@@ -135,6 +135,12 @@ const ServiceEntry = struct {
     // Objective (ntp, jepa, hybrid, nca-ntp, etc.)
     objective: [24]u8 = undefined,
     objective_len: u8 = 0,
+    // Phase (ntp/jepa/hybrid/nca — distinct from objective for hybrid switching)
+    phase: [12]u8 = undefined,
+    phase_len: u8 = 0,
+    // Wave (w6/w7/w8/w8.5 etc.)
+    wave: [8]u8 = undefined,
+    wave_len: u8 = 0,
     // Lineage
     generation: u16 = 0,
     parent: [64]u8 = undefined,
@@ -184,6 +190,16 @@ const ServiceEntry = struct {
     fn objectiveStr(self: *const ServiceEntry) []const u8 {
         if (self.objective_len == 0) return "ntp";
         return self.objective[0..self.objective_len];
+    }
+
+    fn phaseStr(self: *const ServiceEntry) []const u8 {
+        if (self.phase_len == 0) return self.objectiveStr();
+        return self.phase[0..self.phase_len];
+    }
+
+    fn waveStr(self: *const ServiceEntry) []const u8 {
+        if (self.wave_len == 0) return "?";
+        return self.wave[0..self.wave_len];
     }
 
     fn parentName(self: *const ServiceEntry) []const u8 {
@@ -2197,9 +2213,10 @@ fn saveState(state: EvolutionState) !void {
             svc.last_poll_step,       svc.stall_count,     svc.last_ckpt_step,
         }) catch return error.OutOfMemory).len;
 
-        // Architecture config fields
-        pos += (std.fmt.bufPrint(buf[pos..], ",\"obj\":\"{s}\",\"ctx\":{d},\"gc\":{d:.2},\"wu\":{d},\"sched\":\"{s}\"", .{
+        // Architecture config (nested cfg object)
+        pos += (std.fmt.bufPrint(buf[pos..], ",\"cfg\":{{\"obj\":\"{s}\",\"ctx\":{d},\"gc\":{d:.2},\"wu\":{d},\"sched\":\"{s}\",\"phase\":\"{s}\",\"wave\":\"{s}\"}}", .{
             svc.objectiveStr(), svc.context, svc.grad_clip, svc.warmup, svc.lr_schedule.toStr(),
+            svc.phaseStr(),     svc.waveStr(),
         }) catch return error.OutOfMemory).len;
 
         // I1: Loss history array
@@ -2293,20 +2310,48 @@ fn loadState(allocator: Allocator) !EvolutionState {
                 entry.stall_count = @intCast(@min(jsonU32(item, "sc"), 255));
                 entry.last_ckpt_step = jsonU32(item, "lcs");
 
-                // Architecture config (backward-compatible — defaults for old state files)
-                const obj_str = getJsonString(item, "obj");
-                if (obj_str.len > 0 and !std.mem.eql(u8, obj_str, "?")) {
-                    copyToFixed(&entry.objective, &entry.objective_len, obj_str);
-                }
-                const ctx_val = jsonU32(item, "ctx");
-                if (ctx_val > 0) entry.context = ctx_val;
-                const gc_val = jsonF32(item, "gc");
-                if (gc_val > 0) entry.grad_clip = gc_val;
-                const wu_val = jsonU32(item, "wu");
-                if (wu_val > 0) entry.warmup = wu_val;
-                const sched_str = getJsonString(item, "sched");
-                if (sched_str.len > 0 and !std.mem.eql(u8, sched_str, "?")) {
-                    entry.lr_schedule = LrSchedule.fromStr(sched_str);
+                // Architecture config — try nested "cfg" object first, fallback to flat keys
+                if (getJsonObject(item, "cfg")) |cfg_val| {
+                    if (cfg_val == .object) {
+                        const obj_str = getJsonString(cfg_val, "obj");
+                        if (obj_str.len > 0 and !std.mem.eql(u8, obj_str, "?")) {
+                            copyToFixed(&entry.objective, &entry.objective_len, obj_str);
+                        }
+                        const ctx_val = jsonU32(cfg_val, "ctx");
+                        if (ctx_val > 0) entry.context = ctx_val;
+                        const gc_val = jsonF32(cfg_val, "gc");
+                        if (gc_val > 0) entry.grad_clip = gc_val;
+                        const wu_val = jsonU32(cfg_val, "wu");
+                        if (wu_val > 0) entry.warmup = wu_val;
+                        const sched_str = getJsonString(cfg_val, "sched");
+                        if (sched_str.len > 0 and !std.mem.eql(u8, sched_str, "?")) {
+                            entry.lr_schedule = LrSchedule.fromStr(sched_str);
+                        }
+                        const phase_str = getJsonString(cfg_val, "phase");
+                        if (phase_str.len > 0 and !std.mem.eql(u8, phase_str, "?")) {
+                            copyToFixed(&entry.phase, &entry.phase_len, phase_str);
+                        }
+                        const wave_str = getJsonString(cfg_val, "wave");
+                        if (wave_str.len > 0 and !std.mem.eql(u8, wave_str, "?")) {
+                            copyToFixed(&entry.wave, &entry.wave_len, wave_str);
+                        }
+                    }
+                } else {
+                    // Flat fallback for old state files
+                    const obj_str = getJsonString(item, "obj");
+                    if (obj_str.len > 0 and !std.mem.eql(u8, obj_str, "?")) {
+                        copyToFixed(&entry.objective, &entry.objective_len, obj_str);
+                    }
+                    const ctx_val = jsonU32(item, "ctx");
+                    if (ctx_val > 0) entry.context = ctx_val;
+                    const gc_val = jsonF32(item, "gc");
+                    if (gc_val > 0) entry.grad_clip = gc_val;
+                    const wu_val = jsonU32(item, "wu");
+                    if (wu_val > 0) entry.warmup = wu_val;
+                    const sched_str = getJsonString(item, "sched");
+                    if (sched_str.len > 0 and !std.mem.eql(u8, sched_str, "?")) {
+                        entry.lr_schedule = LrSchedule.fromStr(sched_str);
+                    }
                 }
 
                 // I1: Load loss history
