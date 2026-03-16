@@ -1633,6 +1633,7 @@ const MutatedConfig = struct {
     nca_steps: u32 = 0, // NCA pre-pre-training steps (0 = no NCA)
     nca_entropy_min: []const u8 = "1.5",
     nca_entropy_max: []const u8 = "2.8",
+    fresh: bool = false, // true = HSLM_FRESH=1 (new training from scratch)
 };
 
 pub fn mutateConfig(leader: *const ServiceEntry, prng_seed: u32) MutatedConfig {
@@ -2079,13 +2080,13 @@ fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usiz
     const sched_str: []const u8 = config.lr_schedule.toStr();
 
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"0","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
-        config.optimizer_str[0..config.optimizer_len], sched_str,                             warmup_str,
-        grad_clip_str,                                 ctx_str,                               shard_str,
-        num_shards_str,                                config.objective,
+        config.optimizer_str[0..config.optimizer_len], sched_str,                             if (config.fresh) "1" else "0",
+        warmup_str,                                    grad_clip_str,                         ctx_str,
+        shard_str,                                     num_shards_str,                        config.objective,
     }) catch return;
     defer allocator.free(set_vars_json);
 
@@ -2215,7 +2216,7 @@ fn saveState(state: EvolutionState) !void {
 
         // Architecture config (nested cfg object)
         pos += (std.fmt.bufPrint(buf[pos..], ",\"cfg\":{{\"obj\":\"{s}\",\"ctx\":{d},\"gc\":{d:.2},\"wu\":{d},\"sched\":\"{s}\",\"phase\":\"{s}\",\"wave\":\"{s}\"}}", .{
-            svc.objectiveStr(), svc.context, svc.grad_clip, svc.warmup, svc.lr_schedule.toStr(),
+            svc.objectiveStr(), svc.context,   svc.grad_clip, svc.warmup, svc.lr_schedule.toStr(),
             svc.phaseStr(),     svc.waveStr(),
         }) catch return error.OutOfMemory).len;
 
@@ -3083,12 +3084,12 @@ fn deployConfigToService(
 
     const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"0","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
-        config.optimizer_str[0..config.optimizer_len], sched_str,                             warmup_str,
-        grad_clip_str,                                 ctx_str,
+        config.optimizer_str[0..config.optimizer_len], sched_str,                             if (config.fresh) "1" else "0",
+        warmup_str,                                    grad_clip_str,                         ctx_str,
     }) catch return false;
     defer allocator.free(set_vars_json);
 
@@ -4094,6 +4095,10 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
     var nca_steps: u32 = 15000;
     var nca_entropy_min: []const u8 = "1.5";
     var nca_entropy_max: []const u8 = "2.8";
+    var override_context: ?u32 = null;
+    var batch_count: ?u32 = null;
+    var override_sched: ?LrSchedule = null;
+    var force_fresh = false;
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -4115,17 +4120,49 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
         } else if (std.mem.eql(u8, args[i], "--nca-entropy-max") and i + 1 < args.len) {
             i += 1;
             nca_entropy_max = args[i];
+        } else if (std.mem.eql(u8, args[i], "--context") and i + 1 < args.len) {
+            i += 1;
+            const ctx_val = std.fmt.parseInt(u32, args[i], 10) catch {
+                print("{s}ERROR: --context requires a number{s}\n", .{ RED, RESET });
+                return;
+            };
+            if (ctx_val != 27 and ctx_val != 54 and ctx_val != 81 and ctx_val != 243) {
+                print("{s}ERROR: --context must be sacred dimension ∈ {{27, 54, 81, 243}}, got {d}{s}\n", .{ RED, ctx_val, RESET });
+                return;
+            }
+            override_context = ctx_val;
+        } else if (std.mem.eql(u8, args[i], "--count") and i + 1 < args.len) {
+            i += 1;
+            const cnt = std.fmt.parseInt(u32, args[i], 10) catch {
+                print("{s}ERROR: --count requires a number{s}\n", .{ RED, RESET });
+                return;
+            };
+            batch_count = @min(cnt, 15);
+        } else if (std.mem.eql(u8, args[i], "--sched") and i + 1 < args.len) {
+            i += 1;
+            if (std.mem.eql(u8, args[i], "flat")) {
+                print("{s}ERROR: flat LR schedule is BANNED (dead by 20K steps). Use cosine/wsd/d2z/phi_restart.{s}\n", .{ RED, RESET });
+                return;
+            }
+            override_sched = LrSchedule.fromStr(args[i]);
         } else if (std.mem.eql(u8, args[i], "--sacred")) {
             sacred = true;
         } else if (std.mem.eql(u8, args[i], "--dry-run")) {
             dry_run = true;
         } else if (std.mem.eql(u8, args[i], "--force-recycle") or std.mem.eql(u8, args[i], "--force")) {
             force_recycle = true;
+        } else if (std.mem.eql(u8, args[i], "--fresh")) {
+            force_fresh = true;
         }
     }
 
+    // Batch injection path: --count N auto-picks N worst performers
+    if (batch_count) |count| {
+        return runInjectBatch(allocator, count, sacred, dry_run, force_recycle, objective, nca_steps, nca_entropy_min, nca_entropy_max, override_context, override_sched, force_fresh);
+    }
+
     const tgt = target_name orelse {
-        print("{s}ERROR: --target <service-name> is required{s}\n", .{ RED, RESET });
+        print("{s}ERROR: --target <service-name> is required (or use --count N for batch){s}\n", .{ RED, RESET });
         return;
     };
 
@@ -4179,15 +4216,26 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
 
     const parent = &state.services[parent_idx];
     const seed: u32 = @truncate(@as(u64, @intCast(std.time.milliTimestamp())));
-    const config = if (sacred)
+    var config = if (sacred)
         mutateConfigSacred(parent, seed, false)
     else
         mutateConfig(parent, seed);
 
+    if (override_context) |ctx| config.context = ctx;
+    if (override_sched) |sched| config.lr_schedule = sched;
+
+    // Detect architecture change vs parent → fresh start
+    const obj_changed = !std.mem.eql(u8, objective, parent.objectiveStr());
+    const ctx_changed = (override_context != null and config.context != parent.context);
+    if (obj_changed or ctx_changed or force_fresh) {
+        config.fresh = true;
+    }
+
     const p_name = parent.svcName();
+    const fresh_str: []const u8 = if (config.fresh) " [FRESH]" else "";
     const mode_str: []const u8 = if (sacred) " [SACRED]" else "";
     const obj_str: []const u8 = if (std.mem.eql(u8, objective, "ntp")) "" else if (std.mem.eql(u8, objective, "hybrid")) " [HYBRID]" else if (std.mem.indexOf(u8, objective, "nca") != null) " [NCA]" else " [JEPA]";
-    print("\n{s}💉 INJECT:{s} {s} ← child of {s}{s}{s}\n", .{ BOLD, RESET, tgt, p_name, mode_str, obj_str });
+    print("\n{s}💉 INJECT:{s} {s} ← child of {s}{s}{s}{s}\n", .{ BOLD, RESET, tgt, p_name, mode_str, obj_str, fresh_str });
     print("   LR={s}  GC={d:.3}  WU={d}  seed={d}  objective={s}\n", .{ config.lr_str[0..config.lr_len], config.grad_clip, config.warmup, config.seed, objective });
     if (std.mem.indexOf(u8, objective, "nca") != null) {
         print("   NCA: steps={d}  entropy=[{s}, {s}]\n", .{ nca_steps, nca_entropy_min, nca_entropy_max });
@@ -4218,6 +4266,138 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
         print("  {s}⚠️  Failed to save state: {}{s}\n", .{ YELLOW, err, RESET });
     };
     print("   {s}✅ Injected successfully ({d} API calls){s}\n\n", .{ GREEN, api_calls, RESET });
+}
+
+fn runInjectBatch(
+    allocator: Allocator,
+    count: u32,
+    sacred: bool,
+    dry_run: bool,
+    force_recycle: bool,
+    objective: []const u8,
+    nca_steps: u32,
+    nca_entropy_min: []const u8,
+    nca_entropy_max: []const u8,
+    override_context: ?u32,
+    override_sched: ?LrSchedule,
+    force_fresh: bool,
+) !void {
+    var state = loadState(allocator) catch {
+        print("{s}ERROR: No evolution state. Run 'tri farm evolve init' first.{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    // Build candidate array: worst performers eligible for recycling
+    var candidates: [MAX_SERVICES]usize = undefined;
+    var cand_count: usize = 0;
+
+    for (state.services[0..state.service_count], 0..) |*svc, si| {
+        // Skip PRIMARY account
+        if (svc.account_idx == 0) continue;
+        // Skip near-finish (≥90K steps)
+        if (svc.current_step >= 90000) continue;
+
+        const recyclable = svc.status == .crashed or svc.status == .stalled or
+            svc.status == .diverged or svc.status == .stuck or
+            svc.status == .idle or svc.status == .killed;
+
+        if (recyclable) {
+            candidates[cand_count] = si;
+            cand_count += 1;
+            continue;
+        }
+
+        // Running workers: batch --force allows recycling any running worker with step>=10K
+        // (single-target inject still enforces PPL>50 in runInject)
+        if (svc.status == .running and svc.current_step > 0 and svc.current_step < 100000) {
+            if (force_recycle and svc.current_step >= 10000) {
+                candidates[cand_count] = si;
+                cand_count += 1;
+            }
+        }
+    }
+
+    if (cand_count == 0) {
+        print("{s}⚠️  No recyclable candidates found. All workers are healthy or on PRIMARY.{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    // Sort candidates by PPL ascending (worst = last)
+    sortByPpl(&state, candidates[0..cand_count]);
+
+    // Take N worst from the end
+    const n = @min(count, @as(u32, @intCast(cand_count)));
+    const mode_str: []const u8 = if (sacred) " [SACRED]" else "";
+    const obj_str: []const u8 = if (std.mem.eql(u8, objective, "ntp")) "" else if (std.mem.eql(u8, objective, "hybrid")) " [HYBRID]" else if (std.mem.indexOf(u8, objective, "nca") != null) " [NCA]" else " [JEPA]";
+
+    print("\n{s}💉 BATCH INJECT:{s} {d} of {d} candidates{s}{s}\n", .{ BOLD, RESET, n, cand_count, mode_str, obj_str });
+    if (override_context) |ctx| print("   context override: {d}\n", .{ctx});
+    if (override_sched) |sched| print("   schedule override: {s}\n", .{sched.toStr()});
+
+    var total_api_calls: u32 = 0;
+    const seed_base: u32 = @truncate(@as(u64, @intCast(std.time.milliTimestamp())));
+
+    var injected: u32 = 0;
+    var ji: u32 = 0;
+    while (ji < n) : (ji += 1) {
+        const target_idx = candidates[cand_count - 1 - ji]; // worst first (end of sorted array)
+        const target = &state.services[target_idx];
+        const t_name = target.svcName();
+
+        // Select parent
+        const seed = seed_base +% ji;
+        const parent_idx = selectParentTruncation(&state, seed) orelse {
+            print("   {s}⚠️  No elite parents available, stopping.{s}\n", .{ YELLOW, RESET });
+            break;
+        };
+        const parent = &state.services[parent_idx];
+        const p_name = parent.svcName();
+
+        // Mutate config from parent
+        var config = if (sacred)
+            mutateConfigSacred(parent, seed, false)
+        else
+            mutateConfig(parent, seed);
+
+        // Apply overrides
+        if (override_context) |ctx| config.context = ctx;
+        if (override_sched) |sched| config.lr_schedule = sched;
+        config.objective = objective;
+        if (std.mem.indexOf(u8, objective, "nca") != null) {
+            config.nca_steps = nca_steps;
+            config.nca_entropy_min = nca_entropy_min;
+            config.nca_entropy_max = nca_entropy_max;
+        }
+
+        // Detect architecture change vs parent → fresh start
+        const obj_changed = !std.mem.eql(u8, objective, parent.objectiveStr());
+        const ctx_changed = (override_context != null and config.context != parent.context);
+        if (obj_changed or ctx_changed or force_fresh) {
+            config.fresh = true;
+        }
+
+        const fresh_tag: []const u8 = if (config.fresh) " FRESH" else "";
+        print("   [{d}/{d}] {s} ← {s} (ctx={d}, sched={s}{s})\n", .{ ji + 1, n, t_name, p_name, config.context, config.lr_schedule.toStr(), fresh_tag });
+
+        if (dry_run) continue;
+
+        recycleService(allocator, &state, target_idx, config, p_name, &total_api_calls);
+
+        var detail_buf: [128]u8 = undefined;
+        const detail = std.fmt.bufPrint(&detail_buf, "batch-injected from {s}", .{p_name}) catch "batch-injected";
+        state.addEvent(.spawn, t_name, detail);
+        notifyWsBus(.inject, t_name, detail);
+        injected += 1;
+    }
+
+    if (!dry_run) {
+        saveState(state) catch |err| {
+            print("  {s}⚠️  Failed to save state: {}{s}\n", .{ YELLOW, err, RESET });
+        };
+        print("\n   {s}✅ Injected {d} services ({d} API calls){s}\n\n", .{ GREEN, injected, total_api_calls, RESET });
+    } else {
+        print("\n   {s}--dry-run: no action taken{s}\n\n", .{ DIM, RESET });
+    }
 }
 
 fn runWatch(allocator: Allocator, args: []const []const u8) !void {
