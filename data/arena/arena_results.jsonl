@@ -1,1 +1,7 @@
 {"id":1,"fighter_a":"trinity-hslm","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":4293,"latency_b_ms":0,"timestamp":1773653132}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"api-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773659856}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"api-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773659876}
+{"id":2,"fighter_a":"trinity-hslm","fighter_b":"echo","task_id":"api-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":3531,"latency_b_ms":0,"timestamp":1773659876}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"api-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773659898}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"api-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773659926}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773659934}
