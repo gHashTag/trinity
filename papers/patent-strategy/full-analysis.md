@@ -291,6 +291,76 @@ Quality gate: improvement rate > phi^(-1) ~ 0.618 qualifies as IMMORTAL. Below t
 
 ---
 
+## Patent #5: SEVO — Sacred EVolutionary Objective Search
+
+### Invention Summary
+
+SEVO (Sacred EVolutionary Objective Search) is a population-based evolutionary training system that mutates not only scalar hyperparameters (learning rate, gradient clipping, warmup) but the **training objective itself** (NTP, JEPA, NCA, hybrid) across a population of workers. No existing PBT/ASHA/NAS system does this.
+
+### Key Innovations
+
+#### 5a. Objective Mutation in PBT Population
+
+Each worker carries a `config.objective` field accepting values from {NTP, NTP-81+, JEPA, hybrid}. During injection, objectives are selected according to DEFAULT_QUOTAS: 40% NTP, 20% NTP-81+, 20% JEPA, 20% hybrid. Mutation via `mutateConfigSacred()` can change the objective type — a dimension not explored by any prior PBT system.
+
+#### 5b. Diversity-Preserving Injection with PPL=0.0 Sentinel
+
+After recycling, new workers receive PPL=0.0 sentinel value to prevent immediate re-killing as "worst". Diversity health H = product(stdev_lr, stdev_gc, stdev_wu) measures population spread. Auto-injection triggers when H falls below threshold.
+
+#### 5c. Sacred 3^k Constraints
+
+- SACRED_RUNGS: evaluation at 3^k steps (2187, 6561, 19683, 59049)
+- phi-grid LR: base × φ^p, p ∈ {-3..3}
+- Sacred warmups: {243, 729, 2187}
+- Sacred contexts: {27, 81, 243}
+
+#### 5d. ASHA + PBT + Objective Injection Combined
+
+Three mechanisms in one loop: ASHA successive halving at rungs, PBT mutation of surviving configs, objective injection based on quota deficit.
+
+#### 5e. HSLM_FRESH Detection
+
+Automatic restart vs resume decision: `obj_changed || ctx_changed` → FRESH=1 (restart); scalar-only → FRESH=0 (resume checkpoint).
+
+### Experimental Scale
+
+| Metric | Value |
+|--------|-------|
+| Workers | 108 Railway services |
+| Accounts | 6 ($20/month each = $120/month) |
+| Compute | CPU-only (no GPU/TPU) |
+| Best result | R33: PPL=4.6 at 100K steps |
+| Generations | G0 → G3 |
+
+### Source Files
+
+- `src/tri/tri_farm_evolve.zig` — Complete SEVO implementation (6,700+ LOC)
+- `papers/sevo-method.md` — Formal method description
+
+### Proposed Claims
+
+1. **Method claim**: "A method for evolutionary neural network training comprising maintaining a population of workers with mutable training objective fields, wherein the training objective (loss function type) is mutated during population-based training evolution, not just scalar hyperparameters."
+
+2. **Method claim**: "A diversity-preserving injection method for evolutionary training populations, wherein newly injected workers receive a sentinel fitness value (PPL=0.0) preventing their elimination in the next evolution cycle, combined with quota-based objective selection."
+
+3. **Method claim**: "An automatic training continuation method that detects whether a mutated worker requires fresh initialization (when training objective or context length changed) or can resume from parent checkpoint (when only scalar hyperparameters changed)."
+
+4. **System claim**: "A combined evolutionary training system integrating ASHA successive halving, PBT hyperparameter mutation, and diversity-preserving objective injection in a single evolutionary loop, with sacred 3^k constraints on the search space."
+
+5. **Dependent claim**: "The system of claim 4, wherein evaluation rungs are constrained to powers of 3, learning rates follow a golden-ratio grid, and warmup/context values are restricted to powers of 3."
+
+### Strength Assessment: HIGH
+
+| Factor | Assessment |
+|--------|-----------|
+| Novelty | No prior PBT system mutates training objective |
+| Non-obviousness | Objective mutation requires FRESH detection — not trivial |
+| Experimental evidence | 108 workers, G0→G3 evolution, PPL=4.6 |
+| Prior art gap | PBT (US12314856B2) mutates scalars only |
+| 101 risk | LOW — concrete algorithm with measurable metrics |
+
+---
+
 ## Additional Patentable Elements
 
 ### 5a. VSA with Balanced Ternary + SIMD
@@ -328,7 +398,7 @@ Quality gate: improvement rate > phi^(-1) ~ 0.618 qualifies as IMMORTAL. Below t
 
 ## Defensive Publication Strategy
 
-All 7 discoveries are published as **defensive publications** on Zenodo with enabling disclosure sufficient for patent examiners to find and cite as prior art. Each description includes:
+All 8 discoveries are published as **defensive publications** on Zenodo with enabling disclosure sufficient for patent examiners to find and cite as prior art. Each description includes:
 
 1. **Problem Statement** — what gap this addresses
 2. **Technical Disclosure** — algorithm/method with reproducible detail
@@ -349,6 +419,7 @@ Each record is tagged with relevant Cooperative Patent Classification codes for 
 | D005 (19020213) | G06F7/72, G06N3/04, G06F17/16 |
 | D006 (19020215) | G06N3/0455, G06F17/14, G06N3/084 |
 | D007 (19020217) | G06F7/544, G06F7/72, G06F17/16 |
+| D008 (TBD) | G06N3/086, G06N20/00, G06F18/24 |
 
 ### Description Files
 
@@ -358,13 +429,116 @@ HTML descriptions stored in `papers/patent-strategy/zenodo-descriptions/`:
 - `D005.html` — VSA Balanced Ternary + SIMD
 - `D006.html` — phi-RoPE
 - `D007.html` — Sparse Ternary MatMul
+- `D008.html` — SEVO — Sacred EVolutionary Objective Search
 
 ### Update Command
 
 ```bash
-tri zenodo update          # Update all 5 records
+tri zenodo update          # Update all 6 records
 tri zenodo update D004     # Update single record
 ```
+
+---
+
+## Competitive Positioning: Trinity SEVO vs Industry
+
+### Method vs Model — Strategic Focus
+
+Trinity's patent portfolio protects the **METHOD** (scalable to any model size), not the current **model** (1.95M params research prototype). The priority date is established at small scale; the method applies at 2B+ params.
+
+### Comparison Table
+
+| System | Cost | GPU | Mutates Objective | Full Vertical |
+|--------|------|-----|-------------------|---------------|
+| BitNet 2B (Microsoft, 2024) | $50K–$500K | 64× A100 | No (NTP only) | No |
+| Falcon-Edge 1B (TII, 2024) | ~$100K+ | Dozens A100 | No | No |
+| PBT (DeepMind, 2017) | Varies | GPU cluster | No (LR/batch only) | No |
+| bitnet.cpp (Microsoft, 2024) | N/A | CPU inference | N/A (inference only) | No |
+| **Trinity SEVO 1.95M** | **$120/mo** | **Zero GPU** | **Yes (NTP/JEPA/NCA/hybrid)** | **Yes** |
+
+### Unique Vertical (no competitor has all together)
+
+Training (SEVO on CPU) → Inference (Zero-DSP FPGA) → Evaluation (Arena ELO) → Self-improvement (Ouroboros)
+
+### Honest Weaknesses
+
+- 1.95M params = research prototype (vs BitNet 2B production-ready)
+- PPL=4.6 on vocab=729 is not comparable to PPL on BPE-50K tokenizers
+- bitnet.cpp (Microsoft) is production-ready CPU inference; FPGA pipeline is prototype
+- Arena ELO is internal only; no external validation yet
+
+**Strategic conclusion**: Patent the METHOD (scales to any size), not the model (currently small). Priority date protects the algorithmic innovations regardless of model scale.
+
+---
+
+## Evaluated & Rejected D009 Candidates
+
+### Ouroboros Closed Loop (SEVO → Arena → Code Arena → tri → SEVO)
+
+**Verdict: NOT a separate invention (not D009)**
+
+Reasons:
+1. **Data path not closed in code** — Arena, Code Arena, SEVO, Ouroboros operate in isolation. No actual feedback from Arena back to SEVO training. Chimera (`tri_chimera.zig`) is a convenience macro, not a feedback mechanism.
+2. **Prior art kills novelty**: AutoML (Google, 2017+), AlphaCode/AlphaEvolve (DeepMind), RLHF (OpenAI), LMSYS Chatbot Arena — all implement evaluation→training feedback loops.
+3. **Obvious combination of D004 + D008** — D004 already describes "multi-agent ouroboros" as obvious extension. Patent examiner would reject as obvious combination.
+4. **High marketing value, zero patent value** — "Self-improving AI for $120/mo" is GTM narrative, not invention.
+
+**Recommended use**: Workshop paper, investor pitch, grant narrative. Add as obvious extension in D004 and D008 picket fences.
+
+### Other Rejected Candidates
+
+| Candidate | File | Why Not Patentable |
+|-----------|------|--------------------|
+| Arena length-bias debiasing | `src/arena/judge.zig` (206 LOC) | WildBench (2024) prior art. 2x threshold is standard heuristic |
+| Toxic Verdict 12-dim | `src/tri/toxic_verdict.zig` (1800 LOC) | SonarQube, CodeClimate have multi-dim scoring. Partially in D004 |
+| Faculty Board V-zone | `src/tri/faculty_board.zig` (2500 LOC) | phi threshold is aesthetic, not technical. No proof phi > 0.7 |
+| Link #22 self-referential | `src/tri/golden_chain.zig` (939 LOC) | Placeholder in enum. Schmidhuber Gödel Machine (2003) prior art |
+| Experience hooks | `src/tri/experience_hooks.zig` (81 LOC) | Standard structured logging. MLflow/W&B do the same |
+| Diversity Health H | `tri_farm_evolve.zig` | Already part of D008 (Claim 6) |
+
+---
+
+## T-JEPA (D009 Candidate) — Pending Experimental Validation
+
+### What It Is
+
+First implementation of JEPA (LeCun 2022, Meta I-JEPA 2023) on ternary weights {-1, 0, +1}.
+
+### Source Files
+
+- `src/hslm/tjepa.zig` (~500 LOC) — Ternary JEPA forward pass
+- `src/hslm/ema.zig` — Exponential moving average for target encoder
+- `src/hslm/mask.zig` — Masking strategy
+- `src/hslm/mse_loss.zig` — MSE loss for JEPA prediction
+
+### Novelty Assessment
+
+- JEPA exists (Meta I-JEPA, 2023) — float weights
+- Ternary networks exist (BitNet, 2023) — NTP only, not JEPA
+- **JEPA + ternary = non-obvious combination**: EMA target update breaks when snapping to {-1, 0, +1}
+- **Prior art gap**: No publications on ternary JEPA. I-JEPA uses float. BitNet uses NTP only.
+
+### Current Status
+
+- SEVO allocates 20% JEPA workers in diversity quotas
+- **No PPL data found in evolution_state.json** — JEPA workers may not have reported results
+- Without experimental results, this is implementation only, not a validated discovery
+
+### Decision
+
+- **If PPL < 10 is achieved**: File as D009 "First Ternary World Model" (HIGH priority)
+- **If no results**: Defer. Implementation without experimental validation is insufficient for patent claims.
+
+---
+
+## Full-Stack Vertical — GTM Narrative (Not Patent)
+
+The complete training→inference→evaluation→improvement loop is **not patentable** (obvious combination of D004+D008, extensive prior art in AutoML/RLHF), but has high value as:
+
+1. **Workshop paper**: "Ouroboros: A Self-Improving Ternary Training System on Commodity CPUs at $120/mo"
+2. **Investor pitch**: Full-stack vertical from training to hardware inference — unique in ternary AI
+3. **Grant narrative**: End-to-end AI system with evolutionary training, FPGA deployment, arena evaluation
+4. **Picket fence**: Added as obvious extension in D004 and D008 to block trivial patent variations
 
 ---
 
@@ -377,6 +551,7 @@ tri zenodo update D004     # Update single record
 | P1 | Ternary Resonance Law + Square Attention (Patents #1 + #2) | CRITICAL | $2,000-3,000 |
 | P2 | Zero-DSP FPGA Inference (Patent #3) | CRITICAL | $2,000-3,000 |
 | P3 | Self-Evolving Ouroboros (Patent #4) | HIGH | $1,500-2,500 |
+| P5 | SEVO — Sacred EVolutionary Objective Search (Patent #5) | HIGH | $1,500-2,000 |
 
 Provisional applications provide 12 months of priority date at minimal cost.
 
@@ -396,10 +571,10 @@ Provisional applications provide 12 months of priority date at minimal cost.
 
 | Phase | Cost Range |
 |-------|-----------|
-| Phase 1 (3 provisionals) | $5,500-8,500 |
+| Phase 1 (4 provisionals) | $7,000-10,500 |
 | Phase 2 (2 full utility) | $15,000-25,000 |
 | Phase 3 (PCT + national) | $30,000-50,000 |
-| **Total (3-year)** | **$50,000-83,000** |
+| **Total (3-year)** | **$52,000-85,500** |
 
 ---
 
@@ -436,6 +611,7 @@ Provisional applications provide 12 months of priority date at minimal cost.
 | VSA Ternary | MEDIUM | Partial | Kanerva 2009, but not ternary | #4 |
 | phi-RoPE | MEDIUM | Yes | Standard = 10000-base | #5 |
 | Sparse Ternary MatMul | MEDIUM | Branchless 9.2x | BitNet exists, but not branchless | #6 |
+| **SEVO** | **HIGH** | **Yes (objective mutation)** | **PBT mutates scalars only** | **#5** |
 
 ---
 
