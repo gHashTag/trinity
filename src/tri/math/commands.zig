@@ -1025,13 +1025,159 @@ pub fn runParticlesCommand(_: std.mem.Allocator, args: []const []const u8) !void
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runEvidenceCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+
+    const GOLDEN = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const GREEN = "\x1b[32m";
+    const RED = "\x1b[31m";
+    const WHITE = "\x1b[97m";
+    const GRAY = "\x1b[90m";
+    const RESET = "\x1b[0m";
+
     if (args.len == 0) {
-        std.debug.print("Usage: tri math evidence <formula_id>\n", .{});
-        std.debug.print("  Show evidence level and verification status for a formula\n", .{});
+        std.debug.print("Usage: tri math evidence <name>\n", .{});
+        std.debug.print("  Show sacred formula evidence card for a constant or prediction\n", .{});
+        std.debug.print("  Example: tri math evidence \"fine structure\"\n", .{});
+        std.debug.print("  Example: tri math evidence Lambda_QCD\n", .{});
         return;
     }
-    const formula_id = args[0];
-    try sacred_v2.runSacredExplain(allocator, &[_][]const u8{formula_id});
+
+    // Join args into query, lowercase for matching
+    var query_buf: [256]u8 = undefined;
+    var query_len: usize = 0;
+    for (args, 0..) |arg, i| {
+        if (i > 0) {
+            if (query_len < query_buf.len) {
+                query_buf[query_len] = ' ';
+                query_len += 1;
+            }
+        }
+        for (arg) |ch| {
+            if (query_len < query_buf.len) {
+                query_buf[query_len] = std.ascii.toLower(ch);
+                query_len += 1;
+            }
+        }
+    }
+    const query = query_buf[0..query_len];
+
+    var found: usize = 0;
+
+    // Search sacred_constants
+    for (sacred_formula.sacred_constants) |c| {
+        var name_lower: [128]u8 = undefined;
+        const name_l = toLowerSlice(&name_lower, c.name);
+        var sym_lower: [64]u8 = undefined;
+        const sym_l = toLowerSlice(&sym_lower, c.symbol);
+
+        if (containsSubstring(name_l, query) or containsSubstring(sym_l, query)) {
+            found += 1;
+            // Evidence card
+            std.debug.print("\n{s}══════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+            std.debug.print("{s} EVIDENCE CARD: {s}{s}\n", .{ GOLDEN, c.name, RESET });
+            std.debug.print("{s}══════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+            std.debug.print("  {s}Symbol:{s}    {s}{s}{s}\n", .{ GRAY, RESET, WHITE, c.symbol, RESET });
+            std.debug.print("  {s}Category:{s}  {s}{s}{s}\n", .{ GRAY, RESET, CYAN, c.category, RESET });
+            std.debug.print("  {s}Target:{s}    {s}{d:.10}{s}\n", .{ GRAY, RESET, WHITE, c.target, RESET });
+            std.debug.print("  {s}Computed:{s}  {s}{d:.10}{s}\n", .{ GRAY, RESET, WHITE, c.computed, RESET });
+
+            var formula_buf: [128]u8 = undefined;
+            const fit = sacred_formula.SacredFormulaFit{
+                .n = c.n,
+                .k = c.k,
+                .m = c.m,
+                .p = c.p,
+                .q = c.q,
+                .computed = c.computed,
+                .error_pct = c.error_pct,
+            };
+            const formula_str = sacred_formula.formatFormulaString(&formula_buf, fit);
+            std.debug.print("  {s}Formula:{s}   {s}V = {s}{s}\n", .{ GRAY, RESET, GOLDEN, formula_str, RESET });
+
+            const err_color = if (c.error_pct < 1.0) GREEN else if (c.error_pct < 5.0) CYAN else RED;
+            std.debug.print("  {s}Error:{s}     {s}{d:.4}%{s}\n", .{ GRAY, RESET, err_color, c.error_pct, RESET });
+            std.debug.print("  {s}Exponents:{s} n={s}{d}{s} k={s}{d}{s} m={s}{d}{s} p={s}{d}{s} q={s}{d}{s}\n", .{
+                GRAY,  RESET,
+                WHITE, c.n,
+                RESET, WHITE,
+                c.k,   RESET,
+                WHITE, c.m,
+                RESET, WHITE,
+                c.p,   RESET,
+                WHITE, c.q,
+                RESET,
+            });
+        }
+    }
+
+    // Search sacred_predictions
+    for (sacred_formula.sacred_predictions) |p| {
+        var name_lower: [128]u8 = undefined;
+        const name_l = toLowerSlice(&name_lower, p.name);
+
+        if (containsSubstring(name_l, query)) {
+            found += 1;
+            std.debug.print("\n{s}══════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+            std.debug.print("{s} PREDICTION: {s}{s}\n", .{ GOLDEN, p.name, RESET });
+            std.debug.print("{s}══════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+            std.debug.print("  {s}Unit:{s}      {s}{s}{s}\n", .{ GRAY, RESET, CYAN, p.unit, RESET });
+            std.debug.print("  {s}Value:{s}     {s}{d:.10}{s}\n", .{ GRAY, RESET, WHITE, p.value, RESET });
+
+            var formula_buf: [128]u8 = undefined;
+            const fit = sacred_formula.SacredFormulaFit{
+                .n = p.n,
+                .k = p.k,
+                .m = p.m,
+                .p = p.p,
+                .q = p.q,
+                .computed = p.value,
+                .error_pct = 0.0,
+            };
+            const formula_str = sacred_formula.formatFormulaString(&formula_buf, fit);
+            std.debug.print("  {s}Formula:{s}   {s}V = {s}{s}\n", .{ GRAY, RESET, GOLDEN, formula_str, RESET });
+            std.debug.print("  {s}Exponents:{s} n={s}{d}{s} k={s}{d}{s} m={s}{d}{s} p={s}{d}{s} q={s}{d}{s}\n", .{
+                GRAY,  RESET,
+                WHITE, p.n,
+                RESET, WHITE,
+                p.k,   RESET,
+                WHITE, p.m,
+                RESET, WHITE,
+                p.p,   RESET,
+                WHITE, p.q,
+                RESET,
+            });
+        }
+    }
+
+    if (found > 0) {
+        std.debug.print("\n{s}Found {d} match(es) | φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLDEN, found, RESET });
+    } else {
+        std.debug.print("\n{s}No match for \"{s}\"{s}\n", .{ RED, query, RESET });
+        std.debug.print("{s}Available constants:{s}\n", .{ GRAY, RESET });
+        for (sacred_formula.sacred_constants) |c| {
+            std.debug.print("  {s}{s}{s} ({s})\n", .{ WHITE, c.name, RESET, c.symbol });
+        }
+        std.debug.print("\n", .{});
+    }
+}
+
+fn toLowerSlice(buf: []u8, src: []const u8) []const u8 {
+    const len = @min(src.len, buf.len);
+    for (src[0..len], 0..) |ch, i| {
+        buf[i] = std.ascii.toLower(ch);
+    }
+    return buf[0..len];
+}
+
+fn containsSubstring(haystack: []const u8, needle: []const u8) bool {
+    if (needle.len > haystack.len) return false;
+    if (needle.len == 0) return true;
+    var i: usize = 0;
+    while (i + needle.len <= haystack.len) : (i += 1) {
+        if (std.mem.eql(u8, haystack[i..][0..needle.len], needle)) return true;
+    }
+    return false;
 }
 
 pub fn runSearchBestFitCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {

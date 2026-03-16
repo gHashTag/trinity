@@ -451,12 +451,14 @@ pub fn formatStatusSnapshot(
     alive: u32,
     dead: u32,
     total: u32,
+    health_score: f32,
+    leader_step: u32,
     buf: []u8,
 ) []const u8 {
     return std.fmt.bufPrint(
         buf,
-        "{{\"best_ppl\":{d:.2},\"best\":\"{s}\",\"alive\":{d},\"dead\":{d},\"total\":{d}}}",
-        .{ best_ppl, best_name, alive, dead, total },
+        "{{\"best_ppl\":{d:.2},\"best\":\"{s}\",\"alive\":{d},\"dead\":{d},\"total\":{d},\"health_score\":{d:.0},\"leader_step\":{d}}}",
+        .{ best_ppl, best_name, alive, dead, total, health_score, leader_step },
     ) catch "{}";
 }
 

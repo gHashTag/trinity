@@ -285,6 +285,8 @@ pub const Command = enum {
     metrics,
     // Context Loader (Kiro-inspired)
     context_load,
+    // HSLM Inference
+    infer,
 };
 
 pub const CLIState = struct {
@@ -935,6 +937,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "deck") or std.mem.eql(u8, arg, "deck-generate")) return .deck_generate;
     if (std.mem.eql(u8, arg, "fpga")) return .fpga;
     if (std.mem.eql(u8, arg, "train")) return .train;
+    if (std.mem.eql(u8, arg, "infer")) return .infer;
     if (std.mem.eql(u8, arg, "cloud")) return .cloud;
     if (std.mem.eql(u8, arg, "farm")) return .farm;
     if (std.mem.eql(u8, arg, "fpga-demo")) return .fpga_demo;

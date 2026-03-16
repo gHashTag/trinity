@@ -559,6 +559,240 @@ pub fn printSacredConstantsTable() void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CSV EXPORT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Export sacred constants, predictions, and random control to CSV files.
+/// Writes to papers/sacred/ directory.
+pub fn exportCSV(allocator: std.mem.Allocator) !void {
+    const base_dir = "papers/sacred";
+
+    // Ensure directory exists
+    std.fs.cwd().makePath(base_dir) catch {};
+
+    // 1. sacred_constants.csv
+    {
+        const path = base_dir ++ "/sacred_constants.csv";
+        const file = try std.fs.cwd().createFile(path, .{});
+        defer file.close();
+
+        try file.writeAll("name,target,computed,error_pct,n,k,m,p,q,category\n");
+        for (sacred_constants) |c| {
+            const line = try std.fmt.allocPrint(allocator, "{s},{d:.10},{d:.10},{d:.6},{d},{d},{d},{d},{d},{s}\n", .{
+                c.name, c.target,   c.computed, c.error_pct,
+                c.n,    c.k,        c.m,        c.p,
+                c.q,    c.category,
+            });
+            defer allocator.free(line);
+            try file.writeAll(line);
+        }
+
+        std.debug.print("  Wrote {s} ({d} rows)\n", .{ path, sacred_constants.len });
+    }
+
+    // 2. sacred_predictions.csv
+    {
+        const path = base_dir ++ "/sacred_predictions.csv";
+        const file = try std.fs.cwd().createFile(path, .{});
+        defer file.close();
+
+        try file.writeAll("name,formula,value,unit,reference_state,experimental_bound,falsification_criterion\n");
+        for (sacred_predictions) |p| {
+            var fbuf: [128]u8 = undefined;
+            const fit = SacredFormulaFit{ .n = p.n, .k = p.k, .m = p.m, .p = p.p, .q = p.q, .computed = p.value, .error_pct = 0.0 };
+            const fstr = formatFormulaString(&fbuf, fit);
+
+            const ref_state = predictionRefState(p.name);
+            const exp_bound = predictionExpBound(p.name);
+            const falsification = predictionFalsification(p.name);
+
+            const line = try std.fmt.allocPrint(allocator, "{s},{s},{d:.10},{s},{s},{s},{s}\n", .{
+                p.name,    fstr,      p.value,       p.unit,
+                ref_state, exp_bound, falsification,
+            });
+            defer allocator.free(line);
+            try file.writeAll(line);
+        }
+
+        std.debug.print("  Wrote {s} ({d} rows)\n", .{ path, sacred_predictions.len });
+    }
+
+    // 3. sacred_random_control.csv
+    {
+        const stats = runRandomControlInternal();
+        const path = base_dir ++ "/sacred_random_control.csv";
+        const file = try std.fs.cwd().createFile(path, .{});
+        defer file.close();
+
+        try file.writeAll("random_value,computed,error_pct,n,k,m,p,q\n");
+        for (stats.values, stats.fits) |val, fit| {
+            const line = try std.fmt.allocPrint(allocator, "{d:.10},{d:.10},{d:.6},{d},{d},{d},{d},{d}\n", .{
+                val, fit.computed, fit.error_pct, fit.n, fit.k, fit.m, fit.p, fit.q,
+            });
+            defer allocator.free(line);
+            try file.writeAll(line);
+        }
+
+        std.debug.print("  Wrote {s} (100 rows)\n", .{path});
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RANDOM CONTROL STATISTICS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const CONTROL_N: usize = 100;
+
+const ControlStats = struct {
+    values: [CONTROL_N]f64,
+    fits: [CONTROL_N]SacredFormulaFit,
+    real_median: f64,
+    random_median: f64,
+    real_mean: f64,
+    random_mean: f64,
+};
+
+fn runRandomControlInternal() ControlStats {
+    // Fixed seed = 42 for reproducibility
+    var prng = std.Random.DefaultPrng.init(42);
+    const rand = prng.random();
+
+    var random_values: [CONTROL_N]f64 = undefined;
+    var random_fits: [CONTROL_N]SacredFormulaFit = undefined;
+    var random_errors: [CONTROL_N]f64 = undefined;
+
+    // Generate log-uniform random numbers in [1e-44, 1e32]
+    for (0..CONTROL_N) |i| {
+        const log_min: f64 = -44.0;
+        const log_max: f64 = 32.0;
+        const log_val = log_min + rand.float(f64) * (log_max - log_min);
+        random_values[i] = math.pow(f64, 10.0, log_val);
+        random_fits[i] = fitSacredFormula(random_values[i]);
+        random_errors[i] = random_fits[i].error_pct;
+    }
+
+    // Compute real constants errors
+    var real_errors: [sacred_constants.len]f64 = undefined;
+    for (sacred_constants, 0..) |c, i| {
+        real_errors[i] = c.error_pct;
+    }
+
+    // Sort for median
+    std.mem.sort(f64, &real_errors, {}, std.sort.asc(f64));
+    std.mem.sort(f64, &random_errors, {}, std.sort.asc(f64));
+
+    const real_median = (real_errors[real_errors.len / 2 - 1] + real_errors[real_errors.len / 2]) / 2.0;
+    const random_median = (random_errors[CONTROL_N / 2 - 1] + random_errors[CONTROL_N / 2]) / 2.0;
+
+    // Mean
+    var real_sum: f64 = 0;
+    for (real_errors) |e| real_sum += e;
+    var random_sum: f64 = 0;
+    for (random_fits, 0..) |f, i| {
+        _ = i;
+        random_sum += f.error_pct;
+    }
+
+    return .{
+        .values = random_values,
+        .fits = random_fits,
+        .real_median = real_median,
+        .random_median = random_median,
+        .real_mean = real_sum / @as(f64, @floatFromInt(real_errors.len)),
+        .random_mean = random_sum / @as(f64, @floatFromInt(CONTROL_N)),
+    };
+}
+
+/// Print random control comparison table
+pub fn runRandomControl() void {
+    const GOLDEN = "\x1b[33m";
+    const CYAN = "\x1b[36m";
+    const WHITE = "\x1b[97m";
+    const GRAY = "\x1b[90m";
+    const GREEN = "\x1b[32m";
+    const RESET = "\x1b[0m";
+    const BOLD = "\x1b[1m";
+
+    std.debug.print("\n{s}{s}SACRED FORMULA — RANDOM CONTROL TEST{s}\n", .{ BOLD, GOLDEN, RESET });
+    std.debug.print("{s}Seed: 42 | N=100 | Range: [1e-44, 1e32] log-uniform{s}\n", .{ GRAY, RESET });
+    std.debug.print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
+
+    const stats = runRandomControlInternal();
+
+    const ratio = stats.random_median / stats.real_median;
+
+    std.debug.print("  {s}Real constants{s}   ({d} values):\n", .{ CYAN, RESET, sacred_constants.len });
+    std.debug.print("    Median error: {s}{d:.4}%{s}\n", .{ GREEN, stats.real_median, RESET });
+    std.debug.print("    Mean error:   {s}{d:.4}%{s}\n\n", .{ WHITE, stats.real_mean, RESET });
+
+    std.debug.print("  {s}Random control{s}  (100 values, seed=42):\n", .{ CYAN, RESET });
+    std.debug.print("    Median error: {s}{d:.4}%{s}\n", .{ WHITE, stats.random_median, RESET });
+    std.debug.print("    Mean error:   {s}{d:.4}%{s}\n\n", .{ WHITE, stats.random_mean, RESET });
+
+    std.debug.print("  {s}Ratio:{s} random/real = {s}{d:.1}x{s}\n", .{ CYAN, RESET, GREEN, ratio, RESET });
+    std.debug.print("  {s}(Higher = formula fits real constants much better than random){s}\n\n", .{ GRAY, RESET });
+
+    std.debug.print("{s}phi^2 + 1/phi^2 = 3 = TRINITY{s}\n\n", .{ GOLDEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PREDICTION METADATA — Reference states, bounds, falsification criteria
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn predictionRefState(name: []const u8) []const u8 {
+    if (std.mem.indexOf(u8, name, "m_ν") != null or std.mem.indexOf(u8, name, "Neutrino mass") != null) return "untestable";
+    if (std.mem.indexOf(u8, name, "Σm_ν") != null) return "within_1sigma";
+    if (std.mem.indexOf(u8, name, "N_eff") != null) return "within_1sigma";
+    if (std.mem.indexOf(u8, name, "τ_n") != null or std.mem.indexOf(u8, name, "Neutron") != null) return "tension_5sigma";
+    if (std.mem.indexOf(u8, name, "X17") != null) return "conflict";
+    if (std.mem.indexOf(u8, name, "WIMP") != null) return "open";
+    if (std.mem.indexOf(u8, name, "M-theory") != null) return "untestable";
+    if (std.mem.indexOf(u8, name, "Bosonic") != null) return "untestable";
+    if (std.mem.indexOf(u8, name, "Proton lifetime") != null) return "open";
+    if (std.mem.indexOf(u8, name, "Sterile") != null) return "open";
+    if (std.mem.indexOf(u8, name, "Inflation") != null) return "within_1sigma";
+    if (std.mem.indexOf(u8, name, "Tensor") != null) return "open";
+    if (std.mem.indexOf(u8, name, "S_topo") != null) return "untestable";
+    if (std.mem.indexOf(u8, name, "S_8") != null) return "within_1sigma";
+    if (std.mem.indexOf(u8, name, "QCD") != null) return "within_1sigma";
+    if (std.mem.indexOf(u8, name, "CP phase") != null or std.mem.indexOf(u8, name, "Dirac") != null) return "open";
+    if (std.mem.indexOf(u8, name, "Reionization") != null) return "within_1sigma";
+    if (std.mem.indexOf(u8, name, "dm2_32") != null) return "within_1sigma";
+    return "open";
+}
+
+fn predictionExpBound(name: []const u8) []const u8 {
+    if (std.mem.indexOf(u8, name, "Σm_ν") != null) return "DESI DR2: <0.064 eV (95%CL) / oscillations: >0.059 eV";
+    if (std.mem.indexOf(u8, name, "N_eff") != null) return "DESI DR2+CMB: 3.23 +/-0.35";
+    if (std.mem.indexOf(u8, name, "τ_n") != null or std.mem.indexOf(u8, name, "Neutron") != null) return "UCNtau: 877.82 +/-0.3 s";
+    if (std.mem.indexOf(u8, name, "X17") != null) return "MEG II: excluded 94%CL / PADME: 2.5sigma";
+    if (std.mem.indexOf(u8, name, "WIMP") != null) return "No direct detection";
+    if (std.mem.indexOf(u8, name, "M-theory") != null) return "Theoretical";
+    if (std.mem.indexOf(u8, name, "Neutrino mass") != null) return "KATRIN: <0.45 eV (90%CL)";
+    if (std.mem.indexOf(u8, name, "Bosonic") != null) return "Theoretical";
+    if (std.mem.indexOf(u8, name, "Proton lifetime") != null) return "Super-K: >1.6e34 yr (90%CL)";
+    if (std.mem.indexOf(u8, name, "Sterile") != null) return "MicroBooNE: no evidence at 1.3 eV";
+    if (std.mem.indexOf(u8, name, "Inflation") != null) return "Planck 2018: 50-60 e-folds";
+    if (std.mem.indexOf(u8, name, "Tensor") != null) return "BICEP/Keck: r<0.036 (95%CL)";
+    if (std.mem.indexOf(u8, name, "QCD") != null) return "Lattice QCD: 156.5 +/-1.5 MeV";
+    if (std.mem.indexOf(u8, name, "CP phase") != null or std.mem.indexOf(u8, name, "Dirac") != null) return "T2K+NOvA: 195-300 deg";
+    if (std.mem.indexOf(u8, name, "Reionization") != null) return "Planck 2018: 7.67 +/-0.73";
+    return "see literature";
+}
+
+fn predictionFalsification(name: []const u8) []const u8 {
+    if (std.mem.indexOf(u8, name, "Σm_ν") != null) return "DESI DR3/DR4 by 2027: if outside [0.055-0.065] eV";
+    if (std.mem.indexOf(u8, name, "N_eff") != null) return "CMB-S4 by 2030: if outside [3.01-3.08]";
+    if (std.mem.indexOf(u8, name, "τ_n") != null or std.mem.indexOf(u8, name, "Neutron") != null) return "UCNtau/tauSPECT: if confirmed <878 s";
+    if (std.mem.indexOf(u8, name, "X17") != null) return "MEG II final result by 2026: if definitively excluded";
+    if (std.mem.indexOf(u8, name, "WIMP") != null) return "LZ/XENONnT: if 50 GeV excluded at 90%CL";
+    if (std.mem.indexOf(u8, name, "Neutrino mass") != null) return "Decades away - KATRIN limit 0.45 eV vs prediction 0.006 eV";
+    if (std.mem.indexOf(u8, name, "Tensor") != null) return "LiteBIRD by 2032: if r measured and outside [0.025-0.035]";
+    if (std.mem.indexOf(u8, name, "Dirac") != null or std.mem.indexOf(u8, name, "CP phase") != null) return "DUNE/HK by 2030: if outside [210-235] deg";
+    return "see future experiments";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 

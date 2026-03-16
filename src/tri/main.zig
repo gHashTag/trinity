@@ -788,6 +788,10 @@ pub fn main() !void {
         .fpga_demo => commands.runFpgaDemoCommand(allocator, cmd_args),
         .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
         .train => try tri_train.runTrainCommand(allocator, cmd_args),
+        .infer => {
+            const tri_infer = @import("tri_infer.zig");
+            try tri_infer.runInferCommand(allocator, cmd_args);
+        },
         .zenodo => try tri_zenodo.runZenodoCommand(allocator, cmd_args),
         .cloud => try tri_cloud.runCloudCommand(allocator, cmd_args),
         .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
