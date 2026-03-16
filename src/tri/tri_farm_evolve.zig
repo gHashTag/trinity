@@ -129,6 +129,7 @@ const ServiceEntry = struct {
     current_step: u32 = 0,
     current_ppl: f32 = 999.0,
     current_loss: f32 = 99.0,
+    tok_per_sec: f32 = 0,
     val_ppl: f32 = 999.0, // P1: validation PPL (999 = not yet measured)
     status: ServiceStatus = .unknown,
     // Per-service rung tracking
@@ -200,6 +201,7 @@ const EvolutionState = struct {
     best_ppl: f32 = 999.0,
     best_name: [64]u8 = undefined,
     best_name_len: u8 = 0,
+    best_step: u32 = 0,
     events: [MAX_EVENTS]Event = undefined,
     event_count: usize = 0,
 
@@ -551,7 +553,7 @@ fn runMock(allocator: Allocator, args: []const []const u8) !void {
         padTo(countDigits(config.warmup), 5);
         print("| {d}", .{config.context});
         padTo(countDigits(config.context), 4);
-        const sched_str: []const u8 = if (config.lr_schedule == .cosine) "cos  " else "phi  ";
+        const sched_str: []const u8 = config.lr_schedule.toShort();
         print("| {s}", .{sched_str});
         const sacred_str: []const u8 = if (config.sacred) "φ" else " ";
         print("| {s}\n", .{sacred_str});
@@ -590,7 +592,7 @@ fn writeMockConfigsJson(
         const c = &configs_buf[ci];
         const child_name = config_names[ci][0..config_name_lens[ci]];
         const parent_name = parent_names_buf[ci][0..parent_name_lens[ci]];
-        const sched: []const u8 = if (c.lr_schedule == .cosine) "cosine" else "phi_restart";
+        const sched: []const u8 = c.lr_schedule.toStr();
         const sacred_str: []const u8 = if (c.sacred) "true" else "false";
         var line_buf: [512]u8 = undefined;
         const line = std.fmt.bufPrint(&line_buf,
@@ -641,7 +643,7 @@ fn appendMockLineage(
         const parent_idx = ci % actual_parents;
         const parent = &entries[sorted_idx[parent_idx]];
         const parent_name = parent_names_buf[ci][0..parent_name_lens[ci]];
-        const sched: []const u8 = if (c.lr_schedule == .cosine) "cosine" else "phi_restart";
+        const sched: []const u8 = c.lr_schedule.toStr();
         const sacred_str: []const u8 = if (c.sacred) "true" else "false";
         var line_buf: [512]u8 = undefined;
         const line = std.fmt.bufPrint(&line_buf,
@@ -850,6 +852,7 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     for (state.services[0..state.service_count]) |*svc| {
         if (svc.status == .running and svc.current_ppl < state.best_ppl and svc.current_ppl > 0) {
             state.best_ppl = svc.current_ppl;
+            state.best_step = svc.current_step;
             copyToFixed(&state.best_name, &state.best_name_len, svc.svcName());
         }
     }
@@ -1143,6 +1146,7 @@ fn parseLogsForMetrics(svc: *ServiceEntry, root: std.json.Value) void {
             svc.current_step = metrics.step;
             svc.current_loss = metrics.loss;
             svc.current_ppl = metrics.ppl;
+            svc.tok_per_sec = metrics.tok_per_sec;
             break;
         }
     }
@@ -1170,6 +1174,7 @@ const TrainingMetrics = struct {
     step: u32,
     loss: f32,
     ppl: f32,
+    tok_per_sec: f32 = 0,
 };
 
 /// Parse pipe-delimited training output:
@@ -1216,7 +1221,9 @@ pub fn parseTrainingLine(line: []const u8) ?TrainingMetrics {
 
     if (ppl <= 0 or loss <= 0) return null;
 
-    return .{ .step = step, .loss = loss, .ppl = ppl };
+    const tok_s = if (col_idx > 6) std.fmt.parseFloat(f32, columns[6]) catch 0 else 0;
+
+    return .{ .step = step, .loss = loss, .ppl = ppl, .tok_per_sec = tok_s };
 }
 
 /// Parse [VAL] log line: "[VAL] step=NNNNN val_loss=X.XXXX val_ppl=XX.XX"
@@ -1366,6 +1373,33 @@ fn sortByPpl(state: *EvolutionState, indices: []usize) void {
 const LrSchedule = enum(u8) {
     cosine,
     phi_restart,
+    d2z, // Linear Decay-to-Zero (ICLR 2025)
+    wsd, // Warmup-Stable-Decay (MiniCPM-style)
+
+    fn toStr(self: LrSchedule) []const u8 {
+        return switch (self) {
+            .cosine => "cosine",
+            .phi_restart => "phi_restart",
+            .d2z => "d2z",
+            .wsd => "wsd",
+        };
+    }
+
+    fn toShort(self: LrSchedule) []const u8 {
+        return switch (self) {
+            .cosine => "cos  ",
+            .phi_restart => "phi  ",
+            .d2z => "d2z  ",
+            .wsd => "wsd  ",
+        };
+    }
+
+    fn fromStr(s: []const u8) LrSchedule {
+        if (std.mem.eql(u8, s, "phi_restart")) return .phi_restart;
+        if (std.mem.eql(u8, s, "d2z")) return .d2z;
+        if (std.mem.eql(u8, s, "wsd")) return .wsd;
+        return .cosine;
+    }
 };
 
 const MutatedConfig = struct {
@@ -1382,6 +1416,7 @@ const MutatedConfig = struct {
     context: u32 = 27,
     kill_ppl_30k: f32 = 999.0, // inherit from parent
     sacred: bool = false, // true = sacred-guided mutations
+    objective: []const u8 = "ntp", // ntp | jepa | hybrid
 };
 
 pub fn mutateConfig(leader: *const ServiceEntry, prng_seed: u32) MutatedConfig {
@@ -1422,10 +1457,15 @@ pub fn mutateConfigEx(leader: *const ServiceEntry, prng_seed: u32, allow_ctx_mut
     const base_warmup: f32 = @floatFromInt(leader.warmup);
     config.warmup = @intFromFloat(@max(@as(f32, @floatFromInt(WU_MIN)), @min(@as(f32, @floatFromInt(WU_MAX)), base_warmup * wu_factor)));
 
-    // --- LR schedule: 90% inherit, 10% switch ---
+    // --- LR schedule: 90% inherit, 10% mutate to random other ---
     const rng_sched = mulberry32(prng_seed +% 17);
     if (rng_sched % 10 == 0) {
-        config.lr_schedule = if (leader.lr_schedule == .cosine) .phi_restart else .cosine;
+        const schedules = [_]LrSchedule{ .cosine, .phi_restart, .d2z, .wsd };
+        const pick = rng_sched / 10 % 4;
+        config.lr_schedule = schedules[pick];
+        if (config.lr_schedule == leader.lr_schedule) {
+            config.lr_schedule = schedules[(pick + 1) % 4];
+        }
     } else {
         config.lr_schedule = leader.lr_schedule;
     }
@@ -1667,10 +1707,13 @@ fn findKillTournamentVictim(state: *const EvolutionState, min_step: u32, prng_se
 const PopulationHealth = struct {
     diversity: f32, // product of stdevs(lr, gc, wu) — dimensionless
     elite_gap: f32, // ppl_rank5 / ppl_rank1
-    stagnation: u32, // steps since last best_ppl improvement (approx)
+    stagnation: u32, // steps since last best_ppl improvement
     spike_rate: f32, // fraction of workers with loss > 1.5× expected
     alive: u32,
     total: u32,
+    health_score: f32, // 0-100 aggregate
+    leader_improvement: f32, // ΔPPL per 1K steps (negative = improving)
+    leader_step: u32, // current step of best worker
 };
 
 fn computePopulationHealth(state: *const EvolutionState) PopulationHealth {
@@ -1695,7 +1738,7 @@ fn computePopulationHealth(state: *const EvolutionState) PopulationHealth {
         alive += 1;
     }
 
-    if (alive == 0) return .{ .diversity = 0, .elite_gap = 1, .stagnation = 0, .spike_rate = 0, .alive = 0, .total = @intCast(state.service_count) };
+    if (alive == 0) return .{ .diversity = 0, .elite_gap = 1, .stagnation = 0, .spike_rate = 0, .alive = 0, .total = @intCast(state.service_count), .health_score = 0, .leader_improvement = 0, .leader_step = 0 };
 
     // Compute stdevs
     const n: f64 = @floatFromInt(alive);
@@ -1725,15 +1768,32 @@ fn computePopulationHealth(state: *const EvolutionState) PopulationHealth {
     const rank5 = sorted_ppls[rank5_idx];
     const elite_gap: f32 = if (rank1 > 0.1) rank5 / rank1 else 1.0;
 
-    // Stagnation: approximate from best service step vs event timestamps
-    var best_step: u32 = 0;
-    for (state.services[0..state.service_count]) |*svc| {
-        if (svc.status == .running and svc.current_step > best_step) best_step = svc.current_step;
-    }
-    // Use evolution_step as proxy for last improvement cycle
-    const stagnation: u32 = if (best_step > state.evolution_step * 1000) best_step - state.evolution_step * 1000 else 0;
-
     const spike_rate: f32 = @as(f32, @floatFromInt(spike_count)) / @as(f32, @floatFromInt(alive));
+
+    // Health score: weighted aggregate 0-100
+    const ppl_score: f32 = @max(0, 40.0 * (1.0 - @min(1.0, @log(rank1) / @log(@as(f32, 500.0)))));
+    const spike_score: f32 = 30.0 * (1.0 - spike_rate);
+    const div_score: f32 = @min(20.0, diversity / 0.01 * 20.0);
+    const alive_ratio: f32 = if (state.service_count > 0) @as(f32, @floatFromInt(alive)) / @as(f32, @floatFromInt(state.service_count)) else 0;
+    const alive_score: f32 = alive_ratio * 10.0;
+    const health_score = ppl_score + spike_score + div_score + alive_score;
+
+    // Leader step + improvement rate
+    var leader_step: u32 = 0;
+    var leader_ppl: f32 = 999.0;
+    for (state.services[0..state.service_count]) |*svc| {
+        if (svc.status == .running and getPplForRanking(svc) < leader_ppl) {
+            leader_ppl = getPplForRanking(svc);
+            leader_step = svc.current_step;
+        }
+    }
+    const leader_improvement: f32 = if (leader_step > state.best_step and state.best_step > 0)
+        (leader_ppl - state.best_ppl) / @as(f32, @floatFromInt((leader_step - state.best_step) / 1000 + 1))
+    else
+        0.0;
+
+    // Precise stagnation from best_step
+    const stagnation: u32 = if (leader_step > state.best_step) leader_step - state.best_step else 0;
 
     return .{
         .diversity = diversity,
@@ -1742,6 +1802,9 @@ fn computePopulationHealth(state: *const EvolutionState) PopulationHealth {
         .spike_rate = spike_rate,
         .alive = alive,
         .total = @intCast(state.service_count),
+        .health_score = health_score,
+        .leader_improvement = leader_improvement,
+        .leader_step = leader_step,
     };
 }
 
@@ -1797,16 +1860,16 @@ fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usiz
     defer allocator.free(grad_clip_str);
     const ctx_str = std.fmt.allocPrint(allocator, "{d}", .{config.context}) catch return;
     defer allocator.free(ctx_str);
-    const sched_str: []const u8 = if (config.lr_schedule == .cosine) "cosine" else "phi_restart";
+    const sched_str: []const u8 = config.lr_schedule.toStr();
 
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"0","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"0","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
         config.optimizer_str[0..config.optimizer_len], sched_str,                             warmup_str,
         grad_clip_str,                                 ctx_str,                               shard_str,
-        num_shards_str,
+        num_shards_str,                                config.objective,
     }) catch return;
     defer allocator.free(set_vars_json);
 
@@ -1892,9 +1955,9 @@ fn saveState(state: EvolutionState) !void {
     var pos: usize = 0;
 
     // Manual JSON serialization
-    pos += (std.fmt.bufPrint(buf[pos..], "{{\"evolution_step\":{d},\"total_configs_tested\":{d},\"best_ppl\":{d:.2},\"best_name\":\"{s}\",\"service_count\":{d},\"event_count\":{d},\"services\":[", .{
+    pos += (std.fmt.bufPrint(buf[pos..], "{{\"evolution_step\":{d},\"total_configs_tested\":{d},\"best_ppl\":{d:.2},\"best_name\":\"{s}\",\"best_step\":{d},\"service_count\":{d},\"event_count\":{d},\"services\":[", .{
         state.evolution_step, state.total_configs_tested, state.best_ppl, state.bestNameStr(),
-        state.service_count,  state.event_count,
+        state.best_step, state.service_count, state.event_count,
     }) catch return error.OutOfMemory).len;
 
     for (state.services[0..state.service_count], 0..) |*svc, si| {
@@ -1902,12 +1965,13 @@ fn saveState(state: EvolutionState) !void {
             buf[pos] = ',';
             pos += 1;
         }
-        const rungs_str = std.fmt.bufPrint(buf[pos..], "{{\"id\":\"{s}\",\"name\":\"{s}\",\"acct\":{d},\"lr\":\"{s}\",\"batch\":\"{s}\",\"opt\":\"{s}\",\"seed\":{d},\"gen\":{d},\"parent\":\"{s}\",\"step\":{d},\"ppl\":{d:.2},\"loss\":{d:.4},\"vppl\":{d:.2},\"shard\":{d},\"status\":{d},\"rp\":[{},{},{},{}],\"lts\":{d}}}", .{
+        const rungs_str = std.fmt.bufPrint(buf[pos..], "{{\"id\":\"{s}\",\"name\":\"{s}\",\"acct\":{d},\"lr\":\"{s}\",\"batch\":\"{s}\",\"opt\":\"{s}\",\"seed\":{d},\"gen\":{d},\"parent\":\"{s}\",\"step\":{d},\"ppl\":{d:.2},\"loss\":{d:.4},\"tps\":{d:.1},\"vppl\":{d:.2},\"shard\":{d},\"status\":{d},\"rp\":[{},{},{},{}],\"lts\":{d}}}", .{
             svc.svcId(),         svc.svcName(),       svc.account_idx,
             svc.lrStr(),         svc.batchStr(),      svc.optimizerStr(),
             svc.seed,            svc.generation,      svc.parentName(),
             svc.current_step,    svc.current_ppl,     svc.current_loss,
-            svc.val_ppl,         svc.data_shard,      @intFromEnum(svc.status),
+            svc.tok_per_sec,     svc.val_ppl,         svc.data_shard,
+            @intFromEnum(svc.status),
             svc.rungs_passed[0], svc.rungs_passed[1], svc.rungs_passed[2],
             svc.rungs_passed[3], svc.last_tuned_step,
         }) catch return error.OutOfMemory;
@@ -1950,6 +2014,7 @@ fn loadState(allocator: Allocator) !EvolutionState {
     state.best_ppl = jsonF32(root, "best_ppl");
     const bn = getJsonString(root, "best_name");
     copyToFixed(&state.best_name, &state.best_name_len, bn);
+    state.best_step = jsonU32(root, "best_step");
 
     // Load services
     if (getJsonObject(root, "services")) |svcs| {
@@ -1971,6 +2036,7 @@ fn loadState(allocator: Allocator) !EvolutionState {
                 entry.current_step = jsonU32(item, "step");
                 entry.current_ppl = jsonF32(item, "ppl");
                 entry.current_loss = jsonF32(item, "loss");
+                entry.tok_per_sec = jsonF32(item, "tps");
                 entry.val_ppl = jsonF32(item, "vppl");
                 if (entry.val_ppl == 0) entry.val_ppl = 999.0; // missing field → not measured
                 entry.data_shard = @intCast(jsonU32(item, "shard"));
@@ -2033,8 +2099,9 @@ fn printDashboard(state: *const EvolutionState) void {
     print("{s}  ASHA+PBT EVOLUTION — Step {d}, Rung {d}/{d}{s}\n", .{ BOLD, state.evolution_step, active_rung + 1, NUM_RUNGS, RESET });
     print("{s}═══════════════════════════════════════════════════════════{s}\n\n", .{ BOLD, RESET });
 
-    print("  Configs tested: {d} | Best: PPL={d:.1} ({s})\n\n", .{
-        state.total_configs_tested, state.best_ppl, state.bestNameStr(),
+    const dash_health = computePopulationHealth(state);
+    print("  Configs tested: {d} | Best: PPL={d:.1} ({s}) | Health: {d:.0}/100\n\n", .{
+        state.total_configs_tested, state.best_ppl, state.bestNameStr(), dash_health.health_score,
     });
 
     // Leaderboard (top 10 running by PPL)
@@ -2352,10 +2419,7 @@ fn runDeploy(allocator: Allocator, args: []const []const u8) !void {
     for (0..selected_count) |si| {
         const ci = selected_indices[si];
         const c = &configs[ci];
-        if (c.lr_schedule != .cosine and c.lr_schedule != .phi_restart) {
-            print("{s}❌ Config {s} has forbidden schedule — only cosine/phi_restart allowed{s}\n", .{ RED, names[ci][0..name_lens[ci]], RESET });
-            return;
-        }
+        _ = c.lr_schedule.toStr(); // all enum variants are valid
     }
 
     // Discover Railway accounts + scan for idle/crashed services
@@ -2632,7 +2696,7 @@ fn parseMockConfigJson(
 
         // LR schedule
         const sched_str = getJsonString(item, "lr_schedule");
-        c.lr_schedule = if (std.mem.eql(u8, sched_str, "phi_restart")) .phi_restart else .cosine;
+        c.lr_schedule = LrSchedule.fromStr(sched_str);
 
         // Sacred flag
         if (item.object.get("sacred")) |v| {
@@ -2677,7 +2741,7 @@ fn deployConfigToService(
     defer allocator.free(grad_clip_str);
     const ctx_str = std.fmt.allocPrint(allocator, "{d}", .{config.context}) catch return false;
     defer allocator.free(ctx_str);
-    const sched_str: []const u8 = if (config.lr_schedule == .cosine) "cosine" else "phi_restart";
+    const sched_str: []const u8 = config.lr_schedule.toStr();
 
     const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
     const set_vars_json = std.fmt.allocPrint(allocator,
@@ -2734,7 +2798,7 @@ fn appendDeployLineage(
     lineage_file.seekFromEnd(0) catch {};
 
     const ts = std.time.milliTimestamp();
-    const sched: []const u8 = if (config.lr_schedule == .cosine) "cosine" else "phi_restart";
+    const sched: []const u8 = config.lr_schedule.toStr();
     const sacred_str: []const u8 = if (config.sacred) "true" else "false";
     const ok_str: []const u8 = if (success) "true" else "false";
     var line_buf: [512]u8 = undefined;
@@ -3687,6 +3751,7 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
     var parent_name: ?[]const u8 = null;
     var sacred = false;
     var dry_run = false;
+    var objective: []const u8 = "ntp";
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -3696,6 +3761,9 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
         } else if (std.mem.eql(u8, args[i], "--parent") and i + 1 < args.len) {
             i += 1;
             parent_name = args[i];
+        } else if (std.mem.eql(u8, args[i], "--objective") and i + 1 < args.len) {
+            i += 1;
+            objective = args[i];
         } else if (std.mem.eql(u8, args[i], "--sacred")) {
             sacred = true;
         } else if (std.mem.eql(u8, args[i], "--dry-run")) {
@@ -3726,8 +3794,8 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
         return;
     }
 
-    // SAFETY: refuse if actively training
-    if (target.status == .running and target.current_step > 0) {
+    // SAFETY: refuse if actively training (but allow finished workers at 100K)
+    if (target.status == .running and target.current_step > 0 and target.current_step < 100000) {
         print("{s}REFUSED: '{s}' is actively training (step={d}, PPL={d:.2}). Stop it first.{s}\n", .{ RED, tgt, target.current_step, target.current_ppl, RESET });
         return;
     }
@@ -3757,16 +3825,20 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
 
     const p_name = parent.svcName();
     const mode_str: []const u8 = if (sacred) " [SACRED]" else "";
-    print("\n{s}💉 INJECT:{s} {s} ← child of {s}{s}\n", .{ BOLD, RESET, tgt, p_name, mode_str });
-    print("   LR={s}  GC={d:.3}  WU={d}  seed={d}\n", .{ config.lr_str[0..config.lr_len], config.grad_clip, config.warmup, config.seed });
+    const obj_str: []const u8 = if (std.mem.eql(u8, objective, "ntp")) "" else if (std.mem.eql(u8, objective, "hybrid")) " [HYBRID]" else " [JEPA]";
+    print("\n{s}💉 INJECT:{s} {s} ← child of {s}{s}{s}\n", .{ BOLD, RESET, tgt, p_name, mode_str, obj_str });
+    print("   LR={s}  GC={d:.3}  WU={d}  seed={d}  objective={s}\n", .{ config.lr_str[0..config.lr_len], config.grad_clip, config.warmup, config.seed, objective });
 
     if (dry_run) {
         print("   {s}--dry-run: no action taken{s}\n\n", .{ DIM, RESET });
         return;
     }
 
+    var config_with_obj = config;
+    config_with_obj.objective = objective;
+
     var api_calls: u32 = 0;
-    recycleService(allocator, &state, target_idx, config, p_name, &api_calls);
+    recycleService(allocator, &state, target_idx, config_with_obj, p_name, &api_calls);
 
     var detail_buf: [128]u8 = undefined;
     const detail = std.fmt.bufPrint(&detail_buf, "injected from {s}", .{p_name}) catch "injected";
@@ -3787,6 +3859,7 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
     var notify = false;
     var kill_live = false;
     var tune = false;
+    var objective: []const u8 = "ntp";
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -3802,6 +3875,9 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
             kill_live = true;
         } else if (std.mem.eql(u8, args[i], "--tune")) {
             tune = true;
+        } else if (std.mem.eql(u8, args[i], "--objective") and i + 1 < args.len) {
+            i += 1;
+            objective = args[i];
         } else if (std.mem.eql(u8, args[i], "--interval") and i + 1 < args.len) {
             i += 1;
             interval = std.fmt.parseInt(u64, args[i], 10) catch 300;
@@ -3857,14 +3933,16 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
                 const p_name = parent.svcName();
 
                 seed = mulberry32(seed);
-                const config = if (sacred)
+                var config = if (sacred)
                     mutateConfigSacred(parent, seed, false)
                 else
                     mutateConfig(parent, seed);
+                config.objective = objective;
 
                 const mode_str: []const u8 = if (sacred) " [SACRED]" else "";
-                print("   💉 {s} ← {s}{s}  LR={s}  GC={d:.3}  WU={d}\n", .{
-                    svc.svcName(),                   p_name,           mode_str,
+                const obj_str: []const u8 = if (std.mem.eql(u8, objective, "ntp")) "" else if (std.mem.eql(u8, objective, "hybrid")) " [HYBRID]" else " [JEPA]";
+                print("   💉 {s} ← {s}{s}{s}  LR={s}  GC={d:.3}  WU={d}\n", .{
+                    svc.svcName(),                   p_name,           mode_str, obj_str,
                     config.lr_str[0..config.lr_len], config.grad_clip, config.warmup,
                 });
 
@@ -3964,6 +4042,7 @@ const NotifyState = struct {
     last_best_name_len: u8 = 0,
     last_event_count: usize = 0,
     last_timestamp: i64 = 0,
+    last_leader_step: u32 = 0,
 };
 
 fn loadNotifyState(allocator: Allocator) NotifyState {
@@ -3980,6 +4059,7 @@ fn loadNotifyState(allocator: Allocator) NotifyState {
     copyToFixed(&ns.last_best_name, &ns.last_best_name_len, name);
     ns.last_event_count = @intCast(jsonU32(parsed.value, "last_event_count"));
     ns.last_timestamp = jsonI64(parsed.value, "last_timestamp");
+    ns.last_leader_step = jsonU32(parsed.value, "last_leader_step");
     return ns;
 }
 
@@ -3993,8 +4073,8 @@ fn saveNotifyState(ns: *const NotifyState) void {
         ns.last_best_name[0..ns.last_best_name_len]
     else
         "";
-    const json = std.fmt.bufPrint(&buf, "{{\"last_best_ppl\":{d:.2},\"last_best_name\":\"{s}\",\"last_event_count\":{d},\"last_timestamp\":{d}}}", .{
-        ns.last_best_ppl, name, ns.last_event_count, ns.last_timestamp,
+    const json = std.fmt.bufPrint(&buf, "{{\"last_best_ppl\":{d:.2},\"last_best_name\":\"{s}\",\"last_event_count\":{d},\"last_timestamp\":{d},\"last_leader_step\":{d}}}", .{
+        ns.last_best_ppl, name, ns.last_event_count, ns.last_timestamp, ns.last_leader_step,
     }) catch return;
     file.writeAll(json) catch {};
 }
@@ -4104,15 +4184,127 @@ fn runNotify(allocator: Allocator, args: []const []const u8) !void {
         has_insights = true;
     }
 
-    // Farm summary
-    if (has_insights and pos + 100 < msg_buf.len) {
-        pos += (std.fmt.bufPrint(msg_buf[pos..], "\n📊 Farm: {d} alive / {d} dead / {d} total", .{
-            health.alive, @as(u32, @intCast(state.service_count)) - health.alive, @as(u32, @intCast(state.service_count)),
+    // Trigger 7: LEADER_PLATEAU — not improving >10K steps, still far from 100K
+    if (health.leader_step > 0 and health.leader_step < 80000) {
+        const steps_no_improve = health.stagnation;
+        if (steps_no_improve > 10000 and pos + 300 < msg_buf.len) {
+            pos += (std.fmt.bufPrint(msg_buf[pos..], "📊 LEADER PLATEAU: {s} no improvement for {d}K steps (at {d}K/100K)\n", .{
+                state.bestNameStr(), steps_no_improve / 1000, health.leader_step / 1000,
+            }) catch "").len;
+            has_insights = true;
+        }
+    }
+
+    // Trigger 8: INVESTIGATE — catastrophic spike (loss > 3× expected)
+    for (state.services[0..state.service_count]) |*svc| {
+        if (svc.status != .running or svc.current_step == 0) continue;
+        const expected = @log(svc.current_ppl);
+        if (svc.current_loss > expected * 3.0 and pos + 200 < msg_buf.len) {
+            pos += (std.fmt.bufPrint(msg_buf[pos..], "🚨 INVESTIGATE: {s} catastrophic spike loss={d:.2} (3x expected={d:.2})\n", .{
+                svc.svcName(), svc.current_loss, expected * 3.0,
+            }) catch "").len;
+            has_insights = true;
+        }
+    }
+
+    // Trigger 9: WAVE_COMPLETE — all top-N reached 100K
+    const TARGET_STEP: u32 = 100000;
+    var top_at_100k: u32 = 0;
+    var top_count: u32 = 0;
+    for (state.services[0..state.service_count]) |*svc| {
+        if (svc.status == .running and getPplForRanking(svc) < 50.0) {
+            top_count += 1;
+            if (svc.current_step >= TARGET_STEP) top_at_100k += 1;
+        }
+    }
+    if (top_at_100k > 0 and top_at_100k == top_count and pos + 200 < msg_buf.len) {
+        pos += (std.fmt.bufPrint(msg_buf[pos..], "🏁 WAVE COMPLETE: all {d} top workers reached 100K! Ready for next wave\n", .{top_count}) catch "").len;
+        has_insights = true;
+    }
+
+    // Trigger 10: RECORD_VERIFIED — leader reached 100K with new best
+    if (health.leader_step >= TARGET_STEP and state.best_ppl < ns.last_best_ppl and pos + 200 < msg_buf.len) {
+        pos += (std.fmt.bufPrint(msg_buf[pos..], "🏆 RECORD VERIFIED at 100K: {s} PPL={d:.2}\n", .{
+            state.bestNameStr(), state.best_ppl,
+        }) catch "").len;
+        has_insights = true;
+    }
+
+    // ETA + Leader mini-summary
+    if (has_insights and pos + 600 < msg_buf.len) {
+        const r33_ppl: f32 = 4.6;
+        const delta_r33 = state.best_ppl - r33_ppl;
+        const steps_no_improve_summary = if (health.leader_step > state.best_step) health.leader_step - state.best_step else @as(u32, 0);
+
+        pos += (std.fmt.bufPrint(msg_buf[pos..], "\n📋 <b>Leader</b>: {s} PPL={d:.2} step={d}K\n", .{
+            state.bestNameStr(), state.best_ppl, health.leader_step / 1000,
+        }) catch "").len;
+
+        if (delta_r33 < 0) {
+            pos += (std.fmt.bufPrint(msg_buf[pos..], "  dR33: ✅{d:.2} | no-improve: {d}K steps\n", .{
+                -delta_r33, steps_no_improve_summary / 1000,
+            }) catch "").len;
+        } else {
+            pos += (std.fmt.bufPrint(msg_buf[pos..], "  dR33: ⬆️{d:.2} | no-improve: {d}K steps\n", .{
+                delta_r33, steps_no_improve_summary / 1000,
+            }) catch "").len;
+        }
+
+        // ETA lines
+        const ctx: u32 = 27;
+        const batch: u32 = 66;
+        const toks_per_step: f32 = @floatFromInt(ctx * batch); // 1782
+        var leader_toks: f32 = 0;
+        var slowest_step: u32 = TARGET_STEP;
+        var slowest_toks: f32 = 0;
+        var slowest_name_buf: [64]u8 = undefined;
+        var slowest_name_len: u8 = 0;
+        for (state.services[0..state.service_count]) |*svc| {
+            if (svc.status != .running or svc.current_step == 0) continue;
+            if (std.mem.eql(u8, svc.svcName(), state.bestNameStr())) {
+                leader_toks = svc.tok_per_sec;
+            }
+            if (svc.current_step < slowest_step and svc.tok_per_sec > 0) {
+                slowest_step = svc.current_step;
+                slowest_toks = svc.tok_per_sec;
+                copyToFixed(&slowest_name_buf, &slowest_name_len, svc.svcName());
+            }
+        }
+
+        if (leader_toks > 0 and health.leader_step < TARGET_STEP) {
+            const remaining = TARGET_STEP - health.leader_step;
+            const eta_sec = @as(f32, @floatFromInt(remaining)) * toks_per_step / leader_toks;
+            const eta_h: u32 = @intFromFloat(eta_sec / 3600.0);
+            const eta_m: u32 = @intFromFloat(@mod(eta_sec / 60.0, 60.0));
+            pos += (std.fmt.bufPrint(msg_buf[pos..], "⏱️ Leader ETA: ~{d}h{d:0>2}m to 100K\n", .{ eta_h, eta_m }) catch "").len;
+        }
+        if (slowest_toks > 0 and slowest_step < TARGET_STEP) {
+            const remaining = TARGET_STEP - slowest_step;
+            const eta_sec = @as(f32, @floatFromInt(remaining)) * toks_per_step / slowest_toks;
+            const eta_h: u32 = @intFromFloat(eta_sec / 3600.0);
+            const eta_m: u32 = @intFromFloat(@mod(eta_sec / 60.0, 60.0));
+            pos += (std.fmt.bufPrint(msg_buf[pos..], "⏱️ Tail ETA: {s} ~{d}h{d:0>2}m to 100K\n", .{
+                slowest_name_buf[0..slowest_name_len], eta_h, eta_m,
+            }) catch "").len;
+        }
+
+        pos += (std.fmt.bufPrint(msg_buf[pos..], "📊 Farm: {d}🟢 / {d}☠️ / {d} total | health: {d:.0}/100", .{
+            health.alive, @as(u32, @intCast(state.service_count)) - health.alive,
+            @as(u32, @intCast(state.service_count)), health.health_score,
         }) catch "").len;
     }
 
     if (!has_insights) {
         print("   {s}No new insights{s}\n", .{ DIM, RESET });
+        return;
+    }
+
+    // Dedup: skip if nothing changed since last notify (same leader PPL, step, alive, events)
+    const same_ppl = (state.best_ppl == ns.last_best_ppl);
+    const same_step = (health.leader_step == ns.last_leader_step);
+    const same_events = (state.event_count == ns.last_event_count);
+    if (same_ppl and same_step and same_events and !dry_run) {
+        print("   {s}No change since last notify — skipping duplicate{s}\n", .{ DIM, RESET });
         return;
     }
 
@@ -4132,6 +4324,7 @@ fn runNotify(allocator: Allocator, args: []const []const u8) !void {
     copyToFixed(&ns.last_best_name, &ns.last_best_name_len, state.bestNameStr());
     ns.last_event_count = state.event_count;
     ns.last_timestamp = std.time.milliTimestamp();
+    ns.last_leader_step = health.leader_step;
     saveNotifyState(&ns);
 }
 
@@ -4227,7 +4420,7 @@ fn serveRequest(allocator: Allocator, stream: std.net.Stream, broadcaster: *farm
         // Build snapshot JSON for WS handshake
         var snap_buf: [2048]u8 = undefined;
         const state = loadState(allocator) catch {
-            const snap = farm_ws.formatStatusSnapshot(999.0, "(none)", 0, 0, 0, &snap_buf);
+            const snap = farm_ws.formatStatusSnapshot(999.0, "(none)", 0, 0, 0, 0, 0, &snap_buf);
             return farm_ws.handleUpgrade(stream, request, broadcaster, snap);
         };
         const health = computePopulationHealth(&state);
@@ -4241,6 +4434,8 @@ fn serveRequest(allocator: Allocator, stream: std.net.Stream, broadcaster: *farm
             health.alive,
             dead,
             @intCast(state.service_count),
+            health.health_score,
+            health.leader_step,
             &snap_buf,
         );
         return farm_ws.handleUpgrade(stream, request, broadcaster, snap);
@@ -4286,10 +4481,13 @@ fn serveStatus(allocator: Allocator, stream: std.net.Stream) void {
         if (svc.status == .crashed or svc.status == .killed) dead += 1;
     }
     var buf: [2048]u8 = undefined;
-    const json = std.fmt.bufPrint(&buf, "{{\"best_ppl\":{d:.2},\"best_name\":\"{s}\",\"alive\":{d},\"dead\":{d},\"total\":{d},\"evolution_step\":{d},\"events\":{d},\"health\":{{\"diversity\":{d:.6},\"elite_gap\":{d:.2},\"stagnation\":{d},\"spike_rate\":{d:.3}}}}}", .{
-        state.best_ppl,                          state.bestNameStr(),  health.alive,                          dead,
-        @as(u32, @intCast(state.service_count)), state.evolution_step, @as(u32, @intCast(state.event_count)), health.diversity,
-        health.elite_gap,                        health.stagnation,    health.spike_rate,
+    const json = std.fmt.bufPrint(&buf, "{{\"best_ppl\":{d:.2},\"best_name\":\"{s}\",\"best_step\":{d},\"alive\":{d},\"dead\":{d},\"total\":{d},\"evolution_step\":{d},\"events\":{d},\"health\":{{\"diversity\":{d:.6},\"elite_gap\":{d:.2},\"stagnation\":{d},\"spike_rate\":{d:.3},\"health_score\":{d:.1},\"leader_step\":{d},\"leader_improvement\":{d:.4}}}}}", .{
+        state.best_ppl,                          state.bestNameStr(),  state.best_step,
+        health.alive,                            dead,
+        @as(u32, @intCast(state.service_count)), state.evolution_step, @as(u32, @intCast(state.event_count)),
+        health.diversity,                        health.elite_gap,     health.stagnation,
+        health.spike_rate,                       health.health_score,  health.leader_step,
+        health.leader_improvement,
     }) catch return;
     sendJson(stream, json);
 }
