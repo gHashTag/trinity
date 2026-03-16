@@ -330,7 +330,7 @@ pub fn runEvolveCommand(allocator: Allocator, args: []const []const u8) !void {
         exp_hooks.autoSaveExperience("farm evolve", subcmd, true);
         return;
     } else if (std.mem.eql(u8, subcmd, "status")) {
-        return runStatus(allocator);
+        return runStatus(allocator, if (args.len > 1) args[1..] else &.{});
     } else if (std.mem.eql(u8, subcmd, "step")) {
         runStep(allocator, args[1..]) catch |err| {
             const exp_hooks = @import("experience_hooks.zig");
@@ -362,6 +362,10 @@ pub fn runEvolveCommand(allocator: Allocator, args: []const []const u8) !void {
         return runServe(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "tune")) {
         return runTune(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "resume")) {
+        return runResume(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "recommend")) {
+        return runRecommend(allocator);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -838,11 +842,21 @@ fn runInit(allocator: Allocator) !void {
 // STATUS — Leaderboard + rung progress
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn runStatus(allocator: Allocator) !void {
+fn runStatus(allocator: Allocator, args: []const []const u8) !void {
     var state = loadState(allocator) catch {
         print("{s}❌ No evolution state. Run: tri farm evolve init{s}\n", .{ RED, RESET });
         return;
     };
+
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--json")) {
+            exportJson(&state);
+            return;
+        } else if (std.mem.eql(u8, arg, "--csv")) {
+            exportCsv(&state);
+            return;
+        }
+    }
 
     printDashboard(&state);
 }
@@ -938,11 +952,10 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     }
     print("\n", .{});
 
-    // 6. Post to GitHub issue
+    // 6. Post to GitHub issue (always #357 for Rainbow Bridge, override with --issue)
     if (!dry_run) {
-        if (issue_num) |inum| {
-            postToIssue(allocator, inum, &state, total_killed, total_spawned);
-        }
+        const target_issue = issue_num orelse "357";
+        postToIssue(allocator, target_issue, &state, total_killed, total_spawned);
     }
 }
 
@@ -1614,6 +1627,159 @@ const LrSchedule = enum(u8) {
         return .cosine;
     }
 };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Diversity Quotas — auto-balance objective/context distribution
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const QuotaBucket = struct {
+    objective: []const u8,
+    min_context: u32, // 0 = any context, 81 = only 81+243
+    target_pct: f32, // target fraction 0.0-1.0
+};
+
+const MAX_QUOTA_BUCKETS = 8;
+
+const DEFAULT_QUOTAS = [_]QuotaBucket{
+    .{ .objective = "ntp", .min_context = 0, .target_pct = 0.40 },
+    .{ .objective = "ntp", .min_context = 81, .target_pct = 0.20 },
+    .{ .objective = "jepa", .min_context = 0, .target_pct = 0.20 },
+    .{ .objective = "hybrid", .min_context = 0, .target_pct = 0.20 },
+};
+
+const QuotaDeficit = struct {
+    objective: []const u8,
+    min_context: u32,
+    deficit: f32, // target_pct - actual_pct (positive = underrepresented)
+};
+
+fn computeQuotaDeficit(state: *const EvolutionState) QuotaDeficit {
+    var alive: u32 = 0;
+    var counts: [DEFAULT_QUOTAS.len]u32 = .{0} ** DEFAULT_QUOTAS.len;
+
+    for (state.services[0..state.service_count]) |*svc| {
+        if (svc.status != .running and svc.status != .idle) continue;
+        alive += 1;
+
+        for (DEFAULT_QUOTAS, 0..) |bucket, bi| {
+            const obj_match = std.mem.eql(u8, svc.objectiveStr(), bucket.objective) or
+                (std.mem.eql(u8, bucket.objective, "ntp") and svc.objective_len == 0);
+            if (!obj_match) continue;
+            if (bucket.min_context > 0 and svc.context < bucket.min_context) continue;
+            counts[bi] += 1;
+        }
+    }
+
+    if (alive == 0) {
+        return .{ .objective = DEFAULT_QUOTAS[0].objective, .min_context = DEFAULT_QUOTAS[0].min_context, .deficit = 1.0 };
+    }
+
+    const n: f32 = @floatFromInt(alive);
+    var max_deficit: f32 = -999.0;
+    var max_idx: usize = 0;
+
+    for (DEFAULT_QUOTAS, 0..) |bucket, bi| {
+        const actual_pct: f32 = @as(f32, @floatFromInt(counts[bi])) / n;
+        const deficit = bucket.target_pct - actual_pct;
+        if (deficit > max_deficit) {
+            max_deficit = deficit;
+            max_idx = bi;
+        }
+    }
+
+    return .{
+        .objective = DEFAULT_QUOTAS[max_idx].objective,
+        .min_context = DEFAULT_QUOTAS[max_idx].min_context,
+        .deficit = max_deficit,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Recommendations — rule engine for actionable suggestions
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const Recommendation = struct {
+    severity: Severity,
+    message: [192]u8,
+    message_len: u8,
+    command: [128]u8,
+    command_len: u8,
+
+    const Severity = enum { info, warning, critical };
+};
+
+const MAX_RECOMMENDATIONS = 8;
+
+fn computeRecommendations(state: *const EvolutionState, health: PopulationHealth, resume_eligible: u32) struct { recs: [MAX_RECOMMENDATIONS]Recommendation, count: usize } {
+    var recs: [MAX_RECOMMENDATIONS]Recommendation = undefined;
+    var count: usize = 0;
+
+    // Rule 1: diversity collapse
+    if (health.diversity < 0.001 and count < MAX_RECOMMENDATIONS) {
+        recs[count] = makeRecommendation(.critical, "Diversity collapse ({d:.4}). Inject diverse configs.", "tri farm evolve inject --count 10 --quota --sacred", .{health.diversity});
+        count += 1;
+    }
+
+    // Rule 2: elite gap too large
+    if (health.elite_gap > 5.0 and count < MAX_RECOMMENDATIONS) {
+        recs[count] = makeRecommendation(.warning, "Elite gap high ({d:.1}x). Inject more configs.", "tri farm evolve inject --count 8 --quota --force", .{health.elite_gap});
+        count += 1;
+    }
+
+    // Rule 3: spike rate
+    if (health.spike_rate > 0.15 and count < MAX_RECOMMENDATIONS) {
+        recs[count] = makeRecommendation(.warning, "Spike rate {d:.0}%. Tune struggling workers.", "tri farm evolve tune --sacred", .{health.spike_rate * 100});
+        count += 1;
+    }
+
+    // Rule 4: resume eligible
+    if (resume_eligible > 3 and count < MAX_RECOMMENDATIONS) {
+        var cmd_buf: [128]u8 = undefined;
+        const cmd = std.fmt.bufPrint(&cmd_buf, "tri farm evolve resume --top-k {d}", .{resume_eligible}) catch "tri farm evolve resume";
+        var rec = Recommendation{ .severity = .info, .message = undefined, .message_len = 0, .command = undefined, .command_len = 0 };
+        const msg = std.fmt.bufPrint(&rec.message, "{d} services eligible for resume.", .{resume_eligible}) catch "Services eligible for resume.";
+        rec.message_len = @intCast(msg.len);
+        @memcpy(rec.command[0..cmd.len], cmd);
+        rec.command_len = @intCast(cmd.len);
+        recs[count] = rec;
+        count += 1;
+    }
+
+    // Rule 5: alive < total/2
+    if (health.alive < health.total / 2 and health.total > 4 and count < MAX_RECOMMENDATIONS) {
+        recs[count] = makeRecommendation(.critical, "Only {d}/{d} services alive. Mass inject needed.", "tri farm evolve inject --count 15 --quota --force", .{ health.alive, health.total });
+        count += 1;
+    }
+
+    // Rule 6: quota deficit > 15%
+    const deficit = computeQuotaDeficit(state);
+    if (deficit.deficit > 0.15 and count < MAX_RECOMMENDATIONS) {
+        var cmd_buf: [128]u8 = undefined;
+        const cmd = if (deficit.min_context > 0)
+            std.fmt.bufPrint(&cmd_buf, "tri farm evolve inject --count 5 --objective {s} --context {d}", .{ deficit.objective, deficit.min_context }) catch "tri farm evolve inject --count 5 --quota"
+        else
+            std.fmt.bufPrint(&cmd_buf, "tri farm evolve inject --count 5 --objective {s}", .{deficit.objective}) catch "tri farm evolve inject --count 5 --quota";
+        var rec = Recommendation{ .severity = .warning, .message = undefined, .message_len = 0, .command = undefined, .command_len = 0 };
+        const msg = std.fmt.bufPrint(&rec.message, "Quota deficit: {s} at {d:.0}% below target.", .{ deficit.objective, deficit.deficit * 100 }) catch "Quota deficit detected.";
+        rec.message_len = @intCast(msg.len);
+        @memcpy(rec.command[0..cmd.len], cmd);
+        rec.command_len = @intCast(cmd.len);
+        recs[count] = rec;
+        count += 1;
+    }
+
+    return .{ .recs = recs, .count = count };
+}
+
+fn makeRecommendation(severity: Recommendation.Severity, comptime msg_fmt: []const u8, comptime cmd: []const u8, args: anytype) Recommendation {
+    var rec = Recommendation{ .severity = severity, .message = undefined, .message_len = 0, .command = undefined, .command_len = 0 };
+    const msg = std.fmt.bufPrint(&rec.message, msg_fmt, args) catch msg_fmt[0..@min(msg_fmt.len, 192)];
+    rec.message_len = @intCast(msg.len);
+    const cmd_bytes = cmd;
+    @memcpy(rec.command[0..cmd_bytes.len], cmd_bytes);
+    rec.command_len = @intCast(cmd_bytes.len);
+    return rec;
+}
 
 const MutatedConfig = struct {
     lr_str: [16]u8,
@@ -2493,6 +2659,87 @@ fn printDashboard(state: *const EvolutionState) void {
             ri + 1, rung.step_threshold / 1000, passed, eligible, color, status_str, RESET,
         });
     }
+
+    // Diversity quotas
+    print("\n  {s}DIVERSITY QUOTAS:{s}\n", .{ BOLD, RESET });
+    {
+        var alive_q: u32 = 0;
+        var q_counts: [DEFAULT_QUOTAS.len]u32 = .{0} ** DEFAULT_QUOTAS.len;
+        for (state.services[0..state.service_count]) |*svc| {
+            if (svc.status != .running and svc.status != .idle) continue;
+            alive_q += 1;
+            for (DEFAULT_QUOTAS, 0..) |bucket, bi| {
+                const obj_match = std.mem.eql(u8, svc.objectiveStr(), bucket.objective) or
+                    (std.mem.eql(u8, bucket.objective, "ntp") and svc.objective_len == 0);
+                if (!obj_match) continue;
+                if (bucket.min_context > 0 and svc.context < bucket.min_context) continue;
+                q_counts[bi] += 1;
+            }
+        }
+        const n_q: f32 = if (alive_q > 0) @floatFromInt(alive_q) else 1.0;
+        for (DEFAULT_QUOTAS, 0..) |bucket, bi| {
+            const actual_pct: f32 = @as(f32, @floatFromInt(q_counts[bi])) / n_q * 100.0;
+            const target_pct = bucket.target_pct * 100.0;
+            const diff = actual_pct - target_pct;
+            const status_icon: []const u8 = if (diff >= -5.0) GREEN else YELLOW;
+            const ctx_label: []const u8 = if (bucket.min_context > 0) "/81+" else "    ";
+            print("  {s}{s}{s}{s}:  {d:.0}% (target {d:.0}%)", .{ status_icon, bucket.objective, ctx_label, RESET, actual_pct, target_pct });
+            if (diff < -5.0) {
+                print(" {s}{d:.0}%{s}", .{ YELLOW, diff, RESET });
+            }
+            print("\n", .{});
+        }
+    }
+
+    // Resume eligible
+    var resume_count: u32 = 0;
+    print("\n  {s}RESUME ELIGIBLE{s} (stalled/crashed, step>=30K, PPL<15):\n", .{ BOLD, RESET });
+    {
+        for (state.services[0..state.service_count]) |*svc| {
+            const resumable = svc.status == .stalled or svc.status == .crashed or svc.status == .idle;
+            if (!resumable) continue;
+            if (svc.current_step < 30000 or svc.current_ppl <= 0 or svc.current_ppl >= 15.0) continue;
+            if (resume_count < 5) {
+                const st_str: []const u8 = switch (svc.status) {
+                    .stalled => "stalled",
+                    .crashed => "crashed",
+                    .idle => "idle",
+                    else => "?",
+                };
+                print("  {s}  step={d}K  PPL={d:.1}  ({s}){s}\n", .{ svc.svcName(), svc.current_step / 1000, svc.current_ppl, st_str, RESET });
+            }
+            resume_count += 1;
+        }
+        if (resume_count == 0) {
+            print("  {s}(none){s}\n", .{ DIM, RESET });
+        } else if (resume_count > 5) {
+            print("  ... and {d} more\n", .{resume_count - 5});
+        }
+        if (resume_count > 0) {
+            print("  {s}-> tri farm evolve resume --top-k {d}{s}\n", .{ CYAN, resume_count, RESET });
+        }
+    }
+
+    // Recommendations
+    const rec_result = computeRecommendations(state, dash_health, resume_count);
+    if (rec_result.count > 0) {
+        print("\n  {s}RECOMMENDATIONS:{s}\n", .{ BOLD, RESET });
+        for (rec_result.recs[0..rec_result.count]) |*rec| {
+            const icon: []const u8 = switch (rec.severity) {
+                .critical => RED,
+                .warning => YELLOW,
+                .info => CYAN,
+            };
+            const sev_str: []const u8 = switch (rec.severity) {
+                .critical => "!!",
+                .warning => "! ",
+                .info => "i ",
+            };
+            print("  {s}{s}{s} {s}\n", .{ icon, sev_str, RESET, rec.message[0..rec.message_len] });
+            print("     {s}Run: {s}{s}\n", .{ DIM, rec.command[0..rec.command_len], RESET });
+        }
+    }
+
     print("\n", .{});
 }
 
@@ -2501,37 +2748,66 @@ fn printDashboard(state: *const EvolutionState) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn postToIssue(allocator: Allocator, issue_num: []const u8, state: *const EvolutionState, killed: usize, spawned: usize) void {
-    var body_buf: [2048]u8 = undefined;
+    var body_buf: [3072]u8 = undefined;
     const body = std.fmt.bufPrint(&body_buf,
-        \\🧬 **Evolution Step {d}**
+        \\🧬 **SEVO Step #{d}** — {s} PPL={d:.1}
         \\
-        \\📊 Configs tested: {d} | Best PPL: {d:.1} ({s})
-        \\💀 Killed: {d} | 🌱 Spawned: {d}
+        \\| Field | Value |
+        \\|-------|-------|
+        \\| Configs tested | {d} |
+        \\| Best PPL | {d:.1} ({s}) |
+        \\| Killed | {d} |
+        \\| Spawned | {d} |
+        \\| Services | {d} |
         \\
-        \\Rungs: {d}K/{d}K/{d}K/{d}K
+        \\<!-- trinity-meta {{"type":"sevo_step","step":{d},"best_ppl":{d:.1},"best_name":"{s}","configs":{d},"killed":{d},"spawned":{d},"services":{d}}} -->
     , .{
         state.evolution_step,
+        state.bestNameStr(),
+        state.best_ppl,
         state.total_configs_tested,
         state.best_ppl,
         state.bestNameStr(),
         killed,
         spawned,
-        DEFAULT_RUNGS[0].step_threshold / 1000,
-        DEFAULT_RUNGS[1].step_threshold / 1000,
-        DEFAULT_RUNGS[2].step_threshold / 1000,
-        DEFAULT_RUNGS[3].step_threshold / 1000,
+        state.service_count,
+        state.evolution_step,
+        state.best_ppl,
+        state.bestNameStr(),
+        state.total_configs_tested,
+        killed,
+        spawned,
+        state.service_count,
     }) catch return;
 
-    const cmd = std.fmt.allocPrint(allocator, "gh issue comment {s} --body \"{s}\"", .{ issue_num, body }) catch return;
-    defer allocator.free(cmd);
-
-    var child = std.process.Child.init(&.{ "gh", "issue", "comment", issue_num, "--body", body }, allocator);
-    _ = child.spawnAndWait() catch {
-        print("  {s}⚠️  Failed to post to issue #{s}{s}\n", .{ YELLOW, issue_num, RESET });
+    // Write to temp file (body may contain special chars)
+    const tmp_path = "/tmp/sevo_step_comment.md";
+    const tmp_file = std.fs.cwd().createFile(tmp_path, .{}) catch return;
+    tmp_file.writeAll(body) catch {
+        tmp_file.close();
         return;
     };
+    tmp_file.close();
 
-    print("  {s}📝 Posted to issue #{s}{s}\n", .{ GREEN, issue_num, RESET });
+    // Use tri issue comment (existing CLI) with fallback to gh
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "zig-out/bin/tri", "issue", "comment", issue_num, "-F", tmp_path },
+        .max_output_bytes = 4096,
+    }) catch {
+        // Fallback: gh with --repo
+        var child = std.process.Child.init(&.{ "gh", "issue", "comment", issue_num, "--repo", "gHashTag/trinity", "-F", tmp_path }, allocator);
+        _ = child.spawnAndWait() catch {
+            print("  {s}\xe2\x9a\xa0\xef\xb8\x8f  Failed to post to issue #{s}{s}\n", .{ YELLOW, issue_num, RESET });
+            return;
+        };
+        print("  {s}\xf0\x9f\x93\x9d Posted to issue #{s}{s}\n", .{ GREEN, issue_num, RESET });
+        return;
+    };
+    allocator.free(result.stdout);
+    allocator.free(result.stderr);
+
+    print("  {s}\xf0\x9f\x93\x9d Posted to issue #{s}{s}\n", .{ GREEN, issue_num, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -4099,6 +4375,7 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
     var batch_count: ?u32 = null;
     var override_sched: ?LrSchedule = null;
     var force_fresh = false;
+    var use_quotas = false;
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -4153,12 +4430,14 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
             force_recycle = true;
         } else if (std.mem.eql(u8, args[i], "--fresh")) {
             force_fresh = true;
+        } else if (std.mem.eql(u8, args[i], "--quota")) {
+            use_quotas = true;
         }
     }
 
     // Batch injection path: --count N auto-picks N worst performers
     if (batch_count) |count| {
-        return runInjectBatch(allocator, count, sacred, dry_run, force_recycle, objective, nca_steps, nca_entropy_min, nca_entropy_max, override_context, override_sched, force_fresh);
+        return runInjectBatch(allocator, count, sacred, dry_run, force_recycle, objective, nca_steps, nca_entropy_min, nca_entropy_max, override_context, override_sched, force_fresh, use_quotas);
     }
 
     const tgt = target_name orelse {
@@ -4281,6 +4560,7 @@ fn runInjectBatch(
     override_context: ?u32,
     override_sched: ?LrSchedule,
     force_fresh: bool,
+    use_quotas: bool,
 ) !void {
     var state = loadState(allocator) catch {
         print("{s}ERROR: No evolution state. Run 'tri farm evolve init' first.{s}\n", .{ RED, RESET });
@@ -4363,6 +4643,16 @@ fn runInjectBatch(
         if (override_context) |ctx| config.context = ctx;
         if (override_sched) |sched| config.lr_schedule = sched;
         config.objective = objective;
+
+        // Quota-driven objective/context override
+        if (use_quotas) {
+            const deficit = computeQuotaDeficit(&state);
+            config.objective = deficit.objective;
+            if (deficit.min_context > 0) {
+                config.context = if (seed % 2 == 0) 81 else 243;
+            }
+        }
+
         if (std.mem.indexOf(u8, objective, "nca") != null) {
             config.nca_steps = nca_steps;
             config.nca_entropy_min = nca_entropy_min;
@@ -5409,6 +5699,269 @@ fn runTune(allocator: Allocator, args: []const []const u8) !void {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// JSON/CSV Export
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn exportJson(state: *const EvolutionState) void {
+    print("[", .{});
+    for (state.services[0..state.service_count], 0..) |*svc, si| {
+        if (si > 0) print(",", .{});
+        print(
+            \\{{"name":"{s}","status":"{s}","ppl":{d:.2},"val_ppl":{d:.2},"step":{d},"gen":{d},"lr":"{s}","batch":"{s}","optimizer":"{s}","grad_clip":{d:.3},"warmup":{d},"context":{d},"objective":"{s}","schedule":"{s}","shard":{d},"seed":{d},"tok_per_sec":{d:.1},"loss":{d:.4},"parent":"{s}"}}
+        , .{
+            svc.svcName(),
+            statusToStr(svc.status),
+            svc.current_ppl,
+            svc.val_ppl,
+            svc.current_step,
+            svc.generation,
+            svc.lrStr(),
+            svc.batchStr(),
+            svc.optimizerStr(),
+            svc.grad_clip,
+            svc.warmup,
+            svc.context,
+            svc.objectiveStr(),
+            svc.lr_schedule.toStr(),
+            svc.data_shard,
+            svc.seed,
+            svc.tok_per_sec,
+            svc.current_loss,
+            svc.parentName(),
+        });
+    }
+    print("]\n", .{});
+}
+
+fn exportCsv(state: *const EvolutionState) void {
+    print("name,status,ppl,val_ppl,step,gen,lr,batch,optimizer,grad_clip,warmup,context,objective,schedule,shard,seed,tok_per_sec,loss,parent\n", .{});
+    for (state.services[0..state.service_count]) |*svc| {
+        print("{s},{s},{d:.2},{d:.2},{d},{d},{s},{s},{s},{d:.3},{d},{d},{s},{s},{d},{d},{d:.1},{d:.4},{s}\n", .{
+            svc.svcName(),
+            statusToStr(svc.status),
+            svc.current_ppl,
+            svc.val_ppl,
+            svc.current_step,
+            svc.generation,
+            svc.lrStr(),
+            svc.batchStr(),
+            svc.optimizerStr(),
+            svc.grad_clip,
+            svc.warmup,
+            svc.context,
+            svc.objectiveStr(),
+            svc.lr_schedule.toStr(),
+            svc.data_shard,
+            svc.seed,
+            svc.tok_per_sec,
+            svc.current_loss,
+            svc.parentName(),
+        });
+    }
+}
+
+fn statusToStr(status: ServiceStatus) []const u8 {
+    return switch (status) {
+        .running => "running",
+        .idle => "idle",
+        .crashed => "crashed",
+        .killed => "killed",
+        .unknown => "unknown",
+        .stalled => "stalled",
+        .diverged => "diverged",
+        .stuck => "stuck",
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RESUME — Redeploy stalled/crashed good services with same config
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runResume(allocator: Allocator, args: []const []const u8) !void {
+    var top_k: u32 = 5;
+    var min_step: u32 = 30000;
+    var max_ppl: f32 = 15.0;
+    var dry_run = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--top-k") and i + 1 < args.len) {
+            i += 1;
+            top_k = std.fmt.parseInt(u32, args[i], 10) catch 5;
+        } else if (std.mem.eql(u8, args[i], "--min-step") and i + 1 < args.len) {
+            i += 1;
+            min_step = std.fmt.parseInt(u32, args[i], 10) catch 30000;
+        } else if (std.mem.eql(u8, args[i], "--max-ppl") and i + 1 < args.len) {
+            i += 1;
+            max_ppl = std.fmt.parseFloat(f32, args[i]) catch 15.0;
+        } else if (std.mem.eql(u8, args[i], "--dry-run")) {
+            dry_run = true;
+        }
+    }
+
+    var state = loadState(allocator) catch {
+        print("{s}ERROR: No evolution state. Run 'tri farm evolve init' first.{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    // Find resume-eligible services
+    var candidates: [MAX_SERVICES]usize = undefined;
+    var cand_count: usize = 0;
+
+    for (state.services[0..state.service_count], 0..) |*svc, si| {
+        const resumable = svc.status == .stalled or svc.status == .crashed or svc.status == .idle;
+        if (!resumable) continue;
+        if (svc.current_step < min_step) continue;
+        if (svc.current_ppl <= 0 or svc.current_ppl >= max_ppl) continue;
+        if (svc.account_idx == 0) continue; // never touch PRIMARY
+        candidates[cand_count] = si;
+        cand_count += 1;
+    }
+
+    if (cand_count == 0) {
+        print("{s}No resume-eligible services found (step>={d}, PPL<{d:.1}, stalled/crashed/idle).{s}\n", .{ YELLOW, min_step, max_ppl, RESET });
+        return;
+    }
+
+    // Sort by PPL ascending (best first)
+    sortByPpl(&state, candidates[0..cand_count]);
+
+    const n = @min(top_k, @as(u32, @intCast(cand_count)));
+    print("\n{s}RESUME:{s} {d} of {d} eligible services\n", .{ BOLD, RESET, n, cand_count });
+
+    var total_api_calls: u32 = 0;
+    var resumed: u32 = 0;
+
+    var ji: u32 = 0;
+    while (ji < n) : (ji += 1) {
+        const svc_idx = candidates[ji]; // best first (start of sorted array)
+        const svc = &state.services[svc_idx];
+        const st_str: []const u8 = switch (svc.status) {
+            .stalled => "stalled",
+            .crashed => "crashed",
+            .idle => "idle",
+            else => "?",
+        };
+
+        print("  [{d}/{d}] {s}  step={d}  PPL={d:.2}  ({s})\n", .{ ji + 1, n, svc.svcName(), svc.current_step, svc.current_ppl, st_str });
+
+        if (dry_run) continue;
+
+        resumeService(allocator, &state, svc_idx, &total_api_calls);
+        resumed += 1;
+    }
+
+    if (!dry_run) {
+        saveState(state) catch |err| {
+            print("  {s}Failed to save state: {}{s}\n", .{ YELLOW, err, RESET });
+        };
+        print("\n  {s}Resumed {d} services ({d} API calls){s}\n\n", .{ GREEN, resumed, total_api_calls, RESET });
+    } else {
+        print("\n  {s}--dry-run: no action taken{s}\n\n", .{ DIM, RESET });
+    }
+}
+
+fn resumeService(allocator: Allocator, state: *EvolutionState, svc_idx: usize, api_calls: *u32) void {
+    const svc = &state.services[svc_idx];
+
+    var accounts_buf: [MAX_FARM_ACCOUNTS]Account = undefined;
+    const account_count = farm_accounts_mod.discoverAccounts(allocator, &accounts_buf);
+    defer farm_accounts_mod.deinitAccounts(allocator, &accounts_buf, account_count);
+
+    if (svc.account_idx >= account_count) {
+        print("  {s}  {s}: account_idx {d} out of range{s}\n", .{ YELLOW, svc.svcName(), svc.account_idx, RESET });
+        state.addEvent(.err, svc.svcName(), "resume: account_idx out of range");
+        return;
+    }
+    const acct = &accounts_buf[svc.account_idx];
+
+    var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch return;
+    defer api.deinit();
+
+    const svc_id = svc.svcId();
+
+    // Set HSLM_FRESH=0 to resume from checkpoint
+    const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
+    const set_vars_json = std.fmt.allocPrint(allocator,
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_FRESH":"0"}}}}}}
+    , .{ acct.project_id, svc_id, acct.env_id }) catch return;
+    defer allocator.free(set_vars_json);
+
+    if (api.query(set_vars_gql, set_vars_json)) |resp| {
+        allocator.free(resp);
+    } else |_| {
+        print("  {s}  {s}: resume vars failed{s}\n", .{ YELLOW, svc.svcName(), RESET });
+        state.addEvent(.err, svc.svcName(), "resume: variableCollectionUpsert failed");
+        return;
+    }
+    api_calls.* += 1;
+
+    std.Thread.sleep(100 * std.time.ns_per_ms);
+
+    // Redeploy
+    if (api.redeployService(svc_id, acct.env_id)) |resp| {
+        allocator.free(resp);
+    } else |_| {
+        print("  {s}  {s}: resume redeploy failed{s}\n", .{ YELLOW, svc.svcName(), RESET });
+        state.addEvent(.err, svc.svcName(), "resume: redeploy failed");
+        return;
+    }
+    api_calls.* += 1;
+
+    // Reset status
+    svc.status = .running;
+    svc.stall_count = 0;
+
+    var detail_buf: [128]u8 = undefined;
+    const detail = std.fmt.bufPrint(&detail_buf, "resumed at step {d}, PPL={d:.2}", .{ svc.current_step, svc.current_ppl }) catch "resumed";
+    state.addEvent(.tune, svc.svcName(), detail);
+    notifyWsBus(.tune, svc.svcName(), detail);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RECOMMEND — Standalone recommendations subcommand
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runRecommend(allocator: Allocator) !void {
+    const state = loadState(allocator) catch {
+        print("{s}ERROR: No evolution state. Run 'tri farm evolve init' first.{s}\n", .{ RED, RESET });
+        return;
+    };
+    const health = computePopulationHealth(&state);
+
+    // Count resume-eligible
+    var resume_count: u32 = 0;
+    for (state.services[0..state.service_count]) |*svc| {
+        const resumable = svc.status == .stalled or svc.status == .crashed or svc.status == .idle;
+        if (!resumable) continue;
+        if (svc.current_step >= 30000 and svc.current_ppl > 0 and svc.current_ppl < 15.0) resume_count += 1;
+    }
+
+    const rec_result = computeRecommendations(&state, health, resume_count);
+    if (rec_result.count == 0) {
+        print("{s}No recommendations — farm is healthy.{s}\n", .{ GREEN, RESET });
+        return;
+    }
+
+    print("\n{s}RECOMMENDATIONS:{s}\n", .{ BOLD, RESET });
+    for (rec_result.recs[0..rec_result.count]) |*rec| {
+        const icon: []const u8 = switch (rec.severity) {
+            .critical => RED,
+            .warning => YELLOW,
+            .info => CYAN,
+        };
+        const sev_str: []const u8 = switch (rec.severity) {
+            .critical => "!!",
+            .warning => "! ",
+            .info => "i ",
+        };
+        print("  {s}{s}{s} {s}\n", .{ icon, sev_str, RESET, rec.message[0..rec.message_len] });
+        print("     Run: {s}\n", .{rec.command[0..rec.command_len]});
+    }
+    print("\n", .{});
+}
+
 fn printHelp() void {
     print(
         \\
@@ -5419,11 +5972,13 @@ fn printHelp() void {
         \\
         \\Commands:
         \\  init             Scan all accounts, build initial state
-        \\  status           Leaderboard + rung progress (default)
+        \\  status           Leaderboard + rung progress + quotas + recommendations (default)
         \\  step             Execute one evolution cycle
         \\  inject           Inject one child into a dead/idle slot (tournament selection)
         \\  watch            Steady-state watchdog: scan + auto-inject dead slots
         \\  tune             Warm restart: gently mutate LR on struggling workers
+        \\  resume           Redeploy stalled/crashed good services (same config, FRESH=0)
+        \\  recommend        Show actionable recommendations only
         \\  mock             Offline evolution simulation from snapshot JSON
         \\  deploy           Deploy pre-made configs to idle Railway services
         \\  collect          A/B collect — fetch PPL from deployed configs, compare sacred vs random
@@ -5439,10 +5994,15 @@ fn printHelp() void {
         \\  --sacred         Use sacred φ-weighted fitness + 3^k rungs
         \\  --issue <N>      Post summary to GitHub issue #N
         \\
+        \\Status options:
+        \\  --json                   Export full state as JSON to stdout
+        \\  --csv                    Export full state as CSV to stdout
+        \\
         \\Inject options:
         \\  --target <name>          Service to recycle (required)
         \\  --parent <name>          Parent config to mutate from (default: auto-best)
         \\  --sacred                 Use φ-grid mutations
+        \\  --quota                  Auto-select objective/context from diversity quotas
         \\  --dry-run                Preview only
         \\
         \\Watch options:
@@ -5456,6 +6016,12 @@ fn printHelp() void {
         \\
         \\Tune options:
         \\  --sacred                 Use φ-grid gentle mutations
+        \\  --dry-run                Preview only
+        \\
+        \\Resume options:
+        \\  --top-k <N>              Max services to resume (default: 5)
+        \\  --min-step <N>           Min step threshold (default: 30000)
+        \\  --max-ppl <F>            Max PPL threshold (default: 15.0)
         \\  --dry-run                Preview only
         \\
         \\Notify options:
@@ -6126,4 +6692,90 @@ test "parseCkptLine step NNNNN format" {
 test "parseCkptLine no step" {
     const step = parseCkptLine("Training checkpoint saved...");
     try std.testing.expect(step == null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Diversity quota tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "computeQuotaDeficit picks most underrepresented bucket" {
+    var state = EvolutionState{};
+
+    // Add 10 NTP/27 services (all one bucket)
+    for (0..10) |_| {
+        const entry = state.addService() orelse break;
+        entry.status = .running;
+        entry.current_step = 5000;
+        entry.current_ppl = 20.0;
+        entry.context = 27;
+        copyToFixed(&entry.objective, &entry.objective_len, "ntp");
+    }
+
+    const deficit = computeQuotaDeficit(&state);
+    // JEPA and hybrid have 0% actual vs 20% target → one of them should be picked
+    // NTP/81+ has 0% actual vs 20% target → also a candidate
+    // All three have deficit = 0.20, NTP/27 has surplus
+    try std.testing.expect(deficit.deficit > 0.1);
+    // Should NOT pick "ntp"/0 (it's overrepresented at 100%)
+    const is_ntp_any = std.mem.eql(u8, deficit.objective, "ntp") and deficit.min_context == 0;
+    try std.testing.expect(!is_ntp_any);
+}
+
+test "computeQuotaDeficit balanced returns low deficit" {
+    var state = EvolutionState{};
+
+    // 4 NTP/27, 2 NTP/81, 2 JEPA, 2 hybrid = balanced
+    for (0..4) |_| {
+        const entry = state.addService() orelse break;
+        entry.status = .running;
+        entry.context = 27;
+        copyToFixed(&entry.objective, &entry.objective_len, "ntp");
+    }
+    for (0..2) |_| {
+        const entry = state.addService() orelse break;
+        entry.status = .running;
+        entry.context = 81;
+        copyToFixed(&entry.objective, &entry.objective_len, "ntp");
+    }
+    for (0..2) |_| {
+        const entry = state.addService() orelse break;
+        entry.status = .running;
+        copyToFixed(&entry.objective, &entry.objective_len, "jepa");
+    }
+    for (0..2) |_| {
+        const entry = state.addService() orelse break;
+        entry.status = .running;
+        copyToFixed(&entry.objective, &entry.objective_len, "hybrid");
+    }
+
+    const deficit = computeQuotaDeficit(&state);
+    // All buckets roughly at target, max deficit should be small
+    try std.testing.expect(deficit.deficit < 0.1);
+}
+
+test "computeRecommendations diversity collapse" {
+    const state = EvolutionState{};
+    const health = PopulationHealth{
+        .diversity = 0.0001,
+        .elite_gap = 2.0,
+        .stagnation = 0,
+        .spike_rate = 0.0,
+        .alive = 10,
+        .total = 10,
+        .health_score = 50.0,
+        .leader_improvement = 0,
+        .leader_step = 0,
+    };
+
+    const result = computeRecommendations(&state, health, 0);
+    try std.testing.expect(result.count >= 1);
+    try std.testing.expect(result.recs[0].severity == .critical);
+}
+
+test "statusToStr covers all variants" {
+    try std.testing.expectEqualStrings("running", statusToStr(.running));
+    try std.testing.expectEqualStrings("stalled", statusToStr(.stalled));
+    try std.testing.expectEqualStrings("crashed", statusToStr(.crashed));
+    try std.testing.expectEqualStrings("idle", statusToStr(.idle));
+    try std.testing.expectEqualStrings("diverged", statusToStr(.diverged));
 }
