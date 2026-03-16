@@ -151,6 +151,9 @@ pub const Arena = struct {
         self.appendResult(battle) catch {};
         self.total_battles += 1;
 
+        // Log to GitHub Issue (Rainbow Bridge)
+        self.logToGitHub(battle) catch {};
+
         return battle;
     }
 
@@ -221,6 +224,67 @@ pub const Arena = struct {
 
         file.writeAll(line) catch {};
         file.writeAll("\n") catch {};
+    }
+
+    /// Log battle result to GitHub Issue (Rainbow Bridge protocol)
+    /// Uses `gh issue comment` to append structured battle summary
+    fn logToGitHub(self: *Arena, battle: types.Battle) !void {
+        // Only log judged battles
+        if (battle.status != .judged) return;
+
+        const verdict_str = if (battle.judge_verdict) |v| v.toString() else "none";
+        const verdict_emoji: []const u8 = if (battle.judge_verdict) |v| switch (v) {
+            .a_wins => "\xf0\x9f\x8f\x86",
+            .b_wins => "\xf0\x9f\x8f\x86",
+            .tie => "\xf0\x9f\xa4\x9d",
+        } else "\xe2\x9d\x93";
+
+        // Build comment body
+        var buf: [2048]u8 = undefined;
+        const comment = std.fmt.bufPrint(&buf,
+            \\{s} **Arena Battle #{d}**
+            \\
+            \\| Field | Value |
+            \\|-------|-------|
+            \\| Fighter A | `{s}` |
+            \\| Fighter B | `{s}` |
+            \\| Task | {s} ({s}) |
+            \\| Verdict | **{s}** |
+            \\| Latency A | {d}ms |
+            \\| Latency B | {d}ms |
+            \\
+            \\---
+            \\*Logged by Trinity Arena 2.0*
+        , .{
+            verdict_emoji,
+            battle.id,
+            battle.fighter_a,
+            battle.fighter_b,
+            battle.task.id,
+            battle.task.category.toString(),
+            verdict_str,
+            battle.latency_a_ms,
+            battle.latency_b_ms,
+        }) catch return;
+
+        // Write to temp file for gh
+        const tmp_path = "/tmp/arena_battle_comment.md";
+        const tmp_file = std.fs.cwd().createFile(tmp_path, .{}) catch return;
+        tmp_file.writeAll(comment) catch {
+            tmp_file.close();
+            return;
+        };
+        tmp_file.close();
+
+        // Post to Arena log issue (create if needed)
+        // Use issue #357 (Training Farm tracker) or a dedicated arena log issue
+        const result = std.process.Child.run(.{
+            .allocator = self.allocator,
+            .argv = &.{ "gh", "issue", "comment", "357", "--repo", "gHashTag/trinity", "-F", tmp_path },
+            .max_output_bytes = 4096,
+        }) catch return;
+        self.allocator.free(result.stdout);
+        self.allocator.free(result.stderr);
     }
 
     /// Write leaderboard to JSON
