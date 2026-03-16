@@ -24,9 +24,9 @@ const CONTEXT_LEN = constants.CONTEXT_LEN;
 const TNN_PARAMS_PER_BLOCK: usize = EMBED_DIM * HIDDEN_DIM + HIDDEN_DIM * EMBED_DIM + HIDDEN_DIM + EMBED_DIM;
 const ATTN_PARAMS_PER_BLOCK: usize = EMBED_DIM * EMBED_DIM * 4 + EMBED_DIM;
 const PARAMS_PER_BLOCK: usize = TNN_PARAMS_PER_BLOCK + ATTN_PARAMS_PER_BLOCK;
-const TOTAL_BLOCK_PARAMS: usize = PARAMS_PER_BLOCK * constants.NUM_BLOCKS;
 const OUTPUT_PARAMS: usize = EMBED_DIM * VOCAB_SIZE + VOCAB_SIZE;
-const ENCODER_TRAINABLE_PARAMS: usize = TOTAL_BLOCK_PARAMS + OUTPUT_PARAMS;
+// Default encoder params (for compile-time sizing, runtime uses model.blocks.len)
+const ENCODER_TRAINABLE_PARAMS: usize = PARAMS_PER_BLOCK * constants.DEFAULT_BLOCKS + OUTPUT_PARAMS;
 
 // Predictor trainable params
 const PREDICTOR_TRAINABLE_PARAMS: usize = tjepa_mod.Predictor.paramCount();
@@ -198,7 +198,7 @@ pub const TJepaTrainer = struct {
         offset += VOCAB_SIZE;
 
         // Block parameters
-        for (&online.blocks) |*block| {
+        for (online.blocks) |*block| {
             // TNN
             autograd.clipGradNorm(block.tnn.grad_shadow_up, clip);
             autograd.clipGradNorm(block.tnn.grad_shadow_down, clip);

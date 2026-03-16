@@ -156,7 +156,7 @@ pub const Trainer = struct {
         }
 
         // Also perturb block shadow weights (smaller subset)
-        for (&self.model.blocks) |*block| {
+        for (self.model.blocks) |*block| {
             const block_shadow = block.tnn.shadow_up;
             for (0..256) |_| {
                 const idx = rng.intRangeAtMost(usize, 0, block_shadow.len - 1);

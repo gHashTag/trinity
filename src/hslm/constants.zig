@@ -28,7 +28,21 @@ pub const VOCAB_SIZE: usize = 729; // 3⁶ — token vocabulary
 pub const EMBED_DIM: usize = 243; // 3⁵ — TNN float embedding
 pub const HIDDEN_DIM: usize = 729; // 3⁶ — TNN hidden layer
 pub const VSA_DIM: usize = 1024; // Hypervector space
-pub const NUM_BLOCKS: usize = 3; // Trinity blocks
+pub const DEFAULT_BLOCKS: usize = 3; // Trinity blocks (default)
+pub const NUM_BLOCKS: usize = DEFAULT_BLOCKS; // Alias for backward compat
+pub const MAX_BLOCKS: usize = 9; // Max blocks for Wave 8 (3²)
+
+/// Validate block count: must be power of 3 and ≤ MAX_BLOCKS
+pub fn isValidBlockCount(n: usize) bool {
+    if (n == 0 or n > MAX_BLOCKS) return false;
+    // Check power of 3: 1, 3, 9
+    var v = n;
+    while (v > 1) {
+        if (v % 3 != 0) return false;
+        v /= 3;
+    }
+    return true;
+}
 pub const CONTEXT_LEN: usize = 81; // 3⁴ — sequence length
 pub const NUM_HEADS: usize = 3; // Trinity — sacred attention heads
 pub const HEAD_DIM: usize = 81; // 3⁴ — per-head dimension
@@ -72,8 +86,8 @@ pub const GRAD_CLIP: f32 = 1.0;
 // At 1.58 bits/param (ternary): ~390 KB
 //
 
-pub const ESTIMATED_PARAMS: usize = 1_952_991;
-pub const ESTIMATED_SIZE_KB: usize = 390;
+pub const ESTIMATED_PARAMS: usize = 1_952_991; // at DEFAULT_BLOCKS=3
+pub const ESTIMATED_SIZE_KB: usize = 390; // at DEFAULT_BLOCKS=3
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MODEL CONFIG
@@ -137,6 +151,16 @@ pub const JEPA_MASK_RATIO: f32 = 0.6;
 pub const JEPA_MIN_SPAN: usize = 3; // = 3, ternary
 pub const JEPA_MAX_SPAN: usize = 9; // = 3², sacred
 pub const JEPA_NUM_SPANS: usize = 3; // = 3, trinity
+
+test "valid block counts" {
+    try std.testing.expect(isValidBlockCount(1));
+    try std.testing.expect(isValidBlockCount(3));
+    try std.testing.expect(isValidBlockCount(9));
+    try std.testing.expect(!isValidBlockCount(0));
+    try std.testing.expect(!isValidBlockCount(2));
+    try std.testing.expect(!isValidBlockCount(6));
+    try std.testing.expect(!isValidBlockCount(27)); // > MAX_BLOCKS=9
+}
 
 test "consciousness threshold is phi inverse" {
     try std.testing.expectApproxEqAbs(PHI_INV, CONSCIOUSNESS_THRESHOLD, 1e-10);

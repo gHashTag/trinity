@@ -297,7 +297,7 @@ pub const TJepa = struct {
         };
         // Copy online → target
         ema_mod.EmaSync.updateShadows(target.output_shadow, online.output_shadow, 0.0);
-        for (&target.blocks, online.blocks) |*tb, ob| {
+        for (target.blocks, online.blocks) |*tb, ob| {
             ema_mod.EmaSync.updateShadows(tb.tnn.shadow_up, ob.tnn.shadow_up, 0.0);
             ema_mod.EmaSync.updateShadows(tb.tnn.shadow_down, ob.tnn.shadow_down, 0.0);
             ema_mod.EmaSync.updateShadows(tb.tnn.bias_up, ob.tnn.bias_up, 0.0);

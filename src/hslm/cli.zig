@@ -55,6 +55,7 @@ pub fn main() !void {
     var optimizer_type: trainer_mod.OptimizerType = .adamw;
     var grad_accum: usize = 1;
     var context_len: usize = constants.CONTEXT_LEN;
+    var num_blocks: usize = constants.DEFAULT_BLOCKS;
     var lr_schedule: trainer_mod.LrScheduleType = .sacred;
     var label_smoothing_val: f32 = 0.1;
     var restart_period: u32 = 25000;
@@ -87,6 +88,15 @@ pub fn main() !void {
 
     // Gradient clipping (spike prevention)
     var grad_clip_val: f32 = 1.0;
+
+    // Inference / eval args
+    var eval_data_path: ?[]const u8 = null;
+    var eval_lines: usize = 1000;
+    var temperature: f32 = 0.8;
+    var top_k: usize = 27;
+    var rep_penalty: f32 = 1.2;
+    var prompt: ?[]const u8 = null;
+    var max_gen_tokens: usize = 200;
 
     // Early kill thresholds (EXP-025: relaxed defaults — 72/72 W7 runs killed by aggressive thresholds)
     var kill_ppl_10k: f32 = 500.0;
@@ -171,6 +181,9 @@ pub fn main() !void {
             context_len = std.fmt.parseInt(usize, args[i], 10) catch constants.CONTEXT_LEN;
             if (context_len < 1) context_len = 1;
             if (context_len > constants.CONTEXT_LEN) context_len = constants.CONTEXT_LEN;
+        } else if (std.mem.eql(u8, arg, "--blocks") and i + 1 < args.len) {
+            i += 1;
+            num_blocks = std.fmt.parseInt(usize, args[i], 10) catch constants.DEFAULT_BLOCKS;
         } else if (std.mem.eql(u8, arg, "--lr-schedule") and i + 1 < args.len) {
             i += 1;
             const sched_str = args[i];
@@ -265,6 +278,27 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--log-every") and i + 1 < args.len) {
             i += 1;
             log_every = std.fmt.parseInt(u32, args[i], 10) catch 100;
+        } else if (std.mem.eql(u8, arg, "--eval") and i + 1 < args.len) {
+            i += 1;
+            eval_data_path = args[i];
+        } else if (std.mem.eql(u8, arg, "--eval-lines") and i + 1 < args.len) {
+            i += 1;
+            eval_lines = std.fmt.parseInt(usize, args[i], 10) catch 1000;
+        } else if (std.mem.eql(u8, arg, "--temperature") and i + 1 < args.len) {
+            i += 1;
+            temperature = std.fmt.parseFloat(f32, args[i]) catch 0.8;
+        } else if (std.mem.eql(u8, arg, "--top-k") and i + 1 < args.len) {
+            i += 1;
+            top_k = std.fmt.parseInt(usize, args[i], 10) catch 27;
+        } else if (std.mem.eql(u8, arg, "--rep-penalty") and i + 1 < args.len) {
+            i += 1;
+            rep_penalty = std.fmt.parseFloat(f32, args[i]) catch 1.2;
+        } else if (std.mem.eql(u8, arg, "--prompt") and i + 1 < args.len) {
+            i += 1;
+            prompt = args[i];
+        } else if (std.mem.eql(u8, arg, "--max-tokens") and i + 1 < args.len) {
+            i += 1;
+            max_gen_tokens = std.fmt.parseInt(usize, args[i], 10) catch 200;
         } else if (std.mem.eql(u8, arg, "bench")) {
             mode = .bench;
         } else if (std.mem.eql(u8, arg, "generate")) {
@@ -275,21 +309,45 @@ pub fn main() !void {
         }
     }
 
+    // HSLM_BLOCKS env var fallback (Railway)
+    if (num_blocks == constants.DEFAULT_BLOCKS) {
+        if (std.posix.getenv("HSLM_BLOCKS")) |env_blocks| {
+            num_blocks = std.fmt.parseInt(usize, env_blocks, 10) catch constants.DEFAULT_BLOCKS;
+        }
+    }
+
+    // Validate block count
+    if (!constants.isValidBlockCount(num_blocks)) {
+        const stderr = std.fs.File.stderr().deprecatedWriter();
+        stderr.print("[FATAL] Invalid --blocks {d}: must be power of 3, max {d} (valid: 1, 3, 9)\n", .{ num_blocks, constants.MAX_BLOCKS }) catch {};
+        std.process.exit(1);
+    }
+
     switch (mode) {
         .bench => try runBenchmarks(allocator),
-        .generate => try runGenerate(allocator, checkpoint_path),
+        .generate => try runGenerate(allocator, checkpoint_path, .{
+            .eval_data_path = eval_data_path,
+            .eval_lines = eval_lines,
+            .temperature = temperature,
+            .top_k = top_k,
+            .rep_penalty = rep_penalty,
+            .prompt = prompt,
+            .max_gen_tokens = max_gen_tokens,
+            .context_len = context_len,
+            .num_blocks = num_blocks,
+        }),
         .train => switch (objective) {
             .ntp => try runTrain(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
                 .mode = ste_mode,
                 .threshold = ste_threshold,
                 .warmup_steps = ste_warmup,
-            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k),
+            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, num_blocks),
             .jepa => try runJepaTraining(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, seed_offset, context_len, grad_clip_val, weight_decay, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, init_zero),
             .hybrid => try runHybridTraining(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
                 .mode = ste_mode,
                 .threshold = ste_threshold,
                 .warmup_steps = ste_warmup,
-            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every),
+            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, num_blocks),
         },
     }
 }
@@ -323,6 +381,7 @@ fn printUsage() void {
         \\  --optimizer <type>     Optimizer: adamw|lamb (default: adamw)
         \\  --grad-accum <n>       Gradient accumulation steps (default: 1, eff_batch = batch * n)
         \\  --grad-clip <float>    Gradient clipping max norm (default: 1.0, spike prevention)
+        \\  --blocks <n>           Number of Trinity blocks: 1, 3, or 9 (default: 3, env: HSLM_BLOCKS)
         \\  --context <n>          Context length (default: 81, max: 81, shorter = faster)
         \\  --lr-schedule <type>   LR schedule: sacred|cosine|cosine-restarts|wsd|phi-restart|d2z (default: sacred)
         \\  --label-smoothing <f>  Label smoothing epsilon (default: 0.1, 0=off)
@@ -401,31 +460,40 @@ fn runTrain(
     kill_ppl_30k: f32,
     kill_ppl_60k: f32,
     kill_ppl_80k: f32,
+    num_blocks_arg: usize,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
+
+    const model_config = constants.Config{ .num_blocks = num_blocks_arg };
 
     try stdout.print(
         \\
         \\================================================================
         \\  HSLM Training — Hybrid Symbolic Language Model
-        \\  ~1.95M ternary parameters, ~390KB
+        \\  Blocks: {d}, Params: ~{d}K, Memory: ~{d}KB
         \\  Autograd + STE quantization + AdamW
         \\================================================================
         \\
-    , .{});
+    , .{ num_blocks_arg, model_config.paramCount() / 1000, model_config.memorySizeKB() });
+
+    // Square Attention check
+    const head_dim = constants.HEAD_DIM;
+    if (context_len != head_dim) {
+        try stdout.print("  ⚠ Non-square attention: ctx={d} × head_dim={d} (rank-deficient QKᵀ)\n", .{ context_len, head_dim });
+    }
 
     // Initialize model
     if (init_zero_flag) {
-        try stdout.print("[1/4] Initializing model (ZERO init — all weights zeroed)...\n", .{});
+        try stdout.print("[1/4] Initializing model (ZERO init — all weights zeroed, blocks={d})...\n", .{num_blocks_arg});
     } else if (seed_offset > 0) {
-        try stdout.print("[1/4] Initializing model (seed offset: {d})...\n", .{seed_offset});
+        try stdout.print("[1/4] Initializing model (seed offset: {d}, blocks={d})...\n", .{ seed_offset, num_blocks_arg });
     } else {
-        try stdout.print("[1/4] Initializing model...\n", .{});
+        try stdout.print("[1/4] Initializing model (blocks={d})...\n", .{num_blocks_arg});
     }
     var model = if (init_zero_flag)
-        try model_mod.HSLM.initZero(allocator)
+        try model_mod.HSLM.initZeroWithConfig(allocator, model_config)
     else
-        try model_mod.HSLM.initWithSeed(allocator, seed_offset);
+        try model_mod.HSLM.initWithConfigAndSeed(allocator, model_config, seed_offset);
     defer model.deinit();
 
     const mem_kb = bench_mod.memoryUsage();
@@ -563,12 +631,9 @@ fn runTrain(
     const initial_threshold: f64 = 0.15;
     const final_threshold: f64 = constants.PHI_INV;
 
-    const EMBED_DIM = constants.EMBED_DIM;
     try stdout.print("       WD: {d:.3} (cosine, disable at 50%)\n", .{initial_wd});
     try stdout.print("       Consciousness: adaptive threshold {d:.2} -> phi^-1 (warmup {d}K steps)\n", .{ initial_threshold, consciousness_warmup_steps / 1000 });
-    const tnn_per_block = EMBED_DIM * constants.HIDDEN_DIM * 2 + constants.HIDDEN_DIM + EMBED_DIM;
-    const attn_per_block = EMBED_DIM * EMBED_DIM * 4 + EMBED_DIM;
-    const total_trainable = VOCAB_SIZE * EMBED_DIM + VOCAB_SIZE + 3 * (tnn_per_block + attn_per_block);
+    const total_trainable = trainer_mod.totalTrainableParams(num_blocks_arg);
     try stdout.print("       Full STE backprop: {d} trainable params (100%%)\n", .{total_trainable});
 
     var trainer = try trainer_mod.FullTrainer.init(allocator, &model, &dataset, config);
@@ -642,7 +707,7 @@ fn runTrain(
         if (trainer.metrics.step < consciousness_warmup_steps) {
             const t_progress = @as(f64, @floatFromInt(trainer.metrics.step)) / @as(f64, @floatFromInt(consciousness_warmup_steps));
             const threshold = initial_threshold + (final_threshold - initial_threshold) * t_progress;
-            for (&trainer.model.blocks) |*block| {
+            for (trainer.model.blocks) |*block| {
                 block.gate.threshold = threshold;
             }
         }
@@ -739,7 +804,7 @@ fn runTrain(
                         const target = val_batch.getTarget(b);
                         const sl = @min(input.len, context_len);
                         // Reset KV cache for each sequence
-                        for (&model.blocks) |*block| {
+                        for (model.blocks) |*block| {
                             block.sacred_attn.resetCache();
                         }
                         // Forward-only (inference mode, no dropout, no grad)
@@ -768,7 +833,7 @@ fn runTrain(
         // Milestone text generation
         if (trainer.metrics.step == 1000 or trainer.metrics.step == 2000 or trainer.metrics.step == 3000) {
             try stdout.print("\n[MILESTONE step {d}] Generated text:\n", .{trainer.metrics.step});
-            try generateSample(allocator, &model);
+            try generateSample(allocator, &model, .{});
             try stdout.print("\n", .{});
         }
     }
@@ -817,7 +882,7 @@ fn runTrain(
 
     // Generate sample
     try stdout.print("\n[SAMPLE] Generated text:\n", .{});
-    try generateSample(allocator, &model);
+    try generateSample(allocator, &model, .{});
 }
 
 fn runJepaTraining(
@@ -1121,6 +1186,7 @@ fn runHybridTraining(
     mask_ratio: f32,
     predictor_lr_mult: f32,
     log_every: u32,
+    num_blocks_arg: usize,
 ) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
     const jepa_steps = total_steps / 2;
@@ -1142,7 +1208,7 @@ fn runHybridTraining(
     try stdout.print("\n[STAGE 2/2] NTP fine-tuning from JEPA checkpoint...\n", .{});
     var resume_buf: [256]u8 = undefined;
     const jepa_ckpt = std.fmt.bufPrint(&resume_buf, "{s}/jepa_step_{d}_final.bin", .{ checkpoint_dir, jepa_steps }) catch "jepa_final.bin";
-    try runTrain(allocator, data_path, ntp_steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, jepa_ckpt, weight_decay, dropout, seed_offset, ste_config, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, t_ternary_grads, t_adaptive_sparsity, t_ternary_schedule, lamb_clamp_val, stable_ratio_val, init_zero_flag, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k);
+    try runTrain(allocator, data_path, ntp_steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, jepa_ckpt, weight_decay, dropout, seed_offset, ste_config, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, t_ternary_grads, t_adaptive_sparsity, t_ternary_schedule, lamb_clamp_val, stable_ratio_val, init_zero_flag, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, num_blocks_arg);
 }
 
 fn runBenchmarks(allocator: std.mem.Allocator) !void {
@@ -1208,63 +1274,195 @@ fn runBenchmarks(allocator: std.mem.Allocator) !void {
     try stdout.print("\n", .{});
 }
 
-fn runGenerate(allocator: std.mem.Allocator, checkpoint_path: ?[]const u8) !void {
+const GenerateOpts = struct {
+    eval_data_path: ?[]const u8 = null,
+    eval_lines: usize = 1000,
+    temperature: f32 = 0.8,
+    top_k: usize = 27,
+    rep_penalty: f32 = 1.2,
+    prompt: ?[]const u8 = null,
+    max_gen_tokens: usize = 200,
+    context_len: usize = CONTEXT_LEN_CONST,
+    num_blocks: usize = constants.DEFAULT_BLOCKS,
+};
+
+fn runGenerate(allocator: std.mem.Allocator, checkpoint_path: ?[]const u8, opts: GenerateOpts) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
 
-    try stdout.print("\n[INIT] Loading HSLM model...\n", .{});
-    var model = try model_mod.HSLM.init(allocator);
+    try stdout.print("\n[INIT] Loading HSLM model (blocks={d})...\n", .{opts.num_blocks});
+    var model = try model_mod.HSLM.initWithConfig(allocator, constants.Config{ .num_blocks = opts.num_blocks });
     defer model.deinit();
 
+    var ckpt_step: u32 = 0;
     if (checkpoint_path) |ckpt| {
-        const step = try trainer_mod.loadCheckpoint(&model, ckpt);
-        try stdout.print("[CKPT] Loaded checkpoint: {s} (step {d})\n", .{ ckpt, step });
+        ckpt_step = try trainer_mod.loadCheckpoint(&model, ckpt);
+        try stdout.print("[CKPT] Loaded checkpoint: {s} (step {d})\n", .{ ckpt, ckpt_step });
     } else {
         try stdout.print("[WARN] No --checkpoint provided, using random weights\n", .{});
     }
 
-    try stdout.print("[GEN] Generating text samples (temp=0.8, top_k=20, rep_penalty=1.2):\n\n", .{});
+    // PPL evaluation
+    if (opts.eval_data_path) |eval_path| {
+        try evalPerplexity(allocator, &model, eval_path, opts.eval_lines, opts.context_len);
+    }
 
-    try generateSample(allocator, &model);
+    // Text generation
+    try stdout.print("[GEN] Generating text (temp={d:.2}, top_k={d}, rep_penalty={d:.2}, max_tokens={d}):\n\n", .{
+        opts.temperature, opts.top_k, opts.rep_penalty, opts.max_gen_tokens,
+    });
+
+    try generateSample(allocator, &model, opts);
 }
 
-fn generateSample(allocator: std.mem.Allocator, model: *model_mod.HSLM) !void {
+fn evalPerplexity(allocator: std.mem.Allocator, model: *model_mod.HSLM, data_path: []const u8, max_lines: usize, context_len: usize) !void {
+    const stdout = std.fs.File.stdout().deprecatedWriter();
+    const train_mod = @import("train.zig");
+
+    try stdout.print("\n[EVAL] Loading data: {s} (max {d} lines)...\n", .{ data_path, max_lines });
+
+    const t_start = std.time.nanoTimestamp();
+
+    var dataset = try data_mod.Dataset.init(allocator, context_len);
+    defer dataset.deinit();
+    const lines_loaded = try dataset.loadTextFile(data_path, max_lines);
+    try stdout.print("[EVAL] Loaded {d} lines, {d} tokens\n", .{ lines_loaded, dataset.tokens.items.len });
+
+    // Use last 10% as validation
+    var val_set = try dataset.splitTrainVal(0.9);
+    defer val_set.deinit();
+    const val_tokens = val_set.tokens.items;
+    try stdout.print("[EVAL] Validation set: {d} tokens\n", .{val_tokens.len});
+
+    if (val_tokens.len < context_len + 1) {
+        try stdout.print("[EVAL] Not enough validation tokens for PPL eval\n", .{});
+        return;
+    }
+
+    // Evaluate sequences
+    const seq_len = context_len;
+    var total_loss: f64 = 0.0;
+    var num_seqs: usize = 0;
+    const max_seqs: usize = 500; // Cap for speed
+
+    var pos: usize = 0;
+    while (pos + seq_len + 1 <= val_tokens.len and num_seqs < max_seqs) : (pos += seq_len) {
+        const input = val_tokens[pos .. pos + seq_len];
+        const targets = val_tokens[pos + 1 .. pos + seq_len + 1];
+
+        // Convert to u16 slices for model API
+        var input_u16: [constants.CONTEXT_LEN]u16 = undefined;
+        var targets_u16: [constants.CONTEXT_LEN]u16 = undefined;
+        for (0..seq_len) |j| {
+            input_u16[j] = input[j];
+            targets_u16[j] = targets[j];
+        }
+
+        var all_logits: [constants.CONTEXT_LEN * VOCAB_SIZE]f32 = undefined;
+        model.forwardAll(input_u16[0..seq_len], &all_logits);
+
+        const loss = train_mod.sequenceLoss(&all_logits, targets_u16[0..seq_len], seq_len);
+        total_loss += loss;
+        num_seqs += 1;
+    }
+
+    const t_end = std.time.nanoTimestamp();
+    const elapsed_ms = @as(f64, @floatFromInt(t_end - t_start)) / 1_000_000.0;
+
+    if (num_seqs > 0) {
+        const avg_loss = total_loss / @as(f64, @floatFromInt(num_seqs));
+        const ppl = @exp(avg_loss);
+        try stdout.print(
+            \\
+            \\╔══════════════════════════════════════╗
+            \\║  PPL Evaluation Results               ║
+            \\╠══════════════════════════════════════╣
+            \\║  Sequences evaluated: {d:<16}║
+            \\║  Avg loss:            {d:<14.4}  ║
+            \\║  Perplexity (PPL):    {d:<14.2}  ║
+            \\║  Time:                {d:<11.0} ms  ║
+            \\╚══════════════════════════════════════╝
+            \\
+        , .{ num_seqs, @as(f32, @floatCast(avg_loss)), @as(f32, @floatCast(ppl)), elapsed_ms });
+    } else {
+        try stdout.print("[EVAL] No sequences evaluated\n", .{});
+    }
+}
+
+fn generateSample(allocator: std.mem.Allocator, model: *model_mod.HSLM, opts: GenerateOpts) !void {
     const stdout = std.fs.File.stdout().deprecatedWriter();
     var tok = try tokenizer_mod.Tokenizer.init(allocator);
     defer tok.deinit();
 
-    // Sampling params: temperature + top-k + repetition penalty
     const params = model_mod.HSLM.SampleParams{
-        .temperature = 0.8,
-        .top_k = 27,
-        .rep_penalty = 1.2,
+        .temperature = opts.temperature,
+        .top_k = opts.top_k,
+        .rep_penalty = opts.rep_penalty,
     };
     var prng = std.Random.DefaultPrng.init(@as(u64, @intCast(std.time.milliTimestamp() & 0x7FFFFFFFFFFFFFFF)));
     const rng = prng.random();
 
-    // Seed prompts
-    const prompts = [_][]const u8{
-        "Once upon a time",
-        "The little cat",
-        "She was very",
-    };
+    const max_tok = @min(opts.max_gen_tokens, 255);
 
-    for (prompts) |prompt| {
+    if (opts.prompt) |custom_prompt| {
+        // Single custom prompt
+        const t_start = std.time.nanoTimestamp();
         var tokens: [256]u16 = undefined;
-        const n = tok.encode(prompt, &tokens);
+        const n = tok.encode(custom_prompt, &tokens);
 
-        // Generate up to 200 chars worth of tokens
         var gen_len = n;
-        for (0..200) |_| {
+        var tokens_generated: usize = 0;
+        for (0..max_tok) |_| {
             if (gen_len >= 255) break;
             const next = model.generateSampled(tokens[0..gen_len], params, rng);
             tokens[gen_len] = next;
             gen_len += 1;
+            tokens_generated += 1;
             if (next == tokenizer_mod.EOS_TOKEN) break;
         }
 
+        const t_end = std.time.nanoTimestamp();
+        const elapsed_ms = @as(f64, @floatFromInt(t_end - t_start)) / 1_000_000.0;
+        const tok_per_sec = if (elapsed_ms > 0) @as(f64, @floatFromInt(tokens_generated)) / (elapsed_ms / 1000.0) else 0;
+
         var decoded: [2048]u8 = undefined;
         const m = tok.decode(tokens[0..gen_len], &decoded);
-        try stdout.print("  > {s}\n", .{decoded[0..m]});
+        try stdout.print("  > {s}\n\n", .{decoded[0..m]});
+        try stdout.print("  [{d} tokens, {d:.0}ms, {d:.1} tok/s]\n", .{ tokens_generated, elapsed_ms, tok_per_sec });
+    } else {
+        // Default seed prompts
+        const prompts = [_][]const u8{
+            "Once upon a time",
+            "The little cat",
+            "She was very",
+        };
+
+        var total_tokens: usize = 0;
+        const t_start = std.time.nanoTimestamp();
+
+        for (prompts) |p| {
+            var tokens: [256]u16 = undefined;
+            const n = tok.encode(p, &tokens);
+
+            var gen_len = n;
+            for (0..max_tok) |_| {
+                if (gen_len >= 255) break;
+                const next = model.generateSampled(tokens[0..gen_len], params, rng);
+                tokens[gen_len] = next;
+                gen_len += 1;
+                total_tokens += 1;
+                if (next == tokenizer_mod.EOS_TOKEN) break;
+            }
+
+            var decoded: [2048]u8 = undefined;
+            const m_dec = tok.decode(tokens[0..gen_len], &decoded);
+            try stdout.print("  > {s}\n", .{decoded[0..m_dec]});
+        }
+
+        const t_end = std.time.nanoTimestamp();
+        const elapsed_ms = @as(f64, @floatFromInt(t_end - t_start)) / 1_000_000.0;
+        const tok_per_sec = if (elapsed_ms > 0) @as(f64, @floatFromInt(total_tokens)) / (elapsed_ms / 1000.0) else 0;
+
+        try stdout.print("\n  [{d} tokens total, {d:.0}ms, {d:.1} tok/s]\n", .{ total_tokens, elapsed_ms, tok_per_sec });
     }
 }
 

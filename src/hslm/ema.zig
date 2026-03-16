@@ -39,7 +39,7 @@ pub const EmaSync = struct {
         updateShadows(target.output_shadow, online.output_shadow, decay);
 
         // Per-block params
-        for (&target.blocks, online.blocks) |*t_block, o_block| {
+        for (target.blocks, online.blocks) |*t_block, o_block| {
             // TNN dense shadows
             updateShadows(t_block.tnn.shadow_up, o_block.tnn.shadow_up, decay);
             updateShadows(t_block.tnn.shadow_down, o_block.tnn.shadow_down, decay);

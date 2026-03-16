@@ -21,7 +21,6 @@ const ternary_inference = @import("ternary_inference.zig");
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM = constants.EMBED_DIM;
 const VSA_DIM = constants.VSA_DIM;
-const NUM_BLOCKS = constants.NUM_BLOCKS;
 const CONTEXT_LEN = constants.CONTEXT_LEN;
 const Config = constants.Config;
 
@@ -36,7 +35,7 @@ const SACRED_LOGIT_SCALE: f32 = @floatCast(1.0 / std.math.pow(f64, @as(f64, EMBE
 pub const HSLM = struct {
     config: Config,
     emb: embedding_mod.Embedding,
-    blocks: [NUM_BLOCKS]trinity_block.TrinityBlock,
+    blocks: []trinity_block.TrinityBlock,
     // Output projection: EMBED_DIM → VOCAB_SIZE (ternary weights)
     output_weights: []i8,
     output_bias: []f32,
@@ -87,9 +86,14 @@ pub const HSLM = struct {
     fn initFull(allocator: std.mem.Allocator, config: Config, seed_offset: u64, zero_init: bool) !Self {
         const emb = try embedding_mod.Embedding.init(allocator);
 
-        var blocks: [NUM_BLOCKS]trinity_block.TrinityBlock = undefined;
-        for (0..NUM_BLOCKS) |i| {
+        const num_blocks = config.num_blocks;
+        const blocks = try allocator.alloc(trinity_block.TrinityBlock, num_blocks);
+        errdefer allocator.free(blocks);
+        var blocks_inited: usize = 0;
+        errdefer for (blocks[0..blocks_inited]) |*b| b.deinit();
+        for (0..num_blocks) |i| {
             blocks[i] = try trinity_block.TrinityBlock.init(allocator);
+            blocks_inited += 1;
         }
 
         const out_w = try allocator.alloc(i8, EMBED_DIM * VOCAB_SIZE);
@@ -110,7 +114,7 @@ pub const HSLM = struct {
             @memset(out_b, 0.0);
 
             // Zero all block weights too
-            for (&blocks) |*block| {
+            for (blocks) |*block| {
                 @memset(block.tnn.shadow_up, 0.0);
                 @memset(block.tnn.shadow_down, 0.0);
                 @memset(block.tnn.bias_up, 0.0);
@@ -151,11 +155,20 @@ pub const HSLM = struct {
     /// Workers process forward/backward but never requantize or run optimizer.
     /// Saves ~7MB per worker (no shadow weights for TNN, attention, or output projection).
     pub fn initWorker(allocator: std.mem.Allocator) !Self {
+        return initWorkerWithConfig(allocator, Config{});
+    }
+
+    pub fn initWorkerWithConfig(allocator: std.mem.Allocator, config: Config) !Self {
         const emb = try embedding_mod.Embedding.init(allocator);
 
-        var blocks: [NUM_BLOCKS]trinity_block.TrinityBlock = undefined;
-        for (0..NUM_BLOCKS) |i| {
+        const num_blocks = config.num_blocks;
+        const blocks = try allocator.alloc(trinity_block.TrinityBlock, num_blocks);
+        errdefer allocator.free(blocks);
+        var blocks_inited: usize = 0;
+        errdefer for (blocks[0..blocks_inited]) |*b| b.deinit();
+        for (0..num_blocks) |i| {
             blocks[i] = try trinity_block.TrinityBlock.initWorker(allocator);
+            blocks_inited += 1;
         }
 
         const out_w = try allocator.alloc(i8, EMBED_DIM * VOCAB_SIZE);
@@ -170,7 +183,7 @@ pub const HSLM = struct {
         @memset(g_ob, 0.0);
 
         return Self{
-            .config = Config{},
+            .config = config,
             .emb = emb,
             .blocks = blocks,
             .output_weights = out_w,
@@ -185,7 +198,8 @@ pub const HSLM = struct {
 
     pub fn deinit(self: *Self) void {
         self.emb.deinit();
-        for (&self.blocks) |*b| b.deinit();
+        for (self.blocks) |*b| b.deinit();
+        self.allocator.free(self.blocks);
         self.allocator.free(self.output_weights);
         self.allocator.free(self.output_bias);
         if (!self.is_worker) {
@@ -219,7 +233,7 @@ pub const HSLM = struct {
         var next_float: [CONTEXT_LEN * EMBED_DIM]f32 = undefined;
         var next_trit: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
 
-        for (&self.blocks) |*block| {
+        for (self.blocks) |*block| {
             block.sacred_attn.resetCache();
             for (0..seq_len) |pos| {
                 const f_off = pos * EMBED_DIM;
@@ -270,7 +284,7 @@ pub const HSLM = struct {
         var next_float: [CONTEXT_LEN * EMBED_DIM]f32 = undefined;
         var next_trit: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
 
-        for (&self.blocks) |*block| {
+        for (self.blocks) |*block| {
             block.sacred_attn.resetCache();
             for (0..seq_len) |pos| {
                 const f_off = pos * EMBED_DIM;
@@ -330,7 +344,7 @@ pub const HSLM = struct {
         var next_float: [CONTEXT_LEN * EMBED_DIM]f32 = undefined;
         var next_trit: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
 
-        for (&self.blocks) |*block| {
+        for (self.blocks) |*block| {
             block.sacred_attn.resetCache();
             for (0..seq_len) |pos| {
                 const f_off = pos * EMBED_DIM;
@@ -358,7 +372,7 @@ pub const HSLM = struct {
         @memcpy(&grad_current, grad_hidden[0..EMBED_DIM]);
         var grad_next: [EMBED_DIM]f32 = undefined;
 
-        var block_idx: usize = NUM_BLOCKS;
+        var block_idx: usize = self.blocks.len;
         while (block_idx > 0) {
             block_idx -= 1;
             self.blocks[block_idx].tnn.backward(&grad_current, &grad_next);
@@ -486,23 +500,20 @@ pub const HSLM = struct {
         return len;
     }
 
-    /// Get consciousness statistics
-    pub fn consciousnessStats(self: *const Self) struct { ratio: f64, per_block: [NUM_BLOCKS]f64 } {
+    /// Get consciousness statistics (average ratio across all blocks)
+    pub fn consciousnessStats(self: *const Self) struct { ratio: f64 } {
         var total_ratio: f64 = 0.0;
-        var per_block: [NUM_BLOCKS]f64 = undefined;
-        for (0..NUM_BLOCKS) |i| {
-            per_block[i] = self.blocks[i].gate.consciousnessRatio();
-            total_ratio += per_block[i];
+        for (self.blocks) |*block| {
+            total_ratio += block.gate.consciousnessRatio();
         }
         return .{
-            .ratio = total_ratio / @as(f64, NUM_BLOCKS),
-            .per_block = per_block,
+            .ratio = if (self.blocks.len > 0) total_ratio / @as(f64, @floatFromInt(self.blocks.len)) else 0.0,
         };
     }
 
     /// Re-quantize all ternary weights from shadow floats
     pub fn requantize(self: *Self) void {
-        for (&self.blocks) |*block| {
+        for (self.blocks) |*block| {
             block.tnn.requantize();
             block.sacred_attn.requantize();
         }
@@ -511,7 +522,7 @@ pub const HSLM = struct {
 
     /// Re-quantize using STE mode (TWN/vanilla/progressive)
     pub fn requantizeSte(self: *Self, config: ste_mod.SteConfig, step: u32) void {
-        for (&self.blocks) |*block| {
+        for (self.blocks) |*block| {
             block.tnn.requantizeSte(config, step);
             block.sacred_attn.requantizeSte(config, step);
         }
@@ -535,7 +546,7 @@ pub const HSLM = struct {
 
         const last_pos = seq_len - 1;
 
-        for (&self.blocks) |*block| {
+        for (self.blocks) |*block| {
             block.sacred_attn.resetCache();
 
             for (0..seq_len) |pos| {
@@ -667,7 +678,7 @@ pub const HSLM = struct {
         var grad_current: [EMBED_DIM]f32 = grad_pre_rms;
         var grad_next: [EMBED_DIM]f32 = undefined;
 
-        var block_idx: usize = NUM_BLOCKS;
+        var block_idx: usize = self.blocks.len;
         while (block_idx > 0) {
             block_idx -= 1;
             // TNN Dense FFN backward
@@ -684,7 +695,7 @@ pub const HSLM = struct {
     pub fn zeroGrad(self: *Self) void {
         @memset(self.grad_output_shadow, 0.0);
         @memset(self.grad_output_bias, 0.0);
-        for (&self.blocks) |*block| {
+        for (self.blocks) |*block| {
             block.tnn.zeroGrad();
             block.sacred_attn.zeroGrad();
         }
@@ -692,9 +703,7 @@ pub const HSLM = struct {
 
     /// Total parameter count
     pub fn paramCount(self: *const Self) usize {
-        _ = self;
-        const cfg = Config{};
-        return cfg.paramCount();
+        return self.config.paramCount();
     }
 };
 
@@ -756,7 +765,7 @@ test "hslm init/deinit" {
     defer model.deinit();
 
     try std.testing.expect(model.config.vocab_size == VOCAB_SIZE);
-    try std.testing.expect(model.config.num_blocks == NUM_BLOCKS);
+    try std.testing.expect(model.config.num_blocks == constants.DEFAULT_BLOCKS);
 }
 
 test "hslm forward" {

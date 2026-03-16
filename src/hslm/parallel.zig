@@ -62,7 +62,7 @@ pub const ParallelTrainer = struct {
             @memcpy(w.output_bias, source.output_bias);
 
             // Per-block weights
-            for (0..NUM_BLOCKS) |b| {
+            for (0..source.blocks.len) |b| {
                 // TNN weights + biases
                 @memcpy(w.blocks[b].tnn.weights_up, source.blocks[b].tnn.weights_up);
                 @memcpy(w.blocks[b].tnn.weights_down, source.blocks[b].tnn.weights_down);
@@ -141,7 +141,7 @@ pub const ParallelTrainer = struct {
             addSlice(target.grad_output_bias, w.grad_output_bias);
 
             // Per-block grads
-            for (0..NUM_BLOCKS) |b| {
+            for (0..target.blocks.len) |b| {
                 // TNN grads
                 addSlice(target.blocks[b].tnn.grad_shadow_up, w.blocks[b].tnn.grad_shadow_up);
                 addSlice(target.blocks[b].tnn.grad_shadow_down, w.blocks[b].tnn.grad_shadow_down);
@@ -181,7 +181,7 @@ fn workerFn(
         const seq_len = @min(input.len, CONTEXT_LEN);
 
         // Reset KV cache before each new sequence (mandatory — different sequences!)
-        for (&worker.blocks) |*block| {
+        for (worker.blocks) |*block| {
             block.sacred_attn.resetCache();
         }
 
@@ -257,7 +257,7 @@ test "parallel weight sync copies correctly" {
         try std.testing.expect(par.workers[0].output_bias[i] == master.output_bias[i]);
     }
     // Verify block weights
-    for (0..NUM_BLOCKS) |b| {
+    for (0..master.blocks.len) |b| {
         try std.testing.expect(par.workers[0].blocks[b].tnn.weights_up[0] == master.blocks[b].tnn.weights_up[0]);
         try std.testing.expect(par.workers[0].blocks[b].sacred_attn.w_q[0] == master.blocks[b].sacred_attn.w_q[0]);
     }
