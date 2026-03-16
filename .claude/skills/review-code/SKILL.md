@@ -2,6 +2,8 @@
 name: review-code
 description: Review recent code changes for bugs, style issues, and improvements. Use after writing code or before committing.
 argument-hint: [file-or-branch] (optional)
+allowed-tools: Bash(git *), Bash(zig *), Read, Grep, Glob
+model: sonnet
 ---
 
 # Code Review

@@ -5,6 +5,9 @@ argument-hint: [quick|full|scan|junk|docs|dupes] [lang:ru|en]
 allowed-tools: Bash(tri *), Bash(gh *), Bash(git *), Bash(zig *), Bash(cat *), Bash(find *), Bash(ls *), Bash(grep *), Bash(wc *), Bash(pgrep *), Bash(date *), Bash(tail *), Bash(python3 *), Bash(npm *), Bash(cd *), Read, Grep, Glob, Edit, Write
 ---
 
+For system state collection, follow `.claude/skills/_shared/data_collection.md`.
+For output formatting conventions, follow `.claude/skills/_shared/output_format.md`.
+
 ## HEALER MODE — DIAGNOSE → HEAL → REPORT
 
 You are a HEALER. You diagnose, fix, commit, and report HONESTLY.
@@ -254,33 +257,8 @@ tri doctor dupes    # Run 8-point duplication check
 
 ## Language
 
-Read `.claude/skills/tri/lang.md` for output language. Default: `ru`.
-Technical terms (binary names, commands, file paths) stay in English.
-
-### Translation Table
-
-| EN | RU |
-|----|-----|
-| PAST | БЫЛО |
-| DONE | СДЕЛАНО |
-| NEXT CYCLE | ПЛАН |
-| HEALTHY | ЗДОРОВ |
-| RECOVERING | ВЫЗДОРАВЛИВАЕТ |
-| INFECTED | ЗАРАЖЁН |
-| CRITICAL | КРИТИЧЕСКИЙ |
-| healed | вылечено |
-| committed | закоммичено |
-| build passing | билд проходит |
-| build broken | билд сломан |
-| nothing to heal | лечить нечего |
-| dirty files | грязных файлов |
-| agents running | агентов запущено |
-| docs stale | документация устарела |
-| docs fresh | документация актуальна |
-| duplicates | дубликаты |
-| divergence risk | риск расхождения |
-| consolidate | консолидировать |
-| docs build broken | билд документации сломан |
+For language detection and translations, follow `.claude/skills/_shared/language.md`.
+Default: `ru`. Technical terms stay in English.
 
 ## Output Format
 
@@ -351,6 +329,14 @@ Run `tri doctor dupes` first, then apply the dupes healing protocol for each cri
 - Always include `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
 - Separate .zig code commits from state file commits
 - Never force-push
+
+## Step: Telegram Broadcast
+
+After rendering the report, send a summary to Telegram.
+
+Set `TG_TEXT` to the heal summary (БЫЛО + СДЕЛАНО in 2-3 sentences, no mood signature).
+Set `TG_MODE=send`.
+Then execute the shared Telegram template from `.claude/skills/_shared/telegram.md`.
 
 ## Integration Notes
 

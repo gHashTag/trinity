@@ -2,6 +2,8 @@
 name: security-audit
 description: Security vulnerability scanner — scans repo for hardcoded secrets, injection vectors, unsafe patterns, Docker/CI misconfigs, and policy violations. Use when checking security posture or before releases.
 argument-hint: [secrets|code|infra|full] (default: full)
+allowed-tools: Bash(grep *), Bash(git *), Bash(cat *), Bash(find *), Bash(ls *), Bash(wc *), Read, Grep, Glob
+context: fork
 ---
 
 # Security Audit — Trinity Repository

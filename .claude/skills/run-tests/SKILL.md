@@ -2,6 +2,8 @@
 name: run-tests
 description: Build the project, check for warnings, run all tests, and report results. Quick health check for the codebase.
 argument-hint: [module] (optional - all, vsa, vm, bsd, hslm, tri-api)
+allowed-tools: Bash(zig *), Bash(cat *), Bash(ls *), Read, Grep, Glob
+model: haiku
 ---
 
 # Build & Test

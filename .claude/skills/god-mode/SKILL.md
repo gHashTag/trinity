@@ -2,6 +2,7 @@
 name: god-mode
 description: GOD MODE — Agent monitoring dashboard. Shows swarm status, task queue, pipeline compliance, circuit breakers, git activity, and rule violations.
 argument-hint: [status|agents|tasks|violations]
+allowed-tools: Bash(tri *), Bash(git *), Bash(cat *), Bash(gh *), Bash(pgrep *), Bash(ls *), Read, Grep, Glob
 ---
 
 # GOD MODE — Agent Oversight Dashboard

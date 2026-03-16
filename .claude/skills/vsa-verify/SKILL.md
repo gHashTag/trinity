@@ -2,7 +2,7 @@
 name: vsa-verify
 description: Verify VSA (Vector Symbolic Architecture) mathematical proofs and operations. Use for math verification, bind/unbind/bundle testing, phi identity checks.
 argument-hint: [operation or proof to verify]
-allowed-tools: Read, Grep, Glob, Bash
+allowed-tools: Bash(zig *), Bash(cat *), Read, Grep, Glob
 ---
 
 # VSA Mathematical Verification

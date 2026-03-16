@@ -2,6 +2,8 @@
 name: cloud
 description: Show Trinity Cloud Dev dashboard — containers, training farm, issues, PRs, costs. Use when checking agent swarm status, cloud containers, or CI/CD pipeline.
 argument-hint: [status|agents|events|full]
+allowed-tools: Bash(tri *), Bash(gh *), Bash(cat *), Bash(tail *), Bash(ls *), Bash(python3 *), Bash(date *), Read, Grep, Glob
+context: fork
 ---
 
 # Cloud Dev Dashboard
