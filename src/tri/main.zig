@@ -41,6 +41,7 @@ const faculty_board = @import("faculty_board.zig");
 // P2.10: Observability layer
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
+const env_loader = @import("env_loader.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -53,6 +54,9 @@ pub fn main() !void {
     // P2.10: Initialize structured logging
     try structured_log.initGlobalLogger(allocator, .info);
     defer structured_log.deinitGlobalLogger();
+
+    // Auto-load .env into process environment (process env wins over .env)
+    env_loader.loadDotEnv(allocator);
 
     const args = try std.process.argsAlloc(allocator);
     defer std.process.argsFree(allocator, args);
@@ -1251,6 +1255,12 @@ fn dispatchNamespacedCommand(
         // Arena commands: tri dev arena list|run|compare
         if (std.mem.eql(u8, cmd_name, "arena")) {
             try swe_arena.runArenaCommand(allocator, cmd_args);
+            return;
+        }
+        // LLM Battle Arena: tri battle serve|battle|leaderboard|bench|tasks
+        if (std.mem.eql(u8, cmd_name, "battle")) {
+            const tri_battle = @import("tri_battle.zig");
+            try tri_battle.runBattleCommand(allocator, cmd_args);
             return;
         }
         // Spec template matching: tri spec-match "<issue text>"
