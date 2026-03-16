@@ -89,3 +89,5 @@
 {"ts":1773658759688,"type":"health","svc":"hslm-w7-60","detail":"stalled: step unchanged 2+ polls","step":11500}
 {"ts":1773659261709,"type":"health","svc":"hslm-r16","detail":"stalled: step unchanged 2+ polls","step":100000}
 {"ts":1773659437150,"type":"health","svc":"hslm-w7-50","detail":"stalled: step unchanged 2+ polls","step":16400}
+{"ts":1773659640289,"type":"health","svc":"hslm-w7-50","detail":"stalled: step unchanged 2+ polls","step":16400}
+{"ts":1773659869427,"type":"health","svc":"hslm-w7-50","detail":"stalled: step unchanged 2+ polls","step":16400}
