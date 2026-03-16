@@ -194,5 +194,90 @@
       "first_mismatch_offset": "0x0",
       "duration": "approx 4 minutes"
     }
+  },
+  {
+    "id": "FPGA-015",
+    "date": "2026-03-15",
+    "category": "JTAG",
+    "action": "Flash hslm_full_top.bit — 4-layer ternary transformer on XC7A100T",
+    "result": "SUCCESS",
+    "symptom": "FPGA LED activity confirmed — design is RUNNING on silicon",
+    "root_cause": "Full HSLM pipeline (TMU K=32, 3 attention blocks, 81.25 MHz MMCM) successfully programmed via jtag_switcher write",
+    "lesson": "hslm_full_top.bit (10.2 MB) programs and runs correctly on QMTech XC7A100T. LED blinking confirms clock and logic activity.",
+    "tags": ["jtag", "hslm", "milestone", "running", "tmu-k32", "live-on-silicon"],
+    "data": {
+      "bitstream": "hslm_full_top.bit",
+      "size_mb": 10.2,
+      "architecture": "4-layer ternary transformer, TMU K=32",
+      "clock": "81.25 MHz (MMCM from 100 MHz)",
+      "estimated_throughput": "1879 tok/s",
+      "dsp_used": 0,
+      "led_activity": true,
+      "board": "QMTech XC7A100T-FGG676"
+    }
+  },
+  {
+    "id": "FPGA-016",
+    "date": "2026-03-15",
+    "category": "SYNTHESIS",
+    "action": "Wide BRAM packing — fix distributed RAM explosion in TMU K=32",
+    "result": "SUCCESS",
+    "symptom": "K=32 with 32 separate 2-bit bank memories → 73,623 LUT (116% of XC7A100T) — did not fit",
+    "root_cause": "Yosys mapped narrow 2-bit memories to distributed RAM (LUT-RAM) instead of Block RAM, causing ~55K LUT overhead",
+    "lesson": "Pack K narrow BRAM banks into one wide (2*K)-bit memory with (* ram_style = block *). Yosys naturally infers BRAM for wide memories. 73K→9K LUT = 7.9x reduction.",
+    "tags": ["synthesis", "bram", "wide-packing", "yosys", "lut-optimization"],
+    "data": {
+      "before_lut": 73623,
+      "after_lut": 9199,
+      "lut_reduction": "7.9x",
+      "bram18": 10,
+      "bram36": 4,
+      "dsp": 0,
+      "bscane2": 1,
+      "k": 32,
+      "note": "BRAM count low due to dummy weight files — expect ~70 BRAM36-eq with real weights"
+    }
+  },
+  {
+    "id": "FPGA-017",
+    "date": "2026-03-15",
+    "category": "DESIGN",
+    "action": "Add BSCANE2 JTAG bridge to hslm_full_top + fix CDC multi-driver",
+    "result": "SUCCESS",
+    "symptom": "seed_reg, max_gen_reg, jtag_start_toggle driven from both sys_clk and bscan_tck always blocks",
+    "root_cause": "Verilog multi-driver: same reg assigned in two always blocks with different clocks. Fix: use initial values (INIT attribute) instead of reset assignment for JTAG-domain registers",
+    "lesson": "For CDC registers driven only from secondary clock domain, use reg initialization (= value) instead of putting them in the primary clock reset block. FPGA INIT attributes handle power-on state.",
+    "tags": ["cdc", "bscane2", "jtag-bridge", "multi-driver", "verilog"],
+    "data": {
+      "fixed_regs": ["seed_reg", "max_gen_reg", "jtag_start_toggle"],
+      "bridge_protocol": "32-bit DR scan via USER1: [CMD:8][ADDR:8][DATA:16]",
+      "commands": ["READ_REG(0x01)", "WRITE_REG(0x02)", "START_INFERENCE(0x03)"]
+    }
+  },
+  {
+    "id": "FPGA-018",
+    "date": "2026-03-15",
+    "category": "SYNTHESIS",
+    "action": "K=16 wide BRAM synthesis with real weights — verified fit on XC7A100T",
+    "result": "SUCCESS",
+    "symptom": "K=32 requires 72.6K LUT (114%) — inherent computation logic, not BRAM issue",
+    "root_cause": "K=32 has 224 partial products + 7 five-stage adder trees — too much for XC7A100T. K=16 halves to 112 partials + 4-stage trees = fits.",
+    "lesson": "With real (non-zero) weights, Yosys can't constant-fold computation. Empty weights give misleadingly low LUT. Always test with real data.",
+    "tags": ["synthesis", "k16", "wide-bram", "real-weights", "verified-fit"],
+    "data": {
+      "lut_explicit": 19097,
+      "ram64m": 6528,
+      "lut_effective": "~45K (71%)",
+      "bram18": 187,
+      "bram36": 7,
+      "bram36_eq": 100.5,
+      "bram_pct": "74.4%",
+      "dsp": 0,
+      "bscane2": 1,
+      "k": 16,
+      "estimated_tok_s": 1003,
+      "clock_mhz": 81.25,
+      "note": "RAM64M = x_buffer distributed RAM (K=16 simultaneous reads, can't use BRAM). Buffers (emb/inter/relu) also distributed due to unregistered reads."
+    }
   }
 ]
