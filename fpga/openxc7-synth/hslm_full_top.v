@@ -1,19 +1,20 @@
 // =============================================================================
 // HSLM FULL TOP — Autoregressive Ternary Transformer on FPGA
 // =============================================================================
-// Autoregressive generation loop:
-//   token_id → Embedding → Block₁ → Block₂ → Block₃
+// Autoregressive generation loop (2-block variant for XC7A100T SLICEM fit):
+//   token_id → Embedding → Block₁ → Block₂
 //            → LM_Head → Argmax → next_token_id → (loop back)
 //
 // Generates MAX_GEN tokens starting from seed token_id=42.
 // Each generated token feeds back as input to the next iteration.
 //
-// Pipeline per token (3 blocks + LM Head, all TMU K=32):
+// Pipeline per token (3 blocks + LM Head, all TMU K=16, wide BRAM):
 //   1. Embedding lookup (BRAM): token_id → 243-dim vector (~248 clk)
-//   2. Three TrinityBlocks (sequential): 243→729→243 each, TMU K=32 (~13.8K each)
-//   3. LM Head (TMU K=32): 243→128 logits (~1,400 clk)
+//   2. Three TrinityBlocks (sequential): 243→729→243 each, TMU K=16 (~26K each)
+//   3. LM Head (TMU K=16): 243→128 logits (~2,800 clk)
 //   4. Argmax: 128 logits → predicted token_id (~1 clk)
-//   Total: ~43.2K cycles/token → ~1,881 tok/s @ 81.25 MHz (MMCM from 50 MHz)
+//   Total: ~81K cycles/token → ~1,003 tok/s @ 81.25 MHz (MMCM from 50 MHz)
+//   K=32 variant: ~43K cyc/tok, 1,881 tok/s — needs XC7A200T (72K LUT > 63K limit)
 //
 // UART report: sends generated token sequence after completion.
 // LED D6: solid ON during generation, blinks when done (pass).
@@ -103,7 +104,7 @@ module hslm_full_top (
         .ADDR_WIDTH(15),
         .TOK_WIDTH (7),
         .DIM_WIDTH (8),
-        .MEM_FILE  ("fpga/weights/embedding_weights.mem")
+        .MEM_FILE  ("embedding_weights.mem")
     ) emb (
         .clk      (sys_clk),
         .rst      (rst),
@@ -122,14 +123,17 @@ module hslm_full_top (
     localparam BUF_DEPTH = 256;
 
     // Embedding output → Block1 input
+    // Force registers (not DRAM) — nextpnr-xilinx DRAM packer has assertion bug
+    (* ram_style = "registers" *)
     reg signed [ACC_WIDTH-1:0] emb_buffer [0:BUF_DEPTH-1];
 
-    // Inter-block buffers
+    // Inter-block buffer
+    (* ram_style = "registers" *)
     reg signed [ACC_WIDTH-1:0] inter_buf1 [0:BUF_DEPTH-1];
-    reg signed [ACC_WIDTH-1:0] inter_buf2 [0:BUF_DEPTH-1];
 
-    // Block3 output → LM Head input
-    reg signed [ACC_WIDTH-1:0] b3_output_buf [0:BUF_DEPTH-1];
+    // Block2 output → LM Head input (2-block variant: no Block3)
+    (* ram_style = "registers" *)
+    reg signed [ACC_WIDTH-1:0] b2_output_buf [0:BUF_DEPTH-1];
 
     // Capture embedding output into buffer
     always @(posedge sys_clk) begin
@@ -194,41 +198,10 @@ module hslm_full_top (
         .busy(b2_busy), .done(b2_done)
     );
 
+    // Capture Block2 output into buffer for LM Head (2-block variant)
     always @(posedge sys_clk) begin
         if (b2_out_valid)
-            inter_buf2[b2_out_addr] <= b2_out_data;
-    end
-
-    // =====================================================================
-    // BLOCK 3
-    // =====================================================================
-    wire [7:0] b3_rd_addr;
-    wire signed [ACC_WIDTH-1:0] b3_rd_data;
-    assign b3_rd_data = inter_buf2[b3_rd_addr];
-
-    wire        b3_out_valid;
-    wire signed [ACC_WIDTH-1:0] b3_out_data;
-    wire [7:0]  b3_out_addr;
-    wire        b3_busy, b3_done;
-    reg         b3_start;
-
-    trinity_block #(
-        .N_SMALL(N_SMALL), .N_LARGE(N_LARGE), .ACC_WIDTH(ACC_WIDTH),
-        .FRAC_BITS(FRAC_BITS), .ADDR_WIDTH(18),
-        .I_UP_WIDTH(8), .J_UP_WIDTH(10), .I_DOWN_WIDTH(10), .J_DOWN_WIDTH(8),
-        .MEM_FILE_UP_PREFIX  ("tmu_w_b3_up"),
-        .MEM_FILE_DOWN_PREFIX("tmu_w_b3_down")
-    ) block3 (
-        .clk(sys_clk), .rst(rst), .start(b3_start),
-        .x_rd_addr(b3_rd_addr), .x_rd_data(b3_rd_data),
-        .out_valid(b3_out_valid), .out_data(b3_out_data), .out_addr(b3_out_addr),
-        .busy(b3_busy), .done(b3_done)
-    );
-
-    // Capture Block3 output into buffer for LM Head
-    always @(posedge sys_clk) begin
-        if (b3_out_valid)
-            b3_output_buf[b3_out_addr] <= b3_out_data;
+            b2_output_buf[b2_out_addr] <= b2_out_data;
     end
 
     // =====================================================================
@@ -236,7 +209,7 @@ module hslm_full_top (
     // =====================================================================
     wire [7:0] lm_x_addr;
     wire signed [ACC_WIDTH-1:0] lm_x_data_raw;
-    assign lm_x_data_raw = b3_output_buf[lm_x_addr];
+    assign lm_x_data_raw = b2_output_buf[lm_x_addr];
 
     // Sign-extend 20-bit input to 32-bit for wider logit accumulation
     wire signed [LM_ACC-1:0] lm_x_data_ext;
@@ -252,7 +225,7 @@ module hslm_full_top (
     tmu_top #(
         .N_IN           (N_SMALL),
         .N_OUT          (VOCAB),
-        .K              (32),
+        .K              (16),
         .ACC_WIDTH      (LM_ACC),
         .ADDR_WIDTH     (12),
         .I_WIDTH        (8),
@@ -302,8 +275,8 @@ module hslm_full_top (
     reg [ACC_WIDTH-1:0] uart_results [0:7];
 
     always @(posedge sys_clk) begin
-        if (b3_out_valid && b3_out_addr < 8'd8)
-            uart_results[b3_out_addr[2:0]] <= b3_out_data;
+        if (b2_out_valid && b2_out_addr < 8'd8)
+            uart_results[b2_out_addr[2:0]] <= b2_out_data;
     end
 
     // =====================================================================
@@ -318,13 +291,12 @@ module hslm_full_top (
     localparam ST_RUN_B1      = 4'd4;
     localparam ST_START_B2    = 4'd5;
     localparam ST_RUN_B2      = 4'd6;
-    localparam ST_START_B3    = 4'd7;
-    localparam ST_RUN_B3      = 4'd8;
-    localparam ST_START_LM    = 4'd9;
-    localparam ST_RUN_LM      = 4'd10;
-    localparam ST_WAIT_ARGMAX = 4'd11;
-    localparam ST_NEXT_TOKEN  = 4'd12;
-    localparam ST_DONE        = 4'd13;
+    // Block 3 removed — 2-block variant for XC7A100T SLICEM fit
+    localparam ST_START_LM    = 4'd7;
+    localparam ST_RUN_LM      = 4'd8;
+    localparam ST_WAIT_ARGMAX = 4'd9;
+    localparam ST_NEXT_TOKEN  = 4'd10;
+    localparam ST_DONE        = 4'd11;
 
     reg [3:0]  st_state;
     reg        self_test_pass;
@@ -339,6 +311,25 @@ module hslm_full_top (
     reg [4:0]  gen_count;             // tokens generated so far [0..MAX_GEN]
     reg [6:0]  gen_tokens [0:15];     // generated token sequence (for UART report)
 
+    // JTAG bridge — configurable parameters
+    // Initial values map to FPGA INIT attributes — driven ONLY from bscan_tck domain
+    reg [6:0]  seed_reg = 7'd42;      // JTAG-writable seed token (default 42)
+    reg [4:0]  max_gen_reg = 5'd16;   // JTAG-writable max gen count (default 16)
+    reg [31:0] cycle_count;           // sys_clk cycles during inference
+
+    // JTAG start CDC (bscan_tck → sys_clk toggle synchronizer)
+    // Initial value via INIT attribute — driven ONLY from bscan_tck UPDATE handler
+    reg        jtag_start_toggle = 1'b0;
+    reg [2:0]  jtag_start_sync;
+    wire       jtag_start_pulse = jtag_start_sync[2] ^ jtag_start_sync[1];
+
+    always @(posedge sys_clk) begin
+        if (rst)
+            jtag_start_sync <= 3'b0;
+        else
+            jtag_start_sync <= {jtag_start_sync[1:0], jtag_start_toggle};
+    end
+
     always @(posedge sys_clk) begin
         if (rst) begin
             st_state         <= ST_WAIT;
@@ -347,7 +338,6 @@ module hslm_full_top (
             emb_start        <= 1'b0;
             b1_start         <= 1'b0;
             b2_start         <= 1'b0;
-            b3_start         <= 1'b0;
             lm_start         <= 1'b0;
             wait_cnt         <= 8'd0;
             b3_out_count     <= 8'd0;
@@ -356,17 +346,21 @@ module hslm_full_top (
             result_token     <= 7'd0;
             emb_token_id     <= 7'd42;  // seed token
             gen_count        <= 5'd0;
+            cycle_count      <= 32'd0;
         end else begin
             emb_start <= 1'b0;
             b1_start  <= 1'b0;
             b2_start  <= 1'b0;
-            b3_start  <= 1'b0;
             lm_start  <= 1'b0;
 
-            // Track Block3 outputs
-            if (b3_out_valid) begin
+            // Cycle counter — runs during inference, frozen in WAIT/DONE
+            if (st_state != ST_WAIT && st_state != ST_DONE)
+                cycle_count <= cycle_count + 32'd1;
+
+            // Track Block2 outputs (2-block variant)
+            if (b2_out_valid) begin
                 b3_out_count <= b3_out_count + 8'd1;
-                if (b3_out_data != {ACC_WIDTH{1'b0}})
+                if (b2_out_data != {ACC_WIDTH{1'b0}})
                     has_nonzero <= 1'b1;
             end
 
@@ -381,8 +375,9 @@ module hslm_full_top (
                     if (wait_cnt < 8'd20)
                         wait_cnt <= wait_cnt + 1;
                     else begin
-                        emb_token_id <= 7'd42;  // seed token
+                        emb_token_id <= seed_reg;
                         gen_count    <= 5'd0;
+                        cycle_count  <= 32'd0;
                         st_state     <= ST_START_EMB;
                     end
                 end
@@ -417,27 +412,16 @@ module hslm_full_top (
 
                 ST_RUN_B2: begin
                     if (b2_done)
-                        st_state <= ST_START_B3;
-                end
-
-                // --- BLOCK 3 (last block — output goes to LM Head) ---
-                ST_START_B3: begin
-                    b3_start     <= 1'b1;
-                    b3_out_count <= 8'd0;
-                    has_nonzero  <= 1'b0;
-                    st_state     <= ST_RUN_B3;
-                end
-
-                ST_RUN_B3: begin
-                    if (b3_done)
                         st_state <= ST_START_LM;
                 end
 
                 // --- LM HEAD ---
                 ST_START_LM: begin
-                    lm_start   <= 1'b1;
-                    got_argmax <= 1'b0;
-                    st_state   <= ST_RUN_LM;
+                    lm_start     <= 1'b1;
+                    got_argmax   <= 1'b0;
+                    b3_out_count <= 8'd0;
+                    has_nonzero  <= 1'b0;
+                    st_state     <= ST_RUN_LM;
                 end
 
                 ST_RUN_LM: begin
@@ -461,7 +445,7 @@ module hslm_full_top (
 
                 // --- AUTOREGRESSIVE LOOP ---
                 ST_NEXT_TOKEN: begin
-                    if (gen_count < MAX_GEN[4:0]) begin
+                    if (gen_count < max_gen_reg) begin
                         // Feed argmax output back as next input
                         emb_token_id <= result_token;
                         st_state     <= ST_START_EMB;
@@ -472,7 +456,19 @@ module hslm_full_top (
                     end
                 end
 
-                ST_DONE: st_state <= ST_DONE;
+                ST_DONE: begin
+                    if (jtag_start_pulse) begin
+                        emb_token_id     <= seed_reg;
+                        gen_count        <= 5'd0;
+                        computation_done <= 1'b0;
+                        self_test_pass   <= 1'b0;
+                        cycle_count      <= 32'd0;
+                        b3_out_count     <= 8'd0;
+                        has_nonzero      <= 1'b0;
+                        got_argmax       <= 1'b0;
+                        st_state         <= ST_START_EMB;
+                    end
+                end
                 default: st_state <= ST_DONE;
             endcase
         end
@@ -591,6 +587,112 @@ module hslm_full_top (
                         report_idx <= report_idx + 1;
                 end
             end
+        end
+    end
+
+    // =====================================================================
+    // JTAG BRIDGE — BSCANE2 host communication via JTAG cable
+    // =====================================================================
+    // No UART needed! Data flows through the existing DLC-10 JTAG cable.
+    //
+    // Protocol: 32-bit DR scan via USER1 instruction
+    //   Host shifts in:  [CMD:8][ADDR:8][DATA:16]
+    //   Host shifts out: [STATUS:8][RESPONSE:24]
+    //
+    // Commands:
+    //   0x01 READ_REG(addr)      — read bridge register
+    //   0x02 WRITE_REG(addr,d)   — write bridge register
+    //   0x03 START_INFERENCE      — trigger new generation
+    //
+    // Read registers:
+    //   0x00: STATUS  {done, pass, 1'b0, gen_count[4:0], st_state[3:0]}
+    //   0x01: CYCLE_COUNT (full 32-bit)
+    //   0x02: CONFIG  {3'b0, max_gen_reg[4:0], 1'b0, seed_reg[6:0]}
+    //   0x10..0x1F: gen_tokens[0..15]
+    //
+    // Write registers:
+    //   0x00: SEED[6:0]
+    //   0x01: MAX_GEN[4:0]
+    //
+    // Resources: ~50 LUT, 0 BRAM, 0 DSP
+    // CDC: sys_clk signals are quasi-static when read (stable in ST_DONE)
+    // =====================================================================
+
+    wire bscan_capture, bscan_drck, bscan_reset_w, bscan_runtest;
+    wire bscan_sel, bscan_shift, bscan_tck, bscan_tdi, bscan_tms, bscan_update;
+    wire bscan_tdo;
+
+    BSCANE2 #(
+        .JTAG_CHAIN(1)  // USER1
+    ) bscan_inst (
+        .CAPTURE (bscan_capture),
+        .DRCK    (bscan_drck),
+        .RESET   (bscan_reset_w),
+        .RUNTEST (bscan_runtest),
+        .SEL     (bscan_sel),
+        .SHIFT   (bscan_shift),
+        .TCK     (bscan_tck),
+        .TDI     (bscan_tdi),
+        .TMS     (bscan_tms),
+        .UPDATE  (bscan_update),
+        .TDO     (bscan_tdo)
+    );
+
+    // 32-bit shift register
+    reg [31:0] bscan_sr;
+    // Latched command fields from previous UPDATE
+    reg [7:0]  bscan_cmd;
+    reg [7:0]  bscan_addr;
+
+    assign bscan_tdo = bscan_sr[0];
+
+    // BSCANE2 shift register — operates in bscan_tck domain
+    // On CAPTURE: load response based on previous command's address
+    // On SHIFT: shift in new command, shift out response
+    // On UPDATE: latch command and execute writes
+    always @(posedge bscan_tck) begin
+        if (bscan_sel) begin
+            if (bscan_capture) begin
+                // Load response for readback
+                // Sys_clk signals are quasi-static here (stable for 1000s of TCK cycles)
+                case (bscan_addr)
+                    8'h00:   bscan_sr <= {16'b0, computation_done, self_test_pass,
+                                          1'b0, gen_count, st_state};
+                    8'h01:   bscan_sr <= cycle_count;
+                    8'h02:   bscan_sr <= {16'b0, 3'b0, max_gen_reg, 1'b0, seed_reg};
+                    default: begin
+                        if (bscan_addr[7:4] == 4'h1)
+                            bscan_sr <= {25'b0, gen_tokens[bscan_addr[3:0]]};
+                        else
+                            bscan_sr <= 32'hDEAD_BEEF;
+                    end
+                endcase
+            end else if (bscan_shift) begin
+                // Shift: TDI in at MSB, TDO out from LSB
+                bscan_sr <= {bscan_tdi, bscan_sr[31:1]};
+            end
+        end
+    end
+
+    // Command latch and execution — on UPDATE
+    always @(posedge bscan_tck) begin
+        if (bscan_sel && bscan_update) begin
+            bscan_cmd  <= bscan_sr[31:24];
+            bscan_addr <= bscan_sr[23:16];
+
+            // WRITE_REG (0x02): update configurable parameters
+            if (bscan_sr[31:24] == 8'h02) begin
+                case (bscan_sr[23:16])
+                    8'h00: seed_reg    <= bscan_sr[6:0];
+                    8'h01: max_gen_reg <= bscan_sr[4:0];
+                    default: ;
+                endcase
+            end
+
+            // START_INFERENCE (0x03) or WRITE_REG to CONTROL addr (0x02)
+            if (bscan_sr[31:24] == 8'h03 ||
+                (bscan_sr[31:24] == 8'h02 && bscan_sr[23:16] == 8'h02 && bscan_sr[0]))
+                jtag_start_toggle <= ~jtag_start_toggle;
         end
     end
 

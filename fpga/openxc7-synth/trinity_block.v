@@ -54,6 +54,7 @@ module trinity_block #(
     // INPUT BUFFER — stores external input for matvec1 and residual
     // =========================================================================
     localparam INPUT_BUF_DEPTH = 256;
+    (* ram_style = "registers" *)
     reg signed [ACC_WIDTH-1:0] input_buffer [0:INPUT_BUF_DEPTH-1];
 
     // matvec1 reads from input_buffer
@@ -79,7 +80,7 @@ module trinity_block #(
     tmu_top #(
         .N_IN           (N_SMALL),
         .N_OUT          (N_LARGE),
-        .K              (32),
+        .K              (16),
         .ACC_WIDTH      (ACC_WIDTH),
         .ADDR_WIDTH     (ADDR_WIDTH),
         .I_WIDTH        (I_UP_WIDTH),
@@ -119,6 +120,8 @@ module trinity_block #(
     // INTERMEDIATE BUFFER — N_LARGE x ACC_WIDTH
     // =========================================================================
     localparam RELU_BUF_DEPTH = 1024;
+    // Force registers — nextpnr-xilinx DRAM packer assertion bug
+    (* ram_style = "registers" *)
     reg signed [ACC_WIDTH-1:0] relu_buffer [0:RELU_BUF_DEPTH-1];
 
     always @(posedge clk) begin
@@ -142,7 +145,7 @@ module trinity_block #(
     tmu_top #(
         .N_IN           (N_LARGE),
         .N_OUT          (N_SMALL),
-        .K              (32),
+        .K              (16),
         .ACC_WIDTH      (ACC_WIDTH),
         .ADDR_WIDTH     (ADDR_WIDTH),
         .I_WIDTH        (I_DOWN_WIDTH),

@@ -28,7 +28,7 @@ module embedding_lookup #(
     parameter ADDR_WIDTH = 15,   // 2^15 = 32768 >= 128*243 = 31104
     parameter TOK_WIDTH  = 7,    // ceil(log2(VOCAB))
     parameter DIM_WIDTH  = 8,    // ceil(log2(DIM))
-    parameter MEM_FILE   = "fpga/weights/embedding_weights.mem"
+    parameter MEM_FILE   = "embedding_weights.mem"
 )(
     input  wire                       clk,
     input  wire                       rst,
@@ -47,6 +47,7 @@ module embedding_lookup #(
     // =========================================================================
     localparam MEM_DEPTH = 1 << ADDR_WIDTH;  // 32768 (power-of-2)
 
+    (* ram_style = "block" *)
     reg [1:0] emb_mem [0:MEM_DEPTH-1];
     initial $readmemb(MEM_FILE, emb_mem);
 
