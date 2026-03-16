@@ -1003,7 +1003,14 @@ fn countDirtyFiles(allocator: Allocator) u16 {
 }
 
 fn countOpenIssues(allocator: Allocator) u16 {
-    const result = runCmd(allocator, &.{ "gh", "issue", "list", "--state=open", "--json=number", "--limit=200" }) catch return 0;
+    // Get GH token — keyring may not be accessible from child process
+    const token = getGhToken(allocator);
+    defer if (token) |t| allocator.free(t);
+
+    // Use --repo explicitly — gh can't always detect repo from subprocess context
+    const result = runCmdWithToken(allocator, &.{
+        "gh", "issue", "list", "--repo", "gHashTag/trinity", "--state=open", "--json=number", "--limit=200",
+    }, token) catch return 0;
     defer allocator.free(result);
     // Count occurrences of "number" in JSON array
     var count: u16 = 0;
@@ -1013,6 +1020,80 @@ fn countOpenIssues(allocator: Allocator) u16 {
         idx = pos + 8;
     }
     return count;
+}
+
+/// Get GitHub token: `gh auth token` (keyring, always current) → env GH_TOKEN / GITHUB_TOKEN
+fn getGhToken(allocator: Allocator) ?[]u8 {
+    // Prefer `gh auth token` — always returns current token from keyring.
+    // Env vars (loaded from .env) may contain stale/revoked tokens.
+    if (getGhAuthToken(allocator)) |t| return t;
+    if (std.process.getEnvVarOwned(allocator, "GH_TOKEN") catch null) |t| return t;
+    if (std.process.getEnvVarOwned(allocator, "GITHUB_TOKEN") catch null) |t| return t;
+    return null;
+}
+
+fn getGhAuthToken(allocator: Allocator) ?[]u8 {
+    // Run with clean env (only PATH + HOME) so gh reads from keyring,
+    // not from a possibly-stale GH_TOKEN in the process environment.
+    var clean_env = std.process.EnvMap.init(allocator);
+    defer clean_env.deinit();
+    // EnvMap.put copies the value, so we can use string literals for fallbacks
+    const path = std.process.getEnvVarOwned(allocator, "PATH") catch null;
+    defer if (path) |p| allocator.free(p);
+    clean_env.put("PATH", path orelse "/usr/bin:/usr/local/bin") catch return null;
+    const home = std.process.getEnvVarOwned(allocator, "HOME") catch null;
+    defer if (home) |h| allocator.free(h);
+    clean_env.put("HOME", home orelse "/tmp") catch return null;
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "gh", "auth", "token" },
+        .max_output_bytes = 4096,
+        .env_map = &clean_env,
+    }) catch return null;
+    allocator.free(result.stderr);
+    if (result.term != .Exited or result.term.Exited != 0 or result.stdout.len == 0) {
+        allocator.free(result.stdout);
+        return null;
+    }
+    // Trim trailing newline
+    const len = std.mem.trimRight(u8, result.stdout, "\n\r").len;
+    if (len == 0) {
+        allocator.free(result.stdout);
+        return null;
+    }
+    if (len < result.stdout.len) {
+        const trimmed = allocator.alloc(u8, len) catch {
+            allocator.free(result.stdout);
+            return null;
+        };
+        @memcpy(trimmed, result.stdout[0..len]);
+        allocator.free(result.stdout);
+        return trimmed;
+    }
+    return result.stdout;
+}
+
+/// Run command with optional GH_TOKEN injected into environment
+fn runCmdWithToken(allocator: Allocator, argv: []const []const u8, gh_token: ?[]const u8) ![]u8 {
+    if (gh_token) |token| {
+        // Get current environment and inject fresh GH_TOKEN (overrides stale .env value)
+        var env_map = std.process.getEnvMap(allocator) catch return error.CommandFailed;
+        defer env_map.deinit();
+        env_map.put("GH_TOKEN", token) catch return error.CommandFailed;
+        const result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = argv,
+            .max_output_bytes = 1024 * 1024,
+            .env_map = &env_map,
+        }) catch return error.CommandFailed;
+        allocator.free(result.stderr);
+        if (result.term != .Exited or result.term.Exited != 0) {
+            allocator.free(result.stdout);
+            return error.CommandFailed;
+        }
+        return result.stdout;
+    }
+    return runCmd(allocator, argv);
 }
 
 fn countMuPatterns(allocator: Allocator) u16 {
