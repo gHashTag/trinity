@@ -22,6 +22,7 @@ type = "tool"
 commands = ["battle", "leaderboard", "judge"]
 tri_subcommands = ["arena battle", "arena leaderboard"]
 events = ["on_battle_complete", "on_elo_update"]
+binaries = ["arena"]
 
 [dependencies]
 trinity.hslm = "^1.0.0"

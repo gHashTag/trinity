@@ -49,6 +49,7 @@ const CellInfo = struct {
     contributes_commands: []const u8,
     contributes_tri_subcommands: []const u8,
     contributes_events: []const u8,
+    contributes_binaries: []const u8,
     dependencies_raw: []const u8, // raw [dependencies] section text (TOML lines: key = "value")
     // Security permissions
     perm_level: []const u8, // L0 (read-only), L1 (local r/w), L2 (network+external)
@@ -2372,6 +2373,28 @@ fn runStatus(allocator: Allocator) !void {
     // Count binaries and mapped ones
     var bin_total: usize = 0;
     var bin_mapped: usize = 0;
+    // Build binary→cell map from contributes.binaries
+    var status_bin_map = std.StringHashMap(void).init(allocator);
+    defer status_bin_map.deinit();
+    for (discovered) |path| {
+        const stbp = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+        defer allocator.free(stbp);
+        const stbc = std.fs.cwd().readFileAlloc(allocator, stbp, 65536) catch continue;
+        defer allocator.free(stbc);
+        const stcell = parseCellTri(stbc);
+        if (stcell.contributes_binaries.len > 2) {
+            const stripped = std.mem.trim(u8, stcell.contributes_binaries, "[]");
+            var sbit = std.mem.splitScalar(u8, stripped, ',');
+            while (sbit.next()) |elem| {
+                const tb = std.mem.trim(u8, elem, " \t\"'");
+                if (tb.len > 0) {
+                    const kb = allocator.dupe(u8, tb) catch continue;
+                    status_bin_map.put(kb, {}) catch allocator.free(kb);
+                }
+            }
+        }
+    }
+
     if (std.fs.cwd().openDir("zig-out/bin", .{ .iterate = true })) |bd_val| {
         var bd = bd_val;
         defer bd.close();
@@ -2379,7 +2402,12 @@ fn runStatus(allocator: Allocator) !void {
         while (bi.next() catch null) |entry| {
             if (entry.kind != .file or entry.name[0] == '.') continue;
             bin_total += 1;
-            // Quick match: check if any cell dir name matches binary
+            // Check contributes.binaries first
+            if (status_bin_map.contains(entry.name)) {
+                bin_mapped += 1;
+                continue;
+            }
+            // Fallback: dir-name matching
             for (discovered) |path| {
                 const dir_name = if (std.mem.lastIndexOf(u8, path, "/")) |s| path[s + 1 ..] else path;
                 var norm_bin: [64]u8 = undefined;
@@ -2488,9 +2516,13 @@ fn runMap(allocator: Allocator) !void {
         allocator.free(discovered);
     }
 
-    // Build path → cell id map
+    // Build binary_name → cell_id map from contributes.binaries
+    var bin_to_cell = std.StringHashMap([]const u8).init(allocator);
+    defer bin_to_cell.deinit();
+    // Also keep path→id for dir-name fallback
     var cell_paths = std.StringHashMap([]const u8).init(allocator);
     defer cell_paths.deinit();
+
     for (discovered) |path| {
         const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
         defer allocator.free(cell_tri_path);
@@ -2498,9 +2530,27 @@ fn runMap(allocator: Allocator) !void {
         defer allocator.free(content);
         const cell = parseCellTri(content);
         if (cell.id.len == 0) continue;
-        // Dupe since content is freed
         const id_copy = allocator.dupe(u8, cell.id) catch continue;
-        cell_paths.put(path, id_copy) catch allocator.free(id_copy);
+        cell_paths.put(path, id_copy) catch {
+            allocator.free(id_copy);
+            continue;
+        };
+
+        // Parse contributes.binaries = ["bin1", "bin2"]
+        if (cell.contributes_binaries.len > 2) {
+            const stripped = std.mem.trim(u8, cell.contributes_binaries, "[]");
+            var bit = std.mem.splitScalar(u8, stripped, ',');
+            while (bit.next()) |elem| {
+                const trimmed_bin = std.mem.trim(u8, elem, " \t\"'");
+                if (trimmed_bin.len > 0) {
+                    // Dupe key since it points into content which will be freed
+                    const key_copy = allocator.dupe(u8, trimmed_bin) catch continue;
+                    bin_to_cell.put(key_copy, id_copy) catch {
+                        allocator.free(key_copy);
+                    };
+                }
+            }
+        }
     }
     defer {
         var vit = cell_paths.valueIterator();
@@ -2514,30 +2564,32 @@ fn runMap(allocator: Allocator) !void {
     std.debug.print("  {s}─────────────────────── ──────────────────────── ──────{s}\n", .{ GRAY, RESET });
 
     for (binaries.items) |bin_name| {
-        // Try to find matching cell by directory name matching binary name
-        var found_cell: ?[]const u8 = null;
-        for (discovered) |path| {
-            const dir_name = if (std.mem.lastIndexOf(u8, path, "/")) |slash| path[slash + 1 ..] else path;
-            // Match: binary name contains cell dir name, or cell dir contains binary name
-            // Normalize: binary "trinity-mcp" → "trinity_mcp"
-            var norm_bin: [64]u8 = undefined;
-            const norm_len = @min(bin_name.len, 63);
-            @memcpy(norm_bin[0..norm_len], bin_name[0..norm_len]);
-            for (norm_bin[0..norm_len]) |*c| {
-                if (c.* == '-') c.* = '_';
-            }
-            var norm_dir: [64]u8 = undefined;
-            const dir_len = @min(dir_name.len, 63);
-            @memcpy(norm_dir[0..dir_len], dir_name[0..dir_len]);
-            for (norm_dir[0..dir_len]) |*c| {
-                if (c.* == '-') c.* = '_';
-            }
+        // First: check contributes.binaries mapping
+        var found_cell: ?[]const u8 = bin_to_cell.get(bin_name);
 
-            if (std.mem.eql(u8, norm_bin[0..norm_len], norm_dir[0..dir_len]) or
-                std.mem.eql(u8, bin_name, dir_name))
-            {
-                found_cell = cell_paths.get(path);
-                break;
+        // Fallback: dir-name matching
+        if (found_cell == null) {
+            for (discovered) |path| {
+                const dir_name = if (std.mem.lastIndexOf(u8, path, "/")) |slash| path[slash + 1 ..] else path;
+                var norm_bin: [64]u8 = undefined;
+                const norm_len = @min(bin_name.len, 63);
+                @memcpy(norm_bin[0..norm_len], bin_name[0..norm_len]);
+                for (norm_bin[0..norm_len]) |*c| {
+                    if (c.* == '-') c.* = '_';
+                }
+                var norm_dir: [64]u8 = undefined;
+                const dir_len = @min(dir_name.len, 63);
+                @memcpy(norm_dir[0..dir_len], dir_name[0..dir_len]);
+                for (norm_dir[0..dir_len]) |*c| {
+                    if (c.* == '-') c.* = '_';
+                }
+
+                if (std.mem.eql(u8, norm_bin[0..norm_len], norm_dir[0..dir_len]) or
+                    std.mem.eql(u8, bin_name, dir_name))
+                {
+                    found_cell = cell_paths.get(path);
+                    break;
+                }
             }
         }
 
@@ -3925,6 +3977,7 @@ fn parseCellTri(content: []const u8) CellInfo {
         .contributes_commands = "",
         .contributes_tri_subcommands = "",
         .contributes_events = "",
+        .contributes_binaries = "",
         .dependencies_raw = "",
         .perm_level = "",
         .perm_filesystem = "",
@@ -4001,7 +4054,8 @@ fn parseCellTri(content: []const u8) CellInfo {
             .contributes => {
                 if (std.mem.eql(u8, key, "commands")) info.contributes_commands = value
                 else if (std.mem.eql(u8, key, "tri_subcommands")) info.contributes_tri_subcommands = value
-                else if (std.mem.eql(u8, key, "events")) info.contributes_events = value;
+                else if (std.mem.eql(u8, key, "events")) info.contributes_events = value
+                else if (std.mem.eql(u8, key, "binaries")) info.contributes_binaries = value;
             },
             .dependencies => {
                 // Track end of dependencies section

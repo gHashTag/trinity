@@ -22,6 +22,7 @@ type = "tool"
 commands = ["serve", "list-tools"]
 tri_subcommands = ["mcp start", "mcp tools"]
 events = ["on_tool_invoked"]
+binaries = ["trinity-mcp", "ralph-agent", "ralph-hook", "scholar-agent", "mu-agent", "tri-bot", "agent-entrypoint"]
 
 [dependencies]
 trinity.needle = "^1.0.0"

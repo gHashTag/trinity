@@ -22,6 +22,7 @@ type = "agent"
 commands = ["start", "status", "connect"]
 tri_subcommands = ["node start", "node status"]
 events = ["on_node_connected", "on_node_disconnected"]
+binaries = ["trinity-node", "trinity-node-gui"]
 
 [dependencies]
 trinity.vibeec = "^1.0.0"
