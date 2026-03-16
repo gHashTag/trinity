@@ -21,6 +21,7 @@ const autograd = @import("autograd.zig");
 const tjepa_mod = @import("tjepa.zig");
 const tjepa_trainer_mod = @import("tjepa_trainer.zig");
 const mse_loss_mod = @import("mse_loss.zig");
+const nca_mod = @import("nca.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM_CONST = constants.EMBED_DIM;
@@ -64,7 +65,12 @@ pub fn main() !void {
     var stable_ratio: f32 = 0.7;
 
     // Training objective
-    var objective: enum { ntp, jepa, hybrid } = .ntp;
+    var objective: enum { ntp, jepa, hybrid, nca_ntp, nca_jepa_ntp, nca_jepa_ntp_v2 } = .ntp;
+    var nca_steps: u32 = 15000;
+    var nca_grid: u8 = 9;
+    var nca_states: u8 = 9;
+    var nca_rollout: u16 = 128;
+    var jepa_steps: u32 = 0; // 0 = auto (half of total for hybrid, 40K for nca-jepa-ntp)
     var ema_decay_start: f32 = 0.996;
     var ema_decay_end: f32 = 1.0;
     var mask_ratio: f32 = 0.3;
@@ -260,6 +266,12 @@ pub fn main() !void {
                 objective = .jepa;
             } else if (std.mem.eql(u8, obj_str, "hybrid")) {
                 objective = .hybrid;
+            } else if (std.mem.eql(u8, obj_str, "nca-ntp")) {
+                objective = .nca_ntp;
+            } else if (std.mem.eql(u8, obj_str, "nca-jepa-ntp")) {
+                objective = .nca_jepa_ntp;
+            } else if (std.mem.eql(u8, obj_str, "nca-jepa-ntp-v2")) {
+                objective = .nca_jepa_ntp_v2;
             } else {
                 objective = .ntp;
             }
@@ -278,6 +290,21 @@ pub fn main() !void {
         } else if (std.mem.eql(u8, arg, "--log-every") and i + 1 < args.len) {
             i += 1;
             log_every = std.fmt.parseInt(u32, args[i], 10) catch 100;
+        } else if (std.mem.eql(u8, arg, "--nca-steps") and i + 1 < args.len) {
+            i += 1;
+            nca_steps = std.fmt.parseInt(u32, args[i], 10) catch 15000;
+        } else if (std.mem.eql(u8, arg, "--nca-grid") and i + 1 < args.len) {
+            i += 1;
+            nca_grid = std.fmt.parseInt(u8, args[i], 10) catch 9;
+        } else if (std.mem.eql(u8, arg, "--nca-states") and i + 1 < args.len) {
+            i += 1;
+            nca_states = std.fmt.parseInt(u8, args[i], 10) catch 9;
+        } else if (std.mem.eql(u8, arg, "--nca-rollout") and i + 1 < args.len) {
+            i += 1;
+            nca_rollout = std.fmt.parseInt(u16, args[i], 10) catch 128;
+        } else if (std.mem.eql(u8, arg, "--jepa-steps") and i + 1 < args.len) {
+            i += 1;
+            jepa_steps = std.fmt.parseInt(u32, args[i], 10) catch 0;
         } else if (std.mem.eql(u8, arg, "--eval") and i + 1 < args.len) {
             i += 1;
             eval_data_path = args[i];
@@ -348,6 +375,21 @@ pub fn main() !void {
                 .threshold = ste_threshold,
                 .warmup_steps = ste_warmup,
             }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, num_blocks),
+            .nca_ntp => try runNcaNtpTraining(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
+                .mode = ste_mode,
+                .threshold = ste_threshold,
+                .warmup_steps = ste_warmup,
+            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, num_blocks, nca_steps, nca_grid, nca_states, nca_rollout),
+            .nca_jepa_ntp => try runNcaJepaNtpTraining(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
+                .mode = ste_mode,
+                .threshold = ste_threshold,
+                .warmup_steps = ste_warmup,
+            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, num_blocks, nca_steps, nca_grid, nca_states, nca_rollout, if (jepa_steps > 0) jepa_steps else 40000),
+            .nca_jepa_ntp_v2 => try runNcaJepaNtpTraining(allocator, data_path, steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, resume_path, weight_decay, dropout, seed_offset, ste_mod.SteConfig{
+                .mode = ste_mode,
+                .threshold = ste_threshold,
+                .warmup_steps = ste_warmup,
+            }, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, ternary_grads or full_ternary, adaptive_sparsity_flag or full_ternary, ternary_schedule_flag or full_ternary, lamb_clamp, stable_ratio, init_zero, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, num_blocks, nca_steps, nca_grid, nca_states, nca_rollout, if (jepa_steps > 0) jepa_steps else 20000),
         },
     }
 }
@@ -405,11 +447,18 @@ fn printUsage() void {
         \\  --log-every <n>        Log interval in steps (default: 100)
         \\
         \\T-JEPA Options:
-        \\  --objective <type>     Training objective: ntp|jepa|hybrid (default: ntp)
+        \\  --objective <type>     Training objective: ntp|jepa|hybrid|nca-ntp|nca-jepa-ntp|nca-jepa-ntp-v2
         \\  --ema-decay-start <f>  JEPA: EMA decay start (default: 0.996)
         \\  --ema-decay-end <f>    JEPA: EMA decay end (default: 1.0)
         \\  --mask-ratio <f>       JEPA: mask ratio (default: 0.3)
         \\  --predictor-lr-mult <f> JEPA: predictor LR multiplier (default: 2.0)
+        \\
+        \\NCA Pre-Pre-Training Options:
+        \\  --nca-steps <n>        NCA stage steps (default: 15000)
+        \\  --nca-grid <n>         NCA grid size (default: 9, 9x9=81=CONTEXT_LEN)
+        \\  --nca-states <n>       NCA states per cell (default: 9)
+        \\  --nca-rollout <n>      NCA rollout steps per trajectory (default: 128)
+        \\  --jepa-steps <n>       JEPA stage steps for nca-jepa-ntp (default: 40000/20000)
         \\
         \\  --help, -h             Show this help
         \\
@@ -1209,6 +1258,296 @@ fn runHybridTraining(
     var resume_buf: [256]u8 = undefined;
     const jepa_ckpt = std.fmt.bufPrint(&resume_buf, "{s}/jepa_step_{d}_final.bin", .{ checkpoint_dir, jepa_steps }) catch "jepa_final.bin";
     try runTrain(allocator, data_path, ntp_steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, jepa_ckpt, weight_decay, dropout, seed_offset, ste_config, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, t_ternary_grads, t_adaptive_sparsity, t_ternary_schedule, lamb_clamp_val, stable_ratio_val, init_zero_flag, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, num_blocks_arg);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NCA PRE-PRE-TRAINING — MIT arXiv 2603.10055
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runNcaNtpTraining(
+    allocator: std.mem.Allocator,
+    data_path: ?[]const u8,
+    total_steps: u32,
+    lr: f32,
+    lr_min: f32,
+    batch_size: usize,
+    checkpoint_dir: []const u8,
+    max_lines: usize,
+    warmup_steps: u32,
+    resume_path: ?[]const u8,
+    weight_decay: f32,
+    dropout: f32,
+    seed_offset: u64,
+    ste_config: ste_mod.SteConfig,
+    optimizer_type: trainer_mod.OptimizerType,
+    grad_accum: usize,
+    context_len: usize,
+    lr_schedule: trainer_mod.LrScheduleType,
+    label_smoothing_val: f32,
+    restart_period: u32,
+    restart_mult: f32,
+    t_ternary_grads: bool,
+    t_adaptive_sparsity: bool,
+    t_ternary_schedule: bool,
+    lamb_clamp_val: f32,
+    stable_ratio_val: f32,
+    init_zero_flag: bool,
+    data_shard: u32,
+    num_shards: u32,
+    total_lines: usize,
+    val_split: f32,
+    grad_clip_val: f32,
+    kill_ppl_10k: f32,
+    kill_ppl_30k: f32,
+    kill_ppl_60k: f32,
+    kill_ppl_80k: f32,
+    num_blocks_arg: usize,
+    p_nca_steps: u32,
+    nca_grid: u8,
+    nca_states: u8,
+    nca_rollout: u16,
+) !void {
+    const stdout = std.fs.File.stdout().deprecatedWriter();
+    const ntp_steps = if (total_steps > p_nca_steps) total_steps - p_nca_steps else total_steps;
+
+    try stdout.print(
+        \\
+        \\================================================================
+        \\  NCA→NTP Training: Stage 0 NCA ({d} steps) + Stage 1 NTP ({d} steps)
+        \\  Grid: {d}x{d}, States: {d}, Rollout: {d}
+        \\================================================================
+        \\
+    , .{ p_nca_steps, ntp_steps, nca_grid, nca_grid, nca_states, nca_rollout });
+
+    // Stage 0: Generate NCA dataset + train with NTP loss on synthetic data
+    try stdout.print("\nPHASE=nca\n[STAGE 0] NCA pre-pre-training ({d} steps)...\n", .{p_nca_steps});
+
+    const nca_config = nca_mod.NcaConfig{
+        .grid_size = nca_grid,
+        .num_states = nca_states,
+        .rollout_steps = nca_rollout,
+        .seed = 42 + seed_offset,
+    };
+
+    // Generate synthetic tokens: nca_steps * batch_size * context_len
+    const target_tokens = @as(usize, p_nca_steps) * batch_size * context_len;
+    try stdout.print("  Generating {d} NCA tokens...\n", .{target_tokens});
+
+    var nca_dataset = try nca_mod.generateNcaDataset(allocator, nca_config, target_tokens);
+    defer nca_dataset.deinit(allocator);
+    try stdout.print("  Generated {d} NCA tokens (entropy-filtered)\n", .{nca_dataset.items.len});
+
+    // Create Dataset and add NCA tokens
+    var ds = try data_mod.Dataset.init(allocator, context_len);
+    defer ds.deinit();
+    try ds.addTokens(nca_dataset.items);
+
+    // Create model + trainer for NCA stage
+    var hslm = try model_mod.HSLM.init(allocator);
+    defer hslm.deinit();
+
+    if (resume_path) |rp| {
+        try stdout.print("  Resuming from checkpoint: {s}\n", .{rp});
+        _ = trainer_mod.loadCheckpoint(&hslm, rp) catch |err| {
+            try stdout.print("  WARNING: Failed to load checkpoint: {}\n", .{err});
+        };
+    }
+
+    var ft = try trainer_mod.FullTrainer.init(allocator, &hslm, &ds, trainer_mod.TrainConfig{
+        .total_steps = p_nca_steps,
+        .lr = lr,
+        .lr_min = lr_min,
+        .batch_size = batch_size,
+        .warmup_steps = warmup_steps,
+        .weight_decay = weight_decay,
+        .optimizer = optimizer_type,
+        .lr_schedule = lr_schedule,
+        .label_smoothing = label_smoothing_val,
+        .restart_period = restart_period,
+        .restart_mult = restart_mult,
+        .lamb_clamp = lamb_clamp_val,
+        .stable_ratio = stable_ratio_val,
+        .grad_clip = grad_clip_val,
+        .ste = ste_config,
+    });
+    defer ft.deinit();
+
+    // Train NCA stage
+    var batch_data = try data_mod.Batch.init(allocator, batch_size, context_len);
+    defer batch_data.deinit();
+
+    var step: u32 = 0;
+    while (step < p_nca_steps) : (step += 1) {
+        ds.nextBatch(&batch_data);
+        var total_loss: f32 = 0;
+        for (0..batch_size) |b| {
+            total_loss += ft.trainStep(batch_data.getInput(b), batch_data.getTarget(b));
+        }
+        const avg_loss = total_loss / @as(f32, @floatFromInt(batch_size));
+
+        if (step % 100 == 0) {
+            const ppl = @exp(avg_loss);
+            try stdout.print("  [NCA] step={d}/{d} loss={d:.4} ppl={d:.2}\n", .{ step, p_nca_steps, avg_loss, ppl });
+        }
+    }
+
+    // Save NCA checkpoint
+    var nca_ckpt_buf: [256]u8 = undefined;
+    const nca_ckpt_path = std.fmt.bufPrint(&nca_ckpt_buf, "{s}/nca_step_{d}_final.bin", .{ checkpoint_dir, p_nca_steps }) catch "nca_final.bin";
+    trainer_mod.saveCheckpoint(&hslm, p_nca_steps, 0, nca_ckpt_path) catch |err| {
+        try stdout.print("  WARNING: Failed to save NCA checkpoint: {}\n", .{err});
+    };
+    try stdout.print("  NCA checkpoint saved: {s}\n", .{nca_ckpt_path});
+
+    // Stage 1: NTP on real data from NCA checkpoint
+    try stdout.print("\nPHASE=ntp\n[STAGE 1] NTP training from NCA checkpoint ({d} steps)...\n", .{ntp_steps});
+    try runTrain(allocator, data_path, ntp_steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, nca_ckpt_path, weight_decay, dropout, seed_offset, ste_config, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, t_ternary_grads, t_adaptive_sparsity, t_ternary_schedule, lamb_clamp_val, stable_ratio_val, init_zero_flag, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, num_blocks_arg);
+}
+
+fn runNcaJepaNtpTraining(
+    allocator: std.mem.Allocator,
+    data_path: ?[]const u8,
+    total_steps: u32,
+    lr: f32,
+    lr_min: f32,
+    batch_size: usize,
+    checkpoint_dir: []const u8,
+    max_lines: usize,
+    warmup_steps: u32,
+    resume_path: ?[]const u8,
+    weight_decay: f32,
+    dropout: f32,
+    seed_offset: u64,
+    ste_config: ste_mod.SteConfig,
+    optimizer_type: trainer_mod.OptimizerType,
+    grad_accum: usize,
+    context_len: usize,
+    lr_schedule: trainer_mod.LrScheduleType,
+    label_smoothing_val: f32,
+    restart_period: u32,
+    restart_mult: f32,
+    t_ternary_grads: bool,
+    t_adaptive_sparsity: bool,
+    t_ternary_schedule: bool,
+    lamb_clamp_val: f32,
+    stable_ratio_val: f32,
+    init_zero_flag: bool,
+    data_shard: u32,
+    num_shards: u32,
+    total_lines: usize,
+    val_split: f32,
+    grad_clip_val: f32,
+    kill_ppl_10k: f32,
+    kill_ppl_30k: f32,
+    kill_ppl_60k: f32,
+    kill_ppl_80k: f32,
+    ema_decay_start: f32,
+    ema_decay_end: f32,
+    mask_ratio: f32,
+    predictor_lr_mult: f32,
+    log_every: u32,
+    num_blocks_arg: usize,
+    p_nca_steps: u32,
+    nca_grid: u8,
+    nca_states: u8,
+    nca_rollout: u16,
+    p_jepa_steps: u32,
+) !void {
+    const stdout = std.fs.File.stdout().deprecatedWriter();
+    const remaining = if (total_steps > p_nca_steps + p_jepa_steps) total_steps - p_nca_steps - p_jepa_steps else total_steps / 2;
+
+    try stdout.print(
+        \\
+        \\================================================================
+        \\  NCA→JEPA→NTP Training: NCA ({d}) + JEPA ({d}) + NTP ({d})
+        \\  Grid: {d}x{d}, States: {d}, Rollout: {d}
+        \\================================================================
+        \\
+    , .{ p_nca_steps, p_jepa_steps, remaining, nca_grid, nca_grid, nca_states, nca_rollout });
+
+    // Stage 0: NCA pre-pre-training (reuse runNcaNtpTraining logic but stop after NCA)
+    try stdout.print("\nPHASE=nca\n[STAGE 0/3] NCA pre-pre-training ({d} steps)...\n", .{p_nca_steps});
+
+    const nca_config = nca_mod.NcaConfig{
+        .grid_size = nca_grid,
+        .num_states = nca_states,
+        .rollout_steps = nca_rollout,
+        .seed = 42 + seed_offset,
+    };
+
+    const target_tokens = @as(usize, p_nca_steps) * batch_size * context_len;
+    try stdout.print("  Generating {d} NCA tokens...\n", .{target_tokens});
+
+    var nca_dataset = try nca_mod.generateNcaDataset(allocator, nca_config, target_tokens);
+    defer nca_dataset.deinit(allocator);
+    try stdout.print("  Generated {d} NCA tokens (entropy-filtered)\n", .{nca_dataset.items.len});
+
+    var ds = try data_mod.Dataset.init(allocator, context_len);
+    defer ds.deinit();
+    try ds.addTokens(nca_dataset.items);
+
+    var hslm = try model_mod.HSLM.init(allocator);
+    defer hslm.deinit();
+
+    if (resume_path) |rp| {
+        _ = trainer_mod.loadCheckpoint(&hslm, rp) catch |err| {
+            try stdout.print("  WARNING: Failed to load checkpoint: {}\n", .{err});
+        };
+    }
+
+    var ft = try trainer_mod.FullTrainer.init(allocator, &hslm, &ds, trainer_mod.TrainConfig{
+        .total_steps = p_nca_steps,
+        .lr = lr,
+        .lr_min = lr_min,
+        .batch_size = batch_size,
+        .warmup_steps = warmup_steps,
+        .weight_decay = weight_decay,
+        .optimizer = optimizer_type,
+        .lr_schedule = lr_schedule,
+        .label_smoothing = label_smoothing_val,
+        .restart_period = restart_period,
+        .restart_mult = restart_mult,
+        .lamb_clamp = lamb_clamp_val,
+        .stable_ratio = stable_ratio_val,
+        .grad_clip = grad_clip_val,
+        .ste = ste_config,
+    });
+    defer ft.deinit();
+
+    var batch_data = try data_mod.Batch.init(allocator, batch_size, context_len);
+    defer batch_data.deinit();
+
+    var step: u32 = 0;
+    while (step < p_nca_steps) : (step += 1) {
+        ds.nextBatch(&batch_data);
+        var total_loss: f32 = 0;
+        for (0..batch_size) |b| {
+            total_loss += ft.trainStep(batch_data.getInput(b), batch_data.getTarget(b));
+        }
+        const avg_loss = total_loss / @as(f32, @floatFromInt(batch_size));
+
+        if (step % 100 == 0) {
+            const ppl = @exp(avg_loss);
+            try stdout.print("  [NCA] step={d}/{d} loss={d:.4} ppl={d:.2}\n", .{ step, p_nca_steps, avg_loss, ppl });
+        }
+    }
+
+    var nca_ckpt_buf: [256]u8 = undefined;
+    const nca_ckpt_path = std.fmt.bufPrint(&nca_ckpt_buf, "{s}/nca_step_{d}_final.bin", .{ checkpoint_dir, p_nca_steps }) catch "nca_final.bin";
+    trainer_mod.saveCheckpoint(&hslm, p_nca_steps, 0, nca_ckpt_path) catch |err| {
+        try stdout.print("  WARNING: Failed to save NCA checkpoint: {}\n", .{err});
+    };
+    try stdout.print("  NCA checkpoint saved: {s}\n", .{nca_ckpt_path});
+
+    // Stage 1: T-JEPA from NCA checkpoint
+    try stdout.print("\nPHASE=jepa\n[STAGE 1/3] T-JEPA from NCA checkpoint ({d} steps)...\n", .{p_jepa_steps});
+    try runJepaTraining(allocator, data_path, p_jepa_steps, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, nca_ckpt_path, seed_offset, context_len, grad_clip_val, weight_decay, ema_decay_start, ema_decay_end, mask_ratio, predictor_lr_mult, log_every, init_zero_flag);
+
+    // Stage 2: NTP from JEPA checkpoint
+    try stdout.print("\nPHASE=ntp\n[STAGE 2/3] NTP from JEPA checkpoint ({d} steps)...\n", .{remaining});
+    var jepa_ckpt_buf: [256]u8 = undefined;
+    const jepa_ckpt = std.fmt.bufPrint(&jepa_ckpt_buf, "{s}/jepa_step_{d}_final.bin", .{ checkpoint_dir, p_jepa_steps }) catch "jepa_final.bin";
+    try runTrain(allocator, data_path, remaining, lr, lr_min, batch_size, checkpoint_dir, max_lines, warmup_steps, jepa_ckpt, weight_decay, dropout, seed_offset, ste_config, optimizer_type, grad_accum, context_len, lr_schedule, label_smoothing_val, restart_period, restart_mult, t_ternary_grads, t_adaptive_sparsity, t_ternary_schedule, lamb_clamp_val, stable_ratio_val, init_zero_flag, data_shard, num_shards, total_lines, val_split, grad_clip_val, kill_ppl_10k, kill_ppl_30k, kill_ppl_60k, kill_ppl_80k, num_blocks_arg);
 }
 
 fn runBenchmarks(allocator: std.mem.Allocator) !void {

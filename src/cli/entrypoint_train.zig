@@ -53,6 +53,13 @@ const TrainConfig = struct {
     mask_ratio: []const u8 = "0.3",
     predictor_lr_mult: []const u8 = "2.0",
 
+    // NCA pre-pre-training
+    nca_steps: []const u8 = "15000",
+    nca_grid: []const u8 = "9",
+    nca_states: []const u8 = "9",
+    nca_rollout: []const u8 = "128",
+    jepa_steps: []const u8 = "0",
+
     // Data sharding (T10)
     data_shard: []const u8 = "0",
     num_shards: []const u8 = "1",
@@ -111,6 +118,13 @@ fn readConfig() TrainConfig {
         .ternary_grads = envBool("HSLM_TERNARY_GRADS", false),
         .adaptive_sparsity = envBool("HSLM_ADAPTIVE_SPARSITY", false),
         .ternary_schedule = envBool("HSLM_TERNARY_SCHEDULE", false),
+
+        // NCA pre-pre-training
+        .nca_steps = envStr("HSLM_NCA_STEPS", "15000"),
+        .nca_grid = envStr("HSLM_NCA_GRID", "9"),
+        .nca_states = envStr("HSLM_NCA_STATES", "9"),
+        .nca_rollout = envStr("HSLM_NCA_ROLLOUT", "128"),
+        .jepa_steps = envStr("HSLM_JEPA_STEPS", "0"),
 
         // T-JEPA objective
         .objective = envStr("HSLM_OBJECTIVE", "ntp"),
@@ -429,6 +443,35 @@ pub fn main() !void {
             config.ema_decay_end,
             config.mask_ratio,
             config.predictor_lr_mult,
+        });
+    }
+
+    // NCA pre-pre-training params
+    if (std.mem.startsWith(u8, config.objective, "nca")) {
+        buf[argc] = "--nca-steps";
+        argc += 1;
+        buf[argc] = config.nca_steps;
+        argc += 1;
+        buf[argc] = "--nca-grid";
+        argc += 1;
+        buf[argc] = config.nca_grid;
+        argc += 1;
+        buf[argc] = "--nca-states";
+        argc += 1;
+        buf[argc] = config.nca_states;
+        argc += 1;
+        buf[argc] = "--nca-rollout";
+        argc += 1;
+        buf[argc] = config.nca_rollout;
+        argc += 1;
+        if (!std.mem.eql(u8, config.jepa_steps, "0")) {
+            buf[argc] = "--jepa-steps";
+            argc += 1;
+            buf[argc] = config.jepa_steps;
+            argc += 1;
+        }
+        log.info("NCA: steps={s} grid={s} states={s} rollout={s}", .{
+            config.nca_steps, config.nca_grid, config.nca_states, config.nca_rollout,
         });
     }
 

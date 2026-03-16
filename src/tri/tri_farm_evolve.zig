@@ -1416,7 +1416,8 @@ const MutatedConfig = struct {
     context: u32 = 27,
     kill_ppl_30k: f32 = 999.0, // inherit from parent
     sacred: bool = false, // true = sacred-guided mutations
-    objective: []const u8 = "ntp", // ntp | jepa | hybrid
+    objective: []const u8 = "ntp", // ntp | jepa | hybrid | nca-ntp | nca-jepa-ntp | nca-jepa-ntp-v2
+    nca_steps: u32 = 0, // NCA pre-pre-training steps (0 = no NCA)
 };
 
 pub fn mutateConfig(leader: *const ServiceEntry, prng_seed: u32) MutatedConfig {
@@ -1881,6 +1882,20 @@ fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usiz
         return;
     }
     api_calls.* += 1;
+
+    // Set NCA steps if objective contains "nca"
+    if (config.nca_steps > 0 and std.mem.indexOf(u8, config.objective, "nca") != null) {
+        const nca_steps_str = std.fmt.allocPrint(allocator, "{d}", .{config.nca_steps}) catch return;
+        defer allocator.free(nca_steps_str);
+        const nca_vars_json = std.fmt.allocPrint(allocator,
+            \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_NCA_STEPS":"{s}"}}}}}}
+        , .{ acct.project_id, svc_id, acct.env_id, nca_steps_str }) catch return;
+        defer allocator.free(nca_vars_json);
+        if (api.query(set_vars_gql, nca_vars_json)) |resp| {
+            allocator.free(resp);
+        } else |_| {}
+        api_calls.* += 1;
+    }
 
     std.Thread.sleep(100 * std.time.ns_per_ms);
 
