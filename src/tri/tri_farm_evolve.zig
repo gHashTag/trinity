@@ -1956,8 +1956,8 @@ fn saveState(state: EvolutionState) !void {
 
     // Manual JSON serialization
     pos += (std.fmt.bufPrint(buf[pos..], "{{\"evolution_step\":{d},\"total_configs_tested\":{d},\"best_ppl\":{d:.2},\"best_name\":\"{s}\",\"best_step\":{d},\"service_count\":{d},\"event_count\":{d},\"services\":[", .{
-        state.evolution_step, state.total_configs_tested, state.best_ppl, state.bestNameStr(),
-        state.best_step, state.service_count, state.event_count,
+        state.evolution_step, state.total_configs_tested, state.best_ppl,    state.bestNameStr(),
+        state.best_step,      state.service_count,        state.event_count,
     }) catch return error.OutOfMemory).len;
 
     for (state.services[0..state.service_count], 0..) |*svc, si| {
@@ -1966,14 +1966,13 @@ fn saveState(state: EvolutionState) !void {
             pos += 1;
         }
         const rungs_str = std.fmt.bufPrint(buf[pos..], "{{\"id\":\"{s}\",\"name\":\"{s}\",\"acct\":{d},\"lr\":\"{s}\",\"batch\":\"{s}\",\"opt\":\"{s}\",\"seed\":{d},\"gen\":{d},\"parent\":\"{s}\",\"step\":{d},\"ppl\":{d:.2},\"loss\":{d:.4},\"tps\":{d:.1},\"vppl\":{d:.2},\"shard\":{d},\"status\":{d},\"rp\":[{},{},{},{}],\"lts\":{d}}}", .{
-            svc.svcId(),         svc.svcName(),       svc.account_idx,
-            svc.lrStr(),         svc.batchStr(),      svc.optimizerStr(),
-            svc.seed,            svc.generation,      svc.parentName(),
-            svc.current_step,    svc.current_ppl,     svc.current_loss,
-            svc.tok_per_sec,     svc.val_ppl,         svc.data_shard,
-            @intFromEnum(svc.status),
-            svc.rungs_passed[0], svc.rungs_passed[1], svc.rungs_passed[2],
-            svc.rungs_passed[3], svc.last_tuned_step,
+            svc.svcId(),              svc.svcName(),       svc.account_idx,
+            svc.lrStr(),              svc.batchStr(),      svc.optimizerStr(),
+            svc.seed,                 svc.generation,      svc.parentName(),
+            svc.current_step,         svc.current_ppl,     svc.current_loss,
+            svc.tok_per_sec,          svc.val_ppl,         svc.data_shard,
+            @intFromEnum(svc.status), svc.rungs_passed[0], svc.rungs_passed[1],
+            svc.rungs_passed[2],      svc.rungs_passed[3], svc.last_tuned_step,
         }) catch return error.OutOfMemory;
         pos += rungs_str.len;
     }
@@ -3942,7 +3941,7 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
                 const mode_str: []const u8 = if (sacred) " [SACRED]" else "";
                 const obj_str: []const u8 = if (std.mem.eql(u8, objective, "ntp")) "" else if (std.mem.eql(u8, objective, "hybrid")) " [HYBRID]" else " [JEPA]";
                 print("   💉 {s} ← {s}{s}{s}  LR={s}  GC={d:.3}  WU={d}\n", .{
-                    svc.svcName(),                   p_name,           mode_str, obj_str,
+                    svc.svcName(),                   p_name,           mode_str,      obj_str,
                     config.lr_str[0..config.lr_len], config.grad_clip, config.warmup,
                 });
 
@@ -4289,7 +4288,7 @@ fn runNotify(allocator: Allocator, args: []const []const u8) !void {
         }
 
         pos += (std.fmt.bufPrint(msg_buf[pos..], "📊 Farm: {d}🟢 / {d}☠️ / {d} total | health: {d:.0}/100", .{
-            health.alive, @as(u32, @intCast(state.service_count)) - health.alive,
+            health.alive,                            @as(u32, @intCast(state.service_count)) - health.alive,
             @as(u32, @intCast(state.service_count)), health.health_score,
         }) catch "").len;
     }
@@ -4482,12 +4481,11 @@ fn serveStatus(allocator: Allocator, stream: std.net.Stream) void {
     }
     var buf: [2048]u8 = undefined;
     const json = std.fmt.bufPrint(&buf, "{{\"best_ppl\":{d:.2},\"best_name\":\"{s}\",\"best_step\":{d},\"alive\":{d},\"dead\":{d},\"total\":{d},\"evolution_step\":{d},\"events\":{d},\"health\":{{\"diversity\":{d:.6},\"elite_gap\":{d:.2},\"stagnation\":{d},\"spike_rate\":{d:.3},\"health_score\":{d:.1},\"leader_step\":{d},\"leader_improvement\":{d:.4}}}}}", .{
-        state.best_ppl,                          state.bestNameStr(),  state.best_step,
-        health.alive,                            dead,
-        @as(u32, @intCast(state.service_count)), state.evolution_step, @as(u32, @intCast(state.event_count)),
-        health.diversity,                        health.elite_gap,     health.stagnation,
-        health.spike_rate,                       health.health_score,  health.leader_step,
-        health.leader_improvement,
+        state.best_ppl,       state.bestNameStr(),                   state.best_step,
+        health.alive,         dead,                                  @as(u32, @intCast(state.service_count)),
+        state.evolution_step, @as(u32, @intCast(state.event_count)), health.diversity,
+        health.elite_gap,     health.stagnation,                     health.spike_rate,
+        health.health_score,  health.leader_step,                    health.leader_improvement,
     }) catch return;
     sendJson(stream, json);
 }
