@@ -1,0 +1,33 @@
+[cell]
+id = "trinity.quantum_gravity"
+name = "quantum_gravity"
+version = "0.1.0"
+kind = "library"
+path = "src/quantum_gravity"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for quantum_gravity"
+capabilities = ["init", "normSquared", "isValid", "generateAll", "quantumProjection"]
+files = 1
+tests = 9
+owner = ""
+
+[tags]
+scope = "physics"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+trinity.vsa = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

@@ -13,3 +13,12 @@ pub fn getSystemMemory() !SystemMemory {
         .available_bytes = 4 * 1024 * 1024 * 1024,
     };
 }
+
+const std = @import("std");
+
+test "system memory defaults" {
+    const mem = try getSystemMemory();
+    try std.testing.expect(mem.total_bytes == 8 * 1024 * 1024 * 1024);
+    try std.testing.expect(mem.available_bytes == 4 * 1024 * 1024 * 1024);
+    try std.testing.expect(mem.available_bytes <= mem.total_bytes);
+}

@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.qcd"
+name = "qcd"
+version = "0.1.0"
+kind = "library"
+path = "src/qcd"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for qcd"
+capabilities = ["thetaQCDExact", "thetaQCDPerturbative", "axionMass", "axionMassGeV", "axionDecayConstant"]
+files = 1
+tests = 16
+owner = ""
+
+[tags]
+scope = "physics"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

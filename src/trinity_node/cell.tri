@@ -1,0 +1,39 @@
+[cell]
+id = "trinity.trinity-node"
+name = "Trinity Node"
+version = "1.0.0"
+kind = "agent"
+path = "src/trinity_node"
+min_core_version = "1.0.0"
+status = "stable"
+description = "Autonomous node agent with TUI dashboard and networking"
+capabilities = ["node", "tui", "networking", "dashboard"]
+files = 54
+tests = 442
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "agent"
+type = "agent"
+
+[contributes]
+commands = ["start", "status", "connect"]
+tri_subcommands = ["node start", "node status"]
+events = ["on_node_connected", "on_node_disconnected"]
+
+[dependencies]
+trinity.vibeec = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+
+ffi = "native"
+concurrency = "yes"
+[security]
+signed = true
+signature = "sha256:b367af81bd15ac25f4a1c9ab9e8af50aa7e608db421ed4aeefe205b1a7cc1ca9"

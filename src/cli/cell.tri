@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.cli"
+name = "cli"
+version = "0.1.0"
+kind = "library"
+path = "src/cli"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for cli"
+capabilities = ["main", "main"]
+files = 2
+tests = 10
+owner = ""
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "read"
+network = "none"
+process = "spawn"
+ffi = "native"
+concurrency = "none"
+
+[security]
+signed = true
+signature = "sha256:ef5d1a5a4f498f8d5b370a5b5f149357e66089a36a2d525ec9c05dd5019efdeb"

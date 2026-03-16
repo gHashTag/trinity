@@ -312,7 +312,7 @@ fn runSSEServer() void {
     std.debug.print("{s}║     SSE LIVE SYNC — port 1618 (phi*1000)                ║{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
 
-    const addr = std.net.Address.parseIp4("0.0.0.0", 1618) catch {
+    const addr = std.net.Address.parseIp4("127.0.0.1", 1618) catch {
         std.debug.print("Cannot parse address\n", .{});
         return;
     };
@@ -322,7 +322,7 @@ fn runSSEServer() void {
     };
     defer server.deinit();
 
-    std.debug.print("{s}[SSE] Listening on http://0.0.0.0:1618/events{s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}[SSE] Listening on http://127.0.0.1:1618/events{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}Connect: curl -N http://localhost:1618/events{s}\n", .{ GRAY, RESET });
     std.debug.print("{s}Press Ctrl+C to stop{s}\n\n", .{ GRAY, RESET });
 
@@ -360,14 +360,14 @@ fn runQuantumStream() void {
     std.debug.print("{s}║     Bell/CHSH + E8 + Fermion Generations                ║{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ YELLOW, RESET });
 
-    const addr = std.net.Address.parseIp4("0.0.0.0", 1618) catch return;
+    const addr = std.net.Address.parseIp4("127.0.0.1", 1618) catch return;
     var server = addr.listen(.{ .reuse_address = true }) catch {
         std.debug.print("{s}[ERROR]{s} Cannot bind port 1618\n", .{ RED, RESET });
         return;
     };
     defer server.deinit();
 
-    std.debug.print("{s}[QUANTUM SSE] Listening on http://0.0.0.0:1618/{s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}[QUANTUM SSE] Listening on http://127.0.0.1:1618/{s}\n", .{ GREEN, RESET });
     std.debug.print("{s}CHSH = 2*sqrt(2) = {d:.10}{s}\n\n", .{ CYAN, @sqrt(2.0) * 2.0, RESET });
 
     while (true) {

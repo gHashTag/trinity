@@ -1367,7 +1367,7 @@ pub fn printCommandHelp(cmd: Command) void {
             std.debug.print("Start HTTP API server with REST + GraphQL\n\n", .{});
             std.debug.print("{s}OPTIONS:{s}\n", .{ CYAN, RESET });
             std.debug.print("  --port PORT    Listen port (default: 8899)\n", .{});
-            std.debug.print("  --host HOST    Bind address (default: 0.0.0.0)\n", .{});
+            std.debug.print("  --host HOST    Bind address (default: 127.0.0.1)\n", .{});
             std.debug.print("  --daemon       Background mode\n\n", .{});
             std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
             std.debug.print("  tri serve                              # Start on port 8899\n", .{});

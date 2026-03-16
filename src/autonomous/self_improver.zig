@@ -98,3 +98,27 @@ pub fn main() !void {
     std.debug.print("Status: Basic structure created\n", .{});
     std.debug.print("DEFERRED (v12): Code analysis, research comparison, VIBEE bridge\n", .{});
 }
+
+test "ImprovementProposal struct" {
+    const proposal = ImprovementProposal{
+        .title = "test",
+        .description = "desc",
+        .category = "optimization",
+        .priority = 0.8,
+        .expected_improvement = 15.0,
+        .files_to_modify = &.{},
+    };
+    try std.testing.expect(proposal.priority == 0.8);
+    try std.testing.expect(proposal.expected_improvement == 15.0);
+    try std.testing.expectEqualStrings("optimization", proposal.category);
+}
+
+test "SelfImprover init" {
+    const si = SelfImprover.init(std.testing.allocator);
+    _ = si;
+}
+
+test "EvolutionCycle init" {
+    const ec = EvolutionCycle.init(std.testing.allocator);
+    _ = ec;
+}

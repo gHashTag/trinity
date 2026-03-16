@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.orchestration"
+name = "orchestration"
+version = "0.1.0"
+kind = "library"
+path = "src/orchestration"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for orchestration"
+capabilities = ["default", "init", "deinit", "selectStrategy", "getConsciousnessAnalysis"]
+files = 2
+tests = 14
+owner = ""
+
+[tags]
+scope = "agent"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

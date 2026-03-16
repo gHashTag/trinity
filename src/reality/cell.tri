@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.reality"
+name = "reality"
+version = "0.1.0"
+kind = "library"
+path = "src/reality"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for reality"
+capabilities = ["formulaCount", "startFormulaId", "displayName", "emoji", "color"]
+files = 1
+tests = 12
+owner = ""
+
+[tags]
+scope = "sacred"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "write"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

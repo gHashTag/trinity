@@ -57,14 +57,14 @@ pub const Bridge = struct {
     pub fn serve(self: *Bridge) !void {
         self.ensureQueueDir();
 
-        const address = std.net.Address.parseIp4("0.0.0.0", self.port) catch |err| {
+        const address = std.net.Address.parseIp4("127.0.0.1", self.port) catch |err| {
             std.log.err("perplexity_bridge: failed to parse address: {}", .{err});
             return error.SocketError;
         };
         var server = try address.listen(.{ .reuse_address = true });
         defer server.deinit();
 
-        std.debug.print("[px-bridge] listening on 0.0.0.0:{d}\n", .{self.port});
+        std.debug.print("[px-bridge] listening on 127.0.0.1:{d}\n", .{self.port});
         std.debug.print("[px-bridge] queue dir: {s}\n", .{self.queue_dir});
         std.debug.print("[px-bridge] routes: /px/status /px/exec /px/result /px/queue /px/done /px/jobs /px/issues /px/log\n", .{});
 

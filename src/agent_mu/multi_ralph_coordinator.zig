@@ -229,7 +229,7 @@ pub const MultiRalphCoordinator = struct {
         pub fn default(node_id: []const u8) CoordinatorConfig {
             return .{
                 .node_id = node_id,
-                .listen_address = "0.0.0.0",
+                .listen_address = "127.0.0.1",
                 .listen_port = 8080,
                 .heartbeat_interval_ms = DEFAULT_HEARTBEAT_INTERVAL_MS,
                 .election_timeout_ms = DEFAULT_ELECTION_TIMEOUT_MS,

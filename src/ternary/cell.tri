@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.ternary"
+name = "ternary"
+version = "0.1.0"
+kind = "library"
+path = "src/ternary"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for ternary"
+capabilities = ["ln", "log2", "informationDensity", "optimalBase", "ternaryEfficiencyRatio"]
+files = 1
+tests = 11
+owner = ""
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

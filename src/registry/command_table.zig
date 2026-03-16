@@ -1036,7 +1036,7 @@ pub const all_commands = [_]CommandDef{
         .examples = &.{
             "tri serve",
             "tri serve --port 3000",
-            "tri serve --host 0.0.0.0 --port 8080",
+            "tri serve --host 127.0.0.1 --port 8080",
         },
         .input_params = &.{
             .{ .name = "port", .param_type = .integer, .description = "Server port (default: 8080)" },

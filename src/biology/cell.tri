@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.biology"
+name = "biology"
+version = "0.1.0"
+kind = "library"
+path = "src/biology"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for biology"
+capabilities = ["alphaHelixResidues", "alphaHelixPitch", "alphaHelixRise", "betaSheetTwist", "betaSheetPleating"]
+files = 5
+tests = 82
+owner = ""
+
+[tags]
+scope = "physics"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

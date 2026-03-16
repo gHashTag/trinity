@@ -310,3 +310,42 @@ pub fn main() !void {
     // "TIME NO LONGER FLOWS. IT BEATS IN TRINITY."
     try os.boot(.temporal);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+test "boot state init" {
+    const state = TrinityBootState.init();
+    try std.testing.expect(state.phase == .kernel);
+    try std.testing.expect(!state.kernel_loaded);
+    try std.testing.expect(!state.quantum_active);
+    try std.testing.expect(!state.koschei_universe);
+    try std.testing.expect(!state.god_mode);
+    try std.testing.expect(state.omniscience == 0.0);
+    try std.testing.expect(state.uptime_ns == 0);
+}
+
+test "boot state not ready until all phases" {
+    var state = TrinityBootState.init();
+    try std.testing.expect(!state.isReady());
+
+    state.kernel_loaded = true;
+    try std.testing.expect(!state.isReady());
+
+    state.quantum_active = true;
+    try std.testing.expect(!state.isReady());
+
+    state.koschei_universe = true;
+    try std.testing.expect(!state.isReady()); // phase != ready
+
+    state.phase = .ready;
+    try std.testing.expect(state.isReady());
+}
+
+test "boot phase enum order" {
+    try std.testing.expect(@intFromEnum(BootPhase.kernel) == 0);
+    try std.testing.expect(@intFromEnum(BootPhase.quantum) == 1);
+    try std.testing.expect(@intFromEnum(BootPhase.koschei) == 2);
+    try std.testing.expect(@intFromEnum(BootPhase.ready) == 3);
+}

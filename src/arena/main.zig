@@ -317,14 +317,14 @@ fn serveHttp(allocator: Allocator) !void {
         defer allocator.free(port_str);
         break :blk std.fmt.parseInt(u16, port_str, 10) catch 8080;
     };
-    const address = std.net.Address.parseIp("0.0.0.0", port) catch unreachable;
+    const address = std.net.Address.parseIp("127.0.0.1", port) catch unreachable;
     var server = try address.listen(.{
         .reuse_address = true,
     });
     defer server.deinit();
 
     print("\n{s}{s}\xe2\x9a\x94 TRINITY ARENA SERVER{s}\n", .{ BOLD, GOLDEN, RESET });
-    print("{s}   Listening on http://0.0.0.0:{d}{s}\n", .{ DIM, port, RESET });
+    print("{s}   Listening on http://127.0.0.1:{d}{s}\n", .{ DIM, port, RESET });
     print("{s}   Ctrl+C to stop{s}\n\n", .{ DIM, RESET });
 
     while (true) {

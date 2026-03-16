@@ -1,0 +1,37 @@
+[cell]
+id = "trinity.queen-ui"
+name = "Queen UI"
+version = "1.0.0"
+kind = "frontend"
+path = "apps/queen"
+min_core_version = "1.0.0"
+status = "stable"
+description = "27-screen SwiftUI personal CTO interface"
+capabilities = ["ui", "chat", "dashboard", "telegram"]
+files = 0
+tests = 0
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "ui"
+type = "ui"
+
+[contributes]
+commands = ["launch", "build"]
+tri_subcommands = ["queen start", "ui"]
+events = ["on_ui_ready"]
+
+[dependencies]
+trinity.hslm = "^1.0.0"
+trinity.arena = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+
+ffi = "none"
+concurrency = "none"

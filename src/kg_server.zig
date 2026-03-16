@@ -1125,7 +1125,7 @@ pub const KGServer = struct {
         std.debug.print("╔══════════════════════════════════════════════════════════════╗\n", .{});
         std.debug.print("║         Trinity Knowledge Graph Server                       ║\n", .{});
         std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
-        std.debug.print("║  http://0.0.0.0:{d:<5}                                       ║\n", .{self.server.listen_address.getPort()});
+        std.debug.print("║  http://127.0.0.1:{d:<5}                                       ║\n", .{self.server.listen_address.getPort()});
         std.debug.print("╠══════════════════════════════════════════════════════════════╣\n", .{});
         std.debug.print("║  GET  /           - Interactive visualization               ║\n", .{});
         std.debug.print("║  GET  /api/graph  - D3.js graph format                      ║\n", .{});

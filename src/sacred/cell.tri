@@ -1,0 +1,37 @@
+[cell]
+id = "trinity.sacred"
+name = "Sacred Mathematics"
+version = "1.0.0"
+kind = "vsa_op"
+path = "src/sacred"
+min_core_version = "1.0.0"
+status = "stable"
+description = "Sacred mathematical operations and phi-based computations"
+capabilities = ["sacred_math", "phi", "vsa_op", "predictions"]
+files = 35
+tests = 160
+owner = "agent:scholar"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "sacred"
+type = "library"
+
+[contributes]
+commands = ["predict", "validate", "classify"]
+tri_subcommands = ["math predict classify", "math predict validate"]
+events = ["on_prediction_registered"]
+
+[dependencies]
+trinity.registry = "^1.0.0"
+trinity.math = "^1.0.0"
+
+[permissions]
+level = "L1"
+filesystem = "write"
+network = "none"
+process = "none"
+
+ffi = "none"
+concurrency = "none"

@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.dark_matter"
+name = "dark_matter"
+version = "0.1.0"
+kind = "library"
+path = "src/dark_matter"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for dark_matter"
+capabilities = ["particleMass", "selfCoupling", "nucleonCrossSection", "abundance", "freezeoutTemp"]
+files = 1
+tests = 22
+owner = ""
+
+[tags]
+scope = "physics"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

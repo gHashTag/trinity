@@ -103,6 +103,7 @@ const ServiceStatus = enum(u8) {
     stalled,
     diverged,
     stuck,
+    mirage, // PPL looks good but generation is garbage (overfitting / capacity trap)
 };
 
 // I1: Loss history ring buffer — per-service last 20 data points
@@ -255,7 +256,7 @@ const Event = struct {
 const MAX_SERVICES = 160;
 const MAX_EVENTS = 512;
 
-const EvolutionState = struct {
+pub const EvolutionState = struct {
     services: [MAX_SERVICES]ServiceEntry = undefined,
     service_count: usize = 0,
     evolution_step: u32 = 0,
@@ -366,6 +367,8 @@ pub fn runEvolveCommand(allocator: Allocator, args: []const []const u8) !void {
         return runResume(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "recommend")) {
         return runRecommend(allocator);
+    } else if (std.mem.eql(u8, subcmd, "mirage")) {
+        return runMirage(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -905,6 +908,24 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
         saveState(state) catch {};
     }
 
+    // 1b. DIAGNOSE mode: if actively training < 50% → warn and skip recycle
+    //     Only .running counts as alive — .stalled means process stopped (EARLY KILL or hang)
+    var alive_count: usize = 0;
+    var stalled_count: usize = 0;
+    for (state.services[0..state.service_count]) |svc| {
+        if (svc.status == .running) alive_count += 1;
+        if (svc.status == .stalled) stalled_count += 1;
+    }
+    const alive_pct = if (state.service_count > 0) alive_count * 100 / state.service_count else 0;
+    const diagnose_mode = alive_pct < 50;
+    if (diagnose_mode) {
+        print("{s}⚠️  DIAGNOSE MODE: only {d}% workers training ({d} running, {d} stalled, {d} total). Skipping kill/recycle.{s}\n", .{
+            YELLOW, alive_pct, alive_count, stalled_count, state.service_count, RESET,
+        });
+        print("   Run: tri farm evolve resume --top-k 20\n", .{});
+        print("\n", .{});
+    }
+
     // 2. Process each rung
     var total_killed: usize = 0;
     var total_spawned: usize = 0;
@@ -912,7 +933,12 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     var summary_len: usize = 0;
 
     const active_rungs = if (sacred_mode) &SACRED_RUNGS else &DEFAULT_RUNGS;
+    if (diagnose_mode) {
+        // In diagnose mode: still save metrics/dashboard but don't kill anything
+        print("  {s}(rung processing skipped — diagnose mode){s}\n\n", .{ DIM, RESET });
+    }
     for (active_rungs, 0..) |rung, rung_idx| {
+        if (diagnose_mode) continue;
         const result = processRung(allocator, &state, @intCast(rung_idx), rung, dry_run, &api_calls, sacred_mode);
         total_killed += result.killed;
         total_spawned += result.spawned;
@@ -1007,7 +1033,7 @@ fn runHistory(allocator: Allocator) !void {
 // Core: Metric Collection
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *u32) void {
+pub fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *u32) void {
     var collected: usize = 0;
     var skipped: usize = 0;
 
@@ -1572,7 +1598,9 @@ fn processRung(allocator: Allocator, state: *EvolutionState, rung_idx: u8, rung:
 }
 
 /// Get effective PPL for ranking: prefer val_ppl when available (P1)
+/// Mirage services get worst-possible rank (excluded from leadership)
 fn getPplForRanking(svc: *const ServiceEntry) f32 {
+    if (svc.status == .mirage) return 999.0;
     if (svc.val_ppl < 998.0) return svc.val_ppl;
     return svc.current_ppl;
 }
@@ -1853,12 +1881,22 @@ pub fn mutateConfigEx(leader: *const ServiceEntry, prng_seed: u32, allow_ctx_mut
         config.lr_schedule = leader.lr_schedule;
     }
 
-    // --- Context: 95% inherit, 5% switch 27↔54 (only if opt-in) ---
+    // --- Context: 95% inherit, 5% mutate (sacred ternary: 81=3⁴, 243=3⁵) ---
+    // NTP minimum ctx=81 (ctx=27 creates PPL mirage — memorizes trigrams without generalization)
+    // JEPA allowed ctx=27 (different context usage pattern)
     config.context = leader.context;
     if (allow_ctx_mutation) {
         const rng_ctx = mulberry32(prng_seed +% 23);
         if (rng_ctx % 20 == 0) {
-            config.context = if (leader.context == 27) 54 else 27;
+            // Sacred ternary context values: 81 (3⁴) or 243 (3⁵)
+            config.context = if (leader.context <= 81) 243 else 81;
+        }
+    }
+    // Enforce minimum ctx=81 for NTP objectives (anti-mirage guard)
+    if (config.context < 81) {
+        const obj = leader.objective[0..leader.objective_len];
+        if (obj.len == 0 or std.mem.eql(u8, obj, "ntp") or std.mem.startsWith(u8, obj, "nca-ntp")) {
+            config.context = 81;
         }
     }
 
@@ -1923,12 +1961,19 @@ pub fn mutateConfigSacred(leader: *const ServiceEntry, prng_seed: u32, allow_ctx
         config.lr_schedule = leader.lr_schedule;
     }
 
-    // --- Context: 95% inherit, 5% switch (same as random) ---
+    // --- Context: 95% inherit, 5% mutate (sacred ternary: 81=3⁴, 243=3⁵) ---
     config.context = leader.context;
     if (allow_ctx_mutation) {
         const rng_ctx = mulberry32(prng_seed +% 23);
         if (rng_ctx % 20 == 0) {
-            config.context = if (leader.context == 27) 54 else 27;
+            config.context = if (leader.context <= 81) 243 else 81;
+        }
+    }
+    // Enforce minimum ctx=81 for NTP (anti-mirage guard)
+    if (config.context < 81) {
+        const obj = leader.objective[0..leader.objective_len];
+        if (obj.len == 0 or std.mem.eql(u8, obj, "ntp") or std.mem.startsWith(u8, obj, "nca-ntp")) {
+            config.context = 81;
         }
     }
 
@@ -2246,7 +2291,7 @@ fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usiz
     const sched_str: []const u8 = config.lr_schedule.toStr();
 
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
@@ -2349,7 +2394,7 @@ pub fn mulberry32(seed: u32) u32 {
 // State Persistence (JSON)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn saveState(state: EvolutionState) !void {
+pub fn saveState(state: EvolutionState) !void {
     var file = try std.fs.cwd().createFile(STATE_PATH, .{});
     defer file.close();
 
@@ -2416,7 +2461,7 @@ fn saveState(state: EvolutionState) !void {
     try file.writeAll(buf[0..pos]);
 }
 
-fn loadState(allocator: Allocator) !EvolutionState {
+pub fn loadState(allocator: Allocator) !EvolutionState {
     const file = std.fs.cwd().openFile(STATE_PATH, .{}) catch return error.FileNotFound;
     defer file.close();
 
@@ -2460,7 +2505,7 @@ fn loadState(allocator: Allocator) !EvolutionState {
                 entry.val_ppl = jsonF32(item, "vppl");
                 if (entry.val_ppl == 0) entry.val_ppl = 999.0; // missing field → not measured
                 entry.data_shard = @intCast(jsonU32(item, "shard"));
-                entry.status = @enumFromInt(@min(jsonU32(item, "status"), 7));
+                entry.status = @enumFromInt(@min(jsonU32(item, "status"), 8));
 
                 // Load rungs_passed
                 if (getJsonObject(item, "rp")) |rp| {
@@ -3360,7 +3405,7 @@ fn deployConfigToService(
 
     const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
@@ -5195,7 +5240,7 @@ fn runNotify(allocator: Allocator, args: []const []const u8) !void {
 
 fn runServe(allocator: Allocator, args: []const []const u8) !void {
     var port: u16 = 8642;
-    var host: []const u8 = "0.0.0.0";
+    var host: []const u8 = "127.0.0.1";
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -5210,7 +5255,7 @@ fn runServe(allocator: Allocator, args: []const []const u8) !void {
 
     // Parse address
     var addr_buf: [4]u8 = .{ 0, 0, 0, 0 };
-    if (!std.mem.eql(u8, host, "0.0.0.0")) {
+    if (!std.mem.eql(u8, host, "127.0.0.1")) {
         // Parse dotted-quad
         var parts: [4]u8 = undefined;
         var pi: usize = 0;
@@ -5771,6 +5816,7 @@ fn statusToStr(status: ServiceStatus) []const u8 {
         .stalled => "stalled",
         .diverged => "diverged",
         .stuck => "stuck",
+        .mirage => "mirage",
     };
 }
 
@@ -5923,6 +5969,60 @@ fn resumeService(allocator: Allocator, state: *EvolutionState, svc_idx: usize, a
 // RECOMMEND — Standalone recommendations subcommand
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// MIRAGE — Mark service as PPL mirage (overfitting, garbage generation)
+// Usage: tri farm evolve mirage <service-name> [--reason <text>]
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runMirage(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        print("{s}Usage: tri farm evolve mirage <service-name> [--reason <text>]{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    const target_name = args[0];
+    var reason: []const u8 = "PPL mirage — low PPL but garbage generation";
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--reason") and i + 1 < args.len) {
+            i += 1;
+            reason = args[i];
+        }
+    }
+
+    var state = loadState(allocator) catch {
+        print("{s}ERROR: No evolution state. Run 'tri farm evolve init' first.{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    // Find service by name
+    var found = false;
+    for (state.services[0..state.service_count]) |*svc| {
+        if (std.mem.eql(u8, svc.svcName(), target_name)) {
+            const old_status = statusToStr(svc.status);
+            svc.status = .mirage;
+            found = true;
+
+            // Add event via helper
+            state.addEvent(.err, target_name, reason);
+
+            saveState(state) catch |err| {
+                print("{s}ERROR: Failed to save state: {}{s}\n", .{ RED, err, RESET });
+                return;
+            };
+
+            print("{s}🎭 MIRAGE{s} {s}{s}{s}: {s} → mirage\n", .{ YELLOW, RESET, BOLD, target_name, RESET, old_status });
+            print("   Reason: {s}\n", .{reason});
+            print("   Service excluded from ranking and SEVO selection.\n", .{});
+            break;
+        }
+    }
+
+    if (!found) {
+        print("{s}ERROR: Service '{s}' not found in evolution state.{s}\n", .{ RED, target_name, RESET });
+    }
+}
+
 fn runRecommend(allocator: Allocator) !void {
     const state = loadState(allocator) catch {
         print("{s}ERROR: No evolution state. Run 'tri farm evolve init' first.{s}\n", .{ RED, RESET });
@@ -6030,7 +6130,7 @@ fn printHelp() void {
         \\
         \\Serve options:
         \\  --port <N>               HTTP port (default: 8642)
-        \\  --host <addr>            Bind address (default: 0.0.0.0)
+        \\  --host <addr>            Bind address (default: 127.0.0.1)
         \\
         \\Mock options:
         \\  --snapshot <path>         Snapshot JSON (default: .trinity/farm/w7v2_snapshot.json)
@@ -6648,10 +6748,36 @@ test "stall detection marks stalled after 2 unchanged polls" {
     try std.testing.expect(svc.status == .stalled);
 }
 
+test "mirage service excluded from ranking" {
+    var svc = ServiceEntry{};
+    svc.current_ppl = 5.0; // Looks great...
+    svc.status = .mirage; // ...but it's a mirage
+    try std.testing.expectEqual(@as(f32, 999.0), getPplForRanking(&svc));
+
+    // Non-mirage with same PPL gets real rank
+    var svc2 = ServiceEntry{};
+    svc2.current_ppl = 5.0;
+    svc2.status = .running;
+    try std.testing.expectEqual(@as(f32, 5.0), getPplForRanking(&svc2));
+}
+
+test "ctx mutation enforces min 81 for NTP" {
+    var leader = ServiceEntry{};
+    leader.context = 27;
+    copyToFixed(&leader.objective, &leader.objective_len, "ntp");
+    copyToFixed(&leader.lr, &leader.lr_len, "1e-3");
+    copyToFixed(&leader.batch, &leader.batch_len, "66");
+    copyToFixed(&leader.optimizer, &leader.optimizer_len, "lamb");
+    const config = mutateConfigEx(&leader, 42, false);
+    // Even without ctx mutation enabled, NTP at ctx=27 gets bumped to 81
+    try std.testing.expect(config.context >= 81);
+}
+
 test "new ServiceStatus values" {
     try std.testing.expectEqual(@as(u8, 5), @intFromEnum(ServiceStatus.stalled));
     try std.testing.expectEqual(@as(u8, 6), @intFromEnum(ServiceStatus.diverged));
     try std.testing.expectEqual(@as(u8, 7), @intFromEnum(ServiceStatus.stuck));
+    try std.testing.expectEqual(@as(u8, 8), @intFromEnum(ServiceStatus.mirage));
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

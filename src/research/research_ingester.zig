@@ -111,3 +111,27 @@ pub fn main() !void {
     std.debug.print("Status: Basic structure created\n", .{});
     std.debug.print("DEFERRED (v12): Implement arXiv fetch, PDF parse, insight extraction\n", .{});
 }
+
+test "Paper struct" {
+    const paper = Paper{
+        .title = "Ternary Neural Networks",
+        .authors = "Trinity",
+        .abstract = "We present...",
+        .url = "https://arxiv.org/abs/2401.00001",
+        .year = 2026,
+        .keywords = &.{},
+    };
+    try std.testing.expect(paper.year == 2026);
+    try std.testing.expectEqualStrings("Ternary Neural Networks", paper.title);
+}
+
+test "Insight struct" {
+    const insight = Insight{
+        .paper_id = "2401.00001",
+        .category = "ternary",
+        .finding = "1.58 bits/trit is optimal",
+        .relevance = 0.95,
+    };
+    try std.testing.expect(insight.relevance == 0.95);
+    try std.testing.expectEqualStrings("ternary", insight.category);
+}

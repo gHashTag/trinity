@@ -1,0 +1,46 @@
+[cell]
+id = "trinity.tri"
+name = "tri"
+version = "0.1.0"
+kind = "backend"
+path = "src/tri"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for tri"
+capabilities = ["runIdempotencyCommand", "runDuplicationCommand", "runResearchCommand", "trit_and", "trit_or"]
+files = 246
+tests = 1545
+owner = ""
+
+[tags]
+scope = "infra"
+type = "backend"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+trinity.math = "^1.0.0"
+trinity.sacred = "^1.0.0"
+trinity.gravity = "^1.0.0"
+trinity.monopoles = "^1.0.0"
+trinity.bsd = "^1.0.0"
+trinity.vsa = "^1.0.0"
+trinity.registry = "^1.0.0"
+trinity.api = "^1.0.0"
+trinity.superconductivity = "^1.0.0"
+trinity.queen-ui = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+ffi = "native"
+concurrency = "yes"
+
+[security]
+signed = true
+signature = "sha256:a8ff2089fef78643c066346eabcc9d77808e427b2cf01d4b56c845f8f8f758fe"
