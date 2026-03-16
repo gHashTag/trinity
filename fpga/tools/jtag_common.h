@@ -17,6 +17,8 @@
 #define IR_CFG_OUT  0x04
 #define IR_JSTART   0x0C
 #define IR_BYPASS   0x3F
+#define IR_USER1    0x02
+#define IR_USER2    0x03
 
 /* Bit-reverse a byte (MSB<->LSB, required for JTAG bit ordering) */
 uint8_t bitrev(uint8_t b);
