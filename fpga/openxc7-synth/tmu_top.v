@@ -2,7 +2,7 @@
 // TMU_TOP — Trinity Block-compatible wrapper for TMU
 // =============================================================================
 // Drop-in replacement for ternary_matvec_bram in trinity_block.v.
-// Instantiates TMU with K=32 parallel dot product.
+// Instantiates TMU with K-parallel dot product (K=16 default, K=32 optional).
 // Swap in trinity_block.v: change module name from ternary_matvec_bram to tmu_top.
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY

@@ -60,6 +60,42 @@ synth-tmu-full:
 	  synth_xilinx -flatten -abc9 -arch xc7 -top hslm_full_top; stat" \
 	  2>&1 | tee synth_reports/hslm_tmu_full.log
 
+## HSLM Full — Yosys synth only (wide BRAM, K=32 + BSCANE2 bridge)
+HSLM_SRCS = tmu.v tmu_top.v ternary_activation.v ternary_rmsnorm.v \
+            trinity_block.v embedding_lookup.v argmax_unit.v hslm_full_top.v
+
+synth-hslm:
+	@mkdir -p synth_reports
+	yosys -p "read_verilog $(HSLM_SRCS); \
+	  synth_xilinx -flatten -abc9 -arch xc7 -top hslm_full_top; stat" \
+	  2>&1 | tee synth_reports/hslm_wide_bram.log
+
+## HSLM Full — complete bitstream pipeline (requires openXC7 toolchain)
+hslm_full_top.json: $(HSLM_SRCS)
+	yosys -p "read_verilog $(HSLM_SRCS); \
+	  synth_xilinx -flatten -abc9 -arch xc7 -top hslm_full_top; \
+	  write_json $@"
+
+hslm_full_top.fasm: hslm_full_top.json $(CHIPDB)/$(DBPART).bin hslm_full_top.xdc
+	nextpnr-xilinx --chipdb $(CHIPDB)/$(DBPART).bin --xdc hslm_full_top.xdc \
+	  --json hslm_full_top.json --fasm $@
+
+hslm_full_top.frames: hslm_full_top.fasm
+	fasm2frames --part $(PART) --db-root $(PRJXRAY_DB_DIR)/$(FAMILY) $< > $@
+
+hslm_full_top.bit: hslm_full_top.frames
+	xc7frames2bit --part_file $(PRJXRAY_DB_DIR)/$(FAMILY)/$(PART)/part.yaml \
+	  --part_name $(PART) --frm_file $< --output_file $@
+
+## Pack weights: 32 bank .mem → 1 wide .mem (requires weight_pack_wide tool)
+pack-weights:
+	@echo "Packing lm_head..."
+	../tools/weight_pack_wide lm_head 32 1024
+	@for prefix in tmu_w_b1_up tmu_w_b1_down tmu_w_b2_up tmu_w_b2_down tmu_w_b3_up tmu_w_b3_down; do \
+	  echo "Packing $$prefix..."; \
+	  ../tools/weight_pack_wide $$prefix 32 5832; \
+	done
+
 clean:
 	rm -f *.bit *.frames *.fasm *.json tmu_test *.vcd
 	rm -rf chipdb/
