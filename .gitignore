@@ -276,11 +276,9 @@ fpga/openxc7-synth/*.sh
 fpga/openxc7-synth/*_wide.mem
 fpga/openxc7-synth/fpga/
 
-# FPGA weight tool binaries (compiled C)
+# FPGA weight tool binaries (compiled C, sources tracked)
 fpga/tools/weight_col2wide
-fpga/tools/weight_col2wide.c
 fpga/tools/weight_pack_wide
-fpga/tools/weight_pack_wide.c
 
 # Generated sacred CSV exports — all tracked for Zenodo upload
 
