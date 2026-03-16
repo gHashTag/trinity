@@ -80,11 +80,12 @@ pub fn runArenaCommand(allocator: Allocator, args: []const []const u8) !void {
 // ─────────────────────────────────────────────────────────────────────────────
 
 fn cliBattle(allocator: Allocator, args: []const []const u8) !void {
-    // Parse: arena battle "prompt" [--a fighter_a] [--b fighter_b] [--judge]
+    // Parse: arena battle "prompt" [--a fighter_a] [--b fighter_b] [--judge] [--from-issue N]
     var prompt: ?[]const u8 = null;
     var fighter_a: []const u8 = "trinity-hslm";
     var fighter_b: []const u8 = "echo";
     var auto_judge = false;
+    var from_issue: ?[]const u8 = null;
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -101,13 +102,39 @@ fn cliBattle(allocator: Allocator, args: []const []const u8) !void {
             if (tasks_mod.findTask(args[i])) |task| {
                 prompt = task.prompt;
             }
+        } else if (std.mem.eql(u8, args[i], "--from-issue") and i + 1 < args.len) {
+            i += 1;
+            from_issue = args[i];
         } else if (prompt == null) {
             prompt = args[i];
         }
     }
 
+    // If --from-issue, fetch issue title as prompt
+    if (from_issue) |issue_num| {
+        const gh_result = std.process.Child.run(.{
+            .allocator = allocator,
+            .argv = &.{ "gh", "issue", "view", issue_num, "--repo", "gHashTag/trinity", "--json", "title,body", "--jq", ".title" },
+            .max_output_bytes = 4096,
+        }) catch {
+            print("{s}Failed to fetch issue #{s}{s}\n", .{ RED, issue_num, RESET });
+            return;
+        };
+        defer allocator.free(gh_result.stderr);
+        if (gh_result.stdout.len > 0) {
+            prompt = gh_result.stdout;
+            // Trim trailing newline
+            if (prompt) |p| {
+                const trimmed = std.mem.trimRight(u8, p, "\n\r");
+                prompt = trimmed;
+            }
+            auto_judge = true; // Auto-judge when from issue
+            print("{s}📋 From issue #{s}: {s}{s}\n", .{ CYAN, issue_num, prompt.?, RESET });
+        }
+    }
+
     if (prompt == null) {
-        print("{s}Usage: arena battle <prompt> [--a fighter] [--b fighter] [--judge]{s}\n", .{ RED, RESET });
+        print("{s}Usage: arena battle <prompt> [--a fighter] [--b fighter] [--judge] [--from-issue N]{s}\n", .{ RED, RESET });
         return;
     }
 
