@@ -282,9 +282,7 @@ fpga/tools/weight_col2wide.c
 fpga/tools/weight_pack_wide
 fpga/tools/weight_pack_wide.c
 
-# Generated sacred CSV exports (keep predictions CSV and Zenodo HTML)
-papers/sacred/sacred_constants.csv
-papers/sacred/sacred_random_control.csv
+# Generated sacred CSV exports — all tracked for Zenodo upload
 
 # Junk archive (large, local only)
 archive/junk-*/

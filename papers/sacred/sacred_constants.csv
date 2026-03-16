@@ -1,0 +1,8 @@
+symbol,name,value,formula,source
+phi,Golden Ratio,1.6180339887498948,"(1 + sqrt(5)) / 2",algebraic
+pi,Circle Constant,3.1415926535897932,,transcendental
+e,Euler Number,2.7182818284590452,,transcendental
+3,Trinity Number,3,"phi^2 + 1/phi^2",identity
+gamma,Gamma,"0.2360679774997896","phi^-3",hypothesis
+mu,Immortality Threshold,0.0382,"phi^-4",derived
+chi,Quantum Consciousness,0.0618,"phi^-2 / (2*pi)",derived
