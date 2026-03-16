@@ -719,7 +719,7 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
     defer allocator.free(draft_url);
 
     const metadata_json = try std.fmt.allocPrint(allocator,
-        \\{{"metadata":{{"title":"gHashTag/trinity: Trinity {s} — FPGA Autoregressive Ternary LLM + Training Results","description":"HSLM: 1.95M-parameter ternary language model with zero-DSP FPGA inference. PPL=125 on TinyStories, 1,872KB model, 0 DSP48, $30 FPGA.","creators":[{{"person_or_org":{{"family_name":"Vasilev","given_name":"Dmitrii","type":"personal"}}}}],"publication_date":"{d}-{d:0>2}-{d:0>2}","version":"{s}","resource_type":{{"id":"software"}},"publisher":"Zenodo","related_identifiers":[{{"identifier":"https://github.com/gHashTag/trinity","relation_type":{{"id":"issupplementto"}},"scheme":"url"}}]}}}}
+        \\{{"metadata":{{"title":"gHashTag/trinity: Trinity {s} — FPGA Autoregressive Ternary LLM (PPL=2.90, TMU K=32, 1503 tok/s)","description":"HSLM: 1.95M-parameter ternary language model. PPL=2.90 (R23v2, LAMB optimizer, cosine schedule). TMU K=32 parallel ternary matmul — 1,503 tok/s (+82%% over K=16). Zero-DSP FPGA inference on $30 Artix-7: 0 DSP48 (real Yosys 0.63 synthesis). Ouroboros self-evolution score 95/100 LEGENDARY. FPL 2026 paper included. 386 KB checkpoint, pure Zig, zero external dependencies.","creators":[{{"person_or_org":{{"family_name":"Vasilev","given_name":"Dmitrii","type":"personal"}}}}],"publication_date":"{d}-{d:0>2}-{d:0>2}","version":"{s}","resource_type":{{"id":"software"}},"publisher":"Zenodo","related_identifiers":[{{"identifier":"https://github.com/gHashTag/trinity","relation_type":{{"id":"issupplementto"}},"scheme":"url"}}]}}}}
     , .{
         version,
         @as(u16, @intCast(std.time.epoch.EpochSeconds.getEpochDay(@as(std.time.epoch.EpochSeconds, .{ .secs = @intCast(std.time.timestamp()) })).calculateYearDay().year)),
@@ -750,6 +750,7 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
             "fpga/openxc7-synth/", "fpga/tools/fpga_eye.py", "papers/",
             "specs/tri/",
         },
+        .max_output_bytes = 10 * 1024 * 1024,
     });
     allocator.free(zip_result.stdout);
     allocator.free(zip_result.stderr);
