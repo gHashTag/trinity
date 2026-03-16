@@ -1,0 +1,33 @@
+[cell]
+id = "trinity.gravity"
+name = "gravity"
+version = "0.1.0"
+kind = "library"
+path = "src/gravity"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for gravity"
+capabilities = ["pageCurve", "pageTime", "informationRate", "islandsFormula", "fineGrainedEntropy"]
+files = 8
+tests = 90
+owner = ""
+
+[tags]
+scope = "physics"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+trinity.tri = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

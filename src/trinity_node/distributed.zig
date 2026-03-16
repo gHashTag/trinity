@@ -180,7 +180,7 @@ pub const PipelineWorker = struct {
             return;
         };
 
-        std.debug.print("\x1b[38;2;0;229;153m[Worker] Listening on 0.0.0.0:{d} — ready for forward requests\x1b[0m\n", .{self.listen_port});
+        std.debug.print("\x1b[38;2;0;229;153m[Worker] Listening on 127.0.0.1:{d} — ready for forward requests\x1b[0m\n", .{self.listen_port});
 
         while (self.running.load(.acquire)) {
             var client_addr: std.net.Address = undefined;
@@ -476,7 +476,7 @@ pub const PipelineRelay = struct {
             return;
         };
 
-        std.debug.print("\x1b[38;2;0;229;153m[Relay] Listening on 0.0.0.0:{d} — ready for relay\x1b[0m\n", .{self.listen_port});
+        std.debug.print("\x1b[38;2;0;229;153m[Relay] Listening on 127.0.0.1:{d} — ready for relay\x1b[0m\n", .{self.listen_port});
 
         while (self.running.load(.acquire)) {
             var client_addr: std.net.Address = undefined;

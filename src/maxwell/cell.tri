@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.maxwell"
+name = "maxwell"
+version = "0.1.0"
+kind = "library"
+path = "src/maxwell"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for maxwell"
+capabilities = ["toString", "glm", "claude", "openai", "loadFromEnv"]
+files = 7
+tests = 17
+owner = ""
+
+[tags]
+scope = "physics"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+ffi = "none"
+concurrency = "yes"
+
+[security]
+signed = true
+signature = "sha256:162c8edfccf5ad3620943e04262cc147e241e193b60ce571c0b46b59eb2d7f74"

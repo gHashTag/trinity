@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.particle_physics"
+name = "particle_physics"
+version = "0.1.0"
+kind = "library"
+path = "src/particle_physics"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for particle_physics"
+capabilities = ["strongCoupling", "weinbergAngle", "cabibboAngle", "protonElectronRatio", "cmbTemperature"]
+files = 1
+tests = 79
+owner = ""
+
+[tags]
+scope = "physics"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

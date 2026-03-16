@@ -1,0 +1,40 @@
+[cell]
+id = "trinity.vsa"
+name = "vsa"
+version = "0.1.0"
+kind = "library"
+path = "src/vsa"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for vsa"
+capabilities = ["init", "initPhi", "randomVector", "seededVector", "bind"]
+files = 36
+tests = 165
+owner = ""
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+trinity.models = "^1.0.0"
+trinity.quantum = "^1.0.0"
+trinity.common = "^1.0.0"
+trinity.autonomous = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+ffi = "native"
+concurrency = "yes"
+
+[security]
+signed = true
+signature = "sha256:0ab6fc62826ad173e21b53688f4f1423591c3faa6dc854a3cee53a11c6ac377b"

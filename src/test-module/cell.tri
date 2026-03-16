@@ -1,0 +1,35 @@
+[cell]
+id = "trinity.test-module"
+name = "test-module"
+version = "0.1.0"
+kind = "tool"
+path = "src/test-module"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "TODO: describe this cell"
+capabilities = []
+files = 1
+tests = 1
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "infra"
+type = "tool"
+
+[contributes]
+commands = ["test"]
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+
+ffi = "none"
+concurrency = "none"

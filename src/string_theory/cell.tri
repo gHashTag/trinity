@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.string_theory"
+name = "string_theory"
+version = "0.1.0"
+kind = "library"
+path = "src/string_theory"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for string_theory"
+capabilities = ["main", "init", "init", "effectiveDimensions", "init"]
+files = 7
+tests = 68
+owner = ""
+
+[tags]
+scope = "physics"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

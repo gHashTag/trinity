@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.autonomous"
+name = "autonomous"
+version = "0.1.0"
+kind = "library"
+path = "src/autonomous"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for autonomous"
+capabilities = ["deinit", "init", "analyzeCode", "compareWithResearch", "generateVibeSpec"]
+files = 3
+tests = 3
+owner = ""
+
+[tags]
+scope = "agent"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = true
+signature = "sha256:0fa271b8257df3ca029fe1eff6c24174989408c4bfae161da22b0086651108ae"

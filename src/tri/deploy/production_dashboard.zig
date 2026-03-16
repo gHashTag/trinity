@@ -290,14 +290,14 @@ fn executeExternalDeploy(allocator: mem.Allocator, config: *const DeployConfig) 
 pub fn deployBuiltinServer(allocator: mem.Allocator, config: DeployConfig) !DeployResult {
     const start_time = time.nanoTimestamp();
 
-    var server = try BuiltinServer.init(allocator, "0.0.0.0", config.builtin_port);
+    var server = try BuiltinServer.init(allocator, "127.0.0.1", config.builtin_port);
     defer server.deinit();
 
     try server.start();
 
     const deploy_time_ms = (time.nanoTimestamp() - start_time) / 1_000_000;
 
-    const url = try std.fmt.allocPrint(allocator, "http://0.0.0.0:{d}", .{config.builtin_port});
+    const url = try std.fmt.allocPrint(allocator, "http://127.0.0.1:{d}", .{config.builtin_port});
 
     return DeployResult{
         .success = true,

@@ -813,7 +813,7 @@ pub const ApiServer = struct {
         std.debug.print("╚══════════════════════════════════════════════════════════════╝\n", .{});
         std.debug.print("\n", .{});
 
-        std.debug.print("Starting server on http://0.0.0.0:{d}\n", .{self.port});
+        std.debug.print("Starting server on http://127.0.0.1:{d}\n", .{self.port});
         std.debug.print("Endpoints:\n", .{});
         std.debug.print("  POST /v1/chat/completions - Chat completion\n", .{});
         std.debug.print("  GET  /v1/models           - List models\n", .{});

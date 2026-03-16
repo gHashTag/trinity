@@ -13,7 +13,7 @@ pub const HttpConfig = struct {
     /// Port for the /metrics endpoint
     port: u16 = 9090,
     /// Bind address
-    bind_address: []const u8 = "0.0.0.0",
+    bind_address: []const u8 = "127.0.0.1",
     /// Maximum request size (bytes)
     max_request_size: usize = 4096,
     /// Response content type

@@ -15,8 +15,8 @@ const token_staking_mod = @import("token_staking.zig");
 pub const ApiConfig = struct {
     /// Port for the HTTP API server
     port: u16 = 8080,
-    /// Bind address (0.0.0.0 for all interfaces)
-    bind_address: []const u8 = "0.0.0.0",
+    /// Bind address (127.0.0.1 for localhost only)
+    bind_address: []const u8 = "127.0.0.1",
     /// Maximum request size (bytes)
     max_request_size: usize = 8192,
     /// Server version string
@@ -1123,7 +1123,7 @@ test "http_api: stats accumulate across requests" {
 test "http_api: config defaults are correct" {
     const config = ApiConfig{};
     try std.testing.expectEqual(@as(u16, 8080), config.port);
-    try std.testing.expectEqualStrings("0.0.0.0", config.bind_address);
+    try std.testing.expectEqualStrings("127.0.0.1", config.bind_address);
     try std.testing.expectEqual(@as(usize, 8192), config.max_request_size);
     try std.testing.expectEqualStrings("0.1.0", config.version);
 }

@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.api"
+name = "api"
+version = "0.1.0"
+kind = "library"
+path = "src/api"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for api"
+capabilities = ["toString", "toJson", "init", "deinit", "get"]
+files = 7
+tests = 32
+owner = ""
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "read"
+network = "external"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = true
+signature = "sha256:d672a81d78922e893e13eaa1e9d5ba3b6e81b78804709e548b56330ca9031772"

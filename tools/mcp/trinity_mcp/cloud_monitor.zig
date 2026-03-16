@@ -124,14 +124,14 @@ pub fn runMonitor(port: u16) !void {
         std.log.warn("Failed to restore state from events: {}", .{err});
     };
 
-    const address = net.Address.parseIp4("0.0.0.0", actual_port) catch return;
+    const address = net.Address.parseIp4("127.0.0.1", actual_port) catch return;
     var server = address.listen(.{ .reuse_address = true }) catch |err| {
         std.log.err("Cloud Monitor failed to bind: {}", .{err});
         return;
     };
     defer server.deinit();
 
-    std.log.info("Cloud Monitor listening on http://0.0.0.0:{d}", .{actual_port});
+    std.log.info("Cloud Monitor listening on http://127.0.0.1:{d}", .{actual_port});
 
     // Accept loop
     while (true) {

@@ -410,7 +410,7 @@ pub const ChatServer = struct {
         });
         defer server.deinit();
 
-        std.debug.print("Server ready on http://0.0.0.0:{d}\n\n", .{self.port});
+        std.debug.print("Server ready on http://127.0.0.1:{d}\n\n", .{self.port});
 
         while (true) {
             var connection = server.accept() catch |err| {

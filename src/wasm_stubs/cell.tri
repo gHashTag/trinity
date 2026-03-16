@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.wasm_stubs"
+name = "wasm_stubs"
+version = "0.1.0"
+kind = "library"
+path = "src/wasm_stubs"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for wasm_stubs"
+capabilities = ["getHue", "getLabel", "getRGB", "getLabel", "getSymbol"]
+files = 7
+tests = 1
+owner = ""
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

@@ -267,7 +267,7 @@ pub const HttpServer = struct {
             return err;
         };
 
-        std.debug.print("\nServer starting on http://0.0.0.0:{d}\n", .{self.port});
+        std.debug.print("\nServer starting on http://127.0.0.1:{d}\n", .{self.port});
         std.debug.print("Endpoints:\n", .{});
         std.debug.print("  POST /v1/chat/completions - Chat completion\n", .{});
         std.debug.print("  GET  /health              - Health check\n", .{});

@@ -11,7 +11,7 @@ pub fn main() !void {
     const port = std.fmt.parseInt(u16, port_str, 10) catch 8080;
 
     // Create TCP listener
-    const address = try std.net.Address.parseIp("0.0.0.0", port);
+    const address = try std.net.Address.parseIp("127.0.0.1", port);
     var listener = try address.listen(.{ .reuse_address = true });
 
     std.debug.print("TRINITY API Server listening on port {d}...\n", .{port});

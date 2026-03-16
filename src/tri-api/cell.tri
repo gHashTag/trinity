@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.tri-api"
+name = "tri-api"
+version = "0.1.0"
+kind = "backend"
+path = "src/tri-api"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for tri-api"
+capabilities = ["deinit", "check", "loadConfig", "init", "deinit"]
+files = 12
+tests = 23
+owner = ""
+
+[tags]
+scope = "infra"
+type = "backend"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = true
+signature = "sha256:45658db759f91f3dc1d654aba2147790263d185c4e88a03f9b4dd3f6b46ab61d"

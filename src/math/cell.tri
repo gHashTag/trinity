@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.math"
+name = "math"
+version = "0.1.0"
+kind = "library"
+path = "src/math"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for math"
+capabilities = ["init", "add", "mul", "abs", "zeta"]
+files = 1
+tests = 8
+owner = ""
+
+[tags]
+scope = "sacred"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"

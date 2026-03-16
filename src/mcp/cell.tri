@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.mcp"
+name = "mcp"
+version = "0.1.0"
+kind = "library"
+path = "src/mcp"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Auto-generated cell for mcp"
+capabilities = ["needsRestart", "isOverloaded", "calculateDesiredCount", "init", "deinit"]
+files = 4
+tests = 0
+owner = ""
+
+[tags]
+scope = "mcp"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "read"
+network = "none"
+process = "spawn"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = true
+signature = "sha256:3cc2ff453a7a8c65615bfa34d8c290282ac61f5c851a18b56d6a4d5662a944e5"
