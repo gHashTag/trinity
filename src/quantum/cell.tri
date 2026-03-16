@@ -22,6 +22,7 @@ type = "library"
 commands = ["simulate", "measure"]
 tri_subcommands = []
 events = []
+binaries = ["quantum"]
 
 [dependencies]
 trinity.sacred = "^1.0.0"

@@ -22,6 +22,7 @@ type = "library"
 commands = ["convert", "batch"]
 tri_subcommands = []
 events = []
+binaries = ["b2t"]
 
 [dependencies]
 

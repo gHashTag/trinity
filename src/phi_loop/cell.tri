@@ -20,6 +20,7 @@ type = "library"
 commands = []
 tri_subcommands = []
 events = []
+binaries = ["phi-loop"]
 
 [dependencies]
 trinity.agent-mu = "^1.0.0"

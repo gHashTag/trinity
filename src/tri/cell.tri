@@ -20,6 +20,7 @@ type = "backend"
 commands = []
 tri_subcommands = []
 events = []
+binaries = ["tri"]
 
 [dependencies]
 trinity.math = "^1.0.0"

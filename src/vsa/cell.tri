@@ -20,6 +20,7 @@ type = "library"
 commands = []
 tri_subcommands = []
 events = []
+binaries = ["photon-demo", "photon-immersive", "photon-terminal", "trinity-canvas"]
 
 [dependencies]
 trinity.models = "^1.0.0"

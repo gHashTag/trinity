@@ -22,6 +22,7 @@ type = "backend"
 commands = ["train", "eval", "export", "checkpoint"]
 tri_subcommands = ["farm train", "farm eval", "farm evolve"]
 events = ["on_step_complete", "on_epoch_end", "on_checkpoint"]
+binaries = ["hslm-train", "hslm-bench", "bpe-train"]
 
 [dependencies]
 trinity.sacred = "^1.0.0"

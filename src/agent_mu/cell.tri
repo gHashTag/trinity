@@ -22,6 +22,7 @@ type = "agent"
 commands = ["learn", "recall", "forget"]
 tri_subcommands = ["mu status", "mu patterns"]
 events = ["on_pattern_learned", "on_experience_saved"]
+binaries = ["pas-demo"]
 
 [dependencies]
 trinity.tvc = "^1.0.0"

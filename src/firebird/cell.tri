@@ -22,6 +22,7 @@ type = "agent"
 commands = ["browse", "navigate"]
 tri_subcommands = ["firebird browse"]
 events = ["on_page_loaded"]
+binaries = ["firebird"]
 
 [dependencies]
 trinity.vsa = "^1.0.0"
