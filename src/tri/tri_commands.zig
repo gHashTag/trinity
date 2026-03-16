@@ -1367,6 +1367,128 @@ fn printLintHelp() void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI Command: Queen UI launcher
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runUiCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const sub = if (args.len > 0) args[0] else "";
+
+    if (std.mem.eql(u8, sub, "kill")) {
+        uiKill(allocator);
+        return;
+    }
+    if (std.mem.eql(u8, sub, "build")) {
+        try uiBuild(allocator);
+        return;
+    }
+    if (std.mem.eql(u8, sub, "help") or std.mem.eql(u8, sub, "--help")) {
+        std.debug.print(
+            \\{s}tri ui{s} — Queen UI launcher
+            \\
+            \\  {s}tri ui{s}        build + kill old + copy to .app + open
+            \\  {s}tri ui build{s}  swift build only
+            \\  {s}tri ui kill{s}   kill running Trinity.app
+            \\
+        , .{ GREEN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET });
+        return;
+    }
+
+    // Full cycle: kill → build → copy → open
+    std.debug.print("{s}▸ Killing old Trinity.app...{s}\n", .{ GRAY, RESET });
+    uiKill(allocator);
+
+    std.debug.print("{s}▸ Building Queen UI (swift build)...{s}\n", .{ CYAN, RESET });
+    try uiBuild(allocator);
+
+    std.debug.print("{s}▸ Copying binary to Trinity.app bundle...{s}\n", .{ CYAN, RESET });
+    try uiCopyBinary(allocator);
+
+    std.debug.print("{s}▸ Opening Trinity.app...{s}\n", .{ GREEN, RESET });
+    try uiOpen(allocator);
+
+    std.debug.print("{s}✓ Queen UI launched{s}\n", .{ GREEN, RESET });
+}
+
+fn uiKill(allocator: std.mem.Allocator) void {
+    _ = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "pkill", "-9", "-f", "Trinity.app" },
+        .max_output_bytes = 4096,
+    }) catch {};
+    // Also kill by process name
+    _ = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "pkill", "-9", "trinity" },
+        .max_output_bytes = 4096,
+    }) catch {};
+    std.debug.print("{s}✓ Old processes killed{s}\n", .{ GREEN, RESET });
+}
+
+fn uiBuild(allocator: std.mem.Allocator) !void {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "swift", "build" },
+        .cwd = "apps/queen",
+        .max_output_bytes = 256 * 1024,
+    }) catch |err| {
+        std.debug.print("{s}✗ swift build failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return err;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const code: u8 = switch (result.term) {
+        .Exited => |c| c,
+        else => 1,
+    };
+
+    if (code != 0) {
+        std.debug.print("{s}✗ swift build failed (exit {d}):{s}\n{s}\n", .{ RED, code, RESET, result.stderr });
+        return error.BuildFailed;
+    }
+    std.debug.print("{s}✓ Build OK{s}\n", .{ GREEN, RESET });
+}
+
+fn uiCopyBinary(allocator: std.mem.Allocator) !void {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{
+            "cp",
+            "apps/queen/.build/arm64-apple-macosx/debug/trinity",
+            "apps/queen/Trinity.app/Contents/MacOS/trinity",
+        },
+        .max_output_bytes = 4096,
+    }) catch |err| {
+        std.debug.print("{s}✗ Copy failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return err;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const code: u8 = switch (result.term) {
+        .Exited => |c| c,
+        else => 1,
+    };
+    if (code != 0) {
+        std.debug.print("{s}✗ Copy failed (exit {d}):{s}\n{s}\n", .{ RED, code, RESET, result.stderr });
+        return error.CopyFailed;
+    }
+}
+
+fn uiOpen(allocator: std.mem.Allocator) !void {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "open", "apps/queen/Trinity.app" },
+        .max_output_bytes = 4096,
+    }) catch |err| {
+        std.debug.print("{s}✗ open failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return err;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+}
+
 // BUILTIN REFERENCE
 // ═══════════════════════════════════════════════════════════════════════════════
 
