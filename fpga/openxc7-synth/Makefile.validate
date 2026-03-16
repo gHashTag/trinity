@@ -135,9 +135,9 @@ $(REPORT_DIR)/hslm_full_top.log: $(FULL_DEPS)
 summary:
 	@echo ""
 	@echo "============================================================"
-	@echo "  Synthesis Summary — $(PART)"
+	@echo "  Synthesis Summary — $(PART) (Yosys 0.63)"
 	@echo "============================================================"
-	@printf "%-35s %8s %8s %8s\n" "Module" "LUTs" "BRAM36" "FFs"
+	@printf "%-30s %8s %8s %8s %6s %5s\n" "Module" "LUTs" "BRAM36eq" "FFs" "CARRY4" "DSP48"
 	@echo "------------------------------------------------------------"
 	@for log in \
 	    uart_weight_loader \
@@ -153,28 +153,32 @@ summary:
 	    hslm_full_top; do \
 	  logfile="$(REPORT_DIR)/$${log}.log"; \
 	  if [ -f "$$logfile" ]; then \
-	    luts=$$(awk '/Number of LUTs:/{print $$NF} \
-	                /LUT4s:/{print $$NF} \
-	                /LUT[0-9]+\b/{sub(/.*LUT[0-9]+:? */,""); print $$1}' \
-	              "$$logfile" | tail -1); \
-	    luts=$$(grep -oE 'Number of LUTs:[[:space:]]+[0-9]+' "$$logfile" | \
-	            awk '{print $$NF}' | tail -1); \
-	    [ -z "$$luts" ] && luts=$$(grep -oE '[0-9]+ LUT[0-9]' "$$logfile" | \
-	            awk 'BEGIN{s=0}{s+=$$1}END{print s}'); \
-	    [ -z "$$luts" ] && luts="--"; \
-	    bram=$$(grep -oE '[0-9]+ RAMB36' "$$logfile" | \
-	           awk 'BEGIN{s=0}{s+=$$1}END{if(s>0)print s; else print "--"}'); \
-	    ffs=$$(grep -oE 'Number of [Ff]lip-[Ff]lops:[[:space:]]+[0-9]+' "$$logfile" | \
-	          awk '{print $$NF}' | tail -1); \
-	    [ -z "$$ffs" ] && ffs=$$(grep -oE '[0-9]+ Flip-Flops' "$$logfile" | \
-	           awk 'BEGIN{s=0}{s+=$$1}END{if(s>0)print s; else print "--"}'); \
-	    [ -z "$$ffs" ] && ffs="--"; \
-	    printf "%-35s %8s %8s %8s\n" "$$log" "$$luts" "$$bram" "$$ffs"; \
+	    inv=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+INV$$/{print $$1}' "$$logfile" | tail -1); inv=$${inv:-0}; \
+	    l2=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+LUT2$$/{print $$1}' "$$logfile" | tail -1); l2=$${l2:-0}; \
+	    l3=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+LUT3$$/{print $$1}' "$$logfile" | tail -1); l3=$${l3:-0}; \
+	    l4=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+LUT4$$/{print $$1}' "$$logfile" | tail -1); l4=$${l4:-0}; \
+	    l5=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+LUT5$$/{print $$1}' "$$logfile" | tail -1); l5=$${l5:-0}; \
+	    l6=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+LUT6$$/{print $$1}' "$$logfile" | tail -1); l6=$${l6:-0}; \
+	    luts=$$((inv + l2 + l3 + l4 + l5 + l6)); \
+	    b18=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+RAMB18E1$$/{print $$1}' "$$logfile" | tail -1); b18=$${b18:-0}; \
+	    b36=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+RAMB36E1$$/{print $$1}' "$$logfile" | tail -1); b36=$${b36:-0}; \
+	    bram=$$(echo "scale=1; $$b36 + $$b18 / 2" | bc); \
+	    fdre=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+FDRE$$/{print $$1}' "$$logfile" | tail -1); fdre=$${fdre:-0}; \
+	    fdse=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+FDSE$$/{print $$1}' "$$logfile" | tail -1); fdse=$${fdse:-0}; \
+	    ffs=$$((fdre + fdse)); \
+	    carry=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+CARRY4$$/{print $$1}' "$$logfile" | tail -1); carry=$${carry:-0}; \
+	    dsp=$$(awk '/^[[:space:]]+[0-9]+[[:space:]]+DSP48E1$$/{print $$1}' "$$logfile" | tail -1); dsp=$${dsp:-0}; \
+	    if [ "$$luts" -eq 0 ] && [ "$$ffs" -eq 0 ]; then \
+	      printf "%-30s %8s %8s %8s %6s %5s\n" "$$log" "FAIL" "--" "--" "--" "--"; \
+	    else \
+	      printf "%-30s %8d %8s %8d %6d %5d\n" "$$log" "$$luts" "$$bram" "$$ffs" "$$carry" "$$dsp"; \
+	    fi; \
 	  else \
-	    printf "%-35s %8s %8s %8s\n" "$$log" "(no log)" "" ""; \
+	    printf "%-30s %8s %8s %8s %6s %5s\n" "$$log" "(none)" "" "" "" ""; \
 	  fi; \
 	done
 	@echo "============================================================"
+	@echo "  XC7A100T: 63,400 LUT | 135 BRAM36 | 126,800 FF | 240 DSP48"
 	@echo "  Reports in: $(REPORT_DIR)/"
 	@echo "============================================================"
 	@echo ""

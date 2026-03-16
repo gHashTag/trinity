@@ -279,5 +279,40 @@
       "clock_mhz": 81.25,
       "note": "RAM64M = x_buffer distributed RAM (K=16 simultaneous reads, can't use BRAM). Buffers (emb/inter/relu) also distributed due to unregistered reads."
     }
+  },
+  {
+    "id": "FPGA-019",
+    "date": "2026-03-16",
+    "category": "TESTING",
+    "action": "Full JTAG verification + Yosys synthesis of live hslm_full_top design",
+    "result": "SUCCESS",
+    "symptom": "Needed comprehensive hardware test + real synthesis metrics for paper",
+    "root_cause": "Previous utilization estimates (32% LUT, 87% BRAM) were inaccurate — Yosys shows 78% LUT, 47% BRAM",
+    "lesson": "LUT is the real bottleneck (78%), not BRAM (47%). 4,608 RAM64M distributed RAMs consume significant LUT resources. Always run full Yosys synthesis for accurate numbers, never trust manual estimates.",
+    "tags": ["testing", "synthesis", "yosys", "metrics", "paper-data", "fpga-016"],
+    "data": {
+      "jtag_tests": "6/6 passed",
+      "stat_register": "0x401079FC",
+      "device_dna": "0x00001C0000001C",
+      "idcode": "0x13631093",
+      "yosys_version": "0.63",
+      "lut_cells": 49363,
+      "lut_pct": "77.9%",
+      "ram64m": 4608,
+      "estimated_lcs": 43619,
+      "estimated_lc_pct": "68.7%",
+      "bram18e1": 118,
+      "bram36e1": 4,
+      "bram36_eq": 63.0,
+      "bram_pct": "46.7%",
+      "ff_total": 59013,
+      "ff_pct": "46.5%",
+      "carry4": 701,
+      "dsp48e1": 0,
+      "mmcme2_base": 1,
+      "bscane2": 1,
+      "clock_mhz": 81.25,
+      "bottleneck": "LUT (78%), not BRAM as previously assumed"
+    }
   }
 ]

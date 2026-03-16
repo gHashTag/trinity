@@ -1,10 +1,11 @@
 {
-  "last_test": "2026-03-14T23:45:00+07:00",
+  "last_test": "2026-03-16T17:10:00+07:00",
   "test_summary": {
-    "write": "SUCCESS — 3.6 MB programmed in ~5 min",
-    "status": "SUCCESS — DONE=1, Part NOT Secured",
-    "readback": "SUCCESS — 1516616 bytes read in ~4 min",
-    "verify": "PARTIAL — 333 mismatches (readback works, alignment issue)"
+    "write": "SUCCESS — hslm_full_top.bit programmed (FPGA-015)",
+    "status": "SUCCESS — DONE=1, MMCM_LOCK=1, CRC_OK, Part NOT Secured",
+    "jtag_debug": "SUCCESS — 6/6 diagnostic tests passed",
+    "synthesis": "SUCCESS — Yosys 0.63 full synthesis: 49,363 LUT, 63 BRAM36-eq, 59,013 FF, 0 DSP48",
+    "readback": "PARTIAL — 333 mismatches (readback works, alignment issue)"
   },
   "cable": {
     "type": "Xilinx DLC10 Platform Cable USB II (new)",
@@ -21,7 +22,7 @@
   "fpga": {
     "board": "QMTech XC7A100T",
     "idcode": "0x13631093",
-    "dna": "0x180000001800000",
+    "dna": "0x00001C0000001C",
     "stat": "0x401079FC",
     "configured": true,
     "done_bit": true,
