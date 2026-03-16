@@ -373,6 +373,12 @@ static int cmd_readback(const char *outfile)
 
     uint32_t total_words = XC7A100T_FRAME_COUNT * FRAME_WORDS;
 
+    /*
+     * Readback command sequence per UG470 Section 7.1.2.
+     * Pipeline flush: 8 NOPs after Type 2 read command ensures the JTAG
+     * config pipeline is fully flushed before data starts clocking out.
+     * Previous 2 NOPs caused misalignment (issue #371).
+     */
     uint32_t cmd[] = {
         0xAA995566,                              /* Sync */
         0x20000000,                              /* NOP */
@@ -389,12 +395,19 @@ static int cmd_readback(const char *outfile)
         type1_packet(2, REG_CMD, 1),             /* Write CMD */
         CMD_RCFG,                                /* RCFG — readback config */
         0x20000000,                              /* NOP */
+        0x20000000,                              /* NOP (extra pipeline flush) */
         type1_packet(1, REG_FDRO, 0),            /* Type 1 READ FDRO, 0 words (header for Type 2) */
         type2_packet(1, total_words),            /* Type 2 READ, total_words */
-        0x20000000,                              /* NOP */
-        0x20000000,                              /* NOP */
+        0x20000000,                              /* NOP — pipeline flush (UG470) */
+        0x20000000,                              /* NOP — pipeline flush */
+        0x20000000,                              /* NOP — pipeline flush */
+        0x20000000,                              /* NOP — pipeline flush */
+        0x20000000,                              /* NOP — pipeline flush */
+        0x20000000,                              /* NOP — pipeline flush */
+        0x20000000,                              /* NOP — pipeline flush */
+        0x20000000,                              /* NOP — pipeline flush */
     };
-    shift_cfg_in(cmd, 19);
+    shift_cfg_in(cmd, 26);
 
     /* Switch to CFG_OUT for readback */
     jtag_load_ir(IR_CFG_OUT);
@@ -596,13 +609,52 @@ static int cmd_verify(const char *bitfile)
     fclose(f);
 
     /*
+     * Auto-detect readback alignment (issue #371).
+     *
+     * Per UG470, readback data includes pad frame(s) before real configuration
+     * data. The exact offset depends on pipeline flush timing and NOP count.
+     * Instead of hardcoding 1 pad frame, we try word-aligned offsets from 0 to
+     * 3 pad frames and pick the offset with the fewest mismatches in the first
+     * reference frame. This eliminates alignment-dependent mismatch errors.
+     */
+    int rb_offset = FRAME_BYTES;  /* Default: 1 pad frame */
+    int best_offset = rb_offset;
+    int best_mismatches = ref_len;  /* Worst case */
+    int max_try_offset = 3 * FRAME_BYTES;
+    if (max_try_offset > (int)readback_len - FRAME_BYTES)
+        max_try_offset = (int)readback_len - FRAME_BYTES;
+
+    /* Scan word-aligned offsets to find best alignment */
+    for (int try_off = 0; try_off <= max_try_offset; try_off += 4) {
+        int mm = 0;
+        int check_len = FRAME_BYTES;
+        if (check_len > ref_len) check_len = ref_len;
+        if (try_off + check_len > (int)readback_len) continue;
+
+        for (int i = 0; i < check_len; i++) {
+            if (ref_data[i] != readback[try_off + i])
+                mm++;
+        }
+        if (mm < best_mismatches) {
+            best_mismatches = mm;
+            best_offset = try_off;
+        }
+    }
+
+    rb_offset = best_offset;
+    printf("  Alignment: auto-detected offset = %d bytes (%d words, %.1f frames)\n",
+           rb_offset, rb_offset / 4, (double)rb_offset / FRAME_BYTES);
+    if (rb_offset != FRAME_BYTES) {
+        printf("  NOTE: offset differs from default 1-pad-frame assumption\n");
+    }
+
+    /*
      * Frame-by-frame comparison per UG470:
-     * - Skip first pad frame in readback (101 words = 404 bytes)
+     * - Skip pad frame(s) in readback (auto-detected above)
      * - Skip ECC word (word #50 in each 101-word frame) — volatile
      * - Track BRAM frames separately (block type 1 in FAR — volatile after startup)
      * - Without .rbd/.msd files (openXC7, not Vivado), some mismatches are expected
      */
-    int rb_offset = FRAME_BYTES;  /* Skip 1 pad frame in readback */
     int rb_avail = (int)readback_len - rb_offset;
     int compare_frames = ref_len / FRAME_BYTES;
     int rb_frames = rb_avail / FRAME_BYTES;
