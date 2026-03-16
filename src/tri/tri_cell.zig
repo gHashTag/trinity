@@ -229,6 +229,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "sign")) return runSign(allocator, rest);
     if (std.mem.eql(u8, sub, "doctor")) return runDoctor(allocator, rest);
     if (std.mem.eql(u8, sub, "explain")) return runExplain(allocator, rest);
+    if (std.mem.eql(u8, sub, "map")) return runMap(allocator);
 
     printHelp();
 }
@@ -270,6 +271,7 @@ fn printHelp() void {
     std.debug.print("  {s}sign [<id>|--all]{s}  Sign L2 cells (sha256 hash)\n", .{ GREEN, RESET });
     std.debug.print("  {s}doctor{s}            Full heal cycle: fix→sign→audit→lint→sync→status\n", .{ GREEN, RESET });
     std.debug.print("  {s}explain <id>{s}      Show WHY a cell has its permission level\n", .{ GREEN, RESET });
+    std.debug.print("  {s}map{s}               Binary → cell mapping, find orphan binaries\n", .{ GREEN, RESET });
     std.debug.print("  {s}verify{s}            Check content hashes (integrity)\n", .{ GREEN, RESET });
     std.debug.print("  {s}check-boundaries{s}  Validate tag boundary rules\n", .{ GREEN, RESET });
 }
@@ -2367,6 +2369,41 @@ fn runStatus(allocator: Allocator) !void {
         CYAN, RESET, total_deps, cells_with_deps, total_cells,
     });
 
+    // Count binaries and mapped ones
+    var bin_total: usize = 0;
+    var bin_mapped: usize = 0;
+    if (std.fs.cwd().openDir("zig-out/bin", .{ .iterate = true })) |bd_val| {
+        var bd = bd_val;
+        defer bd.close();
+        var bi = bd.iterate();
+        while (bi.next() catch null) |entry| {
+            if (entry.kind != .file or entry.name[0] == '.') continue;
+            bin_total += 1;
+            // Quick match: check if any cell dir name matches binary
+            for (discovered) |path| {
+                const dir_name = if (std.mem.lastIndexOf(u8, path, "/")) |s| path[s + 1 ..] else path;
+                var norm_bin: [64]u8 = undefined;
+                const nl = @min(entry.name.len, 63);
+                @memcpy(norm_bin[0..nl], entry.name[0..nl]);
+                for (norm_bin[0..nl]) |*c| if (c.* == '-') { c.* = '_'; };
+                var norm_dir: [64]u8 = undefined;
+                const dl = @min(dir_name.len, 63);
+                @memcpy(norm_dir[0..dl], dir_name[0..dl]);
+                for (norm_dir[0..dl]) |*c| if (c.* == '-') { c.* = '_'; };
+                if (std.mem.eql(u8, norm_bin[0..nl], norm_dir[0..dl])) {
+                    bin_mapped += 1;
+                    break;
+                }
+            }
+        }
+    } else |_| {}
+    if (bin_total > 0) {
+        const orphan_color = if (bin_total - bin_mapped > 10) YELLOW else GREEN;
+        std.debug.print("  {s}Binaries:{s}     {d} total, {d} mapped, {s}{d} orphan{s}\n", .{
+            CYAN, RESET, bin_total, bin_mapped, orphan_color, bin_total - bin_mapped, RESET,
+        });
+    }
+
     // Score
     std.debug.print("\n  {s}Score:{s}        {s}{d}/100{s}", .{ CYAN, RESET, avg_color, avg_score, RESET });
     std.debug.print("  A:{s}{d}{s} B:{s}{d}{s} C:{s}{d}{s} F:{s}{d}{s}\n", .{
@@ -2405,6 +2442,124 @@ fn runStatus(allocator: Allocator) !void {
     }
 
     std.debug.print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAP — binary → cell mapping, find orphan binaries
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runMap(allocator: Allocator) !void {
+    std.debug.print("\n{s}🗺  BINARY → CELL MAP{s}\n\n", .{ GOLDEN, RESET });
+
+    // Scan zig-out/bin/ for built binaries
+    var binaries = std.array_list.Managed([]const u8).init(allocator);
+    defer {
+        for (binaries.items) |b| allocator.free(b);
+        binaries.deinit();
+    }
+
+    var bin_dir = std.fs.cwd().openDir("zig-out/bin", .{ .iterate = true }) catch {
+        std.debug.print("  {s}No zig-out/bin/ found. Run `zig build` first.{s}\n\n", .{ YELLOW, RESET });
+        return;
+    };
+    defer bin_dir.close();
+
+    var iter = bin_dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (std.mem.startsWith(u8, entry.name, ".")) continue;
+        const name = allocator.dupe(u8, entry.name) catch continue;
+        binaries.append(name) catch {
+            allocator.free(name);
+        };
+    }
+
+    // Sort
+    std.mem.sort([]const u8, binaries.items, {}, struct {
+        fn lt(_: void, a: []const u8, b: []const u8) bool {
+            return std.mem.order(u8, a, b) == .lt;
+        }
+    }.lt);
+
+    // Load cells and build root_source → cell mapping
+    const discovered = discoverCells(allocator) catch return;
+    defer {
+        for (discovered) |p| allocator.free(p);
+        allocator.free(discovered);
+    }
+
+    // Build path → cell id map
+    var cell_paths = std.StringHashMap([]const u8).init(allocator);
+    defer cell_paths.deinit();
+    for (discovered) |path| {
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+        defer allocator.free(cell_tri_path);
+        const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+        defer allocator.free(content);
+        const cell = parseCellTri(content);
+        if (cell.id.len == 0) continue;
+        // Dupe since content is freed
+        const id_copy = allocator.dupe(u8, cell.id) catch continue;
+        cell_paths.put(path, id_copy) catch allocator.free(id_copy);
+    }
+    defer {
+        var vit = cell_paths.valueIterator();
+        while (vit.next()) |v| allocator.free(v.*);
+    }
+
+    var mapped: usize = 0;
+    var orphan: usize = 0;
+
+    std.debug.print("  {s}BINARY                  CELL                     STATUS{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}─────────────────────── ──────────────────────── ──────{s}\n", .{ GRAY, RESET });
+
+    for (binaries.items) |bin_name| {
+        // Try to find matching cell by directory name matching binary name
+        var found_cell: ?[]const u8 = null;
+        for (discovered) |path| {
+            const dir_name = if (std.mem.lastIndexOf(u8, path, "/")) |slash| path[slash + 1 ..] else path;
+            // Match: binary name contains cell dir name, or cell dir contains binary name
+            // Normalize: binary "trinity-mcp" → "trinity_mcp"
+            var norm_bin: [64]u8 = undefined;
+            const norm_len = @min(bin_name.len, 63);
+            @memcpy(norm_bin[0..norm_len], bin_name[0..norm_len]);
+            for (norm_bin[0..norm_len]) |*c| {
+                if (c.* == '-') c.* = '_';
+            }
+            var norm_dir: [64]u8 = undefined;
+            const dir_len = @min(dir_name.len, 63);
+            @memcpy(norm_dir[0..dir_len], dir_name[0..dir_len]);
+            for (norm_dir[0..dir_len]) |*c| {
+                if (c.* == '-') c.* = '_';
+            }
+
+            if (std.mem.eql(u8, norm_bin[0..norm_len], norm_dir[0..dir_len]) or
+                std.mem.eql(u8, bin_name, dir_name))
+            {
+                found_cell = cell_paths.get(path);
+                break;
+            }
+        }
+
+        std.debug.print("  {s}{s}{s}", .{ WHITE, bin_name, RESET });
+        printPad(bin_name.len, 24);
+
+        if (found_cell) |cell_id| {
+            std.debug.print("{s}{s}{s}", .{ GREEN, cell_id, RESET });
+            printPad(cell_id.len, 25);
+            std.debug.print("{s}mapped{s}\n", .{ GREEN, RESET });
+            mapped += 1;
+        } else {
+            std.debug.print("{s}(no cell){s}", .{ YELLOW, RESET });
+            printPad(9, 25);
+            std.debug.print("{s}orphan{s}\n", .{ YELLOW, RESET });
+            orphan += 1;
+        }
+    }
+
+    std.debug.print("\n  {s}Mapped: {d}{s} | {s}Orphan: {d}{s} | Total: {d}\n\n", .{
+        GREEN, mapped, RESET, if (orphan > 0) YELLOW else GREEN, orphan, RESET, binaries.items.len,
+    });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
