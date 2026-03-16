@@ -5,21 +5,26 @@
 //
 // Architecture: K weights processed per cycle via SINGLE wide BRAM + adder tree
 //   - x_buffer filled during S_FILL phase (N_IN cycles)
-//   - One wide BRAM read: (2*K)-bit word → K 2-bit weight codes
-//   - Combinational adder tree reduces K partial products
+//   - S_PREFETCH loads K values from x_buffer BRAM into x_reg[] one-at-a-time
+//   - S_COMPUTE: K x_reg values + K weight codes from wide BRAM → adder tree
 //   - Accumulator sums tree output across ceil(N_IN/K) steps
 //
-// Wide BRAM: packs K banks into one (2*K)-bit-wide memory.
+// DRAM-free design: x_buffer marked ram_style=block (single read port).
+//   K parallel reads replaced by K-cycle prefetch into x_reg[0:K-1] registers.
+//   x_reg is K flip-flops — never inferred as distributed RAM.
+//
+// Wide BRAM (weight): packs K banks into one (2*K)-bit-wide memory.
 //   K=32: 64-bit wide → 1 BRAM36 read port per TMU instance
 //   K=16: 32-bit wide → 1 BRAM18 read port per TMU instance
-//   Eliminates distributed-RAM LUT explosion from narrow 2-bit banks.
 //
-// K=32: 243x729 matvec in ~6.8K cycles (zero-bubble FSM)
-// K=16: 243x729 matvec in ~12.4K cycles
+// Cycle budget (K=16, N_IN=243, N_OUT=729, STEPS_PER_OUT=16):
+//   S_FILL:     243 cycles
+//   Per output: K_prefetch (K+1=17) + STEPS_PER_OUT compute = 33 cycles/step × 16 steps = 528
+//   Total:      729 × 528 ≈ 385K cycles/token  (vs 81K zero-bubble; 4.75× slower, synthesises)
 //
 // Weight encoding: 2'b01=+1, 2'b10=-1, 2'b00=0
 // Wide word layout: {w[K-1], ..., w[1], w[0]} where each w[b] is 2 bits
-// Address: j * STEPS_PER_OUT + (i / K), bank index = i % K
+// Address: j * STEPS_PER_OUT + (i / K)
 //
 // phi^2 + 1/phi^2 = 3 = TRINITY
 // =============================================================================
@@ -76,16 +81,23 @@ module tmu #(
     localparam BANK_MEM_DEPTH = 1 << BANK_ADDR_BITS;
     localparam WIDE_BITS      = 2 * K;  // 64 for K=32, 32 for K=16
 
+    // Width for prefetch counter (0..K-1 + 1 for BRAM latency)
+    localparam K_WIDTH        = (K == 32) ? 6 : 5;  // enough bits for 0..K
+
     // Width-safe comparison constants
     localparam [I_WIDTH-1:0] LAST_I = N_IN - 1;
     localparam [J_WIDTH-1:0] LAST_J = N_OUT - 1;
 
     // =========================================================================
-    // X BUFFER — filled during S_FILL, read K values/cycle during S_COMPUTE
+    // X BUFFER — BRAM (single read port, registered output)
     // =========================================================================
-    reg signed [ACC_WIDTH-1:0] x_buffer [0:N_IN-1];
-    reg [I_WIDTH-1:0] fill_idx;
+    // Marked ram_style=block so Yosys infers Block RAM, not distributed RAM.
+    // Only one read address issued per cycle → no multi-port DRAM inference.
 
+    (* ram_style = "block" *)
+    reg signed [ACC_WIDTH-1:0] x_buffer [0:N_IN-1];
+
+    reg [I_WIDTH-1:0] fill_idx;
     assign x_ext_addr = fill_idx;
 
     wire signed [ACC_WIDTH-1:0] x_fill_val;
@@ -96,6 +108,26 @@ module tmu #(
             assign x_fill_val = {{(ACC_WIDTH - I_WIDTH - 1){1'b0}}, fill_idx} + {{(ACC_WIDTH-1){1'b0}}, 1'b1};
         end
     endgenerate
+
+    // Single-port BRAM read — address driven by FSM, 1-cycle read latency
+    reg [I_WIDTH-1:0]          xbuf_rd_addr;
+    reg signed [ACC_WIDTH-1:0] xbuf_rd_data;  // registered output (latency=1)
+
+    always @(posedge clk) begin
+        xbuf_rd_data <= x_buffer[xbuf_rd_addr];
+    end
+
+    // =========================================================================
+    // X REGISTER FILE — K flip-flops loaded during S_PREFETCH
+    // =========================================================================
+    // K=16 or K=32 plain registers — synthesiser will NOT infer RAM for these
+    // because they are only written sequentially (one per cycle) and read all
+    // at once combinationally in S_COMPUTE.
+    // Yosys DRAM inference requires write-enable on individual elements
+    // selected by a runtime index; here each element has a fixed address
+    // decoded from pf_cnt via the generate loop.
+
+    reg signed [ACC_WIDTH-1:0] x_reg [0:K-1];
 
     // =========================================================================
     // WIDE BRAM — single (2*K)-bit-wide memory replaces K separate 2-bit banks
@@ -126,20 +158,19 @@ module tmu #(
     endgenerate
 
     // =========================================================================
-    // TERNARY MUX — K partial products (combinational)
+    // TERNARY MUX — K partial products using x_reg (DRAM-free)
     // =========================================================================
-    reg [I_WIDTH-1:0] step_base_d1;
+    // x_reg[b] is a simple register index — no runtime-indexed array read.
+    // The (x_idx < N_IN) guard handles the tail partial step where
+    // step_base + b >= N_IN; those x_reg entries are zero-initialised and
+    // loaded with 0 during S_PREFETCH for out-of-range indices.
 
     wire signed [ACC_WIDTH-1:0] partial [0:K-1];
-    wire signed [ACC_WIDTH-1:0] x_buf_val [0:K-1];
 
     generate
         for (b = 0; b < K; b = b + 1) begin : gen_partial
-            wire [I_WIDTH:0] x_idx = {1'b0, step_base_d1} + b[I_WIDTH:0];
-            assign x_buf_val[b] = (x_idx < N_IN) ? x_buffer[x_idx[I_WIDTH-1:0]] : {ACC_WIDTH{1'b0}};
-
-            assign partial[b] = (w_code[b] == 2'b01) ?  x_buf_val[b] :
-                                (w_code[b] == 2'b10) ? -x_buf_val[b] :
+            assign partial[b] = (w_code[b] == 2'b01) ?  x_reg[b] :
+                                (w_code[b] == 2'b10) ? -x_reg[b] :
                                                         {ACC_WIDTH{1'b0}};
         end
     endgenerate
@@ -188,23 +219,68 @@ module tmu #(
     end endgenerate
 
     // =========================================================================
-    // STATE MACHINE — Zero-bubble: PREFETCH merged into FILL/OUTPUT
+    // STATE MACHINE
     // =========================================================================
-    localparam S_IDLE    = 3'd0;
-    localparam S_FILL    = 3'd1;
-    localparam S_COMPUTE = 3'd2;
-    localparam S_OUTPUT  = 3'd3;
-    localparam S_DONE    = 3'd4;
+    // S_IDLE    → S_FILL     (on start)
+    // S_FILL    → S_PREFETCH (after N_IN cycles)
+    // S_PREFETCH→ S_COMPUTE  (after K+1 cycles: K addr issues + 1 BRAM latency)
+    // S_COMPUTE → S_PREFETCH (if more steps remain for this j)
+    //           → S_OUTPUT   (last step for this j)
+    // S_OUTPUT  → S_PREFETCH (next j, if j < LAST_J)
+    //           → S_DONE     (if j == LAST_J)
+    // S_DONE    → S_IDLE
+    //
+    // S_PREFETCH details:
+    //   pf_cnt=0:     issue xbuf_rd_addr = step_base + 0
+    //   pf_cnt=1:     x_reg[0] <= xbuf_rd_data; issue addr for x_reg[1]
+    //   ...
+    //   pf_cnt=K-1:   x_reg[K-2] loaded; issue addr for x_reg[K-1]
+    //   pf_cnt=K:     x_reg[K-1] loaded; issue bank_rd_addr; → S_COMPUTE
+    //                 (bank_word valid on first cycle of S_COMPUTE)
+    //
+    // S_COMPUTE details (1 cycle):
+    //   acc += tree_sum  (bank_word and x_reg[] both valid)
+    //   If last step → S_OUTPUT, else advance step and → S_PREFETCH
+
+    localparam S_IDLE      = 3'd0;
+    localparam S_FILL      = 3'd1;
+    localparam S_PREFETCH  = 3'd2;
+    localparam S_COMPUTE   = 3'd3;
+    localparam S_OUTPUT    = 3'd4;
+    localparam S_DONE      = 3'd5;
 
     reg [2:0] state;
     reg signed [ACC_WIDTH-1:0] acc;
-    reg [J_WIDTH-1:0]   j_idx;
-    reg [BANK_ADDR_BITS-1:0] step_cnt;
-    reg [BANK_ADDR_BITS-1:0] j_base_addr;
-    reg [I_WIDTH-1:0] step_base;
-    reg                compute_valid;
+    reg [J_WIDTH-1:0]          j_idx;
+    reg [BANK_ADDR_BITS-1:0]   step_cnt;       // which K-group within current j
+    reg [BANK_ADDR_BITS-1:0]   j_base_addr;    // j * STEPS_PER_OUT
+    reg [I_WIDTH-1:0]          step_base;      // step_cnt * K (x index of first element)
+    reg [K_WIDTH-1:0]          pf_cnt;         // prefetch counter 0..K
 
     localparam [BANK_ADDR_BITS-1:0] STEPS_M1 = STEPS_PER_OUT - 1;
+
+    // Prefetch address computation — module-scope wire, no inline reg declarations.
+    // Computes step_base + pf_cnt with one extra bit to detect out-of-range.
+    wire [I_WIDTH:0] pf_xidx_wide;
+    assign pf_xidx_wide = {1'b0, step_base} + {{(I_WIDTH-K_WIDTH+1){1'b0}}, pf_cnt};
+
+    // Generate loop for x_reg write — each register pb gets written when
+    // pf_cnt == pb+1 (one cycle after addr pb was issued, BRAM latency=1).
+    // Using individual equality comparisons avoids a runtime-indexed LHS,
+    // which is what triggers distributed-RAM inference in Yosys.
+    genvar pb;
+    generate
+        for (pb = 0; pb < K; pb = pb + 1) begin : gen_xreg_load
+            always @(posedge clk) begin
+                if (rst) begin
+                    x_reg[pb] <= {ACC_WIDTH{1'b0}};
+                end else if (state == S_PREFETCH && pf_cnt == (pb[K_WIDTH-1:0] + {{(K_WIDTH-1){1'b0}},1'b1})) begin
+                    // xbuf_rd_data is the result of the address issued when pf_cnt==pb
+                    x_reg[pb] <= xbuf_rd_data;
+                end
+            end
+        end
+    endgenerate
 
     always @(posedge clk) begin
         if (rst) begin
@@ -214,7 +290,8 @@ module tmu #(
             step_cnt      <= {BANK_ADDR_BITS{1'b0}};
             j_base_addr   <= {BANK_ADDR_BITS{1'b0}};
             step_base     <= {I_WIDTH{1'b0}};
-            step_base_d1  <= {I_WIDTH{1'b0}};
+            pf_cnt        <= {K_WIDTH{1'b0}};
+            xbuf_rd_addr  <= {I_WIDTH{1'b0}};
             bank_rd_addr  <= {BANK_ADDR_BITS{1'b0}};
             acc           <= {ACC_WIDTH{1'b0}};
             done          <= 1'b0;
@@ -222,13 +299,12 @@ module tmu #(
             result_valid  <= 1'b0;
             result_data   <= {ACC_WIDTH{1'b0}};
             result_addr   <= {J_WIDTH{1'b0}};
-            compute_valid <= 1'b0;
         end else begin
-            done          <= 1'b0;
-            result_valid  <= 1'b0;
-            compute_valid <= 1'b0;
+            done         <= 1'b0;
+            result_valid <= 1'b0;
 
             case (state)
+                // ---------------------------------------------------------
                 S_IDLE: begin
                     if (start) begin
                         fill_idx <= {I_WIDTH{1'b0}};
@@ -237,6 +313,8 @@ module tmu #(
                     end
                 end
 
+                // ---------------------------------------------------------
+                // S_FILL: write N_IN values into x_buffer BRAM one per cycle
                 S_FILL: begin
                     x_buffer[fill_idx] <= x_fill_val;
                     if (fill_idx == LAST_I) begin
@@ -244,33 +322,66 @@ module tmu #(
                         j_base_addr  <= {BANK_ADDR_BITS{1'b0}};
                         step_cnt     <= {BANK_ADDR_BITS{1'b0}};
                         step_base    <= {I_WIDTH{1'b0}};
-                        bank_rd_addr <= {BANK_ADDR_BITS{1'b0}};
                         acc          <= {ACC_WIDTH{1'b0}};
-                        state        <= S_COMPUTE;
+                        pf_cnt       <= {K_WIDTH{1'b0}};
+                        xbuf_rd_addr <= {I_WIDTH{1'b0}};
+                        state        <= S_PREFETCH;
                     end else begin
                         fill_idx <= fill_idx + {{(I_WIDTH-1){1'b0}}, 1'b1};
                     end
                 end
 
-                S_COMPUTE: begin
-                    step_base_d1 <= step_base;
-
-                    if (compute_valid)
-                        acc <= acc + tree_sum;
-
-                    if (step_cnt == STEPS_M1) begin
-                        compute_valid <= 1'b1;
-                        state         <= S_OUTPUT;
+                // ---------------------------------------------------------
+                // S_PREFETCH: load K values from x_buffer BRAM into x_reg[]
+                //
+                // On cycles pf_cnt = 0..K-1:
+                //   Issue xbuf_rd_addr = step_base + pf_cnt (clamped to 0 if OOB)
+                //   gen_xreg_load flops capture xbuf_rd_data one cycle later
+                //
+                // On cycle pf_cnt = K:
+                //   All K x_reg entries are valid
+                //   Issue bank_rd_addr = j_base_addr + step_cnt
+                //   Transition to S_COMPUTE (bank_word valid next cycle)
+                S_PREFETCH: begin
+                    if (pf_cnt < K[K_WIDTH-1:0]) begin
+                        // Issue x_buffer read address (clamped if out-of-range)
+                        xbuf_rd_addr <= (pf_xidx_wide < N_IN[I_WIDTH:0])
+                                        ? pf_xidx_wide[I_WIDTH-1:0]
+                                        : {I_WIDTH{1'b0}};
+                        pf_cnt <= pf_cnt + {{(K_WIDTH-1){1'b0}}, 1'b1};
                     end else begin
-                        compute_valid <= 1'b1;
-                        step_cnt     <= step_cnt + {{(BANK_ADDR_BITS-1){1'b0}}, 1'b1};
-                        step_base    <= step_base + K[I_WIDTH-1:0];
-                        bank_rd_addr <= j_base_addr + step_cnt + {{(BANK_ADDR_BITS-1){1'b0}}, 1'b1};
+                        // All K x_reg values loaded; arm weight BRAM read
+                        bank_rd_addr <= j_base_addr + step_cnt;
+                        pf_cnt       <= {K_WIDTH{1'b0}};
+                        state        <= S_COMPUTE;
                     end
                 end
 
+                // ---------------------------------------------------------
+                // S_COMPUTE: one cycle
+                //   bank_word valid (issued on last pf_cnt==K cycle, latency=1)
+                //   x_reg[] valid (loaded during S_PREFETCH)
+                //   acc accumulates tree_sum
+                S_COMPUTE: begin
+                    acc <= acc + tree_sum;
+
+                    if (step_cnt == STEPS_M1) begin
+                        state <= S_OUTPUT;
+                    end else begin
+                        step_cnt     <= step_cnt + {{(BANK_ADDR_BITS-1){1'b0}}, 1'b1};
+                        step_base    <= step_base + K[I_WIDTH-1:0];
+                        pf_cnt       <= {K_WIDTH{1'b0}};
+                        // Prime the first xbuf read of the next prefetch
+                        xbuf_rd_addr <= step_base + K[I_WIDTH-1:0];
+                        state        <= S_PREFETCH;
+                    end
+                end
+
+                // ---------------------------------------------------------
+                // S_OUTPUT: emit accumulated result for j_idx
+                // acc holds the final dot product (updated in last S_COMPUTE)
                 S_OUTPUT: begin
-                    result_data  <= acc + tree_sum;
+                    result_data  <= acc;
                     result_addr  <= j_idx;
                     result_valid <= 1'b1;
 
@@ -279,19 +390,22 @@ module tmu #(
                     end else begin
                         j_idx        <= j_idx + {{(J_WIDTH-1){1'b0}}, 1'b1};
                         j_base_addr  <= j_base_addr + STEPS_PER_OUT[BANK_ADDR_BITS-1:0];
-                        bank_rd_addr <= j_base_addr + STEPS_PER_OUT[BANK_ADDR_BITS-1:0];
                         step_cnt     <= {BANK_ADDR_BITS{1'b0}};
                         step_base    <= {I_WIDTH{1'b0}};
                         acc          <= {ACC_WIDTH{1'b0}};
-                        state        <= S_COMPUTE;
+                        pf_cnt       <= {K_WIDTH{1'b0}};
+                        xbuf_rd_addr <= {I_WIDTH{1'b0}};
+                        state        <= S_PREFETCH;
                     end
                 end
 
+                // ---------------------------------------------------------
                 S_DONE: begin
                     done  <= 1'b1;
                     busy  <= 1'b0;
                     state <= S_IDLE;
                 end
+
             endcase
         end
     end
