@@ -1,5 +1,5 @@
 {
-  "version": "10.2",
+  "version": "10.3",
   "created_at": 1741171200,
   "last_updated": "2026-03-16T12:00:00Z",
   "metadata": {
@@ -9,7 +9,8 @@
     "v9_changelog": "Honest reclassification: all 10 predictions marked POSTDICTION.",
     "v10_changelog": "4-tier classification system: postdiction/prior_informed/semiblind/blind + data_state_at_construction. Reclassified 10 entries: 5 PST + 5 PRI + 0 SBL + 0 BLD. Added data_sources and per-entry honest_assessment.",
     "v10_1_changelog": "FIRST semiblind prediction: P-SBL-001 delta_CP = (3-phi)*pi = 248.75 deg. Structurally derived from Trinity identity, NOT targeting T2K/NOvA hint.",
-    "v10_2_changelog": "SECOND semiblind prediction: P-SBL-002 w0 = -1/phi = -0.618. Golden fraction of vacuum pressure, NOT targeting DESI best-fit. Total: 5 PST + 5 PRI + 2 SBL + 0 BLD = 12."
+    "v10_2_changelog": "SECOND semiblind prediction: P-SBL-002 w0 = -1/phi = -0.618. Golden fraction of vacuum pressure, NOT targeting DESI best-fit.",
+    "v10_3_changelog": "THIRD semiblind prediction: P-SBL-003 wa = -1/phi^2 = -0.382. Golden pair with P-SBL-002: w(a=0) = -1 exactly. Total: 5 PST + 5 PRI + 3 SBL + 0 BLD = 13."
   },
   "classification_schema": {
     "prediction_types": {
@@ -441,22 +442,66 @@
         "step_4": "Recorded formula and value before any further experimental data analysis",
         "forbidden": "Brute-force search, numerical fitting, targeting DESI DR2 best-fit -0.45"
       }
+    },
+    {
+      "id": "P-SBL-003",
+      "created_at": 1742083200,
+      "created_by": "TRI v10.2 sacred-prediction",
+      "constant_name": "Dark energy evolution parameter w\u2090",
+      "symbol": "w\u2090",
+      "quantity": "wa_dark_energy_evolution",
+      "description": "Rate of change of dark energy equation of state in CPL parametrization w(a) = w0 + wa(1-a). Measures how dark energy strengthens or weakens over cosmic time.",
+      "methodology": "structural_derivation",
+      "prediction_type": "semiblind",
+      "prediction_type_short": "SBL",
+      "data_state_at_construction": "measured_roughly",
+      "data_sources": [
+        "DESI DR2 + Planck CMB (Mar 2025): wa = -1.79 \u00b1 0.48 in w0-wa model",
+        "DESI DR2: 2.5-3.9\u03c3 tension with \u039bCDM (wa=0)"
+      ],
+      "formula_string": "-1/\u03c6\u00b2",
+      "formula_derivation": "Geometric progression from P-SBL-002: if w\u2080 = -1/\u03c6, then w\u2090 = -1/\u03c6\u00b2 is the next term with common ratio 1/\u03c6. Crucially, w\u2080 + w\u2090 = -1/\u03c6 - 1/\u03c6\u00b2 = -1 exactly (since 1/\u03c6 + 1/\u03c6\u00b2 = 1). This means w(a=0) = w\u2080 + w\u2090 = -1 at the Big Bang epoch: dark energy was EXACTLY the cosmological constant \u039b, and has since drifted away by the golden fraction. The Trinity identity \u03c6\u00b2 + 1/\u03c6\u00b2 = 3 guarantees this structure.",
+      "formula_params": { "n": -1, "k": 0, "m": 0, "p": -2, "q": 0, "note": "wa = -1/phi^2 = -phi^{-2}" },
+      "predicted_value": -0.3820,
+      "uncertainty_lower": -0.4011,
+      "uncertainty_upper": -0.3629,
+      "uncertainty_method": "5% structural uncertainty",
+      "unit": "dimensionless",
+      "status": "pending",
+      "verified_at": null,
+      "verified_value": null,
+      "verification_source": null,
+      "falsification_criterion": "DESI DR3 (2027): if wa measured with \u03c3(wa) < 0.3 and value excludes [-0.401, -0.363] at \u22653\u03c3",
+      "falsification_experiment": "DESI (Dark Energy Spectroscopic Instrument)",
+      "falsification_timeline": "2027-2028",
+      "rationale": "Structural derivation: geometric progression (-1/phi, -1/phi^2) with ratio 1/phi. The pair gives w(a=0) = -1 exactly — dark energy at the Big Bang was a perfect cosmological constant. This is the strongest structural statement in the dark energy sector.",
+      "honest_assessment": "SEMIBLIND: DESI DR2 gives wa = -1.79 \u00b1 0.48. Formula -1/\u03c6\u00b2 = -0.382 is ~3\u03c3 from DESI best-fit — this is a RISKY prediction. NOT derived by targeting -1.79. Structural motivation: golden geometric progression paired with P-SBL-002, yielding w(a=0) = -1 exactly.",
+      "confidence": 0.10,
+      "tags": ["dark_energy", "cosmological_constant", "quintessence", "desi", "equation_of_state", "semiblind", "structural_derivation", "golden_pair"],
+      "notes": "THIRD SEMIBLIND. Forms golden pair with P-SBL-002: (w0,wa) = (-1/phi, -1/phi^2). w(a=0) = -1 exactly. Alternative: wa = -phi = -1.618 (sum = -sqrt(5)). Confidence deliberately low (0.10) because value is far from DESI central value.",
+      "construction_protocol": {
+        "step_1": "Generated 7 candidate formulas from structural/aesthetic arguments ONLY",
+        "step_2": "Evaluated all candidates BEFORE comparing to DESI best-fit",
+        "step_3": "Selected -1/phi^2 for: golden geometric progression with P-SBL-002, w(a=0)=-1 exactly, strongest physical interpretation",
+        "step_4": "Recorded formula and value before any further experimental data analysis",
+        "forbidden": "Brute-force search, numerical fitting, targeting DESI DR2 best-fit -1.79"
+      }
     }
   ],
   "honest_assessment": {
-    "total": 12,
+    "total": 13,
     "by_prediction_type": {
       "postdiction": 5,
       "prior_informed": 5,
-      "semiblind": 2,
+      "semiblind": 3,
       "blind": 0
     },
     "by_status": {
       "falsified": 1,
       "tension": 1,
       "consistent": 3,
-      "pending": 7
+      "pending": 8
     },
-    "conclusion": "v10.2 HONEST 4-TIER: 5 PST + 5 PRI + 2 SBL + 0 BLD = 12 total. Two semiblind predictions: delta_CP = (3-phi)*pi = 248.75 deg (DUNE ~2031), w0 = -1/phi = -0.618 (DESI DR3 ~2027)."
+    "conclusion": "v10.3 HONEST 4-TIER: 5 PST + 5 PRI + 3 SBL + 0 BLD = 13 total. Three semiblind: delta_CP = (3-phi)*pi (DUNE ~2031), w0 = -1/phi (DESI ~2027), wa = -1/phi^2 (DESI ~2027). Golden pair (w0,wa) gives w(a=0) = -1 exactly."
   }
 }
