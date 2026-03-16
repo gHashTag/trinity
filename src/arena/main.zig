@@ -113,6 +113,10 @@ fn cliBattle(allocator: Allocator, args: []const []const u8) !void {
 
     var arena = battle_mod.Arena.init(allocator);
 
+    // Register common fighters for CLI mode
+    arena.registerFighter("gpt-4o", .openai, "gpt-4o", null);
+    arena.registerFighter("claude-sonnet", .anthropic, "claude-sonnet-4-20250514", null);
+
     print("\n{s}{s}\xe2\x9a\x94 ARENA BATTLE{s}\n", .{ BOLD, GOLDEN, RESET });
     print("{s}Task:{s} {s}\n", .{ CYAN, RESET, prompt.? });
     print("{s}Fighter A:{s} {s}\n", .{ CYAN, RESET, fighter_a });

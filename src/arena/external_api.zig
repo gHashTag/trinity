@@ -56,8 +56,18 @@ pub fn complete(
             return callOpenAI(allocator, ep, mdl, prompt, start_ms);
         },
         .anthropic => {
-            const mdl = model orelse "claude-sonnet-4-20250514";
-            const ep = endpoint orelse "https://api.anthropic.com/v1/messages";
+            const mdl = model orelse blk_m: {
+                // Use CLAUDE_MODEL env if set (z.ai uses glm-5)
+                break :blk_m std.process.getEnvVarOwned(allocator, "CLAUDE_MODEL") catch "claude-sonnet-4-20250514";
+            };
+            const ep = endpoint orelse blk_e: {
+                // Use ANTHROPIC_BASE_URL env if set (z.ai proxy)
+                if (std.process.getEnvVarOwned(allocator, "ANTHROPIC_BASE_URL") catch null) |base| {
+                    defer allocator.free(base);
+                    break :blk_e std.fmt.allocPrint(allocator, "{s}/v1/messages", .{base}) catch "https://api.anthropic.com/v1/messages";
+                }
+                break :blk_e "https://api.anthropic.com/v1/messages";
+            };
             return callAnthropic(allocator, ep, mdl, prompt, start_ms);
         },
         .local, .custom => {
