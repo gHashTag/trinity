@@ -28,6 +28,12 @@ ATTN_DEPS   = ternary_attention.v trinity_block.v ternary_matvec_bram.v \
               ternary_activation.v ternary_rmsnorm.v
 
 # ── Phony targets ───────────────────────────────────────────────────────────
+# TMU + full top dependencies
+TMU_DEPS    = tmu.v tmu_top.v
+FULL_DEPS   = hslm_full_top.v trinity_block.v ternary_matvec_bram.v \
+              ternary_activation.v ternary_rmsnorm.v embedding_lookup.v \
+              lm_head_matvec.v argmax_unit.v $(TMU_DEPS)
+
 .PHONY: validate-all \
         validate-uart-weight-loader \
         validate-spi-flash-master \
@@ -39,6 +45,7 @@ ATTN_DEPS   = ternary_attention.v trinity_block.v ternary_matvec_bram.v \
         validate-trinity-attn-block \
         validate-embedding-lookup \
         validate-embedding-lookup-512 \
+        validate-hslm-full-top \
         summary clean
 
 validate-all: \
@@ -51,7 +58,8 @@ validate-all: \
         validate-ternary-attention \
         validate-trinity-attn-block \
         validate-embedding-lookup \
-        validate-embedding-lookup-512
+        validate-embedding-lookup-512 \
+        validate-hslm-full-top
 	@$(MAKE) -f Makefile.validate summary
 
 # ── Helper macro ────────────────────────────────────────────────────────────
@@ -116,6 +124,11 @@ validate-embedding-lookup-512: $(REPORT_DIR)/embedding_lookup_512.log
 $(REPORT_DIR)/embedding_lookup_512.log: embedding_lookup_512.v
 	$(call synth,embedding_lookup_512,embedding_lookup_512,$^)
 
+# ── 11. hslm_full_top — THE LIVE DESIGN (3-block TMU K=16, prошит на XC7A100T)
+validate-hslm-full-top: $(REPORT_DIR)/hslm_full_top.log
+$(REPORT_DIR)/hslm_full_top.log: $(FULL_DEPS)
+	$(call synth,hslm_full_top,hslm_full_top,$^)
+
 # ── Summary table ────────────────────────────────────────────────────────────
 # Parses each .log for Yosys "Number of LUT4s" / "RAMB36E1" / "Flip-Flops"
 # and prints a compact ASCII table.  Requires awk (POSIX).
@@ -136,7 +149,8 @@ summary:
 	    ternary_attention \
 	    trinity_attn_block \
 	    embedding_lookup \
-	    embedding_lookup_512; do \
+	    embedding_lookup_512 \
+	    hslm_full_top; do \
 	  logfile="$(REPORT_DIR)/$${log}.log"; \
 	  if [ -f "$$logfile" ]; then \
 	    luts=$$(awk '/Number of LUTs:/{print $$NF} \

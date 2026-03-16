@@ -2380,4 +2380,33 @@ pub fn build(b: *std.Build) void {
     const tri_api_step = b.step("tri-api", "Run TRI-API — Direct Anthropic API Agent");
     tri_api_step.dependOn(&run_tri_api.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // ARENA — LLM Battle Platform (Trinity Arena 2.0)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const arena_exe = b.addExecutable(.{
+        .name = "arena",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/arena/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(arena_exe);
+    const run_arena = b.addRunArtifact(arena_exe);
+    if (b.args) |args| run_arena.addArgs(args);
+    const arena_step = b.step("arena", "Run Trinity Arena — LLM Battle Platform");
+    arena_step.dependOn(&run_arena.step);
+
+    // Arena tests
+    const arena_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/arena/main.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_arena_tests = b.addRunArtifact(arena_tests);
+    test_step.dependOn(&run_arena_tests.step);
+
 }
