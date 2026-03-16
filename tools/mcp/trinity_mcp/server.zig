@@ -166,6 +166,9 @@ const TrinityMCPServer = struct {
             \\{"name":"cloud_farm_sync","description":"Sync active service counts across all Railway accounts","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"cloud_farm_capacity","description":"Get farm capacity as JSON — total slots, active services, daily remaining per account","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"cloud_farm_rebalance","description":"Migrate services from overloaded to underloaded Railway accounts","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"farm_evolve_health","description":"Farm evolution health dashboard — leaderboard, health_score 0-100, stagnation, ETA","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"farm_evolve_notify","description":"Farm insight scan — detect leader changes, plateaus, spikes, wave completion. Sends to Telegram unless dry-run","inputSchema":{"type":"object","properties":{"dry_run":{"type":"boolean","description":"Preview without sending (default: false)"}}}},
+            \\{"name":"farm_evolve_watch","description":"Single evolution sweep — inject sacred children into free slots, auto-notify. Always --once","inputSchema":{"type":"object","properties":{"sacred":{"type":"boolean","description":"Use phi-grid mutations (default: false)"},"dry_run":{"type":"boolean","description":"Preview without deploying (default: false)"}}}},
             \\{"name":"cloud_train","description":"Spawn an HSLM training experiment on Railway farm","inputSchema":{"type":"object","properties":{"name":{"type":"string","description":"Experiment name (e.g. hslm-r4)"}},"required":["name"]}},
             \\{"name":"cloud_train_batch","description":"Spawn all 13 HSLM training experiments across Railway farm","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"chain_cache","description":"Chain Link 0: TVC Gate — search corpus, return cached or continue","inputSchema":{"type":"object","properties":{"task":{"type":"string","description":"Task description"}}}},
@@ -316,8 +319,8 @@ const TrinityMCPServer = struct {
         } else if (std.mem.startsWith(u8, tool_name, "chain_")) {
             // ═══ CHAIN TOOLS (26 Golden Chain links) ═══
             try self.handleChainTool(tool_name, arguments_json, writer);
-        } else if (std.mem.startsWith(u8, tool_name, "cloud_")) {
-            // ═══ CLOUD TOOLS ═══
+        } else if (std.mem.startsWith(u8, tool_name, "cloud_") or std.mem.startsWith(u8, tool_name, "farm_evolve_")) {
+            // ═══ CLOUD + FARM EVOLVE TOOLS ═══
             try self.handleCloudTool(tool_name, arguments_json, writer);
         } else if (std.mem.startsWith(u8, tool_name, "fpga_")) {
             // ═══ FPGA UART TOOLS ═══
@@ -836,6 +839,15 @@ const TrinityMCPServer = struct {
             try writeJsonResponse(writer, cloud.cloudFarmCapacity(&buf), false);
         } else if (std.mem.eql(u8, tool_name, "cloud_farm_rebalance")) {
             try writeJsonResponse(writer, cloud.cloudFarmRebalance(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "farm_evolve_health")) {
+            try writeJsonResponse(writer, cloud.cloudFarmEvolveHealth(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "farm_evolve_notify")) {
+            const dry = extractBoolField(arguments_json, "dry_run") orelse false;
+            try writeJsonResponse(writer, cloud.cloudFarmEvolveNotify(&buf, dry), false);
+        } else if (std.mem.eql(u8, tool_name, "farm_evolve_watch")) {
+            const sacred = extractBoolField(arguments_json, "sacred") orelse false;
+            const dry = extractBoolField(arguments_json, "dry_run") orelse false;
+            try writeJsonResponse(writer, cloud.cloudFarmEvolveWatch(&buf, sacred, dry), false);
         } else if (std.mem.eql(u8, tool_name, "cloud_train")) {
             const name = extractStringField(arguments_json, "name") orelse {
                 try writeJsonResponse(writer, "Error: Missing name", true);
