@@ -251,72 +251,34 @@ fn httpPost(
     body: []const u8,
     content_type: []const u8,
 ) !HttpResponse {
-    var client = std.http.Client{ .allocator = allocator };
-    defer client.deinit();
+    // Use curl subprocess — Zig std.http.Client has gzip decompression issues
+    _ = content_type;
 
-    const uri = std.Uri.parse(url) catch return .{
-        .body = try allocator.dupe(u8, ""),
-        .err = try allocator.dupe(u8, "invalid URL"),
-    };
-
-    // Build auth header value
-    var auth_buf: [512]u8 = undefined;
-    const auth_val = if (std.mem.eql(u8, auth_header, "Bearer"))
-        std.fmt.bufPrint(&auth_buf, "Bearer {s}", .{auth_value}) catch auth_value
+    // Build auth header for curl
+    var auth_h_buf: [512]u8 = undefined;
+    const auth_h = if (std.mem.eql(u8, auth_header, "x-api-key"))
+        std.fmt.bufPrint(&auth_h_buf, "x-api-key: {s}", .{auth_value}) catch "x-api-key: "
     else
-        auth_value;
+        std.fmt.bufPrint(&auth_h_buf, "Authorization: Bearer {s}", .{auth_value}) catch "Authorization: Bearer ";
 
-    // Determine auth header name
-    const auth_header_name: []const u8 = if (std.mem.eql(u8, auth_header, "x-api-key"))
-        "x-api-key"
-    else
-        "Authorization";
-
-    const extra_headers = [_]std.http.Header{
-        .{ .name = "Content-Type", .value = content_type },
-        .{ .name = auth_header_name, .value = auth_val },
-        .{ .name = "anthropic-version", .value = "2023-06-01" },
-        .{ .name = "Accept-Encoding", .value = "identity" },
-    };
-
-    var req = client.request(.POST, uri, .{
-        .extra_headers = &extra_headers,
-        .redirect_behavior = .unhandled,
-    }) catch |err| return .{
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{
+            "curl", "-s", "--max-time", "30",
+            url,
+            "-H", "content-type: application/json",
+            "-H", auth_h,
+            "-H", "anthropic-version: 2023-06-01",
+            "-d", body,
+        },
+        .max_output_bytes = 1024 * 1024,
+    }) catch return .{
         .body = try allocator.dupe(u8, ""),
-        .err = try std.fmt.allocPrint(allocator, "connection error: {s}", .{@errorName(err)}),
+        .err = try allocator.dupe(u8, "curl spawn failed"),
     };
-    defer req.deinit();
+    allocator.free(result.stderr);
 
-    req.transfer_encoding = .{ .content_length = body.len };
-    var body_writer = req.sendBodyUnflushed(&.{}) catch |err| return .{
-        .body = try allocator.dupe(u8, ""),
-        .err = try std.fmt.allocPrint(allocator, "send error: {s}", .{@errorName(err)}),
-    };
-    body_writer.writer.writeAll(body) catch |err| return .{
-        .body = try allocator.dupe(u8, ""),
-        .err = try std.fmt.allocPrint(allocator, "write error: {s}", .{@errorName(err)}),
-    };
-    body_writer.end() catch |err| return .{
-        .body = try allocator.dupe(u8, ""),
-        .err = try std.fmt.allocPrint(allocator, "finish error: {s}", .{@errorName(err)}),
-    };
-    if (req.connection) |conn| conn.flush() catch {};
-
-    var redirect_buf: [0]u8 = .{};
-    var response = req.receiveHead(&redirect_buf) catch |err| return .{
-        .body = try allocator.dupe(u8, ""),
-        .err = try std.fmt.allocPrint(allocator, "receive error: {s}", .{@errorName(err)}),
-    };
-
-    var transfer_buf: [8192]u8 = undefined;
-    var reader = response.reader(&transfer_buf);
-    const resp_body = reader.allocRemaining(allocator, std.Io.Limit.limited(1024 * 1024)) catch |err| return .{
-        .body = try allocator.dupe(u8, ""),
-        .err = try std.fmt.allocPrint(allocator, "read error: {s}", .{@errorName(err)}),
-    };
-
-    return .{ .body = resp_body, .err = null };
+    return .{ .body = result.stdout, .err = null };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
