@@ -590,6 +590,10 @@ pub fn main() !void {
         },
         // Dev Utilities
         .doctor => try commands.runDoctorCommand(allocator, cmd_args),
+        .regen => {
+            const regen_mod = @import("regen.zig");
+            try regen_mod.runRegenCLI(allocator, cmd_args);
+        },
         .clean => try commands.runCleanCommand(allocator),
         .fmt_cmd => try commands.runFmtCommand(allocator),
         .stats_cmd => try commands.runStatsCommand(allocator),
@@ -1402,6 +1406,10 @@ fn dispatchCommand(
         .verify => pipeline.runVerifyCommand(allocator),
         .verdict => pipeline.runVerdictCommandEx(allocator, cmd_args),
         .doctor => commands.runDoctorCommand(allocator, cmd_args),
+        .regen => {
+            const regen_mod = @import("regen.zig");
+            try regen_mod.runRegenCLI(allocator, cmd_args);
+        },
         .commands => tri_list.runCommandsList(allocator, cmd_args),
         .mcp => tri_mcp.runMcpCommand(allocator, cmd_args),
         // SWE Agent commands (agent namespace)
