@@ -44,6 +44,7 @@ struct ChatSidebar: View {
     @State private var showExportFormat = false
     @State private var exportThread: ChatThread? = nil
     @State private var exportToast = ""
+    @State private var shareToast = ""
     @State private var debouncedQuery = ""
     @State private var searchTask: Task<Void, Never>? = nil
     @State private var showArchiveSection = false
@@ -467,6 +468,25 @@ struct ChatSidebar: View {
                 .transition(.opacity)
             }
 
+            // Share toast
+            if !shareToast.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(TrinityTheme.statusOK)
+                    Text(shareToast)
+                        .font(.system(size: 10))
+                        .foregroundStyle(TrinityTheme.textPrimary)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(TrinityTheme.statusOK.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .padding(.horizontal, 8)
+                .transition(.opacity)
+            }
+
             // Archive suggestion banner
             if store.showArchiveSuggestion {
                 HStack(spacing: 8) {
@@ -504,18 +524,10 @@ struct ChatSidebar: View {
             ScrollView {
                 LazyVStack(spacing: 0) {
                     // Skeleton loading placeholder while threads load
-                    if store.threads.isEmpty && !store.isLoaded {
-                        ForEach(0..<6, id: \.self) { _ in
-                            HStack(spacing: 8) {
-                                RoundedRectangle(cornerRadius: 4)
-                                    .fill(Color.white.opacity(0.04))
-                                    .frame(height: 14)
-                                    .frame(maxWidth: .infinity)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
+                    if !store.isLoaded {
+                        ForEach(0..<5, id: \.self) { index in
+                            SkeletonThreadRow(index: index)
                         }
-                        .redacted(reason: .placeholder)
                     }
 
                     // Folders first
@@ -563,6 +575,75 @@ struct ChatSidebar: View {
                         ForEach(threads) { thread in
                             threadRow(thread)
                         }
+                    }
+
+                    // Empty state: no threads at all (after loading)
+                    if store.isLoaded && store.threads.isEmpty {
+                        VStack(spacing: 12) {
+                            Image(systemName: "bubble.left.and.bubble.right")
+                                .font(.system(size: 28))
+                                .foregroundStyle(TrinityTheme.textMuted)
+                            Text("No conversations yet")
+                                .font(.system(size: 13))
+                                .foregroundStyle(TrinityTheme.textMuted)
+                            Button {
+                                store.newThread()
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 11, weight: .semibold))
+                                    Text("New Thread")
+                                        .font(.system(size: 12, weight: .medium))
+                                }
+                                .foregroundStyle(TrinityTheme.accent)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 7)
+                                .background(TrinityTheme.accent.opacity(0.12))
+                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 48)
+                        .padding(.bottom, 24)
+                    }
+
+                    // Empty state: search / filters returned no results
+                    if store.isLoaded && !store.threads.isEmpty && filteredThreads.isEmpty {
+                        VStack(spacing: 10) {
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 24))
+                                .foregroundStyle(TrinityTheme.textMuted)
+                            if !debouncedQuery.isEmpty {
+                                Text("No matches for '\(debouncedQuery)'")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .multilineTextAlignment(.center)
+                                Text("Try broader terms")
+                                    .font(.caption2)
+                                    .foregroundStyle(Color.white.opacity(0.25))
+                            } else if activeFilterCount > 0 {
+                                Text("No matches with current filters")
+                                    .font(.system(size: 12))
+                                    .foregroundStyle(TrinityTheme.textMuted)
+                                Button {
+                                    filterDateRange = .all
+                                    filterModel = nil
+                                } label: {
+                                    Text("Clear filters")
+                                        .font(.system(size: 11, weight: .medium))
+                                        .foregroundStyle(TrinityTheme.accent)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 5)
+                                        .background(TrinityTheme.accent.opacity(0.12))
+                                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.top, 40)
+                        .padding(.bottom, 20)
                     }
 
                     // Archive section (collapsed by default)
@@ -817,6 +898,7 @@ struct ChatSidebar: View {
             onQuickExportHTML: { quickExportHTML(thread) },
             onQuickExportJSON: { quickExportJSON(thread) },
             onDuplicate: { store.duplicateThread(thread.id) },
+            onShare: { shareThread(thread) },
             onArchive: {
                 withAnimation(.easeInOut(duration: 0.2)) {
                     if thread.isArchived {
@@ -830,6 +912,17 @@ struct ChatSidebar: View {
         )
         .onHover { hovering in
             hoveredThread = hovering ? thread.id : nil
+        }
+    }
+
+    private func shareThread(_ thread: ChatThread) {
+        let text = ChatScreen.formatShareText(thread: thread)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        shareToast = "Conversation copied to clipboard"
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            shareToast = ""
         }
     }
 
@@ -1262,6 +1355,7 @@ struct ThreadRow: View {
     var onQuickExportHTML: (() -> Void)? = nil
     var onQuickExportJSON: (() -> Void)? = nil
     var onDuplicate: (() -> Void)? = nil
+    var onShare: (() -> Void)? = nil
     var onArchive: (() -> Void)? = nil
     var folders: [ThreadFolder] = []
 
@@ -1343,6 +1437,9 @@ struct ThreadRow: View {
                                     .font(.system(size: 8, weight: .bold))
                                     .foregroundStyle(TrinityTheme.accent)
                             }
+                            if tokenData.count >= 4 {
+                                TokenSparkline(data: tokenData)
+                            }
                             Text("\(thread.messages.count) msgs")
                                 .font(.system(size: 9))
                                 .foregroundStyle(Color.white.opacity(0.25))
@@ -1413,6 +1510,11 @@ struct ThreadRow: View {
                 Button("HTML") { onQuickExportHTML?() }
                 Button("JSON") { onQuickExportJSON?() }
             }
+            Button {
+                onShare?()
+            } label: {
+                Label("Share", systemImage: "square.and.arrow.up")
+            }
             Button("Duplicate") { onDuplicate?() }
             Menu("Add Tag") {
                 ForEach(["hslm", "fpga", "patent", "research", "sevo", "arena", "bug", "feature"], id: \.self) { tag in
@@ -1445,11 +1547,91 @@ struct ThreadRow: View {
         .accessibilityHint("Double-tap to open thread")
     }
 
+    private var tokenData: [Int] {
+        thread.messages.compactMap { $0.role == .assistant ? $0.outputTokens : nil }
+    }
+
     private func relativeDate(_ date: Date) -> String {
         let delta = Int(Date().timeIntervalSince(date))
         if delta < 60 { return "now" }
         if delta < 3600 { return "\(delta / 60)m" }
         if delta < 86400 { return "\(delta / 3600)h" }
         return "\(delta / 86400)d"
+    }
+}
+
+// MARK: - Token Sparkline
+
+private struct TokenSparkline: View {
+    let data: [Int]
+
+    private var totalLabel: String {
+        let sum = data.reduce(0, +)
+        return sum >= 1000 ? "\(String(format: "%.1f", Double(sum) / 1000))K tokens" : "\(sum) tokens"
+    }
+
+    var body: some View {
+        let maxVal = data.max() ?? 1
+        Canvas { ctx, size in
+            let barW: CGFloat = 2
+            let gap: CGFloat = 1
+            let count = data.count
+            let totalW = CGFloat(count) * barW + CGFloat(count - 1) * gap
+            let offsetX = max(0, (size.width - totalW) / 2)
+            for (i, val) in data.enumerated() {
+                let h = size.height * CGFloat(val) / CGFloat(maxVal)
+                let x = offsetX + CGFloat(i) * (barW + gap)
+                let rect = CGRect(x: x, y: size.height - h, width: barW, height: max(1, h))
+                ctx.fill(Path(roundedRect: rect, cornerRadius: 0.5),
+                         with: .color(TrinityTheme.accent.opacity(0.6)))
+            }
+        }
+        .frame(width: 30, height: 12)
+        .help("Total: \(totalLabel)")
+    }
+}
+
+// MARK: - Skeleton Thread Row (shimmer loading placeholder)
+
+struct SkeletonThreadRow: View {
+    let index: Int
+    @State private var shimmer = false
+
+    // Vary widths to look natural
+    private var titleWidth: CGFloat {
+        [0.85, 0.6, 0.75, 0.5, 0.9][index % 5]
+    }
+    private var subtitleWidth: CGFloat {
+        [0.5, 0.35, 0.45, 0.3, 0.55][index % 5]
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            RoundedRectangle(cornerRadius: 4)
+                .fill(Color.white.opacity(0.06))
+                .frame(height: 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .scaleEffect(x: titleWidth, y: 1, anchor: .leading)
+            HStack(spacing: 8) {
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.white.opacity(0.04))
+                    .frame(height: 9)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .scaleEffect(x: subtitleWidth, y: 1, anchor: .leading)
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(Color.white.opacity(0.03))
+                    .frame(width: 36, height: 9)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .opacity(shimmer ? 0.7 : 0.3)
+        .animation(
+            .easeInOut(duration: 1.0)
+                .repeatForever(autoreverses: true)
+                .delay(Double(index) * 0.1),
+            value: shimmer
+        )
+        .onAppear { shimmer = true }
     }
 }

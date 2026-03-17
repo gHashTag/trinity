@@ -147,28 +147,34 @@ enum SlashCommand: String, CaseIterable {
     }
 }
 
-/// Sound cue manager for audio feedback
+/// Sound cue manager for subtle audio feedback on key actions
 class SoundCueManager {
     static let shared = SoundCueManager()
+
+    /// Feedback volume (0.0–1.0). Kept low for subtle UI cues.
+    private let feedbackVolume: Float = 0.3
 
     private var enabled: Bool {
         UserDefaults.standard.string(forKey: "soundMode") != "silent"
     }
 
-    func playSend() {
-        guard enabled else { return }
-        NSSound(named: "Tink")?.play()
+    private func play(_ name: String) {
+        guard enabled, let sound = NSSound(named: NSSound.Name(name)) else { return }
+        sound.volume = feedbackVolume
+        sound.play()
     }
 
-    func playReceive() {
-        guard enabled else { return }
-        NSSound(named: "Pop")?.play()
-    }
+    /// Subtle whoosh when message is sent
+    func playSend() { play("Tink") }
 
-    func playError() {
-        guard enabled else { return }
-        NSSound(named: "Basso")?.play()
-    }
+    /// Gentle ding when streaming response completes
+    func playReceive() { play("Glass") }
+
+    /// Soft thud on error
+    func playError() { play("Basso") }
+
+    /// Tiny click on copy to clipboard
+    func playCopy() { play("Morse") }
 }
 
 /// Style preset: controls CTO tone
@@ -292,7 +298,11 @@ class ChatClient: ObservableObject {
     @Published var streamingTTFB: Int = 0          // ms to first token
     @Published var streamingOutputTokens: Int = 0
     @Published var failoverEvent: FailoverEvent? = nil
-    @Published var lastError: APIErrorType? = nil
+    @Published var lastError: APIErrorType? = nil {
+        didSet {
+            if lastError != nil { SoundCueManager.shared.playError() }
+        }
+    }
     @Published var isSlowResponse = false          // TTFB > 5s warning
     @Published var streamingThinkingText = ""
     @Published var lastResponseTruncated: Bool = false
@@ -364,6 +374,7 @@ class ChatClient: ObservableObject {
             streamingText += "\n\n*[Timed out: \(reason)]*"
         }
         streamingState = .error(reason)
+        SoundCueManager.shared.playError()
         stop()
     }
 
@@ -450,6 +461,7 @@ class ChatClient: ObservableObject {
     var stylePreset: StylePreset = .concise
     var effortLevel: EffortLevel = .medium
     var activePersona: Persona? = nil
+    var customSystemPrompt: String? = nil
 
     private var systemPrompt: String {
         buildSystemPrompt()
@@ -528,6 +540,11 @@ class ChatClient: ObservableObject {
             for mem in memories.suffix(20) {
                 prompt += "- \(mem.text)\n"
             }
+        }
+
+        // Inject custom system prompt override from thread
+        if let custom = customSystemPrompt, !custom.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            prompt += "\n\n## Custom Instructions\n" + custom
         }
 
         return prompt
