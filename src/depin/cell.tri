@@ -8,8 +8,8 @@ min_core_version = "1.0.0"
 status = "experimental"
 description = "DePIN node management and compute reward distribution"
 capabilities = ["main", "detectPlatform", "detectArch", "detectCPUCores", "detectMemoryMB"]
-files = 4
-tests = 16
+files = 5
+tests = 20
 owner = "agent:ralph"
 
 [tags]

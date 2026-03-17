@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "experimental"
 description = "FPGA commands: synthesis, experience tracking, LED test"
 capabilities = ["fpga", "synthesis"]
-tests = 4
+tests = 8
 owner = "agent:ralph"
 
 [tags]
@@ -16,7 +16,7 @@ scope = "infra"
 type = "domain"
 
 [source]
-file_patterns = ["tri_fpga*.zig", "vision_led_test.zig"]
+file_patterns = ["tri_fpga*.zig", "tri_hardware_deploy.zig", "vision_led_test.zig"]
 
 [contributes]
 commands = ["fpga"]

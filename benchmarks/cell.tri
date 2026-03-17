@@ -26,6 +26,8 @@ events = ["on_bench_complete"]
 binaries = []
 
 [dependencies]
+trinity.vsa = "^1.0.0"
+trinity.needle = "^1.0.0"
 
 [permissions]
 level = "L1"
@@ -37,4 +39,4 @@ concurrency = "yes"
 
 [security]
 signed = "true"
-signature = "sha256:6c854d3b075cc9bed02f73ad8deccbdba6bb21d86b5771b18c19385fe595c666"
+signature = "sha256:642c5c4b63b69e30854c30ade1cdaca4072f9597399b2585425ca9fd12786a9c"

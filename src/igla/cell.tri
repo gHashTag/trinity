@@ -1,0 +1,38 @@
+[cell]
+id = "trinity.igla"
+name = "IGLA Tracing"
+version = "1.0.0"
+kind = "tool"
+path = "src/igla"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "VSA operation chain tracing for symbolic reasoning"
+capabilities = ["tracing", "vsa", "debugging"]
+files = 1
+tests = 4
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:2b8fd6f83b0306383d16d21ea5a57a2e0eccace86a610a2a02815d1324790e2e"

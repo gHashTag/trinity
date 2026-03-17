@@ -1,0 +1,40 @@
+[cell]
+id = "trinity.quantum-gravity"
+name = "Quantum Gravity"
+version = "1.0.0"
+kind = "library"
+path = "src/quantum_gravity"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "E8-quantum gravity bridge with holographic entropy"
+capabilities = ["vsa", "quantum-gravity", "e8"]
+files = 1
+tests = 9
+owner = "agent:ralph"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+trinity.vsa = "^1.0.0"
+trinity.sacred = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:6646b8ff6aaa7c1bc99e77511d85cf163303257ac1c4bb6bbbf19ae7dc2f9ced"
