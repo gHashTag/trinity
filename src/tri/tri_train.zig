@@ -88,9 +88,12 @@ pub fn runTrainCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         const dash_csv = for (sub_args) |a| {
             if (std.mem.eql(u8, a, "--csv")) break true;
         } else false;
+        const dash_quick = for (sub_args) |a| {
+            if (std.mem.eql(u8, a, "--quick")) break true;
+        } else false;
         if (dash_json) return runDashboardExport(allocator, .json);
         if (dash_csv) return runDashboardExport(allocator, .csv);
-        return runDashboard(allocator);
+        return runDashboard(allocator, dash_quick);
     } else {
         print("Unknown subcommand: {s}\n", .{subcmd});
         print("Usage: tri train <status|start|logs|loss|diagnose|compare|checkpoint> [args]\n", .{});
@@ -708,17 +711,21 @@ const BG_RED = "\x1b[41m";
 
 const farm_evolve = @import("tri_farm_evolve.zig");
 
-fn runDashboard(allocator: std.mem.Allocator) !void {
+fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
     // ═══════ AUTO-REFRESH: poll Railway for fresh data ═══════
-    print("{s}🔄 Refreshing farm data...{s}", .{ DIM, RESET });
-    if (farm_evolve.loadState(allocator)) |state| {
-        var mutable_state = state;
-        var api_calls: u32 = 0;
-        farm_evolve.collectMetrics(allocator, &mutable_state, &api_calls);
-        farm_evolve.saveState(mutable_state) catch {};
-        print(" {s}done ({d} API calls){s}\n\n", .{ GREEN, api_calls, RESET });
-    } else |_| {
-        print(" {s}(no state — run: tri farm evolve init){s}\n\n", .{ YELLOW, RESET });
+    if (quick) {
+        print("{s}⚡ Quick mode — using cached data{s}\n\n", .{ YELLOW, RESET });
+    } else {
+        print("{s}🔄 Refreshing farm data...{s}", .{ DIM, RESET });
+        if (farm_evolve.loadState(allocator)) |state| {
+            var mutable_state = state;
+            var api_calls: u32 = 0;
+            farm_evolve.collectMetrics(allocator, &mutable_state, &api_calls);
+            farm_evolve.saveState(mutable_state) catch {};
+            print(" {s}done ({d} API calls){s}\n\n", .{ GREEN, api_calls, RESET });
+        } else |_| {
+            print(" {s}(no state — run: tri farm evolve init){s}\n\n", .{ YELLOW, RESET });
+        }
     }
 
     // ═══════ HEADER ═══════
