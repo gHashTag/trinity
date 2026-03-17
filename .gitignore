@@ -286,3 +286,4 @@ fpga/tools/weight_pack_wide
 # Junk archive (large, local only)
 archive/junk-*/
 fpga/openxc7-synth/synth_reports/hslm_full_top.json
+*.bak
