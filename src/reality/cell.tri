@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["displayPyramid", "displayCompactPyramid", "displayLevelFormulas"]
 tri_subcommands = []
 events = []
 binaries = []
@@ -35,4 +35,4 @@ concurrency = "none"
 
 [security]
 signed = "true"
-signature = "sha256:94b0576874bbc2b6a9e7234a5694a0c93121b706a850d922e852c0b60b6d7fcc"
+signature = "sha256:18d2b575172746ab3678a4e0ba3f5435fea55e1b9fd0a8911f9d8427ea69de53"
