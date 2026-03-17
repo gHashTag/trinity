@@ -31,12 +31,10 @@ trinity.tri.observability = "^1.0.0"
 trinity.math = "^1.0.0"
 trinity.queen-ui = "^1.0.0"
 trinity.sacred = "^1.0.0"
-trinity.gravity = "^1.0.0"
-trinity.monopoles = "^1.0.0"
+trinity.physics = "^1.0.0"
 trinity.vsa = "^1.0.0"
 trinity.registry = "^1.0.0"
 trinity.api = "^1.0.0"
-trinity.superconductivity = "^1.0.0"
 
 [permissions]
 level = "L2"
