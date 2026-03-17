@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsScreen: View {
     @AppStorage("appearanceMode") private var appearanceModeRaw: String = AppearanceMode.dark.rawValue
+    @AppStorage("selectedTheme") private var selectedThemeRaw: String = ThemeVariant.deepSpace.rawValue
     @AppStorage("arenaHost") private var arenaHost = "localhost"
     @AppStorage("arenaPort") private var arenaPort = 8080
     @AppStorage("refreshInterval") private var refreshInterval = 5.0
@@ -58,7 +59,7 @@ struct SettingsScreen: View {
                         .foregroundStyle(TrinityTheme.accent)
 
                     HStack {
-                        Text("Theme")
+                        Text("Mode")
                             .font(.caption)
                             .foregroundStyle(TrinityTheme.textMuted)
                             .frame(width: 100, alignment: .leading)
@@ -70,7 +71,12 @@ struct SettingsScreen: View {
                         .pickerStyle(.segmented)
                     }
 
-                    Text("System follows macOS appearance. Dark and Light are fixed.")
+                    Divider()
+                        .background(Color.white.opacity(0.1))
+
+                    // ThemeSelector() — TODO: restore after fixing build
+
+                    Text("Theme variants apply to dark mode only. Light mode uses standard colors.")
                         .font(.caption2)
                         .foregroundStyle(TrinityTheme.textMuted)
                 }
@@ -775,6 +781,7 @@ struct SettingsScreen: View {
     private func clearAllData() {
         // Reset all @AppStorage values to defaults
         appearanceModeRaw = AppearanceMode.dark.rawValue
+        selectedThemeRaw = ThemeVariant.deepSpace.rawValue
         soundMode = "full"
         soundFeedback = true
         backgroundNotifications = true
