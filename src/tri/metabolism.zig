@@ -18,6 +18,7 @@
 const std = @import("std");
 const types = @import("train_types.zig");
 const diag = @import("train_diagnostics.zig");
+const hippocampus = @import("hippocampus.zig");
 const CheckpointInfo = types.CheckpointInfo;
 const TrainLogEntry = types.TrainLogEntry;
 const Sacred = types.Sacred;
@@ -1281,6 +1282,24 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
             });
             print("   Leader PPL: {s}{d:.2}{s}  │  Mean PPL: {d:.1}  │  Spike rate: {d:.1}%\n\n", .{ GREEN, best_pop_ppl, RESET, mean, spike_pct });
 
+            // ═══════════════════════════════════════════════════════════════════════════════
+            // DUAL-WRITE: Hypothalamus → Hippocampus (Wave 3)
+            // ═══════════════════════════════════════════════════════════════════════════════
+            var buf: [256]u8 = undefined;
+            const tok_per_sec: u32 = if (tps_count > 0) @intFromFloat(total_tps / @as(f32, @floatFromInt(tps_count))) else 0;
+            const summary = std.fmt.bufPrint(&buf,
+                "metabolism: ppl={d:.2} tok/s={d} spike={d:.1}% diversity={d:.3} health={d:.1}",
+                .{ best_pop_ppl, tok_per_sec, spike_pct, shannon, health });
+            hippocampus.writeObservation(allocator, "hypothalamus", summary catch "metabolism snapshot", "{}") catch {};
+
+            // Spike alert (>20% is concerning)
+            if (spike_pct > 20.0) {
+                const spike_msg = std.fmt.bufPrint(&buf,
+                    "metabolism spike: leader PPL={d:.2} spike_rate={d:.1}% (threshold=20%)",
+                    .{ best_pop_ppl, spike_pct });
+                hippocampus.writeError(allocator, "hypothalamus", spike_msg catch "spike detected", "{}") catch {};
+            }
+
             // Recommendations
             if (shannon_norm < 0.3) {
                 print("   {s}⚠️  Low diversity (H={d:.2}): consider injecting JEPA/NCA seeds{s}\n", .{ YELLOW, shannon, RESET });
@@ -1367,17 +1386,30 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
     // ═══════ ALERTS ═══════
     if (stalled > 0 or diverged > 0 or stuck > 0 or mirage > 0) {
         print("{s}{s}🚨 ALERTS{s}\n", .{ RED, BOLD, RESET });
+        var buf: [256]u8 = undefined;
         for (svcs) |s| {
             const status = jsonU32(s, "status");
             const name = getJsonStr(s, "name");
             const step = jsonU32(s, "step");
             if (status == 5) print("   {s}⏸️  {s}: stalled at step {d}{s}\n", .{ YELLOW, name, step, RESET });
-            if (status == 6) print("   {s}💥 {s}: diverged (PPL={d:.0}) at step {d}{s}\n", .{ RED, name, jsonF32(s, "ppl"), step, RESET });
+            if (status == 6) {
+                print("   {s}💥 {s}: diverged (PPL={d:.0}) at step {d}{s}\n", .{ RED, name, jsonF32(s, "ppl"), step, RESET });
+                // DUAL-WRITE: diverged alert to hippocampus
+                const div_msg = std.fmt.bufPrint(&buf,
+                    "diverged: {s} PPL={d:.0} at step {d}",
+                    .{ name, jsonF32(s, "ppl"), step });
+                hippocampus.writeError(allocator, "hypothalamus", div_msg catch "diverged detected", "{}") catch {};
+            }
             if (status == 7) print("   {s}🔒 {s}: stuck at step=0{s}\n", .{ RED, name, RESET });
             if (status == 8) {
                 const cfg = getJsonObj(s, "cfg");
                 const ctx = if (cfg) |c| jsonU32(c, "ctx") else 0;
                 print("   {s}🎭 {s}: MIRAGE (PPL={d:.2}, ctx={d}) — excluded from ranking{s}\n", .{ YELLOW, name, jsonF32(s, "ppl"), ctx, RESET });
+                // DUAL-WRITE: mirage alert to hippocampus
+                const mirage_msg = std.fmt.bufPrint(&buf,
+                    "mirage: {s} PPL={d:.2} ctx={d} — excluded from ranking",
+                    .{ name, jsonF32(s, "ppl"), ctx });
+                hippocampus.writeError(allocator, "hypothalamus", mirage_msg catch "mirage detected", "{}") catch {};
             }
         }
         print("\n", .{});

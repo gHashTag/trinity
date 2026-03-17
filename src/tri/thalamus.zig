@@ -316,3 +316,165 @@ test "thalamus countMuResolvedErrors returns zero or more" {
     const count = countMuResolvedErrors(std.testing.allocator);
     try std.testing.expect(count >= 0);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RELAY 8: Cell health — hippocampus "cerebellum" → fallback cell_cache.json
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const CellHealthSummary = struct {
+    healthy: u32 = 0,
+    weak: u32 = 0,
+    broken: u32 = 0,
+    total: u32 = 0,
+    cycles: u32 = 0,
+    timestamp: i64 = 0,
+};
+
+pub fn getCellHealth(allocator: Allocator) CellHealthSummary {
+    var results = hippocampus.read(allocator, .{
+        .agent = "cerebellum",
+        .kind = .observation,
+        .limit = 1,
+    }) catch return .{};
+
+    defer results.deinit(allocator);
+    if (results.items.len > 0) {
+        // Parse "cell health: 18/18 total (A:15 B:3 C:0 F:0) | cycles: 0 | weakest: xxx (99)"
+        const d = results.items[0].summary();
+        var summary: CellHealthSummary = .{
+            .timestamp = @as(i64, @intCast(results.items[0].ts)),
+        };
+
+        // Parse total (format: "18/18 total")
+        if (std.mem.indexOf(u8, d, "/")) |slash_idx| {
+            var start = slash_idx - 1;
+            while (start > 0 and d[start - 1] >= '0' and d[start - 1] <= '9') : (start -= 1) {}
+            summary.total = std.fmt.parseInt(u32, d[start..slash_idx], 10) catch 0;
+        }
+
+        // Parse grades (A:15 B:3 C:0 F:0)
+        summary.healthy = parseHealthStat(d, "A:");
+        summary.weak = parseHealthStat(d, "B:") + parseHealthStat(d, "C:");
+        summary.broken = parseHealthStat(d, "F:");
+
+        // Parse cycles
+        summary.cycles = parseHealthStat(d, "cycles:");
+
+        return summary;
+    }
+    return .{};
+}
+
+fn parseHealthStat(data: []const u8, keyword: []const u8) u32 {
+    // Parse "A:15" -> 15, "cycles: 0" -> 0
+    if (std.mem.indexOf(u8, data, keyword)) |idx| {
+        const start = idx + keyword.len;
+        var end = start;
+        while (end < data.len and data[end] >= '0' and data[end] <= '9') : (end += 1) {}
+        return std.fmt.parseInt(u32, data[start..end], 10) catch 0;
+    }
+    return 0;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RELAY 9: Metabolism alerts — hippocampus "hypothalamus" errors
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const MetabolismAlert = struct {
+    message: []const u8,
+    timestamp: i64,
+};
+
+pub fn getMetabolismAlerts(allocator: Allocator, limit: u8) ![]MetabolismAlert {
+    var results = hippocampus.read(allocator, .{
+        .agent = "hypothalamus",
+        .kind = .@"error",
+        .limit = limit,
+    }) catch return &[0]MetabolismAlert{};
+
+    defer results.deinit(allocator);
+
+    var alerts = try allocator.alloc(MetabolismAlert, results.items.len);
+    for (results.items, 0..) |r, i| {
+        alerts[i] = .{
+            .message = try allocator.dupe(u8, r.summary()),
+            .timestamp = @as(i64, @intCast(r.ts)),
+        };
+    }
+    return alerts;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RELAY 10: Latest metabolism snapshot — hippocampus "hypothalamus" observation
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const MetabolismSnapshot = struct {
+    ppl: f32 = 0.0,
+    tok_per_sec: u32 = 0,
+    spike_pct: f32 = 0.0,
+    diversity: f32 = 0.0,
+    health: f32 = 0.0,
+    timestamp: i64 = 0,
+};
+
+pub fn getMetabolismSnapshot(allocator: Allocator) ?MetabolismSnapshot {
+    var results = hippocampus.read(allocator, .{
+        .agent = "hypothalamus",
+        .kind = .observation,
+        .limit = 1,
+    }) catch return null;
+
+    defer results.deinit(allocator);
+    if (results.items.len == 0) return null;
+
+    // Parse "metabolism: ppl=4.6 tok/s=500 spike=10.5% diversity=0.450 health=75.0"
+    const d = results.items[0].summary();
+    return .{
+        .ppl = parseMetricFloat(d, "ppl=") orelse 0.0,
+        .tok_per_sec = parseMetricU32(d, "tok/s=") orelse 0,
+        .spike_pct = parseMetricFloat(d, "spike=") orelse 0.0,
+        .diversity = parseMetricFloat(d, "diversity=") orelse 0.0,
+        .health = parseMetricFloat(d, "health=") orelse 0.0,
+        .timestamp = @as(i64, @intCast(results.items[0].ts)),
+    };
+}
+
+fn parseMetricFloat(data: []const u8, key: []const u8) ?f32 {
+    if (std.mem.indexOf(u8, data, key)) |idx| {
+        const start = idx + key.len;
+        var end = start;
+        while (end < data.len and data[end] != ' ' and data[end] != '%') : (end += 1) {}
+        return std.fmt.parseFloat(f32, data[start..end]) catch null;
+    }
+    return null;
+}
+
+fn parseMetricU32(data: []const u8, key: []const u8) ?u32 {
+    if (std.mem.indexOf(u8, data, key)) |idx| {
+        const start = idx + key.len;
+        var end = start;
+        while (end < data.len and data[end] >= '0' and data[end] <= '9') : (end += 1) {}
+        return std.fmt.parseInt(u32, data[start..end], 10) catch null;
+    }
+    return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS (Wave 3)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "thalamus getCellHealth returns default when empty" {
+    const summary = getCellHealth(std.testing.allocator);
+    try std.testing.expect(summary.total == 0);
+}
+
+test "thalamus getMetabolismSnapshot returns null when empty" {
+    const snapshot = getMetabolismSnapshot(std.testing.allocator);
+    try std.testing.expect(snapshot == null);
+}
+
+test "thalamus getMetabolismAlerts returns empty when none" {
+    const alerts = try getMetabolismAlerts(std.testing.allocator, 5);
+    defer std.testing.allocator.free(alerts);
+    try std.testing.expect(alerts.len == 0);
+}
