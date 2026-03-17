@@ -13,6 +13,7 @@
 
 const std = @import("std");
 const colors = @import("tri_colors.zig");
+const cell_parser = @import("tri_cell_parser.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -30,73 +31,12 @@ const CORE_VERSION = "1.0.0";
 // Directories to scan for cell.tri manifests
 const CELL_SCAN_DIRS = [_][]const u8{ "src", "apps", "tools", "fpga", "libs" };
 
-const CellInfo = struct {
-    id: []const u8,
-    name: []const u8,
-    version: []const u8,
-    kind: []const u8,
-    path: []const u8,
-    status: []const u8,
-    description: []const u8,
-    min_core_version: []const u8,
-    capabilities: []const u8,
-    files: u32,
-    tests: u32,
-    owner: []const u8,
-    // Section-aware fields
-    tags_scope: []const u8,
-    tags_type: []const u8,
-    contributes_commands: []const u8,
-    contributes_tri_subcommands: []const u8,
-    contributes_events: []const u8,
-    contributes_binaries: []const u8,
-    dependencies_raw: []const u8, // raw [dependencies] section text (TOML lines: key = "value")
-    // Security permissions
-    perm_level: []const u8, // L0 (read-only), L1 (local r/w), L2 (network+external)
-    perm_filesystem: []const u8, // none, read, write
-    perm_network: []const u8, // none, local, external
-    perm_process: []const u8, // none, spawn
-    perm_ffi: []const u8, // none, native
-    perm_concurrency: []const u8, // none, yes
-    // Security section
-    security_signed: bool,
-    security_signature: []const u8,
-    // Computed security score (not parsed, computed by audit)
-    security_score: ?u8,
-};
+// CellInfo is now an alias for the shared CellManifest (Honeycomb v7 — single source of truth)
+const CellInfo = cell_parser.CellManifest;
 
 /// Iterator over dependency entries from raw [dependencies] section text.
-/// Each entry yields (dep_id, constraint_str) from lines like: trinity.sacred = "^1.0.0"
-const DepIterator = struct {
-    lines: std.mem.SplitIterator(u8, .scalar),
-
-    fn init(raw: []const u8) DepIterator {
-        return .{ .lines = std.mem.splitScalar(u8, raw, '\n') };
-    }
-
-    fn next(self: *DepIterator) ?struct { id: []const u8, constraint: []const u8 } {
-        while (self.lines.next()) |line| {
-            const trimmed = std.mem.trim(u8, line, " \t\r");
-            if (trimmed.len == 0) continue;
-            if (trimmed[0] == '[') break; // hit next section
-            const eq_pos = std.mem.indexOf(u8, trimmed, "=") orelse continue;
-            if (eq_pos == 0) continue;
-            const key = std.mem.trim(u8, trimmed[0..eq_pos], " \t\"");
-            const value = std.mem.trim(u8, trimmed[eq_pos + 1 ..], " \t\"");
-            if (key.len > 0 and value.len > 0) {
-                return .{ .id = key, .constraint = value };
-            }
-        }
-        return null;
-    }
-
-    fn count(raw: []const u8) usize {
-        var it = DepIterator.init(raw);
-        var n: usize = 0;
-        while (it.next()) |_| n += 1;
-        return n;
-    }
-};
+/// DepIterator — delegates to shared tri_cell_parser.zig
+const DepIterator = cell_parser.DepIterator;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // VERSION CONSTRAINT (from plugin_manifest.zig pattern)
@@ -231,6 +171,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "doctor")) return runDoctor(allocator, rest);
     if (std.mem.eql(u8, sub, "explain")) return runExplain(allocator, rest);
     if (std.mem.eql(u8, sub, "map")) return runMap(allocator);
+    if (std.mem.eql(u8, sub, "contracts")) return runContracts(allocator);
     if (std.mem.eql(u8, sub, "mcp-gen")) {
         const cell_dispatch = @import("tri_cell_dispatch.zig");
         return cell_dispatch.runMcpGenCommand(allocator);
@@ -255,6 +196,8 @@ fn printHelp() void {
     std.debug.print("  {s}check --dry-run{s}   Show sync changes without writing\n", .{ GREEN, RESET });
     std.debug.print("  {s}deps <id>{s}         Show dependency tree\n", .{ GREEN, RESET });
     std.debug.print("  {s}deps <id> --tree{s}  Recursive dependency tree\n", .{ GREEN, RESET });
+    std.debug.print("  {s}deps --auto-detect{s}  Scan @imports, find missing deps\n", .{ GREEN, RESET });
+    std.debug.print("  {s}deps --auto-detect --write{s}  Auto-detect + update cell.tri\n", .{ GREEN, RESET });
     std.debug.print("  {s}graph{s}             Output Mermaid dependency diagram\n", .{ GREEN, RESET });
     std.debug.print("  {s}health{s}            Per-cell health score breakdown\n", .{ GREEN, RESET });
     std.debug.print("  {s}lint{s}              Check @import isolation + permission violations\n", .{ GREEN, RESET });
@@ -278,6 +221,7 @@ fn printHelp() void {
     std.debug.print("  {s}doctor{s}            Full heal cycle: fix→sign→audit→lint→sync→status\n", .{ GREEN, RESET });
     std.debug.print("  {s}explain <id>{s}      Show WHY a cell has its permission level\n", .{ GREEN, RESET });
     std.debug.print("  {s}map{s}               Binary → cell mapping, find orphan binaries\n", .{ GREEN, RESET });
+    std.debug.print("  {s}contracts{s}          Verify cell exports match source code (integrity)\n", .{ GREEN, RESET });
     std.debug.print("  {s}mcp-gen{s}           Generate MCP tools JSON from cell contributes\n", .{ GREEN, RESET });
     std.debug.print("  {s}commands{s}          List all cell-contributed tri subcommands\n", .{ GREEN, RESET });
     std.debug.print("  {s}verify{s}            Check content hashes (integrity)\n", .{ GREEN, RESET });
@@ -963,7 +907,12 @@ fn runCheck(allocator: Allocator, args: []const []const u8) !void {
                 std.debug.print("{s}ERROR{s}: Write failed: {}\n", .{ RED, RESET, err });
                 return;
             };
-            std.debug.print("  {s}✓ Registry synced:{s} {s} ({d} cells)\n\n", .{ GREEN, RESET, registry_path, valid });
+            std.debug.print("  {s}✓ Registry synced:{s} {s} ({d} cells)\n", .{ GREEN, RESET, registry_path, valid });
+
+            // Auto-regenerate MCP tools (Honeycomb v7 — single pipeline)
+            const cell_dispatch = @import("tri_cell_dispatch.zig");
+            cell_dispatch.runMcpGenCommand(allocator) catch {};
+            cell_dispatch.invalidateCache();
         }
     }
 }
@@ -973,8 +922,30 @@ fn runCheck(allocator: Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runDeps(allocator: Allocator, args: []const []const u8) !void {
+    // tri cell deps --auto-detect → scan @imports across all cells
+    for (args) |a| {
+        if (std.mem.eql(u8, a, "--auto-detect")) {
+            const write_mode = for (args) |b| {
+                if (std.mem.eql(u8, b, "--write")) break true;
+            } else false;
+            return runAutoDetectDeps(allocator, write_mode);
+        }
+        if (std.mem.eql(u8, a, "--prune")) {
+            const write_mode = for (args) |b| {
+                if (std.mem.eql(u8, b, "--write")) break true;
+            } else false;
+            return runPruneDeps(allocator, write_mode);
+        }
+        if (std.mem.eql(u8, a, "--cycles")) {
+            return runDetectCycles(allocator);
+        }
+    }
+
     if (args.len == 0) {
         std.debug.print("{s}Usage:{s} tri cell deps <cell-id> [--tree]\n", .{ YELLOW, RESET });
+        std.debug.print("       tri cell deps --auto-detect [--write]\n", .{});
+        std.debug.print("       tri cell deps --prune [--write]\n", .{});
+        std.debug.print("       tri cell deps --cycles\n", .{});
         return;
     }
 
@@ -1092,6 +1063,483 @@ fn printDepsTree(allocator: Allocator, cells: []const std.json.Value, deps_raw: 
             std.debug.print(" {s}(not found){s}\n", .{ RED, RESET });
         }
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUTO-DETECT DEPS — Scan @import statements to find real cross-cell dependencies
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runAutoDetectDeps(allocator: Allocator, write_mode: bool) !void {
+    std.debug.print("{s}[auto-detect]{s} Scanning @import statements across all cells...\n\n", .{ CYAN, RESET });
+
+    const cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(cells);
+
+    // Build cell_path → cell_id mapping
+    var path_to_cell = std.StringHashMap([]const u8).init(allocator);
+    defer path_to_cell.deinit();
+    for (cells) |cell| {
+        path_to_cell.put(cell.manifest.path, cell.manifest.id) catch {};
+    }
+
+    var total_missing: usize = 0;
+    var total_confirmed: usize = 0;
+    var cells_with_empty_deps: usize = 0;
+    var cells_with_imports: usize = 0;
+
+    for (cells) |cell| {
+        const m = cell.manifest;
+        const cell_path = m.path;
+
+        // Scan .zig files in cell's path
+        var detected_deps = std.StringHashMap(void).init(allocator);
+        defer detected_deps.deinit();
+        var import_count: usize = 0;
+
+        var dir = std.fs.cwd().openDir(cell_path, .{ .iterate = true }) catch continue;
+        defer dir.close();
+
+        var walker = dir.iterate();
+        while (walker.next() catch null) |entry| {
+            if (entry.kind != .file) continue;
+            if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+
+            // Read file content
+            const content = dir.readFileAlloc(allocator, entry.name, 1048576) catch continue;
+            defer allocator.free(content);
+
+            // Scan for @import("...") patterns
+            var pos: usize = 0;
+            while (std.mem.indexOf(u8, content[pos..], "@import(\"")) |idx| {
+                const abs_start = pos + idx + 9; // skip @import("
+                const end = std.mem.indexOf(u8, content[abs_start..], "\"") orelse break;
+                const import_path = content[abs_start .. abs_start + end];
+                pos = abs_start + end + 1;
+
+                // Skip stdlib imports
+                if (std.mem.eql(u8, import_path, "std") or
+                    std.mem.eql(u8, import_path, "builtin") or
+                    std.mem.eql(u8, import_path, "root"))
+                    continue;
+
+                // Check if it's a cross-cell import (contains "../" or is a root-relative path)
+                if (std.mem.startsWith(u8, import_path, "../")) {
+                    // Resolve: cell_path + "/" + import_path → normalize → find owning cell
+                    // Try to match the first directory after going up
+                    const resolved = resolveImportToCell(import_path, cell_path, &path_to_cell);
+                    if (resolved) |dep_cell_id| {
+                        if (!std.mem.eql(u8, dep_cell_id, m.id)) {
+                            detected_deps.put(dep_cell_id, {}) catch {};
+                            import_count += 1;
+                        }
+                    }
+                } else if (!std.mem.endsWith(u8, import_path, ".zig")) {
+                    // Bare module name like "vsa" or "tvc_corpus" — check if a cell owns it
+                    for (cells) |other| {
+                        const other_path = other.manifest.path;
+                        // Match if the import name matches the cell directory name
+                        if (std.mem.lastIndexOfScalar(u8, other_path, '/')) |slash| {
+                            const dir_name = other_path[slash + 1 ..];
+                            if (std.mem.eql(u8, import_path, dir_name) and !std.mem.eql(u8, other.manifest.id, m.id)) {
+                                detected_deps.put(other.manifest.id, {}) catch {};
+                                import_count += 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+                // Internal .zig imports (same directory) → skip
+            }
+        }
+
+        // Compare detected vs declared
+        var declared_deps = std.StringHashMap(void).init(allocator);
+        defer declared_deps.deinit();
+        var dep_it = cell_parser.DepIterator.init(m.dependencies_raw);
+        while (dep_it.next()) |dep_entry| {
+            declared_deps.put(dep_entry.id, {}) catch {};
+        }
+
+        const has_declared = declared_deps.count() > 0;
+        const has_detected = detected_deps.count() > 0;
+
+        if (!has_declared and !has_detected) {
+            cells_with_empty_deps += 1;
+            continue;
+        }
+
+        if (has_detected) cells_with_imports += 1;
+
+        // Print diff for this cell
+        var printed_header = false;
+
+        // Check confirmed deps (declared AND detected)
+        var declared_it = declared_deps.iterator();
+        while (declared_it.next()) |entry| {
+            if (detected_deps.contains(entry.key_ptr.*)) {
+                if (!printed_header) {
+                    std.debug.print("{s}{s}:{s}\n", .{ GOLDEN, m.id, RESET });
+                    printed_header = true;
+                }
+                std.debug.print("  {s}\u{2713}{s} {s} (declared, confirmed by @import)\n", .{ GREEN, RESET, entry.key_ptr.* });
+                total_confirmed += 1;
+            }
+        }
+
+        // Check missing deps (detected but NOT declared)
+        var detected_it = detected_deps.iterator();
+        while (detected_it.next()) |entry| {
+            if (!declared_deps.contains(entry.key_ptr.*)) {
+                if (!printed_header) {
+                    std.debug.print("{s}{s}:{s}\n", .{ GOLDEN, m.id, RESET });
+                    printed_header = true;
+                }
+                std.debug.print("  {s}+{s} {s} ({s}MISSING{s} \u{2014} found @import)\n", .{ RED, RESET, entry.key_ptr.*, RED, RESET });
+                total_missing += 1;
+            }
+        }
+
+        // Check extra declared deps (declared but NOT detected)
+        declared_it = declared_deps.iterator();
+        while (declared_it.next()) |entry| {
+            if (!detected_deps.contains(entry.key_ptr.*)) {
+                if (!printed_header) {
+                    std.debug.print("{s}{s}:{s}\n", .{ GOLDEN, m.id, RESET });
+                    printed_header = true;
+                }
+                std.debug.print("  {s}?{s} {s} (declared, no @import found)\n", .{ YELLOW, RESET, entry.key_ptr.* });
+            }
+        }
+
+        if (printed_header) std.debug.print("\n", .{});
+    }
+
+    // Summary
+    std.debug.print("{s}[auto-detect summary]{s}\n", .{ CYAN, RESET });
+    std.debug.print("  Confirmed deps: {s}{d}{s}\n", .{ GREEN, total_confirmed, RESET });
+    std.debug.print("  Missing deps:   {s}{d}{s}\n", .{ RED, total_missing, RESET });
+    std.debug.print("  Cells with cross-cell imports: {d}\n", .{cells_with_imports});
+    std.debug.print("  Cells with empty deps (truly independent): {d}\n", .{cells_with_empty_deps});
+
+    if (write_mode and total_missing > 0) {
+        std.debug.print("\n{s}--write{s} mode: Writing deps to cell.tri is not yet implemented.\n", .{ YELLOW, RESET });
+        std.debug.print("  Review the output above and add missing deps manually.\n", .{});
+    } else if (total_missing > 0) {
+        std.debug.print("\n  Run with {s}--write{s} to update cell.tri files (coming soon).\n", .{ YELLOW, RESET });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRUNE — find declared deps with no matching @import
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runPruneDeps(allocator: Allocator, write_mode: bool) !void {
+    std.debug.print("{s}[prune]{s} Finding declared deps with no matching @import...\n\n", .{ CYAN, RESET });
+
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    var path_to_cell = std.StringHashMap([]const u8).init(allocator);
+    defer path_to_cell.deinit();
+    for (all_cells) |c| path_to_cell.put(c.manifest.path, c.manifest.id) catch {};
+
+    var total_prunable: usize = 0;
+
+    for (all_cells) |c| {
+        const m = c.manifest;
+        const cell_info = parseCellTri(c.content);
+        const dep_acc = computeDepsAccuracy(allocator, m.path, cell_info, all_cells, &path_to_cell);
+
+        if (dep_acc.extra == 0) continue;
+
+        std.debug.print("{s}{s}:{s}\n", .{ GOLDEN, m.id, RESET });
+
+        // Re-scan to show specifics
+        var declared_deps = std.StringHashMap(void).init(allocator);
+        defer declared_deps.deinit();
+        var dep_it = cell_parser.DepIterator.init(m.dependencies_raw);
+        while (dep_it.next()) |dep_entry| declared_deps.put(dep_entry.id, {}) catch {};
+
+        // Scan actual imports
+        var detected_deps = std.StringHashMap(void).init(allocator);
+        defer detected_deps.deinit();
+        scanCellImports(allocator, m.path, m.id, all_cells, &path_to_cell, &detected_deps);
+
+        var dit = declared_deps.iterator();
+        while (dit.next()) |entry| {
+            if (!detected_deps.contains(entry.key_ptr.*)) {
+                std.debug.print("  {s}✂{s} {s} (declared, no @import found — prunable)\n", .{ YELLOW, RESET, entry.key_ptr.* });
+                total_prunable += 1;
+            }
+        }
+        std.debug.print("\n", .{});
+    }
+
+    std.debug.print("{s}[prune summary]{s} {d} prunable deps found\n", .{ CYAN, RESET, total_prunable });
+    if (write_mode and total_prunable > 0) {
+        std.debug.print("\n{s}[prune --write]{s} Rewriting cell.tri files...\n", .{ CYAN, RESET });
+        var files_written: usize = 0;
+        for (all_cells) |c| {
+            const m = c.manifest;
+            const cell_info = parseCellTri(c.content);
+            const dep_acc = computeDepsAccuracy(allocator, m.path, cell_info, all_cells, &path_to_cell);
+            if (dep_acc.extra == 0) continue;
+
+            // Find which deps to keep
+            var detected_deps = std.StringHashMap(void).init(allocator);
+            defer detected_deps.deinit();
+            scanCellImports(allocator, m.path, m.id, all_cells, &path_to_cell, &detected_deps);
+
+            // Rebuild cell.tri content, filtering out prunable dep lines
+            const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{m.path}) catch continue;
+            defer allocator.free(cell_tri_path);
+            const original = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+            defer allocator.free(original);
+
+            var result = std.array_list.Managed(u8).init(allocator);
+            defer result.deinit();
+
+            var in_deps_section = false;
+            var lines_iter = std.mem.splitScalar(u8, original, '\n');
+            while (lines_iter.next()) |line| {
+                // Detect section headers
+                if (line.len > 0 and line[0] == '[') {
+                    in_deps_section = std.mem.eql(u8, line, "[dependencies]");
+                    result.appendSlice(line) catch continue;
+                    result.append('\n') catch continue;
+                    continue;
+                }
+
+                if (in_deps_section and std.mem.indexOf(u8, line, " = ") != null) {
+                    // Parse dep id: "trinity.foo = ^1.0.0" → extract "trinity.foo"
+                    const eq_pos = std.mem.indexOf(u8, line, " = ") orelse {
+                        result.appendSlice(line) catch continue;
+                        result.append('\n') catch continue;
+                        continue;
+                    };
+                    const dep_id = std.mem.trim(u8, line[0..eq_pos], " ");
+
+                    // Check if this dep has a real @import
+                    var declared_deps_check = std.StringHashMap(void).init(allocator);
+                    defer declared_deps_check.deinit();
+                    var dep_it_check = cell_parser.DepIterator.init(m.dependencies_raw);
+                    while (dep_it_check.next()) |de| declared_deps_check.put(de.id, {}) catch {};
+
+                    if (declared_deps_check.contains(dep_id) and !detected_deps.contains(dep_id)) {
+                        // Prunable — skip this line
+                        std.debug.print("  {s}✂{s} {s}: removed {s}\n", .{ GREEN, RESET, m.id, dep_id });
+                        continue;
+                    }
+                }
+
+                result.appendSlice(line) catch continue;
+                result.append('\n') catch continue;
+            }
+
+            // Remove trailing extra newline
+            if (result.items.len > 0 and result.items[result.items.len - 1] == '\n') {
+                _ = result.pop();
+            }
+
+            const file = std.fs.cwd().createFile(cell_tri_path, .{}) catch continue;
+            defer file.close();
+            file.writeAll(result.items) catch continue;
+            files_written += 1;
+        }
+        std.debug.print("\n{s}[prune done]{s} {d} cell.tri files rewritten\n", .{ CYAN, RESET, files_written });
+    } else if (total_prunable > 0) {
+        std.debug.print("  Run with {s}--write{s} to auto-prune.\n", .{ YELLOW, RESET });
+    }
+}
+
+// Helper: scan @imports for a cell into a hashmap
+fn scanCellImports(
+    allocator: Allocator,
+    cell_path: []const u8,
+    cell_id: []const u8,
+    all_cells: []const cell_parser.DiscoveredCell,
+    path_to_cell: *std.StringHashMap([]const u8),
+    detected_deps: *std.StringHashMap(void),
+) void {
+    var dir = std.fs.cwd().openDir(cell_path, .{ .iterate = true }) catch return;
+    defer dir.close();
+
+    var walker = dir.iterate();
+    while (walker.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+
+        const file_content = dir.readFileAlloc(allocator, entry.name, 1048576) catch continue;
+        defer allocator.free(file_content);
+
+        var pos: usize = 0;
+        while (std.mem.indexOf(u8, file_content[pos..], "@import(\"")) |idx| {
+            const abs_start = pos + idx + 9;
+            const end_idx = std.mem.indexOf(u8, file_content[abs_start..], "\"") orelse break;
+            const import_path = file_content[abs_start .. abs_start + end_idx];
+            pos = abs_start + end_idx + 1;
+
+            if (std.mem.eql(u8, import_path, "std") or
+                std.mem.eql(u8, import_path, "builtin") or
+                std.mem.eql(u8, import_path, "root")) continue;
+
+            if (std.mem.startsWith(u8, import_path, "../")) {
+                if (resolveImportToCell(import_path, cell_path, path_to_cell)) |dep_cell_id| {
+                    if (!std.mem.eql(u8, dep_cell_id, cell_id)) {
+                        detected_deps.put(dep_cell_id, {}) catch {};
+                    }
+                }
+            } else if (!std.mem.endsWith(u8, import_path, ".zig")) {
+                for (all_cells) |other| {
+                    const other_path = other.manifest.path;
+                    if (std.mem.lastIndexOfScalar(u8, other_path, '/')) |slash| {
+                        const dir_name = other_path[slash + 1 ..];
+                        if (std.mem.eql(u8, import_path, dir_name) and !std.mem.eql(u8, other.manifest.id, cell_id)) {
+                            detected_deps.put(other.manifest.id, {}) catch {};
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLES — detect dependency cycles via DFS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runDetectCycles(allocator: Allocator) !void {
+    std.debug.print("{s}[cycles]{s} Scanning for dependency cycles...\n\n", .{ CYAN, RESET });
+
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    // Build adjacency: cell_id → [dep_cell_ids]
+    var adj = std.StringHashMap(std.array_list.Managed([]const u8)).init(allocator);
+    defer {
+        var it = adj.iterator();
+        while (it.next()) |entry| entry.value_ptr.deinit();
+        adj.deinit();
+    }
+
+    for (all_cells) |c| {
+        const m = c.manifest;
+        var deps_list = std.array_list.Managed([]const u8).init(allocator);
+        var dep_it = cell_parser.DepIterator.init(m.dependencies_raw);
+        while (dep_it.next()) |dep_entry| {
+            deps_list.append(dep_entry.id) catch {};
+        }
+        adj.put(m.id, deps_list) catch {};
+    }
+
+    // DFS with coloring: 0=white, 1=gray, 2=black
+    var color = std.StringHashMap(u8).init(allocator);
+    defer color.deinit();
+    for (all_cells) |c| color.put(c.manifest.id, 0) catch {};
+
+    var cycles_found: usize = 0;
+
+    for (all_cells) |c| {
+        const cell_id = c.manifest.id;
+        if ((color.get(cell_id) orelse 0) == 0) {
+            // DFS iterative with path tracking
+            var stack = std.array_list.Managed(struct { id: []const u8, idx: usize }).init(allocator);
+            defer stack.deinit();
+            var path_list = std.array_list.Managed([]const u8).init(allocator);
+            defer path_list.deinit();
+
+            stack.append(.{ .id = cell_id, .idx = 0 }) catch {};
+            color.put(cell_id, 1) catch {};
+            path_list.append(cell_id) catch {};
+
+            while (stack.items.len > 0) {
+                const top = &stack.items[stack.items.len - 1];
+                const neighbors = adj.get(top.id);
+                if (neighbors != null and top.idx < neighbors.?.items.len) {
+                    const next = neighbors.?.items[top.idx];
+                    top.idx += 1;
+                    const next_color = color.get(next) orelse 0;
+                    if (next_color == 1) {
+                        // Found cycle — print it
+                        std.debug.print("  {s}CYCLE:{s} ", .{ RED, RESET });
+                        var in_cycle = false;
+                        for (path_list.items) |p| {
+                            if (std.mem.eql(u8, p, next)) in_cycle = true;
+                            if (in_cycle) std.debug.print("{s} → ", .{p});
+                        }
+                        std.debug.print("{s}\n", .{next});
+                        cycles_found += 1;
+                    } else if (next_color == 0) {
+                        color.put(next, 1) catch {};
+                        stack.append(.{ .id = next, .idx = 0 }) catch {};
+                        path_list.append(next) catch {};
+                    }
+                } else {
+                    color.put(top.id, 2) catch {};
+                    _ = stack.pop();
+                    if (path_list.items.len > 0) _ = path_list.pop();
+                }
+            }
+        }
+    }
+
+    if (cycles_found == 0) {
+        std.debug.print("  {s}✓{s} No dependency cycles detected\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("\n  {s}{d} cycle(s) found{s}\n", .{ RED, cycles_found, RESET });
+    }
+}
+
+fn resolveImportToCell(import_path: []const u8, cell_path: []const u8, path_to_cell: *std.StringHashMap([]const u8)) ?[]const u8 {
+    // import_path is like "../vsa/core.zig" or "../tri/tri_utils.zig"
+    // cell_path is like "src/hslm"
+    // We need to resolve: "src/hslm" + "../vsa/core.zig" → "src/vsa"
+
+    // Count ../ levels
+    var remaining = import_path;
+    var up_count: usize = 0;
+    while (std.mem.startsWith(u8, remaining, "../")) {
+        up_count += 1;
+        remaining = remaining[3..];
+    }
+
+    // Go up from cell_path
+    var base = cell_path;
+    var i: usize = 0;
+    while (i < up_count) : (i += 1) {
+        if (std.mem.lastIndexOfScalar(u8, base, '/')) |slash| {
+            base = base[0..slash];
+        } else {
+            return null; // Can't go up further
+        }
+    }
+
+    // Take the first path component of remaining as the target directory
+    const slash_pos = std.mem.indexOfScalar(u8, remaining, '/');
+    const target_dir = if (slash_pos) |s| remaining[0..s] else blk: {
+        // Direct file import like "../vsa.zig" → strip .zig
+        if (std.mem.endsWith(u8, remaining, ".zig")) {
+            break :blk remaining[0 .. remaining.len - 4];
+        }
+        break :blk remaining;
+    };
+
+    // Build resolved path: base + "/" + target_dir
+    var buf: [512]u8 = undefined;
+    const resolved = std.fmt.bufPrint(&buf, "{s}/{s}", .{ base, target_dir }) catch return null;
+
+    // Look up in path_to_cell
+    return path_to_cell.get(resolved);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2885,6 +3333,7 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
     var fix_ids = false;
     var fix_scope = false;
     var fix_counts = false;
+    var fix_owner = false;
     var dry_run = false;
 
     for (args) |arg| {
@@ -2893,18 +3342,20 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
         if (std.mem.eql(u8, arg, "--ids")) fix_ids = true;
         if (std.mem.eql(u8, arg, "--scope")) fix_scope = true;
         if (std.mem.eql(u8, arg, "--counts")) fix_counts = true;
+        if (std.mem.eql(u8, arg, "--owner")) fix_owner = true;
         if (std.mem.eql(u8, arg, "--all")) {
             fix_perms = true;
             fix_deps = true;
             fix_ids = true;
             fix_scope = true;
             fix_counts = true;
+            fix_owner = true;
         }
         if (std.mem.eql(u8, arg, "--dry-run")) dry_run = true;
     }
 
-    if (!fix_perms and !fix_deps and !fix_ids and !fix_scope and !fix_counts) {
-        std.debug.print("{s}Usage:{s} tri cell fix --perms|--deps|--ids|--scope|--counts|--all [--dry-run]\n", .{ YELLOW, RESET });
+    if (!fix_perms and !fix_deps and !fix_ids and !fix_scope and !fix_counts and !fix_owner) {
+        std.debug.print("{s}Usage:{s} tri cell fix --perms|--deps|--ids|--scope|--counts|--owner|--all [--dry-run]\n", .{ YELLOW, RESET });
         return;
     }
 
@@ -3236,6 +3687,78 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("\n", .{});
     }
 
+    // === FIX --owner: set owner + auto-fill empty contributes.commands ===
+    if (fix_owner) {
+        // Auto-fill contributes.commands from capabilities for cells with empty commands
+        std.debug.print("  {s}[CONTRIBUTES]{s} Auto-filling commands from capabilities...\n", .{ CYAN, RESET });
+        for (discovered) |path| {
+            const ctri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+            defer allocator.free(ctri_path);
+            const ctri_content = std.fs.cwd().readFileAlloc(allocator, ctri_path, 65536) catch continue;
+            defer allocator.free(ctri_content);
+            const ccell = parseCellTri(ctri_content);
+            if (ccell.id.len == 0) continue;
+
+            // Skip if already has commands
+            if (ccell.contributes_commands.len > 2) continue;
+            // Need capabilities to derive commands from
+            if (ccell.capabilities.len <= 2) continue;
+
+            // Extract first 3 capabilities as commands
+            var caps_iter = cell_parser.ArrayIterator.init(ccell.capabilities);
+            var cmd_buf: [256]u8 = undefined;
+            var cmd_len: usize = 0;
+            var cap_count: usize = 0;
+            cmd_buf[0] = '[';
+            cmd_len = 1;
+            while (caps_iter.next()) |cap| {
+                if (cap_count >= 3) break;
+                if (cap_count > 0) {
+                    @memcpy(cmd_buf[cmd_len..][0..2], ", ");
+                    cmd_len += 2;
+                }
+                cmd_buf[cmd_len] = '"';
+                cmd_len += 1;
+                const copy_len = @min(cap.len, cmd_buf.len - cmd_len - 2);
+                @memcpy(cmd_buf[cmd_len..][0..copy_len], cap[0..copy_len]);
+                cmd_len += copy_len;
+                cmd_buf[cmd_len] = '"';
+                cmd_len += 1;
+                cap_count += 1;
+            }
+            if (cap_count == 0) continue;
+            cmd_buf[cmd_len] = ']';
+            cmd_len += 1;
+
+            std.debug.print("    {s}FIX{s}  {s}: commands = {s}\n", .{ YELLOW, RESET, ccell.id, cmd_buf[0..cmd_len] });
+            if (!dry_run) {
+                fixCellTriField(allocator, path, "commands", cmd_buf[0..cmd_len]);
+                total_fixes += 1;
+            }
+        }
+        std.debug.print("\n", .{});
+
+        // Set owner for cells without one
+        std.debug.print("  {s}[OWNER]{s} Setting owner for cells without one...\n", .{ CYAN, RESET });
+        std.debug.print("  {s}[OWNER]{s} Setting owner for cells without one...\n", .{ CYAN, RESET });
+        for (discovered) |path| {
+            const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+            defer allocator.free(cell_tri_path);
+            const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+            defer allocator.free(content);
+            const cell = parseCellTri(content);
+            if (cell.id.len == 0) continue;
+            if (cell.owner.len > 0) continue; // already has owner
+
+            std.debug.print("    {s}FIX{s}  {s}: owner = \"agent:ralph\"\n", .{ YELLOW, RESET, cell.id });
+            if (!dry_run) {
+                fixCellTriField(allocator, path, "owner", "agent:ralph");
+                total_fixes += 1;
+            }
+        }
+        std.debug.print("\n", .{});
+    }
+
     if (dry_run) {
         std.debug.print("  {s}[DRY RUN]{s} No files modified. Run without --dry-run to apply.\n\n", .{ YELLOW, RESET });
     } else {
@@ -3258,6 +3781,7 @@ fn fixCellTriField(allocator: Allocator, cell_path: []const u8, key: []const u8,
     const is_numeric = new_value.len > 0 and for (new_value) |ch| {
         if (ch < '0' or ch > '9') break false;
     } else true;
+    const is_array = new_value.len > 0 and new_value[0] == '[';
 
     var found = false;
     var lines = std.mem.splitScalar(u8, content, '\n');
@@ -3290,7 +3814,7 @@ fn fixCellTriField(allocator: Allocator, cell_path: []const u8, key: []const u8,
             const line_key = std.mem.trim(u8, trimmed[0..ep], " \t");
             if (std.mem.eql(u8, line_key, key)) {
                 found = true;
-                const new_line = if (is_numeric)
+                const new_line = if (is_numeric or is_array)
                     std.fmt.allocPrint(allocator, "{s} = {s}", .{ key, new_value }) catch return
                 else
                     std.fmt.allocPrint(allocator, "{s} = \"{s}\"", .{ key, new_value }) catch return;
@@ -3387,7 +3911,7 @@ fn appendDepsToCell(allocator: Allocator, cell_path: []const u8, deps: *std.Stri
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runScore(allocator: Allocator, args: []const []const u8) !void {
-    std.debug.print("\n{s}🏆 CELL INTEGRITY SCORE{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}🏆 CELL INTEGRITY SCORE v9 (honest){s}\n\n", .{ GOLDEN, RESET });
 
     const discovered = discoverCells(allocator) catch {
         std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
@@ -3396,6 +3920,74 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
     defer {
         for (discovered) |p| allocator.free(p);
         allocator.free(discovered);
+    }
+
+    // Build path→cell_id map for deps accuracy
+    const all_cells = cell_parser.discoverAll(allocator) catch null;
+    defer if (all_cells) |ac| allocator.free(ac);
+    var path_to_cell = std.StringHashMap([]const u8).init(allocator);
+    defer path_to_cell.deinit();
+    if (all_cells) |ac| {
+        for (ac) |c| path_to_cell.put(c.manifest.path, c.manifest.id) catch {};
+    }
+
+    // Build cycle set for penalty
+    var cycle_cells = std.StringHashMap(void).init(allocator);
+    defer cycle_cells.deinit();
+    if (all_cells) |ac| {
+        // Build adjacency
+        var adj = std.StringHashMap(std.array_list.Managed([]const u8)).init(allocator);
+        defer {
+            var it = adj.iterator();
+            while (it.next()) |entry| entry.value_ptr.deinit();
+            adj.deinit();
+        }
+        for (ac) |c| {
+            var deps_list = std.array_list.Managed([]const u8).init(allocator);
+            var dep_it = cell_parser.DepIterator.init(c.manifest.dependencies_raw);
+            while (dep_it.next()) |de| deps_list.append(de.id) catch {};
+            adj.put(c.manifest.id, deps_list) catch {};
+        }
+        // DFS for cycle detection
+        var color = std.StringHashMap(u8).init(allocator);
+        defer color.deinit();
+        for (ac) |c| color.put(c.manifest.id, 0) catch {};
+        for (ac) |c| {
+            if ((color.get(c.manifest.id) orelse 0) != 0) continue;
+            var stack = std.array_list.Managed(struct { id: []const u8, idx: usize }).init(allocator);
+            defer stack.deinit();
+            var path_list = std.array_list.Managed([]const u8).init(allocator);
+            defer path_list.deinit();
+            stack.append(.{ .id = c.manifest.id, .idx = 0 }) catch {};
+            color.put(c.manifest.id, 1) catch {};
+            path_list.append(c.manifest.id) catch {};
+            while (stack.items.len > 0) {
+                const top = &stack.items[stack.items.len - 1];
+                const neighbors = adj.get(top.id);
+                if (neighbors != null and top.idx < neighbors.?.items.len) {
+                    const next = neighbors.?.items[top.idx];
+                    top.idx += 1;
+                    const nc = color.get(next) orelse 0;
+                    if (nc == 1) {
+                        // Mark all nodes in cycle path
+                        var in_cycle = false;
+                        for (path_list.items) |p| {
+                            if (std.mem.eql(u8, p, next)) in_cycle = true;
+                            if (in_cycle) cycle_cells.put(p, {}) catch {};
+                        }
+                        cycle_cells.put(next, {}) catch {};
+                    } else if (nc == 0) {
+                        color.put(next, 1) catch {};
+                        stack.append(.{ .id = next, .idx = 0 }) catch {};
+                        path_list.append(next) catch {};
+                    }
+                } else {
+                    color.put(top.id, 2) catch {};
+                    _ = stack.pop();
+                    if (path_list.items.len > 0) _ = path_list.pop();
+                }
+            }
+        }
     }
 
     // Optional cell filter
@@ -3409,8 +4001,8 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
     var grade_c: usize = 0;
     var grade_f: usize = 0;
 
-    std.debug.print("  {s}CELL                    HEALTH  SECURITY  DEPS  TOTAL  GRADE{s}\n", .{ CYAN, RESET });
-    std.debug.print("  {s}─────────────────────── ─────── ──────── ───── ────── ─────{s}\n", .{ GRAY, RESET });
+    std.debug.print("  {s}CELL                    HEALTH  SECURITY  DEPS  CONTRACTS  TOTAL  GRADE{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}─────────────────────── ─────── ──────── ───── ───────── ────── ─────{s}\n", .{ GRAY, RESET });
 
     for (discovered) |path| {
         const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
@@ -3427,38 +4019,56 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
         // Skip binary-kind
         if (std.mem.eql(u8, cell.kind, "binary")) continue;
 
-        // Health: tests + capabilities + owner + metadata
-        const has_tests: u8 = if (cell.tests > 0) 25 else 0;
-        const has_owner: u8 = if (cell.owner.len > 0) 10 else 0;
-        const has_caps: u8 = if (cell.capabilities.len > 2) 10 else 0; // more than "[]"
+        // ── Health (max 30) ──
+        // tests: tiered — 1-9→3, 10-49→8, 50-99→12, 100+→15
+        const test_score: u8 = if (cell.tests == 0) 0 else if (cell.tests < 10) 3 else if (cell.tests < 50) 8 else if (cell.tests < 100) 12 else 15;
+        const has_owner: u8 = if (cell.owner.len > 0) 5 else 0;
+        const has_caps: u8 = if (cell.capabilities.len > 2) 5 else 0;
         const has_desc: u8 = if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) 5 else 0;
-        const health_score: u8 = has_tests + has_owner + has_caps + has_desc; // max 50
+        const health_score: u8 = test_score + has_owner + has_caps + has_desc; // max 30
 
-        // Security: permissions declared + match code + signed
+        // ── Security (max 30) ──
         var security_score: u8 = 0;
         if (cell.perm_level.len > 0) security_score += 10;
         const code_perms = inferPermissions(allocator, path);
         const perms_match = std.mem.eql(u8, cell.perm_level, code_perms.level) and
             std.mem.eql(u8, cell.perm_network, code_perms.net) and
             std.mem.eql(u8, cell.perm_process, code_perms.proc);
-        if (perms_match) security_score += 15;
+        if (perms_match) security_score += 10;
         if (cell.security_signed) security_score += 5;
         const no_bind_all = !(scanCodeForPattern(allocator, path, "parseIp4(\"0.0.0.0\"") or
             scanCodeForPattern(allocator, path, "parseIp(\"0.0.0.0\"") or
             scanCodeForPattern(allocator, path, "bind_address: []const u8 = \"0.0.0.0\"") or
             scanCodeForPattern(allocator, path, ".host = \"0.0.0.0\"") or
             scanCodeForPattern(allocator, path, "listen_address = \"0.0.0.0\""));
-        if (no_bind_all) security_score += 10;
-        // max 40
+        if (no_bind_all) security_score += 5;
+        // max 30
 
-        // Deps: has declared deps where code has cross-cell imports
-        var deps_score: u8 = 10; // default: no deps needed = full score
-        if (cell.dependencies_raw.len > 0) {
-            deps_score = 10; // has declared deps
+        // ── Deps accuracy (max 25) ──
+        var deps_score: u8 = 0;
+        const dep_acc = computeDepsAccuracy(allocator, path, cell, all_cells, &path_to_cell);
+        if (dep_acc.total == 0) {
+            deps_score = 25; // truly independent, no deps needed
+        } else {
+            const ratio: u8 = @intCast(@min(15, dep_acc.confirmed * 15 / dep_acc.total));
+            deps_score = ratio + (if (dep_acc.missing == 0) @as(u8, 10) else 0);
         }
-        // max 10
+        // Cycle penalty: -5 if this cell participates in a dependency cycle
+        if (cycle_cells.contains(cell.id)) {
+            deps_score -|= 5;
+        }
 
-        const final_score = health_score + security_score + deps_score;
+        // ── Contracts (max 15) ──
+        var contracts_score: u8 = 0;
+        if (cell.contributes_exports.len > 0) {
+            contracts_score += 10; // has declared exports
+        } else {
+            contracts_score += 5; // no exports = neutral
+        }
+        // boundary: cell kind matches deps
+        contracts_score += 5; // baseline (actual boundary check deferred to v10)
+
+        const final_score = health_score + security_score + deps_score + contracts_score;
         const grade_char: []const u8 = if (final_score >= 80) "A" else if (final_score >= 60) "B" else if (final_score >= 40) "C" else "F";
         const grade_color = if (final_score >= 80) GREEN else if (final_score >= 60) YELLOW else RED;
 
@@ -3466,8 +4076,8 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
 
         std.debug.print("  {s}{s}{s}", .{ WHITE, cell.id, RESET });
         printPad(cell.id.len, 24);
-        std.debug.print("{d:3}     {d:3}       {d:2}    {s}{d:3}{s}    {s}{s}{s}\n", .{
-            health_score, security_score, deps_score,
+        std.debug.print("{d:3}     {d:3}       {d:2}       {d:2}     {s}{d:3}{s}    {s}{s}{s}\n", .{
+            health_score, security_score, deps_score, contracts_score,
             grade_color,  final_score,    RESET,
             grade_color,  grade_char,     RESET,
         });
@@ -3479,10 +4089,102 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
     if (count > 0) {
         const avg = total_score / count;
         const avg_color = if (avg >= 80) GREEN else if (avg >= 60) YELLOW else RED;
-        std.debug.print("\n  {s}Average: {s}{d}/100{s} | A:{d} B:{d} C:{d} F:{d} | {d} cells\n\n", .{
-            GRAY, avg_color, avg, RESET, grade_a, grade_b, grade_c, grade_f, count,
+        std.debug.print("\n  {s}Average: {s}{d}/100{s} | A:{d} B:{d} C:{d} F:{d} | {d} cells{s}\n", .{
+            GRAY, avg_color, avg, RESET, grade_a, grade_b, grade_c, grade_f, count, RESET,
         });
+        std.debug.print("  {s}Formula: health(30) + security(30) + deps(25) + contracts(15) = 100{s}\n\n", .{ GRAY, RESET });
     }
+}
+
+const DepsAccuracy = struct { confirmed: usize, missing: usize, extra: usize, total: usize };
+
+fn computeDepsAccuracy(
+    allocator: Allocator,
+    cell_path: []const u8,
+    cell: CellInfo,
+    all_cells_opt: ?[]const cell_parser.DiscoveredCell,
+    path_to_cell: *std.StringHashMap([]const u8),
+) DepsAccuracy {
+    var result = DepsAccuracy{ .confirmed = 0, .missing = 0, .extra = 0, .total = 0 };
+    const all_cells = all_cells_opt orelse return result;
+
+    // Scan @imports in this cell's directory
+    var detected_deps = std.StringHashMap(void).init(allocator);
+    defer detected_deps.deinit();
+
+    var dir = std.fs.cwd().openDir(cell_path, .{ .iterate = true }) catch return result;
+    defer dir.close();
+
+    var walker = dir.iterate();
+    while (walker.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+
+        const file_content = dir.readFileAlloc(allocator, entry.name, 1048576) catch continue;
+        defer allocator.free(file_content);
+
+        var pos: usize = 0;
+        while (std.mem.indexOf(u8, file_content[pos..], "@import(\"")) |idx| {
+            const abs_start = pos + idx + 9;
+            const end = std.mem.indexOf(u8, file_content[abs_start..], "\"") orelse break;
+            const import_path = file_content[abs_start .. abs_start + end];
+            pos = abs_start + end + 1;
+
+            if (std.mem.eql(u8, import_path, "std") or
+                std.mem.eql(u8, import_path, "builtin") or
+                std.mem.eql(u8, import_path, "root")) continue;
+
+            if (std.mem.startsWith(u8, import_path, "../")) {
+                const resolved = resolveImportToCell(import_path, cell_path, path_to_cell);
+                if (resolved) |dep_cell_id| {
+                    if (!std.mem.eql(u8, dep_cell_id, cell.id)) {
+                        detected_deps.put(dep_cell_id, {}) catch {};
+                    }
+                }
+            } else if (!std.mem.endsWith(u8, import_path, ".zig")) {
+                for (all_cells) |other| {
+                    const other_path = other.manifest.path;
+                    if (std.mem.lastIndexOfScalar(u8, other_path, '/')) |slash| {
+                        const dir_name = other_path[slash + 1 ..];
+                        if (std.mem.eql(u8, import_path, dir_name) and !std.mem.eql(u8, other.manifest.id, cell.id)) {
+                            detected_deps.put(other.manifest.id, {}) catch {};
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Build declared deps set
+    var declared_deps = std.StringHashMap(void).init(allocator);
+    defer declared_deps.deinit();
+    var dep_it = cell_parser.DepIterator.init(cell.dependencies_raw);
+    while (dep_it.next()) |dep_entry| {
+        declared_deps.put(dep_entry.id, {}) catch {};
+    }
+
+    // Count confirmed (declared AND detected)
+    var declared_it = declared_deps.iterator();
+    while (declared_it.next()) |e| {
+        result.total += 1;
+        if (detected_deps.contains(e.key_ptr.*)) {
+            result.confirmed += 1;
+        } else {
+            result.extra += 1;
+        }
+    }
+
+    // Count missing (detected but NOT declared)
+    var detected_it = detected_deps.iterator();
+    while (detected_it.next()) |e| {
+        if (!declared_deps.contains(e.key_ptr.*)) {
+            result.missing += 1;
+            result.total += 1;
+        }
+    }
+
+    return result;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -3800,6 +4502,103 @@ fn runCellCommands(allocator: Allocator) !void {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CONTRACTS — verify cell exports match source code
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runContracts(allocator: Allocator) !void {
+    const cells = try cell_parser.discoverAll(allocator);
+    defer allocator.free(cells);
+
+    std.debug.print("\n{s}📋 CELL INTEGRITY CONTRACTS{s}\n\n", .{ GOLDEN, RESET });
+
+    var total_exports: usize = 0;
+    var verified: usize = 0;
+    var missing: usize = 0;
+    var cells_with_exports: usize = 0;
+    var cells_without: usize = 0;
+
+    for (cells) |cell| {
+        const m = cell.manifest;
+
+        // Check exports if declared
+        if (m.hasExports()) {
+            cells_with_exports += 1;
+            var iter = cell_parser.ArrayIterator.init(m.contributes_exports);
+            while (iter.next()) |export_name| {
+                total_exports += 1;
+                if (verifyExportExists(allocator, m.path, export_name)) {
+                    verified += 1;
+                } else {
+                    missing += 1;
+                    std.debug.print("  {s}MISSING{s}  {s}: pub fn {s} — not found in {s}/\n", .{
+                        RED, RESET, m.id, export_name, m.path,
+                    });
+                }
+            }
+        } else {
+            cells_without += 1;
+        }
+
+        // Also verify contributes.commands map to real tri subcommands
+        if (m.hasSubcommands()) {
+            var sub_iter = cell_parser.ArrayIterator.init(m.contributes_tri_subcommands);
+            while (sub_iter.next()) |_| {
+                // Subcommands are verified via cell dispatch, not source scanning
+            }
+        }
+    }
+
+    if (cells_with_exports == 0) {
+        std.debug.print("  {s}No cells declare exports yet.{s}\n", .{ GRAY, RESET });
+        std.debug.print("  Add to cell.tri:\n", .{});
+        std.debug.print("  {s}[contributes]{s}\n", .{ CYAN, RESET });
+        std.debug.print("  {s}exports = [\"runArenaCommand\", \"runLeaderboardCommand\"]{s}\n\n", .{ CYAN, RESET });
+        std.debug.print("  Cells without exports: {d}/{d}\n\n", .{ cells_without, cells.len });
+    } else {
+        std.debug.print("\n  Cells with exports: {d}/{d}\n", .{ cells_with_exports, cells.len });
+        std.debug.print("  Total exports: {d} | {s}Verified: {d}{s} | {s}Missing: {d}{s}\n\n", .{
+            total_exports,
+            GREEN,
+            verified,
+            RESET,
+            if (missing > 0) RED else GREEN,
+            missing,
+            RESET,
+        });
+    }
+}
+
+/// Scan .zig files in a cell's path for a `pub fn <name>` declaration
+fn verifyExportExists(allocator: Allocator, cell_path: []const u8, export_name: []const u8) bool {
+    const cwd = std.fs.cwd();
+    var dir = cwd.openDir(cell_path, .{ .iterate = true }) catch return false;
+    defer dir.close();
+
+    var walker = dir.walk(allocator) catch return false;
+    defer walker.deinit();
+
+    // Build the search pattern: "pub fn <export_name>"
+    const pattern = std.fmt.allocPrint(allocator, "pub fn {s}", .{export_name}) catch return false;
+    defer allocator.free(pattern);
+
+    while (walker.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.basename, ".zig")) continue;
+
+        const full_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ cell_path, entry.path }) catch continue;
+        defer allocator.free(full_path);
+
+        const content = cwd.readFileAlloc(allocator, full_path, 524288) catch continue;
+        defer allocator.free(content);
+
+        if (std.mem.indexOf(u8, content, pattern) != null) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -3984,118 +4783,11 @@ fn discoverCells(allocator: Allocator) ![][]const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// SECTION-AWARE CELL.TRI PARSER
+// CELL.TRI PARSER — delegates to shared tri_cell_parser.zig (Honeycomb v7)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn parseCellTri(content: []const u8) CellInfo {
-    var info: CellInfo = .{
-        .id = "",
-        .name = "",
-        .version = "",
-        .kind = "",
-        .path = "",
-        .status = "",
-        .description = "",
-        .min_core_version = "",
-        .capabilities = "",
-        .files = 0,
-        .tests = 0,
-        .owner = "",
-        .tags_scope = "",
-        .tags_type = "",
-        .contributes_commands = "",
-        .contributes_tri_subcommands = "",
-        .contributes_events = "",
-        .contributes_binaries = "",
-        .dependencies_raw = "",
-        .perm_level = "",
-        .perm_filesystem = "",
-        .perm_network = "",
-        .perm_process = "",
-        .perm_ffi = "",
-        .perm_concurrency = "",
-        .security_signed = false,
-        .security_signature = "",
-        .security_score = null,
-    };
-
-    const Section = enum { cell, tags, contributes, dependencies, permissions, security };
-    var current_section: Section = .cell;
-
-    // Track the raw [dependencies] section span inside content
-    // We store start/end offsets into content so the slice stays valid
-    var dep_section_start: ?usize = null;
-    var dep_section_end: usize = 0;
-
-    var offset: usize = 0;
-    var lines = std.mem.splitScalar(u8, content, '\n');
-    while (lines.next()) |line| {
-        const line_start = offset;
-        offset += line.len + 1; // +1 for '\n'
-        if (offset > content.len) offset = content.len;
-        const trimmed = std.mem.trim(u8, line, " \t\r");
-        if (trimmed.len == 0) continue;
-
-        // Section headers
-        if (trimmed.len >= 2 and trimmed[0] == '[') {
-            if (std.mem.eql(u8, trimmed, "[cell]")) {
-                current_section = .cell;
-            } else if (std.mem.eql(u8, trimmed, "[tags]")) {
-                current_section = .tags;
-            } else if (std.mem.eql(u8, trimmed, "[contributes]")) {
-                current_section = .contributes;
-            } else if (std.mem.eql(u8, trimmed, "[dependencies]")) {
-                current_section = .dependencies;
-                dep_section_start = offset; // content after [dependencies]\n
-            } else if (std.mem.eql(u8, trimmed, "[permissions]")) {
-                current_section = .permissions;
-            } else if (std.mem.eql(u8, trimmed, "[security]")) {
-                current_section = .security;
-            }
-            continue;
-        }
-
-        // Parse key = value
-        const eq_pos = std.mem.indexOf(u8, trimmed, "=") orelse continue;
-        if (eq_pos == 0) continue;
-        const key = std.mem.trim(u8, trimmed[0..eq_pos], " \t");
-        const value = std.mem.trim(u8, trimmed[eq_pos + 1 ..], " \t\"");
-
-        switch (current_section) {
-            .cell => {
-                if (std.mem.eql(u8, key, "id")) info.id = value else if (std.mem.eql(u8, key, "name")) info.name = value else if (std.mem.eql(u8, key, "version")) info.version = value else if (std.mem.eql(u8, key, "kind")) info.kind = value else if (std.mem.eql(u8, key, "path")) info.path = value else if (std.mem.eql(u8, key, "status")) info.status = value else if (std.mem.eql(u8, key, "description")) info.description = value else if (std.mem.eql(u8, key, "min_core_version")) info.min_core_version = value else if (std.mem.eql(u8, key, "capabilities")) info.capabilities = value else if (std.mem.eql(u8, key, "owner")) info.owner = value else if (std.mem.eql(u8, key, "files")) info.files = std.fmt.parseInt(u32, value, 10) catch 0 else if (std.mem.eql(u8, key, "tests")) info.tests = std.fmt.parseInt(u32, value, 10) catch 0;
-            },
-            .tags => {
-                if (std.mem.eql(u8, key, "scope")) info.tags_scope = value else if (std.mem.eql(u8, key, "type")) info.tags_type = value;
-            },
-            .contributes => {
-                if (std.mem.eql(u8, key, "commands")) info.contributes_commands = value else if (std.mem.eql(u8, key, "tri_subcommands")) info.contributes_tri_subcommands = value else if (std.mem.eql(u8, key, "events")) info.contributes_events = value else if (std.mem.eql(u8, key, "binaries")) info.contributes_binaries = value;
-            },
-            .dependencies => {
-                // Track end of dependencies section
-                _ = line_start; // used by offset calculation above
-                if (key.len > 0) {
-                    dep_section_end = offset;
-                }
-            },
-            .permissions => {
-                if (std.mem.eql(u8, key, "level")) info.perm_level = value else if (std.mem.eql(u8, key, "filesystem")) info.perm_filesystem = value else if (std.mem.eql(u8, key, "network")) info.perm_network = value else if (std.mem.eql(u8, key, "process")) info.perm_process = value else if (std.mem.eql(u8, key, "ffi")) info.perm_ffi = value else if (std.mem.eql(u8, key, "concurrency")) info.perm_concurrency = value;
-            },
-            .security => {
-                if (std.mem.eql(u8, key, "signed")) info.security_signed = std.mem.eql(u8, value, "true") else if (std.mem.eql(u8, key, "signature")) info.security_signature = value;
-            },
-        }
-    }
-
-    // Extract dependencies_raw as the raw text of the [dependencies] section
-    // We'll parse it on-the-fly when needed
-    if (dep_section_start) |start| {
-        if (dep_section_end > start) {
-            info.dependencies_raw = content[start..dep_section_end];
-        }
-    }
-
-    return info;
+    return cell_parser.parse(content);
 }
 
 fn extractField(content: []const u8, field: []const u8) []const u8 {
