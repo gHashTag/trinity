@@ -8,6 +8,8 @@ struct ChatSidebar: View {
     @State private var isSearching = false
     @State private var selectedTag: String?
     @State private var hoveredThread: UUID? = nil
+    @State private var showNewTagAlert = false
+    @State private var newTagName = ""
 
     private var filteredThreads: [ChatThread] {
         var base = store.sortedThreads
@@ -129,18 +131,38 @@ struct ChatSidebar: View {
                 .fill(Color.white.opacity(0.06))
                 .frame(height: 1)
 
-            // Tag filter chips
-            if !store.allTags.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 4) {
-                        tagChip(nil, label: "All")
-                        ForEach(store.allTags, id: \.self) { tag in
-                            tagChip(tag, label: "#\(tag)")
-                        }
+            // Tag filter chips + create
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 4) {
+                    tagChip(nil, label: "All")
+                    ForEach(store.allTags, id: \.self) { tag in
+                        tagChip(tag, label: "#\(tag)")
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 4)
+                    Button {
+                        showNewTagAlert = true
+                    } label: {
+                        Image(systemName: "plus.circle")
+                            .font(.system(size: 11))
+                            .foregroundStyle(TrinityTheme.accent.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Create tag")
                 }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+            }
+            .alert("New Tag", isPresented: $showNewTagAlert) {
+                TextField("Tag name", text: $newTagName)
+                Button("Add") {
+                    let tag = newTagName.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !tag.isEmpty, let threadID = store.activeThreadID {
+                        store.addTag(tag, to: threadID)
+                    }
+                    newTagName = ""
+                }
+                Button("Cancel", role: .cancel) { newTagName = "" }
+            } message: {
+                Text("Enter a tag name for the current thread")
             }
 
             // Thread list with date groups
@@ -405,6 +427,14 @@ struct ThreadRow: View {
                                     .padding(.vertical, 1)
                                     .background(TrinityTheme.purple.opacity(0.1))
                                     .clipShape(Capsule())
+                            }
+                            if !searchQuery.isEmpty {
+                                let matchCount = thread.messages.filter { $0.text.lowercased().contains(searchQuery.lowercased()) }.count
+                                if matchCount > 0 {
+                                    Text("\(matchCount) match\(matchCount == 1 ? "" : "es")")
+                                        .font(.system(size: 8, weight: .bold))
+                                        .foregroundStyle(TrinityTheme.accent)
+                                }
                             }
                             Text("\(thread.messages.count) msgs")
                                 .font(.system(size: 9))

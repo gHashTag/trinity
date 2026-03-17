@@ -8,6 +8,8 @@ struct ChatThread: Identifiable, Codable {
     var updatedAt: Date
     var isPinned: Bool
     var tags: [String]
+    var folderID: UUID?
+    var personaID: UUID?
 
     init(id: UUID = UUID(), title: String = "New Thread") {
         self.id = id
@@ -17,9 +19,11 @@ struct ChatThread: Identifiable, Codable {
         self.updatedAt = Date()
         self.isPinned = false
         self.tags = []
+        self.folderID = nil
+        self.personaID = nil
     }
 
-    // Backwards-compatible decoding (existing threads lack pinned/tags)
+    // Backwards-compatible decoding (existing threads lack pinned/tags/folderID/personaID)
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(UUID.self, forKey: .id)
@@ -29,6 +33,107 @@ struct ChatThread: Identifiable, Codable {
         updatedAt = try c.decode(Date.self, forKey: .updatedAt)
         isPinned = try c.decodeIfPresent(Bool.self, forKey: .isPinned) ?? false
         tags = try c.decodeIfPresent([String].self, forKey: .tags) ?? []
+        folderID = try c.decodeIfPresent(UUID.self, forKey: .folderID)
+        personaID = try c.decodeIfPresent(UUID.self, forKey: .personaID)
+    }
+}
+
+// MARK: - Persona
+
+struct Persona: Identifiable, Codable, Equatable {
+    var id: UUID
+    var name: String
+    var icon: String
+    var systemPrompt: String
+    var modelID: String?
+    var temperature: Double?
+
+    init(name: String, icon: String, systemPrompt: String, modelID: String? = nil, temperature: Double? = nil) {
+        self.id = UUID()
+        self.name = name
+        self.icon = icon
+        self.systemPrompt = systemPrompt
+        self.modelID = modelID
+        self.temperature = temperature
+    }
+
+    static let builtIn: [Persona] = [
+        Persona(name: "CTO", icon: "crown.fill", systemPrompt: "You are a CTO advisor. Be direct, focus on architecture, scalability, and technical debt. Flag risks early."),
+        Persona(name: "Code Reviewer", icon: "magnifyingglass.circle", systemPrompt: "You are a senior code reviewer. Focus on bugs, security issues, performance problems, and style. Be constructive but thorough."),
+        Persona(name: "Security Auditor", icon: "lock.shield", systemPrompt: "You are a security auditor. Identify vulnerabilities, suggest mitigations, check for OWASP top 10. Be paranoid."),
+        Persona(name: "Doc Writer", icon: "doc.text", systemPrompt: "You are a technical writer. Write clear, concise documentation. Use examples. Target developer audience."),
+        Persona(name: "Mentor", icon: "graduationcap", systemPrompt: "You are a patient programming mentor. Explain concepts clearly, use analogies, encourage learning. Never just give the answer — guide understanding."),
+    ]
+}
+
+// MARK: - Prompt Template
+
+struct PromptTemplate: Identifiable, Codable, Equatable {
+    var id: UUID
+    var title: String
+    var body: String  // Contains {{variable}} placeholders
+    var category: String
+    var icon: String
+
+    init(title: String, body: String, category: String, icon: String) {
+        self.id = UUID()
+        self.title = title
+        self.body = body
+        self.category = category
+        self.icon = icon
+    }
+
+    /// Extract variable names from {{variable}} placeholders
+    var variables: [String] {
+        let regex = try? NSRegularExpression(pattern: "\\{\\{(\\w+)\\}\\}")
+        let matches = regex?.matches(in: body, range: NSRange(body.startIndex..., in: body)) ?? []
+        return matches.compactMap { match in
+            guard let range = Range(match.range(at: 1), in: body) else { return nil }
+            return String(body[range])
+        }
+    }
+
+    /// Substitute variables with values
+    func substitute(_ values: [String: String]) -> String {
+        var result = body
+        for (key, value) in values {
+            result = result.replacingOccurrences(of: "{{\(key)}}", with: value)
+        }
+        return result
+    }
+
+    static let builtIn: [PromptTemplate] = [
+        PromptTemplate(title: "Review PR", body: "Review PR #{{number}}. Focus on bugs, security, and performance. Be thorough.", category: "Code", icon: "arrow.triangle.pull"),
+        PromptTemplate(title: "Write Tests", body: "Write comprehensive tests for {{file}}. Cover edge cases and error paths.", category: "Code", icon: "checkmark.circle"),
+        PromptTemplate(title: "Explain Code", body: "Explain how {{file}} works. Focus on the architecture and key design decisions.", category: "Code", icon: "questionmark.circle"),
+        PromptTemplate(title: "Debug Error", body: "I'm getting this error:\n```\n{{error}}\n```\nHelp me debug it.", category: "Debug", icon: "ladybug"),
+        PromptTemplate(title: "Refactor", body: "Refactor {{file}} to improve {{aspect}}. Keep the API stable.", category: "Code", icon: "arrow.triangle.2.circlepath"),
+        PromptTemplate(title: "Architecture Decision", body: "I need to decide between {{option_a}} and {{option_b}} for {{feature}}. Compare trade-offs.", category: "Design", icon: "square.3.layers.3d"),
+        PromptTemplate(title: "Write Docs", body: "Write documentation for {{module}}. Include usage examples and API reference.", category: "Docs", icon: "doc.text"),
+        PromptTemplate(title: "Performance Audit", body: "Analyze {{file}} for performance issues. Suggest optimizations with benchmarks.", category: "Debug", icon: "gauge.with.dots.needle.50percent"),
+        PromptTemplate(title: "Git Commit Message", body: "Write a commit message for these changes:\n{{changes}}", category: "Git", icon: "arrow.triangle.branch"),
+        PromptTemplate(title: "Issue Description", body: "Write a GitHub issue for: {{description}}. Include acceptance criteria and technical notes.", category: "Git", icon: "exclamationmark.circle"),
+    ]
+}
+
+// MARK: - Thread Folder
+
+struct ThreadFolder: Identifiable, Codable, Equatable {
+    var id: UUID
+    var name: String
+    var color: String  // hex string like "00FF88"
+    var isCollapsed: Bool
+
+    init(name: String, color: String = "00FF88") {
+        self.id = UUID()
+        self.name = name
+        self.color = color
+        self.isCollapsed = false
+    }
+
+    var swiftColor: Color {
+        let hex = UInt32(color, radix: 16) ?? 0x00FF88
+        return Color(hex: hex)
     }
 }
 

@@ -51,7 +51,10 @@ struct SmartSuggestions: View {
     }
 
     private func buildSuggestions() -> [Suggestion] {
-        trinityCtx.refresh()
+        // Refresh only if stale (>10s since last refresh)
+        if trinityCtx.lastRefresh == nil || Date().timeIntervalSince(trinityCtx.lastRefresh!) > 10 {
+            trinityCtx.refresh()
+        }
         var result: [Suggestion] = []
 
         // Build broken → urgent

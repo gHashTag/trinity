@@ -278,6 +278,8 @@ class ChatClient: ObservableObject {
     @Published var streamingThinkingText = ""
     @Published var proposedMemories: [MemoryEntry] = []
     @Published var followUpSuggestions: [String] = []
+    @Published var extractedTasks: [String] = []
+    @Published var elicitationQuestion: (question: String, options: [String])? = nil
     @Published var showRejectionFeedback: (messageID: UUID, threadID: UUID)? = nil
     @Published var activeToolCalls: [ToolCallStep] = []
 
@@ -320,6 +322,7 @@ class ChatClient: ObservableObject {
 
     var stylePreset: StylePreset = .concise
     var effortLevel: EffortLevel = .medium
+    var activePersona: Persona? = nil
 
     private var systemPrompt: String {
         buildSystemPrompt()
@@ -373,6 +376,11 @@ class ChatClient: ObservableObject {
         let farmEvents = trinityCtx.recentFarmEvents(count: 3)
         if !farmEvents.isEmpty {
             prompt += "\n\n" + farmEvents
+        }
+
+        // Inject persona override
+        if let persona = activePersona {
+            prompt += "\n\n## Active Persona: \(persona.name)\n" + persona.systemPrompt
         }
 
         // Inject style preset
@@ -660,6 +668,8 @@ class ChatClient: ObservableObject {
         isStreaming = true
         streamingText = ""
         streamingThinkingText = ""
+        activeStreamThreadID = threadID
+        activeStreamStore = store
 
         var history: [[String: String]] = store.activeThread()?.messages
             .filter { !$0.text.isEmpty }
@@ -724,6 +734,8 @@ class ChatClient: ObservableObject {
                 let suggestionsText = streamingText
                 Task { @MainActor in
                     followUpSuggestions = Self.generateFollowUps(from: suggestionsText, userMessage: text)
+                    extractedTasks = Self.extractTasks(from: suggestionsText)
+                    elicitationQuestion = Self.extractElicitation(from: suggestionsText)
                 }
             } catch {
                 if !Task.isCancelled {
@@ -950,6 +962,60 @@ class ChatClient: ObservableObject {
         return Array(suggestions.prefix(3))
     }
 
+    // MARK: - Elicitation Extraction
+
+    /// Extract structured questions from response (lines ending with "?", option lists)
+    static func extractElicitation(from response: String) -> (question: String, options: [String])? {
+        let lines = response.components(separatedBy: "\n").map { $0.trimmingCharacters(in: .whitespaces) }
+
+        // Look for a question followed by options (a), b), c) or 1), 2), 3))
+        for (i, line) in lines.enumerated() {
+            guard line.hasSuffix("?") && line.count > 10 else { continue }
+
+            var options: [String] = []
+            for j in (i+1)..<min(i+8, lines.count) {
+                let opt = lines[j]
+                if let range = opt.range(of: #"^[a-d\d][\.\)]\s+"#, options: .regularExpression) {
+                    let text = String(opt[range.upperBound...]).trimmingCharacters(in: .whitespaces)
+                    if !text.isEmpty { options.append(text) }
+                } else if opt.hasPrefix("- ") && opt.count > 3 {
+                    options.append(String(opt.dropFirst(2)))
+                } else if !opt.isEmpty && options.isEmpty {
+                    continue // skip intermediate text
+                } else if opt.isEmpty && !options.isEmpty {
+                    break // end of option list
+                }
+            }
+
+            if options.count >= 2 {
+                return (question: line, options: Array(options.prefix(5)))
+            }
+        }
+        return nil
+    }
+
+    // MARK: - Task Extraction
+
+    /// Extract actionable tasks from response (numbered lists, checkboxes, "steps:")
+    static func extractTasks(from response: String) -> [String] {
+        var tasks: [String] = []
+        let lines = response.components(separatedBy: "\n")
+
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            // Match: "1. Do something", "- [ ] Do something", "Step 1: Do something"
+            if let range = trimmed.range(of: #"^(\d+[\.\)]\s+|- \[ \] |- \[x\] |Step \d+[:\s])"#, options: .regularExpression) {
+                let task = String(trimmed[range.upperBound...]).trimmingCharacters(in: .whitespaces)
+                if task.count > 5 && task.count < 200 {
+                    tasks.append(task)
+                }
+            }
+        }
+
+        // Only return if there are 2+ tasks (avoid false positives from single numbered items)
+        return tasks.count >= 2 ? Array(tasks.prefix(10)) : []
+    }
+
     // MARK: - Rejection Feedback
 
     /// Resend with user correction after dislike
@@ -965,7 +1031,6 @@ class ChatClient: ObservableObject {
 
         // Find the original assistant message and the user message before it
         guard let msgIdx = thread.messages.firstIndex(where: { $0.id == originalMessageID }) else { return }
-        let originalResponse = thread.messages[msgIdx].text
         let userMsg = thread.messages.prefix(msgIdx).last(where: { $0.role == .user })
         let userText = userMsg?.text ?? ""
 
@@ -1057,11 +1122,34 @@ class ChatClient: ObservableObject {
     private var lastModelID: String = ""
     private var lastProviderName: String = ""
 
+    /// ID of the thread being streamed to (set in send())
+    private var activeStreamThreadID: UUID?
+    /// Reference to store for saving on stop
+    private weak var activeStreamStore: ThreadStore?
+
     func stop() {
         streamTask?.cancel()
         streamTask = nil
+
+        // Save partial text before clearing state
+        if !streamingText.isEmpty, let threadID = activeStreamThreadID, let store = activeStreamStore {
+            var finalText = streamingText
+            if finalText.count > 5 {
+                finalText += "\n\n*[Stopped by user]*"
+            }
+            store.updateLastMessage(text: finalText, in: threadID)
+
+            // Save thinking text if any
+            if !streamingThinkingText.isEmpty {
+                store.updateLastMessageThinking(text: streamingThinkingText, in: threadID)
+            }
+
+            store.saveThread(threadID)
+        }
+
         isStreaming = false
         isSlowResponse = false
+        SoundCueManager.shared.playReceive()
 
         // Record cancellation with actual provider/model
         if let start = streamStartTime {
@@ -1475,6 +1563,11 @@ class ChatClient: ObservableObject {
                 history: history, threadID: threadID, store: store,
                 model: model, key: key, modelManager: modelManager, mode: mode
             )
+        case .ollama:
+            try await streamOllama(
+                history: history, threadID: threadID, store: store,
+                model: model, modelManager: modelManager, mode: mode
+            )
         }
     }
 
@@ -1865,6 +1958,158 @@ class ChatClient: ObservableObject {
                 inputTokens: inputTokens, outputTokens: streamingOutputTokens,
                 ttfbMs: streamingTTFB, totalMs: totalMs, status: "ok"
             )
+        }
+    }
+
+    // MARK: - Ollama streaming (NDJSON format)
+
+    private func streamOllama(
+        history: [[String: String]],
+        threadID: UUID,
+        store: ThreadStore,
+        model: AIModel,
+        modelManager: ModelManager,
+        mode: ChatMode = .trinity
+    ) async throws {
+        let modelName = modelManager.ollamaModelName(model)
+        var messages: [[String: String]] = [["role": "system", "content": systemPrompt + mode.systemSuffix]]
+        messages.append(contentsOf: history)
+
+        let body: [String: Any] = [
+            "model": modelName,
+            "messages": messages,
+            "stream": true
+        ]
+        let bodyData = try JSONSerialization.data(withJSONObject: body)
+
+        guard let request = modelManager.buildRequest(for: model, body: bodyData) else {
+            store.updateLastMessage(text: "[Failed to build Ollama request]", in: threadID)
+            return
+        }
+
+        streamStartTime = Date()
+        firstTokenTime = nil
+        streamingOutputTokens = 0
+        streamingTTFB = 0
+        isSlowResponse = false
+        lastError = nil
+        let inputTokens = history.reduce(0) { $0 + ($1["content"]?.count ?? 0) / 4 }
+
+        let (bytes, response): (URLSession.AsyncBytes, URLResponse)
+        do {
+            (bytes, response) = try await URLSession.shared.bytes(for: request)
+        } catch {
+            lastError = .connectionFailed
+            store.updateLastMessage(text: "[Ollama not reachable. Is it running?]", in: threadID)
+            return
+        }
+
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+            var errorBody = ""
+            for try await line in bytes.lines { errorBody += line }
+            store.updateLastMessage(text: "[Ollama error: HTTP \(httpResponse.statusCode) \(String(errorBody.prefix(200)))]", in: threadID)
+            return
+        }
+
+        // Ollama streams NDJSON: each line is a JSON object with {"message":{"content":"..."}, "done":false}
+        for try await line in bytes.lines {
+            try Task.checkCancellation()
+            guard !line.isEmpty,
+                  let jsonData = line.data(using: .utf8),
+                  let event = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else { continue }
+
+            if let done = event["done"] as? Bool, done { break }
+
+            guard let message = event["message"] as? [String: Any],
+                  let content = message["content"] as? String else { continue }
+
+            if firstTokenTime == nil {
+                firstTokenTime = Date()
+                if let start = streamStartTime {
+                    streamingTTFB = Int(firstTokenTime!.timeIntervalSince(start) * 1000)
+                }
+            }
+            streamingText += content
+            streamingOutputTokens += max(content.count / 4, 1)
+            updateTokensPerSec()
+            store.updateLastMessage(text: streamingText, in: threadID)
+        }
+
+        if let start = streamStartTime {
+            let totalMs = Int(Date().timeIntervalSince(start) * 1000)
+            NetworkLog.shared.record(
+                provider: model.provider.rawValue, model: model.id,
+                inputTokens: inputTokens, outputTokens: streamingOutputTokens,
+                ttfbMs: streamingTTFB, totalMs: totalMs, status: "ok"
+            )
+        }
+    }
+
+    // MARK: - Regenerate with specific model override
+
+    func regenerateFromWithModel(messageID: UUID, threadID: UUID, store: ThreadStore, modelManager: ModelManager, withModel: AIModel) {
+        guard !isStreaming else { return }
+        guard let thread = store.threads.first(where: { $0.id == threadID }) else { return }
+        guard let msgIdx = thread.messages.firstIndex(where: { $0.id == messageID }) else { return }
+        let msg = thread.messages[msgIdx]
+        guard msg.role == .assistant else { return }
+
+        // Find the user message before this assistant message
+        let userMsg = thread.messages.prefix(msgIdx).last(where: { $0.role == .user })
+        guard let userText = userMsg?.text, !userText.isEmpty else { return }
+
+        // Save old response as branch
+        let tIdx = store.threads.firstIndex(where: { $0.id == threadID })!
+        let branchID = store.threads[tIdx].messages[msgIdx].branchID ?? UUID()
+        let oldIndex = store.threads[tIdx].messages[msgIdx].branchIndex ?? 0
+        let branchKey = "branch_\(branchID)_\(oldIndex)"
+        let oldMessages = Array(store.threads[tIdx].messages[msgIdx...])
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        if let data = try? encoder.encode(oldMessages) {
+            UserDefaults.standard.set(data, forKey: branchKey)
+        }
+
+        // Remove this message and after
+        if msgIdx < store.threads[tIdx].messages.count {
+            store.threads[tIdx].messages.removeSubrange(msgIdx...)
+        }
+        store.threads[tIdx].updatedAt = Date()
+        store.saveThread(threadID)
+
+        // Add new assistant placeholder with the chosen model
+        var assistantMsg = ChatMessage(role: .assistant, text: "", modelID: withModel.id)
+        assistantMsg.branchID = branchID
+        assistantMsg.branchIndex = oldIndex + 1
+        store.appendMessage(assistantMsg, to: threadID)
+
+        isStreaming = true
+        streamingText = ""
+        streamingThinkingText = ""
+
+        let history: [[String: String]] = store.activeThread()?.messages
+            .filter { !$0.text.isEmpty }
+            .map { ["role": $0.role.rawValue, "content": $0.text] } ?? []
+
+        let newMsgID = assistantMsg.id
+
+        streamTask = Task {
+            do {
+                try await streamResponse(
+                    history: history, threadID: threadID, store: store,
+                    model: withModel, modelManager: modelManager
+                )
+                saveMetrics(messageID: newMsgID, threadID: threadID, store: store)
+            } catch {
+                if !Task.isCancelled {
+                    store.updateLastMessage(
+                        text: streamingText + "\n[Error: \(error.localizedDescription)]",
+                        in: threadID
+                    )
+                }
+            }
+            store.saveThread(threadID)
+            isStreaming = false
         }
     }
 }
