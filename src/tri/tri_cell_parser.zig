@@ -64,12 +64,26 @@ pub const CellManifest = struct {
     security_signature: []const u8 = "",
     security_score: ?u8 = null,
 
+    // [dna] section — regeneration contract for Phoenix system
+    dna_cell_id: []const u8 = "",
+    dna_source: []const u8 = "",
+    dna_output: []const u8 = "",
+    dna_regenerable: bool = false,
+
+    // [contract] section — stored as raw text for Phoenix validation
+    dna_contract_raw: []const u8 = "",
+
     // [agent] section — links cell to .claude/agents/<name>.md definition
     agent_definition: []const u8 = "", // ".claude/agents/queen-swift.md"
     agent_model: []const u8 = "", // "opus" | "sonnet" | "haiku"
     agent_max_turns: u16 = 0,
     agent_tools: []const u8 = "", // "Read,Edit,Write,Bash,Grep,Glob"
     agent_isolation: []const u8 = "", // "worktree" | ""
+
+    /// True if this cell has DNA (regeneration contract)
+    pub fn hasDNA(self: CellManifest) bool {
+        return self.dna_source.len > 0 and self.dna_output.len > 0;
+    }
 
     /// True if this cell is an agent with a .md definition
     pub fn isAgent(self: CellManifest) bool {
@@ -101,7 +115,7 @@ pub const CellManifest = struct {
 // PARSER — section-aware cell.tri TOML-like format
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const Section = enum { cell, tags, contributes, dependencies, permissions, security, source, agent };
+const Section = enum { cell, tags, contributes, dependencies, permissions, security, source, agent, dna, contract };
 
 /// Parse cell.tri content into CellManifest.
 /// All string fields are slices into `content` — caller must keep it alive.
@@ -111,6 +125,8 @@ pub fn parse(content: []const u8) CellManifest {
 
     var dep_section_start: ?usize = null;
     var dep_section_end: usize = 0;
+    var contract_section_start: ?usize = null;
+    var contract_section_end: usize = 0;
 
     var offset: usize = 0;
     var lines = std.mem.splitScalar(u8, content, '\n');
@@ -139,6 +155,11 @@ pub fn parse(content: []const u8) CellManifest {
                 current_section = .source;
             } else if (std.mem.eql(u8, trimmed, "[agent]")) {
                 current_section = .agent;
+            } else if (std.mem.eql(u8, trimmed, "[dna]")) {
+                current_section = .dna;
+            } else if (std.mem.eql(u8, trimmed, "[contract]")) {
+                current_section = .contract;
+                contract_section_start = offset;
             }
             continue;
         }
@@ -171,6 +192,12 @@ pub fn parse(content: []const u8) CellManifest {
             .source => {
                 if (std.mem.eql(u8, key, "file_patterns")) m.file_patterns = value;
             },
+            .dna => {
+                if (std.mem.eql(u8, key, "cell_id")) m.dna_cell_id = value else if (std.mem.eql(u8, key, "source")) m.dna_source = value else if (std.mem.eql(u8, key, "output")) m.dna_output = value else if (std.mem.eql(u8, key, "regenerable")) m.dna_regenerable = std.mem.eql(u8, value, "true");
+            },
+            .contract => {
+                if (key.len > 0) contract_section_end = offset;
+            },
             .agent => {
                 if (std.mem.eql(u8, key, "definition")) m.agent_definition = value else if (std.mem.eql(u8, key, "model")) m.agent_model = value else if (std.mem.eql(u8, key, "max_turns")) m.agent_max_turns = std.fmt.parseInt(u16, value, 10) catch 0 else if (std.mem.eql(u8, key, "tools")) m.agent_tools = value else if (std.mem.eql(u8, key, "isolation")) m.agent_isolation = value;
             },
@@ -180,6 +207,12 @@ pub fn parse(content: []const u8) CellManifest {
     if (dep_section_start) |start| {
         if (dep_section_end > start) {
             m.dependencies_raw = content[start..dep_section_end];
+        }
+    }
+
+    if (contract_section_start) |start| {
+        if (contract_section_end > start) {
+            m.dna_contract_raw = content[start..contract_section_end];
         }
     }
 
@@ -466,4 +499,44 @@ test "non-agent cell has isAgent false" {
     const m = parse(content);
     try std.testing.expect(!m.isAgent());
     try std.testing.expectEqualStrings("", m.agent_definition);
+}
+
+test "parse cell.tri with DNA section" {
+    const content =
+        \\[cell]
+        \\id = "trinity.b2t"
+        \\name = "B2T"
+        \\path = "src/b2t"
+        \\
+        \\[dna]
+        \\cell_id = "trinity.b2t"
+        \\source = "specs/b2t/core.tri"
+        \\output = "gen/protein.zig"
+        \\regenerable = true
+        \\
+        \\[contract]
+        \\inputs = ["binary_data: []u8"]
+        \\outputs = ["ternary_data: []Trit"]
+    ;
+
+    const m = parse(content);
+    try std.testing.expectEqualStrings("trinity.b2t", m.id);
+    try std.testing.expectEqualStrings("trinity.b2t", m.dna_cell_id);
+    try std.testing.expectEqualStrings("specs/b2t/core.tri", m.dna_source);
+    try std.testing.expectEqualStrings("gen/protein.zig", m.dna_output);
+    try std.testing.expect(m.dna_regenerable);
+    try std.testing.expect(m.hasDNA());
+    try std.testing.expect(m.dna_contract_raw.len > 0);
+}
+
+test "cell without DNA has hasDNA false" {
+    const content =
+        \\[cell]
+        \\id = "trinity.core"
+        \\name = "Core"
+        \\path = "src/core"
+    ;
+
+    const m = parse(content);
+    try std.testing.expect(!m.hasDNA());
 }

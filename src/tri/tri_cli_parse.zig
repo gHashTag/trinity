@@ -97,7 +97,7 @@ pub fn parseCommand(arg: []const u8) cli_types.Command {
     if (std.mem.eql(u8, arg, "mmo-demo") or std.mem.eql(u8, arg, "mmo")) return .mm_orch_demo;
     if (std.mem.eql(u8, arg, "mmo-bench")) return .mm_orch_bench;
     // Agent Memory & Cross-Modal Learning
-    if (std.mem.eql(u8, arg, "memory-demo") or std.mem.eql(u8, arg, "memory")) return .memory_demo;
+    if (std.mem.eql(u8, arg, "memory-demo")) return .memory_demo;
     if (std.mem.eql(u8, arg, "memory-bench")) return .memory_bench;
     // Persistent Memory & Disk Serialization
     if (std.mem.eql(u8, arg, "persist-demo") or std.mem.eql(u8, arg, "persist")) return .persist_demo;
