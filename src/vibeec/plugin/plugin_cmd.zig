@@ -536,7 +536,7 @@ pub fn runPluginCommand(allocator: Allocator, args: []const []const u8) !u8 {
 
 /// Scan cell.tri manifests and register each cell as a plugin
 fn loadCellsIntoRegistry(allocator: Allocator, registry: *PluginRegistry) void {
-    const CELL_SCAN_DIRS = [_][]const u8{ "src", "apps", "tools", "fpga", "libs" };
+    const CELL_SCAN_DIRS = [_][]const u8{ "src", "apps", "tools", "fpga", "libs", "specs", "benchmarks", "papers", "data", "contracts" };
     const cwd = std.fs.cwd();
 
     for (CELL_SCAN_DIRS) |scan_dir| {
