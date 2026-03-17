@@ -1,84 +1,74 @@
 # ═══════════════════════════════════════════════════════════════════════════════
-# tri_loop v2.0.0 — Extended Loop Decision with Needle Quality Check
+# tri_plan_commands v1.0.0 — Strategic Planning with Replanning on Failure
 # ═══════════════════════════════════════════════════════════════════════════════
 #
-# Extends loop_decide with needleCheck behavior for structural quality
-# via needle MCP server. Adds quality gate to decision cascade.
+# Plan commands for multi-step strategic planning.
+# Integrates with task_decomposer for dependency analysis.
 #
 # phi^2 + 1/phi^2 = 3 = TRINITY
 # ═══════════════════════════════════════════════════════════════════════════════
 
-name: tri_loop
-version: "2.0.0"
+name: tri_plan_commands
+version: "1.0.0"
 language: zig
-module: tri.loop_decide
+module: tri.tri_pipeline
 
 description: |
-  TRI Loop — Ralph-Pattern Autonomous Development Loop.
-
-  One iteration: wake -> scan -> decide -> act -> report -> sleep.
-  Continuous: `tri loop --interval 300` (5 min cycle).
-
-  v2.0: Extended with needleCheck for structural quality assessment.
-  Adds quality gate to decision cascade: if needle score < threshold,
-  decision becomes fix_first before continuing to next task.
-
-  Integrates with tri_experience for persistent learning.
-
-dependencies:
-  - tri_experience
-  - loop_decide
+  Strategic planning: multi-step plan generation and replanning on failure.
+  Uses task_decomposer for dependency analysis.
+  Outputs plan to .trinity/plans/ directory.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TYPES
 # ═══════════════════════════════════════════════════════════════════════════════
 
 types:
-  NeedleResult:
+  PlanStep:
     fields:
-      score: Float32              # 0-100 quality score from needle
-      issues_found: UInt32        # number of structural issues
-      passed: Bool                # score >= threshold
+      index: u8
+      description: String
+      command: String               # tri command to execute
+      depends_on: List<u8>          # step indices this depends on
+      estimated_seconds: u32
 
-  LoopDecisionExtended:
+  StrategicPlan:
     fields:
-      base: DecisionReport        # existing decision report
-      needle: NeedleResult        # needle quality gate result
-      combined_confidence: Float32 # adjusted confidence with needle
+      issue_number: UInt32
+      steps: List<PlanStep>         # max 16
+      step_count: u8
+      total_estimated_seconds: u32
+      created_at: Int64
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # BEHAVIORS
 # ═══════════════════════════════════════════════════════════════════════════════
 
 behaviors:
-  - name: runLoop
-    given: Allocator, interval seconds, max iterations
-    when: Called
-    then: Executes autonomous development cycles until max reached
-
-  - name: runOnce
-    given: Allocator
-    when: Called
-    then: Executes a single wake/scan/decide/act/report cycle
-
-  - name: needleCheck
-    given: allocator
-    when: Loop decision needs structural quality assessment
+  - name: strategicPlan
+    given: Issue number and allocator
+    when: tri plan <issue-number> is invoked
     then: |
-      Runs tri needle quality-gate as subprocess.
-      Parses output for score and issue count.
-      Returns NeedleResult with pass/fail.
-      If needle not available, returns default pass.
+      Reads issue from GitHub, analyzes requirements.
+      Generates multi-step plan using phase templates.
+      Saves plan to .trinity/plans/plan_{issue}.json.
+      Prints plan summary to stdout.
+
+  - name: replan
+    given: Failed step index and original plan
+    when: A plan step fails during execution
+    then: |
+      Adjusts remaining steps based on failure.
+      Adds recovery steps if needed.
+      Saves updated plan.
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INTEGRATION
 # ═══════════════════════════════════════════════════════════════════════════════
 
 reuses:
-  - loop_decide.zig (Decision, DecisionInput, DecisionReport, decide)
-  - needle MCP server (quality-gate tool)
+  - task_decomposer.zig (Phase, SubTask for dependency analysis)
+  - tri_pipeline.zig (plan command routing)
 
 export_functions:
-  - runLoop
-  - runOnce
-  - needleCheck
+  - strategicPlan
+  - replan

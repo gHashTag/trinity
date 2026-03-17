@@ -24,7 +24,6 @@ events = []
 binaries = ["tri-api"]
 
 [dependencies]
-trinity.tri.memory = "^1.0.0"
 
 [permissions]
 level = "L2"

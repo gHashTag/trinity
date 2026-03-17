@@ -27,8 +27,8 @@ binaries = []
 
 [dependencies]
 trinity.sacred = "^1.0.0"
-trinity.vm = "^1.0.0"
-trinity.vsa = "^1.0.0"
+trinity.vm = ">=0.1.0"
+trinity.vsa = ">=0.1.0"
 trinity.needle = "^1.0.0"
 
 [permissions]
