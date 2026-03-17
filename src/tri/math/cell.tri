@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Sacred mathematics: phi, fibonacci, lucas, gematria, formulas, constants"
 capabilities = ["math", "phi", "fibonacci", "gematria"]
-tests = 15
+tests = 133
 owner = "agent:ralph"
 
 [tags]
@@ -17,7 +17,7 @@ type = "domain"
 
 [contributes]
 commands = ["math", "phi", "fib", "lucas", "gematria", "formula", "sacred", "constants", "spiral"]
-exports = ["runMathCommand", "runPhiCommand", "runFibCommand", "runLucasCommand", "runGematriaTopLevel", "runFormulaCommand", "runSacredCommand", "runConstantsCommand", "runSpiralCommand"]
+exports = ["runGematriaCommand", "validate", "analyzeFileForSacredPatches", "validatePatch", "applyPatch"]
 
 [dependencies]
 trinity.bench = "^1.0.0"
@@ -25,11 +25,13 @@ trinity.bsd = "^1.0.0"
 trinity.sacred = "^1.0.0"
 
 [permissions]
-level = "L1"
-filesystem = "read"
+level = "L2"
+filesystem = "write"
 network = "none"
-process = "none"
+process = "spawn"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = true
 signature = "sha256:3874bb88511779edc00651e06a7d7e529fca9aef428e8f78314fa0775b96017e"

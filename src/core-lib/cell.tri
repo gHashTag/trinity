@@ -1,14 +1,14 @@
 [cell]
-id = "trinity.core-lib"
-name = "Core Library"
+id = "trinity.core-platform"
+name = "Core Platform"
 version = "1.0.0"
 kind = "virtual"
 path = "src"
 status = "stable"
-description = "Core trinity imports: trinity.zig, sacred constants, hybrid, science, bigint, fpga MVP, search"
-capabilities = ["constants", "sacred", "hybrid", "science"]
-files = 9
-tests = 41
+description = "Core platform: trinity imports, sacred constants, hybrid, JIT, SDK, knowledge graph, mining, VSA extensions, ML forward pass"
+capabilities = ["constants", "sacred", "hybrid", "science", "jit", "codegen", "sdk", "api", "graph", "mining", "packed", "parallel", "sparse", "forward", "inference"]
+files = 35
+tests = 495
 owner = "agent:ralph"
 
 [tags]
@@ -16,21 +16,23 @@ scope = "core"
 type = "library"
 
 [source]
-file_patterns = ["trinity.zig", "sacred_constants.zig", "sacred_constants_reexport.zig", "constants.zig", "hybrid.zig", "science.zig", "bigint.zig", "trinity_fpga_mvp.zig", "trinity_search.zig"]
+file_patterns = ["trinity.zig", "sacred_constants.zig", "sacred_constants_reexport.zig", "constants.zig", "hybrid.zig", "science.zig", "bigint.zig", "trinity_fpga_mvp.zig", "trinity_search.zig", "jit.zig", "jit_arm64.zig", "jit_x86_64.zig", "jit_unified.zig", "vsa_jit.zig", "bench_jit.zig", "sdk.zig", "c_api.zig", "queen_api.zig", "server_main.zig", "tri_commander.zig", "knowledge_graph.zig", "kg_cli.zig", "kg_server.zig", "query_cli.zig", "btc_mining_mvp.zig", "pas_mining_core.zig", "pas_mining_test.zig", "network_codex.zig", "packed_trit.zig", "packed_vsa.zig", "parallel.zig", "sparse.zig", "simd_avx512.zig", "minimal_forward.zig", "sequence_hdc.zig"]
 
 [contributes]
-exports = ["rotateQutrit", "harvestEntropy", "evolveGeneration", "selfEvolutionStep", "phiSpiral"]
+exports = ["rotateQutrit", "harvestEntropy", "evolveGeneration", "selfEvolutionStep", "phiSpiral", "archName", "hasSIMD", "compileDotProduct", "random", "randomLabeled", "addTriple", "queryObject", "updateHashrate", "nnz", "sparsity", "getVector", "encodeString"]
 
 [dependencies]
+trinity.vsa = "^1.0.0"
+trinity.hslm = "^1.0.0"
 
 [permissions]
 level = "L2"
-filesystem = "read"
-network = "none"
+filesystem = "write"
+network = "external"
 process = "spawn"
-
 ffi = "none"
-concurrency = "none"
+concurrency = "yes"
+
 [security]
-signed = "true"
-signature = "sha256:6b5d17aa51b63a1e70087e9dad00b28dfbbc8514493348adffe3f6e2af2987bf"
+signed = "false"
+signature = ""

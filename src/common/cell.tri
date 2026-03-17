@@ -1,13 +1,13 @@
 [cell]
-id = "trinity.common"
-name = "common"
+id = "trinity.infra"
+name = "Infrastructure"
 version = "0.1.0"
 kind = "library"
 path = "src/common"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Shared utilities and common helper functions"
-capabilities = ["isRecoverable", "getDescription", "from", "value", "isZero"]
+description = "Infrastructure: shared utilities, economy, orchestration, OS interfaces, WASM stubs, LLM routing, MCP protocol, neural models, IGLA simulator"
+capabilities = ["isRecoverable", "getDescription", "from", "value", "isZero", "amountTri", "selectStrategy", "bootKernel", "loadFromEnv", "needsRestart", "inference", "benchmark"]
 files = 5
 tests = 42
 owner = "agent:ralph"
@@ -22,15 +22,17 @@ tri_subcommands = []
 events = []
 
 [dependencies]
+trinity.sacred = "^1.0.0"
+trinity.quantum = "^1.0.0"
 
 [permissions]
-level = "L0"
-filesystem = "read"
-network = "none"
-process = "none"
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
 ffi = "none"
-concurrency = "none"
+concurrency = "yes"
 
 [security]
-signed = true
-signature = "sha256:53fe81e6e90895b86eb089f3773c00ad0d29a8dcf51d1eadd6489cc6b30b9ec0"
+signed = "false"
+signature = ""
