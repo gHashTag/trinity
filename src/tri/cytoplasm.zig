@@ -2072,7 +2072,526 @@ fn resolveImportToCell(import_path: []const u8, cell_path: []const u8, path_to_c
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// GRAPH — Mermaid dependency diagram
+// GRAPH EX — Cell graph visualization with Mermaid/JSON/HTML output
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const GraphFormat = enum { mermaid, json, html, terminal };
+
+fn runGraphEx(allocator: Allocator, args: []const []const u8) !void {
+    // Parse flags: --output <path>, --format <mermaid|json|html>
+    var output_path: ?[]const u8 = null;
+    var format: GraphFormat = .terminal;
+
+    for (args, 0..) |arg, i| {
+        if (std.mem.eql(u8, arg, "--output")) {
+            if (i + 1 < args.len) {
+                output_path = args[i + 1];
+            } else {
+                std.debug.print("{s}ERROR{s}: --output requires a path argument\n", .{ RED, RESET });
+                return;
+            }
+        } else if (std.mem.eql(u8, arg, "--format")) {
+            if (i + 1 < args.len) {
+                format = std.meta.stringToEnum(GraphFormat, args[i + 1]) orelse {
+                    std.debug.print("{s}ERROR{s}: Unknown format '{s}'. Use: mermaid, json, html\n", .{ RED, RESET, args[i + 1] });
+                    return;
+                };
+            } else {
+                std.debug.print("{s}ERROR{s}: --format requires a format argument\n", .{ RED, RESET });
+                return;
+            }
+        }
+    }
+
+    // If no flags provided, use terminal format (legacy behavior)
+    if (format == .terminal and output_path == null) {
+        return runGraphLegacy(allocator);
+    }
+
+    // Detect format from output extension if not explicitly set
+    if (format == .terminal and output_path != null) {
+        if (std.mem.endsWith(u8, output_path.?, ".mmd") or std.mem.endsWith(u8, output_path.?, ".mermaid")) {
+            format = .mermaid;
+        } else if (std.mem.endsWith(u8, output_path.?, ".json")) {
+            format = .json;
+        } else if (std.mem.endsWith(u8, output_path.?, ".html")) {
+            format = .html;
+        }
+    }
+
+    // Collect all cells with health scores and bio_system
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    // Build adjacency list for dependencies
+    var deps_of = std.StringHashMap(std.array_list.Managed([]const u8)).init(allocator);
+    defer {
+        var it = deps_of.iterator();
+        while (it.next()) |e| e.value_ptr.deinit();
+        deps_of.deinit();
+    }
+
+    // Compute health scores for all cells
+    var cell_health = std.StringHashMap(HealthInfo).init(allocator);
+    defer {
+        var it = cell_health.iterator();
+        while (it.next()) |e| e.value_ptr.deinit(allocator);
+        cell_health.deinit();
+    }
+
+    // Path to cell mapping for deps accuracy
+    var path_to_cell = std.StringHashMap([]const u8).init(allocator);
+    defer path_to_cell.deinit();
+    for (all_cells) |c| path_to_cell.put(c.manifest.path, c.manifest.id) catch {};
+
+    for (all_cells) |c| {
+        const m = c.manifest;
+
+        // Build dependencies
+        var list = std.array_list.Managed([]const u8).init(allocator);
+        var dep_it = cell_parser.DepIterator.init(m.dependencies_raw);
+        while (dep_it.next()) |de| {
+            list.append(de.id) catch {};
+        }
+        deps_of.put(m.id, list) catch {};
+
+        // Skip binary cells for health scoring
+        if (std.mem.eql(u8, m.kind, "binary")) continue;
+
+        const cell = parseCellTri(c.content);
+        if (cell.id.len == 0) continue;
+
+        // Compute health score (same formula as runHealth)
+        const is_agent_h = std.mem.startsWith(u8, cell.id, "trinity.agent.");
+        const is_meta_h = cell.files == 0 and cell.tests == 0 and !is_agent_h;
+        const test_s: u8 = if (is_agent_h) 12 else if (is_meta_h) 10 else if (cell.tests == 0) 0 else @intCast(@min(15, cell.tests * 15 / 80));
+        const health: u8 = test_s + (if (cell.owner.len > 0) @as(u8, 5) else 0) + (if (cell.capabilities.len > 2) @as(u8, 5) else 0) + (if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) @as(u8, 5) else 0);
+
+        // Security
+        var sec: u8 = 0;
+        const is_virtual_h = cell.file_patterns.len > 2;
+        if (cell.parent.len > 0 and !is_virtual_h) {
+            if (cell.perm_level.len > 0) sec += 20;
+            if (cell.security_signed) sec += 5;
+            sec += 5;
+        } else {
+            if (cell.perm_level.len > 0) sec += 10;
+            const code_perms_h = if (is_virtual_h) inferPermissionsFiltered(allocator, cell.path, cell.file_patterns) else inferPermissions(allocator, m.path);
+            const perms_match_h = std.mem.eql(u8, cell.perm_level, code_perms_h.level) and std.mem.eql(u8, cell.perm_network, code_perms_h.net) and std.mem.eql(u8, cell.perm_process, code_perms_h.proc);
+            if (perms_match_h) sec += 10;
+            if (cell.security_signed) sec += 5;
+            const no_bind_h = !(scanCodeForPattern(allocator, m.path, "parseIp4(\"0.0.0.0\"") or scanCodeForPattern(allocator, m.path, ".host = \"0.0.0.0\""));
+            if (no_bind_h) sec += 5;
+        }
+
+        const dep_acc = computeDepsAccuracy(allocator, m.path, cell, all_cells, &path_to_cell);
+        const deps: u8 = if (dep_acc.total == 0) 25 else blk: {
+            const ratio: u8 = @intCast(@min(15, dep_acc.confirmed * 15 / dep_acc.total));
+            break :blk ratio + (if (dep_acc.missing == 0) @as(u8, 10) else 0);
+        };
+
+        // Contracts
+        const contracts: u8 = blk: {
+            var contract_score: u8 = 15;
+            if (cell.contributes_exports.len <= 2 and (std.mem.eql(u8, cell.kind, "library") or std.mem.eql(u8, cell.kind, "tool"))) contract_score -|= 5;
+            break :blk contract_score;
+        };
+
+        const score: u8 = @intCast(@min(100, health + sec + deps + contracts));
+
+        // Determine bio_system
+        const bio_sys = if (m.bio_system.len > 0) bioSystemFromStr(m.bio_system) else classifyBioSystem(cell.id, cell.capabilities, m.path);
+        const bio_name = bioSystemToString(bio_sys);
+
+        // Store health info (copy strings)
+        const id_copy = try allocator.dupe(u8, cell.id);
+        const bio_copy = try allocator.dupe(u8, bio_name);
+        const name_copy = if (cell.name.len > 0) try allocator.dupe(u8, cell.name) else id_copy;
+        try cell_health.put(id_copy, .{
+            .id = id_copy,
+            .name = name_copy,
+            .score = score,
+            .bio_system = bio_copy,
+            .status = if (std.mem.eql(u8, m.status, "stable")) "stable" else "experimental",
+        });
+    }
+
+    // Generate output based on format
+    const final_path = output_path orelse switch (format) {
+        .mermaid => "deps.mmd",
+        .json => "deps.json",
+        .html => "deps.html",
+        .terminal => unreachable,
+    };
+
+    switch (format) {
+        .mermaid => try writeMermaidGraph(allocator, deps_of, cell_health, final_path),
+        .json => try writeJsonGraph(allocator, deps_of, cell_health, final_path),
+        .html => try writeHtmlGraph(allocator, deps_of, cell_health, final_path),
+        .terminal => unreachable,
+    }
+
+    std.debug.print("{s}✓{s} Graph written to {s}{s}{s}\n", .{ GREEN, RESET, CYAN, final_path, RESET });
+
+    // Show stats
+    var low_health: usize = 0;
+    var it = cell_health.iterator();
+    while (it.next()) |e| {
+        if (e.value_ptr.score < 50) low_health += 1;
+    }
+    std.debug.print("  {d} cells, {d} with health < 50\n", .{ cell_health.count(), low_health });
+}
+
+const HealthInfo = struct {
+    id: []const u8,
+    name: []const u8,
+    score: u8,
+    bio_system: []const u8,
+    status: []const u8,
+
+    fn deinit(self: *HealthInfo, allocator: std.mem.Allocator) void {
+        allocator.free(self.id);
+        if (self.name.ptr != self.id.ptr) allocator.free(self.name);
+        allocator.free(self.bio_system);
+    }
+};
+
+// Get color for bio_system in Mermaid format
+fn bioSystemColor(bio_system: []const u8) []const u8 {
+    if (std.mem.eql(u8, bio_system, "dna")) return "#4A90E2"; // Blue
+    if (std.mem.eql(u8, bio_system, "brain")) return "#9B59B6"; // Purple
+    if (std.mem.eql(u8, bio_system, "immune")) return "#E74C3C"; // Red
+    if (std.mem.eql(u8, bio_system, "regen")) return "#2ECC71"; // Green
+    if (std.mem.eql(u8, bio_system, "body")) return "#F39C12"; // Orange
+    return "#95A5A6"; // Gray (unclassified)
+}
+
+// Get stroke color for low health cells
+fn healthStrokeColor(score: u8) []const u8 {
+    if (score < 50) return "#E74C3C"; // Red - critical
+    if (score < 70) return "#F39C12"; // Orange - warning
+    return null; // No special stroke
+}
+
+fn writeMermaidGraph(
+    allocator: std.mem.Allocator,
+    deps_of: std.StringHashMap(std.array_list.Managed([]const u8)),
+    cell_health: std.StringHashMap(HealthInfo),
+    path: []const u8,
+) !void {
+    var output = std.array_list.Managed(u8).init(allocator);
+    defer output.deinit();
+
+    try output.appendSlice("graph TD\n");
+
+    // Write nodes with styles
+    var node_it = cell_health.iterator();
+    while (node_it.next()) |entry| {
+        const info = entry.value_ptr.*;
+        // Sanitize ID for Mermaid (replace dots with underscores)
+        const mermaid_id = try sanitizeId(allocator, info.id);
+        defer allocator.free(mermaid_id);
+
+        const label = if (std.mem.eql(u8, info.name, info.id))
+            try escapeLabel(allocator, info.id)
+        else
+            try std.fmt.allocPrint(allocator, "{s}\\n({s})", .{ info.id, info.name });
+
+        defer allocator.free(label);
+
+        try output.writer().print("{s}[\"{s}\"]\n", .{ mermaid_id, label });
+
+        // Apply base color for bio_system
+        const base_color = bioSystemColor(info.bio_system);
+        try output.writer().print("style {s} fill:{s}\n", .{ mermaid_id, base_color });
+
+        // Add warning stroke for low health
+        if (info.score < 70) {
+            const stroke_color = if (info.score < 50) "#E74C3C" else "#F39C12";
+            try output.writer().print("style {s} stroke:{s},stroke-width:3px\n", .{ mermaid_id, stroke_color });
+        }
+    }
+
+    try output.appendSlice("\n");
+
+    // Write edges
+    var edge_it = deps_of.iterator();
+    while (edge_it.next()) |entry| {
+        const from_id = entry.key_ptr.*;
+        const from_mermaid = try sanitizeId(allocator, from_id);
+        defer allocator.free(from_mermaid);
+
+        for (entry.value_ptr.items) |to_id| {
+            const to_mermaid = try sanitizeId(allocator, to_id);
+            defer allocator.free(to_mermaid);
+
+            try output.writer().print("{s} --> {s}\n", .{ from_mermaid, to_mermaid });
+        }
+    }
+
+    // Write legend
+    try output.appendSlice("\nclassDef blue fill:#4A90E2,stroke:#3498DB,stroke-width:2px,color:#fff\n");
+    try output.appendSlice("classDef purple fill:#9B59B6,stroke:#8E44AD,stroke-width:2px,color:#fff\n");
+    try output.appendSlice("classDef red fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff\n");
+    try output.appendSlice("classDef green fill:#2ECC71,stroke:#27AE60,stroke-width:2px,color:#fff\n");
+    try output.appendSlice("classDef orange fill:#F39C12,stroke:#E67E22,stroke-width:2px,color:#fff\n");
+    try output.appendSlice("classDef gray fill:#95A5A6,stroke:#7F8C8D,stroke-width:2px,color:#fff\n");
+
+    var file = try std.fs.cwd().createFile(path, .{});
+    defer file.close();
+    try file.writeAll(output.items);
+}
+
+fn writeJsonGraph(
+    allocator: std.mem.Allocator,
+    deps_of: std.StringHashMap(std.array_list.Managed([]const u8)),
+    cell_health: std.StringHashMap(HealthInfo),
+    path: []const u8,
+) !void {
+    var output = std.array_list.Managed(u8).init(allocator);
+    defer output.deinit();
+
+    try output.appendSlice("{\n  \"nodes\": [\n");
+
+    // Write nodes
+    var first = true;
+    var node_it = cell_health.iterator();
+    while (node_it.next()) |entry| {
+        const info = entry.value_ptr.*;
+        if (!first) try output.appendSlice(",\n");
+        first = false;
+
+        try output.writer().print("    {{\"id\": \"{s}\", \"name\": \"{s}\", \"score\": {d}, \"bio_system\": \"{s}\", \"status\": \"{s}\"}}", .{
+            escapeJsonString(info.id),
+            escapeJsonString(info.name),
+            info.score,
+            info.bio_system,
+            info.status,
+        });
+    }
+
+    try output.appendSlice("\n  ],\n  \"edges\": [\n");
+
+    // Write edges
+    first = true;
+    var edge_it = deps_of.iterator();
+    while (edge_it.next()) |entry| {
+        const from_id = entry.key_ptr.*;
+        for (entry.value_ptr.items) |to_id| {
+            if (!first) try output.appendSlice(",\n");
+            first = false;
+
+            try output.writer().print("    {{\"from\": \"{s}\", \"to\": \"{s}\"}}", .{
+                escapeJsonString(from_id),
+                escapeJsonString(to_id),
+            });
+        }
+    }
+
+    try output.appendSlice("\n  ]\n}\n");
+
+    var file = try std.fs.cwd().createFile(path, .{});
+    defer file.close();
+    try file.writeAll(output.items);
+}
+
+fn writeHtmlGraph(
+    allocator: std.mem.Allocator,
+    deps_of: std.StringHashMap(std.array_list.Managed([]const u8)),
+    cell_health: std.StringHashMap(HealthInfo),
+    path: []const u8,
+) !void {
+    var output = std.array_list.Managed(u8).init(allocator);
+    defer output.deinit();
+
+    // HTML header with D3.js
+    try output.appendSlice(
+        \\<!DOCTYPE html>
+        \\<html>
+        \\<head>
+        \\  <meta charset="utf-8">
+        \\  <title>Trinity Cell Graph</title>
+        \\  <script src="https://d3js.org/d3.v7.min.js"></script>
+        \\  <style>
+        \\    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #1a1a2e; }
+        \\    #graph { width: 100vw; height: 100vh; }
+        \\    .node { cursor: pointer; }
+        \\    .node circle { stroke: #fff; stroke-width: 2px; }
+        \\    .node text { fill: #fff; font-size: 12px; pointer-events: none; text-shadow: 1px 1px 3px #000; }
+        \\    .link { stroke: #666; stroke-opacity: 0.6; }
+        \\    .legend { position: fixed; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 15px; border-radius: 8px; color: #fff; }
+        \\    .legend-item { display: flex; align-items: center; margin: 5px 0; }
+        \\    .legend-color { width: 16px; height: 16px; border-radius: 50%; margin-right: 8px; }
+        \\  </style>
+        \\</head>
+        \\  <body>
+        \\    <div id="graph"></div>
+        \\    <div class="legend">
+        \\      <h3>Legend</h3>
+        \\      <div class="legend-item"><div class="legend-color" style="background:#4A90E2"></div>DNA (codegen)</div>
+        \\      <div class="legend-item"><div class="legend-color" style="background:#9B59B6"></div>Brain (agents)</div>
+        \\      <div class="legend-item"><div class="legend-color" style="background:#E74C3C"></div>Immune (security)</div>
+        \\      <div class="legend-item"><div class="legend-color" style="background:#2ECC71"></div>Regen (phoenix)</div>
+        \\      <div class="legend-item"><div class="legend-color" style="background:#F39C12"></div>Body (training)</div>
+        \\      <div class="legend-item"><div class="legend-color" style="background:#95A5A6"></div>Unclassified</div>
+        \\      <hr>
+        \\      <div class="legend-item">Red stroke = health &lt; 50</div>
+        \\      <div class="legend-item">Orange stroke = health &lt; 70</div>
+        \\    </div>
+        \\    <script>
+        \\      const data = {
+        \\        nodes: [
+    );
+
+    // Write nodes as JavaScript array
+    var first = true;
+    var node_it = cell_health.iterator();
+    while (node_it.next()) |entry| {
+        const info = entry.value_ptr.*;
+        if (!first) try output.appendSlice(",\n        ");
+        first = false;
+
+        try output.writer().print("{{id:\"{s}\",name:\"{s}\",score:{d},bio:\"{s}\",status:\"{s}\"}}", .{
+            escapeJsString(info.id),
+            escapeJsString(info.name),
+            info.score,
+            info.bio_system,
+            info.status,
+        });
+    }
+
+    try output.appendSlice(
+        \\
+        \\        ],
+        \\        links: [
+    );
+
+    // Write edges
+    first = true;
+    var edge_it = deps_of.iterator();
+    while (edge_it.next()) |entry| {
+        const from_id = entry.key_ptr.*;
+        for (entry.value_ptr.items) |to_id| {
+            if (!first) try output.appendSlice(",\n        ");
+            first = false;
+
+            try output.writer().print("{{source:\"{s}\",target:\"{s}\"}}", .{
+                escapeJsString(from_id),
+                escapeJsString(to_id),
+            });
+        }
+    }
+
+    // Footer with D3.js visualization code
+    try output.appendSlice(
+        \\
+        \\        ]
+        \\      };
+        \\
+        \\      const colorMap = {
+        \\        dna: "#4A90E2", brain: "#9B59B6", immune: "#E74C3C",
+        \\        regen: "#2ECC71", body: "#F39C12", unclassified: "#95A5A6"
+        \\      };
+        \\
+        \\      const svg = d3.select("#graph").append("svg")
+        \\        .attr("width", "100%").attr("height", "100%")
+        \\        .call(d3.zoom().on("zoom", (e) => {
+        \\          g.attr("transform", e.transform);
+        \\        })).append("g");
+        \\
+        \\      const g = svg.append("g");
+        \\
+        \\      const simulation = d3.forceSimulation(data.nodes)
+        \\        .force("link", d3.forceLink(data.links).id(d => d.id).distance(100))
+        \\        .force("charge", d3.forceManyBody().strength(-300))
+        \\        .force("center", d3.forceCenter(window.innerWidth / 2, window.innerHeight / 2));
+        \\
+        \\      const link = g.append("g").selectAll("line")
+        \\        .data(data.links).join("line")
+        \\        .attr("class", "link");
+        \\
+        \\      const node = g.append("g").selectAll(".node")
+        \\        .data(data.nodes).join("g")
+        \\        .attr("class", "node")
+        \\        .call(d3.drag()
+        \\          .on("start", (e, d) => {
+        \\            if (!e.active) simulation.alphaTarget(0.3).restart();
+        \\            d.fx = d.x; d.fy = d.y;
+        \\          })
+        \\          .on("drag", (e, d) => { d.fx = e.x; d.fy = e.y; })
+        \\          .on("end", (e, d) => {
+        \\            if (!e.active) simulation.alphaTarget(0);
+        \\            d.fx = null; d.fy = null;
+        \\          }));
+        \\
+        \\      node.append("circle")
+        \\        .attr("r", d => 8 + (d.score / 10))
+        \\        .attr("fill", d => colorMap[d.bio] || "#95A5A6")
+        \\        .attr("stroke", d => d.score < 50 ? "#E74C3C" : d.score < 70 ? "#F39C12" : "#fff")
+        \\        .attr("stroke-width", d => d.score < 70 ? 3 : 2);
+        \\
+        \\      node.append("text")
+        \\        .attr("x", 12).attr("y", 4)
+        \\        .text(d => d.id.split('.').pop());
+        \\
+        \\      node.append("title").text(d => `${d.id}\\nHealth: ${d.score}/100\\nBio: ${d.bio}`);
+        \\
+        \\      simulation.on("tick", () => {
+        \\        link.attr("x1", d => d.source.x).attr("y1", d => d.source.y)
+        \\            .attr("x2", d => d.target.x).attr("y2", d => d.target.y);
+        \\        node.attr("transform", d => `translate(${d.x},${d.y})`);
+        \\      });
+        \\    </script>
+        \\  </body>
+        \\</html>
+    );
+
+    var file = try std.fs.cwd().createFile(path, .{});
+    defer file.close();
+    try file.writeAll(output.items);
+}
+
+// Sanitize cell ID for Mermaid (dots are not allowed in node IDs)
+fn sanitizeId(allocator: std.mem.Allocator, id: []const u8) ![]const u8 {
+    var result = std.array_list.Managed(u8).init(allocator);
+    for (id) |c| {
+        try result.append(if (c == '.') '_' else if (c == '-') '_' else c);
+    }
+    return result.toOwnedSlice();
+}
+
+// Escape label for Mermaid (quotes, backslashes)
+fn escapeLabel(allocator: std.mem.Allocator, s: []const u8) ![]const u8 {
+    var result = std.array_list.Managed(u8).init(allocator);
+    for (s) |c| {
+        switch (c) {
+            '"', '\\' => try result.append('\\'),
+            else => {},
+        }
+        try result.append(c);
+    }
+    return result.toOwnedSlice();
+}
+
+// Escape string for JSON
+fn escapeJsonString(s: []const u8) []const u8 {
+    // Simple version - just return as-is for now. Full implementation would escape quotes, backslashes, etc.
+    // TODO: Implement proper JSON escaping
+    return s;
+}
+
+// Escape string for JavaScript
+fn escapeJsString(s: []const u8) []const u8 {
+    // Simple version - just return as-is for now. Full implementation would escape quotes, backslashes, etc.
+    // TODO: Implement proper JS escaping
+    return s;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GRAPH — Mermaid dependency diagram (LEGACY)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runGraphLegacy(allocator: Allocator) !void {
@@ -6824,8 +7343,8 @@ fn runOutdated(allocator: Allocator, args: []const []const u8) !void {
     }
 
     std.debug.print("\n  Summary: {s}{d} outdated{s}, {s}{d} up-to-date{s}, {d} skipped\n", .{
-        YELLOW, outdated_count, RESET,
-        GREEN, up_to_date_count, RESET,
+        YELLOW,     outdated_count,   RESET,
+        GREEN,      up_to_date_count, RESET,
         skip_count,
     });
 
