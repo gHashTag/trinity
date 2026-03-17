@@ -4,12 +4,21 @@ import QueenUILib
 @main
 struct QueenApp: App {
     @StateObject private var watcher = StateWatcher()
+    @AppStorage("appearanceMode") private var appearanceModeRaw: String = AppearanceMode.dark.rawValue
+
+    private var resolvedScheme: ColorScheme? {
+        switch AppearanceMode(rawValue: appearanceModeRaw) ?? .dark {
+        case .system: return nil
+        case .dark: return .dark
+        case .light: return .light
+        }
+    }
 
     var body: some Scene {
         WindowGroup {
             MainView()
                 .environmentObject(watcher)
-                .preferredColorScheme(.dark)
+                .preferredColorScheme(resolvedScheme)
         }
         .windowStyle(.titleBar)
         .commands {

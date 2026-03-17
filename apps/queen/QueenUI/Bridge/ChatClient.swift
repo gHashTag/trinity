@@ -292,6 +292,7 @@ class ChatClient: ObservableObject {
     @Published var lastError: APIErrorType? = nil
     @Published var isSlowResponse = false          // TTFB > 5s warning
     @Published var streamingThinkingText = ""
+    @Published var lastResponseTruncated: Bool = false
     @Published var proposedMemories: [MemoryEntry] = []
     @Published var followUpSuggestions: [String] = []
     @Published var extractedTasks: [String] = []
@@ -421,6 +422,21 @@ class ChatClient: ObservableObject {
             try? data.write(to: queueURL, options: .atomic)
         }
     }
+
+    // MARK: - Stream Reconnection Checkpoint
+
+    private struct StreamCheckpoint {
+        let messageID: UUID
+        let threadID: UUID
+        let accumulatedText: String
+        let thinkingText: String
+        let chunkCount: Int
+        let timestamp: Date
+    }
+
+    private var lastCheckpoint: StreamCheckpoint? = nil
+    private var sseChunkCounter: Int = 0
+    private let checkpointInterval: Int = 20
 
     private var streamTask: Task<Void, Never>?
     private let repo = RepoContext()
@@ -751,16 +767,27 @@ class ChatClient: ObservableObject {
             return
         }
 
-        // Offline queue: if selected provider is down, queue for later
+        // Offline queue: if selected provider is down or circuit breaker is open, queue for later
         let providerName = modelManager.selectedModel.provider.rawValue
-        if let status = NetworkLog.shared.providerHealth[providerName], !status.isUp {
+        let isProviderDown = NetworkLog.shared.providerHealth[providerName].map { !$0.isUp } ?? false
+        let isCircuitOpen = NetworkLog.shared.isCircuitOpen(provider: providerName)
+        if isProviderDown || isCircuitOpen {
+            // Try failover first before queuing
+            if let fallback = modelManager.failoverModel() {
+                // Circuit open on primary but fallback available — use it
+                failoverEvent = FailoverEvent(from: modelManager.selectedModel.displayName, to: fallback.displayName, timestamp: Date())
+                failoverLog.append(failoverEvent!)
+                send(text, threadID: threadID, store: store, modelManager: modelManager, mode: mode, modelOverride: fallback)
+                return
+            }
+            let reason = isCircuitOpen ? "circuit breaker open" : "offline"
             offlineQueue.append(QueuedMessage(text: text, threadID: threadID, mode: mode))
             offlineQueueCount = offlineQueue.count
             persistQueue()
             // Add user message with queued indicator
             let userMsg = ChatMessage(role: .user, text: text)
             store.appendMessage(userMsg, to: threadID)
-            let queuedMsg = ChatMessage(role: .assistant, text: "*[Queued — will send when \(providerName) is back online]*", modelID: modelManager.selectedModel.id)
+            let queuedMsg = ChatMessage(role: .assistant, text: "*[Queued — \(providerName) \(reason), will retry shortly]*", modelID: modelManager.selectedModel.id)
             store.appendMessage(queuedMsg, to: threadID)
             store.saveThread(threadID)
             startOfflineDrain(store: store, modelManager: modelManager)
@@ -797,6 +824,7 @@ class ChatClient: ObservableObject {
         streamingState = .connecting
         streamingText = ""
         streamingThinkingText = ""
+        lastResponseTruncated = false
         lastCheckpointTokens = 0
         activeStreamThreadID = threadID
         activeStreamStore = store
@@ -867,6 +895,9 @@ class ChatClient: ObservableObject {
                     extractedTasks = Self.extractTasks(from: suggestionsText)
                     elicitationQuestion = Self.extractElicitation(from: suggestionsText)
                 }
+
+                // Check if response was truncated by max_tokens
+                lastResponseTruncated = (lastStopReason == "max_tokens")
             } catch {
                 if !Task.isCancelled {
                     let kind = errorKind(from: lastError)
@@ -1256,6 +1287,8 @@ class ChatClient: ObservableObject {
     /// Last used model/provider for recording on cancel
     private var lastModelID: String = ""
     private var lastProviderName: String = ""
+    /// Stop reason from the last Anthropic stream (e.g. "end_turn", "max_tokens")
+    private var lastStopReason: String = ""
 
     /// ID of the thread being streamed to (set in send())
     private var activeStreamThreadID: UUID?
@@ -1420,6 +1453,30 @@ class ChatClient: ObservableObject {
     private func retryAfterSeconds(from errType: APIErrorType) -> Int? {
         if case .rateLimited(let retryAfter) = errType { return retryAfter }
         return nil
+    }
+
+    /// Save a stream checkpoint (called every N chunks during SSE streaming)
+    private func saveStreamCheckpoint(threadID: UUID, messageID: UUID = UUID()) {
+        lastCheckpoint = StreamCheckpoint(
+            messageID: messageID,
+            threadID: threadID,
+            accumulatedText: streamingText,
+            thinkingText: streamingThinkingText,
+            chunkCount: sseChunkCounter,
+            timestamp: Date()
+        )
+    }
+
+    /// Check if an error is a recoverable network disconnect
+    private func isRecoverableDisconnect(_ error: Error) -> Bool {
+        guard let urlError = error as? URLError else { return false }
+        switch urlError.code {
+        case .networkConnectionLost, .notConnectedToInternet,
+             .timedOut, .cannotConnectToHost, .dataNotAllowed:
+            return true
+        default:
+            return false
+        }
     }
 
     private func updateTokensPerSec() {
@@ -1778,6 +1835,7 @@ class ChatClient: ObservableObject {
         streamingTTFB = 0  // Reset TTFB on every attempt
         isSlowResponse = false
         lastError = nil
+        lastStopReason = ""
         let inputTokens = history.reduce(0) { $0 + ($1["content"]?.count ?? 0) / 4 }
 
         // Start slow-response timer
@@ -1910,53 +1968,140 @@ class ChatClient: ObservableObject {
         }
 
         var currentBlockType: String = "text"  // Track content block type
+        sseChunkCounter = 0
+        var receivedMessageStop = false
 
-        for try await line in bytes.lines {
-            try Task.checkCancellation()
-            guard line.hasPrefix("data: ") else { continue }
-            let data = String(line.dropFirst(6))
-            if data == "[DONE]" { break }
+        do {
+            for try await line in bytes.lines {
+                try Task.checkCancellation()
+                guard line.hasPrefix("data: ") else { continue }
+                let data = String(line.dropFirst(6))
+                if data == "[DONE]" { receivedMessageStop = true; break }
 
-            guard let jsonData = data.data(using: .utf8),
-                  let event = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
-                  let type = event["type"] as? String else { continue }
+                guard let jsonData = data.data(using: .utf8),
+                      let event = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+                      let type = event["type"] as? String else { continue }
 
-            // Track block type from content_block_start
-            if type == "content_block_start",
-               let contentBlock = event["content_block"] as? [String: Any],
-               let blockType = contentBlock["type"] as? String {
-                currentBlockType = blockType
-            }
+                if type == "message_stop" { receivedMessageStop = true; break }
 
-            if type == "content_block_delta",
-               let delta = event["delta"] as? [String: Any] {
-                // Handle thinking deltas
-                if let thinking = delta["thinking"] as? String, currentBlockType == "thinking" {
-                    if firstTokenTime == nil {
-                        firstTokenTime = Date()
-                        if let start = streamStartTime {
-                            streamingTTFB = Int(firstTokenTime!.timeIntervalSince(start) * 1000)
-                        }
-                        isSlowResponse = false
-                    }
-                    streamingThinkingText += thinking
-                    store.updateLastMessageThinking(text: streamingThinkingText, in: threadID)
+                // Capture stop_reason from message_delta (e.g. "end_turn", "max_tokens")
+                if type == "message_delta",
+                   let delta = event["delta"] as? [String: Any],
+                   let stopReason = delta["stop_reason"] as? String {
+                    lastStopReason = stopReason
                 }
-                // Handle text deltas
-                else if let text = delta["text"] as? String {
-                    if firstTokenTime == nil {
-                        firstTokenTime = Date()
-                        if let start = streamStartTime {
-                            streamingTTFB = Int(firstTokenTime!.timeIntervalSince(start) * 1000)
+
+                // Track block type from content_block_start
+                if type == "content_block_start",
+                   let contentBlock = event["content_block"] as? [String: Any],
+                   let blockType = contentBlock["type"] as? String {
+                    currentBlockType = blockType
+                }
+
+                if type == "content_block_delta",
+                   let delta = event["delta"] as? [String: Any] {
+                    // Handle thinking deltas
+                    if let thinking = delta["thinking"] as? String, currentBlockType == "thinking" {
+                        if firstTokenTime == nil {
+                            firstTokenTime = Date()
+                            if let start = streamStartTime {
+                                streamingTTFB = Int(firstTokenTime!.timeIntervalSince(start) * 1000)
+                            }
+                            isSlowResponse = false
                         }
-                        isSlowResponse = false
+                        streamingThinkingText += thinking
+                        store.updateLastMessageThinking(text: streamingThinkingText, in: threadID)
                     }
-                    streamingText += text
-                    streamingOutputTokens += max(text.count / 4, 1)
-                    updateTokensPerSec()
-                    store.updateLastMessage(text: streamingText, in: threadID)
+                    // Handle text deltas
+                    else if let text = delta["text"] as? String {
+                        if firstTokenTime == nil {
+                            firstTokenTime = Date()
+                            if let start = streamStartTime {
+                                streamingTTFB = Int(firstTokenTime!.timeIntervalSince(start) * 1000)
+                            }
+                            isSlowResponse = false
+                        }
+                        streamingText += text
+                        streamingOutputTokens += max(text.count / 4, 1)
+                        updateTokensPerSec()
+                        store.updateLastMessage(text: streamingText, in: threadID)
+                    }
+
+                    // Checkpoint every N chunks
+                    sseChunkCounter += 1
+                    if sseChunkCounter % checkpointInterval == 0 {
+                        saveStreamCheckpoint(threadID: threadID)
+                    }
                 }
             }
+        } catch {
+            // Stream disconnected mid-response — attempt reconnection
+            if isRecoverableDisconnect(error) && streamingOutputTokens > 5 && retryCount < 3 {
+                saveStreamCheckpoint(threadID: threadID)
+                let savedText = streamingText
+
+                // Show reconnecting status inline
+                store.updateLastMessage(text: savedText + "\n\n*Connection lost. Reconnecting...*", in: threadID)
+
+                // Exponential backoff: 1s, 2s, 4s
+                let delaySec = retryDelay(attempt: retryCount, retryAfter: nil)
+                try await Task.sleep(nanoseconds: delaySec)
+
+                // Build continuation history: include partial response, ask to continue
+                var continueHistory = history
+                continueHistory.append(["role": "assistant", "content": savedText])
+                continueHistory.append(["role": "user", "content": "Continue from where you left off. Do not repeat what you already said."])
+
+                // Restore partial text (new response appends after it)
+                streamingText = savedText + "\n\n"
+                streamingOutputTokens = 0
+                firstTokenTime = nil
+
+                store.updateLastMessage(text: streamingText, in: threadID)
+
+                // Retry with incremented count
+                try await streamAnthropic(
+                    history: continueHistory, threadID: threadID, store: store,
+                    model: model, key: key, modelManager: modelManager,
+                    mode: mode, retryCount: retryCount + 1, triedModels: triedModels
+                )
+                return
+            } else if isRecoverableDisconnect(error) && streamingOutputTokens > 5 {
+                // Max retries exhausted — show partial with interruption notice
+                streamingText += "\n\n*[Response interrupted — connection lost after \(retryCount) retries]*"
+                store.updateLastMessage(text: streamingText, in: threadID)
+                // Fall through to record partial success
+            } else {
+                throw error  // Re-throw non-recoverable errors
+            }
+        }
+
+        // If stream ended without message_stop and we have partial content, it was an unexpected close
+        if !receivedMessageStop && streamingOutputTokens > 10 && retryCount < 3 {
+            saveStreamCheckpoint(threadID: threadID)
+            let savedText = streamingText
+
+            store.updateLastMessage(text: savedText + "\n\n*Stream ended unexpectedly. Reconnecting...*", in: threadID)
+
+            let delaySec = retryDelay(attempt: retryCount, retryAfter: nil)
+            try await Task.sleep(nanoseconds: delaySec)
+
+            var continueHistory = history
+            continueHistory.append(["role": "assistant", "content": savedText])
+            continueHistory.append(["role": "user", "content": "Continue from where you left off. Do not repeat what you already said."])
+
+            streamingText = savedText + "\n\n"
+            streamingOutputTokens = 0
+            firstTokenTime = nil
+
+            store.updateLastMessage(text: streamingText, in: threadID)
+
+            try await streamAnthropic(
+                history: continueHistory, threadID: threadID, store: store,
+                model: model, key: key, modelManager: modelManager,
+                mode: mode, retryCount: retryCount + 1, triedModels: triedModels
+            )
+            return
         }
 
         // Record to network log
@@ -2135,29 +2280,106 @@ class ChatClient: ObservableObject {
             }
         }
 
-        for try await line in bytes.lines {
-            try Task.checkCancellation()
-            guard line.hasPrefix("data: ") else { continue }
-            let data = String(line.dropFirst(6))
-            if data == "[DONE]" { break }
+        sseChunkCounter = 0
+        var receivedDone = false
 
-            guard let jsonData = data.data(using: .utf8),
-                  let event = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
-                  let choices = event["choices"] as? [[String: Any]],
-                  let delta = choices.first?["delta"] as? [String: Any],
-                  let content = delta["content"] as? String else { continue }
+        do {
+            for try await line in bytes.lines {
+                try Task.checkCancellation()
+                guard line.hasPrefix("data: ") else { continue }
+                let data = String(line.dropFirst(6))
+                if data == "[DONE]" { receivedDone = true; break }
 
-            if firstTokenTime == nil {
-                firstTokenTime = Date()
-                if let start = streamStartTime {
-                    streamingTTFB = Int(firstTokenTime!.timeIntervalSince(start) * 1000)
+                guard let jsonData = data.data(using: .utf8),
+                      let event = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
+                      let choices = event["choices"] as? [[String: Any]],
+                      let delta = choices.first?["delta"] as? [String: Any],
+                      let content = delta["content"] as? String else { continue }
+
+                if firstTokenTime == nil {
+                    firstTokenTime = Date()
+                    if let start = streamStartTime {
+                        streamingTTFB = Int(firstTokenTime!.timeIntervalSince(start) * 1000)
+                    }
+                    isSlowResponse = false
                 }
-                isSlowResponse = false
+                streamingText += content
+                streamingOutputTokens += max(content.count / 4, 1)
+                updateTokensPerSec()
+                store.updateLastMessage(text: streamingText, in: threadID)
+
+                // Checkpoint every N chunks
+                sseChunkCounter += 1
+                if sseChunkCounter % checkpointInterval == 0 {
+                    saveStreamCheckpoint(threadID: threadID)
+                }
+
+                // Check for finish_reason in the chunk
+                if let finishReason = choices.first?["finish_reason"] as? String, finishReason == "stop" {
+                    receivedDone = true
+                }
             }
-            streamingText += content
-            streamingOutputTokens += max(content.count / 4, 1)
-            updateTokensPerSec()
+        } catch {
+            // Stream disconnected mid-response — attempt reconnection
+            if isRecoverableDisconnect(error) && streamingOutputTokens > 5 && retryCount < 3 {
+                saveStreamCheckpoint(threadID: threadID)
+                let savedText = streamingText
+
+                store.updateLastMessage(text: savedText + "\n\n*Connection lost. Reconnecting...*", in: threadID)
+
+                let delaySec = retryDelay(attempt: retryCount, retryAfter: nil)
+                try await Task.sleep(nanoseconds: delaySec)
+
+                var continueHistory = history
+                continueHistory.append(["role": "assistant", "content": savedText])
+                continueHistory.append(["role": "user", "content": "Continue from where you left off. Do not repeat what you already said."])
+
+                streamingText = savedText + "\n\n"
+                streamingOutputTokens = 0
+                firstTokenTime = nil
+
+                store.updateLastMessage(text: streamingText, in: threadID)
+
+                try await streamOpenAI(
+                    history: continueHistory, threadID: threadID, store: store,
+                    model: model, key: key, modelManager: modelManager,
+                    mode: mode, retryCount: retryCount + 1, triedModels: triedModels
+                )
+                return
+            } else if isRecoverableDisconnect(error) && streamingOutputTokens > 5 {
+                streamingText += "\n\n*[Response interrupted — connection lost after \(retryCount) retries]*"
+                store.updateLastMessage(text: streamingText, in: threadID)
+            } else {
+                throw error
+            }
+        }
+
+        // If stream ended without [DONE] and we have partial content, attempt reconnection
+        if !receivedDone && streamingOutputTokens > 10 && retryCount < 3 {
+            saveStreamCheckpoint(threadID: threadID)
+            let savedText = streamingText
+
+            store.updateLastMessage(text: savedText + "\n\n*Stream ended unexpectedly. Reconnecting...*", in: threadID)
+
+            let delaySec = retryDelay(attempt: retryCount, retryAfter: nil)
+            try await Task.sleep(nanoseconds: delaySec)
+
+            var continueHistory = history
+            continueHistory.append(["role": "assistant", "content": savedText])
+            continueHistory.append(["role": "user", "content": "Continue from where you left off. Do not repeat what you already said."])
+
+            streamingText = savedText + "\n\n"
+            streamingOutputTokens = 0
+            firstTokenTime = nil
+
             store.updateLastMessage(text: streamingText, in: threadID)
+
+            try await streamOpenAI(
+                history: continueHistory, threadID: threadID, store: store,
+                model: model, key: key, modelManager: modelManager,
+                mode: mode, retryCount: retryCount + 1, triedModels: triedModels
+            )
+            return
         }
 
         // Extract citations for search mode (Perplexity responses)

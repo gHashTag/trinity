@@ -200,19 +200,21 @@ class ModelManager: ObservableObject {
     /// Get xAI API key directly (for image generation)
     var xaiKey: String? { env["XAI_API_KEY"] }
 
-    /// Auto-failover: if selected provider is down, pick best available alternative
+    /// Auto-failover: if selected provider is down or circuit-open, pick best available alternative
     /// Tries ALL providers, scored by recent TTFB (fastest first)
     func failoverModel() -> AIModel? {
         let health = NetworkLog.shared.providerHealth
         let currentProvider = selectedModel.provider.rawValue
 
-        // If current provider is up, no failover needed
-        if let status = health[currentProvider], status.isUp { return nil }
+        // If current provider is up and circuit is closed, no failover needed
+        let circuitOpen = NetworkLog.shared.isCircuitOpen(provider: currentProvider)
+        if !circuitOpen, let status = health[currentProvider], status.isUp { return nil }
 
-        // Find all candidates whose provider is up and has a key
+        // Find all candidates whose provider is up, circuit is closed, and has a key
         let candidates = availableModels.filter { model in
             model.id != selectedModel.id &&
             !model.isImageModel &&
+            !NetworkLog.shared.isCircuitOpen(provider: model.provider.rawValue) &&
             (health[model.provider.rawValue]?.isUp ?? true)
         }
 
@@ -227,7 +229,8 @@ class ModelManager: ObservableObject {
         return scored.first?.0
     }
 
-    /// Full failover chain: returns ALL available alternatives sorted by speed
+    /// Full failover chain: returns ALL available alternatives sorted by speed.
+    /// Excludes providers with open circuit breakers.
     func failoverChain(excluding: Set<String> = []) -> [AIModel] {
         let health = NetworkLog.shared.providerHealth
         let excluded = excluding.union([selectedModel.id])
@@ -236,6 +239,7 @@ class ModelManager: ObservableObject {
             .filter { model in
                 !excluded.contains(model.id) &&
                 !model.isImageModel &&
+                !NetworkLog.shared.isCircuitOpen(provider: model.provider.rawValue) &&
                 (health[model.provider.rawValue]?.isUp ?? true)
             }
             .sorted { a, b in

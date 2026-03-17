@@ -584,5 +584,7 @@ struct PersonaPicker: View {
         }
         .menuStyle(.borderlessButton)
         .fixedSize()
+        .accessibilityLabel("Select persona, currently \(selectedPersona?.name ?? "Default")")
+        .accessibilityHint("Opens persona selection menu")
     }
 }

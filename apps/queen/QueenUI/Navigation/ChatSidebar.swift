@@ -4,6 +4,7 @@ import AppKit
 struct ChatSidebar: View {
     @ObservedObject var store: ThreadStore
     @ObservedObject var modelManager: ModelManager
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var searchQuery = ""
     @State private var isSearching = false
     @State private var selectedTag: String?
@@ -19,10 +20,11 @@ struct ChatSidebar: View {
     @State private var exportToast = ""
     @State private var debouncedQuery = ""
     @State private var searchTask: Task<Void, Never>? = nil
+    @State private var showArchiveSection = false
     @AppStorage("threadSortOrder") private var sortOrder: String = "date"
 
     private var filteredThreads: [ChatThread] {
-        var base = store.sortedThreads
+        var base = store.sortedThreads.filter { !$0.isArchived }
         // Apply sort order
         switch sortOrder {
         case "name":
@@ -105,6 +107,7 @@ struct ChatSidebar: View {
                 .menuStyle(.borderlessButton)
                 .frame(width: 20)
                 .help("Sort threads")
+                .accessibilityLabel("Sort threads, currently by \(sortOrder)")
 
                 Button {
                     withAnimation(.easeInOut(duration: 0.15)) {
@@ -118,6 +121,7 @@ struct ChatSidebar: View {
                 }
                 .buttonStyle(.plain)
                 .help("Search threads (Cmd+Shift+F)")
+                .accessibilityLabel(isSearching ? "Close search" : "Search threads")
             }
             .padding(.horizontal, 16)
             .padding(.top, 16)
@@ -140,7 +144,7 @@ struct ChatSidebar: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .padding(.horizontal, 8)
                 .padding(.bottom, 8)
-                .transition(.opacity.combined(with: .move(edge: .top)))
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
             }
 
             // New Thread + Import buttons
@@ -168,6 +172,7 @@ struct ChatSidebar: View {
                 }
                 .buttonStyle(.plain)
                 .help("Import conversations")
+                .accessibilityLabel("Import conversations")
 
                 Button { showNewFolderAlert = true } label: {
                     Image(systemName: "folder.badge.plus")
@@ -177,6 +182,7 @@ struct ChatSidebar: View {
                 }
                 .buttonStyle(.plain)
                 .help("New folder")
+                .accessibilityLabel("Create new folder")
 
                 if !store.allBookmarks().isEmpty {
                     Menu {
@@ -307,6 +313,39 @@ struct ChatSidebar: View {
                 .transition(.opacity)
             }
 
+            // Archive suggestion banner
+            if store.showArchiveSuggestion {
+                HStack(spacing: 8) {
+                    Text("\u{1F4E6} \(store.staleThreads.count) thread\(store.staleThreads.count == 1 ? "" : "s") older than 90 days")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.7))
+                    Spacer()
+                    Button("Archive All") {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            store.archiveAllStale()
+                        }
+                    }
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(TrinityTheme.accent)
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Archive all stale threads")
+                    Button("Dismiss") {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            store.showArchiveSuggestion = false
+                        }
+                    }
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.4))
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(TrinityTheme.accent.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .padding(.horizontal, 8)
+                .padding(.bottom, 4)
+            }
+
             // Thread list with folder groups + date groups
             ScrollView {
                 LazyVStack(spacing: 0) {
@@ -371,6 +410,50 @@ struct ChatSidebar: View {
                             threadRow(thread)
                         }
                     }
+
+                    // Archive section (collapsed by default)
+                    if !store.archivedThreads.isEmpty {
+                        VStack(spacing: 0) {
+                            HStack(spacing: 6) {
+                                Button {
+                                    withAnimation(.easeInOut(duration: 0.15)) {
+                                        showArchiveSection.toggle()
+                                    }
+                                } label: {
+                                    Image(systemName: showArchiveSection ? "chevron.down" : "chevron.right")
+                                        .font(.system(size: 8, weight: .bold))
+                                        .foregroundStyle(Color.white.opacity(0.3))
+                                }
+                                .buttonStyle(.plain)
+
+                                Image(systemName: "archivebox")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(Color.white.opacity(0.3))
+                                Text("Archive")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(Color.white.opacity(0.3))
+                                Spacer()
+                                Text("\(store.archivedThreads.count)")
+                                    .font(.system(size: 9, design: .monospaced))
+                                    .foregroundStyle(Color.white.opacity(0.2))
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.top, 10)
+                            .padding(.bottom, 4)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                withAnimation(.easeInOut(duration: 0.15)) {
+                                    showArchiveSection.toggle()
+                                }
+                            }
+
+                            if showArchiveSection {
+                                ForEach(store.archivedThreads) { thread in
+                                    threadRow(thread)
+                                }
+                            }
+                        }
+                    }
                 }
                 .padding(.vertical, 2)
             }
@@ -406,6 +489,8 @@ struct ChatSidebar: View {
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(TrinityTheme.accent)
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Undo delete")
+                    .accessibilityHint("Restores the deleted thread")
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
@@ -417,7 +502,7 @@ struct ChatSidebar: View {
                 )
                 .padding(.horizontal, 8)
                 .padding(.bottom, 4)
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
             }
 
             // Network stats bar
@@ -558,6 +643,15 @@ struct ChatSidebar: View {
             onMoveToFolder: { folderID in store.moveThread(thread.id, to: folderID) },
             onQuickExport: { quickExportMarkdown(thread) },
             onDuplicate: { store.duplicateThread(thread.id) },
+            onArchive: {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    if thread.isArchived {
+                        store.unarchiveThread(thread.id)
+                    } else {
+                        store.archiveThread(thread.id)
+                    }
+                }
+            },
             folders: store.folders
         )
         .onHover { hovering in
@@ -692,6 +786,7 @@ struct ExportFormatPicker: View {
 struct ProviderDot: View {
     let provider: AIProvider
     @StateObject private var networkLog = NetworkLog.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var pulse = false
 
     var body: some View {
@@ -699,7 +794,7 @@ struct ProviderDot: View {
         let isUp = status?.isUp ?? true
 
         ZStack {
-            if !isUp {
+            if !isUp && !reduceMotion {
                 Circle()
                     .stroke(TrinityTheme.statusError.opacity(0.4), lineWidth: 1)
                     .frame(width: 12, height: 12)
@@ -793,6 +888,7 @@ struct ThreadRow: View {
     var onMoveToFolder: ((UUID?) -> Void)? = nil
     var onQuickExport: (() -> Void)? = nil
     var onDuplicate: (() -> Void)? = nil
+    var onArchive: (() -> Void)? = nil
     var folders: [ThreadFolder] = []
 
     @State private var isHovered = false
@@ -816,6 +912,7 @@ struct ThreadRow: View {
                         .font(.system(size: 8))
                         .foregroundStyle(TrinityTheme.golden)
                         .rotationEffect(.degrees(45))
+                        .accessibilityLabel("Pinned thread")
                 }
 
                 if isRenaming {
@@ -879,6 +976,7 @@ struct ThreadRow: View {
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(Color.white.opacity(0.4))
+                    .accessibilityLabel("Rename thread")
 
                     Button(action: onExport) {
                         Image(systemName: "square.and.arrow.up")
@@ -887,6 +985,7 @@ struct ThreadRow: View {
                     .buttonStyle(.plain)
                     .foregroundStyle(Color.white.opacity(0.4))
                     .help("Export as Markdown")
+                    .accessibilityLabel("Export thread")
 
                     Button(action: onDelete) {
                         Image(systemName: "trash")
@@ -894,6 +993,7 @@ struct ThreadRow: View {
                     }
                     .buttonStyle(.plain)
                     .foregroundStyle(TrinityTheme.statusError.opacity(0.6))
+                    .accessibilityLabel("Delete thread")
                 }
             }
 
@@ -938,6 +1038,9 @@ struct ThreadRow: View {
                     Divider()
                     Button("Uncategorized") { onMoveToFolder?(nil) }
                 }
+            }
+            if let onArchive = onArchive {
+                Button(thread.isArchived ? "Unarchive" : "Archive") { onArchive() }
             }
             Divider()
             Button("Delete", role: .destructive) { showDeleteConfirm = true }
