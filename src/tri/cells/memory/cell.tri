@@ -32,6 +32,17 @@ process = "none"
 ffi = "none"
 concurrency = "none"
 
+[dna]
+cell_id = "trinity.tri.memory"
+source = "specs/tri/memory.tri"
+output = "gen/memory_types.zig"
+regenerable = true
+
+[contract]
+inputs = ["agent: str", "kind: MemoryKind", "summary: str"]
+outputs = ["record: MemoryRecord", "id: uuid"]
+invariants = ["heartbeat TTL == 7d", "learning TTL == permanent", "auto-rotate at 1MB"]
+
 [security]
 signed = true
 signature = "sha256:0000000000000000000000000000000000000000000000000000000000000000"

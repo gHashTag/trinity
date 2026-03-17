@@ -33,6 +33,10 @@ process = "spawn"
 ffi = "none"
 concurrency = "none"
 
+[biology]
+system = "regen"
+organ = "phoenix"
+
 [security]
 signed = true
 signature = "sha256:3e5b9c16c8061eaec0f2661df45e9921ef72b5d8e12e08d4fc4c81b45766f194"

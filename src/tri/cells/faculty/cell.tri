@@ -16,7 +16,7 @@ scope = "infra"
 type = "agent"
 
 [source]
-file_patterns = ["faculty*.zig", "phi_poetry.zig", "three_paths.zig", "voice_engine.zig", "analysis_engine.zig"]
+file_patterns = ["faculty*.zig", "phi_poetry.zig", "three_paths.zig", "voice_engine.zig", "analysis_engine.zig", "cortex.zig"]
 
 [contributes]
 commands = ["faculty"]
@@ -32,6 +32,10 @@ process = "spawn"
 
 ffi = "none"
 concurrency = "none"
+[biology]
+system = "brain"
+organ = "cortex"
+
 [security]
 signed = true
 signature = "sha256:550617f74b73e7e263ac30151e09c28b960575730e0a64f3fb08f63a88be81b6"

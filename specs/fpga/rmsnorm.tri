@@ -1,0 +1,17 @@
+[spec]
+name = "fpga_rmsnorm"
+version = "1.0.0"
+description = "Shift-based RMSNorm for FPGA, no multiply"
+
+[interface]
+inputs = ["activations: [dim]signed"]
+outputs = ["normalized: [dim]signed"]
+
+[invariants]
+no_multiply = "approximation via bit shifts only"
+no_dsp = "zero DSP blocks"
+latency = "single cycle per element"
+
+[architecture]
+method = "approximate reciprocal sqrt via shift + lookup"
+precision = "fixed-point, configurable width"

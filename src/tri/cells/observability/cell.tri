@@ -32,6 +32,10 @@ process = "none"
 
 ffi = "none"
 concurrency = "yes"
+[biology]
+system = "immune"
+organ = "immune_surveillance"
+
 [security]
 signed = true
 signature = "sha256:01cc4f088a2a470c307173494f64f817dae2b02810a70dff2e1aa1a0e6b8e973"

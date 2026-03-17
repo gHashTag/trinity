@@ -16,7 +16,7 @@ scope = "infra"
 type = "agent"
 
 [source]
-file_patterns = ["mu_*.zig"]
+file_patterns = ["mu_*.zig", "hippocampus.zig"]
 
 [contributes]
 commands = ["mu"]
@@ -32,6 +32,10 @@ process = "spawn"
 
 ffi = "none"
 concurrency = "none"
+[biology]
+system = "brain"
+organ = "hippocampus"
+
 [security]
 signed = true
 signature = "sha256:5a70356f06cec03b9b14e22cdbc134cca92207bc1b172b0ace8aeab3808f4d12"

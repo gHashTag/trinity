@@ -16,7 +16,7 @@ scope = "infra"
 type = "infra"
 
 [source]
-file_patterns = ["tri_cell*.zig"]
+file_patterns = ["tri_cell*.zig", "cytoplasm.zig", "ribosome.zig"]
 
 [contributes]
 commands = ["cell score", "cell deps", "cell audit", "cell create", "cell fix"]
@@ -32,6 +32,10 @@ process = "spawn"
 
 ffi = "native"
 concurrency = "yes"
+[biology]
+system = "dna"
+organ = "ribosome"
+
 [security]
 signed = true
 signature = "sha256:fadbad75498a860fb22aa206e988b29dc3f43935a38acc0040ff0ec78fd15df1"

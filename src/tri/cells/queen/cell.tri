@@ -32,6 +32,10 @@ process = "spawn"
 
 ffi = "none"
 concurrency = "yes"
+[biology]
+system = "brain"
+organ = "synapse"
+
 [security]
 signed = true
 signature = "sha256:5e69162646c8afb8910bed66dcef8b47e7c6b8da99493dba66a0e239e2b53d08"

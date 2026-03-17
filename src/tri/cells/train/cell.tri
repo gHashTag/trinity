@@ -16,7 +16,7 @@ scope = "infra"
 type = "infra"
 
 [source]
-file_patterns = ["tri_train.zig", "train_*.zig", "cloud_train.zig"]
+file_patterns = ["train_*.zig", "cloud_train.zig", "metabolism.zig"]
 
 [contributes]
 commands = ["train"]
@@ -32,6 +32,10 @@ process = "spawn"
 
 ffi = "none"
 concurrency = "none"
+[biology]
+system = "body"
+organ = "metabolism"
+
 [security]
 signed = true
 signature = "sha256:6c82db7c5da47ec5e1a08117d4eecf5805caa837e540fc928bcc0950d221cdb1"

@@ -16,7 +16,7 @@ scope = "infra"
 type = "infra"
 
 [source]
-file_patterns = ["tri_doctor.zig", "tri_ouroboros.zig", "toxic_verdict.zig", "tri_strict.zig"]
+file_patterns = ["tri_strict.zig", "leukocyte.zig"]
 
 [contributes]
 commands = ["doctor", "verdict", "ouroboros"]
@@ -32,6 +32,10 @@ process = "spawn"
 
 ffi = "none"
 concurrency = "none"
+[biology]
+system = "immune"
+organ = "leukocyte"
+
 [security]
 signed = true
 signature = "sha256:67bfeecaf3aab7051cbb8a9d3b00d29ddb184e1c89cf1d8316b48c0bc6a6982f"
