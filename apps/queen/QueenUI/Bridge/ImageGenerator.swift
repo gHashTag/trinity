@@ -1,5 +1,5 @@
 import Foundation
-import AppKit
+@preconcurrency import AppKit
 
 /// xAI Grok Aurora image generation client
 @MainActor
