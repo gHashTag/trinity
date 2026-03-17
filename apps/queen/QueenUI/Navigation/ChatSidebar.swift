@@ -10,6 +10,12 @@ struct ChatSidebar: View {
     @State private var hoveredThread: UUID? = nil
     @State private var showNewTagAlert = false
     @State private var newTagName = ""
+    @State private var showNewFolderAlert = false
+    @State private var newFolderName = ""
+    @State private var showImportPicker = false
+    @State private var importResult = ""
+    @State private var showExportFormat = false
+    @State private var exportThread: ChatThread? = nil
 
     private var filteredThreads: [ChatThread] {
         var base = store.sortedThreads
@@ -17,16 +23,14 @@ struct ChatSidebar: View {
             base = base.filter { $0.tags.contains(tag) }
         }
         if searchQuery.isEmpty { return base }
-        let q = searchQuery.lowercased()
-        return base.filter { thread in
-            thread.title.lowercased().contains(q) ||
-            thread.messages.contains { $0.text.lowercased().contains(q) }
-        }
+        // Use fuzzy search for better matching
+        let fuzzyResults = store.fuzzySearch(searchQuery)
+        let matchIDs = Set(fuzzyResults.map { $0.thread.id })
+        return base.filter { matchIDs.contains($0.id) }
     }
 
     /// Group threads by date: Today / Yesterday / This Week / This Month / Older
-    private var groupedThreads: [(String, [ChatThread])] {
-        let threads = filteredThreads
+    private func groupThreadsByDate(_ threads: [ChatThread]) -> [(String, [ChatThread])] {
         guard !threads.isEmpty else { return [] }
 
         let cal = Calendar.current
@@ -108,24 +112,55 @@ struct ChatSidebar: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
-            // New Thread button
-            Button(action: { store.newThread() }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "square.and.pencil")
-                        .font(.system(size: 13))
-                    Text("New Thread")
-                        .font(.system(size: 13, weight: .medium))
+            // New Thread + Import buttons
+            HStack(spacing: 4) {
+                Button(action: { store.newThread() }) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "square.and.pencil")
+                            .font(.system(size: 13))
+                        Text("New Thread")
+                            .font(.system(size: 13, weight: .medium))
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 9)
+                    .foregroundStyle(Color.white.opacity(0.8))
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 9)
-                .foregroundStyle(Color.white.opacity(0.8))
+                .buttonStyle(.plain)
+                .accessibilityLabel("New thread")
+
+                Button { showImportPicker = true } label: {
+                    Image(systemName: "square.and.arrow.down")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.white.opacity(0.4))
+                        .padding(8)
+                }
+                .buttonStyle(.plain)
+                .help("Import conversations")
+
+                Button { showNewFolderAlert = true } label: {
+                    Image(systemName: "folder.badge.plus")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.white.opacity(0.4))
+                        .padding(8)
+                }
+                .buttonStyle(.plain)
+                .help("New folder")
             }
-            .buttonStyle(.plain)
             .padding(.horizontal, 8)
             .padding(.bottom, 8)
-            .accessibilityLabel("New thread")
-            .accessibilityHint("Creates a new conversation")
+            .alert("New Folder", isPresented: $showNewFolderAlert) {
+                TextField("Folder name", text: $newFolderName)
+                Button("Create") {
+                    let name = newFolderName.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if !name.isEmpty { store.createFolder(name: name) }
+                    newFolderName = ""
+                }
+                Button("Cancel", role: .cancel) { newFolderName = "" }
+            }
+            .fileImporter(isPresented: $showImportPicker, allowedContentTypes: [.json, .plainText], allowsMultipleSelection: true) { result in
+                handleImport(result)
+            }
 
             Rectangle()
                 .fill(Color.white.opacity(0.06))
@@ -165,10 +200,74 @@ struct ChatSidebar: View {
                 Text("Enter a tag name for the current thread")
             }
 
-            // Thread list with date groups
+            // Import result banner
+            if !importResult.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(TrinityTheme.statusOK)
+                    Text(importResult)
+                        .font(.system(size: 10))
+                        .foregroundStyle(TrinityTheme.textPrimary)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(TrinityTheme.statusOK.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .padding(.horizontal, 8)
+                .onAppear {
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(3))
+                        importResult = ""
+                    }
+                }
+            }
+
+            // Fuzzy search result count
+            if !searchQuery.isEmpty {
+                let total = filteredThreads.count
+                HStack {
+                    Text("\(total) result\(total == 1 ? "" : "s")")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(TrinityTheme.accent)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 4)
+            }
+
+            // Thread list with folder groups + date groups
             ScrollView {
                 LazyVStack(spacing: 0) {
-                    ForEach(groupedThreads, id: \.0) { groupName, threads in
+                    // Folders first
+                    ForEach(store.folders) { folder in
+                        folderSection(folder)
+                    }
+
+                    // Uncategorized threads (no folder) — grouped by date
+                    let uncategorized = filteredThreads.filter { $0.folderID == nil }
+                    if !uncategorized.isEmpty && !store.folders.isEmpty {
+                        HStack {
+                            Image(systemName: "tray")
+                                .font(.system(size: 9))
+                                .foregroundStyle(Color.white.opacity(0.3))
+                            Text("Uncategorized")
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(Color.white.opacity(0.3))
+                            Spacer()
+                            Text("\(uncategorized.count)")
+                                .font(.system(size: 9, design: .monospaced))
+                                .foregroundStyle(Color.white.opacity(0.2))
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 10)
+                        .padding(.bottom, 4)
+                    }
+
+                    // Date-grouped threads (uncategorized or all if no folders)
+                    let threadsToGroup = store.folders.isEmpty ? filteredThreads : uncategorized
+                    ForEach(groupThreadsByDate(threadsToGroup), id: \.0) { groupName, threads in
                         // Date group header
                         HStack {
                             Text(groupName)
@@ -184,25 +283,22 @@ struct ChatSidebar: View {
                         .padding(.bottom, 4)
 
                         ForEach(threads) { thread in
-                            ThreadRow(
-                                thread: thread,
-                                isActive: store.activeThreadID == thread.id,
-                                searchQuery: searchQuery,
-                                isHoveredForPreview: hoveredThread == thread.id,
-                                onSelect: { store.activeThreadID = thread.id },
-                                onDelete: { store.delete(thread) },
-                                onRename: { store.rename(thread.id, title: $0) },
-                                onExport: { exportThread(thread) },
-                                onPin: { store.togglePin(thread.id) },
-                                onAddTag: { store.addTag($0, to: thread.id) }
-                            )
-                            .onHover { hovering in
-                                hoveredThread = hovering ? thread.id : nil
-                            }
+                            threadRow(thread)
                         }
                     }
                 }
                 .padding(.vertical, 2)
+            }
+
+            // Export format picker
+            .sheet(isPresented: $showExportFormat) {
+                if let thread = exportThread {
+                    ExportFormatPicker(
+                        thread: thread,
+                        store: store,
+                        onDismiss: { showExportFormat = false }
+                    )
+                }
             }
 
             Spacer(minLength: 0)
@@ -253,15 +349,175 @@ struct ChatSidebar: View {
         .buttonStyle(.plain)
     }
 
-    private func exportThread(_ thread: ChatThread) {
-        guard let md = store.exportAsMarkdown(thread.id) else { return }
-        let panel = NSSavePanel()
-        panel.allowedContentTypes = [.plainText]
-        panel.nameFieldStringValue = "\(thread.title.prefix(30)).md"
-        panel.begin { response in
-            guard response == .OK, let url = panel.url else { return }
-            try? md.data(using: .utf8)?.write(to: url)
+    private func showExport(_ thread: ChatThread) {
+        exportThread = thread
+        showExportFormat = true
+    }
+
+    @ViewBuilder
+    private func folderSection(_ folder: ThreadFolder) -> some View {
+        let folderThreads = filteredThreads.filter { $0.folderID == folder.id }
+        if !folderThreads.isEmpty || searchQuery.isEmpty {
+            VStack(spacing: 0) {
+                // Folder header
+                HStack(spacing: 6) {
+                    Button {
+                        store.toggleFolderCollapse(folder.id)
+                    } label: {
+                        Image(systemName: folder.isCollapsed ? "chevron.right" : "chevron.down")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundStyle(Color.white.opacity(0.3))
+                    }
+                    .buttonStyle(.plain)
+
+                    Image(systemName: "folder.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(folder.swiftColor)
+                    Text(folder.name)
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(folder.swiftColor)
+                    Spacer()
+                    Text("\(folderThreads.count)")
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(Color.white.opacity(0.2))
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 10)
+                .padding(.bottom, 4)
+                .contextMenu {
+                    Button("Rename") {
+                        // Simple rename via alert
+                        newFolderName = folder.name
+                        showNewFolderAlert = true
+                    }
+                    Menu("Color") {
+                        Button("Green") { store.recolorFolder(folder.id, color: "00FF88") }
+                        Button("Purple") { store.recolorFolder(folder.id, color: "8B5CF6") }
+                        Button("Gold") { store.recolorFolder(folder.id, color: "FFD700") }
+                        Button("Red") { store.recolorFolder(folder.id, color: "EF4444") }
+                        Button("Blue") { store.recolorFolder(folder.id, color: "3B82F6") }
+                    }
+                    Divider()
+                    Button("Delete Folder", role: .destructive) { store.deleteFolder(folder.id) }
+                }
+
+                if !folder.isCollapsed {
+                    ForEach(folderThreads) { thread in
+                        threadRow(thread)
+                    }
+                }
+            }
         }
+    }
+
+    @ViewBuilder
+    private func threadRow(_ thread: ChatThread) -> some View {
+        ThreadRow(
+            thread: thread,
+            isActive: store.activeThreadID == thread.id,
+            searchQuery: searchQuery,
+            matchCount: searchQuery.isEmpty ? 0 : store.matchCount(searchQuery, in: thread),
+            isHoveredForPreview: hoveredThread == thread.id,
+            onSelect: { store.activeThreadID = thread.id },
+            onDelete: { store.delete(thread) },
+            onRename: { store.rename(thread.id, title: $0) },
+            onExport: { showExport(thread) },
+            onPin: { store.togglePin(thread.id) },
+            onAddTag: { store.addTag($0, to: thread.id) },
+            onMoveToFolder: { folderID in store.moveThread(thread.id, to: folderID) },
+            folders: store.folders
+        )
+        .onHover { hovering in
+            hoveredThread = hovering ? thread.id : nil
+        }
+    }
+
+    private func handleImport(_ result: Result<[URL], Error>) {
+        guard case .success(let urls) = result else { return }
+        var totalImported = 0
+        for url in urls {
+            guard url.startAccessingSecurityScopedResource() else { continue }
+            defer { url.stopAccessingSecurityScopedResource() }
+            guard let data = try? Data(contentsOf: url) else { continue }
+
+            if url.pathExtension == "json" {
+                totalImported += store.importFromChatGPTJSON(data)
+            } else if let text = String(data: data, encoding: .utf8) {
+                if url.pathExtension == "md" {
+                    totalImported += store.importFromMarkdown(text)
+                } else {
+                    totalImported += store.importFromPlainText(text)
+                }
+            }
+        }
+        if totalImported > 0 {
+            importResult = "Imported \(totalImported) thread\(totalImported == 1 ? "" : "s")"
+        } else {
+            importResult = "No threads found in file"
+        }
+    }
+}
+
+// MARK: - Export Format Picker
+
+struct ExportFormatPicker: View {
+    let thread: ChatThread
+    let store: ThreadStore
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Text("Export: \(thread.title)")
+                .font(.headline)
+                .foregroundStyle(TrinityTheme.textPrimary)
+                .lineLimit(1)
+
+            HStack(spacing: 12) {
+                exportButton("Markdown", icon: "doc.text", ext: "md") {
+                    store.exportAsMarkdown(thread.id)?.data(using: .utf8)
+                }
+                exportButton("HTML", icon: "globe", ext: "html") {
+                    store.exportAsHTML(thread.id)?.data(using: .utf8)
+                }
+                exportButton("JSON", icon: "curlybraces", ext: "json") {
+                    store.exportAsJSON(thread.id)
+                }
+            }
+
+            Button("Cancel") { onDismiss() }
+                .font(.system(size: 12))
+                .foregroundStyle(Color.white.opacity(0.4))
+                .buttonStyle(.plain)
+        }
+        .padding(24)
+        .frame(width: 360)
+        .background(Color(hex: 0x1A1A1A))
+    }
+
+    @ViewBuilder
+    private func exportButton(_ label: String, icon: String, ext: String, dataProvider: @escaping () -> Data?) -> some View {
+        Button {
+            guard let data = dataProvider() else { return }
+            let panel = NSSavePanel()
+            panel.nameFieldStringValue = "\(thread.title.prefix(30)).\(ext)"
+            panel.begin { response in
+                guard response == .OK, let url = panel.url else { return }
+                try? data.write(to: url)
+            }
+            onDismiss()
+        } label: {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.system(size: 20))
+                Text(label)
+                    .font(.system(size: 12, weight: .medium))
+            }
+            .foregroundStyle(TrinityTheme.accent)
+            .frame(width: 80, height: 70)
+            .background(Color.white.opacity(0.06))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+        }
+        .buttonStyle(.plain)
     }
 }
 
@@ -360,6 +616,7 @@ struct ThreadRow: View {
     let thread: ChatThread
     let isActive: Bool
     let searchQuery: String
+    var matchCount: Int = 0
     var isHoveredForPreview: Bool = false
     let onSelect: () -> Void
     let onDelete: () -> Void
@@ -367,6 +624,8 @@ struct ThreadRow: View {
     let onExport: () -> Void
     let onPin: () -> Void
     let onAddTag: (String) -> Void
+    var onMoveToFolder: ((UUID?) -> Void)? = nil
+    var folders: [ThreadFolder] = []
 
     @State private var isHovered = false
     @State private var isRenaming = false
@@ -428,13 +687,10 @@ struct ThreadRow: View {
                                     .background(TrinityTheme.purple.opacity(0.1))
                                     .clipShape(Capsule())
                             }
-                            if !searchQuery.isEmpty {
-                                let matchCount = thread.messages.filter { $0.text.lowercased().contains(searchQuery.lowercased()) }.count
-                                if matchCount > 0 {
-                                    Text("\(matchCount) match\(matchCount == 1 ? "" : "es")")
-                                        .font(.system(size: 8, weight: .bold))
-                                        .foregroundStyle(TrinityTheme.accent)
-                                }
+                            if !searchQuery.isEmpty && matchCount > 0 {
+                                Text("\(matchCount) match\(matchCount == 1 ? "" : "es")")
+                                    .font(.system(size: 8, weight: .bold))
+                                    .foregroundStyle(TrinityTheme.accent)
                             }
                             Text("\(thread.messages.count) msgs")
                                 .font(.system(size: 9))

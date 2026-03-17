@@ -3650,7 +3650,12 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
             // Skip binary-kind cells (tri CLI)
             if (std.mem.eql(u8, cell.kind, "binary")) continue;
 
-            const code_perms = inferPermissions(allocator, path);
+            // Virtual cells: scan cell.path + file_patterns instead of the cell.tri directory
+            const has_patterns = cell.file_patterns.len > 2;
+            const code_perms = if (has_patterns)
+                inferPermissionsFiltered(allocator, cell.path, cell.file_patterns)
+            else
+                inferPermissions(allocator, path);
             var changed = false;
             var changes_buf: [256]u8 = undefined;
             var changes_pos: usize = 0;
@@ -3736,7 +3741,12 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
             const cell = parseCellTri(content);
             if (cell.id.len == 0) continue;
 
-            const stats = countFilesAndTests(allocator, path);
+            // Virtual cells: scan cell.path + file_patterns instead of the cell.tri directory
+            const has_patterns = cell.file_patterns.len > 2;
+            const stats = if (has_patterns)
+                countFilesAndTestsFiltered(allocator, cell.path, cell.file_patterns)
+            else
+                countFilesAndTests(allocator, path);
             if (stats.files != cell.files or stats.tests != cell.tests) {
                 std.debug.print("    {s}FIX{s}  {s}: files {d}→{d}, tests {d}→{d}\n", .{
                     YELLOW, RESET, cell.id, cell.files, stats.files, cell.tests, stats.tests,
@@ -4284,8 +4294,8 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
         }
         std.debug.print("{d:3}     {d:3}       {d:2}       {d:2}     {s}{d:3}{s}    {s}{s}{s}\n", .{
             health_score, security_score, deps_score, contracts_score,
-            grade_color,  final_score,    RESET,
-            grade_color,  grade_char,     RESET,
+            grade_color,  final_score,    RESET,      grade_color,
+            grade_char,   RESET,
         });
 
         total_score += final_score;
@@ -4442,6 +4452,36 @@ fn computeDepsAccuracy(
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const FileStats = struct { files: u32, tests: u32 };
+
+/// Like countFilesAndTests but only counts files matching file_patterns in a flat directory.
+/// Used for virtual cells where path="src" but code lives in specific files.
+fn countFilesAndTestsFiltered(allocator: Allocator, dir_path: []const u8, file_patterns: []const u8) FileStats {
+    var result = FileStats{ .files = 0, .tests = 0 };
+    var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return result;
+    defer dir.close();
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+        if (!matchesFilePatterns(entry.name, file_patterns)) continue;
+
+        result.files += 1;
+
+        const file_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ dir_path, entry.name }) catch continue;
+        defer allocator.free(file_path);
+        const source = std.fs.cwd().readFileAlloc(allocator, file_path, 1048576) catch continue;
+        defer allocator.free(source);
+
+        var pos: usize = 0;
+        while (pos < source.len) {
+            const test_pos = std.mem.indexOf(u8, source[pos..], "test \"") orelse break;
+            pos += test_pos + 6;
+            result.tests += 1;
+        }
+    }
+    return result;
+}
 
 fn countFilesAndTests(allocator: Allocator, path: []const u8) FileStats {
     var result = FileStats{ .files = 0, .tests = 0 };

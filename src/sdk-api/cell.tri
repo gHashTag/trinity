@@ -19,7 +19,7 @@ type = "library"
 file_patterns = ["sdk.zig", "c_api.zig", "queen_api.zig", "server_main.zig", "tri_commander.zig"]
 
 [contributes]
-exports = ["sdk", "c_api", "queen_api"]
+exports = []
 
 [dependencies]
 trinity.vsa = "^1.0.0"

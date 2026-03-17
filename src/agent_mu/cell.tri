@@ -20,7 +20,7 @@ type = "agent"
 
 [contributes]
 commands = ["learn", "recall", "forget"]
-exports = ["runMuCommand"]
+exports = []
 tri_subcommands = ["mu status", "mu patterns"]
 events = ["on_pattern_learned", "on_experience_saved"]
 binaries = ["pas-demo"]

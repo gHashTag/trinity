@@ -24,6 +24,8 @@ binaries = ["photon-demo", "photon-immersive", "photon-terminal", "trinity-canva
 exports = ["bind", "unbind", "cosineSimilarity"]
 
 [dependencies]
+trinity.common = "^1.0.0"
+trinity.autonomous = "^1.0.0"
 trinity.models = "^1.0.0"
 trinity.quantum = "^1.0.0"
 

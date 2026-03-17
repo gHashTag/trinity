@@ -20,7 +20,7 @@ type = "library"
 
 [contributes]
 commands = ["encode", "decode", "compress"]
-exports = ["compress", "decompress"]
+exports = []
 tri_subcommands = []
 events = []
 binaries = ["bench-compress"]

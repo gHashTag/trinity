@@ -22,6 +22,8 @@ tri_subcommands = []
 events = []
 
 [dependencies]
+trinity.vsa = "^1.0.0"
+trinity.quantum = "^1.0.0"
 
 [permissions]
 level = "L0"
