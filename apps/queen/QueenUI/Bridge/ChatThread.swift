@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 struct ChatThread: Identifiable, Codable {
     var id: UUID
@@ -145,6 +146,48 @@ struct Citation: Codable, Identifiable {
     let domain: String?
 }
 
+/// Structured error kind for message-level error display
+enum MessageErrorKind: String, Codable {
+    case unauthorized       // 401 — bad/expired key
+    case rateLimited        // 429 — rate limit
+    case serverError        // 5xx
+    case timeout            // connection or TTFB timeout
+    case connectionFailed   // no network
+    case contextOverflow    // too many tokens
+    case cancelled          // user cancelled
+
+    var icon: String {
+        switch self {
+        case .unauthorized: return "key.slash"
+        case .rateLimited: return "clock.badge.exclamationmark"
+        case .serverError: return "exclamationmark.icloud"
+        case .timeout: return "clock.arrow.circlepath"
+        case .connectionFailed: return "wifi.slash"
+        case .contextOverflow: return "arrow.up.right.and.arrow.down.left"
+        case .cancelled: return "xmark.circle"
+        }
+    }
+
+    var label: String {
+        switch self {
+        case .unauthorized: return "API key invalid"
+        case .rateLimited: return "Rate limited"
+        case .serverError: return "Server error"
+        case .timeout: return "Timed out"
+        case .connectionFailed: return "No connection"
+        case .contextOverflow: return "Context too long"
+        case .cancelled: return "Cancelled"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .rateLimited, .timeout: return TrinityTheme.statusWarn
+        default: return TrinityTheme.statusError
+        }
+    }
+}
+
 struct ChatMessage: Identifiable, Codable {
     var id: UUID
     let role: Role
@@ -163,10 +206,14 @@ struct ChatMessage: Identifiable, Codable {
     var branchID: UUID?
     var branchIndex: Int?
     var thinkingText: String?
+    var errorKind: MessageErrorKind?
 
     enum Role: String, Codable {
         case user, assistant
     }
+
+    /// Whether this message has a structured error
+    var hasError: Bool { errorKind != nil }
 
     init(role: Role, text: String, modelID: String? = nil, imageURLs: [String]? = nil) {
         self.id = UUID()
@@ -186,6 +233,7 @@ struct ChatMessage: Identifiable, Codable {
         self.branchID = nil
         self.branchIndex = nil
         self.thinkingText = nil
+        self.errorKind = nil
     }
 
     // Backwards-compatible decoding
@@ -208,5 +256,6 @@ struct ChatMessage: Identifiable, Codable {
         branchID = try c.decodeIfPresent(UUID.self, forKey: .branchID)
         branchIndex = try c.decodeIfPresent(Int.self, forKey: .branchIndex)
         thinkingText = try c.decodeIfPresent(String.self, forKey: .thinkingText)
+        errorKind = try c.decodeIfPresent(MessageErrorKind.self, forKey: .errorKind)
     }
 }

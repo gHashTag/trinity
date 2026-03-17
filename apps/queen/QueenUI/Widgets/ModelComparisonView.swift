@@ -311,6 +311,16 @@ struct ModelComparisonView: View {
                         ["role": "user", "content": prompt]
                     ]
                 ]
+            case .ollama:
+                let modelName = modelManager.ollamaModelName(model)
+                body = [
+                    "model": modelName,
+                    "stream": true,
+                    "messages": [
+                        ["role": "system", "content": systemPrompt],
+                        ["role": "user", "content": prompt]
+                    ]
+                ]
             }
 
             let bodyData = try JSONSerialization.data(withJSONObject: body)

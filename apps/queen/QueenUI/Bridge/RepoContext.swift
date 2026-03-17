@@ -115,6 +115,21 @@ class RepoContext: ObservableObject {
         }
     }
 
+    /// Flat list of file paths for autocomplete (cached with tree)
+    func fileSuggestions(matching query: String, limit: Int = 8) -> [String] {
+        let tree = fileTree(depth: 4)
+        let paths = tree.split(separator: "\n").map { line in
+            String(line.drop(while: { $0 == " " }))
+        }.filter { !$0.hasSuffix("/") && !$0.isEmpty }
+
+        if query.isEmpty { return Array(paths.prefix(limit)) }
+        let q = query.lowercased()
+        // Exact prefix matches first, then contains
+        let prefixMatches = paths.filter { $0.lowercased().hasPrefix(q) }
+        let containsMatches = paths.filter { $0.lowercased().contains(q) && !$0.lowercased().hasPrefix(q) }
+        return Array((prefixMatches + containsMatches).prefix(limit))
+    }
+
     /// Read CLAUDE.md from repo root
     func claudeMD() -> String? {
         readFile("CLAUDE.md")

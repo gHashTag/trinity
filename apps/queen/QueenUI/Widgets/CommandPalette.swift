@@ -39,6 +39,18 @@ struct CommandPalette: View {
             }
         }
 
+        // Slash commands
+        for cmd in SlashCommand.allCases {
+            if q.isEmpty || cmd.rawValue.lowercased().contains(q) || cmd.description.lowercased().contains(q) {
+                items.append(PaletteItem(
+                    icon: cmd.icon,
+                    title: cmd.rawValue,
+                    subtitle: cmd.description,
+                    action: .runCommand(cmd.rawValue)
+                ))
+            }
+        }
+
         // Chat modes
         for mode in ChatMode.allCases {
             if q.isEmpty || mode.rawValue.lowercased().contains(q) {
@@ -63,7 +75,7 @@ struct CommandPalette: View {
             }
         }
 
-        // Recent threads
+        // Recent threads (title match)
         for thread in store.sortedThreads.prefix(q.isEmpty ? 5 : 20) {
             if q.isEmpty || thread.title.lowercased().contains(q) {
                 items.append(PaletteItem(
@@ -71,6 +83,25 @@ struct CommandPalette: View {
                     title: thread.title,
                     subtitle: "\(thread.messages.count) msgs",
                     action: .switchThread(thread.id)
+                ))
+            }
+        }
+
+        // Message content search (only when query is non-empty, search across all threads)
+        if q.count >= 3 {
+            let contentMatches = store.search(q)
+            for match in contentMatches.prefix(5) {
+                // Skip if thread already in results from title match
+                if items.contains(where: {
+                    if case .switchThread(let id) = $0.action { return id == match.thread.id }
+                    return false
+                }) { continue }
+                let snippet = String(match.message.text.prefix(60))
+                items.append(PaletteItem(
+                    icon: "text.magnifyingglass",
+                    title: match.thread.title,
+                    subtitle: snippet,
+                    action: .switchThread(match.thread.id)
                 ))
             }
         }
@@ -170,6 +201,23 @@ struct CommandPalette: View {
             selectedIndex = 0
         }
         .onChange(of: query) { _, _ in selectedIndex = 0 }
+        .onKeyPress(.upArrow) {
+            if selectedIndex > 0 { selectedIndex -= 1 }
+            return .handled
+        }
+        .onKeyPress(.downArrow) {
+            let max = min(filteredItems.count, 15) - 1
+            if selectedIndex < max { selectedIndex += 1 }
+            return .handled
+        }
+        .onKeyPress(.escape) {
+            isPresented = false
+            return .handled
+        }
+        .onKeyPress(.return) {
+            executeSelected()
+            return .handled
+        }
     }
 
     private func paletteRow(_ item: PaletteItem, isSelected: Bool) -> some View {
