@@ -13,6 +13,7 @@ struct ChatThread: Identifiable, Codable {
     var personaID: UUID?
     var isArchived: Bool
     var summary: String?
+    var customSystemPrompt: String?
 
     init(id: UUID = UUID(), title: String = "New Thread") {
         self.id = id
@@ -26,6 +27,7 @@ struct ChatThread: Identifiable, Codable {
         self.personaID = nil
         self.isArchived = false
         self.summary = nil
+        self.customSystemPrompt = nil
     }
 
     // Backwards-compatible decoding (existing threads lack pinned/tags/folderID/personaID)
@@ -42,6 +44,7 @@ struct ChatThread: Identifiable, Codable {
         personaID = try c.decodeIfPresent(UUID.self, forKey: .personaID)
         isArchived = try c.decodeIfPresent(Bool.self, forKey: .isArchived) ?? false
         summary = try c.decodeIfPresent(String.self, forKey: .summary)
+        customSystemPrompt = try c.decodeIfPresent(String.self, forKey: .customSystemPrompt)
     }
 }
 
