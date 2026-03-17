@@ -7,7 +7,7 @@ path = "fpga/openxc7-synth"
 parent = "trinity.fpga"
 status = "stable"
 description = "Shift-based RMSNorm approximation for FPGA, zero DSP, zero multiply"
-files = 1
+files = 0
 tests = 0
 owner = "agent:ralph"
 
