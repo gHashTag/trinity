@@ -20,6 +20,7 @@
 const std = @import("std");
 const colors = @import("tri_colors.zig");
 const swe_arena = @import("swe_arena.zig");
+const thalamus = @import("thalamus.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -150,7 +151,8 @@ pub fn collectInputs(allocator: std.mem.Allocator) VerdictInput {
     const dups = countDuplication(allocator);
     const specs = countSpecGaps(allocator);
     const scholar = readScholarHealth();
-    const energy = readEnergyHealth(allocator);
+    const energy_vc = thalamus.countEpisodeVerdicts(allocator);
+    const energy = EnergyHealth{ .total = energy_vc.total, .pass = energy_vc.pass };
     const cost = readTokenCost();
 
     return VerdictInput{

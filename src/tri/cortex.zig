@@ -18,6 +18,7 @@ const colors = @import("tri_colors.zig");
 const Sacred = @import("train_types.zig").Sacred;
 const tri_state = @import("tri_state.zig");
 const hippocampus = @import("hippocampus.zig");
+const thalamus = @import("thalamus.zig");
 const FacultySnapshot = types.FacultySnapshot;
 const FacultyDelta = types.FacultyDelta;
 const AgentState = types.AgentState;
@@ -614,9 +615,8 @@ pub fn runFacultyCommand(allocator: Allocator, args: []const []const u8) !void {
     var stream = std.io.fixedBufferStream(&buf);
 
     if (raw_mode) {
-        var mu_hb = voice_engine.readMuHeartbeat();
-        var scholar_hb = voice_engine.readScholarHeartbeat();
-        enrichFromHippocampus(allocator, &mu_hb, &scholar_hb);
+        const mu_hb = thalamus.getMuHeartbeat(allocator);
+        const scholar_hb = thalamus.getScholarHeartbeat(allocator);
         const swarm = readSwarmState(allocator);
         const pipeline = tri_state.loadPipelineCheckpoint(allocator);
         const raw_len = renderRaw(.{
@@ -634,9 +634,8 @@ pub fn runFacultyCommand(allocator: Allocator, args: []const []const u8) !void {
             return;
         };
     } else {
-        var mu_hb = voice_engine.readMuHeartbeat();
-        var scholar_hb = voice_engine.readScholarHeartbeat();
-        enrichFromHippocampus(allocator, &mu_hb, &scholar_hb);
+        const mu_hb = thalamus.getMuHeartbeat(allocator);
+        const scholar_hb = thalamus.getScholarHeartbeat(allocator);
         const thought_len = renderThoughtLang(snapshot, delta, mu_hb, scholar_hb, &buf, lang);
         stream.pos = thought_len;
 
@@ -1154,30 +1153,7 @@ const SwarmInfo = struct {
     action_desc: []const u8,
 };
 
-/// Enrich file-based heartbeats with hippocampus data (use fresher age if available)
-fn enrichFromHippocampus(allocator: Allocator, mu_hb: *voice_engine.MuHeartbeat, scholar_hb: *voice_engine.ScholarHeartbeat) void {
-    // Try phoenix heartbeat from hippocampus — if fresher, update mu age
-    if (hippocampus.latestHeartbeat(allocator, "phoenix") catch null) |hb| {
-        if (hb.ts > 0) {
-            const now: u64 = @intCast(std.time.timestamp());
-            const hipp_age: i64 = @intCast(now -| hb.ts);
-            if (mu_hb.age_s == 0 or hipp_age < mu_hb.age_s) {
-                mu_hb.age_s = hipp_age;
-            }
-        }
-    }
-
-    // Try scholar heartbeat from hippocampus
-    if (hippocampus.latestHeartbeat(allocator, "scholar") catch null) |hb| {
-        if (hb.ts > 0) {
-            const now: u64 = @intCast(std.time.timestamp());
-            const hipp_age: i64 = @intCast(now -| hb.ts);
-            if (scholar_hb.age_s == 0 or hipp_age < scholar_hb.age_s) {
-                scholar_hb.age_s = hipp_age;
-            }
-        }
-    }
-}
+// enrichFromHippocampus — removed: thalamus.zig handles hippocampus→file relay
 
 fn readSwarmState(allocator: Allocator) SwarmInfo {
     const content = std.fs.cwd().readFileAlloc(allocator, SWARM_STATE_PATH, 64 * 1024) catch
