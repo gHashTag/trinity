@@ -1,0 +1,431 @@
+{
+  "": {
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/master.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/App.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/App.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/App.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/App~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/App.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ActionQueue.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ActionQueue.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ActionQueue.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ActionQueue~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ActionQueue.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ArenaClient.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaClient.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaClient.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaClient.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ChatClient.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatClient.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatClient.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatClient~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatClient.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ChatThread.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatThread.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatThread.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatThread~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatThread.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/EnvLoader.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/EnvLoader.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/EnvLoader.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/EnvLoader~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/EnvLoader.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ImageGenerator.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ImageGenerator.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ImageGenerator.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ImageGenerator~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ImageGenerator.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/JSONModels.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/JSONModels.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/JSONModels.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/JSONModels~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/JSONModels.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ModelProvider.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ModelProvider.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ModelProvider.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ModelProvider~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ModelProvider.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/NetworkLog.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/NetworkLog.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/NetworkLog.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/NetworkLog~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/NetworkLog.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/NotificationService.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/NotificationService.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/NotificationService.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/NotificationService~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/NotificationService.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/QueenBridge.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/QueenBridge.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/QueenBridge.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/QueenBridge~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/QueenBridge.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/RepoContext.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/RepoContext.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/RepoContext.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/RepoContext~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/RepoContext.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/StateWatcher.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StateWatcher.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StateWatcher.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StateWatcher~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StateWatcher.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/ThreadStore.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ThreadStore.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ThreadStore.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ThreadStore~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ThreadStore.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Bridge/TrinityContext.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TrinityContext.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TrinityContext.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TrinityContext~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TrinityContext.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Navigation/ChatSidebar.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatSidebar.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatSidebar.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatSidebar~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatSidebar.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Navigation/KingdomSidebar.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/KingdomSidebar.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/KingdomSidebar.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/KingdomSidebar~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/KingdomSidebar.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Navigation/Screen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/Screen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/Screen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/Screen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/Screen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Navigation/ScreenRouter.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ScreenRouter.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ScreenRouter.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ScreenRouter~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ScreenRouter.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/BridgeScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BridgeScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BridgeScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BridgeScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BridgeScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/BuildScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BuildScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BuildScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BuildScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BuildScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/DeployScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/DeployScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/DeployScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/DeployScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/DeployScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/FilesScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FilesScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FilesScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FilesScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FilesScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/GitScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/GitScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/GitScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/GitScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/GitScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/IssuesScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/IssuesScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/IssuesScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/IssuesScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/IssuesScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/KeysScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/KeysScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/KeysScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/KeysScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/KeysScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/StateScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StateScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StateScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StateScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StateScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Body/TelegramScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TelegramScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TelegramScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TelegramScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TelegramScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/ArenaCodeScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaCodeScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaCodeScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaCodeScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaCodeScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/ArenaLLMScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaLLMScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaLLMScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaLLMScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ArenaLLMScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/ChatScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ChatScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/CommentSidebar.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/CommentSidebar.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/CommentSidebar.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/CommentSidebar~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/CommentSidebar.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/FacultyScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FacultyScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FacultyScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FacultyScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FacultyScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/MUMemoryScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MUMemoryScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MUMemoryScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MUMemoryScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MUMemoryScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/OracleScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/OracleScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/OracleScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/OracleScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/OracleScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/QueenScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/QueenScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/QueenScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/QueenScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/QueenScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/SEVOFarmScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SEVOFarmScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SEVOFarmScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SEVOFarmScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SEVOFarmScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/ScholarScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ScholarScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ScholarScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ScholarScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ScholarScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Brain/SwarmScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SwarmScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SwarmScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SwarmScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SwarmScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/BenchmarksScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BenchmarksScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BenchmarksScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BenchmarksScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/BenchmarksScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/ExperienceScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ExperienceScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ExperienceScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ExperienceScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ExperienceScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/FPGAScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FPGAScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FPGAScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FPGAScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/FPGAScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/PipelineScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/PipelineScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/PipelineScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/PipelineScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/PipelineScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/RainbowBridgeScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/RainbowBridgeScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/RainbowBridgeScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/RainbowBridgeScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/RainbowBridgeScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/SacredMathScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SacredMathScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SacredMathScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SacredMathScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SacredMathScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/SettingsScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SettingsScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SettingsScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SettingsScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SettingsScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/TechTreeScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TechTreeScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TechTreeScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TechTreeScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TechTreeScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Screens/Spirit/VSAScreen.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/VSAScreen.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/VSAScreen.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/VSAScreen~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/VSAScreen.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Theme.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/Theme.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/Theme.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/Theme~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/Theme.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AgentRow.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AgentRow.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AgentRow.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AgentRow~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AgentRow.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AgentStreamView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AgentStreamView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AgentStreamView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AgentStreamView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AgentStreamView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/AggregateDiffView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AggregateDiffView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AggregateDiffView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AggregateDiffView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/AggregateDiffView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/CommandPalette.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/CommandPalette.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/CommandPalette.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/CommandPalette~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/CommandPalette.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ContextInspector.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ContextInspector.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ContextInspector.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ContextInspector~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ContextInspector.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/DiffView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/DiffView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/DiffView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/DiffView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/DiffView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ELOChart.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ELOChart.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ELOChart.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ELOChart~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ELOChart.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/LoadingIndicator.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/LoadingIndicator.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/LoadingIndicator.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/LoadingIndicator~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/LoadingIndicator.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MarkdownTextView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MarkdownTextView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MarkdownTextView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MarkdownTextView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MarkdownTextView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MemoryTodoView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MemoryTodoView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MemoryTodoView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MemoryTodoView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MemoryTodoView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/MetricGauge.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MetricGauge.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MetricGauge.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MetricGauge~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/MetricGauge.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ModelComparisonView.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ModelComparisonView.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ModelComparisonView.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ModelComparisonView~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ModelComparisonView.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/PPLChart.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/PPLChart.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/PPLChart.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/PPLChart~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/PPLChart.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ShortcutsOverlay.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ShortcutsOverlay.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ShortcutsOverlay.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ShortcutsOverlay~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ShortcutsOverlay.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/SmartSuggestions.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SmartSuggestions.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SmartSuggestions.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SmartSuggestions~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/SmartSuggestions.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/StatCard.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StatCard.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StatCard.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StatCard~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StatCard.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/StatusBadge.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StatusBadge.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StatusBadge.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StatusBadge~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/StatusBadge.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/ToolCallRow.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ToolCallRow.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ToolCallRow.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ToolCallRow~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/ToolCallRow.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/TriangleLogo.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TriangleLogo.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TriangleLogo.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TriangleLogo~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TriangleLogo.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/TritVisualizer.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TritVisualizer.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TritVisualizer.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TritVisualizer~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/TritVisualizer.swiftdeps"
+  },
+  "/Users/playra/trinity-w1/apps/queen/QueenUI/Widgets/WorkflowDAG.swift": {
+    "dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/WorkflowDAG.d",
+    "object": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/WorkflowDAG.swift.o",
+    "swiftmodule": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/WorkflowDAG~partial.swiftmodule",
+    "swift-dependencies": "/Users/playra/trinity-w1/apps/queen/.build/arm64-apple-macosx/debug/trinity.build/WorkflowDAG.swiftdeps"
+  }
+}

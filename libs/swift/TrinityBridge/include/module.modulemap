@@ -1,0 +1,5 @@
+module CTrinityQueen {
+    header "trinity_queen.h"
+    link "trinity-queen"
+    export *
+}

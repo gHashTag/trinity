@@ -7,7 +7,8 @@
       {"id": 19020211, "doi": "10.5281/zenodo.19020211", "version": "v1.0.0", "title": "D004: Self-Evolving Ouroboros", "date": "2026-03-14", "status": "defensive_publication", "cpc": ["G06F8/65", "G06N20/00", "G06F11/36"]},
       {"id": 19020213, "doi": "10.5281/zenodo.19020213", "version": "v1.0.0", "title": "D005: VSA Balanced Ternary + SIMD", "date": "2026-03-14", "status": "defensive_publication", "cpc": ["G06F7/72", "G06N3/04", "G06F17/16"]},
       {"id": 19020215, "doi": "10.5281/zenodo.19020215", "version": "v1.0.0", "title": "D006: phi-RoPE Attention", "date": "2026-03-14", "status": "defensive_publication", "cpc": ["G06N3/0455", "G06F17/14", "G06N3/084"]},
-      {"id": 19020217, "doi": "10.5281/zenodo.19020217", "version": "v1.0.0", "title": "D007: Sparse Ternary MatMul", "date": "2026-03-14", "status": "defensive_publication", "cpc": ["G06F7/544", "G06F7/72", "G06F17/16"]}
+      {"id": 19020217, "doi": "10.5281/zenodo.19020217", "version": "v1.0.0", "title": "D007: Sparse Ternary MatMul", "date": "2026-03-14", "status": "defensive_publication", "cpc": ["G06F7/544", "G06F7/72", "G06F17/16"]},
+      {"id": "TBD", "doi": "TBD", "version": "v1.0.0", "title": "D008: SEVO — Sacred EVolutionary Objective Search", "date": "2026-03-16", "status": "draft", "cpc": ["G06N3/086", "G06N20/00", "G06F18/24"]}
     ],
     "author": "Vasilev Dmitrii",
     "license": "MIT",
@@ -20,15 +21,16 @@
     {"name": "self-evolving-ouroboros", "id": "D004", "doi": "10.5281/zenodo.19020211", "status": "defensive_publication", "priority": "HIGH", "strength": "MEDIUM+", "claims": 4, "cpc": ["G06F8/65", "G06N20/00", "G06F11/36"]},
     {"name": "vsa-ternary-simd", "id": "D005", "doi": "10.5281/zenodo.19020213", "status": "defensive_publication", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1, "cpc": ["G06F7/72", "G06N3/04", "G06F17/16"]},
     {"name": "phi-rope", "id": "D006", "doi": "10.5281/zenodo.19020215", "status": "defensive_publication", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1, "cpc": ["G06N3/0455", "G06F17/14", "G06N3/084"]},
-    {"name": "sparse-ternary-matmul", "id": "D007", "doi": "10.5281/zenodo.19020217", "status": "defensive_publication", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1, "cpc": ["G06F7/544", "G06F7/72", "G06F17/16"]}
+    {"name": "sparse-ternary-matmul", "id": "D007", "doi": "10.5281/zenodo.19020217", "status": "defensive_publication", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1, "cpc": ["G06F7/544", "G06F7/72", "G06F17/16"]},
+    {"name": "sevo-evolutionary-objective", "id": "D008", "status": "draft", "priority": "HIGH", "strength": "HIGH", "claims": 5, "cpc": ["G06N3/086", "G06N20/00", "G06F18/24"]}
   ],
   "strategy": {
     "approach": "defensive_publication",
-    "phase1_provisionals": "$5,500-8,500",
+    "phase1_provisionals": "$7,000-10,500",
     "phase2_full_utility": "$15,000-25,000",
     "phase3_pct_international": "$30,000-50,000",
     "total_3yr": "$50,000-83,000"
   },
-  "ip_score": "7/7 = 100%",
-  "updated": "2026-03-14"
+  "ip_score": "8/8 = 100%",
+  "updated": "2026-03-16"
 }
