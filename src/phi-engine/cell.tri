@@ -24,6 +24,8 @@ tri_subcommands = []
 events = []
 
 [dependencies]
+trinity.cli = "^1.0.0"
+trinity.jit = "^1.0.0"
 
 [permissions]
 level = "L2"

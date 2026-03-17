@@ -25,6 +25,10 @@ events = ["on_codegen_complete"]
 binaries = ["vibee", "vibee-self-improve", "claude-ui", "fluent", "trinity-hybrid", "trinity-cli"]
 
 [dependencies]
+trinity.vsa = "^1.0.0"
+trinity.registry = "^1.0.0"
+trinity.cli = "^1.0.0"
+trinity.jit = "^1.0.0"
 trinity.phi_loop = "^1.0.0"
 trinity.agent-mu = "^1.0.0"
 

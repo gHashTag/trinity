@@ -20,7 +20,7 @@ file_patterns = ["workflow*.zig"]
 
 [contributes]
 commands = ["workflow"]
-exports = ["runWorkflowCommand"]
+exports = []
 
 [dependencies]
 

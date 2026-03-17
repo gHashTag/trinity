@@ -22,10 +22,11 @@ tri_subcommands = []
 events = []
 
 [dependencies]
+trinity.tri = "^1.0.0"
 trinity.vsa = "^1.0.0"
 
 [permissions]
-level = "L0"
+level = "L1"
 filesystem = "read"
 network = "none"
 process = "none"

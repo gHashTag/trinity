@@ -23,6 +23,13 @@ events = []
 binaries = ["tri"]
 
 [dependencies]
+trinity.tri.workflow = "^1.0.0"
+trinity.bench = "^1.0.0"
+trinity.tri.math = "^1.0.0"
+trinity.bsd = "^1.0.0"
+trinity.tri.observability = "^1.0.0"
+trinity.math = "^1.0.0"
+trinity.queen-ui = "^1.0.0"
 trinity.sacred = "^1.0.0"
 trinity.gravity = "^1.0.0"
 trinity.monopoles = "^1.0.0"

@@ -20,7 +20,7 @@ type = "tool"
 
 [contributes]
 commands = ["serve", "list-tools"]
-exports = ["runServer"]
+exports = []
 tri_subcommands = ["mcp start", "mcp tools"]
 events = ["on_tool_invoked"]
 binaries = ["trinity-mcp", "ralph-agent", "ralph-hook", "scholar-agent", "mu-agent", "tri-bot", "agent-entrypoint"]

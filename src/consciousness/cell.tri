@@ -20,11 +20,13 @@ type = "agent"
 
 [contributes]
 commands = ["reflect", "analyze"]
-exports = ["runConsciousnessCommand"]
+exports = []
 tri_subcommands = []
 events = ["on_awareness_update"]
 
 [dependencies]
+trinity.sacred = "^1.0.0"
+trinity.quantum = "^1.0.0"
 trinity.common = "^1.0.0"
 trinity.vsa = "^1.0.0"
 
