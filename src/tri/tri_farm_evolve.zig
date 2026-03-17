@@ -871,6 +871,7 @@ fn runStatus(allocator: Allocator, args: []const []const u8) !void {
 fn runStep(allocator: Allocator, args: []const []const u8) !void {
     var dry_run = false;
     var sacred_mode = false;
+    var kill_stalled = false;
     var issue_num: ?[]const u8 = null;
 
     var i: usize = 0;
@@ -879,6 +880,8 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
             dry_run = true;
         } else if (std.mem.eql(u8, args[i], "--sacred")) {
             sacred_mode = true;
+        } else if (std.mem.eql(u8, args[i], "--kill-stalled")) {
+            kill_stalled = true;
         } else if (std.mem.eql(u8, args[i], "--issue") and i + 1 < args.len) {
             i += 1;
             issue_num = args[i];
@@ -948,6 +951,30 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
                 rung_idx + 1, rung.step_threshold / 1000, result.killed, result.spawned,
             }) catch break;
             summary_len += line.len;
+        }
+    }
+
+    // 2b. Kill stalled workers (--kill-stalled or auto-kill long-stalled)
+    if (kill_stalled and !diagnose_mode) {
+        var stalled_killed: usize = 0;
+        for (state.services[0..state.service_count]) |*svc| {
+            if (svc.status == .stalled and svc.stall_count >= 3) {
+                print("  {s}💀 KILL STALLED:{s} {s} (stall_count={d}, step={d}, PPL={d:.1})\n", .{
+                    RED, RESET, svc.svcName(), svc.stall_count, svc.current_step, svc.current_ppl,
+                });
+                if (!dry_run) {
+                    // Mark as killed — actual Railway API kill handled by recycle
+                    svc.status = .killed;
+                    state.addEvent(.kill, svc.svcName(), "killed: stalled worker cleanup");
+                }
+                stalled_killed += 1;
+            }
+        }
+        if (stalled_killed > 0) {
+            total_killed += stalled_killed;
+            const line = std.fmt.bufPrint(summary_buf[summary_len..], "  Stalled cleanup: {d} killed\n", .{stalled_killed}) catch "";
+            summary_len += line.len;
+            print("  {s}Stalled workers killed: {d}{s}\n\n", .{ MAGENTA, stalled_killed, RESET });
         }
     }
 
@@ -1091,6 +1118,12 @@ pub fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *
             };
             if (svc.status != .running and svc.status != .stalled) continue;
 
+            // Skip stalled services that haven't changed in 3+ polls
+            // Re-poll every 5th cycle to detect recovery
+            if (svc.status == .stalled and svc.stall_count >= 3 and svc.stall_count % 5 != 0) {
+                continue;
+            }
+
             // Extract deployment ID
             var dep_id: ?[]const u8 = null;
             if (getJsonObject(node, "deployments")) |deps| {
@@ -1111,8 +1144,8 @@ pub fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *
 
             print("  {s}  {s}...{s}", .{ DIM, svc_name, RESET });
 
-            // Rate limit — 1s between calls to reduce Railway API pressure
-            std.Thread.sleep(1000 * std.time.ns_per_ms);
+            // Rate limit — 200ms between calls (Railway API limit ~10 req/s)
+            std.Thread.sleep(200 * std.time.ns_per_ms);
 
             // Fresh API client per log call (reusing clients causes TLS hangs)
             var log_api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch {
@@ -6092,6 +6125,7 @@ fn printHelp() void {
         \\Step options:
         \\  --dry-run        Preview actions without executing
         \\  --sacred         Use sacred φ-weighted fitness + 3^k rungs
+        \\  --kill-stalled   Force-kill all stalled workers (stall_count >= 3)
         \\  --issue <N>      Post summary to GitHub issue #N
         \\
         \\Status options:
