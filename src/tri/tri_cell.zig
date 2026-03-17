@@ -169,6 +169,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "status")) return runStatus(allocator);
     if (std.mem.eql(u8, sub, "sign")) return runSign(allocator, rest);
     if (std.mem.eql(u8, sub, "doctor")) return runDoctor(allocator, rest);
+    if (std.mem.eql(u8, sub, "orphans")) return runOrphans(allocator);
     if (std.mem.eql(u8, sub, "explain")) return runExplain(allocator, rest);
     if (std.mem.eql(u8, sub, "map")) return runMap(allocator);
     if (std.mem.eql(u8, sub, "contracts")) return runContracts(allocator);
@@ -219,6 +220,7 @@ fn printHelp() void {
     std.debug.print("  {s}status{s}            One-shot integrity dashboard\n", .{ GREEN, RESET });
     std.debug.print("  {s}sign [<id>|--all]{s}  Sign L2 cells (sha256 hash)\n", .{ GREEN, RESET });
     std.debug.print("  {s}doctor{s}            Full heal cycle: fix→sign→audit→lint→sync→status\n", .{ GREEN, RESET });
+    std.debug.print("  {s}orphans{s}           Find .zig files not claimed by any cell\n", .{ GREEN, RESET });
     std.debug.print("  {s}explain <id>{s}      Show WHY a cell has its permission level\n", .{ GREEN, RESET });
     std.debug.print("  {s}map{s}               Binary → cell mapping, find orphan binaries\n", .{ GREEN, RESET });
     std.debug.print("  {s}contracts{s}          Verify cell exports match source code (integrity)\n", .{ GREEN, RESET });
@@ -1956,19 +1958,47 @@ fn runHealth(allocator: Allocator, _: []const []const u8) !void {
         const cell = parseCellTri(c.content);
         if (cell.id.len == 0) continue;
 
-        // Simplified scoring (same formula as runScore v10)
+        // Unified scoring (identical to runScore v10)
         const is_agent_h = std.mem.startsWith(u8, cell.id, "trinity.agent.");
         const is_meta_h = cell.files == 0 and cell.tests == 0 and !is_agent_h;
         const test_s: u8 = if (is_agent_h) 12 else if (is_meta_h) 10 else if (cell.tests == 0) 0 else @intCast(@min(15, cell.tests * 15 / 80));
         const health: u8 = test_s + (if (cell.owner.len > 0) @as(u8, 5) else 0) + (if (cell.capabilities.len > 2) @as(u8, 5) else 0) + (if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) @as(u8, 5) else 0);
-        const sec: u8 = (if (cell.perm_level.len > 0) @as(u8, 10) else 0) + 10 + (if (cell.security_signed) @as(u8, 5) else 0) + 5;
+        // Security: use inferred permissions when possible (matches runScore)
+        var sec: u8 = 0;
+        const is_virtual_h = cell.file_patterns.len > 2;
+        if (cell.parent.len > 0 and !is_virtual_h) {
+            if (cell.perm_level.len > 0) sec += 20;
+            if (cell.security_signed) sec += 5;
+            sec += 5;
+        } else {
+            if (cell.perm_level.len > 0) sec += 10;
+            const code_perms_h = if (is_virtual_h) inferPermissionsFiltered(allocator, cell.path, cell.file_patterns) else inferPermissions(allocator, m.path);
+            const perms_match_h = std.mem.eql(u8, cell.perm_level, code_perms_h.level) and std.mem.eql(u8, cell.perm_network, code_perms_h.net) and std.mem.eql(u8, cell.perm_process, code_perms_h.proc);
+            if (perms_match_h) sec += 10;
+            if (cell.security_signed) sec += 5;
+            const no_bind_h = !(scanCodeForPattern(allocator, m.path, "parseIp4(\"0.0.0.0\"") or scanCodeForPattern(allocator, m.path, ".host = \"0.0.0.0\""));
+            if (no_bind_h) sec += 5;
+        }
         const dep_acc = computeDepsAccuracy(allocator, m.path, cell, all_cells, &path_to_cell);
         var deps: u8 = if (dep_acc.total == 0) 25 else blk: {
             const ratio: u8 = @intCast(@min(15, dep_acc.confirmed * 15 / dep_acc.total));
             break :blk ratio + (if (dep_acc.missing == 0) @as(u8, 10) else 0);
         };
         if (cycle_cells_set.contains(cell.id)) deps -|= 10;
-        const contracts: u8 = if (cell.contributes_exports.len > 2) 15 else 10;
+        // Contracts: with boundary checks (matches runScore)
+        var contracts: u8 = 15;
+        if (cell.contributes_exports.len <= 2 and (std.mem.eql(u8, cell.kind, "library") or std.mem.eql(u8, cell.kind, "tool"))) contracts -|= 5;
+        if (std.mem.eql(u8, cell.perm_level, "L0")) {
+            var dep_it_h = cell_parser.DepIterator.init(cell.dependencies_raw);
+            while (dep_it_h.next()) |dep_h| {
+                for (all_cells) |dc| {
+                    if (std.mem.eql(u8, dc.manifest.id, dep_h.id) and std.mem.eql(u8, dc.manifest.perm_level, "L2")) {
+                        contracts -|= 3;
+                        break;
+                    }
+                }
+            }
+        }
         const score: usize = @as(usize, health) + sec + deps + contracts;
 
         if (score >= 80) grade_a += 1 else if (score >= 60) grade_b += 1 else if (score >= 40) grade_c += 1 else grade_f += 1;
@@ -3788,31 +3818,130 @@ fn runSign(allocator: Allocator, args: []const []const u8) !void {
 fn runDoctor(allocator: Allocator, args: []const []const u8) !void {
     _ = args;
     std.debug.print("\n{s}🏥 CELL DOCTOR — Full Heal Cycle{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  {s}fix --all → sign --all → check --sync → audit → lint → status{s}\n\n", .{ GRAY, RESET });
+    std.debug.print("  {s}fix → sign → sync → audit → lint → orphans → status{s}\n\n", .{ GRAY, RESET });
 
     // Step 1: Fix all
-    std.debug.print("  {s}[1/6]{s} Fix...\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[1/7]{s} Fix...\n", .{ CYAN, RESET });
     try runFix(allocator, &[_][]const u8{"--all"});
 
     // Step 2: Sign L2 cells
-    std.debug.print("  {s}[2/6]{s} Sign L2 cells...\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[2/7]{s} Sign L2 cells...\n", .{ CYAN, RESET });
     try runSign(allocator, &[_][]const u8{"--all"});
 
     // Step 3: Sync registry
-    std.debug.print("  {s}[3/6]{s} Sync registry...\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[3/7]{s} Sync registry...\n", .{ CYAN, RESET });
     try runCheck(allocator, &[_][]const u8{"--sync"});
 
     // Step 4: Audit
-    std.debug.print("  {s}[4/6]{s} Audit...\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[4/7]{s} Audit...\n", .{ CYAN, RESET });
     try runAudit(allocator, &[_][]const u8{});
 
     // Step 5: Lint
-    std.debug.print("  {s}[5/6]{s} Lint...\n", .{ CYAN, RESET });
+    std.debug.print("  {s}[5/7]{s} Lint...\n", .{ CYAN, RESET });
     try runLint(allocator, &[_][]const u8{});
 
-    // Step 6: Status
-    std.debug.print("  {s}[6/6]{s} Status...\n", .{ CYAN, RESET });
+    // Step 6: Orphans
+    std.debug.print("  {s}[6/7]{s} Orphan scan...\n", .{ CYAN, RESET });
+    try runOrphans(allocator);
+
+    // Step 7: Status
+    std.debug.print("  {s}[7/7]{s} Status...\n", .{ CYAN, RESET });
     try runStatus(allocator);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ORPHANS — find .zig files not claimed by any cell
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runOrphans(allocator: Allocator) !void {
+    std.debug.print("\n{s}🔍 ORPHAN SCAN — Finding unclaimed .zig files{s}\n\n", .{ GOLDEN, RESET });
+
+    // Discover all cells and build ownership map
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    // Build set of owned files: cell path → file_patterns expanded
+    var owned = std.StringHashMap(void).init(allocator);
+    defer owned.deinit();
+
+    for (all_cells) |c| {
+        const m = c.manifest;
+        if (m.file_patterns.len > 2) {
+            // Virtual cell with patterns — scan its path dir and match
+            var dir = std.fs.cwd().openDir(m.path, .{ .iterate = true }) catch continue;
+            defer dir.close();
+            var iter = dir.iterate();
+            while (iter.next() catch null) |entry| {
+                if (entry.kind != .file) continue;
+                if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+                if (matchesFilePatterns(entry.name, m.file_patterns)) {
+                    const key = std.fmt.allocPrint(allocator, "{s}/{s}", .{ m.path, entry.name }) catch continue;
+                    owned.put(key, {}) catch {};
+                }
+            }
+        } else {
+            // Regular cell — owns all .zig in its path
+            var dir = std.fs.cwd().openDir(m.path, .{ .iterate = true }) catch continue;
+            defer dir.close();
+            var iter = dir.iterate();
+            while (iter.next() catch null) |entry| {
+                if (entry.kind != .file) continue;
+                if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+                const key = std.fmt.allocPrint(allocator, "{s}/{s}", .{ m.path, entry.name }) catch continue;
+                owned.put(key, {}) catch {};
+            }
+        }
+    }
+
+    // Scan all CELL_SCAN_DIRS for .zig files and check ownership
+    var orphan_count: usize = 0;
+    var total_scanned: usize = 0;
+    for (CELL_SCAN_DIRS) |scan_dir| {
+        var dir = std.fs.cwd().openDir(scan_dir, .{ .iterate = true }) catch continue;
+        defer dir.close();
+        var walker = dir.walk(allocator) catch continue;
+        defer walker.deinit();
+        while (walker.next() catch null) |entry| {
+            if (entry.kind != .file) continue;
+            if (!std.mem.endsWith(u8, entry.basename, ".zig")) continue;
+            total_scanned += 1;
+            const full_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ scan_dir, entry.path }) catch continue;
+            defer allocator.free(full_path);
+            if (!owned.contains(full_path)) {
+                // Check if any ancestor directory has a cell.tri (recursive ownership)
+                var is_owned = false;
+                var check_path: []const u8 = full_path;
+                while (true) {
+                    const dir_path = std.fs.path.dirname(check_path) orelse break;
+                    if (dir_path.len < scan_dir.len) break; // Don't go above scan root
+                    const cell_check = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{dir_path}) catch break;
+                    defer allocator.free(cell_check);
+                    if (std.fs.cwd().access(cell_check, .{})) |_| {
+                        is_owned = true;
+                        break;
+                    } else |_| {}
+                    check_path = dir_path;
+                }
+                if (is_owned) continue;
+
+                std.debug.print("  {s}ORPHAN{s}  {s}\n", .{ YELLOW, RESET, full_path });
+                orphan_count += 1;
+            }
+        }
+    }
+
+    if (orphan_count == 0) {
+        std.debug.print("  {s}All {d} .zig files are claimed by cells.{s}\n", .{ GREEN, total_scanned, RESET });
+    } else {
+        std.debug.print("\n  Scanned: {d} | {s}Orphans: {d}{s}\n", .{
+            total_scanned, if (orphan_count > 0) YELLOW else GREEN, orphan_count, RESET,
+        });
+        std.debug.print("  {s}Fix: add orphans to cell.tri file_patterns or create new cells{s}\n", .{ GRAY, RESET });
+    }
+    std.debug.print("\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
