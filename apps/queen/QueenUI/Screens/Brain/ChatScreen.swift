@@ -1046,20 +1046,20 @@ struct ChatScreen: View {
     @ViewBuilder
     private var mentionPopupSection: some View {
         if showMentionPopup {
-            EnhancedMentionPopup(
-                query: mentionQuery,
-                isPresented: $showMentionPopup,
-                onSelect: { value in
-                    if let atRange = input.range(of: "@\(mentionQuery)", options: .backwards) {
-                        input.replaceSubrange(atRange, with: "@\(value)")
-                    }
-                    showMentionPopup = false
-                },
-                repoContext: repoContext,
-                trinityContext: trinityCtx
-            )
-            .padding(.horizontal, 60)
-            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+            // TODO: Re-enable EnhancedMentionPopup after fixing visibility issue
+            // EnhancedMentionPopup(
+            //     query: mentionQuery,
+            //     isPresented: $showMentionPopup,
+            //     onSelect: { value in
+            //         if let atRange = input.range(of: "@\(mentionQuery)", options: .backwards) {
+            //             input.replaceSubrange(atRange, with: "@\(value)")
+            //         }
+            //         showMentionPopup = false
+            //     },
+            //     repoContext: repoContext,
+            //     trinityContext: trinityCtx
+            // )
+            EmptyView()
         }
     }
 
