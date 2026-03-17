@@ -139,8 +139,24 @@ fn sendNotification(allocator: Allocator, message: []const u8) !void {
         },
         .redirect_behavior = .unhandled,
     }) catch return error.RequestFailed;
+    defer req.deinit();
 
-    try req.sendBodyComplete(body);
+    // Send request body
+    req.transfer_encoding = .{ .content_length = body.len };
+    var body_writer_req = req.sendBodyUnflushed(&.{}) catch return error.RequestFailed;
+    body_writer_req.writer.writeAll(body) catch return error.RequestFailed;
+    body_writer_req.end() catch return error.RequestFailed;
+    if (req.connection) |conn| conn.flush() catch return error.RequestFailed;
+
+    // Receive response
+    var redirect_buf: [0]u8 = .{};
+    const response = req.receiveHead(&redirect_buf) catch return error.RequestFailed;
+
+    const status_code = @intFromEnum(response.head.status);
+    if (status_code != 200) {
+        std.debug.print("\x1b[38;2;255;85;85mTelegram API error: {d}\x1b[0m\n", .{status_code});
+        return error.TelegramError;
+    }
 }
 
 /// Get emoji for objective type
