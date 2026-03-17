@@ -12,7 +12,7 @@ tests = 18
 owner = "agent:ralph"
 
 [tags]
-scope = "core"
+scope = "sacred"
 type = "domain"
 
 [source]
