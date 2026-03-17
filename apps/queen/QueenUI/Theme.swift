@@ -248,6 +248,67 @@ struct TrinityTheme {
     static var fadeAnimation: Animation {
         .easeInOut(duration: 0.25)
     }
+
+    // MARK: - High Contrast Colors
+
+    /// High contrast variant with stronger color differences for accessibility
+    /// Use these colors when AccessibilityManager.shared.highContrast is true
+    struct HighContrast {
+        /// Maximum contrast accent (bright green on dark backgrounds)
+        static let accent = Color(hex: 0x00FF00)
+
+        /// Pure white for text on dark backgrounds
+        static let textPrimary = Color.white
+
+        /// Light gray for secondary text (still high contrast)
+        static let textMuted = Color(hex: 0xD0D0D0)
+
+        /// Pure black borders on light backgrounds
+        static let borderLight = Color.black
+
+        /// Pure white borders on dark backgrounds
+        static let borderDark = Color.white
+
+        /// Strong error color (bright red)
+        static let error = Color(hex: 0xFF0000)
+
+        /// Strong warning color (bright yellow/orange)
+        static let warning = Color(hex: 0xFFAA00)
+
+        /// Strong success color (bright green)
+        static let success = Color(hex: 0x00FF00)
+
+        /// Background for high contrast mode
+        static let background = Color.black
+
+        /// Card background for high contrast mode (slightly lighter than background)
+        static let cardBackground = Color(hex: 0x1A1A1A)
+    }
+
+    /// Returns appropriate accent color based on high contrast setting
+    static func accessibleAccent(_ highContrast: Bool) -> Color {
+        highContrast ? HighContrast.accent : accent
+    }
+
+    /// Returns appropriate text primary color based on high contrast setting
+    static func accessibleTextPrimary(_ highContrast: Bool) -> Color {
+        highContrast ? HighContrast.textPrimary : textPrimary
+    }
+
+    /// Returns appropriate text muted color based on high contrast setting
+    static func accessibleTextMuted(_ highContrast: Bool) -> Color {
+        highContrast ? HighContrast.textMuted : textMuted
+    }
+
+    /// Returns appropriate border color based on high contrast setting
+    static func accessibleBorder(_ highContrast: Bool) -> Color {
+        highContrast ? HighContrast.borderDark : bgCardBorder
+    }
+
+    /// Returns appropriate background color for cards in high contrast mode
+    static func accessibleCardBackground(_ highContrast: Bool) -> Color {
+        highContrast ? HighContrast.cardBackground : bgCard
+    }
 }
 
 extension Color {

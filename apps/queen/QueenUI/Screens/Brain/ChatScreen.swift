@@ -80,6 +80,7 @@ struct ChatScreen: View {
     @AppStorage("effortLevel") private var effortLevelRaw: String = EffortLevel.medium.rawValue
     @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @EnvironmentObject private var a11y: AccessibilityManager
     @FocusState private var focused: Bool
 
     private var stylePreset: StylePreset {
@@ -597,21 +598,24 @@ struct ChatScreen: View {
                     ThreadStatsCard(thread: t, isExpanded: $showThreadStats)
                     Button(action: shareConversation) {
                         Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 11))
+                            .font(.system(size: a11y.scaledFontSize(11)))
                             .foregroundStyle(TrinityTheme.textMuted)
                             .padding(6)
                             .background(TrinityTheme.bgCard)
                             .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
                             .overlay(
                                 RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 0.5)
+                                    .stroke(a11y.highContrast ? TrinityTheme.HighContrast.borderDark : TrinityTheme.bgCardBorder, lineWidth: 0.5)
                             )
                     }
                     .buttonStyle(.plain)
                     .help("Share conversation to clipboard")
                     .accessibilityLabel("Share conversation")
+                    .accessibilityHint("Double tap to copy conversation to clipboard")
+                    .accessibilityIdentifier("chat.shareConversation")
                     Button {
-                        withAnimation(.easeInOut(duration: 0.15)) {
+                        let animation = a11y.isReduceMotionEnabled() ? nil : Animation.easeInOut(duration: 0.15)
+                        withAnimation(animation) {
                             isSelecting.toggle()
                             if !isSelecting {
                                 selectedMessageIDs.removeAll()
@@ -620,18 +624,21 @@ struct ChatScreen: View {
                         }
                     } label: {
                         Image(systemName: isSelecting ? "checkmark.circle.fill" : "checkmark.circle")
-                            .font(.system(size: 11))
-                            .foregroundStyle(isSelecting ? TrinityTheme.accent : TrinityTheme.textMuted)
+                            .font(.system(size: a11y.scaledFontSize(11)))
+                            .foregroundStyle(isSelecting ? (a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent) : TrinityTheme.textMuted)
                             .padding(6)
                             .background(TrinityTheme.bgCard)
                             .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
                             .overlay(
                                 RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                                    .stroke(isSelecting ? TrinityTheme.accent.opacity(0.5) : TrinityTheme.bgCardBorder, lineWidth: 0.5)
+                                    .stroke(isSelecting ? (a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent).opacity(0.5) : TrinityTheme.bgCardBorder, lineWidth: 0.5)
                             )
                     }
                     .buttonStyle(.plain)
                     .help(isSelecting ? "Exit selection mode" : "Select messages")
+                    .accessibilityLabel(isSelecting ? "Exit selection mode" : "Select messages")
+                    .accessibilityHint(isSelecting ? "Double tap to exit selection mode" : "Double tap to enter message selection mode")
+                    .accessibilityIdentifier(isSelecting ? "chat.exitSelection" : "chat.selectMessages")
                 }
                 .padding(.bottom, 12)
             }
@@ -729,17 +736,20 @@ struct ChatScreen: View {
             } label: {
                 HStack(spacing: 4) {
                     Text("\u{21AA}")
-                        .font(.system(size: 13, weight: .bold))
+                        .font(.system(size: a11y.scaledFontSize(13), weight: .bold))
                     Text("Continue")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                 }
                 .foregroundStyle(.black)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
-                .background(TrinityTheme.accent)
+                .background(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
                 .clipShape(Capsule())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Continue generation")
+            .accessibilityHint("Double tap to continue the truncated response")
+            .accessibilityIdentifier("chat.continue")
             .transition(.opacity)
         }
     }
@@ -750,26 +760,28 @@ struct ChatScreen: View {
     private func scrollToBottomButton(proxy: ScrollViewProxy) -> some View {
         if showScrollToBottom && !client.isStreaming {
             Button {
-                withAnimation(.easeOut(duration: 0.3)) {
+                let animation = a11y.isReduceMotionEnabled() ? nil : Animation.easeOut(duration: 0.3)
+                withAnimation(animation) {
                     proxy.scrollTo("bottom", anchor: .bottom)
                 }
             } label: {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.down")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: a11y.scaledFontSize(13), weight: .semibold))
                     Text("New messages")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.system(size: a11y.scaledFontSize(13), weight: .medium))
                 }
                 .foregroundStyle(.black)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(TrinityTheme.accent)
+                .background(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
                 .clipShape(Capsule())
                 .shadow(color: .black.opacity(0.4), radius: TrinityTheme.shadowMediumRadius, y: 4)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Scroll to bottom, new messages")
             .accessibilityHint("Scrolls to the latest messages")
+            .accessibilityIdentifier("chat.scrollToBottom")
             .padding(.bottom, 120)
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
         }
@@ -1206,6 +1218,9 @@ struct ChatScreen: View {
             }
             .padding(.vertical, 12)
             .transition(.opacity)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Streaming response")
+            .accessibilityValue("Generation in progress")
         }
     }
 
@@ -1213,10 +1228,11 @@ struct ChatScreen: View {
         HStack(spacing: 12) {
             // Compact pulse ring indicator
             CompactPulseRing(state: client.streamingState)
+                .accessibilityHidden(true)
 
             if !client.streamingThinkingText.isEmpty && client.streamingText.isEmpty {
                 Image(systemName: "brain.head.profile")
-                    .font(.system(size: 14))
+                    .font(.system(size: a11y.scaledFontSize(14)))
                     .foregroundStyle(TrinityTheme.purple)
                     .symbolEffect(.pulse, options: .repeating)
                 Text("Reasoning...")
@@ -1224,30 +1240,34 @@ struct ChatScreen: View {
                     .foregroundStyle(TrinityTheme.purple)
                 StreamingElapsedTimer()
                 Text("\(client.streamingThinkingText.count) chars")
-                    .font(.system(size: 9, design: .monospaced))
+                    .font(.system(size: a11y.scaledFontSize(9), design: .monospaced))
                     .foregroundStyle(TrinityTheme.textMuted)
+                    .accessibilityLabel("\(client.streamingThinkingText.count) characters of reasoning")
             } else if thread?.messages.last?.text.isEmpty ?? false {
                 QueenThinkingIndicator()
                 LiveTTFBCounter(isWaiting: client.streamingTTFB == 0)
             }
             if client.streamingTTFB > 0 {
                 Text("First token: \(client.streamingTTFB)ms")
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .font(.system(size: a11y.scaledFontSize(10), weight: .medium, design: .monospaced))
                     .foregroundStyle(ttfbColor(client.streamingTTFB))
+                    .accessibilityLabel("First token received in \(client.streamingTTFB) milliseconds")
             }
             if client.streamingTokensPerSec > 0 {
                 LiveSpeedIndicator(tokPerSec: client.streamingTokensPerSec)
             }
             if client.streamingOutputTokens > 0 {
                 Text("\(client.streamingOutputTokens) tok")
-                    .font(.system(size: 10, design: .monospaced))
+                    .font(.system(size: a11y.scaledFontSize(10), design: .monospaced))
                     .foregroundStyle(TrinityTheme.textMuted)
+                    .accessibilityLabel("\(client.streamingOutputTokens) tokens generated")
             }
             if client.streamingMaxTokens > 0, client.streamingOutputTokens > 0 {
                 let pct = min(Double(client.streamingOutputTokens) / Double(client.streamingMaxTokens) * 100, 100)
                 Text(String(format: "~%.0f%%", pct))
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .font(.system(size: a11y.scaledFontSize(10), weight: .medium, design: .monospaced))
                     .foregroundStyle(TrinityTheme.textMuted)
+                    .accessibilityLabel("\(Int(pct)) percent of maximum tokens")
             }
         }
     }
@@ -1336,9 +1356,9 @@ struct ChatScreen: View {
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                             Text("Retry")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                         }
                         .foregroundStyle(.black)
                         .padding(.horizontal, 14)
@@ -1347,6 +1367,9 @@ struct ChatScreen: View {
                         .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Regenerate response")
+                    .accessibilityHint("Repeats the last request to generate a new response")
+                    .accessibilityIdentifier("chat.retry")
 
                     Button {
                         if let userMsg = thread?.messages.last(where: { $0.role == .user }) {
@@ -1357,9 +1380,9 @@ struct ChatScreen: View {
                     } label: {
                         HStack(spacing: 4) {
                             Image(systemName: "pencil")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                             Text("Edit & Retry")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                         }
                         .foregroundStyle(Color.white.opacity(0.7))
                         .padding(.horizontal, 14)
@@ -1368,6 +1391,9 @@ struct ChatScreen: View {
                         .clipShape(Capsule())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Edit and retry message")
+                    .accessibilityHint("Loads your last message into the input for editing")
+                    .accessibilityIdentifier("chat.editRetry")
 
                     if let fallback = modelManager.failoverModel() {
                         Button {
@@ -1378,9 +1404,9 @@ struct ChatScreen: View {
                         } label: {
                             HStack(spacing: 4) {
                                 Image(systemName: "arrow.triangle.2.circlepath")
-                                    .font(.system(size: 12, weight: .bold))
+                                    .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                                 Text("Try \(fallback.displayName)")
-                                    .font(.system(size: 12, weight: .bold))
+                                    .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                             }
                             .foregroundStyle(.black)
                             .padding(.horizontal, 14)
@@ -1389,6 +1415,9 @@ struct ChatScreen: View {
                             .clipShape(Capsule())
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Try fallback model")
+                        .accessibilityHint("Switches to \(fallback.displayName) and retries")
+                        .accessibilityIdentifier("chat.tryFallback")
                     }
                 }
             }
@@ -1501,15 +1530,16 @@ struct ChatScreen: View {
         if let msg = replyingTo {
             HStack(spacing: 8) {
                 RoundedRectangle(cornerRadius: 1)
-                    .fill(TrinityTheme.accent)
+                    .fill(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
                     .frame(width: 2)
+                    .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(msg.role == .user ? "You" : "Queen")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(.system(size: a11y.scaledFontSize(10), weight: .semibold))
+                        .foregroundStyle(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
                     Text(String(msg.text.prefix(80)) + (msg.text.count > 80 ? "..." : ""))
-                        .font(.system(size: 11))
+                        .font(.system(size: a11y.scaledFontSize(11)))
                         .foregroundStyle(TrinityTheme.textMuted)
                         .lineLimit(2)
                 }
@@ -1520,16 +1550,21 @@ struct ChatScreen: View {
                     withAnimation { replyingTo = nil }
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: a11y.scaledFontSize(10), weight: .medium))
                         .foregroundStyle(Color.white.opacity(0.4))
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Cancel reply")
+                .accessibilityHint("Removes the reply preview")
+                .accessibilityIdentifier("chat.cancelReply")
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
             .background(Color.white.opacity(0.04))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, 60)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Replying to \(msg.role == .user ? "your" : "Queen's") message")
             .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
         }
     }
@@ -1942,15 +1977,17 @@ struct ChatScreen: View {
                     showSystemPrompt.toggle()
                 } label: {
                     Image(systemName: "terminal")
-                        .font(.system(size: 13))
+                        .font(.system(size: a11y.scaledFontSize(13)))
                         .foregroundStyle(
-                            showSystemPrompt ? TrinityTheme.accent :
+                            showSystemPrompt ? (a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent) :
                             (store.activeThread()?.customSystemPrompt != nil ? TrinityTheme.golden : Color.white.opacity(0.4))
                         )
                 }
                 .buttonStyle(.plain)
                 .help("System prompt editor")
                 .accessibilityLabel("Edit system prompt")
+                .accessibilityHint("Double tap to open the system prompt editor")
+                .accessibilityIdentifier("chat.systemPrompt")
             }
             .padding(.leading, 14)
 
@@ -1973,32 +2010,35 @@ struct ChatScreen: View {
             HStack(spacing: 8) {
                 Button { openFilePicker() } label: {
                     Image(systemName: "paperclip")
-                        .font(.system(size: 15))
+                        .font(.system(size: a11y.scaledFontSize(15)))
                         .foregroundStyle(Color.white.opacity(0.4))
                 }
                 .buttonStyle(.plain)
                 .help("Attach file (⌘O)")
                 .accessibilityLabel("Attach file")
-                .accessibilityHint("Opens file picker to attach a file")
+                .accessibilityHint("Double tap to open file picker and attach a file")
+                .accessibilityIdentifier("chat.attachFile")
 
                 Button { showShortcuts.toggle() } label: {
                     Image(systemName: "keyboard")
-                        .font(.system(size: 15))
+                        .font(.system(size: a11y.scaledFontSize(15)))
                         .foregroundStyle(Color.white.opacity(0.4))
                 }
                 .buttonStyle(.plain)
                 .help("Shortcuts (⌘/)")
                 .accessibilityLabel("Keyboard shortcuts")
+                .accessibilityHint("Double tap to show available keyboard shortcuts")
+                .accessibilityIdentifier("chat.shortcuts")
 
                 Button { toggleVoiceInput() } label: {
                     ZStack {
                         if isRecording {
                             Circle()
-                                .stroke(TrinityTheme.accent, lineWidth: 2)
+                                .stroke(a11y.highContrast ? TrinityTheme.HighContrast.error : TrinityTheme.accent, lineWidth: 2)
                                 .frame(width: 36, height: 36)
-                                .scaleEffect(pulseScale)
+                                .scaleEffect(a11y.isReduceMotionEnabled() ? 1.0 : pulseScale)
                                 .opacity(isRecording ? 0 : 1)
-                                .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: false), value: isRecording)
+                                .animation(!a11y.isReduceMotionEnabled() ? .easeInOut(duration: 1.0).repeatForever(autoreverses: false) : nil, value: isRecording)
                                 .onAppear {
                                     withAnimation {
                                         pulseScale = 1.8
@@ -2006,33 +2046,37 @@ struct ChatScreen: View {
                                 }
                         }
                         Image(systemName: isRecording ? "mic.fill" : "mic")
-                            .font(.system(size: 15))
-                            .foregroundStyle(isRecording ? TrinityTheme.accent : Color.white.opacity(0.4))
+                            .font(.system(size: a11y.scaledFontSize(15)))
+                            .foregroundStyle(isRecording ? (a11y.highContrast ? TrinityTheme.HighContrast.error : TrinityTheme.accent) : Color.white.opacity(0.4))
                     }
                 }
                 .buttonStyle(.plain)
                 .help("Voice input")
                 .accessibilityLabel(isRecording ? "Stop recording" : "Voice input")
-                .accessibilityHint(isRecording ? "Stops voice recording" : "Starts voice input")
+                .accessibilityHint(isRecording ? "Double tap to stop voice recording" : "Double tap to start voice input")
+                .accessibilityIdentifier(isRecording ? "chat.stopRecording" : "chat.voiceInput")
 
                 // Estimated cost of next message
                 if let costStr = estimatedCostString, !client.isStreaming {
                     Text(costStr)
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .font(.system(size: a11y.scaledFontSize(9), weight: .medium, design: .monospaced))
                         .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
                         .help("Estimated cost of next message")
+                        .accessibilityLabel("Estimated cost: \(costStr)")
                 }
 
                 // Context preview button
                 if !client.isStreaming {
                     Button { showContextPreview.toggle() } label: {
                         Image(systemName: "eye")
-                            .font(.system(size: 11))
-                            .foregroundStyle(showContextPreview ? TrinityTheme.accent : Color.white.opacity(0.3))
+                            .font(.system(size: a11y.scaledFontSize(11)))
+                            .foregroundStyle(showContextPreview ? (a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent) : Color.white.opacity(0.3))
                     }
                     .buttonStyle(.plain)
                     .help("Preview context that will be sent to API")
                     .accessibilityLabel("Preview context")
+                    .accessibilityHint("Double tap to preview the context that will be sent to the API")
+                    .accessibilityIdentifier("chat.previewContext")
                     .popover(isPresented: $showContextPreview) {
                         contextPreviewPopover
                     }
@@ -2185,11 +2229,12 @@ struct ChatScreen: View {
             if client.isStreaming {
                 Button(action: { client.stop() }) {
                     Image(systemName: "stop.circle.fill")
-                        .font(.system(size: 24))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(.system(size: a11y.scaledFontSize(24)))
+                        .foregroundStyle(a11y.highContrast ? TrinityTheme.HighContrast.error : TrinityTheme.accent)
                 }
                 .accessibilityLabel("Stop generation")
-                .accessibilityHint("Stops the current response generation")
+                .accessibilityHint("Double tap to stop the current response generation")
+                .accessibilityIdentifier("chat.stopGeneration")
             } else {
                 Button(action: { send() }) {
                     ZStack {
@@ -2197,19 +2242,26 @@ struct ChatScreen: View {
                             .fill(input.isEmpty ? Color.white.opacity(0.1) : modeColor(chatMode))
                             .frame(width: 32, height: 32)
                         Image(systemName: chatMode == .image ? "photo" : "arrow.up")
-                            .font(.system(size: 14, weight: .semibold))
+                            .font(.system(size: a11y.scaledFontSize(14), weight: .semibold))
                             .foregroundStyle(input.isEmpty ? Color.white.opacity(0.3) : .black)
                     }
                 }
                 .disabled(input.isEmpty)
                 .accessibilityLabel("Send message")
-                .accessibilityHint("Sends the current message")
+                .accessibilityHint("Double tap to send your message")
+                .accessibilityIdentifier("chat.send")
+                .accessibilityAction(named: "Send with specific model") {
+                    if !input.isEmpty {
+                        showModelPopover = true
+                    }
+                }
                 .popover(isPresented: $showModelPopover) {
                     VStack(spacing: 4) {
                         Text("Send with model")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.system(size: a11y.scaledFontSize(11), weight: .bold))
                             .foregroundStyle(Color.white.opacity(0.6))
                             .padding(.top, 8)
+                            .accessibilityAddTraits(.isHeader)
                         ForEach(modelManager.availableModels.filter { modelManager.providerHasKey($0.provider) }) { model in
                             Button {
                                 showModelPopover = false
@@ -2217,10 +2269,11 @@ struct ChatScreen: View {
                             } label: {
                                 HStack {
                                     Text(model.displayName)
-                                        .font(.system(size: 12))
+                                        .font(.system(size: a11y.scaledFontSize(12)))
                                     if model == modelManager.selectedModel {
                                         Image(systemName: "checkmark")
                                             .font(.system(size: 10))
+                                            .accessibilityLabel("Currently selected")
                                     }
                                 }
                                 .foregroundStyle(Color.white)
@@ -2228,6 +2281,8 @@ struct ChatScreen: View {
                                 .padding(.vertical, 6)
                             }
                             .buttonStyle(.plain)
+                            .accessibilityLabel("Send with \(model.displayName)")
+                            .accessibilityHint(model == modelManager.selectedModel ? "Currently selected model" : "Switches to this model and sends")
                         }
                     }
                     .padding(.bottom, 8)
@@ -2324,9 +2379,9 @@ struct ChatScreen: View {
                 Button { chatMode = mode } label: {
                     HStack(spacing: 4) {
                         Image(systemName: mode.icon)
-                            .font(.system(size: 12))
+                            .font(.system(size: a11y.scaledFontSize(12)))
                         Text(mode.rawValue)
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.system(size: a11y.scaledFontSize(12), weight: .medium))
                     }
                     .foregroundStyle(chatMode == mode ? .black : Color.white.opacity(0.5))
                     .padding(.horizontal, 12)
@@ -2340,6 +2395,8 @@ struct ChatScreen: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("\(mode.rawValue) mode\(chatMode == mode ? ", selected" : "")")
+                .accessibilityHint("Double tap to switch to \(mode.rawValue) mode")
+                .accessibilityIdentifier("chat.mode.\(mode.rawValue)")
             }
 
             Spacer()
@@ -2356,6 +2413,7 @@ struct ChatScreen: View {
                             Text(level.rawValue)
                             if effortLevel == level {
                                 Image(systemName: "checkmark")
+                                    .accessibilityLabel("Currently selected")
                             }
                         }
                     }
@@ -2363,9 +2421,9 @@ struct ChatScreen: View {
             } label: {
                 HStack(spacing: 3) {
                     Image(systemName: effortLevel.icon)
-                        .font(.system(size: 10))
+                        .font(.system(size: a11y.scaledFontSize(10)))
                     Text(effortLevel.rawValue)
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: a11y.scaledFontSize(10), weight: .medium))
                 }
                 .foregroundStyle(effortLevel.color)
                 .padding(.horizontal, 8)
@@ -2377,7 +2435,8 @@ struct ChatScreen: View {
             .fixedSize()
             .help("Effort level: controls reasoning depth")
             .accessibilityLabel("Effort level, currently \(effortLevel.rawValue)")
-            .accessibilityHint("Changes reasoning depth")
+            .accessibilityHint("Double tap to change reasoning depth")
+            .accessibilityIdentifier("chat.effortLevel")
 
             // Style preset picker
             Menu {
@@ -2391,6 +2450,7 @@ struct ChatScreen: View {
                             Text(preset.rawValue)
                             if stylePreset == preset {
                                 Image(systemName: "checkmark")
+                                    .accessibilityLabel("Currently selected")
                             }
                         }
                     }
@@ -2398,9 +2458,9 @@ struct ChatScreen: View {
             } label: {
                 HStack(spacing: 3) {
                     Image(systemName: stylePreset.icon)
-                        .font(.system(size: 10))
+                        .font(.system(size: a11y.scaledFontSize(10)))
                     Text(stylePreset.rawValue)
-                        .font(.system(size: 10, weight: .medium))
+                        .font(.system(size: a11y.scaledFontSize(10), weight: .medium))
                 }
                 .foregroundStyle(Color.white.opacity(0.5))
                 .padding(.horizontal, 8)
@@ -2411,6 +2471,8 @@ struct ChatScreen: View {
             .menuStyle(.borderlessButton)
             .fixedSize()
             .accessibilityLabel("Style preset, currently \(stylePreset.rawValue)")
+            .accessibilityHint("Double tap to change response style")
+            .accessibilityIdentifier("chat.stylePreset")
 
             ContextMeter(tokens: estimatedTokens)
         }
