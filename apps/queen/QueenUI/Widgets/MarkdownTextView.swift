@@ -20,6 +20,7 @@ struct MarkdownTextView: View {
         case diff(String)              // diff block with +/- lines
         case callout(CalloutType, String) // info/warning/error callout
         case listItem(String)
+        case taskItem(Bool, String)  // checked, text
         case table([[String]])         // rows of cells (first row = header)
         case image(String, String)     // alt, url
         case math(String)              // block math ($$...$$)
@@ -176,6 +177,18 @@ struct MarkdownTextView: View {
                 continue
             }
 
+            // Task list item: - [ ] or - [x] or - [X]
+            if line.hasPrefix("- [x] ") || line.hasPrefix("- [X] ") {
+                result.append(.taskItem(true, String(line.dropFirst(6))))
+                i += 1
+                continue
+            }
+            if line.hasPrefix("- [ ] ") {
+                result.append(.taskItem(false, String(line.dropFirst(6))))
+                i += 1
+                continue
+            }
+
             // List item
             if line.hasPrefix("- ") || line.hasPrefix("* ") || line.hasPrefix("\u{2022} ") {
                 result.append(.listItem(String(line.dropFirst(2))))
@@ -273,6 +286,17 @@ struct MarkdownTextView: View {
             .background(Color(hex: 0x1A1A1A))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(.vertical, 4)
+
+        case .taskItem(let checked, let text):
+            HStack(alignment: .top, spacing: 8) {
+                Image(systemName: checked ? "checkmark.square.fill" : "square")
+                    .font(.system(size: 13))
+                    .foregroundStyle(checked ? TrinityTheme.accent : Color.white.opacity(0.4))
+                inlineMarkdown(text)
+                    .strikethrough(checked, color: Color.white.opacity(0.3))
+            }
+            .padding(.vertical, 1)
+            .padding(.leading, 8)
 
         case .listItem(let text):
             HStack(alignment: .top, spacing: 8) {

@@ -242,6 +242,21 @@ struct ChatSidebar: View {
             // Thread list with folder groups + date groups
             ScrollView {
                 LazyVStack(spacing: 0) {
+                    // Skeleton loading placeholder while threads load
+                    if store.threads.isEmpty && !store.isLoaded {
+                        ForEach(0..<6, id: \.self) { _ in
+                            HStack(spacing: 8) {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.white.opacity(0.04))
+                                    .frame(height: 14)
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                        }
+                        .redacted(reason: .placeholder)
+                    }
+
                     // Folders first
                     ForEach(store.folders) { folder in
                         folderSection(folder)
@@ -646,6 +661,7 @@ struct ThreadRow: View {
     @State private var isHovered = false
     @State private var isRenaming = false
     @State private var renameText = ""
+    @State private var showDeleteConfirm = false
 
     /// Preview text: first user message (truncated)
     private var previewText: String? {
@@ -785,7 +801,13 @@ struct ThreadRow: View {
                 }
             }
             Divider()
+            Button("Delete", role: .destructive) { showDeleteConfirm = true }
+        }
+        .alert("Delete Thread?", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) { onDelete() }
+        } message: {
+            Text("Delete \"\(thread.title)\"? This cannot be undone.")
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(thread.title), \(thread.messages.count) messages, \(relativeDate(thread.updatedAt))")
