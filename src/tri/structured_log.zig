@@ -278,7 +278,7 @@ pub const Logger = struct {
 
     fn rotateLogFileIfNeeded(self: *Logger) !void {
         const now = std.time.timestamp();
-        const current_date = now / (24 * 60 * 60); // Days since epoch
+        const current_date = @divTrunc(now, 24 * 60 * 60); // Days since epoch
 
         if (self.current_date == current_date and self.current_file != null) {
             // Check file size
@@ -297,7 +297,7 @@ pub const Logger = struct {
 
         // Open new log file: tri-YYYY-MM-DD.jsonl
         var buffer: [32]u8 = undefined;
-        const date_str = std.fmt.formatIntBuf(buffer[0..], current_date, 10, .lower, .{});
+        const date_str = std.fmt.formatIntBuf(buffer[0..], @intCast(current_date), 10, .lower, .{});
 
         const filename = try std.fmt.allocPrint(self.allocator, "tri-{s}.jsonl", .{date_str});
         defer self.allocator.free(filename);
@@ -364,15 +364,78 @@ pub fn getGlobalLogger() ?*Logger {
     return if (global_logger) |*l| &l else null;
 }
 
+// Observer role prefixes for structured logging
+pub const ObserverRole = enum {
+    oracle,
+    sentinel,
+    muse,
+    scholar,
+    chronos,
+    cortex,
+    salience,
+    pathology,
+    voice,
+    thalamus,
+    hippocampus,
+    phoenix,
+    basal_ganglia,
+    evolution,
+    farm,
+    arena,
+};
+
+/// Convert observer role to bracketed prefix string
+fn rolePrefixToString(role: ?ObserverRole) []const u8 {
+    if (role) |r| {
+        return switch (r) {
+            .oracle => "[ORACLE] ",
+            .sentinel => "[SENTINEL] ",
+            .muse => "[MUSE] ",
+            .scholar => "[SCHOLAR] ",
+            .chronos => "[CHRONOS] ",
+            .cortex => "[CORTEX] ",
+            .salience => "[SALIENCE] ",
+            .pathology => "[PATHOLOGY] ",
+            .voice => "[VOICE] ",
+            .thalamus => "[THALAMUS] ",
+            .hippocampus => "[HIPPOCAMPUS] ",
+            .phoenix => "[PHOENIX] ",
+            .basal_ganglia => "[BASAL_GANGLIA] ",
+            .evolution => "[EVOLUTION] ",
+            .farm => "[FARM] ",
+            .arena => "[ARENA] ",
+        };
+    }
+    return "";
+}
+
 /// Convenience functions using global logger
-pub fn log(level: Level, message: []const u8) void {
+/// logNarrate accepts optional role prefix for observer identification
+pub fn logNarrate(level: Level, role: ?ObserverRole, message: []const u8) void {
     if (getGlobalLogger()) |logger| {
-        var entry = LogEntry.init(logger.allocator, level, message);
+        // Prepend role prefix if provided
+        const prefix = rolePrefixToString(role);
+        const full_message = std.fmt.allocPrint(std.heap.page_allocator, "{s}{s}", .{ prefix, message }) catch {
+            // Fallback to message alone if formatting fails
+            var entry = LogEntry.init(logger.allocator, level, message);
+            defer entry.deinit();
+            logger.log(entry) catch |err| {
+                std.log.debug("structured_log: failed to write log entry: {}", .{err});
+            };
+            return;
+        };
+        defer std.heap.page_allocator.free(full_message);
+
+        var entry = LogEntry.init(logger.allocator, level, full_message);
         defer entry.deinit();
         logger.log(entry) catch |err| {
             std.log.debug("structured_log: failed to write log entry: {}", .{err});
         };
     }
+}
+
+pub fn log(level: Level, message: []const u8) void {
+    logNarrate(level, null, message);
 }
 
 pub fn debugFmt(comptime fmt: []const u8, args: anytype) void {
@@ -384,6 +447,16 @@ pub fn debugFmt(comptime fmt: []const u8, args: anytype) void {
     log(.debug, msg);
 }
 
+/// debugNarrate with optional role prefix
+pub fn debugNarrate(role: ?ObserverRole, comptime fmt: []const u8, args: anytype) void {
+    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
+        logNarrate(.debug, role, "unformattable");
+        return;
+    };
+    defer std.heap.page_allocator.free(msg);
+    logNarrate(.debug, role, msg);
+}
+
 pub fn infoFmt(comptime fmt: []const u8, args: anytype) void {
     const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
         log(.info, "unformattable");
@@ -391,6 +464,16 @@ pub fn infoFmt(comptime fmt: []const u8, args: anytype) void {
     };
     defer std.heap.page_allocator.free(msg);
     log(.info, msg);
+}
+
+/// infoNarrate with optional role prefix
+pub fn infoNarrate(role: ?ObserverRole, comptime fmt: []const u8, args: anytype) void {
+    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
+        logNarrate(.info, role, "unformattable");
+        return;
+    };
+    defer std.heap.page_allocator.free(msg);
+    logNarrate(.info, role, msg);
 }
 
 pub fn warnFmt(comptime fmt: []const u8, args: anytype) void {
@@ -402,6 +485,16 @@ pub fn warnFmt(comptime fmt: []const u8, args: anytype) void {
     log(.warn, msg);
 }
 
+/// warnNarrate with optional role prefix
+pub fn warnNarrate(role: ?ObserverRole, comptime fmt: []const u8, args: anytype) void {
+    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
+        logNarrate(.warn, role, "unformattable");
+        return;
+    };
+    defer std.heap.page_allocator.free(msg);
+    logNarrate(.warn, role, msg);
+}
+
 pub fn errorFmt(comptime fmt: []const u8, args: anytype) void {
     const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
         log(.err, "unformattable");
@@ -411,6 +504,16 @@ pub fn errorFmt(comptime fmt: []const u8, args: anytype) void {
     log(.err, msg);
 }
 
+/// errorNarrate with optional role prefix
+pub fn errorNarrate(role: ?ObserverRole, comptime fmt: []const u8, args: anytype) void {
+    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
+        logNarrate(.err, role, "unformattable");
+        return;
+    };
+    defer std.heap.page_allocator.free(msg);
+    logNarrate(.err, role, msg);
+}
+
 pub fn criticalFmt(comptime fmt: []const u8, args: anytype) void {
     const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
         log(.critical, "unformattable");
@@ -418,6 +521,16 @@ pub fn criticalFmt(comptime fmt: []const u8, args: anytype) void {
     };
     defer std.heap.page_allocator.free(msg);
     log(.critical, msg);
+}
+
+/// criticalNarrate with optional role prefix
+pub fn criticalNarrate(role: ?ObserverRole, comptime fmt: []const u8, args: anytype) void {
+    const msg = std.fmt.allocPrint(std.heap.page_allocator, fmt, args) catch {
+        logNarrate(.critical, role, "unformattable");
+        return;
+    };
+    defer std.heap.page_allocator.free(msg);
+    logNarrate(.critical, role, msg);
 }
 
 /// Write JSON string with proper escaping
@@ -484,4 +597,54 @@ test "writeJsonString escapes special characters" {
     defer std.testing.allocator.free(result);
 
     try std.testing.expectEqualStrings("\"Hello\\nWorld\\\"\"", result);
+}
+
+test "rolePrefixToString returns correct prefixes" {
+    try std.testing.expectEqualStrings("[ORACLE] ", rolePrefixToString(.oracle));
+    try std.testing.expectEqualStrings("[SENTINEL] ", rolePrefixToString(.sentinel));
+    try std.testing.expectEqualStrings("[MUSE] ", rolePrefixToString(.muse));
+    try std.testing.expectEqualStrings("[SCHOLAR] ", rolePrefixToString(.scholar));
+    try std.testing.expectEqualStrings("[CHRONOS] ", rolePrefixToString(.chronos));
+    try std.testing.expectEqualStrings("[CORTEX] ", rolePrefixToString(.cortex));
+    try std.testing.expectEqualStrings("[SALIENCE] ", rolePrefixToString(.salience));
+    try std.testing.expectEqualStrings("[PATHOLOGY] ", rolePrefixToString(.pathology));
+    try std.testing.expectEqualStrings("[VOICE] ", rolePrefixToString(.voice));
+    try std.testing.expectEqualStrings("[THALAMUS] ", rolePrefixToString(.thalamus));
+    try std.testing.expectEqualStrings("[HIPPOCAMPUS] ", rolePrefixToString(.hippocampus));
+    try std.testing.expectEqualStrings("[PHOENIX] ", rolePrefixToString(.phoenix));
+    try std.testing.expectEqualStrings("[BASAL_GANGLIA] ", rolePrefixToString(.basal_ganglia));
+    try std.testing.expectEqualStrings("[EVOLUTION] ", rolePrefixToString(.evolution));
+    try std.testing.expectEqualStrings("[FARM] ", rolePrefixToString(.farm));
+    try std.testing.expectEqualStrings("[ARENA] ", rolePrefixToString(.arena));
+    try std.testing.expectEqualStrings("", rolePrefixToString(null));
+}
+
+test "logNarrate with role prefixes message" {
+    // Just verify the function compiles and doesn't crash
+    // Actual file writing requires global logger to be initialized
+    logNarrate(.info, .oracle, "System state updated");
+    logNarrate(.info, .cortex, "Neural pattern detected");
+    logNarrate(.info, .hippocampus, "Memory consolidation complete");
+    logNarrate(.info, null, "Regular message without prefix");
+}
+
+test "infoNarrate with role prefixes message" {
+    infoNarrate(.oracle, "Deep review complete", .{});
+    infoNarrate(.scholar, "Research findings recorded", .{});
+    infoNarrate(.phoenix, "Cell regeneration triggered", .{});
+    infoNarrate(null, "Standard info message", .{});
+}
+
+test "warnNarrate with role prefixes message" {
+    warnNarrate(.sentinel, "Risk threshold exceeded", .{});
+    warnNarrate(.pathology, "Anomaly detected in patterns", .{});
+    warnNarrate(.evolution, "Kill event logged", .{});
+    warnNarrate(null, "Standard warning", .{});
+}
+
+test "errorNarrate with role prefixes message" {
+    errorNarrate(.farm, "Training service crashed", .{});
+    errorNarrate(.arena, "Battle evaluation failed", .{});
+    errorNarrate(.basal_ganglia, "Pattern matching error", .{});
+    errorNarrate(null, "Standard error", .{});
 }
