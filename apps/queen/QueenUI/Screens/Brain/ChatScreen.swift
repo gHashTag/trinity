@@ -60,6 +60,8 @@ struct ChatScreen: View {
     @State private var isSelecting = false
     @State private var selectedMessageIDs: Set<UUID> = []
     @State private var lastSelectedID: UUID? = nil
+    /// Message ID that should be highlighted (flash animation when navigating from sidebar)
+    @State private var highlightedMessageID: UUID? = nil
     /// Tracks message IDs present at initial thread load so we only animate new ones
     @State private var initialMessageIDs: Set<UUID> = []
     /// Set to true after initial thread load completes
@@ -267,6 +269,7 @@ struct ChatScreen: View {
                 slashCommandResult: $slashCommandResult,
                 historyIndex: $historyIndex,
                 savedCurrentInput: $savedCurrentInput,
+                highlightedMessageID: $highlightedMessageID,
                 thread: thread
             ))
             .sheet(isPresented: $showThinkingTranscript) {
@@ -2722,6 +2725,7 @@ private struct NotificationReceiversModifier: ViewModifier {
     @Binding var slashCommandResult: String?
     @Binding var historyIndex: Int
     @Binding var savedCurrentInput: String
+    @Binding var highlightedMessageID: UUID?
     var thread: ChatThread?
 
     /// All user messages in current thread, newest first (for Up/Down history navigation)
@@ -3562,13 +3566,23 @@ struct MessageRow: View {
 
     var body: some View {
         HStack(spacing: 0) {
-        // Multi-select checkbox
+            selectionCheckbox
+            messageContent
+        }
+        .padding(.vertical, 8)
+        .background(rowBackground)
+        .overlay(rowHighlightOverlay)
+    }
+
+    // MARK: - Subviews (extracted for compiler performance)
+
+    @ViewBuilder
+    private var selectionCheckbox: some View {
         if isSelecting {
             Button {
                 onToggleSelect?(NSEvent.modifierFlags.contains(.shift))
             } label: {
                 ZStack {
-                    // Selection ring effect
                     if isSelected {
                         Circle()
                             .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 2)
@@ -3591,6 +3605,40 @@ struct MessageRow: View {
                 removal: .scale.combined(with: .opacity)
             ))
         }
+    }
+
+    @ViewBuilder
+    private var rowBackground: some View {
+        if searchHighlight != .none {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(searchHighlight == .currentMatch ? TrinityTheme.golden.opacity(0.15) : Color.white.opacity(0.03))
+        }
+    }
+
+    @ViewBuilder
+    private var rowHighlightOverlay: some View {
+        if let highlightedID = store.highlightedMessageID, highlightedID == message.id {
+            RoundedRectangle(cornerRadius: 8)
+                .fill(TrinityTheme.accent.opacity(0.2))
+                .transition(.opacity)
+        }
+    }
+
+    @ViewBuilder
+    private var messageContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            if message.role == .user {
+                userMessageContent
+            } else {
+                assistantMessageContent
+            }
+        }
+    }
+
+    // MARK: - User Message Content
+
+    @ViewBuilder
+    private var userMessageContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             if message.role == .user {
                 // User message — bold, slightly larger
@@ -3845,10 +3893,47 @@ struct MessageRow: View {
         }
         // Context menu (right-click)
         .contextMenu {
-            Button {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(message.text, forType: .string)
-                SoundCueManager.shared.playCopy()
+            // Enhanced copy submenu
+            Menu {
+                Button {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(message.text, forType: .string)
+                    SoundCueManager.shared.playCopy()
+                } label: {
+                    Label("Copy as Markdown", systemImage: "doc.richtext")
+                }
+
+                Button {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(MessageRow.stripMarkdown(from: message.text), forType: .string)
+                    SoundCueManager.shared.playCopy()
+                } label: {
+                    Label("Copy Plain Text", systemImage: "doc.plaintext")
+                }
+
+                let codeBlocks = MessageRow.extractCodeBlocks(from: message.text)
+                if !codeBlocks.isEmpty {
+                    Button {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(codeBlocks.joined(separator: "\n\n"), forType: .string)
+                        SoundCueManager.shared.playCopy()
+                    } label: {
+                        Label("Copy Code Only", systemImage: "chevron.left.forwardslash.chevron.right")
+                    }
+                }
+
+                if !message.citations.isEmpty {
+                    Button {
+                        let withCitations = message.text + "\n\n---\n**Citations:**\n" +
+                            message.citations.enumerated().map { "[\($0.offset + 1)] \($0.element.displayText)" }
+                                .joined(separator: "\n")
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(withCitations, forType: .string)
+                        SoundCueManager.shared.playCopy()
+                    } label: {
+                        Label("Copy with Citations", systemImage: "link")
+                    }
+                }
             } label: {
                 Label("Copy", systemImage: "doc.on.doc")
             }
@@ -4213,6 +4298,37 @@ struct MessageRow: View {
         }
         return tasks
     }
+
+    /// Strip markdown formatting from text, returning plain text
+    static func stripMarkdown(from text: String) -> String {
+        var result = text
+
+        // Remove code blocks but keep content
+        result = result.replacingOccurrences(of: "```[\\w]*\\n([^`]*)```", with: "$1", options: .regularExpression)
+
+        // Remove inline code
+        result = result.replacingOccurrences(of: "`([^`]*)`", with: "$1", options: .regularExpression)
+
+        // Remove headers
+        result = result.replacingOccurrences(of: "^#{1,6}\\s+", with: "", options: .regularExpression)
+
+        // Remove bold/italic
+        result = result.replacingOccurrences(of: "\\*\\*([^*]+)\\*\\*", with: "$1", options: .regularExpression)
+        result = result.replacingOccurrences(of: "\\*([^*]+)\\*", with: "$1", options: .regularExpression)
+        result = result.replacingOccurrences(of: "__([^_]+)__", with: "$1", options: .regularExpression)
+        result = result.replacingOccurrences(of: "_([^_]+)_", with: "$1", options: .regularExpression)
+
+        // Remove strikethrough
+        result = result.replacingOccurrences(of: "~~([^~]+)~~", with: "$1", options: .regularExpression)
+
+        // Remove links but keep text
+        result = result.replacingOccurrences(of: "\\[([^\\]]+)\\]\\([^)]+\\)", with: "$1", options: .regularExpression)
+
+        // Clean up extra whitespace
+        result = result.replacingOccurrences(of: "\\n{3,}", with: "\n\n", options: .regularExpression)
+
+        return result.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
 }
 
 // MARK: - Action Toolbar (Perplexity style)
@@ -4308,16 +4424,18 @@ struct MessageActionBar: View {
                     toggleSpeech()
                 }
 
-                actionButton(didCopy ? "checkmark" : "doc.on.doc", tooltip: "Copy", active: didCopy) {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(message.text, forType: .string)
-                    SoundCueManager.shared.playCopy()
-                    didCopy = true
-                    Task {
-                        try? await Task.sleep(for: .seconds(2))
-                        await MainActor.run { didCopy = false }
-                    }
-                }
+                // Enhanced copy menu
+                CopyMenuView(
+                    message: message,
+                    onCopy: { content, _ in
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(content, forType: .string)
+                    },
+                    isShowing: .constant(false),
+                    didCopy: $didCopy,
+                    lastCopyAction: .constant(nil)
+                )
+                .frame(width: 28, height: 28)
 
                 actionButton("square.and.arrow.up", tooltip: "Share") {
                     let picker = NSSharingServicePicker(items: [message.text])
