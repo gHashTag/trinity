@@ -146,12 +146,35 @@ Set `TG_TEXT` to the ouroboros summary (score, level, weakest dimension, 2-3 sen
 Set `TG_MODE=dedup`, `TG_DEDUP_FILE=.trinity/tg_dedup_status.hash`.
 Then execute the shared Telegram template from `.claude/skills/_shared/telegram.md`.
 
+## Step: Auto-Action (after dashboard + Telegram)
+
+After rendering the dashboard and sending Telegram, **execute the top-priority action automatically**.
+Do NOT just list recommendations — ACT on the highest priority one.
+
+### Priority Cascade (first match wins):
+
+1. **Build broken** → Run `zig build 2>&1`, diagnose, fix the error, verify
+2. **Dirty files > 50** → Group by directory, create conventional commits (skip .env, credentials, >1MB)
+3. **Score dropped ≥5 points** → Run `tri ouroboros --cycles 1 --dimension {weakest}` to recover
+4. **GOD_FILES < 60** → Pick the largest god file, split it (max 1 file per cycle)
+5. **Weakest dimension < 70** → Run targeted fix for that dimension
+6. **Stagnation ≥ 2** → Run `tri ouroboros --cycles 3` to break plateau
+7. **All healthy (score ≥ 90, no weak dims)** → Print "✅ Система в φ-гармонии. Действий не требуется."
+
+### Rules:
+- Only ONE action per /status cycle
+- Report what was done in 1-2 sentences after the action
+- If the action fails, report failure — do NOT retry in same cycle
+- NEVER force-push, NEVER commit .env/credentials
+- NEVER delete running services
+
 ## Session Memory
 
 After each `/status` run, note key metrics for next session:
 - Current score and level
 - Which dimensions improved/regressed
 - What recommendations were given
+- What action was taken and its result
 - Any anomalies (score drops, build failures, stagnation)
 
 This builds context for the next conversation's `/status` call.
