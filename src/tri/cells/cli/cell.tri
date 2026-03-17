@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "CLI skeleton: main dispatch, command parsing, help, colors, config, completion"
 capabilities = ["cli", "parsing", "help", "completion"]
-tests = 12
+tests = 50
 owner = "agent:ralph"
 
 [tags]
@@ -20,16 +20,18 @@ file_patterns = ["main.zig", "tri_utils.zig", "tri_commands.zig", "tri_help*.zig
 
 [contributes]
 commands = ["help", "version", "commands"]
-exports = ["main", "parseCommand", "runGitCommand"]
+exports = ["printBanner", "printHelp", "printVersion", "printInfo", "parseCommand"]
 
 [dependencies]
 
 [permissions]
-level = "L1"
-filesystem = "read"
-network = "none"
+level = "L2"
+filesystem = "write"
+network = "external"
 process = "spawn"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = true
 signature = "sha256:26f23f53550d82f078dd4e1f717dc59d6aeccd5ea75b5828b06d88231834871b"

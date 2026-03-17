@@ -20,7 +20,7 @@ type = "agent"
 
 [contributes]
 commands = ["reflect", "analyze"]
-exports = []
+exports = ["consciousnessLevel", "isConscious", "consciousnessThreshold", "consciousnessThresholdPhiInv", "neuralGammaFrequency"]
 tri_subcommands = []
 events = ["on_awareness_update"]
 

@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "experimental"
 description = "Self-improving pipeline: formula discovery, self-hosting loop"
 capabilities = ["self-improve", "formulas"]
-tests = 16
+tests = 46
 owner = "agent:ralph"
 
 [tags]
@@ -20,16 +20,18 @@ file_patterns = ["self_*.zig"]
 
 [contributes]
 commands = []
-exports = []
+exports = ["main",", "log", "identifyOwnSourceFiles", "analyzeSelfForImprovements", "applySelfPatch"]
 
 [dependencies]
 
 [permissions]
-level = "L1"
+level = "L2"
 filesystem = "write"
 network = "none"
-process = "none"
+process = "spawn"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = true
 signature = "sha256:0267e16bf8385e3df3926caf1d576e450741aab960d72f7c7046e5be610f67f8"

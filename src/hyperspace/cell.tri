@@ -6,7 +6,7 @@ kind = "library"
 path = "src/hyperspace"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Auto-generated cell for hyperspace"
+description = "E8 lattice geometry and hyperdimensional coordinate systems"
 capabilities = ["init", "normSquared", "isValid", "generateAll", "phiCoordinates"]
 files = 3
 tests = 28
@@ -26,7 +26,7 @@ trinity.tri = "^1.0.0"
 trinity.vsa = "^1.0.0"
 
 [permissions]
-level = "L1"
+level = "L0"
 filesystem = "read"
 network = "none"
 process = "none"

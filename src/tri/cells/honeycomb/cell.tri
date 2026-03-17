@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Cell modularity system: create, audit, score, deps, prune, cycles, dispatch"
 capabilities = ["cells", "modularity", "deps", "score"]
-tests = 17
+tests = 24
 owner = "agent:ralph"
 
 [tags]
@@ -20,16 +20,18 @@ file_patterns = ["tri_cell*.zig"]
 
 [contributes]
 commands = ["cell score", "cell deps", "cell audit", "cell create", "cell fix"]
-exports = ["runCellCommand"]
+exports = ["executeInternalCommand", "executeFullCommand", "findCellCommand", "listCellCommands", "executeCellCommand"]
 
 [dependencies]
 
 [permissions]
-level = "L1"
+level = "L2"
 filesystem = "write"
-network = "none"
-process = "none"
+network = "external"
+process = "spawn"
 
+ffi = "native"
+concurrency = "yes"
 [security]
 signed = true
 signature = "sha256:fadbad75498a860fb22aa206e988b29dc3f43935a38acc0040ff0ec78fd15df1"

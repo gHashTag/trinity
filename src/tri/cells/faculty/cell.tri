@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Faculty board: analysis, voice engine, phi poetry, three paths"
 capabilities = ["faculty", "voice", "poetry"]
-tests = 15
+tests = 53
 owner = "agent:ralph"
 
 [tags]
@@ -20,16 +20,18 @@ file_patterns = ["faculty*.zig", "phi_poetry.zig", "three_paths.zig", "voice_eng
 
 [contributes]
 commands = ["faculty"]
-exports = ["runFacultyCommand"]
+exports = ["generatePhiLine", "emoji", "name", "fixIssues", "agentIssue"]
 
 [dependencies]
 
 [permissions]
-level = "L1"
-filesystem = "read"
-network = "none"
-process = "none"
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = true
 signature = "sha256:550617f74b73e7e263ac30151e09c28b960575730e0a64f3fb08f63a88be81b6"

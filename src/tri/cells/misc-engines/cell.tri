@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "experimental"
 description = "Domain engines: autonomous universe, holographic, QG, koschei, learning loops"
 capabilities = ["engines", "simulation"]
-tests = 20
+tests = 77
 owner = "agent:ralph"
 
 [tags]
@@ -24,10 +24,12 @@ file_patterns = ["autonomous_universe*.zig", "holographic_engine.zig", "qg_engin
 
 [permissions]
 level = "L1"
-filesystem = "read"
+filesystem = "write"
 network = "none"
 process = "none"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = true
 signature = "sha256:e9dcdef2ecc3b36bd7ee1009923ddd294db714f92cc4bde1d85566696bf0c196"

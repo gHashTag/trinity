@@ -23,7 +23,7 @@ commands = ["search", "index", "replace"]
 tri_subcommands = ["needle search", "needle replace"]
 events = []
 binaries = ["needle-mcp", "trinity-query", "trinity-search"]
-exports = ["checkFile", "runBenchmark", "runParseCheck"]
+exports = ["insert", "search", "size", "addError", "extractSymbols"]
 
 [dependencies]
 trinity.vsa = "^1.0.0"

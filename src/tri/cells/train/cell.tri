@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "HSLM training CLI: diagnostics, types, cloud training interface"
 capabilities = ["train", "diagnostics"]
-tests = 5
+tests = 15
 owner = "agent:ralph"
 
 [tags]
@@ -20,16 +20,18 @@ file_patterns = ["tri_train.zig", "train_*.zig", "cloud_train.zig"]
 
 [contributes]
 commands = ["train"]
-exports = ["runTrainCommand"]
+exports = ["cloudMetal", "cloudFarm", "cloudDeleteService", "cloudTrain", "cloudTrainBatch"]
 
 [dependencies]
 
 [permissions]
 level = "L2"
 filesystem = "write"
-network = "external"
+network = "none"
 process = "spawn"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = true
 signature = "sha256:6c82db7c5da47ec5e1a08117d4eecf5805caa837e540fc928bcc0950d221cdb1"

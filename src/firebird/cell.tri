@@ -20,7 +20,7 @@ type = "agent"
 
 [contributes]
 commands = ["browse", "navigate"]
-exports = []
+exports = ["bindSimd", "dotProductSimd", "hammingDistanceSimd", "cosineSimilaritySimd", "bundle2Simd"]
 tri_subcommands = ["firebird browse"]
 events = ["on_page_loaded"]
 binaries = ["firebird"]

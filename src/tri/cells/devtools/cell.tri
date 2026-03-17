@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Development utilities: dev loop, scan, pick, pipeline"
 capabilities = ["dev", "scanning"]
-tests = 15
+tests = 33
 owner = "agent:ralph"
 
 [tags]
@@ -20,16 +20,18 @@ file_patterns = ["dev_loop.zig", "dev_pick.zig", "dev_pipeline.zig", "dev_scan.z
 
 [contributes]
 commands = ["dev"]
-exports = []
+exports = ["label", "factorStr", "detailStr", "addReason", "pickFifo"]
 
 [dependencies]
 
 [permissions]
-level = "L1"
+level = "L2"
 filesystem = "write"
 network = "none"
-process = "none"
+process = "spawn"
 
+ffi = "none"
+concurrency = "yes"
 [security]
 signed = true
 signature = "sha256:364e28846d4a0d3e7015542ff1f15f68f13a1e561b696998a13fc67965eef369"

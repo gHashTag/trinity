@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "End-to-end test suites: jobs, registry, negative, toxic"
 capabilities = ["testing", "e2e"]
-tests = 54
+tests = 113
 owner = "agent:ralph"
 
 [tags]
@@ -20,7 +20,7 @@ file_patterns = ["e2e_*.zig", "tri_test.zig", "tri_integration_test.zig", "multi
 
 [contributes]
 commands = ["test"]
-exports = []
+exports = ["nameStr", "descStr", "specPathStr", "scenarioStr", "errorStr"]
 
 [dependencies]
 
@@ -28,8 +28,10 @@ exports = []
 level = "L1"
 filesystem = "write"
 network = "none"
-process = "spawn"
+process = "none"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = true
 signature = "sha256:a8765290c6681b7df39f2f888d9a49261a7fc27d43894011c7afa123658d0ffd"

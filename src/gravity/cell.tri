@@ -6,9 +6,9 @@ kind = "library"
 path = "src/gravity"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Auto-generated cell for gravity"
+description = "Gravitational physics and wave propagation simulation"
 capabilities = ["pageCurve", "pageTime", "informationRate", "islandsFormula", "fineGrainedEntropy"]
-files = 8
+files = 9
 tests = 90
 owner = "agent:ralph"
 

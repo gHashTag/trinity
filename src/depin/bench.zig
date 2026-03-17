@@ -5,7 +5,6 @@
 
 const std = @import("std");
 const network = @import("network.zig");
-const firebird = @import("../firebird/depin.zig");
 
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();

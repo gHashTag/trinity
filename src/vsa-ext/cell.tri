@@ -8,7 +8,7 @@ status = "experimental"
 description = "VSA extensions: packed trit, packed VSA, parallel, sparse, SIMD AVX-512"
 capabilities = ["packed", "parallel", "sparse", "simd"]
 files = 5
-tests = 0
+tests = 35
 owner = "agent:ralph"
 
 [tags]
@@ -19,17 +19,17 @@ type = "library"
 file_patterns = ["packed_trit.zig", "packed_vsa.zig", "parallel.zig", "sparse.zig", "simd_avx512.zig"]
 
 [contributes]
-exports = []
+exports = ["nnz", "sparsity", "memoryBytes", "memorySavings", "set"]
 
 [dependencies]
 trinity.vsa = "^1.0.0"
 
 [permissions]
-level = "L1"
+level = "L0"
 filesystem = "read"
 network = "none"
 process = "none"
-ffi = "native"
+ffi = "none"
 concurrency = "yes"
 
 [security]
