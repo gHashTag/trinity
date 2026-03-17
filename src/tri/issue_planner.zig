@@ -14,8 +14,12 @@ pub const FarmTask = struct {
     priority: u8,
     status: []const u8,
 
+    // Stores backing memory for string fields
+    backing_buffer: ?[]const u8 = null,
+
     pub fn deinit(self: *const FarmTask, allocator: Allocator) void {
-        allocator.free(self.issue_title);
+        // backing_buffer contains all string data, issue_title points into it
+        if (self.backing_buffer) |buf| allocator.free(buf);
     }
 
     fn compareAsc(context: void, a: FarmTask, b: FarmTask) bool {
@@ -198,14 +202,17 @@ pub fn loadTasksFromDir(allocator: Allocator) ![]FarmTask {
 
             const stat = try file.stat();
             const content = try allocator.alloc(u8, stat.size);
-            defer allocator.free(content);
+            // NOTE: Don't free content here - it's stored in task.backing_buffer
 
             _ = try file.readAll(content);
 
             const parsed = try std.json.parseFromSlice(FarmTask, allocator, content, .{
                 .ignore_unknown_fields = true,
             });
-            result[index] = parsed.value;
+            var task = parsed.value;
+            task.backing_buffer = content;
+            task.issue_title = try allocator.dupe(u8, task.issue_title);
+            result[index] = task;
             index += 1;
         }
     }

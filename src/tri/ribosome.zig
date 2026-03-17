@@ -250,7 +250,7 @@ var cache_state: struct {
     manifests: []const CellManifest = &.{},
 } = .{};
 
-const cache_mutex = std.Thread.Mutex{};
+var cache_mutex = std.Thread.Mutex{};
 
 /// Discovery options for benchmarking and cache control
 pub const DiscoveryOptions = struct {
@@ -292,7 +292,7 @@ pub fn discoverAllEx(allocator: Allocator, options: DiscoveryOptions) !Discovery
         break :blk false;
     };
 
-    var scan_results: std.ArrayList(DiscoveredCell) = .init(allocator);
+    var scan_results = try std.array_list.Managed(DiscoveredCell).initCapacity(allocator, 64);
     defer {
         if (!needs_refresh) {
             // Don't free on cache hit
@@ -328,7 +328,7 @@ pub fn discoverAllEx(allocator: Allocator, options: DiscoveryOptions) !Discovery
         const cwd = std.fs.cwd();
 
         // Collect all cell.tri files first
-        var cell_files = std.ArrayList(struct { path: []const u8, mtime: i128 }).init(allocator);
+        var cell_files = try std.array_list.Managed(struct { path: []const u8, mtime: i128 }).initCapacity(allocator, 64);
         defer {
             for (cell_files.items) |cf| allocator.free(cf.path);
             cell_files.deinit();
@@ -403,8 +403,8 @@ pub fn discoverAllEx(allocator: Allocator, options: DiscoveryOptions) !Discovery
             }
 
             // Build new cache
-            var paths = std.ArrayList([]const u8).init(allocator);
-            var manifests = std.ArrayList(CellManifest).init(allocator);
+            var paths = std.array_list.Managed([]const u8).init(allocator);
+            var manifests = std.array_list.Managed(CellManifest).init(allocator);
 
             for (scan_results.items) |cell| {
                 try paths.append(try allocator.dupe(u8, cell.dir_path));
