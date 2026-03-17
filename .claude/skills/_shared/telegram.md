@@ -75,6 +75,22 @@ case "$TG_MODE" in
 esac
 ```
 
+### Dedup Registry
+
+Default: `TG_DEDUP_FILE=.trinity/tg_dedup_${SKILL_NAME}.hash`
+
+If `TG_DEDUP_FILE` is not set explicitly, derive from skill name automatically:
+`TG_DEDUP_FILE=.trinity/tg_dedup_$(echo "$SKILL_NAME" | tr '[:upper:]' '[:lower:]').hash`
+
+| Skill | File | Mode |
+|-------|------|------|
+| tri | .trinity/tg_dedup_tri.hash | pin |
+| train | .trinity/tg_dedup_train.hash | dedup |
+| farm | .trinity/tg_dedup_farm.hash | dedup |
+| status | .trinity/tg_dedup_status.hash | dedup |
+| wave | .trinity/tg_dedup_wave.hash | dedup |
+| doctor | (none — uses send mode) | send |
+
 ### Key Rules
 - `tri notify --pin` sends ONE message, pins it, prints `message_id` to stdout
 - `tri notify --edit <id>` edits existing message (no new message sent)
@@ -84,3 +100,4 @@ esac
 - HTML parse mode is automatic (set in Zig code)
 - Do NOT include `[emoji mood]` signature in Telegram messages (stdout only)
 - Per-skill dedup files prevent cross-skill interference
+- Use the registry above to determine which dedup file a skill should use

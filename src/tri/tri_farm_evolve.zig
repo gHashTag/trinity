@@ -49,7 +49,7 @@ const SACRED_WARMUPS = [_]u32{ 243, 729, 2187 }; // 3^5, 3^6, 3^7
 
 // Deploy/mutation bounds (single source of truth)
 const LR_MIN: f64 = 1e-5;
-const LR_MAX: f64 = 1e-2;
+const LR_MAX: f64 = 1.618e-3; // φ×1e-3 — empirical: LR>1e-3 diverges (w7-40 proved at 6.86e-3)
 const GC_MIN: f32 = 0.3;
 const GC_MAX: f32 = 3.0;
 const WU_MIN: u32 = 500;
