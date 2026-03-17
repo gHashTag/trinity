@@ -287,3 +287,8 @@ fpga/tools/weight_pack_wide
 archive/junk-*/
 fpga/openxc7-synth/synth_reports/hslm_full_top.json
 *.bak
+
+# Swift build artifacts (Queen UI)
+apps/queen/*.d
+apps/queen/*.swiftdeps
+apps/queen/*.swiftdeps~
