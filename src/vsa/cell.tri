@@ -36,6 +36,17 @@ process = "spawn"
 ffi = "native"
 concurrency = "yes"
 
+[dna]
+cell_id = "trinity.vsa"
+source = "specs/vsa/core.tri"
+output = "gen/vsa_ops.zig"
+regenerable = true
+
+[contract]
+inputs = ["vectors: [][D]Trit"]
+outputs = ["result: [D]Trit", "similarity: f32"]
+invariants = ["D == 1024 or 10000", "trit in {-1, 0, +1}", "bind is invertible"]
+
 [security]
 signed = true
 signature = "sha256:0ab6fc62826ad173e21b53688f4f1423591c3faa6dc854a3cee53a11c6ac377b"

@@ -1,0 +1,21 @@
+[spec]
+name = "vsa_core"
+version = "1.0.0"
+description = "Vector Symbolic Architecture operations on ternary hypervectors"
+
+[interface]
+inputs = ["vectors: [][D]Trit"]
+outputs = ["result: [D]Trit", "similarity: f32"]
+
+[invariants]
+dimensions = "D == 1024 or 10000"
+trit_values = "{-1, 0, +1}"
+bind_invertible = "unbind(bind(a, b), a) ~= b"
+bundle_majority = "bundle = element-wise majority vote"
+
+[architecture]
+bind = "element-wise ternary multiplication"
+unbind = "bind with inverse (self-inverse for ternary)"
+bundle = "element-wise majority vote"
+similarity = "cosine similarity in [-1, 1]"
+permute = "cyclic shift for sequence encoding"
