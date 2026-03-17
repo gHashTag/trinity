@@ -3593,7 +3593,15 @@ fn runAudit(allocator: Allocator, args: []const []const u8) !void {
 // STATUS — one-shot integrity dashboard
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn runStatus(allocator: Allocator) !void {
+fn runStatus(allocator: Allocator, args: []const []const u8) !void {
+    // Parse flags
+    var benchmark = false;
+    var use_cache = true;
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--benchmark")) benchmark = true;
+        if (std.mem.eql(u8, arg, "--no-cache")) use_cache = false;
+    }
+
     const discovered = discoverCells(allocator) catch {
         std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
         return;
@@ -3601,6 +3609,47 @@ fn runStatus(allocator: Allocator) !void {
     defer {
         for (discovered) |p| allocator.free(p);
         allocator.free(discovered);
+    }
+
+    // Benchmark output if requested
+    if (benchmark) {
+        const result = cell_parser.discoverAllEx(allocator, .{
+            .use_cache = use_cache,
+            .parallel = true,
+            .benchmark = true,
+        }) catch |err| {
+            std.debug.print("{s}ERROR{s}: Benchmark failed: {}\n", .{ RED, RESET, err });
+            return;
+        };
+        defer {
+            for (result.cells) |c| {
+                allocator.free(c.content);
+                allocator.free(c.dir_path);
+            }
+            allocator.free(result.cells);
+        }
+
+        const ms = @as(f64, @floatFromInt(result.total_time_ns)) / 1_000_000.0;
+        const scan_ms = @as(f64, @floatFromInt(result.scan_time_ns)) / 1_000_000.0;
+        const parse_ms = @as(f64, @floatFromInt(result.parse_time_ns)) / 1_000_000.0;
+        const cache_rate = if (result.cache_hits + result.cache_misses > 0)
+            @as(f64, @floatFromInt(result.cache_hits)) / @as(f64, @floatFromInt(result.cache_hits + result.cache_misses)) * 100.0
+        else
+            0.0;
+
+        std.debug.print("\n{s}═══ CELL DISCOVERY BENCHMARK ═══{s}\n\n", .{ GOLDEN, RESET });
+        std.debug.print("  {s}Cells found:{s}    {d}\n", .{ CYAN, RESET, result.cells.len });
+        std.debug.print("  {s}Total time:{s}    {d:.2} ms\n", .{ CYAN, RESET, ms });
+        std.debug.print("  {s}Scan time:{s}     {d:.2} ms\n", .{ CYAN, RESET, scan_ms });
+        std.debug.print("  {s}Parse time:{s}    {d:.2} ms\n", .{ CYAN, RESET, parse_ms });
+        std.debug.print("  {s}Cache hits:{s}    {d} ({d:.1}%)\n", .{ CYAN, RESET, result.cache_hits, cache_rate });
+        std.debug.print("  {s}Cache misses:{s}  {d}\n", .{ CYAN, RESET, result.cache_misses });
+
+        // Verdict
+        const verdict = if (ms < 500) "🚀 FAST (<500ms)" else if (ms < 1000) "✓ OK (<1s)" else "⚠ SLOW (>1s)";
+        const vcolor = if (ms < 500) GREEN else if (ms < 1000) YELLOW else RED;
+        std.debug.print("\n  {s}Verdict:{s} {s}{s}{s}\n\n", .{ CYAN, RESET, vcolor, verdict, RESET });
+        return;
     }
 
     var total_cells: usize = 0;

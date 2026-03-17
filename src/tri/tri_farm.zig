@@ -759,6 +759,7 @@ fn printHelp() void {
         \\  recycle          Set training vars + redeploy all idle services
         \\  fill             Create NEW services to fill empty slots (up to 25/account)
         \\  evolve           ASHA+PBT evolution (init/status/step/mock/history)
+        \\  from-issues      Execute farm tasks from GitHub Issues (farm-task label)
         \\  help             Show this help
         \\
         \\Common options:
