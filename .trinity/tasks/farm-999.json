@@ -7,5 +7,6 @@
   "lr_schedule": "cosine",
   "sacred": false,
   "priority": 2,
-  "status": "pending"
+  "status": "in-progress",
+  "backing_buffer": null
 }
