@@ -1,6 +1,32 @@
 import SwiftUI
 import AppKit
 
+// MARK: - Date Filter
+
+enum DateFilter: String, CaseIterable {
+    case all = "All"
+    case today = "Today"
+    case thisWeek = "This Week"
+    case thisMonth = "This Month"
+    case older = "Older"
+
+    func matches(_ date: Date) -> Bool {
+        let cal = Calendar.current
+        let now = Date()
+        let todayStart = cal.startOfDay(for: now)
+        switch self {
+        case .all: return true
+        case .today: return date >= todayStart
+        case .thisWeek:
+            return date >= cal.date(byAdding: .day, value: -7, to: todayStart)!
+        case .thisMonth:
+            return date >= cal.date(byAdding: .month, value: -1, to: todayStart)!
+        case .older:
+            return date < cal.date(byAdding: .month, value: -1, to: todayStart)!
+        }
+    }
+}
+
 struct ChatSidebar: View {
     @ObservedObject var store: ThreadStore
     @ObservedObject var modelManager: ModelManager
@@ -21,7 +47,25 @@ struct ChatSidebar: View {
     @State private var debouncedQuery = ""
     @State private var searchTask: Task<Void, Never>? = nil
     @State private var showArchiveSection = false
+    @State private var filterDateRange: DateFilter = .all
+    @State private var filterModel: String? = nil
     @AppStorage("threadSortOrder") private var sortOrder: String = "date"
+
+    /// Number of active metadata filters
+    private var activeFilterCount: Int {
+        var count = 0
+        if filterDateRange != .all { count += 1 }
+        if filterModel != nil { count += 1 }
+        return count
+    }
+
+    /// Unique model IDs across all threads
+    private var availableModels: [String] {
+        let allModels = store.threads.flatMap { thread in
+            thread.messages.compactMap { $0.modelID }
+        }
+        return Array(Set(allModels)).sorted()
+    }
 
     private var filteredThreads: [ChatThread] {
         var base = store.sortedThreads.filter { !$0.isArchived }
@@ -35,6 +79,15 @@ struct ChatSidebar: View {
         }
         if let tag = selectedTag {
             base = base.filter { $0.tags.contains(tag) }
+        }
+        // Metadata filters
+        if filterDateRange != .all {
+            base = base.filter { filterDateRange.matches($0.updatedAt) }
+        }
+        if let model = filterModel {
+            base = base.filter { thread in
+                thread.messages.contains { $0.modelID?.contains(model) == true }
+            }
         }
         if debouncedQuery.isEmpty { return base }
         // Use fuzzy search for better matching
@@ -112,12 +165,27 @@ struct ChatSidebar: View {
                 Button {
                     withAnimation(.easeInOut(duration: 0.15)) {
                         isSearching.toggle()
-                        if !isSearching { searchQuery = "" }
+                        if !isSearching {
+                            searchQuery = ""
+                            filterDateRange = .all
+                            filterModel = nil
+                        }
                     }
                 } label: {
-                    Image(systemName: isSearching ? "xmark" : "magnifyingglass")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.4))
+                    ZStack(alignment: .topTrailing) {
+                        Image(systemName: isSearching ? "xmark" : "magnifyingglass")
+                            .font(.system(size: 12))
+                            .foregroundStyle(Color.white.opacity(0.4))
+                        if !isSearching && activeFilterCount > 0 {
+                            Text("\(activeFilterCount)")
+                                .font(.system(size: 7, weight: .bold))
+                                .foregroundStyle(.black)
+                                .frame(width: 12, height: 12)
+                                .background(TrinityTheme.accent)
+                                .clipShape(Circle())
+                                .offset(x: 4, y: -4)
+                        }
+                    }
                 }
                 .buttonStyle(.plain)
                 .help("Search threads (Cmd+Shift+F)")
@@ -143,8 +211,89 @@ struct ChatSidebar: View {
                 .background(Color.white.opacity(0.06))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .padding(.horizontal, 8)
-                .padding(.bottom, 8)
+                .padding(.bottom, 4)
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
+
+                // Metadata filter chips
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 4) {
+                        // Date filter
+                        Menu {
+                            ForEach(DateFilter.allCases, id: \.self) { df in
+                                Button {
+                                    filterDateRange = df
+                                } label: {
+                                    HStack {
+                                        Text(df.rawValue)
+                                        if filterDateRange == df {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            filterPill(
+                                label: "Date: \(filterDateRange.rawValue)",
+                                isActive: filterDateRange != .all
+                            )
+                        }
+                        .menuStyle(.borderlessButton)
+
+                        // Model filter
+                        Menu {
+                            Button {
+                                filterModel = nil
+                            } label: {
+                                HStack {
+                                    Text("All")
+                                    if filterModel == nil {
+                                        Image(systemName: "checkmark")
+                                    }
+                                }
+                            }
+                            ForEach(availableModels, id: \.self) { model in
+                                Button {
+                                    filterModel = model
+                                } label: {
+                                    HStack {
+                                        Text(model)
+                                        if filterModel == model {
+                                            Image(systemName: "checkmark")
+                                        }
+                                    }
+                                }
+                            }
+                        } label: {
+                            filterPill(
+                                label: filterModel.map { "Model: \($0)" } ?? "Model: All",
+                                isActive: filterModel != nil
+                            )
+                        }
+                        .menuStyle(.borderlessButton)
+
+                        // Clear all filters
+                        if activeFilterCount > 0 {
+                            Button {
+                                filterDateRange = .all
+                                filterModel = nil
+                            } label: {
+                                HStack(spacing: 2) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.system(size: 9))
+                                    Text("Clear")
+                                        .font(.system(size: 10, weight: .medium))
+                                }
+                                .foregroundStyle(TrinityTheme.accent)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 2)
+                }
+                .padding(.bottom, 4)
             }
 
             // New Thread + Import buttons
@@ -281,13 +430,18 @@ struct ChatSidebar: View {
                 }
             }
 
-            // Fuzzy search result count
-            if !debouncedQuery.isEmpty {
+            // Fuzzy search / filter result count
+            if !debouncedQuery.isEmpty || activeFilterCount > 0 {
                 let total = filteredThreads.count
                 HStack {
                     Text("\(total) result\(total == 1 ? "" : "s")")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(TrinityTheme.accent)
+                    if activeFilterCount > 0 {
+                        Text("(\(activeFilterCount) filter\(activeFilterCount == 1 ? "" : "s"))")
+                            .font(.system(size: 10))
+                            .foregroundStyle(TrinityTheme.textMuted)
+                    }
                     Spacer()
                 }
                 .padding(.horizontal, 16)
@@ -530,7 +684,10 @@ struct ChatSidebar: View {
         .onReceive(NotificationCenter.default.publisher(for: .toggleThreadSearch)) { _ in
             withAnimation(.easeInOut(duration: 0.15)) {
                 isSearching.toggle()
-                if !isSearching { searchQuery = ""; debouncedQuery = "" }
+                if !isSearching {
+                    searchQuery = ""; debouncedQuery = ""
+                    filterDateRange = .all; filterModel = nil
+                }
             }
         }
         .onChange(of: searchQuery) { _, newValue in
@@ -547,6 +704,21 @@ struct ChatSidebar: View {
                 }
             }
         }
+    }
+
+    private func filterPill(label: String, isActive: Bool) -> some View {
+        HStack(spacing: 3) {
+            Text(label)
+                .font(.system(size: 10, weight: isActive ? .bold : .medium))
+                .lineLimit(1)
+            Image(systemName: "chevron.down")
+                .font(.system(size: 7, weight: .bold))
+        }
+        .foregroundStyle(isActive ? .black : TrinityTheme.textMuted)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(isActive ? TrinityTheme.accent : Color.white.opacity(0.06))
+        .clipShape(Capsule())
     }
 
     private func tagChip(_ tag: String?, label: String) -> some View {
@@ -887,6 +1059,8 @@ struct ThreadRow: View {
     let onAddTag: (String) -> Void
     var onMoveToFolder: ((UUID?) -> Void)? = nil
     var onQuickExport: (() -> Void)? = nil
+    var onQuickExportHTML: (() -> Void)? = nil
+    var onQuickExportJSON: (() -> Void)? = nil
     var onDuplicate: (() -> Void)? = nil
     var onArchive: (() -> Void)? = nil
     var folders: [ThreadFolder] = []
