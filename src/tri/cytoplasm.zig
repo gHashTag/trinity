@@ -6755,13 +6755,6 @@ fn findCellVersion(cells: []const std.json.Value, cell_id: []const u8) ?Version 
 fn discoverCells(allocator: Allocator) ![][]const u8 {
     // Use optimized discovery from ribosome
     const discovered = try cell_parser.discoverAll(allocator);
-    defer {
-        for (discovered) |c| {
-            allocator.free(c.content);
-            allocator.free(c.dir_path);
-        }
-        allocator.free(discovered);
-    }
 
     // Extract just the dir_paths
     var results = std.array_list.Managed([]const u8).init(allocator);
@@ -6773,6 +6766,13 @@ fn discoverCells(allocator: Allocator) ![][]const u8 {
     for (discovered) |c| {
         try results.append(try allocator.dupe(u8, c.dir_path));
     }
+
+    // Free discovered after copying
+    for (discovered) |c| {
+        allocator.free(c.content);
+        allocator.free(c.dir_path);
+    }
+    allocator.free(discovered);
 
     return results.toOwnedSlice();
 }
