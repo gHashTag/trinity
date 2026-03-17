@@ -19,7 +19,7 @@ type = "library"
 file_patterns = ["jit.zig", "jit_arm64.zig", "jit_x86_64.zig", "jit_unified.zig", "vsa_jit.zig", "bench_jit.zig"]
 
 [contributes]
-exports = ["jit"]
+exports = []
 
 [dependencies]
 trinity.vsa = "^1.0.0"

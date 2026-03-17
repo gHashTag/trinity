@@ -20,7 +20,7 @@ type = "backend"
 file_patterns = ["minimal_forward.zig", "sequence_hdc.zig"]
 
 [contributes]
-exports = ["minimal_forward", "sequence_hdc"]
+exports = []
 
 [dependencies]
 trinity.hslm = "^1.0.0"

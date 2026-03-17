@@ -19,7 +19,7 @@ type = "backend"
 file_patterns = ["btc_mining_mvp.zig", "pas_mining_core.zig", "pas_mining_test.zig", "network_codex.zig"]
 
 [contributes]
-exports = ["mining"]
+exports = []
 
 [dependencies]
 

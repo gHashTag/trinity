@@ -20,7 +20,7 @@ file_patterns = ["knowledge_graph.zig", "kg_cli.zig", "kg_server.zig", "query_cl
 
 [contributes]
 commands = ["kg", "query"]
-exports = ["knowledge_graph"]
+exports = []
 
 [dependencies]
 trinity.vsa = "^1.0.0"

@@ -19,7 +19,7 @@ type = "library"
 file_patterns = ["packed_trit.zig", "packed_vsa.zig", "parallel.zig", "sparse.zig", "simd_avx512.zig"]
 
 [contributes]
-exports = ["packed_trit", "packed_vsa", "parallel", "sparse"]
+exports = []
 
 [dependencies]
 trinity.vsa = "^1.0.0"

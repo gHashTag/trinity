@@ -1550,6 +1550,17 @@ struct MessageRow: View {
     @State private var isHovering = false
     @State private var isEditing = false
     @State private var editText = ""
+    @AppStorage("chatFontSize") private var chatFontSize = 15
+
+    /// Estimate token count for this message
+    private var estimatedTokens: Int {
+        if let actual = message.outputTokens { return actual }
+        let chars = message.text.count
+        guard chars > 0 else { return 0 }
+        let hasCode = message.text.contains("```") || message.text.contains("    ")
+        let ratio: Double = hasCode ? 3.2 : 3.8
+        return Int(ceil(Double(chars) / ratio))
+    }
 
     /// Estimate token share of this message (0...1)
     private var tokenShare: Double {
@@ -1559,6 +1570,20 @@ struct MessageRow: View {
         let ratio: Double = hasCode ? 3.2 : 3.8
         let tokens = chars / ratio
         return min(tokens / 180_000.0, 1.0)
+    }
+
+    private var tokenBadgeColor: Color {
+        if estimatedTokens < 500 { return TrinityTheme.textMuted }
+        if estimatedTokens < 2000 { return TrinityTheme.accent }
+        if estimatedTokens < 5000 { return TrinityTheme.golden }
+        return TrinityTheme.statusError
+    }
+
+    private var tokenBadgeText: String {
+        if estimatedTokens >= 1000 {
+            return String(format: "%.1fK", Double(estimatedTokens) / 1000.0)
+        }
+        return "\(estimatedTokens)"
     }
 
     var body: some View {
@@ -1574,7 +1599,7 @@ struct MessageRow: View {
                             VStack(alignment: .trailing, spacing: 6) {
                                 TextField("Edit message...", text: $editText, axis: .vertical)
                                     .textFieldStyle(.plain)
-                                    .font(.system(size: 15, weight: .semibold))
+                                    .font(.system(size: CGFloat(chatFontSize), weight: .semibold))
                                     .foregroundStyle(Color.white)
                                     .lineLimit(1...10)
                                     .padding(10)
@@ -1602,7 +1627,7 @@ struct MessageRow: View {
                             }
                         } else {
                             Text(message.text)
-                                .font(.system(size: 15, weight: .semibold))
+                                .font(.system(size: CGFloat(chatFontSize), weight: .semibold))
                                 .foregroundStyle(Color.white)
                                 .textSelection(.enabled)
                                 .multilineTextAlignment(.trailing)
@@ -1662,7 +1687,7 @@ struct MessageRow: View {
                 // Assistant message — plain text, full width, readable
                 VStack(alignment: .leading, spacing: 8) {
                     messageContent
-                        .font(.system(size: 15, weight: .regular))
+                        .font(.system(size: CGFloat(chatFontSize), weight: .regular))
                         .foregroundStyle(Color(hex: 0xD1D1D1))
                         .textSelection(.enabled)
                         .lineSpacing(4)
@@ -1687,6 +1712,20 @@ struct MessageRow: View {
                                     .foregroundStyle(TrinityTheme.textMuted)
                                     .padding(.leading, 8)
                                     .transition(.opacity)
+                            }
+
+                            Spacer()
+
+                            // Token count badge
+                            if estimatedTokens > 0 {
+                                Text("\(tokenBadgeText) tok")
+                                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                    .foregroundStyle(tokenBadgeColor)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(tokenBadgeColor.opacity(0.1))
+                                    .clipShape(Capsule())
+                                    .help(message.outputTokens != nil ? "Actual tokens" : "Estimated tokens")
                             }
                         }
                         .padding(.top, 8)

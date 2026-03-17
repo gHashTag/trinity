@@ -25,7 +25,7 @@ events = []
 trinity.vsa = "^1.0.0"
 
 [permissions]
-level = "L0"
+level = "L1"
 filesystem = "read"
 network = "none"
 process = "none"

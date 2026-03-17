@@ -19,7 +19,7 @@ type = "library"
 file_patterns = ["trinity.zig", "sacred_constants.zig", "sacred_constants_reexport.zig", "constants.zig", "hybrid.zig", "science.zig", "bigint.zig", "trinity_fpga_mvp.zig", "trinity_search.zig"]
 
 [contributes]
-exports = ["trinity", "sacred_constants"]
+exports = []
 
 [dependencies]
 

@@ -25,6 +25,7 @@ events = []
 binaries = ["b2t"]
 
 [dependencies]
+trinity.jit = "^1.0.0"
 
 [permissions]
 level = "L2"
