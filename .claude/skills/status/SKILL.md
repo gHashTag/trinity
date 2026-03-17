@@ -3,6 +3,7 @@ name: status
 description: Live system dashboard — 12-dimension ouroboros score, verdict v3, agents, build health, recommendations
 argument-hint: [quick|full] [lang:ru|en]
 allowed-tools: Bash(zig *), Bash(zig-out/*), Bash(git *), Bash(gh *), Bash(pgrep *), Bash(cat *), Bash(ls *), Bash(wc *), Bash(tail *), Bash(find *), Bash(date *), Read, Grep, Glob
+model: haiku
 context: fork
 ---
 

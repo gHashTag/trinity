@@ -3,6 +3,7 @@ name: agents
 description: Agent swarm development dashboard — live Railway containers, issue queue, PR pipeline, JSONL events, pool utilization, and queue drain status. Use when checking agent dev tasks, spawning status, or monitoring issues #315-#319.
 argument-hint: [focus] (status, queue, events, pools, spawn <N>, full)
 allowed-tools: Bash(tri *), Bash(gh *), Bash(cat *), Bash(ls *), Bash(pgrep *), Bash(date *), Read, Grep, Glob
+model: haiku
 context: fork
 ---
 

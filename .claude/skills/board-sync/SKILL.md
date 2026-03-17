@@ -2,6 +2,7 @@
 name: board
 description: GitHub Project Board auto-sync — fill empty fields, sync labels with board status, audit field completeness. Keeps board as realtime source of truth.
 argument-hint: [sync|audit|fix]
+model: haiku
 allowed-tools: Bash(gh *), Bash(python3 *), Bash(echo *), Bash(date *), Bash(cat *), Read, Edit, Write
 ---
 

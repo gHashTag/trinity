@@ -4,6 +4,7 @@ description: Coordination agent — audits CLI build, docs, skills every 15 min.
 tools: Bash, Read, Glob, Grep, Agent(tri-doctor, tri-scholar, tri-farmer)
 model: haiku
 maxTurns: 15
+memory: project
 skills: [tri, doctor, status]
 ---
 

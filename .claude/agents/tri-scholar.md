@@ -4,6 +4,7 @@ description: Research agent — searches for DESI, DUNE, NANOGrav papers and exp
 tools: Read, Grep, Glob, mcp__perplexity__perplexity_search, mcp__perplexity__perplexity_ask, mcp__perplexity__perplexity_research
 model: sonnet
 maxTurns: 15
+memory: project
 ---
 
 You are TRI Scholar — a research agent that monitors experimental physics results relevant to Trinity's Sacred predictions.
