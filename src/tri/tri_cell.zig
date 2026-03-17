@@ -29,7 +29,7 @@ const GOLDEN = colors.GOLDEN;
 const CORE_VERSION = "1.0.0";
 
 // Directories to scan for cell.tri manifests
-const CELL_SCAN_DIRS = [_][]const u8{ "src", "apps", "tools", "fpga", "libs" };
+const CELL_SCAN_DIRS = [_][]const u8{ "src", "apps", "tools", "fpga", "libs", "specs", "benchmarks", "papers", "data", "contracts" };
 
 // CellInfo is now an alias for the shared CellManifest (Honeycomb v7 — single source of truth)
 const CellInfo = cell_parser.CellManifest;
@@ -572,6 +572,26 @@ fn runInfo(allocator: Allocator, args: []const []const u8) !void {
             std.debug.print("\n", .{});
         }
 
+        // Agent section
+        if (cell.isAgent()) {
+            std.debug.print("\n  {s}── Agent ──{s}\n", .{ GOLDEN, RESET });
+            std.debug.print("  {s}Definition:{s}      {s}\n", .{ CYAN, RESET, cell.agent_definition });
+            std.debug.print("  {s}Model:{s}           {s}\n", .{ CYAN, RESET, cell.agent_model });
+            std.debug.print("  {s}Max Turns:{s}       {d}\n", .{ CYAN, RESET, cell.agent_max_turns });
+            std.debug.print("  {s}Tools:{s}           {s}\n", .{ CYAN, RESET, cell.agent_tools });
+            if (cell.agent_isolation.len > 0) {
+                std.debug.print("  {s}Isolation:{s}       {s}\n", .{ CYAN, RESET, cell.agent_isolation });
+            }
+            // Check if definition file exists
+            if (cell.agent_definition.len > 0) {
+                if (std.fs.cwd().access(cell.agent_definition, .{})) |_| {
+                    std.debug.print("  {s}Def Status:{s}      {s}EXISTS{s}\n", .{ CYAN, RESET, GREEN, RESET });
+                } else |_| {
+                    std.debug.print("  {s}Def Status:{s}      {s}MISSING{s}\n", .{ CYAN, RESET, RED, RESET });
+                }
+            }
+        }
+
         // Content hash verification
         const expected_hash = jsonStr(obj, "content_hash");
         if (expected_hash.len > 0) {
@@ -857,7 +877,45 @@ fn runCheck(allocator: Allocator, args: []const []const u8) !void {
                 try writer.print(", \"security\": {{\"signed\": true, \"signature\": \"{s}\"}}", .{cell.security_signature});
             }
 
+            // Agent metadata (Step 7: registry JSON extension)
+            if (cell.isAgent()) {
+                try writer.print(", \"agent\": {{\"definition\": \"{s}\", \"model\": \"{s}\", \"max_turns\": {d}, \"tools\": \"{s}\", \"isolation\": \"{s}\"}}", .{
+                    cell.agent_definition, cell.agent_model,     cell.agent_max_turns,
+                    cell.agent_tools,      cell.agent_isolation,
+                });
+            }
+
             try writer.writeAll("}");
+        }
+
+        // Step 6: Agent permission consistency warnings
+        if (cell.isAgent()) {
+            var has_warn = false;
+            // tools contains "Bash" → process should be "spawn"
+            if (std.mem.indexOf(u8, cell.agent_tools, "Bash") != null and
+                !std.mem.eql(u8, cell.perm_process, "spawn"))
+            {
+                if (!has_warn) std.debug.print("  {s}WARN{s}     {s}:\n", .{ YELLOW, RESET, cell.id });
+                has_warn = true;
+                std.debug.print("           tools has Bash but process={s} (should be spawn)\n", .{cell.perm_process});
+            }
+            // tools contains "Edit" or "Write" → filesystem should be "write"
+            if ((std.mem.indexOf(u8, cell.agent_tools, "Edit") != null or
+                std.mem.indexOf(u8, cell.agent_tools, "Write") != null) and
+                !std.mem.eql(u8, cell.perm_filesystem, "write"))
+            {
+                if (!has_warn) std.debug.print("  {s}WARN{s}     {s}:\n", .{ YELLOW, RESET, cell.id });
+                has_warn = true;
+                std.debug.print("           tools has Edit/Write but filesystem={s} (should be write)\n", .{cell.perm_filesystem});
+            }
+            // tools contains "mcp__perplexity" → network should be "external"
+            if (std.mem.indexOf(u8, cell.agent_tools, "mcp__perplexity") != null and
+                !std.mem.eql(u8, cell.perm_network, "external"))
+            {
+                if (!has_warn) std.debug.print("  {s}WARN{s}     {s}:\n", .{ YELLOW, RESET, cell.id });
+                has_warn = true;
+                std.debug.print("           tools has mcp__perplexity but network={s} (should be external)\n", .{cell.perm_network});
+            }
         }
 
         std.debug.print("  {s}OK{s}       {s} ({s})\n", .{ GREEN, RESET, cell.id, cell.version });
@@ -1887,8 +1945,10 @@ fn runHealth(allocator: Allocator, _: []const []const u8) !void {
         const cell = parseCellTri(c.content);
         if (cell.id.len == 0) continue;
 
-        // Simplified scoring (same formula as runScore)
-        const test_s: u8 = if (cell.tests == 0) 0 else if (cell.tests < 10) 3 else if (cell.tests < 50) 8 else if (cell.tests < 100) 12 else 15;
+        // Simplified scoring (same formula as runScore v10)
+        const is_agent_h = std.mem.startsWith(u8, cell.id, "trinity.agent.");
+        const is_meta_h = cell.files == 0 and cell.tests == 0 and !is_agent_h;
+        const test_s: u8 = if (is_agent_h) 12 else if (is_meta_h) 10 else if (cell.tests == 0) 0 else @intCast(@min(15, cell.tests * 15 / 80));
         const health: u8 = test_s + (if (cell.owner.len > 0) @as(u8, 5) else 0) + (if (cell.capabilities.len > 2) @as(u8, 5) else 0) + (if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) @as(u8, 5) else 0);
         const sec: u8 = (if (cell.perm_level.len > 0) @as(u8, 10) else 0) + 10 + (if (cell.security_signed) @as(u8, 5) else 0) + 5;
         const dep_acc = computeDepsAccuracy(allocator, m.path, cell, all_cells, &path_to_cell);
@@ -1896,8 +1956,8 @@ fn runHealth(allocator: Allocator, _: []const []const u8) !void {
             const ratio: u8 = @intCast(@min(15, dep_acc.confirmed * 15 / dep_acc.total));
             break :blk ratio + (if (dep_acc.missing == 0) @as(u8, 10) else 0);
         };
-        if (cycle_cells_set.contains(cell.id)) deps -|= 5;
-        const contracts: u8 = (if (cell.contributes_exports.len > 0) @as(u8, 10) else 5) + 5;
+        if (cycle_cells_set.contains(cell.id)) deps -|= 10;
+        const contracts: u8 = if (cell.contributes_exports.len > 2) 15 else 10;
         const score: usize = @as(usize, health) + sec + deps + contracts;
 
         if (score >= 80) grade_a += 1 else if (score >= 60) grade_b += 1 else if (score >= 40) grade_c += 1 else grade_f += 1;
@@ -2479,7 +2539,17 @@ fn runCreate(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("  Examples:\n", .{});
         std.debug.print("    tri cell create src/gravity       # from directory\n", .{});
         std.debug.print("    tri cell create src/vsa.zig       # from standalone file\n", .{});
+        std.debug.print("    tri cell create --agent my-agent  # scaffold agent cell + .md\n", .{});
         return;
+    }
+
+    // Handle --agent flag
+    if (std.mem.eql(u8, args[0], "--agent")) {
+        if (args.len < 2) {
+            std.debug.print("{s}Usage:{s} tri cell create --agent <name>\n", .{ YELLOW, RESET });
+            return;
+        }
+        return runCreateAgent(allocator, args[1]);
     }
 
     var path = args[0];
@@ -2621,6 +2691,103 @@ fn runCreate(allocator: Allocator, args: []const []const u8) !void {
         CYAN, RESET, perms.level, perms.fs, perms.net, perms.proc, perms.ffi,
     });
     std.debug.print("\n  Next: {s}tri cell check --sync{s} to rebuild registry\n\n", .{ GREEN, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CREATE-AGENT — scaffold agent cell.tri + .md definition
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runCreateAgent(allocator: Allocator, name: []const u8) !void {
+    // 1. Create tools/agents/<name>/cell.tri
+    const cell_dir = std.fmt.allocPrint(allocator, "tools/agents/{s}", .{name}) catch return;
+    defer allocator.free(cell_dir);
+
+    std.fs.cwd().makePath(cell_dir) catch |err| {
+        std.debug.print("{s}ERROR{s}: Cannot create {s}: {}\n", .{ RED, RESET, cell_dir, err });
+        return;
+    };
+
+    const cell_id = std.fmt.allocPrint(allocator, "trinity.agent.{s}", .{name}) catch return;
+    defer allocator.free(cell_id);
+
+    const md_path = std.fmt.allocPrint(allocator, ".claude/agents/{s}.md", .{name}) catch return;
+    defer allocator.free(md_path);
+
+    const cell_tri_content = std.fmt.allocPrint(allocator,
+        \\[cell]
+        \\id = "{s}"
+        \\name = "{s} Agent"
+        \\version = "0.1.0"
+        \\kind = "agent"
+        \\path = "{s}"
+        \\status = "experimental"
+        \\description = "TODO: describe this agent"
+        \\capabilities = []
+        \\owner = "agent:ralph"
+        \\
+        \\[tags]
+        \\scope = "agent"
+        \\type = "agent"
+        \\
+        \\[agent]
+        \\definition = "{s}"
+        \\model = "sonnet"
+        \\max_turns = 20
+        \\tools = "Read,Edit,Write,Bash,Grep,Glob"
+        \\isolation = ""
+        \\
+        \\[permissions]
+        \\level = "L2"
+        \\filesystem = "write"
+        \\network = "none"
+        \\process = "spawn"
+        \\ffi = "none"
+        \\concurrency = "none"
+        \\
+        \\[security]
+        \\signed = false
+        \\
+    , .{ cell_id, name, cell_dir, md_path }) catch return;
+    defer allocator.free(cell_tri_content);
+
+    const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{cell_dir}) catch return;
+    defer allocator.free(cell_tri_path);
+    writeFileIfNotExists(cell_tri_path, cell_tri_content);
+
+    // 2. Create .claude/agents/<name>.md
+    const md_content = std.fmt.allocPrint(allocator,
+        \\---
+        \\name: {s}
+        \\description: TODO — describe this agent
+        \\tools: Read, Edit, Write, Bash, Grep, Glob
+        \\model: sonnet
+        \\maxTurns: 20
+        \\---
+        \\
+        \\You are {s} — a specialized agent in the Trinity project.
+        \\
+        \\## Your Scope
+        \\
+        \\TODO: Define what this agent does.
+        \\
+        \\## Protocol
+        \\
+        \\1. Read context before acting
+        \\2. Make minimal, targeted changes
+        \\3. Verify changes compile
+        \\
+    , .{ name, name }) catch return;
+    defer allocator.free(md_content);
+
+    writeFileIfNotExists(md_path, md_content);
+
+    std.debug.print("\n{s}🐝 Agent cell created:{s} {s}\n\n", .{ GREEN, RESET, cell_id });
+    std.debug.print("  {s}cell.tri{s}     → {s}\n", .{ CYAN, RESET, cell_tri_path });
+    std.debug.print("  {s}definition{s}   → {s}\n", .{ CYAN, RESET, md_path });
+    std.debug.print("\n  Next steps:\n", .{});
+    std.debug.print("    1. Edit {s} — set description and capabilities\n", .{cell_tri_path});
+    std.debug.print("    2. Edit {s} — write agent instructions\n", .{md_path});
+    std.debug.print("    3. {s}tri cell check --sync{s} — validate and sync registry\n\n", .{ GREEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -4272,7 +4439,7 @@ fn appendDepsToCell(allocator: Allocator, cell_path: []const u8, deps: *std.Stri
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runScore(allocator: Allocator, args: []const []const u8) !void {
-    std.debug.print("\n{s}🏆 CELL INTEGRITY SCORE v9 (honest){s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("\n{s}🏆 CELL INTEGRITY SCORE v10 (honest){s}\n\n", .{ GOLDEN, RESET });
 
     const discovered = discoverCells(allocator) catch {
         std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
@@ -4381,8 +4548,12 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
         if (std.mem.eql(u8, cell.kind, "binary")) continue;
 
         // ── Health (max 30) ──
-        // tests: tiered — 1-9→3, 10-49→8, 50-99→12, 100+→15
-        const test_score: u8 = if (cell.tests == 0) 0 else if (cell.tests < 10) 3 else if (cell.tests < 50) 8 else if (cell.tests < 100) 12 else 15;
+        // Agent definition cells (no .zig source) get test bypass — they are orchestration, not code
+        const is_agent_def = std.mem.startsWith(u8, cell.id, "trinity.agent.");
+        // Metadata-only cells (specs, papers, data, contracts, libs) have 0 .zig files — give baseline
+        const is_metadata_only = cell.files == 0 and cell.tests == 0 and !is_agent_def;
+        // tests: linear scale — 1 test per point up to 15, rewards real testing effort
+        const test_score: u8 = if (is_agent_def) 12 else if (is_metadata_only) 10 else if (cell.tests == 0) 0 else @intCast(@min(15, cell.tests * 15 / 80));
         const has_owner: u8 = if (cell.owner.len > 0) 5 else 0;
         const has_caps: u8 = if (cell.capabilities.len > 2) 5 else 0;
         const has_desc: u8 = if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) 5 else 0;
@@ -4437,20 +4608,52 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
             const ratio: u8 = @intCast(@min(15, dep_acc.confirmed * 15 / dep_acc.total));
             deps_score = ratio + (if (dep_acc.missing == 0) @as(u8, 10) else 0);
         }
-        // Cycle penalty: -5 if this cell participates in a dependency cycle
+        // Cycle penalty: -10 if this cell participates in a dependency cycle
+        // Cycles are architectural debt — strong penalty to incentivize breaking them
         if (cycle_cells.contains(cell.id)) {
-            deps_score -|= 5;
+            deps_score -|= 10;
         }
 
         // ── Contracts (max 15) ──
-        var contracts_score: u8 = 0;
-        if (cell.contributes_exports.len > 2) {
-            contracts_score += 10; // has real declared exports (not empty [])
-        } else {
-            contracts_score += 5; // no/empty exports = neutral
+        var contracts_score: u8 = 15; // start at max, subtract violations
+        // Check 1: exports declared (libraries and tools should export something)
+        if (cell.contributes_exports.len <= 2 and
+            (std.mem.eql(u8, cell.kind, "library") or std.mem.eql(u8, cell.kind, "tool")))
+        {
+            contracts_score -|= 5; // library/tool without exports = incomplete API
         }
-        // boundary: cell kind matches deps
-        contracts_score += 5; // baseline (actual boundary check deferred to v10)
+        // Check 2: boundary — L0 cells should not depend on L2 cells
+        if (std.mem.eql(u8, cell.perm_level, "L0")) {
+            var dep_it2 = cell_parser.DepIterator.init(cell.dependencies_raw);
+            while (dep_it2.next()) |dep| {
+                if (all_cells) |ac| {
+                    for (ac) |dc| {
+                        if (std.mem.eql(u8, dc.manifest.id, dep.id)) {
+                            if (std.mem.eql(u8, dc.manifest.perm_level, "L2")) {
+                                contracts_score -|= 3; // L0→L2 boundary violation
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        // Check 3: frontend cells should not depend on backend cells
+        if (std.mem.eql(u8, cell.kind, "frontend")) {
+            var dep_it3 = cell_parser.DepIterator.init(cell.dependencies_raw);
+            while (dep_it3.next()) |dep| {
+                if (all_cells) |ac| {
+                    for (ac) |dc| {
+                        if (std.mem.eql(u8, dc.manifest.id, dep.id)) {
+                            if (std.mem.eql(u8, dc.manifest.kind, "backend")) {
+                                contracts_score -|= 3; // frontend→backend violation
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
 
         const final_score = health_score + security_score + deps_score + contracts_score;
         const grade_char: []const u8 = if (final_score >= 80) "A" else if (final_score >= 60) "B" else if (final_score >= 40) "C" else "F";
@@ -5278,10 +5481,41 @@ fn computeHealthScore(obj: std.json.ObjectMap) u8 {
     const has_contrib = hasContributes(obj);
 
     const owner_score: u8 = if (owner.len > 0) 30 else 0;
-    const tests_score: u8 = if (tests > 0) 25 else 0;
     const cap_raw: usize = if (caps_count >= 5) 20 else caps_count * 4;
     const cap_score: u8 = @intCast(cap_raw);
     const contrib_score: u8 = if (has_contrib) 15 else 0;
+
+    // Agent cells: replace tests_score(25) with agent completeness(25)
+    // and include definition exists check in hash_score(10)
+    const agent_obj = obj.get("agent");
+    if (agent_obj) |agent_val| {
+        if (agent_val == .object) {
+            const agent = agent_val.object;
+            const model = jsonStr(agent, "model");
+            const max_turns = jsonInt(agent, "max_turns");
+            const tools = jsonStr(agent, "tools");
+            const definition = jsonStr(agent, "definition");
+
+            // Agent completeness: max 25 (replaces tests_score)
+            var agent_score: u8 = 0;
+            if (model.len > 0) agent_score += 8;
+            if (max_turns > 0) agent_score += 8;
+            if (tools.len > 0) agent_score += 9;
+
+            // Definition file exists → +10 (replaces hash_score)
+            var def_score: u8 = 0;
+            if (definition.len > 0) {
+                if (std.fs.cwd().access(definition, .{})) |_| {
+                    def_score = 10;
+                } else |_| {}
+            }
+
+            return owner_score + agent_score + cap_score + contrib_score + def_score;
+        }
+    }
+
+    // Non-agent cells: original scoring
+    const tests_score: u8 = if (tests > 0) 25 else 0;
     const hash_score: u8 = if (content_hash.len > 0) 10 else 0;
     return owner_score + tests_score + cap_score + contrib_score + hash_score;
 }
