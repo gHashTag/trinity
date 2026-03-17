@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["main", "analyzeCodebase", "generateSpec"]
 tri_subcommands = []
 events = []
 binaries = []
@@ -35,4 +35,4 @@ concurrency = "none"
 
 [security]
 signed = "true"
-signature = "sha256:7acb9791f308eb26be5f85b6b1c8b6dbcb582765af9450f60617eedcca4a3d99"
+signature = "sha256:6062e9fdcef22fd7e03930d2c97fd7d454ec8fd5a389f1f2ecd8a130d1686ebf"

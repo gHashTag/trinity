@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Cell modularity system: create, audit, score, deps, prune, cycles, dispatch"
 capabilities = ["cells", "modularity", "deps", "score"]
-tests = 26
+tests = 28
 owner = "agent:ralph"
 
 [tags]

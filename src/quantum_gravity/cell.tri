@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["findBestGammaMatch", "calculateHolographicEntropy", "generateQuantumGravityAssignment"]
 tri_subcommands = []
 events = []
 binaries = []
@@ -37,4 +37,4 @@ concurrency = "none"
 
 [security]
 signed = "true"
-signature = "sha256:6646b8ff6aaa7c1bc99e77511d85cf163303257ac1c4bb6bbbf19ae7dc2f9ced"
+signature = "sha256:905a6fdb90fa488013dd063887e6e22e1e14f85a6df025c223d847d8a7e2dd7a"
