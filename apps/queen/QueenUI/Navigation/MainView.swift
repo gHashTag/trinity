@@ -138,6 +138,12 @@ public struct MainView: View {
                 return nil
             }
 
+            // Cmd+O = thinking transcript
+            if ch == "o" || ch == "O" {
+                NotificationCenter.default.post(name: .showThinkingTranscript, object: nil)
+                return nil
+            }
+
             // Cmd+W = close/delete thread (handled in ChatScreen)
             if ch == "w" || ch == "W" {
                 // Let ChatScreen handle this via notification

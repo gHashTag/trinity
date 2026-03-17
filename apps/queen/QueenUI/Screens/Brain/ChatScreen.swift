@@ -25,6 +25,9 @@ struct ChatScreen: View {
     @State private var showSidebar = true
     @State private var showModelPopover = false
     @State private var slashCommandResult: String? = nil
+    @State private var showThinkingTranscript = false
+    @State private var showOnboarding = false
+    @State private var taskItems: [TaskItem] = []
     @AppStorage("stylePreset") private var stylePresetRaw: String = StylePreset.concise.rawValue
     @AppStorage("effortLevel") private var effortLevelRaw: String = EffortLevel.medium.rawValue
     @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend = false
@@ -38,6 +41,32 @@ struct ChatScreen: View {
     private var effortLevel: EffortLevel {
         get { EffortLevel(rawValue: effortLevelRaw) ?? .medium }
         set { effortLevelRaw = newValue.rawValue }
+    }
+
+    /// Parse @mentions from current input into visual chips
+    private var parsedMentionChips: [(type: String, value: String)] {
+        let mentions: [(String, String)] = [
+            ("@file:", "file"), ("@grep:", "grep"), ("@build", "build"),
+            ("@farm", "farm"), ("@issues", "issues"), ("@gitdiff", "gitdiff"),
+        ]
+        var chips: [(String, String)] = []
+        for (prefix, type) in mentions {
+            if input.contains(prefix) {
+                if prefix.hasSuffix(":") {
+                    // Extract value after prefix
+                    if let range = input.range(of: prefix) {
+                        let after = input[range.upperBound...]
+                        let value = String(after.prefix(while: { !$0.isWhitespace }))
+                        if !value.isEmpty {
+                            chips.append((type, value))
+                        }
+                    }
+                } else {
+                    chips.append((type, type))
+                }
+            }
+        }
+        return chips
     }
 
     private var thread: ChatThread? {
@@ -93,7 +122,7 @@ struct ChatScreen: View {
                             .fill(Color.white.opacity(0.06))
                             .frame(height: 1)
 
-                        NetworkDashboard(client: client)
+                        NetworkDashboard(client: client, modelManager: modelManager)
                             .frame(maxHeight: 220)
                     }
                     .frame(width: 240)
@@ -267,6 +296,20 @@ struct ChatScreen: View {
                                             .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
                                     }
 
+                                    // Elicitation card (Queen asks a question)
+                                    if let q = client.elicitationQuestion {
+                                        ElicitationCard(
+                                            question: q.question,
+                                            options: q.options,
+                                            onSelect: { answer in
+                                                input = answer
+                                                send()
+                                                client.elicitationQuestion = nil
+                                            }
+                                        )
+                                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+                                    }
+
                                     // Follow-up suggestions (after response)
                                     if !client.isStreaming && !client.followUpSuggestions.isEmpty {
                                         FollowUpSuggestions(
@@ -414,6 +457,10 @@ struct ChatScreen: View {
         .onAppear {
             if store.threads.isEmpty { store.newThread() }
             focused = true
+            // Show onboarding on first launch
+            if !UserDefaults.standard.bool(forKey: "onboardingCompleted") {
+                showOnboarding = true
+            }
             // Defer heavy work off the body evaluation path
             Task { @MainActor in
                 NotificationService.shared.requestPermission()
@@ -437,10 +484,28 @@ struct ChatScreen: View {
                 NSPasteboard.general.setString(last.text, forType: .string)
             }
         }
+        .onReceive(NotificationCenter.default.publisher(for: .showThinkingTranscript)) { _ in
+            showThinkingTranscript = true
+        }
+        .sheet(isPresented: $showThinkingTranscript) {
+            ThinkingTranscriptSheet(messages: thread?.messages ?? [])
+        }
+        .sheet(isPresented: $showOnboarding) {
+            OnboardingWalkthrough(isPresented: $showOnboarding)
+        }
         // Draft auto-save: persist input text per thread
         .onChange(of: input) { _, newValue in
             if let tid = store.activeThreadID {
                 UserDefaults.standard.set(newValue, forKey: "draft_\(tid)")
+            }
+            // Clear follow-up suggestions when user starts typing
+            if !newValue.isEmpty && !client.followUpSuggestions.isEmpty {
+                client.followUpSuggestions = []
+            }
+        }
+        .onChange(of: client.extractedTasks) { _, newTasks in
+            if !newTasks.isEmpty {
+                taskItems = newTasks.map { TaskItem(title: $0) }
             }
         }
         .onChange(of: store.activeThreadID) { _, newID in
@@ -571,7 +636,7 @@ struct ChatScreen: View {
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
         }
 
-        // Rejection feedback inline
+        // Rejection feedback inline (auto-dismiss after 30s)
         if let rejection = client.showRejectionFeedback,
            let threadID = store.activeThreadID, rejection.threadID == threadID {
             RejectionFeedbackView(
@@ -588,6 +653,12 @@ struct ChatScreen: View {
                     client.showRejectionFeedback = nil
                 }
             )
+            .onAppear {
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(30))
+                    client.showRejectionFeedback = nil
+                }
+            }
         }
 
         // Context overflow warning
@@ -626,6 +697,38 @@ struct ChatScreen: View {
                 }
             )
             .padding(.horizontal, 60)
+        }
+
+        // Task tracker
+        if !taskItems.isEmpty {
+            TaskTrackerView(tasks: $taskItems)
+                .padding(.horizontal, 60)
+                .padding(.bottom, 4)
+        }
+
+        // @Mention chips (parsed from input — click to remove)
+        if !parsedMentionChips.isEmpty {
+            HStack(spacing: 6) {
+                ForEach(parsedMentionChips, id: \.value) { chip in
+                    Button {
+                        // Remove this mention from input
+                        let mentionStr = chip.type == chip.value ? "@\(chip.type)" : "@\(chip.type):\(chip.value)"
+                        input = input.replacingOccurrences(of: mentionStr, with: "")
+                            .trimmingCharacters(in: .whitespaces)
+                    } label: {
+                        HStack(spacing: 2) {
+                            MentionChip(type: chip.type, value: chip.value)
+                            Image(systemName: "xmark")
+                                .font(.system(size: 7))
+                                .foregroundStyle(Color.white.opacity(0.3))
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 60)
+            .padding(.bottom, 2)
         }
 
         // Attached files chips
@@ -1014,14 +1117,25 @@ struct ChatScreen: View {
     private func toggleVoiceInput() {
         if isRecording {
             isRecording = false
-            SFSpeechRecognizer.requestAuthorization { _ in }
-        } else {
-            SFSpeechRecognizer.requestAuthorization { status in
-                DispatchQueue.main.async {
-                    if status == .authorized {
-                        isRecording = true
-                        startListening()
+            return
+        }
+
+        SFSpeechRecognizer.requestAuthorization { status in
+            DispatchQueue.main.async {
+                switch status {
+                case .authorized:
+                    isRecording = true
+                    startListening()
+                case .denied, .restricted:
+                    slashCommandResult = "Microphone access denied. Enable in System Settings > Privacy > Speech Recognition"
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(5))
+                        slashCommandResult = nil
                     }
+                case .notDetermined:
+                    break // Wait for user decision
+                @unknown default:
+                    break
                 }
             }
         }
@@ -1125,6 +1239,7 @@ extension Notification.Name {
     static let toggleSidebar = Notification.Name("toggleSidebar")
     static let copyLastResponse = Notification.Name("copyLastResponse")
     static let newThread = Notification.Name("newThread")
+    static let showThinkingTranscript = Notification.Name("showThinkingTranscript")
 }
 
 // MARK: - Scroll Offset Preference Key
@@ -1240,8 +1355,17 @@ struct ConnectionStatusBar: View {
             // Rate limit predictor warning
             RateLimitWarning(modelManager: modelManager)
 
-            // Branch pill (CTO context)
-            BranchPill()
+            // MCP server status + Branch pill
+            HStack(spacing: 12) {
+                MCPStatusView()
+                    .onAppear {
+                        // Will load from .mcp.json
+                    }
+                BranchPill()
+                Spacer()
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 2)
         }
         .onAppear { checkConnection() }
         .onChange(of: client.failoverEvent) {
@@ -1859,15 +1983,29 @@ struct ActionIconStyle: ButtonStyle {
 struct EmptyThreadView: View {
     @Binding var chatMode: ChatMode
     var onSuggestion: ((String) -> Void)?
+    @StateObject private var trinityCtx = TrinityContext.shared
 
-    private let suggestions: [(String, String, ChatMode)] = [
-        ("🔍", "What's new in ternary AI research?", .search),
-        ("🧬", "Show SEVO farm evolution status", .trinity),
-        ("💡", "Analyze Trinity's architecture trade-offs", .reason),
-        ("🖼", "Trinity logo: golden crown on black, sci-fi style", .image),
-        ("📊", "Compare our PPL with BitNet and Falcon", .trinity),
-        ("🔨", "Is the build passing? What needs fixing?", .trinity),
-    ]
+    private var suggestions: [(String, String, ChatMode)] {
+        var items: [(String, String, ChatMode)] = []
+
+        // Contextual suggestions based on live state
+        if trinityCtx.buildOK == false {
+            items.append(("\u{1F6A8}", "Build is broken — diagnose and fix", .trinity))
+        }
+        if let ppl = trinityCtx.bestPPL, let run = trinityCtx.bestRun {
+            items.append(("\u{1F3C6}", "\(run) PPL=\(String(format: "%.1f", ppl)) — analyze results", .trinity))
+        }
+        if let dirty = trinityCtx.dirtyFiles, dirty > 10 {
+            items.append(("\u{1F9F9}", "\(dirty) dirty files — review changes", .trinity))
+        }
+
+        // Static fallbacks
+        items.append(("\u{1F50D}", "What's new in ternary AI research?", .search))
+        items.append(("\u{1F4A1}", "Analyze Trinity's architecture trade-offs", .reason))
+        items.append(("\u{1F5BC}", "Trinity logo: golden crown on black, sci-fi style", .image))
+
+        return Array(items.prefix(6))
+    }
 
     var body: some View {
         VStack(spacing: 24) {
@@ -2540,6 +2678,7 @@ struct StreamingElapsedTimer: View {
 
 struct NetworkDashboard: View {
     @ObservedObject var client: ChatClient
+    @ObservedObject var modelManager: ModelManager
     @StateObject private var networkLog = NetworkLog.shared
     @State private var isExpanded = false
 
@@ -2596,6 +2735,24 @@ struct NetworkDashboard: View {
                         Text("\(remaining) left")
                             .font(.system(size: 8, design: .monospaced))
                             .foregroundStyle(remaining < 10 ? TrinityTheme.statusError : TrinityTheme.textMuted)
+                    }
+                    // Quick switch button if not current provider
+                    if status.isUp && modelManager.selectedModel.provider.rawValue != status.name {
+                        Button {
+                            if let model = modelManager.availableModels.first(where: { $0.provider.rawValue == status.name && !$0.isImageModel }) {
+                                modelManager.selectedModel = model
+                                modelManager.persistSelection()
+                            }
+                        } label: {
+                            Text("Use")
+                                .font(.system(size: 8, weight: .bold))
+                                .foregroundStyle(.black)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(TrinityTheme.accent)
+                                .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
                 HStack(spacing: 8) {
@@ -3133,5 +3290,439 @@ struct ElicitationCard: View {
         .padding(12)
         .background(TrinityTheme.purple.opacity(0.06))
         .clipShape(RoundedRectangle(cornerRadius: 10))
+    }
+}
+
+// MARK: - Thinking Transcript Sheet (Cmd+O)
+
+struct ThinkingTranscriptSheet: View {
+    let messages: [ChatMessage]
+    @Environment(\.dismiss) private var dismiss
+
+    private var thinkingEntries: [(model: String, thinking: String, response: String)] {
+        messages.filter { $0.role == .assistant && $0.thinkingText != nil }.map { msg in
+            (
+                model: msg.modelID ?? "unknown",
+                thinking: msg.thinkingText ?? "",
+                response: String(msg.text.prefix(200))
+            )
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Image(systemName: "brain")
+                    .font(.system(size: 16))
+                    .foregroundStyle(TrinityTheme.purple)
+                Text("Thinking Transcript")
+                    .font(.headline)
+                    .foregroundStyle(TrinityTheme.textPrimary)
+                Spacer()
+                Button {
+                    // Copy all thinking to clipboard
+                    let all = thinkingEntries.map { "[\($0.model)]\n\($0.thinking)" }.joined(separator: "\n\n---\n\n")
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(all, forType: NSPasteboard.PasteboardType.string)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "doc.on.doc")
+                        Text("Copy All")
+                    }
+                    .font(.system(size: 12))
+                    .foregroundStyle(TrinityTheme.accent)
+                }
+                .buttonStyle(.plain)
+                Button { dismiss() } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 16))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding()
+
+            if thinkingEntries.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "brain.head.profile")
+                        .font(.system(size: 32))
+                        .foregroundStyle(Color.white.opacity(0.2))
+                    Text("No thinking data in this thread")
+                        .font(.system(size: 14))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                    Text("Use Reason mode or High/Max effort to enable extended thinking")
+                        .font(.system(size: 12))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 16) {
+                        ForEach(Array(thinkingEntries.enumerated()), id: \.offset) { idx, entry in
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack {
+                                    Text("Turn \(idx + 1)")
+                                        .font(.system(size: 11, weight: .bold))
+                                        .foregroundStyle(TrinityTheme.purple)
+                                    Text(entry.model)
+                                        .font(.system(size: 10, design: .monospaced))
+                                        .foregroundStyle(TrinityTheme.textMuted)
+                                    Spacer()
+                                    Text("\(entry.thinking.count) chars")
+                                        .font(.system(size: 9, design: .monospaced))
+                                        .foregroundStyle(Color.white.opacity(0.3))
+                                }
+
+                                Text(entry.thinking)
+                                    .font(.system(size: 12, design: .monospaced))
+                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .textSelection(.enabled)
+                                    .padding(8)
+                                    .background(Color.white.opacity(0.03))
+                                    .clipShape(RoundedRectangle(cornerRadius: 6))
+
+                                // Response preview
+                                Text(entry.response + (entry.response.count >= 200 ? "..." : ""))
+                                    .font(.system(size: 11))
+                                    .foregroundStyle(Color.white.opacity(0.4))
+                                    .lineLimit(2)
+                            }
+                        }
+                    }
+                    .padding()
+                }
+            }
+        }
+        .frame(minWidth: 600, minHeight: 400)
+        .background(TrinityTheme.bgWindow)
+    }
+}
+
+// MARK: - Onboarding Walkthrough (4-step)
+
+struct OnboardingWalkthrough: View {
+    @Binding var isPresented: Bool
+    @State private var step = 0
+
+    private let steps: [(icon: String, title: String, body: String)] = [
+        ("crown.fill", "Welcome to Queen",
+         "Your personal CTO for the Trinity project. Queen has full access to your repo, build status, training farm, and arena."),
+        ("at", "Use @mentions",
+         "Type @ in the input to attach context: @file:path, @grep:query, @build, @farm, @issues, @gitdiff. Queen reads them automatically."),
+        ("keyboard", "Slash Commands",
+         "Type / for quick actions: /effort, /model, /compact, /cost, /fast, /branch, /help. Or press Cmd+K for the command palette."),
+        ("gauge.with.dots.needle.33percent", "Control Quality",
+         "Use the Effort picker (Low/Med/High/Max) to control response depth. Use Style presets for tone. Long-press Send to pick a specific model."),
+    ]
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            // Step indicator
+            HStack(spacing: 8) {
+                ForEach(0..<steps.count, id: \.self) { i in
+                    Circle()
+                        .fill(i == step ? TrinityTheme.accent : Color.white.opacity(0.15))
+                        .frame(width: 8, height: 8)
+                }
+            }
+
+            // Content
+            let current = steps[step]
+            Image(systemName: current.icon)
+                .font(.system(size: 48))
+                .foregroundStyle(step == 0 ? TrinityTheme.golden : TrinityTheme.accent)
+
+            Text(current.title)
+                .font(.system(size: 24, weight: .bold))
+                .foregroundStyle(TrinityTheme.textPrimary)
+
+            Text(current.body)
+                .font(.system(size: 15))
+                .foregroundStyle(Color.white.opacity(0.6))
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 400)
+
+            Spacer()
+
+            // Navigation
+            HStack(spacing: 16) {
+                if step > 0 {
+                    Button {
+                        withAnimation { step -= 1 }
+                    } label: {
+                        Text("Back")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Color.white.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Spacer()
+
+                Button {
+                    if step < steps.count - 1 {
+                        withAnimation { step += 1 }
+                    } else {
+                        UserDefaults.standard.set(true, forKey: "onboardingCompleted")
+                        isPresented = false
+                    }
+                } label: {
+                    Text(step < steps.count - 1 ? "Next" : "Get Started")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(TrinityTheme.accent)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 40)
+            .padding(.bottom, 30)
+
+            // Skip
+            Button {
+                UserDefaults.standard.set(true, forKey: "onboardingCompleted")
+                isPresented = false
+            } label: {
+                Text("Skip")
+                    .font(.system(size: 12))
+                    .foregroundStyle(Color.white.opacity(0.3))
+            }
+            .buttonStyle(.plain)
+            .padding(.bottom, 16)
+        }
+        .frame(minWidth: 500, minHeight: 400)
+        .background(TrinityTheme.bgWindow)
+    }
+}
+
+// MARK: - Task Tracker
+
+struct TaskItem: Identifiable {
+    let id = UUID()
+    var title: String
+    var isDone: Bool = false
+}
+
+struct TaskTrackerView: View {
+    @Binding var tasks: [TaskItem]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Image(systemName: "checklist")
+                    .font(.system(size: 11))
+                    .foregroundStyle(TrinityTheme.accent)
+                Text("Tasks")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(TrinityTheme.accent)
+                let done = tasks.filter(\.isDone).count
+                Text("\(done)/\(tasks.count)")
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(TrinityTheme.textMuted)
+                Spacer()
+                Button {
+                    tasks.removeAll()
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 9))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+                .buttonStyle(.plain)
+            }
+
+            ForEach(tasks.indices, id: \.self) { idx in
+                HStack(spacing: 6) {
+                    Button {
+                        tasks[idx].isDone.toggle()
+                    } label: {
+                        Image(systemName: tasks[idx].isDone ? "checkmark.circle.fill" : "circle")
+                            .font(.system(size: 12))
+                            .foregroundStyle(tasks[idx].isDone ? TrinityTheme.statusOK : Color.white.opacity(0.3))
+                    }
+                    .buttonStyle(.plain)
+
+                    Text(tasks[idx].title)
+                        .font(.system(size: 11))
+                        .foregroundStyle(tasks[idx].isDone ? TrinityTheme.textMuted : TrinityTheme.textPrimary)
+                        .strikethrough(tasks[idx].isDone)
+                }
+            }
+
+            // Progress bar
+            let progress = tasks.isEmpty ? 0.0 : Double(tasks.filter(\.isDone).count) / Double(tasks.count)
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.white.opacity(0.06))
+                    Capsule()
+                        .fill(progress >= 1.0 ? TrinityTheme.statusOK : TrinityTheme.accent)
+                        .frame(width: geo.size.width * progress)
+                }
+            }
+            .frame(height: 3)
+            .padding(.top, 4)
+        }
+        .padding(10)
+        .background(TrinityTheme.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+    }
+}
+
+// MARK: - @Mention Chips (visual inline chips)
+
+struct MentionChip: View {
+    let type: String  // "file", "grep", "build", etc.
+    let value: String
+
+    private var icon: String {
+        switch type {
+        case "file": return "doc.text"
+        case "grep": return "magnifyingglass"
+        case "build": return "hammer"
+        case "farm": return "chart.bar"
+        case "issues": return "list.bullet"
+        case "gitdiff": return "arrow.triangle.branch"
+        default: return "at"
+        }
+    }
+
+    private var color: Color {
+        switch type {
+        case "file": return TrinityTheme.accent
+        case "grep": return TrinityTheme.purple
+        case "build": return TrinityTheme.statusError
+        case "farm": return TrinityTheme.golden
+        default: return TrinityTheme.accent
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 9))
+            Text(value)
+                .font(.system(size: 10, weight: .medium))
+                .lineLimit(1)
+        }
+        .foregroundStyle(color)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 2)
+        .background(color.opacity(0.12))
+        .clipShape(Capsule())
+    }
+}
+
+// MARK: - Agent Status Indicator (3 states)
+
+struct AgentStatusIndicator: View {
+    enum AgentState {
+        case active, done, pending
+    }
+
+    let name: String
+    let state: AgentState
+
+    private var icon: String {
+        switch state {
+        case .active: return "circle.fill"
+        case .done: return "checkmark.circle.fill"
+        case .pending: return "clock"
+        }
+    }
+
+    private var color: Color {
+        switch state {
+        case .active: return TrinityTheme.accent
+        case .done: return TrinityTheme.statusOK
+        case .pending: return TrinityTheme.textMuted
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 8))
+                .foregroundStyle(color)
+            Text(name)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(color)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 3)
+        .background(color.opacity(0.1))
+        .clipShape(Capsule())
+    }
+}
+
+// MARK: - MCP Status Indicator
+
+struct MCPStatusView: View {
+    @State private var servers: [(name: String, connected: Bool)] = []
+
+    var body: some View {
+        Group {
+            if !servers.isEmpty {
+                HStack(spacing: 8) {
+                    ForEach(servers, id: \.name) { server in
+                        HStack(spacing: 3) {
+                            Circle()
+                                .fill(server.connected ? TrinityTheme.statusOK : Color.white.opacity(0.2))
+                                .frame(width: 5, height: 5)
+                            Text(server.name)
+                                .font(.system(size: 9))
+                                .foregroundStyle(server.connected ? TrinityTheme.textMuted : Color.white.opacity(0.2))
+                        }
+                    }
+                }
+            }
+        }
+        .onAppear {
+            servers = Self.loadServers()
+        }
+    }
+
+    /// Probe .mcp.json to determine which MCP servers are configured
+    static func loadServers() -> [(name: String, connected: Bool)] {
+        let cwd = FileManager.default.currentDirectoryPath
+        let mcpPath = "\(cwd)/.mcp.json"
+        let names = ["trinity", "needle", "zig-docs", "railway"]
+
+        guard let data = try? Data(contentsOf: URL(fileURLWithPath: mcpPath)),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let configured = json["mcpServers"] as? [String: Any] else {
+            return names.map { ($0, false) }
+        }
+
+        return names.map { ($0, configured[$0] != nil) }
+    }
+}
+
+// MARK: - Truncation Gradient Modifier
+
+struct TruncationGradient: ViewModifier {
+    let maxHeight: CGFloat
+
+    func body(content: Content) -> some View {
+        content
+            .frame(maxHeight: maxHeight)
+            .clipped()
+            .overlay(alignment: .bottom) {
+                LinearGradient(
+                    colors: [Color.black.opacity(0), Color.black],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .frame(height: 30)
+            }
+    }
+}
+
+extension View {
+    func truncationGradient(maxHeight: CGFloat = 200) -> some View {
+        modifier(TruncationGradient(maxHeight: maxHeight))
     }
 }

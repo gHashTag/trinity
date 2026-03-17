@@ -266,9 +266,12 @@ struct ModelComparisonView: View {
     private func stopComparison() {
         leftTask?.cancel()
         rightTask?.cancel()
+        leftTask = nil
+        rightTask = nil
         isRunning = false
-        if leftMetrics.status == "streaming" { leftMetrics.status = "done" }
-        if rightMetrics.status == "streaming" { rightMetrics.status = "done" }
+        // Ensure both sides show final state (fix race condition)
+        if leftMetrics.status == "streaming" { leftMetrics.status = "stopped" }
+        if rightMetrics.status == "streaming" { rightMetrics.status = "stopped" }
     }
 
     private func runModel(

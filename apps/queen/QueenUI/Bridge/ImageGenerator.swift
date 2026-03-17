@@ -84,6 +84,18 @@ class ImageGenerator: ObservableObject {
 /// Downloads an image from URL and returns NSImage
 func downloadImage(from urlString: String) async -> NSImage? {
     guard let url = URL(string: urlString) else { return nil }
-    guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
+
+    // Try with timeout and HTTP status validation
+    var request = URLRequest(url: url)
+    request.timeoutInterval = 15
+
+    guard let (data, response) = try? await URLSession.shared.data(for: request) else { return nil }
+
+    // Validate HTTP response
+    if let httpResponse = response as? HTTPURLResponse {
+        guard (200...299).contains(httpResponse.statusCode) else { return nil }
+    }
+
+    guard !data.isEmpty else { return nil }
     return NSImage(data: data)
 }
