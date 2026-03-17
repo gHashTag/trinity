@@ -244,7 +244,18 @@ fn updateTaskStatus(allocator: Allocator, issue_number: u32, new_status: []const
     const filename = try std.fmt.allocPrint(allocator, ".trinity/tasks/farm-{d}.json", .{issue_number});
     defer allocator.free(filename);
 
-    const file = try std.fs.cwd().openFile(filename, .{});
+    // Ensure tasks directory exists
+    try std.fs.cwd().makePath(".trinity/tasks");
+
+    // Try to open existing file, or create new if it doesn't exist
+    const file = std.fs.cwd().openFile(filename, .{}) catch |err| {
+        if (err == error.FileNotFound) {
+            // File doesn't exist - this is OK for GitHub mode, just skip status update
+            // The task status lives on GitHub, not in local cache
+            return;
+        }
+        return err;
+    };
     defer file.close();
 
     const stat = try file.stat();
