@@ -367,6 +367,8 @@ pub fn runEvolveCommand(allocator: Allocator, args: []const []const u8) !void {
         return runResume(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "recommend")) {
         return runRecommend(allocator);
+    } else if (std.mem.eql(u8, subcmd, "restart")) {
+        return runRestart(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "mirage")) {
         return runMirage(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
@@ -1711,10 +1713,11 @@ const QuotaBucket = struct {
 const MAX_QUOTA_BUCKETS = 8;
 
 const DEFAULT_QUOTAS = [_]QuotaBucket{
-    .{ .objective = "ntp", .min_context = 0, .target_pct = 0.40 },
-    .{ .objective = "ntp", .min_context = 81, .target_pct = 0.20 },
-    .{ .objective = "jepa", .min_context = 0, .target_pct = 0.20 },
-    .{ .objective = "hybrid", .min_context = 0, .target_pct = 0.20 },
+    .{ .objective = "ntp", .min_context = 0, .target_pct = 0.35 }, // 35% NTP any ctx
+    .{ .objective = "ntp", .min_context = 81, .target_pct = 0.15 }, // 15% NTP ctx≥81
+    .{ .objective = "nca-ntp", .min_context = 0, .target_pct = 0.25 }, // 25% NCA (w7-3 PPL=32.03, 2.2x better)
+    .{ .objective = "jepa", .min_context = 0, .target_pct = 0.15 }, // 15% JEPA
+    .{ .objective = "hybrid", .min_context = 0, .target_pct = 0.10 }, // 10% HYBRID
 };
 
 const QuotaDeficit = struct {
@@ -6010,6 +6013,116 @@ fn resumeService(allocator: Allocator, state: *EvolutionState, svc_idx: usize, a
 // ═══════════════════════════════════════════════════════════════════════════════
 // RECOMMEND — Standalone recommendations subcommand
 // ═══════════════════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RESTART — Update kill thresholds + redeploy, preserving checkpoint
+// Usage: tri farm evolve restart --target <name> [--dry-run]
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runRestart(allocator: Allocator, args: []const []const u8) !void {
+    var target_name: ?[]const u8 = null;
+    var dry_run = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--target") and i + 1 < args.len) {
+            i += 1;
+            target_name = args[i];
+        } else if (std.mem.eql(u8, args[i], "--dry-run")) {
+            dry_run = true;
+        }
+    }
+
+    const tgt = target_name orelse {
+        print("{s}Usage: tri farm evolve restart --target <service-name> [--dry-run]{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    var state = loadState(allocator) catch {
+        print("{s}No state. Run: tri farm evolve init{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    // Find service by name
+    var svc_idx: ?usize = null;
+    for (state.services[0..state.service_count], 0..) |*svc, si| {
+        if (std.mem.eql(u8, svc.svcName(), tgt)) {
+            svc_idx = si;
+            break;
+        }
+    }
+
+    const idx = svc_idx orelse {
+        print("{s}Service '{s}' not found in state{s}\n", .{ RED, tgt, RESET });
+        return;
+    };
+    const svc = &state.services[idx];
+
+    print("\n{s}🔄 RESTART:{s} {s}  (step={d}, PPL={d:.2})\n", .{ BOLD, RESET, tgt, svc.current_step, svc.current_ppl });
+    print("   Kill thresholds: 10K=800, 30K=400, 60K=200, 80K=80\n", .{});
+    print("   FRESH=0 (preserve checkpoint), MAX_STEPS=100000\n", .{});
+
+    if (dry_run) {
+        print("   {s}--dry-run: no action taken{s}\n\n", .{ DIM, RESET });
+        return;
+    }
+
+    var accounts_buf: [MAX_FARM_ACCOUNTS]Account = undefined;
+    const account_count = farm_accounts_mod.discoverAccounts(allocator, &accounts_buf);
+    defer farm_accounts_mod.deinitAccounts(allocator, &accounts_buf, account_count);
+
+    if (svc.account_idx >= account_count) {
+        print("  {s}account_idx {d} out of range{s}\n", .{ YELLOW, svc.account_idx, RESET });
+        return;
+    }
+    const acct = &accounts_buf[svc.account_idx];
+
+    var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch return;
+    defer api.deinit();
+
+    const svc_id = svc.svcId();
+
+    // Set only kill thresholds + FRESH=0 + MAX_STEPS — preserve all other config
+    const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
+    const set_vars_json = std.fmt.allocPrint(allocator,
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","HSLM_FRESH":"0","HSLM_MAX_STEPS":"100000"}}}}}}
+    , .{ acct.project_id, svc_id, acct.env_id }) catch return;
+    defer allocator.free(set_vars_json);
+
+    if (api.query(set_vars_gql, set_vars_json)) |resp| {
+        allocator.free(resp);
+    } else |_| {
+        print("  {s}variableCollectionUpsert failed{s}\n", .{ RED, RESET });
+        state.addEvent(.err, svc.svcName(), "restart: variableCollectionUpsert failed");
+        return;
+    }
+
+    std.Thread.sleep(100 * std.time.ns_per_ms);
+
+    // Redeploy
+    if (api.redeployService(svc_id, acct.env_id)) |resp| {
+        allocator.free(resp);
+    } else |_| {
+        print("  {s}redeploy failed{s}\n", .{ RED, RESET });
+        state.addEvent(.err, svc.svcName(), "restart: redeploy failed");
+        return;
+    }
+
+    // Update state
+    svc.status = .running;
+    svc.stall_count = 0;
+
+    var detail_buf: [128]u8 = undefined;
+    const detail = std.fmt.bufPrint(&detail_buf, "restart: kill thresholds updated, step={d}, PPL={d:.2}", .{ svc.current_step, svc.current_ppl }) catch "restarted";
+    state.addEvent(.tune, svc.svcName(), detail);
+    notifyWsBus(.tune, svc.svcName(), detail);
+
+    saveState(state) catch |err| {
+        print("  {s}Failed to save state: {}{s}\n", .{ YELLOW, err, RESET });
+    };
+
+    print("  {s}✅ {s} restarted — checkpoint preserved, thresholds fixed{s}\n\n", .{ GREEN, tgt, RESET });
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MIRAGE — Mark service as PPL mirage (overfitting, garbage generation)

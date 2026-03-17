@@ -897,9 +897,19 @@ class ChatClient: ObservableObject {
                 }
             }
             store.saveThread(threadID)
+            cancelStreamTimeout()
             streamingState = .done
             // Sound cue on receive
             SoundCueManager.shared.playReceive()
+            // Notify if long stream and app backgrounded
+            if let start = streamStartTime {
+                let duration = Date().timeIntervalSince(start)
+                NotificationService.shared.streamCompleted(
+                    tokens: streamingOutputTokens,
+                    duration: duration,
+                    model: lastModelID
+                )
+            }
         }
     }
 

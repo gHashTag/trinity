@@ -260,6 +260,7 @@ class NetworkLog: ObservableObject {
     }
 
     private func loadRecent() {
+        rotateIfNeeded()
         guard let content = try? String(contentsOf: logURL, encoding: .utf8) else { return }
         let decoder = JSONDecoder()
         let lines = content.components(separatedBy: "\n").suffix(maxEntries)
@@ -267,5 +268,37 @@ class NetworkLog: ObservableObject {
             guard !line.isEmpty, let data = line.data(using: .utf8) else { return nil }
             return try? decoder.decode(Entry.self, from: data)
         }
+    }
+
+    /// Rotate log daily: archive yesterday's log, delete logs >7 days old
+    private func rotateIfNeeded() {
+        let fm = FileManager.default
+        guard fm.fileExists(atPath: logURL.path) else { return }
+
+        // Check last rotation date
+        let lastRotateKey = "networkLog.lastRotate"
+        let lastRotate = UserDefaults.standard.string(forKey: lastRotateKey) ?? ""
+        let today = ISO8601DateFormatter().string(from: Date()).prefix(10)  // "2026-03-17"
+        guard lastRotate != String(today) else { return }
+
+        // Archive current log
+        let archiveURL = logURL.deletingLastPathComponent()
+            .appendingPathComponent("network_log_\(lastRotate.isEmpty ? "old" : lastRotate).jsonl")
+        try? fm.moveItem(at: logURL, to: archiveURL)
+
+        // Delete archives older than 7 days
+        let logDir = logURL.deletingLastPathComponent()
+        if let files = try? fm.contentsOfDirectory(at: logDir, includingPropertiesForKeys: [.creationDateKey]) {
+            let cutoff = Date().addingTimeInterval(-7 * 86400)
+            for file in files where file.lastPathComponent.hasPrefix("network_log_") && file.lastPathComponent != logURL.lastPathComponent {
+                if let attrs = try? fm.attributesOfItem(atPath: file.path),
+                   let created = attrs[.creationDate] as? Date,
+                   created < cutoff {
+                    try? fm.removeItem(at: file)
+                }
+            }
+        }
+
+        UserDefaults.standard.set(String(today), forKey: lastRotateKey)
     }
 }

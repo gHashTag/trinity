@@ -64,6 +64,18 @@ pub const CellManifest = struct {
     security_signature: []const u8 = "",
     security_score: ?u8 = null,
 
+    // [agent] section — links cell to .claude/agents/<name>.md definition
+    agent_definition: []const u8 = "", // ".claude/agents/queen-swift.md"
+    agent_model: []const u8 = "", // "opus" | "sonnet" | "haiku"
+    agent_max_turns: u16 = 0,
+    agent_tools: []const u8 = "", // "Read,Edit,Write,Bash,Grep,Glob"
+    agent_isolation: []const u8 = "", // "worktree" | ""
+
+    /// True if this cell is an agent with a .md definition
+    pub fn isAgent(self: CellManifest) bool {
+        return self.agent_definition.len > 0;
+    }
+
     // Convenience: check if cell has any tri subcommands
     pub fn hasSubcommands(self: CellManifest) bool {
         return self.contributes_tri_subcommands.len > 2;
@@ -89,7 +101,7 @@ pub const CellManifest = struct {
 // PARSER — section-aware cell.tri TOML-like format
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const Section = enum { cell, tags, contributes, dependencies, permissions, security, source };
+const Section = enum { cell, tags, contributes, dependencies, permissions, security, source, agent };
 
 /// Parse cell.tri content into CellManifest.
 /// All string fields are slices into `content` — caller must keep it alive.
@@ -125,6 +137,8 @@ pub fn parse(content: []const u8) CellManifest {
                 current_section = .security;
             } else if (std.mem.eql(u8, trimmed, "[source]")) {
                 current_section = .source;
+            } else if (std.mem.eql(u8, trimmed, "[agent]")) {
+                current_section = .agent;
             }
             continue;
         }
@@ -156,6 +170,9 @@ pub fn parse(content: []const u8) CellManifest {
             },
             .source => {
                 if (std.mem.eql(u8, key, "file_patterns")) m.file_patterns = value;
+            },
+            .agent => {
+                if (std.mem.eql(u8, key, "definition")) m.agent_definition = value else if (std.mem.eql(u8, key, "model")) m.agent_model = value else if (std.mem.eql(u8, key, "max_turns")) m.agent_max_turns = std.fmt.parseInt(u16, value, 10) catch 0 else if (std.mem.eql(u8, key, "tools")) m.agent_tools = value else if (std.mem.eql(u8, key, "isolation")) m.agent_isolation = value;
             },
         }
     }
@@ -392,4 +409,61 @@ test "dep iterator" {
 test "dep count" {
     try std.testing.expectEqual(@as(usize, 2), DepIterator.count("a = \"1\"\nb = \"2\"\n"));
     try std.testing.expectEqual(@as(usize, 0), DepIterator.count(""));
+}
+
+test "parse agent cell.tri" {
+    const content =
+        \\[cell]
+        \\id = "trinity.agent.queen-swift"
+        \\name = "Queen Swift Agent"
+        \\version = "1.0.0"
+        \\kind = "agent"
+        \\path = "tools/agents/queen-swift"
+        \\status = "stable"
+        \\description = "SwiftUI developer for Queen UI"
+        \\capabilities = ["swiftui", "macos", "queen-ui"]
+        \\owner = "agent:ralph"
+        \\
+        \\[tags]
+        \\scope = "agent"
+        \\type = "agent"
+        \\
+        \\[agent]
+        \\definition = ".claude/agents/queen-swift.md"
+        \\model = "opus"
+        \\max_turns = 30
+        \\tools = "Read,Edit,Write,Bash,Grep,Glob"
+        \\isolation = "worktree"
+        \\
+        \\[permissions]
+        \\level = "L2"
+        \\filesystem = "write"
+        \\network = "none"
+        \\process = "spawn"
+    ;
+
+    const m = parse(content);
+    try std.testing.expectEqualStrings("trinity.agent.queen-swift", m.id);
+    try std.testing.expectEqualStrings("agent", m.kind);
+    try std.testing.expect(m.isAgent());
+    try std.testing.expectEqualStrings(".claude/agents/queen-swift.md", m.agent_definition);
+    try std.testing.expectEqualStrings("opus", m.agent_model);
+    try std.testing.expectEqual(@as(u16, 30), m.agent_max_turns);
+    try std.testing.expectEqualStrings("Read,Edit,Write,Bash,Grep,Glob", m.agent_tools);
+    try std.testing.expectEqualStrings("worktree", m.agent_isolation);
+    try std.testing.expectEqualStrings("L2", m.perm_level);
+    try std.testing.expectEqualStrings("write", m.perm_filesystem);
+    try std.testing.expectEqualStrings("spawn", m.perm_process);
+}
+
+test "non-agent cell has isAgent false" {
+    const content =
+        \\[cell]
+        \\id = "trinity.core"
+        \\name = "Core"
+        \\path = "src/core"
+    ;
+    const m = parse(content);
+    try std.testing.expect(!m.isAgent());
+    try std.testing.expectEqualStrings("", m.agent_definition);
 }
