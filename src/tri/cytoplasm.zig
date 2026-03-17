@@ -235,6 +235,8 @@ fn printHelp() void {
     std.debug.print("  {s}check-boundaries{s}  Validate tag boundary rules\n", .{ GREEN, RESET });
     std.debug.print("  {s}bio{s}               Show biological systems map\n", .{ GREEN, RESET });
     std.debug.print("  {s}fix-bio [--all]{s}   Fix missing [biology] sections\n", .{ GREEN, RESET });
+    std.debug.print("  {s}watch [--interval N]{s}  Live health dashboard (default: 5s)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}watch --json{s}      Export health snapshot as JSON\n", .{ GREEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -2099,11 +2101,11 @@ fn runHealth(allocator: Allocator, _: []const []const u8) !void {
                 .cell_id = cell.id,
                 .cell_name = if (cell.name.len > 0) cell.name else cell.id,
                 .health_score = @intCast(@min(100, score)),
-                .health_delta = 0,  // TODO: track previous score for delta
+                .health_delta = 0, // TODO: track previous score for delta
                 .bio_system = bio_name,
                 .trigger = "scan",
                 .files_total = cell.files,
-                .files_generated = 0,  // TODO: count generated files
+                .files_generated = 0, // TODO: count generated files
                 .files_manual = cell.files,
                 .tests_passing = cell.tests > 0,
             }) catch {};
@@ -2177,15 +2179,11 @@ fn runHealth(allocator: Allocator, _: []const []const u8) !void {
     // DUAL-WRITE: Cerebellum → Hippocampus (Wave 3)
     // ═══════════════════════════════════════════════════════════════════════════════
     var buf: [256]u8 = undefined;
-    const summary = std.fmt.bufPrint(&buf,
-        "cell health: {d}/{d} total (A:{d} B:{d} C:{d} F:{d}) | cycles: {d} | weakest: {s} ({d})",
-        .{ cell_count + sub_count, cell_count + sub_count, grade_a, grade_b, grade_c, grade_f, cycle_count, weakest_id, weakest_score });
+    const summary = std.fmt.bufPrint(&buf, "cell health: {d}/{d} total (A:{d} B:{d} C:{d} F:{d}) | cycles: {d} | weakest: {s} ({d})", .{ cell_count + sub_count, cell_count + sub_count, grade_a, grade_b, grade_c, grade_f, cycle_count, weakest_id, weakest_score });
     hippocampus.writeObservation(allocator, "cerebellum", summary catch "cell health snapshot", "{}") catch {};
 
     if (grade_f > 0 or cycle_count > 0) {
-        const err_summary = std.fmt.bufPrint(&buf,
-            "cell issue: {d} broken cells, {d} dependency cycles",
-            .{ grade_f, cycle_count });
+        const err_summary = std.fmt.bufPrint(&buf, "cell issue: {d} broken cells, {d} dependency cycles", .{ grade_f, cycle_count });
         hippocampus.writeError(allocator, "cerebellum", err_summary catch "cell issues detected", "{}") catch {};
     }
 
@@ -4275,17 +4273,259 @@ fn patchCellBio(allocator: Allocator, cell_path: []const u8, suggestion: BioSugg
     // Find insertion point: after [security] or at end
     const insert_pos = if (std.mem.indexOf(u8, content, "[security]")) |pos| pos else content.len;
 
-    var new_content = std.ArrayList(u8).init(allocator);
+    var new_content = try std.ArrayList(u8).initCapacity(allocator, 512);
     defer new_content.deinit(allocator);
-    try new_content.appendSlice(content[0..insert_pos]);
-    try new_content.appendSlice(bio_section.items);
+    try new_content.appendSlice(allocator, content[0..insert_pos]);
+    try new_content.appendSlice(allocator, bio_section.items);
     if (insert_pos < content.len) {
-        try new_content.appendSlice(content[insert_pos..]);
+        try new_content.appendSlice(allocator, content[insert_pos..]);
     }
 
     // Write back
-    try std.fs.cwd().writeFile(.{ .sub_path = cell_tri_path }, new_content.items);
+    try std.fs.cwd().writeFile(.{ .sub_path = cell_tri_path, .data = new_content.items });
     return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// H1: CELL HEALTH DASHBOARD — TUI with auto-refresh
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const CellSnapshot = struct {
+    id: []const u8,
+    name: []const u8,
+    score: u8,
+    prev_score: u8,
+    bio_system: []const u8,
+};
+
+fn runWatch(allocator: Allocator, args: []const []const u8) !void {
+    // Parse interval: --interval N (default 5 seconds)
+    var interval: u64 = 5;
+    var json_output = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--interval")) {
+            if (i + 1 < args.len) {
+                interval = try std.fmt.parseUnsigned(u64, args[i + 1], 10);
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, args[i], "--json")) {
+            json_output = true;
+        }
+    }
+
+    if (json_output) {
+        return runWatchJSON(allocator);
+    }
+
+    // ANSI escape codes for TUI
+    const CLEAR_SCREEN = "\x1b[2J\x1b[H";
+
+    var prev_scores = std.StringHashMap(u8).init(allocator);
+    defer prev_scores.deinit();
+
+    // Watch loop
+    var iter: u32 = 0;
+    while (true) : (iter += 1) {
+        // Clear screen and move cursor to top-left
+        std.debug.print("{s}", .{CLEAR_SCREEN});
+
+        // Header
+        const timestamp = std.time.timestamp();
+        std.debug.print("{s}🏥 CELL HEALTH DASHBOARD{s} — refresh every {d}s\n", .{ GOLDEN, RESET, interval });
+        std.debug.print("{s}Last scan: {d}{s}\n\n", .{ GRAY, timestamp, RESET });
+
+        // Get current health scores
+        const all_cells = cell_parser.discoverAll(allocator) catch {
+            std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+            return;
+        };
+        defer allocator.free(all_cells);
+
+        // Collect snapshots with scores
+        var snapshots = try std.ArrayList(CellSnapshot).initCapacity(allocator, 64);
+        defer {
+            for (snapshots.items) |s| {
+                allocator.free(s.id);
+                allocator.free(s.name);
+            }
+            snapshots.deinit(allocator);
+        }
+
+        for (all_cells) |c| {
+            const m = c.manifest;
+            if (std.mem.eql(u8, m.kind, "binary")) continue;
+            const cell = parseCellTri(c.content);
+            if (cell.id.len == 0) continue;
+
+            // Calculate health score (simplified from runHealth)
+            const is_agent = std.mem.startsWith(u8, cell.id, "trinity.agent.");
+            const is_meta = cell.files == 0 and cell.tests == 0 and !is_agent;
+            const test_score: u8 = if (is_agent) 12 else if (is_meta) 10 else if (cell.tests == 0) 0 else @intCast(@min(15, cell.tests * 15 / 80));
+            const health: u8 = test_score + (if (cell.owner.len > 0) @as(u8, 5) else 0) + (if (cell.capabilities.len > 2) @as(u8, 5) else 0) + (if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) @as(u8, 5) else 0);
+
+            // Security score (simplified)
+            var sec: u8 = 0;
+            const is_virtual = cell.file_patterns.len > 2;
+            if (cell.parent.len > 0 and !is_virtual) {
+                if (cell.perm_level.len > 0) sec += 20;
+                if (cell.security_signed) sec += 5;
+                sec += 5;
+            } else {
+                if (cell.perm_level.len > 0) sec += 10;
+                if (cell.security_signed) sec += 5;
+                sec += 5;
+            }
+
+            // Dependencies (simplified)
+            var deps: u8 = 25;
+            if (cell.dependencies_raw.len > 0) deps = 15;
+
+            // Contracts
+            var contracts: u8 = 15;
+            if (cell.contributes_exports.len <= 2 and (std.mem.eql(u8, cell.kind, "library") or std.mem.eql(u8, cell.kind, "tool"))) contracts -|= 5;
+
+            const score: u8 = @intCast(@min(100, health + sec + deps + contracts));
+
+            // Get previous score
+            const prev_score = prev_scores.get(cell.id) orelse score;
+
+            // Determine bio_system
+            const bio_sys = if (m.bio_system.len > 0) m.bio_system else "";
+            const bio_name = if (bio_sys.len > 0) bio_sys else "unclassified";
+
+            // Store snapshot
+            const id_copy = try allocator.dupe(u8, cell.id);
+            const name_copy = try allocator.dupe(u8, if (cell.name.len > 0) cell.name else cell.id);
+            const bio_copy = try allocator.dupe(u8, bio_name);
+            try snapshots.append(allocator, .{
+                .id = id_copy,
+                .name = name_copy,
+                .score = score,
+                .prev_score = prev_score,
+                .bio_system = bio_copy,
+            });
+
+            // Update prev_scores
+            try prev_scores.put(cell.id, score);
+        }
+
+        // Sort by score (worst first)
+        std.sort.insertion(CellSnapshot, snapshots.items, {}, struct {
+            fn lessThan(_: void, a: CellSnapshot, b: CellSnapshot) bool {
+                return a.score < b.score;
+            }
+        }.lessThan);
+
+        // Calculate stats
+        var total: usize = 0;
+        var sum: usize = 0;
+        var grade_a: usize = 0;
+        var grade_b: usize = 0;
+        var grade_c: usize = 0;
+        var grade_f: usize = 0;
+
+        for (snapshots.items) |s| {
+            total += 1;
+            sum += s.score;
+            if (s.score >= 80) grade_a += 1 else if (s.score >= 60) grade_b += 1 else if (s.score >= 40) grade_c += 1 else grade_f += 1;
+        }
+
+        const avg = if (total > 0) sum / total else 0;
+        const avg_color = if (avg >= 80) GREEN else if (avg >= 60) YELLOW else RED;
+
+        // Stats line
+        std.debug.print("{s}Average:{s} {s}{d}/100{s}  ", .{ WHITE, RESET, avg_color, avg, RESET });
+        std.debug.print("{s}A:{d}{s} {s}B:{d}{s} {s}C:{d}{s} {s}F:{d}{s}\n\n", .{
+            GREEN, grade_a, RESET, YELLOW, grade_b, RESET, YELLOW, grade_c, RESET, RED, grade_f, RESET,
+        });
+
+        // Top 5 worst cells
+        std.debug.print("{s}⚠️  TOP 5 WORST CELLS{s}\n\n", .{ RED, RESET });
+
+        const show_count = @min(5, snapshots.items.len);
+        for (snapshots.items[0..show_count]) |s| {
+            const color = if (s.score >= 80) GREEN else if (s.score >= 60) YELLOW else RED;
+            const trend = if (s.score > s.prev_score) "↑" else if (s.score < s.prev_score) "↓" else "→";
+            const trend_color = if (s.score > s.prev_score) GREEN else if (s.score < s.prev_score) RED else GRAY;
+
+            std.debug.print("  {s}{d:3} {s}{s}{s} {s}{s}{s} {s}[{s}]{s}\n", .{
+                color,        s.score, RESET,
+                trend_color,  trend,   RESET,
+                s.name,       RESET,   GRAY,
+                s.bio_system, RESET,
+            });
+
+            // Suggest fix for F grade
+            if (s.score < 40) {
+                std.debug.print("    {s}→ tri cell fix {s}{s}\n", .{ YELLOW, s.id, RESET });
+            }
+        }
+
+        // Footer
+        std.debug.print("\n{s}Press Ctrl+C to exit | Next scan in {d}s...{s}", .{ GRAY, interval, RESET });
+
+        // Sleep for interval (use non-blocking sleep)
+        std.Thread.sleep(interval * 1_000_000_000); // interval in nanoseconds
+    }
+}
+
+fn runWatchJSON(allocator: Allocator) !void {
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{{\"error\": \"Failed to discover cells\"}}\n", .{});
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    std.debug.print("{{\n", .{});
+    std.debug.print("  \"timestamp\": {d},\n", .{std.time.timestamp()});
+    std.debug.print("  \"cells\": [\n", .{});
+
+    var first = true;
+    for (all_cells) |c| {
+        const m = c.manifest;
+        if (std.mem.eql(u8, m.kind, "binary")) continue;
+        const cell = parseCellTri(c.content);
+        if (cell.id.len == 0) continue;
+
+        // Simplified score calculation
+        const is_agent = std.mem.startsWith(u8, cell.id, "trinity.agent.");
+        const is_meta = cell.files == 0 and cell.tests == 0 and !is_agent;
+        const test_score: u8 = if (is_agent) 12 else if (is_meta) 10 else if (cell.tests == 0) 0 else @intCast(@min(15, cell.tests * 15 / 80));
+        const health: u8 = test_score + (if (cell.owner.len > 0) @as(u8, 5) else 0) + (if (cell.capabilities.len > 2) @as(u8, 5) else 0) + (if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) @as(u8, 5) else 0);
+
+        var sec: u8 = 0;
+        const is_virtual = cell.file_patterns.len > 2;
+        if (cell.parent.len > 0 and !is_virtual) {
+            if (cell.perm_level.len > 0) sec += 20;
+            if (cell.security_signed) sec += 5;
+            sec += 5;
+        } else {
+            if (cell.perm_level.len > 0) sec += 10;
+            if (cell.security_signed) sec += 5;
+            sec += 5;
+        }
+
+        var deps: u8 = 25;
+        if (cell.dependencies_raw.len > 0) deps = 15;
+
+        var contracts: u8 = 15;
+        if (cell.contributes_exports.len <= 2 and (std.mem.eql(u8, cell.kind, "library") or std.mem.eql(u8, cell.kind, "tool"))) contracts -|= 5;
+
+        const score: u8 = @intCast(@min(100, health + sec + deps + contracts));
+        const grade = if (score >= 80) "A" else if (score >= 60) "B" else if (score >= 40) "C" else "F";
+        const bio_sys = if (m.bio_system.len > 0) m.bio_system else "unclassified";
+
+        if (!first) std.debug.print(",\n", .{});
+        first = false;
+
+        std.debug.print("    {{\"id\":\"{s}\",\"name\":\"{s}\",\"score\":{d},\"grade\":\"{s}\",\"bio_system\":\"{s}\"}}", .{
+            cell.id, cell.name, score, grade, bio_sys,
+        });
+    }
+
+    std.debug.print("\n  ]\n}}\n", .{});
 }
 
 fn bioSystemFromStr(system: []const u8) u8 {
