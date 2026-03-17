@@ -172,6 +172,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "doctor")) return runDoctor(allocator, rest);
     if (std.mem.eql(u8, sub, "orphans")) return runOrphans(allocator);
     if (std.mem.eql(u8, sub, "bio")) return runBio(allocator);
+    if (std.mem.eql(u8, sub, "fix-bio")) return runFixBio(allocator, rest);
     if (std.mem.eql(u8, sub, "explain")) return runExplain(allocator, rest);
     if (std.mem.eql(u8, sub, "map")) return runMap(allocator);
     if (std.mem.eql(u8, sub, "contracts")) return runContracts(allocator);
@@ -231,6 +232,8 @@ fn printHelp() void {
     std.debug.print("  {s}commands{s}          List all cell-contributed tri subcommands\n", .{ GREEN, RESET });
     std.debug.print("  {s}verify{s}            Check content hashes (integrity)\n", .{ GREEN, RESET });
     std.debug.print("  {s}check-boundaries{s}  Validate tag boundary rules\n", .{ GREEN, RESET });
+    std.debug.print("  {s}bio{s}               Show biological systems map\n", .{ GREEN, RESET });
+    std.debug.print("  {s}fix-bio [--all]{s}   Fix missing [biology] sections\n", .{ GREEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -4132,6 +4135,155 @@ fn runBio(allocator: Allocator) !void {
     }
 
     std.debug.print("  {s}Total: {d} cells across 5 biological systems{s}\n\n", .{ GRAY, total, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// C2: FIX MISSING [biology] SECTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runFixBio(allocator: Allocator, args: []const []const u8) !void {
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    // Find cells without [biology] section
+    var missing = std.ArrayList([]const u8).init(allocator);
+    defer {
+        for (missing.items) |p| allocator.free(p);
+        missing.deinit();
+    }
+
+    for (all_cells) |c| {
+        const m = c.manifest;
+        if (m.bio_system.len == 0) {
+            const path_copy = try allocator.dupe(u8, c.manifest.path);
+            try missing.append(path_copy);
+        }
+    }
+
+    if (missing.items.len == 0) {
+        std.debug.print("{s}✓{s} All cells have [biology] section!\n\n", .{ GREEN, RESET });
+        return;
+    }
+
+    const fix_all = args.len > 0 and std.mem.eql(u8, args[0], "--all");
+
+    if (fix_all) {
+        std.debug.print("{s}Fixing {d} cells with missing [biology]...{s}\n\n", .{ YELLOW, missing.items.len, RESET });
+    } else {
+        std.debug.print("{s}Found {d} cells with missing [biology]:{s}\n\n", .{ YELLOW, missing.items.len, RESET });
+    }
+
+    var fixed_count: usize = 0;
+    for (missing.items) |cell_path| {
+        // Determine suggested bio_system from path
+        const suggested = suggestBioSystem(cell_path);
+
+        if (!fix_all) {
+            std.debug.print("  {s}{s}{s} → suggest: {s}{s}{s}\n", .{ CYAN, cell_path, RESET, GREEN, suggested.system, RESET });
+            std.debug.print("    Run: {s}tri cell fix-bio --all{s} to apply\n\n", .{ CYAN, RESET });
+            continue;
+        }
+
+        // Patch the cell.tri file
+        if (try patchCellBio(allocator, cell_path, suggested)) {
+            std.debug.print("  {s}✓{s} Fixed: {s} → {s}{s}\n", .{ GREEN, RESET, cell_path, suggested.system, RESET });
+            fixed_count += 1;
+        } else {
+            std.debug.print("  {s}✗{s} Failed: {s}\n", .{ RED, RESET, cell_path });
+        }
+    }
+
+    if (fix_all) {
+        std.debug.print("\n{s}Fixed {d}/{d} cells{s}\n\n", .{ GREEN, fixed_count, missing.items.len, RESET });
+    }
+}
+
+const BioSuggestion = struct {
+    system: []const u8,
+    organ: []const u8,
+};
+
+fn suggestBioSystem(cell_path: []const u8) BioSuggestion {
+    // Queen agents → brain
+    if (std.mem.indexOf(u8, cell_path, "queen") != null) {
+        return .{ .system = "brain", .organ = "cortex" };
+    }
+
+    // tri-doctor → immune (leukocyte)
+    if (std.mem.indexOf(u8, cell_path, "tri-doctor") != null) {
+        return .{ .system = "immune", .organ = "leukocyte" };
+    }
+
+    // tri-scholar → brain (memory/learning)
+    if (std.mem.indexOf(u8, cell_path, "tri-scholar") != null) {
+        return .{ .system = "brain", .organ = "hippocampus" };
+    }
+
+    // tri-orchestrator → brain (hypothalamus)
+    if (std.mem.indexOf(u8, cell_path, "tri-orchestrator") != null) {
+        return .{ .system = "brain", .organ = "hypothalamus" };
+    }
+
+    // tri-farmer → body (evolution/metabolism)
+    if (std.mem.indexOf(u8, cell_path, "tri-farmer") != null) {
+        return .{ .system = "body", .organ = "evolution" };
+    }
+
+    // Default for tools/agents/* → immune
+    if (std.mem.indexOf(u8, cell_path, "tools/agents") != null) {
+        return .{ .system = "immune", .organ = "" };
+    }
+
+    // Default fallback
+    return .{ .system = "body", .organ = "" };
+}
+
+fn patchCellBio(allocator: Allocator, cell_path: []const u8, suggestion: BioSuggestion) !bool {
+    const cell_tri_path = try std.fmt.allocPrint(allocator, "{s}/cell.tri", .{cell_path});
+    defer allocator.free(cell_tri_path);
+
+    // Read existing content
+    const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch {
+        return false;
+    };
+    defer allocator.free(content);
+
+    // Check if [biology] already exists
+    if (std.mem.indexOf(u8, content, "[biology]") != null) {
+        return true; // Already has biology, skip
+    }
+
+    // Build [biology] section
+    var bio_section = std.ArrayList(u8).init(allocator);
+    defer bio_section.deinit();
+
+    try bio_section.appendSlice("\n[biology]\n");
+    try bio_section.appendSlice("system = \"");
+    try bio_section.appendSlice(suggestion.system);
+    try bio_section.appendSlice("\"\n");
+
+    if (suggestion.organ.len > 0) {
+        try bio_section.appendSlice("organ = \"");
+        try bio_section.appendSlice(suggestion.organ);
+        try bio_section.appendSlice("\"\n");
+    }
+
+    // Find insertion point: after [security] or at end
+    const insert_pos = if (std.mem.indexOf(u8, content, "[security]")) |pos| pos else content.len;
+
+    var new_content = std.ArrayList(u8).init(allocator);
+    try new_content.appendSlice(content[0..insert_pos]);
+    try new_content.appendSlice(bio_section.items);
+    if (insert_pos < content.len) {
+        try new_content.appendSlice(content[insert_pos..]);
+    }
+
+    // Write back
+    try std.fs.cwd().writeFile(.{ .sub_path = cell_tri_path }, new_content.items);
+    return true;
 }
 
 fn bioSystemFromStr(system: []const u8) u8 {

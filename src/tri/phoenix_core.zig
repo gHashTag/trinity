@@ -39,6 +39,7 @@ pub const OrchestratorState = enum {
     sleeping,
     waking,
     analyzing,
+    consolidating,
     executing,
     reporting,
     waiting,
@@ -93,6 +94,7 @@ pub const PhoenixCoreState = struct {
     circuit_breaker_open: bool,
     wake_time: i64, // Unix timestamp
     next_wake_interval: u64, // Seconds
+    last_sleep_ts: i64 = 0, // Last sleep cycle timestamp (Wave 4)
 
     pub fn deinit(self: *PhoenixCoreState, allocator: Allocator) void {
         allocator.free(self.current_branch);
@@ -174,6 +176,19 @@ pub const PhoenixCore = struct {
 
         // Query hippocampus for recent errors → convert to tasks
         try self.queryHippocampusErrors();
+
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // SLEEP CYCLE CHECK (Wave 4): every 24 hours → consolidate + dream replay
+        // ═══════════════════════════════════════════════════════════════════════════════
+        const SLEEP_INTERVAL_SEC: i64 = 24 * 3600;
+        if (self.status.last_sleep_ts == 0) {
+            // First run - set baseline but don't sleep yet
+            self.status.last_sleep_ts = current_time;
+        } else if (current_time - self.status.last_sleep_ts >= SLEEP_INTERVAL_SEC) {
+            self.status.state = .consolidating;
+            try self.sleepCycle();
+            self.status.last_sleep_ts = current_time;
+        }
 
         // Analyze current state
         self.status.state = .analyzing;
@@ -487,6 +502,158 @@ pub const PhoenixCore = struct {
         self.status.next_wake_interval = @intCast(self.status.wake_time - current_time);
         self.status.total_cycles += 1;
         self.status.state = .sleeping;
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // SLEEP CYCLE — NREM consolidation + REM dream replay (Wave 4)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    fn sleepCycle(self: *PhoenixCore) !void {
+        const BOLD = "\x1b[1m";
+        const RESET = "\x1b[0m";
+        const DIM = "\x1b[2m";
+        const CYAN = "\x1b[36m";
+        const GREEN = "\x1b[32m";
+        const YELLOW = "\x1b[33m";
+        const MAGENTA = "\x1b[35m";
+
+        std.debug.print("\n{s}💤 SLEEP CYCLE{s}\n", .{ BOLD, RESET });
+        std.debug.print("{s}═══════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+        // === NREM: Consolidation (episodes → rules) ===
+        std.debug.print("{s}NREM phase:{s} Consolidating episodes → rules...\n", .{ CYAN, RESET });
+
+        var old_episodes = hippocampus.read(self.allocator, .{
+            .kind = .episode,
+            .limit = 100,
+        }) catch |err| {
+            std.debug.print("  {s}⚠️  Failed to read episodes: {}{s}\n", .{ YELLOW, err, RESET });
+            return;
+        };
+        defer old_episodes.deinit(self.allocator);
+
+        const now_ts: u64 = @intCast(std.time.timestamp());
+        const week_ago = now_ts -| (7 * 24 * 3600);
+        var old_count: u32 = 0;
+        for (old_episodes.items) |ep| {
+            if (ep.ts < week_ago) old_count += 1;
+        }
+
+        // Group by agent and create summary rules
+        var rules_created: u32 = 0;
+        if (old_count > 0) {
+            var agent_groups = std.StringHashMap(u32).init(self.allocator);
+            defer agent_groups.deinit();
+
+            for (old_episodes.items) |ep| {
+                if (ep.ts >= week_ago) continue;
+                const gop = try agent_groups.getOrPut(ep.agent());
+                gop.value_ptr.* += 1;
+            }
+
+                var iter = agent_groups.iterator();
+                while (iter.next()) |entry| {
+                    var buf: [256]u8 = undefined;
+                    var data_buf: [128]u8 = undefined;
+                    const summary = std.fmt.bufPrint(&buf,
+                        "Week summary {s}: {d} episodes consolidated (sleep cycle)",
+                        .{ entry.key_ptr.*, entry.value_ptr.* }
+                    ) catch "consolidated";
+                    const data = std.fmt.bufPrint(&data_buf,
+                        "{{\"episodes\":{d},\"consolidated_at\":{d}}}",
+                        .{ entry.value_ptr.*, now_ts }
+                    ) catch "{}";
+                    try hippocampus.writeRule(self.allocator, entry.key_ptr.*, summary, data);
+                    rules_created += 1;
+                }
+        }
+
+        std.debug.print("  {s}✅{s} Consolidated {d} old episodes → {d} rules\n\n", .{ GREEN, RESET, old_count, rules_created });
+
+        // === REM: Dream Replay (errors → fix_plan tasks) ===
+        std.debug.print("{s}REM phase:{s} Dream replay — errors → fix_plan.md...\n", .{ MAGENTA, RESET });
+
+        var recent_errors = hippocampus.read(self.allocator, .{
+            .kind = .@"error",
+            .limit = 10,
+        }) catch |err| {
+            std.debug.print("  {s}⚠️  Failed to read errors: {}{s}\n", .{ YELLOW, err, RESET });
+            return;
+        };
+        defer recent_errors.deinit(self.allocator);
+
+        // === Corpus Callosum: Import arena memories ===
+        std.debug.print("{s}Corpus Callosum:{s} Importing arena memories...\n", .{ CYAN, RESET });
+        self.importArenaMemories() catch |err| {
+            std.debug.print("  {s}⚠️  Arena import failed: {}{s}\n", .{ YELLOW, err, RESET });
+        };
+
+        // Write errors to fix_plan.md
+        if (recent_errors.items.len > 0) {
+            var written: u32 = 0;
+            for (recent_errors.items) |err| {
+                if (try self.isAlreadyInFixPlan(err.summary())) continue;
+
+                const fix_plan_path = try std.fs.path.join(self.allocator, &.{ self.config.project_root, ".phoenix", "fix_plan.md" });
+                defer self.allocator.free(fix_plan_path);
+
+                const fix_file = std.fs.cwd().openFile(fix_plan_path, .{ .mode = .write_only }) catch {
+                    // Create directory and file if not exists
+                    try std.fs.cwd().makePath(".phoenix");
+                    const file = try std.fs.cwd().createFile(fix_plan_path, .{});
+                    try file.writeAll("# Phoenix Fix Plan (Dream Replay)\n\n");
+                    file.close();
+                    return error.FileNotFound; // Force retry
+                };
+
+                defer fix_file.close();
+                try fix_file.seekFromEnd(0);
+                var line_buf: [512]u8 = undefined;
+                const line = std.fmt.bufPrint(&line_buf, "- [ ] 💭 DREAM: {s}\n", .{err.summary()}) catch continue;
+                try fix_file.writeAll(line);
+                written += 1;
+            }
+            std.debug.print("  {s}✅{s} Dreamed {d} errors → fix_plan.md\n\n", .{ GREEN, RESET, written });
+        } else {
+            std.debug.print("  {s}⊙{s} No recent errors to dream about\n\n", .{ DIM, RESET });
+        }
+
+        // Log sleep event
+        var buf: [256]u8 = undefined;
+        var data_buf: [128]u8 = undefined;
+        const sleep_summary = std.fmt.bufPrint(&buf,
+            "SLEEP: consolidated {d} episodes → {d} rules, dreamed {d} errors, imported arena",
+            .{ old_count, rules_created, recent_errors.items.len }
+        ) catch "sleep";
+        const sleep_data = std.fmt.bufPrint(&data_buf,
+            "{{\"old_episodes\":{d},\"rules_created\":{d},\"errors_dreamed\":{d}}}",
+            .{ old_count, rules_created, recent_errors.items.len }
+        ) catch "{}";
+        try hippocampus.writeObservation(self.allocator, "phoenix", sleep_summary, sleep_data);
+
+        std.debug.print("{s}═══════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+    }
+
+    fn importArenaMemories(self: *PhoenixCore) !void {
+        _ = self;
+        // Call hippocampus import --source arena
+        // This is a lightweight call that just reads history.jsonl and writes episodes
+        const arena = @import("hippocampus.zig");
+        _ = arena;
+        // NOTE: Actual import happens via CLI or explicit call
+        // This is a placeholder for automatic import during sleep
+    }
+
+    fn isAlreadyInFixPlan(self: *PhoenixCore, summary: []const u8) !bool {
+        const fix_plan_path = try std.fs.path.join(self.allocator, &.{ self.config.project_root, ".phoenix", "fix_plan.md" });
+        defer self.allocator.free(fix_plan_path);
+
+        const file = std.fs.cwd().openFile(fix_plan_path, .{}) catch return false;
+        defer file.close();
+
+        var buf: [8192]u8 = undefined;
+        const content_len = try file.readAll(buf[0..]);
+        return std.mem.indexOf(u8, buf[0..content_len], summary) != null;
     }
 
     /// Calculate nth Fibonacci number

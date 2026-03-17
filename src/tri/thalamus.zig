@@ -478,3 +478,44 @@ test "thalamus getMetabolismAlerts returns empty when none" {
     defer std.testing.allocator.free(alerts);
     try std.testing.expect(alerts.len == 0);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RELAY 11: Last sleep info — hippocampus "phoenix" SLEEP observations
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const SleepInfo = struct {
+    timestamp: i64 = 0,
+    episodes_consolidated: u32 = 0,
+    rules_created: u32 = 0,
+    errors_dreamed: u32 = 0,
+    hours_since: i64 = 0,
+};
+
+pub fn getLastSleepInfo(allocator: Allocator) ?SleepInfo {
+    var results = hippocampus.search(allocator, "SLEEP:", 10) catch return null;
+    defer results.deinit(allocator);
+
+    if (results.items.len == 0) return null;
+
+    // Get most recent SLEEP observation
+    const rec = results.items[0];
+    const d = rec.data();
+    const now: i64 = @intCast(std.time.timestamp());
+
+    return .{
+        .timestamp = @as(i64, @intCast(rec.ts)),
+        .episodes_consolidated = parseMetricU32(d, "old_episodes") orelse 0,
+        .rules_created = parseMetricU32(d, "rules_created") orelse 0,
+        .errors_dreamed = parseMetricU32(d, "errors_dreamed") orelse 0,
+        .hours_since = (now - @as(i64, @intCast(rec.ts))) / 3600,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS (Wave 4)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "thalamus getLastSleepInfo returns null when no sleep" {
+    const info = getLastSleepInfo(std.testing.allocator);
+    try std.testing.expect(info == null);
+}
