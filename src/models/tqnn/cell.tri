@@ -1,0 +1,39 @@
+[cell]
+id = "trinity.tqnn"
+name = "TQNN Inference"
+version = "1.0.0"
+kind = "library"
+path = "src/models/tqnn"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Ternary Quantum Neural Network inference with VSA integration"
+capabilities = ["tqnn", "inference", "benchmark"]
+files = 2
+tests = 0
+owner = "agent:ralph"
+
+[tags]
+scope = "hslm"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+trinity.vsa = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:fe3b625b599f59099d2c850fa330c39651828cd57c2cf0a33fb52aa7d74a1574"
