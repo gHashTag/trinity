@@ -4,7 +4,7 @@
 //! Page curve, ER=EPR, holographic encoding, consciousness connection.
 
 const std = @import("std");
-const tri_colors = @import("../tri/tri_colors.zig");
+const tri_colors = @import("colors.zig");
 const bhi = @import("black_hole_information.zig");
 
 // ============================================================================

@@ -1,0 +1,31 @@
+[cell]
+id = "trinity.tri.cli"
+name = "CLI Framework"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "CLI skeleton: main dispatch, command parsing, help, colors, config, completion"
+capabilities = ["cli", "parsing", "help", "completion"]
+tests = 12
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "infra"
+
+[source]
+file_patterns = ["main.zig", "tri_utils.zig", "tri_commands.zig", "tri_help*.zig", "tri_cli_*.zig", "tri_colors.zig", "tri_config.zig", "tri_completion.zig", "tri_exit_codes.zig", "tri_error.zig", "tri_cmd_list.zig", "tri_namespace.zig"]
+
+[contributes]
+commands = ["help", "version", "commands"]
+exports = ["main", "parseCommand", "runGitCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "read"
+network = "none"
+process = "spawn"

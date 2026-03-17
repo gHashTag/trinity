@@ -26,7 +26,6 @@ events = ["on_pattern_learned", "on_experience_saved"]
 binaries = ["pas-demo"]
 
 [dependencies]
-trinity.vibeec = "^1.0.0"
 
 [permissions]
 level = "L2"
