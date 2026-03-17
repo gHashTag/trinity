@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["diracCharge", "monopoleMass", "monopoleMassCorrected", "criticalMagneticField", "magneticCoupling"]
 tri_subcommands = []
 events = []
 binaries = []

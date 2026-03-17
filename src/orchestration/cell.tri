@@ -18,12 +18,13 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["default", "selectStrategy", "getConsciousnessAnalysis", "getLearningMetrics", "success"]
 tri_subcommands = []
 events = []
 binaries = []
 
 [dependencies]
+trinity.contracts = "^1.0.0"
 
 [permissions]
 level = "L0"

@@ -28,8 +28,8 @@ binaries = []
 [dependencies]
 
 [permissions]
-level = "L1"
-filesystem = "write"
+level = "L0"
+filesystem = "read"
 network = "none"
 process = "none"
 ffi = "none"

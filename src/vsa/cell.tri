@@ -24,6 +24,7 @@ binaries = ["photon-demo", "photon-immersive", "photon-terminal", "trinity-canva
 exports = ["initPhi", "randomVector", "seededVector", "bind", "unbind"]
 
 [dependencies]
+trinity.tri.memory = "^1.0.0"
 trinity.infra = "^1.0.0"
 trinity.autonomous = "^1.0.0"
 trinity.quantum = "^1.0.0"

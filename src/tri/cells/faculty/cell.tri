@@ -20,7 +20,7 @@ file_patterns = ["faculty*.zig", "phi_poetry.zig", "three_paths.zig", "voice_eng
 
 [contributes]
 commands = ["faculty"]
-exports = ["generatePhiLine", "emoji", "name", "fixIssues", "agentIssue"]
+exports = ["parse", "collectSnapshot", "renderCompact", "renderThought", "renderThoughtLang"]
 
 [dependencies]
 

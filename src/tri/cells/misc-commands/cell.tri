@@ -26,7 +26,7 @@ commands = ["mcp", "plugin", "events", "depin", "register", "init", "search"]
 [permissions]
 level = "L2"
 filesystem = "write"
-network = "external"
+network = "none"
 process = "spawn"
 
 ffi = "none"

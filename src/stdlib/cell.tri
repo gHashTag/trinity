@@ -20,7 +20,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = ["Stack", "Queue", "RingBuffer", "Pair", "Triple", "Optional", "Result"]
+exports = ["print", "println", "printf", "eprint", "eprintln"]
 tri_subcommands = []
 events = []
 binaries = []

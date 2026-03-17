@@ -31,7 +31,7 @@ network = "external"
 process = "spawn"
 
 ffi = "none"
-concurrency = "none"
+concurrency = "yes"
 [biology]
 system = "body"
 organ = "heartbeat"

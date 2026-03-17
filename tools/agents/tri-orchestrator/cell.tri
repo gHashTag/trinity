@@ -21,7 +21,7 @@ tools = "Bash,Read,Glob,Grep"
 isolation = ""
 
 [permissions]
-level = "L1"
+level = "L0"
 filesystem = "read"
 network = "none"
 process = "none"

@@ -21,10 +21,10 @@ tools = "Read,Grep,Glob,Bash"
 isolation = ""
 
 [permissions]
-level = "L1"
+level = "L0"
 filesystem = "read"
 network = "none"
-process = "spawn"
+process = "none"
 ffi = "none"
 concurrency = "none"
 

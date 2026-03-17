@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = ["findBestGammaMatch", "calculateHolographicEntropy", "generateQuantumGravityAssignment"]
+exports = ["normSquared", "isValid", "generateAll", "quantumProjection", "calculate"]
 tri_subcommands = []
 events = []
 binaries = []

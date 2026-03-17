@@ -20,7 +20,7 @@ file_patterns = ["tri_fpga*.zig", "tri_hardware_deploy.zig", "vision_led_test.zi
 
 [contributes]
 commands = ["fpga"]
-exports = ["writeBytes", "readBytes", "findSerialDevice", "runFpgaUartCommand", "runFpgaSynthCommand"]
+exports = ["fpgaThroughput", "speedupFactor", "detectPlatform", "detectArch", "nodePort"]
 
 [dependencies]
 

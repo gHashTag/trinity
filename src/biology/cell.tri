@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["alphaHelixResidues", "alphaHelixPitch", "alphaHelixRise", "betaSheetTwist", "betaSheetPleating"]
 tri_subcommands = []
 events = []
 binaries = []

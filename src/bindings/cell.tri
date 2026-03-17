@@ -20,7 +20,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = ["iglaTriParse", "iglaFibonacci", "iglaGoldenIdentity", "iglaDotProduct"]
+exports = ["iglaVersionMajor", "iglaVersionMinor", "iglaVersionPatch", "iglaTriParse", "iglaFibonacci"]
 tri_subcommands = []
 events = []
 binaries = []
@@ -28,11 +28,11 @@ binaries = []
 [dependencies]
 
 [permissions]
-level = "L1"
+level = "L0"
 filesystem = "read"
 network = "none"
 process = "none"
-ffi = "native"
+ffi = "none"
 concurrency = "none"
 
 [security]

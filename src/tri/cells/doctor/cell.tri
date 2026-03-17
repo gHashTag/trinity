@@ -20,7 +20,7 @@ file_patterns = ["tri_strict.zig", "leukocyte.zig"]
 
 [contributes]
 commands = ["doctor", "verdict", "ouroboros"]
-exports = ["runStrictCommand", "label", "runOuroborosCommand", "runInit", "runScan"]
+exports = ["runInit", "runScan", "runMark", "runReport", "runPlan"]
 
 [dependencies]
 
