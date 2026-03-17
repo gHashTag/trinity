@@ -16,7 +16,7 @@ scope = "infra"
 type = "agent"
 
 [source]
-file_patterns = ["mu_*.zig", "hippocampus.zig"]
+file_patterns = ["mu_*.zig", "hippocampus.zig", "thalamus.zig"]
 
 [contributes]
 commands = ["mu"]
