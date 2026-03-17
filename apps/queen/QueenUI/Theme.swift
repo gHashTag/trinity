@@ -18,6 +18,34 @@ struct TrinityTheme {
 
     static let cardCorner: CGFloat = 12
     static let spacing: CGFloat = 16
+
+    // MARK: - Dynamic Type Sizes (Accessibility)
+    /// Base font sizes that scale with system Dynamic Type setting
+    static func bodySize(_ sizeCategory: DynamicTypeSize = .medium) -> CGFloat {
+        switch sizeCategory {
+        case .xSmall: return 12
+        case .small: return 13
+        case .medium: return 15
+        case .large: return 16
+        case .xLarge: return 18
+        case .xxLarge: return 20
+        case .xxxLarge: return 22
+        case .accessibility1: return 26
+        case .accessibility2: return 30
+        case .accessibility3: return 34
+        case .accessibility4: return 38
+        case .accessibility5: return 42
+        @unknown default: return 15
+        }
+    }
+
+    static func captionSize(_ sizeCategory: DynamicTypeSize = .medium) -> CGFloat {
+        return max(bodySize(sizeCategory) - 4, 9)
+    }
+
+    static func headingSize(_ sizeCategory: DynamicTypeSize = .medium) -> CGFloat {
+        return bodySize(sizeCategory) + 5
+    }
 }
 
 extension Color {

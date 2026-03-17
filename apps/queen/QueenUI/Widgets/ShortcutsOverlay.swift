@@ -3,20 +3,25 @@ import SwiftUI
 struct ShortcutsOverlay: View {
     @Binding var isPresented: Bool
 
-    private let shortcuts: [(String, String)] = [
-        ("⌘0", "Main Menu"),
-        ("⌘1", "Chat"),
-        ("⌘2", "SEVO Farm"),
-        ("⌘3", "Arena LLM"),
-        ("⌘4", "Faculty"),
-        ("⌘5", "Oracle"),
-        ("⌘6", "Build"),
-        ("⌘7", "Deploy"),
-        ("⌘8", "Telegram"),
-        ("⌘9", "Settings"),
-        ("⌘J", "Agent Stream"),
-        ("⌘/", "Shortcuts"),
-        ("Esc", "Back"),
+    private let sections: [(String, [(String, String)])] = [
+        ("Navigation", [
+            ("⌘0", "Main Menu"),
+            ("⌘1-9", "Switch Screen"),
+            ("⌘J", "Agent Stream"),
+            ("⌘/", "Shortcuts"),
+            ("Esc", "Back"),
+        ]),
+        ("Chat", [
+            ("⌘N", "New Thread"),
+            ("⌘K", "Command Palette"),
+            ("⌘⇧F", "Search Threads"),
+            ("⌘⇧S", "Toggle Sidebar"),
+            ("⌘⇧;", "Copy Last Response"),
+            ("Enter", "Send Message"),
+            ("⇧Enter", "New Line"),
+            ("@file:", "Attach File"),
+            ("@grep:", "Search Code"),
+        ]),
     ]
 
     var body: some View {
@@ -27,7 +32,7 @@ struct ShortcutsOverlay: View {
 
             VStack(spacing: 0) {
                 HStack {
-                    Text("⌨️ Keyboard Shortcuts")
+                    Text("Keyboard Shortcuts")
                         .font(.title2.weight(.bold))
                         .foregroundStyle(TrinityTheme.accent)
                     Spacer()
@@ -40,24 +45,33 @@ struct ShortcutsOverlay: View {
                 }
                 .padding(.bottom, 20)
 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    ForEach(shortcuts, id: \.0) { key, desc in
-                        HStack(spacing: 12) {
-                            Text(key)
-                                .font(.system(size: 14, weight: .bold, design: .monospaced))
-                                .foregroundStyle(TrinityTheme.golden)
-                                .frame(width: 50, alignment: .trailing)
-                            Text(desc)
-                                .font(.system(size: 14))
-                                .foregroundStyle(TrinityTheme.textPrimary)
-                            Spacer()
+                ForEach(sections, id: \.0) { sectionName, shortcuts in
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(sectionName)
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .padding(.top, 8)
+
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+                            ForEach(shortcuts, id: \.0) { key, desc in
+                                HStack(spacing: 10) {
+                                    Text(key)
+                                        .font(.system(size: 13, weight: .bold, design: .monospaced))
+                                        .foregroundStyle(TrinityTheme.golden)
+                                        .frame(width: 70, alignment: .trailing)
+                                    Text(desc)
+                                        .font(.system(size: 13))
+                                        .foregroundStyle(TrinityTheme.textPrimary)
+                                    Spacer()
+                                }
+                                .padding(.vertical, 2)
+                            }
                         }
-                        .padding(.vertical, 4)
                     }
                 }
             }
             .padding(32)
-            .frame(width: 500)
+            .frame(width: 560)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(hex: 0x1A1A1A))

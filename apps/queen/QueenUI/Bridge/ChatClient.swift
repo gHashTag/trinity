@@ -29,6 +29,103 @@ enum ChatMode: String, CaseIterable {
     }
 }
 
+/// Style preset: controls CTO tone
+enum StylePreset: String, CaseIterable, Identifiable {
+    case concise = "Concise"
+    case detailed = "Detailed"
+    case codeFirst = "Code First"
+    case ctoBlunt = "CTO Blunt"
+
+    var id: String { rawValue }
+
+    var icon: String {
+        switch self {
+        case .concise: return "text.alignleft"
+        case .detailed: return "doc.text.magnifyingglass"
+        case .codeFirst: return "curlybraces"
+        case .ctoBlunt: return "bolt.fill"
+        }
+    }
+
+    var systemSuffix: String {
+        switch self {
+        case .concise: return "\nBe extremely brief. One-sentence answers when possible. No preamble."
+        case .detailed: return "\nBe thorough and comprehensive. Explain reasoning, trade-offs, and alternatives."
+        case .codeFirst: return "\nLead with code. Show the solution first, explain after if needed."
+        case .ctoBlunt: return "\nPoint out problems directly. No sugar-coating. Be blunt about risks and bad decisions."
+        }
+    }
+}
+
+/// Memory entry extracted from chat
+struct MemoryEntry: Codable, Identifiable {
+    var id: UUID
+    let text: String
+    let source: String  // message snippet that triggered extraction
+    let timestamp: Date
+
+    init(text: String, source: String) {
+        self.id = UUID()
+        self.text = text
+        self.source = source
+        self.timestamp = Date()
+    }
+}
+
+/// Typed API error for user-friendly messages
+enum APIErrorType {
+    case unauthorized       // 401 — bad/expired key
+    case rateLimited(retryAfter: Int?)  // 429 — rate limit
+    case serverError(Int)   // 5xx
+    case timeout            // connection or TTFB timeout
+    case connectionFailed   // no network
+    case malformedResponse  // 200 but bad JSON
+    case unknown(Int, String)
+
+    var userMessage: String {
+        switch self {
+        case .unauthorized:
+            return "API key invalid or expired. Check .env file."
+        case .rateLimited(let retry):
+            if let s = retry { return "Rate limited. Retry in \(s)s." }
+            return "Rate limited. Wait a moment and retry."
+        case .serverError(let code):
+            return "Server error (\(code)). Provider may be down."
+        case .timeout:
+            return "Request timed out (>30s). Try a faster model."
+        case .connectionFailed:
+            return "No connection. Check your network."
+        case .malformedResponse:
+            return "Received corrupted response. Retry."
+        case .unknown(let code, let body):
+            return "Error \(code): \(String(body.prefix(200)))"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .unauthorized: return "key.slash"
+        case .rateLimited: return "clock.badge.exclamationmark"
+        case .serverError: return "exclamationmark.icloud"
+        case .timeout: return "clock.arrow.circlepath"
+        case .connectionFailed: return "wifi.slash"
+        case .malformedResponse: return "doc.badge.gearshape"
+        case .unknown: return "exclamationmark.triangle"
+        }
+    }
+
+    static func from(statusCode: Int, body: String, headers: HTTPURLResponse?) -> APIErrorType {
+        switch statusCode {
+        case 401, 403: return .unauthorized
+        case 429:
+            let retryAfter = headers?.value(forHTTPHeaderField: "Retry-After").flatMap(Int.init)
+            return .rateLimited(retryAfter: retryAfter)
+        case 500...599: return .serverError(statusCode)
+        default: return .unknown(statusCode, body)
+        }
+    }
+}
+
 @MainActor
 class ChatClient: ObservableObject {
     @Published var isStreaming = false
@@ -36,11 +133,38 @@ class ChatClient: ObservableObject {
     @Published var streamingTokensPerSec: Double = 0
     @Published var streamingTTFB: Int = 0          // ms to first token
     @Published var streamingOutputTokens: Int = 0
+    @Published var failoverEvent: FailoverEvent? = nil
+    @Published var lastError: APIErrorType? = nil
+    @Published var isSlowResponse = false          // TTFB > 5s warning
+    @Published var streamingThinkingText = ""
+    @Published var proposedMemories: [MemoryEntry] = []
+
+    struct FailoverEvent: Equatable {
+        let from: String
+        let to: String
+        let timestamp: Date
+    }
+
+    // MARK: - Offline Queue
+    @Published var offlineQueueCount: Int = 0
+    @Published var failoverLog: [FailoverEvent] = []
+
+    struct QueuedMessage: Identifiable {
+        let id = UUID()
+        let text: String
+        let threadID: UUID
+        let mode: ChatMode
+    }
+
+    @Published var offlineQueue: [QueuedMessage] = []
+    private var offlineDrainTask: Task<Void, Never>?
 
     private var streamTask: Task<Void, Never>?
     private let repo = RepoContext()
     private var streamStartTime: Date?
     private var firstTokenTime: Date?
+
+    var stylePreset: StylePreset = .concise
 
     private var systemPrompt: String {
         buildSystemPrompt()
@@ -94,6 +218,21 @@ class ChatClient: ObservableObject {
         let farmEvents = trinityCtx.recentFarmEvents(count: 3)
         if !farmEvents.isEmpty {
             prompt += "\n\n" + farmEvents
+        }
+
+        // Inject style preset
+        if stylePreset != .concise {
+            prompt += stylePreset.systemSuffix
+        }
+
+        // Inject saved memories (capped at 20)
+        let store = ThreadStore()
+        let memories = store.loadMemories()
+        if !memories.isEmpty {
+            prompt += "\n\n## Remembered Context\n"
+            for mem in memories.suffix(20) {
+                prompt += "- \(mem.text)\n"
+            }
         }
 
         return prompt
@@ -204,10 +343,70 @@ class ChatClient: ObservableObject {
 
     /// Auto-detect file paths in user message and attach contents
     func attachFileContext(_ text: String) -> String? {
-        let paths = repo.detectPaths(in: text)
-        guard !paths.isEmpty else { return nil }
-        var context: [String] = []
-        for path in paths.prefix(3) { // Max 3 files per message
+        var paths = repo.detectPaths(in: text)
+
+        // Parse @file:path mentions
+        let mentionPattern = #"@file:([^\s]+)"#
+        if let regex = try? NSRegularExpression(pattern: mentionPattern) {
+            let range = NSRange(text.startIndex..., in: text)
+            for match in regex.matches(in: text, range: range) {
+                guard let r = Range(match.range(at: 1), in: text) else { continue }
+                let path = String(text[r])
+                if !paths.contains(path) { paths.append(path) }
+            }
+        }
+
+        // Parse @grep:query mentions
+        let grepPattern = #"@grep:([^\s]+)"#
+        var grepResults: [String] = []
+        if let regex = try? NSRegularExpression(pattern: grepPattern) {
+            let range = NSRange(text.startIndex..., in: text)
+            for match in regex.matches(in: text, range: range) {
+                guard let r = Range(match.range(at: 1), in: text) else { continue }
+                let query = String(text[r])
+                let results = repo.searchCode(query)
+                let formatted = results.prefix(10).map { "\($0.file):\($0.line): \($0.content)" }.joined(separator: "\n")
+                if !formatted.isEmpty {
+                    grepResults.append("### grep: \(query)\n```\n\(formatted)\n```")
+                }
+            }
+        }
+
+        // Parse @build mention — last build output
+        if text.contains("@build") {
+            let buildLog = TrinityContext.shared.lastBuildLog()
+            if !buildLog.isEmpty {
+                grepResults.append("### Build Status\n```\n\(String(buildLog.prefix(4000)))\n```")
+            }
+        }
+
+        // Parse @farm mention — farm events snapshot
+        if text.contains("@farm") {
+            let farmSnap = TrinityContext.shared.farmSnapshot()
+            if !farmSnap.isEmpty {
+                grepResults.append("### Farm Status\n\(farmSnap)")
+            }
+        }
+
+        // Parse @issues mention — open issues summary
+        if text.contains("@issues") {
+            let issuesSummary = TrinityContext.shared.openIssuesSummary()
+            if !issuesSummary.isEmpty {
+                grepResults.append("### Open Issues\n```\n\(String(issuesSummary.prefix(4000)))\n```")
+            }
+        }
+
+        // Parse @gitdiff mention — HEAD diff
+        if text.contains("@gitdiff") {
+            let diff = TrinityContext.shared.headDiff()
+            if !diff.isEmpty {
+                grepResults.append("### Git Diff (HEAD)\n```diff\n\(String(diff.prefix(6000)))\n```")
+            }
+        }
+
+        guard !paths.isEmpty || !grepResults.isEmpty else { return nil }
+        var context: [String] = grepResults
+        for path in paths.prefix(3) {
             if let content = repo.readFile(path) {
                 context.append("### \(path)\n```\n\(String(content.prefix(4000)))\n```")
                 TrinityContext.shared.recordAttachedFile(path, size: content.count)
@@ -216,10 +415,43 @@ class ChatClient: ObservableObject {
         return context.isEmpty ? nil : context.joined(separator: "\n\n")
     }
 
-    func send(_ text: String, threadID: UUID, store: ThreadStore, modelManager: ModelManager, mode: ChatMode = .trinity) {
+    /// Extract citations from Perplexity API response
+    static func extractCitations(from text: String) -> [Citation] {
+        // Match [1], [2], etc. and try to pair with URLs in the text
+        var citations: [Citation] = []
+        let urlPattern = #"https?://[^\s\)\]\"']+"#
+        guard let regex = try? NSRegularExpression(pattern: urlPattern) else { return [] }
+        let range = NSRange(text.startIndex..., in: text)
+        for match in regex.matches(in: text, range: range) {
+            guard let r = Range(match.range, in: text) else { continue }
+            let url = String(text[r])
+            let domain = URL(string: url)?.host?.replacingOccurrences(of: "www.", with: "")
+            if !citations.contains(where: { $0.url == url }) {
+                citations.append(Citation(url: url, title: nil, domain: domain))
+            }
+        }
+        return citations
+    }
+
+    func send(_ text: String, threadID: UUID, store: ThreadStore, modelManager: ModelManager, mode: ChatMode = .trinity, modelOverride: AIModel? = nil) {
         // Image mode — route to xAI image generation
         if mode == .image {
             sendImageGeneration(text, threadID: threadID, store: store, modelManager: modelManager)
+            return
+        }
+
+        // Offline queue: if selected provider is down, queue for later
+        let providerName = modelManager.selectedModel.provider.rawValue
+        if let status = NetworkLog.shared.providerHealth[providerName], !status.isUp {
+            offlineQueue.append(QueuedMessage(text: text, threadID: threadID, mode: mode))
+            offlineQueueCount = offlineQueue.count
+            // Add user message with queued indicator
+            let userMsg = ChatMessage(role: .user, text: text)
+            store.appendMessage(userMsg, to: threadID)
+            let queuedMsg = ChatMessage(role: .assistant, text: "*[Queued — will send when \(providerName) is back online]*", modelID: modelManager.selectedModel.id)
+            store.appendMessage(queuedMsg, to: threadID)
+            store.saveThread(threadID)
+            startOfflineDrain(store: store, modelManager: modelManager)
             return
         }
 
@@ -232,15 +464,19 @@ class ChatClient: ObservableObject {
         let userMsg = ChatMessage(role: .user, text: text)
         store.appendMessage(userMsg, to: threadID)
 
-        // Resolve model based on mode
+        // Resolve model based on mode or override
         let model: AIModel
-        switch mode {
-        case .search:
-            model = AIModel.allModels.first(where: { $0.id == "sonar-pro" }) ?? modelManager.selectedModel
-        case .reason:
-            model = AIModel.allModels.first(where: { $0.id == "sonar-reasoning-pro" }) ?? modelManager.selectedModel
-        case .trinity, .image, .compare:
-            model = modelManager.selectedModel
+        if let override = modelOverride {
+            model = override
+        } else {
+            switch mode {
+            case .search:
+                model = AIModel.allModels.first(where: { $0.id == "sonar-pro" }) ?? modelManager.selectedModel
+            case .reason:
+                model = AIModel.allModels.first(where: { $0.id == "sonar-reasoning-pro" }) ?? modelManager.selectedModel
+            case .trinity, .image, .compare:
+                model = modelManager.selectedModel
+            }
         }
 
         let assistantMsg = ChatMessage(role: .assistant, text: "", modelID: model.id)
@@ -248,6 +484,7 @@ class ChatClient: ObservableObject {
 
         isStreaming = true
         streamingText = ""
+        streamingThinkingText = ""
 
         var history: [[String: String]] = store.activeThread()?.messages
             .filter { !$0.text.isEmpty }
@@ -269,6 +506,7 @@ class ChatClient: ObservableObject {
 
         let chatMode = mode
 
+        let assistantMsgID = assistantMsg.id
         streamTask = Task {
             do {
                 try await streamResponse(
@@ -279,6 +517,9 @@ class ChatClient: ObservableObject {
                     modelManager: modelManager,
                     mode: chatMode
                 )
+
+                // Persist streaming metrics to message
+                saveMetrics(messageID: assistantMsgID, threadID: threadID, store: store)
 
                 // Process tool tags in response ([READ:], [RUN:], [GREP:])
                 let toolResult = processToolTags(streamingText)
@@ -293,12 +534,48 @@ class ChatClient: ObservableObject {
                     let title = generateTitle(from: text)
                     store.rename(threadID, title: title)
                 }
+
+                // Auto-memory extraction: 3-second delay then scan for patterns
+                let responseText = streamingText
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(3))
+                    let extracted = MemoryExtractor.extract(from: responseText)
+                    if !extracted.isEmpty {
+                        proposedMemories = extracted
+                    }
+                }
             } catch {
                 if !Task.isCancelled {
-                    store.updateLastMessage(
-                        text: streamingText + "\n[Error: \(error.localizedDescription)]",
-                        in: threadID
-                    )
+                    // Streaming recovery: if we got partial text, try to continue
+                    if streamingOutputTokens > 10 {
+                        let partial = streamingText
+                        store.updateLastMessage(text: partial + "\n\n*[Recovering...]*", in: threadID)
+                        var continueHistory = history
+                        continueHistory.append(["role": "assistant", "content": partial])
+                        continueHistory.append(["role": "user", "content": "Continue from where you left off. Do not repeat what you already said."])
+                        streamingText = partial + "\n\n"
+                        do {
+                            try await streamResponse(
+                                history: continueHistory,
+                                threadID: threadID,
+                                store: store,
+                                model: model,
+                                modelManager: modelManager,
+                                mode: chatMode
+                            )
+                            saveMetrics(messageID: assistantMsgID, threadID: threadID, store: store)
+                        } catch {
+                            store.updateLastMessage(
+                                text: streamingText + "\n[Error: \(error.localizedDescription)]",
+                                in: threadID
+                            )
+                        }
+                    } else {
+                        store.updateLastMessage(
+                            text: streamingText + "\n[Error: \(error.localizedDescription)]",
+                            in: threadID
+                        )
+                    }
                 }
             }
             store.saveThread(threadID)
@@ -352,20 +629,62 @@ class ChatClient: ObservableObject {
         }
     }
 
+    /// Last used model/provider for recording on cancel
+    private var lastModelID: String = ""
+    private var lastProviderName: String = ""
+
     func stop() {
         streamTask?.cancel()
         streamTask = nil
         isStreaming = false
+        isSlowResponse = false
 
-        // Record cancellation
+        // Record cancellation with actual provider/model
         if let start = streamStartTime {
             NetworkLog.shared.record(
-                provider: "", model: "", inputTokens: 0,
+                provider: lastProviderName, model: lastModelID,
+                inputTokens: 0,
                 outputTokens: streamingOutputTokens,
                 ttfbMs: streamingTTFB,
                 totalMs: Int(Date().timeIntervalSince(start) * 1000),
                 status: "cancelled"
             )
+        }
+    }
+
+    /// Start background drain of offline queue
+    private func startOfflineDrain(store: ThreadStore, modelManager: ModelManager) {
+        guard offlineDrainTask == nil else { return }
+        offlineDrainTask = Task {
+            while !offlineQueue.isEmpty {
+                try? await Task.sleep(for: .seconds(15))
+                // Check if provider is back
+                NetworkLog.shared.checkAllProviders()
+                try? await Task.sleep(for: .seconds(3))
+
+                var drained: [QueuedMessage] = []
+                for queued in offlineQueue {
+                    let providerName = modelManager.selectedModel.provider.rawValue
+                    if let status = NetworkLog.shared.providerHealth[providerName], !status.isUp {
+                        break // Still offline
+                    }
+                    drained.append(queued)
+                }
+
+                for queued in drained {
+                    offlineQueue.removeFirst()
+                    offlineQueueCount = offlineQueue.count
+                    // Remove the queued placeholder
+                    store.removeLastAssistantMessage(in: queued.threadID)
+                    // Send normally
+                    send(queued.text, threadID: queued.threadID, store: store, modelManager: modelManager, mode: queued.mode)
+                    // Wait for completion
+                    while isStreaming {
+                        try? await Task.sleep(for: .milliseconds(500))
+                    }
+                }
+            }
+            offlineDrainTask = nil
         }
     }
 
@@ -395,6 +714,7 @@ class ChatClient: ObservableObject {
             .map { ["role": $0.role.rawValue, "content": $0.text] } ?? []
 
         let model = modelManager.selectedModel
+        let editAssistantMsgID = assistantMsg.id
 
         streamTask = Task {
             do {
@@ -402,12 +722,34 @@ class ChatClient: ObservableObject {
                     history: history, threadID: threadID, store: store,
                     model: model, modelManager: modelManager, mode: mode
                 )
+                saveMetrics(messageID: editAssistantMsgID, threadID: threadID, store: store)
             } catch {
                 if !Task.isCancelled {
-                    store.updateLastMessage(
-                        text: streamingText + "\n[Error: \(error.localizedDescription)]",
-                        in: threadID
-                    )
+                    if streamingOutputTokens > 10 {
+                        let partial = streamingText
+                        store.updateLastMessage(text: partial + "\n\n*[Recovering...]*", in: threadID)
+                        var continueHistory = history
+                        continueHistory.append(["role": "assistant", "content": partial])
+                        continueHistory.append(["role": "user", "content": "Continue from where you left off. Do not repeat what you already said."])
+                        streamingText = partial + "\n\n"
+                        do {
+                            try await streamResponse(
+                                history: continueHistory, threadID: threadID, store: store,
+                                model: model, modelManager: modelManager, mode: mode
+                            )
+                            saveMetrics(messageID: editAssistantMsgID, threadID: threadID, store: store)
+                        } catch {
+                            store.updateLastMessage(
+                                text: streamingText + "\n[Error: \(error.localizedDescription)]",
+                                in: threadID
+                            )
+                        }
+                    } else {
+                        store.updateLastMessage(
+                            text: streamingText + "\n[Error: \(error.localizedDescription)]",
+                            in: threadID
+                        )
+                    }
                 }
             }
             store.saveThread(threadID)
@@ -526,6 +868,67 @@ class ChatClient: ObservableObject {
         }
     }
 
+    /// Remove a queued offline message
+    func cancelQueued(_ id: UUID) {
+        offlineQueue.removeAll { $0.id == id }
+        offlineQueueCount = offlineQueue.count
+    }
+
+    /// Retry a specific assistant message (not just the last one)
+    func regenerateFrom(messageID: UUID, threadID: UUID, store: ThreadStore, modelManager: ModelManager) {
+        guard !isStreaming else { return }
+        guard let thread = store.threads.first(where: { $0.id == threadID }) else { return }
+        guard let msgIdx = thread.messages.firstIndex(where: { $0.id == messageID }) else { return }
+        let msg = thread.messages[msgIdx]
+        guard msg.role == .assistant else { return }
+
+        // Find the user message before this assistant message
+        let userMsg = thread.messages.prefix(msgIdx).last(where: { $0.role == .user })
+        guard let userText = userMsg?.text, !userText.isEmpty else { return }
+
+        // Remove this assistant message and everything after it
+        let tIdx = store.threads.firstIndex(where: { $0.id == threadID })!
+        if msgIdx < store.threads[tIdx].messages.count {
+            store.threads[tIdx].messages.removeSubrange(msgIdx...)
+        }
+        store.threads[tIdx].updatedAt = Date()
+        store.saveThread(threadID)
+
+        // Add new assistant placeholder and stream
+        let assistantMsg = ChatMessage(role: .assistant, text: "", modelID: modelManager.selectedModel.id)
+        store.appendMessage(assistantMsg, to: threadID)
+
+        isStreaming = true
+        streamingText = ""
+        streamingThinkingText = ""
+
+        let history: [[String: String]] = store.activeThread()?.messages
+            .filter { !$0.text.isEmpty }
+            .map { ["role": $0.role.rawValue, "content": $0.text] } ?? []
+
+        let model = modelManager.selectedModel
+        let newMsgID = assistantMsg.id
+
+        streamTask = Task {
+            do {
+                try await streamResponse(
+                    history: history, threadID: threadID, store: store,
+                    model: model, modelManager: modelManager
+                )
+                saveMetrics(messageID: newMsgID, threadID: threadID, store: store)
+            } catch {
+                if !Task.isCancelled {
+                    store.updateLastMessage(
+                        text: streamingText + "\n[Error: \(error.localizedDescription)]",
+                        in: threadID
+                    )
+                }
+            }
+            store.saveThread(threadID)
+            isStreaming = false
+        }
+    }
+
     func regenerate(threadID: UUID, store: ThreadStore, modelManager: ModelManager) {
         guard !isStreaming else { return }
         guard let thread = store.activeThread(),
@@ -550,6 +953,7 @@ class ChatClient: ObservableObject {
             .map { ["role": $0.role.rawValue, "content": $0.text] } ?? []
 
         let model = modelManager.selectedModel
+        let regenAssistantMsgID = assistantMsg.id
 
         streamTask = Task {
             do {
@@ -560,17 +964,57 @@ class ChatClient: ObservableObject {
                     model: model,
                     modelManager: modelManager
                 )
+                saveMetrics(messageID: regenAssistantMsgID, threadID: threadID, store: store)
             } catch {
                 if !Task.isCancelled {
-                    store.updateLastMessage(
-                        text: streamingText + "\n[Error: \(error.localizedDescription)]",
-                        in: threadID
-                    )
+                    if streamingOutputTokens > 10 {
+                        let partial = streamingText
+                        store.updateLastMessage(text: partial + "\n\n*[Recovering...]*", in: threadID)
+                        var continueHistory = history
+                        continueHistory.append(["role": "assistant", "content": partial])
+                        continueHistory.append(["role": "user", "content": "Continue from where you left off. Do not repeat what you already said."])
+                        streamingText = partial + "\n\n"
+                        do {
+                            try await streamResponse(
+                                history: continueHistory, threadID: threadID, store: store,
+                                model: model, modelManager: modelManager
+                            )
+                            saveMetrics(messageID: regenAssistantMsgID, threadID: threadID, store: store)
+                        } catch {
+                            store.updateLastMessage(
+                                text: streamingText + "\n[Error: \(error.localizedDescription)]",
+                                in: threadID
+                            )
+                        }
+                    } else {
+                        store.updateLastMessage(
+                            text: streamingText + "\n[Error: \(error.localizedDescription)]",
+                            in: threadID
+                        )
+                    }
                 }
             }
             store.saveThread(threadID)
             isStreaming = false
         }
+    }
+
+    private func saveMetrics(messageID: UUID, threadID: UUID, store: ThreadStore) {
+        guard streamingOutputTokens > 0 else { return }
+        let total: Int
+        if let start = streamStartTime {
+            total = Int(Date().timeIntervalSince(start) * 1000)
+        } else {
+            total = 0
+        }
+        store.updateMessageMetrics(
+            messageID,
+            ttfbMs: streamingTTFB,
+            tokPerSec: streamingTokensPerSec,
+            outputTokens: streamingOutputTokens,
+            totalMs: total,
+            in: threadID
+        )
     }
 
     private func generateTitle(from text: String) -> String {
@@ -591,6 +1035,10 @@ class ChatClient: ObservableObject {
             store.updateLastMessage(text: "[No API key for \(model.provider.rawValue)]", in: threadID)
             return
         }
+
+        // Track for cancel recording
+        lastModelID = model.id
+        lastProviderName = model.provider.rawValue
 
         switch model.provider {
         case .perplexity, .xai:
@@ -616,15 +1064,20 @@ class ChatClient: ObservableObject {
         key: String,
         modelManager: ModelManager,
         mode: ChatMode = .trinity,
-        retryCount: Int = 0
+        retryCount: Int = 0,
+        triedModels: Set<String> = []
     ) async throws {
-        let body: [String: Any] = [
+        var body: [String: Any] = [
             "model": model.id,
-            "max_tokens": 4096,
+            "max_tokens": mode == .reason ? 16384 : 4096,
             "stream": true,
             "system": systemPrompt + mode.systemSuffix,
             "messages": history
         ]
+        // Enable extended thinking for reason mode (Anthropic API)
+        if mode == .reason && model.provider == .anthropic {
+            body["thinking"] = ["type": "enabled", "budget_tokens": 8192]
+        }
         let bodyData = try JSONSerialization.data(withJSONObject: body)
 
         guard let request = modelManager.buildRequest(for: model, body: bodyData) else {
@@ -635,9 +1088,57 @@ class ChatClient: ObservableObject {
         streamStartTime = Date()
         firstTokenTime = nil
         streamingOutputTokens = 0
+        streamingTTFB = 0  // Reset TTFB on every attempt
+        isSlowResponse = false
+        lastError = nil
         let inputTokens = history.reduce(0) { $0 + ($1["content"]?.count ?? 0) / 4 }
 
-        let (bytes, response) = try await URLSession.shared.bytes(for: request)
+        // Start slow-response timer
+        let slowTimer = Task {
+            try await Task.sleep(for: .seconds(5))
+            if firstTokenTime == nil {
+                await MainActor.run { isSlowResponse = true }
+            }
+        }
+
+        let bytes: URLSession.AsyncBytes
+        let response: URLResponse
+        do {
+            (bytes, response) = try await URLSession.shared.bytes(for: request)
+        } catch {
+            slowTimer.cancel()
+            // Connection error (timeout, no network, etc.)
+            let errType: APIErrorType = error.localizedDescription.contains("timed out")
+                ? .timeout : .connectionFailed
+            lastError = errType
+
+            // Try failover chain
+            var tried = triedModels.union([model.id])
+            let chain = modelManager.failoverChain(excluding: tried)
+            if let next = chain.first, let nextKey = modelManager.apiKey(for: next) {
+                tried.insert(next.id)
+                store.updateLastMessage(text: "", in: threadID)
+                failoverEvent = FailoverEvent(from: model.displayName, to: next.displayName, timestamp: Date())
+                failoverLog.append(failoverEvent!)
+                try await streamAnthropic(
+                    history: history, threadID: threadID, store: store,
+                    model: next, key: nextKey, modelManager: modelManager,
+                    mode: mode, retryCount: 0, triedModels: tried
+                )
+                return
+            }
+            store.updateLastMessage(text: "[\(errType.userMessage)]", in: threadID)
+            NetworkLog.shared.record(
+                provider: model.provider.rawValue, model: model.id,
+                inputTokens: inputTokens, outputTokens: 0, ttfbMs: 0,
+                totalMs: Int(Date().timeIntervalSince(streamStartTime!) * 1000),
+                status: "error", errorMessage: errType.userMessage
+            )
+            return
+        }
+
+        slowTimer.cancel()
+        isSlowResponse = false
 
         if let httpResponse = response as? HTTPURLResponse {
             modelManager.parseRateLimitHeaders(httpResponse, provider: model.provider)
@@ -646,30 +1147,39 @@ class ChatClient: ObservableObject {
                 var errorBody = ""
                 for try await line in bytes.lines { errorBody += line }
 
-                // Retry on 429 (rate limit) or 5xx
+                let errType = APIErrorType.from(statusCode: httpResponse.statusCode, body: errorBody, headers: httpResponse)
+                lastError = errType
+
+                // Retry on 429 or 5xx — try same model first, then failover chain
                 if (httpResponse.statusCode == 429 || httpResponse.statusCode >= 500) && retryCount < 2 {
                     let delay = [3.0, 8.0][min(retryCount, 1)]
-                    // Reset streaming state to avoid text concatenation on retry
                     streamingText = ""
                     streamingOutputTokens = 0
                     firstTokenTime = nil
-                    store.updateLastMessage(text: "Reconnecting (\(retryCount + 1)/3)...", in: threadID)
+                    streamingTTFB = 0
+                    // Don't leave "Reconnecting..." in final message — clear it
+                    store.updateLastMessage(text: "", in: threadID)
                     try await Task.sleep(for: .seconds(delay))
 
-                    // Try auto-failover on 2nd+ retry
+                    // Try failover chain on 2nd+ retry
                     var retryModel = model
                     var retryKey = key
-                    if retryCount >= 1, let fallback = modelManager.failoverModel(),
-                       let fbKey = modelManager.apiKey(for: fallback) {
-                        retryModel = fallback
-                        retryKey = fbKey
-                        store.updateLastMessage(text: "Failover to \(fallback.displayName)...", in: threadID)
+                    var tried = triedModels.union([model.id])
+                    if retryCount >= 1 {
+                        let chain = modelManager.failoverChain(excluding: tried)
+                        if let fallback = chain.first, let fbKey = modelManager.apiKey(for: fallback) {
+                            retryModel = fallback
+                            retryKey = fbKey
+                            tried.insert(fallback.id)
+                            failoverEvent = FailoverEvent(from: model.displayName, to: fallback.displayName, timestamp: Date())
+                            failoverLog.append(failoverEvent!)
+                        }
                     }
 
                     try await streamAnthropic(
                         history: history, threadID: threadID, store: store,
                         model: retryModel, key: retryKey, modelManager: modelManager,
-                        mode: mode, retryCount: retryCount + 1
+                        mode: mode, retryCount: retryCount + 1, triedModels: tried
                     )
                     return
                 }
@@ -680,10 +1190,12 @@ class ChatClient: ObservableObject {
                     totalMs: Int(Date().timeIntervalSince(streamStartTime!) * 1000),
                     status: "error", errorMessage: "HTTP \(httpResponse.statusCode)"
                 )
-                store.updateLastMessage(text: "[API Error \(httpResponse.statusCode): \(errorBody)]", in: threadID)
+                store.updateLastMessage(text: "[\(errType.userMessage)]", in: threadID)
                 return
             }
         }
+
+        var currentBlockType: String = "text"  // Track content block type
 
         for try await line in bytes.lines {
             try Task.checkCancellation()
@@ -695,28 +1207,53 @@ class ChatClient: ObservableObject {
                   let event = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any],
                   let type = event["type"] as? String else { continue }
 
+            // Track block type from content_block_start
+            if type == "content_block_start",
+               let contentBlock = event["content_block"] as? [String: Any],
+               let blockType = contentBlock["type"] as? String {
+                currentBlockType = blockType
+            }
+
             if type == "content_block_delta",
-               let delta = event["delta"] as? [String: Any],
-               let text = delta["text"] as? String {
-                // Track first token time
-                if firstTokenTime == nil {
-                    firstTokenTime = Date()
-                    streamingTTFB = Int(firstTokenTime!.timeIntervalSince(streamStartTime!) * 1000)
+               let delta = event["delta"] as? [String: Any] {
+                // Handle thinking deltas
+                if let thinking = delta["thinking"] as? String, currentBlockType == "thinking" {
+                    if firstTokenTime == nil {
+                        firstTokenTime = Date()
+                        if let start = streamStartTime {
+                            streamingTTFB = Int(firstTokenTime!.timeIntervalSince(start) * 1000)
+                        }
+                        isSlowResponse = false
+                    }
+                    streamingThinkingText += thinking
+                    store.updateLastMessageThinking(text: streamingThinkingText, in: threadID)
                 }
-                streamingText += text
-                streamingOutputTokens += max(text.count / 4, 1)
-                updateTokensPerSec()
-                store.updateLastMessage(text: streamingText, in: threadID)
+                // Handle text deltas
+                else if let text = delta["text"] as? String {
+                    if firstTokenTime == nil {
+                        firstTokenTime = Date()
+                        if let start = streamStartTime {
+                            streamingTTFB = Int(firstTokenTime!.timeIntervalSince(start) * 1000)
+                        }
+                        isSlowResponse = false
+                    }
+                    streamingText += text
+                    streamingOutputTokens += max(text.count / 4, 1)
+                    updateTokensPerSec()
+                    store.updateLastMessage(text: streamingText, in: threadID)
+                }
             }
         }
 
         // Record to network log
-        let totalMs = Int(Date().timeIntervalSince(streamStartTime!) * 1000)
-        NetworkLog.shared.record(
-            provider: model.provider.rawValue, model: model.id,
-            inputTokens: inputTokens, outputTokens: streamingOutputTokens,
-            ttfbMs: streamingTTFB, totalMs: totalMs, status: "ok"
-        )
+        if let start = streamStartTime {
+            let totalMs = Int(Date().timeIntervalSince(start) * 1000)
+            NetworkLog.shared.record(
+                provider: model.provider.rawValue, model: model.id,
+                inputTokens: inputTokens, outputTokens: streamingOutputTokens,
+                ttfbMs: streamingTTFB, totalMs: totalMs, status: "ok"
+            )
+        }
     }
 
     // MARK: - OpenAI-compatible streaming (Perplexity, xAI Grok)
@@ -729,9 +1266,9 @@ class ChatClient: ObservableObject {
         key: String,
         modelManager: ModelManager,
         mode: ChatMode = .trinity,
-        retryCount: Int = 0
+        retryCount: Int = 0,
+        triedModels: Set<String> = []
     ) async throws {
-        // OpenAI chat completions format (used by Perplexity, xAI)
         var messages: [[String: String]] = [["role": "system", "content": systemPrompt + mode.systemSuffix]]
         messages.append(contentsOf: history)
 
@@ -741,7 +1278,6 @@ class ChatClient: ObservableObject {
             "messages": messages
         ]
 
-        // Search mode: add recency filter for fresh results (Perplexity-only)
         if mode == .search && model.provider == .perplexity {
             body["search_recency_filter"] = "week"
         }
@@ -755,9 +1291,54 @@ class ChatClient: ObservableObject {
         streamStartTime = Date()
         firstTokenTime = nil
         streamingOutputTokens = 0
+        streamingTTFB = 0
+        isSlowResponse = false
+        lastError = nil
         let inputTokens = history.reduce(0) { $0 + ($1["content"]?.count ?? 0) / 4 }
 
-        let (bytes, response) = try await URLSession.shared.bytes(for: request)
+        let slowTimer = Task {
+            try await Task.sleep(for: .seconds(5))
+            if firstTokenTime == nil {
+                await MainActor.run { isSlowResponse = true }
+            }
+        }
+
+        let bytes: URLSession.AsyncBytes
+        let response: URLResponse
+        do {
+            (bytes, response) = try await URLSession.shared.bytes(for: request)
+        } catch {
+            slowTimer.cancel()
+            let errType: APIErrorType = error.localizedDescription.contains("timed out")
+                ? .timeout : .connectionFailed
+            lastError = errType
+
+            var tried = triedModels.union([model.id])
+            let chain = modelManager.failoverChain(excluding: tried)
+            if let next = chain.first, let nextKey = modelManager.apiKey(for: next) {
+                tried.insert(next.id)
+                store.updateLastMessage(text: "", in: threadID)
+                failoverEvent = FailoverEvent(from: model.displayName, to: next.displayName, timestamp: Date())
+                failoverLog.append(failoverEvent!)
+                try await streamOpenAI(
+                    history: history, threadID: threadID, store: store,
+                    model: next, key: nextKey, modelManager: modelManager,
+                    mode: mode, retryCount: 0, triedModels: tried
+                )
+                return
+            }
+            store.updateLastMessage(text: "[\(errType.userMessage)]", in: threadID)
+            NetworkLog.shared.record(
+                provider: model.provider.rawValue, model: model.id,
+                inputTokens: inputTokens, outputTokens: 0, ttfbMs: 0,
+                totalMs: Int(Date().timeIntervalSince(streamStartTime!) * 1000),
+                status: "error", errorMessage: errType.userMessage
+            )
+            return
+        }
+
+        slowTimer.cancel()
+        isSlowResponse = false
 
         if let httpResponse = response as? HTTPURLResponse {
             modelManager.parseRateLimitHeaders(httpResponse, provider: model.provider)
@@ -766,28 +1347,36 @@ class ChatClient: ObservableObject {
                 var errorBody = ""
                 for try await line in bytes.lines { errorBody += line }
 
-                // Retry on 429 or 5xx
+                let errType = APIErrorType.from(statusCode: httpResponse.statusCode, body: errorBody, headers: httpResponse)
+                lastError = errType
+
                 if (httpResponse.statusCode == 429 || httpResponse.statusCode >= 500) && retryCount < 2 {
                     let delay = [3.0, 8.0][min(retryCount, 1)]
                     streamingText = ""
                     streamingOutputTokens = 0
                     firstTokenTime = nil
-                    store.updateLastMessage(text: "Reconnecting (\(retryCount + 1)/3)...", in: threadID)
+                    streamingTTFB = 0
+                    store.updateLastMessage(text: "", in: threadID)
                     try await Task.sleep(for: .seconds(delay))
 
                     var retryModel = model
                     var retryKey = key
-                    if retryCount >= 1, let fallback = modelManager.failoverModel(),
-                       let fbKey = modelManager.apiKey(for: fallback) {
-                        retryModel = fallback
-                        retryKey = fbKey
-                        store.updateLastMessage(text: "Failover to \(fallback.displayName)...", in: threadID)
+                    var tried = triedModels.union([model.id])
+                    if retryCount >= 1 {
+                        let chain = modelManager.failoverChain(excluding: tried)
+                        if let fallback = chain.first, let fbKey = modelManager.apiKey(for: fallback) {
+                            retryModel = fallback
+                            retryKey = fbKey
+                            tried.insert(fallback.id)
+                            failoverEvent = FailoverEvent(from: model.displayName, to: fallback.displayName, timestamp: Date())
+                            failoverLog.append(failoverEvent!)
+                        }
                     }
 
                     try await streamOpenAI(
                         history: history, threadID: threadID, store: store,
                         model: retryModel, key: retryKey, modelManager: modelManager,
-                        mode: mode, retryCount: retryCount + 1
+                        mode: mode, retryCount: retryCount + 1, triedModels: tried
                     )
                     return
                 }
@@ -798,7 +1387,7 @@ class ChatClient: ObservableObject {
                     totalMs: Int(Date().timeIntervalSince(streamStartTime!) * 1000),
                     status: "error", errorMessage: "HTTP \(httpResponse.statusCode)"
                 )
-                store.updateLastMessage(text: "[API Error \(httpResponse.statusCode): \(errorBody)]", in: threadID)
+                store.updateLastMessage(text: "[\(errType.userMessage)]", in: threadID)
                 return
             }
         }
@@ -817,7 +1406,10 @@ class ChatClient: ObservableObject {
 
             if firstTokenTime == nil {
                 firstTokenTime = Date()
-                streamingTTFB = Int(firstTokenTime!.timeIntervalSince(streamStartTime!) * 1000)
+                if let start = streamStartTime {
+                    streamingTTFB = Int(firstTokenTime!.timeIntervalSince(start) * 1000)
+                }
+                isSlowResponse = false
             }
             streamingText += content
             streamingOutputTokens += max(content.count / 4, 1)
@@ -825,11 +1417,56 @@ class ChatClient: ObservableObject {
             store.updateLastMessage(text: streamingText, in: threadID)
         }
 
-        let totalMs = Int(Date().timeIntervalSince(streamStartTime!) * 1000)
-        NetworkLog.shared.record(
-            provider: model.provider.rawValue, model: model.id,
-            inputTokens: inputTokens, outputTokens: streamingOutputTokens,
-            ttfbMs: streamingTTFB, totalMs: totalMs, status: "ok"
-        )
+        // Extract citations for search mode (Perplexity responses)
+        if mode == .search && !streamingText.isEmpty {
+            let citations = ChatClient.extractCitations(from: streamingText)
+            if !citations.isEmpty {
+                store.updateLastMessageCitations(citations, in: threadID)
+            }
+        }
+
+        if let start = streamStartTime {
+            let totalMs = Int(Date().timeIntervalSince(start) * 1000)
+            NetworkLog.shared.record(
+                provider: model.provider.rawValue, model: model.id,
+                inputTokens: inputTokens, outputTokens: streamingOutputTokens,
+                ttfbMs: streamingTTFB, totalMs: totalMs, status: "ok"
+            )
+        }
+    }
+}
+
+// MARK: - Memory Extractor
+
+enum MemoryExtractor {
+    /// Scan response text for actionable patterns
+    static func extract(from text: String) -> [MemoryEntry] {
+        var entries: [MemoryEntry] = []
+        let patterns: [String] = [
+            #"(?:set|changed|configured)\s+(\w[\w\s]*?)\s+to\s+([\w\d\.\-]+)"#,
+            #"the fix was\s+(.+?)(?:\.|$)"#,
+            #"use\s+(\w[\w\s]*?)\s+instead of\s+(\w[\w\s]*?)(?:\.|$)"#,
+            #"PPL[=: ]+(\d+\.?\d*)"#,
+        ]
+
+        let lines = text.components(separatedBy: "\n")
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            guard trimmed.count > 10 && trimmed.count < 200 else { continue }
+
+            for pattern in patterns {
+                guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive) else { continue }
+                let range = NSRange(trimmed.startIndex..., in: trimmed)
+                if regex.firstMatch(in: trimmed, range: range) != nil {
+                    let entry = MemoryEntry(text: trimmed, source: String(trimmed.prefix(80)))
+                    if !entries.contains(where: { $0.text == entry.text }) {
+                        entries.append(entry)
+                    }
+                    break
+                }
+            }
+        }
+
+        return Array(entries.prefix(3))
     }
 }

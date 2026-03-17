@@ -54,6 +54,46 @@ final class ThreadStore: ObservableObject {
         threads[idx].updatedAt = Date()
     }
 
+    func updateLastMessageThinking(text: String, in threadID: UUID) {
+        guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        guard !threads[idx].messages.isEmpty else { return }
+        let lastIdx = threads[idx].messages.count - 1
+        threads[idx].messages[lastIdx].thinkingText = text
+        threads[idx].updatedAt = Date()
+    }
+
+    // MARK: - Memory Persistence
+
+    private var memoriesURL: URL {
+        let appSupport = FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        return appSupport.appendingPathComponent("QueenUI/memories.json")
+    }
+
+    func loadMemories() -> [MemoryEntry] {
+        guard let data = try? Data(contentsOf: memoriesURL) else { return [] }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return (try? decoder.decode([MemoryEntry].self, from: data)) ?? []
+    }
+
+    func saveMemory(_ entry: MemoryEntry) {
+        var memories = loadMemories()
+        memories.append(entry)
+        // Cap at 20 most recent
+        if memories.count > 20 { memories = Array(memories.suffix(20)) }
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        encoder.outputFormatting = .prettyPrinted
+        if let data = try? encoder.encode(memories) {
+            try? data.write(to: memoriesURL, options: .atomic)
+        }
+    }
+
+    func dismissMemory(_ id: UUID) {
+        // No-op for dismissed (not saved)
+    }
+
     func updateLastMessage(text: String, imageURLs: [String], in threadID: UUID) {
         guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
         guard !threads[idx].messages.isEmpty else { return }
@@ -97,17 +137,83 @@ final class ThreadStore: ObservableObject {
         threads[tIdx].messages[mIdx].comments?[lastIdx].text = text
     }
 
-    /// Fork conversation from a specific message: update its text and remove everything after it
+    /// Fork conversation from a specific message: save branch, update text, remove everything after
     func forkFromMessage(_ messageID: UUID, newText: String, in threadID: UUID) {
         guard let tIdx = threads.firstIndex(where: { $0.id == threadID }) else { return }
         guard let mIdx = threads[tIdx].messages.firstIndex(where: { $0.id == messageID }) else { return }
+
+        // Save branch: store old text + subsequent messages for branch navigation
+        let branchID = threads[tIdx].messages[mIdx].branchID ?? UUID()
+        let oldIndex = threads[tIdx].messages[mIdx].branchIndex ?? 0
+
+        // Store branch data in UserDefaults
+        let branchKey = "branch_\(branchID)_\(oldIndex)"
+        let oldMessages = Array(threads[tIdx].messages[mIdx...])
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        if let data = try? encoder.encode(oldMessages) {
+            UserDefaults.standard.set(data, forKey: branchKey)
+        }
+
+        threads[tIdx].messages[mIdx].branchID = branchID
+        threads[tIdx].messages[mIdx].branchIndex = oldIndex + 1
         threads[tIdx].messages[mIdx].text = newText
+
         // Remove all messages after the edited one
         if mIdx + 1 < threads[tIdx].messages.count {
             threads[tIdx].messages.removeSubrange((mIdx + 1)...)
         }
         threads[tIdx].updatedAt = Date()
         save(threads[tIdx])
+    }
+
+    /// Switch to a specific branch version of a message
+    func switchBranch(_ messageID: UUID, toIndex: Int, in threadID: UUID) {
+        guard let tIdx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        guard let mIdx = threads[tIdx].messages.firstIndex(where: { $0.id == messageID }) else { return }
+        guard let branchID = threads[tIdx].messages[mIdx].branchID else { return }
+
+        // Save current branch
+        let currentIndex = threads[tIdx].messages[mIdx].branchIndex ?? 0
+        let currentKey = "branch_\(branchID)_\(currentIndex)"
+        let currentMessages = Array(threads[tIdx].messages[mIdx...])
+        let encoder = JSONEncoder()
+        encoder.dateEncodingStrategy = .iso8601
+        if let data = try? encoder.encode(currentMessages) {
+            UserDefaults.standard.set(data, forKey: currentKey)
+        }
+
+        // Load target branch
+        let targetKey = "branch_\(branchID)_\(toIndex)"
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        if let data = UserDefaults.standard.data(forKey: targetKey),
+           let restored = try? decoder.decode([ChatMessage].self, from: data) {
+            // Replace from mIdx onwards
+            threads[tIdx].messages.removeSubrange(mIdx...)
+            threads[tIdx].messages.append(contentsOf: restored)
+            // Update branch index on the forked message
+            threads[tIdx].messages[mIdx].branchIndex = toIndex
+        }
+        threads[tIdx].updatedAt = Date()
+        save(threads[tIdx])
+    }
+
+    /// Get total branch count for a message
+    func branchCount(for messageID: UUID, in threadID: UUID) -> Int {
+        guard let tIdx = threads.firstIndex(where: { $0.id == threadID }) else { return 0 }
+        guard let mIdx = threads[tIdx].messages.firstIndex(where: { $0.id == messageID }) else { return 0 }
+        guard let branchID = threads[tIdx].messages[mIdx].branchID else { return 0 }
+        let currentIndex = threads[tIdx].messages[mIdx].branchIndex ?? 0
+        // Count stored branches
+        var count = 0
+        for i in 0...currentIndex + 5 {
+            let key = "branch_\(branchID)_\(i)"
+            if UserDefaults.standard.data(forKey: key) != nil || i == currentIndex {
+                count = i + 1
+            }
+        }
+        return count
     }
 
     /// Search across all threads — returns matching (thread, message) pairs
@@ -216,6 +322,23 @@ final class ThreadStore: ObservableObject {
             if a.isPinned != b.isPinned { return a.isPinned }
             return a.updatedAt > b.updatedAt
         }
+    }
+
+    func updateLastMessageCitations(_ citations: [Citation], in threadID: UUID) {
+        guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        guard !threads[idx].messages.isEmpty else { return }
+        let lastIdx = threads[idx].messages.count - 1
+        threads[idx].messages[lastIdx].citations = citations
+    }
+
+    func updateMessageMetrics(_ messageID: UUID, ttfbMs: Int, tokPerSec: Double, outputTokens: Int, totalMs: Int, in threadID: UUID) {
+        guard let tIdx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        guard let mIdx = threads[tIdx].messages.firstIndex(where: { $0.id == messageID }) else { return }
+        threads[tIdx].messages[mIdx].ttfbMs = ttfbMs
+        threads[tIdx].messages[mIdx].tokPerSec = tokPerSec
+        threads[tIdx].messages[mIdx].outputTokens = outputTokens
+        threads[tIdx].messages[mIdx].totalMs = totalMs
+        save(threads[tIdx])
     }
 
     func saveThread(_ threadID: UUID) {

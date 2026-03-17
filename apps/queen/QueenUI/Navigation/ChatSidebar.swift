@@ -7,6 +7,7 @@ struct ChatSidebar: View {
     @State private var searchQuery = ""
     @State private var isSearching = false
     @State private var selectedTag: String?
+    @State private var hoveredThread: UUID? = nil
 
     private var filteredThreads: [ChatThread] {
         var base = store.sortedThreads
@@ -21,6 +22,42 @@ struct ChatSidebar: View {
         }
     }
 
+    /// Group threads by date: Today / Yesterday / This Week / This Month / Older
+    private var groupedThreads: [(String, [ChatThread])] {
+        let threads = filteredThreads
+        guard !threads.isEmpty else { return [] }
+
+        let cal = Calendar.current
+        let now = Date()
+        let todayStart = cal.startOfDay(for: now)
+        let yesterdayStart = cal.date(byAdding: .day, value: -1, to: todayStart)!
+        let weekStart = cal.date(byAdding: .day, value: -7, to: todayStart)!
+        let monthStart = cal.date(byAdding: .month, value: -1, to: todayStart)!
+
+        var today: [ChatThread] = []
+        var yesterday: [ChatThread] = []
+        var week: [ChatThread] = []
+        var month: [ChatThread] = []
+        var older: [ChatThread] = []
+
+        for thread in threads {
+            let date = thread.updatedAt
+            if date >= todayStart { today.append(thread) }
+            else if date >= yesterdayStart { yesterday.append(thread) }
+            else if date >= weekStart { week.append(thread) }
+            else if date >= monthStart { month.append(thread) }
+            else { older.append(thread) }
+        }
+
+        var groups: [(String, [ChatThread])] = []
+        if !today.isEmpty { groups.append(("Today", today)) }
+        if !yesterday.isEmpty { groups.append(("Yesterday", yesterday)) }
+        if !week.isEmpty { groups.append(("This Week", week)) }
+        if !month.isEmpty { groups.append(("This Month", month)) }
+        if !older.isEmpty { groups.append(("Older", older)) }
+        return groups
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Logo / brand
@@ -32,7 +69,6 @@ struct ChatSidebar: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Color.white)
                 Spacer()
-                // Search toggle
                 Button {
                     withAnimation(.easeInOut(duration: 0.15)) {
                         isSearching.toggle()
@@ -86,6 +122,8 @@ struct ChatSidebar: View {
             .buttonStyle(.plain)
             .padding(.horizontal, 8)
             .padding(.bottom, 8)
+            .accessibilityLabel("New thread")
+            .accessibilityHint("Creates a new conversation")
 
             Rectangle()
                 .fill(Color.white.opacity(0.06))
@@ -95,7 +133,6 @@ struct ChatSidebar: View {
             if !store.allTags.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 4) {
-                        // "All" chip
                         tagChip(nil, label: "All")
                         ForEach(store.allTags, id: \.self) { tag in
                             tagChip(tag, label: "#\(tag)")
@@ -106,39 +143,41 @@ struct ChatSidebar: View {
                 }
             }
 
-            // History label with count
-            HStack {
-                Text("History")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.4))
-                if !searchQuery.isEmpty || selectedTag != nil {
-                    Text("(\(filteredThreads.count))")
-                        .font(.system(size: 11))
-                        .foregroundStyle(TrinityTheme.accent)
-                }
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 9))
-                    .foregroundStyle(Color.white.opacity(0.3))
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 12)
-            .padding(.bottom, 6)
-
-            // Thread list
+            // Thread list with date groups
             ScrollView {
-                LazyVStack(spacing: 1) {
-                    ForEach(filteredThreads) { thread in
-                        ThreadRow(
-                            thread: thread,
-                            isActive: store.activeThreadID == thread.id,
-                            searchQuery: searchQuery,
-                            onSelect: { store.activeThreadID = thread.id },
-                            onDelete: { store.delete(thread) },
-                            onRename: { store.rename(thread.id, title: $0) },
-                            onExport: { exportThread(thread) },
-                            onPin: { store.togglePin(thread.id) },
-                            onAddTag: { store.addTag($0, to: thread.id) }
-                        )
+                LazyVStack(spacing: 0) {
+                    ForEach(groupedThreads, id: \.0) { groupName, threads in
+                        // Date group header
+                        HStack {
+                            Text(groupName)
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(Color.white.opacity(0.3))
+                            Spacer()
+                            Text("\(threads.count)")
+                                .font(.system(size: 9, design: .monospaced))
+                                .foregroundStyle(Color.white.opacity(0.2))
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.top, 10)
+                        .padding(.bottom, 4)
+
+                        ForEach(threads) { thread in
+                            ThreadRow(
+                                thread: thread,
+                                isActive: store.activeThreadID == thread.id,
+                                searchQuery: searchQuery,
+                                isHoveredForPreview: hoveredThread == thread.id,
+                                onSelect: { store.activeThreadID = thread.id },
+                                onDelete: { store.delete(thread) },
+                                onRename: { store.rename(thread.id, title: $0) },
+                                onExport: { exportThread(thread) },
+                                onPin: { store.togglePin(thread.id) },
+                                onAddTag: { store.addTag($0, to: thread.id) }
+                            )
+                            .onHover { hovering in
+                                hoveredThread = hovering ? thread.id : nil
+                            }
+                        }
                     }
                 }
                 .padding(.vertical, 2)
@@ -299,6 +338,7 @@ struct ThreadRow: View {
     let thread: ChatThread
     let isActive: Bool
     let searchQuery: String
+    var isHoveredForPreview: Bool = false
     let onSelect: () -> Void
     let onDelete: () -> Void
     let onRename: (String) -> Void
@@ -310,78 +350,106 @@ struct ThreadRow: View {
     @State private var isRenaming = false
     @State private var renameText = ""
 
+    /// Preview text: first user message (truncated)
+    private var previewText: String? {
+        guard let first = thread.messages.first(where: { $0.role == .user }) else { return nil }
+        let text = first.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty ? nil : String(text.prefix(120))
+    }
+
     var body: some View {
-        HStack(spacing: 4) {
-            // Pin indicator
-            if thread.isPinned {
-                Image(systemName: "pin.fill")
-                    .font(.system(size: 8))
-                    .foregroundStyle(TrinityTheme.golden)
-                    .rotationEffect(.degrees(45))
-            }
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 4) {
+                // Pin indicator
+                if thread.isPinned {
+                    Image(systemName: "pin.fill")
+                        .font(.system(size: 8))
+                        .foregroundStyle(TrinityTheme.golden)
+                        .rotationEffect(.degrees(45))
+                }
 
-            if isRenaming {
-                TextField("Thread name", text: $renameText)
-                    .textFieldStyle(.plain)
-                    .font(.system(size: 13))
-                    .foregroundStyle(.white)
-                    .onSubmit {
-                        onRename(renameText)
-                        isRenaming = false
-                    }
-                    .onAppear { renameText = thread.title }
-            } else {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(thread.title)
+                if isRenaming {
+                    TextField("Thread name", text: $renameText)
+                        .textFieldStyle(.plain)
                         .font(.system(size: 13))
-                        .foregroundStyle(isActive ? Color.white : Color.white.opacity(0.6))
-                        .lineLimit(1)
-
-                    HStack(spacing: 4) {
-                        // Tags
-                        ForEach(thread.tags.prefix(2), id: \.self) { tag in
-                            Text("#\(tag)")
-                                .font(.system(size: 8, weight: .medium))
-                                .foregroundStyle(TrinityTheme.purple)
-                                .padding(.horizontal, 3)
-                                .padding(.vertical, 1)
-                                .background(TrinityTheme.purple.opacity(0.1))
-                                .clipShape(Capsule())
+                        .foregroundStyle(.white)
+                        .onSubmit {
+                            onRename(renameText)
+                            isRenaming = false
                         }
-                        // Count + time
-                        Text("\(thread.messages.count) msgs")
-                            .font(.system(size: 9))
-                            .foregroundStyle(Color.white.opacity(0.25))
-                        Text(relativeDate(thread.updatedAt))
-                            .font(.system(size: 9))
-                            .foregroundStyle(Color.white.opacity(0.2))
+                        .onAppear { renameText = thread.title }
+                } else {
+                    VStack(alignment: .leading, spacing: 2) {
+                        // Title with search highlighting
+                        if !searchQuery.isEmpty, let range = thread.title.lowercased().range(of: searchQuery.lowercased()) {
+                            let before = String(thread.title[thread.title.startIndex..<range.lowerBound])
+                            let match = String(thread.title[range])
+                            let after = String(thread.title[range.upperBound...])
+                            (Text(before) + Text(match).foregroundColor(TrinityTheme.accent).bold() + Text(after))
+                                .font(.system(size: 13))
+                                .foregroundStyle(isActive ? Color.white : Color.white.opacity(0.6))
+                                .lineLimit(1)
+                        } else {
+                            Text(thread.title)
+                                .font(.system(size: 13))
+                                .foregroundStyle(isActive ? Color.white : Color.white.opacity(0.6))
+                                .lineLimit(1)
+                        }
+
+                        HStack(spacing: 4) {
+                            ForEach(thread.tags.prefix(2), id: \.self) { tag in
+                                Text("#\(tag)")
+                                    .font(.system(size: 8, weight: .medium))
+                                    .foregroundStyle(TrinityTheme.purple)
+                                    .padding(.horizontal, 3)
+                                    .padding(.vertical, 1)
+                                    .background(TrinityTheme.purple.opacity(0.1))
+                                    .clipShape(Capsule())
+                            }
+                            Text("\(thread.messages.count) msgs")
+                                .font(.system(size: 9))
+                                .foregroundStyle(Color.white.opacity(0.25))
+                            Text(relativeDate(thread.updatedAt))
+                                .font(.system(size: 9))
+                                .foregroundStyle(Color.white.opacity(0.2))
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
+
+                if isHovered && !isRenaming {
+                    Button(action: { isRenaming = true }) {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 10))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.white.opacity(0.4))
+
+                    Button(action: onExport) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 10))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(Color.white.opacity(0.4))
+                    .help("Export as Markdown")
+
+                    Button(action: onDelete) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 10))
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(TrinityTheme.statusError.opacity(0.6))
+                }
             }
 
-            if isHovered && !isRenaming {
-                Button(action: { isRenaming = true }) {
-                    Image(systemName: "pencil")
-                        .font(.system(size: 10))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(Color.white.opacity(0.4))
-
-                Button(action: onExport) {
-                    Image(systemName: "square.and.arrow.up")
-                        .font(.system(size: 10))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(Color.white.opacity(0.4))
-                .help("Export as Markdown")
-
-                Button(action: onDelete) {
-                    Image(systemName: "trash")
-                        .font(.system(size: 10))
-                }
-                .buttonStyle(.plain)
-                .foregroundStyle(TrinityTheme.statusError.opacity(0.6))
+            // Thread preview on hover (first message snippet)
+            if isHoveredForPreview && !isActive && !isRenaming, let preview = previewText {
+                Text(preview)
+                    .font(.system(size: 10))
+                    .foregroundStyle(Color.white.opacity(0.35))
+                    .lineLimit(2)
+                    .padding(.top, 3)
+                    .transition(.opacity)
             }
         }
         .padding(.horizontal, 12)
@@ -408,6 +476,9 @@ struct ThreadRow: View {
             Divider()
             Button("Delete", role: .destructive) { onDelete() }
         }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(thread.title), \(thread.messages.count) messages, \(relativeDate(thread.updatedAt))")
+        .accessibilityHint("Double-tap to open thread")
     }
 
     private func relativeDate(_ date: Date) -> String {
