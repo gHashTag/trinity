@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Core standalone commands: mcp, plugin, events, depin, register, init, history, search, context, state, vsa, math, query, self, sync, task, spec, benchmark"
 capabilities = ["commands", "mcp", "plugin", "register"]
-tests = 70
+tests = 72
 owner = "agent:ralph"
 
 [tags]
