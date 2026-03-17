@@ -1,7 +1,7 @@
 ---
 name: tri-farmer
 description: Farm management agent — evolves configs, recycles services, monitors convergence, kills underperformers. Called by tri-orchestrator for farm operations.
-tools: Bash, Read, Grep, Glob
+tools: Bash, Read, Write, Edit, Grep, Glob
 model: sonnet
 maxTurns: 20
 memory: project
