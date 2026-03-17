@@ -5,14 +5,14 @@ version = "1.0.0"
 kind = "virtual-sub"
 path = "src/tri"
 parent = "trinity.tri"
-status = "stable"
+status = "experimental"
 description = "FPGA commands: synthesis, experience tracking, LED test"
 capabilities = ["fpga", "synthesis"]
 tests = 4
 owner = "agent:ralph"
 
 [tags]
-scope = "core"
+scope = "infra"
 type = "domain"
 
 [source]

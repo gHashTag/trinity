@@ -7,7 +7,7 @@ path = "src/phi_loop"
 min_core_version = "1.0.0"
 status = "experimental"
 description = "Phi-based feedback loops and golden ratio resonance"
-capabilities = ["displayName", "colorHex", "displayName", "realm", "phiWeight"]
+capabilities = ["displayName", "colorHex", "realm", "phiWeight"]
 files = 3
 tests = 7
 owner = "agent:ralph"
@@ -17,7 +17,7 @@ scope = "sacred"
 type = "agent"
 
 [contributes]
-commands = ["displayName", "colorHex", "displayName"]
+commands = ["displayName", "colorHex", "realm"]
 tri_subcommands = []
 events = []
 binaries = ["phi-loop"]

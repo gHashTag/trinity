@@ -7,7 +7,7 @@ path = "src/cli"
 min_core_version = "1.0.0"
 status = "experimental"
 description = "CLI argument parsing and tri command routing"
-capabilities = ["main", "main"]
+capabilities = ["main", "entrypoint"]
 files = 2
 tests = 10
 owner = "agent:ralph"
@@ -17,7 +17,7 @@ scope = "infra"
 type = "library"
 
 [contributes]
-commands = ["main", "main"]
+commands = ["main"]
 tri_subcommands = []
 events = []
 binaries = ["hslm-entrypoint", "swe-entrypoint"]

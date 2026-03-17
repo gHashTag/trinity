@@ -12,14 +12,14 @@ tests = 24
 owner = "agent:ralph"
 
 [tags]
-scope = "core"
+scope = "infra"
 type = "domain"
 
 [source]
 file_patterns = ["string_*.zig", "tri_string.zig"]
 
 [contributes]
-commands = []
+commands = ["strings", "e8", "manifold"]
 exports = ["eulerChi", "fermionGenerations", "mirror", "phiHarmonic", "massSquared"]
 
 [dependencies]

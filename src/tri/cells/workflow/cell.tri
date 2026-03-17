@@ -12,7 +12,7 @@ tests = 22
 owner = "agent:ralph"
 
 [tags]
-scope = "core"
+scope = "infra"
 type = "infra"
 
 [source]

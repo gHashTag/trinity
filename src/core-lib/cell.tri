@@ -12,14 +12,14 @@ tests = 495
 owner = "agent:ralph"
 
 [tags]
-scope = "core"
+scope = "infra"
 type = "library"
 
 [source]
 file_patterns = ["trinity.zig", "sacred_constants.zig", "sacred_constants_reexport.zig", "constants.zig", "hybrid.zig", "science.zig", "bigint.zig", "trinity_fpga_mvp.zig", "trinity_search.zig", "jit.zig", "jit_arm64.zig", "jit_x86_64.zig", "jit_unified.zig", "vsa_jit.zig", "bench_jit.zig", "sdk.zig", "c_api.zig", "queen_api.zig", "server_main.zig", "tri_commander.zig", "knowledge_graph.zig", "kg_cli.zig", "kg_server.zig", "query_cli.zig", "btc_mining_mvp.zig", "pas_mining_core.zig", "pas_mining_test.zig", "network_codex.zig", "packed_trit.zig", "packed_vsa.zig", "parallel.zig", "sparse.zig", "simd_avx512.zig", "minimal_forward.zig", "sequence_hdc.zig"]
 
 [contributes]
-exports = ["rotateQutrit", "harvestEntropy", "evolveGeneration", "selfEvolutionStep", "phiSpiral", "archName", "hasSIMD", "compileDotProduct", "random", "randomLabeled", "addTriple", "queryObject", "updateHashrate", "nnz", "sparsity", "getVector", "encodeString"]
+exports = ["default", "updateHashrate", "calculateTriBonus", "checkIdle", "start"]
 
 [dependencies]
 trinity.vsa = "^1.0.0"
@@ -34,5 +34,5 @@ ffi = "none"
 concurrency = "yes"
 
 [security]
-signed = "false"
-signature = ""
+signed = "true"
+signature = "sha256:f660a26baed10eed960ba1ed02e132b86317a2711eeec6f0db5160e51df0a732"
