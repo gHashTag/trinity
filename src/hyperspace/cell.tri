@@ -25,6 +25,7 @@ binaries = []
 
 [dependencies]
 trinity.vsa = "^1.0.0"
+trinity.tri = "^0.1.0"
 
 [permissions]
 level = "L0"

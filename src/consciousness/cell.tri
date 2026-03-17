@@ -2,7 +2,7 @@
 id = "trinity.consciousness"
 name = "Consciousness"
 version = "1.0.0"
-kind = "agent"
+kind = "library"
 path = "src/consciousness"
 min_core_version = "1.0.0"
 status = "experimental"
@@ -16,7 +16,7 @@ api_version = "1.0.0"
 
 [tags]
 scope = "sacred"
-type = "agent"
+type = "library"
 
 [contributes]
 commands = ["reflect", "analyze"]

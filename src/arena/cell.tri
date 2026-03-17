@@ -26,6 +26,7 @@ binaries = ["arena"]
 exports = ["expectedScore", "updateRatings", "formatElo", "findTask", "tasksByCategory"]
 
 [dependencies]
+trinity.tri = "^0.1.0"
 
 [permissions]
 level = "L2"
