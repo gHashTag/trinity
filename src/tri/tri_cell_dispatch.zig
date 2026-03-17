@@ -1,9 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRI CELL DISPATCH — Cell→Command Bridge
+// TRI CELL DISPATCH — Cell→Command Bridge + Internal Handler Registry
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Builds a command lookup table from cell.tri `contributes.tri_subcommands`.
 // Allows new cells to auto-register commands without modifying main.zig.
+//
+// v8: Internal handler registry — comptime map of CLI strings to demo functions.
+// Demo commands are dispatched here instead of through the Command enum.
 //
 // φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -11,6 +14,261 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const cell_parser = @import("tri_cell_parser.zig");
+const demos = @import("tri_demos.zig");
+const math_commands = @import("math/commands.zig");
+const bio_commands = @import("tri_biology.zig");
+const cosmos_commands = @import("tri_cosmology.zig");
+const neuro_commands = @import("tri_neuro.zig");
+const chemistry_commands = @import("tri_chemistry.zig");
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTERNAL HANDLER REGISTRY — Comptime map of CLI aliases to demo functions
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const SimpleHandler = *const fn () void;
+
+/// Comptime handler registry — maps CLI strings to internal demo functions.
+/// Wave 1: 130 entries covering 34 demo command pairs (demo + bench) with aliases.
+const internal_handlers = std.StaticStringMap(SimpleHandler).initComptime(.{
+    // TVC (Distributed Learning)
+    .{ "tvc-demo", &demos.runTVCDemo },
+    .{ "tvc", &demos.runTVCDemo },
+    .{ "tvc-stats", &demos.runTVCStats },
+    // Multi-Agent System
+    .{ "agents-demo", &demos.runAgentsDemo },
+    .{ "agents", &demos.runAgentsDemo },
+    .{ "agents-bench", &demos.runAgentsBench },
+    // Long Context
+    .{ "context-demo", &demos.runContextDemo },
+    .{ "context-bench", &demos.runContextBench },
+    // RAG
+    .{ "rag-demo", &demos.runRAGDemo },
+    .{ "rag", &demos.runRAGDemo },
+    .{ "rag-bench", &demos.runRAGBench },
+    // Voice I/O
+    .{ "voice-demo", &demos.runVoiceIODemo },
+    .{ "voice", &demos.runVoiceIODemo },
+    .{ "mic", &demos.runVoiceIODemo },
+    .{ "voice-bench", &demos.runVoiceIOBench },
+    .{ "mic-bench", &demos.runVoiceIOBench },
+    // Code Sandbox
+    .{ "sandbox-demo", &demos.runSandboxDemo },
+    .{ "sandbox", &demos.runSandboxDemo },
+    .{ "sandbox-bench", &demos.runSandboxBench },
+    // Streaming Pipeline
+    .{ "stream-demo", &demos.runStreamPipelineDemo },
+    .{ "stream", &demos.runStreamPipelineDemo },
+    .{ "stream-bench", &demos.runStreamPipelineBench },
+    .{ "pipeline-bench", &demos.runStreamPipelineBench },
+    // Vision
+    .{ "vision-demo", &demos.runVisionDemo },
+    .{ "vision", &demos.runVisionDemo },
+    .{ "eye", &demos.runVisionDemo },
+    .{ "vision-bench", &demos.runVisionBench },
+    .{ "eye-bench", &demos.runVisionBench },
+    // Fine-Tuning
+    .{ "finetune-demo", &demos.runFineTuneDemo },
+    .{ "finetune", &demos.runFineTuneDemo },
+    .{ "finetune-bench", &demos.runFineTuneBench },
+    // Batched
+    .{ "batched-demo", &demos.runBatchedDemo },
+    .{ "batched", &demos.runBatchedDemo },
+    .{ "batched-bench", &demos.runBatchedBench },
+    // Priority
+    .{ "priority-demo", &demos.runPriorityDemo },
+    .{ "priority", &demos.runPriorityDemo },
+    .{ "priority-bench", &demos.runPriorityBench },
+    // Deadline
+    .{ "deadline-demo", &demos.runDeadlineDemo },
+    .{ "deadline", &demos.runDeadlineDemo },
+    .{ "deadline-bench", &demos.runDeadlineBench },
+    // Multi-Modal
+    .{ "multimodal-demo", &demos.runMultiModalDemo },
+    .{ "multimodal", &demos.runMultiModalDemo },
+    .{ "mm", &demos.runMultiModalDemo },
+    .{ "multimodal-bench", &demos.runMultiModalBench },
+    .{ "mm-bench", &demos.runMultiModalBench },
+    // Tool Use
+    .{ "tooluse-demo", &demos.runToolUseDemo },
+    .{ "tooluse", &demos.runToolUseDemo },
+    .{ "tooluse-bench", &demos.runToolUseBench },
+    // Unified Agent
+    .{ "unified-demo", &demos.runUnifiedAgentDemo },
+    .{ "unified", &demos.runUnifiedAgentDemo },
+    .{ "unified-bench", &demos.runUnifiedAgentBench },
+    // Autonomous Agent
+    .{ "auto-demo", &demos.runAutonomousAgentDemo },
+    .{ "auto", &demos.runAutonomousAgentDemo },
+    .{ "autonomous", &demos.runAutonomousAgentDemo },
+    .{ "auto-bench", &demos.runAutonomousAgentBench },
+    .{ "autonomous-bench", &demos.runAutonomousAgentBench },
+    // Orchestration
+    .{ "orch-demo", &demos.runOrchestrationDemo },
+    .{ "orch", &demos.runOrchestrationDemo },
+    .{ "orchestrate", &demos.runOrchestrationDemo },
+    .{ "orch-bench", &demos.runOrchestrationBench },
+    .{ "orchestrate-bench", &demos.runOrchestrationBench },
+    // MM Orchestration
+    .{ "mmo-demo", &demos.runMMOrchDemo },
+    .{ "mmo", &demos.runMMOrchDemo },
+    .{ "mm-orch", &demos.runMMOrchDemo },
+    .{ "mmo-bench", &demos.runMMOrchBench },
+    .{ "mm-orch-bench", &demos.runMMOrchBench },
+    // Memory
+    .{ "memory-demo", &demos.runMemoryDemo },
+    .{ "memory", &demos.runMemoryDemo },
+    .{ "mem", &demos.runMemoryDemo },
+    .{ "memory-bench", &demos.runMemoryBench },
+    .{ "mem-bench", &demos.runMemoryBench },
+    // Persist
+    .{ "persist-demo", &demos.runPersistDemo },
+    .{ "persist", &demos.runPersistDemo },
+    .{ "save", &demos.runPersistDemo },
+    .{ "persist-bench", &demos.runPersistBench },
+    .{ "save-bench", &demos.runPersistBench },
+    // Spawn
+    .{ "spawn-demo", &demos.runSpawnDemo },
+    .{ "spawn", &demos.runSpawnDemo },
+    .{ "pool", &demos.runSpawnDemo },
+    .{ "spawn-bench", &demos.runSpawnBench },
+    .{ "pool-bench", &demos.runSpawnBench },
+    // Cluster
+    .{ "cluster-demo", &demos.runClusterDemo },
+    .{ "cluster", &demos.runClusterDemo },
+    .{ "nodes", &demos.runClusterDemo },
+    .{ "cluster-bench", &demos.runClusterBench },
+    .{ "nodes-bench", &demos.runClusterBench },
+    // Work Steal
+    .{ "worksteal-demo", &demos.runWorkStealDemo },
+    .{ "worksteal", &demos.runWorkStealDemo },
+    .{ "steal", &demos.runWorkStealDemo },
+    .{ "worksteal-bench", &demos.runWorkStealBench },
+    .{ "steal-bench", &demos.runWorkStealBench },
+    // Plugin (no bare "plugin" — reserved)
+    .{ "plugin-demo", &demos.runPluginDemo },
+    .{ "ext", &demos.runPluginDemo },
+    .{ "plugin-bench", &demos.runPluginBench },
+    .{ "ext-bench", &demos.runPluginBench },
+    // Comms
+    .{ "comms-demo", &demos.runCommsDemo },
+    .{ "comms", &demos.runCommsDemo },
+    .{ "msg", &demos.runCommsDemo },
+    .{ "comms-bench", &demos.runCommsBench },
+    .{ "msg-bench", &demos.runCommsBench },
+    // Observe
+    .{ "observe-demo", &demos.runObserveDemo },
+    .{ "observe", &demos.runObserveDemo },
+    .{ "otel", &demos.runObserveDemo },
+    .{ "observe-bench", &demos.runObserveBench },
+    .{ "otel-bench", &demos.runObserveBench },
+    // Consensus
+    .{ "consensus-demo", &demos.runConsensusDemo },
+    .{ "consensus", &demos.runConsensusDemo },
+    .{ "raft", &demos.runConsensusDemo },
+    .{ "consensus-bench", &demos.runConsensusBench },
+    .{ "raft-bench", &demos.runConsensusBench },
+    // Speculative Execution (no bare "spec" — reserved)
+    .{ "specexec-demo", &demos.runSpecExecDemo },
+    .{ "specexec", &demos.runSpecExecDemo },
+    .{ "specexec-bench", &demos.runSpecExecBench },
+    .{ "spec-bench", &demos.runSpecExecBench },
+    // Governor
+    .{ "governor-demo", &demos.runGovernorDemo },
+    .{ "governor", &demos.runGovernorDemo },
+    .{ "gov", &demos.runGovernorDemo },
+    .{ "governor-bench", &demos.runGovernorBench },
+    .{ "gov-bench", &demos.runGovernorBench },
+    // Federated Learning
+    .{ "fedlearn-demo", &demos.runFedLearnDemo },
+    .{ "fedlearn", &demos.runFedLearnDemo },
+    .{ "fl", &demos.runFedLearnDemo },
+    .{ "fedlearn-bench", &demos.runFedLearnBench },
+    .{ "fl-bench", &demos.runFedLearnBench },
+    // Event Sourcing
+    .{ "eventsrc-demo", &demos.runEventSrcDemo },
+    .{ "eventsrc", &demos.runEventSrcDemo },
+    .{ "es", &demos.runEventSrcDemo },
+    .{ "eventsrc-bench", &demos.runEventSrcBench },
+    .{ "es-bench", &demos.runEventSrcBench },
+    // Capability Security
+    .{ "capsec-demo", &demos.runCapSecDemo },
+    .{ "capsec", &demos.runCapSecDemo },
+    .{ "sec", &demos.runCapSecDemo },
+    .{ "capsec-bench", &demos.runCapSecBench },
+    .{ "sec-bench", &demos.runCapSecBench },
+    // Distributed Transactions
+    .{ "dtxn-demo", &demos.runDTxnDemo },
+    .{ "dtxn", &demos.runDTxnDemo },
+    .{ "txn", &demos.runDTxnDemo },
+    .{ "dtxn-bench", &demos.runDTxnBench },
+    .{ "txn-bench", &demos.runDTxnBench },
+    // Cache
+    .{ "cache-demo", &demos.runCacheDemo },
+    .{ "cache", &demos.runCacheDemo },
+    .{ "memo", &demos.runCacheDemo },
+    .{ "cache-bench", &demos.runCacheBench },
+    .{ "memo-bench", &demos.runCacheBench },
+    // Contract
+    .{ "contract-demo", &demos.runContractDemo },
+    .{ "contract", &demos.runContractDemo },
+    .{ "sla", &demos.runContractDemo },
+    .{ "contract-bench", &demos.runContractBench },
+    .{ "sla-bench", &demos.runContractBench },
+    // Workflow
+    .{ "workflow-demo", &demos.runWorkflowDemo },
+    .{ "workflow", &demos.runWorkflowDemo },
+    .{ "wf", &demos.runWorkflowDemo },
+    .{ "workflow-bench", &demos.runWorkflowBench },
+    .{ "wf-bench", &demos.runWorkflowBench },
+});
+
+/// Try internal handler registry. Returns true if command was handled.
+pub fn executeInternalCommand(command: []const u8) bool {
+    const handler = internal_handlers.get(command) orelse return false;
+    handler();
+    return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FULL HANDLER REGISTRY — Commands that need allocator + args (v9 Wave 2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const FullHandler = *const fn (Allocator, []const []const u8) anyerror!void;
+
+const full_handlers = std.StaticStringMap(FullHandler).initComptime(.{
+    // Sacred Mathematics (v3.6)
+    .{ "math", &math_commands.runMathCommand },
+    .{ "constants", &math_commands.runConstantsCommand },
+    .{ "phi", &math_commands.runPhiCommand },
+    .{ "fib", &math_commands.runFibCommand },
+    .{ "lucas", &math_commands.runLucasCommand },
+    .{ "spiral", &math_commands.runSpiralCommand },
+    .{ "gematria", &math_commands.runGematriaTopLevel },
+    .{ "gem", &math_commands.runGematriaTopLevel },
+    .{ "formula", &math_commands.runFormulaCommand },
+    .{ "sacred", &math_commands.runSacredCommand },
+    // Biology (v14.0)
+    .{ "bio", &bio_commands.runBioCommand },
+    .{ "biology", &bio_commands.runBioCommand },
+    // Cosmology (v15.0)
+    .{ "cosmos", &cosmos_commands.runCosmosCommand },
+    .{ "cosmology", &cosmos_commands.runCosmosCommand },
+    // Neuroscience (v16.0)
+    .{ "neuro", &neuro_commands.runNeuroCommand },
+    .{ "neuroscience", &neuro_commands.runNeuroCommand },
+    // Chemistry (v6.0)
+    .{ "chem", &chemistry_commands.runChemCommand },
+    .{ "chemistry", &chemistry_commands.runChemCommand },
+});
+
+/// Try full handler registry (commands needing allocator + args). Returns true if handled.
+pub fn executeFullCommand(command: []const u8, allocator: Allocator, cmd_args: []const []const u8) bool {
+    const handler = full_handlers.get(command) orelse return false;
+    handler(allocator, cmd_args) catch |err| {
+        std.debug.print("Command error: {}\n", .{err});
+    };
+    return true;
+}
 
 const CACHE_PATH = ".trinity/command_cache.json";
 
