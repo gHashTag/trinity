@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// VIBEE GEN - Minimal Code Generator (Zig 0.15 compatible)
+// TRANSCRIPTION - Code Generator (Phoenix biology nomenclature)
 // ═══════════════════════════════════════════════════════════════════════════════
 //
 // Generates Zig/Verilog code from .tri specifications
@@ -63,18 +63,18 @@ fn printUsage() void {
     std.debug.print(
         \\
         \\╔══════════════════════════════════════════════════════════════╗
-        \\║           VIBEE GEN - Code Generator                         ║
+        \\║           TRANSCRIPTION - Code Generator                      ║
         \\║           Single Source of Truth: .tri -> Code             ║
         \\╚══════════════════════════════════════════════════════════════╝
         \\
         \\Usage:
-        \\  vibee_gen gen <spec.tri> [output]   Generate code from spec
-        \\  vibee_gen koschei                      Show 16-step cycle
-        \\  vibee_gen help                         Show this help
+        \\  transcription gen <spec.tri> [output]   Generate code from spec
+        \\  transcription koschei                      Show 16-step cycle
+        \\  transcription help                         Show this help
         \\
         \\Examples:
-        \\  vibee_gen gen specs/tri/trinity_cli.tri
-        \\  vibee_gen gen specs/tri/agent.tri trinity/output/agent.zig
+        \\  transcription gen specs/tri/trinity_cli.tri
+        \\  transcription gen specs/tri/agent.tri trinity/output/agent.zig
         \\
         \\Supported languages in .tri:
         \\  language: zig         -> Generates .zig file
@@ -109,7 +109,7 @@ fn printKoscheiCycle() void {
         \\  4. Add algorithms if needed
         \\
         \\GENERATION (Steps 5-8):
-        \\  5. Run: vibee_gen gen <spec.tri>
+        \\  5. Run: transcription gen <spec.tri>
         \\  6. Review generated code
         \\  7. Run tests: zig build test
         \\  8. Fix any issues in SPEC (not generated code!)
@@ -217,7 +217,7 @@ fn deriveOutputPath(allocator: std.mem.Allocator, input_path: []const u8, langua
 
 fn generateCode(allocator: std.mem.Allocator, input_path: []const u8, output_path: []const u8) !void {
     std.debug.print("\n╔══════════════════════════════════════════════════════════════╗\n", .{});
-    std.debug.print("║  VIBEE CODE GENERATION                                       ║\n", .{});
+    std.debug.print("║  TRANSCRIPTION CODE GENERATION                                ║\n", .{});
     std.debug.print("╚══════════════════════════════════════════════════════════════╝\n\n", .{});
 
     std.debug.print("Input:  {s}\n", .{input_path});
