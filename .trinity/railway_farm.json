@@ -1,12 +1,12 @@
 {"accounts":[
-  {"account_id":1,"alias":"primary","email":"keseeopaywabso6sp@hotmail.com","token":"ab78f2ce-3715-4ed0-bced-b9a1c67d84d3","project_id":"aa0efa7f-95e6-4466-8de6-43945a031365","env_id":"6748f1ad-9c2f-4b71-9a90-67f40ce34dc9","daily_creates":0,"active_services":0,"daily_reset_epoch":1773705600,"max_concurrent":25,"max_daily_creates":50,"token_status":"valid"},
-  {"account_id":2,"alias":"farm-2","email":"tonjabtoepp8mnf5@hotmail.com","token":"0a8551d9-0b7f-41a7-9a24-a8959646a8e7","project_id":"ca4303d2-4a09-4143-b725-9a3f3977118f","env_id":"d8602284-9bba-48bc-94f5-470f9d1fff48","daily_creates":14,"active_services":15,"daily_reset_epoch":1773705600,"max_concurrent":25,"max_daily_creates":50,"token_status":"expired"},
-  {"account_id":3,"alias":"farm-3","email":"klickzbrems464f@hotmail.com","token":"aba45aa3-821b-4719-b707-dd73f81d8468","project_id":"292e8862-11ce-4542-aff8-35a41e6b3217","env_id":"912e9084-e1ad-4bf1-aaea-0a77f9b2a158","daily_creates":14,"active_services":17,"daily_reset_epoch":1773705600,"max_concurrent":25,"max_daily_creates":50,"token_status":"valid"},
-  {"account_id":4,"alias":"farm-4","email":"cinkozyanokwo7ox@hotmail.com","token":"a5ea9fac-60a0-48b5-93c8-8bb3ffa66804","project_id":"6295eb86-ff2f-4a1a-aa9f-e36aac5827f7","env_id":"4e4e34d7-49a7-4332-b259-2fc83a1b4b3a","daily_creates":0,"active_services":25,"daily_reset_epoch":1773705600,"max_concurrent":25,"max_daily_creates":50,"token_status":"valid"},
-  {"account_id":5,"alias":"farm-5","email":"nesetcufferrcia@hotmail.com","token":"ead3d97a-2c09-449b-b5f9-20631e3702f3","project_id":"d4e4bb95-9906-4571-8e06-6d962eb5cb60","env_id":"9d4a2b88-1cc4-4dfc-882f-0b3730c5dc72","daily_creates":0,"active_services":27,"daily_reset_epoch":1773705600,"max_concurrent":25,"max_daily_creates":50,"token_status":"valid"},
-  {"account_id":6,"alias":"farm-6","email":"vogtsrshural8q0xh@hotmail.comm","token":"20187955-3dc8-494a-b833-3ee4403fdc24","project_id":"9edfc52d-1a84-4b26-9943-381cb27ce2bb","env_id":"7445e021-0934-4537-be7f-9a4ea91028c8","daily_creates":0,"active_services":25,"daily_reset_epoch":1773705600,"max_concurrent":25,"max_daily_creates":50,"token_status":"valid"},
-  {"account_id":7,"alias":"farm-7","email":"evelyxhasey3r2vdq@hotmail.com","token":"e95caad0-706c-4375-a477-c5800dc23d85","project_id":"1d190b1b-cccd-4c65-a1c1-430b44b384ad","env_id":"c38fb061-5044-4ebb-bb81-c328096d3b23","daily_creates":0,"active_services":25,"daily_reset_epoch":1773705600,"max_concurrent":25,"max_daily_creates":50,"token_status":"valid"},
-  {"account_id":8,"alias":"farm-8","email":"ufkesftedla4sd5g@hotmail.com","token":"4cc27855-667a-40bd-942d-39339e195a79","project_id":"5e2aa97e-d38a-42d7-b34c-f7a5b2105cb4","env_id":"aaacba5e-34f3-45a7-adc3-4cfa507bbe10","daily_creates":0,"active_services":24,"daily_reset_epoch":1773705600,"max_concurrent":25,"max_daily_creates":50,"token_status":"valid"}
+  {"account_id":1,"alias":"primary","daily_creates":0,"active_services":0,"daily_reset_epoch":1773705600},
+  {"account_id":2,"alias":"farm-2","daily_creates":14,"active_services":15,"daily_reset_epoch":1773705600},
+  {"account_id":3,"alias":"farm-3","daily_creates":14,"active_services":17,"daily_reset_epoch":1773705600},
+  {"account_id":4,"alias":"farm-4","daily_creates":0,"active_services":25,"daily_reset_epoch":1773705600},
+  {"account_id":5,"alias":"farm-5","daily_creates":0,"active_services":27,"daily_reset_epoch":1773705600},
+  {"account_id":6,"alias":"farm-6","daily_creates":0,"active_services":25,"daily_reset_epoch":1773705600},
+  {"account_id":7,"alias":"farm-7","daily_creates":0,"active_services":25,"daily_reset_epoch":1773705600},
+  {"account_id":8,"alias":"farm-8","daily_creates":0,"active_services":24,"daily_reset_epoch":1773705600}
 ],"agent_map":[
   {"issue":2026198461,"account_id":2,"service_id":"e01e6005-f85d-40e3-8afa-2ccf001bbc7f"},
   {"issue":2009420842,"account_id":2,"service_id":"2d322f05-69da-49b4-adab-e1b6914bafeb"},
@@ -36,4 +36,4 @@
   {"issue":1925532747,"account_id":3,"service_id":"164e04a2-b0d0-49d5-a6ba-ab1810bf03ca"},
   {"issue":1908755128,"account_id":3,"service_id":"e7721613-976b-4111-bb8b-8880fad2c873"},
   {"issue":2120794029,"account_id":3,"service_id":"79c095a7-1b11-4924-b663-7c30c394cb88"}
-],"cost_estimates":{"per_run_usd":0.44,"per_run_hours":8,"vcpu_rate_per_min":0.000463,"ram_rate_per_min_gb":0.000231,"budget_per_account_usd":25,"total_budget_usd":200,"max_affordable_runs":454},"capacity":{"max_per_account":25,"accounts":8,"total_slots":200,"used_slots":133,"free_slots":67}}
+]}
