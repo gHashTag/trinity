@@ -53,6 +53,12 @@ struct ChatScreen: View {
     @State private var showShareCopied = false
     @State private var showSystemPrompt = false
     @State private var systemPromptDraft = ""
+    @State private var hoveringTopBar = false
+    @State private var showContextPreview = false
+    // Multi-select mode
+    @State private var isSelecting = false
+    @State private var selectedMessageIDs: Set<UUID> = []
+    @State private var lastSelectedID: UUID? = nil
     /// Tracks message IDs present at initial thread load so we only animate new ones
     @State private var initialMessageIDs: Set<UUID> = []
     /// Set to true after initial thread load completes
@@ -102,6 +108,33 @@ struct ChatScreen: View {
 
     private var thread: ChatThread? {
         store.activeThread()
+    }
+
+    /// Subtle context pill: message count, duration, tokens (hover-only)
+    private func conversationContextPill(for t: ChatThread) -> some View {
+        let msgs = t.messages
+        let count = msgs.count
+        let tokens = msgs.compactMap(\.outputTokens).reduce(0, +)
+        let duration: String = {
+            guard let first = msgs.first?.timestamp, let last = msgs.last?.timestamp else { return "" }
+            let secs = Int(last.timeIntervalSince(first))
+            if secs < 60 { return "<1 min" }
+            if secs < 3600 { return "\(secs / 60) min" }
+            let h = secs / 3600; let m = (secs % 3600) / 60
+            if h < 24 { return m > 0 ? "\(h)h \(m)min" : "\(h)h" }
+            return "\(h / 24) days"
+        }()
+        let tokenStr = tokens >= 1000 ? String(format: "%.1fK", Double(tokens) / 1000.0) : "\(tokens)"
+        return HStack(spacing: 4) {
+            Spacer()
+            Text("\u{1F4AC} \(count) msgs")
+            if !duration.isEmpty { Text("\u{00B7}"); Text(duration) }
+            if tokens > 0 { Text("\u{00B7}"); Text("\(tokenStr) tokens") }
+        }
+        .font(.system(size: 10))
+        .foregroundStyle(TrinityTheme.textMuted.opacity(0.4))
+        .padding(.horizontal, 16)
+        .padding(.vertical, 3)
     }
 
     /// Messages matching in-thread search
@@ -322,6 +355,71 @@ struct ChatScreen: View {
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .allowsHitTesting(false)
             }
+
+            // Multi-select floating action bar
+            if isSelecting, !selectedMessageIDs.isEmpty {
+                VStack {
+                    Spacer()
+                    HStack(spacing: 16) {
+                        Text("\(selectedMessageIDs.count) selected")
+                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(.white)
+
+                        Divider()
+                            .frame(height: 16)
+                            .background(Color.white.opacity(0.2))
+
+                        Button { copySelectedMessages() } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "doc.on.doc")
+                                    .font(.system(size: 11))
+                                Text("Copy")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundStyle(.white)
+                        }
+                        .buttonStyle(.plain)
+
+                        Button { exportSelectedAsMarkdown() } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.up.doc")
+                                    .font(.system(size: 11))
+                                Text("Export")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundStyle(.white)
+                        }
+                        .buttonStyle(.plain)
+
+                        Divider()
+                            .frame(height: 16)
+                            .background(Color.white.opacity(0.2))
+
+                        Button { exitSelectionMode() } label: {
+                            Text("Cancel")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundStyle(Color.white.opacity(0.6))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(hex: 0x2A2A2A))
+                            .shadow(color: .black.opacity(0.4), radius: 12, y: 4)
+                    )
+                    .padding(.bottom, 90)
+                }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+        .onKeyPress(.escape) {
+            if isSelecting {
+                exitSelectionMode()
+                return .handled
+            }
+            return .ignored
         }
     }
 
@@ -333,8 +431,18 @@ struct ChatScreen: View {
 
             VStack(spacing: 0) {
                 if !focusMode {
-                    // Connection status bar
-                    ConnectionStatusBar(modelManager: modelManager, client: client)
+                    // Connection status bar + conversation context pill (hover-only)
+                    VStack(spacing: 0) {
+                        ConnectionStatusBar(modelManager: modelManager, client: client)
+
+                        if hoveringTopBar, let t = thread, !t.messages.isEmpty {
+                            conversationContextPill(for: t)
+                                .transition(.opacity)
+                        }
+                    }
+                    .onHover { hovering in
+                        withAnimation(.easeInOut(duration: 0.15)) { hoveringTopBar = hovering }
+                    }
 
                     // Sticky context meter (always visible when >1K tokens)
                     ContextBar(tokens: estimatedTokens, onCompact: {
@@ -511,6 +619,28 @@ struct ChatScreen: View {
                     .buttonStyle(.plain)
                     .help("Share conversation to clipboard")
                     .accessibilityLabel("Share conversation")
+                    Button {
+                        withAnimation(.easeInOut(duration: 0.15)) {
+                            isSelecting.toggle()
+                            if !isSelecting {
+                                selectedMessageIDs.removeAll()
+                                lastSelectedID = nil
+                            }
+                        }
+                    } label: {
+                        Image(systemName: isSelecting ? "checkmark.circle.fill" : "checkmark.circle")
+                            .font(.system(size: 11))
+                            .foregroundStyle(isSelecting ? TrinityTheme.accent : TrinityTheme.textMuted)
+                            .padding(6)
+                            .background(TrinityTheme.bgCard)
+                            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
+                                    .stroke(isSelecting ? TrinityTheme.accent.opacity(0.5) : TrinityTheme.bgCardBorder, lineWidth: 0.5)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .help(isSelecting ? "Exit selection mode" : "Select messages")
                 }
                 .padding(.bottom, 12)
             }
@@ -524,7 +654,12 @@ struct ChatScreen: View {
                     isLastMessage: msg.id == thread?.messages.last?.id,
                     onComment: { commentingMessage = $0 },
                     onReply: { replyingTo = $0; focused = true },
-                    searchHighlight: searchHighlightFor(msg)
+                    searchHighlight: searchHighlightFor(msg),
+                    isSelecting: isSelecting,
+                    isSelected: selectedMessageIDs.contains(msg.id),
+                    onToggleSelect: { shiftClick in
+                        toggleMessageSelection(msg.id, shiftClick: shiftClick)
+                    }
                 )
                 .transition(messageTransition(for: msg))
             }
@@ -721,6 +856,68 @@ struct ChatScreen: View {
         }
     }
 
+    // MARK: - Multi-Select
+
+    private func toggleMessageSelection(_ id: UUID, shiftClick: Bool) {
+        let messages = thread?.messages ?? []
+        if shiftClick, let lastID = lastSelectedID,
+           let lastIdx = messages.firstIndex(where: { $0.id == lastID }),
+           let curIdx = messages.firstIndex(where: { $0.id == id }) {
+            let range = lastIdx <= curIdx ? lastIdx...curIdx : curIdx...lastIdx
+            for i in range {
+                selectedMessageIDs.insert(messages[i].id)
+            }
+        } else {
+            if selectedMessageIDs.contains(id) {
+                selectedMessageIDs.remove(id)
+            } else {
+                selectedMessageIDs.insert(id)
+            }
+        }
+        lastSelectedID = id
+    }
+
+    private func exitSelectionMode() {
+        withAnimation(.easeInOut(duration: 0.15)) {
+            isSelecting = false
+            selectedMessageIDs.removeAll()
+            lastSelectedID = nil
+        }
+    }
+
+    private func copySelectedMessages() {
+        let messages = thread?.messages ?? []
+        let selected = messages.filter { selectedMessageIDs.contains($0.id) }
+        guard !selected.isEmpty else { return }
+        let text = selected.map { msg in
+            let role = msg.role == .user ? "You" : "Assistant"
+            return "\(role): \(msg.text)"
+        }.joined(separator: "\n\n")
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        SoundCueManager.shared.playCopy()
+        exitSelectionMode()
+    }
+
+    private func exportSelectedAsMarkdown() {
+        let messages = thread?.messages ?? []
+        let selected = messages.filter { selectedMessageIDs.contains($0.id) }
+        guard !selected.isEmpty else { return }
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .short
+        var md = "# Conversation Export\n\n"
+        for msg in selected {
+            let role = msg.role == .user ? "**You**" : "**Assistant**"
+            let ts = dateFormatter.string(from: msg.timestamp)
+            md += "### \(role) (\(ts))\n\n\(msg.text)\n\n---\n\n"
+        }
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(md, forType: .string)
+        SoundCueManager.shared.playCopy()
+        exitSelectionMode()
+    }
+
     static func formatShareText(thread: ChatThread) -> String {
         let dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .medium
@@ -895,18 +1092,22 @@ struct ChatScreen: View {
                 LiveTTFBCounter(isWaiting: client.streamingTTFB == 0)
             }
             if client.streamingTTFB > 0 {
-                Text("TTFB \(client.streamingTTFB)ms")
+                Text("First token: \(client.streamingTTFB)ms")
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
                     .foregroundStyle(ttfbColor(client.streamingTTFB))
             }
             if client.streamingTokensPerSec > 0 {
-                Text(String(format: "%.0f tok/s", client.streamingTokensPerSec))
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.accent)
+                LiveSpeedIndicator(tokPerSec: client.streamingTokensPerSec)
             }
             if client.streamingOutputTokens > 0 {
                 Text("\(client.streamingOutputTokens) tok")
                     .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(TrinityTheme.textMuted)
+            }
+            if client.streamingMaxTokens > 0, client.streamingOutputTokens > 0 {
+                let pct = min(Double(client.streamingOutputTokens) / Double(client.streamingMaxTokens) * 100, 100)
+                Text(String(format: "~%.0f%%", pct))
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
                     .foregroundStyle(TrinityTheme.textMuted)
             }
         }
@@ -1105,16 +1306,20 @@ struct ChatScreen: View {
                 }
                 if client.streamingOutputTokens > 0 {
                     if client.streamingTTFB > 0 {
-                        Text("TTFB \(client.streamingTTFB)ms")
+                        Text("First token: \(client.streamingTTFB)ms")
                             .font(.system(size: 10, weight: .medium, design: .monospaced))
                             .foregroundStyle(ttfbColor(client.streamingTTFB))
                     }
-                    Text(String(format: "%.0f tok/s", client.streamingTokensPerSec))
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundStyle(TrinityTheme.accent)
+                    LiveSpeedIndicator(tokPerSec: client.streamingTokensPerSec)
                     Text("\(client.streamingOutputTokens) tok")
                         .font(.system(size: 10, design: .monospaced))
                         .foregroundStyle(TrinityTheme.textMuted)
+                    if client.streamingMaxTokens > 0 {
+                        let pct = min(Double(client.streamingOutputTokens) / Double(client.streamingMaxTokens) * 100, 100)
+                        Text(String(format: "~%.0f%%", pct))
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .foregroundStyle(TrinityTheme.textMuted)
+                    }
                 }
                 Spacer()
                 Button {
@@ -1700,6 +1905,21 @@ struct ChatScreen: View {
                         .help("Estimated cost of next message")
                 }
 
+                // Context preview button
+                if !client.isStreaming {
+                    Button { showContextPreview.toggle() } label: {
+                        Image(systemName: "eye")
+                            .font(.system(size: 11))
+                            .foregroundStyle(showContextPreview ? TrinityTheme.accent : Color.white.opacity(0.3))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Preview context that will be sent to API")
+                    .accessibilityLabel("Preview context")
+                    .popover(isPresented: $showContextPreview) {
+                        contextPreviewPopover
+                    }
+                }
+
                 sendButton
 
                 // Send confirmation tick
@@ -1904,6 +2124,79 @@ struct ChatScreen: View {
             }
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Context Preview Popover
+    private var contextPreviewPopover: some View {
+        let msgs = thread?.messages ?? []
+        let msgCount = msgs.count
+        let sysPrompt = client.systemPrompt
+        let sysLen = sysPrompt.count
+        let sysPreview = sysLen > 100 ? String(sysPrompt.prefix(100)) + "..." : sysPrompt
+        let personaName = client.activePersona?.name
+        let customPrompt = client.customSystemPrompt
+        let customPreview = customPrompt.flatMap { $0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : $0 }
+        let msgTokens = msgs.reduce(0) { $0 + estimateTokens($1.text) }
+        let inputTokens = estimateTokens(input)
+        let systemTokens = estimateTokens(sysPrompt)
+        let fileTokens = attachedFiles.reduce(0) { $0 + estimateTokens($1.content) }
+        let totalTokens = systemTokens + msgTokens + inputTokens + fileTokens
+        let outputBudget = effortLevel.maxTokens
+        let model = modelManager.selectedModel
+        let cost = AIModel.estimateCost(provider: model.provider.rawValue, inputTokens: totalTokens, outputTokens: outputBudget)
+        let costStr = cost < 0.001 ? "<$0.01" : String(format: "~$%.2f", cost)
+        return VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "eye").font(.system(size: 11)).foregroundStyle(TrinityTheme.accent)
+                Text("Context Preview").font(.system(size: 12, weight: .bold)).foregroundStyle(TrinityTheme.textPrimary)
+                Spacer()
+                Text(model.displayName).font(.system(size: 10, weight: .medium, design: .monospaced)).foregroundStyle(TrinityTheme.accent)
+            }
+            Divider().background(Color.white.opacity(0.1))
+            contextPreviewRow(icon: "terminal", label: "System prompt", detail: "\(sysLen) chars", preview: sysPreview)
+            if let name = personaName { contextPreviewRow(icon: "person.fill", label: "Persona", detail: name, preview: nil) }
+            if let cp = customPreview {
+                contextPreviewRow(icon: "doc.text", label: "Custom prompt", detail: "\(cp.count) chars", preview: cp.count > 50 ? String(cp.prefix(50)) + "..." : cp)
+            }
+            if !attachedFiles.isEmpty {
+                contextPreviewRow(icon: "paperclip", label: "Files (\(attachedFiles.count))", detail: "\(fileTokens) tok", preview: attachedFiles.map(\.name).joined(separator: ", "))
+            }
+            if !parsedMentionChips.isEmpty {
+                contextPreviewRow(icon: "at", label: "Mentions", detail: "\(parsedMentionChips.count)", preview: parsedMentionChips.map { "@\($0.type):\($0.value)" }.joined(separator: ", "))
+            }
+            contextPreviewRow(icon: "bubble.left.and.bubble.right", label: "History", detail: "\(msgCount) msgs, ~\(formatTokenCount(msgTokens))", preview: nil)
+            if !input.isEmpty {
+                contextPreviewRow(icon: "pencil", label: "Your message", detail: "~\(formatTokenCount(inputTokens))", preview: input.count > 50 ? String(input.prefix(50)) + "..." : input)
+            }
+            Divider().background(Color.white.opacity(0.1))
+            HStack {
+                Text("Total estimated").font(.system(size: 11, weight: .semibold)).foregroundStyle(TrinityTheme.textPrimary)
+                Spacer()
+                Text("~\(formatTokenCount(totalTokens)) tokens  \(costStr)").font(.system(size: 11, weight: .bold, design: .monospaced)).foregroundStyle(TrinityTheme.accent)
+            }
+            HStack {
+                Text("Output budget").font(.system(size: 10)).foregroundStyle(TrinityTheme.textMuted)
+                Spacer()
+                Text("\(formatTokenCount(outputBudget)) (\(effortLevel.rawValue))").font(.system(size: 10, design: .monospaced)).foregroundStyle(TrinityTheme.textMuted)
+            }
+        }
+        .padding(12).frame(width: 340).background(Color(hex: 0x141414))
+    }
+    private func contextPreviewRow(icon: String, label: String, detail: String, preview: String?) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 6) {
+                Image(systemName: icon).font(.system(size: 10)).foregroundStyle(TrinityTheme.textMuted).frame(width: 14)
+                Text(label).font(.system(size: 11, weight: .medium)).foregroundStyle(TrinityTheme.textPrimary)
+                Spacer()
+                Text(detail).font(.system(size: 10, weight: .medium, design: .monospaced)).foregroundStyle(TrinityTheme.textMuted)
+            }
+            if let preview = preview {
+                Text(preview).font(.system(size: 10, design: .monospaced)).foregroundStyle(Color.white.opacity(0.35)).lineLimit(2).padding(.leading, 20)
+            }
+        }
+    }
+    private func formatTokenCount(_ tokens: Int) -> String {
+        tokens >= 1000 ? String(format: "%.1fK", Double(tokens) / 1000.0) : "\(tokens)"
     }
 
     @ViewBuilder
@@ -2471,13 +2764,24 @@ private struct ChangeTrackersModifier: ViewModifier {
     @Binding var isLoadingThread: Bool
     @ObservedObject var store: ThreadStore
     @ObservedObject var client: ChatClient
+    @State private var draftSaveTask: Task<Void, Never>? = nil
 
     func body(content: Content) -> some View {
         content
             .onChange(of: input) { _, newValue in
                 modelSuggestionDismissed = false
-                if let tid = store.activeThreadID {
-                    UserDefaults.standard.set(newValue, forKey: "draft_\(tid)")
+                // Debounced draft save: persist after 1s of typing inactivity
+                draftSaveTask?.cancel()
+                draftSaveTask = Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(1))
+                    guard !Task.isCancelled else { return }
+                    if let tid = store.activeThreadID {
+                        if newValue.isEmpty {
+                            UserDefaults.standard.removeObject(forKey: "draft_\(tid)")
+                        } else {
+                            UserDefaults.standard.set(newValue, forKey: "draft_\(tid)")
+                        }
+                    }
                 }
                 if !newValue.isEmpty && !client.followUpSuggestions.isEmpty {
                     client.followUpSuggestions = []
@@ -2495,7 +2799,16 @@ private struct ChangeTrackersModifier: ViewModifier {
                     taskItems = newTasks.map { TaskItem(title: $0) }
                 }
             }
-            .onChange(of: store.activeThreadID) { _, newID in
+            .onChange(of: store.activeThreadID) { oldID, newID in
+                // Flush pending draft for the thread we're leaving
+                draftSaveTask?.cancel()
+                draftSaveTask = nil
+                if let oldTid = oldID, !input.isEmpty {
+                    UserDefaults.standard.set(input, forKey: "draft_\(oldTid)")
+                } else if let oldTid = oldID {
+                    UserDefaults.standard.removeObject(forKey: "draft_\(oldTid)")
+                }
+                // Restore draft for the thread we're switching to
                 if let tid = newID {
                     let draft = UserDefaults.standard.string(forKey: "draft_\(tid)") ?? ""
                     input = draft
@@ -2542,6 +2855,7 @@ public extension Notification.Name {
     static let navigateHistoryDown = Notification.Name("navigateHistoryDown")
     static let escapeAction = Notification.Name("escapeAction")
     static let toggleFocusMode = Notification.Name("toggleFocusMode")
+    static let scrollToMessage = Notification.Name("scrollToMessage")
 }
 
 // MARK: - Scroll Offset Preference Key
@@ -2897,6 +3211,34 @@ struct ContextBar: View {
     }
 }
 
+// MARK: - TTFB Sparkline (Path-based, 25x8px)
+
+/// Tiny Path-based sparkline showing recent TTFB values
+struct TTFBSparkline: View {
+    let values: [Int]
+    var width: CGFloat = 25
+    var height: CGFloat = 8
+    var color: Color = TrinityTheme.accent
+
+    var body: some View {
+        if values.count >= 2 {
+            let lo = Double(values.min() ?? 0)
+            let hi = Double(values.max() ?? 1)
+            let range = max(hi - lo, 1.0)
+            Path { path in
+                for (i, val) in values.enumerated() {
+                    let x = width * CGFloat(i) / CGFloat(values.count - 1)
+                    let y = height - height * CGFloat(Double(val) - lo) / CGFloat(range)
+                    if i == 0 { path.move(to: CGPoint(x: x, y: y)) }
+                    else { path.addLine(to: CGPoint(x: x, y: y)) }
+                }
+            }
+            .stroke(color, lineWidth: 1.2)
+            .frame(width: width, height: height)
+        }
+    }
+}
+
 // MARK: - Model Picker (inline, compact)
 
 struct ModelPicker: View {
@@ -2907,25 +3249,58 @@ struct ModelPicker: View {
         networkLog.providerHealth[provider.rawValue]?.isUp ?? true
     }
 
-    /// Sparkline string using Unicode block chars for TTFB history
-    private func sparkline(for modelID: String) -> String {
-        let points = networkLog.recentTTFB(for: modelID, count: 7)
-        guard points.count >= 2 else { return "" }
-        let bars: [Character] = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]
-        let lo = Double(points.min() ?? 0)
-        let hi = Double(points.max() ?? 1)
-        let range = max(hi - lo, 1)
-        return String(points.map { val in
-            let idx = Int((Double(val) - lo) / range * 7)
-            return bars[min(max(idx, 0), 7)]
-        })
+    /// Last 5 TTFB points for a model
+    private func ttfbPoints(for modelID: String) -> [Int] {
+        networkLog.recentTTFB(for: modelID, count: 5)
     }
 
     /// Average TTFB for display
     private func avgTTFB(for modelID: String) -> Int? {
-        let points = networkLog.recentTTFB(for: modelID)
+        let points = ttfbPoints(for: modelID)
         guard !points.isEmpty else { return nil }
         return points.reduce(0, +) / points.count
+    }
+
+    /// Whether circuit breaker is open for a provider
+    private func isCircuitOpen(for provider: AIProvider) -> Bool {
+        networkLog.isCircuitOpen(provider: provider.rawValue)
+    }
+
+    /// Latency info for a model row: sparkline + avg, or "Local" badge, or circuit breaker warning
+    @ViewBuilder
+    private func latencyBadge(for model: AIModel) -> some View {
+        if model.provider == .ollama {
+            Text("Local")
+                .font(.system(size: 9, weight: .semibold))
+                .foregroundStyle(TrinityTheme.accent)
+                .padding(.horizontal, 4)
+                .padding(.vertical, 1)
+                .background(TrinityTheme.accent.opacity(0.15))
+                .cornerRadius(3)
+        } else if isCircuitOpen(for: model.provider) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 9))
+                .foregroundStyle(TrinityTheme.statusError)
+                .help("Circuit breaker open \u{2014} provider temporarily unavailable")
+        } else {
+            let points = ttfbPoints(for: model.id)
+            if points.count >= 2 {
+                TTFBSparkline(values: points)
+                if let avg = avgTTFB(for: model.id) {
+                    Text("~\(avg)ms")
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(Color.white.opacity(0.5))
+                }
+            } else if let avg = avgTTFB(for: model.id) {
+                Text("~\(avg)ms")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.5))
+            } else {
+                Text("\u{2014}")
+                    .font(.system(size: 9))
+                    .foregroundStyle(Color.white.opacity(0.3))
+            }
+        }
     }
 
     var body: some View {
@@ -2943,24 +3318,7 @@ struct ModelPicker: View {
                                         .fill(providerIsUp(model.provider) ? TrinityTheme.statusOK : TrinityTheme.statusError)
                                         .frame(width: 6, height: 6)
                                     Text(model.displayName)
-                                    if model.provider == .ollama {
-                                        Text("Local")
-                                            .font(.system(size: 9, weight: .semibold))
-                                            .foregroundStyle(TrinityTheme.accent)
-                                            .padding(.horizontal, 4)
-                                            .padding(.vertical, 1)
-                                            .background(TrinityTheme.accent.opacity(0.15))
-                                            .cornerRadius(3)
-                                    }
-                                    let spark = sparkline(for: model.id)
-                                    if !spark.isEmpty {
-                                        Text(spark)
-                                            .font(.system(size: 9))
-                                        if let avg = avgTTFB(for: model.id) {
-                                            Text("\(avg)ms")
-                                                .font(.system(size: 9, design: .monospaced))
-                                        }
-                                    }
+                                    latencyBadge(for: model)
                                     if modelManager.selectedModel == model {
                                         Image(systemName: "checkmark")
                                     }
@@ -2978,12 +3336,15 @@ struct ModelPicker: View {
                 Text(modelManager.selectedModel.displayName)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Color.white.opacity(0.7))
-                // Inline sparkline on picker label
-                let spark = sparkline(for: modelManager.selectedModel.id)
-                if !spark.isEmpty {
-                    Text(spark)
+                // Inline Path sparkline on picker label
+                let points = ttfbPoints(for: modelManager.selectedModel.id)
+                if points.count >= 2 {
+                    TTFBSparkline(values: points, color: TrinityTheme.accent.opacity(0.7))
+                }
+                if isCircuitOpen(for: modelManager.selectedModel.provider) {
+                    Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 9))
-                        .foregroundStyle(TrinityTheme.accent.opacity(0.7))
+                        .foregroundStyle(TrinityTheme.statusError)
                 }
                 Image(systemName: "chevron.down")
                     .font(.system(size: 9, weight: .medium))
@@ -3025,6 +3386,9 @@ struct MessageRow: View {
     var onComment: ((ChatMessage) -> Void)? = nil
     var onReply: ((ChatMessage) -> Void)? = nil
     var searchHighlight: SearchHighlight = .none
+    var isSelecting: Bool = false
+    var isSelected: Bool = false
+    var onToggleSelect: ((_ shiftClick: Bool) -> Void)? = nil
 
     enum SearchHighlight {
         case none, match, currentMatch
@@ -3032,10 +3396,12 @@ struct MessageRow: View {
     @State private var isHovering = false
     @State private var isEditing = false
     @State private var editText = ""
+    @State private var showDiffConfirm = false
     @State private var showSaveTemplate = false
     @State private var saveTemplateName = ""
     @State private var saveTemplateCategory = "Code"
     @State private var saveTemplateConfirmed = false
+    @State private var timestampCopied = false
     @AppStorage("chatFontSize") private var chatFontSize = 15
 
     /// Estimate token count for this message
@@ -3084,6 +3450,19 @@ struct MessageRow: View {
 
     var body: some View {
         HStack(spacing: 0) {
+        // Multi-select checkbox
+        if isSelecting {
+            Button {
+                onToggleSelect?(NSEvent.modifierFlags.contains(.shift))
+            } label: {
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.system(size: 16))
+                    .foregroundStyle(isSelected ? TrinityTheme.accent : Color.white.opacity(0.3))
+            }
+            .buttonStyle(.plain)
+            .padding(.trailing, 10)
+            .transition(.opacity.combined(with: .move(edge: .leading)))
+        }
         VStack(alignment: .leading, spacing: 0) {
             if message.role == .user {
                 // User message — bold, slightly larger
@@ -3103,9 +3482,35 @@ struct MessageRow: View {
                                     .clipShape(RoundedRectangle(cornerRadius: 10))
                                     .onSubmit { submitEdit() }
 
+                                // Diff preview
+                                if editText.trimmingCharacters(in: .whitespacesAndNewlines) != message.text.trimmingCharacters(in: .whitespacesAndNewlines) {
+                                    let diff = Self.computeBriefDiff(old: message.text, new: editText)
+                                    HStack(spacing: 0) {
+                                        Spacer(minLength: 0)
+                                        (Text(diff.removed).foregroundColor(.red.opacity(0.8)).strikethrough()
+                                         + Text(" → ").foregroundColor(.white.opacity(0.3))
+                                         + Text(diff.added).foregroundColor(.green.opacity(0.8)))
+                                            .font(.system(size: 11))
+                                            .lineLimit(2)
+                                            .truncationMode(.middle)
+                                            .padding(.horizontal, 8)
+                                            .padding(.vertical, 4)
+                                            .background(Color.white.opacity(0.04))
+                                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                                    }
+                                } else if !editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                    HStack(spacing: 0) {
+                                        Spacer(minLength: 0)
+                                        Text("No changes")
+                                            .font(.system(size: 11))
+                                            .foregroundStyle(Color.white.opacity(0.3))
+                                    }
+                                }
+
                                 HStack(spacing: 8) {
                                     Button("Cancel") {
                                         isEditing = false
+                                        showDiffConfirm = false
                                     }
                                     .font(.system(size: 12))
                                     .foregroundStyle(Color.white.opacity(0.4))
@@ -3116,9 +3521,14 @@ struct MessageRow: View {
                                         .foregroundStyle(.black)
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 4)
-                                        .background(TrinityTheme.accent)
+                                        .background(
+                                            editText.trimmingCharacters(in: .whitespacesAndNewlines) != message.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                                            ? TrinityTheme.accent
+                                            : Color.gray.opacity(0.3)
+                                        )
                                         .clipShape(Capsule())
                                         .buttonStyle(.plain)
+                                        .disabled(editText.trimmingCharacters(in: .whitespacesAndNewlines) == message.text.trimmingCharacters(in: .whitespacesAndNewlines))
                                 }
                             }
                         } else {
@@ -3315,6 +3725,20 @@ struct MessageRow: View {
                 Label("Copy", systemImage: "doc.on.doc")
             }
 
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(isoTimestamp, forType: .string)
+            } label: {
+                Label("Copy Timestamp", systemImage: "clock")
+            }
+
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(message.id.uuidString, forType: .string)
+            } label: {
+                Label("Copy Message ID", systemImage: "number")
+            }
+
             if message.role == .user {
                 Button {
                     editText = message.text
@@ -3454,18 +3878,68 @@ struct MessageRow: View {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(TrinityTheme.accent.opacity(0.08))
                 case .none:
-                    Color.clear
+                    if isSelected {
+                        RoundedRectangle(cornerRadius: 8)
+                            .fill(TrinityTheme.accent.opacity(0.05))
+                    } else {
+                        Color.clear
+                    }
                 }
             }
         )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if isSelecting {
+                onToggleSelect?(NSEvent.modifierFlags.contains(.shift))
+            }
+        }
     }
 
     private func submitEdit() {
         let text = editText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !client.isStreaming else { return }
+        guard text != message.text.trimmingCharacters(in: .whitespacesAndNewlines) else {
+            isEditing = false
+            return
+        }
         guard let threadID = store.activeThreadID else { return }
         isEditing = false
+        showDiffConfirm = false
         client.editAndResend(message.id, newText: text, threadID: threadID, store: store, modelManager: modelManager)
+    }
+
+    /// Brief diff: find the changed substring between old and new text.
+    /// Returns (removed, added) snippets capped at ~80 chars each.
+    static func computeBriefDiff(old: String, new: String) -> (removed: String, added: String) {
+        let oldChars = Array(old)
+        let newChars = Array(new)
+        var prefixLen = 0
+        while prefixLen < oldChars.count && prefixLen < newChars.count && oldChars[prefixLen] == newChars[prefixLen] {
+            prefixLen += 1
+        }
+        var suffixLen = 0
+        while suffixLen < (oldChars.count - prefixLen) && suffixLen < (newChars.count - prefixLen)
+              && oldChars[oldChars.count - 1 - suffixLen] == newChars[newChars.count - 1 - suffixLen] {
+            suffixLen += 1
+        }
+        let removedRange = prefixLen ..< (oldChars.count - suffixLen)
+        let addedRange = prefixLen ..< (newChars.count - suffixLen)
+        let contextLen = 12
+        let prefixContext = prefixLen > 0
+            ? String(oldChars[max(0, prefixLen - contextLen) ..< prefixLen]) : ""
+        let suffixContext = suffixLen > 0
+            ? String(oldChars[(oldChars.count - suffixLen) ..< min(oldChars.count, oldChars.count - suffixLen + contextLen)]) : ""
+        var removed = String(oldChars[removedRange])
+        var added = String(newChars[addedRange])
+        let cap = 80
+        if removed.count > cap { removed = String(removed.prefix(cap)) + "..." }
+        if added.count > cap { added = String(added.prefix(cap)) + "..." }
+        let removedDisplay = prefixContext + removed + suffixContext
+        let addedDisplay = prefixContext + added + suffixContext
+        if removedDisplay.count > 200 {
+            return (String(old.prefix(80)) + "...", String(new.prefix(80)) + "...")
+        }
+        return (removedDisplay, addedDisplay)
     }
 
     // MARK: - Timestamp & Model Badge Helpers
@@ -3494,10 +3968,28 @@ struct MessageRow: View {
         return id
     }
 
+    private var isoTimestamp: String {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        return f.string(from: message.timestamp)
+    }
+
+    private var fullTimestamp: String {
+        message.timestamp.formatted(date: .abbreviated, time: .shortened)
+    }
+
     @ViewBuilder
     private var metadataLine: some View {
         HStack(spacing: 0) {
             Text(relativeTimestamp)
+                .foregroundStyle(timestampCopied ? Color.accentColor : TrinityTheme.textMuted)
+                .help(fullTimestamp)
+                .onTapGesture {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(isoTimestamp, forType: .string)
+                    timestampCopied = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { timestampCopied = false }
+                }
             if let modelID = message.modelID, !modelID.isEmpty {
                 Text(" \u{00B7} ")
                 Text(Self.truncateModelID(modelID))
@@ -4843,6 +5335,31 @@ struct LiveTTFBCounter: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Live Speed Indicator (color-coded tok/s during streaming)
+
+struct LiveSpeedIndicator: View {
+    let tokPerSec: Double
+
+    private var speedColor: Color {
+        if tokPerSec < 20 { return TrinityTheme.statusError }
+        if tokPerSec < 50 { return TrinityTheme.statusWarn }
+        return TrinityTheme.statusOK
+    }
+
+    var body: some View {
+        HStack(spacing: 3) {
+            Image(systemName: "bolt.fill")
+                .font(.system(size: 8))
+                .foregroundStyle(speedColor)
+            Text(String(format: "%.0f tok/s", tokPerSec))
+                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .foregroundStyle(speedColor)
+        }
+        .contentTransition(.numericText(countsDown: false))
+        .animation(.easeInOut(duration: 0.3), value: Int(tokPerSec))
     }
 }
 
