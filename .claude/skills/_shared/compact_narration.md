@@ -485,7 +485,25 @@ except: print('board_open=0')
 {top 5 backlog items}
 
 🧪 Farm: N services | PPL best
+
+📡 Live: {service} step={N}K PPL={N} best={N} (if live_logs.json exists)
 ```
+
+### Step 3.6: Live Log State (for /tri integration)
+
+```bash
+cat .trinity/farm/live_logs.json 2>/dev/null || echo "{}"
+```
+
+If file exists and `ts` is fresh (< 10 min):
+- Add `📡 Live: {service} step={step}K PPL={ppl} best={best_ppl}` to board section
+- In reporter mode, weave into П1 narration: "Прямо сейчас {service} на step={step}K с PPL={ppl}"
+- If `best_ppl` improved since last snapshot, lead with the record
+
+Fields: `live_service`, `live_step`, `live_ppl`, `live_best_ppl`, `live_polls`, `live_ts`.
+
+**To start live monitoring:** `tri farm evolve logs <name> --live`
+**Integration:** Live logs auto-save to `.trinity/farm/live_logs.json`, /tri reads it.
 
 ### Step 4: Fallback (only if CLI failed)
 
