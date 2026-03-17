@@ -1497,6 +1497,60 @@ test "prescribe_generates_actions_v3" {
     try std.testing.expect(rx.projected_score > rx.current_score);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// AUTO-COLLECT — Pipeline-friendly verdict without manual input (v2.0)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Auto-collect verdict input, compute score, and return gate result.
+/// Used by pipeline_parallel for automated quality gates.
+pub const PipelineVerdictResult = struct {
+    verdict: ToxicVerdict,
+    gate_pass: bool,
+    threshold: f32,
+    recommendation: [256]u8 = [_]u8{0} ** 256,
+    recommendation_len: usize = 0,
+};
+
+/// Collect inputs, compute verdict, check against threshold.
+/// Returns PipelineVerdictResult with gate_pass and recommendation.
+pub fn autoCollectAndVerdict(allocator: std.mem.Allocator, threshold: f32) PipelineVerdictResult {
+    const input = collectInputs(allocator);
+    const score = computeScore(input);
+    const level = classifyLevel(score.total);
+    const comparison = compareWithPast(allocator, score.total);
+    const timestamp = std.time.timestamp();
+
+    const verdict = ToxicVerdict{
+        .score = score,
+        .level = level,
+        .input = input,
+        .comparison = comparison,
+        .timestamp = timestamp,
+    };
+
+    const pass = score.total >= threshold;
+
+    var result = PipelineVerdictResult{
+        .verdict = verdict,
+        .gate_pass = pass,
+        .threshold = threshold,
+    };
+
+    // Generate recommendation
+    const rec = if (!input.build_ok)
+        "Build broken — fix compilation errors first"
+    else if (!pass)
+        "Score below threshold — improve test coverage and reduce debt"
+    else
+        "Quality gate passed — proceed to next pipeline step";
+
+    const rec_len = @min(rec.len, 256);
+    @memcpy(result.recommendation[0..rec_len], rec[0..rec_len]);
+    result.recommendation_len = rec_len;
+
+    return result;
+}
+
 test "simpleJsonStr_parsing" {
     const json = "{\"pattern\":\"forgot errdefer\",\"count\":5}";
     const pattern = simpleJsonStr(json, "pattern");

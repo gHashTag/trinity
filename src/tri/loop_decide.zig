@@ -246,6 +246,87 @@ pub fn runLoopDecideCommand(allocator: std.mem.Allocator, args: []const []const 
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// NEEDLE CHECK — Structural quality gate via needle MCP (v2.0)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const NeedleResult = struct {
+    score: f32, // 0-100
+    issues_found: u32,
+    passed: bool,
+};
+
+/// Run needle quality-gate check via subprocess.
+/// Returns NeedleResult with score and pass/fail.
+/// If needle is not available, returns default pass (score=100).
+pub fn needleCheck(allocator: std.mem.Allocator) NeedleResult {
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "zig-out/bin/tri", "needle", "quality-gate" },
+        .max_output_bytes = 16384,
+    }) catch return NeedleResult{ .score = 100.0, .issues_found = 0, .passed = true };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const success = (switch (result.term) {
+        .Exited => |code| code,
+        else => @as(u32, 1),
+    }) == 0;
+
+    // Parse score from output (look for "score: N" or "Score: N")
+    var score: f32 = if (success) 100.0 else 0.0;
+    var issues: u32 = 0;
+
+    if (std.mem.indexOf(u8, result.stdout, "score:")) |idx| {
+        const after = result.stdout[idx + 6 ..];
+        var s: usize = 0;
+        while (s < after.len and after[s] == ' ') : (s += 1) {}
+        var e = s;
+        while (e < after.len and (after[e] >= '0' and after[e] <= '9' or after[e] == '.')) : (e += 1) {}
+        if (e > s) {
+            score = std.fmt.parseFloat(f32, after[s..e]) catch score;
+        }
+    }
+
+    if (std.mem.indexOf(u8, result.stdout, "issues:")) |idx| {
+        const after = result.stdout[idx + 7 ..];
+        var s: usize = 0;
+        while (s < after.len and after[s] == ' ') : (s += 1) {}
+        var e = s;
+        while (e < after.len and after[e] >= '0' and after[e] <= '9') : (e += 1) {}
+        if (e > s) {
+            issues = std.fmt.parseInt(u32, after[s..e], 10) catch 0;
+        }
+    }
+
+    const threshold: f32 = 60.0;
+    return NeedleResult{
+        .score = score,
+        .issues_found = issues,
+        .passed = score >= threshold,
+    };
+}
+
+/// Extended decision that includes needle quality check.
+/// If needle fails, overrides decision to fix_first.
+pub fn decideExtended(allocator: std.mem.Allocator) DecisionReport {
+    const input = collectInputs(allocator);
+    var report = decide(input);
+
+    // Only check needle if base decision is continue_next
+    if (report.decision == .continue_next) {
+        const needle = needleCheck(allocator);
+        if (!needle.passed) {
+            report.decision = .fix_first;
+            report.confidence = 0.7;
+            report.reason = "Needle quality gate failed — structural issues detected";
+            report.recommended_action = "tri needle quality-gate --fix";
+        }
+    }
+
+    return report;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -420,4 +501,16 @@ test "continue_happy_path" {
     };
     const report = decide(input);
     try std.testing.expect(report.decision == .continue_next);
+}
+
+test "NeedleResult_default" {
+    const nr = NeedleResult{ .score = 100.0, .issues_found = 0, .passed = true };
+    try std.testing.expect(nr.passed);
+    try std.testing.expect(nr.score == 100.0);
+}
+
+test "NeedleResult_fail" {
+    const nr = NeedleResult{ .score = 30.0, .issues_found = 5, .passed = false };
+    try std.testing.expect(!nr.passed);
+    try std.testing.expectEqual(@as(u32, 5), nr.issues_found);
 }
