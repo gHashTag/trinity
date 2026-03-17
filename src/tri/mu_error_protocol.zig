@@ -9,6 +9,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const hippocampus = @import("hippocampus.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
@@ -324,7 +325,41 @@ pub fn logError(allocator: Allocator, err: MuError) ![]u8 {
     defer file.close();
     try file.writeAll(json);
 
+    // Dual-write to hippocampus (Wave 2: Basal Ganglia)
+    writeToHippocampusDual(allocator, err.spec, err.fix_result, err.generator_component) catch |write_err| {
+        std.log.warn("mu_error_protocol: hippocampus dual-write failed: {}", .{write_err});
+    };
+
     return filename;
+}
+
+// Dual-write helper to avoid shadowing local ts variable
+fn writeToHippocampusDual(allocator: Allocator, spec: []const u8, fix_result: []const u8, generator: []const u8) !void {
+    var record: hippocampus.MemoryRecord = undefined;
+    const mem_ts: u64 = @intCast(std.time.timestamp());
+    hippocampus.generateId(&record.id_buf, &record.id_len, mem_ts, "mu_resolved");
+    hippocampus.copyToFixed(32, &record.agent_buf, &record.agent_len, "mu_resolved");
+    record.kind = .observation;
+    record.ts = mem_ts;
+    record.ttl = 30 * 24 * 3600;
+
+    const summary_text = try std.fmt.allocPrint(allocator, "Resolved: {s}", .{spec});
+    defer allocator.free(summary_text);
+    hippocampus.copyToFixed(256, &record.summary_buf, &record.summary_len, summary_text);
+
+    const data_text = try std.fmt.allocPrint(allocator, "{{\"spec\":\"{s}\",\"resolution\":\"{s}\",\"generator\":\"{s}\"}}", .{ spec, fix_result, generator });
+    defer allocator.free(data_text);
+    hippocampus.copyToFixed(2048, &record.data_buf, &record.data_len, data_text);
+
+    // Set tags
+    const tags = [2][]const u8{ "mu", "error_resolved" };
+    std.mem.copyForwards(u8, record.tags[0][0..tags[0].len], tags[0]);
+    std.mem.copyForwards(u8, record.tags[1][0..tags[1].len], tags[1]);
+    record.tag_count = 2;
+    record.tag_lens[0] = @intCast(tags[0].len);
+    record.tag_lens[1] = @intCast(tags[1].len);
+
+    try hippocampus.write(allocator, &record);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
