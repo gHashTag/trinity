@@ -75,7 +75,7 @@ enum FileType {
             self = .archive
         } else if lowerMime.hasPrefix("text/") || lowerName.hasSuffix(".txt") || lowerName.hasSuffix(".md") {
             self = .text
-        } else if codeExtensions.contains(lowerName.components(separatedBy: ".").last ?? "") {
+        } else if Self.codeExtensions.contains(lowerName.components(separatedBy: ".").last ?? "") {
             self = .code
         } else if lowerMime.contains("document") || lowerMime.contains("word") || lowerMime.contains("office") ||
                   lowerName.hasSuffix(".doc") || lowerName.hasSuffix(".docx") || lowerName.hasSuffix(".pages") {

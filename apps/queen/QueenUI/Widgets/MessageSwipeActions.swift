@@ -286,7 +286,7 @@ private enum TrinityHapticFeedback {
         case .impact: nsPattern = .generic
         }
 
-        NSHapticFeedbackManager.defaultPerformer?.perform(nsPattern, performanceTime: .default)
+        AppKit.NSHapticFeedbackManager.defaultPerformer.perform(nsPattern, performanceTime: .default)
         #endif
     }
 }
