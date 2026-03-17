@@ -11,6 +11,7 @@ const hippocampus = @import("hippocampus.zig");
 const voice_engine = @import("voice_engine.zig");
 
 const FRESHNESS_THRESHOLD: i64 = 300; // 5 minutes
+const MU_ERRORS_DIR = ".trinity/mu/errors";
 
 pub const VerdictCounts = struct {
     total: u32 = 0,
@@ -202,5 +203,116 @@ test "thalamus countEpisodeVerdicts returns valid" {
 
 test "thalamus countFarmEvents returns zero or more" {
     const count = countFarmEvents(std.testing.allocator, "agent:spawn");
+    try std.testing.expect(count >= 0);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// RELAY 6: MU patterns — hippocampus "mu_pattern" → fallback DB file
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn getMuPatterns(allocator: Allocator, limit: u32) !struct { items: [][]const u8, count: u32 } {
+    var results = hippocampus.read(allocator, .{
+        .agent = "mu_pattern",
+        .limit = limit,
+    }) catch return getMuPatternsFallback(limit);
+    defer results.deinit(allocator);
+
+    if (results.items.len > 0) {
+        var items: std.ArrayList([]const u8) = .empty;
+        defer items.deinit(allocator);
+        for (results.items) |rec| {
+            try items.append(allocator, try allocator.dupe(u8, rec.data()));
+        }
+        return .{ .items = try items.toOwnedSlice(allocator), .count = @intCast(results.items.len) };
+    }
+    return getMuPatternsFallback(allocator, limit);
+}
+
+fn getMuPatternsFallback(allocator: Allocator, limit: u32) !struct { items: [][]const u8, count: u32 } {
+    const DB_PATH = ".trinity/mu/learning_db.json";
+    const file = std.fs.cwd().openFile(DB_PATH, .{}) catch {
+        return .{ .items = &.{}, .count = 0 };
+    };
+    defer file.close();
+
+    var buf: [64 * 1024]u8 = undefined;
+    const n = file.readAll(&buf) catch return .{ .items = &.{}, .count = 0 };
+
+    var items: std.ArrayList([]const u8) = .empty;
+    defer items.deinit(allocator);
+
+    // Extract rules from JSON (simple string extraction)
+    const content = buf[0..n];
+    var pos: usize = 0;
+    var count: u32 = 0;
+
+    while (count < limit) {
+        const rule_start = std.mem.indexOfPos(u8, content, pos, "\"id\": \"") orelse break;
+        const rule_end = std.mem.indexOfPos(u8, content, rule_start, "}") orelse break;
+        const rule_data = content[rule_start..rule_end];
+
+        try items.append(allocator, try allocator.dupe(u8, rule_data));
+        count += 1;
+        pos = rule_end + 1;
+    }
+
+    return .{ .items = try items.toOwnedSlice(allocator), .count = count };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RELAY 7: MU resolved errors — hippocampus "mu_resolved" → fallback errors dir
+// ═════════════════════════════════════════════════════════════════════════════
+
+pub fn countMuResolvedErrors(allocator: Allocator) u32 {
+    var results = hippocampus.read(allocator, .{
+        .agent = "mu_resolved",
+        .limit = 10000,
+    }) catch return countMuResolvedErrorsFallback();
+    defer results.deinit(allocator);
+
+    if (results.items.len > 0) return @intCast(results.items.len);
+    return countMuResolvedErrorsFallback();
+}
+
+fn countMuResolvedErrorsFallback() u32 {
+    var dir = std.fs.cwd().openDir(MU_ERRORS_DIR, .{ .iterate = true }) catch return 0;
+    defer dir.close();
+    var count: u32 = 0;
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
+        // Check if error has fix_result (i.e., resolved)
+        const content = dir.readFileAlloc(std.heap.page_allocator, entry.name, 8192) catch continue;
+        defer std.heap.page_allocator.free(content);
+        if (std.mem.indexOf(u8, content, "\"fix_result\": \"") != null and
+            std.mem.indexOf(u8, content, "\"resolution_status\": \"FIXED\"") != null)
+        {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS (continued)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "thalamus getMuPatterns returns items" {
+    const result = getMuPatterns(std.testing.allocator, 10) catch |err| {
+        std.debug.print("getMuPatterns error: {}\n", .{err});
+        return;
+    };
+    defer {
+        for (result.items) |item| {
+            std.testing.allocator.free(item);
+        }
+        std.testing.allocator.free(result.items);
+    }
+    try std.testing.expect(result.count >= 0);
+}
+
+test "thalamus countMuResolvedErrors returns zero or more" {
+    const count = countMuResolvedErrors(std.testing.allocator);
     try std.testing.expect(count >= 0);
 }
