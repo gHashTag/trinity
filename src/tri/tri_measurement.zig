@@ -269,7 +269,8 @@ test "MODULE_NAME constant" {
 
 test "help command formats" {
     const version_fmt = "{s}";
-    _ = std.fmt.bufPrint(&[version_fmt:0:32], VERSION);
+    var buf: [32]u8 = undefined;
+    _ = std.fmt.bufPrint(&buf, version_fmt, .{VERSION});
 }
 
 test "subcommand dispatch handles known commands" {
