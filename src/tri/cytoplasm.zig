@@ -184,6 +184,9 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "commands")) return runCellCommands(allocator);
     if (std.mem.eql(u8, sub, "install-hooks")) return runInstallHooks(allocator);
     if (std.mem.eql(u8, sub, "coverage")) return runCoverage(allocator, rest);
+    if (std.mem.eql(u8, sub, "version")) return runVersion(allocator, rest);
+    if (std.mem.eql(u8, sub, "outdated")) return runOutdated(allocator, rest);
+    if (std.mem.eql(u8, sub, "regenerate")) return runRegenerate(allocator, rest);
 
     printHelp();
 }
@@ -244,6 +247,9 @@ fn printHelp() void {
     std.debug.print("  {s}check --auto-register --yes{s}  Auto-register without prompt\n", .{ GREEN, RESET });
     std.debug.print("  {s}install-hooks{s}     Install Git hooks for auto-registration\n", .{ GREEN, RESET });
     std.debug.print("  {s}coverage [--threshold N]{s}  Test coverage report (fail if <70%%)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}version{s}            Show cell versions and content hashes\n", .{ GREEN, RESET });
+    std.debug.print("  {s}outdated{s}           List cells with modified content (needs regen)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}regenerate --outdated{s}  Regenerate all outdated cells\n", .{ GREEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -6688,6 +6694,266 @@ fn runCoverage(allocator: Allocator, args: []const []const u8) !void {
             GREEN, RESET, coverage_pct * 100, threshold * 100,
         });
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// VERSION — Cell version tracking (M3: Cell Organism Evolution)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runVersion(allocator: Allocator, args: []const []const u8) !void {
+    _ = args;
+    std.debug.print("\n{s}🧬 CELL VERSION TRACKING{s}\n\n", .{ GOLDEN, RESET });
+
+    const registry = try loadRegistry(allocator);
+    defer allocator.free(registry);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, registry, .{}) catch {
+        std.debug.print("{s}ERROR{s}: Failed to parse registry.json\n", .{ RED, RESET });
+        return;
+    };
+    defer parsed.deinit();
+
+    const cells = parsed.value.object.get("cells") orelse {
+        std.debug.print("{s}ERROR{s}: 'cells' key missing\n", .{ RED, RESET });
+        return;
+    };
+    const items = cells.array.items;
+
+    std.debug.print("  {s}ID                       VERSION      HASH{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}───────────────────────── ──────────── ───────────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+    for (items) |item| {
+        const obj = item.object;
+        const id = jsonStr(obj, "id");
+        const version = jsonStr(obj, "version");
+        const content_hash = jsonStr(obj, "content_hash");
+
+        std.debug.print("  {s}{s}{s}", .{ WHITE, id, RESET });
+        printPad(id.len, 26);
+        std.debug.print(" {s}", .{version});
+        printPad(version.len, 12);
+
+        if (content_hash.len > 0) {
+            // Show first 16 chars of hash
+            const hash_preview = if (content_hash.len > 16) content_hash[0..16] else content_hash;
+            std.debug.print(" {s}{s}{s}\n", .{ GREEN, hash_preview, RESET });
+        } else {
+            std.debug.print(" {s}<no hash>{s}\n", .{ GRAY, RESET });
+        }
+    }
+
+    std.debug.print("\n  Total: {d} cells\n\n", .{items.len});
+}
+
+fn runOutdated(allocator: Allocator, args: []const []const u8) !void {
+    _ = args;
+    std.debug.print("\n{s}🔄 CHECKING FOR OUTDATED CELLS{s}\n\n", .{ GOLDEN, RESET });
+
+    const registry = try loadRegistry(allocator);
+    defer allocator.free(registry);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, registry, .{}) catch {
+        std.debug.print("{s}ERROR{s}: Failed to parse registry.json\n", .{ RED, RESET });
+        return;
+    };
+    defer parsed.deinit();
+
+    const cells = parsed.value.object.get("cells") orelse {
+        std.debug.print("{s}ERROR{s}: 'cells' key missing\n", .{ RED, RESET });
+        return;
+    };
+    const items = cells.array.items;
+
+    var outdated_count: usize = 0;
+    var up_to_date_count: usize = 0;
+    var skip_count: usize = 0;
+
+    std.debug.print("  {s}ID                       STATUS{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}───────────────────────── ───────────────────────────────────{s}\n", .{ GRAY, RESET });
+
+    for (items) |item| {
+        const obj = item.object;
+        const id = jsonStr(obj, "id");
+        const path = jsonStr(obj, "path");
+        const expected_hash = jsonStr(obj, "content_hash");
+
+        if (expected_hash.len == 0) {
+            std.debug.print("  {s}{s}{s}", .{ WHITE, id, RESET });
+            printPad(id.len, 26);
+            std.debug.print(" {s}<skip: no hash>{s}\n", .{ GRAY, RESET });
+            skip_count += 1;
+            continue;
+        }
+
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+        defer allocator.free(cell_tri_path);
+
+        const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch {
+            std.debug.print("  {s}{s}{s}", .{ WHITE, id, RESET });
+            printPad(id.len, 26);
+            std.debug.print(" {s}<error: cannot read>{s}\n", .{ RED, RESET });
+            skip_count += 1;
+            continue;
+        };
+        defer allocator.free(content);
+
+        var hash: [32]u8 = undefined;
+        std.crypto.hash.sha2.Sha256.hash(content, &hash, .{});
+        const actual_hex = std.fmt.bytesToHex(hash, .lower);
+
+        const is_outdated = !std.mem.eql(u8, actual_hex[0..64], expected_hash);
+
+        std.debug.print("  {s}{s}{s}", .{ WHITE, id, RESET });
+        printPad(id.len, 26);
+
+        if (is_outdated) {
+            std.debug.print(" {s}OUTDATED{s} (modified)\n", .{ YELLOW, RESET });
+            outdated_count += 1;
+        } else {
+            std.debug.print(" {s}up to date{s}\n", .{ GREEN, RESET });
+            up_to_date_count += 1;
+        }
+    }
+
+    std.debug.print("\n  Summary: {s}{d} outdated{s}, {s}{d} up-to-date{s}, {d} skipped\n", .{
+        YELLOW, outdated_count, RESET,
+        GREEN, up_to_date_count, RESET,
+        skip_count,
+    });
+
+    if (outdated_count > 0) {
+        std.debug.print("\n  Run: {s}tri cell regenerate --outdated{s}\n\n", .{ GREEN, RESET });
+    } else {
+        std.debug.print("\n  {s}✓ All cells are up-to-date!{s}\n\n", .{ GREEN, RESET });
+    }
+}
+
+fn runRegenerate(allocator: Allocator, args: []const []const u8) !void {
+    var regenerate_outdated = false;
+
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--outdated")) {
+            regenerate_outdated = true;
+        }
+    }
+
+    if (!regenerate_outdated) {
+        std.debug.print("{s}Usage: tri cell regenerate --outdated{s}\n", .{ RED, RESET });
+        std.debug.print("  Run 'tri cell outdated' first to see changed cells\n", .{});
+        return;
+    }
+
+    std.debug.print("\n{s}🔄 REGENERATING OUTDATED CELLS{s}\n\n", .{ GOLDEN, RESET });
+
+    // First, find outdated cells
+    const registry = try loadRegistry(allocator);
+    defer allocator.free(registry);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, registry, .{}) catch {
+        std.debug.print("{s}ERROR{s}: Failed to parse registry.json\n", .{ RED, RESET });
+        return;
+    };
+    defer parsed.deinit();
+
+    const cells = parsed.value.object.get("cells") orelse {
+        std.debug.print("{s}ERROR{s}: 'cells' key missing\n", .{ RED, RESET });
+        return;
+    };
+    const items = cells.array.items;
+
+    // Collect outdated cells with DNA source
+    const OutdatedCell = struct {
+        id: []const u8,
+        dna_source: []const u8,
+        path: []const u8,
+    };
+
+    var outdated_list = try std.ArrayList(OutdatedCell).initCapacity(allocator, 16);
+    defer {
+        for (outdated_list.items) |c| {
+            allocator.free(c.id);
+            allocator.free(c.dna_source);
+            allocator.free(c.path);
+        }
+        outdated_list.deinit(allocator);
+    }
+
+    for (items) |item| {
+        const obj = item.object;
+        const id = jsonStr(obj, "id");
+        const path = jsonStr(obj, "path");
+        const expected_hash = jsonStr(obj, "content_hash");
+
+        if (expected_hash.len == 0) continue;
+
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+        defer allocator.free(cell_tri_path);
+
+        const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+        defer allocator.free(content);
+
+        var hash: [32]u8 = undefined;
+        std.crypto.hash.sha2.Sha256.hash(content, &hash, .{});
+        const actual_hex = std.fmt.bytesToHex(hash, .lower);
+
+        if (!std.mem.eql(u8, actual_hex[0..64], expected_hash)) {
+            // Check if cell has DNA source
+            const dna_obj = jsonObjMap(obj, "dna");
+            const dna_source = if (dna_obj != null) jsonStr(dna_obj.?, "source") else "";
+
+            if (dna_source.len > 0) {
+                const id_copy = try allocator.dupe(u8, id);
+                const source_copy = try allocator.dupe(u8, dna_source);
+                const path_copy = try allocator.dupe(u8, path);
+                try outdated_list.append(allocator, OutdatedCell{
+                    .id = id_copy,
+                    .dna_source = source_copy,
+                    .path = path_copy,
+                });
+            } else {
+                std.debug.print("  {s}SKIP{s}  {s} — no DNA source (cannot auto-regenerate)\n", .{ GRAY, RESET, id });
+            }
+        }
+    }
+
+    if (outdated_list.items.len == 0) {
+        std.debug.print("  {s}✓ No outdated cells to regenerate{ s}\n\n", .{ GREEN, RESET });
+        return;
+    }
+
+    std.debug.print("  Found {d} outdated cells with DNA:\n\n", .{outdated_list.items.len});
+
+    for (outdated_list.items) |c| {
+        std.debug.print("    {s}→{s} {s} (from {s})\n", .{ CYAN, RESET, c.id, c.dna_source });
+    }
+
+    std.debug.print("\n  {s}Running Golden Chain pipeline for each cell...{s}\n\n", .{ GOLDEN, RESET });
+
+    // Import pipeline executor
+    const pipeline_executor = @import("rna_polymerase.zig");
+
+    for (outdated_list.items) |c| {
+        std.debug.print("  {s}🧬 Regenerating: {s}{s}\n", .{ GOLDEN, c.id, RESET });
+        std.debug.print("     DNA source: {s}\n", .{c.dna_source});
+
+        // Create task description for regeneration
+        const task = try std.fmt.allocPrint(allocator, "regenerate cell {s} from {s}", .{ c.id, c.dna_source });
+        defer allocator.free(task);
+
+        // Run pipeline
+        var executor = pipeline_executor.PipelineExecutor.init(allocator, 1, task);
+        defer executor.deinit();
+
+        executor.runAllLinks() catch |err| {
+            std.debug.print("     {s}FAIL{s}: {}\n", .{ RED, RESET, err });
+            continue;
+        };
+
+        std.debug.print("     {s}✓ Regenerated successfully{s}\n\n", .{ GREEN, RESET });
+    }
+
+    std.debug.print("  {s}✓ Regeneration complete!{s}\n\n", .{ GREEN, RESET });
+    std.debug.print("  Run: {s}tri cell check --sync{s} to update registry hashes\n\n", .{ CYAN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
