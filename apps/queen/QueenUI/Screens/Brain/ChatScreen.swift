@@ -2982,6 +2982,52 @@ struct MessageRow: View {
             }
         }
     }
+
+    // MARK: - Quick Action Helpers
+
+    /// Extract all fenced code blocks from markdown text
+    static func extractCodeBlocks(from text: String) -> [String] {
+        var blocks: [String] = []
+        let lines = text.components(separatedBy: "\n")
+        var inBlock = false
+        var current: [String] = []
+        for line in lines {
+            if line.hasPrefix("```") {
+                if inBlock {
+                    blocks.append(current.joined(separator: "\n"))
+                    current = []
+                    inBlock = false
+                } else {
+                    inBlock = true
+                }
+            } else if inBlock {
+                current.append(line)
+            }
+        }
+        return blocks
+    }
+
+    /// Extract task/checklist items from markdown text
+    static func extractTasks(from text: String) -> [String] {
+        var tasks: [String] = []
+        let lines = text.components(separatedBy: "\n")
+        for line in lines {
+            let trimmed = line.trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("- [ ] ") || trimmed.hasPrefix("- [x] ") || trimmed.hasPrefix("- [X] ") {
+                tasks.append(trimmed)
+            } else if trimmed.hasPrefix("- ") || trimmed.hasPrefix("* ") {
+                tasks.append(trimmed)
+            } else if let first = trimmed.first, first.isNumber,
+                      trimmed.contains(". ") {
+                let dotIdx = trimmed.firstIndex(of: ".")!
+                let afterDot = trimmed[trimmed.index(after: dotIdx)...]
+                if afterDot.hasPrefix(" ") {
+                    tasks.append(trimmed)
+                }
+            }
+        }
+        return tasks
+    }
 }
 
 // MARK: - Action Toolbar (Perplexity style)
