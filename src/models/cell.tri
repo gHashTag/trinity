@@ -9,7 +9,7 @@ status = "experimental"
 description = "Ternary neural network models (TQNN inference and benchmarks)"
 capabilities = ["run_layer_benchmark", "run_hybrid_benchmark", "run_scaling_benchmark", "inference", "benchmark"]
 files = 2
-tests = 0
+tests = 2
 owner = "agent:ralph"
 
 [tags]

@@ -20,7 +20,7 @@ type = "library"
 
 [contributes]
 commands = ["encode", "decode", "compress"]
-exports = []
+exports = ["parseVibeeSpec", "indexSymbol", "retrieve", "removeSymbol", "clear"]
 tri_subcommands = []
 events = []
 binaries = ["bench-compress"]

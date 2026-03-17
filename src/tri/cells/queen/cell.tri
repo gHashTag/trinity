@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Personal CTO agent: monitoring, policy, actions, Telegram reports"
 capabilities = ["queen", "monitoring", "telegram"]
-tests = 5
+tests = 50
 owner = "agent:ralph"
 
 [tags]
@@ -20,7 +20,7 @@ file_patterns = ["queen*.zig"]
 
 [contributes]
 commands = ["queen start", "queen status"]
-exports = ["runQueenCommand"]
+exports = ["applyGodMode", "emoji", "labelRu", "detailStr", "bestNameStr"]
 
 [dependencies]
 
@@ -30,6 +30,8 @@ filesystem = "write"
 network = "external"
 process = "spawn"
 
+ffi = "none"
+concurrency = "yes"
 [security]
 signed = true
 signature = "sha256:5e69162646c8afb8910bed66dcef8b47e7c6b8da99493dba66a0e239e2b53d08"

@@ -382,5 +382,37 @@ pub fn tqnn_forward_batch(inputs: [][]const f32, gate_select: u2) !struct {
     };
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "TQNN Layer 1 forward pass" {
+    const allocator = std.testing.allocator;
+
+    var layer = try TQNNLayer1.init(allocator, TQNNConfig.default(16));
+    defer layer.deinit(allocator);
+
+    const input = [_]f32{-1.0} ** 16;
+    const output = try layer.forward(&input);
+
+    try std.testing.expectEqual(@as(usize, 16), output.len);
+}
+
+test "TQNN+VSA hybrid inference" {
+    const allocator = std.testing.allocator;
+
+    var engine = try TQNNVSAInference.init(allocator, 16);
+    defer engine.deinit();
+
+    const input = [_]f32{0.5} ** 16;
+    const result = try engine.forward(&input);
+
+    // Verify quantum state was computed
+    try std.testing.expect(result.quantum_state.pos + result.quantum_state.neg + result.quantum_state.zero == 16);
+
+    // Verify similarity was computed
+    try std.testing.expect(result.similarity >= 0 and result.similarity <= 65535);
+}
+
 // φ² + 1/φ² = 3 = TRINITY
 // Cycle #127 — Week 2 Day 5

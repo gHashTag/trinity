@@ -8,7 +8,7 @@ status = "experimental"
 description = "BTC mining MVP, PAS mining core/test, network codex"
 capabilities = ["mining", "network"]
 files = 4
-tests = 0
+tests = 7
 owner = "agent:ralph"
 
 [tags]
@@ -19,16 +19,18 @@ type = "backend"
 file_patterns = ["btc_mining_mvp.zig", "pas_mining_core.zig", "pas_mining_test.zig", "network_codex.zig"]
 
 [contributes]
-exports = []
+exports = ["default", "updateHashrate", "calculateTriBonus", "checkIdle", "start"]
 
 [dependencies]
 
 [permissions]
-level = "L1"
+level = "L0"
 filesystem = "read"
-network = "external"
+network = "none"
 process = "none"
 
+ffi = "none"
+concurrency = "yes"
 [security]
 signed = "true"
 signature = "sha256:9f5700d43499958436837ec114c36cc1413d6afdeae0443f70a246ace1f87b5c"

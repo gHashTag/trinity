@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "GitHub API: issues, PRs, app auth, protocol v2"
 capabilities = ["github", "issues", "prs"]
-tests = 5
+tests = 20
 owner = "agent:ralph"
 
 [tags]
@@ -20,16 +20,18 @@ file_patterns = ["github_*.zig"]
 
 [contributes]
 commands = ["github", "issue", "pr"]
-exports = ["runGithubCommand"]
+exports = ["getToken", "isAvailable", "createIssue", "commentIssue", "closeIssue"]
 
 [dependencies]
 
 [permissions]
 level = "L2"
-filesystem = "read"
+filesystem = "write"
 network = "external"
-process = "none"
+process = "spawn"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = true
 signature = "sha256:8a3f2ba600248c9d4c40e3ab48120a41aeb1efe506787b95a6a955679b69210a"

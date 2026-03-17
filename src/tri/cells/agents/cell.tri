@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Agent swarm: spawning, orchestration, loop decisions, chimera commands, hub"
 capabilities = ["swarm", "orchestration", "agents"]
-tests = 15
+tests = 30
 owner = "agent:ralph"
 
 [tags]
@@ -20,16 +20,18 @@ file_patterns = ["tri_swarm.zig", "tri_agent_run.zig", "mu_agent.zig", "tri_loop
 
 [contributes]
 commands = ["swarm", "agent run", "loop", "chimera"]
-exports = ["runSwarmCommand", "runAgentRunCommand"]
+exports = ["registerCommand", "getCommand", "calculateSacredScore", "printStats", "verifyTrinityIdentity"]
 
 [dependencies]
 
 [permissions]
 level = "L2"
 filesystem = "write"
-network = "external"
+network = "none"
 process = "spawn"
 
+ffi = "none"
+concurrency = "yes"
 [security]
 signed = true
 signature = "sha256:72b0e4f52cc6dc61a9cc4840615b7cf235d5454e1bfb123752e41b468b8ad4c9"

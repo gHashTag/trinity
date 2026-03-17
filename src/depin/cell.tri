@@ -6,7 +6,7 @@ kind = "library"
 path = "src/depin"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Auto-generated cell for depin"
+description = "DePIN node management and compute reward distribution"
 capabilities = ["main", "detectPlatform", "detectArch", "detectCPUCores", "detectMemoryMB"]
 files = 4
 tests = 16
@@ -22,7 +22,6 @@ tri_subcommands = []
 events = []
 
 [dependencies]
-trinity.firebird = "^1.0.0"
 
 [permissions]
 level = "L2"

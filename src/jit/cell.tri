@@ -8,7 +8,7 @@ status = "experimental"
 description = "JIT compilation: ARM64, x86_64, unified backend, VSA JIT, benchmarks"
 capabilities = ["jit", "codegen", "arm64", "x86_64"]
 files = 6
-tests = 0
+tests = 50
 owner = "agent:ralph"
 
 [tags]
@@ -19,18 +19,18 @@ type = "library"
 file_patterns = ["jit.zig", "jit_arm64.zig", "jit_x86_64.zig", "jit_unified.zig", "vsa_jit.zig", "bench_jit.zig"]
 
 [contributes]
-exports = []
+exports = ["archName", "hasSIMD", "compileDotProduct", "compileDotProductSIMD", "compileDotProductScalar"]
 
 [dependencies]
 trinity.vsa = "^1.0.0"
 
 [permissions]
-level = "L2"
+level = "L0"
 filesystem = "read"
 network = "none"
 process = "none"
-ffi = "native"
-concurrency = "yes"
+ffi = "none"
+concurrency = "none"
 
 [security]
 signed = "true"

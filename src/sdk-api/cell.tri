@@ -8,7 +8,7 @@ status = "experimental"
 description = "Public SDK, C API, Queen API, server main, tri commander"
 capabilities = ["sdk", "api", "ffi"]
 files = 5
-tests = 0
+tests = 24
 owner = "agent:ralph"
 
 [tags]
@@ -19,7 +19,7 @@ type = "library"
 file_patterns = ["sdk.zig", "c_api.zig", "queen_api.zig", "server_main.zig", "tri_commander.zig"]
 
 [contributes]
-exports = []
+exports = ["random", "randomLabeled", "fromRaw", "getDimension", "get"]
 
 [dependencies]
 trinity.vsa = "^1.0.0"
@@ -29,7 +29,7 @@ level = "L2"
 filesystem = "write"
 network = "external"
 process = "spawn"
-ffi = "native"
+ffi = "none"
 concurrency = "yes"
 
 [security]

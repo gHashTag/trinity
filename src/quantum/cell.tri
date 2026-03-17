@@ -20,7 +20,7 @@ type = "library"
 
 [contributes]
 commands = ["simulate", "measure"]
-exports = []
+exports = ["collapseTime", "collapseProbability", "collapseThreshold", "collapseRate", "postCollapseEntropy"]
 tri_subcommands = []
 events = []
 binaries = ["quantum"]

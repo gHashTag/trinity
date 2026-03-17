@@ -6,7 +6,7 @@ kind = "library"
 path = "src/quantum_gravity"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Auto-generated cell for quantum_gravity"
+description = "Loop quantum gravity and spin foam simulation"
 capabilities = ["init", "normSquared", "isValid", "generateAll", "quantumProjection"]
 files = 1
 tests = 9
@@ -25,7 +25,7 @@ events = []
 trinity.vsa = "^1.0.0"
 
 [permissions]
-level = "L1"
+level = "L0"
 filesystem = "read"
 network = "none"
 process = "none"
