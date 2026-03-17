@@ -19,6 +19,22 @@ struct TrinityTheme {
     static let cardCorner: CGFloat = 12
     static let spacing: CGFloat = 16
 
+    // MARK: - Unified Corner Radius Tokens
+    static let cornerSmall: CGFloat = 6       // small buttons, badges
+    static let cornerMedium: CGFloat = 10     // input fields, popovers
+    static let cornerLarge: CGFloat = 12      // cards, panels
+    static let cornerXL: CGFloat = 24         // input bar (pill shape)
+
+    // MARK: - Shadow Tokens
+    static func shadowSmall(_ scheme: ColorScheme = .dark) -> some View {
+        Color.black.opacity(0.3).blur(radius: 4)
+    }
+
+    static let shadowMediumRadius: CGFloat = 8
+    static let shadowMediumOpacity: Double = 0.4
+    static let shadowLargeRadius: CGFloat = 16
+    static let shadowLargeOpacity: Double = 0.5
+
     // MARK: - User-controlled font size (Settings slider)
     /// User-adjustable chat font size (12-22pt), persisted in UserDefaults
     static var chatFontSize: CGFloat {

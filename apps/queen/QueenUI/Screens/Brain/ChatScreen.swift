@@ -196,6 +196,7 @@ struct ChatScreen: View {
                                             isLastMessage: msg.id == thread?.messages.last?.id,
                                             onComment: { commentingMessage = $0 }
                                         )
+                                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 6)))
                                     }
 
                                     errorRetryBlock
@@ -1072,7 +1073,7 @@ struct ChatScreen: View {
                 placeholder: placeholder,
                 isFocused: $focused,
                 onSubmit: { send() },
-                onImagePaste: { name, _ in
+                onImagePaste: { name, path in
                     attachedFiles.append((name: name, content: "[Image: \(name)]"))
                 },
                 onMentionTrigger: { query in
@@ -1116,6 +1117,18 @@ struct ChatScreen: View {
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(TrinityTheme.accent)
                         .transition(.opacity.combined(with: .scale))
+                }
+                // Draft saved indicator + character counter
+                if showDraftSaved && !showSentConfirmation && !client.isStreaming {
+                    Text("Draft")
+                        .font(.system(size: 9, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.2))
+                        .transition(.opacity)
+                }
+                if input.count > 200 {
+                    Text("\(input.count)")
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .foregroundStyle(input.count > 8000 ? TrinityTheme.statusError : Color.white.opacity(0.2))
                 }
             }
             .padding(.trailing, 10)
@@ -1594,6 +1607,7 @@ struct ConnectionStatusBar: View {
     @ObservedObject var modelManager: ModelManager
     @ObservedObject var client: ChatClient
     @StateObject private var networkLog = NetworkLog.shared
+    @StateObject private var networkMonitor = NetworkMonitor.shared
     @State private var isOnline: Bool? = nil  // nil = checking
     @State private var showFailover = false
 
@@ -1604,6 +1618,41 @@ struct ConnectionStatusBar: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Device network offline (WiFi/Ethernet down)
+            if !networkMonitor.isConnected {
+                HStack(spacing: 6) {
+                    Image(systemName: "wifi.slash")
+                        .font(.caption2)
+                    Text("No network connection")
+                        .font(.caption2)
+                    Spacer()
+                    Text(networkMonitor.connectionType.rawValue)
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+                .foregroundStyle(TrinityTheme.statusError)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 5)
+                .background(TrinityTheme.statusError.opacity(0.12))
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
+            // Reconnected toast
+            if networkMonitor.wasDisconnected {
+                HStack(spacing: 6) {
+                    Image(systemName: "wifi")
+                        .font(.caption2)
+                    Text("Reconnected")
+                        .font(.caption2)
+                    Spacer()
+                }
+                .foregroundStyle(TrinityTheme.statusOK)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 4)
+                .background(TrinityTheme.statusOK.opacity(0.08))
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
             // Failover chain notification
             if let event = client.failoverEvent, showFailover {
                 HStack(spacing: 6) {
@@ -2175,6 +2224,62 @@ struct MessageRow: View {
                 isHovering = hovering
             }
         }
+        // Context menu (right-click)
+        .contextMenu {
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(message.text, forType: .string)
+            } label: {
+                Label("Copy", systemImage: "doc.on.doc")
+            }
+
+            if message.role == .user {
+                Button {
+                    editText = message.text
+                    isEditing = true
+                } label: {
+                    Label("Edit & Resend", systemImage: "pencil")
+                }
+            }
+
+            if message.role == .assistant, !client.isStreaming {
+                Button {
+                    guard let threadID = store.activeThreadID else { return }
+                    client.regenerateFrom(messageID: message.id, threadID: threadID, store: store, modelManager: modelManager)
+                } label: {
+                    Label("Regenerate", systemImage: "arrow.clockwise")
+                }
+            }
+
+            Button {
+                guard let threadID = store.activeThreadID else { return }
+                store.toggleBookmark(message.id, in: threadID)
+            } label: {
+                Label(
+                    message.isBookmarked == true ? "Remove Bookmark" : "Bookmark",
+                    systemImage: message.isBookmarked == true ? "bookmark.fill" : "bookmark"
+                )
+            }
+
+            if let onComment {
+                Button {
+                    onComment(message)
+                } label: {
+                    Label("Comment", systemImage: "text.bubble")
+                }
+            }
+
+            Divider()
+
+            if message.role == .assistant {
+                Button(role: .destructive) {
+                    guard let threadID = store.activeThreadID else { return }
+                    store.deleteMessage(message.id, in: threadID)
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+        }
         // Accessibility
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(message.role == .user ? "You" : "Queen"): \(String(message.text.prefix(200)))")
@@ -2372,7 +2477,7 @@ struct MessageActionBar: View {
 
             Spacer()
 
-            // Persisted metrics badge
+            // Persisted metrics badge + cost
             if let ttfb = message.ttfbMs, let tps = message.tokPerSec, let tok = message.outputTokens {
                 HStack(spacing: 6) {
                     Text("\(ttfb)ms")
@@ -2381,6 +2486,19 @@ struct MessageActionBar: View {
                         .foregroundStyle(TrinityTheme.accent)
                     Text("\(tok) tok")
                         .foregroundStyle(TrinityTheme.textMuted)
+                    // Cost estimate
+                    if let modelID = message.modelID {
+                        let provider = modelID.contains("claude") || modelID.contains("sonnet") || modelID.contains("opus") || modelID.contains("haiku") ? "Anthropic"
+                            : modelID.contains("glm") ? "z.ai"
+                            : modelID.contains("sonar") ? "Perplexity"
+                            : modelID.contains("grok") ? "xAI"
+                            : modelID.contains("llama") || modelID.contains("qwen") ? "Ollama" : "Anthropic"
+                        let cost = AIModel.estimateCost(provider: provider, inputTokens: tok, outputTokens: tok)
+                        if cost > 0.0001 {
+                            Text(String(format: "$%.3f", cost))
+                                .foregroundStyle(TrinityTheme.golden)
+                        }
+                    }
                 }
                 .font(.system(size: 9, weight: .medium, design: .monospaced))
                 .padding(.trailing, 8)
