@@ -16,7 +16,7 @@ public struct MainView: View {
 
     public var body: some View {
         ZStack(alignment: .trailing) {
-            Color.black.ignoresSafeArea()
+            TrinityTheme.bgWindow.ignoresSafeArea()
 
             if let screen = selectedScreen {
                 // Screen content with back button

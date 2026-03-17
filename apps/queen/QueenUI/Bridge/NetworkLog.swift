@@ -9,6 +9,33 @@ class NetworkLog: ObservableObject {
     @Published var entries: [Entry] = []
     @Published var providerHealth: [String: ProviderStatus] = [:]
 
+    /// Daily cost budget in USD (user-configurable, default $5/day)
+    var dailyCostBudget: Double {
+        get {
+            let stored = UserDefaults.standard.double(forKey: "dailyCostBudget")
+            return stored > 0 ? stored : 5.0
+        }
+        set { UserDefaults.standard.set(newValue, forKey: "dailyCostBudget") }
+    }
+
+    /// True when today's spend exceeds 80% of budget
+    var isBudgetWarning: Bool {
+        todayCostEstimate() > dailyCostBudget * 0.8
+    }
+
+    /// True when today's spend meets or exceeds budget
+    var isBudgetExceeded: Bool {
+        todayCostEstimate() >= dailyCostBudget
+    }
+
+    // MARK: - Circuit Breaker
+    /// Tracks consecutive failures per provider. After 3 consecutive failures,
+    /// the provider is marked unavailable for 60 seconds.
+    private var consecutiveFailures: [String: Int] = [:]
+    private var circuitOpenUntil: [String: Date] = [:]
+    private let circuitBreakerThreshold = 3
+    private let circuitBreakerCooldown: TimeInterval = 60
+
     private let logURL: URL
     private let maxEntries = 200
 
@@ -77,6 +104,13 @@ class NetworkLog: ObservableObject {
             entries = Array(entries.suffix(maxEntries))
         }
 
+        // Update circuit breaker state
+        if status == "ok" {
+            recordSuccess(provider: provider)
+        } else if status == "error" || status == "timeout" {
+            recordFailure(provider: provider)
+        }
+
         // Append to JSONL
         if let data = try? JSONEncoder().encode(entry),
            let line = String(data: data, encoding: .utf8) {
@@ -138,6 +172,44 @@ class NetworkLog: ObservableObject {
             status.remainingRequests = remaining
             providerHealth[provider] = status
         }
+    }
+
+    // MARK: - Circuit Breaker Methods
+
+    /// Record a failed request for circuit breaker tracking.
+    /// After `circuitBreakerThreshold` consecutive failures, the provider
+    /// circuit opens for `circuitBreakerCooldown` seconds.
+    func recordFailure(provider: String) {
+        let count = (consecutiveFailures[provider] ?? 0) + 1
+        consecutiveFailures[provider] = count
+        if count >= circuitBreakerThreshold {
+            circuitOpenUntil[provider] = Date().addingTimeInterval(circuitBreakerCooldown)
+        }
+    }
+
+    /// Record a successful request — resets consecutive failure counter.
+    func recordSuccess(provider: String) {
+        consecutiveFailures[provider] = 0
+        circuitOpenUntil.removeValue(forKey: provider)
+    }
+
+    /// Returns true if the provider's circuit breaker is open (unavailable).
+    func isCircuitOpen(provider: String) -> Bool {
+        guard let reopenDate = circuitOpenUntil[provider] else { return false }
+        if Date() >= reopenDate {
+            // Cooldown expired — half-open: allow next request through
+            circuitOpenUntil.removeValue(forKey: provider)
+            consecutiveFailures[provider] = 0
+            return false
+        }
+        return true
+    }
+
+    /// Seconds remaining until circuit breaker reopens, or nil if not open.
+    func circuitReopenIn(provider: String) -> Int? {
+        guard let reopenDate = circuitOpenUntil[provider] else { return nil }
+        let remaining = reopenDate.timeIntervalSinceNow
+        return remaining > 0 ? Int(remaining) : nil
     }
 
     // Stats
