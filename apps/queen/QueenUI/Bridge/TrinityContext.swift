@@ -119,6 +119,81 @@ class TrinityContext: ObservableObject {
         return events.isEmpty ? "" : "## Recent Farm Events\n" + events.joined(separator: "\n")
     }
 
+    /// Get build error summary from senses.json
+    func buildErrorSummary() -> String? {
+        guard buildOK == false else { return nil }
+        // Try to read last build log
+        let logPath = "\(trinityPath)/queen/build_log.txt"
+        if let content = try? String(contentsOfFile: logPath, encoding: .utf8) {
+            let lines = content.components(separatedBy: "\n")
+            let errorLines = lines.filter { $0.contains("error") || $0.contains("Error") }
+            if !errorLines.isEmpty {
+                return errorLines.prefix(10).joined(separator: "\n")
+            }
+            return String(content.suffix(500))
+        }
+        return "Build is broken (no log available)"
+    }
+
+    /// Last build output (for @build mention)
+    func lastBuildLog() -> String {
+        let logPath = "\(trinityPath)/queen/build_log.txt"
+        if let content = try? String(contentsOfFile: logPath, encoding: .utf8) {
+            return String(content.suffix(4000))
+        }
+        // Fallback: run tri build status
+        let pipe = Pipe()
+        let process = Process()
+        let cwd = FileManager.default.currentDirectoryPath
+        let triPath = "\(cwd)/zig-out/bin/tri"
+        guard FileManager.default.fileExists(atPath: triPath) else { return "tri binary not found" }
+        process.executableURL = URL(fileURLWithPath: triPath)
+        process.arguments = ["build", "status"]
+        process.currentDirectoryURL = URL(fileURLWithPath: cwd)
+        process.standardOutput = pipe
+        process.standardError = pipe
+        try? process.run()
+        process.waitUntilExit()
+        return String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+    }
+
+    /// Farm snapshot (for @farm mention)
+    func farmSnapshot() -> String {
+        return recentFarmEvents(count: 10)
+    }
+
+    /// Open issues summary (for @issues mention)
+    func openIssuesSummary() -> String {
+        let pipe = Pipe()
+        let process = Process()
+        let cwd = FileManager.default.currentDirectoryPath
+        let triPath = "\(cwd)/zig-out/bin/tri"
+        guard FileManager.default.fileExists(atPath: triPath) else { return "" }
+        process.executableURL = URL(fileURLWithPath: triPath)
+        process.arguments = ["issue", "list"]
+        process.currentDirectoryURL = URL(fileURLWithPath: cwd)
+        process.standardOutput = pipe
+        process.standardError = pipe
+        try? process.run()
+        process.waitUntilExit()
+        return String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+    }
+
+    /// Git diff HEAD (for @gitdiff mention)
+    func headDiff() -> String {
+        let pipe = Pipe()
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/git")
+        process.arguments = ["diff", "HEAD"]
+        let cwd = FileManager.default.currentDirectoryPath
+        process.currentDirectoryURL = URL(fileURLWithPath: cwd)
+        process.standardOutput = pipe
+        process.standardError = pipe
+        try? process.run()
+        process.waitUntilExit()
+        return String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+    }
+
     // MARK: - Loaders
 
     private func loadSenses() {

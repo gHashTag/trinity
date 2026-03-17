@@ -3,6 +3,7 @@ import AppKit
 
 struct MarkdownTextView: View {
     let text: String
+    var citations: [Citation]? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -21,6 +22,7 @@ struct MarkdownTextView: View {
         case listItem(String)
         case table([[String]])         // rows of cells (first row = header)
         case image(String, String)     // alt, url
+        case math(String)              // block math ($$...$$)
         case horizontalRule
         case empty
     }
@@ -59,6 +61,37 @@ struct MarkdownTextView: View {
 
         while i < lines.count {
             let line = lines[i]
+
+            // Block math: $$...$$ (single line or multi-line)
+            if line.trimmingCharacters(in: .whitespaces).hasPrefix("$$") {
+                let trimmed = line.trimmingCharacters(in: .whitespaces)
+                // Single-line block math: $$formula$$
+                if trimmed.hasSuffix("$$") && trimmed.count > 4 {
+                    let math = String(trimmed.dropFirst(2).dropLast(2))
+                    result.append(.math(math))
+                    i += 1
+                    continue
+                }
+                // Multi-line block math
+                var mathLines: [String] = []
+                let firstLine = String(trimmed.dropFirst(2))
+                if !firstLine.isEmpty { mathLines.append(firstLine) }
+                i += 1
+                while i < lines.count {
+                    let ml = lines[i]
+                    if ml.trimmingCharacters(in: .whitespaces).hasSuffix("$$") {
+                        let last = ml.trimmingCharacters(in: .whitespaces)
+                        let content = String(last.dropLast(2))
+                        if !content.isEmpty { mathLines.append(content) }
+                        i += 1
+                        break
+                    }
+                    mathLines.append(ml)
+                    i += 1
+                }
+                result.append(.math(mathLines.joined(separator: "\n")))
+                continue
+            }
 
             // Code block fence
             if line.hasPrefix("```") {
@@ -262,6 +295,10 @@ struct MarkdownTextView: View {
             DiffBlockView(content: content)
                 .padding(.vertical, 4)
 
+        case .math(let expr):
+            MathBlockView(expression: expr)
+                .padding(.vertical, 4)
+
         case .callout(let type, let text):
             CalloutView(type: type, text: text)
                 .padding(.vertical, 4)
@@ -303,16 +340,64 @@ struct MarkdownTextView: View {
 
     @ViewBuilder
     private func inlineMarkdown(_ text: String) -> some View {
+        let processed = MathRenderer.processInlineMath(text)
         if let attributed = try? AttributedString(
-            markdown: text,
+            markdown: processed,
             options: .init(interpretedSyntax: .inlineOnlyPreservingWhitespace)
         ) {
-            Text(attributed)
+            let withCitations = applyCitationSuperscripts(to: attributed)
+            Text(withCitations)
                 .foregroundStyle(Color(hex: 0xD1D1D1))
+                .environment(\.openURL, OpenURLAction { url in
+                    NSWorkspace.shared.open(url)
+                    return .handled
+                })
         } else {
-            Text(text)
+            Text(processed)
                 .foregroundStyle(Color(hex: 0xD1D1D1))
         }
+    }
+
+    /// Replace [N] patterns with tappable accent-colored superscripts linked to citation URLs
+    private func applyCitationSuperscripts(to str: AttributedString) -> AttributedString {
+        guard let citations = citations, !citations.isEmpty else { return str }
+        var result = str
+        let superMap: [Character: Character] = [
+            "0": "\u{2070}", "1": "\u{00B9}", "2": "\u{00B2}", "3": "\u{00B3}",
+            "4": "\u{2074}", "5": "\u{2075}", "6": "\u{2076}", "7": "\u{2077}",
+            "8": "\u{2078}", "9": "\u{2079}",
+        ]
+
+        // Process [1], [2], etc.
+        let plain = String(result.characters)
+        guard let regex = try? NSRegularExpression(pattern: #"\[(\d+)\]"#) else { return result }
+        let nsRange = NSRange(plain.startIndex..., in: plain)
+        // Process matches in reverse order to maintain string indices
+        let matches = regex.matches(in: plain, range: nsRange).reversed()
+        for match in matches {
+            guard let fullRange = Range(match.range, in: plain),
+                  let numRange = Range(match.range(at: 1), in: plain) else { continue }
+            let numStr = String(plain[numRange])
+            guard let num = Int(numStr), num >= 1, num <= citations.count else { continue }
+
+            let startOffset = plain.distance(from: plain.startIndex, to: fullRange.lowerBound)
+            let endOffset = plain.distance(from: plain.startIndex, to: fullRange.upperBound)
+            let attrStart = result.index(result.startIndex, offsetByCharacters: startOffset)
+            let attrEnd = result.index(result.startIndex, offsetByCharacters: endOffset)
+
+            // Build superscript string
+            let superscript = String(numStr.map { superMap[$0] ?? $0 })
+            var replacement = AttributedString(superscript)
+            replacement.foregroundColor = Color(hex: 0x50FA7B) // accent green
+            replacement.font = .system(size: 11, weight: .bold)
+            // Add link to citation URL
+            if let url = URL(string: citations[num - 1].url) {
+                replacement.link = url
+            }
+
+            result.replaceSubrange(attrStart..<attrEnd, with: replacement)
+        }
+        return result
     }
 
     private func headingSize(_ level: Int) -> CGFloat {
@@ -711,5 +796,185 @@ struct ImageBlockView: View {
                 try? png.write(to: url)
             }
         }
+    }
+}
+
+// MARK: - Math Block View (block $$...$$ display)
+
+struct MathBlockView: View {
+    let expression: String
+
+    var body: some View {
+        HStack(spacing: 0) {
+            Spacer()
+            VStack(alignment: .center, spacing: 4) {
+                Text(MathRenderer.render(expression))
+                    .font(.system(size: 18, weight: .regular, design: .serif))
+                    .foregroundStyle(Color(hex: 0xE0E0E0))
+                    .textSelection(.enabled)
+                    .multilineTextAlignment(.center)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            Spacer()
+        }
+        .background(Color(hex: 0x0A0A0A))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(TrinityTheme.purple.opacity(0.2), lineWidth: 1)
+        )
+        .accessibilityLabel("Math expression: \(expression)")
+    }
+}
+
+// MARK: - Math Renderer (Unicode-based, no external deps)
+
+enum MathRenderer {
+    /// Render LaTeX-like expression to Unicode math
+    static func render(_ expr: String) -> String {
+        var s = expr
+
+        // Greek letters
+        let greek: [(String, String)] = [
+            ("\\alpha", "\u{03B1}"), ("\\beta", "\u{03B2}"), ("\\gamma", "\u{03B3}"),
+            ("\\delta", "\u{03B4}"), ("\\epsilon", "\u{03B5}"), ("\\zeta", "\u{03B6}"),
+            ("\\eta", "\u{03B7}"), ("\\theta", "\u{03B8}"), ("\\iota", "\u{03B9}"),
+            ("\\kappa", "\u{03BA}"), ("\\lambda", "\u{03BB}"), ("\\mu", "\u{03BC}"),
+            ("\\nu", "\u{03BD}"), ("\\xi", "\u{03BE}"), ("\\pi", "\u{03C0}"),
+            ("\\rho", "\u{03C1}"), ("\\sigma", "\u{03C3}"), ("\\tau", "\u{03C4}"),
+            ("\\upsilon", "\u{03C5}"), ("\\phi", "\u{03C6}"), ("\\chi", "\u{03C7}"),
+            ("\\psi", "\u{03C8}"), ("\\omega", "\u{03C9}"),
+            ("\\Gamma", "\u{0393}"), ("\\Delta", "\u{0394}"), ("\\Theta", "\u{0398}"),
+            ("\\Lambda", "\u{039B}"), ("\\Xi", "\u{039E}"), ("\\Pi", "\u{03A0}"),
+            ("\\Sigma", "\u{03A3}"), ("\\Phi", "\u{03A6}"), ("\\Psi", "\u{03A8}"),
+            ("\\Omega", "\u{03A9}"),
+        ]
+        for (tex, uni) in greek {
+            s = s.replacingOccurrences(of: tex, with: uni)
+        }
+
+        // Common symbols
+        let symbols: [(String, String)] = [
+            ("\\infty", "\u{221E}"), ("\\pm", "\u{00B1}"), ("\\mp", "\u{2213}"),
+            ("\\times", "\u{00D7}"), ("\\div", "\u{00F7}"), ("\\cdot", "\u{22C5}"),
+            ("\\leq", "\u{2264}"), ("\\geq", "\u{2265}"), ("\\neq", "\u{2260}"),
+            ("\\approx", "\u{2248}"), ("\\equiv", "\u{2261}"), ("\\sim", "\u{223C}"),
+            ("\\rightarrow", "\u{2192}"), ("\\leftarrow", "\u{2190}"),
+            ("\\Rightarrow", "\u{21D2}"), ("\\Leftarrow", "\u{21D0}"),
+            ("\\forall", "\u{2200}"), ("\\exists", "\u{2203}"), ("\\partial", "\u{2202}"),
+            ("\\nabla", "\u{2207}"), ("\\in", "\u{2208}"), ("\\notin", "\u{2209}"),
+            ("\\subset", "\u{2282}"), ("\\supset", "\u{2283}"),
+            ("\\cup", "\u{222A}"), ("\\cap", "\u{2229}"),
+            ("\\ldots", "\u{2026}"), ("\\cdots", "\u{22EF}"),
+            ("\\sum", "\u{2211}"), ("\\prod", "\u{220F}"), ("\\int", "\u{222B}"),
+        ]
+        for (tex, uni) in symbols {
+            s = s.replacingOccurrences(of: tex, with: uni)
+        }
+
+        // Superscripts: ^{...} or ^n
+        s = applySuperscripts(s)
+
+        // Subscripts: _{...} or _n
+        s = applySubscripts(s)
+
+        // \frac{a}{b} → a/b
+        while let range = s.range(of: #"\\frac\{([^}]*)\}\{([^}]*)\}"#, options: .regularExpression) {
+            let match = String(s[range])
+            if let regex = try? NSRegularExpression(pattern: #"\\frac\{([^}]*)\}\{([^}]*)\}"#),
+               let m = regex.firstMatch(in: match, range: NSRange(match.startIndex..., in: match)),
+               let r1 = Range(m.range(at: 1), in: match),
+               let r2 = Range(m.range(at: 2), in: match) {
+                let num = render(String(match[r1]))
+                let den = render(String(match[r2]))
+                s = s.replacingCharacters(in: range, with: "\(num)\u{2044}\(den)")
+            } else {
+                break
+            }
+        }
+
+        // \sqrt{x} → √x
+        s = s.replacingOccurrences(of: #"\\sqrt\{([^}]*)\}"#, with: "\u{221A}($1)", options: .regularExpression)
+
+        // Clean up remaining backslashes for simple commands
+        s = s.replacingOccurrences(of: "\\text{", with: "")
+        s = s.replacingOccurrences(of: "\\mathrm{", with: "")
+        s = s.replacingOccurrences(of: "\\mathbf{", with: "")
+        // Remove unmatched closing braces from above
+        if s.filter({ $0 == "}" }).count > s.filter({ $0 == "{" }).count {
+            s = s.replacingOccurrences(of: "}", with: "")
+        }
+
+        return s
+    }
+
+    /// Process inline $...$ math in text
+    static func processInlineMath(_ text: String) -> String {
+        guard text.contains("$") else { return text }
+        var result = ""
+        var i = text.startIndex
+        while i < text.endIndex {
+            if text[i] == "$" && (i == text.startIndex || text[text.index(before: i)] != "\\") {
+                // Find closing $
+                let start = text.index(after: i)
+                if start < text.endIndex, let end = text[start...].firstIndex(of: "$") {
+                    let mathExpr = String(text[start..<end])
+                    if !mathExpr.isEmpty && !mathExpr.contains("\n") {
+                        result += render(mathExpr)
+                        i = text.index(after: end)
+                        continue
+                    }
+                }
+            }
+            result.append(text[i])
+            i = text.index(after: i)
+        }
+        return result
+    }
+
+    private static func applySuperscripts(_ s: String) -> String {
+        let superMap: [Character: Character] = [
+            "0": "\u{2070}", "1": "\u{00B9}", "2": "\u{00B2}", "3": "\u{00B3}",
+            "4": "\u{2074}", "5": "\u{2075}", "6": "\u{2076}", "7": "\u{2077}",
+            "8": "\u{2078}", "9": "\u{2079}", "+": "\u{207A}", "-": "\u{207B}",
+            "n": "\u{207F}", "i": "\u{2071}",
+        ]
+        var result = s
+        // ^{content}
+        while let range = result.range(of: #"\^\{([^}]*)\}"#, options: .regularExpression) {
+            let inner = String(result[range]).dropFirst(2).dropLast(1)
+            let sup = String(inner).map { superMap[$0] ?? $0 }
+            result = result.replacingCharacters(in: range, with: String(sup))
+        }
+        // ^single_char
+        while let range = result.range(of: #"\^([0-9ni])"#, options: .regularExpression) {
+            let ch = result[result.index(range.lowerBound, offsetBy: 1)]
+            let sup = superMap[ch] ?? ch
+            result = result.replacingCharacters(in: range, with: String(sup))
+        }
+        return result
+    }
+
+    private static func applySubscripts(_ s: String) -> String {
+        let subMap: [Character: Character] = [
+            "0": "\u{2080}", "1": "\u{2081}", "2": "\u{2082}", "3": "\u{2083}",
+            "4": "\u{2084}", "5": "\u{2085}", "6": "\u{2086}", "7": "\u{2087}",
+            "8": "\u{2088}", "9": "\u{2089}", "+": "\u{208A}", "-": "\u{208B}",
+        ]
+        var result = s
+        // _{content}
+        while let range = result.range(of: #"_\{([^}]*)\}"#, options: .regularExpression) {
+            let inner = String(result[range]).dropFirst(2).dropLast(1)
+            let sub = String(inner).map { subMap[$0] ?? $0 }
+            result = result.replacingCharacters(in: range, with: String(sub))
+        }
+        // _single_digit
+        while let range = result.range(of: #"_([0-9])"#, options: .regularExpression) {
+            let ch = result[result.index(range.lowerBound, offsetBy: 1)]
+            let sub = subMap[ch] ?? ch
+            result = result.replacingCharacters(in: range, with: String(sub))
+        }
+        return result
     }
 }

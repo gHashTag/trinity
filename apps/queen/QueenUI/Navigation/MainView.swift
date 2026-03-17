@@ -1,20 +1,6 @@
 import SwiftUI
 
-@main
-struct QueenApp: App {
-    @StateObject private var watcher = StateWatcher()
-
-    var body: some Scene {
-        WindowGroup {
-            MainView()
-                .environmentObject(watcher)
-                .preferredColorScheme(.dark)
-        }
-        .windowStyle(.titleBar)
-    }
-}
-
-struct MainView: View {
+public struct MainView: View {
     @State private var selectedScreen: Screen? = nil
     @State private var keyMonitor: Any?
     @State private var showAgentStream = false
@@ -26,7 +12,9 @@ struct MainView: View {
         .build, .deploy, .telegram, .settings,
     ]
 
-    var body: some View {
+    public init() {}
+
+    public var body: some View {
         ZStack(alignment: .trailing) {
             Color.black.ignoresSafeArea()
 
@@ -120,6 +108,12 @@ struct MainView: View {
                 return nil
             }
 
+            // Cmd+N = new thread
+            if ch == "n" || ch == "N" {
+                NotificationCenter.default.post(name: .newThread, object: nil)
+                return nil
+            }
+
             // Cmd+Shift+F = toggle thread search
             if (ch == "f" || ch == "F") && event.modifierFlags.contains(.shift) {
                 NotificationCenter.default.post(name: .toggleThreadSearch, object: nil)
@@ -130,6 +124,24 @@ struct MainView: View {
             if ch == "k" || ch == "K" {
                 NotificationCenter.default.post(name: .toggleCommandPalette, object: nil)
                 return nil
+            }
+
+            // Cmd+Shift+S = toggle sidebar
+            if (ch == "s" || ch == "S") && event.modifierFlags.contains(.shift) {
+                NotificationCenter.default.post(name: .toggleSidebar, object: nil)
+                return nil
+            }
+
+            // Cmd+Shift+; = copy last response
+            if ch == ";" && event.modifierFlags.contains(.shift) {
+                NotificationCenter.default.post(name: .copyLastResponse, object: nil)
+                return nil
+            }
+
+            // Cmd+W = close/delete thread (handled in ChatScreen)
+            if ch == "w" || ch == "W" {
+                // Let ChatScreen handle this via notification
+                return event
             }
 
             if let digit = ch.wholeNumberValue, digit >= 1, digit <= 9 {

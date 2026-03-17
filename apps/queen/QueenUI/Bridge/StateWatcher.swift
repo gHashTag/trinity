@@ -4,7 +4,7 @@ import Combine
 /// Watches .trinity/ JSON files for changes via DispatchSource.
 /// Single instance — injected via @EnvironmentObject from App.swift.
 /// Uses Combine debounce (250ms) to coalesce burst writes from Queen daemon.
-final class StateWatcher: ObservableObject {
+public final class StateWatcher: ObservableObject {
     @Published var ouroborosState: OuroborosState?
     @Published var heartbeats: [AgentHeartbeat] = []
     @Published var farmEvents: [FarmEvent] = []
@@ -30,7 +30,7 @@ final class StateWatcher: ObservableObject {
     private let eventFlushSubject = PassthroughSubject<Void, Never>()
     private var eventFlushCancellable: AnyCancellable?
 
-    init(trinityPath: String? = nil) {
+    public init(trinityPath: String? = nil) {
         self.trinityPath = trinityPath ?? Self.findTrinityPath()
 
         // 250ms debounce: Queen daemon writes 3-5 files per cycle in ~200ms

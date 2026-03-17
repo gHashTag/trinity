@@ -31,6 +31,20 @@ struct AIModel: Identifiable, Codable, Equatable, Hashable {
 
     /// Whether this model generates images instead of text
     var isImageModel: Bool { id.contains("image") }
+
+    /// Estimate cost in USD for given token counts (per 1M tokens pricing)
+    static func estimateCost(provider: String, inputTokens: Int, outputTokens: Int) -> Double {
+        // Approximate $/1M token pricing
+        let (inPrice, outPrice): (Double, Double)
+        switch provider {
+        case "Anthropic":  (inPrice, outPrice) = (3.0, 15.0)   // Sonnet 4
+        case "z.ai":       (inPrice, outPrice) = (1.0, 2.0)    // GLM proxy
+        case "Perplexity": (inPrice, outPrice) = (3.0, 15.0)   // Sonar Pro
+        case "xAI":        (inPrice, outPrice) = (3.0, 15.0)   // Grok 3
+        default:           (inPrice, outPrice) = (3.0, 15.0)
+        }
+        return (Double(inputTokens) * inPrice + Double(outputTokens) * outPrice) / 1_000_000.0
+    }
 }
 
 @MainActor
@@ -111,6 +125,7 @@ class ModelManager: ObservableObject {
         let url = URL(string: baseURL(for: model))!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
+        request.timeoutInterval = 30  // Prevent indefinite hangs
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         switch model.provider {
@@ -134,7 +149,8 @@ class ModelManager: ObservableObject {
     /// Get xAI API key directly (for image generation)
     var xaiKey: String? { env["XAI_API_KEY"] }
 
-    /// Auto-failover: if selected provider is down, pick the best available alternative
+    /// Auto-failover: if selected provider is down, pick best available alternative
+    /// Tries ALL providers, scored by recent TTFB (fastest first)
     func failoverModel() -> AIModel? {
         let health = NetworkLog.shared.providerHealth
         let currentProvider = selectedModel.provider.rawValue
@@ -142,12 +158,42 @@ class ModelManager: ObservableObject {
         // If current provider is up, no failover needed
         if let status = health[currentProvider], status.isUp { return nil }
 
-        // Find first available model whose provider is up and has a key
+        // Find all candidates whose provider is up and has a key
         let candidates = availableModels.filter { model in
             model.id != selectedModel.id &&
-            (health[model.provider.rawValue]?.isUp ?? true) // default to up if not checked yet
+            !model.isImageModel &&
+            (health[model.provider.rawValue]?.isUp ?? true)
         }
-        return candidates.first
+
+        // Score by recent average TTFB (lower = better)
+        let scored = candidates.map { model -> (AIModel, Int) in
+            let ttfbs = NetworkLog.shared.recentTTFB(for: model.id)
+            let avg = ttfbs.isEmpty ? 1000 : ttfbs.reduce(0, +) / ttfbs.count
+            return (model, avg)
+        }
+        .sorted { $0.1 < $1.1 }
+
+        return scored.first?.0
+    }
+
+    /// Full failover chain: returns ALL available alternatives sorted by speed
+    func failoverChain(excluding: Set<String> = []) -> [AIModel] {
+        let health = NetworkLog.shared.providerHealth
+        let excluded = excluding.union([selectedModel.id])
+
+        return availableModels
+            .filter { model in
+                !excluded.contains(model.id) &&
+                !model.isImageModel &&
+                (health[model.provider.rawValue]?.isUp ?? true)
+            }
+            .sorted { a, b in
+                let aAvg = NetworkLog.shared.recentTTFB(for: a.id).isEmpty ? 1000 :
+                    NetworkLog.shared.recentTTFB(for: a.id).reduce(0, +) / NetworkLog.shared.recentTTFB(for: a.id).count
+                let bAvg = NetworkLog.shared.recentTTFB(for: b.id).isEmpty ? 1000 :
+                    NetworkLog.shared.recentTTFB(for: b.id).reduce(0, +) / NetworkLog.shared.recentTTFB(for: b.id).count
+                return aAvg < bAvg
+            }
     }
 
     /// Parse rate limit headers from HTTP response

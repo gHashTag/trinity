@@ -9,8 +9,17 @@ let package = Package(
     ],
     products: [],
     targets: [
+        .target(
+            name: "QueenUILib",
+            path: "QueenUI",
+            exclude: ["Entry"]),
         .executableTarget(
             name: "trinity",
-            path: "QueenUI")
+            dependencies: ["QueenUILib"],
+            path: "QueenUI/Entry"),
+        .testTarget(
+            name: "QueenUITests",
+            dependencies: ["QueenUILib"],
+            path: "Tests/QueenUITests"),
     ]
 )

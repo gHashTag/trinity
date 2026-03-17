@@ -164,6 +164,57 @@ class NetworkLog: ObservableObject {
         return valid.reduce(0.0) { $0 + $1.tokensPerSec } / Double(valid.count)
     }
 
+    /// Recent TTFB values for a specific model (for sparkline)
+    func recentTTFB(for modelID: String, count: Int = 7) -> [Int] {
+        entries
+            .filter { $0.model == modelID && $0.ttfbMs > 0 && $0.status == "ok" }
+            .suffix(count)
+            .map(\.ttfbMs)
+    }
+
+    /// Recent TTFB values for a provider
+    func recentTTFBForProvider(_ provider: String, count: Int = 7) -> [Int] {
+        entries
+            .filter { $0.provider == provider && $0.ttfbMs > 0 && $0.status == "ok" }
+            .suffix(count)
+            .map(\.ttfbMs)
+    }
+
+    /// Total cost estimate for today's session (USD)
+    func todayCostEstimate() -> Double {
+        todayEntries.reduce(0.0) { total, entry in
+            total + AIModel.estimateCost(
+                provider: entry.provider,
+                inputTokens: entry.inputTokens,
+                outputTokens: entry.outputTokens
+            )
+        }
+    }
+
+    /// Get error entries (for network dashboard)
+    var recentErrors: [Entry] {
+        entries.filter { $0.status == "error" || $0.status == "timeout" }.suffix(10).reversed()
+    }
+
+    /// Per-provider stats summary
+    func providerStats(_ provider: String) -> (requests: Int, errors: Int, avgTTFB: Int, avgTPS: Double) {
+        let provEntries = todayEntries.filter { $0.provider == provider }
+        let requests = provEntries.count
+        let errors = provEntries.filter { $0.status != "ok" && $0.status != "cancelled" }.count
+        let validTTFB = provEntries.filter { $0.ttfbMs > 0 && $0.status == "ok" }
+        let avgTTFB = validTTFB.isEmpty ? 0 : validTTFB.reduce(0) { $0 + $1.ttfbMs } / validTTFB.count
+        let validTPS = provEntries.filter { $0.tokensPerSec > 0 }
+        let avgTPS = validTPS.isEmpty ? 0.0 : validTPS.reduce(0.0) { $0 + $1.tokensPerSec } / Double(validTPS.count)
+        return (requests, errors, avgTTFB, avgTPS)
+    }
+
+    /// Check if rate limit is running low for a provider
+    func isRateLimitLow(_ provider: String) -> (low: Bool, remaining: Int?) {
+        guard let status = providerHealth[provider] else { return (false, nil) }
+        guard let remaining = status.remainingRequests else { return (false, nil) }
+        return (remaining < 10, remaining)
+    }
+
     private func loadRecent() {
         guard let content = try? String(contentsOf: logURL, encoding: .utf8) else { return }
         let decoder = JSONDecoder()
