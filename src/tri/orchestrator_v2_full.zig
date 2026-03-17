@@ -380,9 +380,9 @@ pub fn registerAllCommands(allocator: Allocator) !CommandRegistry {
         });
     }
 
-    // Ralph Orchestrator (FPGA Roadmap v1.0)
-    const ralph_names = [_][]const u8{ "ralph_orchestrator", "ralph-orchestrator", "ralph" };
-    for (ralph_names) |name| {
+    // PhoenixCore (ex-Ralph Orchestrator, FPGA Roadmap v1.0)
+    const phoenix_names = [_][]const u8{ "phoenix", "phoenix_core", "phoenix-core" };
+    for (phoenix_names) |name| {
         try registry.registerCommand(.{
             .name = name,
             .category = .autonomous,
@@ -391,7 +391,7 @@ pub fn registerAllCommands(allocator: Allocator) !CommandRegistry {
             .risk_level = .low,
             .min_args = 0,
             .max_args = 5,
-            .description = "Ralph Orchestrator — FPGA autonomous development manager",
+            .description = "PhoenixCore — Self-regenerating cell system + autonomous dev manager",
             .executor = noopExecutor,
         });
     }
