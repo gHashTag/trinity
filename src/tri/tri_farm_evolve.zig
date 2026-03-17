@@ -1312,21 +1312,46 @@ const BatchLogEntry = struct {
     matched_svc: *const ServiceEntry,
 };
 
-/// O1: Build aliased GraphQL query for multiple deploymentLogs in one call.
-/// Returns: "query { d0: deploymentLogs(deploymentId:\"...\", limit:10) { timestamp message severity } d1: ... }"
-fn buildBatchLogQuery(allocator: Allocator, entries: []const BatchLogEntry) ![]const u8 {
-    var buf = std.ArrayListUnmanaged(u8){};
-    errdefer buf.deinit(allocator);
+/// O1: Build aliased GraphQL query + variables for multiple deploymentLogs in one call.
+/// Returns gql and variables as a pair via out params.
+/// Query uses $d0id, $d0lim, $d1id, $d1lim, ... pattern with variable declarations.
+const BatchLogQueryResult = struct {
+    gql: []const u8,
+    vars: []const u8,
+};
 
-    try buf.appendSlice(allocator, "query {");
-    for (entries, 0..) |entry, i| {
-        // Alias: d0, d1, d2, ...
-        try buf.writer(allocator).print(" d{d}: deploymentLogs(deploymentId:\\\"{s}\\\", limit:{d}) {{ timestamp message severity }}", .{
-            i, entry.dep_id, entry.log_limit,
-        });
+fn buildBatchLogQuery(allocator: Allocator, entries: []const BatchLogEntry) !BatchLogQueryResult {
+    var gql_buf = std.ArrayListUnmanaged(u8){};
+    errdefer gql_buf.deinit(allocator);
+    var vars_buf = std.ArrayListUnmanaged(u8){};
+    errdefer vars_buf.deinit(allocator);
+
+    // Build variable declarations: query($d0id: String!, $d0lim: Int, ...)
+    try gql_buf.appendSlice(allocator, "query(");
+    for (entries, 0..) |_, i| {
+        if (i > 0) try gql_buf.appendSlice(allocator, ", ");
+        try gql_buf.writer(allocator).print("$d{d}id: String!, $d{d}lim: Int", .{ i, i });
     }
-    try buf.appendSlice(allocator, " }");
-    return buf.toOwnedSlice(allocator);
+    try gql_buf.appendSlice(allocator, ") {");
+
+    // Build aliased fields: d0: deploymentLogs(deploymentId: $d0id, limit: $d0lim) { ... }
+    for (0..entries.len) |i| {
+        try gql_buf.writer(allocator).print(" d{d}: deploymentLogs(deploymentId: $d{d}id, limit: $d{d}lim) {{ timestamp message severity }}", .{ i, i, i });
+    }
+    try gql_buf.appendSlice(allocator, " }");
+
+    // Build variables JSON: {"d0id":"<uuid>","d0lim":10,...}
+    try vars_buf.appendSlice(allocator, "{");
+    for (entries, 0..) |entry, i| {
+        if (i > 0) try vars_buf.appendSlice(allocator, ",");
+        try vars_buf.writer(allocator).print("\"d{d}id\":\"{s}\",\"d{d}lim\":{d}", .{ i, entry.dep_id, i, entry.log_limit });
+    }
+    try vars_buf.appendSlice(allocator, "}");
+
+    return .{
+        .gql = try gql_buf.toOwnedSlice(allocator),
+        .vars = try vars_buf.toOwnedSlice(allocator),
+    };
 }
 
 /// O3: Check if service progressed enough to warrant re-polling.
@@ -1455,8 +1480,8 @@ fn collectMetricsForAccount(
         // Rate limit — one 200ms sleep per chunk (not per service)
         std.Thread.sleep(200 * std.time.ns_per_ms);
 
-        // Build aliased query
-        const log_gql = buildBatchLogQuery(allocator, chunk) catch {
+        // Build aliased query with variables
+        const batch_q = buildBatchLogQuery(allocator, chunk) catch {
             // Fallback: skip this chunk
             for (chunk_start..chunk_end) |_| {
                 result.skipped += 1;
@@ -1465,7 +1490,8 @@ fn collectMetricsForAccount(
             chunk_start = chunk_end;
             continue;
         };
-        defer allocator.free(log_gql);
+        defer allocator.free(batch_q.gql);
+        defer allocator.free(batch_q.vars);
 
         // Send query with retry
         var log_resp: []const u8 = undefined;
@@ -1473,7 +1499,7 @@ fn collectMetricsForAccount(
         var backoff_ms: u64 = 300;
         for (0..3) |_| {
             var log_api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch break;
-            const log_result = log_api.query(log_gql, null);
+            const log_result = log_api.query(batch_q.gql, batch_q.vars);
             log_api.deinit();
             if (log_result) |resp| {
                 log_resp = resp;
