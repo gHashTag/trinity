@@ -1040,6 +1040,7 @@ struct ProviderDot: View {
 
 struct NetworkStatsBar: View {
     @StateObject private var networkLog = NetworkLog.shared
+    @State private var showNetworkTimeline = false
 
     var body: some View {
         let today = networkLog.todayEntries
@@ -1051,19 +1052,37 @@ struct NetworkStatsBar: View {
                     .fill(Color.white.opacity(0.06))
                     .frame(height: 1)
 
-                HStack(spacing: 12) {
-                    miniStat("\(today.count)", "reqs")
-                    miniStat("\(networkLog.todayTokens / 1000)K", "tok")
-                    if networkLog.avgTTFB > 0 {
-                        miniStat("\(networkLog.avgTTFB)ms", "TTFB")
+                // Clickable stats row
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        showNetworkTimeline.toggle()
                     }
-                    if networkLog.avgTokPerSec > 0 {
-                        miniStat(String(format: "%.0f", networkLog.avgTokPerSec), "tok/s")
+                }) {
+                    HStack(spacing: 12) {
+                        miniStat("\(today.count)", "reqs")
+                        miniStat("\(networkLog.todayTokens / 1000)K", "tok")
+                        if networkLog.avgTTFB > 0 {
+                            miniStat("\(networkLog.avgTTFB)ms", "TTFB")
+                        }
+                        if networkLog.avgTokPerSec > 0 {
+                            miniStat(String(format: "%.0f", networkLog.avgTokPerSec), "tok/s")
+                        }
+                        Spacer()
+                        Image(systemName: showNetworkTimeline ? "chevron.down" : "chevron.right")
+                            .font(.system(size: 8, weight: .semibold))
+                            .foregroundStyle(Color.white.opacity(0.3))
                     }
-                    Spacer()
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    .contentShape(Rectangle())
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
+                .buttonStyle(.plain)
+
+                // Expandable timeline
+                if showNetworkTimeline {
+                    NetworkTimelineView(networkLog: networkLog)
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
             }
         )
     }
@@ -1077,6 +1096,150 @@ struct NetworkStatsBar: View {
                 .font(.system(size: 8))
                 .foregroundStyle(Color.white.opacity(0.25))
         }
+    }
+}
+
+// MARK: - Network Timeline View
+
+struct NetworkTimelineView: View {
+    @ObservedObject var networkLog: NetworkLog
+
+    private var recentEntries: [NetworkLog.Entry] {
+        Array(networkLog.todayEntries.suffix(20).reversed())
+    }
+
+    private var maxTotalMs: Int {
+        recentEntries.map(\.totalMs).max() ?? 1
+    }
+
+    private var summaryText: String {
+        let today = networkLog.todayEntries
+        let totalTokens = networkLog.todayTokens
+        let avgMs = today.isEmpty ? 0 : today.reduce(0) { $0 + $1.totalMs } / today.count
+        let cost = networkLog.todayCostEstimate()
+        return "Today: \(today.count) requests \u{00B7} \(totalTokens / 1000)K tokens \u{00B7} avg \(formatDuration(avgMs)) \u{00B7} $\(String(format: "%.2f", cost))"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            // Summary line
+            Text(summaryText)
+                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .foregroundStyle(Color.white.opacity(0.4))
+                .padding(.horizontal, 16)
+                .padding(.top, 4)
+
+            Rectangle()
+                .fill(Color.white.opacity(0.04))
+                .frame(height: 1)
+                .padding(.horizontal, 12)
+
+            // Timeline rows
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: 2) {
+                    ForEach(recentEntries) { entry in
+                        timelineRow(entry)
+                    }
+                }
+                .padding(.horizontal, 12)
+            }
+            .frame(maxHeight: 260)
+            .padding(.bottom, 4)
+        }
+        .background(TrinityTheme.bgCard.opacity(0.5))
+    }
+
+    private func timelineRow(_ entry: NetworkLog.Entry) -> some View {
+        let barFraction = maxTotalMs > 0 ? CGFloat(entry.totalMs) / CGFloat(maxTotalMs) : 0
+        let ttfbFraction = entry.totalMs > 0 ? CGFloat(entry.ttfbMs) / CGFloat(entry.totalMs) : 0
+        let barColor = statusColor(entry.status)
+        let modelShort = shortModelName(entry.model)
+        let providerIcon = providerSymbol(entry.provider)
+
+        return HStack(spacing: 4) {
+            // Left label: provider icon + model
+            HStack(spacing: 2) {
+                Text(providerIcon)
+                    .font(.system(size: 8))
+                Text(modelShort)
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.5))
+            }
+            .frame(width: 70, alignment: .leading)
+
+            // Bar chart
+            GeometryReader { geo in
+                let barWidth = max(geo.size.width * barFraction, 2)
+                let ttfbX = barWidth * ttfbFraction
+
+                ZStack(alignment: .leading) {
+                    // Background track
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.white.opacity(0.04))
+                        .frame(width: geo.size.width, height: 12)
+
+                    // Duration bar
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(barColor.opacity(0.6))
+                        .frame(width: barWidth, height: 12)
+
+                    // TTFB tick mark
+                    if entry.ttfbMs > 0 && ttfbX > 2 {
+                        Rectangle()
+                            .fill(Color.white.opacity(0.8))
+                            .frame(width: 1, height: 12)
+                            .offset(x: ttfbX)
+                    }
+                }
+            }
+            .frame(height: 12)
+
+            // Right label: duration
+            Text("\(entry.totalMs)ms")
+                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .foregroundStyle(Color.white.opacity(0.4))
+                .frame(width: 48, alignment: .trailing)
+        }
+        .frame(height: 20)
+    }
+
+    private func statusColor(_ status: String) -> Color {
+        switch status {
+        case "ok": return TrinityTheme.statusOK
+        case "timeout": return TrinityTheme.statusWarn
+        case "error": return TrinityTheme.statusError
+        default: return Color.white.opacity(0.3)
+        }
+    }
+
+    private func providerSymbol(_ provider: String) -> String {
+        switch provider.lowercased() {
+        case "anthropic": return "A"
+        case "z.ai": return "Z"
+        case "perplexity": return "P"
+        case "xai": return "X"
+        case "openai": return "O"
+        default: return String(provider.prefix(1)).uppercased()
+        }
+    }
+
+    private func shortModelName(_ model: String) -> String {
+        // Shorten common model names
+        var s = model
+        s = s.replacingOccurrences(of: "claude-", with: "c-")
+        s = s.replacingOccurrences(of: "sonnet", with: "son")
+        s = s.replacingOccurrences(of: "opus", with: "ops")
+        s = s.replacingOccurrences(of: "haiku", with: "hku")
+        s = s.replacingOccurrences(of: "gpt-4o", with: "4o")
+        if s.count > 10 { s = String(s.prefix(10)) }
+        return s
+    }
+
+    private func formatDuration(_ ms: Int) -> String {
+        if ms >= 1000 {
+            return String(format: "%.1fs", Double(ms) / 1000.0)
+        }
+        return "\(ms)ms"
     }
 }
 
