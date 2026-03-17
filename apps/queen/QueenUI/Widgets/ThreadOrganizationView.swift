@@ -80,7 +80,6 @@ struct ThreadTagsManager: View {
                 HStack {
                     TextField("New tag name", text: $newTagText)
                         .textFieldStyle(.roundedBorder)
-                        .autocapitalization(.none)
 
                     Button("Add") {
                         addNewTag()
@@ -102,7 +101,6 @@ struct ThreadTagsManager: View {
             }
             .padding()
             .navigationTitle("Edit Tags")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Done") {
@@ -117,7 +115,7 @@ struct ThreadTagsManager: View {
     private func availableTagRow(_ tag: String) -> some View {
         let isSelected = thread.tags.contains(tag)
 
-        Button {
+        return Button {
             if isSelected {
                 onTagsUpdated(thread.tags.filter { $0 != tag })
             } else {
@@ -292,7 +290,7 @@ struct ThreadFolderView: View {
 
             // Custom folders
             ForEach(folders) { folder in
-                folderButton(name: folder.name, icon: folder.icon, count: folder.threadCount) {
+                folderButton(name: folder.name, icon: "folder.fill", count: nil) {
                     selectedFolder = folder
                     onFolderSelect(folder)
                 }
@@ -345,27 +343,6 @@ struct ThreadFolderView: View {
 
     private func createNewFolder() {
         // Implementation would show a dialog for folder creation
-    }
-}
-
-// MARK: - Thread Folder Model
-
-struct ThreadFolder: Identifiable, Codable {
-    let id = UUID()
-    var name: String
-    var icon: String
-    var color: String?
-    var threadIDs: Set<UUID>
-    var createdAt: Date
-
-    var threadCount: Int { threadIDs.count }
-
-    init(name: String, icon: String = "folder", color: String? = nil) {
-        self.name = name
-        self.icon = icon
-        self.color = color
-        self.threadIDs = []
-        self.createdAt = Date()
     }
 }
 
