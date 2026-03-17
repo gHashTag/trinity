@@ -49,6 +49,7 @@ pub const MemoryKind = enum {
     rule,
     @"error",
     observation,
+    cellhealth,  // C1: Cell health events for organism learning
 
     pub fn toString(self: MemoryKind) []const u8 {
         return switch (self) {
@@ -58,6 +59,7 @@ pub const MemoryKind = enum {
             .rule => "rule",
             .@"error" => "error",
             .observation => "observation",
+            .cellhealth => "cellhealth",
         };
     }
 
@@ -68,6 +70,7 @@ pub const MemoryKind = enum {
         if (std.mem.eql(u8, s, "rule")) return .rule;
         if (std.mem.eql(u8, s, "error")) return .@"error";
         if (std.mem.eql(u8, s, "observation")) return .observation;
+        if (std.mem.eql(u8, s, "cellhealth")) return .cellhealth;
         return null;
     }
 
@@ -78,6 +81,7 @@ pub const MemoryKind = enum {
             .learning, .rule => 0, // permanent
             .@"error" => 14 * 24 * 3600, // 14 days
             .observation => 30 * 24 * 3600, // 30 days
+            .cellhealth => 90 * 24 * 3600, // 90 days - longer retention for health trends
         };
     }
 };
@@ -368,6 +372,96 @@ pub fn writeObservation(allocator: Allocator, agent_name: []const u8, summary_te
     copyToFixed(256, &record.summary_buf, &record.summary_len, summary_text);
 
     try write(allocator, &record);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// C1: CELL HEALTH EVENTS — Wave 3 Dual-Write (Cytoplasm → Hippocampus)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Cell health event data — stored in hippocampus for learning patterns
+pub const CellHealthData = struct {
+    cell_id: []const u8,
+    cell_name: []const u8,
+    health_score: u8,        // 0-100
+    health_delta: i8,        // change from previous scan
+    bio_system: []const u8,   // dna, brain, immune, regen, body
+    trigger: []const u8,      // "scan", "fix", "regenerate", "manual"
+    files_total: u32,
+    files_generated: u32,
+    files_manual: u32,
+    tests_passing: bool,
+};
+
+/// Write cell health event to hippocampus (called by cytoplasm.runHealth)
+/// Agent name: "cytoplasm" — all cell health events come from cell scanner
+pub fn writeCellHealth(allocator: Allocator, cell_data: CellHealthData) !void {
+    // Build JSON data payload
+    var data_buffer: [1024]u8 = undefined;
+    const data_json = try std.fmt.bufPrint(&data_buffer,
+        \\{{"cell_id":"{s}","cell_name":"{s}","health":{d},"delta":{d},"bio_system":"{s}","trigger":"{s}","files":{{"total":{d},"generated":{d},"manual":{d}}},"tests_passing":{s}}}
+    , .{
+        cell_data.cell_id,
+        cell_data.cell_name,
+        cell_data.health_score,
+        cell_data.health_delta,
+        cell_data.bio_system,
+        cell_data.trigger,
+        cell_data.files_total,
+        cell_data.files_generated,
+        cell_data.files_manual,
+        if (cell_data.tests_passing) "true" else "false",
+    });
+
+    // Build summary text
+    var summary_buffer: [128]u8 = undefined;
+    const summary = try std.fmt.bufPrint(&summary_buffer,
+        "{s} health: {d} ({s}) {d} files",
+        .{ cell_data.cell_name, cell_data.health_score, cell_data.bio_system, cell_data.files_total }
+    );
+
+    // Create and write record
+    var record = MemoryRecord{};
+    const ts: u64 = @intCast(std.time.timestamp());
+    generateId(&record.id_buf, &record.id_len, ts, "cytoplasm");
+    copyToFixed(32, &record.agent_buf, &record.agent_len, "cytoplasm");
+    record.kind = .cellhealth;
+    record.ts = ts;
+    record.ttl = MemoryKind.cellhealth.defaultTtl(); // 90 days
+
+    // Add tag for bio_system filtering
+    const tag = try std.fmt.allocPrint(allocator, "bio:{s}", .{cell_data.bio_system});
+    defer allocator.free(tag);
+    copyToFixed(32, &record.tags[0], &record.tag_lens[0], tag);
+    record.tag_count = 1;
+
+    copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+    copyToFixed(256, &record.summary_buf, &record.summary_len, summary);
+
+    try write(allocator, &record);
+}
+
+/// Query cell health history for a specific cell
+pub fn getCellHistory(allocator: Allocator, cell_id: []const u8, days: u32) !std.ArrayList(MemoryRecord) {
+    const now = std.time.timestamp();
+    const since_ts: u64 = @intCast(now - (@as(u64, days) * 24 * 3600));
+
+    var records = try read(allocator, .{
+        .kind_filter = .cellhealth,
+        .since_ts = since_ts,
+        .agent_filter = "cytoplasm",
+    });
+
+    // Filter by cell_id (done in-memory since data_json contains cell_id)
+    var filtered = std.ArrayList(MemoryRecord).init(allocator);
+    for (records.items) |rec| {
+        const data_slice = rec.data_buf[0..rec.data_len];
+        if (std.mem.indexOf(u8, data_slice, cell_id) != null) {
+            try filtered.append(rec);
+        }
+    }
+    records.deinit();
+
+    return filtered;
 }
 
 pub fn writeRule(allocator: Allocator, agent_name: []const u8, summary_text: []const u8, data_json: []const u8) !void {
@@ -1136,6 +1230,7 @@ fn kindColor(kind: MemoryKind) []const u8 {
         .rule => YELLOW,
         .@"error" => RED,
         .observation => WHITE,
+        .cellhealth => CYAN,  // Health events - same as learning
     };
 }
 

@@ -1703,13 +1703,12 @@ struct ChatScreen: View {
         }
     }
 
-    @ViewBuilder
-
     // MARK: - Rate Limit Warning Bar
 
     private var activeProviderRemaining: Int? {
         let provider = modelManager.selectedModel.provider.rawValue
-        return networkLog.providerHealth[provider]?.remainingRequests
+        let result = networkLog.providerHealth[provider]?.remainingRequests
+        return result
     }
 
     private var rateLimitWarningBar: some View {
@@ -1768,7 +1767,7 @@ struct ChatScreen: View {
                 .padding(.horizontal, 60)
             }
         }
-        .onChange(of: activeProviderRemaining) { newValue in
+        .onChange(of: activeProviderRemaining) { _, newValue in
             // Auto-reset when quota recovers (above 50) or data becomes unavailable (nil = fresh state)
             if newValue == nil || (newValue ?? 0) >= 50 {
                 rateLimitDismissed = false

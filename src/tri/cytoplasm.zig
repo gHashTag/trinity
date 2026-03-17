@@ -2082,6 +2082,29 @@ fn runHealth(allocator: Allocator, _: []const []const u8) !void {
         }
         const score: usize = @as(usize, health) + sec + deps + contracts;
 
+        // ═══════════════════════════════════════════════════════════════════════════════
+        // C1: DUAL-WRITE Cell Health → Hippocampus (per-cell granularity)
+        // ═══════════════════════════════════════════════════════════════════════════════
+        {
+            // Determine bio_system (convert string to enum or classify)
+            const bio_sys = if (m.bio_system.len > 0) bioSystemFromStr(m.bio_system) else classifyBioSystem(cell.id, cell.capabilities, m.path);
+            const bio_name = bioSystemToString(bio_sys);
+
+            // Write to hippocampus (ignore errors, non-blocking)
+            hippocampus.writeCellHealth(allocator, .{
+                .cell_id = cell.id,
+                .cell_name = if (cell.name.len > 0) cell.name else cell.id,
+                .health_score = @intCast(@min(100, score)),
+                .health_delta = 0,  // TODO: track previous score for delta
+                .bio_system = bio_name,
+                .trigger = "scan",
+                .files_total = cell.files,
+                .files_generated = 0,  // TODO: count generated files
+                .files_manual = cell.files,
+                .tests_passing = cell.tests > 0,
+            }) catch {};
+        }
+
         if (score >= 80) grade_a += 1 else if (score >= 60) grade_b += 1 else if (score >= 40) grade_c += 1 else grade_f += 1;
         total_score += score;
         scored_count += 1;
@@ -4118,6 +4141,17 @@ fn bioSystemFromStr(system: []const u8) u8 {
     if (std.mem.eql(u8, system, "regen")) return 3;
     if (std.mem.eql(u8, system, "body")) return 4;
     return 5; // unclassified
+}
+
+fn bioSystemToString(system: u8) []const u8 {
+    return switch (system) {
+        0 => "dna",
+        1 => "brain",
+        2 => "immune",
+        3 => "regen",
+        4 => "body",
+        else => "unclassified",
+    };
 }
 
 fn classifyBioSystem(id: []const u8, caps: []const u8, path: []const u8) u8 {
