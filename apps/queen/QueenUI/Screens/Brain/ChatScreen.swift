@@ -3617,11 +3617,7 @@ struct MessageRow: View {
 
     @ViewBuilder
     private var rowHighlightOverlay: some View {
-        if let highlightedID = store.highlightedMessageID, highlightedID == message.id {
-            RoundedRectangle(cornerRadius: 8)
-                .fill(TrinityTheme.accent.opacity(0.2))
-                .transition(.opacity)
-        }
+        EmptyView()
     }
 
     @ViewBuilder
@@ -3637,432 +3633,157 @@ struct MessageRow: View {
 
     // MARK: - User Message Content
 
+    /// Edit mode UI for user messages with diff preview and action buttons
+    @ViewBuilder
+    private func userMessageEditModeView() -> some View {
+        VStack(alignment: .trailing, spacing: 6) {
+            TextField("Edit message...", text: $editText, axis: .vertical)
+                .textFieldStyle(.plain)
+                .font(.system(size: CGFloat(chatFontSize), weight: .semibold))
+                .foregroundStyle(Color.white)
+                .lineLimit(1...10)
+                .padding(10)
+                .background(Color.white.opacity(0.06))
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .onSubmit { submitEdit() }
+
+            // Diff preview
+            if editText.trimmingCharacters(in: .whitespacesAndNewlines) != message.text.trimmingCharacters(in: .whitespacesAndNewlines) {
+                let diff = Self.computeBriefDiff(old: message.text, new: editText)
+                HStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    (Text(diff.removed).foregroundColor(.red.opacity(0.8)).strikethrough()
+                     + Text(" → ").foregroundColor(.white.opacity(0.3))
+                     + Text(diff.added).foregroundColor(.green.opacity(0.8)))
+                        .font(.system(size: 11))
+                        .lineLimit(2)
+                        .truncationMode(.middle)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.white.opacity(0.04))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+            } else if !editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                HStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    Text("No changes")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+            }
+
+            HStack(spacing: 8) {
+                Button("Cancel") {
+                    isEditing = false
+                    showDiffConfirm = false
+                }
+                .font(.system(size: 12))
+                .foregroundStyle(Color.white.opacity(0.4))
+                .buttonStyle(.plain)
+
+                Button("Send") { submitEdit() }
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+                    .background(
+                        editText.trimmingCharacters(in: .whitespacesAndNewlines) != message.text.trimmingCharacters(in: .whitespacesAndNewlines)
+                        ? TrinityTheme.accent
+                        : Color.gray.opacity(0.3)
+                    )
+                    .clipShape(Capsule())
+                    .buttonStyle(.plain)
+                    .disabled(editText.trimmingCharacters(in: .whitespacesAndNewlines) == message.text.trimmingCharacters(in: .whitespacesAndNewlines))
+            }
+        }
+    }
+
+    /// Display mode UI for user messages with highlight text and action buttons
+    @ViewBuilder
+    private func userMessageDisplayModeView() -> some View {
+        VStack(alignment: .trailing, spacing: 4) {
+            HighlightText(message.text)
+                .font(.system(size: CGFloat(chatFontSize), weight: .semibold))
+                .foregroundStyle(Color.white)
+                .textSelection(.enabled)
+                .multilineTextAlignment(.trailing)
+
+            // Branch navigator (when message has been edited/forked)
+            if message.branchID != nil, let threadID = store.activeThreadID {
+                BranchNavigator(message: message, store: store, threadID: threadID)
+            }
+
+            // Metadata line: always visible for last message, hover for others
+            if isLastMessage || (isHovering && !isEditing) {
+                metadataLine
+                    .transition(.opacity)
+            }
+
+            // Action buttons on hover
+            if isHovering && !isEditing {
+                HStack(spacing: 8) {
+                    Button {
+                        editText = message.text
+                        isEditing = true
+                    } label: {
+                        Image(systemName: "pencil")
+                            .font(.system(size: 10))
+                            .foregroundStyle(Color.white.opacity(0.4))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Edit & resend")
+
+                    Button {
+                        NSPasteboard.general.clearContents()
+                        NSPasteboard.general.setString(message.text, forType: .string)
+                        SoundCueManager.shared.playCopy()
+                    } label: {
+                        Image(systemName: "doc.on.doc")
+                            .font(.system(size: 10))
+                            .foregroundStyle(Color.white.opacity(0.4))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Copy")
+
+                    Button {
+                        guard let threadID = store.activeThreadID else { return }
+                        store.toggleBookmark(message.id, in: threadID)
+                    } label: {
+                        Image(systemName: message.isBookmarked == true ? "pin.fill" : "pin")
+                            .font(.system(size: 10))
+                            .foregroundStyle(message.isBookmarked == true ? TrinityTheme.accent : Color.white.opacity(0.4))
+                    }
+                    .buttonStyle(.plain)
+                    .help("Pin message")
+                }
+                .transition(.opacity)
+            }
+        }
+    }
+
     @ViewBuilder
     private var userMessageContent: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if message.role == .user {
-                // User message — bold, slightly larger
-                HStack(alignment: .top, spacing: 0) {
-                    Spacer(minLength: 0)
-                    VStack(alignment: .trailing, spacing: 4) {
-                        if isEditing {
-                            // Inline edit mode
-                            VStack(alignment: .trailing, spacing: 6) {
-                                TextField("Edit message...", text: $editText, axis: .vertical)
-                                    .textFieldStyle(.plain)
-                                    .font(.system(size: CGFloat(chatFontSize), weight: .semibold))
-                                    .foregroundStyle(Color.white)
-                                    .lineLimit(1...10)
-                                    .padding(10)
-                                    .background(Color.white.opacity(0.06))
-                                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                                    .onSubmit { submitEdit() }
-
-                                // Diff preview
-                                if editText.trimmingCharacters(in: .whitespacesAndNewlines) != message.text.trimmingCharacters(in: .whitespacesAndNewlines) {
-                                    let diff = Self.computeBriefDiff(old: message.text, new: editText)
-                                    HStack(spacing: 0) {
-                                        Spacer(minLength: 0)
-                                        (Text(diff.removed).foregroundColor(.red.opacity(0.8)).strikethrough()
-                                         + Text(" → ").foregroundColor(.white.opacity(0.3))
-                                         + Text(diff.added).foregroundColor(.green.opacity(0.8)))
-                                            .font(.system(size: 11))
-                                            .lineLimit(2)
-                                            .truncationMode(.middle)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 4)
-                                            .background(Color.white.opacity(0.04))
-                                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                                    }
-                                } else if !editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                    HStack(spacing: 0) {
-                                        Spacer(minLength: 0)
-                                        Text("No changes")
-                                            .font(.system(size: 11))
-                                            .foregroundStyle(Color.white.opacity(0.3))
-                                    }
-                                }
-
-                                HStack(spacing: 8) {
-                                    Button("Cancel") {
-                                        isEditing = false
-                                        showDiffConfirm = false
-                                    }
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(Color.white.opacity(0.4))
-                                    .buttonStyle(.plain)
-
-                                    Button("Send") { submitEdit() }
-                                        .font(.system(size: 12, weight: .bold))
-                                        .foregroundStyle(.black)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 4)
-                                        .background(
-                                            editText.trimmingCharacters(in: .whitespacesAndNewlines) != message.text.trimmingCharacters(in: .whitespacesAndNewlines)
-                                            ? TrinityTheme.accent
-                                            : Color.gray.opacity(0.3)
-                                        )
-                                        .clipShape(Capsule())
-                                        .buttonStyle(.plain)
-                                        .disabled(editText.trimmingCharacters(in: .whitespacesAndNewlines) == message.text.trimmingCharacters(in: .whitespacesAndNewlines))
-                                }
-                            }
-                        } else {
-                            HighlightText(message.text)
-                                .font(.system(size: CGFloat(chatFontSize), weight: .semibold))
-                                .foregroundStyle(Color.white)
-                                .textSelection(.enabled)
-                                .multilineTextAlignment(.trailing)
-                        }
-
-                        // Branch navigator (when message has been edited/forked)
-                        if message.branchID != nil, let threadID = store.activeThreadID {
-                            BranchNavigator(message: message, store: store, threadID: threadID)
-                        }
-
-                        // Metadata line: always visible for last message, hover for others
-                        if isLastMessage || (isHovering && !isEditing) {
-                            metadataLine
-                                .transition(.opacity)
-                        }
-
-                        // Action buttons on hover
-                        if isHovering && !isEditing {
-                            HStack(spacing: 8) {
-                                Button {
-                                    editText = message.text
-                                    isEditing = true
-                                } label: {
-                                    Image(systemName: "pencil")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(Color.white.opacity(0.4))
-                                }
-                                .buttonStyle(.plain)
-                                .help("Edit & resend")
-
-                                Button {
-                                    NSPasteboard.general.clearContents()
-                                    NSPasteboard.general.setString(message.text, forType: .string)
-                                    SoundCueManager.shared.playCopy()
-                                } label: {
-                                    Image(systemName: "doc.on.doc")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(Color.white.opacity(0.4))
-                                }
-                                .buttonStyle(.plain)
-                                .help("Copy")
-
-                                Button {
-                                    guard let threadID = store.activeThreadID else { return }
-                                    store.toggleBookmark(message.id, in: threadID)
-                                } label: {
-                                    Image(systemName: message.isBookmarked == true ? "pin.fill" : "pin")
-                                        .font(.system(size: 10))
-                                        .foregroundStyle(message.isBookmarked == true ? TrinityTheme.accent : Color.white.opacity(0.4))
-                                }
-                                .buttonStyle(.plain)
-                                .help("Pin message")
-                            }
-                            .transition(.opacity)
-                        }
-                    }
-                    .padding(.vertical, 16)
-                }
-            } else {
-                // Assistant message — plain text, full width, readable
-                VStack(alignment: .leading, spacing: 8) {
-                    messageContent
-                        .font(.system(size: CGFloat(chatFontSize), weight: .regular))
-                        .foregroundStyle(Color(hex: 0xD1D1D1))
-                        .textSelection(.enabled)
-                        .lineSpacing(4)
-                        .padding(.top, 16)
-
-                    // Inline retry button on the last failed assistant message
-                    if isLastMessage, message.hasError, !client.isStreaming,
-                       let errKind = message.errorKind {
-                        Button {
-                            guard let threadID = store.activeThreadID else { return }
-                            client.regenerateFrom(
-                                messageID: message.id,
-                                threadID: threadID,
-                                store: store,
-                                modelManager: modelManager
-                            )
-                        } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 12, weight: .bold))
-                                Text("Retry")
-                                    .font(.system(size: 12, weight: .bold))
-                            }
-                            .foregroundStyle(errKind.color)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 6)
-                            .background(errKind.color.opacity(0.12))
-                            .clipShape(Capsule())
-                        }
-                        .buttonStyle(.plain)
-                        .transition(.opacity)
-                    }
-
-                    // Branch navigator (when assistant response has alternatives)
-                    if message.branchID != nil, let threadID = store.activeThreadID {
-                        BranchNavigator(message: message, store: store, threadID: threadID)
-                    }
-
-                    // Reading time (long assistant messages only)
-                    if message.role == .assistant, !client.isStreaming, wordCount > 200 {
-                        HStack(spacing: 4) {
-                            Image(systemName: "text.alignleft")
-                            Text("\(wordCount) words · \(readingTimeMinutes) min read")
-                        }
-                        .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
-                        .opacity(0.5)
-                    }
-
-                    // Action toolbar (only for non-empty assistant messages)
-                    if !message.text.isEmpty {
-                        HStack(spacing: 0) {
-                            MessageActionBar(
-                                message: message,
-                                store: store,
-                                client: client,
-                                modelManager: modelManager,
-                                isHovering: isHovering,
-                                onComment: onComment,
-                                onReply: onReply
-                            )
-
-                            // Timestamp + model badge (always for last, hover for others)
-                            if isLastMessage || isHovering {
-                                metadataLine
-                                    .padding(.leading, 8)
-                                    .transition(.opacity)
-                            }
-
-                            Spacer()
-
-                            // Token count badge
-                            if estimatedTokens > 0 {
-                                Text("\(tokenBadgeText) tok")
-                                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(tokenBadgeColor)
-                                    .padding(.horizontal, 6)
-                                    .padding(.vertical, 2)
-                                    .background(tokenBadgeColor.opacity(0.1))
-                                    .clipShape(Capsule())
-                                    .help(message.outputTokens != nil ? "Actual tokens" : "Estimated tokens")
-                            }
-                        }
-                        .padding(.top, 8)
-                        .padding(.bottom, 12)
+            // User message — bold, slightly larger
+            HStack(alignment: .top, spacing: 0) {
+                Spacer(minLength: 0)
+                VStack(alignment: .trailing, spacing: 4) {
+                    if isEditing {
+                        userMessageEditModeView()
+                    } else {
+                        userMessageDisplayModeView()
                     }
                 }
+                .padding(.vertical, 16)
             }
-
-            // Thin separator between messages
-            Rectangle()
-                .fill(Color.white.opacity(0.04))
-                .frame(height: 1)
         }
-
-        // Token budget bar (right edge)
-        if isHovering && !message.text.isEmpty {
-            GeometryReader { geo in
-                let barHeight = max(geo.size.height * min(tokenShare * 50, 1.0), 4)
-                let color: Color = tokenShare < 0.02 ? TrinityTheme.accent.opacity(0.3)
-                    : tokenShare < 0.05 ? TrinityTheme.golden.opacity(0.5)
-                    : TrinityTheme.statusError.opacity(0.5)
-                VStack {
-                    Spacer()
-                    RoundedRectangle(cornerRadius: 1)
-                        .fill(color)
-                        .frame(width: 2, height: barHeight)
-                }
-            }
-            .frame(width: 2)
-            .transition(.opacity)
-        }
-        } // HStack
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.15)) {
                 isHovering = hovering
             }
         }
         // Context menu (right-click)
-        .contextMenu {
-            // Enhanced copy submenu
-            Menu {
-                Button {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(message.text, forType: .string)
-                    SoundCueManager.shared.playCopy()
-                } label: {
-                    Label("Copy as Markdown", systemImage: "doc.richtext")
-                }
-
-                Button {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(MessageRow.stripMarkdown(from: message.text), forType: .string)
-                    SoundCueManager.shared.playCopy()
-                } label: {
-                    Label("Copy Plain Text", systemImage: "doc.plaintext")
-                }
-
-                let codeBlocks = MessageRow.extractCodeBlocks(from: message.text)
-                if !codeBlocks.isEmpty {
-                    Button {
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(codeBlocks.joined(separator: "\n\n"), forType: .string)
-                        SoundCueManager.shared.playCopy()
-                    } label: {
-                        Label("Copy Code Only", systemImage: "chevron.left.forwardslash.chevron.right")
-                    }
-                }
-
-                if !message.citations.isEmpty {
-                    Button {
-                        let withCitations = message.text + "\n\n---\n**Citations:**\n" +
-                            message.citations.enumerated().map { "[\($0.offset + 1)] \($0.element.displayText)" }
-                                .joined(separator: "\n")
-                        NSPasteboard.general.clearContents()
-                        NSPasteboard.general.setString(withCitations, forType: .string)
-                        SoundCueManager.shared.playCopy()
-                    } label: {
-                        Label("Copy with Citations", systemImage: "link")
-                    }
-                }
-            } label: {
-                Label("Copy", systemImage: "doc.on.doc")
-            }
-
-            Button {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(isoTimestamp, forType: .string)
-            } label: {
-                Label("Copy Timestamp", systemImage: "clock")
-            }
-
-            Button {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(message.id.uuidString, forType: .string)
-            } label: {
-                Label("Copy Message ID", systemImage: "number")
-            }
-
-            if message.role == .user {
-                Button {
-                    editText = message.text
-                    isEditing = true
-                } label: {
-                    Label("Edit & Resend", systemImage: "pencil")
-                }
-            }
-
-            if message.role == .assistant, !client.isStreaming {
-                Button {
-                    guard let threadID = store.activeThreadID else { return }
-                    client.regenerateFrom(messageID: message.id, threadID: threadID, store: store, modelManager: modelManager)
-                } label: {
-                    Label("Regenerate", systemImage: "arrow.clockwise")
-                }
-            }
-
-            Button {
-                guard let threadID = store.activeThreadID else { return }
-                store.toggleBookmark(message.id, in: threadID)
-            } label: {
-                Label(
-                    message.isBookmarked == true ? "Unpin" : "Pin message",
-                    systemImage: message.isBookmarked == true ? "pin.fill" : "pin"
-                )
-            }
-
-            if message.role == .user {
-                Button {
-                    saveTemplateName = String(message.text.prefix(40))
-                    saveTemplateCategory = "Code"
-                    showSaveTemplate = true
-                } label: {
-                    Label("Save as Template", systemImage: "doc.on.clipboard")
-                }
-            }
-
-            if let onComment {
-                Button {
-                    onComment(message)
-                } label: {
-                    Label("Comment", systemImage: "text.bubble")
-                }
-            }
-
-            if let onReply {
-                Button {
-                    onReply(message)
-                } label: {
-                    Label("Reply", systemImage: "arrowshape.turn.up.left")
-                }
-            }
-
-            if message.role == .assistant {
-                Menu {
-                    Button {
-                        let codeBlocks = MessageRow.extractCodeBlocks(from: message.text)
-                        if !codeBlocks.isEmpty {
-                            NSPasteboard.general.clearContents()
-                            NSPasteboard.general.setString(codeBlocks.joined(separator: "\n\n"), forType: .string)
-                        }
-                    } label: {
-                        Label("Copy All Code", systemImage: "chevron.left.forwardslash.chevron.right")
-                    }
-                    .disabled(MessageRow.extractCodeBlocks(from: message.text).isEmpty)
-
-                    Button {
-                        let tasks = MessageRow.extractTasks(from: message.text)
-                        if !tasks.isEmpty {
-                            NSPasteboard.general.clearContents()
-                            NSPasteboard.general.setString(tasks.joined(separator: "\n"), forType: .string)
-                        }
-                    } label: {
-                        Label("Extract Tasks (\(MessageRow.extractTasks(from: message.text).count))", systemImage: "checklist")
-                    }
-                    .disabled(MessageRow.extractTasks(from: message.text).isEmpty)
-
-                    Divider()
-
-                    Button {
-                        guard let threadID = store.activeThreadID, !client.isStreaming else { return }
-                        client.send("Summarize the above response in 3 bullet points.", threadID: threadID, store: store, modelManager: modelManager)
-                    } label: {
-                        Label("Summarize", systemImage: "text.justify.leading")
-                    }
-                    .disabled(client.isStreaming)
-
-                    Button {
-                        guard let threadID = store.activeThreadID, !client.isStreaming else { return }
-                        client.send("Explain the above response in simpler terms, as if to a beginner.", threadID: threadID, store: store, modelManager: modelManager)
-                    } label: {
-                        Label("Explain Simply", systemImage: "lightbulb")
-                    }
-                    .disabled(client.isStreaming)
-                } label: {
-                    Label("Quick Actions", systemImage: "bolt.circle")
-                }
-            }
-
-            Divider()
-
-            if message.role == .assistant {
-                Button(role: .destructive) {
-                    guard let threadID = store.activeThreadID else { return }
-                    store.deleteMessage(message.id, in: threadID)
-                } label: {
-                    Label("Delete", systemImage: "trash")
-                }
-            }
-        }
+        .contextMenu { userMessageContextMenu() }
         .popover(isPresented: $showSaveTemplate) {
             SaveAsTemplatePopover(
                 name: $saveTemplateName,
@@ -4075,8 +3796,8 @@ struct MessageRow: View {
         }
         // Accessibility
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(message.role == .user ? "You" : "Queen"): \(String(message.text.prefix(200)))")
-        .accessibilityHint(message.role == .user ? "Double-tap to edit" : "Double-tap for actions")
+        .accessibilityLabel("You: \(String(message.text.prefix(200)))")
+        .accessibilityHint("Double-tap to edit")
         .background(
             Group {
                 switch searchHighlight {
@@ -4104,6 +3825,549 @@ struct MessageRow: View {
         .onTapGesture {
             if isSelecting {
                 onToggleSelect?(NSEvent.modifierFlags.contains(.shift))
+            }
+        }
+    }
+
+    // MARK: - User Message Context Menu
+
+    /// Context menu for user messages
+    @ViewBuilder
+    private func userMessageContextMenu() -> some View {
+        Group {
+            userCopySubmenu()
+            copyTimestampButton()
+            copyMessageIDButton()
+            editAndResendButton()
+            userBookmarkButton()
+            saveAsTemplateButton()
+            userCommentReplyButtons()
+            Divider()
+        }
+    }
+
+    @ViewBuilder
+    private func userCopySubmenu() -> some View {
+        Menu {
+            userCopyAsMarkdownButton()
+            userCopyPlainTextButton()
+            userCopyCodeOnlyButton()
+            userCopyWithCitationsButton()
+        } label: {
+            Label("Copy", systemImage: "doc.on.doc")
+        }
+    }
+
+    @ViewBuilder
+    private func userCopyAsMarkdownButton() -> some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(message.text, forType: .string)
+            SoundCueManager.shared.playCopy()
+        } label: {
+            Label("Copy as Markdown", systemImage: "doc.richtext")
+        }
+    }
+
+    @ViewBuilder
+    private func userCopyPlainTextButton() -> some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(MessageRow.stripMarkdown(from: message.text), forType: .string)
+            SoundCueManager.shared.playCopy()
+        } label: {
+            Label("Copy Plain Text", systemImage: "doc.plaintext")
+        }
+    }
+
+    @ViewBuilder
+    private func userCopyCodeOnlyButton() -> some View {
+        let codeBlocks = MessageRow.extractCodeBlocks(from: message.text)
+        if !codeBlocks.isEmpty {
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(codeBlocks.joined(separator: "\n\n"), forType: .string)
+                SoundCueManager.shared.playCopy()
+            } label: {
+                Label("Copy Code Only", systemImage: "chevron.left.forwardslash.chevron.right")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func userCopyWithCitationsButton() -> some View {
+        if let citations = message.citations, !citations.isEmpty {
+            Button {
+                copyWithCitations(citations: citations)
+            } label: {
+                Label("Copy with Citations", systemImage: "link")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func copyTimestampButton() -> some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(isoTimestamp, forType: .string)
+        } label: {
+            Label("Copy Timestamp", systemImage: "clock")
+        }
+    }
+
+    @ViewBuilder
+    private func copyMessageIDButton() -> some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(message.id.uuidString, forType: .string)
+        } label: {
+            Label("Copy Message ID", systemImage: "number")
+        }
+    }
+
+    @ViewBuilder
+    private func editAndResendButton() -> some View {
+        Button {
+            editText = message.text
+            isEditing = true
+        } label: {
+            Label("Edit & Resend", systemImage: "pencil")
+        }
+    }
+
+    @ViewBuilder
+    private func userBookmarkButton() -> some View {
+        Button {
+            guard let threadID = store.activeThreadID else { return }
+            store.toggleBookmark(message.id, in: threadID)
+        } label: {
+            Label(
+                message.isBookmarked == true ? "Unpin" : "Pin message",
+                systemImage: message.isBookmarked == true ? "pin.fill" : "pin"
+            )
+        }
+    }
+
+    @ViewBuilder
+    private func saveAsTemplateButton() -> some View {
+        Button {
+            saveTemplateName = String(message.text.prefix(40))
+            saveTemplateCategory = "Code"
+            showSaveTemplate = true
+        } label: {
+            Label("Save as Template", systemImage: "doc.on.clipboard")
+        }
+    }
+
+    @ViewBuilder
+    private func userCommentReplyButtons() -> some View {
+        if let onComment {
+            Button {
+                onComment(message)
+            } label: {
+                Label("Comment", systemImage: "text.bubble")
+            }
+        }
+
+        if let onReply {
+            Button {
+                onReply(message)
+            } label: {
+                Label("Reply", systemImage: "arrowshape.turn.up.left")
+            }
+        }
+    }
+
+    // MARK: - Assistant Message Content
+
+    /// Retry button shown on failed assistant messages
+    @ViewBuilder
+    private func assistantRetryButton() -> some View {
+        if isLastMessage, message.hasError, !client.isStreaming,
+           let errKind = message.errorKind {
+            Button {
+                guard let threadID = store.activeThreadID else { return }
+                client.regenerateFrom(
+                    messageID: message.id,
+                    threadID: threadID,
+                    store: store,
+                    modelManager: modelManager
+                )
+            } label: {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("Retry")
+                        .font(.system(size: 12, weight: .bold))
+                }
+                .foregroundStyle(errKind.color)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(errKind.color.opacity(0.12))
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .transition(.opacity)
+        }
+    }
+
+    /// Branch navigator for alternative responses
+    @ViewBuilder
+    private func branchNavigatorView() -> some View {
+        if message.branchID != nil, let threadID = store.activeThreadID {
+            BranchNavigator(message: message, store: store, threadID: threadID)
+        }
+    }
+
+    /// Reading time indicator for long messages
+    @ViewBuilder
+    private func readingTimeView() -> some View {
+        if message.role == .assistant, !client.isStreaming, wordCount > 200 {
+            HStack(spacing: 4) {
+                Image(systemName: "text.alignleft")
+                Text("\(wordCount) words · \(readingTimeMinutes) min read")
+            }
+            .font(.caption2)
+            .foregroundStyle(TrinityTheme.textMuted)
+            .opacity(0.5)
+        }
+    }
+
+    /// Message action toolbar with metadata and token badge
+    @ViewBuilder
+    private func messageActionToolbar() -> some View {
+        if !message.text.isEmpty {
+            HStack(spacing: 0) {
+                MessageActionBar(
+                    message: message,
+                    store: store,
+                    client: client,
+                    modelManager: modelManager,
+                    isHovering: isHovering,
+                    onComment: onComment,
+                    onReply: onReply
+                )
+
+                // Timestamp + model badge (always for last, hover for others)
+                if isLastMessage || isHovering {
+                    metadataLine
+                        .padding(.leading, 8)
+                        .transition(.opacity)
+                }
+
+                Spacer()
+
+                // Token count badge
+                if estimatedTokens > 0 {
+                    Text("\(tokenBadgeText) tok")
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .foregroundStyle(tokenBadgeColor)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(tokenBadgeColor.opacity(0.1))
+                        .clipShape(Capsule())
+                        .help(message.outputTokens != nil ? "Actual tokens" : "Estimated tokens")
+                }
+            }
+            .padding(.top, 8)
+            .padding(.bottom, 12)
+        }
+    }
+
+    /// Token budget bar shown on hover
+    @ViewBuilder
+    private func tokenBudgetBar() -> some View {
+        if isHovering && !message.text.isEmpty {
+            GeometryReader { geo in
+                let barHeight = max(geo.size.height * min(tokenShare * 50, 1.0), 4)
+                let color: Color = tokenShare < 0.02 ? TrinityTheme.accent.opacity(0.3)
+                    : tokenShare < 0.05 ? TrinityTheme.golden.opacity(0.5)
+                    : TrinityTheme.statusError.opacity(0.5)
+                VStack {
+                    Spacer()
+                    RoundedRectangle(cornerRadius: 1)
+                        .fill(color)
+                        .frame(width: 2, height: barHeight)
+                }
+            }
+            .frame(width: 2)
+            .transition(.opacity)
+        }
+    }
+
+    /// Main message body for assistant
+    @ViewBuilder
+    private func assistantMessageBody() -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            VStack(alignment: .leading, spacing: 8) {
+                messageBodyContent
+                    .font(.system(size: CGFloat(chatFontSize), weight: .regular))
+                    .foregroundStyle(Color(hex: 0xD1D1D1))
+                    .textSelection(.enabled)
+                    .lineSpacing(4)
+                    .padding(.top, 16)
+
+                assistantRetryButton()
+                branchNavigatorView()
+                readingTimeView()
+                messageActionToolbar()
+            }
+
+            // Thin separator between messages
+            Rectangle()
+                .fill(Color.white.opacity(0.04))
+                .frame(height: 1)
+        }
+    }
+
+    @ViewBuilder
+    private var assistantMessageContent: some View {
+        HStack(spacing: 0) {
+            assistantMessageBody()
+            tokenBudgetBar()
+        }
+        .onHover { hovering in
+            withAnimation(.easeInOut(duration: 0.15)) {
+                isHovering = hovering
+            }
+        }
+        .contextMenu { assistantContextMenu() }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Queen: \(String(message.text.prefix(200)))")
+        .accessibilityHint("Double-tap for actions")
+        .background(messageBackgroundHighlight())
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if isSelecting {
+                onToggleSelect?(NSEvent.modifierFlags.contains(.shift))
+            }
+        }
+    }
+
+    /// Background highlight for search results and selection
+    @ViewBuilder
+    private func messageBackgroundHighlight() -> some View {
+        switch searchHighlight {
+        case .currentMatch:
+            RoundedRectangle(cornerRadius: 8)
+                .fill(TrinityTheme.accent.opacity(0.18))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(TrinityTheme.accent.opacity(0.5), lineWidth: 1.5)
+                )
+        case .match:
+            RoundedRectangle(cornerRadius: 8)
+                .fill(TrinityTheme.accent.opacity(0.08))
+        case .none:
+            if isSelected {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(TrinityTheme.accent.opacity(0.05))
+            } else {
+                Color.clear
+            }
+        }
+    }
+
+    /// Context menu for assistant messages
+    @ViewBuilder
+    private func assistantContextMenu() -> some View {
+        Group {
+            copySubmenu()
+            Divider()
+            regenerationButton()
+            bookmarkButton()
+            commentReplyButtons()
+            quickActionsMenu()
+            Divider()
+            deleteButton()
+        }
+    }
+
+    /// Copy submenu with various copy options
+    @ViewBuilder
+    private func copySubmenu() -> some View {
+        Menu {
+            copyAsMarkdownButton()
+            copyPlainTextButton()
+            copyCodeOnlyButton()
+            copyWithCitationsButton()
+        } label: {
+            Label("Copy", systemImage: "doc.on.doc")
+        }
+    }
+
+    @ViewBuilder
+    private func copyAsMarkdownButton() -> some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(message.text, forType: .string)
+            SoundCueManager.shared.playCopy()
+        } label: {
+            Label("Copy as Markdown", systemImage: "doc.richtext")
+        }
+    }
+
+    @ViewBuilder
+    private func copyPlainTextButton() -> some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(MessageRow.stripMarkdown(from: message.text), forType: .string)
+            SoundCueManager.shared.playCopy()
+        } label: {
+            Label("Copy Plain Text", systemImage: "doc.plaintext")
+        }
+    }
+
+    @ViewBuilder
+    private func copyCodeOnlyButton() -> some View {
+        let codeBlocks = MessageRow.extractCodeBlocks(from: message.text)
+        if !codeBlocks.isEmpty {
+            Button {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(codeBlocks.joined(separator: "\n\n"), forType: .string)
+                SoundCueManager.shared.playCopy()
+            } label: {
+                Label("Copy Code Only", systemImage: "chevron.left.forwardslash.chevron.right")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func copyWithCitationsButton() -> some View {
+        if let citations = message.citations, !citations.isEmpty {
+            Button {
+                copyWithCitations(citations: citations)
+            } label: {
+                Label("Copy with Citations", systemImage: "link")
+            }
+        }
+    }
+
+    private func copyWithCitations(citations: [Citation]) {
+        let citationList = citations.enumerated().map { "[\($0.offset + 1)] \($0.element.title ?? $0.element.url)" }.joined(separator: "\n")
+        let withCitations = message.text + "\n\n---\n**Citations:**\n" + citationList
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(withCitations, forType: .string)
+        SoundCueManager.shared.playCopy()
+    }
+
+    @ViewBuilder
+    private func regenerationButton() -> some View {
+        if message.role == .assistant, !client.isStreaming {
+            Button {
+                guard let threadID = store.activeThreadID else { return }
+                client.regenerateFrom(messageID: message.id, threadID: threadID, store: store, modelManager: modelManager)
+            } label: {
+                Label("Regenerate", systemImage: "arrow.clockwise")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func bookmarkButton() -> some View {
+        Button {
+            guard let threadID = store.activeThreadID else { return }
+            store.toggleBookmark(message.id, in: threadID)
+        } label: {
+            Label(
+                message.isBookmarked == true ? "Unpin" : "Pin message",
+                systemImage: message.isBookmarked == true ? "pin.fill" : "pin"
+            )
+        }
+    }
+
+    @ViewBuilder
+    private func commentReplyButtons() -> some View {
+        if let onComment {
+            Button {
+                onComment(message)
+            } label: {
+                Label("Comment", systemImage: "text.bubble")
+            }
+        }
+
+        if let onReply {
+            Button {
+                onReply(message)
+            } label: {
+                Label("Reply", systemImage: "arrowshape.turn.up.left")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func quickActionsMenu() -> some View {
+        if message.role == .assistant {
+            Menu {
+                quickActionCopyAllCode()
+                quickActionExtractTasks()
+                Divider()
+                quickActionSummarize()
+                quickActionExplainSimply()
+            } label: {
+                Label("Quick Actions", systemImage: "bolt.circle")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func quickActionCopyAllCode() -> some View {
+        Button {
+            let codeBlocks = MessageRow.extractCodeBlocks(from: message.text)
+            if !codeBlocks.isEmpty {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(codeBlocks.joined(separator: "\n\n"), forType: .string)
+            }
+        } label: {
+            Label("Copy All Code", systemImage: "chevron.left.forwardslash.chevron.right")
+        }
+        .disabled(MessageRow.extractCodeBlocks(from: message.text).isEmpty)
+    }
+
+    @ViewBuilder
+    private func quickActionExtractTasks() -> some View {
+        Button {
+            let tasks = MessageRow.extractTasks(from: message.text)
+            if !tasks.isEmpty {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(tasks.joined(separator: "\n"), forType: .string)
+            }
+        } label: {
+            Label("Extract Tasks (\(MessageRow.extractTasks(from: message.text).count))", systemImage: "checklist")
+        }
+        .disabled(MessageRow.extractTasks(from: message.text).isEmpty)
+    }
+
+    @ViewBuilder
+    private func quickActionSummarize() -> some View {
+        Button {
+            guard let threadID = store.activeThreadID, !client.isStreaming else { return }
+            client.send("Summarize the above response in 3 bullet points.", threadID: threadID, store: store, modelManager: modelManager)
+        } label: {
+            Label("Summarize", systemImage: "text.justify.leading")
+        }
+        .disabled(client.isStreaming)
+    }
+
+    @ViewBuilder
+    private func quickActionExplainSimply() -> some View {
+        Button {
+            guard let threadID = store.activeThreadID, !client.isStreaming else { return }
+            client.send("Explain the above response in simpler terms, as if to a beginner.", threadID: threadID, store: store, modelManager: modelManager)
+        } label: {
+            Label("Explain Simply", systemImage: "lightbulb")
+        }
+        .disabled(client.isStreaming)
+    }
+
+    @ViewBuilder
+    private func deleteButton() -> some View {
+        if message.role == .assistant {
+            Button(role: .destructive) {
+                guard let threadID = store.activeThreadID else { return }
+                store.deleteMessage(message.id, in: threadID)
+            } label: {
+                Label("Delete", systemImage: "trash")
             }
         }
     }
@@ -4218,7 +4482,7 @@ struct MessageRow: View {
     }
 
     @ViewBuilder
-    private var messageContent: some View {
+    private var messageBodyContent: some View {
         VStack(alignment: .leading, spacing: 8) {
             // Thinking/reasoning block (collapsible)
             if let thinking = message.thinkingText, !thinking.isEmpty {
