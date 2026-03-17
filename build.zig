@@ -1354,7 +1354,7 @@ pub fn build(b: *std.Build) void {
     // Native Zig MCP server exposing ALL Trinity CLI commands as Claude Code tools
 
     const tri_train_mod = b.createModule(.{
-        .root_source_file = b.path("src/tri/tri_train.zig"),
+        .root_source_file = b.path("src/tri/metabolism.zig"),
         .target = target,
         .optimize = optimize,
     });

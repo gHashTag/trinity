@@ -13,6 +13,7 @@ struct ChatScreen: View {
     private var trinityCtx: TrinityContext { TrinityContext.shared }
     @State private var input = ""
     @State private var commentingMessage: ChatMessage? = nil
+    @State private var replyingTo: ChatMessage? = nil
     @State private var chatMode: ChatMode = .trinity
     @State private var attachedFiles: [(name: String, content: String)] = []
     @State private var isRecording = false
@@ -33,6 +34,8 @@ struct ChatScreen: View {
     @State private var selectedPersona: Persona? = nil
     @State private var showPersonaLibrary = false
     @State private var showTemplatePicker = false
+    @State private var historyIndex: Int = -1
+    @State private var savedCurrentInput: String = ""
     @State private var lastSentText = ""
     @State private var showSentConfirmation = false
     @State private var showDraftSaved = false
@@ -40,6 +43,7 @@ struct ChatScreen: View {
     @State private var queueDrainedMessageCount = 0
     @State private var rateLimitDismissed = false
     @State private var budgetWarningDismissed = false
+    @State private var modelSuggestionDismissed = false
     @ObservedObject private var networkLog = NetworkLog.shared
     @State private var showThreadStats = false
     @State private var showInThreadSearch = false
@@ -90,6 +94,12 @@ struct ChatScreen: View {
         store.activeThread()
     }
 
+    /// All user messages in current thread, newest first (for Up/Down history navigation)
+    private var inputHistory: [String] {
+        guard let msgs = thread?.messages else { return [] }
+        return msgs.filter { $0.role == .user }.map(\.text).reversed()
+    }
+
     /// Messages matching in-thread search
     private var inThreadSearchMatches: [ChatMessage] {
         guard !inThreadSearchQuery.isEmpty, let msgs = thread?.messages else { return [] }
@@ -103,6 +113,45 @@ struct ChatScreen: View {
         let matches = inThreadSearchMatches
         guard let idx = matches.firstIndex(where: { $0.id == msg.id }) else { return .none }
         return idx == inThreadSearchIndex ? .currentMatch : .match
+    }
+
+    /// Suggest a better model based on query complexity
+    private var suggestedModel: (model: AIModel, reason: String)? {
+        guard !input.isEmpty, !client.isStreaming, !modelSuggestionDismissed else { return nil }
+        let lower = input.lowercased()
+        let current = modelManager.selectedModel
+        let codeKw = ["debug", "implement", "refactor", "fix bug", "write code", "function", "algorithm", "optimize"]
+        let isCode = codeKw.contains(where: { lower.contains($0) })
+        if isCode && current.displayName.lowercased().contains("haiku") {
+            if let s = modelManager.availableModels.first(where: { $0.displayName.contains("Sonnet") }) {
+                return (s, "better for code tasks")
+            }
+        }
+        let deepKw = ["analyze", "compare", "architecture", "design", "evaluate", "trade-off", "tradeoff"]
+        let isDeep = deepKw.contains(where: { lower.contains($0) })
+        if isDeep && (current.displayName.lowercased().contains("haiku") || current.displayName.lowercased().contains("glm")) {
+            if let s = modelManager.availableModels.first(where: { $0.displayName.contains("Sonnet") }) {
+                return (s, "deep reasoning needed")
+            }
+        }
+        let simpleKw = ["explain simply", "what is", "define", "translate", "hello", "hi ", "hey "]
+        let isSimple = simpleKw.contains(where: { lower.contains($0) })
+        if isSimple && !current.displayName.lowercased().contains("haiku") && !current.displayName.lowercased().contains("glm") {
+            if let h = modelManager.availableModels.first(where: { $0.displayName.contains("Haiku") }) {
+                return (h, "fast & cheap for simple queries")
+            }
+            if let g = modelManager.availableModels.first(where: { $0.displayName.contains("GLM") }) {
+                return (g, "fast & cheap for simple queries")
+            }
+        }
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.count < 20 && !current.displayName.lowercased().contains("haiku")
+            && !current.displayName.lowercased().contains("glm") && !isCode && !isDeep {
+            if let h = modelManager.availableModels.first(where: { $0.displayName.contains("Haiku") }) {
+                return (h, "10x cheaper for short queries")
+            }
+        }
+        return nil
     }
 
     /// Token estimation: ~3.5 chars/token for English, ~2.5 for code/mixed
@@ -191,6 +240,7 @@ struct ChatScreen: View {
             .modifier(ChangeTrackersModifier(
                 input: $input,
                 showDraftSaved: $showDraftSaved,
+                modelSuggestionDismissed: $modelSuggestionDismissed,
                 taskItems: $taskItems,
                 selectedPersona: $selectedPersona,
                 store: store,
@@ -252,7 +302,9 @@ struct ChatScreen: View {
                 inputAreaContent
                 rateLimitWarningBar
                 budgetWarningBar
+                replyPreviewBar
                 inputBarView
+                modelSuggestionView
                 modeBarView
             }
         }
@@ -370,6 +422,7 @@ struct ChatScreen: View {
                     modelManager: modelManager,
                     isLastMessage: msg.id == thread?.messages.last?.id,
                     onComment: { commentingMessage = $0 },
+                    onReply: { replyingTo = $0; focused = true },
                     searchHighlight: searchHighlightFor(msg)
                 )
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 6)))
@@ -957,6 +1010,46 @@ struct ChatScreen: View {
         }
     }
 
+    // MARK: - Reply Preview Bar
+
+    @ViewBuilder
+    private var replyPreviewBar: some View {
+        if let msg = replyingTo {
+            HStack(spacing: 8) {
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(TrinityTheme.accent)
+                    .frame(width: 2)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(msg.role == .user ? "You" : "Queen")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(TrinityTheme.accent)
+                    Text(String(msg.text.prefix(80)) + (msg.text.count > 80 ? "..." : ""))
+                        .font(.system(size: 11))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                        .lineLimit(2)
+                }
+
+                Spacer()
+
+                Button {
+                    withAnimation { replyingTo = nil }
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.4))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(Color.white.opacity(0.04))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal, 60)
+            .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+
     @ViewBuilder
     private var inputAreaContent: some View {
         // Offline queue badge + drain toast
@@ -1442,6 +1535,40 @@ struct ChatScreen: View {
     }
 
     @ViewBuilder
+    private var modelSuggestionView: some View {
+        if let suggestion = suggestedModel, suggestion.model != modelManager.selectedModel {
+            HStack(spacing: 6) {
+                Button {
+                    modelManager.selectedModel = suggestion.model
+                    modelManager.persistSelection()
+                    modelSuggestionDismissed = true
+                } label: {
+                    HStack(spacing: 4) {
+                        Text("\u{1F4A1} Try \(suggestion.model.displayName)")
+                            .fontWeight(.medium)
+                        Text("\u{2014} \(suggestion.reason)")
+                    }
+                    .font(.caption)
+                    .foregroundStyle(TrinityTheme.textMuted)
+                    .opacity(0.6)
+                }
+                .buttonStyle(.plain)
+                Spacer()
+                Button {
+                    modelSuggestionDismissed = true
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 8))
+                        .foregroundStyle(Color.white.opacity(0.2))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 60)
+            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+        }
+    }
+
+    @ViewBuilder
     private var sendButton: some View {
         Group {
             if client.isStreaming {
@@ -1611,6 +1738,10 @@ struct ChatScreen: View {
         var text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !client.isStreaming else { return }
 
+        // Reset input history navigation
+        historyIndex = -1
+        savedCurrentInput = ""
+
         // Slash command handling
         var effortLevelVar = effortLevel
         var chatModeVar = chatMode
@@ -1658,8 +1789,16 @@ struct ChatScreen: View {
         }
         attachedFiles.removeAll()
 
+        // Prepend reply quote if replying to a message
+        if let reply = replyingTo {
+            let quoted = reply.text.prefix(200)
+            text = "> \(quoted)\n\n\(text)"
+            replyingTo = nil
+        }
+
         lastSentText = text
         input = ""
+        modelSuggestionDismissed = false
         // Clear draft on send
         UserDefaults.standard.removeObject(forKey: "draft_\(threadID)")
         // Brief send confirmation
@@ -1984,10 +2123,23 @@ private struct NotificationReceiversModifier: ViewModifier {
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: .recallLastMessage)) { _ in
-                if input.isEmpty {
-                    if let lastUserMsg = thread?.messages.last(where: { $0.role == .user }) {
-                        input = lastUserMsg.text
-                    }
+                let history = inputHistory
+                guard !history.isEmpty else { return }
+                guard input.isEmpty || historyIndex >= 0 else { return }
+                if historyIndex == -1 { savedCurrentInput = input }
+                let nextIndex = min(historyIndex + 1, history.count - 1)
+                if nextIndex != historyIndex {
+                    historyIndex = nextIndex
+                    input = history[historyIndex]
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .navigateHistoryDown)) { _ in
+                guard historyIndex >= 0 else { return }
+                historyIndex -= 1
+                if historyIndex == -1 {
+                    input = savedCurrentInput
+                } else {
+                    input = inputHistory[historyIndex]
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: .escapeAction)) { _ in
@@ -2017,6 +2169,7 @@ private struct NotificationReceiversModifier: ViewModifier {
 private struct ChangeTrackersModifier: ViewModifier {
     @Binding var input: String
     @Binding var showDraftSaved: Bool
+    @Binding var modelSuggestionDismissed: Bool
     @Binding var taskItems: [TaskItem]
     @Binding var selectedPersona: Persona?
     @ObservedObject var store: ThreadStore
@@ -2025,6 +2178,7 @@ private struct ChangeTrackersModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .onChange(of: input) { _, newValue in
+                modelSuggestionDismissed = false
                 if let tid = store.activeThreadID {
                     UserDefaults.standard.set(newValue, forKey: "draft_\(tid)")
                 }
@@ -2074,6 +2228,7 @@ public extension Notification.Name {
     static let searchInThread = Notification.Name("searchInThread")
     static let exportThreadClipboard = Notification.Name("exportThreadClipboard")
     static let recallLastMessage = Notification.Name("recallLastMessage")
+    static let navigateHistoryDown = Notification.Name("navigateHistoryDown")
     static let escapeAction = Notification.Name("escapeAction")
 }
 
@@ -2541,6 +2696,7 @@ struct MessageRow: View {
     @ObservedObject var modelManager: ModelManager
     var isLastMessage: Bool = false
     var onComment: ((ChatMessage) -> Void)? = nil
+    var onReply: ((ChatMessage) -> Void)? = nil
     var searchHighlight: SearchHighlight = .none
 
     enum SearchHighlight {
@@ -2761,7 +2917,8 @@ struct MessageRow: View {
                                 client: client,
                                 modelManager: modelManager,
                                 isHovering: isHovering,
-                                onComment: onComment
+                                onComment: onComment,
+                                onReply: onReply
                             )
 
                             // Timestamp + model badge (always for last, hover for others)
@@ -2872,6 +3029,14 @@ struct MessageRow: View {
                     onComment(message)
                 } label: {
                     Label("Comment", systemImage: "text.bubble")
+                }
+            }
+
+            if let onReply {
+                Button {
+                    onReply(message)
+                } label: {
+                    Label("Reply", systemImage: "arrowshape.turn.up.left")
                 }
             }
 
@@ -3107,6 +3272,7 @@ struct MessageActionBar: View {
     @ObservedObject var modelManager: ModelManager
     let isHovering: Bool
     var onComment: ((ChatMessage) -> Void)? = nil
+    var onReply: ((ChatMessage) -> Void)? = nil
 
     @State private var isSpeaking = false
     @State private var didCopy = false
@@ -3210,6 +3376,10 @@ struct MessageActionBar: View {
 
                 actionButton("text.bubble", tooltip: "Comment") {
                     onComment?(message)
+                }
+
+                actionButton("arrowshape.turn.up.left", tooltip: "Reply") {
+                    onReply?(message)
                 }
 
                 actionButton(
