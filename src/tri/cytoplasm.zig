@@ -1962,6 +1962,10 @@ fn runDepsValidate(allocator: Allocator, args: []const []const u8) !void {
         for (missing_deps_list.items) |entry| {
             std.debug.print("    {s} → {s}\n", .{ entry.cell, entry.dep });
         }
+        // DUAL-WRITE: missing dependencies alert to hippocampus
+        const missing_msg = std.fmt.allocPrint(allocator, "missing dependencies: {d} cell(s) reference non-existent deps", .{missing_deps_list.items.len}) catch "";
+        defer allocator.free(missing_msg);
+        hippocampus.writeError(allocator, "cerebellum", missing_msg, "{}") catch {};
     }
 
     if (orphan_cells.items.len > 0) {
@@ -1969,6 +1973,10 @@ fn runDepsValidate(allocator: Allocator, args: []const []const u8) !void {
         for (orphan_cells.items) |cell_id| {
             std.debug.print("    {s}\n", .{cell_id});
         }
+        // DUAL-WRITE: orphan cells alert to hippocampus
+        const orphan_msg = std.fmt.allocPrint(allocator, "orphan cells: {d} cell(s) have no dependents", .{orphan_cells.items.len}) catch "";
+        defer allocator.free(orphan_msg);
+        hippocampus.writeError(allocator, "cerebellum", orphan_msg, "{}") catch {};
     }
 
     if (circular_deps.items.len > 0) {
@@ -6917,7 +6925,7 @@ fn runRegenerate(allocator: Allocator, args: []const []const u8) !void {
     }
 
     if (outdated_list.items.len == 0) {
-        std.debug.print("  {s}✓ No outdated cells to regenerate{ s}\n\n", .{ GREEN, RESET });
+        std.debug.print("  {s}✓ No outdated cells to regenerate{s}\n\n", .{ GREEN, RESET });
         return;
     }
 
