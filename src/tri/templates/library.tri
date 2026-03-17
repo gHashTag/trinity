@@ -1,0 +1,41 @@
+# Library Cell Template
+# Variables: {{CELL_ID}}, {{NAME}}, {{PATH}}, {{DESCRIPTION}}
+
+[cell]
+id = "{{CELL_ID}}"
+name = "{{NAME}}"
+version = "0.1.0"
+kind = "library"
+path = "{{PATH}}"
+status = "experimental"
+description = "{{DESCRIPTION}}"
+capabilities = ["exports"]
+files = 1
+tests = 1
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "library"
+
+[contributes]
+commands = []
+tri_subcommands = []
+exports = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "none"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[biology]
+system = "dna"
+organ = "library"
+
+[security]
+signed = false
