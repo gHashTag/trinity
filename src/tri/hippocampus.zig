@@ -19,6 +19,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
+const agent_roles = @import("agent_roles.zig");
+
 const print = std.debug.print;
 
 // ANSI colors
@@ -993,7 +995,7 @@ fn runMemoryDashboard(allocator: Allocator) !void {
 
     const now_ts: u64 = @intCast(std.time.timestamp());
 
-    print("\n{s}  Agent                Records   Last Active{s}\n", .{ BOLD, RESET });
+    print("\n{s}  Agent         ROLE     Records   Last Active{s}\n", .{ BOLD, RESET });
     print("{s}  ─────────────────────────────────────────────{s}\n", .{ DIM, RESET });
 
     var total_records: u32 = 0;
@@ -1022,8 +1024,11 @@ fn runMemoryDashboard(allocator: Allocator) !void {
             break :blk std.fmt.bufPrint(&age_buf, "{d}d ago", .{age_s / 86400}) catch "?";
         } else "never";
 
-        print("  {s}{s:<20}{s}  {d:>5}     {s}\n", .{
-            CYAN, entry.name, RESET, count, age_str,
+        const role = agent_roles.agentToRole(entry.name);
+        const role_sym = agent_roles.roleSymbol(role);
+        print("  {s}{s:<20}{s} {s} {d:>5}     {s}\n", .{
+            CYAN,     entry.name, RESET,
+            role_sym, count,      age_str,
         });
     }
 
