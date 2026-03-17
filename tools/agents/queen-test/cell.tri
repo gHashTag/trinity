@@ -1,0 +1,32 @@
+[cell]
+id = "trinity.agent.queen-test"
+name = "Queen Test Agent"
+version = "1.0.0"
+kind = "agent"
+path = "tools/agents/queen-test"
+status = "stable"
+description = "Build and test runner for Queen UI — compiles Swift package, analyzes errors, checks warnings"
+capabilities = ["testing", "swift", "queen-ui", "build"]
+owner = "agent:ralph"
+
+[tags]
+scope = "agent"
+type = "agent"
+
+[agent]
+definition = ".claude/agents/queen-test.md"
+model = "opus"
+max_turns = 15
+tools = "Read,Bash,Grep,Glob"
+isolation = ""
+
+[permissions]
+level = "L1"
+filesystem = "read"
+network = "none"
+process = "spawn"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
