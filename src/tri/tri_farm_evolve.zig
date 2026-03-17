@@ -167,6 +167,8 @@ const ServiceEntry = struct {
     stall_count: u8 = 0, // consecutive polls with unchanged step
     // I4: Checkpoint tracking
     last_ckpt_step: u32 = 0,
+    // O3: Timestamp of last successful log poll (ns since boot, from nanoTimestamp)
+    last_poll_ts: i128 = 0,
 
     fn svcId(self: *const ServiceEntry) []const u8 {
         return self.svc_id[0..self.svc_id_len];
@@ -1253,6 +1255,491 @@ pub fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *
     print("\n", .{});
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Parallel Metric Collection — 1 thread per account, ~8× speedup
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const MAX_UPDATES_PER_ACCOUNT = 32;
+
+const ServiceUpdate = struct {
+    svc_idx: u16, // index into state.services
+    current_step: u32,
+    current_ppl: f32,
+    current_loss: f32,
+    val_ppl: f32,
+    tok_per_sec: f32,
+    status: ServiceStatus,
+    stall_count: u8,
+    last_ckpt_step: u32,
+    last_poll_step: u32,
+    last_poll_ts: i128,
+    loss_history: [LOSS_HISTORY_SIZE]LossPoint,
+    loss_history_len: u8,
+};
+
+const AccountStatus = enum(u8) { ok, timeout, skipped, no_token };
+
+const AccountResult = struct {
+    updates: [MAX_UPDATES_PER_ACCOUNT]ServiceUpdate = undefined,
+    update_count: u32 = 0,
+    api_calls: u32 = 0,
+    status: AccountStatus = .skipped,
+    collected: u32 = 0,
+    skipped: u32 = 0,
+};
+
+const ThreadContext = struct {
+    allocator: Allocator, // per-thread arena allocator (no sharing)
+    acct: *const Account,
+    acct_idx: u8,
+    // Read-only snapshot of service state for matching
+    services: [*]const ServiceEntry,
+    service_count: usize,
+    result: *AccountResult,
+    progress: *std.atomic.Value(u32), // shared atomic progress counter
+};
+
+fn collectMetricsForAccountThread(ctx: *ThreadContext) void {
+    collectMetricsForAccount(ctx.allocator, ctx.acct, ctx.acct_idx, ctx.services, ctx.service_count, ctx.result, ctx.progress);
+}
+
+// O1: Batch entry for aliased GraphQL log query
+const BATCH_LOG_CHUNK = 10; // Max aliases per query (Railway safety limit)
+const BatchLogEntry = struct {
+    dep_id: []const u8,
+    svc_idx: u16,
+    log_limit: u32,
+    matched_svc: *const ServiceEntry,
+};
+
+/// O1: Build aliased GraphQL query for multiple deploymentLogs in one call.
+/// Returns: "query { d0: deploymentLogs(deploymentId:\"...\", limit:10) { timestamp message severity } d1: ... }"
+fn buildBatchLogQuery(allocator: Allocator, entries: []const BatchLogEntry) ![]const u8 {
+    var buf = std.ArrayListUnmanaged(u8){};
+    errdefer buf.deinit(allocator);
+
+    try buf.appendSlice(allocator, "query {");
+    for (entries, 0..) |entry, i| {
+        // Alias: d0, d1, d2, ...
+        try buf.writer(allocator).print(" d{d}: deploymentLogs(deploymentId:\\\"{s}\\\", limit:{d}) {{ timestamp message severity }}", .{
+            i, entry.dep_id, entry.log_limit,
+        });
+    }
+    try buf.appendSlice(allocator, " }");
+    return buf.toOwnedSlice(allocator);
+}
+
+/// O3: Check if service progressed enough to warrant re-polling.
+/// Skip if estimated step delta < 500 since last poll.
+fn shouldSkipByProgress(svc: *const ServiceEntry) bool {
+    if (svc.last_poll_ts == 0 or svc.tok_per_sec <= 0) return false;
+    const now: i128 = std.time.nanoTimestamp();
+    const elapsed_ns: i128 = now - svc.last_poll_ts;
+    if (elapsed_ns <= 0) return false;
+    // Convert to seconds as f64
+    const elapsed_s: f64 = @as(f64, @floatFromInt(@as(i64, @intCast(@min(elapsed_ns, std.math.maxInt(i64)))))) / 1_000_000_000.0;
+    // Rough estimate: tok/s * elapsed / ~tokens_per_step (~81 ctx)
+    const estimated_steps: f64 = @as(f64, @floatCast(svc.tok_per_sec)) * elapsed_s / 81.0;
+    return estimated_steps < 500.0;
+}
+
+fn collectMetricsForAccount(
+    allocator: Allocator,
+    acct: *const Account,
+    acct_idx: u8,
+    services: [*]const ServiceEntry,
+    service_count: usize,
+    result: *AccountResult,
+    progress: *std.atomic.Value(u32),
+) void {
+    var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch {
+        result.status = .no_token;
+        return;
+    };
+    defer api.deinit();
+
+    // Batch query: get all services with deployment IDs in one call
+    const batch_gql = "query($projectId: String!) { project(id: $projectId) { services { edges { node { id name deployments(first:1) { edges { node { id status } } } } } } } }";
+    const batch_vars = std.fmt.allocPrint(allocator, "{{\"projectId\":\"{s}\"}}", .{acct.project_id}) catch return;
+    defer allocator.free(batch_vars);
+
+    const batch_resp = api.query(batch_gql, batch_vars) catch {
+        result.status = .timeout;
+        return;
+    };
+    defer allocator.free(batch_resp);
+    result.api_calls += 1;
+
+    const batch_parsed = std.json.parseFromSlice(std.json.Value, allocator, batch_resp, .{}) catch return;
+    defer batch_parsed.deinit();
+
+    const edges = getEdgesFromProject(batch_parsed.value) orelse return;
+
+    result.status = .ok;
+
+    // O1: Phase 1 — Collect all (deployment_id, svc_idx, log_limit) tuples
+    var batch_entries: [MAX_UPDATES_PER_ACCOUNT]BatchLogEntry = undefined;
+    var batch_count: u32 = 0;
+
+    for (edges) |edge| {
+        const node = getJsonObject(edge, "node") orelse continue;
+        const svc_id = getJsonString(node, "id");
+        const svc_name = getJsonString(node, "name");
+
+        // Find matching service in snapshot
+        var svc_idx: ?u16 = null;
+        var svc: ?*const ServiceEntry = null;
+        for (services[0..service_count], 0..) |*s, si| {
+            if (s.account_idx != acct_idx) continue;
+            if (std.mem.eql(u8, s.svc_id[0..s.svc_id_len], svc_id)) {
+                svc_idx = @intCast(si);
+                svc = s;
+                break;
+            }
+        }
+        const matched_svc = svc orelse {
+            _ = svc_name;
+            continue;
+        };
+        const matched_idx = svc_idx.?;
+
+        if (matched_svc.status != .running and matched_svc.status != .stalled) continue;
+
+        // Skip stalled services that haven't changed in 2+ polls, re-poll every 3rd cycle
+        if (matched_svc.status == .stalled and matched_svc.stall_count >= 2 and matched_svc.stall_count % 3 != 0) {
+            continue;
+        }
+
+        // O3: Smart skip — if not enough progress since last poll, skip
+        if (shouldSkipByProgress(matched_svc)) {
+            _ = progress.fetchAdd(1, .monotonic);
+            continue;
+        }
+
+        // Extract deployment ID
+        var dep_id: ?[]const u8 = null;
+        if (getJsonObject(node, "deployments")) |deps| {
+            if (getJsonObject(deps, "edges")) |dep_edges| {
+                if (dep_edges == .array and dep_edges.array.items.len > 0) {
+                    const dep_node = getJsonObject(dep_edges.array.items[0], "node") orelse continue;
+                    const id = getJsonString(dep_node, "id");
+                    if (!std.mem.eql(u8, id, "?")) dep_id = id;
+                }
+            }
+        }
+
+        const did = dep_id orelse {
+            result.skipped += 1;
+            continue;
+        };
+
+        if (batch_count < MAX_UPDATES_PER_ACCOUNT) {
+            batch_entries[batch_count] = .{
+                .dep_id = did,
+                .svc_idx = matched_idx,
+                .log_limit = logLimitForService(matched_svc),
+                .matched_svc = matched_svc,
+            };
+            batch_count += 1;
+        }
+    }
+
+    if (batch_count == 0) return;
+
+    // O1: Phase 2 — Send batched aliased queries (chunks of BATCH_LOG_CHUNK)
+    var chunk_start: u32 = 0;
+    while (chunk_start < batch_count) {
+        const chunk_end = @min(chunk_start + BATCH_LOG_CHUNK, batch_count);
+        const chunk = batch_entries[chunk_start..chunk_end];
+
+        // Rate limit — one 200ms sleep per chunk (not per service)
+        std.Thread.sleep(200 * std.time.ns_per_ms);
+
+        // Build aliased query
+        const log_gql = buildBatchLogQuery(allocator, chunk) catch {
+            // Fallback: skip this chunk
+            for (chunk_start..chunk_end) |_| {
+                result.skipped += 1;
+                _ = progress.fetchAdd(1, .monotonic);
+            }
+            chunk_start = chunk_end;
+            continue;
+        };
+        defer allocator.free(log_gql);
+
+        // Send query with retry
+        var log_resp: []const u8 = undefined;
+        var got_logs = false;
+        var backoff_ms: u64 = 300;
+        for (0..3) |_| {
+            var log_api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch break;
+            const log_result = log_api.query(log_gql, null);
+            log_api.deinit();
+            if (log_result) |resp| {
+                log_resp = resp;
+                got_logs = true;
+                break;
+            } else |_| {
+                std.Thread.sleep(backoff_ms * std.time.ns_per_ms);
+                backoff_ms *= 2;
+            }
+        }
+
+        if (!got_logs) {
+            for (chunk_start..chunk_end) |_| {
+                result.skipped += 1;
+                _ = progress.fetchAdd(1, .monotonic);
+            }
+            chunk_start = chunk_end;
+            continue;
+        }
+        defer allocator.free(log_resp);
+
+        const log_parsed = std.json.parseFromSlice(std.json.Value, allocator, log_resp, .{}) catch {
+            for (chunk_start..chunk_end) |_| {
+                result.skipped += 1;
+                _ = progress.fetchAdd(1, .monotonic);
+            }
+            chunk_start = chunk_end;
+            continue;
+        };
+        defer log_parsed.deinit();
+
+        result.api_calls += 1;
+
+        // O1: Phase 3 — Parse each aliased result (d0, d1, d2, ...)
+        const resp_data = getJsonObject(log_parsed.value, "data") orelse {
+            for (chunk_start..chunk_end) |_| {
+                result.skipped += 1;
+                _ = progress.fetchAdd(1, .monotonic);
+            }
+            chunk_start = chunk_end;
+            continue;
+        };
+
+        for (chunk, 0..) |entry, ci| {
+            // Build alias key "d0", "d1", etc.
+            var key_buf: [8]u8 = undefined;
+            const key = std.fmt.bufPrint(&key_buf, "d{d}", .{ci}) catch continue;
+
+            // Get the aliased deploymentLogs array
+            const alias_val = getJsonObject(resp_data, key);
+            if (alias_val == null) {
+                result.skipped += 1;
+                _ = progress.fetchAdd(1, .monotonic);
+                continue;
+            }
+
+            // Wrap in {"data":{"deploymentLogs": ...}} structure for parseLogsForMetrics
+            // Instead, parse directly — alias_val is the array
+            var tmp_svc: ServiceEntry = entry.matched_svc.*;
+            parseBatchLogsForMetrics(&tmp_svc, alias_val.?);
+
+            // Store update
+            if (result.update_count < MAX_UPDATES_PER_ACCOUNT) {
+                result.updates[result.update_count] = .{
+                    .svc_idx = entry.svc_idx,
+                    .current_step = tmp_svc.current_step,
+                    .current_ppl = tmp_svc.current_ppl,
+                    .current_loss = tmp_svc.current_loss,
+                    .val_ppl = tmp_svc.val_ppl,
+                    .tok_per_sec = tmp_svc.tok_per_sec,
+                    .status = tmp_svc.status,
+                    .stall_count = tmp_svc.stall_count,
+                    .last_ckpt_step = tmp_svc.last_ckpt_step,
+                    .last_poll_step = tmp_svc.last_poll_step,
+                    .last_poll_ts = std.time.nanoTimestamp(),
+                    .loss_history = tmp_svc.loss_history,
+                    .loss_history_len = tmp_svc.loss_history_len,
+                };
+                result.update_count += 1;
+                if (tmp_svc.current_ppl < 998) {
+                    result.collected += 1;
+                } else {
+                    result.skipped += 1;
+                }
+            }
+            _ = progress.fetchAdd(1, .monotonic);
+        }
+
+        chunk_start = chunk_end;
+    }
+}
+
+/// Parallel metric collection — 1 thread per Railway account, ~8× speedup.
+/// Rate limits are per-token so parallel accounts don't conflict.
+/// Each thread gets its own arena allocator — no shared mutable allocator state.
+pub fn collectMetricsParallel(allocator: Allocator, state: *EvolutionState, api_calls: *u32) void {
+    var accounts_buf: [MAX_FARM_ACCOUNTS]Account = undefined;
+    const account_count = farm_accounts_mod.discoverAccounts(allocator, &accounts_buf);
+    defer farm_accounts_mod.deinitAccounts(allocator, &accounts_buf, account_count);
+
+    if (account_count == 0) {
+        print("  {s}⚠️  No accounts found{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    // Per-thread arena allocators (owned by main thread, outlive worker threads)
+    var arenas: [MAX_FARM_ACCOUNTS]std.heap.ArenaAllocator = undefined;
+    for (0..account_count) |i| {
+        arenas[i] = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    }
+    defer for (0..account_count) |i| {
+        arenas[i].deinit();
+    };
+
+    // Shared atomic progress counter for UX
+    var progress = std.atomic.Value(u32).init(0);
+
+    // Pre-allocate results and thread contexts
+    var results: [MAX_FARM_ACCOUNTS]AccountResult = undefined;
+    var contexts: [MAX_FARM_ACCOUNTS]ThreadContext = undefined;
+    for (0..MAX_FARM_ACCOUNTS) |i| {
+        results[i] = .{};
+    }
+
+    // Spawn threads — one per account
+    var threads: [MAX_FARM_ACCOUNTS]?std.Thread = undefined;
+    for (0..MAX_FARM_ACCOUNTS) |i| threads[i] = null;
+
+    // Count expected services for progress display
+    var expected: u32 = 0;
+    for (state.services[0..state.service_count]) |*svc| {
+        if (svc.status == .running or svc.status == .stalled) expected += 1;
+    }
+
+    for (accounts_buf[0..account_count], 0..) |*acct, ai| {
+        contexts[ai] = .{
+            .allocator = arenas[ai].allocator(),
+            .acct = acct,
+            .acct_idx = @intCast(ai),
+            .services = &state.services,
+            .service_count = state.service_count,
+            .result = &results[ai],
+            .progress = &progress,
+        };
+        threads[ai] = std.Thread.spawn(.{}, collectMetricsForAccountThread, .{&contexts[ai]}) catch {
+            // Fallback: run inline if thread spawn fails
+            collectMetricsForAccount(arenas[ai].allocator(), acct, @intCast(ai), &state.services, state.service_count, &results[ai], &progress);
+            continue;
+        };
+    }
+
+    // Progress polling while threads work (poll every 1s, print progress)
+    // We can't check thread liveness directly — poll until all joined
+    // Use a separate join loop with interleaved progress prints
+    {
+        var joined: [MAX_FARM_ACCOUNTS]bool = undefined;
+        for (0..MAX_FARM_ACCOUNTS) |i| joined[i] = false;
+        while (true) {
+            std.Thread.sleep(500 * std.time.ns_per_ms);
+            const done = progress.load(.monotonic);
+            print("\r  Collecting... {d}/{d} services  ", .{ done, expected });
+            // Try joining completed threads (non-blocking check via status)
+            for (0..account_count) |i| {
+                if (!joined[i]) {
+                    if (results[i].status != .skipped or results[i].update_count > 0 or results[i].api_calls > 0) {
+                        // Account thread likely finished — but we must still join
+                    }
+                }
+            }
+            // Check if all accounts have reported (non-.skipped means thread ran)
+            var accounts_reported: u32 = 0;
+            for (results[0..account_count]) |*res| {
+                if (res.status != .skipped) accounts_reported += 1;
+            }
+            if (accounts_reported >= account_count) break;
+            if (done >= expected) break;
+        }
+    }
+
+    // Join all threads (blocks until each completes)
+    for (threads[0..account_count]) |maybe_thread| {
+        if (maybe_thread) |thread| thread.join();
+    }
+    print("\r  Collecting... done.                    \n", .{});
+
+    // Merge results into state (single-threaded)
+    var total_collected: u32 = 0;
+    var total_skipped: u32 = 0;
+    for (results[0..account_count]) |*res| {
+        api_calls.* += res.api_calls;
+        total_collected += res.collected;
+        total_skipped += res.skipped;
+
+        for (res.updates[0..res.update_count]) |upd| {
+            const svc = &state.services[upd.svc_idx];
+            const prev_status = svc.status;
+
+            svc.current_step = upd.current_step;
+            svc.current_ppl = upd.current_ppl;
+            svc.current_loss = upd.current_loss;
+            svc.val_ppl = upd.val_ppl;
+            svc.tok_per_sec = upd.tok_per_sec;
+            svc.status = upd.status;
+            svc.stall_count = upd.stall_count;
+            svc.last_ckpt_step = upd.last_ckpt_step;
+            svc.last_poll_step = upd.last_poll_step;
+            svc.last_poll_ts = upd.last_poll_ts;
+            svc.loss_history = upd.loss_history;
+            svc.loss_history_len = upd.loss_history_len;
+
+            // Push health events on status change
+            if (svc.status != prev_status and svc.status != .running) {
+                const detail_str: []const u8 = switch (svc.status) {
+                    .stalled => "stalled: step unchanged 2+ polls",
+                    .diverged => "diverged: PPL>1000 at step>5K",
+                    .stuck => "stuck: step=0 for 2+ polls",
+                    else => "status changed",
+                };
+                state.addEvent(.err, svc.svcName(), detail_str);
+                notifyWsBus(.health, svc.svcName(), detail_str);
+                appendEventJsonl(svc.svcName(), detail_str, svc.current_step);
+            }
+
+            // Push checkpoint event
+            if (svc.last_ckpt_step > 0) {
+                var ckpt_detail: [64]u8 = undefined;
+                const ckpt_str = std.fmt.bufPrint(&ckpt_detail, "checkpoint at step {d}", .{svc.last_ckpt_step}) catch "checkpoint";
+                notifyWsBus(.rung, svc.svcName(), ckpt_str);
+            }
+
+            // Print progress
+            if (svc.current_ppl < 998) {
+                const status_icon: []const u8 = switch (svc.status) {
+                    .stalled => " [STALL]",
+                    .diverged => " [DIVERGED]",
+                    .stuck => " [STUCK]",
+                    else => "",
+                };
+                if (svc.val_ppl < 998) {
+                    print("  {s}  {s} step={d} PPL={d:.1} val={d:.1}{s}{s}\n", .{ DIM, svc.svcName(), svc.current_step, svc.current_ppl, svc.val_ppl, status_icon, RESET });
+                } else {
+                    print("  {s}  {s} step={d} PPL={d:.1}{s}{s}\n", .{ DIM, svc.svcName(), svc.current_step, svc.current_ppl, status_icon, RESET });
+                }
+            }
+        }
+    }
+
+    // Single saveState at the end
+    saveState(state.*) catch {};
+
+    // Print summary
+    print("  Collected: {d} | Skipped: {d}\n", .{ total_collected, total_skipped });
+    print("  Accounts: ", .{});
+    for (accounts_buf[0..account_count], 0..) |acct, ai| {
+        const icon: []const u8 = switch (results[ai].status) {
+            .ok => "✅",
+            .timeout => "⚠️ timeout",
+            .no_token => "❌ no token",
+            .skipped => "⏭️ skipped",
+        };
+        if (ai > 0) print(" | ", .{});
+        print("{s} {s}", .{ acct.name, icon });
+    }
+    print("\n", .{});
+}
+
 /// I6: Append event to JSONL file (append-only, never truncated)
 fn appendEventJsonl(svc_name: []const u8, detail: []const u8, step: u32) void {
     const file = std.fs.cwd().createFile(EVENTS_JSONL_PATH, .{ .truncate = false }) catch return;
@@ -1344,10 +1831,22 @@ fn extractDeploymentId(root: std.json.Value) ?[]const u8 {
     return id;
 }
 
+/// O1: Parse logs from a batch aliased response — logs_array is directly the array
+/// (not wrapped in {data: {deploymentLogs: ...}}).
+fn parseBatchLogsForMetrics(svc: *ServiceEntry, logs_array: std.json.Value) void {
+    if (logs_array != .array) return;
+    parseLogs(svc, logs_array);
+}
+
 fn parseLogsForMetrics(svc: *ServiceEntry, root: std.json.Value) void {
     const data = getJsonObject(root, "data") orelse return;
     const logs = getJsonObject(data, "deploymentLogs") orelse return;
     if (logs != .array) return;
+    parseLogs(svc, logs);
+}
+
+/// Shared log parsing logic for both single and batch responses.
+fn parseLogs(svc: *ServiceEntry, logs: std.json.Value) void {
 
     // Save previous step for stall detection (I2)
     svc.last_poll_step = svc.current_step;
@@ -1453,13 +1952,14 @@ fn parseCkptLine(line: []const u8) ?u32 {
 }
 
 /// I3: Determine log line limit based on service PPL/step
+/// O2: Reduced limits — 25/15/10 (was 100/50/20). Dashboard needs ≤20 lines for ring buffer.
 fn logLimitForService(svc: *const ServiceEntry) u32 {
     // Leaders (sub-10 PPL) get wider window
-    if (svc.current_ppl > 0 and svc.current_ppl < 10) return 100;
+    if (svc.current_ppl > 0 and svc.current_ppl < 10) return 25;
     // Near rung thresholds (within 5K of 50K or 100K) get medium window
-    if (svc.current_step > 45000 and svc.current_step < 55000) return 50;
-    if (svc.current_step > 95000 and svc.current_step < 105000) return 50;
-    return 20;
+    if (svc.current_step > 45000 and svc.current_step < 55000) return 15;
+    if (svc.current_step > 95000 and svc.current_step < 105000) return 15;
+    return 10;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
