@@ -1,4 +1,6 @@
 import Foundation
+import SwiftUI
+import AppKit
 
 /// Chat mode: determines how the message is routed
 enum ChatMode: String, CaseIterable {
@@ -26,6 +28,143 @@ enum ChatMode: String, CaseIterable {
         case .compare: return ""
         case .image: return ""
         }
+    }
+}
+
+/// Effort level: controls reasoning depth and max tokens
+enum EffortLevel: String, CaseIterable, Identifiable {
+    case low = "Low"
+    case medium = "Medium"
+    case high = "High"
+    case max = "Max"
+
+    var id: String { rawValue }
+
+    var icon: String {
+        switch self {
+        case .low: return "hare"
+        case .medium: return "figure.walk"
+        case .high: return "figure.run"
+        case .max: return "brain.head.profile"
+        }
+    }
+
+    var maxTokens: Int {
+        switch self {
+        case .low: return 1024
+        case .medium: return 4096
+        case .high: return 8192
+        case .max: return 16384
+        }
+    }
+
+    var thinkingBudget: Int? {
+        switch self {
+        case .low: return nil
+        case .medium: return nil
+        case .high: return 4096
+        case .max: return 16384
+        }
+    }
+
+    var systemSuffix: String {
+        switch self {
+        case .low: return "\nBe extremely brief. One-sentence answers. Skip details."
+        case .medium: return ""
+        case .high: return "\nBe thorough. Consider edge cases. Provide detailed analysis."
+        case .max: return "\nMaximum depth. Exhaustive analysis. Consider all angles. Show full reasoning."
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .low: return Color(hex: 0x8BE9FD)
+        case .medium: return Color(hex: 0x00FF88)
+        case .high: return Color(hex: 0xFFD700)
+        case .max: return Color(hex: 0xFF6B6B)
+        }
+    }
+}
+
+/// Slash command: quick actions from chat input
+enum SlashCommand: String, CaseIterable {
+    case effort = "/effort"
+    case model = "/model"
+    case compact = "/compact"
+    case cost = "/cost"
+    case clear = "/clear"
+    case export = "/export"
+    case mode = "/mode"
+    case fast = "/fast"
+    case branch = "/branch"
+    case help = "/help"
+
+    var description: String {
+        switch self {
+        case .effort: return "Set effort level (low/medium/high/max)"
+        case .model: return "Switch model"
+        case .compact: return "Summarize conversation to free context"
+        case .cost: return "Show session cost breakdown"
+        case .clear: return "Clear current thread"
+        case .export: return "Export thread as markdown"
+        case .mode: return "Switch chat mode"
+        case .fast: return "Toggle fast mode (Haiku)"
+        case .branch: return "Show current git branch"
+        case .help: return "Show available commands"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .effort: return "gauge.with.dots.needle.33percent"
+        case .model: return "cpu"
+        case .compact: return "arrow.down.right.and.arrow.up.left"
+        case .cost: return "dollarsign.circle"
+        case .clear: return "trash"
+        case .export: return "square.and.arrow.up"
+        case .mode: return "switch.2"
+        case .fast: return "hare"
+        case .branch: return "arrow.triangle.branch"
+        case .help: return "questionmark.circle"
+        }
+    }
+
+    /// Parse a slash command from input text. Returns (command, argument) or nil.
+    static func parse(_ input: String) -> (SlashCommand, String?)? {
+        let trimmed = input.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.hasPrefix("/") else { return nil }
+        let parts = trimmed.split(separator: " ", maxSplits: 1)
+        let cmdStr = String(parts[0]).lowercased()
+        let arg = parts.count > 1 ? String(parts[1]) : nil
+
+        for cmd in SlashCommand.allCases {
+            if cmd.rawValue == cmdStr { return (cmd, arg) }
+        }
+        return nil
+    }
+}
+
+/// Sound cue manager for audio feedback
+class SoundCueManager {
+    static let shared = SoundCueManager()
+
+    private var enabled: Bool {
+        UserDefaults.standard.string(forKey: "soundMode") != "silent"
+    }
+
+    func playSend() {
+        guard enabled else { return }
+        NSSound(named: "Tink")?.play()
+    }
+
+    func playReceive() {
+        guard enabled else { return }
+        NSSound(named: "Pop")?.play()
+    }
+
+    func playError() {
+        guard enabled else { return }
+        NSSound(named: "Basso")?.play()
     }
 }
 
@@ -138,6 +277,21 @@ class ChatClient: ObservableObject {
     @Published var isSlowResponse = false          // TTFB > 5s warning
     @Published var streamingThinkingText = ""
     @Published var proposedMemories: [MemoryEntry] = []
+    @Published var followUpSuggestions: [String] = []
+    @Published var showRejectionFeedback: (messageID: UUID, threadID: UUID)? = nil
+    @Published var activeToolCalls: [ToolCallStep] = []
+
+    struct ToolCallStep: Identifiable {
+        let id = UUID()
+        let name: String
+        let args: String
+        var status: ToolStatus = .running
+        let startTime = Date()
+
+        enum ToolStatus {
+            case running, success, error
+        }
+    }
 
     struct FailoverEvent: Equatable {
         let from: String
@@ -165,6 +319,7 @@ class ChatClient: ObservableObject {
     private var firstTokenTime: Date?
 
     var stylePreset: StylePreset = .concise
+    var effortLevel: EffortLevel = .medium
 
     private var systemPrompt: String {
         buildSystemPrompt()
@@ -225,6 +380,11 @@ class ChatClient: ObservableObject {
             prompt += stylePreset.systemSuffix
         }
 
+        // Inject effort level
+        if effortLevel != .medium {
+            prompt += effortLevel.systemSuffix
+        }
+
         // Inject saved memories (capped at 20)
         let store = ThreadStore()
         let memories = store.loadMemories()
@@ -250,6 +410,7 @@ class ChatClient: ObservableObject {
     /// Process all tool tags in AI response: [READ:], [RUN:], [GREP:]
     func processToolTags(_ text: String) -> String? {
         var results: [String] = []
+        clearToolCalls()
 
         // [READ:path/to/file] or [READ:file://path]
         let readPattern = #"\[READ:(?:file://)?([^\]]+)\]"#
@@ -258,11 +419,15 @@ class ChatClient: ObservableObject {
             for match in regex.matches(in: text, range: range) {
                 guard let r = Range(match.range(at: 1), in: text) else { continue }
                 let path = String(text[r])
+                let step = ToolCallStep(name: "READ", args: path)
+                activeToolCalls.append(step)
                 if let content = repo.readFile(path) {
                     results.append("**\(path)**\n```\n\(String(content.prefix(6000)))\n```")
                     TrinityContext.shared.recordAttachedFile(path, size: content.count)
+                    completeToolCall(step.id, success: true)
                 } else {
                     results.append("**\(path)**: file not found")
+                    completeToolCall(step.id, success: false)
                 }
             }
         }
@@ -274,7 +439,11 @@ class ChatClient: ObservableObject {
             for match in regex.matches(in: text, range: range) {
                 guard let r = Range(match.range(at: 1), in: text) else { continue }
                 let cmd = String(text[r])
+                let step = ToolCallStep(name: "RUN", args: cmd)
+                activeToolCalls.append(step)
                 let output = runTriCommand(cmd)
+                let success = !output.hasPrefix("[Error") && !output.hasPrefix("[Blocked")
+                completeToolCall(step.id, success: success)
                 results.append("**$ \(cmd)**\n```\n\(String(output.prefix(4000)))\n```")
             }
         }
@@ -286,8 +455,11 @@ class ChatClient: ObservableObject {
             for match in regex.matches(in: text, range: range) {
                 guard let r = Range(match.range(at: 1), in: text) else { continue }
                 let query = String(text[r])
+                let step = ToolCallStep(name: "GREP", args: query)
+                activeToolCalls.append(step)
                 let searchResults = repo.searchCode(query)
                 let formatted = searchResults.prefix(10).map { "\($0.file):\($0.line): \($0.content)" }.joined(separator: "\n")
+                completeToolCall(step.id, success: !searchResults.isEmpty)
                 results.append("**grep: \(query)**\n```\n\(formatted.isEmpty ? "No matches" : formatted)\n```")
             }
         }
@@ -434,6 +606,9 @@ class ChatClient: ObservableObject {
     }
 
     func send(_ text: String, threadID: UUID, store: ThreadStore, modelManager: ModelManager, mode: ChatMode = .trinity, modelOverride: AIModel? = nil) {
+        // Sound cue on send
+        SoundCueManager.shared.playSend()
+
         // Image mode — route to xAI image generation
         if mode == .image {
             sendImageGeneration(text, threadID: threadID, store: store, modelManager: modelManager)
@@ -544,6 +719,12 @@ class ChatClient: ObservableObject {
                         proposedMemories = extracted
                     }
                 }
+
+                // Generate follow-up suggestions based on response content
+                let suggestionsText = streamingText
+                Task { @MainActor in
+                    followUpSuggestions = Self.generateFollowUps(from: suggestionsText, userMessage: text)
+                }
             } catch {
                 if !Task.isCancelled {
                     // Streaming recovery: if we got partial text, try to continue
@@ -580,7 +761,250 @@ class ChatClient: ObservableObject {
             }
             store.saveThread(threadID)
             isStreaming = false
+            // Sound cue on receive
+            SoundCueManager.shared.playReceive()
         }
+    }
+
+    // MARK: - Auto-Compaction
+
+    /// Check if context needs compaction (>80% of 180K) and auto-summarize
+    func checkAutoCompaction(threadID: UUID, store: ThreadStore, modelManager: ModelManager) {
+        guard let thread = store.threads.first(where: { $0.id == threadID }) else { return }
+        let totalChars = thread.messages.reduce(0) { $0 + $1.text.count }
+        let estimatedTokens = totalChars / 4 + 200
+        let threshold = 144_000 // 80% of 180K
+
+        guard estimatedTokens > threshold else { return }
+
+        // Auto-compact: keep last 4 messages, summarize the rest
+        let messagesToKeep = 4
+        guard thread.messages.count > messagesToKeep + 2 else { return }
+
+        let toSummarize = thread.messages.prefix(thread.messages.count - messagesToKeep)
+        let summary = toSummarize.map { msg in
+            let prefix = msg.role == .user ? "User" : "Queen"
+            return "\(prefix): \(String(msg.text.prefix(150)))"
+        }.joined(separator: "\n")
+
+        let compactedMessage = ChatMessage(
+            role: .assistant,
+            text: "*[Context compacted: \(toSummarize.count) messages summarized]*\n\n\(String(summary.prefix(2000)))"
+        )
+
+        // Replace old messages with compact summary
+        let idx = store.threads.firstIndex(where: { $0.id == threadID })!
+        let kept = Array(store.threads[idx].messages.suffix(messagesToKeep))
+        store.threads[idx].messages = [compactedMessage] + kept
+        store.threads[idx].updatedAt = Date()
+        store.saveThread(threadID)
+    }
+
+    // MARK: - Slash Command Execution
+
+    /// Execute a slash command. Returns true if handled.
+    func executeSlashCommand(
+        _ input: String,
+        store: ThreadStore,
+        modelManager: ModelManager,
+        effortBinding: inout EffortLevel,
+        chatModeBinding: inout ChatMode,
+        onResult: @escaping (String) -> Void
+    ) -> Bool {
+        guard let (cmd, arg) = SlashCommand.parse(input) else { return false }
+
+        switch cmd {
+        case .effort:
+            if let argStr = arg?.lowercased() {
+                if let level = EffortLevel.allCases.first(where: { $0.rawValue.lowercased() == argStr }) {
+                    effortLevel = level
+                    effortBinding = level
+                    onResult("Effort set to \(level.rawValue)")
+                } else {
+                    onResult("Unknown effort level. Use: low, medium, high, max")
+                }
+            } else {
+                onResult("Current effort: \(effortLevel.rawValue). Use: /effort low|medium|high|max")
+            }
+        case .model:
+            if let argStr = arg {
+                if let model = modelManager.availableModels.first(where: {
+                    $0.displayName.lowercased().contains(argStr.lowercased()) ||
+                    $0.id.lowercased().contains(argStr.lowercased())
+                }) {
+                    modelManager.selectedModel = model
+                    modelManager.persistSelection()
+                    onResult("Model switched to \(model.displayName)")
+                } else {
+                    let available = modelManager.availableModels.map(\.displayName).joined(separator: ", ")
+                    onResult("Unknown model. Available: \(available)")
+                }
+            } else {
+                onResult("Current: \(modelManager.selectedModel.displayName). Use: /model <name>")
+            }
+        case .compact:
+            if let threadID = store.activeThreadID {
+                let before = store.activeThread()?.messages.count ?? 0
+                checkAutoCompaction(threadID: threadID, store: store, modelManager: modelManager)
+                let after = store.activeThread()?.messages.count ?? 0
+                if before != after {
+                    onResult("Compacted \(before - after) messages")
+                } else {
+                    onResult("Context is within limits, no compaction needed")
+                }
+            }
+        case .cost:
+            let cost = NetworkLog.shared.todayCostEstimate()
+            onResult(String(format: "Session cost: $%.3f", cost))
+        case .clear:
+            store.newThread()
+            onResult("New thread created")
+        case .export:
+            if let threadID = store.activeThreadID,
+               let md = store.exportAsMarkdown(threadID) {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(md, forType: NSPasteboard.PasteboardType.string)
+                onResult("Thread exported to clipboard")
+            } else {
+                onResult("No thread to export")
+            }
+        case .mode:
+            if let argStr = arg?.lowercased() {
+                if let mode = ChatMode.allCases.first(where: { $0.rawValue.lowercased() == argStr }) {
+                    chatModeBinding = mode
+                    onResult("Mode switched to \(mode.rawValue)")
+                } else {
+                    onResult("Unknown mode. Use: search, trinity, reason, compare, image")
+                }
+            } else {
+                onResult("Current: \(chatModeBinding.rawValue). Use: /mode <name>")
+            }
+        case .fast:
+            if let haiku = modelManager.availableModels.first(where: { $0.id.contains("haiku") }) {
+                modelManager.selectedModel = haiku
+                modelManager.persistSelection()
+                effortLevel = .low
+                effortBinding = .low
+                onResult("Fast mode: \(haiku.displayName) + Low effort")
+            } else {
+                onResult("No fast model available")
+            }
+        case .branch:
+            let result = RepoContext().currentBranch()
+            onResult("Branch: \(result)")
+        case .help:
+            let cmds = SlashCommand.allCases.map { "\($0.rawValue) — \($0.description)" }.joined(separator: "\n")
+            onResult("Available commands:\n\(cmds)")
+        }
+        return true
+    }
+
+    // MARK: - Follow-up Suggestions
+
+    /// Generate contextual follow-up suggestions from response
+    static func generateFollowUps(from response: String, userMessage: String) -> [String] {
+        var suggestions: [String] = []
+        let lower = response.lowercased()
+
+        // Error-related suggestions
+        if lower.contains("error") || lower.contains("failed") || lower.contains("broken") {
+            suggestions.append("Fix this error")
+            suggestions.append("Show the full error log")
+        }
+
+        // Code-related suggestions
+        if lower.contains("```") {
+            suggestions.append("Explain this code")
+            if lower.contains("test") {
+                suggestions.append("Run the tests")
+            } else {
+                suggestions.append("Write tests for this")
+            }
+        }
+
+        // Build/deploy related
+        if lower.contains("build") || lower.contains("compile") {
+            suggestions.append("Build and check for warnings")
+        }
+        if lower.contains("deploy") || lower.contains("railway") {
+            suggestions.append("Check deploy status")
+        }
+
+        // PPL/training related
+        if lower.contains("ppl") || lower.contains("loss") || lower.contains("training") {
+            suggestions.append("Show training dashboard")
+            suggestions.append("Compare with best run")
+        }
+
+        // Issue/PR related
+        if lower.contains("issue") || lower.contains("pr ") || lower.contains("pull request") {
+            suggestions.append("Create an issue for this")
+        }
+
+        // Generic follow-ups if nothing specific matched
+        if suggestions.isEmpty {
+            suggestions.append("Tell me more")
+            suggestions.append("What should I do next?")
+        }
+
+        return Array(suggestions.prefix(3))
+    }
+
+    // MARK: - Rejection Feedback
+
+    /// Resend with user correction after dislike
+    func resendWithFeedback(
+        _ feedback: String,
+        originalMessageID: UUID,
+        threadID: UUID,
+        store: ThreadStore,
+        modelManager: ModelManager
+    ) {
+        guard !isStreaming else { return }
+        guard let thread = store.threads.first(where: { $0.id == threadID }) else { return }
+
+        // Find the original assistant message and the user message before it
+        guard let msgIdx = thread.messages.firstIndex(where: { $0.id == originalMessageID }) else { return }
+        let originalResponse = thread.messages[msgIdx].text
+        let userMsg = thread.messages.prefix(msgIdx).last(where: { $0.role == .user })
+        let userText = userMsg?.text ?? ""
+
+        // Construct a correction prompt
+        let correctionPrompt = """
+        The user asked: "\(String(userText.prefix(500)))"
+        Your previous response was not satisfactory. The user says: "\(feedback)"
+        Please provide a better response.
+        """
+
+        // Remove old response and add correction
+        let tIdx = store.threads.firstIndex(where: { $0.id == threadID })!
+        if msgIdx < store.threads[tIdx].messages.count {
+            store.threads[tIdx].messages.removeSubrange(msgIdx...)
+        }
+        store.threads[tIdx].updatedAt = Date()
+        store.saveThread(threadID)
+
+        // Send correction as new message
+        send(correctionPrompt, threadID: threadID, store: store, modelManager: modelManager)
+        showRejectionFeedback = nil
+    }
+
+    // MARK: - Tool Call Tracking
+
+    /// Record a tool call step (for timeline display)
+    func recordToolCall(name: String, args: String) {
+        let step = ToolCallStep(name: name, args: args)
+        activeToolCalls.append(step)
+    }
+
+    func completeToolCall(_ id: UUID, success: Bool) {
+        if let idx = activeToolCalls.firstIndex(where: { $0.id == id }) {
+            activeToolCalls[idx].status = success ? .success : .error
+        }
+    }
+
+    func clearToolCalls() {
+        activeToolCalls.removeAll()
     }
 
     // MARK: - Image Generation (xAI Grok Aurora)
@@ -1067,16 +1491,25 @@ class ChatClient: ObservableObject {
         retryCount: Int = 0,
         triedModels: Set<String> = []
     ) async throws {
+        let effectiveMaxTokens = mode == .reason ? 16384 : effortLevel.maxTokens
         var body: [String: Any] = [
             "model": model.id,
-            "max_tokens": mode == .reason ? 16384 : 4096,
+            "max_tokens": effectiveMaxTokens,
             "stream": true,
             "system": systemPrompt + mode.systemSuffix,
             "messages": history
         ]
-        // Enable extended thinking for reason mode (Anthropic API)
-        if mode == .reason && model.provider == .anthropic {
-            body["thinking"] = ["type": "enabled", "budget_tokens": 8192]
+        // Enable extended thinking for reason mode or high/max effort (Anthropic API)
+        if model.provider == .anthropic {
+            let thinkingBudget: Int?
+            if mode == .reason {
+                thinkingBudget = 8192
+            } else {
+                thinkingBudget = effortLevel.thinkingBudget
+            }
+            if let budget = thinkingBudget {
+                body["thinking"] = ["type": "enabled", "budget_tokens": budget]
+            }
         }
         let bodyData = try JSONSerialization.data(withJSONObject: body)
 

@@ -380,4 +380,16 @@ final class ThreadStore: ObservableObject {
             try? data.write(to: url, options: .atomic)
         }
     }
+
+    /// Auto-cleanup: delete threads older than N days (default 30)
+    func cleanupOldThreads() {
+        let days = UserDefaults.standard.integer(forKey: "sessionCleanupDays")
+        let maxAge = days > 0 ? days : 30
+        let cutoff = Calendar.current.date(byAdding: .day, value: -maxAge, to: Date()) ?? Date()
+
+        let old = threads.filter { $0.updatedAt < cutoff && !$0.isPinned }
+        for thread in old {
+            delete(thread)
+        }
+    }
 }

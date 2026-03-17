@@ -6,6 +6,8 @@ struct SettingsScreen: View {
     @AppStorage("refreshInterval") private var refreshInterval = 5.0
     @AppStorage("trinityPath") private var trinityPath = ""
     @AppStorage("soundMode") private var soundMode = "full"
+    @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend = false
+    @AppStorage("sessionCleanupDays") private var sessionCleanupDays = 30
 
     @State private var godMode = false
     @State private var maxAutoLevel = 1
@@ -84,6 +86,45 @@ struct SettingsScreen: View {
                     }
 
                     Text("Full = sounds + notifications | Notifications = banners only | Silent = nothing")
+                        .font(.caption2)
+                        .foregroundStyle(TrinityTheme.textMuted)
+                }
+                .padding()
+                .background(TrinityTheme.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .padding(.horizontal)
+
+                // Input behavior
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("INPUT")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(TrinityTheme.accent)
+
+                    Toggle(isOn: $useCtrlEnterToSend) {
+                        VStack(alignment: .leading) {
+                            Text("Ctrl+Enter to send")
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(TrinityTheme.textPrimary)
+                            Text(useCtrlEnterToSend
+                                ? "Enter = new line, Ctrl+Enter = send"
+                                : "Enter = send, Shift+Enter = new line")
+                                .font(.caption2)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                        }
+                    }
+
+                    HStack {
+                        Text("Session Cleanup")
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .frame(width: 120, alignment: .leading)
+                        Stepper(value: $sessionCleanupDays, in: 7...365, step: 7) {
+                            Text("\(sessionCleanupDays) days")
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(TrinityTheme.textPrimary)
+                        }
+                    }
+                    Text("Threads older than \(sessionCleanupDays) days are auto-deleted")
                         .font(.caption2)
                         .foregroundStyle(TrinityTheme.textMuted)
                 }
