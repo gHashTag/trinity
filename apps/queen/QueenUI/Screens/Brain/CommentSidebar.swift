@@ -136,16 +136,26 @@ struct CommentSidebar: View {
 
 struct CommentRow: View {
     let comment: ChatMessage
+    var onRetry: (() -> Void)? = nil
+
+    private var hasError: Bool {
+        comment.role == .assistant &&
+        (comment.text.contains("[Error") || comment.text.contains("[API Error"))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(spacing: 6) {
                 Circle()
-                    .fill(comment.role == .user ? Color.white.opacity(0.3) : TrinityTheme.accent.opacity(0.5))
+                    .fill(comment.role == .user ? Color.white.opacity(0.3) :
+                          hasError ? TrinityTheme.statusError.opacity(0.5) :
+                          TrinityTheme.accent.opacity(0.5))
                     .frame(width: 6, height: 6)
                 Text(comment.role == .user ? "You" : "Queen")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(comment.role == .user ? Color.white.opacity(0.5) : TrinityTheme.accent)
+                    .foregroundStyle(comment.role == .user ? Color.white.opacity(0.5) :
+                                    hasError ? TrinityTheme.statusError :
+                                    TrinityTheme.accent)
             }
 
             if comment.text.isEmpty {
@@ -154,15 +164,32 @@ struct CommentRow: View {
             } else if let attributed = try? AttributedString(markdown: comment.text) {
                 Text(attributed)
                     .font(.system(size: 13))
-                    .foregroundStyle(Color(hex: 0xD1D1D1))
+                    .foregroundStyle(hasError ? TrinityTheme.statusError : Color(hex: 0xD1D1D1))
                     .textSelection(.enabled)
                     .lineSpacing(2)
             } else {
                 Text(comment.text)
                     .font(.system(size: 13))
-                    .foregroundStyle(Color(hex: 0xD1D1D1))
+                    .foregroundStyle(hasError ? TrinityTheme.statusError : Color(hex: 0xD1D1D1))
                     .textSelection(.enabled)
                     .lineSpacing(2)
+            }
+
+            // Retry button for error comments
+            if hasError, let retry = onRetry {
+                Button {
+                    retry()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 9))
+                        Text("Retry")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundStyle(TrinityTheme.statusError)
+                }
+                .buttonStyle(.plain)
+                .padding(.top, 2)
             }
         }
         .padding(.horizontal, 16)

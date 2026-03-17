@@ -6,6 +6,7 @@ enum AIProvider: String, CaseIterable, Identifiable, Codable {
     case zai = "z.ai"
     case perplexity = "Perplexity"
     case xai = "xAI"
+    case ollama = "Ollama"
 
     var id: String { rawValue }
 }
@@ -41,6 +42,7 @@ struct AIModel: Identifiable, Codable, Equatable, Hashable {
         case "z.ai":       (inPrice, outPrice) = (1.0, 2.0)    // GLM proxy
         case "Perplexity": (inPrice, outPrice) = (3.0, 15.0)   // Sonar Pro
         case "xAI":        (inPrice, outPrice) = (3.0, 15.0)   // Grok 3
+        case "Ollama":     (inPrice, outPrice) = (0.0, 0.0)    // Local — free
         default:           (inPrice, outPrice) = (3.0, 15.0)
         }
         return (Double(inputTokens) * inPrice + Double(outputTokens) * outPrice) / 1_000_000.0
@@ -71,8 +73,19 @@ class ModelManager: ObservableObject {
                 if loaded["PERPLEXITY_API_KEY"] != nil { models.append(model) }
             case .xai:
                 if loaded["XAI_API_KEY"] != nil { models.append(model) }
+            case .ollama:
+                break // handled below
             }
         }
+
+        // Add Ollama models if enabled
+        if UserDefaults.standard.bool(forKey: "ollamaEnabled"),
+           let ollamaNames = UserDefaults.standard.stringArray(forKey: "ollamaModels") {
+            for name in ollamaNames {
+                models.append(AIModel(id: "ollama:\(name)", displayName: name, provider: .ollama))
+            }
+        }
+
         self.availableModels = models
 
         // Restore saved selection or pick first available
@@ -101,6 +114,8 @@ class ModelManager: ObservableObject {
             return env["PERPLEXITY_API_KEY"]
         case .xai:
             return env["XAI_API_KEY"]
+        case .ollama:
+            return "ollama" // No key needed, return non-nil to pass checks
         }
     }
 
@@ -117,6 +132,9 @@ class ModelManager: ObservableObject {
                 return "https://api.x.ai/v1/images/generations"
             }
             return "https://api.x.ai/v1/chat/completions"
+        case .ollama:
+            let base = UserDefaults.standard.string(forKey: "ollamaURL") ?? "http://localhost:11434"
+            return base + "/api/chat"
         }
     }
 
@@ -134,10 +152,43 @@ class ModelManager: ObservableObject {
             request.setValue("2023-06-01", forHTTPHeaderField: "anthropic-version")
         case .perplexity, .xai:
             request.setValue("Bearer \(key)", forHTTPHeaderField: "Authorization")
+        case .ollama:
+            break // No auth needed for local Ollama
         }
 
         request.httpBody = body
         return request
+    }
+
+    /// Ollama model name (strip "ollama:" prefix)
+    func ollamaModelName(_ model: AIModel) -> String {
+        if model.id.hasPrefix("ollama:") {
+            return String(model.id.dropFirst(7))
+        }
+        return model.id
+    }
+
+    /// Refresh Ollama model list dynamically
+    func refreshOllamaModels() {
+        guard UserDefaults.standard.bool(forKey: "ollamaEnabled") else { return }
+        let base = UserDefaults.standard.string(forKey: "ollamaURL") ?? "http://localhost:11434"
+        guard let url = URL(string: base + "/api/tags") else { return }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 5
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, _ in
+            guard let data,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let models = json["models"] as? [[String: Any]] else { return }
+            let names = models.compactMap { $0["name"] as? String }
+            UserDefaults.standard.set(names, forKey: "ollamaModels")
+            DispatchQueue.main.async {
+                // Remove old Ollama models and add fresh ones
+                self?.availableModels.removeAll { $0.provider == .ollama }
+                for name in names {
+                    self?.availableModels.append(AIModel(id: "ollama:\(name)", displayName: name, provider: .ollama))
+                }
+            }
+        }.resume()
     }
 
     var hasAnyKey: Bool { !availableModels.isEmpty }

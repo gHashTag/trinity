@@ -459,10 +459,39 @@ struct TableBlockView: View {
 
     private var colCount: Int { rows.map(\.count).max() ?? 0 }
 
+    /// Convert table to plain text for clipboard
+    private var tableAsText: String {
+        rows.map { row in
+            row.joined(separator: " | ")
+        }.joined(separator: "\n")
+    }
+
     var body: some View {
         if rows.isEmpty || colCount == 0 {
             EmptyView()
         } else {
+            VStack(spacing: 0) {
+            // Copy button header
+            HStack {
+                Text("table")
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.3))
+                Spacer()
+                Button {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(tableAsText, forType: NSPasteboard.PasteboardType.string)
+                } label: {
+                    Image(systemName: "doc.on.doc")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+                .buttonStyle(.plain)
+                .help("Copy table")
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 4)
+            .background(Color.white.opacity(0.04))
+
             ScrollView(.horizontal, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(rows.enumerated()), id: \.offset) { rowIdx, row in
@@ -486,7 +515,8 @@ struct TableBlockView: View {
                         }
                     }
                 }
-            }
+            } // ScrollView
+            } // VStack
             .background(Color(hex: 0x0A0A0A))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
@@ -758,13 +788,44 @@ struct ImageBlockView: View {
                 .background(Color(hex: 0x1A1A1A))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
-                // Failed to load — show URL
-                HStack(spacing: 8) {
-                    Image(systemName: "photo.badge.exclamationmark")
-                        .foregroundStyle(TrinityTheme.statusError)
-                    Text(alt.isEmpty ? "Image failed to load" : alt)
-                        .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                // Failed to load — show URL + retry
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "photo.badge.exclamationmark")
+                            .foregroundStyle(TrinityTheme.statusError)
+                        Text(alt.isEmpty ? "Image failed to load" : alt)
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                    }
+                    HStack(spacing: 8) {
+                        Button {
+                            isLoading = true
+                            Task {
+                                image = await downloadImage(from: url)
+                                isLoading = false
+                            }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 10))
+                                Text("Retry")
+                                    .font(.system(size: 10, weight: .bold))
+                            }
+                            .foregroundStyle(TrinityTheme.accent)
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            if let imgURL = URL(string: url) {
+                                NSWorkspace.shared.open(imgURL)
+                            }
+                        } label: {
+                            Text("Open URL")
+                                .font(.system(size: 10))
+                                .foregroundStyle(Color.white.opacity(0.4))
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
                 .padding()
                 .background(Color(hex: 0x1A1A1A))

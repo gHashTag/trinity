@@ -8,8 +8,13 @@ struct SettingsScreen: View {
     @AppStorage("soundMode") private var soundMode = "full"
     @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend = false
     @AppStorage("sessionCleanupDays") private var sessionCleanupDays = 30
+    @AppStorage("chatFontSize") private var chatFontSize = 15
+    @AppStorage("ollamaURL") private var ollamaURL = "http://localhost:11434"
+    @AppStorage("ollamaEnabled") private var ollamaEnabled = false
 
     @State private var godMode = false
+    @State private var ollamaModels: [String] = []
+    @State private var ollamaStatus = ""
     @State private var maxAutoLevel = 1
     @State private var requireApproval = true
     @State private var intervalSec = 600
@@ -88,6 +93,114 @@ struct SettingsScreen: View {
                     Text("Full = sounds + notifications | Notifications = banners only | Silent = nothing")
                         .font(.caption2)
                         .foregroundStyle(TrinityTheme.textMuted)
+                }
+                .padding()
+                .background(TrinityTheme.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .padding(.horizontal)
+
+                // Font Size / Chat Density
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("CHAT DISPLAY")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(TrinityTheme.accent)
+
+                    HStack {
+                        Text("Font Size")
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .frame(width: 100, alignment: .leading)
+                        Slider(value: Binding(
+                            get: { Double(chatFontSize) },
+                            set: { chatFontSize = Int($0) }
+                        ), in: 12...22, step: 1)
+                        Text("\(chatFontSize)pt")
+                            .font(.body.monospacedDigit())
+                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .frame(width: 40)
+                    }
+
+                    Text("The quick brown fox jumps over the lazy dog")
+                        .font(.system(size: CGFloat(chatFontSize)))
+                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .padding(8)
+                        .background(Color.white.opacity(0.04))
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                }
+                .padding()
+                .background(TrinityTheme.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .padding(.horizontal)
+
+                // Ollama (Local Models)
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("OLLAMA (LOCAL MODELS)")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(TrinityTheme.purple)
+
+                    Toggle(isOn: $ollamaEnabled) {
+                        VStack(alignment: .leading) {
+                            Text("Enable Ollama")
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(TrinityTheme.textPrimary)
+                            Text("Connect to local Ollama instance for offline inference")
+                                .font(.caption2)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                        }
+                    }
+
+                    HStack {
+                        Text("URL")
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .frame(width: 100, alignment: .leading)
+                        TextField("http://localhost:11434", text: $ollamaURL)
+                            .textFieldStyle(.roundedBorder)
+                            .font(.body.monospaced())
+                    }
+
+                    HStack {
+                        Button {
+                            detectOllamaModels()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 11))
+                                Text("Detect Models")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(TrinityTheme.purple)
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+
+                        if !ollamaStatus.isEmpty {
+                            Text(ollamaStatus)
+                                .font(.caption)
+                                .foregroundStyle(ollamaStatus.contains("Found") ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                        }
+                    }
+
+                    if !ollamaModels.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Available Models:")
+                                .font(.caption)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                            ForEach(ollamaModels, id: \.self) { model in
+                                HStack(spacing: 6) {
+                                    Image(systemName: "cpu")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(TrinityTheme.purple)
+                                    Text(model)
+                                        .font(.caption.monospaced())
+                                        .foregroundStyle(TrinityTheme.textPrimary)
+                                }
+                            }
+                        }
+                    }
                 }
                 .padding()
                 .background(TrinityTheme.bgCard)
@@ -312,6 +425,37 @@ struct SettingsScreen: View {
         maxAutoLevel = json["max_auto_level"] as? Int ?? 1
         requireApproval = json["require_human_approval"] as? Bool ?? true
         intervalSec = json["interval_sec"] as? Int ?? 600
+    }
+
+    private func detectOllamaModels() {
+        ollamaStatus = "Connecting..."
+        ollamaModels = []
+        let urlString = ollamaURL.trimmingCharacters(in: .whitespaces) + "/api/tags"
+        guard let url = URL(string: urlString) else {
+            ollamaStatus = "Invalid URL"
+            return
+        }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 5
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            DispatchQueue.main.async {
+                if let error {
+                    ollamaStatus = "Error: \(error.localizedDescription)"
+                    return
+                }
+                guard let data,
+                      let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                      let models = json["models"] as? [[String: Any]] else {
+                    ollamaStatus = "No models found"
+                    return
+                }
+                let names = models.compactMap { $0["name"] as? String }
+                ollamaModels = names
+                ollamaStatus = "Found \(names.count) model\(names.count == 1 ? "" : "s")"
+                // Save discovered models for ModelProvider
+                UserDefaults.standard.set(names, forKey: "ollamaModels")
+            }
+        }.resume()
     }
 
     private func saveQueenConfig() {

@@ -19,6 +19,21 @@ struct TrinityTheme {
     static let cardCorner: CGFloat = 12
     static let spacing: CGFloat = 16
 
+    // MARK: - User-controlled font size (Settings slider)
+    /// User-adjustable chat font size (12-22pt), persisted in UserDefaults
+    static var chatFontSize: CGFloat {
+        let stored = UserDefaults.standard.integer(forKey: "chatFontSize")
+        return stored > 0 ? CGFloat(stored) : 15
+    }
+
+    static var chatCaptionSize: CGFloat {
+        return max(chatFontSize - 4, 9)
+    }
+
+    static var chatHeadingSize: CGFloat {
+        return chatFontSize + 5
+    }
+
     // MARK: - Dynamic Type Sizes (Accessibility)
     /// Base font sizes that scale with system Dynamic Type setting
     static func bodySize(_ sizeCategory: DynamicTypeSize = .medium) -> CGFloat {

@@ -186,12 +186,21 @@ struct ContextInspector: View {
             process.arguments = ["log", "--oneline", "-5"]
             process.standardOutput = pipe
             process.standardError = FileHandle.nullDevice
-            try? process.run()
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            process.waitUntilExit()
-            let output = String(data: data, encoding: .utf8) ?? ""
-            await MainActor.run {
-                recentCommits = output.components(separatedBy: "\n").filter { !$0.isEmpty }
+            do {
+                try process.run()
+                let data = pipe.fileHandleForReading.readDataToEndOfFile()
+                process.waitUntilExit()
+                guard process.terminationStatus == 0 else {
+                    await MainActor.run { recentCommits = ["(git exited with \(process.terminationStatus))"] }
+                    return
+                }
+                let output = String(data: data, encoding: .utf8) ?? ""
+                await MainActor.run {
+                    recentCommits = output.components(separatedBy: "\n").filter { !$0.isEmpty }
+                    if recentCommits.isEmpty { recentCommits = ["(no commits)"] }
+                }
+            } catch {
+                await MainActor.run { recentCommits = ["(git not available)"] }
             }
         }
     }
