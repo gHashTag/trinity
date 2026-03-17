@@ -720,7 +720,7 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
         if (farm_evolve.loadState(allocator)) |state| {
             var mutable_state = state;
             var api_calls: u32 = 0;
-            farm_evolve.collectMetrics(allocator, &mutable_state, &api_calls);
+            farm_evolve.collectMetricsParallel(allocator, &mutable_state, &api_calls);
             farm_evolve.saveState(mutable_state) catch {};
             print(" {s}done ({d} API calls){s}\n\n", .{ GREEN, api_calls, RESET });
         } else |_| {
