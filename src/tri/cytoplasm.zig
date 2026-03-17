@@ -189,6 +189,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "regenerate")) return runRegenerate(allocator, rest);
     if (std.mem.eql(u8, sub, "search")) return runSearch(allocator, rest);
     if (std.mem.eql(u8, sub, "find")) return runFind(allocator, rest);
+    if (std.mem.eql(u8, sub, "templates")) return runTemplates(allocator, rest);
 
     printHelp();
 }
@@ -204,6 +205,7 @@ fn printHelp() void {
     std.debug.print("  {s}info <id>{s}         Show cell details (tags, deps, health)\n", .{ GREEN, RESET });
     std.debug.print("  {s}init <id>{s}         Scaffold a new cell (cell.tri + src + test)\n", .{ GREEN, RESET });
     std.debug.print("  {s}init <id> --with-test{s}  Also create <name>.test.zig\n", .{ GREEN, RESET });
+    std.debug.print("  {s}init <id> --template <name>{s}  Use template (see: tri cell templates)\n", .{ GREEN, RESET });
     std.debug.print("  {s}check{s}             Validate all manifests (dynamic discovery)\n", .{ GREEN, RESET });
     std.debug.print("  {s}check --sync{s}      Validate + regenerate registry.json\n", .{ GREEN, RESET });
     std.debug.print("  {s}check --dry-run{s}   Show sync changes without writing\n", .{ GREEN, RESET });
@@ -255,6 +257,7 @@ fn printHelp() void {
     std.debug.print("  {s}search <query>{s}     Fuzzy search by name/id/description\n", .{ GREEN, RESET });
     std.debug.print("  {s}find --capability X{s}  Find cells with specific capability\n", .{ GREEN, RESET });
     std.debug.print("  {s}list --tag X:Y{s}     Filter by tags (scope:brain, type:library)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}templates{s}          List available cell templates\n", .{ GREEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -914,11 +917,12 @@ fn runInfo(allocator: Allocator, args: []const []const u8) !void {
 
 fn runInit(allocator: Allocator, args: []const []const u8) !void {
     if (args.len == 0) {
-        std.debug.print("{s}Usage:{s} tri cell init <name> [--kind tool|agent|backend|frontend] [--with-test]\n", .{ YELLOW, RESET });
+        std.debug.print("{s}Usage:{s} tri cell init <name> [--kind tool|agent|backend|frontend] [--with-test] [--template <name>]\n", .{ YELLOW, RESET });
         std.debug.print("\n  Creates a new cell scaffold:\n", .{});
         std.debug.print("    tool/agent/backend → src/<name>/\n", .{});
         std.debug.print("    frontend           → apps/<name>/\n", .{});
         std.debug.print("    --with-test        Also create <name>.test.zig\n", .{});
+        std.debug.print("    --template <name>  Use template from library (see: tri cell templates)\n", .{});
         return;
     }
 
@@ -926,6 +930,7 @@ fn runInit(allocator: Allocator, args: []const []const u8) !void {
 
     var kind: []const u8 = "tool";
     var with_test = false;
+    var template_name: ?[]const u8 = null;
     var i: usize = 1;
     while (i < args.len) : (i += 1) {
         if (std.mem.eql(u8, args[i], "--kind") and i + 1 < args.len) {
@@ -933,6 +938,9 @@ fn runInit(allocator: Allocator, args: []const []const u8) !void {
             i += 1;
         } else if (std.mem.eql(u8, args[i], "--with-test")) {
             with_test = true;
+        } else if (std.mem.eql(u8, args[i], "--template") and i + 1 < args.len) {
+            template_name = args[i + 1];
+            i += 1;
         }
     }
 
@@ -949,46 +957,119 @@ fn runInit(allocator: Allocator, args: []const []const u8) !void {
     const cell_id = std.fmt.allocPrint(allocator, "trinity.{s}", .{name}) catch return;
     defer allocator.free(cell_id);
 
-    const cell_tri = std.fmt.allocPrint(allocator,
-        \\[cell]
-        \\id = "{s}"
-        \\name = "{s}"
-        \\version = "0.1.0"
-        \\kind = "{s}"
-        \\path = "{s}"
-        \\min_core_version = "{s}"
-        \\status = "experimental"
-        \\description = "TODO: describe this cell"
-        \\capabilities = []
-        \\files = 1
-        \\tests = 1
-        \\owner = ""
-        \\
-        \\[tags]
-        \\scope = ""
-        \\type = "{s}"
-        \\
-        \\[contributes]
-        \\commands = []
-        \\tri_subcommands = []
-        \\events = []
-        \\
-        \\[dependencies]
-        \\
-        \\[permissions]
-        \\level = "L0"
-        \\filesystem = "none"
-        \\network = "none"
-        \\process = "none"
-        \\ffi = "none"
-        \\concurrency = "none"
-        \\
-    , .{ cell_id, name, kind, cell_dir, CORE_VERSION, kind }) catch return;
-    defer allocator.free(cell_tri);
-
     const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{cell_dir}) catch return;
     defer allocator.free(cell_tri_path);
-    writeFileIfNotExists(cell_tri_path, cell_tri);
+
+    // Use template if specified
+    if (template_name) |tmpl| {
+        std.debug.print("\n{s}📋 Using template: {s}{s}\n\n", .{ GOLDEN, RESET, tmpl });
+
+        // Try built-in template first
+        const template_content = if (getTemplate(tmpl)) |builtin|
+            builtin
+        else if (try loadUserTemplate(allocator, tmpl)) |user|
+            user
+        else {
+            std.debug.print("{s}ERROR{s}: Template '{s}' not found\n", .{ RED, RESET, tmpl });
+            std.debug.print("  Run {s}tri cell templates{s} to see available templates\n\n", .{ GREEN, RESET });
+            return;
+        };
+
+        const definition_path = std.fmt.allocPrint(allocator, ".claude/agents/{s}.md", .{name}) catch "";
+        defer allocator.free(definition_path);
+
+        const rendered = try renderTemplate(allocator, template_content, .{
+            .cell_id = cell_id,
+            .name = name,
+            .path = cell_dir,
+            .description = "TODO: describe this cell",
+            .parent = "trinity.tri",
+            .capabilities = "[]",
+            .definition = definition_path,
+        });
+        defer allocator.free(rendered);
+
+        writeFileIfNotExists(cell_tri_path, rendered);
+
+        // For agent template, also create the .md definition file
+        if (std.mem.eql(u8, tmpl, "agent")) {
+            const md_path = std.fmt.allocPrint(allocator, "{s}", .{definition_path}) catch return;
+            defer allocator.free(md_path);
+
+            // Create parent directory if needed
+            const md_dir = std.fs.path.dirname(md_path) orelse "";
+            if (md_dir.len > 0) {
+                std.fs.cwd().makePath(md_dir) catch {};
+            }
+
+            const md_content = std.fmt.allocPrint(allocator,
+                \\---
+                \\name: {s}
+                \\description: TODO — describe this agent
+                \\tools: Read, Edit, Write, Bash, Grep, Glob
+                \\model: sonnet
+                \\maxTurns: 20
+                \\---
+                \\
+                \\You are {s} — a specialized agent in the Trinity project.
+                \\
+                \\## Your Scope
+                \\
+                \\TODO: Define what this agent does.
+                \\
+                \\## Protocol
+                \\
+                \\1. Read context before acting
+                \\2. Make minimal, targeted changes
+                \\3. Verify changes compile
+                \\
+            , .{ name, name }) catch return;
+            defer allocator.free(md_content);
+
+            writeFileIfNotExists(md_path, md_content);
+            std.debug.print("  {s}{s}{s}   → {s}\n", .{ CYAN, "definition", RESET, md_path });
+        }
+    } else {
+        // Default behavior without template
+        const cell_tri = std.fmt.allocPrint(allocator,
+            \\[cell]
+            \\id = "{s}"
+            \\name = "{s}"
+            \\version = "0.1.0"
+            \\kind = "{s}"
+            \\path = "{s}"
+            \\min_core_version = "{s}"
+            \\status = "experimental"
+            \\description = "TODO: describe this cell"
+            \\capabilities = []
+            \\files = 1
+            \\tests = 1
+            \\owner = ""
+            \\
+            \\[tags]
+            \\scope = ""
+            \\type = "{s}"
+            \\
+            \\[contributes]
+            \\commands = []
+            \\tri_subcommands = []
+            \\events = []
+            \\
+            \\[dependencies]
+            \\
+            \\[permissions]
+            \\level = "L0"
+            \\filesystem = "none"
+            \\network = "none"
+            \\process = "none"
+            \\ffi = "none"
+            \\concurrency = "none"
+            \\
+        , .{ cell_id, name, kind, cell_dir, CORE_VERSION, kind }) catch return;
+        defer allocator.free(cell_tri);
+
+        writeFileIfNotExists(cell_tri_path, cell_tri);
+    }
 
     const main_zig_path = std.fmt.allocPrint(allocator, "{s}/main.zig", .{cell_dir}) catch return;
     defer allocator.free(main_zig_path);
@@ -8360,6 +8441,155 @@ fn runInstallHooks(allocator: Allocator) !void {
 
     std.debug.print("  {s}✓{s} Git hook installed: {s}\n", .{ GREEN, RESET, hook_path });
     std.debug.print("\n  {s}Auto-registration will run after each commit.{s}\n\n", .{ GRAY, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEMPLATES — Cell Template Library (L3)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// List available templates
+fn runTemplates(allocator: Allocator, args: []const []const u8) !void {
+    _ = args;
+
+    std.debug.print("\n{s}📋 Cell Template Library{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("  Built-in templates ({s}src/tri/templates/{s}):\n\n", .{ CYAN, RESET });
+
+    const builtin_templates = [_][]const u8{ "agent", "tool", "library", "virtual" };
+
+    for (builtin_templates) |tmpl| {
+        const desc = getTemplateDescription(tmpl);
+        std.debug.print("    {s}{s}{s} — {s}\n", .{ GREEN, tmpl, RESET, desc });
+    }
+
+    // List user templates if they exist
+    const home_dir = std.process.getEnvVarOwned(allocator, "HOME") catch {
+        std.debug.print("\n  {s}No HOME dir, skipping user templates{s}\n", .{ YELLOW, RESET });
+        return;
+    };
+    defer allocator.free(home_dir);
+
+    const user_templates_dir = std.fmt.allocPrint(allocator, "{s}/.tri/templates", .{home_dir}) catch return;
+    defer allocator.free(user_templates_dir);
+
+    var user_templates = std.array_list.Managed([]const u8).init(allocator);
+    defer {
+        for (user_templates.items) |t| allocator.free(t);
+        user_templates.deinit();
+    }
+
+    {
+        var user_dir = std.fs.cwd().openDir(user_templates_dir, .{ .iterate = true }) catch {
+            // No user templates directory, skip
+            return;
+        };
+        defer user_dir.close();
+        var iter = user_dir.iterate();
+        while (iter.next() catch null) |entry| {
+            if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".tri")) {
+                const name = entry.name[0 .. entry.name.len - 4]; // strip .tri
+                const name_copy = allocator.dupe(u8, name) catch continue;
+                user_templates.append(name_copy) catch {};
+            }
+        }
+    }
+
+    if (user_templates.items.len > 0) {
+        std.debug.print("\n  User templates ({s}{s}{s}):\n\n", .{ CYAN, user_templates_dir, RESET });
+        for (user_templates.items) |tmpl| {
+            std.debug.print("    {s}{s}{s}\n", .{ GREEN, tmpl, RESET });
+        }
+    }
+
+    std.debug.print("\n  Usage: {s}tri cell init <name> --template <name>{s}\n\n", .{ GREEN, RESET });
+}
+
+fn getTemplate(name: []const u8) ?[]const u8 {
+    const templates = std.StaticStringMap([]const u8).initComptime(.{
+        .{ "agent", @embedFile("templates/agent.tri") },
+        .{ "tool", @embedFile("templates/tool.tri") },
+        .{ "library", @embedFile("templates/library.tri") },
+        .{ "virtual", @embedFile("templates/virtual.tri") },
+    });
+    return templates.get(name);
+}
+
+fn getTemplateDescription(name: []const u8) []const u8 {
+    const descriptions = std.StaticStringMap([]const u8).initComptime(.{
+        .{ "agent", "Autonomous agent with tools, context, and isolation" },
+        .{ "tool", "CLI utility with commands and exports" },
+        .{ "library", "Reusable library with exports and tests" },
+        .{ "virtual", "Virtual sub-cell for modular organization" },
+    });
+    return descriptions.get(name) orelse "Custom template";
+}
+
+/// Load template from user directory
+fn loadUserTemplate(allocator: Allocator, name: []const u8) !?[]const u8 {
+    const home_dir = std.process.getEnvVarOwned(allocator, "HOME") catch return null;
+    defer allocator.free(home_dir);
+
+    const user_templates_dir = std.fmt.allocPrint(allocator, "{s}/.tri/templates", .{home_dir}) catch return null;
+    defer allocator.free(user_templates_dir);
+
+    const template_path = std.fmt.allocPrint(allocator, "{s}/{s}.tri", .{ user_templates_dir, name }) catch return null;
+    defer allocator.free(template_path);
+
+    return std.fs.cwd().readFileAlloc(allocator, template_path, 65536) catch null;
+}
+
+/// Replace template variables with actual values
+fn renderTemplate(allocator: Allocator, template: []const u8, vars: struct {
+    cell_id: []const u8,
+    name: []const u8,
+    path: []const u8,
+    description: []const u8,
+    parent: []const u8 = "",
+    capabilities: []const u8 = "[]",
+    definition: []const u8 = "",
+}) ![]const u8 {
+    var result = std.array_list.Managed(u8).init(allocator);
+    defer result.deinit();
+
+    var i: usize = 0;
+    while (i < template.len) {
+        // Check for variable start {{VAR}}
+        if (i + 2 <= template.len and template[i] == '{' and template[i + 1] == '{') {
+            const var_start = i + 2;
+            const var_end = std.mem.indexOf(u8, template[var_start..], "}}") orelse {
+                // No closing brace, treat as literal
+                try result.append(template[i]);
+                i += 1;
+                continue;
+            };
+            const var_name = template[var_start .. var_start + var_end];
+
+            // Look up variable value
+            const replacement = if (std.mem.eql(u8, var_name, "CELL_ID"))
+                vars.cell_id
+            else if (std.mem.eql(u8, var_name, "NAME"))
+                vars.name
+            else if (std.mem.eql(u8, var_name, "PATH"))
+                vars.path
+            else if (std.mem.eql(u8, var_name, "DESCRIPTION"))
+                vars.description
+            else if (std.mem.eql(u8, var_name, "PARENT"))
+                vars.parent
+            else if (std.mem.eql(u8, var_name, "CAPABILITIES"))
+                vars.capabilities
+            else if (std.mem.eql(u8, var_name, "DEFINITION"))
+                vars.definition
+            else
+                "";
+
+            try result.appendSlice(replacement);
+            i = var_start + var_end + 2; // skip closing }}
+        } else {
+            try result.append(template[i]);
+            i += 1;
+        }
+    }
+
+    return result.toOwnedSlice();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
