@@ -1032,11 +1032,11 @@ struct ChatScreen: View {
             HStack(spacing: 8) {
                 ForEach(attachedFiles.indices, id: \.self) { idx in
                     HStack(spacing: 4) {
-                        Image(systemName: "paperclip")
+                        Image(systemName: attachedFiles[idx].name.hasSuffix(".png") || attachedFiles[idx].name.hasSuffix(".jpg") ? "photo" : "paperclip")
                             .font(.caption2)
                         Text(attachedFiles[idx].name)
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(attachedFiles[idx].name.contains("clipboard") ? TrinityTheme.purple : TrinityTheme.accent)
                             .lineLimit(1)
                         Button {
                             attachedFiles.remove(at: idx)
