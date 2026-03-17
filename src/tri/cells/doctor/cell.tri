@@ -12,7 +12,7 @@ tests = 23
 owner = "agent:ralph"
 
 [tags]
-scope = "core"
+scope = "infra"
 type = "infra"
 
 [source]
@@ -20,7 +20,7 @@ file_patterns = ["tri_doctor.zig", "tri_ouroboros.zig", "toxic_verdict.zig", "tr
 
 [contributes]
 commands = ["doctor", "verdict", "ouroboros"]
-exports = ["runStrictCommand", "label", "runOuroborosCommand", "runInit"]
+exports = ["runStrictCommand", "label", "runOuroborosCommand", "runInit", "runScan"]
 
 [dependencies]
 

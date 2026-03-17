@@ -12,7 +12,7 @@ tests = 18
 owner = "agent:ralph"
 
 [tags]
-scope = "core"
+scope = "infra"
 type = "tool"
 
 [source]
@@ -33,5 +33,5 @@ process = "none"
 ffi = "none"
 concurrency = "yes"
 [security]
-signed = "true"
+signed = true
 signature = "sha256:c59d3a676f8013d8bd032e767fa318e6921ce72fb00527929c0c8844b99bd104"

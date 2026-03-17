@@ -7,7 +7,7 @@ path = "src/forge"
 min_core_version = "1.0.0"
 status = "experimental"
 description = "Code forge and spec-to-source generation pipeline"
-capabilities = ["findPackagePin", "findClbTile", "findIntTile", "findIobBySiteY", "tileTypeName"]
+capabilities = ["mapModule", "generateBitstream", "generateVerilog", "place", "route"]
 files = 21
 tests = 105
 owner = "agent:ralph"
@@ -17,7 +17,7 @@ scope = "infra"
 type = "backend"
 
 [contributes]
-commands = ["findPackagePin", "findClbTile", "findIntTile"]
+commands = ["mapModule", "generateVerilog", "place"]
 tri_subcommands = []
 events = []
 binaries = ["forge"]

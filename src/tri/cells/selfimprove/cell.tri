@@ -12,15 +12,15 @@ tests = 46
 owner = "agent:ralph"
 
 [tags]
-scope = "core"
+scope = "infra"
 type = "domain"
 
 [source]
 file_patterns = ["self_*.zig"]
 
 [contributes]
-commands = []
-exports = ["main",", "log", "identifyOwnSourceFiles", "analyzeSelfForImprovements", "applySelfPatch"]
+commands = ["self-improve", "formulas"]
+exports = ["log", "identifyOwnSourceFiles", "analyzeSelfForImprovements", "applySelfPatch", "testSelfPatch"]
 
 [dependencies]
 

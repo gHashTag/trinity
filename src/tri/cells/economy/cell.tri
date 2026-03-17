@@ -12,14 +12,14 @@ tests = 70
 owner = "agent:ralph"
 
 [tags]
-scope = "core"
+scope = "infra"
 type = "domain"
 
 [source]
 file_patterns = ["economy*.zig", "nft_*.zig", "marketplace*.zig"]
 
 [contributes]
-commands = []
+commands = ["economy", "nft", "marketplace"]
 exports = ["trit_and", "trit_or", "trit_not", "trit_xor", "mint_nft"]
 
 [dependencies]
