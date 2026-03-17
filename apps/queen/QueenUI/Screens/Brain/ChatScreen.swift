@@ -32,6 +32,7 @@ struct ChatScreen: View {
     @State private var taskItems: [TaskItem] = []
     @State private var selectedPersona: Persona? = nil
     @State private var showPersonaLibrary = false
+    @State private var showTemplatePicker = false
     @State private var lastSentText = ""
     @State private var showSentConfirmation = false
     @State private var showDraftSaved = false
@@ -93,6 +94,14 @@ struct ChatScreen: View {
         guard !inThreadSearchQuery.isEmpty, let msgs = thread?.messages else { return [] }
         let q = inThreadSearchQuery.lowercased()
         return msgs.filter { $0.text.lowercased().contains(q) }
+    }
+
+    /// Determine search highlight state for a message
+    private func searchHighlightFor(_ msg: ChatMessage) -> MessageRow.SearchHighlight {
+        guard showInThreadSearch, !inThreadSearchQuery.isEmpty else { return .none }
+        let matches = inThreadSearchMatches
+        guard let idx = matches.firstIndex(where: { $0.id == msg.id }) else { return .none }
+        return idx == inThreadSearchIndex ? .currentMatch : .match
     }
 
     /// Token estimation: ~3.5 chars/token for English, ~2.5 for code/mixed
@@ -252,6 +261,21 @@ struct ChatScreen: View {
             handleFileDrop(providers)
             return true
         }
+        .overlay {
+            if isDropTargeted {
+                ZStack {
+                    RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
+                        .fill(TrinityTheme.accent.opacity(0.05))
+                    RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
+                        .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8, 4]))
+                        .foregroundStyle(TrinityTheme.accent)
+                    Text("Drop files here")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundStyle(TrinityTheme.accent)
+                }
+                .allowsHitTesting(false)
+            }
+        }
     }
 
     // MARK: - In-Thread Search
@@ -276,33 +300,47 @@ struct ChatScreen: View {
 
     private var messageScrollArea: some View {
         ScrollViewReader { proxy in
-            ScrollView {
-                messageListContent
-            }
-            .coordinateSpace(name: "chatScroll")
-            .onPreferenceChange(ScrollOffsetKey.self) { maxY in
-                showScrollToBottom = maxY > 200
-            }
-            .onChange(of: thread?.messages.count) {
-                withAnimation(.easeOut(duration: 0.15)) {
-                    proxy.scrollTo("bottom", anchor: .bottom)
-                }
-            }
-            .onChange(of: client.streamingText) {
-                if !showScrollToBottom {
-                    proxy.scrollTo("bottom", anchor: .bottom)
-                }
-            }
-            .onChange(of: inThreadSearchIndex) { _, newIdx in
-                let matches = inThreadSearchMatches
-                if newIdx < matches.count {
-                    withAnimation(.easeOut(duration: 0.2)) {
-                        proxy.scrollTo(matches[newIdx].id, anchor: .center)
+            VStack(spacing: 0) {
+                // Pinned messages strip
+                if let threadID = store.activeThreadID {
+                    let pinned = store.pinnedMessages(in: threadID)
+                    if !pinned.isEmpty {
+                        PinnedMessagesStrip(messages: pinned) { messageID in
+                            withAnimation(.easeOut(duration: 0.2)) {
+                                proxy.scrollTo(messageID, anchor: .center)
+                            }
+                        }
                     }
                 }
-            }
-            .overlay(alignment: .bottom) {
-                scrollToBottomButton(proxy: proxy)
+
+                ScrollView {
+                    messageListContent
+                }
+                .coordinateSpace(name: "chatScroll")
+                .onPreferenceChange(ScrollOffsetKey.self) { maxY in
+                    showScrollToBottom = maxY > 200
+                }
+                .onChange(of: thread?.messages.count) {
+                    withAnimation(.easeOut(duration: 0.15)) {
+                        proxy.scrollTo("bottom", anchor: .bottom)
+                    }
+                }
+                .onChange(of: client.streamingText) {
+                    if !showScrollToBottom {
+                        proxy.scrollTo("bottom", anchor: .bottom)
+                    }
+                }
+                .onChange(of: inThreadSearchIndex) { _, newIdx in
+                    let matches = inThreadSearchMatches
+                    if newIdx < matches.count {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            proxy.scrollTo(matches[newIdx].id, anchor: .center)
+                        }
+                    }
+                }
+                .overlay(alignment: .bottom) {
+                    scrollToBottomButton(proxy: proxy)
+                }
             }
         }
     }
@@ -324,7 +362,8 @@ struct ChatScreen: View {
                     client: client,
                     modelManager: modelManager,
                     isLastMessage: msg.id == thread?.messages.last?.id,
-                    onComment: { commentingMessage = $0 }
+                    onComment: { commentingMessage = $0 },
+                    searchHighlight: searchHighlightFor(msg)
                 )
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 6)))
             }
@@ -974,6 +1013,20 @@ struct ChatScreen: View {
             }
         }
 
+        // Template picker (shown via /template command)
+        if showTemplatePicker {
+            TemplatePicker(
+                store: store,
+                onSelect: { templateBody in
+                    input = templateBody
+                    showTemplatePicker = false
+                },
+                onDismiss: { showTemplatePicker = false }
+            )
+            .padding(.horizontal, 60)
+            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+        }
+
         // Offline queue banner
         if client.offlineQueueCount > 0 {
             OfflineQueueBanner(
@@ -1561,6 +1614,10 @@ struct ChatScreen: View {
             effortBinding: &effortLevelVar,
             chatModeBinding: &chatModeVar,
             onResult: { result in
+                if result == "__SHOW_TEMPLATES__" {
+                    showTemplatePicker = true
+                    return
+                }
                 slashCommandResult = result
                 // Errors persist until user dismisses; success auto-dismisses after 4s
                 let isError = result.lowercased().contains("error") || result.lowercased().contains("fail") || result.lowercased().contains("invalid")
@@ -1681,22 +1738,50 @@ struct ChatScreen: View {
 
     // MARK: - Drag & Drop
 
+    private static let supportedDropExtensions: Set<String> = [
+        "swift", "zig", "md", "txt", "json", "py", "js", "ts"
+    ]
+
     private func handleFileDrop(_ providers: [NSItemProvider]) {
-        for provider in providers.prefix(3) {
+        let remaining = max(0, 3 - attachedFiles.count)
+        guard remaining > 0 else { return }
+        for provider in providers.prefix(remaining) {
             provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { item, _ in
                 guard let data = item as? Data,
                       let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+                let ext = url.pathExtension.lowercased()
+                guard Self.supportedDropExtensions.contains(ext) else {
+                    Task { @MainActor in
+                        slashCommandResult = "Unsupported file type: .\(ext)"
+                        try? await Task.sleep(for: .seconds(3))
+                        slashCommandResult = nil
+                    }
+                    return
+                }
                 // Load off main thread
-                Task.detached {
+                Task.detached { [maxAttachmentSize] in
                     guard let fileData = try? Data(contentsOf: url) else { return }
                     let name = url.lastPathComponent
-                    if let content = String(data: fileData.prefix(8192), encoding: .utf8) {
+                    let size = fileData.count
+                    if let content = String(data: fileData.prefix(maxAttachmentSize), encoding: .utf8) {
+                        let truncated = size > maxAttachmentSize
+                        let sizeLabel = size >= 1024 ? "\(size/1024)KB" : "\(size)B"
+                        let label = truncated
+                            ? "\(name) (\(sizeLabel) → \(maxAttachmentSize/1024)KB)"
+                            : "\(name) (\(sizeLabel))"
                         await MainActor.run {
-                            attachedFiles.append((name: name, content: content))
+                            attachedFiles.append((name: label, content: content))
+                            if truncated {
+                                slashCommandResult = "\(name): \(sizeLabel) truncated to \(maxAttachmentSize/1024)KB"
+                                Task { @MainActor in
+                                    try? await Task.sleep(for: .seconds(4))
+                                    slashCommandResult = nil
+                                }
+                            }
                         }
                     } else {
                         await MainActor.run {
-                            attachedFiles.append((name: "\(name) (binary)", content: "[Binary file: \(name)]"))
+                            attachedFiles.append((name: "\(name) (binary)", content: "[Binary file: \(name), \(size) bytes]"))
                         }
                     }
                 }
@@ -2432,9 +2517,18 @@ struct MessageRow: View {
     @ObservedObject var modelManager: ModelManager
     var isLastMessage: Bool = false
     var onComment: ((ChatMessage) -> Void)? = nil
+    var searchHighlight: SearchHighlight = .none
+
+    enum SearchHighlight {
+        case none, match, currentMatch
+    }
     @State private var isHovering = false
     @State private var isEditing = false
     @State private var editText = ""
+    @State private var showSaveTemplate = false
+    @State private var saveTemplateName = ""
+    @State private var saveTemplateCategory = "Code"
+    @State private var saveTemplateConfirmed = false
     @AppStorage("chatFontSize") private var chatFontSize = 15
 
     /// Estimate token count for this message
@@ -2562,12 +2656,12 @@ struct MessageRow: View {
                                     guard let threadID = store.activeThreadID else { return }
                                     store.toggleBookmark(message.id, in: threadID)
                                 } label: {
-                                    Image(systemName: message.isBookmarked == true ? "bookmark.fill" : "bookmark")
+                                    Image(systemName: message.isBookmarked == true ? "pin.fill" : "pin")
                                         .font(.system(size: 10))
                                         .foregroundStyle(message.isBookmarked == true ? TrinityTheme.accent : Color.white.opacity(0.4))
                                 }
                                 .buttonStyle(.plain)
-                                .help("Bookmark")
+                                .help("Pin message")
 
                                 Text(message.timestamp, style: .time)
                                     .font(.system(size: 10))
@@ -2734,9 +2828,19 @@ struct MessageRow: View {
                 store.toggleBookmark(message.id, in: threadID)
             } label: {
                 Label(
-                    message.isBookmarked == true ? "Remove Bookmark" : "Bookmark",
-                    systemImage: message.isBookmarked == true ? "bookmark.fill" : "bookmark"
+                    message.isBookmarked == true ? "Unpin" : "Pin message",
+                    systemImage: message.isBookmarked == true ? "pin.fill" : "pin"
                 )
+            }
+
+            if message.role == .user {
+                Button {
+                    saveTemplateName = String(message.text.prefix(40))
+                    saveTemplateCategory = "Code"
+                    showSaveTemplate = true
+                } label: {
+                    Label("Save as Template", systemImage: "doc.on.clipboard")
+                }
             }
 
             if let onComment {
@@ -2744,6 +2848,52 @@ struct MessageRow: View {
                     onComment(message)
                 } label: {
                     Label("Comment", systemImage: "text.bubble")
+                }
+            }
+
+            if message.role == .assistant {
+                Menu {
+                    Button {
+                        let codeBlocks = MessageRow.extractCodeBlocks(from: message.text)
+                        if !codeBlocks.isEmpty {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(codeBlocks.joined(separator: "\n\n"), forType: .string)
+                        }
+                    } label: {
+                        Label("Copy All Code", systemImage: "chevron.left.forwardslash.chevron.right")
+                    }
+                    .disabled(MessageRow.extractCodeBlocks(from: message.text).isEmpty)
+
+                    Button {
+                        let tasks = MessageRow.extractTasks(from: message.text)
+                        if !tasks.isEmpty {
+                            NSPasteboard.general.clearContents()
+                            NSPasteboard.general.setString(tasks.joined(separator: "\n"), forType: .string)
+                        }
+                    } label: {
+                        Label("Extract Tasks (\(MessageRow.extractTasks(from: message.text).count))", systemImage: "checklist")
+                    }
+                    .disabled(MessageRow.extractTasks(from: message.text).isEmpty)
+
+                    Divider()
+
+                    Button {
+                        guard let threadID = store.activeThreadID, !client.isStreaming else { return }
+                        client.send("Summarize the above response in 3 bullet points.", threadID: threadID, store: store, modelManager: modelManager)
+                    } label: {
+                        Label("Summarize", systemImage: "text.justify.leading")
+                    }
+                    .disabled(client.isStreaming)
+
+                    Button {
+                        guard let threadID = store.activeThreadID, !client.isStreaming else { return }
+                        client.send("Explain the above response in simpler terms, as if to a beginner.", threadID: threadID, store: store, modelManager: modelManager)
+                    } label: {
+                        Label("Explain Simply", systemImage: "lightbulb")
+                    }
+                    .disabled(client.isStreaming)
+                } label: {
+                    Label("Quick Actions", systemImage: "bolt.circle")
                 }
             }
 
@@ -2758,10 +2908,38 @@ struct MessageRow: View {
                 }
             }
         }
+        .popover(isPresented: $showSaveTemplate) {
+            SaveAsTemplatePopover(
+                name: $saveTemplateName,
+                category: $saveTemplateCategory,
+                messageText: message.text,
+                store: store,
+                isPresented: $showSaveTemplate,
+                confirmed: $saveTemplateConfirmed
+            )
+        }
         // Accessibility
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(message.role == .user ? "You" : "Queen"): \(String(message.text.prefix(200)))")
         .accessibilityHint(message.role == .user ? "Double-tap to edit" : "Double-tap for actions")
+        .background(
+            Group {
+                switch searchHighlight {
+                case .currentMatch:
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(TrinityTheme.accent.opacity(0.18))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .strokeBorder(TrinityTheme.accent.opacity(0.5), lineWidth: 1.5)
+                        )
+                case .match:
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(TrinityTheme.accent.opacity(0.08))
+                case .none:
+                    Color.clear
+                }
+            }
+        )
     }
 
     private func submitEdit() {
@@ -2820,6 +2998,7 @@ struct MessageActionBar: View {
     @State private var didCopy = false
     @State private var synthesizer: AVSpeechSynthesizer?
     @State private var showRegenModelPicker = false
+    @State private var showDislikeCategoryPopover = false
 
     private var isLiked: Bool? {
         message.isLiked
@@ -2920,8 +3099,8 @@ struct MessageActionBar: View {
                 }
 
                 actionButton(
-                    message.isBookmarked == true ? "bookmark.fill" : "bookmark",
-                    tooltip: "Bookmark",
+                    message.isBookmarked == true ? "pin.fill" : "pin",
+                    tooltip: "Pin message",
                     active: message.isBookmarked == true
                 ) {
                     guard let threadID = store.activeThreadID else { return }
@@ -2944,12 +3123,28 @@ struct MessageActionBar: View {
                     active: isLiked == false
                 ) {
                     guard let threadID = store.activeThreadID else { return }
-                    let newVal: Bool? = (isLiked == false) ? nil : false
-                    store.toggleLike(message.id, liked: newVal, in: threadID)
-                    // Show rejection feedback input
-                    if newVal == false {
-                        client.showRejectionFeedback = (messageID: message.id, threadID: threadID)
+                    if isLiked == false {
+                        // Already disliked — toggle off
+                        store.toggleLike(message.id, liked: nil, in: threadID)
+                    } else {
+                        // Show category popover
+                        showDislikeCategoryPopover = true
                     }
+                }
+                .popover(isPresented: $showDislikeCategoryPopover) {
+                    DislikeCategoryPopover(
+                        onSelect: { category in
+                            showDislikeCategoryPopover = false
+                            guard let threadID = store.activeThreadID else { return }
+                            store.toggleLike(message.id, liked: false, in: threadID)
+                            store.setFeedbackCategory(category, for: message.id, in: threadID)
+                            // Also show text feedback for custom input
+                            client.showRejectionFeedback = (messageID: message.id, threadID: threadID)
+                        },
+                        onDismiss: {
+                            showDislikeCategoryPopover = false
+                        }
+                    )
                 }
             }
 
@@ -3919,7 +4114,7 @@ struct InThreadSearchBar: View {
                 .onSubmit { if currentIndex < totalMatches - 1 { currentIndex += 1 } }
 
             if !query.isEmpty {
-                Text("\(totalMatches > 0 ? currentIndex + 1 : 0)/\(totalMatches)")
+                Text(totalMatches > 0 ? "\(currentIndex + 1) of \(totalMatches)" : "No matches")
                     .font(.system(size: 11, weight: .medium, design: .monospaced))
                     .foregroundStyle(totalMatches > 0 ? TrinityTheme.accent : TrinityTheme.statusError)
                     .fixedSize()
@@ -4450,6 +4645,106 @@ struct RejectionFeedbackView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal, 60)
         .onAppear { isFocused = true }
+    }
+}
+
+// MARK: - Pinned Messages Strip
+
+struct PinnedMessagesStrip: View {
+    let messages: [ChatMessage]
+    var onScrollTo: (UUID) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                Image(systemName: "pin.fill")
+                    .font(.system(size: 10))
+                    .foregroundStyle(TrinityTheme.accent)
+
+                ForEach(messages) { msg in
+                    Button {
+                        onScrollTo(msg.id)
+                    } label: {
+                        Text(String(msg.text.prefix(50)).replacingOccurrences(of: "\n", with: " "))
+                            .font(.system(size: 11))
+                            .foregroundStyle(Color.white.opacity(0.8))
+                            .lineLimit(1)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(TrinityTheme.accent.opacity(0.12))
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 6)
+        }
+        .background(Color(hex: 0x0A0A0A).opacity(0.9))
+    }
+}
+
+// MARK: - Dislike Category Popover
+
+struct DislikeCategoryPopover: View {
+    var onSelect: (String) -> Void
+    var onDismiss: () -> Void
+
+    private let categories = [
+        ("Inaccurate", "exclamationmark.triangle"),
+        ("Not helpful", "hand.thumbsdown"),
+        ("Too long", "text.badge.minus"),
+        ("Incomplete", "text.badge.plus"),
+        ("Wrong tone", "quote.bubble"),
+    ]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("What went wrong?")
+                .font(.system(size: 11, weight: .bold))
+                .foregroundStyle(Color.white.opacity(0.6))
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+
+            ForEach(categories, id: \.0) { category, icon in
+                Button {
+                    onSelect(category)
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: icon)
+                            .font(.system(size: 11))
+                            .frame(width: 16)
+                        Text(category)
+                            .font(.system(size: 12))
+                    }
+                    .foregroundStyle(Color.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .background(Color.white.opacity(0.001))
+            }
+
+            Divider()
+                .background(Color.white.opacity(0.1))
+                .padding(.horizontal, 8)
+
+            Button {
+                onDismiss()
+            } label: {
+                Text("Cancel")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.4))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 4)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.bottom, 8)
+        .frame(minWidth: 180)
+        .background(Color(hex: 0x1A1A1A))
     }
 }
 
@@ -5116,5 +5411,188 @@ struct TruncationGradient: ViewModifier {
 extension View {
     func truncationGradient(maxHeight: CGFloat = 200) -> some View {
         modifier(TruncationGradient(maxHeight: maxHeight))
+    }
+}
+
+// MARK: - Save as Template Popover
+
+struct SaveAsTemplatePopover: View {
+    @Binding var name: String
+    @Binding var category: String
+    let messageText: String
+    @ObservedObject var store: ThreadStore
+    @Binding var isPresented: Bool
+    @Binding var confirmed: Bool
+
+    private let categories = ["Code", "Debug", "Design", "Docs", "Git", "Other"]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Save as Template")
+                .font(.system(size: 14, weight: .bold))
+                .foregroundStyle(TrinityTheme.textPrimary)
+
+            TextField("Template name", text: $name)
+                .textFieldStyle(.roundedBorder)
+                .font(.system(size: 12))
+
+            Picker("Category", selection: $category) {
+                ForEach(categories, id: \.self) { Text($0) }
+            }
+            .pickerStyle(.segmented)
+            .controlSize(.small)
+
+            Text(String(messageText.prefix(120)) + (messageText.count > 120 ? "..." : ""))
+                .font(.system(size: 10, design: .monospaced))
+                .foregroundStyle(TrinityTheme.textMuted)
+                .lineLimit(3)
+                .padding(8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white.opacity(0.04))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+
+            HStack {
+                Button("Cancel") {
+                    isPresented = false
+                }
+                .foregroundStyle(Color.white.opacity(0.4))
+                .buttonStyle(.plain)
+                Spacer()
+                Button("Save") {
+                    let template = PromptTemplate(
+                        title: name.isEmpty ? "Custom" : name,
+                        body: messageText,
+                        category: category,
+                        icon: iconForCategory(category)
+                    )
+                    store.saveTemplate(template)
+                    confirmed = true
+                    isPresented = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        confirmed = false
+                    }
+                }
+                .font(.system(size: 12, weight: .bold))
+                .foregroundStyle(.black)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(TrinityTheme.purple)
+                .clipShape(Capsule())
+                .buttonStyle(.plain)
+                .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+            }
+        }
+        .padding(16)
+        .frame(width: 300)
+        .background(Color(hex: 0x1A1A1A))
+    }
+
+    private func iconForCategory(_ cat: String) -> String {
+        switch cat {
+        case "Code": return "chevron.left.forwardslash.chevron.right"
+        case "Debug": return "ladybug"
+        case "Design": return "square.3.layers.3d"
+        case "Docs": return "doc.text"
+        case "Git": return "arrow.triangle.branch"
+        default: return "doc.on.clipboard"
+        }
+    }
+}
+
+// MARK: - Template Picker (inline, shown when typing /template)
+
+struct TemplatePicker: View {
+    @ObservedObject var store: ThreadStore
+    let onSelect: (String) -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Image(systemName: "doc.on.clipboard")
+                    .font(.system(size: 12))
+                    .foregroundStyle(TrinityTheme.purple)
+                Text("Templates")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(TrinityTheme.textPrimary)
+                Spacer()
+                Button { onDismiss() } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+
+            Divider().background(Color.white.opacity(0.1))
+
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 2) {
+                    Text("BUILT-IN")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                        .padding(.horizontal, 12)
+                        .padding(.top, 6)
+
+                    ForEach(PromptTemplate.builtIn) { template in
+                        templatePickerRow(template)
+                    }
+
+                    let custom = store.loadCustomTemplates()
+                    if !custom.isEmpty {
+                        Text("CUSTOM")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(Color.white.opacity(0.3))
+                            .padding(.horizontal, 12)
+                            .padding(.top, 8)
+
+                        ForEach(custom) { template in
+                            templatePickerRow(template)
+                                .contextMenu {
+                                    Button("Delete", role: .destructive) {
+                                        store.deleteTemplate(template.id)
+                                    }
+                                }
+                        }
+                    }
+                }
+                .padding(.bottom, 8)
+            }
+            .frame(maxHeight: 280)
+        }
+        .frame(width: 320)
+        .background(Color(hex: 0x0A0A0A))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .shadow(color: .black.opacity(0.5), radius: 12)
+    }
+
+    @ViewBuilder
+    private func templatePickerRow(_ template: PromptTemplate) -> some View {
+        Button {
+            onSelect(template.body)
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: template.icon)
+                    .font(.system(size: 11))
+                    .foregroundStyle(TrinityTheme.purple)
+                    .frame(width: 18)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text(template.title)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color.white)
+                    Text(String(template.body.prefix(50)))
+                        .font(.system(size: 9))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                        .lineLimit(1)
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(Color.white.opacity(0.001))
+        }
+        .buttonStyle(.plain)
     }
 }

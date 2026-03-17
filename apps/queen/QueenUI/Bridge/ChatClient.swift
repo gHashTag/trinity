@@ -97,6 +97,7 @@ enum SlashCommand: String, CaseIterable {
     case mode = "/mode"
     case fast = "/fast"
     case branch = "/branch"
+    case template = "/template"
     case help = "/help"
 
     var description: String {
@@ -110,6 +111,7 @@ enum SlashCommand: String, CaseIterable {
         case .mode: return "Switch chat mode"
         case .fast: return "Toggle fast mode (Haiku)"
         case .branch: return "Show current git branch"
+        case .template: return "Browse and insert prompt templates"
         case .help: return "Show available commands"
         }
     }
@@ -125,6 +127,7 @@ enum SlashCommand: String, CaseIterable {
         case .mode: return "switch.2"
         case .fast: return "hare"
         case .branch: return "arrow.triangle.branch"
+        case .template: return "doc.on.clipboard"
         case .help: return "questionmark.circle"
         }
     }
@@ -1070,6 +1073,9 @@ class ChatClient: ObservableObject {
         case .branch:
             let result = RepoContext().currentBranch()
             onResult("Branch: \(result)")
+        case .template:
+            // Handled in ChatScreen UI — opens template picker
+            onResult("__SHOW_TEMPLATES__")
         case .help:
             let cmds = SlashCommand.allCases.map { "\($0.rawValue) — \($0.description)" }.joined(separator: "\n")
             onResult("Available commands:\n\(cmds)")

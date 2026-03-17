@@ -268,6 +268,12 @@ struct PersonaLibrary: View {
 
                 ForEach(templates) { template in
                     templateRow(template)
+                        .contextMenu {
+                            Button("Delete", role: .destructive) {
+                                templates.removeAll { $0.id == template.id }
+                                saveTemplates()
+                            }
+                        }
                 }
             }
 

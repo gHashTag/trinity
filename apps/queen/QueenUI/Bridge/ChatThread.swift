@@ -12,6 +12,7 @@ struct ChatThread: Identifiable, Codable {
     var folderID: UUID?
     var personaID: UUID?
     var isArchived: Bool
+    var summary: String?
 
     init(id: UUID = UUID(), title: String = "New Thread") {
         self.id = id
@@ -24,6 +25,7 @@ struct ChatThread: Identifiable, Codable {
         self.folderID = nil
         self.personaID = nil
         self.isArchived = false
+        self.summary = nil
     }
 
     // Backwards-compatible decoding (existing threads lack pinned/tags/folderID/personaID)
@@ -39,6 +41,7 @@ struct ChatThread: Identifiable, Codable {
         folderID = try c.decodeIfPresent(UUID.self, forKey: .folderID)
         personaID = try c.decodeIfPresent(UUID.self, forKey: .personaID)
         isArchived = try c.decodeIfPresent(Bool.self, forKey: .isArchived) ?? false
+        summary = try c.decodeIfPresent(String.self, forKey: .summary)
     }
 }
 
@@ -78,13 +81,26 @@ struct PromptTemplate: Identifiable, Codable, Equatable {
     var body: String  // Contains {{variable}} placeholders
     var category: String
     var icon: String
+    var isBuiltIn: Bool
 
-    init(title: String, body: String, category: String, icon: String) {
+    init(title: String, body: String, category: String, icon: String, isBuiltIn: Bool = false) {
         self.id = UUID()
         self.title = title
         self.body = body
         self.category = category
         self.icon = icon
+        self.isBuiltIn = isBuiltIn
+    }
+
+    // Backwards-compatible decoding (existing templates lack isBuiltIn)
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(UUID.self, forKey: .id)
+        title = try c.decode(String.self, forKey: .title)
+        body = try c.decode(String.self, forKey: .body)
+        category = try c.decode(String.self, forKey: .category)
+        icon = try c.decode(String.self, forKey: .icon)
+        isBuiltIn = try c.decodeIfPresent(Bool.self, forKey: .isBuiltIn) ?? false
     }
 
     /// Extract variable names from {{variable}} placeholders
@@ -107,16 +123,16 @@ struct PromptTemplate: Identifiable, Codable, Equatable {
     }
 
     static let builtIn: [PromptTemplate] = [
-        PromptTemplate(title: "Review PR", body: "Review PR #{{number}}. Focus on bugs, security, and performance. Be thorough.", category: "Code", icon: "arrow.triangle.pull"),
-        PromptTemplate(title: "Write Tests", body: "Write comprehensive tests for {{file}}. Cover edge cases and error paths.", category: "Code", icon: "checkmark.circle"),
-        PromptTemplate(title: "Explain Code", body: "Explain how {{file}} works. Focus on the architecture and key design decisions.", category: "Code", icon: "questionmark.circle"),
-        PromptTemplate(title: "Debug Error", body: "I'm getting this error:\n```\n{{error}}\n```\nHelp me debug it.", category: "Debug", icon: "ladybug"),
-        PromptTemplate(title: "Refactor", body: "Refactor {{file}} to improve {{aspect}}. Keep the API stable.", category: "Code", icon: "arrow.triangle.2.circlepath"),
-        PromptTemplate(title: "Architecture Decision", body: "I need to decide between {{option_a}} and {{option_b}} for {{feature}}. Compare trade-offs.", category: "Design", icon: "square.3.layers.3d"),
-        PromptTemplate(title: "Write Docs", body: "Write documentation for {{module}}. Include usage examples and API reference.", category: "Docs", icon: "doc.text"),
-        PromptTemplate(title: "Performance Audit", body: "Analyze {{file}} for performance issues. Suggest optimizations with benchmarks.", category: "Debug", icon: "gauge.with.dots.needle.50percent"),
-        PromptTemplate(title: "Git Commit Message", body: "Write a commit message for these changes:\n{{changes}}", category: "Git", icon: "arrow.triangle.branch"),
-        PromptTemplate(title: "Issue Description", body: "Write a GitHub issue for: {{description}}. Include acceptance criteria and technical notes.", category: "Git", icon: "exclamationmark.circle"),
+        PromptTemplate(title: "Review PR", body: "Review PR #{{number}}. Focus on bugs, security, and performance. Be thorough.", category: "Code", icon: "arrow.triangle.pull", isBuiltIn: true),
+        PromptTemplate(title: "Write Tests", body: "Write comprehensive tests for {{file}}. Cover edge cases and error paths.", category: "Code", icon: "checkmark.circle", isBuiltIn: true),
+        PromptTemplate(title: "Explain Code", body: "Explain how {{file}} works. Focus on the architecture and key design decisions.", category: "Code", icon: "questionmark.circle", isBuiltIn: true),
+        PromptTemplate(title: "Debug Error", body: "I'm getting this error:\n```\n{{error}}\n```\nHelp me debug it.", category: "Debug", icon: "ladybug", isBuiltIn: true),
+        PromptTemplate(title: "Refactor", body: "Refactor {{file}} to improve {{aspect}}. Keep the API stable.", category: "Code", icon: "arrow.triangle.2.circlepath", isBuiltIn: true),
+        PromptTemplate(title: "Architecture Decision", body: "I need to decide between {{option_a}} and {{option_b}} for {{feature}}. Compare trade-offs.", category: "Design", icon: "square.3.layers.3d", isBuiltIn: true),
+        PromptTemplate(title: "Write Docs", body: "Write documentation for {{module}}. Include usage examples and API reference.", category: "Docs", icon: "doc.text", isBuiltIn: true),
+        PromptTemplate(title: "Performance Audit", body: "Analyze {{file}} for performance issues. Suggest optimizations with benchmarks.", category: "Debug", icon: "gauge.with.dots.needle.50percent", isBuiltIn: true),
+        PromptTemplate(title: "Git Commit Message", body: "Write a commit message for these changes:\n{{changes}}", category: "Git", icon: "arrow.triangle.branch", isBuiltIn: true),
+        PromptTemplate(title: "Issue Description", body: "Write a GitHub issue for: {{description}}. Include acceptance criteria and technical notes.", category: "Git", icon: "exclamationmark.circle", isBuiltIn: true),
     ]
 }
 
@@ -210,6 +226,7 @@ struct ChatMessage: Identifiable, Codable {
     var branchIndex: Int?
     var thinkingText: String?
     var errorKind: MessageErrorKind?
+    var feedbackCategory: String?
 
     enum Role: String, Codable {
         case user, assistant
@@ -237,6 +254,7 @@ struct ChatMessage: Identifiable, Codable {
         self.branchIndex = nil
         self.thinkingText = nil
         self.errorKind = nil
+        self.feedbackCategory = nil
     }
 
     // Backwards-compatible decoding
@@ -260,5 +278,6 @@ struct ChatMessage: Identifiable, Codable {
         branchIndex = try c.decodeIfPresent(Int.self, forKey: .branchIndex)
         thinkingText = try c.decodeIfPresent(String.self, forKey: .thinkingText)
         errorKind = try c.decodeIfPresent(MessageErrorKind.self, forKey: .errorKind)
+        feedbackCategory = try c.decodeIfPresent(String.self, forKey: .feedbackCategory)
     }
 }
