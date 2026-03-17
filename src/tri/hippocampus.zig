@@ -49,7 +49,7 @@ pub const MemoryKind = enum {
     rule,
     @"error",
     observation,
-    cellhealth,  // C1: Cell health events for organism learning
+    cellhealth, // C1: Cell health events for organism learning
 
     pub fn toString(self: MemoryKind) []const u8 {
         return switch (self) {
@@ -382,10 +382,10 @@ pub fn writeObservation(allocator: Allocator, agent_name: []const u8, summary_te
 pub const CellHealthData = struct {
     cell_id: []const u8,
     cell_name: []const u8,
-    health_score: u8,        // 0-100
-    health_delta: i8,        // change from previous scan
-    bio_system: []const u8,   // dna, brain, immune, regen, body
-    trigger: []const u8,      // "scan", "fix", "regenerate", "manual"
+    health_score: u8, // 0-100
+    health_delta: i8, // change from previous scan
+    bio_system: []const u8, // dna, brain, immune, regen, body
+    trigger: []const u8, // "scan", "fix", "regenerate", "manual"
     files_total: u32,
     files_generated: u32,
     files_manual: u32,
@@ -414,10 +414,7 @@ pub fn writeCellHealth(allocator: Allocator, cell_data: CellHealthData) !void {
 
     // Build summary text
     var summary_buffer: [128]u8 = undefined;
-    const summary = try std.fmt.bufPrint(&summary_buffer,
-        "{s} health: {d} ({s}) {d} files",
-        .{ cell_data.cell_name, cell_data.health_score, cell_data.bio_system, cell_data.files_total }
-    );
+    const summary = try std.fmt.bufPrint(&summary_buffer, "{s} health: {d} ({s}) {d} files", .{ cell_data.cell_name, cell_data.health_score, cell_data.bio_system, cell_data.files_total });
 
     // Create and write record
     var record = MemoryRecord{};
@@ -1262,11 +1259,11 @@ fn importArenaBattles(allocator: Allocator) !void {
     defer history_file.close();
 
     var buf: [1024 * 64]u8 = undefined;
-    const content = try history_file.readAll(&buf);
+    const content_len = try history_file.readAll(&buf);
 
     var imported: u32 = 0;
     var skipped: u32 = 0;
-    var lines = std.mem.splitScalar(u8, content, '\n');
+    var lines = std.mem.splitScalar(u8, buf[0..content_len], '\n');
 
     // Track imported records by hash for deduplication
     var imported_hashes = std.StringHashMap(void).init(allocator);
@@ -1284,7 +1281,7 @@ fn importArenaBattles(allocator: Allocator) !void {
     defer existing.deinit(allocator);
 
     for (existing.items) |rec| {
-        const hash = try recordHash(allocator, rec);
+        const hash = try recordHash(allocator, &rec);
         try imported_hashes.put(hash, {});
     }
 
@@ -1308,8 +1305,7 @@ fn importArenaBattles(allocator: Allocator) !void {
         const ts: u64 = @intCast(std.time.timestamp());
         temp_rec.ts = ts;
         copyToFixed(32, &temp_rec.agent_buf, &temp_rec.agent_len, "arena");
-        copyToFixed(256, &temp_rec.summary_buf, &temp_rec.summary_len,
-            try std.fmt.allocPrint(allocator, "arena: {s} vs {s} → {s}", .{ winner, loser, result }));
+        copyToFixed(256, &temp_rec.summary_buf, &temp_rec.summary_len, try std.fmt.allocPrint(allocator, "arena: {s} vs {s} → {s}", .{ winner, loser, result }));
 
         const hash = try recordHash(allocator, &temp_rec);
         if (imported_hashes.contains(hash)) {
@@ -1319,16 +1315,10 @@ fn importArenaBattles(allocator: Allocator) !void {
 
         // Write episode to hippocampus
         var summary_buf: [256]u8 = undefined;
-        const summary = std.fmt.bufPrint(&summary_buf,
-            "arena battle: {s} vs {s} on {s} → {s}",
-            .{ winner, loser, task_id, result }
-        ) catch "arena battle";
+        const summary = std.fmt.bufPrint(&summary_buf, "arena battle: {s} vs {s} on {s} → {s}", .{ winner, loser, task_id, result }) catch "arena battle";
 
         var data_buf: [512]u8 = undefined;
-        const data_json = std.fmt.bufPrint(&data_buf,
-            "{{\"winner\":\"{s}\",\"loser\":\"{s}\",\"task_id\":\"{s}\",\"result\":\"{s}\"}}",
-            .{ winner, loser, task_id, result }
-        ) catch "{}";
+        const data_json = std.fmt.bufPrint(&data_buf, "{{\"winner\":\"{s}\",\"loser\":\"{s}\",\"task_id\":\"{s}\",\"result\":\"{s}\"}}", .{ winner, loser, task_id, result }) catch "{}";
 
         try writeEpisode(allocator, "arena", summary, data_json);
         try imported_hashes.put(hash, {});
@@ -1363,7 +1353,7 @@ fn kindColor(kind: MemoryKind) []const u8 {
         .rule => YELLOW,
         .@"error" => RED,
         .observation => WHITE,
-        .cellhealth => CYAN,  // Health events - same as learning
+        .cellhealth => CYAN, // Health events - same as learning
     };
 }
 
