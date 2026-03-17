@@ -16,6 +16,82 @@ public enum AppearanceMode: String, CaseIterable {
     }
 }
 
+// MARK: - Theme Variant
+
+public enum ThemeVariant: String, CaseIterable, Identifiable {
+    case deepSpace = "deepSpace"
+    case oledBlack = "oledBlack"
+    case midnightBlue = "midnightBlue"
+
+    public var id: String { rawValue }
+
+    var name: String {
+        switch self {
+        case .deepSpace: return "Deep Space"
+        case .oledBlack: return "OLED Black"
+        case .midnightBlue: return "Midnight Blue"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .deepSpace: return "Rich dark grays with green accent"
+        case .oledBlack: return "Pure black for OLED displays"
+        case .midnightBlue: return "Dark blue tones with purple tint"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .deepSpace: return "sparkles"
+        case .oledBlack: return "circle.fill"
+        case .midnightBlue: return "moon.stars.fill"
+        }
+    }
+
+    // MARK: - Theme Colors
+
+    var bgWindowDark: UInt32 {
+        switch self {
+        case .deepSpace: return 0x0A0A0F
+        case .oledBlack: return 0x000000
+        case .midnightBlue: return 0x0A0E1A
+        }
+    }
+
+    var bgSidebarDark: UInt32 {
+        switch self {
+        case .deepSpace: return 0x0D0D12
+        case .oledBlack: return 0x000000
+        case .midnightBlue: return 0x0D111F
+        }
+    }
+
+    var bgCardDark: UInt32 {
+        switch self {
+        case .deepSpace: return 0x121218
+        case .oledBlack: return 0x050505
+        case .midnightBlue: return 0x131B2E
+        }
+    }
+
+    var bgCardBorderDark: UInt32 {
+        switch self {
+        case .deepSpace: return 0x1A1A24
+        case .oledBlack: return 0x111111
+        case .midnightBlue: return 0x1E2A40
+        }
+    }
+
+    var accentColor: UInt32 {
+        switch self {
+        case .deepSpace: return 0x00FF88
+        case .oledBlack: return 0x00FF88
+        case .midnightBlue: return 0x00D9FF
+        }
+    }
+}
+
 // Theme from src/trinity_node/ui.zig THEME struct
 struct TrinityTheme {
     // MARK: - Appearance Storage
@@ -34,16 +110,24 @@ struct TrinityTheme {
         }
     }
 
+    // MARK: - Theme Variant Storage
+
+    @AppStorage("selectedTheme") static var selectedThemeRaw: String = ThemeVariant.deepSpace.rawValue
+
+    static var selectedTheme: ThemeVariant {
+        ThemeVariant(rawValue: selectedThemeRaw) ?? .deepSpace
+    }
+
     // MARK: - Adaptive Colors
 
     static var bgWindow: Color {
-        Color(light: Color(hex: 0xF5F5F5), dark: Color(hex: 0x000000))
+        Color(light: Color(hex: 0xF5F5F5), dark: Color(hex: selectedTheme.bgWindowDark))
     }
     static var bgSidebar: Color {
-        Color(light: Color(hex: 0xEBEBEB), dark: Color(hex: 0x050505))
+        Color(light: Color(hex: 0xEBEBEB), dark: Color(hex: selectedTheme.bgSidebarDark))
     }
     static var bgCard: Color {
-        Color(light: Color(hex: 0xFFFFFF), dark: Color(hex: 0x0A0A0A))
+        Color(light: Color(hex: 0xFFFFFF), dark: Color(hex: selectedTheme.bgCardDark))
     }
     static var textPrimary: Color {
         Color(light: .black, dark: .white)
@@ -52,15 +136,19 @@ struct TrinityTheme {
         Color(light: Color(hex: 0x555555), dark: Color(hex: 0xAAAAAA))
     }
     static var bgCardBorder: Color {
-        Color(light: Color(hex: 0xDDDDDD), dark: Color(hex: 0x1A1A1A))
+        Color(light: Color(hex: 0xDDDDDD), dark: Color(hex: selectedTheme.bgCardBorderDark))
     }
 
     // MARK: - Fixed Colors (same in both modes)
 
-    static let accent      = Color(hex: 0x00FF88)
+    static var accent: Color {
+        Color(hex: selectedTheme.accentColor)
+    }
     static let golden      = Color(hex: 0xFFD700)
     static let purple      = Color(hex: 0x8B5CF6)
-    static let statusOK    = Color(hex: 0x00FF88)
+    static var statusOK: Color {
+        Color(hex: selectedTheme.accentColor)
+    }
     static let statusWarn  = Color(hex: 0xFFD700)
     static let statusError = Color(hex: 0xEF4444)
 
@@ -124,6 +212,41 @@ struct TrinityTheme {
 
     static func headingSize(_ sizeCategory: DynamicTypeSize = .medium) -> CGFloat {
         return bodySize(sizeCategory) + 5
+    }
+
+    // MARK: - Animation Tokens
+
+    /// Spring animation for message entrance (smooth, responsive)
+    static let springResponse: Double = 0.45
+    static let springDampingFraction: Double = 0.75
+    static let springBlendDuration: Double = 0.35
+
+    /// Stagger delay for multiple messages appearing (cascade effect)
+    static let messageStaggerDelay: Double = 0.05
+
+    /// Scale values for message entrance polish
+    static let messageEntranceScale: CGFloat = 0.92
+    static let messageExitScale: CGFloat = 0.98
+
+    /// Standard spring animation for UI elements
+    static func springAnimation(response: Double = springResponse,
+                                dampingFraction: Double = springDampingFraction) -> Animation {
+        .spring(response: response, dampingFraction: dampingFraction, blendDuration: springBlendDuration)
+    }
+
+    /// Quick spring for snappy interactions
+    static func quickSpring() -> Animation {
+        .spring(response: 0.3, dampingFraction: 0.7, blendDuration: 0.2)
+    }
+
+    /// Gentle spring for subtle animations
+    static func gentleSpring() -> Animation {
+        .spring(response: 0.6, dampingFraction: 0.8, blendDuration: 0.4)
+    }
+
+    /// Fade-only animation for reduced motion accessibility
+    static var fadeAnimation: Animation {
+        .easeInOut(duration: 0.25)
     }
 }
 
