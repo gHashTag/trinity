@@ -7,6 +7,7 @@
 const std = @import("std");
 const qt = @import("queen_types.zig");
 const faculty_types = @import("faculty_types.zig");
+const thalamus = @import("thalamus.zig");
 
 const Allocator = std.mem.Allocator;
 const FacultySnapshot = faculty_types.FacultySnapshot;
@@ -55,7 +56,7 @@ pub fn collectAllSenses(allocator: Allocator, snapshot: FacultySnapshot) SenseRe
     s.ouroboros_score = readOuroborosScore();
 
     // 11. Experience episodes
-    s.experience_count = countExperienceEpisodes();
+    s.experience_count = thalamus.countEpisodes(allocator);
 
     // 12. Network (Telegram reachable — skip in collect, check lazily)
     s.network_ok = true; // assume OK; queen_telegram checks actual connectivity
@@ -68,13 +69,13 @@ pub fn collectAllSenses(allocator: Allocator, snapshot: FacultySnapshot) SenseRe
     s.stale_arena_hours = calcStaleArenaHours();
 
     // 15. Agent spawn issues (from farm events)
-    s.agent_spawn_issues = countAgentSpawnIssues();
+    s.agent_spawn_issues = @intCast(@min(thalamus.countFarmEvents(allocator, "agent:spawn"), 255));
 
     // 16. Last git push timestamp
     s.last_git_push_ts = readGitPushTs();
 
     // 17. Finished containers
-    s.finished_containers = countFinishedContainers();
+    s.finished_containers = @intCast(@min(thalamus.countFarmEvents(allocator, "FINISHED"), 255));
 
     // 18. Last issue comment timestamp
     s.last_issue_comment_ts = readLastIssueCommentTs();
