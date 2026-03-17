@@ -1,0 +1,31 @@
+[cell]
+id = "trinity.tri.cloud"
+name = "Cloud Orchestration"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Cloud dev pipeline: Railway containers, CI gate, agent spawning"
+capabilities = ["cloud", "containers", "ci"]
+tests = 5
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "domain"
+
+[source]
+file_patterns = ["tri_cloud*.zig", "cloud_orchestrator*.zig", "tri_dev.zig"]
+
+[contributes]
+commands = ["cloud spawn", "cloud kill", "cloud agents", "cloud status"]
+exports = ["runCloudCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
