@@ -526,46 +526,127 @@ final class ThreadStore: ObservableObject {
 
     // MARK: - Export Formats
 
-    /// Export thread as self-contained HTML
+    /// Export thread as self-contained HTML with dark theme and code highlighting
     func exportAsHTML(_ threadID: UUID) -> String? {
         guard let thread = threads.first(where: { $0.id == threadID }) else { return nil }
         let fmt = DateFormatter()
         fmt.dateFormat = "yyyy-MM-dd HH:mm"
+        let titleEsc = Self.htmlEscape(thread.title)
         var html = """
         <!DOCTYPE html>
-        <html><head><meta charset="utf-8">
-        <title>\(thread.title)</title>
+        <html lang="en"><head><meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>\(titleEsc)</title>
         <style>
-        body { background: #0a0a0a; color: #d1d1d1; font-family: -apple-system, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 20px; }
-        h1 { color: #00FF88; }
-        .meta { color: #888; font-size: 12px; margin-bottom: 32px; }
-        .msg { padding: 16px 0; border-bottom: 1px solid #1a1a1a; }
+        :root { --bg: #0a0a0a; --fg: #d1d1d1; --accent: #00FF88; --surface: #141414; --border: #1e1e1e; --muted: #666; --code-bg: #111; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--fg); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, sans-serif; max-width: 860px; margin: 0 auto; padding: 48px 24px; line-height: 1.6; }
+        h1 { color: var(--accent); font-size: 24px; margin-bottom: 8px; }
+        .meta { color: var(--muted); font-size: 13px; margin-bottom: 40px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
+        .meta span { margin-right: 16px; }
+        .msg { padding: 20px 0; border-bottom: 1px solid var(--border); }
+        .msg:last-child { border-bottom: none; }
         .user { text-align: right; }
-        .user .content { background: #1a1a1a; display: inline-block; padding: 12px 16px; border-radius: 16px; font-weight: 600; }
-        .assistant .role { color: #00FF88; font-size: 12px; margin-bottom: 4px; }
-        .model { color: #666; font-size: 11px; }
-        pre { background: #111; padding: 12px; border-radius: 8px; overflow-x: auto; }
-        code { font-family: 'SF Mono', monospace; }
+        .user .bubble { background: var(--surface); display: inline-block; padding: 14px 18px; border-radius: 18px 18px 4px 18px; max-width: 85%; text-align: left; font-weight: 500; }
+        .assistant .role { color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; }
+        .assistant .model-tag { color: var(--muted); font-size: 11px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+        .assistant .content { padding: 4px 0; }
+        .metrics { color: var(--muted); font-size: 11px; margin-top: 8px; font-family: 'SF Mono', 'Menlo', monospace; }
+        .thinking { margin: 8px 0; padding: 10px 14px; background: #0d1a0f; border-left: 3px solid var(--accent); border-radius: 4px; font-size: 13px; color: #8a8a8a; }
+        .thinking summary { cursor: pointer; color: var(--accent); font-size: 12px; font-weight: 500; }
+        pre { background: var(--code-bg); padding: 14px 16px; border-radius: 8px; overflow-x: auto; margin: 10px 0; border: 1px solid var(--border); }
+        code { font-family: 'SF Mono', 'Menlo', 'Cascadia Code', monospace; font-size: 13px; }
+        p code { background: var(--code-bg); padding: 2px 6px; border-radius: 4px; font-size: 0.9em; }
+        .kw { color: #c678dd; } .str { color: #98c379; } .cm { color: #5c6370; font-style: italic; } .fn { color: #61afef; } .num { color: #d19a66; }
+        a { color: var(--accent); }
+        blockquote { border-left: 3px solid var(--accent); padding-left: 14px; margin: 10px 0; color: #999; }
         </style></head><body>
-        <h1>\(thread.title)</h1>
-        <div class="meta">\(fmt.string(from: thread.createdAt)) | \(thread.messages.count) messages</div>
+        <h1>\(titleEsc)</h1>
+        <div class="meta"><span>\(fmt.string(from: thread.createdAt))</span><span>\(thread.messages.count) messages</span></div>
         """
         for msg in thread.messages {
             let cls = msg.role == .user ? "user" : "assistant"
             html += "<div class=\"msg \(cls)\">"
-            if msg.role == .assistant {
-                html += "<div class=\"role\">Queen <span class=\"model\">\(msg.modelID ?? "")</span></div>"
+            if msg.role == .user {
+                html += "<div class=\"bubble\">\(Self.htmlFormatText(msg.text))</div>"
+            } else {
+                let modelStr = msg.modelID.map { " <span class=\"model-tag\">\(Self.htmlEscape($0))</span>" } ?? ""
+                html += "<div class=\"role\">Queen\(modelStr)</div>"
+                if let thinking = msg.thinkingText, !thinking.isEmpty {
+                    html += "<details class=\"thinking\"><summary>Thinking (\(thinking.count) chars)</summary>\(Self.htmlFormatText(thinking))</details>"
+                }
+                html += "<div class=\"content\">\(Self.htmlFormatText(msg.text))</div>"
             }
-            let escaped = msg.text
-                .replacingOccurrences(of: "&", with: "&amp;")
-                .replacingOccurrences(of: "<", with: "&lt;")
-                .replacingOccurrences(of: ">", with: "&gt;")
-                .replacingOccurrences(of: "\n", with: "<br>")
-            html += "<div class=\"content\">\(escaped)</div>"
+            // Metrics
+            var metricParts: [String] = []
+            if let ttfb = msg.ttfbMs { metricParts.append("TTFB: \(ttfb)ms") }
+            if let tps = msg.tokPerSec { metricParts.append(String(format: "%.1f tok/s", tps)) }
+            if let tokens = msg.outputTokens { metricParts.append("\(tokens) tokens") }
+            if let total = msg.totalMs { metricParts.append("total: \(total)ms") }
+            if !metricParts.isEmpty {
+                html += "<div class=\"metrics\">\(metricParts.joined(separator: " | "))</div>"
+            }
             html += "</div>"
         }
         html += "</body></html>"
         return html
+    }
+
+    // MARK: - HTML Helpers
+
+    /// Escape HTML special characters
+    private static func htmlEscape(_ text: String) -> String {
+        text.replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+    }
+
+    /// Convert text with markdown-style code blocks to HTML
+    private static func htmlFormatText(_ text: String) -> String {
+        var result = ""
+        let lines = text.components(separatedBy: "\n")
+        var inCodeBlock = false
+        var codeLang = ""
+        var codeBuffer = ""
+
+        for line in lines {
+            if line.hasPrefix("```") && !inCodeBlock {
+                inCodeBlock = true
+                codeLang = String(line.dropFirst(3)).trimmingCharacters(in: .whitespaces)
+                codeBuffer = ""
+            } else if line.hasPrefix("```") && inCodeBlock {
+                inCodeBlock = false
+                let langAttr = codeLang.isEmpty ? "" : " data-lang=\"\(htmlEscape(codeLang))\""
+                result += "<pre><code\(langAttr)>\(htmlEscape(codeBuffer))</code></pre>"
+                codeBuffer = ""
+                codeLang = ""
+            } else if inCodeBlock {
+                if !codeBuffer.isEmpty { codeBuffer += "\n" }
+                codeBuffer += line
+            } else {
+                // Inline code
+                var processed = htmlEscape(line)
+                // Inline `code`
+                while let start = processed.range(of: "`"),
+                      let end = processed[start.upperBound...].range(of: "`") {
+                    let code = String(processed[start.upperBound..<end.lowerBound])
+                    processed = String(processed[..<start.lowerBound]) + "<code>" + code + "</code>" + String(processed[end.upperBound...])
+                }
+                // Bold **text**
+                while let start = processed.range(of: "**"),
+                      let end = processed[start.upperBound...].range(of: "**") {
+                    let bold = String(processed[start.upperBound..<end.lowerBound])
+                    processed = String(processed[..<start.lowerBound]) + "<strong>" + bold + "</strong>" + String(processed[end.upperBound...])
+                }
+                result += processed + "<br>"
+            }
+        }
+        // Handle unclosed code block
+        if inCodeBlock {
+            result += "<pre><code>\(htmlEscape(codeBuffer))</code></pre>"
+        }
+        return result
     }
 
     /// Export thread as OpenAI-compatible JSON
