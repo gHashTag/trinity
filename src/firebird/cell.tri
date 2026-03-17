@@ -20,15 +20,12 @@ type = "agent"
 
 [contributes]
 commands = ["browse", "navigate"]
+exports = ["runFirebirdCommand"]
 tri_subcommands = ["firebird browse"]
 events = ["on_page_loaded"]
 binaries = ["firebird"]
 
 [dependencies]
-trinity.vsa = "^1.0.0"
-trinity.depin = "^1.0.0"
-trinity.trinity-node = "^1.0.0"
-trinity.b2t = "^1.0.0"
 
 [permissions]
 level = "L2"

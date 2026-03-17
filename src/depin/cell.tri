@@ -10,14 +10,14 @@ description = "Auto-generated cell for depin"
 capabilities = ["main", "detectPlatform", "detectArch", "detectCPUCores", "detectMemoryMB"]
 files = 4
 tests = 16
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "agent"
-type = "library"
+type = "agent"
 
 [contributes]
-commands = []
+commands = ["main", "detectPlatform", "detectArch"]
 tri_subcommands = []
 events = []
 

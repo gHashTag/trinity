@@ -10,14 +10,14 @@ description = "Auto-generated cell for hyperspace"
 capabilities = ["init", "normSquared", "isValid", "generateAll", "phiCoordinates"]
 files = 3
 tests = 28
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
-type = "library"
+type = "backend"
 
 [contributes]
-commands = []
+commands = ["init", "normSquared", "isValid"]
 tri_subcommands = []
 events = []
 

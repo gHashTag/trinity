@@ -23,9 +23,9 @@ commands = ["battle", "leaderboard", "judge"]
 tri_subcommands = ["arena battle", "arena leaderboard"]
 events = ["on_battle_complete", "on_elo_update"]
 binaries = ["arena"]
+exports = ["runArenaCommand"]
 
 [dependencies]
-trinity.hslm = "^1.0.0"
 
 [permissions]
 level = "L2"

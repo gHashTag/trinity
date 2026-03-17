@@ -10,14 +10,14 @@ description = "Auto-generated cell for time"
 capabilities = ["compute", "planckTimeSacred", "planckTimePhi", "cosmologicalTime", "ageOfUniverse"]
 files = 4
 tests = 68
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "sacred"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["compute", "planckTimeSacred", "planckTimePhi"]
 tri_subcommands = []
 events = []
 

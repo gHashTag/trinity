@@ -10,14 +10,14 @@ description = "Auto-generated cell for reality"
 capabilities = ["formulaCount", "startFormulaId", "displayName", "emoji", "color"]
 files = 1
 tests = 12
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "sacred"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["formulaCount", "startFormulaId", "displayName"]
 tri_subcommands = []
 events = []
 

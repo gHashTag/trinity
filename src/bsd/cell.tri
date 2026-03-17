@@ -20,6 +20,7 @@ type = "tool"
 
 [contributes]
 commands = ["scan", "verify"]
+exports = ["runBsdCommand"]
 tri_subcommands = ["bsd scan", "bsd verify"]
 events = []
 

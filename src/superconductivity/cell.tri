@@ -10,14 +10,14 @@ description = "Auto-generated cell for superconductivity"
 capabilities = ["criticalTemperature", "cooperPairEnergy", "isotopeEffect", "densityOfStatesCoupling", "cuprateCriticalTemperature"]
 files = 1
 tests = 24
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["criticalTemperature", "cooperPairEnergy", "isotopeEffect"]
 tri_subcommands = []
 events = []
 

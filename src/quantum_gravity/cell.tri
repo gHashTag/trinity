@@ -10,14 +10,14 @@ description = "Auto-generated cell for quantum_gravity"
 capabilities = ["init", "normSquared", "isValid", "generateAll", "quantumProjection"]
 files = 1
 tests = 9
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["init", "normSquared", "isValid"]
 tri_subcommands = []
 events = []
 

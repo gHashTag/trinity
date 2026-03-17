@@ -20,11 +20,11 @@ type = "backend"
 
 [contributes]
 commands = ["synth", "flash", "program"]
+exports = ["runSynthCommand"]
 tri_subcommands = ["fpga synth", "fpga flash"]
 events = ["on_synthesis_complete", "on_flash_complete"]
 
 [dependencies]
-trinity.common = "^1.0.0"
 
 [permissions]
 level = "L2"

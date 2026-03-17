@@ -10,14 +10,14 @@ description = "Auto-generated cell for economy"
 capabilities = ["amountTri", "totalEarnedTri", "totalClaimedTri", "pendingTri", "init"]
 files = 1
 tests = 5
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["amountTri", "totalEarnedTri", "totalClaimedTri"]
 tri_subcommands = []
 events = []
 

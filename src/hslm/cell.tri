@@ -20,15 +20,12 @@ type = "backend"
 
 [contributes]
 commands = ["train", "eval", "export", "checkpoint"]
+exports = ["runTrainCommand", "runInferCommand"]
 tri_subcommands = ["farm train", "farm eval", "farm evolve"]
 events = ["on_step_complete", "on_epoch_end", "on_checkpoint"]
 binaries = ["hslm-train", "hslm-bench", "bpe-train"]
 
 [dependencies]
-trinity.sacred = "^1.0.0"
-trinity.tvc = ">=1.0.0"
-trinity.consciousness = "^1.0.0"
-trinity.bsd = "^1.0.0"
 
 [permissions]
 level = "L2"

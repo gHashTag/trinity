@@ -10,14 +10,14 @@ description = "Auto-generated cell for api"
 capabilities = ["toString", "toJson", "init", "deinit", "get"]
 files = 7
 tests = 32
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["toString", "toJson", "init"]
 tri_subcommands = []
 events = []
 

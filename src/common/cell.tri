@@ -10,14 +10,14 @@ description = "Auto-generated cell for common"
 capabilities = ["isRecoverable", "getDescription", "from", "value", "isZero"]
 files = 5
 tests = 42
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["isRecoverable", "getDescription", "from"]
 tri_subcommands = []
 events = []
 

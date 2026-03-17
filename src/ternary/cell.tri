@@ -10,14 +10,14 @@ description = "Auto-generated cell for ternary"
 capabilities = ["ln", "log2", "informationDensity", "optimalBase", "ternaryEfficiencyRatio"]
 files = 1
 tests = 11
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "vsa"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["ln", "log2", "informationDensity"]
 tri_subcommands = []
 events = []
 
