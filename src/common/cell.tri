@@ -18,6 +18,7 @@ type = "library"
 
 [contributes]
 commands = ["isRecoverable", "getDescription", "from"]
+exports = ["isRecoverable", "getDescription", "from", "value", "isZero"]
 tri_subcommands = []
 events = []
 

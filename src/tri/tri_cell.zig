@@ -2354,16 +2354,25 @@ fn runLint(allocator: Allocator, args: []const []const u8) !void {
                         is_cross_cell = true;
                     } else if (std.mem.indexOf(u8, import_path, "/") != null) {
                         // Path-based import — check if it traverses into another cell dir
-                        const path_pattern = std.fmt.allocPrint(allocator, "/{s}/", .{other_module}) catch continue;
-                        defer allocator.free(path_pattern);
-                        if (std.mem.indexOf(u8, import_path, path_pattern) != null) {
-                            is_cross_cell = true;
+                        // Skip overly broad modules (e.g. "src") to avoid false positives
+                        if (other_module.len > 3) {
+                            const path_pattern = std.fmt.allocPrint(allocator, "/{s}/", .{other_module}) catch continue;
+                            defer allocator.free(path_pattern);
+                            if (std.mem.indexOf(u8, import_path, path_pattern) != null) {
+                                is_cross_cell = true;
+                            }
                         }
                     } else if (std.mem.endsWith(u8, import_path, ".zig")) {
                         // Filename import — stem must exactly match module name
+                        // But only if the file does NOT exist locally (otherwise it's a same-cell import)
                         const stem = import_path[0 .. import_path.len - 4];
                         if (std.mem.eql(u8, stem, other_module)) {
-                            is_cross_cell = true;
+                            const local_check = std.fmt.allocPrint(allocator, "{s}/{s}", .{ cell_path, import_path }) catch continue;
+                            defer allocator.free(local_check);
+                            const local_exists = if (std.fs.cwd().access(local_check, .{})) true else |_| false;
+                            if (!local_exists) {
+                                is_cross_cell = true;
+                            }
                         }
                     }
 
@@ -4420,6 +4429,10 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
             computeDepsAccuracy(allocator, path, cell, all_cells, &path_to_cell);
         if (dep_acc.total == 0) {
             deps_score = 25; // truly independent, no deps needed
+        } else if (dep_acc.missing == 0 and dep_acc.confirmed == 0) {
+            // All deps declared but none detected via @import scan (indirect/transitive use).
+            // Don't penalize — cell is honest about its dependencies, scanner just can't confirm.
+            deps_score = 20;
         } else {
             const ratio: u8 = @intCast(@min(15, dep_acc.confirmed * 15 / dep_acc.total));
             deps_score = ratio + (if (dep_acc.missing == 0) @as(u8, 10) else 0);

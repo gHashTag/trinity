@@ -26,7 +26,6 @@ events = ["on_synthesis_complete", "on_flash_complete"]
 
 [dependencies]
 trinity.infra = "^1.0.0"
-trinity.common = "^1.0.0"
 
 [permissions]
 level = "L2"

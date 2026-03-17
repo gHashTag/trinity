@@ -59,4 +59,21 @@ class NotificationService {
     func approvalNeeded(action: String) {
         notify(title: "Approval Needed", body: "Queen wants to execute: \(action)", sound: "Morse")
     }
+
+    func streamCompleted(tokens: Int, duration: TimeInterval, model: String) {
+        // Only notify for long streams (>30s) when app is not frontmost
+        guard duration > 30 else { return }
+        guard !NSApp.isActive else { return }
+        let durationStr = duration < 60 ? "\(Int(duration))s" : String(format: "%.1fm", duration / 60)
+        notify(
+            title: "Response Ready",
+            body: "\(model): \(tokens) tokens in \(durationStr)",
+            sound: "Glass"
+        )
+    }
+
+    func apiError(provider: String, error: String) {
+        guard !NSApp.isActive else { return }
+        notify(title: "API Error", body: "\(provider): \(error)", sound: "Basso")
+    }
 }
