@@ -173,6 +173,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "orphans")) return runOrphans(allocator);
     if (std.mem.eql(u8, sub, "bio")) return runBio(allocator);
     if (std.mem.eql(u8, sub, "fix-bio")) return runFixBio(allocator, rest);
+    if (std.mem.eql(u8, sub, "watch")) return runWatch(allocator, rest);
     if (std.mem.eql(u8, sub, "explain")) return runExplain(allocator, rest);
     if (std.mem.eql(u8, sub, "map")) return runMap(allocator);
     if (std.mem.eql(u8, sub, "contracts")) return runContracts(allocator);
@@ -4149,17 +4150,17 @@ fn runFixBio(allocator: Allocator, args: []const []const u8) !void {
     defer allocator.free(all_cells);
 
     // Find cells without [biology] section
-    var missing = std.ArrayList([]const u8).init(allocator);
+    var missing = std.ArrayList([]const u8){};
     defer {
         for (missing.items) |p| allocator.free(p);
-        missing.deinit();
+        missing.deinit(allocator);
     }
 
     for (all_cells) |c| {
         const m = c.manifest;
         if (m.bio_system.len == 0) {
             const path_copy = try allocator.dupe(u8, c.manifest.path);
-            try missing.append(path_copy);
+            try missing.append(allocator, path_copy);
         }
     }
 
@@ -4257,7 +4258,7 @@ fn patchCellBio(allocator: Allocator, cell_path: []const u8, suggestion: BioSugg
     }
 
     // Build [biology] section
-    var bio_section = std.ArrayList(u8).init(allocator);
+    var bio_section = std.array_list.Managed(u8).init(allocator);
     defer bio_section.deinit();
 
     try bio_section.appendSlice("\n[biology]\n");
@@ -4275,6 +4276,7 @@ fn patchCellBio(allocator: Allocator, cell_path: []const u8, suggestion: BioSugg
     const insert_pos = if (std.mem.indexOf(u8, content, "[security]")) |pos| pos else content.len;
 
     var new_content = std.ArrayList(u8).init(allocator);
+    defer new_content.deinit(allocator);
     try new_content.appendSlice(content[0..insert_pos]);
     try new_content.appendSlice(bio_section.items);
     if (insert_pos < content.len) {

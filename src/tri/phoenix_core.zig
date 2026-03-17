@@ -551,21 +551,15 @@ pub const PhoenixCore = struct {
                 gop.value_ptr.* += 1;
             }
 
-                var iter = agent_groups.iterator();
-                while (iter.next()) |entry| {
-                    var buf: [256]u8 = undefined;
-                    var data_buf: [128]u8 = undefined;
-                    const summary = std.fmt.bufPrint(&buf,
-                        "Week summary {s}: {d} episodes consolidated (sleep cycle)",
-                        .{ entry.key_ptr.*, entry.value_ptr.* }
-                    ) catch "consolidated";
-                    const data = std.fmt.bufPrint(&data_buf,
-                        "{{\"episodes\":{d},\"consolidated_at\":{d}}}",
-                        .{ entry.value_ptr.*, now_ts }
-                    ) catch "{}";
-                    try hippocampus.writeRule(self.allocator, entry.key_ptr.*, summary, data);
-                    rules_created += 1;
-                }
+            var iter = agent_groups.iterator();
+            while (iter.next()) |entry| {
+                var buf: [256]u8 = undefined;
+                var data_buf: [128]u8 = undefined;
+                const summary = std.fmt.bufPrint(&buf, "Week summary {s}: {d} episodes consolidated (sleep cycle)", .{ entry.key_ptr.*, entry.value_ptr.* }) catch "consolidated";
+                const data = std.fmt.bufPrint(&data_buf, "{{\"episodes\":{d},\"consolidated_at\":{d}}}", .{ entry.value_ptr.*, now_ts }) catch "{}";
+                try hippocampus.writeRule(self.allocator, entry.key_ptr.*, summary, data);
+                rules_created += 1;
+            }
         }
 
         std.debug.print("  {s}✅{s} Consolidated {d} old episodes → {d} rules\n\n", .{ GREEN, RESET, old_count, rules_created });
@@ -621,14 +615,8 @@ pub const PhoenixCore = struct {
         // Log sleep event
         var buf: [256]u8 = undefined;
         var data_buf: [128]u8 = undefined;
-        const sleep_summary = std.fmt.bufPrint(&buf,
-            "SLEEP: consolidated {d} episodes → {d} rules, dreamed {d} errors, imported arena",
-            .{ old_count, rules_created, recent_errors.items.len }
-        ) catch "sleep";
-        const sleep_data = std.fmt.bufPrint(&data_buf,
-            "{{\"old_episodes\":{d},\"rules_created\":{d},\"errors_dreamed\":{d}}}",
-            .{ old_count, rules_created, recent_errors.items.len }
-        ) catch "{}";
+        const sleep_summary = std.fmt.bufPrint(&buf, "SLEEP: consolidated {d} episodes → {d} rules, dreamed {d} errors, imported arena", .{ old_count, rules_created, recent_errors.items.len }) catch "sleep";
+        const sleep_data = std.fmt.bufPrint(&data_buf, "{{\"old_episodes\":{d},\"rules_created\":{d},\"errors_dreamed\":{d}}}", .{ old_count, rules_created, recent_errors.items.len }) catch "{}";
         try hippocampus.writeObservation(self.allocator, "phoenix", sleep_summary, sleep_data);
 
         std.debug.print("{s}═══════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
