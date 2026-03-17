@@ -24,6 +24,7 @@ const RailwayApi = railway_api.RailwayApi;
 
 const tri_commands = @import("tri_commands.zig");
 const farm_ws = @import("tri_farm_ws.zig");
+const hippocampus = @import("hippocampus.zig");
 const print = std.debug.print;
 
 // ANSI colors
@@ -763,6 +764,13 @@ fn appendMockLineage(
             ts,
         }) catch continue;
         lineage_file.writeAll(line) catch continue;
+
+        // Dual-write: mutation → hippocampus (permanent learning)
+        var ml_summary_buf: [256]u8 = undefined;
+        const ml_summary = std.fmt.bufPrint(&ml_summary_buf, "sevo mutation {s} parent={s}", .{
+            child_name, parent_name,
+        }) catch continue;
+        hippocampus.writeLearning(std.heap.page_allocator, "sevo", ml_summary, line) catch {};
     }
     print("  {s}✅ Lineage logged → {s} ({d} entries){s}\n", .{ GREEN, lineage_path, num_children, RESET });
 }
@@ -1802,6 +1810,19 @@ fn appendEventJsonl(svc_name: []const u8, detail: []const u8, step: u32) void {
         std.time.milliTimestamp(), svc_name, detail, step,
     }) catch return;
     file.writeAll(line) catch {};
+
+    // Dual-write: farm event → hippocampus (observation for routine, error for failures)
+    var summary_buf: [256]u8 = undefined;
+    const summary = std.fmt.bufPrint(&summary_buf, "farm {s}: {s} step={d}", .{ svc_name, detail, step }) catch return;
+    const is_failure = std.mem.indexOf(u8, detail, "kill") != null or
+        std.mem.indexOf(u8, detail, "crash") != null or
+        std.mem.indexOf(u8, detail, "fail") != null or
+        std.mem.indexOf(u8, detail, "spike") != null;
+    if (is_failure) {
+        hippocampus.writeError(std.heap.page_allocator, "farm", summary, line) catch {};
+    } else {
+        hippocampus.writeObservation(std.heap.page_allocator, "farm", summary, line) catch {};
+    }
 }
 
 fn findServiceById(state: *EvolutionState, svc_id: []const u8, acct_idx: u8) ?*ServiceEntry {
@@ -4074,6 +4095,13 @@ fn appendDeployLineage(
         ts,
     }) catch return;
     lineage_file.writeAll(line) catch return;
+
+    // Dual-write: lineage mutation → hippocampus (permanent learning)
+    var lsummary_buf: [256]u8 = undefined;
+    const lsummary = std.fmt.bufPrint(&lsummary_buf, "sevo deploy {s} parent={s} target={s} ok={s}", .{
+        config_name, parent_name, target_name, ok_str,
+    }) catch return;
+    hippocampus.writeLearning(std.heap.page_allocator, "sevo", lsummary, line) catch {};
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

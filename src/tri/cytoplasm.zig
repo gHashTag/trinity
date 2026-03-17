@@ -1203,10 +1203,14 @@ fn runAutoDetectDeps(allocator: Allocator, write_mode: bool) !void {
         var dir = std.fs.cwd().openDir(cell_path, .{ .iterate = true }) catch continue;
         defer dir.close();
 
+        const has_patterns = m.file_patterns.len > 2; // more than "[]"
+
         var walker = dir.iterate();
         while (walker.next() catch null) |entry| {
             if (entry.kind != .file) continue;
             if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+            // For virtual sub-cells, only scan files matching their patterns
+            if (has_patterns and !matchesFilePatterns(entry.name, m.file_patterns)) continue;
 
             // Read file content
             const content = dir.readFileAlloc(allocator, entry.name, 1048576) catch continue;
@@ -1367,10 +1371,10 @@ fn runPruneDeps(allocator: Allocator, write_mode: bool) !void {
         var dep_it = cell_parser.DepIterator.init(m.dependencies_raw);
         while (dep_it.next()) |dep_entry| declared_deps.put(dep_entry.id, {}) catch {};
 
-        // Scan actual imports
+        // Scan actual imports (filtered by file_patterns for virtual sub-cells)
         var detected_deps = std.StringHashMap(void).init(allocator);
         defer detected_deps.deinit();
-        scanCellImports(allocator, m.path, m.id, all_cells, &path_to_cell, &detected_deps);
+        scanCellImportsFiltered(allocator, m.path, m.id, m.file_patterns, all_cells, &path_to_cell, &detected_deps);
 
         var dit = declared_deps.iterator();
         while (dit.next()) |entry| {
@@ -1392,10 +1396,10 @@ fn runPruneDeps(allocator: Allocator, write_mode: bool) !void {
             const dep_acc = computeDepsAccuracy(allocator, m.path, cell_info, all_cells, &path_to_cell);
             if (dep_acc.extra == 0) continue;
 
-            // Find which deps to keep
+            // Find which deps to keep (filtered by file_patterns for virtual sub-cells)
             var detected_deps = std.StringHashMap(void).init(allocator);
             defer detected_deps.deinit();
-            scanCellImports(allocator, m.path, m.id, all_cells, &path_to_cell, &detected_deps);
+            scanCellImportsFiltered(allocator, m.path, m.id, m.file_patterns, all_cells, &path_to_cell, &detected_deps);
 
             // Rebuild cell.tri content, filtering out prunable dep lines
             const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{m.path}) catch continue;
@@ -1490,6 +1494,20 @@ fn scanCellImports(
     path_to_cell: *std.StringHashMap([]const u8),
     detected_deps: *std.StringHashMap(void),
 ) void {
+    scanCellImportsFiltered(allocator, cell_path, cell_id, "", all_cells, path_to_cell, detected_deps);
+}
+
+fn scanCellImportsFiltered(
+    allocator: Allocator,
+    cell_path: []const u8,
+    cell_id: []const u8,
+    file_patterns: []const u8,
+    all_cells: []const cell_parser.DiscoveredCell,
+    path_to_cell: *std.StringHashMap([]const u8),
+    detected_deps: *std.StringHashMap(void),
+) void {
+    const has_patterns = file_patterns.len > 2; // more than "[]"
+
     var dir = std.fs.cwd().openDir(cell_path, .{ .iterate = true }) catch return;
     defer dir.close();
 
@@ -1501,6 +1519,8 @@ fn scanCellImports(
         if (entry.kind != .file) continue;
         if (!std.mem.endsWith(u8, entry.basename, ".zig")) continue;
         if (std.mem.indexOf(u8, entry.path, ".zig-cache") != null) continue;
+        // For virtual sub-cells, only scan files matching their patterns
+        if (has_patterns and !matchesFilePatterns(entry.basename, file_patterns)) continue;
 
         const file_content = blk: {
             const file_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ cell_path, entry.path }) catch continue;
@@ -4261,12 +4281,17 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
             if (changed) {
                 std.debug.print("    {s}FIX{s}  {s}: {s}\n", .{ YELLOW, RESET, cell.id, changes_buf[0..changes_pos] });
                 if (!dry_run) {
-                    fixCellTriField(allocator, path, "level", code_perms.level);
-                    fixCellTriField(allocator, path, "filesystem", code_perms.fs);
-                    fixCellTriField(allocator, path, "network", code_perms.net);
-                    fixCellTriField(allocator, path, "process", code_perms.proc);
-                    fixCellTriField(allocator, path, "ffi", code_perms.ffi);
-                    fixCellTriField(allocator, path, "concurrency", code_perms.concurrency);
+                    // If [permissions] section is missing entirely, insert it
+                    if (cell.perm_level.len == 0) {
+                        insertPermissionsSection(allocator, path, code_perms);
+                    } else {
+                        fixCellTriField(allocator, path, "level", code_perms.level);
+                        fixCellTriField(allocator, path, "filesystem", code_perms.fs);
+                        fixCellTriField(allocator, path, "network", code_perms.net);
+                        fixCellTriField(allocator, path, "process", code_perms.proc);
+                        fixCellTriField(allocator, path, "ffi", code_perms.ffi);
+                        fixCellTriField(allocator, path, "concurrency", code_perms.concurrency);
+                    }
                     total_fixes += 1;
                 }
             }
@@ -4594,6 +4619,57 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
 }
 
 /// Fix a single key=value field in cell.tri
+/// Insert a complete [permissions] section before [security] (or at end)
+fn insertPermissionsSection(allocator: Allocator, cell_path: []const u8, perms: PermResult) void {
+    const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{cell_path}) catch return;
+    defer allocator.free(cell_tri_path);
+
+    const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch return;
+    defer allocator.free(content);
+
+    const section = std.fmt.allocPrint(allocator,
+        \\[permissions]
+        \\level = "{s}"
+        \\filesystem = "{s}"
+        \\network = "{s}"
+        \\process = "{s}"
+        \\ffi = "{s}"
+        \\concurrency = "{s}"
+        \\
+    , .{ perms.level, perms.fs, perms.net, perms.proc, perms.ffi, perms.concurrency }) catch return;
+    defer allocator.free(section);
+
+    var result = std.array_list.Managed(u8).init(allocator);
+    defer result.deinit();
+
+    var inserted = false;
+    var lines = std.mem.splitScalar(u8, content, '\n');
+    var first_line = true;
+    while (lines.next()) |line| {
+        if (!first_line) result.append('\n') catch return;
+        first_line = false;
+
+        const trimmed = std.mem.trim(u8, line, " \t\r");
+        // Insert before [security] section
+        if (!inserted and std.mem.eql(u8, trimmed, "[security]")) {
+            result.appendSlice(section) catch return;
+            result.append('\n') catch return;
+            inserted = true;
+        }
+        result.appendSlice(line) catch return;
+    }
+
+    // If no [security] section found, append at end
+    if (!inserted) {
+        result.append('\n') catch return;
+        result.appendSlice(section) catch return;
+    }
+
+    const file = std.fs.cwd().createFile(cell_tri_path, .{}) catch return;
+    defer file.close();
+    file.writeAll(result.items) catch {};
+}
+
 fn fixCellTriField(allocator: Allocator, cell_path: []const u8, key: []const u8, new_value: []const u8) void {
     const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{cell_path}) catch return;
     defer allocator.free(cell_tri_path);

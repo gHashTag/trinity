@@ -224,6 +224,9 @@ pub const Arena = struct {
 
         file.writeAll(line) catch {};
         file.writeAll("\n") catch {};
+
+        // Dual-write: battle result → hippocampus memory (episode)
+        writeHippocampusEpisode(battle, line);
     }
 
     /// Log battle result to GitHub Issue (Rainbow Bridge protocol)
@@ -403,6 +406,38 @@ pub const Arena = struct {
         print("{s}Total battles: {d}{s}\n\n", .{ DIM, self.total_battles, RESET });
     }
 };
+
+/// Write battle episode directly to hippocampus JSONL (no cross-module import needed)
+fn writeHippocampusEpisode(battle: types.Battle, data_line: []const u8) void {
+    const MEMORY_ROOT = ".trinity/memory";
+    const agent_name = "arena";
+
+    // Ensure directory
+    std.fs.cwd().makePath(MEMORY_ROOT ++ "/" ++ agent_name) catch return;
+
+    const ts: u64 = @intCast(std.time.timestamp());
+    var id_buf: [64]u8 = undefined;
+    const id = std.fmt.bufPrint(&id_buf, "mem_{d}_arena_{x:0>8}", .{ ts, @as(u32, @truncate(ts)) }) catch return;
+
+    var summary_buf: [256]u8 = undefined;
+    const summary = std.fmt.bufPrint(&summary_buf, "arena battle: {s} vs {s} verdict={s}", .{
+        battle.fighter_a,
+        battle.fighter_b,
+        if (battle.judge_verdict) |v| v.toString() else "none",
+    }) catch return;
+
+    // Build JSONL record matching hippocampus format
+    var rec_buf: [4096]u8 = undefined;
+    const rec_json = std.fmt.bufPrint(&rec_buf,
+        \\{{"id":"{s}","agent":"arena","kind":"episode","ts":{d},"tags":[],"ttl":2592000,"data":{s},"summary":"{s}"}}
+    ++ "\n", .{ id, ts, data_line, summary }) catch return;
+
+    const file_path = MEMORY_ROOT ++ "/" ++ agent_name ++ "/current.jsonl";
+    const file = std.fs.cwd().createFile(file_path, .{ .truncate = false }) catch return;
+    defer file.close();
+    file.seekFromEnd(0) catch return;
+    file.writeAll(rec_json) catch {};
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Tests

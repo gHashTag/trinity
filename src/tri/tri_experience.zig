@@ -18,6 +18,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const tri_dev = @import("tri_dev.zig");
+const hippocampus = @import("hippocampus.zig");
 
 const print = std.debug.print;
 
@@ -259,6 +260,27 @@ fn runExperienceRecall(allocator: Allocator, args: []const []const u8) !void {
             @memcpy(scored[scored_count].name[0..copy_len], entry.name[0..copy_len]);
             scored[scored_count].name_len = @intCast(copy_len);
             scored_count += 1;
+        }
+    }
+
+    // Fallback: if few file results, supplement from hippocampus
+    if (scored_count < 3) {
+        var hipp_results = hippocampus.search(allocator, task_query, 3 - @as(u32, @intCast(scored_count))) catch null;
+        if (hipp_results) |*hr| {
+            defer hr.deinit(allocator);
+            for (hr.items) |rec| {
+                if (scored_count >= 256) break;
+                scored[scored_count] = .{
+                    .name = undefined,
+                    .name_len = 0,
+                    .score = 1,
+                };
+                const src = rec.summary();
+                const copy_len = @min(src.len, 128);
+                @memcpy(scored[scored_count].name[0..copy_len], src[0..copy_len]);
+                scored[scored_count].name_len = @intCast(copy_len);
+                scored_count += 1;
+            }
         }
     }
 
@@ -798,6 +820,13 @@ pub fn saveEpisode(episode: Episode) !void {
     var file = try dir.createFile(fname, .{});
     defer file.close();
     try file.writeAll(buf[0..pos]);
+
+    // Dual-write: episode → hippocampus (secondary, file = primary)
+    var summary_buf2: [256]u8 = undefined;
+    const hipp_summary = std.fmt.bufPrint(&summary_buf2, "issue#{d} {s} verdict={s}", .{
+        episode.issue, episode.taskStr(), episode.verdictStr(),
+    }) catch "";
+    hippocampus.writeEpisode(std.heap.page_allocator, "experience", hipp_summary, buf[0..pos]) catch {};
 }
 
 fn updateMistakePatterns(mistake_text: []const u8, issue: u32) !void {
