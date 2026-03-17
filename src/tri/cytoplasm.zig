@@ -144,7 +144,7 @@ const VersionConstraint = struct {
 
 pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (args.len == 0) {
-        return runStatus(allocator);
+        return runStatus(allocator, &[_][]const u8{});
     }
 
     const sub = args[0];
@@ -167,7 +167,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "audit")) return runAudit(allocator, rest);
     if (std.mem.eql(u8, sub, "fix")) return runFix(allocator, rest);
     if (std.mem.eql(u8, sub, "score")) return runScore(allocator, rest);
-    if (std.mem.eql(u8, sub, "status")) return runStatus(allocator);
+    if (std.mem.eql(u8, sub, "status")) return runStatus(allocator, rest);
     if (std.mem.eql(u8, sub, "sign")) return runSign(allocator, rest);
     if (std.mem.eql(u8, sub, "doctor")) return runDoctor(allocator, rest);
     if (std.mem.eql(u8, sub, "orphans")) return runOrphans(allocator);

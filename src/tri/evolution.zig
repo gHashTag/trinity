@@ -2240,7 +2240,7 @@ fn sortByPpl(state: *EvolutionState, indices: []usize) void {
 // Core: Config Mutation (PBT)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const LrSchedule = enum(u8) {
+pub const LrSchedule = enum(u8) {
     cosine,
     phi_restart,
     d2z, // Linear Decay-to-Zero (ICLR 2025)
@@ -2264,7 +2264,7 @@ const LrSchedule = enum(u8) {
         };
     }
 
-    fn fromStr(s: []const u8) LrSchedule {
+    pub fn fromStr(s: []const u8) LrSchedule {
         if (std.mem.eql(u8, s, "phi_restart")) return .phi_restart;
         if (std.mem.eql(u8, s, "d2z")) return .d2z;
         if (std.mem.eql(u8, s, "wsd")) return .wsd;
@@ -5465,7 +5465,7 @@ fn runInject(allocator: Allocator, args: []const []const u8) !void {
     print("   {s}✅ Injected successfully ({d} API calls){s}\n\n", .{ GREEN, api_calls, RESET });
 }
 
-fn runInjectBatch(
+pub fn runInjectBatch(
     allocator: Allocator,
     count: u32,
     sacred: bool,
