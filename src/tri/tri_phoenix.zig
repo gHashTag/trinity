@@ -87,6 +87,8 @@ pub fn runPhoenixCommand(allocator: Allocator, args: []const []const u8) !void {
         } else {
             std.debug.print("{s}Usage:{s} tri phoenix biopsy <cell_id>\n", .{ YELLOW, RESET });
         }
+    } else if (std.mem.eql(u8, cmd, "immune")) {
+        try cmdImmune(allocator);
     } else {
         // Delegate to phoenix_core for start/status/stop/once/fpga
         const phoenix_core = @import("phoenix_core.zig");
@@ -106,6 +108,9 @@ fn printHelp() void {
         \\  regen --all          DAG-ordered tissue regeneration
         \\  lineage <cell_id>    Show genome.log mutation history
         \\  biopsy <cell_id>     Diff DNA contract vs current gen/
+        \\
+        \\Immune System:
+        \\  immune               Show weak cells + suggested regen order
         \\
         \\Daemon Commands:
         \\  start                Start PhoenixCore daemon
@@ -407,6 +412,114 @@ fn appendGenomeLog(allocator: Allocator, cell_dir: []const u8, cell_id: []const 
     defer allocator.free(entry);
 
     _ = file.write(entry) catch {};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IMMUNE — scan weak cells, suggest regen order
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const WeakCell = struct {
+    id: []const u8,
+    dir_path: []const u8,
+    has_dna: bool,
+    regenerable: bool,
+    health: u8,
+    dep_count: u32,
+};
+
+fn cmdImmune(allocator: Allocator) !void {
+    const cells = try cell_parser.discoverAll(allocator);
+    defer allocator.free(cells);
+
+    var weak_cells = std.array_list.Managed(WeakCell).init(allocator);
+    defer weak_cells.deinit();
+
+    // Collect weak cells (health < 80 based on DNA + basic heuristics)
+    for (cells) |cell| {
+        const m = cell.manifest;
+        var health: u8 = 50; // base
+
+        // DNA bonus
+        if (m.hasDNA()) health += 10;
+        if (m.dna_regenerable) health += 5;
+
+        // Owner/tests/capabilities bonuses
+        if (m.owner.len > 0) health += 15;
+        if (m.tests > 0) health += 10;
+        if (m.capabilities.len > 2) health += 5;
+        if (m.contributes_commands.len > 2 or m.contributes_tri_subcommands.len > 2) health += 5;
+
+        // Count how many other cells depend on this one
+        var dep_count: u32 = 0;
+        for (cells) |other| {
+            if (std.mem.eql(u8, other.manifest.id, m.id)) continue;
+            if (other.manifest.dependencies_raw.len == 0) continue;
+            if (std.mem.indexOf(u8, other.manifest.dependencies_raw, m.id) != null) {
+                dep_count += 1;
+            }
+        }
+
+        if (health < 80) {
+            try weak_cells.append(.{
+                .id = m.id,
+                .dir_path = cell.dir_path,
+                .has_dna = m.hasDNA(),
+                .regenerable = m.dna_regenerable,
+                .health = health,
+                .dep_count = dep_count,
+            });
+        }
+    }
+
+    // Sort: core deps first (more dependents = higher priority), then lowest health
+    std.mem.sort(WeakCell, weak_cells.items, {}, struct {
+        fn lessThan(_: void, a: WeakCell, b: WeakCell) bool {
+            if (a.dep_count != b.dep_count) return a.dep_count > b.dep_count;
+            return a.health < b.health;
+        }
+    }.lessThan);
+
+    // Display
+    std.debug.print("\n{s}PHOENIX IMMUNE SYSTEM — Weak Cell Report{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("═══════════════════════════════════════════\n\n", .{});
+
+    if (weak_cells.items.len == 0) {
+        std.debug.print("  {s}All cells healthy (health >= 80){s}\n\n", .{ GREEN, RESET });
+        return;
+    }
+
+    std.debug.print("  {s}Suggested regen order (core deps first, lowest health first):{s}\n\n", .{ CYAN, RESET });
+
+    for (weak_cells.items, 0..) |wc, idx| {
+        const health_color = if (wc.health >= 60) YELLOW else RED;
+        const dna_str: []const u8 = if (wc.has_dna) GREEN ++ "DNA" ++ RESET else GRAY ++ "---" ++ RESET;
+        const regen_str: []const u8 = if (wc.regenerable) GREEN ++ "REGEN" ++ RESET else GRAY ++ "-----" ++ RESET;
+
+        std.debug.print("  {d:>2}. [{s}] [{s}] {s}{s}{s} health={s}{d}{s} deps={d}\n", .{
+            idx + 1,
+            dna_str,
+            regen_str,
+            CYAN,
+            wc.id,
+            RESET,
+            health_color,
+            wc.health,
+            RESET,
+            wc.dep_count,
+        });
+    }
+
+    // Summary
+    var regen_ready: u32 = 0;
+    for (weak_cells.items) |wc| {
+        if (wc.regenerable) regen_ready += 1;
+    }
+
+    std.debug.print("\n{s}Summary:{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  Weak cells:      {s}{d}{s}\n", .{ RED, @as(u32, @intCast(weak_cells.items.len)), RESET });
+    std.debug.print("  Regen-ready:     {s}{d}{s}\n", .{ GREEN, regen_ready, RESET });
+    std.debug.print("  Total cells:     {d}\n", .{cells.len});
+    std.debug.print("\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

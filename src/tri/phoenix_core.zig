@@ -19,6 +19,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayListUnmanaged;
 const StringHashMap = std.StringHashMapUnmanaged;
+const hippocampus = @import("hippocampus.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // SACRED CONSTANTS
@@ -208,6 +209,9 @@ pub const PhoenixCore = struct {
         self.status.state = .reporting;
         try self.reportResults(exec_result);
 
+        // Dual-write: record heartbeat to hippocampus
+        self.writeHippocampusHeartbeat(exec_result);
+
         // Schedule next wake
         self.status.state = .waiting;
         try self.scheduleNextWake();
@@ -370,6 +374,19 @@ pub const PhoenixCore = struct {
         defer self.allocator.free(report);
 
         // DEFERRED: Send via Telegram bot API
+    }
+
+    /// Dual-write heartbeat to hippocampus (additive — no behavior change if it fails)
+    fn writeHippocampusHeartbeat(self: *PhoenixCore, result: TaskResult) void {
+        const data = std.fmt.allocPrint(self.allocator, "{{\"task\":\"{s}\",\"success\":{s},\"duration_ms\":{d},\"cycle\":{d}}}", .{
+            result.task_id,
+            if (result.success) "true" else "false",
+            result.duration_ms,
+            self.status.total_cycles,
+        }) catch return;
+        defer self.allocator.free(data);
+
+        hippocampus.writeHeartbeat(self.allocator, "phoenix", data) catch {};
     }
 
     /// Schedule next wake time
