@@ -1,109 +1,23 @@
 // @origin(spec:issue_planner.tri) @regen(manual-impl)
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// ISSUE PLANNER — GitHub Issues → Farm Task Parser
-// ═══════════════════════════════════════════════════════════════════════════════
-//
-// Parses GitHub Issues labeled with `farm-task` into FarmTask configurations.
-// Supports label-based configuration (MVP) and YAML body parsing (Phase 2).
-//
-// φ² + 1/φ² = 3 = TRINITY
-// ═══════════════════════════════════════════════════════════════════════════════
-
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const github_client = @import("github_client.zig");
-const GitHubClient = github_client.GitHubClient;
-const IssueInfo = github_client.IssueInfo;
 
 pub const FarmTask = struct {
     issue_number: u32,
     issue_title: []const u8,
-    objective: []const u8, // "ntp", "nca", "jepa", "hybrid"
-    count: u32, // number of workers to inject
-    context: u32, // 27, 54, 81, 243 (sacred dimensions)
-    lr_schedule: []const u8, // "cosine", "wsd", "phi_restart", "d2z"
-    sacred: bool, // use sacred mutations
-    priority: u8, // 1=P1, 2=P2, 3=P3 (lower is higher priority)
-    status: []const u8, // "pending", "in-progress", "done"
+    objective: []const u8,
+    count: u32,
+    context: u32,
+    lr_schedule: []const u8,
+    sacred: bool,
+    priority: u8,
+    status: []const u8,
 
-    /// Parse FarmTask from GitHub Issue using labels
-    pub fn fromIssue(allocator: Allocator, issue: IssueInfo) !?FarmTask {
-        // Check for farm-task label
-        var has_farm_task = false;
-        for (issue.labels) |label| {
-            if (std.mem.eql(u8, label, "farm-task")) {
-                has_farm_task = true;
-                break;
-            }
-        }
-        if (!has_farm_task) return null;
-
-        // Skip if already done
-        for (issue.labels) |label| {
-            if (std.mem.eql(u8, label, "status:done")) return null;
-        };
-
-        var task = FarmTask{
-            .issue_number = issue.number,
-            .issue_title = try allocator.dupe(u8, issue.title),
-            .objective = "ntp",
-            .count = 5,
-            .context = 81,
-            .lr_schedule = "cosine",
-            .sacred = false,
-            .priority = 2, // P2 default
-            .status = "pending",
-        };
-
-        // Parse labels for configuration
-        for (issue.labels) |label| {
-            if (std.mem.startsWith(u8, label, "objective:")) {
-                const obj = label["objective:".len..];
-                if (std.mem.eql(u8, obj, "ntp") or std.mem.eql(u8, obj, "nca") or
-                    std.mem.eql(u8, obj, "jepa") or std.mem.eql(u8, obj, "hybrid"))
-                {
-                    task.objective = obj;
-                }
-            } else if (std.mem.startsWith(u8, label, "count:")) {
-                const count_str = label["count:".len..];
-                const count_val = std.fmt.parseInt(u32, count_str, 10) catch 5;
-                task.count = @min(count_val, 25); // Max 25 workers per task
-            } else if (std.mem.startsWith(u8, label, "context:")) {
-                const ctx_str = label["context:".len..];
-                const ctx_val = std.fmt.parseInt(u32, ctx_str, 10) catch 81;
-                if (ctx_val == 27 or ctx_val == 54 or ctx_val == 81 or ctx_val == 243) {
-                    task.context = ctx_val;
-                }
-            } else if (std.mem.startsWith(u8, label, "schedule:")) {
-                const sched = label["schedule:".len..];
-                if (std.mem.eql(u8, sched, "cosine") or std.mem.eql(u8, sched, "wsd") or
-                    std.mem.eql(u8, sched, "phi_restart") or std.mem.eql(u8, sched, "d2z"))
-                {
-                    task.lr_schedule = sched;
-                }
-            } else if (std.mem.eql(u8, label, "sacred")) {
-                task.sacred = true;
-            } else if (std.mem.eql(u8, label, "priority:P1")) {
-                task.priority = 1;
-            } else if (std.mem.eql(u8, label, "priority:P2")) {
-                task.priority = 2;
-            } else if (std.mem.eql(u8, label, "priority:P3")) {
-                task.priority = 3;
-            } else if (std.mem.eql(u8, label, "status:in-progress")) {
-                task.status = "in-progress";
-            }
-        }
-
-        return task;
-    }
-
-    /// Free allocated memory
     pub fn deinit(self: *const FarmTask, allocator: Allocator) void {
         allocator.free(self.issue_title);
     }
 
-    /// Compare tasks by priority (lower first), then by issue number
     fn compareAsc(context: void, a: FarmTask, b: FarmTask) bool {
         _ = context;
         if (a.priority != b.priority) return a.priority < b.priority;
@@ -111,36 +25,125 @@ pub const FarmTask = struct {
     }
 };
 
-/// List all farm tasks from open GitHub issues
-pub fn listFarmTasks(allocator: Allocator, client: *GitHubClient) ![]FarmTask {
-    var tasks = std.ArrayList(FarmTask).init(allocator);
+pub fn listFarmTasks(allocator: Allocator, json_response: []const u8) ![]FarmTask {
+    const parsed = try std.json.parseFromSlice(std.json.Value, allocator, json_response, .{});
+    defer parsed.deinit();
 
-    // List open issues
-    const issues = try client.listIssues(allocator, "open");
-    defer {
-        for (issues) |*issue| {
-            allocator.free(issue.title);
-            allocator.free(issue.body);
-            for (issue.labels) |l| allocator.free(l);
-            allocator.free(issue.labels);
+    const data_obj = parsed.value.object.get("data") orelse return error.MissingData;
+    const repository_obj = data_obj.object.get("repository") orelse return error.MissingRepository;
+    const issues_obj = repository_obj.object.get("issues") orelse return error.MissingIssues;
+    const edges_arr = issues_obj.object.get("edges") orelse return error.MissingEdges;
+    const root = edges_arr.array;
+
+    // Count matching issues
+    var count: usize = 0;
+    for (root.items) |edge| {
+        const issue_node = edge.object.get("node") orelse continue;
+        const labels_val = issue_node.object.get("labels") orelse continue;
+        const labels_edges = labels_val.object.get("edges") orelse continue;
+        const labels = labels_edges.array;
+
+        var has_farm_task = false;
+        var is_done = false;
+        for (labels.items) |label_edge| {
+            const node_obj = label_edge.object.get("node") orelse continue;
+            if (node_obj != .string) continue;
+            const label_name = node_obj.string;
+            if (std.mem.eql(u8, label_name, "farm-task")) has_farm_task = true;
+            if (std.mem.eql(u8, label_name, "status:done")) is_done = true;
         }
-        allocator.free(issues);
+
+        if (has_farm_task and !is_done) count += 1;
     }
 
-    // Parse each issue
-    for (issues) |issue| {
-        if (try FarmTask.fromIssue(allocator, issue)) |task| {
-            try tasks.append(task);
+    if (count == 0) return &.{};
+
+    // Allocate result slice
+    const result = try allocator.alloc(FarmTask, count);
+
+    // Fill the slice
+    var index: usize = 0;
+    for (root.items) |edge| {
+        const issue_node = edge.object.get("node") orelse continue;
+        const labels_val = issue_node.object.get("labels") orelse continue;
+        const labels_edges = labels_val.object.get("edges") orelse continue;
+        const labels = labels_edges.array;
+
+        var has_farm_task = false;
+        var is_done = false;
+        const number_val = issue_node.object.get("number") orelse continue;
+        if (number_val != .integer) continue;
+        const title_val = issue_node.object.get("title") orelse continue;
+        if (title_val != .string) continue;
+
+        var task = FarmTask{
+            .issue_number = @intCast(number_val.integer),
+            .issue_title = try allocator.dupe(u8, title_val.string),
+            .objective = "ntp",
+            .count = 5,
+            .context = 81,
+            .lr_schedule = "cosine",
+            .sacred = false,
+            .priority = 2,
+            .status = "pending",
+        };
+
+        for (labels.items) |label_edge| {
+            const node_obj = label_edge.object.get("node") orelse continue;
+            if (node_obj != .string) continue;
+            const label_name = node_obj.string;
+            if (std.mem.eql(u8, label_name, "farm-task")) has_farm_task = true;
+            if (std.mem.eql(u8, label_name, "status:done")) is_done = true;
+
+            if (std.mem.startsWith(u8, label_name, "objective:")) {
+                const obj = label_name["objective:".len..];
+                if (std.mem.eql(u8, obj, "ntp") or std.mem.eql(u8, obj, "nca") or
+                    std.mem.eql(u8, obj, "jepa") or std.mem.eql(u8, obj, "hybrid"))
+                {
+                    task.objective = obj;
+                }
+            } else if (std.mem.startsWith(u8, label_name, "count:")) {
+                const count_str = label_name["count:".len..];
+                const count_val = std.fmt.parseInt(u32, count_str, 10) catch 5;
+                task.count = @min(count_val, 25);
+            } else if (std.mem.startsWith(u8, label_name, "context:")) {
+                const ctx_str = label_name["context:".len..];
+                const ctx_val = std.fmt.parseInt(u32, ctx_str, 10) catch 81;
+                if (ctx_val == 27 or ctx_val == 54 or ctx_val == 81 or ctx_val == 243) {
+                    task.context = ctx_val;
+                }
+            } else if (std.mem.startsWith(u8, label_name, "schedule:")) {
+                const sched = label_name["schedule:".len..];
+                if (std.mem.eql(u8, sched, "cosine") or std.mem.eql(u8, sched, "wsd") or
+                    std.mem.eql(u8, sched, "phi_restart") or std.mem.eql(u8, sched, "d2z"))
+                {
+                    task.lr_schedule = sched;
+                }
+            } else if (std.mem.eql(u8, label_name, "sacred")) {
+                task.sacred = true;
+            } else if (std.mem.eql(u8, label_name, "priority:P1")) {
+                task.priority = 1;
+            } else if (std.mem.eql(u8, label_name, "priority:P2")) {
+                task.priority = 2;
+            } else if (std.mem.eql(u8, label_name, "priority:P3")) {
+                task.priority = 3;
+            } else if (std.mem.eql(u8, label_name, "status:in-progress")) {
+                task.status = "in-progress";
+            }
+        }
+
+        if (has_farm_task and !is_done) {
+            result[index] = task;
+            index += 1;
         }
     }
 
     // Sort by priority
-    std.sort.insertion(FarmTask, tasks.items, {}, FarmTask.compareAsc);
+    std.sort.insertion(FarmTask, result, {}, FarmTask.compareAsc);
 
-    return tasks.toOwnedSlice();
+    return result;
 }
 
-/// Save tasks to .trinity/tasks/ directory as JSON
 pub fn saveTasksToDir(allocator: Allocator, tasks: []const FarmTask) !void {
     const tasks_dir = ".trinity/tasks";
     try std.fs.cwd().makePath(tasks_dir);
@@ -152,49 +155,70 @@ pub fn saveTasksToDir(allocator: Allocator, tasks: []const FarmTask) !void {
         const file = try std.fs.cwd().createFile(filename, .{ .truncate = true });
         defer file.close();
 
-        const writer = file.writer();
-        try std.json.stringify(task, .{ .whitespace = .indent_2 }, writer);
+        const json_str = try std.json.Stringify.valueAlloc(allocator, task, .{ .whitespace = .indent_2 });
+        defer allocator.free(json_str);
+        try file.writeAll(json_str);
     }
 }
 
-/// Load all task files from .trinity/tasks/
 pub fn loadTasksFromDir(allocator: Allocator) ![]FarmTask {
-    const tasks_dir = ".trinity/tasks";
-    var tasks = std.ArrayList(FarmTask).init(allocator);
+    // Count files first
+    var count: usize = 0;
+    {
+        const tasks_dir = ".trinity/tasks";
+        var dir = try std.fs.cwd().openDir(tasks_dir, .{ .iterate = true });
+        defer dir.close();
 
-    const dir = try std.fs.cwd().openDir(tasks_dir, .{ .iterate = true });
-    defer dir.close();
-
-    var iterator = dir.iterate();
-    while (try iterator.next()) |entry| {
-        if (entry.kind != .file) continue;
-        if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
-
-        const file = try dir.openFile(entry.name, .{});
-        defer file.close();
-
-        const stat = try file.stat();
-        const content = try allocator.alloc(u8, stat.size);
-        defer allocator.free(content);
-
-        _ = try file.readAll(content);
-
-        const parsed = try std.json.parseFromSlice(FarmTask, allocator, content, .{
-            .ignore_unknown_fields = true,
-        });
-        try tasks.append(parsed.value);
+        var iterator = dir.iterate();
+        while (try iterator.next()) |entry| {
+            if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".json"))
+                count += 1;
+        }
     }
 
-    return tasks.toOwnedSlice();
+    if (count == 0) return &.{};
+
+    // Allocate result slice
+    const result = try allocator.alloc(FarmTask, count);
+
+    // Fill the slice
+    var index: usize = 0;
+    {
+        const tasks_dir = ".trinity/tasks";
+        var dir = try std.fs.cwd().openDir(tasks_dir, .{ .iterate = true });
+        defer dir.close();
+
+        var iterator = dir.iterate();
+        while (try iterator.next()) |entry| {
+            if (entry.kind != .file) continue;
+            if (!std.mem.endsWith(u8, entry.name, ".json")) continue;
+
+            const file = try dir.openFile(entry.name, .{});
+            defer file.close();
+
+            const stat = try file.stat();
+            const content = try allocator.alloc(u8, stat.size);
+            defer allocator.free(content);
+
+            _ = try file.readAll(content);
+
+            const parsed = try std.json.parseFromSlice(FarmTask, allocator, content, .{
+                .ignore_unknown_fields = true,
+            });
+            result[index] = parsed.value;
+            index += 1;
+        }
+    }
+
+    return result;
 }
 
-/// Delete task file by issue number
 pub fn deleteTaskFile(allocator: Allocator, issue_number: u32) !void {
     const filename = try std.fmt.allocPrint(allocator, ".trinity/tasks/farm-{d}.json", .{issue_number});
     defer allocator.free(filename);
 
     std.fs.cwd().deleteFile(filename) catch |err| {
-        if (err == error.FileNotFound) return; // Already deleted
+        if (err == error.FileNotFound) return;
         return err;
     };
 }

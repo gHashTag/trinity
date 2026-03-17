@@ -133,7 +133,7 @@ fn executeTasks(allocator: Allocator, tasks: []const FarmTask, dry_run: bool, ma
     }
 
     var remaining = total_to_inject;
-    var errors_list = std.ArrayList(u8).init(allocator);
+    var errors_list = try std.ArrayList(u8).initCapacity(allocator, 256);
 
     for (tasks) |task| {
         if (remaining == 0) break;
@@ -187,7 +187,7 @@ fn executeTasks(allocator: Allocator, tasks: []const FarmTask, dry_run: bool, ma
     }
 
     if (errors_list.items.len > 0) {
-        result.errors = try errors_list.toOwnedSlice();
+        result.errors = try errors_list.toOwnedSlice(allocator);
     }
 
     return result;
@@ -195,11 +195,6 @@ fn executeTasks(allocator: Allocator, tasks: []const FarmTask, dry_run: bool, ma
 
 /// Execute a single task by calling runInjectBatch
 fn executeTask(allocator: Allocator, task: FarmTask, count: u32) !u32 {
-    // Build args for runInjectBatch
-    // Signature: runInjectBatch(allocator, count, sacred, dry_run, force_recycle, objective, ...)
-    var arg_list = std.ArrayList([]const u8).init(allocator);
-    defer arg_list.deinit();
-
     // Call runInjectBatch from evolution.zig
     // This will select worst performers and recycle them
     const sacred = task.sacred;
@@ -209,8 +204,14 @@ fn executeTask(allocator: Allocator, task: FarmTask, count: u32) !u32 {
     const nca_steps: u32 = 15000;
     const nca_entropy_min = "1.5";
     const nca_entropy_max = "2.8";
-    const override_context = task.context;
-    const override_sched = evolution_mod.LrSchedule.fromStr(task.lr_schedule);
+    const override_context: ?u32 = task.context;
+    // Parse LR schedule (inline since LrSchedule.fromStr is private)
+    const override_sched: ?evolution_mod.LrSchedule = blk: {
+        if (std.mem.eql(u8, task.lr_schedule, "phi_restart")) break :blk .phi_restart;
+        if (std.mem.eql(u8, task.lr_schedule, "d2z")) break :blk .d2z;
+        if (std.mem.eql(u8, task.lr_schedule, "wsd")) break :blk .wsd;
+        break :blk .cosine; // default
+    };
     const force_fresh = false;
     const use_quotas = false;
 
@@ -262,7 +263,9 @@ fn updateTaskStatus(allocator: Allocator, issue_number: u32, new_status: []const
     const out_file = try std.fs.cwd().createFile(filename, .{ .truncate = true });
     defer out_file.close();
 
-    try std.json.stringify(parsed.value, .{ .whitespace = .indent_2 }, out_file.writer());
+    const json_str = try std.json.Stringify.valueAlloc(allocator, parsed.value, .{ .whitespace = .indent_2 });
+    defer allocator.free(json_str);
+    try out_file.writeAll(json_str);
 }
 
 fn printHelp() void {

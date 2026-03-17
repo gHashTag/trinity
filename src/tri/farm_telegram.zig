@@ -17,20 +17,9 @@ const FarmTask = issue_planner.FarmTask;
 
 /// Notify Telegram when a farm task starts
 pub fn notifyTaskStart(allocator: Allocator, task: FarmTask) !void {
-    const emoji = switch (task.objective) {
-        "ntp" => "🧠",
-        "nca" => "🔗",
-        "jepa" => "🎬",
-        "hybrid" => "🔮",
-        else => "🚜",
-    };
+    const emoji = getEmoji(task.objective);
 
-    const priority_icon = switch (task.priority) {
-        1 => "🔴", // P1
-        2 => "🟡", // P2
-        3 => "🟢", // P3
-        else => "⚪",
-    };
+    const priority_icon = if (task.priority == 1) "🔴" else if (task.priority == 2) "🟡" else if (task.priority == 3) "🟢" else "⚪";
 
     const message = try std.fmt.allocPrint(allocator,
         \\{s} {s}FARM #{d}: {s}
@@ -59,13 +48,7 @@ pub fn notifyTaskStart(allocator: Allocator, task: FarmTask) !void {
 pub fn notifyTaskProgress(allocator: Allocator, task: FarmTask, injected: u32, total: u32) !void {
     if (injected == 0) return; // Don't notify on failure
 
-    const emoji = switch (task.objective) {
-        "ntp" => "🧠",
-        "nca" => "🔗",
-        "jepa" => "🎬",
-        "hybrid" => "🔮",
-        else => "🚜",
-    };
+    const emoji = getEmoji(task.objective);
 
     const message = try std.fmt.allocPrint(allocator,
         \\{s} ✅ FARM #{d}: {d}/{d} {s} workers injected
@@ -76,7 +59,7 @@ pub fn notifyTaskProgress(allocator: Allocator, task: FarmTask, injected: u32, t
         task.issue_number,
         injected,
         total,
-        std.mem.toUpperConst(allocator, task.objective) catch "NTP",
+        task.objective,
         task.context,
         task.lr_schedule,
     });
@@ -146,7 +129,8 @@ fn sendNotification(allocator: Allocator, message: []const u8) !void {
 
     body_writer.writeAll("\"}") catch return error.BodyTooLarge;
 
-    const body = body_fbs.getWritten();
+    const body_written = body_fbs.getWritten();
+    const body = body_buf[0..body_written.len];
 
     const uri = std.Uri.parse(url) catch return error.InvalidUrl;
     var req = client.request(.POST, uri, .{
@@ -156,11 +140,14 @@ fn sendNotification(allocator: Allocator, message: []const u8) !void {
         .redirect_behavior = .unhandled,
     }) catch return error.RequestFailed;
 
-    req.transfer_encoding = .{ .content_length = body.len };
-    try req.sendAll(body);
-    try req.finish();
+    try req.sendBodyComplete(body);
+}
 
-    // Read response to ensure request completes
-    var resp_buf: [1024]u8 = undefined;
-    _ = try req.readAll(&resp_buf);
+/// Get emoji for objective type
+fn getEmoji(objective: []const u8) []const u8 {
+    if (std.mem.eql(u8, objective, "ntp")) return "🧠";
+    if (std.mem.eql(u8, objective, "nca")) return "🔗";
+    if (std.mem.eql(u8, objective, "jepa")) return "🎬";
+    if (std.mem.eql(u8, objective, "hybrid")) return "🔮";
+    return "🚜";
 }
