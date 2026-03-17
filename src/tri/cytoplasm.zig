@@ -1062,6 +1062,9 @@ fn runDeps(allocator: Allocator, args: []const []const u8) !void {
         if (std.mem.eql(u8, a, "--dead")) {
             return runDeadCells(allocator);
         }
+        if (std.mem.eql(u8, a, "--validate")) {
+            return runDepsValidate(allocator, args);
+        }
     }
 
     if (args.len == 0) {
@@ -1070,6 +1073,7 @@ fn runDeps(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("       tri cell deps --prune [--write]\n", .{});
         std.debug.print("       tri cell deps --cycles\n", .{});
         std.debug.print("       tri cell deps --dead\n", .{});
+        std.debug.print("       tri cell deps --validate [--threshold=0.8]\n", .{});
         return;
     }
 
@@ -1729,6 +1733,226 @@ fn runDeadCells(allocator: Allocator) !void {
     std.debug.print("\n  Dead: {s}{d}{s} | Leaf: {d} | Total scanned: {d}\n", .{
         if (dead_count > 0) YELLOW else GREEN, dead_count, RESET, leaf_count, all_cells.len,
     });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DEPS VALIDATE — H3: Cell Dependency Validation
+// ═══════════════════════════════════════════════════════════════════════════════
+// Checks dependency integrity across all cells:
+// - Missing dependencies (dep not found in all cells)
+// - Orphan cells (no one depends on them, excluding leaf kinds)
+// - Circular dependencies (A→B→A)
+// - Returns dep_health score and exits with error if below threshold
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runDepsValidate(allocator: Allocator, args: []const []const u8) !void {
+    // Parse threshold flag (default 0.8)
+    var threshold: f64 = 0.8;
+    for (args) |a| {
+        if (std.mem.startsWith(u8, a, "--threshold=")) {
+            const val_str = a["--threshold=".len..];
+            threshold = std.fmt.parseFloat(f64, val_str) catch 0.8;
+        }
+    }
+
+    std.debug.print("{s}[deps --validate]{s} Checking dependency integrity (threshold: {d:.1})...\n\n", .{ CYAN, RESET, threshold });
+
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    // Build cell_id → exists mapping for quick lookup (just check if cell exists)
+    var cell_exists = std.StringHashMap(void).init(allocator);
+    defer cell_exists.deinit();
+    for (all_cells) |c| {
+        cell_exists.put(c.manifest.id, {}) catch {};
+    }
+
+    // Track validation issues
+    const MissingDep = struct { cell: []const u8, dep: []const u8 };
+    var missing_deps_list = std.array_list.Managed(MissingDep).init(allocator);
+    defer missing_deps_list.deinit();
+
+    var orphan_cells = std.array_list.Managed([]const u8).init(allocator);
+    defer orphan_cells.deinit();
+
+    var circular_deps = std.array_list.Managed([]const u8).init(allocator);
+    defer {
+        for (circular_deps.items) |cycle| {
+            allocator.free(cycle);
+        }
+        circular_deps.deinit();
+    }
+
+    var total_deps: usize = 0;
+    var valid_deps: usize = 0;
+
+    // Build dependency graph for cycle detection
+    var adj = std.StringHashMap(std.array_list.Managed([]const u8)).init(allocator);
+    defer {
+        var it = adj.iterator();
+        while (it.next()) |entry| entry.value_ptr.deinit();
+        adj.deinit();
+    }
+
+    // Build reverse dep map for orphan detection
+    var incoming = std.StringHashMap(usize).init(allocator);
+    defer incoming.deinit();
+    for (all_cells) |c| incoming.put(c.manifest.id, 0) catch {};
+
+    // First pass: check each cell's dependencies and build graphs
+    for (all_cells) |c| {
+        const m = c.manifest;
+
+        // Build adjacency list for cycle detection
+        var deps_list = std.array_list.Managed([]const u8).init(allocator);
+        var dep_it = cell_parser.DepIterator.init(m.dependencies_raw);
+        while (dep_it.next()) |dep_entry| {
+            total_deps += 1;
+            deps_list.append(dep_entry.id) catch {};
+
+            // Check if dependency exists
+            if (cell_exists.contains(dep_entry.id)) {
+                valid_deps += 1;
+            } else {
+                // Missing dependency
+                const entry = MissingDep{
+                    .cell = m.id,
+                    .dep = dep_entry.id,
+                };
+                missing_deps_list.append(entry) catch {};
+            }
+
+            // Update incoming count for orphan detection
+            if (incoming.get(dep_entry.id)) |count| {
+                incoming.put(dep_entry.id, count + 1) catch {};
+            }
+        }
+        adj.put(m.id, deps_list) catch {};
+    }
+
+    // Second pass: detect orphan cells (no incoming deps, excluding leaf kinds)
+    for (all_cells) |c| {
+        const m = c.manifest;
+        const count = incoming.get(m.id) orelse 0;
+        if (count > 0) continue;
+
+        // Skip sub-cells (they're internal to parent)
+        if (m.parent.len > 0) continue;
+
+        // Leaf cells are expected to have 0 incoming
+        const is_leaf = std.mem.eql(u8, m.kind, "binary") or
+            std.mem.eql(u8, m.kind, "tool") or
+            std.mem.eql(u8, m.kind, "agent") or
+            std.mem.eql(u8, m.kind, "backend") or
+            m.contributes_binaries.len > 2;
+
+        if (!is_leaf) {
+            orphan_cells.append(m.id) catch {};
+        }
+    }
+
+    // Third pass: detect circular dependencies using DFS
+    var color = std.StringHashMap(u8).init(allocator);
+    defer color.deinit();
+    for (all_cells) |c| color.put(c.manifest.id, 0) catch {};
+
+    for (all_cells) |c| {
+        const cell_id = c.manifest.id;
+        if ((color.get(cell_id) orelse 0) == 0) {
+            // DFS iterative with path tracking
+            var stack = std.array_list.Managed(struct { id: []const u8, idx: usize }).init(allocator);
+            defer stack.deinit();
+            var path_list = std.array_list.Managed([]const u8).init(allocator);
+            defer path_list.deinit();
+
+            stack.append(.{ .id = cell_id, .idx = 0 }) catch {};
+            color.put(cell_id, 1) catch {};
+            path_list.append(cell_id) catch {};
+
+            while (stack.items.len > 0) {
+                const top = &stack.items[stack.items.len - 1];
+                const neighbors = adj.get(top.id);
+                if (neighbors != null and top.idx < neighbors.?.items.len) {
+                    const next = neighbors.?.items[top.idx];
+                    top.idx += 1;
+                    const next_color = color.get(next) orelse 0;
+                    if (next_color == 1) {
+                        // Found cycle — record it as a string for display
+                        var cycle_str = std.array_list.Managed(u8).init(allocator);
+                        defer cycle_str.deinit();
+                        const writer = cycle_str.writer();
+                        var in_cycle = false;
+                        for (path_list.items) |p| {
+                            if (std.mem.eql(u8, p, next)) in_cycle = true;
+                            if (in_cycle) {
+                                try writer.print("{s} → ", .{p});
+                            }
+                        }
+                        try writer.print("{s}", .{next});
+                        const cycle_copy = allocator.dupe(u8, cycle_str.items) catch continue;
+                        circular_deps.append(cycle_copy) catch {};
+                    } else if (next_color == 0) {
+                        color.put(next, 1) catch {};
+                        stack.append(.{ .id = next, .idx = 0 }) catch {};
+                        path_list.append(next) catch {};
+                    }
+                } else {
+                    color.put(top.id, 2) catch {};
+                    _ = stack.pop();
+                    if (path_list.items.len > 0) _ = path_list.pop();
+                }
+            }
+        }
+    }
+
+    // Calculate dep_health score
+    const dep_health: f64 = if (total_deps > 0)
+        @as(f64, @floatFromInt(valid_deps)) / @as(f64, @floatFromInt(total_deps))
+    else
+        1.0;
+
+    // Report results
+    std.debug.print("  {s}Dependency Health:{s} {d:.2}% ({d}/{d} valid)\n", .{
+        if (dep_health >= threshold) GREEN else RED, RESET, dep_health * 100.0, valid_deps, total_deps,
+    });
+
+    if (missing_deps_list.items.len > 0) {
+        std.debug.print("\n  {s}MISSING DEPENDENCIES:{s} {d} cell(s) reference non-existent deps\n", .{ RED, RESET, missing_deps_list.items.len });
+        for (missing_deps_list.items) |entry| {
+            std.debug.print("    {s} → {s}\n", .{ entry.cell, entry.dep });
+        }
+    }
+
+    if (orphan_cells.items.len > 0) {
+        std.debug.print("\n  {s}ORPHAN CELLS:{s} {d} cell(s) have no dependents (not leaf kinds)\n", .{ YELLOW, RESET, orphan_cells.items.len });
+        for (orphan_cells.items) |cell_id| {
+            std.debug.print("    {s}\n", .{cell_id});
+        }
+    }
+
+    if (circular_deps.items.len > 0) {
+        std.debug.print("\n  {s}CIRCULAR DEPENDENCIES:{s} {d} cycle(s) detected\n", .{ RED, RESET, circular_deps.items.len });
+        for (circular_deps.items) |cycle| {
+            std.debug.print("    {s}\n", .{cycle});
+        }
+    }
+
+    if (missing_deps_list.items.len == 0 and orphan_cells.items.len == 0 and circular_deps.items.len == 0) {
+        std.debug.print("\n  {s}✓{s} All dependencies are valid\n", .{ GREEN, RESET });
+    }
+
+    // Exit with error if below threshold
+    std.debug.print("\n", .{});
+    if (dep_health < threshold) {
+        const exit_codes = @import("tri_exit_codes.zig");
+        std.debug.print("  {s}FAILED:{s} dep_health {d:.2} < threshold {d:.1}\n", .{ RED, RESET, dep_health, threshold });
+        exit_codes.exitWithCode(.validation_error);
+    } else {
+        std.debug.print("  {s}PASSED:{s} dep_health {d:.2} >= threshold {d:.1}\n", .{ GREEN, RESET, dep_health, threshold });
+    }
 }
 
 fn resolveImportToCell(import_path: []const u8, cell_path: []const u8, path_to_cell: *std.StringHashMap([]const u8)) ?[]const u8 {
