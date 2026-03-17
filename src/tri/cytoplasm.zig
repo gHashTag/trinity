@@ -159,7 +159,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "verify")) return runVerify(allocator);
     if (std.mem.eql(u8, sub, "check-boundaries")) return runCheckBoundaries(allocator);
     if (std.mem.eql(u8, sub, "deps")) return runDeps(allocator, rest);
-    if (std.mem.eql(u8, sub, "graph")) return runGraph(allocator);
+    if (std.mem.eql(u8, sub, "graph")) return runGraphEx(allocator, rest);
     if (std.mem.eql(u8, sub, "health")) return runHealth(allocator, rest);
     if (std.mem.eql(u8, sub, "lint")) return runLint(allocator, rest);
     if (std.mem.eql(u8, sub, "create")) return runCreate(allocator, rest);
@@ -2075,7 +2075,7 @@ fn resolveImportToCell(import_path: []const u8, cell_path: []const u8, path_to_c
 // GRAPH — Mermaid dependency diagram
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn runGraph(allocator: Allocator) !void {
+fn runGraphLegacy(allocator: Allocator) !void {
     std.debug.print("\n{s}🔗 DEPENDENCY GRAPH (DAG){s}\n", .{ GOLDEN, RESET });
 
     const all_cells = cell_parser.discoverAll(allocator) catch {
