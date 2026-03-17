@@ -30,8 +30,9 @@ After rendering output to stdout, include this section to send to Telegram.
 ### Shell Template
 ```bash
 # === TELEGRAM OUTPUT ===
-export TELEGRAM_BOT_TOKEN="$(grep TELEGRAM_BOT_TOKEN .env 2>/dev/null | cut -d= -f2)"
-TG_CHAT="${TG_CHAT:--5160767429}"
+export TELEGRAM_BOT_TOKEN="$(grep '^TELEGRAM_BOT_TOKEN=' .env 2>/dev/null | cut -d= -f2)"
+export TELEGRAM_CHAT_ID="$(grep '^TELEGRAM_CHAT_ID=' .env 2>/dev/null | cut -d= -f2)"
+TG_CHAT="${TG_CHAT:-${TELEGRAM_CHAT_ID:--5160767429}}"
 TG_MODE="${TG_MODE:-send}"
 
 # Strip mood signature if needed

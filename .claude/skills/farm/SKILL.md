@@ -1,6 +1,6 @@
 ---
 name: farm
-description: HSLM training farm management — service status, evolution, leaderboard, recycle, inject configs, kill underperformers. Central dashboard for 108 Railway training workers across 6 accounts.
+description: HSLM training farm management — service status, evolution, leaderboard, recycle, inject configs, kill underperformers. Central dashboard for 152 Railway training workers across 8 accounts.
 argument-hint: [status|evolve|recycle|inject|kill <name>|leaderboard|full]
 allowed-tools: Bash(tri *), Bash(cat *), Bash(python3 *), Bash(ls *), Bash(tail *), Bash(ssh *), Bash(curl *), Bash(date *), Bash(grep *), Read, Grep, Glob
 context: fork
@@ -25,10 +25,12 @@ Check $ARGUMENTS:
 
 ## Data Sources
 
-### Railway Accounts (6 total)
+### Railway Accounts (8 total)
 Read tokens from `.env`:
 - `RAILWAY_API_TOKEN` (PRIMARY)
-- `RAILWAY_API_TOKEN_2` through `RAILWAY_API_TOKEN_6`
+- `RAILWAY_API_TOKEN_2` through `RAILWAY_API_TOKEN_8`
+- FARM-7: 24 workers (hslm-w8-1..24), wave 8
+- FARM-8: 24 workers (hslm-w8-25..48), wave 8
 
 ### Evolution State
 !`cat /Users/playra/trinity-w1/.trinity/evolution_state.json 2>/dev/null | python3 -c "
@@ -49,10 +51,10 @@ except: print('No evolution data')
 
 ## STATUS Mode
 
-Query all 6 Railway accounts for hslm-train services:
+Query all 8 Railway accounts for hslm-train services:
 ```bash
 set -a && source /Users/playra/trinity-w1/.env && set +a
-for i in "" _2 _3 _4 _5 _6; do
+for i in "" _2 _3 _4 _5 _6 _7 _8; do
   TOKEN_VAR="RAILWAY_API_TOKEN$i"
   TOKEN="${!TOKEN_VAR}"
   [ -z "$TOKEN" ] && continue
@@ -140,7 +142,7 @@ Kill specific service by name:
 - **ALWAYS** record experiment results before killing a service
 - **ALWAYS** set `builder: NIXPACKS` via `serviceInstanceUpdate`
 - **ALWAYS** set `dockerfilePath` via `serviceInstanceUpdate`
-- Max 108 concurrent services across all accounts
+- Max 152 concurrent services across 8 accounts
 
 ## Output Format
 
