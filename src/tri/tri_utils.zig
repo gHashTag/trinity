@@ -70,6 +70,7 @@ pub const Command = enum {
     intelligence,
     // Dev Utilities
     doctor,
+    regen, // Wave 5: Immune System
     clean,
     fmt_cmd,
     stats_cmd,
@@ -571,6 +572,7 @@ pub fn printHelp() void {
 
     std.debug.print("{s}DEV UTILITIES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}doctor{s} [sub]                  Codebase health (scan/mark/report/plan/heal/enforce/status)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}regen{s} [analyze|plan|execute|status] Immune system auto-healing\n", .{ GREEN, RESET });
     std.debug.print("  {s}clean{s}                       Clean build artifacts (.zig-cache, zig-out)\n", .{ GREEN, RESET });
     std.debug.print("  {s}fmt{s}                         Format Zig source (zig fmt src/)\n", .{ GREEN, RESET });
     std.debug.print("  {s}stats{s}                       Project statistics (files, LOC, specs, tests)\n", .{ GREEN, RESET });
@@ -659,6 +661,7 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "intelligence") or std.mem.eql(u8, arg, "intel")) return .intelligence;
     // Dev Utilities
     if (std.mem.eql(u8, arg, "doctor") or std.mem.eql(u8, arg, "dr")) return .doctor;
+    if (std.mem.eql(u8, arg, "regen")) return .regen;
     if (std.mem.eql(u8, arg, "clean")) return .clean;
     if (std.mem.eql(u8, arg, "fmt") or std.mem.eql(u8, arg, "format")) return .fmt_cmd;
     if (std.mem.eql(u8, arg, "stats")) return .stats_cmd;
