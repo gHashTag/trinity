@@ -398,11 +398,12 @@ struct LargeTextModeView: View {
 
 struct ScreenReaderAnnouncer {
     static func announce(_ message: String) {
-        // Use NotificationCenter for accessibility announcements
+        // Post accessibility announcement via NotificationCenter
+        // Note: Full VoiceOver integration requires NSAccessibilityProtocol
         NotificationCenter.default.post(
-            name: NSAccessibility.accessibilityNotificationName(for: .announcementRequested),
+            name: Notification.Name("AccessibilityAnnouncement"),
             object: nil,
-            userInfo: [NSAccessibility.AccessibilityNotificationKey: message]
+            userInfo: ["message": message]
         )
     }
 
