@@ -1,0 +1,1088 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRI MEMORY — Unified Agent Memory Store (JSONL)
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// Commands:
+//   tri memory list   [--agent mu] [--kind heartbeat] [--limit 20]
+//   tri memory read   <id>
+//   tri memory write  --agent mu --kind observation --summary "text" [--data '{}'] [--tag build] [--ttl 3600]
+//   tri memory search <query> [--limit 20]
+//   tri memory gc     [--agent mu] [--dry-run]
+//   tri memory stats
+//
+// Storage: .trinity/memory/{agent}/current.jsonl (append-only JSONL)
+// Archive: .trinity/memory/{agent}/archive/{YYYY-MM}.jsonl (after 1MB rotation)
+//
+// φ² + 1/φ² = 3 = TRINITY
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+
+const print = std.debug.print;
+
+// ANSI colors
+const RESET = "\x1b[0m";
+const BOLD = "\x1b[1m";
+const RED = "\x1b[31m";
+const GREEN = "\x1b[32m";
+const YELLOW = "\x1b[33m";
+const CYAN = "\x1b[36m";
+const DIM = "\x1b[2m";
+const MAGENTA = "\x1b[35m";
+const WHITE = "\x1b[37m";
+
+const MEMORY_ROOT = ".trinity/memory";
+const MAX_FILE_SIZE: usize = 1024 * 1024; // 1MB rotation threshold
+const AUTO_GC_INTERVAL: usize = 1000; // GC every N writes
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DATA STRUCTURES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const MemoryKind = enum {
+    heartbeat,
+    learning,
+    episode,
+    rule,
+    @"error",
+    observation,
+
+    pub fn toString(self: MemoryKind) []const u8 {
+        return switch (self) {
+            .heartbeat => "heartbeat",
+            .learning => "learning",
+            .episode => "episode",
+            .rule => "rule",
+            .@"error" => "error",
+            .observation => "observation",
+        };
+    }
+
+    pub fn fromString(s: []const u8) ?MemoryKind {
+        if (std.mem.eql(u8, s, "heartbeat")) return .heartbeat;
+        if (std.mem.eql(u8, s, "learning")) return .learning;
+        if (std.mem.eql(u8, s, "episode")) return .episode;
+        if (std.mem.eql(u8, s, "rule")) return .rule;
+        if (std.mem.eql(u8, s, "error")) return .@"error";
+        if (std.mem.eql(u8, s, "observation")) return .observation;
+        return null;
+    }
+
+    pub fn defaultTtl(self: MemoryKind) u64 {
+        return switch (self) {
+            .heartbeat => 7 * 24 * 3600, // 7 days
+            .episode => 30 * 24 * 3600, // 30 days
+            .learning, .rule => 0, // permanent
+            .@"error" => 14 * 24 * 3600, // 14 days
+            .observation => 30 * 24 * 3600, // 30 days
+        };
+    }
+};
+
+/// Fixed-buffer memory record — used for write path (~2.5KB on stack)
+pub const MemoryRecord = struct {
+    id_buf: [64]u8 = undefined,
+    id_len: u8 = 0,
+    agent_buf: [32]u8 = undefined,
+    agent_len: u8 = 0,
+    kind: MemoryKind = .observation,
+    ts: u64 = 0,
+    tags: [8][32]u8 = undefined,
+    tag_lens: [8]u8 = .{ 0, 0, 0, 0, 0, 0, 0, 0 },
+    tag_count: u8 = 0,
+    ttl: u64 = 0,
+    data_buf: [2048]u8 = undefined,
+    data_len: u16 = 0,
+    summary_buf: [256]u8 = undefined,
+    summary_len: u16 = 0,
+
+    pub fn agent(self: *const MemoryRecord) []const u8 {
+        return self.agent_buf[0..self.agent_len];
+    }
+
+    pub fn summary(self: *const MemoryRecord) []const u8 {
+        return self.summary_buf[0..self.summary_len];
+    }
+
+    pub fn data(self: *const MemoryRecord) []const u8 {
+        return self.data_buf[0..self.data_len];
+    }
+
+    pub fn id(self: *const MemoryRecord) []const u8 {
+        return self.id_buf[0..self.id_len];
+    }
+
+    pub fn getTag(self: *const MemoryRecord, idx: usize) []const u8 {
+        if (idx >= self.tag_count) return "";
+        return self.tags[idx][0..self.tag_lens[idx]];
+    }
+
+    pub fn isExpired(self: *const MemoryRecord, now_ts: u64) bool {
+        if (self.ttl == 0) return false; // permanent
+        return now_ts > self.ts + self.ttl;
+    }
+};
+
+fn copyToFixed(comptime N: usize, dest: *[N]u8, len_ptr: anytype, src: []const u8) void {
+    const copy_len = @min(src.len, N);
+    @memcpy(dest[0..copy_len], src[0..copy_len]);
+    len_ptr.* = @intCast(copy_len);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CORE API
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Write a memory record to the agent's current.jsonl
+pub fn write(allocator: Allocator, record: *const MemoryRecord) !void {
+    const agent_name = record.agent();
+    if (agent_name.len == 0) return error.EmptyAgent;
+
+    // Ensure directory exists
+    const dir_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ MEMORY_ROOT, agent_name });
+    defer allocator.free(dir_path);
+    std.fs.cwd().makePath(dir_path) catch {};
+
+    const file_path = try std.fmt.allocPrint(allocator, "{s}/{s}/current.jsonl", .{ MEMORY_ROOT, agent_name });
+    defer allocator.free(file_path);
+
+    // Serialize record to JSON line
+    var buf: [4096]u8 = undefined;
+    const json_line = try serializeRecord(&buf, record);
+
+    // Append to file
+    const file = try std.fs.cwd().createFile(file_path, .{ .truncate = false });
+    defer file.close();
+    try file.seekFromEnd(0);
+    try file.writeAll(json_line);
+    try file.writeAll("\n");
+
+    // Check file size for rotation
+    const stat = try file.stat();
+    if (stat.size > MAX_FILE_SIZE) {
+        rotateFile(allocator, agent_name) catch {};
+    }
+}
+
+pub const ReadOptions = struct {
+    agent: ?[]const u8 = null, // null = scan all agents
+    kind: ?MemoryKind = null,
+    tag_filter: ?[]const u8 = null,
+    since_ts: u64 = 0,
+    limit: u32 = 100,
+};
+
+/// Read memory records matching the given options
+pub fn read(allocator: Allocator, opts: ReadOptions) !std.ArrayList(MemoryRecord) {
+    var results: std.ArrayList(MemoryRecord) = .{};
+
+    if (opts.agent) |agent_name| {
+        // Read from specific agent
+        try readAgentRecords(allocator, agent_name, opts, &results);
+    } else {
+        // Scan all agent directories
+        var dir = std.fs.cwd().openDir(MEMORY_ROOT, .{ .iterate = true }) catch return results;
+        defer dir.close();
+
+        var dir_iter = dir.iterate();
+        while (try dir_iter.next()) |entry| {
+            if (entry.kind != .directory) continue;
+            try readAgentRecords(allocator, entry.name, opts, &results);
+        }
+    }
+
+    // Sort by timestamp descending (newest first)
+    std.mem.sort(MemoryRecord, results.items, {}, struct {
+        fn lessThan(_: void, a: MemoryRecord, b: MemoryRecord) bool {
+            return a.ts > b.ts;
+        }
+    }.lessThan);
+
+    // Apply limit
+    if (results.items.len > opts.limit) {
+        results.shrinkRetainingCapacity(opts.limit);
+    }
+
+    return results;
+}
+
+/// Search memory records by keyword matching in summary and data
+pub fn search(allocator: Allocator, query: []const u8, limit: u32) !std.ArrayList(MemoryRecord) {
+    // Split query into words
+    var words_buf: [16][]const u8 = undefined;
+    var word_count: usize = 0;
+    var iter = std.mem.splitScalar(u8, query, ' ');
+    while (iter.next()) |w| {
+        if (w.len > 0 and word_count < 16) {
+            words_buf[word_count] = w;
+            word_count += 1;
+        }
+    }
+    const words = words_buf[0..word_count];
+    if (word_count == 0) {
+        const empty: std.ArrayList(MemoryRecord) = .{};
+        return empty;
+    }
+
+    // Read all records
+    var all = try read(allocator, .{ .limit = 10000 });
+    defer all.deinit(allocator);
+
+    var results: std.ArrayList(MemoryRecord) = .{};
+
+    for (all.items) |rec| {
+        var score: u32 = 0;
+        for (words) |word| {
+            if (containsIgnoreCase(rec.summary(), word)) score += 2;
+            if (containsIgnoreCase(rec.data(), word)) score += 1;
+            // Check tags
+            var ti: u8 = 0;
+            while (ti < rec.tag_count) : (ti += 1) {
+                if (containsIgnoreCase(rec.getTag(ti), word)) score += 3;
+            }
+        }
+        if (score > 0) {
+            try results.append(allocator, rec);
+        }
+    }
+
+    // Apply limit
+    if (results.items.len > limit) {
+        results.shrinkRetainingCapacity(limit);
+    }
+
+    return results;
+}
+
+pub const GcResult = struct {
+    scanned: u32 = 0,
+    removed: u32 = 0,
+    kept: u32 = 0,
+};
+
+/// Garbage collect expired records
+pub fn gc(allocator: Allocator, agent_filter: ?[]const u8) !GcResult {
+    var result = GcResult{};
+    const now_ts: u64 = @intCast(std.time.timestamp());
+
+    if (agent_filter) |agent_name| {
+        try gcAgent(allocator, agent_name, now_ts, &result);
+    } else {
+        var dir = std.fs.cwd().openDir(MEMORY_ROOT, .{ .iterate = true }) catch return result;
+        defer dir.close();
+
+        var dir_iter = dir.iterate();
+        while (try dir_iter.next()) |entry| {
+            if (entry.kind != .directory) continue;
+            try gcAgent(allocator, entry.name, now_ts, &result);
+        }
+    }
+
+    return result;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONVENIENCE FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn writeHeartbeat(allocator: Allocator, agent_name: []const u8, data_json: []const u8) !void {
+    var record = MemoryRecord{};
+    const ts: u64 = @intCast(std.time.timestamp());
+    generateId(&record.id_buf, &record.id_len, ts, agent_name);
+    copyToFixed(32, &record.agent_buf, &record.agent_len, agent_name);
+    record.kind = .heartbeat;
+    record.ts = ts;
+    record.ttl = MemoryKind.heartbeat.defaultTtl();
+    copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+
+    const summary_text = try std.fmt.allocPrint(allocator, "{s} heartbeat", .{agent_name});
+    defer allocator.free(summary_text);
+    copyToFixed(256, &record.summary_buf, &record.summary_len, summary_text);
+
+    try write(allocator, &record);
+}
+
+pub fn writeLearning(allocator: Allocator, agent_name: []const u8, summary_text: []const u8, data_json: []const u8) !void {
+    var record = MemoryRecord{};
+    const ts: u64 = @intCast(std.time.timestamp());
+    generateId(&record.id_buf, &record.id_len, ts, agent_name);
+    copyToFixed(32, &record.agent_buf, &record.agent_len, agent_name);
+    record.kind = .learning;
+    record.ts = ts;
+    record.ttl = 0; // permanent
+    copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+    copyToFixed(256, &record.summary_buf, &record.summary_len, summary_text);
+
+    try write(allocator, &record);
+}
+
+pub fn writeEpisode(allocator: Allocator, agent_name: []const u8, summary_text: []const u8, data_json: []const u8) !void {
+    var record = MemoryRecord{};
+    const ts: u64 = @intCast(std.time.timestamp());
+    generateId(&record.id_buf, &record.id_len, ts, agent_name);
+    copyToFixed(32, &record.agent_buf, &record.agent_len, agent_name);
+    record.kind = .episode;
+    record.ts = ts;
+    record.ttl = MemoryKind.episode.defaultTtl();
+    copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+    copyToFixed(256, &record.summary_buf, &record.summary_len, summary_text);
+
+    try write(allocator, &record);
+}
+
+pub fn latestHeartbeat(allocator: Allocator, agent_name: []const u8) !?MemoryRecord {
+    var results = try read(allocator, .{
+        .agent = agent_name,
+        .kind = .heartbeat,
+        .limit = 1,
+    });
+    defer results.deinit(allocator);
+
+    if (results.items.len > 0) {
+        return results.items[0];
+    }
+    return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTERNAL HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn generateId(id_buf: *[64]u8, id_len: *u8, ts: u64, agent_name: []const u8) void {
+    // Simple hash from agent name
+    var hash: u32 = 0;
+    for (agent_name) |c| {
+        hash = hash *% 31 +% c;
+    }
+    hash ^= @truncate(ts);
+
+    const result = std.fmt.bufPrint(id_buf, "mem_{d}_{s}_{x:0>8}", .{ ts, agent_name, hash }) catch {
+        id_len.* = 0;
+        return;
+    };
+    id_len.* = @intCast(result.len);
+}
+
+fn serializeRecord(buf: *[4096]u8, rec: *const MemoryRecord) ![]const u8 {
+    var stream = std.io.fixedBufferStream(buf);
+    const w = stream.writer();
+
+    try w.writeAll("{\"id\":\"");
+    try w.writeAll(rec.id());
+    try w.writeAll("\",\"agent\":\"");
+    try w.writeAll(rec.agent());
+    try w.writeAll("\",\"kind\":\"");
+    try w.writeAll(rec.kind.toString());
+    try w.print("\",\"ts\":{d},\"tags\":[", .{rec.ts});
+
+    var ti: u8 = 0;
+    while (ti < rec.tag_count) : (ti += 1) {
+        if (ti > 0) try w.writeAll(",");
+        try w.writeAll("\"");
+        try w.writeAll(rec.getTag(ti));
+        try w.writeAll("\"");
+    }
+
+    try w.print("],\"ttl\":{d},\"data\":", .{rec.ttl});
+
+    // data is raw JSON or empty object
+    const data_slice = rec.data();
+    if (data_slice.len > 0) {
+        try w.writeAll(data_slice);
+    } else {
+        try w.writeAll("{}");
+    }
+
+    try w.writeAll(",\"summary\":\"");
+    // Escape summary for JSON
+    for (rec.summary()) |c| {
+        switch (c) {
+            '"' => try w.writeAll("\\\""),
+            '\\' => try w.writeAll("\\\\"),
+            '\n' => try w.writeAll("\\n"),
+            '\r' => try w.writeAll("\\r"),
+            '\t' => try w.writeAll("\\t"),
+            else => try w.writeByte(c),
+        }
+    }
+    try w.writeAll("\"}");
+
+    return stream.getWritten();
+}
+
+fn deserializeRecord(line: []const u8, rec: *MemoryRecord) bool {
+    // Minimal JSON parsing — extract fields by scanning
+    rec.* = MemoryRecord{};
+
+    // Extract id
+    if (extractJsonString(line, "\"id\":\"")) |val| {
+        copyToFixed(64, &rec.id_buf, &rec.id_len, val);
+    }
+
+    // Extract agent
+    if (extractJsonString(line, "\"agent\":\"")) |val| {
+        copyToFixed(32, &rec.agent_buf, &rec.agent_len, val);
+    } else return false;
+
+    // Extract kind
+    if (extractJsonString(line, "\"kind\":\"")) |val| {
+        rec.kind = MemoryKind.fromString(val) orelse .observation;
+    }
+
+    // Extract ts
+    if (extractJsonNumber(line, "\"ts\":")) |val| {
+        rec.ts = val;
+    }
+
+    // Extract ttl
+    if (extractJsonNumber(line, "\"ttl\":")) |val| {
+        rec.ttl = val;
+    }
+
+    // Extract summary
+    if (extractJsonString(line, "\"summary\":\"")) |val| {
+        copyToFixed(256, &rec.summary_buf, &rec.summary_len, val);
+    }
+
+    // Extract tags (simple: scan for tags array)
+    if (std.mem.indexOf(u8, line, "\"tags\":[")) |tags_start| {
+        const rest = line[tags_start + 8 ..];
+        if (std.mem.indexOf(u8, rest, "]")) |tags_end| {
+            const tags_content = rest[0..tags_end];
+            var tag_iter = std.mem.splitSequence(u8, tags_content, "\",\"");
+            while (tag_iter.next()) |tag_raw| {
+                if (rec.tag_count >= 8) break;
+                // Strip surrounding quotes
+                var tag = tag_raw;
+                if (tag.len > 0 and tag[0] == '"') tag = tag[1..];
+                if (tag.len > 0 and tag[tag.len - 1] == '"') tag = tag[0 .. tag.len - 1];
+                if (tag.len > 0) {
+                    copyToFixed(32, &rec.tags[rec.tag_count], &rec.tag_lens[rec.tag_count], tag);
+                    rec.tag_count += 1;
+                }
+            }
+        }
+    }
+
+    // Extract data (raw JSON between "data": and ,"summary")
+    if (std.mem.indexOf(u8, line, "\"data\":")) |data_start| {
+        const data_rest = line[data_start + 7 ..];
+        if (std.mem.indexOf(u8, data_rest, ",\"summary\"")) |data_end| {
+            copyToFixed(2048, &rec.data_buf, &rec.data_len, data_rest[0..data_end]);
+        }
+    }
+
+    return rec.agent_len > 0;
+}
+
+fn extractJsonString(json: []const u8, key: []const u8) ?[]const u8 {
+    const start = (std.mem.indexOf(u8, json, key) orelse return null) + key.len;
+    const rest = json[start..];
+    // Find unescaped closing quote
+    var i: usize = 0;
+    while (i < rest.len) : (i += 1) {
+        if (rest[i] == '\\') {
+            i += 1; // skip escaped char
+            continue;
+        }
+        if (rest[i] == '"') return rest[0..i];
+    }
+    return null;
+}
+
+fn extractJsonNumber(json: []const u8, key: []const u8) ?u64 {
+    const start = (std.mem.indexOf(u8, json, key) orelse return null) + key.len;
+    const rest = json[start..];
+    var end: usize = 0;
+    while (end < rest.len and rest[end] >= '0' and rest[end] <= '9') : (end += 1) {}
+    if (end == 0) return null;
+    return std.fmt.parseInt(u64, rest[0..end], 10) catch null;
+}
+
+fn readAgentRecords(allocator: Allocator, agent_name: []const u8, opts: ReadOptions, results: *std.ArrayList(MemoryRecord)) !void {
+    const file_path = try std.fmt.allocPrint(allocator, "{s}/{s}/current.jsonl", .{ MEMORY_ROOT, agent_name });
+    defer allocator.free(file_path);
+
+    const contents = std.fs.cwd().readFileAlloc(allocator, file_path, 8 * 1024 * 1024) catch return;
+    defer allocator.free(contents);
+
+    var line_iter = std.mem.splitScalar(u8, contents, '\n');
+    while (line_iter.next()) |line| {
+        if (line.len == 0) continue;
+
+        var rec = MemoryRecord{};
+        if (!deserializeRecord(line, &rec)) continue;
+
+        // Apply filters
+        if (opts.kind) |k| {
+            if (rec.kind != k) continue;
+        }
+        if (opts.since_ts > 0 and rec.ts < opts.since_ts) continue;
+        if (opts.tag_filter) |tag| {
+            var found = false;
+            var ti: u8 = 0;
+            while (ti < rec.tag_count) : (ti += 1) {
+                if (std.mem.eql(u8, rec.getTag(ti), tag)) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) continue;
+        }
+
+        try results.append(allocator, rec);
+    }
+}
+
+fn gcAgent(allocator: Allocator, agent_name: []const u8, now_ts: u64, result: *GcResult) !void {
+    const file_path = try std.fmt.allocPrint(allocator, "{s}/{s}/current.jsonl", .{ MEMORY_ROOT, agent_name });
+    defer allocator.free(file_path);
+
+    const contents = std.fs.cwd().readFileAlloc(allocator, file_path, 8 * 1024 * 1024) catch return;
+    defer allocator.free(contents);
+
+    var kept_lines: std.ArrayList(u8) = .{};
+    defer kept_lines.deinit(allocator);
+
+    var line_iter = std.mem.splitScalar(u8, contents, '\n');
+    while (line_iter.next()) |line| {
+        if (line.len == 0) continue;
+        result.scanned += 1;
+
+        var rec = MemoryRecord{};
+        if (!deserializeRecord(line, &rec)) {
+            result.removed += 1;
+            continue;
+        }
+
+        if (rec.isExpired(now_ts)) {
+            result.removed += 1;
+        } else {
+            result.kept += 1;
+            try kept_lines.appendSlice(allocator, line);
+            try kept_lines.append(allocator, '\n');
+        }
+    }
+
+    // Rewrite file with only kept records
+    if (result.removed > 0) {
+        const file = try std.fs.cwd().createFile(file_path, .{});
+        defer file.close();
+        try file.writeAll(kept_lines.items);
+    }
+}
+
+fn rotateFile(allocator: Allocator, agent_name: []const u8) !void {
+    // Move current.jsonl to archive/YYYY-MM.jsonl
+    const archive_dir = try std.fmt.allocPrint(allocator, "{s}/{s}/archive", .{ MEMORY_ROOT, agent_name });
+    defer allocator.free(archive_dir);
+    std.fs.cwd().makePath(archive_dir) catch {};
+
+    const ts: u64 = @intCast(std.time.timestamp());
+    // Simple date: use ts / seconds_per_month approximation
+    const days = ts / 86400;
+    const approx_year = 1970 + days / 365;
+    const approx_month = (days % 365) / 30 + 1;
+
+    const archive_path = try std.fmt.allocPrint(allocator, "{s}/{d}-{d:0>2}.jsonl", .{ archive_dir, approx_year, approx_month });
+    defer allocator.free(archive_path);
+
+    const current_path = try std.fmt.allocPrint(allocator, "{s}/{s}/current.jsonl", .{ MEMORY_ROOT, agent_name });
+    defer allocator.free(current_path);
+
+    // Append current to archive, then truncate current
+    const current_contents = std.fs.cwd().readFileAlloc(allocator, current_path, 8 * 1024 * 1024) catch return;
+    defer allocator.free(current_contents);
+
+    const archive_file = try std.fs.cwd().createFile(archive_path, .{ .truncate = false });
+    defer archive_file.close();
+    try archive_file.seekFromEnd(0);
+    try archive_file.writeAll(current_contents);
+
+    // Truncate current
+    const trunc_file = try std.fs.cwd().createFile(current_path, .{});
+    trunc_file.close();
+}
+
+fn containsIgnoreCase(haystack: []const u8, needle: []const u8) bool {
+    if (needle.len == 0 or haystack.len < needle.len) return false;
+    var i: usize = 0;
+    while (i + needle.len <= haystack.len) : (i += 1) {
+        var match = true;
+        for (0..needle.len) |j| {
+            if (toLower(haystack[i + j]) != toLower(needle[j])) {
+                match = false;
+                break;
+            }
+        }
+        if (match) return true;
+    }
+    return false;
+}
+
+fn toLower(c: u8) u8 {
+    return if (c >= 'A' and c <= 'Z') c + 32 else c;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CLI DISPATCH
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runMemoryCommand(allocator: Allocator, args: []const []const u8) !void {
+    const subcmd = if (args.len > 0) args[0] else "help";
+
+    if (std.mem.eql(u8, subcmd, "list")) {
+        return runMemoryList(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "read")) {
+        return runMemoryRead(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "write")) {
+        return runMemoryWrite(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "search")) {
+        return runMemorySearch(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "gc")) {
+        return runMemoryGc(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "stats")) {
+        return runMemoryStats(allocator);
+    } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
+        printHelp();
+    } else {
+        print("{s}Unknown memory subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
+        printHelp();
+    }
+}
+
+fn runMemoryList(allocator: Allocator, args: []const []const u8) !void {
+    var opts = ReadOptions{};
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        const arg = args[i];
+        if (std.mem.eql(u8, arg, "--agent") and i + 1 < args.len) {
+            i += 1;
+            opts.agent = args[i];
+        } else if (std.mem.eql(u8, arg, "--kind") and i + 1 < args.len) {
+            i += 1;
+            opts.kind = MemoryKind.fromString(args[i]);
+        } else if (std.mem.eql(u8, arg, "--limit") and i + 1 < args.len) {
+            i += 1;
+            opts.limit = std.fmt.parseInt(u32, args[i], 10) catch 100;
+        } else if (std.mem.eql(u8, arg, "--tag") and i + 1 < args.len) {
+            i += 1;
+            opts.tag_filter = args[i];
+        }
+    }
+
+    var results = try read(allocator, opts);
+    defer results.deinit(allocator);
+
+    if (results.items.len == 0) {
+        print("{s}No memory records found.{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    print("\n{s}📝 MEMORY RECORDS{s} ({d} found)\n", .{ BOLD, RESET, results.items.len });
+    print("{s}─────────────────────────────────────────────────────{s}\n", .{ DIM, RESET });
+
+    for (results.items) |rec| {
+        const kind_color = kindColor(rec.kind);
+        print("{s}{s:<12}{s} {s}{s}{s}  {s}{s}{s}\n", .{
+            kind_color, rec.kind.toString(), RESET,
+            CYAN,       rec.agent(),         RESET,
+            WHITE,      rec.summary(),       RESET,
+        });
+    }
+    print("\n", .{});
+}
+
+fn runMemoryRead(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        print("{s}Usage: tri memory read <id>{s}\n", .{ RED, RESET });
+        return;
+    }
+    const target_id = args[0];
+
+    var results = try read(allocator, .{ .limit = 10000 });
+    defer results.deinit(allocator);
+
+    for (results.items) |rec| {
+        if (std.mem.eql(u8, rec.id(), target_id)) {
+            print("\n{s}📋 MEMORY RECORD{s}\n", .{ BOLD, RESET });
+            print("  {s}ID:{s}      {s}\n", .{ DIM, RESET, rec.id() });
+            print("  {s}Agent:{s}   {s}{s}{s}\n", .{ DIM, RESET, CYAN, rec.agent(), RESET });
+            print("  {s}Kind:{s}    {s}{s}{s}\n", .{ DIM, RESET, kindColor(rec.kind), rec.kind.toString(), RESET });
+            print("  {s}TS:{s}      {d}\n", .{ DIM, RESET, rec.ts });
+            print("  {s}TTL:{s}     {d}s\n", .{ DIM, RESET, rec.ttl });
+            print("  {s}Summary:{s} {s}\n", .{ DIM, RESET, rec.summary() });
+            print("  {s}Data:{s}    {s}\n", .{ DIM, RESET, rec.data() });
+            // Tags
+            if (rec.tag_count > 0) {
+                print("  {s}Tags:{s}    ", .{ DIM, RESET });
+                var ti: u8 = 0;
+                while (ti < rec.tag_count) : (ti += 1) {
+                    if (ti > 0) print(", ", .{});
+                    print("{s}{s}{s}", .{ MAGENTA, rec.getTag(ti), RESET });
+                }
+                print("\n", .{});
+            }
+            print("\n", .{});
+            return;
+        }
+    }
+
+    print("{s}Record not found: {s}{s}\n", .{ RED, target_id, RESET });
+}
+
+fn runMemoryWrite(allocator: Allocator, args: []const []const u8) !void {
+    var record = MemoryRecord{};
+    const ts: u64 = @intCast(std.time.timestamp());
+    record.ts = ts;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        const arg = args[i];
+        if (std.mem.eql(u8, arg, "--agent") and i + 1 < args.len) {
+            i += 1;
+            copyToFixed(32, &record.agent_buf, &record.agent_len, args[i]);
+        } else if (std.mem.eql(u8, arg, "--kind") and i + 1 < args.len) {
+            i += 1;
+            record.kind = MemoryKind.fromString(args[i]) orelse .observation;
+        } else if (std.mem.eql(u8, arg, "--summary") and i + 1 < args.len) {
+            i += 1;
+            copyToFixed(256, &record.summary_buf, &record.summary_len, args[i]);
+        } else if (std.mem.eql(u8, arg, "--data") and i + 1 < args.len) {
+            i += 1;
+            copyToFixed(2048, &record.data_buf, &record.data_len, args[i]);
+        } else if (std.mem.eql(u8, arg, "--tag") and i + 1 < args.len) {
+            i += 1;
+            if (record.tag_count < 8) {
+                copyToFixed(32, &record.tags[record.tag_count], &record.tag_lens[record.tag_count], args[i]);
+                record.tag_count += 1;
+            }
+        } else if (std.mem.eql(u8, arg, "--ttl") and i + 1 < args.len) {
+            i += 1;
+            record.ttl = std.fmt.parseInt(u64, args[i], 10) catch 0;
+        }
+    }
+
+    if (record.agent_len == 0) {
+        print("{s}Error: --agent is required{s}\n", .{ RED, RESET });
+        return;
+    }
+    if (record.summary_len == 0) {
+        print("{s}Error: --summary is required{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    // Apply default TTL if not specified
+    if (record.ttl == 0) {
+        record.ttl = record.kind.defaultTtl();
+    }
+
+    // Generate ID
+    generateId(&record.id_buf, &record.id_len, ts, record.agent());
+
+    try write(allocator, &record);
+
+    print("{s}✅ Memory written{s}\n", .{ GREEN, RESET });
+    print("  {s}ID:{s}    {s}\n", .{ DIM, RESET, record.id() });
+    print("  {s}Agent:{s} {s}\n", .{ DIM, RESET, record.agent() });
+    print("  {s}Kind:{s}  {s}\n", .{ DIM, RESET, record.kind.toString() });
+    print("\n", .{});
+}
+
+fn runMemorySearch(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        print("{s}Usage: tri memory search <query> [--limit 20]{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const query = args[0];
+    var limit: u32 = 20;
+
+    var i: usize = 1;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--limit") and i + 1 < args.len) {
+            i += 1;
+            limit = std.fmt.parseInt(u32, args[i], 10) catch 20;
+        }
+    }
+
+    var results = try search(allocator, query, limit);
+    defer results.deinit(allocator);
+
+    if (results.items.len == 0) {
+        print("{s}No matches found for: \"{s}\"{s}\n", .{ YELLOW, args[0], RESET });
+        return;
+    }
+
+    print("\n{s}🔍 SEARCH RESULTS{s} ({d} matches for \"{s}\")\n", .{ BOLD, RESET, results.items.len, args[0] });
+    print("{s}─────────────────────────────────────────────────────{s}\n", .{ DIM, RESET });
+
+    for (results.items) |rec| {
+        const kind_color = kindColor(rec.kind);
+        print("{s}{s:<12}{s} {s}{s}{s}  {s}{s}{s}\n", .{
+            kind_color, rec.kind.toString(), RESET,
+            CYAN,       rec.agent(),         RESET,
+            WHITE,      rec.summary(),       RESET,
+        });
+    }
+    print("\n", .{});
+}
+
+fn runMemoryGc(allocator: Allocator, args: []const []const u8) !void {
+    var agent_filter: ?[]const u8 = null;
+    var dry_run = false;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--agent") and i + 1 < args.len) {
+            i += 1;
+            agent_filter = args[i];
+        } else if (std.mem.eql(u8, args[i], "--dry-run")) {
+            dry_run = true;
+        }
+    }
+
+    if (dry_run) {
+        // Just count expired records
+        const now_ts: u64 = @intCast(std.time.timestamp());
+        var result = GcResult{};
+
+        var all = try read(allocator, .{ .agent = agent_filter, .limit = 100000 });
+        defer all.deinit(allocator);
+
+        for (all.items) |rec| {
+            result.scanned += 1;
+            if (rec.isExpired(now_ts)) {
+                result.removed += 1;
+            } else {
+                result.kept += 1;
+            }
+        }
+
+        print("\n{s}🗑️  GC DRY RUN{s}\n", .{ BOLD, RESET });
+        print("  Scanned: {d}\n", .{result.scanned});
+        print("  {s}Would remove: {d}{s}\n", .{ YELLOW, result.removed, RESET });
+        print("  Would keep:   {d}\n", .{result.kept});
+        print("\n", .{});
+    } else {
+        const result = try gc(allocator, agent_filter);
+
+        print("\n{s}🗑️  GC COMPLETE{s}\n", .{ BOLD, RESET });
+        print("  Scanned: {d}\n", .{result.scanned});
+        print("  {s}Removed: {d}{s}\n", .{ RED, result.removed, RESET });
+        print("  {s}Kept:    {d}{s}\n", .{ GREEN, result.kept, RESET });
+        print("\n", .{});
+    }
+}
+
+fn runMemoryStats(allocator: Allocator) !void {
+    var dir = std.fs.cwd().openDir(MEMORY_ROOT, .{ .iterate = true }) catch {
+        print("{s}No memory store found at {s}{s}\n", .{ YELLOW, MEMORY_ROOT, RESET });
+        return;
+    };
+    defer dir.close();
+
+    print("\n{s}📊 MEMORY STATS{s}\n", .{ BOLD, RESET });
+    print("{s}─────────────────────────────────────────────────────{s}\n", .{ DIM, RESET });
+
+    var total_records: u32 = 0;
+    var total_size: u64 = 0;
+
+    var dir_iter = dir.iterate();
+    while (try dir_iter.next()) |entry| {
+        if (entry.kind != .directory) continue;
+
+        const file_path = try std.fmt.allocPrint(allocator, "{s}/current.jsonl", .{entry.name});
+        defer allocator.free(file_path);
+
+        const stat = dir.statFile(file_path) catch continue;
+        const size = stat.size;
+
+        // Count lines
+        const full_path = try std.fmt.allocPrint(allocator, "{s}/{s}/current.jsonl", .{ MEMORY_ROOT, entry.name });
+        defer allocator.free(full_path);
+        const contents = std.fs.cwd().readFileAlloc(allocator, full_path, 8 * 1024 * 1024) catch continue;
+        defer allocator.free(contents);
+
+        var lines: u32 = 0;
+        var line_iter = std.mem.splitScalar(u8, contents, '\n');
+        while (line_iter.next()) |line| {
+            if (line.len > 0) lines += 1;
+        }
+
+        total_records += lines;
+        total_size += size;
+
+        print("  {s}{s:<20}{s}  {d:>5} records  {d:>8} bytes\n", .{
+            CYAN, entry.name, RESET, lines, size,
+        });
+    }
+
+    print("{s}─────────────────────────────────────────────────────{s}\n", .{ DIM, RESET });
+    print("  {s}TOTAL:{s}               {d:>5} records  {d:>8} bytes\n", .{ BOLD, RESET, total_records, total_size });
+    print("\n", .{});
+}
+
+fn kindColor(kind: MemoryKind) []const u8 {
+    return switch (kind) {
+        .heartbeat => GREEN,
+        .learning => CYAN,
+        .episode => MAGENTA,
+        .rule => YELLOW,
+        .@"error" => RED,
+        .observation => WHITE,
+    };
+}
+
+fn printHelp() void {
+    print(
+        \\
+        \\{s}TRI MEMORY{s} — Unified Agent Memory Store
+        \\
+        \\{s}Usage:{s}
+        \\  tri memory list   [--agent <name>] [--kind <kind>] [--tag <tag>] [--limit N]
+        \\  tri memory read   <id>
+        \\  tri memory write  --agent <name> --kind <kind> --summary "text" [--data '{{}}'] [--tag <tag>] [--ttl <sec>]
+        \\  tri memory search <query> [--limit N]
+        \\  tri memory gc     [--agent <name>] [--dry-run]
+        \\  tri memory stats
+        \\
+        \\{s}Kinds:{s} heartbeat, learning, episode, rule, error, observation
+        \\{s}Agents:{s} mu, scholar, phoenix-core, queen, oracle, system
+        \\
+        \\{s}Default TTLs:{s}
+        \\  heartbeat=7d  episode=30d  error=14d  observation=30d  learning/rule=permanent
+        \\
+    , .{ BOLD, RESET, BOLD, RESET, BOLD, RESET, BOLD, RESET, BOLD, RESET });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "MemoryKind toString roundtrip" {
+    const kinds = [_]MemoryKind{ .heartbeat, .learning, .episode, .rule, .@"error", .observation };
+    for (kinds) |k| {
+        const s = k.toString();
+        const parsed = MemoryKind.fromString(s);
+        try std.testing.expectEqual(k, parsed.?);
+    }
+}
+
+test "MemoryKind default TTLs" {
+    try std.testing.expect(MemoryKind.heartbeat.defaultTtl() > 0);
+    try std.testing.expectEqual(@as(u64, 0), MemoryKind.learning.defaultTtl());
+    try std.testing.expectEqual(@as(u64, 0), MemoryKind.rule.defaultTtl());
+}
+
+test "generateId produces valid id" {
+    var id_buf: [64]u8 = undefined;
+    var id_len: u8 = 0;
+    generateId(&id_buf, &id_len, 1773750360, "mu");
+    const id_str = id_buf[0..id_len];
+    try std.testing.expect(std.mem.startsWith(u8, id_str, "mem_"));
+    try std.testing.expect(id_len > 10);
+}
+
+test "serialize and deserialize roundtrip" {
+    var record = MemoryRecord{};
+    copyToFixed(32, &record.agent_buf, &record.agent_len, "mu");
+    copyToFixed(256, &record.summary_buf, &record.summary_len, "test summary");
+    copyToFixed(2048, &record.data_buf, &record.data_len, "{\"key\":\"val\"}");
+    record.kind = .learning;
+    record.ts = 1773750360;
+    record.ttl = 0;
+    generateId(&record.id_buf, &record.id_len, record.ts, record.agent());
+
+    // Add a tag
+    copyToFixed(32, &record.tags[0], &record.tag_lens[0], "build");
+    record.tag_count = 1;
+
+    var buf: [4096]u8 = undefined;
+    const json = try serializeRecord(&buf, &record);
+
+    var parsed = MemoryRecord{};
+    try std.testing.expect(deserializeRecord(json, &parsed));
+
+    try std.testing.expectEqualStrings("mu", parsed.agent());
+    try std.testing.expectEqualStrings("test summary", parsed.summary());
+    try std.testing.expectEqual(MemoryKind.learning, parsed.kind);
+    try std.testing.expectEqual(@as(u64, 1773750360), parsed.ts);
+    try std.testing.expectEqual(@as(u8, 1), parsed.tag_count);
+    try std.testing.expectEqualStrings("build", parsed.getTag(0));
+}
+
+test "containsIgnoreCase" {
+    try std.testing.expect(containsIgnoreCase("Hello World", "hello"));
+    try std.testing.expect(containsIgnoreCase("Hello World", "WORLD"));
+    try std.testing.expect(!containsIgnoreCase("Hello World", "xyz"));
+    try std.testing.expect(!containsIgnoreCase("Hi", "Hello"));
+}
+
+test "MemoryRecord isExpired" {
+    var rec = MemoryRecord{};
+    rec.ts = 1000;
+    rec.ttl = 100;
+
+    try std.testing.expect(!rec.isExpired(1050)); // within TTL
+    try std.testing.expect(rec.isExpired(1200)); // past TTL
+
+    rec.ttl = 0; // permanent
+    try std.testing.expect(!rec.isExpired(999999)); // never expires
+}
+
+test "extractJsonString basic" {
+    const json = "{\"id\":\"mem_123_mu_abc\",\"agent\":\"mu\"}";
+    const id_val = extractJsonString(json, "\"id\":\"");
+    try std.testing.expect(id_val != null);
+    try std.testing.expectEqualStrings("mem_123_mu_abc", id_val.?);
+
+    const agent_val = extractJsonString(json, "\"agent\":\"");
+    try std.testing.expect(agent_val != null);
+    try std.testing.expectEqualStrings("mu", agent_val.?);
+}
+
+test "extractJsonNumber basic" {
+    const json = "{\"ts\":1773750360,\"ttl\":604800}";
+    const ts = extractJsonNumber(json, "\"ts\":");
+    try std.testing.expect(ts != null);
+    try std.testing.expectEqual(@as(u64, 1773750360), ts.?);
+}
+
+test "MemoryKind fromString invalid returns null" {
+    try std.testing.expectEqual(@as(?MemoryKind, null), MemoryKind.fromString("invalid"));
+    try std.testing.expectEqual(@as(?MemoryKind, null), MemoryKind.fromString(""));
+}
+
+test "serialize escapes special chars in summary" {
+    var record = MemoryRecord{};
+    copyToFixed(32, &record.agent_buf, &record.agent_len, "test");
+    copyToFixed(256, &record.summary_buf, &record.summary_len, "line1\nline2\"quoted\"");
+    record.kind = .observation;
+    record.ts = 100;
+    generateId(&record.id_buf, &record.id_len, record.ts, record.agent());
+
+    var buf: [4096]u8 = undefined;
+    const json = try serializeRecord(&buf, &record);
+
+    // Should contain escaped newline and quote
+    try std.testing.expect(std.mem.indexOf(u8, json, "\\n") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\\\"") != null);
+}
+
+test "copyToFixed truncates long input" {
+    var buf: [8]u8 = undefined;
+    var len: u8 = 0;
+    copyToFixed(8, &buf, &len, "this is a very long string that should be truncated");
+    try std.testing.expectEqual(@as(u8, 8), len);
+    try std.testing.expectEqualStrings("this is ", buf[0..len]);
+}
+
+test "empty agent returns error on write" {
+    var record = MemoryRecord{};
+    record.agent_len = 0;
+    const result = write(std.testing.allocator, &record);
+    try std.testing.expectError(error.EmptyAgent, result);
+}
