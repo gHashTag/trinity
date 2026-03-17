@@ -187,6 +187,8 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "version")) return runVersion(allocator, rest);
     if (std.mem.eql(u8, sub, "outdated")) return runOutdated(allocator, rest);
     if (std.mem.eql(u8, sub, "regenerate")) return runRegenerate(allocator, rest);
+    if (std.mem.eql(u8, sub, "search")) return runSearch(allocator, rest);
+    if (std.mem.eql(u8, sub, "find")) return runFind(allocator, rest);
 
     printHelp();
 }
@@ -250,6 +252,9 @@ fn printHelp() void {
     std.debug.print("  {s}version{s}            Show cell versions and content hashes\n", .{ GREEN, RESET });
     std.debug.print("  {s}outdated{s}           List cells with modified content (needs regen)\n", .{ GREEN, RESET });
     std.debug.print("  {s}regenerate --outdated{s}  Regenerate all outdated cells\n", .{ GREEN, RESET });
+    std.debug.print("  {s}search <query>{s}     Fuzzy search by name/id/description\n", .{ GREEN, RESET });
+    std.debug.print("  {s}find --capability X{s}  Find cells with specific capability\n", .{ GREEN, RESET });
+    std.debug.print("  {s}list --tag X:Y{s}     Filter by tags (scope:brain, type:library)\n", .{ GREEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -277,6 +282,7 @@ fn runList(allocator: Allocator, args: []const []const u8) !void {
     var owner_filter: ?[]const u8 = null;
     var scope_filter: ?[]const u8 = null;
     var type_filter: ?[]const u8 = null;
+    var tag_filter: ?[]const u8 = null;
     var show_commands = false;
     var show_health = false;
     var show_group = false;
@@ -291,12 +297,29 @@ fn runList(allocator: Allocator, args: []const []const u8) !void {
         } else if (std.mem.eql(u8, args[i], "--type") and i + 1 < args.len) {
             type_filter = args[i + 1];
             i += 1;
+        } else if (std.mem.eql(u8, args[i], "--tag") and i + 1 < args.len) {
+            tag_filter = args[i + 1];
+            i += 1;
         } else if (std.mem.eql(u8, args[i], "--commands")) {
             show_commands = true;
         } else if (std.mem.eql(u8, args[i], "--health")) {
             show_health = true;
         } else if (std.mem.eql(u8, args[i], "--group")) {
             show_group = true;
+        }
+    }
+
+    // Process --tag filter (format: "key:value" or "*:value")
+    if (tag_filter) |tf| {
+        if (std.mem.indexOf(u8, tf, ":")) |colon_idx| {
+            const key = tf[0..colon_idx];
+            const value = tf[colon_idx + 1 ..];
+            if (std.mem.eql(u8, key, "scope")) {
+                scope_filter = value;
+            } else if (std.mem.eql(u8, key, "type")) {
+                type_filter = value;
+            }
+            // Could support more tag keys in future
         }
     }
 
@@ -472,6 +495,237 @@ fn runList(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print(" | {s}Disabled: {d}{s}", .{ GRAY, disabled_count, RESET });
     }
     std.debug.print(" | Files: {d} | Tests: {d}\n\n", .{ total_files, total_tests });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SEARCH — fuzzy search by name/id/description
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runSearch(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage:{s} tri cell search <query>\n", .{ YELLOW, RESET });
+        std.debug.print("  Example: tri cell search faculty\n", .{});
+        std.debug.print("  Searches: cell ID, name, description\n\n", .{});
+        return;
+    }
+
+    const query = args[0];
+    const query_lower = try allocator.dupe(u8, query);
+    defer allocator.free(query_lower);
+
+    // Convert to lowercase for case-insensitive search
+    for (query_lower, 0..) |c, i| {
+        query_lower[i] = toLower(c);
+    }
+
+    const registry = try loadRegistry(allocator);
+    defer allocator.free(registry);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, registry, .{}) catch {
+        std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
+        return;
+    };
+    defer parsed.deinit();
+
+    const cells = (parsed.value.object.get("cells") orelse return).array.items;
+
+    std.debug.print("\n{s}🔍 SEARCH: \"{s}\"{s}\n\n", .{ CYAN, query, RESET });
+
+    var match_count: usize = 0;
+
+    for (cells) |item| {
+        const obj = item.object;
+        const id = jsonStr(obj, "id");
+        const path = jsonStr(obj, "path");
+
+        // Load cell.tri for name/description
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+        defer allocator.free(cell_tri_path);
+
+        const cell_content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+        defer allocator.free(cell_content);
+
+        const cell = parseCellTri(cell_content);
+
+        // Check fuzzy match in id, name, description
+        const id_lower = try allocLower(allocator, id);
+        defer allocator.free(id_lower);
+        const name_lower = try allocLower(allocator, cell.name);
+        defer allocator.free(name_lower);
+        const desc_lower = try allocLower(allocator, cell.description);
+        defer allocator.free(desc_lower);
+
+        const matches_id = std.mem.indexOf(u8, id_lower, query_lower) != null;
+        const matches_name = std.mem.indexOf(u8, name_lower, query_lower) != null;
+        const matches_desc = std.mem.indexOf(u8, desc_lower, query_lower) != null;
+
+        if (!matches_id and !matches_name and !matches_desc) continue;
+
+        match_count += 1;
+        const health = computeHealthScore(obj);
+        const health_color = if (health >= 80) GREEN else if (health >= 50) YELLOW else RED;
+        const status = jsonStr(obj, "status");
+        const status_color = if (std.mem.eql(u8, status, "stable")) GREEN else YELLOW;
+
+        // Match indicator
+        std.debug.print("  {s}{s}{s} ", .{ WHITE, cell.id, RESET });
+        if (matches_id) std.debug.print("{s}[id]{s} ", .{ GREEN, RESET });
+        if (matches_name) std.debug.print("{s}[name]{s} ", .{ CYAN, RESET });
+        if (matches_desc) std.debug.print("{s}[desc]{s} ", .{ GRAY, RESET });
+        std.debug.print("\n", .{});
+
+        std.debug.print("    Name: {s}{s}{s}\n", .{ WHITE, cell.name, RESET });
+        if (cell.description.len > 0) {
+            std.debug.print("    Desc: {s}{s}{s}\n", .{ GRAY, cell.description, RESET });
+        }
+        std.debug.print("    Health: {s}{d}%{s} | Status: {s}{s}{s}\n", .{
+            health_color, health, RESET, status_color, status, RESET,
+        });
+        std.debug.print("\n", .{});
+    }
+
+    if (match_count == 0) {
+        std.debug.print("  {s}No matches found for \"{s}\"{s}\n\n", .{ GRAY, query, RESET });
+    } else {
+        std.debug.print("  {s}Found {d} cell(s){s}\n\n", .{ GREEN, match_count, RESET });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIND — filter by capability (commands, exports, etc.)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runFind(allocator: Allocator, args: []const []const u8) !void {
+    // Parse flags
+    var capability_filter: ?[]const u8 = null;
+    var export_filter: ?[]const u8 = null;
+    var command_filter: ?[]const u8 = null;
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--capability") and i + 1 < args.len) {
+            capability_filter = args[i + 1];
+            i += 1;
+        } else if (std.mem.eql(u8, args[i], "--export") and i + 1 < args.len) {
+            export_filter = args[i + 1];
+            i += 1;
+        } else if (std.mem.eql(u8, args[i], "--command") and i + 1 < args.len) {
+            command_filter = args[i + 1];
+            i += 1;
+        }
+    }
+
+    if (capability_filter == null and export_filter == null and command_filter == null) {
+        std.debug.print("{s}Usage:{s} tri cell find --capability <name>\n", .{ YELLOW, RESET });
+        std.debug.print("       tri cell find --command <name>\n", .{});
+        std.debug.print("       tri cell find --export <name>\n\n", .{});
+        std.debug.print("  Examples:\n", .{});
+        std.debug.print("    tri cell find --capability pipeline\n", .{});
+        std.debug.print("    tri cell find --command build\n", .{});
+        std.debug.print("    tri cell find --export runIdempotencyCommand\n\n", .{});
+        return;
+    }
+
+    const registry = try loadRegistry(allocator);
+    defer allocator.free(registry);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, registry, .{}) catch {
+        std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
+        return;
+    };
+    defer parsed.deinit();
+
+    const cells = (parsed.value.object.get("cells") orelse return).array.items;
+
+    std.debug.print("\n{s}🎯 FIND CELLS BY CAPABILITY{s}\n\n", .{ CYAN, RESET });
+
+    var match_count: usize = 0;
+
+    for (cells) |item| {
+        const obj = item.object;
+        const path = jsonStr(obj, "path");
+
+        // Load cell.tri for contributes
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+        defer allocator.free(cell_tri_path);
+
+        const cell_content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+        defer allocator.free(cell_content);
+
+        const cell = parseCellTri(cell_content);
+
+        var matches = false;
+        var match_details: []const u8 = "";
+
+        // Check --capability filter (searches in capabilities array)
+        if (capability_filter != null) {
+            const cap = capability_filter.?;
+            const cap_lower = try allocLower(allocator, cap);
+            defer allocator.free(cap_lower);
+            const caps_lower = try allocLower(allocator, cell.capabilities);
+            defer allocator.free(caps_lower);
+
+            if (std.mem.indexOf(u8, caps_lower, cap_lower) != null) {
+                matches = true;
+                match_details = "capability";
+            }
+        }
+
+        // Check --command filter (searches in contributes.commands)
+        if (!matches and command_filter != null) {
+            const cmd = command_filter.?;
+            var cmd_iter = cell_parser.ArrayIterator.init(cell.contributes_commands);
+            while (cmd_iter.next()) |command| {
+                if (std.mem.indexOf(u8, command, cmd) != null) {
+                    matches = true;
+                    match_details = "command";
+                    break;
+                }
+            }
+        }
+
+        // Check --export filter (searches in contributes.exports)
+        if (!matches and export_filter != null) {
+            const exp = export_filter.?;
+            var exp_iter = cell_parser.ArrayIterator.init(cell.contributes_exports);
+            while (exp_iter.next()) |export_name| {
+                if (std.mem.indexOf(u8, export_name, exp) != null) {
+                    matches = true;
+                    match_details = "export";
+                    break;
+                }
+            }
+        }
+
+        if (!matches) continue;
+
+        match_count += 1;
+        const health = computeHealthScore(obj);
+        const health_color = if (health >= 80) GREEN else if (health >= 50) YELLOW else RED;
+
+        std.debug.print("  {s}{s}{s} ", .{ WHITE, cell.id, RESET });
+        std.debug.print("{s}({s}){s}\n", .{ GRAY, match_details, RESET });
+        std.debug.print("    Name: {s}\n", .{cell.name});
+
+        // Show matching details
+        if (command_filter != null and cell.contributes_commands.len > 0) {
+            std.debug.print("    Commands: {s}\n", .{cell.contributes_commands});
+        }
+        if (export_filter != null and cell.contributes_exports.len > 0) {
+            std.debug.print("    Exports: {s}\n", .{cell.contributes_exports});
+        }
+        if (capability_filter != null and cell.capabilities.len > 0) {
+            std.debug.print("    Capabilities: {s}\n", .{cell.capabilities});
+        }
+
+        std.debug.print("    Health: {s}{d}%{s}\n", .{ health_color, health, RESET });
+        std.debug.print("\n", .{});
+    }
+
+    if (match_count == 0) {
+        std.debug.print("  {s}No cells found with specified capability{s}\n\n", .{ GRAY, RESET });
+    } else {
+        std.debug.print("  {s}Found {d} cell(s){s}\n\n", .{ GREEN, match_count, RESET });
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -7670,6 +7924,22 @@ fn findCellVersion(cells: []const std.json.Value, cell_id: []const u8) ?Version 
         }
     }
     return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CASE-INSENSITIVE SEARCH HELPERS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn toLower(c: u8) u8 {
+    return if (c >= 'A' and c <= 'Z') c + 32 else c;
+}
+
+fn allocLower(allocator: Allocator, s: []const u8) ![]u8 {
+    const result = try allocator.alloc(u8, s.len);
+    for (s, 0..) |c, i| {
+        result[i] = toLower(c);
+    }
+    return result;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
