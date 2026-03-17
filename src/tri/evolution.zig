@@ -62,6 +62,31 @@ const MutationMode = enum {
     mixed,
 };
 
+/// Biological evolution algorithms mapped to ML hyperparameter optimization
+/// NaturalSelection = ASHA (Successive Halving) — fast culling of weak phenotypes
+/// EvolutionStrategy = PBT (Population-Based Training) — inheritance + mutation across generations
+pub const EvolutionAlgorithm = enum {
+    natural_selection, // ASHA: kill bottom performers at rung thresholds
+    evolution_strategy, // PBT: mutate hyperparameters from leaders to fill recycled slots
+    hybrid, // ASHA + PBT combined (default)
+
+    pub fn displayName(self: EvolutionAlgorithm) []const u8 {
+        return switch (self) {
+            .natural_selection => "NaturalSelection (ASHA)",
+            .evolution_strategy => "EvolutionStrategy (PBT)",
+            .hybrid => "Hybrid (ASHA+PBT)",
+        };
+    }
+
+    pub fn bioName(self: EvolutionAlgorithm) []const u8 {
+        return switch (self) {
+            .natural_selection => "Natural Selection",
+            .evolution_strategy => "Genetic Breeding",
+            .hybrid => "Evolution: Selection + Breeding",
+        };
+    }
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // Types
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -73,6 +73,10 @@ pub const CellManifest = struct {
     // [contract] section — stored as raw text for Phoenix validation
     dna_contract_raw: []const u8 = "",
 
+    // [biology] section — biological system classification
+    bio_system: []const u8 = "", // "dna" | "brain" | "immune" | "regen" | "body"
+    bio_organ: []const u8 = "", // e.g. "ribosome", "hypothalamus", "leukocyte", "heartbeat"
+
     // [agent] section — links cell to .claude/agents/<name>.md definition
     agent_definition: []const u8 = "", // ".claude/agents/queen-swift.md"
     agent_model: []const u8 = "", // "opus" | "sonnet" | "haiku"
@@ -115,7 +119,7 @@ pub const CellManifest = struct {
 // PARSER — section-aware cell.tri TOML-like format
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const Section = enum { cell, tags, contributes, dependencies, permissions, security, source, agent, dna, contract };
+const Section = enum { cell, tags, contributes, dependencies, permissions, security, source, agent, dna, contract, biology };
 
 /// Parse cell.tri content into CellManifest.
 /// All string fields are slices into `content` — caller must keep it alive.
@@ -160,6 +164,8 @@ pub fn parse(content: []const u8) CellManifest {
             } else if (std.mem.eql(u8, trimmed, "[contract]")) {
                 current_section = .contract;
                 contract_section_start = offset;
+            } else if (std.mem.eql(u8, trimmed, "[biology]")) {
+                current_section = .biology;
             }
             continue;
         }
@@ -200,6 +206,9 @@ pub fn parse(content: []const u8) CellManifest {
             },
             .agent => {
                 if (std.mem.eql(u8, key, "definition")) m.agent_definition = value else if (std.mem.eql(u8, key, "model")) m.agent_model = value else if (std.mem.eql(u8, key, "max_turns")) m.agent_max_turns = std.fmt.parseInt(u16, value, 10) catch 0 else if (std.mem.eql(u8, key, "tools")) m.agent_tools = value else if (std.mem.eql(u8, key, "isolation")) m.agent_isolation = value;
+            },
+            .biology => {
+                if (std.mem.eql(u8, key, "system")) m.bio_system = value else if (std.mem.eql(u8, key, "organ")) m.bio_organ = value;
             },
         }
     }
