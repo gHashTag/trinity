@@ -29,6 +29,14 @@ invariants = ["no multiply", "shift-only approximation", "zero DSP"]
 [dependencies]
 trinity.fpga = "^1.0.0"
 
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
 [security]
 signed = true
 signature = "sha256:0000000000000000000000000000000000000000000000000000000000000000"

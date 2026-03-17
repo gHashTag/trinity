@@ -176,6 +176,8 @@ class NetworkLog: ObservableObject {
     }
 
     // MARK: - Circuit Breaker Methods
+    // Thread safety: All methods are serialized on @MainActor (class-level annotation),
+    // so check-and-reset in isCircuitOpen is atomic with respect to recordFailure/recordSuccess.
 
     /// Record a failed request for circuit breaker tracking.
     /// After `circuitBreakerThreshold` consecutive failures, the provider

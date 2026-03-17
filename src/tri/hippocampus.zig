@@ -134,6 +134,9 @@ fn copyToFixed(comptime N: usize, dest: *[N]u8, len_ptr: anytype, src: []const u
 // CORE API
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// In-memory write counter for auto-GC (resets on process restart — acceptable)
+var gc_write_counter: u32 = 0;
+
 /// Write a memory record to the agent's current.jsonl
 pub fn write(allocator: Allocator, record: *const MemoryRecord) !void {
     const agent_name = record.agent();
@@ -162,6 +165,12 @@ pub fn write(allocator: Allocator, record: *const MemoryRecord) !void {
     const stat = try file.stat();
     if (stat.size > MAX_FILE_SIZE) {
         rotateFile(allocator, agent_name) catch {};
+    }
+
+    // Auto-GC: run gc every AUTO_GC_INTERVAL writes
+    gc_write_counter += 1;
+    if (gc_write_counter % AUTO_GC_INTERVAL == 0) {
+        _ = gc(allocator, null) catch {};
     }
 }
 

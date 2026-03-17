@@ -21,6 +21,10 @@ source = "specs/hslm/attention.tri"
 output = "gen/attention_types.zig"
 regenerable = true
 
+[contributes]
+commands = []
+exports = ["forward", "computeScores", "applyMask"]
+
 [contract]
 inputs = ["query: [81]Trit", "key: [81]Trit", "value: [81]Trit"]
 outputs = ["attended: [81]Trit"]
@@ -28,6 +32,14 @@ invariants = ["dim == 81 (3^4)", "no softmax", "cosine similarity scoring"]
 
 [dependencies]
 trinity.hslm = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
 
 [security]
 signed = true
