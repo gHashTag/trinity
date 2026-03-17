@@ -215,6 +215,50 @@ class NetworkLog: ObservableObject {
         return (remaining < 10, remaining)
     }
 
+    /// Rate limit ETA predictor: estimate minutes until rate limit exhaustion
+    func rateLimitETA(_ provider: String) -> Int? {
+        guard let status = providerHealth[provider],
+              let remaining = status.remainingRequests, remaining > 0 else { return nil }
+
+        // Calculate request rate: requests per minute in last 10 entries
+        let recent = entries.filter { $0.provider == provider && $0.status == "ok" }.suffix(10)
+        guard recent.count >= 2 else { return nil }
+        let firstTs = recent.first!.ts
+        let lastTs = recent.last!.ts
+        let spanSec = lastTs - firstTs
+        guard spanSec > 0 else { return nil }
+
+        let requestsPerMin = Double(recent.count) / (Double(spanSec) / 60.0)
+        guard requestsPerMin > 0 else { return nil }
+
+        return Int(Double(remaining) / requestsPerMin)
+    }
+
+    /// Track previous provider state for recovery detection
+    @Published var recoveredProviders: [String] = []
+
+    /// Detect provider recovery: was down, now up
+    func checkRecovery() {
+        for (name, status) in providerHealth {
+            if status.isUp && !recoveredProviders.contains(name) {
+                // Check if it was recently down (within last 5 minutes of entries)
+                let recentErrors = entries.filter {
+                    $0.provider == name &&
+                    ($0.status == "error" || $0.status == "timeout") &&
+                    $0.ts > Int(Date().timeIntervalSince1970) - 300
+                }
+                if !recentErrors.isEmpty {
+                    recoveredProviders.append(name)
+                    // Auto-clear after 30s
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(30))
+                        recoveredProviders.removeAll { $0 == name }
+                    }
+                }
+            }
+        }
+    }
+
     private func loadRecent() {
         guard let content = try? String(contentsOf: logURL, encoding: .utf8) else { return }
         let decoder = JSONDecoder()

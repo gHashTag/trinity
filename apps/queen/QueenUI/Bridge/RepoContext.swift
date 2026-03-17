@@ -92,6 +92,13 @@ class RepoContext: ObservableObject {
         return output.split(separator: "\n").map(String.init)
     }
 
+    /// Get current git branch name
+    func currentBranch() -> String {
+        let output = shell("git", ["-C", rootPath, "branch", "--show-current"])
+        let branch = output.trimmingCharacters(in: .whitespacesAndNewlines)
+        return branch.isEmpty ? "detached" : branch
+    }
+
     /// Search code for a query string (grep -rn, max 20 results)
     func searchCode(_ query: String) -> [SearchResult] {
         let output = shell("git", ["-C", rootPath, "grep", "-n", "--max-count=20", query, "--", "*.zig", "*.swift", "*.md"])
