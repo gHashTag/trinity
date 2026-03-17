@@ -21,6 +21,10 @@ source = "specs/hslm/block.tri"
 output = "gen/block_types.zig"
 regenerable = true
 
+[contributes]
+commands = []
+exports = ["forward", "initWeights", "paramCount"]
+
 [contract]
 inputs = ["block_input: [ctx][dim]Trit", "weights: BlockWeights"]
 outputs = ["block_output: [ctx][dim]Trit"]
@@ -29,6 +33,14 @@ invariants = ["residual connections", "RMSNorm before sublayers", "ff_ratio == 3
 [dependencies]
 trinity.hslm = "^1.0.0"
 trinity.hslm.attention = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
 
 [security]
 signed = true

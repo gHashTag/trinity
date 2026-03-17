@@ -1596,6 +1596,7 @@ private struct TokenSparkline: View {
 struct SkeletonThreadRow: View {
     let index: Int
     @State private var shimmer = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // Vary widths to look natural
     private var titleWidth: CGFloat {
@@ -1627,7 +1628,7 @@ struct SkeletonThreadRow: View {
         .padding(.vertical, 10)
         .opacity(shimmer ? 0.7 : 0.3)
         .animation(
-            .easeInOut(duration: 1.0)
+            reduceMotion ? nil : .easeInOut(duration: 1.0)
                 .repeatForever(autoreverses: true)
                 .delay(Double(index) * 0.1),
             value: shimmer

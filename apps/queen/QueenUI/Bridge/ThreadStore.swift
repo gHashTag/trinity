@@ -75,6 +75,15 @@ final class ThreadStore: ObservableObject {
         if let deleted = recentlyDeleted {
             let url = storeURL.appendingPathComponent("\(deleted.id).json")
             try? FileManager.default.removeItem(at: url)
+            // Clean up branch keys for all messages in the deleted thread
+            for msg in deleted.messages {
+                if let branchID = msg.branchID {
+                    let currentIndex = msg.branchIndex ?? 0
+                    for i in 0...max(currentIndex + 5, 15) {
+                        UserDefaults.standard.removeObject(forKey: "branch_\(branchID)_\(i)")
+                    }
+                }
+            }
             recentlyDeleted = nil
             showUndoToast = false
         }
@@ -283,7 +292,8 @@ final class ThreadStore: ObservableObject {
         let branchID = threads[tIdx].messages[mIdx].branchID ?? UUID()
         let oldIndex = threads[tIdx].messages[mIdx].branchIndex ?? 0
 
-        // Store branch data in UserDefaults
+        // Store branch data in UserDefaults (cap at 10 branches per message)
+        let maxBranches = 10
         let branchKey = "branch_\(branchID)_\(oldIndex)"
         let oldMessages = Array(threads[tIdx].messages[mIdx...])
         let encoder = JSONEncoder()
@@ -292,8 +302,17 @@ final class ThreadStore: ObservableObject {
             UserDefaults.standard.set(data, forKey: branchKey)
         }
 
+        // Evict oldest branches if exceeding cap
+        let newIndex = oldIndex + 1
+        if newIndex >= maxBranches {
+            // Remove the oldest branch (index 0) and shift is not practical,
+            // so just remove the oldest stored key to stay within cap
+            let oldestKey = "branch_\(branchID)_\(newIndex - maxBranches)"
+            UserDefaults.standard.removeObject(forKey: oldestKey)
+        }
+
         threads[tIdx].messages[mIdx].branchID = branchID
-        threads[tIdx].messages[mIdx].branchIndex = oldIndex + 1
+        threads[tIdx].messages[mIdx].branchIndex = newIndex
         threads[tIdx].messages[mIdx].text = newText
 
         // Remove all messages after the edited one
@@ -717,21 +736,32 @@ final class ThreadStore: ObservableObject {
                 if !codeBuffer.isEmpty { codeBuffer += "\n" }
                 codeBuffer += line
             } else {
-                // Inline code
-                var processed = htmlEscape(line)
-                // Inline `code`
+                // Process formatting on raw text first, then escape plain text segments
+                var processed = line
+                // Inline `code` — extract from raw text, escape code content separately
                 while let start = processed.range(of: "`"),
                       let end = processed[start.upperBound...].range(of: "`") {
                     let code = String(processed[start.upperBound..<end.lowerBound])
-                    processed = String(processed[..<start.lowerBound]) + "<code>" + code + "</code>" + String(processed[end.upperBound...])
+                    processed = String(processed[..<start.lowerBound]) + "\u{00}<code>" + htmlEscape(code) + "</code>\u{00}" + String(processed[end.upperBound...])
                 }
                 // Bold **text**
                 while let start = processed.range(of: "**"),
                       let end = processed[start.upperBound...].range(of: "**") {
                     let bold = String(processed[start.upperBound..<end.lowerBound])
-                    processed = String(processed[..<start.lowerBound]) + "<strong>" + bold + "</strong>" + String(processed[end.upperBound...])
+                    processed = String(processed[..<start.lowerBound]) + "\u{00}<strong>" + htmlEscape(bold) + "</strong>\u{00}" + String(processed[end.upperBound...])
                 }
-                result += processed + "<br>"
+                // Escape remaining plain text segments (split by sentinel \u{00})
+                let segments = processed.components(separatedBy: "\u{00}")
+                var escaped = ""
+                for segment in segments {
+                    if segment.hasPrefix("<code>") || segment.hasPrefix("</code>")
+                        || segment.hasPrefix("<strong>") || segment.hasPrefix("</strong>") {
+                        escaped += segment  // already escaped content inside tags
+                    } else {
+                        escaped += htmlEscape(segment)
+                    }
+                }
+                result += escaped + "<br>"
             }
         }
         // Handle unclosed code block

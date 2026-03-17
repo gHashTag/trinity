@@ -281,9 +281,32 @@ fn cmdRegenAll(allocator: Allocator) !void {
         std.fs.cwd().makePath(gen_dir) catch continue;
 
         if (std.fs.cwd().access(cell.manifest.dna_source, .{})) |_| {
-            std.debug.print(" {s}OK{s} (source exists)\n", .{ GREEN, RESET });
-            try appendGenomeLog(allocator, cell.dir_path, cell.manifest.id, .ok);
-            regen_count += 1;
+            // Run vibee gen to regenerate
+            var child = std.process.Child.init(&.{
+                "zig", "build", "vibee", "--", "gen", cell.manifest.dna_source,
+            }, allocator);
+            child.stdout_behavior = .Pipe;
+            child.stderr_behavior = .Pipe;
+
+            child.spawn() catch |err| {
+                std.debug.print(" {s}FAILED{s} (spawn: {})\n", .{ RED, RESET, err });
+                try appendGenomeLog(allocator, cell.dir_path, cell.manifest.id, .failed);
+                continue;
+            };
+            const term = child.wait() catch |err| {
+                std.debug.print(" {s}FAILED{s} (wait: {})\n", .{ RED, RESET, err });
+                try appendGenomeLog(allocator, cell.dir_path, cell.manifest.id, .failed);
+                continue;
+            };
+
+            if (term.Exited == 0) {
+                std.debug.print(" {s}OK{s}\n", .{ GREEN, RESET });
+                try appendGenomeLog(allocator, cell.dir_path, cell.manifest.id, .ok);
+                regen_count += 1;
+            } else {
+                std.debug.print(" {s}FAILED{s} (exit={d})\n", .{ RED, RESET, term.Exited });
+                try appendGenomeLog(allocator, cell.dir_path, cell.manifest.id, .failed);
+            }
         } else |_| {
             std.debug.print(" {s}SKIP{s} (no spec)\n", .{ YELLOW, RESET });
             skip_count += 1;
