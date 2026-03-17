@@ -4778,21 +4778,32 @@ fn runInspect(allocator: Allocator, args: []const []const u8) !void {
 fn runLogs(allocator: Allocator, args: []const []const u8) !void {
     var service_name: ?[]const u8 = null;
     var log_lines: u32 = 50;
+    var live_mode = false;
+    var live_interval: u64 = 30; // seconds between polls
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
         if (std.mem.eql(u8, args[i], "--lines") and i + 1 < args.len) {
             i += 1;
             log_lines = std.fmt.parseInt(u32, args[i], 10) catch 50;
+        } else if (std.mem.eql(u8, args[i], "--live")) {
+            live_mode = true;
+        } else if (std.mem.eql(u8, args[i], "--interval") and i + 1 < args.len) {
+            i += 1;
+            live_interval = std.fmt.parseInt(u64, args[i], 10) catch 30;
         } else if (service_name == null) {
             service_name = args[i];
         }
     }
 
     const svc_name = service_name orelse {
-        print("{s}❌ Usage: tri farm evolve logs <service-name> [--lines N]{s}\n", .{ RED, RESET });
+        print("{s}❌ Usage: tri farm evolve logs <service-name> [--lines N] [--live] [--interval 30]{s}\n", .{ RED, RESET });
         return;
     };
+
+    if (live_mode) {
+        return runLiveLogs(allocator, svc_name, log_lines, live_interval);
+    }
 
     // Discover accounts
     var accounts_buf: [MAX_FARM_ACCOUNTS]Account = undefined;
@@ -4903,6 +4914,244 @@ fn runLogs(allocator: Allocator, args: []const []const u8) !void {
         }
     }
     print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LIVE LOGS — Real-time log streaming with Telegram notifications
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runLiveLogs(allocator: Allocator, svc_name: []const u8, initial_lines: u32, interval_sec: u64) !void {
+    print("\n{s}📡 LIVE LOGS: {s} (every {d}s, Ctrl+C to stop){s}\n", .{ BOLD, svc_name, interval_sec, RESET });
+    print("{s}═══════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // Discover accounts once
+    var accounts_buf: [MAX_FARM_ACCOUNTS]Account = undefined;
+    const account_count = farm_accounts_mod.discoverAccounts(allocator, &accounts_buf);
+    defer farm_accounts_mod.deinitAccounts(allocator, &accounts_buf, account_count);
+
+    if (account_count == 0) {
+        print("{s}❌ No Railway accounts. Source .env first.{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    // Find deployment ID
+    var dep_id_buf: [64]u8 = undefined;
+    var dep_id_len: u8 = 0;
+    var found_acct_idx: u8 = 0;
+
+    for (0..account_count) |ai| {
+        var api = RailwayApi.initWithSuffix(allocator, accounts_buf[ai].suffix) catch continue;
+
+        const gql = "query($projectId: String!) { project(id: $projectId) { services { edges { node { id name deployments(first:1) { edges { node { id } } } } } } } }";
+        const proj_id = accounts_buf[ai].project_id;
+        const vars = std.fmt.allocPrint(allocator, "{{\"projectId\":\"{s}\"}}", .{proj_id}) catch {
+            api.deinit();
+            continue;
+        };
+
+        const resp = api.query(gql, vars) catch {
+            allocator.free(vars);
+            api.deinit();
+            continue;
+        };
+        allocator.free(vars);
+
+        const parsed = std.json.parseFromSlice(std.json.Value, allocator, resp, .{}) catch {
+            allocator.free(resp);
+            api.deinit();
+            continue;
+        };
+
+        if (getEdgesFromProject(parsed.value)) |edges| {
+            for (edges) |edge| {
+                const node = getJsonObject(edge, "node") orelse continue;
+                const name_str = getJsonString(node, "name");
+                if (std.mem.eql(u8, name_str, svc_name)) {
+                    const deps = getJsonObject(node, "deployments") orelse continue;
+                    const dep_edges = getJsonObject(deps, "edges") orelse continue;
+                    if (dep_edges != .array) continue;
+                    for (dep_edges.array.items) |de| {
+                        const dn = getJsonObject(de, "node") orelse continue;
+                        const did = getJsonString(dn, "id");
+                        if (!std.mem.eql(u8, did, "?")) {
+                            const dl: u8 = @intCast(@min(did.len, 64));
+                            @memcpy(dep_id_buf[0..dl], did[0..dl]);
+                            dep_id_len = dl;
+                            found_acct_idx = @intCast(ai);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+
+        parsed.deinit();
+        allocator.free(resp);
+        api.deinit();
+        if (dep_id_len > 0) break;
+    }
+
+    if (dep_id_len == 0) {
+        print("  {s}Service '{s}' not found across {d} accounts{s}\n\n", .{ RED, svc_name, account_count, RESET });
+        return;
+    }
+
+    const dep_id = dep_id_buf[0..dep_id_len];
+
+    // State for dedup and Telegram
+    var last_seen_count: u32 = 0;
+    var best_ppl: f32 = 999999.0;
+    var poll_count: u32 = 0;
+    const tg_interval: u32 = 10; // send to TG every N polls (10 * 30s = 5min)
+    var last_step: u32 = 0;
+    var last_ppl: f32 = 0;
+
+    // Initial fetch
+    print("  {s}Fetching initial {d} lines...{s}\n\n", .{ CYAN, initial_lines, RESET });
+
+    // Live loop
+    while (true) {
+        std.Thread.sleep(if (poll_count == 0) 0 else interval_sec * std.time.ns_per_s);
+        poll_count += 1;
+
+        const lines_to_fetch = if (poll_count == 1) initial_lines else 20;
+
+        var log_api = RailwayApi.initWithSuffix(allocator, accounts_buf[found_acct_idx].suffix) catch {
+            print("  {s}⚠ API init failed, retrying...{s}\n", .{ RED, RESET });
+            continue;
+        };
+
+        const log_resp = log_api.getDeploymentLogs(dep_id, lines_to_fetch) catch {
+            print("  {s}⚠ Log fetch failed, retrying...{s}\n", .{ RED, RESET });
+            log_api.deinit();
+            continue;
+        };
+        log_api.deinit();
+
+        const log_parsed = std.json.parseFromSlice(std.json.Value, allocator, log_resp, .{}) catch {
+            allocator.free(log_resp);
+            continue;
+        };
+
+        const data = getJsonObject(log_parsed.value, "data");
+        const logs_val = if (data) |d| getJsonObject(d, "deploymentLogs") else null;
+
+        if (logs_val) |logs| {
+            if (logs == .array) {
+                const total = logs.array.items.len;
+
+                // On first poll, show all; after that only new lines
+                const start_idx: usize = if (poll_count == 1) 0 else if (total > last_seen_count) last_seen_count else total;
+
+                for (logs.array.items[start_idx..]) |log_entry| {
+                    const msg = getJsonString(log_entry, "message");
+                    if (!std.mem.eql(u8, msg, "?")) {
+                        print("  {s}\n", .{msg});
+
+                        // Parse step/PPL from training log lines
+                        // Format: "  12300 |   4.2357 |   4.1973 |    69.11 | ..."
+                        parseLiveMetrics(msg, &last_step, &last_ppl, &best_ppl);
+                    }
+                }
+
+                if (start_idx < total and poll_count > 1) {
+                    print("  {s}--- +{d} new lines (poll #{d}) ---{s}\n", .{ DIM, total - start_idx, poll_count, RESET });
+                }
+
+                last_seen_count = @intCast(total);
+            }
+        }
+
+        log_parsed.deinit();
+        allocator.free(log_resp);
+
+        // Save live state for /tri integration
+        saveLiveLogState(svc_name, last_step, last_ppl, best_ppl, poll_count);
+
+        // Send Telegram digest periodically or on PPL record
+        if (poll_count % tg_interval == 0 and last_step > 0) {
+            sendLiveTelegram(allocator, svc_name, last_step, last_ppl, best_ppl, poll_count);
+        }
+
+        // Detect PPL record (new best)
+        if (last_ppl > 0 and last_ppl < best_ppl) {
+            const old_best = best_ppl;
+            best_ppl = last_ppl;
+            print("\n  {s}🏆 NEW BEST PPL={d:.2} (was {d:.2}) at step {d}{s}\n\n", .{ GREEN, last_ppl, old_best, last_step, RESET });
+            sendLiveTelegram(allocator, svc_name, last_step, last_ppl, best_ppl, poll_count);
+        }
+    }
+}
+
+/// Parse step and PPL from training log line
+fn parseLiveMetrics(msg: []const u8, step: *u32, ppl: *f32, best: *f32) void {
+    // Training lines look like: "  12300 |   4.2357 |   4.1973 |    69.11 | ..."
+    // Find first pipe-separated number
+    const trimmed = std.mem.trimLeft(u8, msg, " ");
+    if (trimmed.len == 0) return;
+    if (trimmed[0] < '0' or trimmed[0] > '9') return;
+
+    // Parse step (first number before |)
+    var end: usize = 0;
+    while (end < trimmed.len and trimmed[end] >= '0' and trimmed[end] <= '9') : (end += 1) {}
+    if (end == 0) return;
+    const s = std.fmt.parseInt(u32, trimmed[0..end], 10) catch return;
+
+    // Find PPL (4th pipe field = index 3)
+    var pipe_count: u32 = 0;
+    var pos: usize = end;
+    while (pos < trimmed.len and pipe_count < 3) : (pos += 1) {
+        if (trimmed[pos] == '|') pipe_count += 1;
+    }
+    if (pipe_count < 3) return;
+
+    // Skip spaces after 3rd pipe
+    while (pos < trimmed.len and trimmed[pos] == ' ') : (pos += 1) {}
+    var ppl_end = pos;
+    while (ppl_end < trimmed.len and (trimmed[ppl_end] >= '0' and trimmed[ppl_end] <= '9' or trimmed[ppl_end] == '.')) : (ppl_end += 1) {}
+    if (ppl_end == pos) return;
+
+    const p = std.fmt.parseFloat(f32, trimmed[pos..ppl_end]) catch return;
+
+    step.* = s;
+    ppl.* = p;
+    if (p < best.*) best.* = p;
+}
+
+/// Save live state to JSON for /tri skill integration
+fn saveLiveLogState(svc_name: []const u8, step: u32, ppl_val: f32, best_ppl_val: f32, polls: u32) void {
+    const path = ".trinity/farm/live_logs.json";
+    std.fs.cwd().makePath(".trinity/farm") catch {};
+    var f = std.fs.cwd().createFile(path, .{}) catch return;
+    defer f.close();
+
+    var buf: [512]u8 = undefined;
+    const content = std.fmt.bufPrint(&buf,
+        \\{{"service":"{s}","step":{d},"ppl":{d:.2},"best_ppl":{d:.2},"polls":{d},"ts":{d}}}
+    ++ "\n", .{
+        svc_name, step, ppl_val, best_ppl_val, polls, std.time.timestamp(),
+    }) catch return;
+    f.writeAll(content) catch {};
+}
+
+/// Send Telegram notification with live stats
+fn sendLiveTelegram(allocator: Allocator, svc_name: []const u8, step: u32, ppl_val: f32, best_ppl_val: f32, polls: u32) void {
+    var msg_buf: [512]u8 = undefined;
+    const step_k = step / 1000;
+    const msg = std.fmt.bufPrint(&msg_buf,
+        \\📡 LIVE {s}
+        \\Step: {d}K | PPL: {d:.1} | Best: {d:.1}
+        \\Polls: {d} | phi^2+1/phi^2=3
+    , .{ svc_name, step_k, ppl_val, best_ppl_val, polls }) catch return;
+
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &[_][]const u8{ "zig-out/bin/tri", "notify", msg },
+        .max_output_bytes = 4096,
+    }) catch return;
+    allocator.free(result.stdout);
+    allocator.free(result.stderr);
 }
 
 fn writeHypotheses() void {

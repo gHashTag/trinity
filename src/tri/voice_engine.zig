@@ -434,7 +434,7 @@ fn readSwarmCounts() SwarmCounts {
     return .{ .agents = agent_count, .tasks = task_count, .assigned = assigned_count };
 }
 
-fn parseJsonU32(data: []const u8, key: []const u8) u32 {
+pub fn parseJsonU32(data: []const u8, key: []const u8) u32 {
     const pos = std.mem.indexOf(u8, data, key) orelse return 0;
     const after = data[pos + key.len ..];
     // Skip whitespace
@@ -447,7 +447,7 @@ fn parseJsonU32(data: []const u8, key: []const u8) u32 {
     return std.fmt.parseInt(u32, after[i..end], 10) catch 0;
 }
 
-fn parseJsonI64(data: []const u8, key: []const u8) i64 {
+pub fn parseJsonI64(data: []const u8, key: []const u8) i64 {
     const pos = std.mem.indexOf(u8, data, key) orelse return 0;
     const after = data[pos + key.len ..];
     var i: usize = 0;
@@ -458,7 +458,7 @@ fn parseJsonI64(data: []const u8, key: []const u8) i64 {
     return std.fmt.parseInt(i64, after[i..end], 10) catch 0;
 }
 
-fn parseJsonBool(data: []const u8, key: []const u8) bool {
+pub fn parseJsonBool(data: []const u8, key: []const u8) bool {
     const pos = std.mem.indexOf(u8, data, key) orelse return false;
     const after = data[pos + key.len ..];
     var i: usize = 0;
