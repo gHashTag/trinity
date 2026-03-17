@@ -6,23 +6,22 @@ kind = "library"
 path = "tools/mcp"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Auto-generated cell for mcp"
-capabilities = []
+description = "MCP server infrastructure — deploy, TLS, edge config, healing"
+capabilities = ["deploy", "tls_manage", "edge_config", "healing", "fly_deploy"]
 files = 56
 tests = 72
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "mcp"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["deploy", "heal", "tls"]
 tri_subcommands = []
 events = []
 
 [dependencies]
-trinity.needle = "^1.0.0"
 
 [permissions]
 level = "L2"

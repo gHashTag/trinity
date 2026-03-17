@@ -10,14 +10,14 @@ description = "Auto-generated cell for origin"
 capabilities = ["phaseDescription", "aminoAcidStabilitySeconds", "rnaHalfLifeSeconds", "chiralityBias", "peptideBondEnergyKJmol"]
 files = 1
 tests = 24
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["phaseDescription", "aminoAcidStabilitySeconds", "rnaHalfLifeSeconds"]
 tri_subcommands = []
 events = []
 

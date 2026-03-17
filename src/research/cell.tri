@@ -10,16 +10,17 @@ description = "Auto-generated cell for research"
 capabilities = ["deinit", "deinit", "init", "deinit", "fetchArxivPaper"]
 files = 1
 tests = 2
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["report"]
 tri_subcommands = []
 events = []
+binaries = ["sota-report"]
 
 [dependencies]
 

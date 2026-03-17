@@ -10,14 +10,14 @@ description = "Auto-generated cell for hooks"
 capabilities = ["main"]
 files = 1
 tests = 5
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["main"]
 tri_subcommands = []
 events = []
 binaries = ["pipeline-guard"]

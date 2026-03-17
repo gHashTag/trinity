@@ -10,14 +10,14 @@ description = "Auto-generated cell for cli"
 capabilities = ["main", "main"]
 files = 2
 tests = 10
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["main", "main"]
 tri_subcommands = []
 events = []
 binaries = ["hslm-entrypoint", "swe-entrypoint"]

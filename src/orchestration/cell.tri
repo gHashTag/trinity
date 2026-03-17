@@ -10,14 +10,14 @@ description = "Auto-generated cell for orchestration"
 capabilities = ["default", "init", "deinit", "selectStrategy", "getConsciousnessAnalysis"]
 files = 2
 tests = 14
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "agent"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["default", "init", "deinit"]
 tri_subcommands = []
 events = []
 

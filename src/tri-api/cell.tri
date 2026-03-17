@@ -10,14 +10,14 @@ description = "Auto-generated cell for tri-api"
 capabilities = ["deinit", "check", "loadConfig", "init", "deinit"]
 files = 12
 tests = 23
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "backend"
 
 [contributes]
-commands = []
+commands = ["deinit", "check", "loadConfig"]
 tri_subcommands = []
 events = []
 binaries = ["tri-api"]

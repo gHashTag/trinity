@@ -10,23 +10,22 @@ description = "Auto-generated cell for vsa"
 capabilities = ["init", "initPhi", "randomVector", "seededVector", "bind"]
 files = 36
 tests = 165
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "vsa"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["init", "initPhi", "randomVector"]
 tri_subcommands = []
 events = []
-binaries = ["photon-demo", "photon-immersive", "photon-terminal", "trinity-canvas"]
+binaries = ["photon-demo", "photon-immersive", "photon-terminal", "trinity-canvas", "bench-core", "example-memory", "example-sequence"]
+exports = ["bind", "unbind", "cosineSimilarity"]
 
 [dependencies]
 trinity.models = "^1.0.0"
 trinity.quantum = "^1.0.0"
-trinity.common = "^1.0.0"
-trinity.autonomous = "^1.0.0"
 
 [permissions]
 level = "L2"

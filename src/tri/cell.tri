@@ -8,31 +8,28 @@ min_core_version = "1.0.0"
 status = "experimental"
 description = "Auto-generated cell for tri"
 capabilities = ["runIdempotencyCommand", "runDuplicationCommand", "runResearchCommand", "trit_and", "trit_or"]
-files = 246
-tests = 1545
-owner = ""
+files = 250
+tests = 1557
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "backend"
 
 [contributes]
-commands = []
+commands = ["runIdempotencyCommand", "runDuplicationCommand", "runResearchCommand"]
 tri_subcommands = []
 events = []
 binaries = ["tri"]
 
 [dependencies]
-trinity.math = "^1.0.0"
 trinity.sacred = "^1.0.0"
 trinity.gravity = "^1.0.0"
 trinity.monopoles = "^1.0.0"
-trinity.bsd = "^1.0.0"
 trinity.vsa = "^1.0.0"
 trinity.registry = "^1.0.0"
 trinity.api = "^1.0.0"
 trinity.superconductivity = "^1.0.0"
-trinity.queen-ui = "^1.0.0"
 
 [permissions]
 level = "L2"

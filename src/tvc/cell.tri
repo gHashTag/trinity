@@ -20,8 +20,10 @@ type = "library"
 
 [contributes]
 commands = ["encode", "decode", "compress"]
+exports = ["compress", "decompress"]
 tri_subcommands = []
 events = []
+binaries = ["bench-compress"]
 
 [dependencies]
 trinity.vsa = "^1.0.0"

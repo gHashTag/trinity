@@ -10,14 +10,14 @@ description = "Auto-generated cell for tools"
 capabilities = ["main", "quantizeTernary", "optimalThreshold", "main", "main"]
 files = 3
 tests = 4
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "fpga"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["main", "quantizeTernary", "optimalThreshold"]
 tri_subcommands = []
 events = []
 

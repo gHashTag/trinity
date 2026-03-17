@@ -1,0 +1,28 @@
+[cell]
+id = "trinity.tri.math"
+name = "Sacred Mathematics"
+version = "3.6.0"
+kind = "library"
+path = "src/tri/math"
+parent = "trinity.tri"
+status = "stable"
+description = "Sacred mathematics: phi, fibonacci, lucas, gematria, formulas, constants"
+capabilities = ["math", "phi", "fibonacci", "gematria"]
+tests = 15
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "domain"
+
+[contributes]
+commands = ["math", "phi", "fib", "lucas", "gematria", "formula", "sacred", "constants", "spiral"]
+exports = ["runMathCommand", "runPhiCommand", "runFibCommand", "runLucasCommand", "runGematriaTopLevel", "runFormulaCommand", "runSacredCommand", "runConstantsCommand", "runSpiralCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "read"
+network = "none"
+process = "none"

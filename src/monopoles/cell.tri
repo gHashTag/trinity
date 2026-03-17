@@ -10,14 +10,14 @@ description = "Auto-generated cell for monopoles"
 capabilities = ["diracCharge", "monopoleMass", "monopoleMassCorrected", "criticalMagneticField", "magneticCoupling"]
 files = 1
 tests = 25
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["diracCharge", "monopoleMass", "monopoleMassCorrected"]
 tri_subcommands = []
 events = []
 

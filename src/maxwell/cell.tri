@@ -10,14 +10,14 @@ description = "Auto-generated cell for maxwell"
 capabilities = ["toString", "glm", "claude", "openai", "loadFromEnv"]
 files = 7
 tests = 17
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["toString", "glm", "claude"]
 tri_subcommands = []
 events = []
 

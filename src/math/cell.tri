@@ -10,14 +10,15 @@ description = "Auto-generated cell for math"
 capabilities = ["init", "add", "mul", "abs", "zeta"]
 files = 1
 tests = 8
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "sacred"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["init", "add", "mul"]
+exports = ["runMathCommand"]
 tri_subcommands = []
 events = []
 

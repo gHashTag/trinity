@@ -9,15 +9,15 @@ status = "experimental"
 description = "Auto-generated cell for mcp"
 capabilities = ["needsRestart", "isOverloaded", "calculateDesiredCount", "init", "deinit"]
 files = 4
-tests = 0
-owner = ""
+tests = 4
+owner = "agent:ralph"
 
 [tags]
 scope = "mcp"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["needsRestart", "isOverloaded", "calculateDesiredCount"]
 tri_subcommands = []
 events = []
 

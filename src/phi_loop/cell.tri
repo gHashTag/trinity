@@ -10,14 +10,14 @@ description = "Auto-generated cell for phi_loop"
 capabilities = ["displayName", "colorHex", "displayName", "realm", "phiWeight"]
 files = 3
 tests = 7
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "sacred"
-type = "library"
+type = "agent"
 
 [contributes]
-commands = []
+commands = ["displayName", "colorHex", "displayName"]
 tri_subcommands = []
 events = []
 binaries = ["phi-loop"]

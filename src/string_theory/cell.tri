@@ -10,14 +10,14 @@ description = "Auto-generated cell for string_theory"
 capabilities = ["main", "init", "init", "effectiveDimensions", "init"]
 files = 7
 tests = 68
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["main", "init", "init"]
 tri_subcommands = []
 events = []
 

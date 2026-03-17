@@ -10,14 +10,14 @@ description = "Auto-generated cell for beal"
 capabilities = ["scanNearMisses", "analyzeNearMisses", "runBealNearCommand", "fromEnv", "init"]
 files = 7
 tests = 49
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "sacred"
 type = "backend"
 
 [contributes]
-commands = []
+commands = ["scanNearMisses", "analyzeNearMisses", "runBealNearCommand"]
 tri_subcommands = []
 events = []
 binaries = ["beal"]

@@ -10,14 +10,14 @@ description = "Auto-generated cell for qcd"
 capabilities = ["thetaQCDExact", "thetaQCDPerturbative", "axionMass", "axionMassGeV", "axionDecayConstant"]
 files = 1
 tests = 16
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["thetaQCDExact", "thetaQCDPerturbative", "axionMass"]
 tri_subcommands = []
 events = []
 

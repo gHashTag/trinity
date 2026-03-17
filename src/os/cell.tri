@@ -10,14 +10,14 @@ description = "Auto-generated cell for os"
 capabilities = ["init", "isReady", "init", "deinit", "bootKernel"]
 files = 1
 tests = 3
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["init", "isReady", "init"]
 tri_subcommands = []
 events = []
 
