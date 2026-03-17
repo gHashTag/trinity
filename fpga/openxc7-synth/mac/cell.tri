@@ -7,7 +7,7 @@ path = "fpga/openxc7-synth"
 parent = "trinity.fpga"
 status = "stable"
 description = "Zero-DSP ternary multiply-accumulate: branchless add/sub via 2-bit encoding"
-files = 2
+files = 0
 tests = 0
 owner = "agent:ralph"
 

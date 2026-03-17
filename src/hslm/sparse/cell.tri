@@ -7,8 +7,8 @@ path = "src/hslm"
 parent = "trinity.hslm"
 status = "stable"
 description = "Sparse ternary matrix multiplication: branchless 9.2x speedup, 4 variants"
-files = 1
-tests = 20
+files = 0
+tests = 0
 owner = "agent:ralph"
 
 [tags]

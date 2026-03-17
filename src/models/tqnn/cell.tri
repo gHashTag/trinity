@@ -9,7 +9,7 @@ status = "experimental"
 description = "Ternary Quantum Neural Network inference with VSA integration"
 capabilities = ["tqnn", "inference", "benchmark"]
 files = 2
-tests = 0
+tests = 2
 owner = "agent:ralph"
 
 [tags]
@@ -24,7 +24,7 @@ events = []
 binaries = []
 
 [dependencies]
-trinity.vsa = "^1.0.0"
+trinity.vsa = ">=0.1.0"
 
 [permissions]
 level = "L1"

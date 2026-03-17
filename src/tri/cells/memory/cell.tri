@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Unified agent memory: heartbeats, learnings, episodes, rules via JSONL store"
 capabilities = ["memory", "search", "gc"]
-tests = 12
+tests = 0
 owner = "agent:phoenix-core"
 
 [tags]
