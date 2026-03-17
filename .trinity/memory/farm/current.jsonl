@@ -1,0 +1,14 @@
+{"id":"mem_1773760556_farm_6996a81a","agent":"farm","kind":"observation","ts":1773760556,"tags":[],"ttl":2592000,"data":{"ts":1773760556557,"type":"health","svc":"hslm-r33","detail":"diverged: PPL>1000 at step>5K","step":18900}
+,"summary":"farm hslm-r33: diverged: PPL>1000 at step>5K step=18900"}
+{"id":"mem_1773760556_farm_6996a81a","agent":"farm","kind":"observation","ts":1773760556,"tags":[],"ttl":2592000,"data":{"ts":1773760556557,"type":"health","svc":"hslm-r15","detail":"diverged: PPL>1000 at step>5K","step":24700}
+,"summary":"farm hslm-r15: diverged: PPL>1000 at step>5K step=24700"}
+{"id":"mem_1773760556_farm_6996a81a","agent":"farm","kind":"observation","ts":1773760556,"tags":[],"ttl":2592000,"data":{"ts":1773760556557,"type":"health","svc":"hslm-w7-19","detail":"diverged: PPL>1000 at step>5K","step":14000}
+,"summary":"farm hslm-w7-19: diverged: PPL>1000 at step>5K step=14000"}
+{"id":"mem_1773760556_farm_6996a81a","agent":"farm","kind":"observation","ts":1773760556,"tags":[],"ttl":2592000,"data":{"ts":1773760556558,"type":"health","svc":"hslm-w7-48","detail":"diverged: PPL>1000 at step>5K","step":12800}
+,"summary":"farm hslm-w7-48: diverged: PPL>1000 at step>5K step=12800"}
+{"id":"mem_1773760556_farm_6996a81a","agent":"farm","kind":"observation","ts":1773760556,"tags":[],"ttl":2592000,"data":{"ts":1773760556558,"type":"health","svc":"hslm-w7-46","detail":"diverged: PPL>1000 at step>5K","step":20100}
+,"summary":"farm hslm-w7-46: diverged: PPL>1000 at step>5K step=20100"}
+{"id":"mem_1773760556_farm_6996a81a","agent":"farm","kind":"observation","ts":1773760556,"tags":[],"ttl":2592000,"data":{"ts":1773760556558,"type":"health","svc":"hslm-w7-41","detail":"diverged: PPL>1000 at step>5K","step":18700}
+,"summary":"farm hslm-w7-41: diverged: PPL>1000 at step>5K step=18700"}
+{"id":"mem_1773760556_farm_6996a81a","agent":"farm","kind":"observation","ts":1773760556,"tags":[],"ttl":2592000,"data":{"ts":1773760556558,"type":"health","svc":"hslm-w7-49","detail":"diverged: PPL>1000 at step>5K","step":20900}
+,"summary":"farm hslm-w7-49: diverged: PPL>1000 at step>5K step=20900"}
