@@ -367,64 +367,43 @@ struct ChatScreen: View {
             if isSelecting, !selectedMessageIDs.isEmpty {
                 VStack {
                     Spacer()
-                    HStack(spacing: 16) {
-                        Text("\(selectedMessageIDs.count) selected")
-                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(.white)
-
-                        Divider()
-                            .frame(height: 16)
-                            .background(Color.white.opacity(0.2))
-
-                        Button { copySelectedMessages() } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "doc.on.doc")
-                                    .font(.system(size: 11))
-                                Text("Copy")
-                                    .font(.system(size: 12, weight: .medium))
-                            }
-                            .foregroundStyle(.white)
-                        }
-                        .buttonStyle(.plain)
-
-                        Button { exportSelectedAsMarkdown() } label: {
-                            HStack(spacing: 4) {
-                                Image(systemName: "arrow.up.doc")
-                                    .font(.system(size: 11))
-                                Text("Export")
-                                    .font(.system(size: 12, weight: .medium))
-                            }
-                            .foregroundStyle(.white)
-                        }
-                        .buttonStyle(.plain)
-
-                        Divider()
-                            .frame(height: 16)
-                            .background(Color.white.opacity(0.2))
-
-                        Button { exitSelectionMode() } label: {
-                            Text("Cancel")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundStyle(Color.white.opacity(0.6))
-                        }
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(hex: 0x2A2A2A))
-                            .shadow(color: .black.opacity(0.4), radius: 12, y: 4)
+                    MultiSelectActionBar(
+                        selectedCount: selectedMessageIDs.count,
+                        canCompareModels: canCompareSelectedModels(),
+                        canDelete: canDeleteSelectedMessages(),
+                        onCopyAll: copySelectedMessages,
+                        onDeleteSelected: deleteSelectedMessages,
+                        onQuoteSelected: quoteSelectedMessages,
+                        onCompareModels: compareSelectedModels,
+                        onSelectAll: selectAllMessages,
+                        onDeselectAll: deselectAllMessages,
+                        onCancel: exitSelectionMode
                     )
                     .padding(.bottom, 90)
+                    .transition(.scale.combined(with: .opacity))
                 }
+                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: selectedMessageIDs.count)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
-        .onKeyPress(.escape) {
-            if isSelecting {
+        .onKeyPress(phases: .down) { keyPress in
+            if keyPress.key == .escape && isSelecting {
                 exitSelectionMode()
                 return .handled
+            }
+            // Cmd+A: Select all
+            if keyPress.key == KeyEquivalent(Character("a")) && keyPress.modifiers.contains(.command) && !keyPress.modifiers.contains(.shift) {
+                if isSelecting {
+                    selectAllMessages()
+                    return .handled
+                }
+            }
+            // Cmd+Shift+A: Deselect all
+            if keyPress.key == KeyEquivalent(Character("a")) && keyPress.modifiers.contains(.command) && keyPress.modifiers.contains(.shift) {
+                if isSelecting {
+                    deselectAllMessages()
+                    return .handled
+                }
             }
             return .ignored
         }
@@ -468,7 +447,7 @@ struct ChatScreen: View {
 
                 // Smart suggestions (proactive actions based on Trinity state)
                 if !focusMode, thread?.messages.isEmpty != false {
-                    SmartSuggestions { prompt in
+                    SmartSuggestionBar { prompt in
                         input = prompt
                         send()
                     }
@@ -924,6 +903,87 @@ struct ChatScreen: View {
         NSPasteboard.general.setString(md, forType: .string)
         SoundCueManager.shared.playCopy()
         exitSelectionMode()
+    }
+
+    private func deleteSelectedMessages() {
+        guard let thread = thread else { return }
+        let messages = thread.messages
+        let selected = messages.filter { selectedMessageIDs.contains($0.id) }
+        guard !selected.isEmpty else { return }
+
+        // Delete each selected message
+        for msg in selected {
+            store.deleteMessage(msg.id, in: thread.id)
+        }
+        SoundCueManager.shared.playCopy()  // playDelete doesn't exist, reuse playCopy for feedback
+        exitSelectionMode()
+    }
+
+    private func quoteSelectedMessages() {
+        let messages = thread?.messages ?? []
+        let selected = messages.filter { selectedMessageIDs.contains($0.id) }
+        guard !selected.isEmpty else { return }
+
+        // Combine selected messages into a single quote block
+        let quoteText = selected.map { msg in
+            let role = msg.role == .user ? "You" : "Assistant"
+            return "\(role): \(msg.text)"
+        }.joined(separator: "\n\n")
+
+        // Insert into input field as quote
+        input = "> Combined quote from \(selected.count) message(s):\n\n\(quoteText)\n\n---\n\n"
+        focused = true
+        exitSelectionMode()
+    }
+
+    private func compareSelectedModels() {
+        let messages = thread?.messages ?? []
+        let selected = messages.filter { selectedMessageIDs.contains($0.id) }
+        guard selected.count >= 2 else { return }
+
+        // Get unique models from selected messages
+        let models = Set(selected.compactMap { $0.modelID })
+        guard models.count >= 2 else { return }
+
+        // Create comparison prompt
+        comparisonPrompt = "Compare these \(models.count) model responses:\n\n" +
+            selected.enumerated().map { idx, msg in
+                let modelName = msg.modelID ?? "Unknown"
+                return "## Response \(idx + 1) (\(modelName)):\n\(msg.text)"
+            }.joined(separator: "\n\n---\n\n")
+        showComparison = true
+        exitSelectionMode()
+    }
+
+    private func canCompareSelectedModels() -> Bool {
+        let messages = thread?.messages ?? []
+        let selected = messages.filter { selectedMessageIDs.contains($0.id) }
+        guard selected.count >= 2 else { return false }
+        let models = Set(selected.compactMap { $0.modelID })
+        return models.count >= 2
+    }
+
+    private func canDeleteSelectedMessages() -> Bool {
+        guard let thread = thread else { return false }
+        let messages = thread.messages
+        let selected = messages.filter { selectedMessageIDs.contains($0.id) }
+        // Can't delete if all messages are selected (need at least one)
+        return selected.count < messages.count
+    }
+
+    private func selectAllMessages() {
+        guard let thread = thread else { return }
+        withAnimation(.easeInOut(duration: 0.2)) {
+            selectedMessageIDs = Set(thread.messages.map { $0.id })
+            lastSelectedID = thread.messages.last?.id
+        }
+    }
+
+    private func deselectAllMessages() {
+        withAnimation(.easeInOut(duration: 0.15)) {
+            selectedMessageIDs.removeAll()
+            lastSelectedID = nil
+        }
     }
 
     static func formatShareText(thread: ChatThread) -> String {
@@ -2619,14 +2679,13 @@ struct ChatScreen: View {
                 panel.nameFieldStringValue = "thread.md"
                 panel.begin { response in
                     guard response == .OK, let url = panel.url else { return }
-                    try? md.data(using: .utf8)?.write(to: url)
+                    try? md.write(to: url, atomically: true, encoding: .utf8)
                 }
             }
         case .toggleSearch:
             NotificationCenter.default.post(name: .toggleThreadSearch, object: nil)
         case .runCommand(let prompt):
-            input = prompt
-            send()
+            NotificationCenter.default.post(name: .runCommand, object: prompt)
         }
     }
 
@@ -2634,10 +2693,10 @@ struct ChatScreen: View {
         Task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(60))
-                NetworkLog.shared.checkAllProviders()
+                await NetworkLog.shared.checkAllProviders()
                 // Check for provider recovery after health check
                 try? await Task.sleep(for: .seconds(3))
-                NetworkLog.shared.checkRecovery()
+                await NetworkLog.shared.checkRecovery()
             }
         }
     }
@@ -2876,6 +2935,7 @@ public extension Notification.Name {
     static let escapeAction = Notification.Name("escapeAction")
     static let toggleFocusMode = Notification.Name("toggleFocusMode")
     static let scrollToMessage = Notification.Name("scrollToMessage")
+    static let runCommand = Notification.Name("runCommand")
 }
 
 // MARK: - Scroll Offset Preference Key
@@ -3507,13 +3567,29 @@ struct MessageRow: View {
             Button {
                 onToggleSelect?(NSEvent.modifierFlags.contains(.shift))
             } label: {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 16))
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : Color.white.opacity(0.3))
+                ZStack {
+                    // Selection ring effect
+                    if isSelected {
+                        Circle()
+                            .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 2)
+                            .frame(width: 24, height: 24)
+                            .scaleEffect(isSelected ? 1.2 : 1.0)
+                            .opacity(isSelected ? 0.5 : 0)
+                    }
+
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 18))
+                        .foregroundStyle(isSelected ? TrinityTheme.accent : Color.white.opacity(0.4))
+                        .scaleEffect(isSelected ? 1.1 : 1.0)
+                }
+                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
             }
             .buttonStyle(.plain)
             .padding(.trailing, 10)
-            .transition(.opacity.combined(with: .move(edge: .leading)))
+            .transition(.asymmetric(
+                insertion: .scale.combined(with: .opacity),
+                removal: .scale.combined(with: .opacity)
+            ))
         }
         VStack(alignment: .leading, spacing: 0) {
             if message.role == .user {
@@ -6912,6 +6988,159 @@ private struct ThreadStatsCard: View {
         if model.contains("gpt-4o") { return "gpt-4o" }
         if model.count > 20 { return String(model.prefix(18)) + ".." }
         return model
+    }
+}
+
+// MARK: - Multi-Select Action Bar
+
+struct MultiSelectActionBar: View {
+    let selectedCount: Int
+    let canCompareModels: Bool
+    let canDelete: Bool
+    let onCopyAll: () -> Void
+    let onDeleteSelected: () -> Void
+    let onQuoteSelected: () -> Void
+    let onCompareModels: () -> Void
+    let onSelectAll: () -> Void
+    let onDeselectAll: () -> Void
+    let onCancel: () -> Void
+
+    @State private var isHovering = false
+
+    private var countBadge: some View {
+        HStack(spacing: 4) {
+            Circle()
+                .fill(TrinityTheme.accent)
+                .frame(width: 6, height: 6)
+            Text("\(selectedCount)")
+                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .foregroundStyle(.white)
+        }
+    }
+
+    private func actionButton(
+        _ systemName: String,
+        tooltip: String,
+        color: Color = .white,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(color)
+                .frame(width: 32, height: 32)
+                .background(
+                    Circle()
+                        .fill(color.opacity(0.1))
+                        .overlay(
+                            Circle()
+                                .stroke(color.opacity(0.2), lineWidth: 0.5)
+                        )
+                )
+        }
+        .buttonStyle(.plain)
+        .help(tooltip)
+        .accessibilityLabel(tooltip)
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            // Left: count badge
+            countBadge
+                .padding(.leading, 4)
+
+            Divider()
+                .frame(height: 20)
+                .background(Color.white.opacity(0.15))
+
+            // Middle: action buttons
+            HStack(spacing: 6) {
+                actionButton("doc.on.doc", tooltip: "Copy All (Cmd+C)", color: TrinityTheme.accent, action: onCopyAll)
+
+                actionButton("bubble.left.and.text.bubble.right", tooltip: "Quote Selected", color: TrinityTheme.golden, action: onQuoteSelected)
+
+                if canDelete {
+                    actionButton("trash", tooltip: "Delete Selected", color: TrinityTheme.statusError, action: onDeleteSelected)
+                }
+
+                if canCompareModels {
+                    actionButton("scale.3d", tooltip: "Compare Models", color: TrinityTheme.purple, action: onCompareModels)
+                }
+
+                // Select/Deselect all
+                actionButton("checkmark.circle", tooltip: "Select All (Cmd+A)", color: .white.opacity(0.8), action: onSelectAll)
+                    .keyboardShortcut("a", modifiers: .command)
+
+                if selectedCount > 1 {
+                    actionButton("xmark.circle", tooltip: "Deselect All (Cmd+Shift+A)", color: .white.opacity(0.6), action: onDeselectAll)
+                }
+            }
+
+            Divider()
+                .frame(height: 20)
+                .background(Color.white.opacity(0.15))
+
+            // Right: cancel
+            Button(action: onCancel) {
+                HStack(spacing: 4) {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 11, weight: .bold))
+                    Text("Done")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundStyle(Color.white.opacity(0.5))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
+                .background(Color.white.opacity(0.05))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+            }
+            .buttonStyle(.plain)
+            .help("Exit selection mode (Esc)")
+            .accessibilityLabel("Exit selection mode")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(
+            ZStack {
+                // Gradient background
+                LinearGradient(
+                    colors: [
+                        TrinityTheme.accent.opacity(0.15),
+                        TrinityTheme.purple.opacity(0.1)
+                    ],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+
+                // Glass effect
+                Color.white.opacity(0.03)
+            }
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .stroke(
+                    LinearGradient(
+                        colors: [
+                            TrinityTheme.accent.opacity(isHovering ? 0.5 : 0.2),
+                            TrinityTheme.purple.opacity(isHovering ? 0.3 : 0.1)
+                        ],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ),
+                    lineWidth: 1
+                )
+        )
+        .shadow(
+            color: TrinityTheme.accent.opacity(isHovering ? 0.3 : 0.15),
+            radius: isHovering ? 16 : 8,
+            y: 4
+        )
+        .scaleEffect(isHovering ? 1.02 : 1.0)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
+        .onHover { hovering in
+            isHovering = hovering
+        }
     }
 }
 
