@@ -8,8 +8,8 @@ min_core_version = "1.0.0"
 status = "experimental"
 description = "Core tri CLI framework and cell orchestration runtime"
 capabilities = ["runIdempotencyCommand", "runDuplicationCommand", "runResearchCommand", "trit_and", "trit_or"]
-files = 259
-tests = 1610
+files = 260
+tests = 1615
 owner = "agent:ralph"
 
 [tags]

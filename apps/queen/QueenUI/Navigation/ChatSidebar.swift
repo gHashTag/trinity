@@ -1159,6 +1159,60 @@ struct ChatSidebar: View {
             importResult = "No threads found in file"
         }
     }
+
+    private func quickExportPDF(_ thread: ChatThread) {
+        guard let markdown = store.exportAsMarkdown(thread.id) else { return }
+
+        let filename = "Thread-\(sanitizedFilename(thread.title)).pdf"
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.pdf]
+        panel.nameFieldStringValue = filename
+        panel.directoryURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+
+        guard let window = NSApp.keyWindow, panel.runModal(for: window) == .OK,
+              let fileURL = panel.url else {
+            return
+        }
+
+        do {
+            try generatePDF(from: markdown, thread: thread, to: fileURL)
+            exportToast = "Exported to PDF"
+            NotificationService.shared.notify(
+                title: "PDF Export Complete",
+                body: thread.title,
+                sound: "Glass"
+            )
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(3))
+                exportToast = ""
+            }
+        } catch {
+            exportToast = "PDF export failed"
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(3))
+                exportToast = ""
+            }
+        }
+    }
+
+    private func generatePDF(from markdown: String, thread: ChatThread, to fileURL: URL) throws {
+        let printInfo = NSPrintInfo.shared
+        printInfo.paperSize = NSMakeSize(595.0, 842.0) // A4 size
+        printInfo.leftMargin = 50.0
+        printInfo.rightMargin = 50.0
+        printInfo.topMargin = 50.0
+        printInfo.bottomMargin = 50.0
+        printInfo.isVerticallyCentered = false
+
+        let view = PDFTextView(frame: NSRect(x: 0, y: 0, width: printInfo.paperSize.width - printInfo.leftMargin - printInfo.rightMargin, height: printInfo.paperSize.height))
+        view.threadTitle = thread.title
+        view.threadDate = thread.createdAt
+        view.markdown = markdown
+        view.theme = TrinityTheme.appearanceMode == .dark ? .dark : .light
+
+        let pdfData = view.dataWithPDF(inside: view.bounds)
+        try pdfData.write(to: fileURL)
+    }
 }
 
 // MARK: - Export Format Picker

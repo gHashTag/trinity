@@ -17,6 +17,7 @@ struct ChatScreen: View {
     @State private var chatMode: ChatMode = .trinity
     @State private var attachedFiles: [(name: String, content: String)] = []
     @State private var isRecording = false
+    @State private var pulseScale = 1.0
     @State private var showShortcuts = false
     @State private var isDropTargeted = false
     @State private var showScrollToBottom = false
@@ -65,6 +66,12 @@ struct ChatScreen: View {
     @State private var initialLoadDone = false
     /// Brief loading state when switching to a thread with many messages
     @State private var isLoadingThread = false
+    // Voice input state
+    @State private var speechRecognizer: SFSpeechRecognizer?
+    @State private var audioEngine: AVAudioEngine?
+    @State private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
+    @State private var recognitionTask: SFSpeechRecognitionTask?
+    @State private var transcriptText = ""
     @AppStorage("stylePreset") private var stylePresetRaw: String = StylePreset.concise.rawValue
     @AppStorage("effortLevel") private var effortLevelRaw: String = EffortLevel.medium.rawValue
     @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend = false
@@ -655,6 +662,7 @@ struct ChatScreen: View {
                     onComment: { commentingMessage = $0 },
                     onReply: { replyingTo = $0; focused = true },
                     searchHighlight: searchHighlightFor(msg),
+                    searchQuery: inThreadSearchQuery,
                     isSelecting: isSelecting,
                     isSelected: selectedMessageIDs.contains(msg.id),
                     onToggleSelect: { shiftClick in
@@ -1888,9 +1896,24 @@ struct ChatScreen: View {
                 .accessibilityLabel("Keyboard shortcuts")
 
                 Button { toggleVoiceInput() } label: {
-                    Image(systemName: isRecording ? "mic.fill" : "mic")
-                        .font(.system(size: 15))
-                        .foregroundStyle(isRecording ? TrinityTheme.statusError : Color.white.opacity(0.4))
+                    ZStack {
+                        if isRecording {
+                            Circle()
+                                .stroke(TrinityTheme.accent, lineWidth: 2)
+                                .frame(width: 36, height: 36)
+                                .scaleEffect(pulseScale)
+                                .opacity(isRecording ? 0 : 1)
+                                .animation(.easeInOut(duration: 1.0).repeatForever(autoreverses: false), value: isRecording)
+                                .onAppear {
+                                    withAnimation {
+                                        pulseScale = 1.8
+                                    }
+                                }
+                        }
+                        Image(systemName: isRecording ? "mic.fill" : "mic")
+                            .font(.system(size: 15))
+                            .foregroundStyle(isRecording ? TrinityTheme.accent : Color.white.opacity(0.4))
+                    }
                 }
                 .buttonStyle(.plain)
                 .help("Voice input")
@@ -2508,7 +2531,7 @@ struct ChatScreen: View {
 
     private func toggleVoiceInput() {
         if isRecording {
-            isRecording = false
+            stopRecording()
             return
         }
 
@@ -2516,8 +2539,7 @@ struct ChatScreen: View {
             DispatchQueue.main.async {
                 switch status {
                 case .authorized:
-                    isRecording = true
-                    startListening()
+                    startRecording()
                 case .denied, .restricted:
                     slashCommandResult = "Microphone access denied. Enable in System Settings > Privacy > Speech Recognition"
                     Task { @MainActor in
@@ -2533,50 +2555,85 @@ struct ChatScreen: View {
         }
     }
 
-    private func startListening() {
-        guard let recognizer = SFSpeechRecognizer(), recognizer.isAvailable else {
-            isRecording = false
+    private func startRecording() {
+        guard let recognizer = SFSpeechRecognizer(locale: Locale(identifier: "en-US")),
+              recognizer.isAvailable else {
+            slashCommandResult = "Speech recognizer unavailable"
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(3))
+                slashCommandResult = nil
+            }
             return
         }
+
+        speechRecognizer = recognizer
 
         let request = SFSpeechAudioBufferRecognitionRequest()
         request.shouldReportPartialResults = true
 
+        recognitionRequest = request
+
         let audioEngine = AVAudioEngine()
+        self.audioEngine = audioEngine
+
         let inputNode = audioEngine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
 
-        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { buffer, _ in
-            request.append(buffer)
+        inputNode.installTap(onBus: 0, bufferSize: 1024, format: format) { [weak request] buffer, _ in
+            request?.append(buffer)
         }
 
         audioEngine.prepare()
-        try? audioEngine.start()
+        do {
+            try audioEngine.start()
+            isRecording = true
+            transcriptText = ""
 
-        recognizer.recognitionTask(with: request) { result, error in
-            if let result {
-                DispatchQueue.main.async {
-                    input = result.bestTranscription.formattedString
+            recognitionTask = recognizer.recognitionTask(with: request) { result, error in
+                if let result {
+                    DispatchQueue.main.async {
+                        transcriptText = result.bestTranscription.formattedString
+                        input = transcriptText
+                    }
+                }
+                if error != nil || (result?.isFinal ?? false) {
+                    self.stopRecording()
                 }
             }
-            if error != nil || (result?.isFinal ?? false) {
-                audioEngine.stop()
-                inputNode.removeTap(onBus: 0)
-                DispatchQueue.main.async {
-                    isRecording = false
+
+            // Auto-stop after 30s
+            Task {
+                try? await Task.sleep(for: .seconds(30))
+                if isRecording {
+                    self.stopRecording()
                 }
             }
+        } catch {
+            slashCommandResult = "Failed to start audio engine"
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(3))
+                slashCommandResult = nil
+            }
+            stopRecording()
         }
+    }
 
-        // Auto-stop after 30s
-        Task {
-            try? await Task.sleep(for: .seconds(30))
-            if isRecording {
-                audioEngine.stop()
-                inputNode.removeTap(onBus: 0)
-                request.endAudio()
-                await MainActor.run { isRecording = false }
+    private func stopRecording() {
+        audioEngine?.stop()
+        audioEngine?.inputNode.removeTap(onBus: 0)
+        recognitionRequest?.endAudio()
+        recognitionTask?.cancel()
+
+        audioEngine = nil
+        recognitionRequest = nil
+        recognitionTask = nil
+
+        DispatchQueue.main.async {
+            isRecording = false
+            if !transcriptText.isEmpty {
+                input = transcriptText
             }
+            transcriptText = ""
         }
     }
 
@@ -3239,8 +3296,6 @@ struct TTFBSparkline: View {
     }
 }
 
-// MARK: - Model Picker (inline, compact)
-
 struct ModelPicker: View {
     @ObservedObject var modelManager: ModelManager
     @StateObject private var networkLog = NetworkLog.shared
@@ -3386,12 +3441,46 @@ struct MessageRow: View {
     var onComment: ((ChatMessage) -> Void)? = nil
     var onReply: ((ChatMessage) -> Void)? = nil
     var searchHighlight: SearchHighlight = .none
+    var searchQuery: String = ""
     var isSelecting: Bool = false
     var isSelected: Bool = false
     var onToggleSelect: ((_ shiftClick: Bool) -> Void)? = nil
 
     enum SearchHighlight {
         case none, match, currentMatch
+    }
+
+    /// Create attributed string with search highlights
+    private func attributedTextWithHighlight(_ text: String) -> AttributedString {
+        guard !searchQuery.isEmpty else {
+            return AttributedString(text)
+        }
+
+        var result = AttributedString(text)
+        let lowerText = text.lowercased()
+        let lowerQuery = searchQuery.lowercased()
+        var searchRange = lowerText.startIndex..<lowerText.endIndex
+
+        // Find all match ranges and apply highlights
+        while let range = lowerText.range(of: lowerQuery, range: searchRange) {
+            let attributedRange = result.range(of: String(text[range]), options: .caseInsensitive)
+            if let attributedRange = attributedRange {
+                result[attributedRange].backgroundColor = TrinityTheme.golden.opacity(0.3)
+            }
+            searchRange = range.upperBound..<lowerText.endIndex
+        }
+
+        return result
+    }
+
+    /// Create highlighted text view for search results
+    @ViewBuilder
+    private func HighlightText(_ text: String) -> some View {
+        if !searchQuery.isEmpty {
+            Text(attributedTextWithHighlight(text))
+        } else {
+            Text(text)
+        }
     }
     @State private var isHovering = false
     @State private var isEditing = false
@@ -3532,7 +3621,7 @@ struct MessageRow: View {
                                 }
                             }
                         } else {
-                            Text(message.text)
+                            HighlightText(message.text)
                                 .font(.system(size: CGFloat(chatFontSize), weight: .semibold))
                                 .foregroundStyle(Color.white)
                                 .textSelection(.enabled)
@@ -4019,6 +4108,9 @@ struct MessageRow: View {
 
             if message.text.isEmpty {
                 Text(" ")
+            } else if !searchQuery.isEmpty {
+                // Use highlighted text when search is active
+                HighlightText(message.text)
             } else {
                 MarkdownTextView(text: message.text, citations: message.citations)
             }
@@ -5526,79 +5618,21 @@ struct NetworkDashboard: View {
                     }
                 }
             }
-            .padding(.top, 4)
-        }
-    }
-}
 
-// MARK: - TTFB Sparkline (mini chart)
-
-struct TTFBSparkline: View {
-    let values: [Int]
-
-    var body: some View {
-        GeometryReader { geo in
-            let maxVal = Double(values.max() ?? 1)
-            let minVal = Double(values.min() ?? 0)
-            let range = max(maxVal - minVal, 1)
-            let w = geo.size.width / CGFloat(max(values.count - 1, 1))
-
-            Path { path in
-                for (i, val) in values.enumerated() {
-                    let x = CGFloat(i) * w
-                    let y = geo.size.height * (1 - CGFloat(Double(val) - minVal) / CGFloat(range))
-                    if i == 0 {
-                        path.move(to: CGPoint(x: x, y: y))
-                    } else {
-                        path.addLine(to: CGPoint(x: x, y: y))
-                    }
-                }
-            }
-            .stroke(TrinityTheme.accent.opacity(0.6), lineWidth: 1)
-        }
-    }
-}
-
-// MARK: - Context Overflow Banner (Feature W6-3)
-
-struct ContextOverflowBanner: View {
-    let tokens: Int
-    var onSummarize: () -> Void
-    var onNewThread: () -> Void
-
-    private var percentage: Int {
-        min(Int(Double(tokens) / 180_000 * 100), 100)
-    }
-
-    var body: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.golden)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Context \(percentage)% full")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(TrinityTheme.golden)
-                Text("\(tokens / 1000)K / 180K tokens")
-                    .font(.system(size: 9, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.4))
-            }
-
-            Spacer()
-
-            Button {
-                onSummarize()
-            } label: {
-                Text("Summarize")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.black)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(TrinityTheme.golden)
-                    .clipShape(Capsule())
-            }
-            .buttonStyle(.plain)
+            // TODO: Re-enable when onSummarize is implemented
+            // Spacer()
+            // Button {
+            //     onSummarize()
+            // } label: {
+            //     Text("Summarize")
+            //         .font(.system(size: 10, weight: .bold))
+            //         .foregroundStyle(.black)
+            //         .padding(.horizontal, 8)
+            //         .padding(.vertical, 4)
+            //         .background(TrinityTheme.golden)
+            //         .clipShape(Capsule())
+            // }
+            // .buttonStyle(.plain)
 
             Button {
                 onNewThread()
