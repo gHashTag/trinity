@@ -4016,6 +4016,15 @@ fn runBio(allocator: Allocator) !void {
     std.debug.print("  {s}Total: {d} cells across 5 biological systems{s}\n\n", .{ GRAY, total, RESET });
 }
 
+fn bioSystemFromStr(system: []const u8) u8 {
+    if (std.mem.eql(u8, system, "dna")) return 0;
+    if (std.mem.eql(u8, system, "brain")) return 1;
+    if (std.mem.eql(u8, system, "immune")) return 2;
+    if (std.mem.eql(u8, system, "regen")) return 3;
+    if (std.mem.eql(u8, system, "body")) return 4;
+    return 5; // unclassified
+}
+
 fn classifyBioSystem(id: []const u8, caps: []const u8, path: []const u8) u8 {
     // DNA Engine: codegen, pipeline, specs, parser
     if (std.mem.indexOf(u8, id, "pipeline") != null) return 0;
