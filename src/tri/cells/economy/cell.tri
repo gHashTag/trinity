@@ -1,0 +1,35 @@
+[cell]
+id = "trinity.tri.economy"
+name = "Economy & NFT"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "experimental"
+description = "Economy engines: marketplace, NFT, global economy simulation"
+capabilities = ["economy", "nft", "marketplace"]
+tests = 50
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "domain"
+
+[source]
+file_patterns = ["economy*.zig", "nft_*.zig", "marketplace*.zig"]
+
+[contributes]
+commands = []
+exports = []
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "read"
+network = "none"
+process = "none"
+
+[security]
+signed = true
+signature = "sha256:b8310ace6dd991668069ac24162710283bbbc4debda208c7aa42cc14fad6cba2"

@@ -1,0 +1,35 @@
+[cell]
+id = "trinity.tri.mu"
+name = "MU Agent Helpers"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "MU agent: error protocol, learning DB, failure verification"
+capabilities = ["mu", "learning", "errors"]
+tests = 5
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "agent"
+
+[source]
+file_patterns = ["mu_*.zig"]
+
+[contributes]
+commands = ["mu"]
+exports = []
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "write"
+network = "none"
+process = "none"
+
+[security]
+signed = true
+signature = "sha256:5a70356f06cec03b9b14e22cdbc134cca92207bc1b172b0ace8aeab3808f4d12"

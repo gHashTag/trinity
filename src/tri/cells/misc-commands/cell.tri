@@ -1,0 +1,34 @@
+[cell]
+id = "trinity.tri.misc-commands"
+name = "Miscellaneous Commands"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Standalone commands: mcp, plugin, events, experience, experiment, research, zenodo, patent, depin, register, init, history, search, serve, infer, battle, arena, context, state, vsa, math, sacred-fpga, demos, query, tvc"
+capabilities = ["commands"]
+tests = 30
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "commands"
+
+[source]
+file_patterns = ["tri_mcp.zig", "tri_plugin.zig", "tri_events.zig", "tri_experience.zig", "tri_experiment.zig", "tri_research.zig", "tri_zenodo.zig", "tri_patent.zig", "tri_depin.zig", "tri_register.zig", "tri_init.zig", "tri_history.zig", "tri_search.zig", "tri_serve.zig", "tri_infer.zig", "tri_battle.zig", "tri_context.zig", "tri_state.zig", "tri_vsa.zig", "tri_math.zig", "tri_sacred_fpga.zig", "tri_demos.zig", "tri_query_commands.zig", "tri_command_registry.zig", "tri_self.zig", "tvc_gate.zig", "tvc_indexer.zig", "code_arena.zig", "swe_arena.zig", "chat_server.zig", "needle.zig", "experience_hooks.zig", "perplexity_scholar.zig", "eval_harness.zig", "sync_checker.zig", "task_decomposer.zig", "spec_create.zig", "loop_decide.zig", "perf_benchmark.zig", "benchmark.zig"]
+
+[contributes]
+commands = ["mcp", "plugin", "events", "experience", "experiment", "research", "zenodo", "patent", "depin", "infer", "serve", "battle"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+
+[security]
+signed = true
+signature = "sha256:2d6c41f082302e5c04d9741c8b43dcf805a223c3bc7854aa73fcaa9fdcfe15e8"

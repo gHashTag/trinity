@@ -1,0 +1,37 @@
+[cell]
+id = "trinity.sdk-api"
+name = "SDK & API"
+version = "1.0.0"
+kind = "virtual"
+path = "src"
+status = "experimental"
+description = "Public SDK, C API, Queen API, server main, tri commander"
+capabilities = ["sdk", "api", "ffi"]
+files = 5
+tests = 0
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "library"
+
+[source]
+file_patterns = ["sdk.zig", "c_api.zig", "queen_api.zig", "server_main.zig", "tri_commander.zig"]
+
+[contributes]
+exports = ["sdk", "c_api", "queen_api"]
+
+[dependencies]
+trinity.vsa = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+ffi = "native"
+concurrency = "yes"
+
+[security]
+signed = "true"
+signature = "sha256:c62b2e178d025921a7b7c5fd743ae42cc0576f306c96e67d0476380f02969aeb"

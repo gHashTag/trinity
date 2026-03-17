@@ -1,0 +1,33 @@
+[cell]
+id = "trinity.tri.engines"
+name = "Domain Engines"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "experimental"
+description = "Domain engines: autonomous universe, holographic, QG, koschei, learning loops"
+capabilities = ["engines", "simulation"]
+tests = 20
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "domain"
+
+[source]
+file_patterns = ["autonomous_universe*.zig", "holographic_engine.zig", "qg_engine.zig", "koschei.zig", "learning_loops.zig", "dynamic_memory.zig", "eternal_monitor.zig", "sacred_constants.zig", "tri_sacred_v2.zig"]
+
+[contributes]
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "read"
+network = "none"
+process = "none"
+
+[security]
+signed = true
+signature = "sha256:e9dcdef2ecc3b36bd7ee1009923ddd294db714f92cc4bde1d85566696bf0c196"

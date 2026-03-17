@@ -29,3 +29,7 @@ level = "L1"
 filesystem = "write"
 network = "none"
 process = "none"
+
+[security]
+signed = true
+signature = "sha256:fadbad75498a860fb22aa206e988b29dc3f43935a38acc0040ff0ec78fd15df1"

@@ -1,0 +1,35 @@
+[cell]
+id = "trinity.tri.devtools"
+name = "Dev Tools"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Development utilities: dev loop, scan, pick, pipeline"
+capabilities = ["dev", "scanning"]
+tests = 15
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "infra"
+
+[source]
+file_patterns = ["dev_loop.zig", "dev_pick.zig", "dev_pipeline.zig", "dev_scan.zig"]
+
+[contributes]
+commands = ["dev"]
+exports = []
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "write"
+network = "none"
+process = "none"
+
+[security]
+signed = true
+signature = "sha256:364e28846d4a0d3e7015542ff1f15f68f13a1e561b696998a13fc67965eef369"
