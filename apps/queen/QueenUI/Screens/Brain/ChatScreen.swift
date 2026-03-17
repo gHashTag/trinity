@@ -220,6 +220,8 @@ struct ChatScreen: View {
                 showThinkingTranscript: $showThinkingTranscript,
                 commentingMessage: $commentingMessage,
                 slashCommandResult: $slashCommandResult,
+                historyIndex: $historyIndex,
+                savedCurrentInput: $savedCurrentInput,
                 thread: thread
             ))
             .sheet(isPresented: $showThinkingTranscript) {
@@ -2071,7 +2073,15 @@ private struct NotificationReceiversModifier: ViewModifier {
     @Binding var showThinkingTranscript: Bool
     @Binding var commentingMessage: ChatMessage?
     @Binding var slashCommandResult: String?
+    @Binding var historyIndex: Int
+    @Binding var savedCurrentInput: String
     var thread: ChatThread?
+
+    /// All user messages in current thread, newest first (for Up/Down history navigation)
+    private var inputHistory: [String] {
+        guard let msgs = thread?.messages else { return [] }
+        return msgs.filter { $0.role == .user }.map(\.text).reversed()
+    }
 
     func body(content: Content) -> some View {
         content
