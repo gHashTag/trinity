@@ -1,13 +1,13 @@
 [cell]
-id = "trinity.time"
-name = "time"
+id = "trinity.sacred-time"
+name = "Sacred Time"
 version = "0.1.0"
 kind = "library"
 path = "src/time"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Temporal dynamics and thermodynamic time arrow physics"
-capabilities = ["compute", "planckTimeSacred", "planckTimePhi", "cosmologicalTime", "ageOfUniverse"]
+description = "Sacred formulas: temporal dynamics, thermodynamic time arrow, blind spot detection, reality structure"
+capabilities = ["compute", "planckTimeSacred", "planckTimePhi", "cosmologicalTime", "ageOfUniverse", "errorFraction", "consciousnessParam", "formulaCount", "displayName"]
 files = 4
 tests = 68
 owner = "agent:ralph"
@@ -24,13 +24,13 @@ events = []
 [dependencies]
 
 [permissions]
-level = "L0"
-filesystem = "read"
+level = "L1"
+filesystem = "write"
 network = "none"
 process = "none"
 ffi = "none"
 concurrency = "none"
 
 [security]
-signed = true
-signature = "sha256:d1435c54abdd74bde96758e17cfe29063b7449884355e31aeb8f9b24fc0e73e6"
+signed = "false"
+signature = ""
