@@ -14,6 +14,7 @@
 const std = @import("std");
 const colors = @import("tri_colors.zig");
 const cell_parser = @import("ribosome.zig");
+const hippocampus = @import("hippocampus.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -28,8 +29,8 @@ const GOLDEN = colors.GOLDEN;
 
 const CORE_VERSION = "1.0.0";
 
-// Directories to scan for cell.tri manifests
-const CELL_SCAN_DIRS = [_][]const u8{ "src", "apps", "tools", "fpga", "libs", "specs", "benchmarks", "papers", "data", "contracts" };
+// Cell scan directories — use global constant from ribosome (re-exports from const.zig)
+const CELL_SCAN_DIRS = cell_parser.CELL_SCAN_DIRS;
 
 // CellInfo is now an alias for the shared CellManifest (Honeycomb v7 — single source of truth)
 const CellInfo = cell_parser.CellManifest;
@@ -2144,6 +2145,22 @@ fn runHealth(allocator: Allocator, _: []const []const u8) !void {
     });
     std.debug.print("  {s}Weakest:{s}    {s} ({d})\n", .{ WHITE, RESET, weakest_id, weakest_score });
     std.debug.print("  {s}Formula:{s}    health(30) + security(30) + deps(25) + contracts(15)\n\n", .{ WHITE, RESET });
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // DUAL-WRITE: Cerebellum → Hippocampus (Wave 3)
+    // ═══════════════════════════════════════════════════════════════════════════════
+    var buf: [256]u8 = undefined;
+    const summary = std.fmt.bufPrint(&buf,
+        "cell health: {d}/{d} total (A:{d} B:{d} C:{d} F:{d}) | cycles: {d} | weakest: {s} ({d})",
+        .{ cell_count + sub_count, cell_count + sub_count, grade_a, grade_b, grade_c, grade_f, cycle_count, weakest_id, weakest_score });
+    hippocampus.writeObservation(allocator, "cerebellum", summary catch "cell health snapshot", "{}") catch {};
+
+    if (grade_f > 0 or cycle_count > 0) {
+        const err_summary = std.fmt.bufPrint(&buf,
+            "cell issue: {d} broken cells, {d} dependency cycles",
+            .{ grade_f, cycle_count });
+        hippocampus.writeError(allocator, "cerebellum", err_summary catch "cell issues detected", "{}") catch {};
+    }
 
     if (cycle_count > 0) {
         std.debug.print("  {s}Action:{s} run {s}tri cell deps --cycles{s} to see cycle details\n", .{ YELLOW, RESET, CYAN, RESET });
