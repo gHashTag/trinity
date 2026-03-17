@@ -709,7 +709,7 @@ const DIM = "\x1b[2m";
 const WHITE = "\x1b[97m";
 const BG_RED = "\x1b[41m";
 
-const farm_evolve = @import("tri_farm_evolve.zig");
+const farm_evolve = @import("evolution.zig");
 
 fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
     // ═══════ AUTO-REFRESH: poll Railway for fresh data ═══════

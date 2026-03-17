@@ -13,7 +13,7 @@
 
 const std = @import("std");
 const colors = @import("tri_colors.zig");
-const cell_parser = @import("tri_cell_parser.zig");
+const cell_parser = @import("ribosome.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -170,6 +170,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "sign")) return runSign(allocator, rest);
     if (std.mem.eql(u8, sub, "doctor")) return runDoctor(allocator, rest);
     if (std.mem.eql(u8, sub, "orphans")) return runOrphans(allocator);
+    if (std.mem.eql(u8, sub, "bio")) return runBio(allocator);
     if (std.mem.eql(u8, sub, "explain")) return runExplain(allocator, rest);
     if (std.mem.eql(u8, sub, "map")) return runMap(allocator);
     if (std.mem.eql(u8, sub, "contracts")) return runContracts(allocator);
@@ -221,6 +222,7 @@ fn printHelp() void {
     std.debug.print("  {s}sign [<id>|--all]{s}  Sign L2 cells (sha256 hash)\n", .{ GREEN, RESET });
     std.debug.print("  {s}doctor{s}            Full heal cycle: fix→sign→audit→lint→sync→status\n", .{ GREEN, RESET });
     std.debug.print("  {s}orphans{s}           Find .zig files not claimed by any cell\n", .{ GREEN, RESET });
+    std.debug.print("  {s}bio{s}               Biological systems map (DNA/Brain/Immune/Regen/Body)\n", .{ GREEN, RESET });
     std.debug.print("  {s}explain <id>{s}      Show WHY a cell has its permission level\n", .{ GREEN, RESET });
     std.debug.print("  {s}map{s}               Binary → cell mapping, find orphan binaries\n", .{ GREEN, RESET });
     std.debug.print("  {s}contracts{s}          Verify cell exports match source code (integrity)\n", .{ GREEN, RESET });
@@ -3942,6 +3944,107 @@ fn runOrphans(allocator: Allocator) !void {
         std.debug.print("  {s}Fix: add orphans to cell.tri file_patterns or create new cells{s}\n", .{ GRAY, RESET });
     }
     std.debug.print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BIO — biological system view of cell architecture
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runBio(allocator: Allocator) !void {
+    std.debug.print("\n{s}🧬 BIOLOGICAL SYSTEMS MAP{s}\n\n", .{ GOLDEN, RESET });
+
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    // Classify cells into biological systems based on file patterns and capabilities
+    var dna: usize = 0;
+    var brain: usize = 0;
+    var immune: usize = 0;
+    var regen: usize = 0;
+    var body: usize = 0;
+    var unclassified: usize = 0;
+
+    for (all_cells) |c| {
+        const m = c.manifest;
+        const id = m.id;
+        // Prefer declared [biology] system, fallback to runtime classification
+        const system = if (m.bio_system.len > 0) bioSystemFromStr(m.bio_system) else classifyBioSystem(id, m.capabilities, m.path);
+        switch (system) {
+            0 => dna += 1,
+            1 => brain += 1,
+            2 => immune += 1,
+            3 => regen += 1,
+            4 => body += 1,
+            else => unclassified += 1,
+        }
+    }
+
+    const total = dna + brain + immune + regen + body + unclassified;
+
+    // DNA Engine
+    std.debug.print("  {s}🧬 DNA Engine{s} — spec → code (central dogma)\n", .{ CYAN, RESET });
+    std.debug.print("     Ribosome (parser) · DNA Polymerase (golden chain) · RNA Polymerase (pipeline)\n", .{});
+    std.debug.print("     {s}{d} cells{s}\n\n", .{ GREEN, dna, RESET });
+
+    // Brain
+    std.debug.print("  {s}🧠 Brain{s} — neural coordination\n", .{ CYAN, RESET });
+    std.debug.print("     Hypothalamus (orchestrator) · Cortex (faculty) · Hippocampus (memory) · Synapse (board)\n", .{});
+    std.debug.print("     {s}{d} cells{s}\n\n", .{ GREEN, brain, RESET });
+
+    // Immune
+    std.debug.print("  {s}🛡️  Immune{s} — three defense lines\n", .{ CYAN, RESET });
+    std.debug.print("     PhoenixCore (surveillance) · Pathology (diagnosis) · Leukocyte (doctor)\n", .{});
+    std.debug.print("     {s}{d} cells{s}\n\n", .{ GREEN, immune, RESET });
+
+    // Regen
+    std.debug.print("  {s}🔥 Regen{s} — renewal & regeneration\n", .{ CYAN, RESET });
+    std.debug.print("     Phoenix (bone marrow) · Autophagy (ouroboros self-renewal)\n", .{});
+    std.debug.print("     {s}{d} cells{s}\n\n", .{ GREEN, regen, RESET });
+
+    // Body
+    std.debug.print("  {s}🫀 Body{s} — vital functions\n", .{ CYAN, RESET });
+    std.debug.print("     Heartbeat (loop) · Metabolism (train) · Evolution (farm) · Cytoplasm (cell) · Mitosis (git)\n", .{});
+    std.debug.print("     {s}{d} cells{s}\n\n", .{ GREEN, body, RESET });
+
+    if (unclassified > 0) {
+        std.debug.print("  {s}❓ Unclassified{s}: {d} cells\n\n", .{ YELLOW, RESET, unclassified });
+    }
+
+    std.debug.print("  {s}Total: {d} cells across 5 biological systems{s}\n\n", .{ GRAY, total, RESET });
+}
+
+fn classifyBioSystem(id: []const u8, caps: []const u8, path: []const u8) u8 {
+    // DNA Engine: codegen, pipeline, specs, parser
+    if (std.mem.indexOf(u8, id, "pipeline") != null) return 0;
+    if (std.mem.indexOf(u8, id, "specs") != null) return 0;
+    if (std.mem.indexOf(u8, id, "vibeec") != null) return 0;
+    if (std.mem.indexOf(u8, id, "honeycomb") != null) return 0;
+    if (std.mem.indexOf(u8, caps, "codegen") != null) return 0;
+    if (std.mem.indexOf(u8, caps, "spec") != null) return 0;
+
+    // Brain: orchestration, faculty, memory, agents, queen
+    if (std.mem.indexOf(u8, id, "agent") != null) return 1;
+    if (std.mem.indexOf(u8, id, "queen") != null) return 1;
+    if (std.mem.indexOf(u8, id, "faculty") != null) return 1;
+    if (std.mem.indexOf(u8, id, "mu") != null) return 1;
+    if (std.mem.indexOf(u8, caps, "orchestration") != null) return 1;
+    if (std.mem.indexOf(u8, caps, "swarm") != null) return 1;
+
+    // Immune: doctor, phoenix, audit, security
+    if (std.mem.indexOf(u8, id, "doctor") != null) return 2;
+    if (std.mem.indexOf(u8, id, "selfimprove") != null) return 2;
+    if (std.mem.indexOf(u8, id, "observability") != null) return 2;
+
+    // Regen: phoenix, ouroboros, forge
+    if (std.mem.indexOf(u8, id, "forge") != null) return 3;
+    if (std.mem.indexOf(u8, id, "phoenix") != null) return 3;
+
+    // Body: everything else (training, farm, cells, git, cli, math, physics, etc.)
+    _ = path;
+    return 4;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
