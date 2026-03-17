@@ -612,11 +612,29 @@ pub const PhoenixCore = struct {
             std.debug.print("  {s}⊙{s} No recent errors to dream about\n\n", .{ DIM, RESET });
         }
 
+        // === IMMUNE RESPONSE: Auto-heal (Wave 5) ===
+        std.debug.print("{s}Immune phase:{s} Analyzing and healing...\n", .{ GREEN, RESET });
+
+        const regen = @import("regen.zig");
+        const analysis = regen.analyze(self.allocator) catch |err| {
+            std.debug.print("  {s}⚠️  Regen analysis failed: {}{s}\n", .{ YELLOW, err, RESET });
+        };
+        var immune_healed: u32 = 0;
+        if (analysis.health_score < 80) {
+            std.debug.print("  Health score: {d}/100 — triggering immune response\n", .{analysis.health_score});
+            regen.executeFixPlan(self.allocator, &analysis) catch |err| {
+                std.debug.print("  {s}⚠️  Immune response failed: {}{s}\n", .{ YELLOW, err, RESET });
+            };
+            immune_healed = analysis.fix_count;
+        } else {
+            std.debug.print("  {s}✅{s} Health score {d}/100 — immune system at rest\n", .{ GREEN, RESET, analysis.health_score });
+        }
+
         // Log sleep event
         var buf: [256]u8 = undefined;
         var data_buf: [128]u8 = undefined;
-        const sleep_summary = std.fmt.bufPrint(&buf, "SLEEP: consolidated {d} episodes → {d} rules, dreamed {d} errors, imported arena", .{ old_count, rules_created, recent_errors.items.len }) catch "sleep";
-        const sleep_data = std.fmt.bufPrint(&data_buf, "{{\"old_episodes\":{d},\"rules_created\":{d},\"errors_dreamed\":{d}}}", .{ old_count, rules_created, recent_errors.items.len }) catch "{}";
+        const sleep_summary = std.fmt.bufPrint(&buf, "SLEEP: consolidated {d} episodes → {d} rules, dreamed {d} errors, imported arena, healed {d}", .{ old_count, rules_created, recent_errors.items.len, immune_healed }) catch "sleep";
+        const sleep_data = std.fmt.bufPrint(&data_buf, "{{\"old_episodes\":{d},\"rules_created\":{d},\"errors_dreamed\":{d},\"immune_healed\":{d}}}", .{ old_count, rules_created, recent_errors.items.len, immune_healed }) catch "{}";
         try hippocampus.writeObservation(self.allocator, "phoenix", sleep_summary, sleep_data);
 
         std.debug.print("{s}═══════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
