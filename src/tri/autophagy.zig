@@ -15,7 +15,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const verdict = @import("toxic_verdict.zig");
+const verdict = @import("pathology.zig");
 const colors = @import("tri_colors.zig");
 const experience = @import("experience_hooks.zig");
 const cloud = @import("cloud_orchestrator.zig");

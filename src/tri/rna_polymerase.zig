@@ -6,7 +6,7 @@
 // ============================================================================
 
 const std = @import("std");
-const golden_chain = @import("golden_chain.zig");
+const golden_chain = @import("dna_polymerase.zig");
 const tvc_gate_mod = @import("tvc_gate.zig");
 const tvc_corpus = @import("tvc_corpus");
 const tri_state = @import("tri_state.zig");
