@@ -1387,14 +1387,24 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
             const status = jsonU32(s, "status");
             const name = getJsonStr(s, "name");
             const step = jsonU32(s, "step");
-            if (status == 5) print("   {s}⏸️  {s}: stalled at step {d}{s}\n", .{ YELLOW, name, step, RESET });
+            if (status == 5) {
+                print("   {s}⏸️  {s}: stalled at step {d}{s}\n", .{ YELLOW, name, step, RESET });
+                // DUAL-WRITE: stalled alert to hippocampus
+                const stall_msg = std.fmt.bufPrint(&buf, "stalled: {s} at step {d}", .{ name, step });
+                hippocampus.writeError(allocator, "hypothalamus", stall_msg catch "stalled detected", "{}") catch {};
+            }
             if (status == 6) {
                 print("   {s}💥 {s}: diverged (PPL={d:.0}) at step {d}{s}\n", .{ RED, name, jsonF32(s, "ppl"), step, RESET });
                 // DUAL-WRITE: diverged alert to hippocampus
                 const div_msg = std.fmt.bufPrint(&buf, "diverged: {s} PPL={d:.0} at step {d}", .{ name, jsonF32(s, "ppl"), step });
                 hippocampus.writeError(allocator, "hypothalamus", div_msg catch "diverged detected", "{}") catch {};
             }
-            if (status == 7) print("   {s}🔒 {s}: stuck at step=0{s}\n", .{ RED, name, RESET });
+            if (status == 7) {
+                print("   {s}🔒 {s}: stuck at step=0{s}\n", .{ RED, name, RESET });
+                // DUAL-WRITE: stuck alert to hippocampus
+                const stuck_msg = std.fmt.bufPrint(&buf, "stuck: {s} at step=0", .{name});
+                hippocampus.writeError(allocator, "hypothalamus", stuck_msg catch "stuck detected", "{}") catch {};
+            }
             if (status == 8) {
                 const cfg = getJsonObj(s, "cfg");
                 const ctx = if (cfg) |c| jsonU32(c, "ctx") else 0;
