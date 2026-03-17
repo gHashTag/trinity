@@ -99,7 +99,9 @@ pub const GitHubClient = struct {
 
         const owner_repo = try detectOwnerRepo(allocator);
 
-        const mode: Mode = if (token != null) .native_http else .gh_cli;
+        // Check for GITHUB_USE_CLI env var to force gh_cli mode
+        const use_cli = std.process.hasEnvVarConstant("GITHUB_USE_CLI");
+        const mode: Mode = if (use_cli or token == null) .gh_cli else .native_http;
 
         return Self{
             .allocator = allocator,
@@ -879,10 +881,27 @@ pub const GitHubClient = struct {
     // ═══════════════════════════════════════════════════════════════════════════
 
     fn ghCliRun(self: *Self, argv: []const []const u8) ![]const u8 {
+        // Pass GH_TOKEN to gh CLI subprocess for authentication
+        // This works around keyring access issues in subprocesses
+        var child_env = try std.process.getEnvMap(self.allocator);
+        defer child_env.deinit();
+
+        // If we have a token from init, pass it to gh CLI
+        if (self.token) |tok| {
+            try child_env.put("GH_TOKEN", tok);
+        } else {
+            // Otherwise try to get GH_TOKEN from environment for the subprocess
+            if (std.process.getEnvVarOwned(self.allocator, "GH_TOKEN")) |tok| {
+                defer self.allocator.free(tok);
+                try child_env.put("GH_TOKEN", tok);
+            } else |_| {}
+        }
+
         const result = try std.process.Child.run(.{
             .allocator = self.allocator,
             .argv = argv,
             .max_output_bytes = 1024 * 1024,
+            .env_map = &child_env,
         });
         defer self.allocator.free(result.stderr);
 
@@ -892,6 +911,7 @@ pub const GitHubClient = struct {
         };
         if (gh_exit != 0) {
             std.debug.print("\x1b[38;2;255;85;85mgh CLI failed (exit {d})\x1b[0m\n", .{gh_exit});
+            std.debug.print("\x1b[38;2;255;85;85mstderr: {s}\x1b[0m\n", .{result.stderr});
             self.allocator.free(result.stdout);
             return error.GhCliFailed;
         }

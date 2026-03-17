@@ -30,29 +30,36 @@ pub const FarmTask = struct {
 };
 
 pub fn listFarmTasks(allocator: Allocator, json_response: []const u8) ![]FarmTask {
+    // Parse JSON response from gh issue list --json or GitHub REST API
+    // Both return a JSON array directly, not GraphQL "data" wrapper
     const parsed = try std.json.parseFromSlice(std.json.Value, allocator, json_response, .{});
     defer parsed.deinit();
 
-    const data_obj = parsed.value.object.get("data") orelse return error.MissingData;
-    const repository_obj = data_obj.object.get("repository") orelse return error.MissingRepository;
-    const issues_obj = repository_obj.object.get("issues") orelse return error.MissingIssues;
-    const edges_arr = issues_obj.object.get("edges") orelse return error.MissingEdges;
-    const root = edges_arr.array;
+    // Response is an array of issue objects
+    const root = parsed.value.array;
 
     // Count matching issues
     var count: usize = 0;
-    for (root.items) |edge| {
-        const issue_node = edge.object.get("node") orelse continue;
-        const labels_val = issue_node.object.get("labels") orelse continue;
-        const labels_edges = labels_val.object.get("edges") orelse continue;
-        const labels = labels_edges.array;
+    for (root.items) |issue_val| {
+        const issue_obj = issue_val.object;
+        const labels_val = issue_obj.get("labels") orelse continue;
+        const labels = labels_val.array;
 
         var has_farm_task = false;
         var is_done = false;
-        for (labels.items) |label_edge| {
-            const node_obj = label_edge.object.get("node") orelse continue;
-            if (node_obj != .string) continue;
-            const label_name = node_obj.string;
+        for (labels.items) |label_val| {
+            // gh CLI returns: {"name": "label-name"}
+            // REST API returns: "label-name" (string) or object with name
+            const label_name = blk: {
+                if (label_val == .string) {
+                    break :blk label_val.string;
+                }
+                if (label_val.object.get("name")) |name_val| {
+                    if (name_val == .string) break :blk name_val.string;
+                }
+                continue;
+            };
+
             if (std.mem.eql(u8, label_name, "farm-task")) has_farm_task = true;
             if (std.mem.eql(u8, label_name, "status:done")) is_done = true;
         }
@@ -67,17 +74,17 @@ pub fn listFarmTasks(allocator: Allocator, json_response: []const u8) ![]FarmTas
 
     // Fill the slice
     var index: usize = 0;
-    for (root.items) |edge| {
-        const issue_node = edge.object.get("node") orelse continue;
-        const labels_val = issue_node.object.get("labels") orelse continue;
-        const labels_edges = labels_val.object.get("edges") orelse continue;
-        const labels = labels_edges.array;
+    for (root.items) |issue_val| {
+        const issue_obj = issue_val.object;
+        const labels_val = issue_obj.get("labels") orelse continue;
+        const labels = labels_val.array;
 
         var has_farm_task = false;
         var is_done = false;
-        const number_val = issue_node.object.get("number") orelse continue;
+
+        const number_val = issue_obj.get("number") orelse continue;
         if (number_val != .integer) continue;
-        const title_val = issue_node.object.get("title") orelse continue;
+        const title_val = issue_obj.get("title") orelse continue;
         if (title_val != .string) continue;
 
         var task = FarmTask{
@@ -92,10 +99,17 @@ pub fn listFarmTasks(allocator: Allocator, json_response: []const u8) ![]FarmTas
             .status = "pending",
         };
 
-        for (labels.items) |label_edge| {
-            const node_obj = label_edge.object.get("node") orelse continue;
-            if (node_obj != .string) continue;
-            const label_name = node_obj.string;
+        for (labels.items) |label_val| {
+            const label_name = blk: {
+                if (label_val == .string) {
+                    break :blk label_val.string;
+                }
+                if (label_val.object.get("name")) |name_val| {
+                    if (name_val == .string) break :blk name_val.string;
+                }
+                continue;
+            };
+
             if (std.mem.eql(u8, label_name, "farm-task")) has_farm_task = true;
             if (std.mem.eql(u8, label_name, "status:done")) is_done = true;
 

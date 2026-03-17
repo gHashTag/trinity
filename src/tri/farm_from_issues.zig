@@ -68,9 +68,10 @@ pub fn runFromIssues(allocator: Allocator, args: []const []const u8) !void {
     print("\n", .{});
 
     // Load tasks (from GitHub or local cache)
+    // Note: GitHub client always fetches real data; dry_run only affects injection
     var tasks: []FarmTask = undefined;
     if (use_github) {
-        var client = try GitHubClient.init(allocator, dry_run);
+        var client = try GitHubClient.init(allocator, false); // Always fetch real data
         defer client.deinit();
 
         print("  🔍 Fetching issues from GitHub...\n", .{});
