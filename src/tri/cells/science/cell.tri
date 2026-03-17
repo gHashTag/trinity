@@ -1,0 +1,31 @@
+[cell]
+id = "trinity.tri.science"
+name = "Sacred Sciences"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Domain sciences: biology, chemistry, cosmology, neuroscience"
+capabilities = ["biology", "chemistry", "cosmology", "neuroscience"]
+tests = 8
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "domain"
+
+[source]
+file_patterns = ["tri_biology.zig", "tri_chemistry.zig", "tri_cosmology.zig", "tri_neuro.zig"]
+
+[contributes]
+commands = ["bio", "chem", "cosmos", "neuro"]
+exports = ["runBioCommand", "runChemCommand", "runCosmosCommand", "runNeuroCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "read"
+network = "none"
+process = "none"

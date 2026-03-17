@@ -1,0 +1,31 @@
+[cell]
+id = "trinity.tri.honeycomb"
+name = "Honeycomb Cell System"
+version = "9.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Cell modularity system: create, audit, score, deps, prune, cycles, dispatch"
+capabilities = ["cells", "modularity", "deps", "score"]
+tests = 17
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "infra"
+
+[source]
+file_patterns = ["tri_cell*.zig"]
+
+[contributes]
+commands = ["cell score", "cell deps", "cell audit", "cell create", "cell fix"]
+exports = ["runCellCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "write"
+network = "none"
+process = "none"

@@ -1,0 +1,31 @@
+[cell]
+id = "trinity.tri.farm"
+name = "Training Farm"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "HSLM training farm: Railway service management, evolution, accounts, SSH"
+capabilities = ["farm", "railway", "evolution"]
+tests = 46
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "domain"
+
+[source]
+file_patterns = ["tri_farm*.zig", "railway_*.zig", "farm_*.zig", "dev_farm*.zig"]
+
+[contributes]
+commands = ["farm status", "farm evolve", "farm leaderboard", "farm recycle", "farm inject"]
+exports = ["runFarmCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
