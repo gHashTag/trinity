@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct SettingsScreen: View {
+    @AppStorage("appearanceMode") private var appearanceModeRaw: String = AppearanceMode.dark.rawValue
     @AppStorage("arenaHost") private var arenaHost = "localhost"
     @AppStorage("arenaPort") private var arenaPort = 8080
     @AppStorage("refreshInterval") private var refreshInterval = 5.0
@@ -36,6 +37,34 @@ struct SettingsScreen: View {
                     Spacer()
                 }
                 .padding()
+
+                // Appearance
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("APPEARANCE")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(TrinityTheme.accent)
+
+                    HStack {
+                        Text("Theme")
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .frame(width: 100, alignment: .leading)
+                        Picker("", selection: $appearanceModeRaw) {
+                            ForEach(AppearanceMode.allCases, id: \.rawValue) { mode in
+                                Text(mode.label).tag(mode.rawValue)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+
+                    Text("System follows macOS appearance. Dark and Light are fixed.")
+                        .font(.caption2)
+                        .foregroundStyle(TrinityTheme.textMuted)
+                }
+                .padding()
+                .background(TrinityTheme.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .padding(.horizontal)
 
                 // Queen Daemon config
                 queenDaemonSection

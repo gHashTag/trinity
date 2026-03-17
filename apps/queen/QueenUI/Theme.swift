@@ -1,20 +1,68 @@
 import SwiftUI
 
+// MARK: - Appearance Mode
+
+public enum AppearanceMode: String, CaseIterable {
+    case system = "system"
+    case dark = "dark"
+    case light = "light"
+
+    var label: String {
+        switch self {
+        case .system: return "System"
+        case .dark: return "Dark"
+        case .light: return "Light"
+        }
+    }
+}
+
 // Theme from src/trinity_node/ui.zig THEME struct
 struct TrinityTheme {
-    static let bgWindow    = Color(hex: 0x000000)
-    static let bgSidebar   = Color(hex: 0x050505)
-    static let bgCard      = Color(hex: 0x0A0A0A)
+    // MARK: - Appearance Storage
+
+    @AppStorage("appearanceMode") static var appearanceModeRaw: String = AppearanceMode.dark.rawValue
+
+    static var appearanceMode: AppearanceMode {
+        AppearanceMode(rawValue: appearanceModeRaw) ?? .dark
+    }
+
+    static var colorScheme: ColorScheme? {
+        switch appearanceMode {
+        case .system: return nil
+        case .dark: return .dark
+        case .light: return .light
+        }
+    }
+
+    // MARK: - Adaptive Colors
+
+    static var bgWindow: Color {
+        Color(light: Color(hex: 0xF5F5F5), dark: Color(hex: 0x000000))
+    }
+    static var bgSidebar: Color {
+        Color(light: Color(hex: 0xEBEBEB), dark: Color(hex: 0x050505))
+    }
+    static var bgCard: Color {
+        Color(light: Color(hex: 0xFFFFFF), dark: Color(hex: 0x0A0A0A))
+    }
+    static var textPrimary: Color {
+        Color(light: .black, dark: .white)
+    }
+    static var textMuted: Color {
+        Color(light: Color(hex: 0x555555), dark: Color(hex: 0xAAAAAA))
+    }
+    static var bgCardBorder: Color {
+        Color(light: Color(hex: 0xDDDDDD), dark: Color(hex: 0x1A1A1A))
+    }
+
+    // MARK: - Fixed Colors (same in both modes)
+
     static let accent      = Color(hex: 0x00FF88)
     static let golden      = Color(hex: 0xFFD700)
     static let purple      = Color(hex: 0x8B5CF6)
-    static let textPrimary = Color.white
-    static let textMuted   = Color(hex: 0xAAAAAA)  // raised from 0x888888 for WCAG AA (6.5:1 on black)
     static let statusOK    = Color(hex: 0x00FF88)
     static let statusWarn  = Color(hex: 0xFFD700)
     static let statusError = Color(hex: 0xEF4444)
-
-    static let bgCardBorder = Color(hex: 0x1A1A1A)
 
     static let cardCorner: CGFloat = 12
     static let spacing: CGFloat = 16
@@ -88,5 +136,13 @@ extension Color {
             blue: Double(hex & 0xFF) / 255.0,
             opacity: opacity
         )
+    }
+
+    /// Adaptive color that responds to the current color scheme.
+    init(light: Color, dark: Color) {
+        self.init(nsColor: NSColor(name: nil) { appearance in
+            let isDark = appearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+            return isDark ? NSColor(dark) : NSColor(light)
+        })
     }
 }

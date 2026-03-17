@@ -38,6 +38,7 @@ struct ChatScreen: View {
     @State private var showQueueDrained = false
     @State private var queueDrainedMessageCount = 0
     @State private var rateLimitDismissed = false
+    @State private var budgetWarningDismissed = false
     @ObservedObject private var networkLog = NetworkLog.shared
     @State private var showInThreadSearch = false
     @State private var inThreadSearchQuery = ""
@@ -240,6 +241,7 @@ struct ChatScreen: View {
 
                 inputAreaContent
                 rateLimitWarningBar
+                budgetWarningBar
                 inputBarView
                 modeBarView
             }
@@ -329,6 +331,8 @@ struct ChatScreen: View {
 
             errorRetryBlock
 
+            continueButton
+
             streamingIndicatorView
 
             toolTimelineSection
@@ -395,6 +399,40 @@ struct ChatScreen: View {
         }
     }
 
+    // MARK: - Continue Button (truncated response)
+
+    @ViewBuilder
+    private var continueButton: some View {
+        if client.lastResponseTruncated && !client.isStreaming {
+            Button {
+                guard let threadID = store.activeThreadID else { return }
+                client.lastResponseTruncated = false
+                input = ""
+                client.send(
+                    "Please continue from where you left off.",
+                    threadID: threadID,
+                    store: store,
+                    modelManager: modelManager,
+                    mode: chatMode
+                )
+            } label: {
+                HStack(spacing: 4) {
+                    Text("\u{21AA}")
+                        .font(.system(size: 13, weight: .bold))
+                    Text("Continue")
+                        .font(.system(size: 12, weight: .bold))
+                }
+                .foregroundStyle(.black)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(TrinityTheme.accent)
+                .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+            .transition(.opacity)
+        }
+    }
+
     // MARK: - Scroll To Bottom Button
 
     @ViewBuilder
@@ -419,9 +457,10 @@ struct ChatScreen: View {
                 .shadow(color: .black.opacity(0.4), radius: TrinityTheme.shadowMediumRadius, y: 4)
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Scroll to bottom")
+            .accessibilityLabel("Scroll to bottom, new messages")
+            .accessibilityHint("Scrolls to the latest messages")
             .padding(.bottom, 120)
-            .transition(.opacity.combined(with: .move(edge: .bottom)))
+            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
         }
     }
 
@@ -466,7 +505,7 @@ struct ChatScreen: View {
                     .frame(maxHeight: 220)
             }
             .frame(width: 240)
-            .transition(.move(edge: .leading))
+            .transition(reduceMotion ? .opacity : .move(edge: .leading))
 
             Rectangle()
                 .fill(Color.white.opacity(0.06))
@@ -518,7 +557,7 @@ struct ChatScreen: View {
                 modelManager: modelManager,
                 onClose: { showComparison = false }
             )
-            .transition(.move(edge: .bottom).combined(with: .opacity))
+            .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
         }
     }
 
@@ -544,7 +583,7 @@ struct ChatScreen: View {
                 trinityContext: trinityCtx
             )
             .padding(.horizontal, 60)
-            .transition(.opacity.combined(with: .move(edge: .bottom)))
+            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
         }
     }
 
@@ -1152,6 +1191,7 @@ struct ChatScreen: View {
                             .foregroundStyle(TrinityTheme.statusError.opacity(0.7))
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss rate limit warning")
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 6)
@@ -1178,6 +1218,7 @@ struct ChatScreen: View {
                             .foregroundStyle(TrinityTheme.golden.opacity(0.7))
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss rate limit warning")
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 6)
@@ -1189,6 +1230,56 @@ struct ChatScreen: View {
             // Auto-reset when quota recovers (above 50) or data becomes unavailable (nil = fresh state)
             if newValue == nil || (newValue ?? 0) >= 50 {
                 rateLimitDismissed = false
+            }
+        }
+    }
+
+    private var budgetWarningBar: some View {
+        Group {
+            let cost = networkLog.todayCostEstimate()
+            let budget = networkLog.dailyCostBudget
+            let pct = Int((cost / budget) * 100)
+
+            if networkLog.isBudgetExceeded && !budgetWarningDismissed {
+                HStack(spacing: 8) {
+                    Text("\u{1F6AB} Daily budget exceeded: $\(String(format: "%.2f", cost)) / $\(String(format: "%.2f", budget)) \u{2014} consider switching to cheaper model")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(TrinityTheme.statusError)
+                    Spacer()
+                    Button {
+                        budgetWarningDismissed = true
+                    } label: {
+                        Text("\u{00D7}")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(TrinityTheme.statusError.opacity(0.7))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss cost warning")
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .background(TrinityTheme.statusError.opacity(0.15))
+                .padding(.horizontal, 60)
+            } else if networkLog.isBudgetWarning && !budgetWarningDismissed {
+                HStack(spacing: 8) {
+                    Text("\u{26A0}\u{FE0F} Daily spend: $\(String(format: "%.2f", cost)) / $\(String(format: "%.2f", budget)) (\(pct)%)")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(TrinityTheme.golden)
+                    Spacer()
+                    Button {
+                        budgetWarningDismissed = true
+                    } label: {
+                        Text("\u{00D7}")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(TrinityTheme.golden.opacity(0.7))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss cost warning")
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .background(TrinityTheme.golden.opacity(0.15))
+                .padding(.horizontal, 60)
             }
         }
     }
@@ -1225,6 +1316,8 @@ struct ChatScreen: View {
                 }
                 .buttonStyle(.plain)
                 .help("Attach file (⌘O)")
+                .accessibilityLabel("Attach file")
+                .accessibilityHint("Opens file picker to attach a file")
 
                 Button { showShortcuts.toggle() } label: {
                     Image(systemName: "keyboard")
@@ -1233,6 +1326,7 @@ struct ChatScreen: View {
                 }
                 .buttonStyle(.plain)
                 .help("Shortcuts (⌘/)")
+                .accessibilityLabel("Keyboard shortcuts")
 
                 Button { toggleVoiceInput() } label: {
                     Image(systemName: isRecording ? "mic.fill" : "mic")
@@ -1241,6 +1335,8 @@ struct ChatScreen: View {
                 }
                 .buttonStyle(.plain)
                 .help("Voice input")
+                .accessibilityLabel(isRecording ? "Stop recording" : "Voice input")
+                .accessibilityHint(isRecording ? "Stops voice recording" : "Starts voice input")
 
                 // Estimated cost of next message
                 if let costStr = estimatedCostString, !client.isStreaming {
@@ -1257,7 +1353,7 @@ struct ChatScreen: View {
                     Image(systemName: "checkmark")
                         .font(.system(size: 10, weight: .bold))
                         .foregroundStyle(TrinityTheme.accent)
-                        .transition(.opacity.combined(with: .scale))
+                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale))
                 }
                 // Draft saved indicator + character counter
                 if showDraftSaved && !showSentConfirmation && !client.isStreaming {
@@ -1294,6 +1390,8 @@ struct ChatScreen: View {
                         .font(.system(size: 24))
                         .foregroundStyle(TrinityTheme.accent)
                 }
+                .accessibilityLabel("Stop generation")
+                .accessibilityHint("Stops the current response generation")
             } else {
                 Button(action: { send() }) {
                     ZStack {
@@ -1306,6 +1404,8 @@ struct ChatScreen: View {
                     }
                 }
                 .disabled(input.isEmpty)
+                .accessibilityLabel("Send message")
+                .accessibilityHint("Sends the current message")
                 .popover(isPresented: $showModelPopover) {
                     VStack(spacing: 4) {
                         Text("Send with model")
@@ -1405,6 +1505,8 @@ struct ChatScreen: View {
             .menuStyle(.borderlessButton)
             .fixedSize()
             .help("Effort level: controls reasoning depth")
+            .accessibilityLabel("Effort level, currently \(effortLevel.rawValue)")
+            .accessibilityHint("Changes reasoning depth")
 
             // Style preset picker
             Menu {
@@ -1437,6 +1539,7 @@ struct ChatScreen: View {
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
+            .accessibilityLabel("Style preset, currently \(stylePreset.rawValue)")
 
             ContextMeter(tokens: estimatedTokens)
         }
@@ -1898,6 +2001,7 @@ struct ConnectionStatusBar: View {
     @ObservedObject var client: ChatClient
     @StateObject private var networkLog = NetworkLog.shared
     @StateObject private var networkMonitor = NetworkMonitor.shared
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var isOnline: Bool? = nil  // nil = checking
     @State private var showFailover = false
 
@@ -1924,7 +2028,7 @@ struct ConnectionStatusBar: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 5)
                 .background(TrinityTheme.statusError.opacity(0.12))
-                .transition(.move(edge: .top).combined(with: .opacity))
+                .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
 
             // Reconnected toast
@@ -1940,7 +2044,7 @@ struct ConnectionStatusBar: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 4)
                 .background(TrinityTheme.statusOK.opacity(0.08))
-                .transition(.move(edge: .top).combined(with: .opacity))
+                .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
 
             // Failover chain notification
@@ -1987,7 +2091,7 @@ struct ConnectionStatusBar: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 5)
                 .background(TrinityTheme.accent.opacity(0.08))
-                .transition(.move(edge: .top).combined(with: .opacity))
+                .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
 
             // Offline warning for selected provider
@@ -2143,6 +2247,7 @@ struct ContextMeter: View {
 // MARK: - Sticky Context Bar (always visible at top of chat)
 
 struct ContextBar: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let tokens: Int
     var onCompact: (() -> Void)? = nil
     private let maxTokens = 180_000
@@ -2199,7 +2304,7 @@ struct ContextBar: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                    .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
                 }
             }
             .padding(.horizontal, 60)
@@ -2313,6 +2418,8 @@ struct ModelPicker: View {
         }
         .menuStyle(.borderlessButton)
         .fixedSize()
+        .accessibilityLabel("Select AI model, currently \(modelManager.selectedModel.displayName)")
+        .accessibilityHint("Opens model selection menu")
     }
 }
 
@@ -2362,6 +2469,16 @@ struct MessageRow: View {
             return String(format: "%.1fK", Double(estimatedTokens) / 1000.0)
         }
         return "\(estimatedTokens)"
+    }
+
+    /// Word count for reading time display
+    private var wordCount: Int {
+        message.text.split(separator: " ").count
+    }
+
+    /// Estimated reading time in minutes (250 wpm average)
+    private var readingTimeMinutes: Int {
+        max(1, Int(ceil(Double(wordCount) / 250.0)))
     }
 
     var body: some View {
@@ -2502,6 +2619,17 @@ struct MessageRow: View {
                     // Branch navigator (when assistant response has alternatives)
                     if message.branchID != nil, let threadID = store.activeThreadID {
                         BranchNavigator(message: message, store: store, threadID: threadID)
+                    }
+
+                    // Reading time (long assistant messages only)
+                    if message.role == .assistant, !client.isStreaming, wordCount > 200 {
+                        HStack(spacing: 4) {
+                            Image(systemName: "text.alignleft")
+                            Text("\(wordCount) words · \(readingTimeMinutes) min read")
+                        }
+                        .font(.caption2)
+                        .foregroundStyle(TrinityTheme.textMuted)
+                        .opacity(0.5)
                     }
 
                     // Action toolbar (only for non-empty assistant messages)
@@ -3493,6 +3621,8 @@ struct BranchNavigator: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(currentIndex <= 0)
+                .accessibilityLabel("Previous branch")
+                .accessibilityHint("Shows the previous response branch")
 
                 Text("\(currentIndex + 1)/\(branchCount)")
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
@@ -3508,6 +3638,8 @@ struct BranchNavigator: View {
                 }
                 .buttonStyle(.plain)
                 .disabled(currentIndex >= branchCount - 1)
+                .accessibilityLabel("Next branch, \(currentIndex + 1) of \(branchCount)")
+                .accessibilityHint("Shows the next response branch")
             }
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
@@ -3520,38 +3652,67 @@ struct BranchNavigator: View {
 // MARK: - Thinking Block View (Feature 1)
 
 struct ThinkingBlockView: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let text: String
     @State private var isExpanded = false
 
     var body: some View {
-        DisclosureGroup(isExpanded: $isExpanded) {
-            ScrollView {
-                Text(text)
-                    .font(.system(size: 12, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.6))
-                    .textSelection(.enabled)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(10)
+        VStack(alignment: .leading, spacing: 0) {
+            // Toggle header
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(TrinityTheme.accent)
+                    Text("\u{1F4AD} Thinking")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                    Text("(\(text.count) chars)")
+                        .font(.system(size: 10))
+                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
+                    Spacer()
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 8)
+                .contentShape(Rectangle())
             }
-            .frame(maxHeight: 200)
-        } label: {
-            HStack(spacing: 6) {
-                Image(systemName: "brain")
-                    .font(.system(size: 11))
-                Text("Reasoning")
-                    .font(.system(size: 12, weight: .medium))
-                Text("(\(text.count) chars)")
-                    .font(.system(size: 10))
-                    .foregroundStyle(Color.white.opacity(0.4))
+            .buttonStyle(.plain)
+            .accessibilityLabel(isExpanded ? "Hide thinking process" : "Show thinking process")
+            .accessibilityHint(isExpanded ? "Collapses the thinking block" : "Expands the thinking block")
+
+            // Collapsible body
+            if isExpanded {
+                ScrollView {
+                    Text(text)
+                        .font(.system(size: 12, design: .monospaced))
+                        .foregroundStyle(TrinityTheme.textPrimary.opacity(0.7))
+                        .textSelection(.enabled)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                }
+                .frame(maxHeight: 300)
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
             }
-            .foregroundStyle(Color.white.opacity(0.5))
         }
-        .padding(8)
-        .background(Color.white.opacity(0.03))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .background(TrinityTheme.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+            // Left accent border (blockquote style)
+            HStack(spacing: 0) {
+                RoundedRectangle(cornerRadius: 1)
+                    .fill(TrinityTheme.accent.opacity(0.6))
+                    .frame(width: 2)
+                Spacer()
+            }
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
+                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
         )
     }
 }
@@ -3661,6 +3822,7 @@ struct BuildErrorBanner: View {
 // MARK: - Memory Proposal Card (Feature 8)
 
 struct MemoryProposalCard: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let memories: [MemoryEntry]
     var onAccept: (MemoryEntry) -> Void
     var onDismiss: (MemoryEntry) -> Void
@@ -3712,7 +3874,7 @@ struct MemoryProposalCard: View {
             RoundedRectangle(cornerRadius: 10)
                 .stroke(TrinityTheme.purple.opacity(0.2), lineWidth: 1)
         )
-        .transition(.opacity.combined(with: .move(edge: .bottom)))
+        .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
     }
 }
 
@@ -4320,19 +4482,21 @@ struct SpinnerVerb: View {
 // MARK: - Queen Thinking Indicator
 
 struct QueenThinkingIndicator: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var opacity: Double = 0.3
 
     var body: some View {
         HStack(spacing: 6) {
             Text("\u{25CF}\u{25CF}\u{25CF}")
                 .foregroundColor(TrinityTheme.accent)
-                .opacity(opacity)
+                .opacity(reduceMotion ? 0.7 : opacity)
             Text("Queen is thinking...")
                 .foregroundColor(TrinityTheme.textMuted)
                 .italic()
                 .font(.caption)
         }
         .task {
+            guard !reduceMotion else { return }
             withAnimation(.easeInOut(duration: 0.75).repeatForever(autoreverses: true)) {
                 opacity = 1.0
             }

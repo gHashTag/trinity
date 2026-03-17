@@ -254,22 +254,12 @@ struct MarkdownTextView: View {
 
         case .code(let code, let lang):
             VStack(alignment: .leading, spacing: 0) {
-                // Language badge + copy button
                 if let lang, !lang.isEmpty {
                     HStack {
                         Text(lang)
                             .font(.system(size: 11, weight: .medium, design: .monospaced))
                             .foregroundStyle(TrinityTheme.accent)
                         Spacer()
-                        Button {
-                            NSPasteboard.general.clearContents()
-                            NSPasteboard.general.setString(code, forType: .string)
-                        } label: {
-                            Image(systemName: "doc.on.doc")
-                                .font(.system(size: 11))
-                                .foregroundStyle(TrinityTheme.textMuted)
-                        }
-                        .buttonStyle(.plain)
                     }
                     .padding(.horizontal, 12)
                     .padding(.top, 8)
@@ -285,6 +275,10 @@ struct MarkdownTextView: View {
             }
             .background(Color(hex: 0x1A1A1A))
             .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(alignment: .topTrailing) {
+                CodeCopyButton(code: code)
+                    .padding(8)
+            }
             .padding(.vertical, 4)
 
         case .taskItem(let checked, let text):
@@ -473,6 +467,40 @@ struct MarkdownTextView: View {
         let urlEnd = trimmed.index(before: trimmed.endIndex)
         let url = String(trimmed[urlStart..<urlEnd])
         return ImageMatch(alt: alt, url: url)
+    }
+}
+
+// MARK: - Code Copy Button
+
+private struct CodeCopyButton: View {
+    let code: String
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var copied = false
+    @State private var isHovering = false
+
+    var body: some View {
+        Button {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(code, forType: .string)
+            copied = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                copied = false
+            }
+        } label: {
+            Image(systemName: copied ? "checkmark" : "doc.on.doc")
+                .font(.system(size: 12))
+                .foregroundStyle(copied ? TrinityTheme.accent : TrinityTheme.textMuted)
+                .contentTransition(.symbolEffect(.replace))
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(copied ? "Code copied" : "Copy code block")
+        .accessibilityHint("Copies the code to clipboard")
+        .opacity(isHovering || copied ? 1.0 : 0.0)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.15), value: isHovering)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.15), value: copied)
+        .onHover { hovering in
+            isHovering = hovering
+        }
     }
 }
 

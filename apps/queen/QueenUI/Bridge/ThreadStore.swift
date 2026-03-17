@@ -8,6 +8,7 @@ final class ThreadStore: ObservableObject {
     @Published var isLoaded: Bool = false
     @Published var recentlyDeleted: ChatThread? = nil
     @Published var showUndoToast: Bool = false
+    @Published var showArchiveSuggestion: Bool = false
 
     private var undoTask: Task<Void, Never>? = nil
 
@@ -772,15 +773,45 @@ final class ThreadStore: ObservableObject {
         }
     }
 
-    /// Auto-cleanup: delete threads older than N days (default 30)
+    /// Auto-cleanup: suggest archiving threads older than 90 days instead of deleting
     func cleanupOldThreads() {
-        let days = UserDefaults.standard.integer(forKey: "sessionCleanupDays")
-        let maxAge = days > 0 ? days : 30
-        let cutoff = Calendar.current.date(byAdding: .day, value: -maxAge, to: Date()) ?? Date()
-
-        let old = threads.filter { $0.updatedAt < cutoff && !$0.isPinned }
-        for thread in old {
-            delete(thread)
+        if !staleThreads.isEmpty {
+            showArchiveSuggestion = true
         }
+    }
+
+    // MARK: - Archive
+
+    /// Threads older than 90 days that are not pinned and not already archived
+    var staleThreads: [ChatThread] {
+        let cutoff = Calendar.current.date(byAdding: .day, value: -90, to: Date()) ?? Date()
+        return threads.filter { $0.updatedAt < cutoff && !$0.isPinned && !$0.isArchived }
+    }
+
+    /// Archived threads
+    var archivedThreads: [ChatThread] {
+        threads.filter { $0.isArchived }.sorted { $0.updatedAt > $1.updatedAt }
+    }
+
+    func archiveThread(_ threadID: UUID) {
+        guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        threads[idx].isArchived = true
+        save(threads[idx])
+    }
+
+    func unarchiveThread(_ threadID: UUID) {
+        guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        threads[idx].isArchived = false
+        save(threads[idx])
+    }
+
+    func archiveAllStale() {
+        for thread in staleThreads {
+            if let idx = threads.firstIndex(where: { $0.id == thread.id }) {
+                threads[idx].isArchived = true
+                save(threads[idx])
+            }
+        }
+        showArchiveSuggestion = false
     }
 }
