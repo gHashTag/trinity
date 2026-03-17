@@ -254,7 +254,7 @@ var cache_mutex = std.Thread.Mutex{};
 
 /// Discovery options for benchmarking and cache control
 pub const DiscoveryOptions = struct {
-    use_cache: bool = true,
+    use_cache: bool = false,
     benchmark: bool = false,
 };
 
