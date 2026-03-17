@@ -7,7 +7,7 @@ path = "src/tri-api"
 min_core_version = "1.0.0"
 status = "experimental"
 description = "Claude Code replacement agentic loop and TUI"
-capabilities = ["deinit", "check", "loadConfig", "init", "deinit"]
+capabilities = ["init", "deinit", "check", "loadConfig", "parseResponse"]
 files = 12
 tests = 23
 owner = "agent:ralph"
@@ -17,7 +17,8 @@ scope = "infra"
 type = "backend"
 
 [contributes]
-commands = ["deinit", "check", "loadConfig"]
+commands = ["check", "loadConfig"]
+exports = ["loadSystemPrompt", "appendMemory", "parseResponse", "writeToolDefinitions", "writeToolResult"]
 tri_subcommands = []
 events = []
 binaries = ["tri-api"]

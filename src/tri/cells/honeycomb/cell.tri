@@ -1,14 +1,14 @@
 [cell]
 id = "trinity.tri.honeycomb"
 name = "Honeycomb Cell System"
-version = "9.0.0"
+version = "10.0.0"
 kind = "virtual-sub"
 path = "src/tri"
 parent = "trinity.tri"
 status = "stable"
 description = "Cell modularity system: create, audit, score, deps, prune, cycles, dispatch"
 capabilities = ["cells", "modularity", "deps", "score"]
-tests = 24
+tests = 26
 owner = "agent:ralph"
 
 [tags]
