@@ -53,7 +53,12 @@ struct AIModel: Identifiable, Codable, Equatable, Hashable {
 class ModelManager: ObservableObject {
     @Published var availableModels: [AIModel] = []
     @Published var selectedModel: AIModel
+    @Published var ollamaAvailable: Bool = false
+    /// Set when cloud-to-local fallback fires; UI can display inline notice
+    @Published var cloudFallbackNotice: String? = nil
     let env: [String: String]
+
+    private var ollamaDetectionTask: Task<Void, Never>?
 
     init() {
         let loaded = EnvLoader.load()
@@ -94,6 +99,67 @@ class ModelManager: ObservableObject {
             self.selectedModel = match
         } else {
             self.selectedModel = models.first ?? AIModel.allModels[0]
+        }
+
+        // Start periodic Ollama detection
+        startOllamaDetection()
+    }
+
+    /// Probe localhost:11434 for Ollama availability and discover models
+    func detectOllama() async -> Bool {
+        let base = UserDefaults.standard.string(forKey: "ollamaURL") ?? "http://localhost:11434"
+        guard let url = URL(string: base + "/api/tags") else { return false }
+        var request = URLRequest(url: url)
+        request.timeoutInterval = 2
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200 else { return false }
+            guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let models = json["models"] as? [[String: Any]] else { return false }
+            let names = models.compactMap { $0["name"] as? String }
+            guard !names.isEmpty else { return false }
+
+            // Update available Ollama models on main actor
+            UserDefaults.standard.set(true, forKey: "ollamaEnabled")
+            UserDefaults.standard.set(names, forKey: "ollamaModels")
+            self.availableModels.removeAll { $0.provider == .ollama }
+            for name in names {
+                self.availableModels.append(AIModel(id: "ollama:\(name)", displayName: name, provider: .ollama))
+            }
+            self.ollamaAvailable = true
+            return true
+        } catch {
+            self.ollamaAvailable = false
+            return false
+        }
+    }
+
+    /// Start background task that probes Ollama every 60 seconds
+    private func startOllamaDetection() {
+        ollamaDetectionTask = Task { [weak self] in
+            while !Task.isCancelled {
+                guard let self else { return }
+                _ = await self.detectOllama()
+                try? await Task.sleep(for: .seconds(60))
+            }
+        }
+    }
+
+    /// Best available Ollama model (prefers larger models)
+    func bestOllamaModel() -> AIModel? {
+        availableModels.first(where: { $0.provider == .ollama })
+    }
+
+    /// True when all cloud providers are down or circuit-broken
+    var allCloudDown: Bool {
+        let cloudModels = availableModels.filter { $0.provider != .ollama && !$0.isImageModel }
+        guard !cloudModels.isEmpty else { return true }
+        let health = NetworkLog.shared.providerHealth
+        return cloudModels.allSatisfy { model in
+            let provName = model.provider.rawValue
+            let circuitOpen = NetworkLog.shared.isCircuitOpen(provider: provName)
+            let isDown = health[provName].map { !$0.isUp } ?? false
+            return circuitOpen || isDown
         }
     }
 
@@ -170,22 +236,29 @@ class ModelManager: ObservableObject {
 
     /// Refresh Ollama model list dynamically
     func refreshOllamaModels() {
-        guard UserDefaults.standard.bool(forKey: "ollamaEnabled") else { return }
         let base = UserDefaults.standard.string(forKey: "ollamaURL") ?? "http://localhost:11434"
         guard let url = URL(string: base + "/api/tags") else { return }
         var request = URLRequest(url: url)
         request.timeoutInterval = 5
-        URLSession.shared.dataTask(with: request) { [weak self] data, _, _ in
-            guard let data,
-                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                  let models = json["models"] as? [[String: Any]] else { return }
-            let names = models.compactMap { $0["name"] as? String }
-            UserDefaults.standard.set(names, forKey: "ollamaModels")
-            DispatchQueue.main.async {
-                // Remove old Ollama models and add fresh ones
-                self?.availableModels.removeAll { $0.provider == .ollama }
-                for name in names {
-                    self?.availableModels.append(AIModel(id: "ollama:\(name)", displayName: name, provider: .ollama))
+        URLSession.shared.dataTask(with: request) { [weak self] data, _, error in
+            let hasModels: Bool
+            if let data,
+               let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let models = json["models"] as? [[String: Any]] {
+                let names = models.compactMap { $0["name"] as? String }
+                UserDefaults.standard.set(names, forKey: "ollamaModels")
+                UserDefaults.standard.set(true, forKey: "ollamaEnabled")
+                hasModels = !names.isEmpty
+                DispatchQueue.main.async {
+                    self?.availableModels.removeAll { $0.provider == .ollama }
+                    for name in names {
+                        self?.availableModels.append(AIModel(id: "ollama:\(name)", displayName: name, provider: .ollama))
+                    }
+                    self?.ollamaAvailable = hasModels
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self?.ollamaAvailable = false
                 }
             }
         }.resume()
@@ -201,7 +274,8 @@ class ModelManager: ObservableObject {
     var xaiKey: String? { env["XAI_API_KEY"] }
 
     /// Auto-failover: if selected provider is down or circuit-open, pick best available alternative
-    /// Tries ALL providers, scored by recent TTFB (fastest first)
+    /// Tries ALL providers, scored by recent TTFB (fastest first).
+    /// Falls back to Ollama as last resort when all cloud providers are unavailable.
     func failoverModel() -> AIModel? {
         let health = NetworkLog.shared.providerHealth
         let currentProvider = selectedModel.provider.rawValue
@@ -210,9 +284,10 @@ class ModelManager: ObservableObject {
         let circuitOpen = NetworkLog.shared.isCircuitOpen(provider: currentProvider)
         if !circuitOpen, let status = health[currentProvider], status.isUp { return nil }
 
-        // Find all candidates whose provider is up, circuit is closed, and has a key
+        // Find all cloud candidates whose provider is up, circuit is closed, and has a key
         let candidates = availableModels.filter { model in
             model.id != selectedModel.id &&
+            model.provider != .ollama &&
             !model.isImageModel &&
             !NetworkLog.shared.isCircuitOpen(provider: model.provider.rawValue) &&
             (health[model.provider.rawValue]?.isUp ?? true)
@@ -226,18 +301,29 @@ class ModelManager: ObservableObject {
         }
         .sorted { $0.1 < $1.1 }
 
-        return scored.first?.0
+        if let best = scored.first?.0 { return best }
+
+        // Last resort: if Ollama is available and all cloud is down, use local model
+        if ollamaAvailable, let ollama = bestOllamaModel() {
+            cloudFallbackNotice = "Cloud unavailable, using local model: \(ollama.displayName)"
+            return ollama
+        }
+
+        return nil
     }
 
     /// Full failover chain: returns ALL available alternatives sorted by speed.
     /// Excludes providers with open circuit breakers.
+    /// Ollama models appear at the end as last-resort local fallback.
     func failoverChain(excluding: Set<String> = []) -> [AIModel] {
         let health = NetworkLog.shared.providerHealth
         let excluded = excluding.union([selectedModel.id])
 
-        return availableModels
+        // Cloud models first, sorted by TTFB
+        let cloudModels = availableModels
             .filter { model in
                 !excluded.contains(model.id) &&
+                model.provider != .ollama &&
                 !model.isImageModel &&
                 !NetworkLog.shared.isCircuitOpen(provider: model.provider.rawValue) &&
                 (health[model.provider.rawValue]?.isUp ?? true)
@@ -249,6 +335,15 @@ class ModelManager: ObservableObject {
                     NetworkLog.shared.recentTTFB(for: b.id).reduce(0, +) / NetworkLog.shared.recentTTFB(for: b.id).count
                 return aAvg < bAvg
             }
+
+        // Append Ollama models at the end (local fallback)
+        let ollamaModels = ollamaAvailable ? availableModels.filter { model in
+            !excluded.contains(model.id) &&
+            model.provider == .ollama &&
+            !model.isImageModel
+        } : []
+
+        return cloudModels + ollamaModels
     }
 
     /// Parse rate limit headers from HTTP response

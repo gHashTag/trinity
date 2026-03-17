@@ -124,13 +124,14 @@ class NetworkLog: ObservableObject {
         }
     }
 
-    /// Check health of all providers
+    /// Check health of all providers (including local Ollama)
     func checkAllProviders() {
         let endpoints: [(String, String)] = [
             ("Anthropic", "https://api.anthropic.com"),
             ("z.ai", "https://api.z.ai"),
             ("Perplexity", "https://api.perplexity.ai"),
             ("xAI", "https://api.x.ai"),
+            ("Ollama", (UserDefaults.standard.string(forKey: "ollamaURL") ?? "http://localhost:11434")),
         ]
 
         for (name, urlStr) in endpoints {
