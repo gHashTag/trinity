@@ -1,0 +1,37 @@
+[cell]
+id = "trinity.tri.memory"
+name = "Unified Memory"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Unified agent memory: heartbeats, learnings, episodes, rules via JSONL store"
+capabilities = ["memory", "search", "gc"]
+tests = 12
+owner = "agent:phoenix-core"
+
+[tags]
+scope = "infra"
+type = "agent"
+
+[source]
+file_patterns = ["tri_memory.zig"]
+
+[contributes]
+commands = ["memory list", "memory read", "memory write", "memory search", "memory gc", "memory stats"]
+exports = ["write", "read", "search", "gc", "writeHeartbeat", "writeLearning", "writeEpisode", "latestHeartbeat"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = true
+signature = "sha256:0000000000000000000000000000000000000000000000000000000000000000"
