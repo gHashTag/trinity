@@ -15,3 +15,4 @@
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/string_e8.zig","action":"generated_file_blocked","blocked":true}
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/string_e8.zig","action":"generated_file_blocked","blocked":true}
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/tri_dev.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/tri/swe_arena.zig","action":"generated_file_blocked","blocked":true}
