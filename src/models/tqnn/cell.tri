@@ -18,21 +18,22 @@ type = "library"
 
 [contributes]
 commands = []
-exports = ["forward", "createTQNN", "benchmark"]
+exports = ["default", "run_layer_benchmark", "run_hybrid_benchmark", "run_scaling_benchmark", "print_benchmark_results"]
 tri_subcommands = []
 events = []
 binaries = []
 
 [dependencies]
+trinity.quantum = "^1.0.0"
 trinity.vsa = ">=0.1.0"
 
 [permissions]
-level = "L1"
+level = "L0"
 filesystem = "read"
 network = "none"
 process = "none"
 ffi = "none"
-concurrency = "yes"
+concurrency = "none"
 
 [security]
 signed = "true"

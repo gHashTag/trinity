@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["strongCoupling", "weinbergAngle", "cabibboAngle", "protonElectronRatio", "cmbTemperature"]
 tri_subcommands = []
 events = []
 binaries = []

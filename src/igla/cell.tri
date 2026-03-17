@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["start", "stop", "record", "recordBinary", "recordScalar"]
 tri_subcommands = []
 events = []
 binaries = []

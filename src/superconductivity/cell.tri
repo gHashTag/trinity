@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["criticalTemperature", "cooperPairEnergy", "isotopeEffect", "densityOfStatesCoupling", "cuprateCriticalTemperature"]
 tri_subcommands = []
 events = []
 binaries = []

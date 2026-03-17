@@ -23,6 +23,8 @@ events = []
 binaries = ["tri"]
 
 [dependencies]
+trinity.superconductivity = "^1.0.0"
+trinity.monopoles = "^1.0.0"
 trinity.tri.workflow = "^1.0.0"
 trinity.bench = "^1.0.0"
 trinity.tri.math = "^1.0.0"

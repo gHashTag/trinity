@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = ["main", "analyzeCodebase", "generateSpec"]
+exports = ["glm", "claude", "openai", "loadFromEnv", "chat"]
 tri_subcommands = []
 events = []
 binaries = []
@@ -26,12 +26,12 @@ binaries = []
 [dependencies]
 
 [permissions]
-level = "L0"
-filesystem = "read"
-network = "none"
-process = "none"
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
 ffi = "none"
-concurrency = "none"
+concurrency = "yes"
 
 [security]
 signed = "true"

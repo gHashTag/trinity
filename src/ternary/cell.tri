@@ -20,7 +20,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = ["tritAnd", "tritOr", "tritNot", "tritMajority", "tekumFromInt", "tekumToInt", "trinityScore"]
+exports = ["ln", "log2", "informationDensity", "optimalBase", "ternaryEfficiencyRatio"]
 tri_subcommands = []
 events = []
 binaries = []

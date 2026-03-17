@@ -18,12 +18,13 @@ type = "backend"
 
 [contributes]
 commands = ["check", "loadConfig"]
-exports = ["loadSystemPrompt", "appendMemory", "parseResponse", "writeToolDefinitions", "writeToolResult"]
+exports = ["check", "loadConfig", "serve", "fromString", "executeDynamic"]
 tri_subcommands = []
 events = []
 binaries = ["tri-api"]
 
 [dependencies]
+trinity.tri.memory = "^1.0.0"
 
 [permissions]
 level = "L2"

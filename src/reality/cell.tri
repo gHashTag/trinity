@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = ["displayPyramid", "displayCompactPyramid", "displayLevelFormulas"]
+exports = ["formulaCount", "startFormulaId", "displayName", "emoji", "color"]
 tri_subcommands = []
 events = []
 binaries = []
@@ -26,8 +26,8 @@ binaries = []
 [dependencies]
 
 [permissions]
-level = "L0"
-filesystem = "read"
+level = "L1"
+filesystem = "write"
 network = "none"
 process = "none"
 ffi = "none"

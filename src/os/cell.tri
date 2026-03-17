@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["isReady", "bootKernel", "bootQuantumLayer", "bootKoscheiUniverse", "bootTemporalEnginePhase"]
 tri_subcommands = []
 events = []
 binaries = []

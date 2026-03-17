@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["phaseDescription", "aminoAcidStabilitySeconds", "rnaHalfLifeSeconds", "chiralityBias", "peptideBondEnergyKJmol"]
 tri_subcommands = []
 events = []
 binaries = []

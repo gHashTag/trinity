@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["getHue", "getLabel", "getRGB", "getSymbol", "assessTruth"]
 tri_subcommands = []
 events = []
 binaries = []

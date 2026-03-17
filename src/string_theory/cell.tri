@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["effectiveDimensions", "stringTensionPhi", "dilatonVEV", "phiDimensionReduction", "compactificationModuli"]
 tri_subcommands = []
 events = []
 binaries = []

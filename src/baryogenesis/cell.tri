@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["baryonAsymmetry", "leptogenesisAsymmetry", "sakharovFactor", "sphaleronRate", "baryonNumberY"]
 tri_subcommands = []
 events = []
 binaries = []

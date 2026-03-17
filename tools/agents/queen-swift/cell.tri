@@ -21,10 +21,10 @@ tools = "Read,Edit,Write,Bash,Grep,Glob"
 isolation = "worktree"
 
 [permissions]
-level = "L2"
-filesystem = "write"
+level = "L0"
+filesystem = "read"
 network = "none"
-process = "spawn"
+process = "none"
 ffi = "none"
 concurrency = "none"
 

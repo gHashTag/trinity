@@ -18,7 +18,7 @@ type = "agent"
 
 [contributes]
 commands = ["main", "detectPlatform", "detectArch"]
-exports = ["detectPlatform", "detectArch", "detectCPUCores", "detectMemoryMB", "calculateRewards"]
+exports = ["trit_and", "trit_or", "trit_not", "trit_xor", "verifyTrinity"]
 tri_subcommands = []
 events = []
 

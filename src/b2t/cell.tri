@@ -20,7 +20,7 @@ type = "library"
 
 [contributes]
 commands = ["convert", "batch"]
-exports = ["main", "writeToFile", "disassembleTrit", "detectFormat", "load"]
+exports = ["get", "set", "fromFloatWeights", "matmul", "countNonZero"]
 tri_subcommands = []
 events = []
 binaries = ["b2t"]

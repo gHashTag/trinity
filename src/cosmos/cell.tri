@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["totalDensityParameter", "matterDensityParameter", "darkEnergyDensityParameter", "curvatureDensityParameter", "radiationDensityParameter"]
 tri_subcommands = []
 events = []
 binaries = []
