@@ -75,6 +75,8 @@ final class ThreadStore: ObservableObject {
         if let deleted = recentlyDeleted {
             let url = storeURL.appendingPathComponent("\(deleted.id).json")
             try? FileManager.default.removeItem(at: url)
+            // Clean up draft for the deleted thread
+            UserDefaults.standard.removeObject(forKey: "draft_\(deleted.id)")
             // Clean up branch keys for all messages in the deleted thread
             for msg in deleted.messages {
                 if let branchID = msg.branchID {
@@ -481,6 +483,12 @@ final class ThreadStore: ObservableObject {
     func moveThread(_ threadID: UUID, to folderID: UUID?) {
         guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
         threads[idx].folderID = folderID
+        save(threads[idx])
+    }
+
+    func setColorLabel(_ color: String?, for threadID: UUID) {
+        guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        threads[idx].colorLabel = color
         save(threads[idx])
     }
 

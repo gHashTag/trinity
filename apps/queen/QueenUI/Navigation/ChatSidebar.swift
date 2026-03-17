@@ -48,6 +48,7 @@ struct ChatSidebar: View {
     @State private var debouncedQuery = ""
     @State private var searchTask: Task<Void, Never>? = nil
     @State private var showArchiveSection = false
+    @State private var showBookmarks = false
     @State private var filterDateRange: DateFilter = .all
     @State private var filterModel: String? = nil
     @AppStorage("threadSortOrder") private var sortOrder: String = "date"
@@ -334,25 +335,18 @@ struct ChatSidebar: View {
                 .help("New folder")
                 .accessibilityLabel("Create new folder")
 
-                if !store.allBookmarks().isEmpty {
-                    Menu {
-                        ForEach(store.allBookmarks().prefix(10), id: \.message.id) { item in
-                            Button {
-                                store.activeThreadID = item.thread.id
-                            } label: {
-                                Text(String(item.message.text.prefix(60)))
-                            }
-                        }
-                    } label: {
-                        Image(systemName: "bookmark.fill")
-                            .font(.system(size: 11))
-                            .foregroundStyle(TrinityTheme.golden)
-                            .padding(8)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        showBookmarks.toggle()
                     }
-                    .menuStyle(.borderlessButton)
-                    .frame(width: 28)
-                    .help("Bookmarks (\(store.allBookmarks().count))")
+                } label: {
+                    Image(systemName: showBookmarks ? "bookmark.fill" : "bookmark")
+                        .font(.system(size: 11))
+                        .foregroundStyle(showBookmarks ? TrinityTheme.golden : Color.white.opacity(store.allBookmarks().isEmpty ? 0.2 : 0.4))
+                        .padding(8)
                 }
+                .buttonStyle(.plain)
+                .help(store.allBookmarks().isEmpty ? "No bookmarks" : "Bookmarks (\(store.allBookmarks().count))")
             }
             .padding(.horizontal, 8)
             .padding(.bottom, 8)
@@ -372,6 +366,11 @@ struct ChatSidebar: View {
             Rectangle()
                 .fill(Color.white.opacity(0.06))
                 .frame(height: 1)
+
+            // Bookmarks panel
+            if showBookmarks {
+                bookmarksPanel
+            }
 
             // Tag filter chips + create
             ScrollView(.horizontal, showsIndicators: false) {
@@ -787,6 +786,147 @@ struct ChatSidebar: View {
         }
     }
 
+    // MARK: - Bookmarks Panel
+
+    /// Groups bookmarks by thread and returns (thread, messages) pairs sorted by most recent bookmark
+    private func groupedBookmarks() -> [(thread: ChatThread, messages: [ChatMessage])] {
+        let all = store.allBookmarks()
+        var grouped: [UUID: (thread: ChatThread, messages: [ChatMessage])] = [:]
+        for item in all {
+            if grouped[item.thread.id] != nil {
+                grouped[item.thread.id]!.messages.append(item.message)
+            } else {
+                grouped[item.thread.id] = (thread: item.thread, messages: [item.message])
+            }
+        }
+        return grouped.values
+            .sorted { ($0.messages.first?.timestamp ?? .distantPast) > ($1.messages.first?.timestamp ?? .distantPast) }
+    }
+
+    private var bookmarksPanel: some View {
+        VStack(spacing: 0) {
+            // Panel header
+            HStack(spacing: 6) {
+                Image(systemName: "bookmark.fill")
+                    .font(.system(size: 10))
+                    .foregroundStyle(TrinityTheme.golden)
+                Text("Bookmarks")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(TrinityTheme.textPrimary)
+                Spacer()
+                Text("\(store.allBookmarks().count)")
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(TrinityTheme.textMuted)
+                Button {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        showBookmarks = false
+                    }
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+
+            let groups = groupedBookmarks()
+
+            if groups.isEmpty {
+                // Empty state
+                VStack(spacing: 8) {
+                    Image(systemName: "bookmark.slash")
+                        .font(.system(size: 20))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                    Text("No bookmarked messages yet")
+                        .font(.system(size: 11))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 20)
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(groups, id: \.thread.id) { group in
+                            // Thread header
+                            HStack(spacing: 4) {
+                                Image(systemName: "bubble.left")
+                                    .font(.system(size: 8))
+                                    .foregroundStyle(Color.white.opacity(0.3))
+                                Text(group.thread.title)
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(Color.white.opacity(0.4))
+                                    .lineLimit(1)
+                                Spacer()
+                                Text("\(group.messages.count)")
+                                    .font(.system(size: 9, design: .monospaced))
+                                    .foregroundStyle(Color.white.opacity(0.2))
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.top, 8)
+                            .padding(.bottom, 2)
+
+                            // Bookmarked messages in this thread
+                            ForEach(group.messages) { msg in
+                                Button {
+                                    store.activeThreadID = group.thread.id
+                                    // Post notification to scroll to message
+                                    NotificationCenter.default.post(
+                                        name: .scrollToMessage,
+                                        object: nil,
+                                        userInfo: ["messageID": msg.id]
+                                    )
+                                } label: {
+                                    HStack(alignment: .top, spacing: 6) {
+                                        Image(systemName: "bookmark.fill")
+                                            .font(.system(size: 8))
+                                            .foregroundStyle(TrinityTheme.golden.opacity(0.6))
+                                            .padding(.top, 2)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(String(msg.text.prefix(80)))
+                                                .font(.system(size: 11))
+                                                .foregroundStyle(TrinityTheme.textPrimary)
+                                                .lineLimit(2)
+                                                .multilineTextAlignment(.leading)
+                                            Text(msg.timestamp, style: .relative)
+                                                .font(.system(size: 9))
+                                                .foregroundStyle(TrinityTheme.textMuted)
+                                        }
+                                        Spacer()
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 5)
+                                    .contentShape(Rectangle())
+                                }
+                                .buttonStyle(.plain)
+                                .contextMenu {
+                                    Button {
+                                        store.toggleBookmark(msg.id, in: group.thread.id)
+                                    } label: {
+                                        Label("Remove Bookmark", systemImage: "bookmark.slash")
+                                    }
+                                    Button {
+                                        store.activeThreadID = group.thread.id
+                                    } label: {
+                                        Label("Go to Thread", systemImage: "arrow.right.circle")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                .frame(maxHeight: 260)
+            }
+
+            Rectangle()
+                .fill(Color.white.opacity(0.06))
+                .frame(height: 1)
+        }
+        .background(TrinityTheme.bgCard.opacity(0.5))
+        .transition(.opacity.combined(with: .move(edge: .top)))
+    }
+
     private func filterPill(label: String, isActive: Bool) -> some View {
         HStack(spacing: 3) {
             Text(label)
@@ -908,6 +1048,7 @@ struct ChatSidebar: View {
                     }
                 }
             },
+            onSetColorLabel: { store.setColorLabel($0, for: thread.id) },
             folders: store.folders
         )
         .onHover { hovering in
@@ -1357,12 +1498,22 @@ struct ThreadRow: View {
     var onDuplicate: (() -> Void)? = nil
     var onShare: (() -> Void)? = nil
     var onArchive: (() -> Void)? = nil
+    var onSetColorLabel: ((String?) -> Void)? = nil
     var folders: [ThreadFolder] = []
 
     @State private var isHovered = false
     @State private var isRenaming = false
     @State private var renameText = ""
     @State private var showDeleteConfirm = false
+
+    static let labelColors: [String: Color] = [
+        "red": .red, "orange": .orange, "yellow": .yellow,
+        "green": .green, "blue": .blue, "purple": .purple,
+    ]
+    static let labelColorNames: [(String, Color)] = [
+        ("red", .red), ("orange", .orange), ("yellow", .yellow),
+        ("green", .green), ("blue", .blue), ("purple", .purple),
+    ]
 
     /// Preview text: first user message (truncated)
     private var previewText: String? {
@@ -1374,6 +1525,11 @@ struct ThreadRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 4) {
+                // Color label dot
+                if let label = thread.colorLabel, let c = Self.labelColors[label] {
+                    Circle().fill(c).frame(width: 6, height: 6)
+                }
+
                 // Pin indicator
                 if thread.isPinned {
                     Image(systemName: "pin.fill")
@@ -1520,6 +1676,18 @@ struct ThreadRow: View {
                 ForEach(["hslm", "fpga", "patent", "research", "sevo", "arena", "bug", "feature"], id: \.self) { tag in
                     Button("#\(tag)") { onAddTag(tag) }
                 }
+            }
+            Menu("Label") {
+                ForEach(Self.labelColorNames, id: \.0) { name, color in
+                    Button {
+                        onSetColorLabel?(name)
+                    } label: {
+                        Label(name.capitalized, systemImage: thread.colorLabel == name ? "checkmark.circle.fill" : "circle.fill")
+                    }
+                    .tint(color)
+                }
+                Divider()
+                Button("None") { onSetColorLabel?(nil) }
             }
             if !folders.isEmpty {
                 Menu("Move to Folder") {
