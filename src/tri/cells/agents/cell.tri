@@ -29,3 +29,7 @@ level = "L2"
 filesystem = "write"
 network = "external"
 process = "spawn"
+
+[security]
+signed = true
+signature = "sha256:72b0e4f52cc6dc61a9cc4840615b7cf235d5454e1bfb123752e41b468b8ad4c9"

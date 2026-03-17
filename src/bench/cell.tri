@@ -1,0 +1,35 @@
+[cell]
+id = "trinity.bench"
+name = "Benchmarks"
+version = "1.0.0"
+kind = "virtual"
+path = "src"
+status = "experimental"
+description = "Benchmarks, E2E tests, competitive REPL, SOTA report demo, evolved codex"
+capabilities = ["bench", "test", "report"]
+files = 6
+tests = 0
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "tool"
+
+[source]
+file_patterns = ["bench.zig", "bench_sparse.zig", "e2e_test.zig", "competitive_repl.zig", "sota_report_demo.zig", "evolved_codex.zig"]
+
+[contributes]
+commands = ["bench"]
+
+[dependencies]
+trinity.vsa = "^1.0.0"
+
+[permissions]
+level = "L1"
+filesystem = "write"
+network = "none"
+process = "none"
+
+[security]
+signed = "true"
+signature = "sha256:c59d3a676f8013d8bd032e767fa318e6921ce72fb00527929c0c8844b99bd104"

@@ -1,0 +1,34 @@
+[cell]
+id = "trinity.core-lib"
+name = "Core Library"
+version = "1.0.0"
+kind = "virtual"
+path = "src"
+status = "stable"
+description = "Core trinity imports: trinity.zig, sacred constants, hybrid, science, bigint, fpga MVP, search"
+capabilities = ["constants", "sacred", "hybrid", "science"]
+files = 9
+tests = 0
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "library"
+
+[source]
+file_patterns = ["trinity.zig", "sacred_constants.zig", "sacred_constants_reexport.zig", "constants.zig", "hybrid.zig", "science.zig", "bigint.zig", "trinity_fpga_mvp.zig", "trinity_search.zig"]
+
+[contributes]
+exports = ["trinity", "sacred_constants"]
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+
+[security]
+signed = "true"
+signature = "sha256:6b5d17aa51b63a1e70087e9dad00b28dfbbc8514493348adffe3f6e2af2987bf"

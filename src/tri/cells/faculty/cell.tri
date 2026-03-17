@@ -1,0 +1,35 @@
+[cell]
+id = "trinity.tri.faculty"
+name = "Faculty Board"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Faculty board: analysis, voice engine, phi poetry, three paths"
+capabilities = ["faculty", "voice", "poetry"]
+tests = 15
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "agent"
+
+[source]
+file_patterns = ["faculty*.zig", "phi_poetry.zig", "three_paths.zig", "voice_engine.zig", "analysis_engine.zig"]
+
+[contributes]
+commands = ["faculty"]
+exports = ["runFacultyCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "read"
+network = "none"
+process = "none"
+
+[security]
+signed = true
+signature = "sha256:550617f74b73e7e263ac30151e09c28b960575730e0a64f3fb08f63a88be81b6"

@@ -1,0 +1,37 @@
+[cell]
+id = "trinity.ml-forward"
+name = "ML Forward Pass"
+version = "1.0.0"
+kind = "virtual"
+path = "src"
+status = "experimental"
+description = "ML forward pass implementations: minimal forward, sequence HDC"
+capabilities = ["forward", "inference"]
+files = 2
+tests = 0
+owner = "agent:ralph"
+generated = true
+
+[tags]
+scope = "ml"
+type = "backend"
+
+[source]
+file_patterns = ["minimal_forward.zig", "sequence_hdc.zig"]
+
+[contributes]
+exports = ["minimal_forward", "sequence_hdc"]
+
+[dependencies]
+trinity.hslm = "^1.0.0"
+
+[permissions]
+level = "L1"
+filesystem = "read"
+network = "none"
+process = "none"
+concurrency = "yes"
+
+[security]
+signed = "true"
+signature = "sha256:76d1bdc5bece2ca4686986c7788c1195de6b4266e0f504a2f55c69bddc11c723"

@@ -1,0 +1,37 @@
+[cell]
+id = "trinity.vsa-ext"
+name = "VSA Extensions"
+version = "1.0.0"
+kind = "virtual"
+path = "src"
+status = "experimental"
+description = "VSA extensions: packed trit, packed VSA, parallel, sparse, SIMD AVX-512"
+capabilities = ["packed", "parallel", "sparse", "simd"]
+files = 5
+tests = 0
+owner = "agent:ralph"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[source]
+file_patterns = ["packed_trit.zig", "packed_vsa.zig", "parallel.zig", "sparse.zig", "simd_avx512.zig"]
+
+[contributes]
+exports = ["packed_trit", "packed_vsa", "parallel", "sparse"]
+
+[dependencies]
+trinity.vsa = "^1.0.0"
+
+[permissions]
+level = "L1"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "native"
+concurrency = "yes"
+
+[security]
+signed = "true"
+signature = "sha256:34881421bea9af2fccc84204a22c4055dd7e2c4a7204d66311975636d07f8cd3"
