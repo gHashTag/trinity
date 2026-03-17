@@ -1,0 +1,38 @@
+[cell]
+id = "trinity.superconductivity"
+name = "Superconductivity"
+version = "1.0.0"
+kind = "library"
+path = "src/superconductivity"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Room-temperature superconductivity phi-gamma predictions"
+capabilities = ["vsa", "superconductivity", "sacred-geometry"]
+files = 1
+tests = 24
+owner = "agent:ralph"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:dcbf3a2c938e135fadafeaea077d051e334bf5fca974299ae5b284020f6a0a79"

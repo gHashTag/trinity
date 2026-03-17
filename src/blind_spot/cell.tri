@@ -1,0 +1,38 @@
+[cell]
+id = "trinity.blind-spot"
+name = "Blind Spot Detection"
+version = "1.0.0"
+kind = "library"
+path = "src/blind_spot"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Cross-domain verification framework for phi and gamma relationships"
+capabilities = ["vsa", "verification"]
+files = 1
+tests = 12
+owner = "agent:ralph"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:38926e2d39d932d2611fd29079f858714747c580ec934b5262e4353124f5dd83"
