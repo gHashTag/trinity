@@ -204,3 +204,4 @@
 {"ts":1773718581390,"type":"health","svc":"hslm-w7-64","detail":"stalled: step unchanged 2+ polls","step":30000}
 {"ts":1773718582972,"type":"health","svc":"hslm-w7-47","detail":"stalled: step unchanged 2+ polls","step":30000}
 {"ts":1773718625405,"type":"health","svc":"hslm-w7-64","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773732338818,"type":"health","svc":"hslm-w7-40","detail":"diverged: PPL>1000 at step>5K","step":8200}
