@@ -9,11 +9,6 @@ const tri_config = @import("tri_config.zig");
 const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
-const math_commands = @import("math/commands.zig");
-const bio_commands = @import("tri_biology.zig");
-const cosmos_commands = @import("tri_cosmology.zig");
-const neuro_commands = @import("tri_neuro.zig");
-const chemistry_commands = @import("tri_chemistry.zig");
 const tri_context = @import("tri_context.zig");
 const orchestrator = @import("orchestrator_v2_full.zig");
 const tri_job = @import("tri_job.zig");
@@ -236,6 +231,24 @@ pub fn main() !void {
             try commands.runGitCommand(allocator, git_sub, git_args);
             return;
         }
+        // ═══════════════════════════════════════════════════════════════════
+        // INTERNAL HANDLER REGISTRY (Honeycomb v8+v9)
+        // ═══════════════════════════════════════════════════════════════════
+        // Comptime map of CLI strings → demo functions (SimpleHandler)
+        // + full handlers with allocator+args (FullHandler) for math/bio/cosmos/neuro/chem
+        {
+            const cell_dispatch = @import("tri_cell_dispatch.zig");
+            if (cell_dispatch.executeInternalCommand(first_arg)) {
+                logAgentCommand(args[arg_idx..]);
+                return;
+            }
+            const extra_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            if (cell_dispatch.executeFullCommand(first_arg, allocator, extra_args)) {
+                logAgentCommand(args[arg_idx..]);
+                return;
+            }
+        }
+
         // ═══════════════════════════════════════════════════════════════════
         // CELL-FIRST DISPATCH (Honeycomb v7)
         // ═══════════════════════════════════════════════════════════════════
@@ -553,159 +566,8 @@ pub fn main() !void {
         // Spec & Loop (v8.27)
         .spec_create => pipeline.runSpecCreateCommand(allocator, cmd_args),
         .loop_decide => pipeline.runLoopDecideCommand(allocator, cmd_args),
-        // TVC (Distributed Learning)
-        .tvc_demo => demos.runTVCDemo(),
-        .tvc_stats => demos.runTVCStats(),
-        // Multi-Agent System
-        .agents_demo => demos.runAgentsDemo(),
-        .agents_bench => demos.runAgentsBench(),
-        // Long Context
-        .context_demo => demos.runContextDemo(),
-        .context_bench => demos.runContextBench(),
-        // RAG
-        .rag_demo => demos.runRAGDemo(),
-        .rag_bench => demos.runRAGBench(),
-        // Voice I/O
-        .voice_demo => demos.runVoiceIODemo(),
-        .voice_bench => demos.runVoiceIOBench(),
-        // Code Sandbox
-        .sandbox_demo => demos.runSandboxDemo(),
-        .sandbox_bench => demos.runSandboxBench(),
-        // Streaming Multi-Modal Pipeline (Cycle 38)
-        .stream_demo => demos.runStreamPipelineDemo(),
-        .stream_bench => demos.runStreamPipelineBench(),
-        // Local Vision
-        .vision_demo => demos.runVisionDemo(),
-        .vision_bench => demos.runVisionBench(),
-        // Fine-Tuning Engine
-        .finetune_demo => demos.runFineTuneDemo(),
-        .finetune_bench => demos.runFineTuneBench(),
-        // Batched Stealing
-        .batched_demo => demos.runBatchedDemo(),
-        .batched_bench => demos.runBatchedBench(),
-        // Priority Queue
-        .priority_demo => demos.runPriorityDemo(),
-        .priority_bench => demos.runPriorityBench(),
-        // Deadline Scheduling
-        .deadline_demo => demos.runDeadlineDemo(),
-        .deadline_bench => demos.runDeadlineBench(),
-        // Multi-Modal Unified (Cycle 26)
-        .multimodal_demo => demos.runMultiModalDemo(),
-        .multimodal_bench => demos.runMultiModalBench(),
-        // Multi-Modal Tool Use (Cycle 27)
-        .tooluse_demo => demos.runToolUseDemo(),
-        .tooluse_bench => demos.runToolUseBench(),
-        // Unified Multi-Modal Agent (Cycle 30)
-        .unified_demo => demos.runUnifiedAgentDemo(),
-        .unified_bench => demos.runUnifiedAgentBench(),
-        // Autonomous Agent (Cycle 31)
-        .autonomous_demo => demos.runAutonomousAgentDemo(),
-        .autonomous_bench => demos.runAutonomousAgentBench(),
-        // Multi-Agent Orchestration (Cycle 32)
-        .orchestration_demo => demos.runOrchestrationDemo(),
-        .orchestration_bench => demos.runOrchestrationBench(),
-        // MM Multi-Agent Orchestration (Cycle 33)
-        .mm_orch_demo => demos.runMMOrchDemo(),
-        .mm_orch_bench => demos.runMMOrchBench(),
-        // Agent Memory & Cross-Modal Learning (Cycle 34)
-        .memory_demo => demos.runMemoryDemo(),
-        .memory_bench => demos.runMemoryBench(),
-        // Persistent Memory & Disk Serialization (Cycle 35)
-        .persist_demo => demos.runPersistDemo(),
-        .persist_bench => demos.runPersistBench(),
-        // Dynamic Agent Spawning & Load Balancing (Cycle 36)
-        .spawn_demo => demos.runSpawnDemo(),
-        .spawn_bench => demos.runSpawnBench(),
-        // Distributed Multi-Node Agents (Cycle 37)
-        .cluster_demo => demos.runClusterDemo(),
-        .cluster_bench => demos.runClusterBench(),
-        // Adaptive Work-Stealing Scheduler (Cycle 39)
-        .worksteal_demo => demos.runWorkStealDemo(),
-        .worksteal_bench => demos.runWorkStealBench(),
-        // Plugin & Extension System (Cycle 40)
-        .plugin_demo => demos.runPluginDemo(),
-        .plugin_bench => demos.runPluginBench(),
-        // Agent Communication Protocol (Cycle 41)
-        .comms_demo => demos.runCommsDemo(),
-        .comms_bench => demos.runCommsBench(),
-        // Observability & Tracing System (Cycle 42)
-        .observe_demo => demos.runObserveDemo(),
-        .observe_bench => demos.runObserveBench(),
-        // Consensus & Coordination Protocol (Cycle 43)
-        .consensus_demo => demos.runConsensusDemo(),
-        .consensus_bench => demos.runConsensusBench(),
-        // Speculative Execution Engine (Cycle 44)
-        .specexec_demo => demos.runSpecExecDemo(),
-        .specexec_bench => demos.runSpecExecBench(),
-        // Adaptive Resource Governor (Cycle 45)
-        .governor_demo => demos.runGovernorDemo(),
-        .governor_bench => demos.runGovernorBench(),
-        // Federated Learning Protocol (Cycle 46)
-        .fedlearn_demo => demos.runFedLearnDemo(),
-        .fedlearn_bench => demos.runFedLearnBench(),
-        // Event Sourcing & CQRS Engine (Cycle 47)
-        .eventsrc_demo => demos.runEventSrcDemo(),
-        .eventsrc_bench => demos.runEventSrcBench(),
-        // Capability-Based Security Model (Cycle 48)
-        .capsec_demo => demos.runCapSecDemo(),
-        .capsec_bench => demos.runCapSecBench(),
-        // Distributed Transaction Coordinator (Cycle 49)
-        .dtxn_demo => demos.runDTxnDemo(),
-        .dtxn_bench => demos.runDTxnBench(),
-        // Adaptive Caching & Memoization (Cycle 50)
-        .cache_demo => demos.runCacheDemo(),
-        .cache_bench => demos.runCacheBench(),
-        // Contract-Based Agent Negotiation (Cycle 51)
-        .contract_demo => demos.runContractDemo(),
-        .contract_bench => demos.runContractBench(),
-        // Temporal Workflow Engine (Cycle 52)
-        .workflow_demo => demos.runWorkflowDemo(),
-        .workflow_bench => demos.runWorkflowBench(),
         // Distributed Inference
         .distributed => try commands.runDistributedCommand(allocator, cmd_args),
-        // Sacred Mathematics (v3.6)
-        .math => math_commands.runMathCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Math error: {}\n", .{err});
-        },
-        .constants_cmd => math_commands.runConstantsCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Constants error: {}\n", .{err});
-        },
-        .phi => math_commands.runPhiCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Phi error: {}\n", .{err});
-        },
-        .fib => math_commands.runFibCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Fib error: {}\n", .{err});
-        },
-        .lucas => math_commands.runLucasCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Lucas error: {}\n", .{err});
-        },
-        .spiral => math_commands.runSpiralCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Spiral error: {}\n", .{err});
-        },
-        .gematria => math_commands.runGematriaTopLevel(allocator, cmd_args) catch |err| {
-            std.debug.print("Gematria error: {}\n", .{err});
-        },
-        .formula_cmd => math_commands.runFormulaCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Formula error: {}\n", .{err});
-        },
-        .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Sacred error: {}\n", .{err});
-        },
-        // Biology (v14.0)
-        .bio => bio_commands.runBioCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Bio error: {}\n", .{err});
-        },
-        // Cosmology (v15.0)
-        .cosmos => cosmos_commands.runCosmosCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Cosmos error: {}\n", .{err});
-        },
-        // Neuroscience (v16.0)
-        .neuro => neuro_commands.runNeuroCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Neuro error: {}\n", .{err});
-        },
-        .chem => chemistry_commands.runChemCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Chem error: {}\n", .{err});
-        },
         // Intelligence System
         .intelligence => tri_context.runIntelligenceCommand(allocator, &state, cmd_args) catch |err| {
             std.debug.print("Intelligence error: {}\n", .{err});
@@ -954,7 +816,6 @@ pub fn main() !void {
             const ctx_loader = @import("context_loader.zig");
             ctx_loader.runContextCommand(allocator, cmd_args);
         },
-        // Future commands (monitor, orchestrate_v2, os_boot, infinity, omega_phase) — add to enum when ready
     }
 }
 
@@ -985,6 +846,9 @@ fn isReservedCommand(cmd: []const u8) bool {
         .{ "events", {} },
         .{ "init", {} },
         // Core infrastructure with special parsing
+        .{ "farm", {} },
+        .{ "train", {} },
+        .{ "cloud", {} },
         .{ "deploy", {} },
         .{ "notify", {} },
         .{ "spec", {} },
@@ -1527,47 +1391,6 @@ fn dispatchCommand(
         .doctor => commands.runDoctorCommand(allocator, cmd_args),
         .commands => tri_list.runCommandsList(allocator, cmd_args),
         .mcp => tri_mcp.runMcpCommand(allocator, cmd_args),
-        // Sacred Mathematics (core namespace)
-        .math => math_commands.runMathCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Math error: {}\n", .{err});
-        },
-        .constants_cmd => math_commands.runConstantsCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Constants error: {}\n", .{err});
-        },
-        .phi => math_commands.runPhiCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Phi error: {}\n", .{err});
-        },
-        .fib => math_commands.runFibCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Fib error: {}\n", .{err});
-        },
-        .lucas => math_commands.runLucasCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Lucas error: {}\n", .{err});
-        },
-        .spiral => math_commands.runSpiralCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Spiral error: {}\n", .{err});
-        },
-        .gematria => math_commands.runGematriaTopLevel(allocator, cmd_args) catch |err| {
-            std.debug.print("Gematria error: {}\n", .{err});
-        },
-        .formula_cmd => math_commands.runFormulaCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Formula error: {}\n", .{err});
-        },
-        .sacred => math_commands.runSacredCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Sacred error: {}\n", .{err});
-        },
-        // Science commands (core namespace)
-        .bio => bio_commands.runBioCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Bio error: {}\n", .{err});
-        },
-        .cosmos => cosmos_commands.runCosmosCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Cosmos error: {}\n", .{err});
-        },
-        .neuro => neuro_commands.runNeuroCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Neuro error: {}\n", .{err});
-        },
-        .chem => chemistry_commands.runChemCommand(allocator, cmd_args) catch |err| {
-            std.debug.print("Chem error: {}\n", .{err});
-        },
         // SWE Agent commands (agent namespace)
         .fix => utils.runSWECommand(state, .BugFix, cmd_args),
         .explain => utils.runSWECommand(state, .Explain, cmd_args),

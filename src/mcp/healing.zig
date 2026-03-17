@@ -400,3 +400,59 @@ pub const UptimeCalculator = struct {
         return self.uptimePercentage() >= 99.99;
     }
 };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "instance — crashed needs restart" {
+    const instance = Instance{
+        .id = "test-1",
+        .region = "us-east",
+        .state = .crashed,
+        .health = .unhealthy,
+        .connections = 0,
+        .last_health_check = 0,
+        .restart_count = 0,
+        .memory_mb = 100.0,
+        .cpu_percent = 10.0,
+    };
+    try std.testing.expect(instance.needsRestart());
+}
+
+test "instance — healthy running no restart" {
+    const instance = Instance{
+        .id = "test-2",
+        .region = "eu-west",
+        .state = .running,
+        .health = .healthy,
+        .connections = 10,
+        .last_health_check = std.time.nanoTimestamp(),
+        .restart_count = 0,
+        .memory_mb = 100.0,
+        .cpu_percent = 30.0,
+    };
+    try std.testing.expect(!instance.needsRestart());
+    try std.testing.expect(!instance.isOverloaded());
+}
+
+test "instance — overloaded" {
+    const instance = Instance{
+        .id = "test-3",
+        .region = "ap-south",
+        .state = .running,
+        .health = .degraded,
+        .connections = 100,
+        .last_health_check = std.time.nanoTimestamp(),
+        .restart_count = 0,
+        .memory_mb = 500.0,
+        .cpu_percent = 95.0,
+    };
+    try std.testing.expect(instance.isOverloaded());
+}
+
+test "scaling policy — min instances when empty" {
+    const policy = ScalingPolicy{ .min_instances = 2 };
+    const empty = [_]Instance{};
+    try std.testing.expectEqual(@as(u32, 2), policy.calculateDesiredCount(&empty));
+}

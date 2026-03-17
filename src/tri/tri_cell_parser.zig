@@ -25,6 +25,7 @@ pub const CellManifest = struct {
     version: []const u8 = "",
     kind: []const u8 = "",
     path: []const u8 = "",
+    parent: []const u8 = "", // Sub-cell: parent cell ID (e.g. "trinity.tri")
     status: []const u8 = "",
     description: []const u8 = "",
     min_core_version: []const u8 = "",
@@ -32,6 +33,9 @@ pub const CellManifest = struct {
     files: u32 = 0,
     tests: u32 = 0,
     owner: []const u8 = "",
+
+    // [source] section — virtual sub-cells use file_patterns instead of directory
+    file_patterns: []const u8 = "", // glob patterns for files (e.g. ["tri_farm*.zig", "railway_*.zig"])
 
     // [tags] section
     tags_scope: []const u8 = "",
@@ -42,6 +46,7 @@ pub const CellManifest = struct {
     contributes_tri_subcommands: []const u8 = "",
     contributes_events: []const u8 = "",
     contributes_binaries: []const u8 = "",
+    contributes_exports: []const u8 = "", // pub fn names this cell guarantees
 
     // [dependencies] section — raw text for lazy parsing
     dependencies_raw: []const u8 = "",
@@ -73,13 +78,18 @@ pub const CellManifest = struct {
     pub fn hasCommands(self: CellManifest) bool {
         return self.contributes_commands.len > 2;
     }
+
+    // Convenience: check if cell declares exports
+    pub fn hasExports(self: CellManifest) bool {
+        return self.contributes_exports.len > 2;
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // PARSER — section-aware cell.tri TOML-like format
 // ═══════════════════════════════════════════════════════════════════════════════
 
-const Section = enum { cell, tags, contributes, dependencies, permissions, security };
+const Section = enum { cell, tags, contributes, dependencies, permissions, security, source };
 
 /// Parse cell.tri content into CellManifest.
 /// All string fields are slices into `content` — caller must keep it alive.
@@ -113,6 +123,8 @@ pub fn parse(content: []const u8) CellManifest {
                 current_section = .permissions;
             } else if (std.mem.eql(u8, trimmed, "[security]")) {
                 current_section = .security;
+            } else if (std.mem.eql(u8, trimmed, "[source]")) {
+                current_section = .source;
             }
             continue;
         }
@@ -125,13 +137,13 @@ pub fn parse(content: []const u8) CellManifest {
 
         switch (current_section) {
             .cell => {
-                if (std.mem.eql(u8, key, "id")) m.id = value else if (std.mem.eql(u8, key, "name")) m.name = value else if (std.mem.eql(u8, key, "version")) m.version = value else if (std.mem.eql(u8, key, "kind")) m.kind = value else if (std.mem.eql(u8, key, "path")) m.path = value else if (std.mem.eql(u8, key, "status")) m.status = value else if (std.mem.eql(u8, key, "description")) m.description = value else if (std.mem.eql(u8, key, "min_core_version")) m.min_core_version = value else if (std.mem.eql(u8, key, "capabilities")) m.capabilities = value else if (std.mem.eql(u8, key, "owner")) m.owner = value else if (std.mem.eql(u8, key, "files")) m.files = std.fmt.parseInt(u32, value, 10) catch 0 else if (std.mem.eql(u8, key, "tests")) m.tests = std.fmt.parseInt(u32, value, 10) catch 0;
+                if (std.mem.eql(u8, key, "id")) m.id = value else if (std.mem.eql(u8, key, "name")) m.name = value else if (std.mem.eql(u8, key, "version")) m.version = value else if (std.mem.eql(u8, key, "kind")) m.kind = value else if (std.mem.eql(u8, key, "path")) m.path = value else if (std.mem.eql(u8, key, "parent")) m.parent = value else if (std.mem.eql(u8, key, "status")) m.status = value else if (std.mem.eql(u8, key, "description")) m.description = value else if (std.mem.eql(u8, key, "min_core_version")) m.min_core_version = value else if (std.mem.eql(u8, key, "capabilities")) m.capabilities = value else if (std.mem.eql(u8, key, "owner")) m.owner = value else if (std.mem.eql(u8, key, "files")) m.files = std.fmt.parseInt(u32, value, 10) catch 0 else if (std.mem.eql(u8, key, "tests")) m.tests = std.fmt.parseInt(u32, value, 10) catch 0;
             },
             .tags => {
                 if (std.mem.eql(u8, key, "scope")) m.tags_scope = value else if (std.mem.eql(u8, key, "type")) m.tags_type = value;
             },
             .contributes => {
-                if (std.mem.eql(u8, key, "commands")) m.contributes_commands = value else if (std.mem.eql(u8, key, "tri_subcommands")) m.contributes_tri_subcommands = value else if (std.mem.eql(u8, key, "events")) m.contributes_events = value else if (std.mem.eql(u8, key, "binaries")) m.contributes_binaries = value;
+                if (std.mem.eql(u8, key, "commands")) m.contributes_commands = value else if (std.mem.eql(u8, key, "tri_subcommands")) m.contributes_tri_subcommands = value else if (std.mem.eql(u8, key, "events")) m.contributes_events = value else if (std.mem.eql(u8, key, "binaries")) m.contributes_binaries = value else if (std.mem.eql(u8, key, "exports")) m.contributes_exports = value;
             },
             .dependencies => {
                 if (key.len > 0) dep_section_end = offset;
@@ -141,6 +153,9 @@ pub fn parse(content: []const u8) CellManifest {
             },
             .security => {
                 if (std.mem.eql(u8, key, "signed")) m.security_signed = std.mem.eql(u8, value, "true") else if (std.mem.eql(u8, key, "signature")) m.security_signature = value;
+            },
+            .source => {
+                if (std.mem.eql(u8, key, "file_patterns")) m.file_patterns = value;
             },
         }
     }
