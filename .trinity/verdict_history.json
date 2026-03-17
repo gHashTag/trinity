@@ -48,4 +48,8 @@
   {"total":87.1,"build":100,"test":100.0,"cover":80.1,"debt":84.4,"spec":96.7,"level":"SOLID","ts":1773505143}
 ,
   {"total":94.2,"build":100,"test":100.0,"cover":93.9,"debt":84.4,"spec":96.7,"level":"LEGENDARY","ts":1773598996}
+,
+  {"total":71.2,"build":0,"test":100.0,"cover":91.8,"debt":84.1,"spec":96.7,"level":"SOLID","ts":1773722925}
+,
+  {"total":91.1,"build":100,"test":100.0,"cover":91.8,"debt":84.1,"spec":96.7,"level":"LEGENDARY","ts":1773729383}
 ]
