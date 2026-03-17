@@ -8,7 +8,7 @@ status = "experimental"
 description = "Benchmarks, E2E tests, competitive REPL, SOTA report demo, evolved codex"
 capabilities = ["bench", "test", "report"]
 files = 6
-tests = 0
+tests = 18
 owner = "agent:ralph"
 
 [tags]
@@ -30,6 +30,8 @@ filesystem = "write"
 network = "none"
 process = "none"
 
+ffi = "none"
+concurrency = "yes"
 [security]
 signed = "true"
 signature = "sha256:c59d3a676f8013d8bd032e767fa318e6921ce72fb00527929c0c8844b99bd104"

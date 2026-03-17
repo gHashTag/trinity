@@ -6,7 +6,7 @@ kind = "library"
 path = "src/vm"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Auto-generated cell for vm"
+description = "Stack-based ternary bytecode virtual machine executor"
 capabilities = ["init", "deinit", "executeSacred", "benchmarkSacredOpcode", "init"]
 files = 2
 tests = 9
@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = ["init", "deinit", "executeSacred"]
-exports = ["execute", "compile"]
+exports = ["executeSacred", "benchmarkSacredOpcode", "track", "isHot", "lookup"]
 tri_subcommands = []
 events = []
 binaries = ["example-vm"]

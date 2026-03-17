@@ -6,7 +6,7 @@ kind = "library"
 path = "src/math"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Auto-generated cell for math"
+description = "Riemann zeta function and number theory computations"
 capabilities = ["init", "add", "mul", "abs", "zeta"]
 files = 1
 tests = 8
@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = ["init", "add", "mul"]
-exports = []
+exports = ["add", "mul", "abs", "zeta", "isZetaZero"]
 tri_subcommands = []
 events = []
 

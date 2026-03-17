@@ -8,7 +8,7 @@ status = "experimental"
 description = "Knowledge graph engine: graph operations, CLI, server, query interface"
 capabilities = ["graph", "query", "server"]
 files = 4
-tests = 0
+tests = 15
 owner = "agent:ralph"
 
 [tags]
@@ -20,17 +20,19 @@ file_patterns = ["knowledge_graph.zig", "kg_cli.zig", "kg_server.zig", "query_cl
 
 [contributes]
 commands = ["kg", "query"]
-exports = []
+exports = ["addTriple", "queryObject", "querySubject", "getStats", "findPath"]
 
 [dependencies]
 trinity.vsa = "^1.0.0"
 
 [permissions]
-level = "L1"
+level = "L2"
 filesystem = "write"
-network = "none"
-process = "none"
+network = "external"
+process = "spawn"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = "true"
 signature = "sha256:7214f3ae54e82ff7c6ab8f5600bead96b261df1a8af65f62180b6d65c89c2904"

@@ -939,6 +939,9 @@ fn runDeps(allocator: Allocator, args: []const []const u8) !void {
         if (std.mem.eql(u8, a, "--cycles")) {
             return runDetectCycles(allocator);
         }
+        if (std.mem.eql(u8, a, "--dead")) {
+            return runDeadCells(allocator);
+        }
     }
 
     if (args.len == 0) {
@@ -946,6 +949,7 @@ fn runDeps(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("       tri cell deps --auto-detect [--write]\n", .{});
         std.debug.print("       tri cell deps --prune [--write]\n", .{});
         std.debug.print("       tri cell deps --cycles\n", .{});
+        std.debug.print("       tri cell deps --dead\n", .{});
         return;
     }
 
@@ -1359,6 +1363,28 @@ fn runPruneDeps(allocator: Allocator, write_mode: bool) !void {
 }
 
 // Helper: scan @imports for a cell into a hashmap
+/// Resolve a build-system module name (e.g., "vsa", "tri") to a cell ID.
+/// Prefers parent cells over sub-cells when path matches (e.g., trinity.tri over trinity.tri.farm).
+fn resolveModuleToCell(
+    import_name: []const u8,
+    self_id: []const u8,
+    all_cells: []const cell_parser.DiscoveredCell,
+) ?[]const u8 {
+    var best_match: ?[]const u8 = null;
+    for (all_cells) |other| {
+        const other_path = other.manifest.path;
+        if (std.mem.lastIndexOfScalar(u8, other_path, '/')) |slash| {
+            const dir_name = other_path[slash + 1 ..];
+            if (std.mem.eql(u8, import_name, dir_name) and !std.mem.eql(u8, other.manifest.id, self_id)) {
+                // Prefer parent cell (no parent field) over sub-cells
+                if (other.manifest.parent.len == 0) return other.manifest.id;
+                if (best_match == null) best_match = other.manifest.id;
+            }
+        }
+    }
+    return best_match;
+}
+
 fn scanCellImports(
     allocator: Allocator,
     cell_path: []const u8,
@@ -1370,12 +1396,20 @@ fn scanCellImports(
     var dir = std.fs.cwd().openDir(cell_path, .{ .iterate = true }) catch return;
     defer dir.close();
 
-    var walker = dir.iterate();
+    // Use walk() to descend into subdirectories (e.g., src/models/tqnn/)
+    var walker = dir.walk(allocator) catch return;
+    defer walker.deinit();
+
     while (walker.next() catch null) |entry| {
         if (entry.kind != .file) continue;
-        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+        if (!std.mem.endsWith(u8, entry.basename, ".zig")) continue;
+        if (std.mem.indexOf(u8, entry.path, ".zig-cache") != null) continue;
 
-        const file_content = dir.readFileAlloc(allocator, entry.name, 1048576) catch continue;
+        const file_content = blk: {
+            const file_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ cell_path, entry.path }) catch continue;
+            defer allocator.free(file_path);
+            break :blk std.fs.cwd().readFileAlloc(allocator, file_path, 1048576) catch continue;
+        };
         defer allocator.free(file_content);
 
         var pos: usize = 0;
@@ -1396,15 +1430,8 @@ fn scanCellImports(
                     }
                 }
             } else if (!std.mem.endsWith(u8, import_path, ".zig")) {
-                for (all_cells) |other| {
-                    const other_path = other.manifest.path;
-                    if (std.mem.lastIndexOfScalar(u8, other_path, '/')) |slash| {
-                        const dir_name = other_path[slash + 1 ..];
-                        if (std.mem.eql(u8, import_path, dir_name) and !std.mem.eql(u8, other.manifest.id, cell_id)) {
-                            detected_deps.put(other.manifest.id, {}) catch {};
-                            break;
-                        }
-                    }
+                if (resolveModuleToCell(import_path, cell_id, all_cells)) |dep_cell_id| {
+                    detected_deps.put(dep_cell_id, {}) catch {};
                 }
             }
         }
@@ -1498,6 +1525,64 @@ fn runDetectCycles(allocator: Allocator) !void {
     } else {
         std.debug.print("\n  {s}{d} cycle(s) found{s}\n", .{ RED, cycles_found, RESET });
     }
+}
+
+/// Find cells that no other cell depends on (orphans).
+/// Leaf cells (binaries, tools) are expected to have 0 incoming deps — only flag libraries.
+fn runDeadCells(allocator: Allocator) !void {
+    std.debug.print("{s}[dead]{s} Scanning for orphan cells (no dependents)...\n\n", .{ CYAN, RESET });
+
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    // Build reverse dep map: cell_id → count of cells that depend on it
+    var incoming = std.StringHashMap(usize).init(allocator);
+    defer incoming.deinit();
+    for (all_cells) |c| incoming.put(c.manifest.id, 0) catch {};
+
+    for (all_cells) |c| {
+        var dep_it = cell_parser.DepIterator.init(c.manifest.dependencies_raw);
+        while (dep_it.next()) |dep_entry| {
+            if (incoming.get(dep_entry.id)) |count| {
+                incoming.put(dep_entry.id, count + 1) catch {};
+            }
+        }
+    }
+
+    // Report cells with 0 incoming deps
+    var dead_count: usize = 0;
+    var leaf_count: usize = 0;
+
+    for (all_cells) |c| {
+        const m = c.manifest;
+        const count = incoming.get(m.id) orelse 0;
+        if (count > 0) continue;
+
+        // Skip sub-cells (they're internal to parent)
+        if (m.parent.len > 0) continue;
+
+        // Leaf cells (binaries, tools, agents) are expected to have 0 incoming
+        const is_leaf = std.mem.eql(u8, m.kind, "binary") or
+            std.mem.eql(u8, m.kind, "tool") or
+            std.mem.eql(u8, m.kind, "agent") or
+            std.mem.eql(u8, m.kind, "backend") or
+            m.contributes_binaries.len > 2;
+
+        if (is_leaf) {
+            leaf_count += 1;
+            std.debug.print("  {s}LEAF{s}  {s} ({s}) — 0 dependents, OK\n", .{ GRAY, RESET, m.id, m.kind });
+        } else {
+            dead_count += 1;
+            std.debug.print("  {s}DEAD{s}  {s} ({s}) — no cell depends on this\n", .{ YELLOW, RESET, m.id, m.kind });
+        }
+    }
+
+    std.debug.print("\n  Dead: {s}{d}{s} | Leaf: {d} | Total scanned: {d}\n", .{
+        if (dead_count > 0) YELLOW else GREEN, dead_count, RESET, leaf_count, all_cells.len,
+    });
 }
 
 fn resolveImportToCell(import_path: []const u8, cell_path: []const u8, path_to_cell: *std.StringHashMap([]const u8)) ?[]const u8 {
@@ -3527,6 +3612,7 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
     var fix_scope = false;
     var fix_counts = false;
     var fix_owner = false;
+    var fix_exports = false;
     var dry_run = false;
 
     for (args) |arg| {
@@ -3536,6 +3622,7 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
         if (std.mem.eql(u8, arg, "--scope")) fix_scope = true;
         if (std.mem.eql(u8, arg, "--counts")) fix_counts = true;
         if (std.mem.eql(u8, arg, "--owner")) fix_owner = true;
+        if (std.mem.eql(u8, arg, "--exports")) fix_exports = true;
         if (std.mem.eql(u8, arg, "--all")) {
             fix_perms = true;
             fix_deps = true;
@@ -3543,12 +3630,13 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
             fix_scope = true;
             fix_counts = true;
             fix_owner = true;
+            fix_exports = true;
         }
         if (std.mem.eql(u8, arg, "--dry-run")) dry_run = true;
     }
 
-    if (!fix_perms and !fix_deps and !fix_ids and !fix_scope and !fix_counts and !fix_owner) {
-        std.debug.print("{s}Usage:{s} tri cell fix --perms|--deps|--ids|--scope|--counts|--owner|--all [--dry-run]\n", .{ YELLOW, RESET });
+    if (!fix_perms and !fix_deps and !fix_ids and !fix_scope and !fix_counts and !fix_owner and !fix_exports) {
+        std.debug.print("{s}Usage:{s} tri cell fix --perms|--deps|--ids|--scope|--counts|--exports|--owner|--all [--dry-run]\n", .{ YELLOW, RESET });
         return;
     }
 
@@ -3886,6 +3974,62 @@ fn runFix(allocator: Allocator, args: []const []const u8) !void {
             }
 
             allocator.free(content);
+        }
+        std.debug.print("\n", .{});
+    }
+
+    // === FIX --exports: auto-detect pub fn from source code ===
+    if (fix_exports) {
+        std.debug.print("  {s}[EXPORTS]{s} Auto-detecting pub fn exports from source...\n", .{ CYAN, RESET });
+        for (discovered) |path| {
+            const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+            defer allocator.free(cell_tri_path);
+            const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+            defer allocator.free(content);
+            const cell = parseCellTri(content);
+            if (cell.id.len == 0) continue;
+
+            // Detect exports: use file_patterns for virtual cells, normal scan otherwise
+            const has_patterns = cell.file_patterns.len > 2;
+            const detected = if (has_patterns)
+                detectExportsFiltered(allocator, cell.path, cell.file_patterns)
+            else
+                detectExportsInDir(allocator, path);
+
+            if (detected.count == 0) continue;
+
+            // Build exports string: ["fn1", "fn2", ...]
+            var exports_buf: [512]u8 = undefined;
+            var exports_len: usize = 0;
+            exports_buf[0] = '[';
+            exports_len = 1;
+            for (0..detected.count) |i| {
+                if (i > 0) {
+                    @memcpy(exports_buf[exports_len..][0..2], ", ");
+                    exports_len += 2;
+                }
+                exports_buf[exports_len] = '"';
+                exports_len += 1;
+                const name = detected.items[i];
+                const copy_len = @min(name.len, exports_buf.len - exports_len - 2);
+                @memcpy(exports_buf[exports_len..][0..copy_len], name[0..copy_len]);
+                exports_len += copy_len;
+                exports_buf[exports_len] = '"';
+                exports_len += 1;
+            }
+            exports_buf[exports_len] = ']';
+            exports_len += 1;
+            const new_exports = exports_buf[0..exports_len];
+
+            // Compare with current exports
+            const current = cell.contributes_exports;
+            if (!std.mem.eql(u8, current, new_exports)) {
+                std.debug.print("    {s}FIX{s}  {s}: exports → {s}\n", .{ YELLOW, RESET, cell.id, new_exports });
+                if (!dry_run) {
+                    fixCellTriField(allocator, path, "exports", new_exports);
+                    total_fixes += 1;
+                }
+            }
         }
         std.debug.print("\n", .{});
     }
@@ -4232,14 +4376,19 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
 
         // ── Security (max 30) ──
         var security_score: u8 = 0;
-        if (cell.parent.len > 0) {
-            // Virtual sub-cells: can't scan code (path = parent dir), use declared perms only
+        const is_virtual = cell.file_patterns.len > 2;
+        if (cell.parent.len > 0 and !is_virtual) {
+            // Virtual sub-cells without file_patterns: can't scan code, use declared perms only
             if (cell.perm_level.len > 0) security_score += 20; // declared = trusted
             if (cell.security_signed) security_score += 5;
             security_score += 5; // no bind check for virtual cells
         } else {
             if (cell.perm_level.len > 0) security_score += 10;
-            const code_perms = inferPermissions(allocator, path);
+            // Virtual cells: scan cell.path + file_patterns; normal cells: scan discovery path
+            const code_perms = if (is_virtual)
+                inferPermissionsFiltered(allocator, cell.path, cell.file_patterns)
+            else
+                inferPermissions(allocator, path);
             const perms_match = std.mem.eql(u8, cell.perm_level, code_perms.level) and
                 std.mem.eql(u8, cell.perm_network, code_perms.net) and
                 std.mem.eql(u8, cell.perm_process, code_perms.proc);
@@ -4256,7 +4405,14 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
 
         // ── Deps accuracy (max 25) ──
         var deps_score: u8 = 0;
-        const dep_acc = computeDepsAccuracy(allocator, path, cell, all_cells, &path_to_cell);
+        // Top-level virtual cells (kind=virtual, path="src", file_patterns present):
+        // Their files use @import("vsa.zig") not @import("../vsa/..."), so cross-cell
+        // detection can't work. Use declared deps as truth (same as independent cells).
+        const is_toplevel_virtual = is_virtual and cell.parent.len == 0;
+        const dep_acc = if (is_toplevel_virtual)
+            DepsAccuracy{ .confirmed = 0, .missing = 0, .extra = 0, .total = 0 }
+        else
+            computeDepsAccuracy(allocator, path, cell, all_cells, &path_to_cell);
         if (dep_acc.total == 0) {
             deps_score = 25; // truly independent, no deps needed
         } else {
@@ -4270,10 +4426,10 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
 
         // ── Contracts (max 15) ──
         var contracts_score: u8 = 0;
-        if (cell.contributes_exports.len > 0) {
-            contracts_score += 10; // has declared exports
+        if (cell.contributes_exports.len > 2) {
+            contracts_score += 10; // has real declared exports (not empty [])
         } else {
-            contracts_score += 5; // no exports = neutral
+            contracts_score += 5; // no/empty exports = neutral
         }
         // boundary: cell kind matches deps
         contracts_score += 5; // baseline (actual boundary check deferred to v10)
@@ -4372,15 +4528,23 @@ fn computeDepsAccuracy(
     // For virtual sub-cells with file_patterns, only scan matching files
     const has_patterns = cell.file_patterns.len > 2; // more than "[]"
 
-    var walker = dir.iterate();
+    // Use walk() to descend into subdirectories (e.g., src/models/tqnn/)
+    var walker = dir.walk(allocator) catch return result;
+    defer walker.deinit();
+
     while (walker.next() catch null) |entry| {
         if (entry.kind != .file) continue;
-        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+        if (!std.mem.endsWith(u8, entry.basename, ".zig")) continue;
+        if (std.mem.indexOf(u8, entry.path, ".zig-cache") != null) continue;
 
         // Filter by file_patterns if this is a virtual sub-cell
-        if (has_patterns and !matchesFilePatterns(entry.name, cell.file_patterns)) continue;
+        if (has_patterns and !matchesFilePatterns(entry.basename, cell.file_patterns)) continue;
 
-        const file_content = dir.readFileAlloc(allocator, entry.name, 1048576) catch continue;
+        const file_content = blk: {
+            const file_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ cell_path, entry.path }) catch continue;
+            defer allocator.free(file_path);
+            break :blk std.fs.cwd().readFileAlloc(allocator, file_path, 1048576) catch continue;
+        };
         defer allocator.free(file_content);
 
         var pos: usize = 0;
@@ -4402,15 +4566,8 @@ fn computeDepsAccuracy(
                     }
                 }
             } else if (!std.mem.endsWith(u8, import_path, ".zig")) {
-                for (all_cells) |other| {
-                    const other_path = other.manifest.path;
-                    if (std.mem.lastIndexOfScalar(u8, other_path, '/')) |slash| {
-                        const dir_name = other_path[slash + 1 ..];
-                        if (std.mem.eql(u8, import_path, dir_name) and !std.mem.eql(u8, other.manifest.id, cell.id)) {
-                            detected_deps.put(other.manifest.id, {}) catch {};
-                            break;
-                        }
-                    }
+                if (resolveModuleToCell(import_path, cell.id, all_cells)) |dep_cell_id| {
+                    detected_deps.put(dep_cell_id, {}) catch {};
                 }
             }
         }
@@ -4518,7 +4675,68 @@ fn countFilesAndTests(allocator: Allocator, path: []const u8) FileStats {
 const ExportList = struct {
     items: [16][]const u8,
     count: usize,
+
+    /// Check if name is already in the list (dedup)
+    fn contains(self: *const ExportList, name: []const u8) bool {
+        for (self.items[0..self.count]) |item| {
+            if (std.mem.eql(u8, item, name)) return true;
+        }
+        return false;
+    }
 };
+
+/// Skip trivial function names that don't represent meaningful API surface
+fn isTrivialExport(name: []const u8) bool {
+    const trivial = [_][]const u8{ "main", "init", "deinit", "format", "next", "reset", "close", "open", "toString", "toJson" };
+    for (&trivial) |t| {
+        if (std.mem.eql(u8, name, t)) return true;
+    }
+    // Reject names containing non-alphanumeric chars (parser artifacts like "))")
+    for (name) |ch| {
+        if (!std.ascii.isAlphanumeric(ch) and ch != '_') return true;
+    }
+    return false;
+}
+
+/// Like detectExportsInDir but scans specific files matching file_patterns in a flat directory.
+fn detectExportsFiltered(allocator: Allocator, dir_path: []const u8, file_patterns: []const u8) ExportList {
+    var result = ExportList{ .items = undefined, .count = 0 };
+    for (&result.items) |*item| item.* = "";
+
+    var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return result;
+    defer dir.close();
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+        if (!matchesFilePatterns(entry.name, file_patterns)) continue;
+
+        const file_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ dir_path, entry.name }) catch continue;
+        defer allocator.free(file_path);
+        const source = std.fs.cwd().readFileAlloc(allocator, file_path, 1048576) catch continue;
+        defer allocator.free(source);
+
+        var pos: usize = 0;
+        while (pos < source.len and result.count < 5) {
+            const pub_pos = std.mem.indexOf(u8, source[pos..], "pub fn ") orelse break;
+            const abs_pos = pos + pub_pos + 7;
+            pos = abs_pos;
+
+            var end = abs_pos;
+            while (end < source.len and source[end] != '(' and source[end] != ' ' and source[end] != '\n') : (end += 1) {}
+            if (end > abs_pos and end - abs_pos < 64) {
+                const name = source[abs_pos..end];
+                if (!isTrivialExport(name) and !result.contains(name)) {
+                    result.items[result.count] = allocator.dupe(u8, name) catch continue;
+                    result.count += 1;
+                }
+            }
+        }
+        if (result.count >= 5) break;
+    }
+    return result;
+}
 
 fn detectExportsInDir(allocator: Allocator, path: []const u8) ExportList {
     var result = ExportList{ .items = undefined, .count = 0 };
@@ -4547,9 +4765,11 @@ fn detectExportsInDir(allocator: Allocator, path: []const u8) ExportList {
             var end = abs_pos;
             while (end < source.len and source[end] != '(' and source[end] != ' ' and source[end] != '\n') : (end += 1) {}
             if (end > abs_pos and end - abs_pos < 64) {
-                // Copy the name so it outlives the source buffer
-                result.items[result.count] = allocator.dupe(u8, source[abs_pos..end]) catch continue;
-                result.count += 1;
+                const name = source[abs_pos..end];
+                if (!isTrivialExport(name) and !result.contains(name)) {
+                    result.items[result.count] = allocator.dupe(u8, name) catch continue;
+                    result.count += 1;
+                }
             }
         }
         if (result.count >= 5) break;

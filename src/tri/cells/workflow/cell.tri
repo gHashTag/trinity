@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "experimental"
 description = "Temporal workflow: parser, executor, DAG engine"
 capabilities = ["workflow", "temporal"]
-tests = 5
+tests = 22
 owner = "agent:ralph"
 
 [tags]
@@ -20,16 +20,18 @@ file_patterns = ["workflow*.zig"]
 
 [contributes]
 commands = ["workflow"]
-exports = []
+exports = ["name", "color", "parse", "isCompleted", "duration"]
 
 [dependencies]
 
 [permissions]
-level = "L1"
-filesystem = "write"
+level = "L0"
+filesystem = "read"
 network = "none"
 process = "none"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = true
 signature = "sha256:a104591a0fb7273936b0c2367d93b16574d46649ac0fa3a21ac3d92b1d097494"

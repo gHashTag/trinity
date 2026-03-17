@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Infra utilities: env loader, streaming, batch runner, cost tracker, context loader, handoff"
 capabilities = ["infra", "env", "streaming"]
-tests = 10
+tests = 52
 owner = "agent:ralph"
 
 [tags]
@@ -23,11 +23,13 @@ file_patterns = ["env_loader.zig", "streaming.zig", "batch_runner.zig", "cost_tr
 [dependencies]
 
 [permissions]
-level = "L1"
+level = "L2"
 filesystem = "write"
 network = "none"
-process = "none"
+process = "spawn"
 
+ffi = "none"
+concurrency = "yes"
 [security]
 signed = true
 signature = "sha256:e4e2da712da0e2eb1e4505546b33b24fc9ca7842ec2fbfb08b1f45ac49d2fb29"

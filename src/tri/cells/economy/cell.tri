@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "experimental"
 description = "Economy engines: marketplace, NFT, global economy simulation"
 capabilities = ["economy", "nft", "marketplace"]
-tests = 50
+tests = 70
 owner = "agent:ralph"
 
 [tags]
@@ -20,16 +20,18 @@ file_patterns = ["economy*.zig", "nft_*.zig", "marketplace*.zig"]
 
 [contributes]
 commands = []
-exports = []
+exports = ["trit_and", "trit_or", "trit_not", "trit_xor", "mint_nft"]
 
 [dependencies]
 
 [permissions]
 level = "L1"
-filesystem = "read"
+filesystem = "write"
 network = "none"
 process = "none"
 
+ffi = "none"
+concurrency = "none"
 [security]
 signed = true
 signature = "sha256:b8310ace6dd991668069ac24162710283bbbc4debda208c7aa42cc14fad6cba2"

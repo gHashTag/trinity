@@ -23,7 +23,7 @@ commands = ["battle", "leaderboard", "judge"]
 tri_subcommands = ["arena battle", "arena leaderboard"]
 events = ["on_battle_complete", "on_elo_update"]
 binaries = ["arena"]
-exports = ["runArenaCommand"]
+exports = ["expectedScore", "updateRatings", "formatElo", "findTask", "tasksByCategory"]
 
 [dependencies]
 

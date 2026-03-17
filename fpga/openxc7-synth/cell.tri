@@ -20,7 +20,7 @@ type = "backend"
 
 [contributes]
 commands = ["synth", "flash", "program"]
-exports = ["runSynthCommand"]
+exports = ["temperatureAt", "acceptanceProbability", "isConverged", "setupMarginNs", "holdMarginNs"]
 tri_subcommands = ["fpga synth", "fpga flash"]
 events = ["on_synthesis_complete", "on_flash_complete"]
 

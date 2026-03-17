@@ -22,7 +22,6 @@ tri_subcommands = []
 events = []
 
 [dependencies]
-trinity.tri.formulas = "^1.0.0"
 
 [permissions]
 level = "L0"

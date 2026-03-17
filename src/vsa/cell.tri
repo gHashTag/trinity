@@ -6,10 +6,10 @@ kind = "library"
 path = "src/vsa"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Auto-generated cell for vsa"
+description = "Vector Symbolic Architecture bind/bundle/similarity operations"
 capabilities = ["init", "initPhi", "randomVector", "seededVector", "bind"]
 files = 36
-tests = 165
+tests = 163
 owner = "agent:ralph"
 
 [tags]
@@ -21,12 +21,11 @@ commands = ["init", "initPhi", "randomVector"]
 tri_subcommands = []
 events = []
 binaries = ["photon-demo", "photon-immersive", "photon-terminal", "trinity-canvas", "bench-core", "example-memory", "example-sequence"]
-exports = ["bind", "unbind", "cosineSimilarity"]
+exports = ["initPhi", "randomVector", "seededVector", "bind", "unbind"]
 
 [dependencies]
 trinity.common = "^1.0.0"
 trinity.autonomous = "^1.0.0"
-trinity.models = "^1.0.0"
 trinity.quantum = "^1.0.0"
 
 [permissions]
