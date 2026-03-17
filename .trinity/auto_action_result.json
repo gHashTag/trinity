@@ -1,7 +1,1 @@
-{
-  "timestamp": "2026-03-17T12:00:00Z",
-  "action": "work-issue-118",
-  "success": true,
-  "details": "Posted architecture design for 9 TRI commands + agent interfaces on issue #118. 3 comments: start, full design doc, completion. Design covers: 3 new specs (tri_decompose, tri_verdict, tri_pipeline_parallel), 3 spec extensions (plan, git, loop), agent role mapping, DAG execution algorithm, error recovery strategy, implementation order.",
-  "build_ok_after": true
-}
+{"timestamp":"","action":"none","success":false,"details":"consumed","build_ok_after":false}
