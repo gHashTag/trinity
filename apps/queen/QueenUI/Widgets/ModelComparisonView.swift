@@ -279,7 +279,7 @@ struct ModelComparisonView: View {
         setText: @escaping (String) -> Void,
         setMetrics: @escaping (StreamMetrics) -> Void
     ) async {
-        guard let key = modelManager.apiKey(for: model) else {
+        guard modelManager.apiKey(for: model) != nil else {
             setMetrics(StreamMetrics(status: "error"))
             setText("[No API key for \(model.provider.rawValue)]")
             return
