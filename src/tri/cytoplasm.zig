@@ -182,6 +182,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
         return cell_dispatch.runMcpGenCommand(allocator);
     }
     if (std.mem.eql(u8, sub, "commands")) return runCellCommands(allocator);
+    if (std.mem.eql(u8, sub, "install-hooks")) return runInstallHooks(allocator);
 
     printHelp();
 }
@@ -237,6 +238,9 @@ fn printHelp() void {
     std.debug.print("  {s}fix-bio [--all]{s}   Fix missing [biology] sections\n", .{ GREEN, RESET });
     std.debug.print("  {s}watch [--interval N]{s}  Live health dashboard (default: 5s)\n", .{ GREEN, RESET });
     std.debug.print("  {s}watch --json{s}      Export health snapshot as JSON\n", .{ GREEN, RESET });
+    std.debug.print("  {s}check --auto-register{s}  Detect and register new cells\n", .{ GREEN, RESET });
+    std.debug.print("  {s}check --auto-register --yes{s}  Auto-register without prompt\n", .{ GREEN, RESET });
+    std.debug.print("  {s}install-hooks{s}     Install Git hooks for auto-registration\n", .{ GREEN, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -753,12 +757,24 @@ fn runInit(allocator: Allocator, args: []const []const u8) !void {
 fn runCheck(allocator: Allocator, args: []const []const u8) !void {
     var do_sync = false;
     var dry_run = false;
+    var auto_register = false;
+    var auto_yes = false;
     for (args) |arg| {
         if (std.mem.eql(u8, arg, "--sync")) do_sync = true;
         if (std.mem.eql(u8, arg, "--dry-run")) {
             dry_run = true;
             do_sync = true;
         }
+        if (std.mem.eql(u8, arg, "--auto-register")) {
+            auto_register = true;
+            do_sync = true;
+        }
+        if (std.mem.eql(u8, arg, "--yes")) auto_yes = true;
+    }
+
+    // H2: Auto-register mode
+    if (auto_register) {
+        return runAutoRegister(allocator, dry_run, auto_yes);
     }
 
     std.debug.print("\n{s}🐝 Checking cell manifests...{s}\n\n", .{ GOLDEN, RESET });
@@ -6660,6 +6676,233 @@ fn writeIndent(writer: anytype, n: usize) !void {
     while (i < n) : (i += 1) {
         try writer.writeByte(' ');
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// H2: AUTO-REGISTRATION — detect new cells and register them automatically
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runAutoRegister(allocator: Allocator, dry_run: bool, auto_yes: bool) !void {
+    std.debug.print("\n{s}🧬 Auto-Registration: detecting new cells...{s}\n\n", .{ GOLDEN, RESET });
+
+    // Discover all cell.tri files
+    const discovered = discoverCells(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer {
+        for (discovered) |p| allocator.free(p);
+        allocator.free(discovered);
+    }
+
+    // Load existing registry
+    const reg_data = std.fs.cwd().readFileAlloc(allocator, "data/cells/registry.json", 262144) catch {
+        std.debug.print("{s}ERROR{s}: Cannot read data/cells/registry.json\n", .{ RED, RESET });
+        return;
+    };
+    defer allocator.free(reg_data);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, reg_data, .{}) catch {
+        std.debug.print("{s}ERROR{s}: Failed to parse registry.json\n", .{ RED, RESET });
+        return;
+    };
+    defer parsed.deinit();
+
+    const existing_cells = parsed.value.object.get("cells") orelse return;
+    var registered_ids = std.StringHashMap(void).init(allocator);
+    defer registered_ids.deinit();
+
+    for (existing_cells.array.items) |cell_item| {
+        const id = jsonStr(cell_item.object, "id");
+        if (id.len > 0) {
+            try registered_ids.put(id, {});
+        }
+    }
+
+    // Find unregistered cells
+    const NewCell = struct {
+        path: []const u8,
+        id: []const u8,
+        suggestion: BioSuggestion,
+    };
+    var new_cells = try std.ArrayList(NewCell).initCapacity(allocator, 16);
+    defer {
+        for (new_cells.items) |c| {
+            allocator.free(c.path);
+            allocator.free(c.id);
+        }
+        new_cells.deinit(allocator);
+    }
+
+    for (discovered) |path| {
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+        defer allocator.free(cell_tri_path);
+
+        const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+        defer allocator.free(content);
+
+        const cell = parseCellTri(content);
+
+        if (cell.id.len == 0) continue;
+
+        // Check if already registered
+        if (registered_ids.get(cell.id) != null) continue;
+
+        // New cell found!
+        const path_copy = try allocator.dupe(u8, path);
+        const id_copy = try allocator.dupe(u8, cell.id);
+        const suggestion = suggestBioSystem(path);
+        try new_cells.append(allocator, .{
+            .path = path_copy,
+            .id = id_copy,
+            .suggestion = suggestion,
+        });
+    }
+
+    if (new_cells.items.len == 0) {
+        std.debug.print("  {s}✓{s} All cells are already registered!\n\n", .{ GREEN, RESET });
+        return;
+    }
+
+    std.debug.print("  {s}Found {d} unregistered cells:{s}\n\n", .{ YELLOW, new_cells.items.len, RESET });
+
+    for (new_cells.items) |c| {
+        std.debug.print("  {s}→{s} {s}\n", .{ CYAN, RESET, c.id });
+        std.debug.print("     Path: {s}\n", .{c.path});
+        std.debug.print("     Suggested bio_system: {s}{s}{s}", .{ GREEN, c.suggestion.system, RESET });
+        if (c.suggestion.organ.len > 0) {
+            std.debug.print(" (organ: {s}{s}{s})", .{ GREEN, c.suggestion.organ, RESET });
+        }
+        std.debug.print("\n\n", .{});
+    }
+
+    if (dry_run) {
+        std.debug.print("  {s}[DRY RUN]{s} Would register {d} new cells\n\n", .{ YELLOW, RESET, new_cells.items.len });
+        return;
+    }
+
+    if (!auto_yes) {
+        std.debug.print("  {s}Register these cells?{s} ", .{ YELLOW, RESET });
+        std.debug.print("(Run again with {s}--yes{s} to auto-confirm)\n\n", .{ GREEN, RESET });
+        // TODO: Add interactive prompt in future (currently requires --yes)
+        return;
+    }
+
+    // Add new cells to registry
+    var added_count: usize = 0;
+    for (new_cells.items) |c| {
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{c.path}) catch continue;
+        defer allocator.free(cell_tri_path);
+
+        const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+        defer allocator.free(content);
+
+        const cell = parseCellTri(content);
+
+        // Append to registry.json cells array
+        // For simplicity, we'll trigger a sync which rebuilds the entire registry
+        std.debug.print("  {s}+{s} Registered: {s}\n", .{ GREEN, RESET, c.id });
+
+        // Patch cell.tri with [biology] section if missing
+        if (cell.bio_system.len == 0) {
+            const bio_added = try patchCellBio(allocator, c.path, c.suggestion);
+            if (bio_added) {
+                std.debug.print("     Added [biology]: {s}{s}{s}\n", .{ GREEN, c.suggestion.system, RESET });
+            }
+        }
+
+        added_count += 1;
+    }
+
+    // Re-sync registry with all cells
+    std.debug.print("\n  {s}Syncing registry...{s}\n", .{ GRAY, RESET });
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("  {s}WARN{s}: Failed to re-discover cells\n", .{ YELLOW, RESET });
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    // Write updated registry
+    try writeRegistry(allocator, all_cells);
+
+    std.debug.print("\n  {s}✓{s} Registered {d} new cells\n\n", .{ GREEN, RESET, added_count });
+}
+
+fn writeRegistry(allocator: Allocator, all_cells: anytype) !void {
+    var buf = std.array_list.Managed(u8).init(allocator);
+    defer buf.deinit();
+
+    const writer = buf.writer();
+    try writer.writeAll("{\n  \"version\": \"1.0.0\",\n  \"updated\": \"");
+    try writer.print("{d}", .{std.time.timestamp()});
+    try writer.writeAll("\",\n  \"core_version\": \"");
+    try writer.writeAll(CORE_VERSION);
+    try writer.writeAll("\",\n  \"core_files\": [\n    \"src/vsa.zig\", \"src/vm.zig\", \"src/hybrid.zig\", \"src/sdk.zig\",\n    \"src/sparse.zig\", \"src/jit.zig\", \"src/science.zig\", \"src/c_api.zig\"\n  ],\n  \"cells\": [\n");
+
+    for (all_cells, 0..) |c, i| {
+        if (i > 0) try writer.writeAll(",\n");
+        const m = c.manifest;
+        try writer.print("    {{\"id\": \"{s}\", \"path\": \"{s}\", \"version\": \"{s}\", \"kind\": \"{s}\", \"status\": \"{s}\", \"files\": {d}, \"tests\": {d}, \"enabled\": true, \"owner\": \"agent:ralph\", \"spec_version\": 2, \"api_version\": \"1.0.0\"", .{
+            m.id, m.path, m.version, m.kind, m.status, m.files, m.tests,
+        });
+
+        if (m.bio_system.len > 0) {
+            try writer.print(", \"biology\": {{\"system\": \"{s}\"}}", .{m.bio_system});
+        }
+
+        try writer.writeAll("}");
+    }
+
+    try writer.writeAll("\n  ],\n  \"plugins\": [],\n  \"boundary_rules\": [\n    {\"sourceTag\": \"type:agent\", \"allowedDeps\": [\"type:library\", \"type:tool\"], \"deniedDeps\": [\"type:ui\"]},\n    {\"sourceTag\": \"type:ui\", \"deniedDeps\": [\"type:agent\"]},\n    {\"sourceTag\": \"type:library\", \"deniedDeps\": [\"type:agent\", \"type:ui\", \"type:backend\"]},\n    {\"sourceTag\": \"type:tool\", \"deniedDeps\": [\"type:agent\", \"type:ui\"]},\n    {\"sourceTag\": \"type:backend\", \"deniedDeps\": [\"type:agent\", \"type:ui\"]}\n  ]\n}\n");
+
+    const registry_path = "data/cells/registry.json";
+    const file = try std.fs.cwd().createFile(registry_path, .{});
+    defer file.close();
+    try file.writeAll(buf.items);
+    std.debug.print("  {s}✓ Registry updated:{s} {s} ({d} cells)\n", .{ GREEN, RESET, registry_path, all_cells.len });
+}
+
+fn runInstallHooks(allocator: Allocator) !void {
+    _ = allocator;
+    std.debug.print("\n{s}🪝 Installing Git hooks for auto-registration...{s}\n\n", .{ GOLDEN, RESET });
+
+    const hook_content =
+        \\#!/bin/sh
+        \\# Trinity cell auto-registration hook
+        \\# Run: tri cell check --auto-register --yes
+        \\
+        \\# Check if tri binary exists
+        \\if ! command -v tri >/dev/null 2>&1; then
+        \\    # Try zig build
+        \\    if [ -f "build.zig" ]; then
+        \\        zig build tri 2>/dev/null
+        \\    fi
+        \\fi
+        \\
+        \\# Run auto-register (non-blocking)
+        \\tri cell check --auto-register --yes 2>/dev/null || true
+        \\
+    ;
+
+    // Create post-commit hook
+    const hook_path = ".git/hooks/post-commit";
+    const file = std.fs.cwd().createFile(hook_path, .{}) catch |err| {
+        std.debug.print("  {s}ERROR{s}: Cannot create {s}: {}\n", .{ RED, RESET, hook_path, err });
+        return;
+    };
+    defer file.close();
+    file.writeAll(hook_content) catch |err| {
+        std.debug.print("  {s}ERROR{s}: Write failed: {}\n", .{ RED, RESET, err });
+        return;
+    };
+
+    // Make hook executable (use posix.fchmod in Zig 0.15)
+    std.posix.fchmod(file.handle, 0o755) catch |chmod_err| {
+        std.debug.print("  {s}WARN{s}: Could not make hook executable: {}\n", .{ YELLOW, RESET, chmod_err });
+    };
+
+    std.debug.print("  {s}✓{s} Git hook installed: {s}\n", .{ GREEN, RESET, hook_path });
+    std.debug.print("\n  {s}Auto-registration will run after each commit.{s}\n\n", .{ GRAY, RESET });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

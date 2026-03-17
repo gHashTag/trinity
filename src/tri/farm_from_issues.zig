@@ -12,6 +12,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const print = std.debug.print;
 
 const github_client = @import("github_client.zig");
 const GitHubClient = github_client.GitHubClient;
@@ -23,6 +24,7 @@ const evolution_mod = @import("evolution.zig");
 // ANSI colors
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
+const DIM = "\x1b[2m";
 const RED = "\x1b[31m";
 const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
@@ -72,7 +74,9 @@ pub fn runFromIssues(allocator: Allocator, args: []const []const u8) !void {
         defer client.deinit();
 
         print("  🔍 Fetching issues from GitHub...\n", .{});
-        tasks = try issue_planner.listFarmTasks(allocator, &client);
+        const json_response = try client.listIssues("open");
+        defer allocator.free(json_response);
+        tasks = try issue_planner.listFarmTasks(allocator, json_response);
     } else {
         print("  📂 Loading tasks from .trinity/tasks/...\n", .{});
         tasks = try issue_planner.loadTasksFromDir(allocator);
@@ -196,9 +200,6 @@ fn executeTask(allocator: Allocator, task: FarmTask, count: u32) !u32 {
     var arg_list = std.ArrayList([]const u8).init(allocator);
     defer arg_list.deinit();
 
-    // Convert count to string for display (runInjectBatch takes direct u32)
-    _ = count; // Passed directly to runInjectBatch
-
     // Call runInjectBatch from evolution.zig
     // This will select worst performers and recycle them
     const sacred = task.sacred;
@@ -266,7 +267,6 @@ fn updateTaskStatus(allocator: Allocator, issue_number: u32, new_status: []const
 
 fn printHelp() void {
     print(
-        \\
         \\Usage: tri farm from-issues [options]
         \\
         \\Execute farm tasks from GitHub Issues labeled 'farm-task'.
