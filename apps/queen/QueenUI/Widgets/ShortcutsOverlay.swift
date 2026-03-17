@@ -2,6 +2,8 @@ import SwiftUI
 
 struct ShortcutsOverlay: View {
     @Binding var isPresented: Bool
+    @AppStorage("hasSeenShortcuts") private var hasSeenShortcuts = false
+    var isFirstLaunch: Bool = false
 
     private let sections: [(String, [(String, String)])] = [
         ("Navigation", [
@@ -49,15 +51,29 @@ struct ShortcutsOverlay: View {
         ZStack {
             Color.black.opacity(0.7)
                 .ignoresSafeArea()
-                .onTapGesture { isPresented = false }
+                .onTapGesture { dismissOverlay() }
 
             VStack(spacing: 0) {
+                if isFirstLaunch {
+                    VStack(spacing: 4) {
+                        Text("Welcome to Queen!")
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(TrinityTheme.golden)
+                        Text("Here are your shortcuts:")
+                            .font(.subheadline)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                    }
+                    .padding(.bottom, 16)
+                }
+
                 HStack {
-                    Text("Keyboard Shortcuts")
-                        .font(.title2.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                    if !isFirstLaunch {
+                        Text("Keyboard Shortcuts")
+                            .font(.title2.weight(.bold))
+                            .foregroundStyle(TrinityTheme.accent)
+                    }
                     Spacer()
-                    Button { isPresented = false } label: {
+                    Button { dismissOverlay() } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.title2)
                             .foregroundStyle(TrinityTheme.textMuted)
@@ -90,6 +106,22 @@ struct ShortcutsOverlay: View {
                         }
                     }
                 }
+
+                if isFirstLaunch {
+                    Button {
+                        dismissOverlay()
+                    } label: {
+                        Text("Got it!")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 32)
+                            .padding(.vertical, 10)
+                            .background(TrinityTheme.golden)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, 20)
+                }
             }
             .padding(32)
             .frame(width: 560)
@@ -102,5 +134,12 @@ struct ShortcutsOverlay: View {
                     )
             )
         }
+    }
+
+    private func dismissOverlay() {
+        if isFirstLaunch {
+            hasSeenShortcuts = true
+        }
+        isPresented = false
     }
 }

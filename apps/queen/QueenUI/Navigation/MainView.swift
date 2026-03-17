@@ -5,6 +5,8 @@ public struct MainView: View {
     @State private var keyMonitor: Any?
     @State private var showAgentStream = false
     @State private var showShortcuts = false
+    @State private var isFirstLaunchShortcuts = false
+    @AppStorage("hasSeenShortcuts") private var hasSeenShortcuts = false
 
     /// Cmd+0–9 keyboard shortcuts
     private static let keyboardScreens: [Screen] = [
@@ -71,14 +73,20 @@ public struct MainView: View {
 
             // Shortcuts overlay (Cmd+/)
             if showShortcuts {
-                ShortcutsOverlay(isPresented: $showShortcuts)
+                ShortcutsOverlay(isPresented: $showShortcuts, isFirstLaunch: isFirstLaunchShortcuts)
                     .transition(.opacity)
             }
         }
         .animation(.easeInOut(duration: 0.25), value: selectedScreen)
         .animation(.easeInOut(duration: 0.25), value: showAgentStream)
         .animation(.easeInOut(duration: 0.2), value: showShortcuts)
-        .onAppear { installKeyboardMonitor() }
+        .onAppear {
+            installKeyboardMonitor()
+            if !hasSeenShortcuts {
+                isFirstLaunchShortcuts = true
+                showShortcuts = true
+            }
+        }
         .onDisappear {
             if let monitor = keyMonitor {
                 NSEvent.removeMonitor(monitor)
@@ -124,6 +132,7 @@ public struct MainView: View {
             }
 
             if ch == "/" {
+                isFirstLaunchShortcuts = false
                 showShortcuts.toggle()
                 return nil
             }

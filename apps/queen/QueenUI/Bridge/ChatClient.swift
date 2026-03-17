@@ -297,6 +297,7 @@ class ChatClient: ObservableObject {
     @Published var streamingTokensPerSec: Double = 0
     @Published var streamingTTFB: Int = 0          // ms to first token
     @Published var streamingOutputTokens: Int = 0
+    @Published var streamingMaxTokens: Int = 0
     @Published var failoverEvent: FailoverEvent? = nil
     @Published var lastError: APIErrorType? = nil {
         didSet {
@@ -463,7 +464,7 @@ class ChatClient: ObservableObject {
     var activePersona: Persona? = nil
     var customSystemPrompt: String? = nil
 
-    private var systemPrompt: String {
+    var systemPrompt: String {
         buildSystemPrompt()
     }
 
@@ -1845,6 +1846,7 @@ class ChatClient: ObservableObject {
         triedModels: Set<String> = []
     ) async throws {
         let effectiveMaxTokens = mode == .reason ? 16384 : effortLevel.maxTokens
+        streamingMaxTokens = effectiveMaxTokens
         var body: [String: Any] = [
             "model": model.id,
             "max_tokens": effectiveMaxTokens,

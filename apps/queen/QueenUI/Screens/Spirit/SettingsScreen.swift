@@ -7,11 +7,23 @@ struct SettingsScreen: View {
     @AppStorage("refreshInterval") private var refreshInterval = 5.0
     @AppStorage("trinityPath") private var trinityPath = ""
     @AppStorage("soundMode") private var soundMode = "full"
+    @AppStorage("soundFeedback") private var soundFeedback = true
+    @AppStorage("backgroundNotifications") private var backgroundNotifications = true
     @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend = false
     @AppStorage("sessionCleanupDays") private var sessionCleanupDays = 30
     @AppStorage("chatFontSize") private var chatFontSize = 15
     @AppStorage("ollamaURL") private var ollamaURL = "http://localhost:11434"
     @AppStorage("ollamaEnabled") private var ollamaEnabled = false
+    @AppStorage("dailyCostBudget") private var dailyCostBudget = 5.0
+    @AppStorage("showCostEstimates") private var showCostEstimates = true
+    @AppStorage("autoArchiveDays") private var autoArchiveDays = 90
+    @AppStorage("autoTitle") private var autoTitle = true
+    @AppStorage("draftAutoSave") private var draftAutoSave = true
+    @AppStorage("stylePreset") private var stylePresetRaw: String = StylePreset.concise.rawValue
+    @AppStorage("effortLevel") private var effortLevelRaw: String = EffortLevel.medium.rawValue
+    @AppStorage("defaultChatMode") private var defaultChatModeRaw: String = ChatMode.trinity.rawValue
+    @AppStorage("threadSortOrder") private var threadSortOrder: String = "date"
+    @AppStorage("hasSeenShortcuts") private var hasSeenShortcuts = false
 
     @State private var godMode = false
     @State private var ollamaModels: [String] = []
@@ -19,6 +31,7 @@ struct SettingsScreen: View {
     @State private var maxAutoLevel = 1
     @State private var requireApproval = true
     @State private var intervalSec = 600
+    @State private var showClearConfirmation = false
 
     var body: some View {
         ScrollView {
@@ -100,11 +113,22 @@ struct SettingsScreen: View {
                 .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
                 .padding(.horizontal)
 
-                // Sound
+                // Notifications
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("SOUND & NOTIFICATIONS")
+                    Text("NOTIFICATIONS")
                         .font(.caption.weight(.bold))
                         .foregroundStyle(TrinityTheme.purple)
+
+                    Toggle(isOn: $soundFeedback) {
+                        VStack(alignment: .leading) {
+                            Text("Sound Feedback")
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(TrinityTheme.textPrimary)
+                            Text("Play sounds for send, receive, and error events")
+                                .font(.caption2)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                        }
+                    }
 
                     HStack {
                         Text("Sound Mode")
@@ -117,6 +141,17 @@ struct SettingsScreen: View {
                             Text("Silent").tag("silent")
                         }
                         .pickerStyle(.segmented)
+                    }
+
+                    Toggle(isOn: $backgroundNotifications) {
+                        VStack(alignment: .leading) {
+                            Text("Background Notifications")
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(TrinityTheme.textPrimary)
+                            Text("Show banners when app is in background")
+                                .font(.caption2)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                        }
                     }
 
                     Text("Full = sounds + notifications | Notifications = banners only | Silent = nothing")
@@ -236,6 +271,163 @@ struct SettingsScreen: View {
                 .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
                 .padding(.horizontal)
 
+                // Budget
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("BUDGET")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(TrinityTheme.golden)
+
+                    HStack {
+                        Text("Daily Limit")
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .frame(width: 100, alignment: .leading)
+                        Text("$")
+                            .font(.body)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                        TextField("5.00", value: $dailyCostBudget, format: .number.precision(.fractionLength(2)))
+                            .textFieldStyle(.roundedBorder)
+                            .font(.body.monospacedDigit())
+                            .frame(width: 100)
+                        Spacer()
+                    }
+
+                    Toggle(isOn: $showCostEstimates) {
+                        VStack(alignment: .leading) {
+                            Text("Show Cost Estimates")
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(TrinityTheme.textPrimary)
+                            Text("Display estimated cost per message in chat")
+                                .font(.caption2)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                        }
+                    }
+
+                    Text("Budget warning at 80%, hard stop at 100% of daily limit")
+                        .font(.caption2)
+                        .foregroundStyle(TrinityTheme.textMuted)
+                }
+                .padding()
+                .background(TrinityTheme.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .padding(.horizontal)
+
+                // Conversation
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("CONVERSATION")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(TrinityTheme.accent)
+
+                    HStack {
+                        Text("Auto-Archive")
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .frame(width: 120, alignment: .leading)
+                        Stepper(value: $autoArchiveDays, in: 7...365, step: 7) {
+                            Text("\(autoArchiveDays) days")
+                                .font(.caption.monospacedDigit())
+                                .foregroundStyle(TrinityTheme.textPrimary)
+                        }
+                    }
+
+                    Toggle(isOn: $autoTitle) {
+                        VStack(alignment: .leading) {
+                            Text("Auto-Title Threads")
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(TrinityTheme.textPrimary)
+                            Text("Automatically generate thread title from first message")
+                                .font(.caption2)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                        }
+                    }
+
+                    Toggle(isOn: $draftAutoSave) {
+                        VStack(alignment: .leading) {
+                            Text("Draft Auto-Save")
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(TrinityTheme.textPrimary)
+                            Text("Save unsent messages as drafts when switching threads")
+                                .font(.caption2)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                        }
+                    }
+
+                    HStack {
+                        Text("Sort Order")
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .frame(width: 120, alignment: .leading)
+                        Picker("", selection: $threadSortOrder) {
+                            Text("Date").tag("date")
+                            Text("Name").tag("name")
+                            Text("Activity").tag("activity")
+                        }
+                        .pickerStyle(.segmented)
+                    }
+
+                    Text("Threads older than \(autoArchiveDays) days are auto-archived")
+                        .font(.caption2)
+                        .foregroundStyle(TrinityTheme.textMuted)
+                }
+                .padding()
+                .background(TrinityTheme.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .padding(.horizontal)
+
+                // AI Defaults
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("AI DEFAULTS")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(TrinityTheme.purple)
+
+                    HStack {
+                        Text("Chat Mode")
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .frame(width: 100, alignment: .leading)
+                        Picker("", selection: $defaultChatModeRaw) {
+                            ForEach(ChatMode.allCases, id: \.rawValue) { mode in
+                                Text(mode.rawValue).tag(mode.rawValue)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+
+                    HStack {
+                        Text("Effort Level")
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .frame(width: 100, alignment: .leading)
+                        Picker("", selection: $effortLevelRaw) {
+                            ForEach(EffortLevel.allCases, id: \.rawValue) { level in
+                                Text(level.rawValue).tag(level.rawValue)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                    }
+
+                    HStack {
+                        Text("Style Preset")
+                            .font(.caption)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .frame(width: 100, alignment: .leading)
+                        Picker("", selection: $stylePresetRaw) {
+                            ForEach(StylePreset.allCases, id: \.rawValue) { preset in
+                                Text(preset.rawValue).tag(preset.rawValue)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+
+                    Text("Defaults apply to new threads. Existing threads keep their settings.")
+                        .font(.caption2)
+                        .foregroundStyle(TrinityTheme.textMuted)
+                }
+                .padding()
+                .background(TrinityTheme.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .padding(.horizontal)
+
                 // Input behavior
                 VStack(alignment: .leading, spacing: 12) {
                     Text("INPUT")
@@ -319,6 +511,45 @@ struct SettingsScreen: View {
                 .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
                 .padding(.horizontal)
 
+                // Tips
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("TIPS & ONBOARDING")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(TrinityTheme.accent)
+
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("Shortcut cheatsheet")
+                                .font(.body.weight(.medium))
+                                .foregroundStyle(TrinityTheme.textPrimary)
+                            Text(hasSeenShortcuts
+                                ? "Already shown on first launch"
+                                : "Will show on next launch")
+                                .font(.caption2)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                        }
+                        Spacer()
+                        if hasSeenShortcuts {
+                            Button {
+                                hasSeenShortcuts = false
+                            } label: {
+                                Text("Reset tips")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundStyle(.black)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 6)
+                                    .background(TrinityTheme.accent)
+                                    .clipShape(Capsule())
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .padding()
+                .background(TrinityTheme.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .padding(.horizontal)
+
                 // About
                 VStack(alignment: .leading, spacing: 8) {
                     Text("ABOUT")
@@ -361,11 +592,60 @@ struct SettingsScreen: View {
                             .font(.caption)
                             .foregroundStyle(TrinityTheme.accent)
                     }
+
+                    Divider()
+                        .background(Color.white.opacity(0.1))
+
+                    HStack(spacing: 12) {
+                        Button {
+                            resetAllTips()
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.counterclockwise")
+                                    .font(.system(size: 11))
+                                Text("Reset All Tips")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.white.opacity(0.08))
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            showClearConfirmation = true
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "trash")
+                                    .font(.system(size: 11))
+                                Text("Clear All Data")
+                                    .font(.system(size: 12, weight: .medium))
+                            }
+                            .foregroundStyle(TrinityTheme.statusError)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(TrinityTheme.statusError.opacity(0.15))
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+
+                        Spacer()
+                    }
                 }
                 .padding()
                 .background(TrinityTheme.bgCard)
                 .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
                 .padding(.horizontal)
+                .alert("Clear All Data", isPresented: $showClearConfirmation) {
+                    Button("Cancel", role: .cancel) {}
+                    Button("Clear Everything", role: .destructive) {
+                        clearAllData()
+                    }
+                } message: {
+                    Text("This will reset all settings to defaults and remove saved threads. This action cannot be undone.")
+                }
             }
             .padding(.bottom)
         }
@@ -485,6 +765,47 @@ struct SettingsScreen: View {
                 UserDefaults.standard.set(names, forKey: "ollamaModels")
             }
         }.resume()
+    }
+
+    private func resetAllTips() {
+        hasSeenShortcuts = false
+        // Reset any other tip/onboarding flags here
+    }
+
+    private func clearAllData() {
+        // Reset all @AppStorage values to defaults
+        appearanceModeRaw = AppearanceMode.dark.rawValue
+        soundMode = "full"
+        soundFeedback = true
+        backgroundNotifications = true
+        dailyCostBudget = 5.0
+        showCostEstimates = true
+        autoArchiveDays = 90
+        autoTitle = true
+        draftAutoSave = true
+        stylePresetRaw = StylePreset.concise.rawValue
+        effortLevelRaw = EffortLevel.medium.rawValue
+        defaultChatModeRaw = ChatMode.trinity.rawValue
+        threadSortOrder = "date"
+        chatFontSize = 15
+        useCtrlEnterToSend = false
+        sessionCleanupDays = 30
+        refreshInterval = 5.0
+        ollamaURL = "http://localhost:11434"
+        ollamaEnabled = false
+        arenaHost = "localhost"
+        arenaPort = 8080
+        trinityPath = ""
+        hasSeenShortcuts = false
+        // Reset queen daemon state
+        godMode = false
+        maxAutoLevel = 1
+        requireApproval = true
+        intervalSec = 600
+        saveQueenConfig()
+        // Clear thread store
+        UserDefaults.standard.removeObject(forKey: "ollamaModels")
+        UserDefaults.standard.removeObject(forKey: "recentGrepPatterns")
     }
 
     private func saveQueenConfig() {
