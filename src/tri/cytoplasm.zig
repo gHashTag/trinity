@@ -3615,7 +3615,6 @@ fn runStatus(allocator: Allocator, args: []const []const u8) !void {
     if (benchmark) {
         const result = cell_parser.discoverAllEx(allocator, .{
             .use_cache = use_cache,
-            .parallel = true,
             .benchmark = true,
         }) catch |err| {
             std.debug.print("{s}ERROR{s}: Benchmark failed: {}\n", .{ RED, RESET, err });
@@ -4257,7 +4256,7 @@ fn runDoctor(allocator: Allocator, args: []const []const u8) !void {
 
     // Step 7: Status
     std.debug.print("  {s}[7/7]{s} Status...\n", .{ CYAN, RESET });
-    try runStatus(allocator);
+    try runStatus(allocator, &[_][]const u8{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -6754,34 +6753,25 @@ fn findCellVersion(cells: []const std.json.Value, cell_id: []const u8) ?Version 
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn discoverCells(allocator: Allocator) ![][]const u8 {
+    // Use optimized discovery from ribosome
+    const discovered = try cell_parser.discoverAll(allocator);
+    defer {
+        for (discovered) |c| {
+            allocator.free(c.content);
+            allocator.free(c.dir_path);
+        }
+        allocator.free(discovered);
+    }
+
+    // Extract just the dir_paths
     var results = std.array_list.Managed([]const u8).init(allocator);
     errdefer {
         for (results.items) |p| allocator.free(p);
         results.deinit();
     }
 
-    const cwd = std.fs.cwd();
-
-    for (CELL_SCAN_DIRS) |scan_dir| {
-        var dir = cwd.openDir(scan_dir, .{ .iterate = true }) catch continue;
-        defer dir.close();
-
-        var walker = dir.walk(allocator) catch continue;
-        defer walker.deinit();
-
-        while (walker.next() catch null) |entry| {
-            if (entry.kind != .file) continue;
-            if (!std.mem.eql(u8, entry.basename, "cell.tri")) continue;
-
-            // Build the path relative to cwd: scan_dir/dir_part
-            const dir_path = std.fs.path.dirname(entry.path) orelse "";
-            const full_path = if (dir_path.len > 0)
-                std.fmt.allocPrint(allocator, "{s}/{s}", .{ scan_dir, dir_path }) catch continue
-            else
-                allocator.dupe(u8, scan_dir) catch continue;
-
-            try results.append(full_path);
-        }
+    for (discovered) |c| {
+        try results.append(try allocator.dupe(u8, c.dir_path));
     }
 
     return results.toOwnedSlice();
