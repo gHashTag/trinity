@@ -1,0 +1,38 @@
+[cell]
+id = "trinity.string-theory"
+name = "String Theory"
+version = "1.0.0"
+kind = "library"
+path = "src/string_theory"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "String dualities with phi-connections and E8 lattice"
+capabilities = ["vsa", "string-theory", "e8"]
+files = 7
+tests = 68
+owner = "agent:ralph"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:a9b2173964f899c52fa86d0a948bf5193c700d9e85a9e80e5d0407cb60e4cd71"

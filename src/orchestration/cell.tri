@@ -1,0 +1,38 @@
+[cell]
+id = "trinity.orchestration"
+name = "FPGA Orchestration"
+version = "1.0.0"
+kind = "library"
+path = "src/orchestration"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "FPGA coordination contracts and deployment agreements"
+capabilities = ["fpga", "orchestration", "contracts"]
+files = 2
+tests = 14
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:3048597dd78059550e61742f504da63dc5c7c35390934f171f83e7b4974b9005"

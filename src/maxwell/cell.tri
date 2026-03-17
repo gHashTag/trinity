@@ -1,0 +1,38 @@
+[cell]
+id = "trinity.maxwell"
+name = "Maxwell Daemon"
+version = "1.0.0"
+kind = "tool"
+path = "src/maxwell"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Code analyzer with codebase indexing and spec generation"
+capabilities = ["analysis", "indexing", "codegen"]
+files = 7
+tests = 17
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:7acb9791f308eb26be5f85b6b1c8b6dbcb582765af9450f60617eedcca4a3d99"

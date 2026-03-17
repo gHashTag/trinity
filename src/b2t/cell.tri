@@ -36,6 +36,17 @@ process = "spawn"
 
 ffi = "none"
 concurrency = "none"
+[dna]
+cell_id = "trinity.b2t"
+source = "specs/b2t/core.tri"
+output = "gen/protein.zig"
+regenerable = true
+
+[contract]
+inputs = ["binary_data: []u8"]
+outputs = ["ternary_data: []Trit"]
+invariants = ["len(output) == ceil(len(input) * 8 / log2(3))"]
+
 [security]
 signed = true
 signature = "sha256:50d1184a0baef72cb61f1b0d4b1755c3c528a3a8dd44bdf36a50d705da95f497"

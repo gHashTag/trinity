@@ -1,0 +1,39 @@
+[cell]
+id = "trinity.os"
+name = "Trinity OS"
+version = "1.0.0"
+kind = "backend"
+path = "src/os"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Native ternary operating system first boot stage"
+capabilities = ["os", "ternary", "boot"]
+files = 1
+tests = 3
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+trinity.sacred = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:18700b714af113a694df32b4a6f448a1ebc00ae1ff9913111a34332d6c1d7a03"
