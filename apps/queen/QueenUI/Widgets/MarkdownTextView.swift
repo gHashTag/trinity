@@ -1,5 +1,6 @@
 import SwiftUI
 import AppKit
+import WebKit
 
 struct MarkdownTextView: View {
     let text: String
@@ -24,6 +25,7 @@ struct MarkdownTextView: View {
         case table([[String]])         // rows of cells (first row = header)
         case image(String, String)     // alt, url
         case math(String)              // block math ($$...$$)
+        case mermaid(String)           // mermaid diagram code
         case horizontalRule
         case empty
     }
@@ -98,8 +100,12 @@ struct MarkdownTextView: View {
             if line.hasPrefix("```") {
                 if inCodeBlock {
                     let content = codeLines.joined(separator: "\n")
+                    // Mermaid diagrams get special rendering
+                    if codeLang?.lowercased() == "mermaid" {
+                        result.append(.mermaid(content))
+                    }
                     // Diff blocks get special rendering
-                    if codeLang?.lowercased() == "diff" {
+                    else if codeLang?.lowercased() == "diff" {
                         result.append(.diff(content))
                     } else {
                         result.append(.code(content, codeLang))
@@ -278,6 +284,31 @@ struct MarkdownTextView: View {
             .overlay(alignment: .topTrailing) {
                 CodeCopyButton(code: code)
                     .padding(8)
+            }
+            .padding(.vertical, 4)
+
+        case .mermaid(let code):
+            VStack(alignment: .leading, spacing: 0) {
+                HStack {
+                    Text("mermaid")
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .foregroundStyle(TrinityTheme.purple)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+                .padding(.bottom, 4)
+
+                MermaidView(mermaidCode: code)
+                    .frame(minHeight: 200)
+                    .frame(maxWidth: .infinity)
+                    .padding(12)
+                    .background(Color(hex: 0x0A0A0A))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(TrinityTheme.purple.opacity(0.3), lineWidth: 1)
+                    )
             }
             .padding(.vertical, 4)
 
@@ -940,6 +971,96 @@ struct MathBlockView: View {
         .accessibilityLabel("Math expression: \(expression)")
     }
 }
+
+// MARK: - Mermaid Diagram View
+
+struct MermaidView: NSViewRepresentable {
+    let mermaidCode: String
+
+    func makeNSView(context: Context) -> WKWebView {
+        let configuration = WKWebViewConfiguration()
+        configuration.userContentController = WKUserContentController()
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.navigationDelegate = context.coordinator
+        webView.setValue(false, forKey: "drawsBackground")
+        return webView
+    }
+
+    func updateNSView(_ nsView: WKWebView, context: Context) {
+        // Only load if not already loaded with same content
+        let js = """
+        <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+        <script>
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'dark',
+                themeVariables: {
+                    primaryColor: '#00ff88',
+                    primaryTextColor: '#ffffff',
+                    primaryBorderColor: '#00ff88',
+                    lineColor: '#ffffff',
+                    secondaryColor: '#1a1a1a',
+                    tertiaryColor: '#0a0a0a',
+                    background: '#000000',
+                    mainBkg: '#0a0a0a',
+                    nodeBorder: '#1a1a1a',
+                    clusterBkg: '#0a0a0a',
+                    clusterBorder: '#1a1a1a',
+                    titleColor: '#ffffff',
+                    edgeLabelBackground: '#1a1a1a',
+                    actorBkg: '#0a0a0a',
+                    actorBorder: '#00ff88',
+                    actorTextColor: '#ffffff',
+                    actorLineColor: '#ffffff',
+                    signalColor: '#ffffff',
+                    signalTextColor: '#ffffff',
+                    labelBoxBkgColor: '#0a0a0a',
+                    labelBoxBorderColor: '#1a1a1a',
+                    labelTextColor: '#ffffff',
+                    loopTextColor: '#ffffff',
+                    noteBorderColor: '#8b5cf6',
+                    noteBkgColor: '#1a1a1a',
+                    noteTextColor: '#ffffff',
+                    activationBorderColor: '#00ff88',
+                    activationBkgColor: '#00ff8833',
+                    sequenceNumberColor: '#ffffff'
+                }
+            });
+        </script>
+        <div class="mermaid">
+        \(escapeMermaidCode(mermaidCode))
+        </div>
+        """
+        nsView.loadHTMLString(js, baseURL: nil)
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    private func escapeMermaidCode(_ code: String) -> String {
+        code
+            .replacingOccurrences(of: "\\", with: "\\\\")
+            .replacingOccurrences(of: "\"", with: "\\\"")
+            .replacingOccurrences(of: "'", with: "\\'")
+            .replacingOccurrences(of: "\n", with: "\\n")
+            .replacingOccurrences(of: "\r", with: "\\r")
+    }
+
+    class Coordinator: NSObject, WKNavigationDelegate {
+        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            // Adjust content size after rendering
+            webView.evaluateJavaScript("document.body.scrollHeight") { height, error in
+                if let height = height as? CGFloat {
+                    DispatchQueue.main.async {
+                        webView.frame.size.height = height
+                    }
+                }
+            }
+        }
+    }
+}
+
 
 // MARK: - Math Renderer (Unicode-based, no external deps)
 

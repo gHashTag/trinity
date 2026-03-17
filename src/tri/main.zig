@@ -666,12 +666,9 @@ pub fn main() !void {
                 const mu_proto = @import("mu_error_protocol.zig");
                 try mu_proto.runMuReportCommand(allocator);
             } else if (std.mem.eql(u8, subcmd, "learn")) {
-                const mu_learn = @import("mu_learning_db.zig");
-                try mu_learn.runMuLearnCommand(allocator);
+                std.debug.print("\x1b[33mtri mu learn: deprecated — use hippocampus write directly\x1b[0m\n", .{});
             } else if (std.mem.eql(u8, subcmd, "fix")) {
-                const mu_learn = @import("mu_learning_db.zig");
-                const fix_args = if (cmd_args.len > 1) cmd_args[1..] else &[_][]const u8{};
-                try mu_learn.runMuFixCommand(allocator, fix_args);
+                std.debug.print("\x1b[33mtri mu fix: deprecated — use hippocampus read/write directly\x1b[0m\n", .{});
             } else if (std.mem.eql(u8, subcmd, "start")) {
                 const result = std.process.Child.run(.{
                     .allocator = allocator,
