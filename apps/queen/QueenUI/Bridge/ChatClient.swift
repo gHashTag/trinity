@@ -3,7 +3,7 @@ import SwiftUI
 import AppKit
 
 /// Chat mode: determines how the message is routed
-enum ChatMode: String, CaseIterable {
+enum ChatMode: String, CaseIterable, Codable {
     case search = "Search"
     case trinity = "Trinity"
     case reason = "Reason"
@@ -265,9 +265,25 @@ enum APIErrorType {
     }
 }
 
+/// Streaming lifecycle: idle → connecting → streaming → done/error
+enum StreamingState: Equatable {
+    case idle
+    case connecting      // request sent, waiting for first token
+    case streaming       // tokens actively flowing
+    case done
+    case error(String)
+}
+
 @MainActor
 class ChatClient: ObservableObject {
-    @Published var isStreaming = false
+    @Published var streamingState: StreamingState = .idle
+    /// Backward-compatible computed property
+    var isStreaming: Bool {
+        switch streamingState {
+        case .connecting, .streaming: return true
+        default: return false
+        }
+    }
     @Published var streamingText = ""
     @Published var streamingTokensPerSec: Double = 0
     @Published var streamingTTFB: Int = 0          // ms to first token
@@ -301,12 +317,81 @@ class ChatClient: ObservableObject {
         let timestamp: Date
     }
 
+    // MARK: - Stream Timeout
+    @Published var streamTimeout: Bool = false
+    private var timeoutTask: Task<Void, Never>?
+    private var lastTokenTime: Date = .distantPast
+
+    /// Start timeout watchdog: 30s connect (60s reason), 15s inactivity after first token
+    func startStreamTimeout(isReasonMode: Bool = false) {
+        streamTimeout = false
+        lastTokenTime = .distantPast
+        let connectTimeout: TimeInterval = isReasonMode ? 60 : 30
+        let inactivityTimeout: TimeInterval = 15
+
+        timeoutTask = Task { [weak self] in
+            // Phase 1: wait for first token
+            try? await Task.sleep(for: .seconds(connectTimeout))
+            guard let self, !Task.isCancelled else { return }
+            if self.streamingState == .connecting {
+                self.handleStreamTimeout("No response after \(Int(connectTimeout))s")
+                return
+            }
+            // Phase 2: inactivity check loop
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(2))
+                guard !Task.isCancelled, self.isStreaming else { return }
+                if Date().timeIntervalSince(self.lastTokenTime) > inactivityTimeout {
+                    self.handleStreamTimeout("No tokens for \(Int(inactivityTimeout))s")
+                    return
+                }
+            }
+        }
+    }
+
+    func recordTokenReceived() {
+        lastTokenTime = Date()
+        if streamingState == .connecting { streamingState = .streaming }
+    }
+
+    private func handleStreamTimeout(_ reason: String) {
+        streamTimeout = true
+        if streamingOutputTokens > 10 {
+            streamingText += "\n\n*[Timed out: \(reason)]*"
+        }
+        streamingState = .error(reason)
+        stop()
+    }
+
+    func cancelStreamTimeout() {
+        timeoutTask?.cancel()
+        timeoutTask = nil
+    }
+
+    // MARK: - Batched Store Updates (reduce disk writes from ~100/sec to ~2/sec)
+    private var lastStoreWrite: Date = .distantPast
+    private let storeWriteInterval: TimeInterval = 0.5
+
+    func bufferedUpdateMessage(store: ThreadStore, threadID: UUID) {
+        let now = Date()
+        if now.timeIntervalSince(lastStoreWrite) >= storeWriteInterval {
+            store.updateLastMessage(text: streamingText, in: threadID)
+            lastStoreWrite = now
+        }
+    }
+
+    func flushToStore(store: ThreadStore, threadID: UUID) {
+        store.updateLastMessage(text: streamingText, in: threadID)
+        lastStoreWrite = .distantPast
+    }
+
     // MARK: - Offline Queue
     @Published var offlineQueueCount: Int = 0
+    @Published var queueDrainedCount: Int = 0  // set when drain succeeds, UI shows toast
     @Published var failoverLog: [FailoverEvent] = []
 
-    struct QueuedMessage: Identifiable {
-        let id = UUID()
+    struct QueuedMessage: Identifiable, Codable {
+        var id = UUID()
         let text: String
         let threadID: UUID
         let mode: ChatMode
@@ -315,10 +400,33 @@ class ChatClient: ObservableObject {
     @Published var offlineQueue: [QueuedMessage] = []
     private var offlineDrainTask: Task<Void, Never>?
 
+    private var queueURL: URL {
+        let appSupport = FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        return appSupport.appendingPathComponent("QueenUI/offline_queue.json")
+    }
+
+    func loadPersistedQueue() {
+        guard let data = try? Data(contentsOf: queueURL) else { return }
+        let decoder = JSONDecoder()
+        if let loaded = try? decoder.decode([QueuedMessage].self, from: data), !loaded.isEmpty {
+            offlineQueue = loaded
+            offlineQueueCount = loaded.count
+        }
+    }
+
+    private func persistQueue() {
+        let encoder = JSONEncoder()
+        if let data = try? encoder.encode(offlineQueue) {
+            try? data.write(to: queueURL, options: .atomic)
+        }
+    }
+
     private var streamTask: Task<Void, Never>?
     private let repo = RepoContext()
     private var streamStartTime: Date?
     private var firstTokenTime: Date?
+    private var lastCheckpointTokens: Int = 0
 
     var stylePreset: StylePreset = .concise
     var effortLevel: EffortLevel = .medium
@@ -404,6 +512,26 @@ class ChatClient: ObservableObject {
         }
 
         return prompt
+    }
+
+    /// Map APIErrorType to MessageErrorKind for structured error display
+    private func errorKind(from apiError: APIErrorType?) -> MessageErrorKind {
+        guard let apiError else { return .serverError }
+        switch apiError {
+        case .unauthorized: return .unauthorized
+        case .rateLimited: return .rateLimited
+        case .serverError: return .serverError
+        case .timeout: return .timeout
+        case .connectionFailed: return .connectionFailed
+        case .malformedResponse: return .serverError
+        case .unknown: return .serverError
+        }
+    }
+
+    /// Set structured error on last message
+    private func setError(_ kind: MessageErrorKind, text: String, threadID: UUID, store: ThreadStore) {
+        store.updateLastMessage(text: text, in: threadID)
+        store.setLastMessageError(kind, in: threadID)
     }
 
     /// Build repo summary as a content block (not system prompt) for first message
@@ -628,6 +756,7 @@ class ChatClient: ObservableObject {
         if let status = NetworkLog.shared.providerHealth[providerName], !status.isUp {
             offlineQueue.append(QueuedMessage(text: text, threadID: threadID, mode: mode))
             offlineQueueCount = offlineQueue.count
+            persistQueue()
             // Add user message with queued indicator
             let userMsg = ChatMessage(role: .user, text: text)
             store.appendMessage(userMsg, to: threadID)
@@ -665,9 +794,10 @@ class ChatClient: ObservableObject {
         let assistantMsg = ChatMessage(role: .assistant, text: "", modelID: model.id)
         store.appendMessage(assistantMsg, to: threadID)
 
-        isStreaming = true
+        streamingState = .connecting
         streamingText = ""
         streamingThinkingText = ""
+        lastCheckpointTokens = 0
         activeStreamThreadID = threadID
         activeStreamStore = store
 
@@ -739,6 +869,7 @@ class ChatClient: ObservableObject {
                 }
             } catch {
                 if !Task.isCancelled {
+                    let kind = errorKind(from: lastError)
                     // Streaming recovery: if we got partial text, try to continue
                     if streamingOutputTokens > 10 {
                         let partial = streamingText
@@ -758,21 +889,15 @@ class ChatClient: ObservableObject {
                             )
                             saveMetrics(messageID: assistantMsgID, threadID: threadID, store: store)
                         } catch {
-                            store.updateLastMessage(
-                                text: streamingText + "\n[Error: \(error.localizedDescription)]",
-                                in: threadID
-                            )
+                            setError(kind, text: streamingText + "\n[\(kind.label): \(error.localizedDescription)]", threadID: threadID, store: store)
                         }
                     } else {
-                        store.updateLastMessage(
-                            text: streamingText + "\n[Error: \(error.localizedDescription)]",
-                            in: threadID
-                        )
+                        setError(kind, text: "[\(kind.label): \(error.localizedDescription)]", threadID: threadID, store: store)
                     }
                 }
             }
             store.saveThread(threadID)
-            isStreaming = false
+            streamingState = .done
             // Sound cue on receive
             SoundCueManager.shared.playReceive()
         }
@@ -1081,14 +1206,14 @@ class ChatClient: ObservableObject {
         let assistantMsg = ChatMessage(role: .assistant, text: "Generating image...", modelID: "grok-2-image")
         store.appendMessage(assistantMsg, to: threadID)
 
-        isStreaming = true
+        streamingState = .connecting
         streamingText = "Generating image..."
 
         streamTask = Task {
             do {
                 guard let key = modelManager.xaiKey else {
                     store.updateLastMessage(text: "[XAI_API_KEY not set in .env]", in: threadID)
-                    isStreaming = false
+                    streamingState = .done
                     return
                 }
 
@@ -1114,7 +1239,7 @@ class ChatClient: ObservableObject {
                 store.updateLastMessage(text: "[Image generation error: \(error.localizedDescription)]", in: threadID)
             }
             store.saveThread(threadID)
-            isStreaming = false
+            streamingState = .done
         }
     }
 
@@ -1128,6 +1253,7 @@ class ChatClient: ObservableObject {
     private weak var activeStreamStore: ThreadStore?
 
     func stop() {
+        cancelStreamTimeout()
         streamTask?.cancel()
         streamTask = nil
 
@@ -1147,7 +1273,7 @@ class ChatClient: ObservableObject {
             store.saveThread(threadID)
         }
 
-        isStreaming = false
+        streamingState = .done
         isSlowResponse = false
         SoundCueManager.shared.playReceive()
 
@@ -1195,6 +1321,9 @@ class ChatClient: ObservableObject {
                         try? await Task.sleep(for: .milliseconds(500))
                     }
                 }
+                if !drained.isEmpty {
+                    queueDrainedCount = drained.count
+                }
             }
             offlineDrainTask = nil
         }
@@ -1218,7 +1347,7 @@ class ChatClient: ObservableObject {
         let assistantMsg = ChatMessage(role: .assistant, text: "", modelID: modelManager.selectedModel.id)
         store.appendMessage(assistantMsg, to: threadID)
 
-        isStreaming = true
+        streamingState = .connecting
         streamingText = ""
 
         let history: [[String: String]] = store.activeThread()?.messages
@@ -1265,7 +1394,7 @@ class ChatClient: ObservableObject {
                 }
             }
             store.saveThread(threadID)
-            isStreaming = false
+            streamingState = .done
         }
     }
 
@@ -1274,6 +1403,13 @@ class ChatClient: ObservableObject {
         let elapsed = Date().timeIntervalSince(first)
         guard elapsed > 0.1 else { return }
         streamingTokensPerSec = Double(streamingOutputTokens) / elapsed
+
+        // Periodic disk checkpoint every ~100 tokens (crash recovery)
+        if streamingOutputTokens - lastCheckpointTokens >= 100,
+           let threadID = activeStreamThreadID {
+            lastCheckpointTokens = streamingOutputTokens
+            activeStreamStore?.saveThread(threadID)
+        }
     }
 
     func sendComment(
@@ -1289,7 +1425,7 @@ class ChatClient: ObservableObject {
         let assistantComment = ChatMessage(role: .assistant, text: "", modelID: modelManager.selectedModel.id)
         store.appendComment(assistantComment, to: originalMessage.id, in: threadID)
 
-        isStreaming = true
+        streamingState = .connecting
         streamingText = ""
 
         let contextHistory: [[String: String]] = [
@@ -1314,7 +1450,7 @@ class ChatClient: ObservableObject {
             do {
                 guard modelManager.apiKey(for: model) != nil else {
                     store.updateLastComment(text: "[No API key]", for: messageID, in: threadID)
-                    isStreaming = false
+                    streamingState = .done
                     return
                 }
 
@@ -1329,7 +1465,7 @@ class ChatClient: ObservableObject {
 
                 guard let request = modelManager.buildRequest(for: model, body: bodyData) else {
                     store.updateLastComment(text: "[Failed to build request]", for: messageID, in: threadID)
-                    isStreaming = false
+                    streamingState = .done
                     return
                 }
 
@@ -1339,7 +1475,7 @@ class ChatClient: ObservableObject {
                     var errorBody = ""
                     for try await line in bytes.lines { errorBody += line }
                     store.updateLastComment(text: "[API Error \(httpResponse.statusCode)]", for: messageID, in: threadID)
-                    isStreaming = false
+                    streamingState = .done
                     return
                 }
 
@@ -1376,7 +1512,7 @@ class ChatClient: ObservableObject {
                 }
             }
             store.saveThread(threadID)
-            isStreaming = false
+            streamingState = .done
         }
     }
 
@@ -1384,6 +1520,7 @@ class ChatClient: ObservableObject {
     func cancelQueued(_ id: UUID) {
         offlineQueue.removeAll { $0.id == id }
         offlineQueueCount = offlineQueue.count
+        persistQueue()
     }
 
     /// Retry a specific assistant message (not just the last one)
@@ -1410,7 +1547,7 @@ class ChatClient: ObservableObject {
         let assistantMsg = ChatMessage(role: .assistant, text: "", modelID: modelManager.selectedModel.id)
         store.appendMessage(assistantMsg, to: threadID)
 
-        isStreaming = true
+        streamingState = .connecting
         streamingText = ""
         streamingThinkingText = ""
 
@@ -1437,7 +1574,7 @@ class ChatClient: ObservableObject {
                 }
             }
             store.saveThread(threadID)
-            isStreaming = false
+            streamingState = .done
         }
     }
 
@@ -1457,7 +1594,7 @@ class ChatClient: ObservableObject {
         let assistantMsg = ChatMessage(role: .assistant, text: "", modelID: modelManager.selectedModel.id)
         store.appendMessage(assistantMsg, to: threadID)
 
-        isStreaming = true
+        streamingState = .connecting
         streamingText = ""
 
         let history: [[String: String]] = store.activeThread()?.messages
@@ -1507,7 +1644,7 @@ class ChatClient: ObservableObject {
                 }
             }
             store.saveThread(threadID)
-            isStreaming = false
+            streamingState = .done
         }
     }
 
@@ -2083,7 +2220,7 @@ class ChatClient: ObservableObject {
         assistantMsg.branchIndex = oldIndex + 1
         store.appendMessage(assistantMsg, to: threadID)
 
-        isStreaming = true
+        streamingState = .connecting
         streamingText = ""
         streamingThinkingText = ""
 
@@ -2109,7 +2246,7 @@ class ChatClient: ObservableObject {
                 }
             }
             store.saveThread(threadID)
-            isStreaming = false
+            streamingState = .done
         }
     }
 }

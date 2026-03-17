@@ -144,6 +144,22 @@ public struct MainView: View {
                 return nil
             }
 
+            // Cmd+[ = previous thread, Cmd+] = next thread
+            if ch == "[" {
+                NotificationCenter.default.post(name: .prevThread, object: nil)
+                return nil
+            }
+            if ch == "]" {
+                NotificationCenter.default.post(name: .nextThread, object: nil)
+                return nil
+            }
+
+            // Cmd+F = search within thread
+            if (ch == "f" || ch == "F") && !event.modifierFlags.contains(.shift) {
+                NotificationCenter.default.post(name: .searchInThread, object: nil)
+                return nil
+            }
+
             // Cmd+W = close/delete thread (handled in ChatScreen)
             if ch == "w" || ch == "W" {
                 // Let ChatScreen handle this via notification

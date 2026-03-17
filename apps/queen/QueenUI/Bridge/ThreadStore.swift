@@ -59,6 +59,14 @@ final class ThreadStore: ObservableObject {
         threads[idx].updatedAt = Date()
     }
 
+    func setLastMessageError(_ errorKind: MessageErrorKind, in threadID: UUID) {
+        guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        guard !threads[idx].messages.isEmpty else { return }
+        let lastIdx = threads[idx].messages.count - 1
+        threads[idx].messages[lastIdx].errorKind = errorKind
+        threads[idx].updatedAt = Date()
+    }
+
     func updateLastMessageThinking(text: String, in threadID: UUID) {
         guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
         guard !threads[idx].messages.isEmpty else { return }

@@ -9,6 +9,8 @@ struct ChatScreen: View {
     @StateObject private var client = ChatClient()
     @StateObject private var commentClient = ChatClient()
     @StateObject private var modelManager = ModelManager()
+    @StateObject private var repoContext = RepoContext()
+    private var trinityCtx: TrinityContext { TrinityContext.shared }
     @State private var input = ""
     @State private var commentingMessage: ChatMessage? = nil
     @State private var chatMode: ChatMode = .trinity
@@ -28,6 +30,16 @@ struct ChatScreen: View {
     @State private var showThinkingTranscript = false
     @State private var showOnboarding = false
     @State private var taskItems: [TaskItem] = []
+    @State private var selectedPersona: Persona? = nil
+    @State private var showPersonaLibrary = false
+    @State private var lastSentText = ""
+    @State private var showSentConfirmation = false
+    @State private var showDraftSaved = false
+    @State private var showQueueDrained = false
+    @State private var queueDrainedMessageCount = 0
+    @State private var showInThreadSearch = false
+    @State private var inThreadSearchQuery = ""
+    @State private var inThreadSearchIndex = 0
     @AppStorage("stylePreset") private var stylePresetRaw: String = StylePreset.concise.rawValue
     @AppStorage("effortLevel") private var effortLevelRaw: String = EffortLevel.medium.rawValue
     @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend = false
@@ -71,6 +83,13 @@ struct ChatScreen: View {
 
     private var thread: ChatThread? {
         store.activeThread()
+    }
+
+    /// Messages matching in-thread search
+    private var inThreadSearchMatches: [ChatMessage] {
+        guard !inThreadSearchQuery.isEmpty, let msgs = thread?.messages else { return [] }
+        let q = inThreadSearchQuery.lowercased()
+        return msgs.filter { $0.text.lowercased().contains(q) }
     }
 
     /// Token estimation: ~3.5 chars/token for English, ~2.5 for code/mixed
@@ -141,6 +160,23 @@ struct ChatScreen: View {
                         // Connection status bar
                         ConnectionStatusBar(modelManager: modelManager, client: client)
 
+                        // Sticky context meter (always visible when >1K tokens)
+                        ContextBar(tokens: estimatedTokens)
+
+                        // In-thread search bar (Cmd+F)
+                        if showInThreadSearch {
+                            InThreadSearchBar(
+                                query: $inThreadSearchQuery,
+                                currentIndex: $inThreadSearchIndex,
+                                totalMatches: inThreadSearchMatches.count,
+                                onDismiss: {
+                                    showInThreadSearch = false
+                                    inThreadSearchQuery = ""
+                                    inThreadSearchIndex = 0
+                                }
+                            )
+                        }
+
                         // Messages
                         ScrollViewReader { proxy in
                             ScrollView {
@@ -162,85 +198,37 @@ struct ChatScreen: View {
                                         )
                                     }
 
-                                    // Error retry block (when last assistant message has error)
-                                    if !client.isStreaming,
-                                       let last = thread?.messages.last,
-                                       last.role == .assistant,
-                                       (last.text.hasPrefix("[") && (last.text.contains("Error") || last.text.contains("error") || last.text.contains("timed out") || last.text.contains("key"))) {
-                                        HStack(spacing: 12) {
-                                            Image(systemName: client.lastError?.icon ?? "exclamationmark.triangle.fill")
-                                                .font(.system(size: 14))
-                                                .foregroundStyle(TrinityTheme.statusError)
-                                            Text(client.lastError?.userMessage ?? "Response failed")
-                                                .font(.system(size: 13))
-                                                .foregroundStyle(TrinityTheme.statusError)
-                                                .lineLimit(2)
-                                            Button {
-                                                guard let threadID = store.activeThreadID else { return }
-                                                client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
-                                            } label: {
-                                                HStack(spacing: 4) {
-                                                    Image(systemName: "arrow.clockwise")
-                                                        .font(.system(size: 12, weight: .bold))
-                                                    Text("Retry")
-                                                        .font(.system(size: 12, weight: .bold))
-                                                }
-                                                .foregroundStyle(.black)
-                                                .padding(.horizontal, 14)
-                                                .padding(.vertical, 6)
-                                                .background(TrinityTheme.statusError)
-                                                .clipShape(Capsule())
-                                            }
-                                            .buttonStyle(.plain)
-
-                                            // Smart failover: suggest alternative provider
-                                            if let fallback = modelManager.failoverModel() {
-                                                Button {
-                                                    modelManager.selectedModel = fallback
-                                                    modelManager.persistSelection()
-                                                    guard let threadID = store.activeThreadID else { return }
-                                                    client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
-                                                } label: {
-                                                    HStack(spacing: 4) {
-                                                        Image(systemName: "arrow.triangle.2.circlepath")
-                                                            .font(.system(size: 12, weight: .bold))
-                                                        Text("Try \(fallback.displayName)")
-                                                            .font(.system(size: 12, weight: .bold))
-                                                    }
-                                                    .foregroundStyle(.black)
-                                                    .padding(.horizontal, 14)
-                                                    .padding(.vertical, 6)
-                                                    .background(TrinityTheme.accent)
-                                                    .clipShape(Capsule())
-                                                }
-                                                .buttonStyle(.plain)
-                                            }
-                                        }
-                                        .padding(.vertical, 12)
-                                        .transition(.opacity)
-                                    }
+                                    errorRetryBlock
 
                                     // Typing indicator + streaming metrics
                                     if client.isStreaming {
                                         VStack(alignment: .leading, spacing: 6) {
                                             HStack(spacing: 12) {
                                                 if !client.streamingThinkingText.isEmpty && client.streamingText.isEmpty {
-                                                    // Reasoning mode: show pulsing indicator with elapsed
+                                                    // Reasoning mode: show pulsing indicator with elapsed + hint
                                                     ThinkingDots()
                                                     Text("Reasoning...")
                                                         .font(.caption)
                                                         .foregroundStyle(TrinityTheme.purple)
                                                     StreamingElapsedTimer()
+                                                    if effortLevel == .max || effortLevel == .high {
+                                                        Text("(may take 10-30s)")
+                                                            .font(.system(size: 9))
+                                                            .foregroundStyle(TrinityTheme.textMuted)
+                                                    }
                                                 } else if thread?.messages.last?.text.isEmpty ?? false {
                                                     ThinkingDots()
                                                     SpinnerVerb()
                                                         .font(.caption)
                                                         .foregroundStyle(TrinityTheme.textMuted)
+                                                    // Live TTFB counter while waiting for first token
+                                                    LiveTTFBCounter(isWaiting: client.streamingTTFB == 0)
                                                 }
+                                                // Show TTFB after first token arrives
                                                 if client.streamingTTFB > 0 {
                                                     Text("TTFB \(client.streamingTTFB)ms")
                                                         .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                                        .foregroundStyle(client.streamingTTFB > 5000 ? TrinityTheme.statusWarn : TrinityTheme.textMuted)
+                                                        .foregroundStyle(ttfbColor(client.streamingTTFB))
                                                 }
                                                 if client.streamingTokensPerSec > 0 {
                                                     Text(String(format: "%.0f tok/s", client.streamingTokensPerSec))
@@ -254,13 +242,29 @@ struct ChatScreen: View {
                                                 }
                                             }
 
-                                            // Slow response warning
+                                            // Slow response warning (>3s for non-reasoning, >10s for reasoning)
                                             if client.isSlowResponse {
                                                 HStack(spacing: 6) {
                                                     Image(systemName: "tortoise.fill")
                                                         .font(.system(size: 10))
-                                                    Text("Slow response (>5s)")
+                                                    Text("Slow response")
                                                         .font(.system(size: 10, weight: .medium))
+                                                    Button {
+                                                        client.stop()
+                                                        if let threadID = store.activeThreadID {
+                                                            store.removeLastAssistantMessage(in: threadID)
+                                                            input = thread?.messages.last(where: { $0.role == .user })?.text ?? ""
+                                                        }
+                                                    } label: {
+                                                        Text("Cancel")
+                                                            .font(.system(size: 10, weight: .bold))
+                                                            .foregroundStyle(.black)
+                                                            .padding(.horizontal, 8)
+                                                            .padding(.vertical, 3)
+                                                            .background(TrinityTheme.statusError)
+                                                            .clipShape(Capsule())
+                                                    }
+                                                    .buttonStyle(.plain)
                                                     if let fallback = modelManager.failoverModel() {
                                                         Button {
                                                             client.stop()
@@ -348,6 +352,14 @@ struct ChatScreen: View {
                             .onChange(of: client.streamingText) {
                                 proxy.scrollTo("bottom", anchor: .bottom)
                             }
+                            .onChange(of: inThreadSearchIndex) { _, newIdx in
+                                let matches = inThreadSearchMatches
+                                if newIdx < matches.count {
+                                    withAnimation(.easeOut(duration: 0.2)) {
+                                        proxy.scrollTo(matches[newIdx].id, anchor: .center)
+                                    }
+                                }
+                            }
 
                             // Scroll-to-bottom FAB
                             if showScrollToBottom && !client.isStreaming {
@@ -384,17 +396,27 @@ struct ChatScreen: View {
                         if showMentionPopup {
                             MentionPopup(
                                 query: mentionQuery,
-                                isPresented: $showMentionPopup
-                            ) { value in
-                                // Replace @query with @value in input
-                                if let atRange = input.range(of: "@\(mentionQuery)", options: .backwards) {
-                                    input.replaceSubrange(atRange, with: "@\(value)")
-                                }
-                                showMentionPopup = false
-                            }
+                                isPresented: $showMentionPopup,
+                                onSelect: { value in
+                                    // Replace @query with @value in input
+                                    if let atRange = input.range(of: "@\(mentionQuery)", options: .backwards) {
+                                        input.replaceSubrange(atRange, with: "@\(value)")
+                                    }
+                                    // Save grep pattern for history
+                                    if value.hasPrefix("grep:") {
+                                        let pattern = String(value.dropFirst(5))
+                                        MentionPopup.saveGrepPattern(pattern)
+                                    }
+                                    showMentionPopup = false
+                                },
+                                repoContext: repoContext,
+                                trinityContext: trinityCtx
+                            )
                             .padding(.horizontal, 60)
                             .transition(.opacity.combined(with: .move(edge: .bottom)))
                         }
+
+                        stickyStreamingBar
 
                         inputAreaContent
                         inputBarView
@@ -466,6 +488,8 @@ struct ChatScreen: View {
                 NotificationService.shared.requestPermission()
                 NetworkLog.shared.checkAllProviders()
                 store.cleanupOldThreads()
+                modelManager.refreshOllamaModels()
+                client.loadPersistedQueue()
             }
             startHealthRefreshTimer()
         }
@@ -477,6 +501,23 @@ struct ChatScreen: View {
         }
         .onReceive(NotificationCenter.default.publisher(for: .newThread)) { _ in
             store.newThread()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .prevThread)) { _ in
+            let sorted = store.sortedThreads
+            guard let currentID = store.activeThreadID,
+                  let idx = sorted.firstIndex(where: { $0.id == currentID }),
+                  idx > 0 else { return }
+            store.activeThreadID = sorted[idx - 1].id
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .nextThread)) { _ in
+            let sorted = store.sortedThreads
+            guard let currentID = store.activeThreadID,
+                  let idx = sorted.firstIndex(where: { $0.id == currentID }),
+                  idx < sorted.count - 1 else { return }
+            store.activeThreadID = sorted[idx + 1].id
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .searchInThread)) { _ in
+            showInThreadSearch = true
         }
         .onReceive(NotificationCenter.default.publisher(for: .copyLastResponse)) { _ in
             if let last = thread?.messages.last(where: { $0.role == .assistant }) {
@@ -493,6 +534,15 @@ struct ChatScreen: View {
         .sheet(isPresented: $showOnboarding) {
             OnboardingWalkthrough(isPresented: $showOnboarding)
         }
+        .sheet(isPresented: $showPersonaLibrary) {
+            PersonaLibrary(
+                selectedPersona: $selectedPersona,
+                isPresented: $showPersonaLibrary,
+                onSelectTemplate: { template in
+                    input = template
+                }
+            )
+        }
         // Draft auto-save: persist input text per thread
         .onChange(of: input) { _, newValue in
             if let tid = store.activeThreadID {
@@ -501,6 +551,14 @@ struct ChatScreen: View {
             // Clear follow-up suggestions when user starts typing
             if !newValue.isEmpty && !client.followUpSuggestions.isEmpty {
                 client.followUpSuggestions = []
+            }
+            // Draft save indicator
+            if !newValue.isEmpty {
+                showDraftSaved = true
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(2))
+                    showDraftSaved = false
+                }
             }
         }
         .onChange(of: client.extractedTasks) { _, newTasks in
@@ -516,12 +574,245 @@ struct ChatScreen: View {
                 input = draft
             }
         }
+        .onChange(of: selectedPersona) { _, newPersona in
+            // Save persona to current thread
+            if let tid = store.activeThreadID,
+               let idx = store.threads.firstIndex(where: { $0.id == tid }) {
+                store.threads[idx].personaID = newPersona?.id
+                store.saveThread(tid)
+            }
+        }
     }
 
     // MARK: - Extracted Input Area Views
 
     @ViewBuilder
+    private var errorRetryBlock: some View {
+        if !client.isStreaming,
+           let last = thread?.messages.last,
+           last.role == .assistant,
+           last.hasError {
+            let errKind = last.errorKind!
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 8) {
+                    Image(systemName: errKind.icon)
+                        .font(.system(size: 16))
+                        .foregroundStyle(errKind.color)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(errKind.label)
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundStyle(errKind.color)
+                        if let detail = client.lastError?.userMessage {
+                            Text(detail)
+                                .font(.system(size: 11))
+                                .foregroundStyle(TrinityTheme.textMuted)
+                                .lineLimit(2)
+                        }
+                    }
+                    Spacer()
+                }
+                HStack(spacing: 8) {
+                    Button {
+                        guard let threadID = store.activeThreadID else { return }
+                        client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.clockwise")
+                                .font(.system(size: 12, weight: .bold))
+                            Text("Retry")
+                                .font(.system(size: 12, weight: .bold))
+                        }
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(errKind.color)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        if let userMsg = thread?.messages.last(where: { $0.role == .user }) {
+                            input = userMsg.text
+                        }
+                        guard let threadID = store.activeThreadID else { return }
+                        store.removeLastAssistantMessage(in: threadID)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "pencil")
+                                .font(.system(size: 12, weight: .bold))
+                            Text("Edit & Retry")
+                                .font(.system(size: 12, weight: .bold))
+                        }
+                        .foregroundStyle(Color.white.opacity(0.7))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(Color.white.opacity(0.1))
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+
+                    if let fallback = modelManager.failoverModel() {
+                        Button {
+                            modelManager.selectedModel = fallback
+                            modelManager.persistSelection()
+                            guard let threadID = store.activeThreadID else { return }
+                            client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.triangle.2.circlepath")
+                                    .font(.system(size: 12, weight: .bold))
+                                Text("Try \(fallback.displayName)")
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(TrinityTheme.accent)
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .padding(12)
+            .background(errKind.color.opacity(0.06))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .padding(.vertical, 8)
+            .transition(.opacity)
+        }
+        // Legacy error fallback
+        else if !client.isStreaming,
+           let last = thread?.messages.last,
+           last.role == .assistant,
+           !last.hasError,
+           last.text.hasPrefix("[") && last.text.contains("Error") {
+            HStack(spacing: 12) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(TrinityTheme.statusError)
+                Text(String(last.text.prefix(200)))
+                    .font(.system(size: 13))
+                    .foregroundStyle(TrinityTheme.statusError)
+                    .lineLimit(2)
+                Button {
+                    guard let threadID = store.activeThreadID else { return }
+                    client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
+                } label: {
+                    Text("Retry")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(TrinityTheme.statusError)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.vertical, 12)
+            .transition(.opacity)
+        }
+    }
+
+    @ViewBuilder
+    private var stickyStreamingBar: some View {
+        if client.isStreaming {
+            HStack(spacing: 16) {
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(client.streamingState == .connecting ? TrinityTheme.statusWarn : TrinityTheme.statusOK)
+                        .frame(width: 5, height: 5)
+                    Text(client.streamingState == .connecting ? "Connecting..." : "Streaming")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                }
+                if client.streamingOutputTokens > 0 {
+                    if client.streamingTTFB > 0 {
+                        Text("TTFB \(client.streamingTTFB)ms")
+                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .foregroundStyle(ttfbColor(client.streamingTTFB))
+                    }
+                    Text(String(format: "%.0f tok/s", client.streamingTokensPerSec))
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundStyle(TrinityTheme.accent)
+                    Text("\(client.streamingOutputTokens) tok")
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                }
+                Spacer()
+                Button {
+                    client.stop()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "stop.circle.fill")
+                            .font(.system(size: 10))
+                        Text("Stop")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 3)
+                    .background(TrinityTheme.statusError)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .help("Stop generating (Esc)")
+                .keyboardShortcut(.escape, modifiers: [])
+            }
+            .padding(.horizontal, 60)
+            .padding(.vertical, 4)
+            .background(Color.white.opacity(0.03))
+        }
+    }
+
+    @ViewBuilder
+    private var offlineQueueBadge: some View {
+        Group {
+            if client.offlineQueueCount > 0 {
+                HStack(spacing: 6) {
+                    Image(systemName: "envelope.badge")
+                        .font(.system(size: 11))
+                    Text("\(client.offlineQueueCount) queued")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundStyle(Color.orange)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(Color.orange.opacity(0.12))
+                .clipShape(Capsule())
+                .padding(.horizontal, 60)
+            } else if showQueueDrained {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 11))
+                    Text("\(queueDrainedMessageCount) queued messages sent")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundStyle(TrinityTheme.statusOK)
+                .padding(.horizontal, 10)
+                .padding(.vertical, 5)
+                .background(TrinityTheme.statusOK.opacity(0.12))
+                .clipShape(Capsule())
+                .padding(.horizontal, 60)
+            }
+        }
+        .onChange(of: client.queueDrainedCount) { _, newValue in
+            if newValue > 0 {
+                queueDrainedMessageCount = newValue
+                withAnimation { showQueueDrained = true }
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(3))
+                    withAnimation { showQueueDrained = false }
+                    client.queueDrainedCount = 0
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
     private var inputAreaContent: some View {
+        // Offline queue badge + drain toast
+        offlineQueueBadge
+
         // Slash command result banner
         if let result = slashCommandResult {
             HStack(spacing: 8) {
@@ -588,6 +879,10 @@ struct ChatScreen: View {
                     for q in client.offlineQueue {
                         client.cancelQueued(q.id)
                     }
+                },
+                queue: client.offlineQueue,
+                onCancelOne: { id in
+                    client.cancelQueued(id)
                 }
             )
         }
@@ -766,8 +1061,11 @@ struct ChatScreen: View {
     @ViewBuilder
     private var inputBarView: some View {
         HStack(spacing: 0) {
-            ModelPicker(modelManager: modelManager)
-                .padding(.leading, 14)
+            HStack(spacing: 4) {
+                ModelPicker(modelManager: modelManager)
+                PersonaPicker(selectedPersona: $selectedPersona, showLibrary: $showPersonaLibrary)
+            }
+            .padding(.leading, 14)
 
             MultilineInput(
                 text: $input,
@@ -778,8 +1076,8 @@ struct ChatScreen: View {
                     attachedFiles.append((name: name, content: "[Image: \(name)]"))
                 },
                 onMentionTrigger: { query in
-                    mentionQuery = query
-                    showMentionPopup = !query.isEmpty
+                    mentionQuery = query ?? ""
+                    showMentionPopup = query != nil
                 }
             )
             .padding(.horizontal, 12)
@@ -811,6 +1109,14 @@ struct ChatScreen: View {
                 .help("Voice input")
 
                 sendButton
+
+                // Send confirmation tick
+                if showSentConfirmation {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(TrinityTheme.accent)
+                        .transition(.opacity.combined(with: .scale))
+                }
             }
             .padding(.trailing, 10)
         }
@@ -998,10 +1304,13 @@ struct ChatScreen: View {
             chatModeBinding: &chatModeVar,
             onResult: { result in
                 slashCommandResult = result
-                // Auto-dismiss after 3s
-                Task { @MainActor in
-                    try? await Task.sleep(for: .seconds(3))
-                    slashCommandResult = nil
+                // Errors persist until user dismisses; success auto-dismisses after 4s
+                let isError = result.lowercased().contains("error") || result.lowercased().contains("fail") || result.lowercased().contains("invalid")
+                if !isError {
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(4))
+                        slashCommandResult = nil
+                    }
                 }
             }
         ) {
@@ -1027,12 +1336,20 @@ struct ChatScreen: View {
         }
         attachedFiles.removeAll()
 
+        lastSentText = text
         input = ""
         // Clear draft on send
         UserDefaults.standard.removeObject(forKey: "draft_\(threadID)")
-        // Sync style preset and effort level
+        // Brief send confirmation
+        showSentConfirmation = true
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1))
+            showSentConfirmation = false
+        }
+        // Sync style preset, effort level, and persona
         client.stylePreset = stylePreset
         client.effortLevel = effortLevel
+        client.activePersona = selectedPersona
         client.send(text, threadID: threadID, store: store, modelManager: modelManager, mode: chatMode, modelOverride: modelOverride)
 
         // Auto-compaction check after send
@@ -1046,6 +1363,13 @@ struct ChatScreen: View {
         send(modelOverride: model)
     }
 
+    private func ttfbColor(_ ms: Int) -> Color {
+        if ms < 1000 { return TrinityTheme.accent }
+        if ms < 3000 { return TrinityTheme.textMuted }
+        if ms < 5000 { return TrinityTheme.statusWarn }
+        return TrinityTheme.statusError
+    }
+
     private func modeColor(_ mode: ChatMode) -> Color {
         switch mode {
         case .search: return TrinityTheme.accent
@@ -1056,6 +1380,8 @@ struct ChatScreen: View {
         }
     }
 
+    private let maxAttachmentSize = 16384 // 16KB
+
     private func openFilePicker() {
         let panel = NSOpenPanel()
         panel.allowsMultipleSelection = true
@@ -1064,20 +1390,28 @@ struct ChatScreen: View {
         panel.begin { response in
             guard response == .OK else { return }
             let urls = Array(panel.urls.prefix(3))
-            // Load files off main thread
-            Task.detached {
+            Task.detached { [maxAttachmentSize] in
                 for url in urls {
                     guard let data = try? Data(contentsOf: url) else { continue }
                     let name = url.lastPathComponent
                     let size = data.count
-                    if let content = String(data: data.prefix(8192), encoding: .utf8) {
-                        let truncated = size > 8192
-                        let label = truncated ? "\(name) (\(size/1024)KB, truncated to 8KB)" : name
+                    if let content = String(data: data.prefix(maxAttachmentSize), encoding: .utf8) {
+                        let truncated = size > maxAttachmentSize
+                        let sizeLabel = size >= 1024 ? "\(size/1024)KB" : "\(size)B"
+                        let label = truncated
+                            ? "\(name) (\(sizeLabel) → \(maxAttachmentSize/1024)KB)"
+                            : "\(name) (\(sizeLabel))"
                         await MainActor.run {
                             attachedFiles.append((name: label, content: content))
+                            if truncated {
+                                slashCommandResult = "\(name): \(sizeLabel) truncated to \(maxAttachmentSize/1024)KB"
+                                Task { @MainActor in
+                                    try? await Task.sleep(for: .seconds(4))
+                                    slashCommandResult = nil
+                                }
+                            }
                         }
                     } else {
-                        // Binary file — just note the name
                         await MainActor.run {
                             attachedFiles.append((name: "\(name) (binary)", content: "[Binary file: \(name), \(size) bytes]"))
                         }
@@ -1233,13 +1567,16 @@ struct ChatScreen: View {
 
 // MARK: - Notification for cross-view communication
 
-extension Notification.Name {
+public extension Notification.Name {
     static let toggleThreadSearch = Notification.Name("toggleThreadSearch")
     static let toggleCommandPalette = Notification.Name("toggleCommandPalette")
     static let toggleSidebar = Notification.Name("toggleSidebar")
     static let copyLastResponse = Notification.Name("copyLastResponse")
     static let newThread = Notification.Name("newThread")
     static let showThinkingTranscript = Notification.Name("showThinkingTranscript")
+    static let prevThread = Notification.Name("prevThread")
+    static let nextThread = Notification.Name("nextThread")
+    static let searchInThread = Notification.Name("searchInThread")
 }
 
 // MARK: - Scroll Offset Preference Key
@@ -1275,15 +1612,29 @@ struct ConnectionStatusBar: View {
                     Text(event.from)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(TrinityTheme.statusError)
+                        .strikethrough()
                     Image(systemName: "arrow.right")
                         .font(.system(size: 8))
                     Text(event.to)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(TrinityTheme.statusOK)
-                    Text("(auto-failover)")
+                    Text("timed out → switched")
                         .font(.system(size: 9))
                         .foregroundStyle(TrinityTheme.textMuted)
                     Spacer()
+                    // Undo: switch back to original
+                    Button {
+                        if let original = modelManager.availableModels.first(where: { $0.displayName == event.from }) {
+                            modelManager.selectedModel = original
+                            modelManager.persistSelection()
+                        }
+                        withAnimation { showFailover = false }
+                    } label: {
+                        Text("Undo")
+                            .font(.system(size: 9, weight: .bold))
+                            .foregroundStyle(TrinityTheme.accent)
+                    }
+                    .buttonStyle(.plain)
                     Button {
                         withAnimation { showFailover = false }
                     } label: {
@@ -1370,12 +1721,10 @@ struct ConnectionStatusBar: View {
         .onAppear { checkConnection() }
         .onChange(of: client.failoverEvent) {
             withAnimation(.easeInOut(duration: 0.3)) { showFailover = true }
-            // Auto-dismiss after 8s
-            Task {
-                try? await Task.sleep(for: .seconds(8))
-                await MainActor.run {
-                    withAnimation { showFailover = false }
-                }
+            // Auto-dismiss after 4s
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(4))
+                withAnimation(.easeInOut(duration: 0.3)) { showFailover = false }
             }
         }
     }
@@ -1442,6 +1791,56 @@ struct ContextMeter: View {
             }
         }
         .help("\(tokens) tokens / \(maxTokens / 1000)K context | Session: $\(String(format: "%.3f", cost))")
+    }
+}
+
+// MARK: - Sticky Context Bar (always visible at top of chat)
+
+struct ContextBar: View {
+    let tokens: Int
+    private let maxTokens = 180_000
+
+    private var ratio: Double { min(Double(tokens) / Double(maxTokens), 1.0) }
+    private var percent: Int { Int(ratio * 100) }
+
+    private var color: Color {
+        if ratio < 0.5 { return TrinityTheme.accent }
+        if ratio < 0.7 { return TrinityTheme.golden }
+        if ratio < 0.85 { return TrinityTheme.statusWarn }
+        return TrinityTheme.statusError
+    }
+
+    var body: some View {
+        if tokens > 1000 {
+            HStack(spacing: 8) {
+                // Progress bar
+                GeometryReader { geo in
+                    ZStack(alignment: .leading) {
+                        Capsule()
+                            .fill(Color.white.opacity(0.06))
+                        Capsule()
+                            .fill(color)
+                            .frame(width: geo.size.width * ratio)
+                    }
+                }
+                .frame(height: 3)
+
+                Text("\(tokens / 1000)K / \(maxTokens / 1000)K")
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundStyle(color)
+                    .fixedSize()
+
+                if ratio >= 0.7 {
+                    Text("\(percent)%")
+                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .foregroundStyle(color)
+                        .fixedSize()
+                }
+            }
+            .padding(.horizontal, 60)
+            .padding(.vertical, 4)
+            .background(ratio >= 0.7 ? color.opacity(0.04) : Color.clear)
+        }
     }
 }
 
@@ -1527,6 +1926,19 @@ struct ModelPicker: View {
                 Image(systemName: "chevron.down")
                     .font(.system(size: 9, weight: .medium))
                     .foregroundStyle(Color.white.opacity(0.4))
+
+                // Rate limit warning badge
+                if let remaining = networkLog.providerHealth[modelManager.selectedModel.provider.rawValue]?.remainingRequests,
+                   remaining < 20 {
+                    Text("\(remaining)")
+                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 4)
+                        .padding(.vertical, 1)
+                        .background(remaining < 5 ? TrinityTheme.statusError : TrinityTheme.statusWarn)
+                        .clipShape(Capsule())
+                        .help("\(remaining) requests remaining")
+                }
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 6)
@@ -2161,7 +2573,7 @@ struct MultilineInput: NSViewRepresentable {
     var isFocused: FocusState<Bool>.Binding
     var onSubmit: () -> Void
     var onImagePaste: ((String, String) -> Void)? = nil  // (name, base64) callback
-    var onMentionTrigger: ((String) -> Void)? = nil  // trigger @mention popup
+    var onMentionTrigger: ((String?) -> Void)? = nil  // trigger @mention popup (nil = dismiss)
 
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
@@ -2221,11 +2633,11 @@ struct MultilineInput: NSViewRepresentable {
         var onSubmit: () -> Void
         var placeholder: String
         var onImagePaste: ((String, String) -> Void)?
-        var onMentionTrigger: ((String) -> Void)?
+        var onMentionTrigger: ((String?) -> Void)?
         weak var textView: NSTextView?
         private var placeholderLayer: CATextLayer?
 
-        init(text: Binding<String>, onSubmit: @escaping () -> Void, placeholder: String, onImagePaste: ((String, String) -> Void)? = nil, onMentionTrigger: ((String) -> Void)? = nil) {
+        init(text: Binding<String>, onSubmit: @escaping () -> Void, placeholder: String, onImagePaste: ((String, String) -> Void)? = nil, onMentionTrigger: ((String?) -> Void)? = nil) {
             self._text = text
             self.onSubmit = onSubmit
             self.placeholder = placeholder
@@ -2238,9 +2650,10 @@ struct MultilineInput: NSViewRepresentable {
             text = textView.string
             updatePlaceholder()
 
-            // Detect @mention trigger
+            // Detect @mention trigger — show popup on @ and while typing after it
             let cursorPos = textView.selectedRange().location
             let str = textView.string
+            var mentionDetected = false
             if cursorPos > 0 && cursorPos <= str.count {
                 let idx = str.index(str.startIndex, offsetBy: cursorPos)
                 let before = str[str.startIndex..<idx]
@@ -2249,8 +2662,12 @@ struct MultilineInput: NSViewRepresentable {
                     let query = String(before[atRange.upperBound...])
                     if !query.contains(" ") && !query.contains("\n") {
                         onMentionTrigger?(query)
+                        mentionDetected = true
                     }
                 }
+            }
+            if !mentionDetected {
+                onMentionTrigger?(String?.none)  // dismiss popup
             }
 
             // Constrain height to ~8 lines
@@ -2329,53 +2746,114 @@ struct MultilineInput: NSViewRepresentable {
     }
 }
 
-// MARK: - @Mention Popup (Cursor-style context injection)
+// MARK: - @Mention Popup (Cursor-style context injection with autocomplete)
 
 struct MentionPopup: View {
     let query: String
     @Binding var isPresented: Bool
     var onSelect: (String) -> Void
+    var repoContext: RepoContext? = nil
+    var trinityContext: TrinityContext? = nil
 
-    private var completions: [(icon: String, label: String, value: String)] {
+    @State private var selectedIndex = 0
+    @AppStorage("recentGrepPatterns") private var recentGrepPatternsRaw: String = ""
+
+    private var recentGrepPatterns: [String] {
+        recentGrepPatternsRaw.split(separator: "\n").map(String.init).filter { !$0.isEmpty }
+    }
+
+    static func saveGrepPattern(_ pattern: String) {
+        let key = "recentGrepPatterns"
+        var existing = (UserDefaults.standard.string(forKey: key) ?? "")
+            .split(separator: "\n").map(String.init).filter { !$0.isEmpty }
+        existing.removeAll { $0 == pattern }
+        existing.insert(pattern, at: 0)
+        if existing.count > 10 { existing = Array(existing.prefix(10)) }
+        UserDefaults.standard.set(existing.joined(separator: "\n"), forKey: key)
+    }
+
+    private var completions: [(icon: String, label: String, value: String, badge: String?)] {
         let q = query.lowercased()
-        var items: [(String, String, String)] = []
 
-        // Built-in mention types
-        let types: [(String, String, String)] = [
-            ("doc.text", "file:", "@file:path — attach file content"),
-            ("magnifyingglass", "grep:", "@grep:query — search codebase"),
-            ("terminal", "tri:", "@tri:command — run tri command"),
-            ("hammer", "build", "@build — last build output"),
-            ("chart.bar", "farm", "@farm — farm events snapshot"),
-            ("list.bullet", "issues", "@issues — open GitHub issues"),
-            ("arrow.triangle.branch", "gitdiff", "@gitdiff — current HEAD diff"),
+        // If query starts with "file:", show file suggestions
+        if q.hasPrefix("file:") {
+            let fileQuery = String(q.dropFirst(5))
+            let suggestions = repoContext?.fileSuggestions(matching: fileQuery, limit: 8) ?? []
+            if !suggestions.isEmpty {
+                return suggestions.map { path in
+                    let ext = (path as NSString).pathExtension
+                    let icon = ext == "swift" ? "swift" : ext == "zig" ? "cpu" : ext == "md" ? "doc.richtext" : "doc.text"
+                    return (icon, path, "file:\(path)", nil)
+                }
+            }
+        }
+
+        // If query starts with "grep:", show grep suggestions
+        if q.hasPrefix("grep:") {
+            let grepQuery = String(q.dropFirst(5))
+            let builtins = ["func ", "struct ", "class ", "TODO", "FIXME", "import ", "error", "test "]
+            let allPatterns = recentGrepPatterns + builtins.filter { p in !recentGrepPatterns.contains(p) }
+            let filtered = grepQuery.isEmpty ? allPatterns : allPatterns.filter { $0.lowercased().contains(grepQuery) }
+            return Array(filtered.prefix(8)).map { pattern in
+                let isRecent = recentGrepPatterns.contains(pattern)
+                return ("magnifyingglass", pattern, "grep:\(pattern)", isRecent ? "recent" : nil)
+            }
+        }
+
+        // Default: show mention types with live badges
+        var items: [(String, String, String, String?)] = []
+
+        let buildBadge: String? = {
+            guard let ctx = trinityContext else { return nil }
+            if let ok = ctx.buildOK { return ok ? "OK" : "FAIL" }
+            return nil
+        }()
+
+        let issuesBadge: String? = {
+            guard let ctx = trinityContext, let n = ctx.openIssues else { return nil }
+            return "\(n) open"
+        }()
+
+        let farmBadge: String? = {
+            guard let ctx = trinityContext else { return nil }
+            var parts: [String] = []
+            if let n = ctx.farmServices { parts.append("\(n) active") }
+            if let ppl = ctx.bestPPL { parts.append("PPL=\(String(format: "%.1f", ppl))") }
+            return parts.isEmpty ? nil : parts.joined(separator: ", ")
+        }()
+
+        let types: [(String, String, String, String?)] = [
+            ("doc.text", "file:", "@file:path — attach file content", nil),
+            ("magnifyingglass", "grep:", "@grep:query — search codebase", nil),
+            ("terminal", "tri:", "@tri:command — run tri command", nil),
+            ("hammer", "build", "@build — last build output", buildBadge),
+            ("chart.bar", "farm", "@farm — farm events snapshot", farmBadge),
+            ("list.bullet", "issues", "@issues — open GitHub issues", issuesBadge),
+            ("arrow.triangle.branch", "gitdiff", "@gitdiff — current HEAD diff", nil),
         ]
 
-        for (icon, prefix, desc) in types {
+        for (icon, prefix, desc, badge) in types {
             if q.isEmpty || prefix.contains(q) || desc.lowercased().contains(q) {
-                items.append((icon, desc, prefix))
+                items.append((icon, desc, prefix, badge))
             }
         }
 
-        // Common file paths
-        let paths = [
-            "src/vsa.zig", "src/vm.zig", "src/hslm/model.zig",
-            "CLAUDE.md", "build.zig", "src/tri-api/main.zig",
-            "src/arena/arena.zig", ".trinity/ouroboros_state.json",
-        ]
-        for path in paths {
-            if q.isEmpty || path.lowercased().contains(q) {
-                items.append(("doc", path, "file:\(path)"))
+        // If typing something that looks like a path (has / or .), show file suggestions too
+        if !q.isEmpty && !q.hasPrefix("file:") && !q.hasPrefix("grep:") && (q.contains("/") || q.contains(".")) {
+            let suggestions = repoContext?.fileSuggestions(matching: q, limit: 4) ?? []
+            for path in suggestions {
+                items.append(("doc.text", path, "file:\(path)", nil))
             }
         }
 
-        return items.prefix(8).map { ($0.0, $0.1, $0.2) }
+        return Array(items.prefix(8))
     }
 
     var body: some View {
-        if !completions.isEmpty {
+        let items = completions
+        if !items.isEmpty {
             VStack(spacing: 0) {
-                ForEach(Array(completions.enumerated()), id: \.offset) { _, item in
+                ForEach(Array(items.enumerated()), id: \.offset) { idx, item in
                     Button {
                         onSelect(item.value)
                         isPresented = false
@@ -2390,16 +2868,25 @@ struct MentionPopup: View {
                                 .foregroundStyle(Color.white.opacity(0.8))
                                 .lineLimit(1)
                             Spacer()
+                            if let badge = item.badge {
+                                Text(badge)
+                                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                    .foregroundStyle(badge == "FAIL" ? Color.red : TrinityTheme.accent)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Color.white.opacity(0.06))
+                                    .clipShape(Capsule())
+                            }
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
                         .contentShape(Rectangle())
+                        .background(idx == selectedIndex ? Color.white.opacity(0.08) : Color.clear)
                     }
                     .buttonStyle(.plain)
-                    .background(Color.clear)
                 }
             }
-            .frame(width: 300)
+            .frame(width: 340)
             .background(Color(hex: 0x1A1A1A))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
@@ -2407,6 +2894,28 @@ struct MentionPopup: View {
                     .stroke(Color.white.opacity(0.1), lineWidth: 1)
             )
             .shadow(color: .black.opacity(0.4), radius: 12)
+            .onKeyPress(.upArrow) {
+                selectedIndex = max(0, selectedIndex - 1)
+                return .handled
+            }
+            .onKeyPress(.downArrow) {
+                selectedIndex = min(items.count - 1, selectedIndex + 1)
+                return .handled
+            }
+            .onKeyPress(.return) {
+                if selectedIndex < items.count {
+                    onSelect(items[selectedIndex].value)
+                    isPresented = false
+                }
+                return .handled
+            }
+            .onKeyPress(.escape) {
+                isPresented = false
+                return .handled
+            }
+            .onChange(of: query) { _, _ in
+                selectedIndex = 0
+            }
         }
     }
 }
@@ -2754,6 +3263,112 @@ struct StreamingElapsedTimer: View {
                     elapsed += 1
                 }
             }
+    }
+}
+
+// MARK: - In-Thread Search Bar (Cmd+F)
+
+struct InThreadSearchBar: View {
+    @Binding var query: String
+    @Binding var currentIndex: Int
+    let totalMatches: Int
+    var onDismiss: () -> Void
+    @FocusState private var isFocused: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 12))
+                .foregroundStyle(Color.white.opacity(0.4))
+
+            TextField("Find in thread...", text: $query)
+                .textFieldStyle(.plain)
+                .font(.system(size: 13))
+                .foregroundStyle(Color.white)
+                .focused($isFocused)
+                .onSubmit { if currentIndex < totalMatches - 1 { currentIndex += 1 } }
+
+            if !query.isEmpty {
+                Text("\(totalMatches > 0 ? currentIndex + 1 : 0)/\(totalMatches)")
+                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .foregroundStyle(totalMatches > 0 ? TrinityTheme.accent : TrinityTheme.statusError)
+                    .fixedSize()
+
+                Button {
+                    if currentIndex > 0 { currentIndex -= 1 }
+                } label: {
+                    Image(systemName: "chevron.up")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(currentIndex > 0 ? Color.white : Color.white.opacity(0.2))
+                }
+                .buttonStyle(.plain)
+                .disabled(currentIndex <= 0)
+
+                Button {
+                    if currentIndex < totalMatches - 1 { currentIndex += 1 }
+                } label: {
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundStyle(currentIndex < totalMatches - 1 ? Color.white : Color.white.opacity(0.2))
+                }
+                .buttonStyle(.plain)
+                .disabled(currentIndex >= totalMatches - 1)
+            }
+
+            Button {
+                onDismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 11))
+                    .foregroundStyle(Color.white.opacity(0.4))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(Color(hex: 0x1A1A1A))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal, 60)
+        .padding(.vertical, 4)
+        .onAppear { isFocused = true }
+        .onChange(of: query) { _, _ in currentIndex = 0 }
+        .onKeyPress(.escape) {
+            onDismiss()
+            return .handled
+        }
+    }
+}
+
+// MARK: - Live TTFB Counter (counts up while waiting for first token)
+
+struct LiveTTFBCounter: View {
+    let isWaiting: Bool
+    @State private var elapsedMs: Int = 0
+
+    private var color: Color {
+        if elapsedMs < 2000 { return TrinityTheme.textMuted }
+        if elapsedMs < 5000 { return TrinityTheme.statusWarn }
+        return TrinityTheme.statusError
+    }
+
+    var body: some View {
+        if isWaiting {
+            HStack(spacing: 3) {
+                Circle()
+                    .fill(color)
+                    .frame(width: 5, height: 5)
+                Text(elapsedMs < 1000 ? "\(elapsedMs)ms" : String(format: "%.1fs", Double(elapsedMs) / 1000.0))
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundStyle(color)
+            }
+            .task {
+                let start = Date()
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .milliseconds(100))
+                    elapsedMs = Int(Date().timeIntervalSince(start) * 1000)
+                }
+            }
+        }
     }
 }
 
@@ -3297,31 +3912,70 @@ struct ToolTimeline: View {
 struct OfflineQueueBanner: View {
     let count: Int
     var onCancelAll: () -> Void
+    var queue: [ChatClient.QueuedMessage] = []
+    var onCancelOne: ((UUID) -> Void)? = nil
+    @State private var isExpanded = false
 
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "wifi.slash")
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.statusWarn)
-            Text("\(count) message\(count == 1 ? "" : "s") queued")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(TrinityTheme.statusWarn)
-            Text("Will send when provider is back")
-                .font(.system(size: 10))
-                .foregroundStyle(TrinityTheme.textMuted)
-            Spacer()
-            Button {
-                onCancelAll()
-            } label: {
-                Text("Cancel All")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(TrinityTheme.statusError)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(TrinityTheme.statusError.opacity(0.12))
-                    .clipShape(Capsule())
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "wifi.slash")
+                    .font(.system(size: 12))
+                    .foregroundStyle(TrinityTheme.statusWarn)
+                Text("\(count) message\(count == 1 ? "" : "s") queued")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(TrinityTheme.statusWarn)
+                Text("Retrying every 15s...")
+                    .font(.system(size: 10))
+                    .foregroundStyle(TrinityTheme.textMuted)
+                Spacer()
+                if count > 1 {
+                    Button {
+                        withAnimation { isExpanded.toggle() }
+                    } label: {
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 9))
+                            .foregroundStyle(Color.white.opacity(0.3))
+                    }
+                    .buttonStyle(.plain)
+                }
+                Button {
+                    onCancelAll()
+                } label: {
+                    Text("Cancel All")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(TrinityTheme.statusError)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(TrinityTheme.statusError.opacity(0.12))
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
+
+            // Per-message queue detail
+            if isExpanded {
+                ForEach(queue) { msg in
+                    HStack(spacing: 6) {
+                        Image(systemName: "clock")
+                            .font(.system(size: 9))
+                            .foregroundStyle(TrinityTheme.statusWarn)
+                        Text(String(msg.text.prefix(60)))
+                            .font(.system(size: 10))
+                            .foregroundStyle(Color.white.opacity(0.6))
+                            .lineLimit(1)
+                        Spacer()
+                        Button {
+                            onCancelOne?(msg.id)
+                        } label: {
+                            Image(systemName: "xmark.circle")
+                                .font(.system(size: 10))
+                                .foregroundStyle(TrinityTheme.statusError.opacity(0.6))
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 6)
