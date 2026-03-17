@@ -503,22 +503,27 @@ struct EnhancedMentionPopup: View {
                 .stroke(Color.white.opacity(0.1), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.4), radius: 12)
-        .keyboardShortcut(.upArrow, action: {
-            selectedIndex = max(0, selectedIndex - 1)
-        })
-        .keyboardShortcut(.downArrow, action: {
-            selectedIndex = min(items.count - 1, selectedIndex + 1)
-        })
-        .keyboardShortcut(.return, action: {
-            if selectedIndex < items.count {
-                let item = items[selectedIndex]
-                onSelect(item.value)
-                isPresented = false
+        .focusable()
+        .onKeyPress(phases: .down) { keyPress in
+            if keyPress.key == .upArrow {
+                selectedIndex = max(0, selectedIndex - 1)
+                return .handled
+            } else if keyPress.key == .downArrow {
+                selectedIndex = min(items.count - 1, selectedIndex + 1)
+                return .handled
+            } else if keyPress.key == .return {
+                if selectedIndex < items.count {
+                    let item = items[selectedIndex]
+                    onSelect(item.value)
+                    isPresented = false
+                }
+                return .handled
             }
-        })
+            return .ignored
+        }
     }
 
-    private func suggestionRow(for item: SmartSuggestionItem, index: Int, total: Int) -> some View {
+    func suggestionRow(for item: SmartSuggestionItem, index: Int, total: Int) -> some View {
         Button {
             onSelect(item.value)
             isPresented = false
@@ -552,6 +557,12 @@ struct EnhancedMentionPopup: View {
                 }
 
                 Spacer()
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .contentShape(Rectangle())
+            .background(index == selectedIndex ? Color.white.opacity(0.08) : Color.clear)
+        }
         .buttonStyle(.plain)
     }
 
