@@ -41,6 +41,7 @@ struct ChatScreen: View {
     @State private var rateLimitDismissed = false
     @State private var budgetWarningDismissed = false
     @ObservedObject private var networkLog = NetworkLog.shared
+    @State private var showThreadStats = false
     @State private var showInThreadSearch = false
     @State private var inThreadSearchQuery = ""
     @State private var inThreadSearchIndex = 0
@@ -355,6 +356,12 @@ struct ChatScreen: View {
                     send()
                 })
             }
+            // MARK: Thread Stats Card
+            if let t = thread, t.messages.count >= 4 {
+                ThreadStatsCard(thread: t, isExpanded: $showThreadStats)
+                    .padding(.bottom, 12)
+            }
+
             ForEach(thread?.messages ?? []) { msg in
                 MessageRow(
                     message: msg,
@@ -2146,9 +2153,15 @@ struct ConnectionStatusBar: View {
                     Text(event.to)
                         .font(.system(size: 10, weight: .medium))
                         .foregroundStyle(TrinityTheme.statusOK)
-                    Text("timed out → switched")
-                        .font(.system(size: 9))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                    if let notice = modelManager.cloudFallbackNotice {
+                        Text(notice)
+                            .font(.system(size: 9))
+                            .foregroundStyle(TrinityTheme.accent)
+                    } else {
+                        Text("timed out \u{2192} switched")
+                            .font(.system(size: 9))
+                            .foregroundStyle(TrinityTheme.textMuted)
+                    }
                     Spacer()
                     // Undo: switch back to original
                     Button {
@@ -2249,10 +2262,12 @@ struct ConnectionStatusBar: View {
         .onAppear { checkConnection() }
         .onChange(of: client.failoverEvent) {
             withAnimation(.easeInOut(duration: 0.3)) { showFailover = true }
-            // Auto-dismiss after 4s
+            // Auto-dismiss after 4s (8s for cloud-to-local fallback)
+            let delay = modelManager.cloudFallbackNotice != nil ? 8 : 4
             Task { @MainActor in
-                try? await Task.sleep(for: .seconds(4))
+                try? await Task.sleep(for: .seconds(delay))
                 withAnimation(.easeInOut(duration: 0.3)) { showFailover = false }
+                modelManager.cloudFallbackNotice = nil
             }
         }
     }
@@ -2446,6 +2461,15 @@ struct ModelPicker: View {
                                         .fill(providerIsUp(model.provider) ? TrinityTheme.statusOK : TrinityTheme.statusError)
                                         .frame(width: 6, height: 6)
                                     Text(model.displayName)
+                                    if model.provider == .ollama {
+                                        Text("Local")
+                                            .font(.system(size: 9, weight: .semibold))
+                                            .foregroundStyle(TrinityTheme.accent)
+                                            .padding(.horizontal, 4)
+                                            .padding(.vertical, 1)
+                                            .background(TrinityTheme.accent.opacity(0.15))
+                                            .cornerRadius(3)
+                                    }
                                     let spark = sparkline(for: model.id)
                                     if !spark.isEmpty {
                                         Text(spark)
@@ -2627,7 +2651,13 @@ struct MessageRow: View {
                             BranchNavigator(message: message, store: store, threadID: threadID)
                         }
 
-                        // Timestamp + action buttons on hover
+                        // Metadata line: always visible for last message, hover for others
+                        if isLastMessage || (isHovering && !isEditing) {
+                            metadataLine
+                                .transition(.opacity)
+                        }
+
+                        // Action buttons on hover
                         if isHovering && !isEditing {
                             HStack(spacing: 8) {
                                 Button {
@@ -2662,10 +2692,6 @@ struct MessageRow: View {
                                 }
                                 .buttonStyle(.plain)
                                 .help("Pin message")
-
-                                Text(message.timestamp, style: .time)
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(TrinityTheme.textMuted)
                             }
                             .transition(.opacity)
                         }
@@ -2738,11 +2764,9 @@ struct MessageRow: View {
                                 onComment: onComment
                             )
 
-                            // Timestamp on hover
-                            if isHovering {
-                                Text(message.timestamp, style: .time)
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                            // Timestamp + model badge (always for last, hover for others)
+                            if isLastMessage || isHovering {
+                                metadataLine
                                     .padding(.leading, 8)
                                     .transition(.opacity)
                             }
@@ -2948,6 +2972,50 @@ struct MessageRow: View {
         guard let threadID = store.activeThreadID else { return }
         isEditing = false
         client.editAndResend(message.id, newText: text, threadID: threadID, store: store, modelManager: modelManager)
+    }
+
+    // MARK: - Timestamp & Model Badge Helpers
+
+    private var relativeTimestamp: String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.unitsStyle = .abbreviated
+        return formatter.localizedString(for: message.timestamp, relativeTo: Date())
+    }
+
+    /// Truncate long model IDs: "claude-sonnet-4-20251022" → "sonnet-4"
+    private static func truncateModelID(_ raw: String) -> String {
+        // Remove date suffixes like -20251022
+        var id = raw
+        if let range = id.range(of: #"-\d{8}$"#, options: .regularExpression) {
+            id = String(id[id.startIndex..<range.lowerBound])
+        }
+        // Remove vendor prefix: "claude-" / "gpt-" / "gemini-" etc.
+        let prefixes = ["claude-", "anthropic-", "openai-"]
+        for prefix in prefixes {
+            if id.hasPrefix(prefix) {
+                id = String(id.dropFirst(prefix.count))
+                break
+            }
+        }
+        return id
+    }
+
+    @ViewBuilder
+    private var metadataLine: some View {
+        HStack(spacing: 0) {
+            Text(relativeTimestamp)
+            if let modelID = message.modelID, !modelID.isEmpty {
+                Text(" \u{00B7} ")
+                Text(Self.truncateModelID(modelID))
+                    .padding(.horizontal, 5)
+                    .padding(.vertical, 1)
+                    .background(TrinityTheme.textMuted.opacity(0.15))
+                    .clipShape(Capsule())
+            }
+        }
+        .font(.system(size: 10))
+        .foregroundStyle(TrinityTheme.textMuted)
+        .opacity(0.5)
     }
 
     @ViewBuilder
@@ -5640,5 +5708,170 @@ struct TemplatePicker: View {
             .background(Color.white.opacity(0.001))
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Thread Stats Card
+
+private struct ThreadStatsCard: View {
+    let thread: ChatThread
+    @Binding var isExpanded: Bool
+
+    private var messageCount: Int { thread.messages.count }
+
+    private var totalTokens: Int {
+        thread.messages.compactMap(\.outputTokens).reduce(0, +)
+    }
+
+    private var totalMs: Int {
+        thread.messages.compactMap(\.totalMs).reduce(0, +)
+    }
+
+    private var avgTTFB: Int {
+        let vals = thread.messages.compactMap(\.ttfbMs)
+        guard !vals.isEmpty else { return 0 }
+        return vals.reduce(0, +) / vals.count
+    }
+
+    private var avgTokPerSec: Double {
+        let vals = thread.messages.compactMap(\.tokPerSec)
+        guard !vals.isEmpty else { return 0 }
+        return vals.reduce(0, +) / Double(vals.count)
+    }
+
+    private var uniqueModels: [String] {
+        Array(Set(thread.messages.compactMap(\.modelID))).sorted()
+    }
+
+    private var threadAge: String {
+        let interval = Date().timeIntervalSince(thread.createdAt)
+        let minutes = Int(interval) / 60
+        let hours = minutes / 60
+        let days = hours / 24
+        if days > 0 { return "\(days)d ago" }
+        if hours > 0 { return "\(hours)h ago" }
+        if minutes > 0 { return "\(minutes)m ago" }
+        return "just now"
+    }
+
+    private func formatDuration(_ ms: Int) -> String {
+        let totalSec = ms / 1000
+        let m = totalSec / 60
+        let s = totalSec % 60
+        if m > 0 { return "\(m)m \(s)s" }
+        return "\(s)s"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Collapsed: single-line summary
+            Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() } }) {
+                HStack(spacing: 8) {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 11))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                    Text("\(messageCount) messages")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                    Text("·")
+                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
+                    Text("Created \(threadAge)")
+                        .font(.system(size: 11))
+                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                    Spacer()
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9))
+                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.white.opacity(0.001))
+            }
+            .buttonStyle(.plain)
+
+            // Expanded: stat grid
+            if isExpanded {
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), spacing: 10),
+                    GridItem(.flexible(), spacing: 10),
+                ], spacing: 10) {
+                    statCell(label: "Messages", value: "\(messageCount)", icon: "bubble.left.and.bubble.right")
+                    statCell(label: "Total Tokens", value: totalTokens > 0 ? formatTokens(totalTokens) : "--", icon: "number")
+                    statCell(label: "Total Time", value: totalMs > 0 ? formatDuration(totalMs) : "--", icon: "clock")
+                    statCell(label: "Avg TTFB", value: avgTTFB > 0 ? "\(avgTTFB)ms" : "--", icon: "bolt")
+                    statCell(label: "Avg tok/s", value: avgTokPerSec > 0 ? String(format: "%.1f", avgTokPerSec) : "--", icon: "speedometer")
+                    statCell(label: "Thread Age", value: threadAge, icon: "calendar")
+                }
+                .padding(.horizontal, 12)
+                .padding(.bottom, 10)
+
+                // Models pills
+                if !uniqueModels.isEmpty {
+                    HStack(spacing: 6) {
+                        Text("Models:")
+                            .font(.system(size: 10))
+                            .foregroundStyle(TrinityTheme.textMuted)
+                        ForEach(uniqueModels, id: \.self) { model in
+                            Text(shortModelName(model))
+                                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                                .foregroundStyle(TrinityTheme.accent)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(TrinityTheme.accent.opacity(0.1))
+                                .clipShape(Capsule())
+                        }
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 10)
+                }
+            }
+        }
+        .background(TrinityTheme.bgCard)
+        .overlay(
+            RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
+                .stroke(TrinityTheme.bgCardBorder, lineWidth: 0.5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+    }
+
+    private func statCell(label: String, value: String, icon: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 10))
+                .foregroundStyle(TrinityTheme.accent.opacity(0.7))
+                .frame(width: 14)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(value)
+                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    .foregroundStyle(TrinityTheme.textPrimary)
+                Text(label)
+                    .font(.system(size: 9))
+                    .foregroundStyle(TrinityTheme.textMuted)
+            }
+            Spacer()
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(TrinityTheme.bgCard.opacity(0.5))
+        .overlay(
+            RoundedRectangle(cornerRadius: 4)
+                .stroke(TrinityTheme.bgCardBorder.opacity(0.5), lineWidth: 0.5)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+
+    private func formatTokens(_ count: Int) -> String {
+        if count >= 1_000_000 { return String(format: "%.1fM", Double(count) / 1_000_000) }
+        if count >= 1_000 { return String(format: "%.1fK", Double(count) / 1_000) }
+        return "\(count)"
+    }
+
+    private func shortModelName(_ model: String) -> String {
+        if model.contains("sonnet") { return "sonnet-4" }
+        if model.contains("opus") { return "opus-4" }
+        if model.contains("haiku") { return "haiku-4" }
+        if model.contains("gpt-4o") { return "gpt-4o" }
+        if model.count > 20 { return String(model.prefix(18)) + ".." }
+        return model
     }
 }
