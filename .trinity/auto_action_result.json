@@ -1,1 +1,7 @@
-{"timestamp":"2026-03-17T17:15:00Z", "action":"auto-commit dirty files", "success":true, "details":"5 commits: cells+registry (38 files), state+heartbeats (10 files), queen UI feat (6 files), farm fix (2 files), ChatScreen fix (1 file). FPGA submodules skipped. Build OK.", "build_ok_after":true}
+{
+  "timestamp": "2026-03-17T12:00:00Z",
+  "action": "work-issue-118",
+  "success": true,
+  "details": "Posted architecture design for 9 TRI commands + agent interfaces on issue #118. 3 comments: start, full design doc, completion. Design covers: 3 new specs (tri_decompose, tri_verdict, tri_pipeline_parallel), 3 spec extensions (plan, git, loop), agent role mapping, DAG execution algorithm, error recovery strategy, implementation order.",
+  "build_ok_after": true
+}

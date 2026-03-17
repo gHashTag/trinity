@@ -252,3 +252,91 @@
 {"ts":1773744703870,"type":"health","svc":"hslm-w7-71","detail":"stalled: step unchanged 2+ polls","step":30000}
 {"ts":1773744705172,"type":"health","svc":"hslm-w7-68","detail":"stalled: step unchanged 2+ polls","step":30000}
 {"ts":1773744707603,"type":"health","svc":"hslm-w7-66","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773747697244,"type":"health","svc":"hslm-r10","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747698802,"type":"health","svc":"hslm-r31","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747700417,"type":"health","svc":"hslm-r36","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747701545,"type":"health","svc":"hslm-r11","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747704946,"type":"health","svc":"hslm-r26","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747711648,"type":"health","svc":"hslm-r28","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747715865,"type":"health","svc":"hslm-w7-4","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747716615,"type":"health","svc":"hslm-w7-6","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747720399,"type":"health","svc":"hslm-w7-20","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747721144,"type":"health","svc":"hslm-w7-2","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747725130,"type":"health","svc":"hslm-w7-24","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747725916,"type":"health","svc":"hslm-w7-23","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747727722,"type":"health","svc":"hslm-w7-21","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747731093,"type":"health","svc":"hslm-w7-39","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747732879,"type":"health","svc":"hslm-w7-44","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747745465,"type":"health","svc":"hslm-w7-56","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747749756,"type":"health","svc":"hslm-w7-57","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747756141,"type":"health","svc":"hslm-w7-63","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773747758925,"type":"health","svc":"hslm-w7-51","detail":"stalled: step unchanged 2+ polls","step":10000}
+{"ts":1773748360633,"type":"health","svc":"hslm-w7-54","detail":"diverged: PPL>1000 at step>5K","step":6800}
+{"ts":1773748370181,"type":"health","svc":"hslm-w7-72","detail":"diverged: PPL>1000 at step>5K","step":5100}
+{"ts":1773748371074,"type":"health","svc":"hslm-w7-60","detail":"diverged: PPL>1000 at step>5K","step":6400}
+{"ts":1773748969476,"type":"health","svc":"hslm-r32","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773748971193,"type":"health","svc":"hslm-r21","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773748972195,"type":"health","svc":"hslm-r30","detail":"diverged: PPL>1000 at step>5K","step":8000}
+{"ts":1773748982918,"type":"health","svc":"hslm-w7-3","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773748985691,"type":"health","svc":"hslm-w7-8","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773748988595,"type":"health","svc":"hslm-w7-15","detail":"diverged: PPL>1000 at step>5K","step":6700}
+{"ts":1773748993460,"type":"health","svc":"hslm-w7-9","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773748998510,"type":"health","svc":"hslm-w7-27","detail":"diverged: PPL>1000 at step>5K","step":8800}
+{"ts":1773748999772,"type":"health","svc":"hslm-w7-35","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773749001647,"type":"health","svc":"hslm-w7-45","detail":"diverged: PPL>1000 at step>5K","step":8800}
+{"ts":1773749002811,"type":"health","svc":"hslm-w7-25","detail":"diverged: PPL>1000 at step>5K","step":7600}
+{"ts":1773749005419,"type":"health","svc":"hslm-w7-41","detail":"diverged: PPL>1000 at step>5K","step":6700}
+{"ts":1773749010826,"type":"health","svc":"hslm-w7-36","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773749016111,"type":"health","svc":"hslm-w7-70","detail":"diverged: PPL>1000 at step>5K","step":8200}
+{"ts":1773749017646,"type":"health","svc":"hslm-w7-61","detail":"diverged: PPL>1000 at step>5K","step":8500}
+{"ts":1773749018509,"type":"health","svc":"hslm-w7-55","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773749019523,"type":"health","svc":"hslm-w7-52","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773749021848,"type":"health","svc":"hslm-w7-68","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773749027181,"type":"health","svc":"hslm-w7-65","detail":"diverged: PPL>1000 at step>5K","step":7900}
+{"ts":1773754958293,"type":"health","svc":"hslm-w7-30","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773754958294,"type":"health","svc":"hslm-w7-42","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773754971725,"type":"health","svc":"hslm-w7-47","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756583667,"type":"health","svc":"hslm-r5","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756583667,"type":"health","svc":"hslm-r13","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756583667,"type":"health","svc":"hslm-r27","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756583667,"type":"health","svc":"hslm-t1","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756583667,"type":"health","svc":"hslm-r20","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756583667,"type":"health","svc":"hslm-w7-7","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756583667,"type":"health","svc":"hslm-w7-12","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756583667,"type":"health","svc":"hslm-w7-13","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756583667,"type":"health","svc":"hslm-w7-40","detail":"stalled: step unchanged 2+ polls","step":10000}
+{"ts":1773756583667,"type":"health","svc":"hslm-w7-29","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756583668,"type":"health","svc":"hslm-w7-64","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756620394,"type":"health","svc":"hslm-r35","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756620394,"type":"health","svc":"hslm-r22","detail":"stalled: step unchanged 2+ polls","step":7600}
+{"ts":1773756620394,"type":"health","svc":"hslm-r25","detail":"stalled: step unchanged 2+ polls","step":15400}
+{"ts":1773756620394,"type":"health","svc":"hslm-r24","detail":"stalled: step unchanged 2+ polls","step":30000}
+{"ts":1773756620394,"type":"health","svc":"hslm-w7-15","detail":"stalled: step unchanged 2+ polls","step":5700}
+{"ts":1773756620394,"type":"health","svc":"hslm-w7-17","detail":"stalled: step unchanged 2+ polls","step":14200}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-1","detail":"stalled: step unchanged 2+ polls","step":19200}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-27","detail":"stalled: step unchanged 2+ polls","step":5800}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-45","detail":"stalled: step unchanged 2+ polls","step":4800}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-25","detail":"stalled: step unchanged 2+ polls","step":7100}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-41","detail":"stalled: step unchanged 2+ polls","step":4600}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-28","detail":"stalled: step unchanged 2+ polls","step":19100}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-31","detail":"stalled: step unchanged 2+ polls","step":25700}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-71","detail":"stalled: step unchanged 2+ polls","step":14800}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-66","detail":"stalled: step unchanged 2+ polls","step":9400}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-49","detail":"stalled: step unchanged 2+ polls","step":8100}
+{"ts":1773756620395,"type":"health","svc":"hslm-w7-72","detail":"stalled: step unchanged 2+ polls","step":10300}
+{"ts":1773756633542,"type":"health","svc":"hslm-w7-61","detail":"stalled: step unchanged 2+ polls","step":5600}
+{"ts":1773756633542,"type":"health","svc":"hslm-w7-65","detail":"stalled: step unchanged 2+ polls","step":10900}
+{"ts":1773757101604,"type":"health","svc":"hslm-w7-60","detail":"stalled: step unchanged 2+ polls","step":5500}
+{"ts":1773757655107,"type":"health","svc":"hslm-r34","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773757655108,"type":"health","svc":"hslm-w7-16","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773757655108,"type":"health","svc":"hslm-w7-45","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773757655108,"type":"health","svc":"hslm-w7-43","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773757655108,"type":"health","svc":"hslm-w7-61","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773757655108,"type":"health","svc":"hslm-w7-66","detail":"stalled: step unchanged 2+ polls","step":1}
+{"ts":1773760556557,"type":"health","svc":"hslm-r33","detail":"diverged: PPL>1000 at step>5K","step":18900}
+{"ts":1773760556557,"type":"health","svc":"hslm-r15","detail":"diverged: PPL>1000 at step>5K","step":24700}
+{"ts":1773760556557,"type":"health","svc":"hslm-w7-19","detail":"diverged: PPL>1000 at step>5K","step":14000}
+{"ts":1773760556558,"type":"health","svc":"hslm-w7-48","detail":"diverged: PPL>1000 at step>5K","step":12800}
+{"ts":1773760556558,"type":"health","svc":"hslm-w7-46","detail":"diverged: PPL>1000 at step>5K","step":20100}
+{"ts":1773760556558,"type":"health","svc":"hslm-w7-41","detail":"diverged: PPL>1000 at step>5K","step":18700}
+{"ts":1773760556558,"type":"health","svc":"hslm-w7-49","detail":"diverged: PPL>1000 at step>5K","step":20900}
