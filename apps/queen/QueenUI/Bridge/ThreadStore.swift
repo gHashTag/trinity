@@ -98,6 +98,8 @@ final class ThreadStore: ObservableObject {
             threads[idx].title = Self.autoTitle(from: msg.text)
         }
         save(threads[idx])
+        // Auto-summarize when thread reaches 6+ messages
+        generateSummary(for: threadID)
     }
 
     /// Generate a short title from the first user message (max ~60 chars, word-boundary truncation).
@@ -113,6 +115,40 @@ final class ThreadStore: ObservableObject {
             return String(truncated[truncated.startIndex..<lastSpace]) + "..."
         }
         return String(truncated) + "..."
+    }
+
+    // MARK: - Auto-Summarization
+
+    /// Generate a local summary from the first assistant response (no AI call).
+    /// Triggered automatically when a thread reaches 6+ messages and has no summary yet.
+    func generateSummary(for threadID: UUID) {
+        guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        guard threads[idx].summary == nil else { return }
+        guard threads[idx].messages.count >= 6 else { return }
+
+        // Find the first assistant response
+        guard let firstAssistant = threads[idx].messages.first(where: { $0.role == .assistant }) else { return }
+
+        let text = firstAssistant.text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { return }
+
+        // Take up to 150 chars, trimmed at word boundary
+        let summary: String
+        if text.count <= 150 {
+            summary = text
+        } else {
+            let limit = text.index(text.startIndex, offsetBy: 150)
+            let truncated = text[text.startIndex..<limit]
+            if let lastSpace = truncated.lastIndex(of: " "), lastSpace > text.startIndex {
+                summary = String(truncated[truncated.startIndex..<lastSpace]) + "..."
+            } else {
+                summary = String(truncated) + "..."
+            }
+        }
+
+        // Remove newlines for single-line display
+        threads[idx].summary = summary.replacingOccurrences(of: "\n", with: " ")
+        save(threads[idx])
     }
 
     func updateLastMessage(text: String, in threadID: UUID) {
@@ -200,7 +236,24 @@ final class ThreadStore: ObservableObject {
         guard let tIdx = threads.firstIndex(where: { $0.id == threadID }) else { return }
         guard let mIdx = threads[tIdx].messages.firstIndex(where: { $0.id == messageID }) else { return }
         threads[tIdx].messages[mIdx].isLiked = liked
+        // Clear feedback category when un-disliking
+        if liked != false {
+            threads[tIdx].messages[mIdx].feedbackCategory = nil
+        }
         save(threads[tIdx])
+    }
+
+    func setFeedbackCategory(_ category: String?, for messageID: UUID, in threadID: UUID) {
+        guard let tIdx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        guard let mIdx = threads[tIdx].messages.firstIndex(where: { $0.id == messageID }) else { return }
+        threads[tIdx].messages[mIdx].feedbackCategory = category
+        save(threads[tIdx])
+    }
+
+    /// Get all pinned (bookmarked) messages in a specific thread
+    func pinnedMessages(in threadID: UUID) -> [ChatMessage] {
+        guard let thread = threads.first(where: { $0.id == threadID }) else { return [] }
+        return thread.messages.filter { $0.isBookmarked == true }
     }
 
     func appendComment(_ comment: ChatMessage, to messageID: UUID, in threadID: UUID) {
@@ -427,6 +480,45 @@ final class ThreadStore: ObservableObject {
         encoder.outputFormatting = .prettyPrinted
         if let data = try? encoder.encode(folders) {
             try? data.write(to: foldersURL, options: .atomic)
+        }
+    }
+
+    // MARK: - Prompt Templates
+
+    private var templatesURL: URL {
+        let appSupport = FileManager.default
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        return appSupport.appendingPathComponent("QueenUI/templates.json")
+    }
+
+    func loadCustomTemplates() -> [PromptTemplate] {
+        guard let data = try? Data(contentsOf: templatesURL) else { return [] }
+        return (try? JSONDecoder().decode([PromptTemplate].self, from: data)) ?? []
+    }
+
+    func saveTemplate(_ template: PromptTemplate) {
+        var templates = loadCustomTemplates()
+        templates.append(template)
+        persistTemplates(templates)
+    }
+
+    func deleteTemplate(_ id: UUID) {
+        var templates = loadCustomTemplates()
+        // Never delete built-in templates
+        templates.removeAll { $0.id == id && !$0.isBuiltIn }
+        persistTemplates(templates)
+    }
+
+    /// All templates: built-in + custom
+    func allTemplates() -> [PromptTemplate] {
+        return PromptTemplate.builtIn + loadCustomTemplates()
+    }
+
+    private func persistTemplates(_ templates: [PromptTemplate]) {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        if let data = try? encoder.encode(templates) {
+            try? data.write(to: templatesURL, options: .atomic)
         }
     }
 
@@ -802,6 +894,7 @@ final class ThreadStore: ObservableObject {
             newMsg.totalMs = msg.totalMs
             newMsg.citations = msg.citations
             newMsg.errorKind = msg.errorKind
+            newMsg.feedbackCategory = msg.feedbackCategory
             return newMsg
         }
         copy.tags = original.tags

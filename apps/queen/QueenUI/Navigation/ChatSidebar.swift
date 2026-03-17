@@ -814,6 +814,8 @@ struct ChatSidebar: View {
             onAddTag: { store.addTag($0, to: thread.id) },
             onMoveToFolder: { folderID in store.moveThread(thread.id, to: folderID) },
             onQuickExport: { quickExportMarkdown(thread) },
+            onQuickExportHTML: { quickExportHTML(thread) },
+            onQuickExportJSON: { quickExportJSON(thread) },
             onDuplicate: { store.duplicateThread(thread.id) },
             onArchive: {
                 withAnimation(.easeInOut(duration: 0.2)) {
@@ -833,22 +835,21 @@ struct ChatSidebar: View {
 
     private func quickExportMarkdown(_ thread: ChatThread) {
         guard let md = store.exportAsMarkdown(thread.id) else { return }
-        let sanitized = thread.title
-            .replacingOccurrences(of: "/", with: "-")
-            .replacingOccurrences(of: ":", with: "-")
-            .replacingOccurrences(of: "\\", with: "-")
-            .replacingOccurrences(of: "\"", with: "")
-            .replacingOccurrences(of: "*", with: "")
-            .replacingOccurrences(of: "?", with: "")
-            .replacingOccurrences(of: "<", with: "")
-            .replacingOccurrences(of: ">", with: "")
-            .replacingOccurrences(of: "|", with: "-")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        let filename = sanitized.isEmpty ? "thread" : String(sanitized.prefix(60))
+        quickSaveToDownloads(thread: thread, content: md, ext: "md")
+    }
+
+    private func quickExportHTML(_ thread: ChatThread) {
+        guard let html = store.exportAsHTML(thread.id) else { return }
+        quickSaveToDownloads(thread: thread, content: html, ext: "html")
+    }
+
+    private func quickExportJSON(_ thread: ChatThread) {
+        guard let data = store.exportAsJSON(thread.id) else { return }
+        let filename = sanitizedFilename(thread.title)
         let downloadsURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
-        let fileURL = downloadsURL.appendingPathComponent("\(filename).md")
+        let fileURL = downloadsURL.appendingPathComponent("\(filename).json")
         do {
-            try md.write(to: fileURL, atomically: true, encoding: .utf8)
+            try data.write(to: fileURL)
             NSWorkspace.shared.selectFile(fileURL.path, inFileViewerRootedAtPath: downloadsURL.path)
             exportToast = "Exported to Downloads"
             Task { @MainActor in
@@ -862,6 +863,42 @@ struct ChatSidebar: View {
                 exportToast = ""
             }
         }
+    }
+
+    private func quickSaveToDownloads(thread: ChatThread, content: String, ext: String) {
+        let filename = sanitizedFilename(thread.title)
+        let downloadsURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
+        let fileURL = downloadsURL.appendingPathComponent("\(filename).\(ext)")
+        do {
+            try content.write(to: fileURL, atomically: true, encoding: .utf8)
+            NSWorkspace.shared.selectFile(fileURL.path, inFileViewerRootedAtPath: downloadsURL.path)
+            exportToast = "Exported to Downloads"
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(3))
+                exportToast = ""
+            }
+        } catch {
+            exportToast = "Export failed"
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(3))
+                exportToast = ""
+            }
+        }
+    }
+
+    private func sanitizedFilename(_ title: String) -> String {
+        let sanitized = title
+            .replacingOccurrences(of: "/", with: "-")
+            .replacingOccurrences(of: ":", with: "-")
+            .replacingOccurrences(of: "\\", with: "-")
+            .replacingOccurrences(of: "\"", with: "")
+            .replacingOccurrences(of: "*", with: "")
+            .replacingOccurrences(of: "?", with: "")
+            .replacingOccurrences(of: "<", with: "")
+            .replacingOccurrences(of: ">", with: "")
+            .replacingOccurrences(of: "|", with: "-")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return sanitized.isEmpty ? "thread" : String(sanitized.prefix(60))
     }
 
     private func handleImport(_ result: Result<[URL], Error>) {
@@ -1117,6 +1154,17 @@ struct ThreadRow: View {
                                 .lineLimit(1)
                         }
 
+                        // Summary preview (shown when not searching)
+                        if searchQuery.isEmpty, let summary = thread.summary {
+                            Text(summary)
+                                .font(.caption2)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                                .opacity(0.6)
+                                .lineLimit(1)
+                                .truncationMode(.tail)
+                                .help(summary)
+                        }
+
                         HStack(spacing: 4) {
                             ForEach(thread.tags.prefix(2), id: \.self) { tag in
                                 Text("#\(tag)")
@@ -1197,7 +1245,11 @@ struct ThreadRow: View {
             Button(thread.isPinned ? "Unpin" : "Pin") { onPin() }
             Button("Rename") { isRenaming = true }
             Button("Export...") { onExport() }
-            Button("Export as Markdown") { onQuickExport?() }
+            Menu("Quick Export") {
+                Button("Markdown") { onQuickExport?() }
+                Button("HTML") { onQuickExportHTML?() }
+                Button("JSON") { onQuickExportJSON?() }
+            }
             Button("Duplicate") { onDuplicate?() }
             Menu("Add Tag") {
                 ForEach(["hslm", "fpga", "patent", "research", "sevo", "arena", "bug", "feature"], id: \.self) { tag in
