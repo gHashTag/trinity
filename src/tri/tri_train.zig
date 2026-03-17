@@ -325,7 +325,7 @@ fn runStatus(json_mode: bool) void {
 fn writeStatusAnsi(ckpts: []const CheckpointInfo, anomalies: []const diag.Anomaly, rec: diag.Recommendation) void {
     print("\n{s}{s}", .{ GOLDEN, BOLD });
     print("═══════════════════════════════════════════════════════\n", .{});
-    print(" HSLM TRAINING OBSERVATORY{s}\n", .{RESET});
+    print(" HSLM LOCAL OBSERVATORY v2{s}\n", .{RESET});
     print("{s}═══════════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
 
     // Architecture
@@ -401,7 +401,9 @@ fn writeStatusAnsi(ckpts: []const CheckpointInfo, anomalies: []const diag.Anomal
     print("  Compression vs f32: {d:.1}x\n", .{32.0 / Sacred.LOG2_3});
     print("  Consciousness threshold: {d:.4} (phi^-1)\n", .{Sacred.PHI_INV});
     print("  Trinity identity: phi^2 + phi^-2 = {d:.1}\n", .{Sacred.PHI_SQ + Sacred.PHI_INV_SQ});
-    print("\n{s}========================================================={s}\n\n", .{ GOLDEN, RESET });
+    print("  Reference: R33 PPL=4.6 (verified king) │ R18 MIRAGE (ctx=27)\n", .{});
+    print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
+    print("{s}   HSLM Local Observatory v2 │ φ² + 1/φ² = 3{s}\n\n", .{ DIM, RESET });
 }
 
 fn writeStatusJson(ckpts: []const CheckpointInfo, anomalies: []const diag.Anomaly, rec: diag.Recommendation) void {
@@ -434,7 +436,7 @@ fn runLossCurve(dir: []const u8) void {
         return;
     }
 
-    print("\n{s}HSLM Loss Curve{s} ({d} checkpoints from {s})\n\n", .{ BOLD, RESET, n, dir });
+    print("\n{s}{s}📉 HSLM Loss Curve v2{s} ({d} checkpoints from {s})\n\n", .{ GOLDEN, BOLD, RESET, n, dir });
     print("  Step    |  Loss    |  PPL      | Bar\n", .{});
     print("  --------|----------|-----------|---------------------\n", .{});
 
@@ -475,7 +477,7 @@ fn runDiagnose(dir: []const u8) void {
     const n_anom = diag.diagnose(entries[0..n_ckpts], &anomalies);
     const rec = diag.recommend(entries[0..n_ckpts]);
 
-    print("\n{s}HSLM Training Diagnostics{s}\n\n", .{ BOLD, RESET });
+    print("\n{s}{s}🔍 HSLM Training Diagnostics v2{s}\n\n", .{ GOLDEN, BOLD, RESET });
     print("  Checkpoints scanned: {d}\n", .{n_ckpts});
     print("  Anomalies found: {d}\n\n", .{n_anom});
 
@@ -503,7 +505,7 @@ fn runCompare(dir1: []const u8, dir2: []const u8) void {
     const n1 = diag.scanCheckpoints(dir1, &ckpts1);
     const n2 = diag.scanCheckpoints(dir2, &ckpts2);
 
-    print("\n{s}HSLM Training Comparison{s}\n\n", .{ BOLD, RESET });
+    print("\n{s}{s}⚖️  HSLM Training Comparison v2{s}\n\n", .{ GOLDEN, BOLD, RESET });
     print("  Run A: {s} ({d} checkpoints)\n", .{ dir1, n1 });
     print("  Run B: {s} ({d} checkpoints)\n\n", .{ dir2, n2 });
 
@@ -549,7 +551,7 @@ fn runCheckpointList(dir: []const u8) void {
         return;
     }
 
-    print("\n{s}HSLM Checkpoints{s} ({s})\n\n", .{ BOLD, RESET, dir });
+    print("\n{s}{s}💾 HSLM Checkpoints v2{s} ({s})\n\n", .{ GOLDEN, BOLD, RESET, dir });
     print("  Step    |  Loss    |   PPL    |  Size\n", .{});
     print("  --------|----------|----------|----------\n", .{});
 
@@ -707,10 +709,22 @@ const BG_RED = "\x1b[41m";
 const farm_evolve = @import("tri_farm_evolve.zig");
 
 fn runDashboard(allocator: std.mem.Allocator) !void {
+    // ═══════ AUTO-REFRESH: poll Railway for fresh data ═══════
+    print("{s}🔄 Refreshing farm data...{s}", .{ DIM, RESET });
+    if (farm_evolve.loadState(allocator)) |state| {
+        var mutable_state = state;
+        var api_calls: u32 = 0;
+        farm_evolve.collectMetrics(allocator, &mutable_state, &api_calls);
+        farm_evolve.saveState(mutable_state) catch {};
+        print(" {s}done ({d} API calls){s}\n\n", .{ GREEN, api_calls, RESET });
+    } else |_| {
+        print(" {s}(no state — run: tri farm evolve init){s}\n\n", .{ YELLOW, RESET });
+    }
+
     // ═══════ HEADER ═══════
-    print("\n{s}{s}", .{ GOLDEN, BOLD });
+    print("{s}{s}", .{ GOLDEN, BOLD });
     print("🧠 ═══════════════════════════════════════════════════════════════\n", .{});
-    print("   HSLM TRAINING OBSERVATORY                                     \n", .{});
+    print("   HSLM TRAINING OBSERVATORY v2                                   \n", .{});
     print("   ═══════════════════════════════════════════════════════════════{s}\n\n", .{RESET});
 
     // ═══════ ARCHITECTURE ═══════
@@ -758,6 +772,7 @@ fn runDashboard(allocator: std.mem.Allocator) !void {
     var stalled: u32 = 0;
     var diverged: u32 = 0;
     var stuck: u32 = 0;
+    var mirage: u32 = 0;
     var with_metrics: u32 = 0;
     var sub5: u32 = 0;
     var sub10: u32 = 0;
@@ -808,6 +823,8 @@ fn runDashboard(allocator: std.mem.Allocator) !void {
             diverged += 1;
         } else if (status == 7) {
             stuck += 1;
+        } else if (status == 8) {
+            mirage += 1;
         }
     }
 
@@ -840,11 +857,12 @@ fn runDashboard(allocator: std.mem.Allocator) !void {
     // ═══════ FARM OVERVIEW ═══════
     print("{s}{s}📊 FARM OVERVIEW{s}  │  Evolution step: {s}{d}{s}\n", .{ CYAN, BOLD, RESET, WHITE, evo_step, RESET });
     print("   Workers: {s}{d}{s} alive │ {d} killed │ {d} total\n", .{ GREEN, alive, RESET, killed, svc_count });
-    if (stalled > 0 or diverged > 0 or stuck > 0) {
+    if (stalled > 0 or diverged > 0 or stuck > 0 or mirage > 0) {
         print("   {s}⚠️  Alerts:{s}", .{ YELLOW, RESET });
         if (stalled > 0) print(" {s}{d} stalled{s}", .{ YELLOW, stalled, RESET });
         if (diverged > 0) print(" {s}{d} diverged{s}", .{ RED, diverged, RESET });
         if (stuck > 0) print(" {s}{d} stuck{s}", .{ RED, stuck, RESET });
+        if (mirage > 0) print(" {s}🎭 {d} mirage{s}", .{ YELLOW, mirage, RESET });
         print("\n", .{});
     }
     if (ppl_count > 0) {
@@ -1340,7 +1358,7 @@ fn runDashboard(allocator: std.mem.Allocator) !void {
     }
 
     // ═══════ ALERTS ═══════
-    if (stalled > 0 or diverged > 0 or stuck > 0) {
+    if (stalled > 0 or diverged > 0 or stuck > 0 or mirage > 0) {
         print("{s}{s}🚨 ALERTS{s}\n", .{ RED, BOLD, RESET });
         for (svcs) |s| {
             const status = jsonU32(s, "status");
@@ -1349,6 +1367,11 @@ fn runDashboard(allocator: std.mem.Allocator) !void {
             if (status == 5) print("   {s}⏸️  {s}: stalled at step {d}{s}\n", .{ YELLOW, name, step, RESET });
             if (status == 6) print("   {s}💥 {s}: diverged (PPL={d:.0}) at step {d}{s}\n", .{ RED, name, jsonF32(s, "ppl"), step, RESET });
             if (status == 7) print("   {s}🔒 {s}: stuck at step=0{s}\n", .{ RED, name, RESET });
+            if (status == 8) {
+                const cfg = getJsonObj(s, "cfg");
+                const ctx = if (cfg) |c| jsonU32(c, "ctx") else 0;
+                print("   {s}🎭 {s}: MIRAGE (PPL={d:.2}, ctx={d}) — excluded from ranking{s}\n", .{ YELLOW, name, jsonF32(s, "ppl"), ctx, RESET });
+            }
         }
         print("\n", .{});
     }
@@ -1501,9 +1524,85 @@ fn runDashboard(allocator: std.mem.Allocator) !void {
         }
     }
 
+    // ═══════ VERDICT ═══════
+    {
+        print("\n{s}{s}🎯 VERDICT{s}\n", .{ GOLDEN, BOLD, RESET });
+
+        // Determine training phase
+        const leader_step: u32 = if (sorted_count > 0) jsonU32(svcs[sorted[0]], "step") else 0;
+        const leader_ppl: f32 = if (sorted_count > 0) jsonF32(svcs[sorted[0]], "ppl") else 999;
+        const leader_name = if (sorted_count > 0) getJsonStr(svcs[sorted[0]], "name") else "none";
+        const leader_ctx: u32 = if (sorted_count > 0) blk: {
+            const cfg = getJsonObj(svcs[sorted[0]], "cfg");
+            break :blk if (cfg) |c| jsonU32(c, "ctx") else 0;
+        } else 0;
+
+        // Phase classification
+        if (leader_step < 10000) {
+            print("   Phase: {s}EARLY{s} (leader at {d}K steps — too early for conclusions)\n", .{ YELLOW, RESET, leader_step / 1000 });
+        } else if (leader_step < 50000) {
+            print("   Phase: {s}MIDDLE{s} (leader at {d}K steps — trends forming)\n", .{ CYAN, RESET, leader_step / 1000 });
+        } else {
+            print("   Phase: {s}LATE{s} (leader at {d}K steps — approaching convergence)\n", .{ GREEN, RESET, leader_step / 1000 });
+        }
+
+        // Leader assessment
+        print("   Leader: {s}{s}{s} PPL={d:.2}", .{ GOLDEN, leader_name, RESET, leader_ppl });
+        if (leader_ctx > 0) print(" ctx={d}", .{leader_ctx});
+        if (leader_ctx > 0 and leader_ctx < 81) {
+            print(" {s}⚠️  LOW CTX — mirage risk!{s}", .{ RED, RESET });
+        }
+        print("\n", .{});
+
+        // Health assessment
+        const health: f32 = blk: {
+            var score: f32 = 50.0;
+            // Alive ratio
+            if (svc_count > 0) score += @as(f32, @floatFromInt(alive)) / @as(f32, @floatFromInt(svc_count)) * 20.0;
+            // Low divergence
+            if (diverged == 0) score += 10.0;
+            // Progress (leader step)
+            score += @min(10.0, @as(f32, @floatFromInt(leader_step)) / 10000.0);
+            // Mirage penalty
+            score -= @as(f32, @floatFromInt(mirage)) * 5.0;
+            // Stall penalty
+            score -= @as(f32, @floatFromInt(stalled)) * 2.0;
+            break :blk @min(100, @max(0, score));
+        };
+
+        print("   Farm health: ", .{});
+        if (health >= 80) {
+            print("{s}{d:.0}/100 HEALTHY{s}", .{ GREEN, health, RESET });
+        } else if (health >= 60) {
+            print("{s}{d:.0}/100 OK{s}", .{ YELLOW, health, RESET });
+        } else {
+            print("{s}{d:.0}/100 NEEDS ATTENTION{s}", .{ RED, health, RESET });
+        }
+        print(" │ {d} alive │ {d} stalled │ {d} diverged │ {d} mirage\n", .{ alive, stalled, diverged, mirage });
+
+        // Mirage warning
+        if (mirage > 0) {
+            print("   {s}🎭 {d} service(s) marked MIRAGE — excluded from ranking{s}\n", .{ YELLOW, mirage, RESET });
+        }
+
+        // Action recommendation
+        if (leader_step < 10000) {
+            print("   Action: {s}WAIT{s} — let workers train, check again at 20K steps\n", .{ CYAN, RESET });
+        } else if (leader_ppl > 50 and leader_step > 30000) {
+            print("   Action: {s}INVESTIGATE{s} — leader PPL still high at {d}K steps\n", .{ YELLOW, RESET, leader_step / 1000 });
+        } else if (leader_ppl < 10 and leader_step > 80000) {
+            print("   Action: {s}VERIFY{s} — check generation quality before declaring record\n", .{ GREEN, RESET });
+        } else {
+            print("   Action: {s}MONITOR{s} — training progressing normally\n", .{ CYAN, RESET });
+        }
+
+        // Reference
+        print("   Reference: R33 PPL=4.6 at 100K (verified king) │ R18 PPL=6.1 (MIRAGE, ctx=27)\n", .{});
+    }
+
     // Footer
     print("\n{s}═══════════════════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-    print("{s}   φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ DIM, RESET });
+    print("{s}   HSLM Observatory v2 │ φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ DIM, RESET });
 }
 
 const ExportFormat = enum { json, csv };

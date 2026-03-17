@@ -889,11 +889,20 @@ fn runTrain(
             }
         }
 
-        // Milestone text generation
+        // Milestone text generation (early)
         if (trainer.metrics.step == 1000 or trainer.metrics.step == 2000 or trainer.metrics.step == 3000) {
             try stdout.print("\n[MILESTONE step {d}] Generated text:\n", .{trainer.metrics.step});
             try generateSample(allocator, &model, .{});
             try stdout.print("\n", .{});
+        }
+
+        // Repetition rate check every 25K steps (anti-mirage metric)
+        if (trainer.metrics.step > 0 and trainer.metrics.step % 25000 == 0) {
+            const rep_rate = measureRepetitionRate(allocator, &model) catch 100.0;
+            try stdout.print("[REP] step={d} repetition_rate={d:.1}%\n", .{ trainer.metrics.step, rep_rate });
+            if (rep_rate > 60.0) {
+                try stdout.print("[REP] WARNING: repetition_rate>{d:.0}% — possible mirage (memorization without generalization)\n", .{60.0});
+            }
         }
     }
 
@@ -1745,6 +1754,61 @@ fn evalPerplexity(allocator: std.mem.Allocator, model: *model_mod.HSLM, data_pat
     } else {
         try stdout.print("[EVAL] No sequences evaluated\n", .{});
     }
+}
+
+/// Measure repetition rate: generate 5 samples, count % of repeated trigrams.
+/// Returns 0-100 (percentage). High rate (>60%) indicates memorization / mirage.
+fn measureRepetitionRate(allocator: std.mem.Allocator, model: *model_mod.HSLM) !f32 {
+    var tok = try tokenizer_mod.Tokenizer.init(allocator);
+    defer tok.deinit();
+
+    const params = model_mod.HSLM.SampleParams{
+        .temperature = 0.8,
+        .top_k = 40,
+        .rep_penalty = 1.0, // no penalty — measure raw repetition
+    };
+    var prng = std.Random.DefaultPrng.init(@as(u64, @intCast(std.time.milliTimestamp() & 0x7FFFFFFFFFFFFFFF)));
+    const rng = prng.random();
+
+    const prompts = [_][]const u8{ "Once upon a time", "The little cat", "She was very", "One day", "There was a" };
+    var total_trigrams: usize = 0;
+    var repeated_trigrams: usize = 0;
+
+    for (prompts) |p| {
+        var tokens: [256]u16 = undefined;
+        const n = tok.encode(p, &tokens);
+        var gen_len = n;
+        for (0..100) |_| {
+            if (gen_len >= 255) break;
+            const next = model.generateSampled(tokens[0..gen_len], params, rng);
+            tokens[gen_len] = next;
+            gen_len += 1;
+            if (next == tokenizer_mod.EOS_TOKEN) break;
+        }
+        // Count trigram repetitions in generated portion
+        if (gen_len > n + 3) {
+            const gen_start = n;
+            const gen_count = gen_len - gen_start;
+            if (gen_count >= 3) {
+                var i: usize = gen_start;
+                while (i + 2 < gen_len) : (i += 1) {
+                    const tri = [3]u16{ tokens[i], tokens[i + 1], tokens[i + 2] };
+                    total_trigrams += 1;
+                    // Check if this trigram appears again later
+                    var j: usize = i + 1;
+                    while (j + 2 < gen_len) : (j += 1) {
+                        if (tokens[j] == tri[0] and tokens[j + 1] == tri[1] and tokens[j + 2] == tri[2]) {
+                            repeated_trigrams += 1;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (total_trigrams == 0) return 0.0;
+    return @as(f32, @floatFromInt(repeated_trigrams)) / @as(f32, @floatFromInt(total_trigrams)) * 100.0;
 }
 
 fn generateSample(allocator: std.mem.Allocator, model: *model_mod.HSLM, opts: GenerateOpts) !void {

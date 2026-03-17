@@ -8,7 +8,7 @@
 //   tri zenodo publish <version>  — create new version, upload, publish
 //   tri zenodo status             — show current record info
 //   tri zenodo draft <version>    — create draft without publishing
-//   tri zenodo update [D004-D007] — upgrade descriptions to defensive publications
+//   tri zenodo update [D004-D008] — upgrade descriptions to defensive publications
 //
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -115,6 +115,13 @@ const disc_table = [_]Discovery{
         .keywords = "sparse-matmul,ternary,branchless,simd,matrix-multiplication,zig",
         .files = &.{"src/hslm/sparse_ternary.zig"},
     },
+    .{
+        .id = "D008",
+        .title = "Trinity D008: SEVO — Sacred EVolutionary Objective Search",
+        .description = "Population-based evolutionary training that mutates not just hyperparameters but the training objective itself (NTP/JEPA/NCA/hybrid). Combines ASHA successive halving + PBT mutation + diversity-preserving injection with sacred 3^k constraints. PPL=0.0 sentinel prevents premature elimination. FRESH/RESUME auto-detection. 108 workers, 6700+ LOC pure Zig.",
+        .keywords = "sevo,evolutionary,population-based-training,objective-mutation,asha,pbt,ternary,zig",
+        .files = &.{"src/tri/tri_farm_evolve.zig"},
+    },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -171,6 +178,14 @@ const update_records = [_]UpdateRecord{
         .keywords = "sparse-matmul,branchless,simd,ternary,defensive-publication",
         .cpc = "G06F7/544,G06F7/72,G06F17/16",
     },
+    .{
+        .id = "D008",
+        .zenodo_id = "TBD",
+        .file = "papers/patent-strategy/zenodo-descriptions/D008.html",
+        .title = "Trinity D008: SEVO — Sacred EVolutionary Objective Search",
+        .keywords = "sevo,evolutionary,population-based-training,objective-mutation,asha,pbt,defensive-publication",
+        .cpc = "G06N3/086,G06N20/00,G06F18/24",
+    },
 };
 
 fn updateAllRecords(allocator: std.mem.Allocator) !void {
@@ -198,7 +213,7 @@ fn updateOneRecord(allocator: std.mem.Allocator, record_id: []const u8) !void {
             return;
         }
     }
-    print("{s}Unknown record: {s}. Valid: D001-D003, D004, D005, D006, D007{s}\n", .{ RED, record_id, RESET });
+    print("{s}Unknown record: {s}. Valid: D001-D003, D004, D005, D006, D007, D008{s}\n", .{ RED, record_id, RESET });
 }
 
 fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
@@ -363,11 +378,11 @@ fn publishDiscovery(allocator: std.mem.Allocator, discovery_id: []const u8) !voi
             return;
         }
     }
-    print("{s}Unknown discovery: {s}. Valid: D004, D005, D006, D007{s}\n", .{ RED, discovery_id, RESET });
+    print("{s}Unknown discovery: {s}. Valid: D004, D005, D006, D007, D008{s}\n", .{ RED, discovery_id, RESET });
 }
 
 fn publishAllDiscoveries(allocator: std.mem.Allocator) !void {
-    print("\n{s}{s}ZENODO DISCOVERY DOI — Publishing 4 records{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("\n{s}{s}ZENODO DISCOVERY DOI — Publishing 5 records{s}\n", .{ GOLDEN, BOLD, RESET });
     print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
 
     for (disc_table) |d| {

@@ -522,6 +522,9 @@ pub fn runPluginCommand(allocator: Allocator, args: []const []const u8) !u8 {
     var registry = try PluginRegistry.init(allocator);
     defer registry.deinit();
 
+    // Load cells as plugins — Cell→Plugin bridge (Honeycomb v6)
+    loadCellsIntoRegistry(allocator, &registry);
+
     var loader = PluginLoader.init(allocator, &registry, .{});
     defer loader.deinit();
 
@@ -529,6 +532,59 @@ pub fn runPluginCommand(allocator: Allocator, args: []const []const u8) !u8 {
     const result = try cli.execute(args);
 
     return result.exit_code;
+}
+
+/// Scan cell.tri manifests and register each cell as a plugin
+fn loadCellsIntoRegistry(allocator: Allocator, registry: *PluginRegistry) void {
+    const CELL_SCAN_DIRS = [_][]const u8{ "src", "apps", "tools", "fpga", "libs" };
+    const cwd = std.fs.cwd();
+
+    for (CELL_SCAN_DIRS) |scan_dir| {
+        var dir = cwd.openDir(scan_dir, .{ .iterate = true }) catch continue;
+        defer dir.close();
+
+        var walker = dir.walk(allocator) catch continue;
+        defer walker.deinit();
+
+        while (walker.next() catch null) |entry| {
+            if (entry.kind != .file) continue;
+            if (!std.mem.eql(u8, entry.basename, "cell.tri")) continue;
+
+            const full_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ scan_dir, entry.path }) catch continue;
+            defer allocator.free(full_path);
+
+            const content = cwd.readFileAlloc(allocator, full_path, 65536) catch continue;
+            defer allocator.free(content);
+
+            // Parse minimal fields
+            var id: []const u8 = "";
+            var name: []const u8 = "";
+            var kind: []const u8 = "";
+            var version: []const u8 = "";
+            var caps: []const u8 = "";
+            var in_cell = false;
+
+            var lines = std.mem.splitScalar(u8, content, '\n');
+            while (lines.next()) |line| {
+                const trimmed = std.mem.trim(u8, line, " \t\r");
+                if (trimmed.len == 0) continue;
+                if (trimmed[0] == '[') {
+                    in_cell = std.mem.eql(u8, trimmed, "[cell]");
+                    continue;
+                }
+                if (!in_cell) continue;
+                const eq = std.mem.indexOf(u8, trimmed, "=") orelse continue;
+                if (eq == 0) continue;
+                const key = std.mem.trim(u8, trimmed[0..eq], " \t");
+                const value = std.mem.trim(u8, trimmed[eq + 1 ..], " \t\"");
+                if (std.mem.eql(u8, key, "id")) id = value else if (std.mem.eql(u8, key, "name")) name = value else if (std.mem.eql(u8, key, "kind")) kind = value else if (std.mem.eql(u8, key, "version")) version = value else if (std.mem.eql(u8, key, "capabilities")) caps = value;
+            }
+
+            if (id.len > 0) {
+                registry.registerFromCell(id, name, kind, version, caps) catch continue;
+            }
+        }
+    }
 }
 
 // ============================================================================

@@ -27,6 +27,9 @@ pub const PluginKind = enum(u8) {
     firebird_ext, // Firebird browser extensions
     optimizer, // Optimization passes
     backend, // Inference backends (CPU, CUDA, Metal)
+    tool, // Standalone tools (arena, needle, etc.)
+    agent, // Autonomous agents (MU, consciousness, etc.)
+    frontend, // UI frontends (Queen UI, etc.)
 
     pub fn toString(self: PluginKind) []const u8 {
         return switch (self) {
@@ -36,6 +39,9 @@ pub const PluginKind = enum(u8) {
             .firebird_ext => "firebird_ext",
             .optimizer => "optimizer",
             .backend => "backend",
+            .tool => "tool",
+            .agent => "agent",
+            .frontend => "frontend",
         };
     }
 };
