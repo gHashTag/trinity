@@ -124,7 +124,7 @@ pub const MemoryRecord = struct {
     }
 };
 
-fn copyToFixed(comptime N: usize, dest: *[N]u8, len_ptr: anytype, src: []const u8) void {
+pub fn copyToFixed(comptime N: usize, dest: *[N]u8, len_ptr: anytype, src: []const u8) void {
     const copy_len = @min(src.len, N);
     @memcpy(dest[0..copy_len], src[0..copy_len]);
     len_ptr.* = @intCast(copy_len);
@@ -400,7 +400,7 @@ pub fn latestHeartbeat(allocator: Allocator, agent_name: []const u8) !?MemoryRec
 // INTERNAL HELPERS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn generateId(id_buf: *[64]u8, id_len: *u8, ts: u64, agent_name: []const u8) void {
+pub fn generateId(id_buf: *[64]u8, id_len: *u8, ts: u64, agent_name: []const u8) void {
     // Simple hash from agent name
     var hash: u32 = 0;
     for (agent_name) |c| {
