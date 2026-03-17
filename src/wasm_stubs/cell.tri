@@ -10,14 +10,14 @@ description = "Auto-generated cell for wasm_stubs"
 capabilities = ["getHue", "getLabel", "getRGB", "getLabel", "getSymbol"]
 files = 7
 tests = 1
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["getHue", "getLabel", "getRGB"]
 tri_subcommands = []
 events = []
 

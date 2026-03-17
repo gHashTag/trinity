@@ -6,24 +6,22 @@ kind = "library"
 path = "src/models"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Auto-generated cell for models"
-capabilities = []
+description = "Ternary neural network models (TQNN inference and benchmarks)"
+capabilities = ["run_layer_benchmark", "run_hybrid_benchmark", "run_scaling_benchmark", "inference", "benchmark"]
 files = 2
 tests = 0
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["benchmark", "inference"]
 tri_subcommands = []
 events = []
 
 [dependencies]
-trinity.vsa = "^1.0.0"
-trinity.quantum = "^1.0.0"
 
 [permissions]
 level = "L0"

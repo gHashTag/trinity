@@ -10,14 +10,14 @@ description = "Auto-generated cell for dark_matter"
 capabilities = ["particleMass", "selfCoupling", "nucleonCrossSection", "abundance", "freezeoutTemp"]
 files = 1
 tests = 22
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["particleMass", "selfCoupling", "nucleonCrossSection"]
 tri_subcommands = []
 events = []
 

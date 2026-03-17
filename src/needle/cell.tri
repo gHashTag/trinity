@@ -22,11 +22,11 @@ type = "tool"
 commands = ["search", "index", "replace"]
 tri_subcommands = ["needle search", "needle replace"]
 events = []
-binaries = ["needle-mcp"]
+binaries = ["needle-mcp", "trinity-query", "trinity-search"]
+exports = ["checkFile", "runBenchmark", "runParseCheck"]
 
 [dependencies]
 trinity.vsa = "^1.0.0"
-trinity.tvc = "^1.0.0"
 
 [permissions]
 level = "L2"

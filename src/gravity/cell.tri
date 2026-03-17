@@ -10,14 +10,14 @@ description = "Auto-generated cell for gravity"
 capabilities = ["pageCurve", "pageTime", "informationRate", "islandsFormula", "fineGrainedEntropy"]
 files = 8
 tests = 90
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
-type = "library"
+type = "backend"
 
 [contributes]
-commands = []
+commands = ["pageCurve", "pageTime", "informationRate"]
 tri_subcommands = []
 events = []
 

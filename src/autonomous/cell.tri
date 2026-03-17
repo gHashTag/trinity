@@ -10,14 +10,14 @@ description = "Auto-generated cell for autonomous"
 capabilities = ["deinit", "init", "analyzeCode", "compareWithResearch", "generateVibeSpec"]
 files = 3
 tests = 3
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "agent"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["deinit", "init", "analyzeCode"]
 tri_subcommands = []
 events = []
 

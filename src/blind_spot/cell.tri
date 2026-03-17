@@ -10,14 +10,14 @@ description = "Auto-generated cell for blind_spot"
 capabilities = ["errorFraction", "consciousnessParam", "gravityParam", "compute", "init"]
 files = 1
 tests = 12
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "sacred"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["errorFraction", "consciousnessParam", "gravityParam"]
 tri_subcommands = []
 events = []
 

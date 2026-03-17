@@ -24,8 +24,6 @@ tri_subcommands = ["queen start", "ui"]
 events = ["on_ui_ready"]
 
 [dependencies]
-trinity.hslm = "^1.0.0"
-trinity.arena = "^1.0.0"
 
 [permissions]
 level = "L0"

@@ -10,14 +10,14 @@ description = "Auto-generated cell for forge"
 capabilities = ["findPackagePin", "findClbTile", "findIntTile", "findIobBySiteY", "tileTypeName"]
 files = 21
 tests = 105
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "backend"
 
 [contributes]
-commands = []
+commands = ["findPackagePin", "findClbTile", "findIntTile"]
 tri_subcommands = []
 events = []
 binaries = ["forge"]

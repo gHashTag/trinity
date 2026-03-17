@@ -10,14 +10,14 @@ description = "Auto-generated cell for cosmos"
 capabilities = ["totalDensityParameter", "matterDensityParameter", "darkEnergyDensityParameter", "curvatureDensityParameter", "radiationDensityParameter"]
 files = 5
 tests = 118
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["totalDensityParameter", "matterDensityParameter", "darkEnergyDensityParameter"]
 tri_subcommands = []
 events = []
 

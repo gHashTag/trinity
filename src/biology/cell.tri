@@ -10,14 +10,14 @@ description = "Auto-generated cell for biology"
 capabilities = ["alphaHelixResidues", "alphaHelixPitch", "alphaHelixRise", "betaSheetTwist", "betaSheetPleating"]
 files = 5
 tests = 82
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["alphaHelixResidues", "alphaHelixPitch", "alphaHelixRise"]
 tri_subcommands = []
 events = []
 

@@ -10,14 +10,14 @@ description = "Auto-generated cell for registry"
 capabilities = ["getApiCommands", "countEndpoints", "isApiEnabled", "supportsProtocol", "generateOpenApiSpec"]
 files = 6
 tests = 22
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "infra"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["getApiCommands", "countEndpoints", "isApiEnabled"]
 tri_subcommands = []
 events = []
 binaries = ["export-registry"]

@@ -6,18 +6,18 @@ kind = "library"
 path = "src/plasma"
 min_core_version = "1.0.0"
 status = "experimental"
-description = "Auto-generated cell for plasma"
-capabilities = ["main"]
+description = "Plasma physics formulas and validation (Debye, Larmor, Saha)"
+capabilities = ["plasmaFrequency", "debyeLength", "larmorRadius", "sahaEquation", "eVToKelvin"]
 files = 1
 tests = 0
-owner = ""
+owner = "agent:ralph"
 
 [tags]
 scope = "physics"
 type = "library"
 
 [contributes]
-commands = []
+commands = ["main"]
 tri_subcommands = []
 events = []
 
