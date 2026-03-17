@@ -26,6 +26,8 @@ struct ChatScreen: View {
     @State private var showCommandPalette = false
     @State private var showMentionPopup = false
     @State private var mentionQuery = ""
+    @State private var showSlashPopup = false
+    @State private var slashQuery = ""
     @State private var showSidebar = true
     @State private var focusMode = false
     @State private var showModelPopover = false
@@ -634,24 +636,8 @@ struct ChatScreen: View {
                 .padding(.bottom, 12)
             }
 
-            ForEach(thread?.messages ?? []) { msg in
-                MessageRow(
-                    message: msg,
-                    store: store,
-                    client: client,
-                    modelManager: modelManager,
-                    isLastMessage: msg.id == thread?.messages.last?.id,
-                    onComment: { commentingMessage = $0 },
-                    onReply: { replyingTo = $0; focused = true },
-                    searchHighlight: searchHighlightFor(msg),
-                    searchQuery: inThreadSearchQuery,
-                    isSelecting: isSelecting,
-                    isSelected: selectedMessageIDs.contains(msg.id),
-                    onToggleSelect: { shiftClick in
-                        toggleMessageSelection(msg.id, shiftClick: shiftClick)
-                    }
-                )
-                .transition(messageTransition(for: msg))
+            ForEach(Array((thread?.messages ?? []).enumerated()), id: \.element.id) { index, msg in
+                messageEntranceAnimation(for: msg, index: index)
             }
 
             errorRetryBlock
@@ -828,6 +814,89 @@ struct ChatScreen: View {
         return .asymmetric(
             insertion: .move(edge: edge).combined(with: .opacity).combined(with: .scale(scale: 0.95)),
             removal: .opacity
+        )
+    }
+
+    // MARK: - Message Entrance Animation Modifier
+
+    /// Custom modifier that provides smooth spring-based entrance animations for messages
+    /// with staggered delays when multiple messages appear simultaneously.
+    struct MessageEntranceModifier: ViewModifier {
+        let isNew: Bool
+        let messageIndex: Int
+        let baseIndex: Int
+        let isUser: Bool
+        let reduceMotion: Bool
+
+        func body(content: Content) -> some View {
+            if !isNew || reduceMotion {
+                // No animation for existing messages or when reduce motion is enabled
+                content
+            } else {
+                content
+                    .scaleEffect(isAnimating ? 1.0 : TrinityTheme.messageEntranceScale)
+                    .opacity(isAnimating ? 1.0 : 0.0)
+                    .offset(y: isAnimating ? 0 : (isUser ? 12 : -12))
+                    .animation(staggeredSpringAnimation, value: isAnimating)
+                    .onAppear {
+                        // Stagger animation based on position from base
+                        let stagger = Double(messageIndex - baseIndex) * TrinityTheme.messageStaggerDelay
+                        let delay = max(0, stagger)
+                        withAnimation(staggeredSpringAnimation.delay(delay)) {
+                            isAnimating = true
+                        }
+                    }
+            }
+        }
+
+        /// Staggered spring animation for cascade effect
+        private var staggeredSpringAnimation: Animation {
+            TrinityTheme.springAnimation()
+        }
+
+        @State private var isAnimating: Bool = false
+    }
+
+    /// Applies the entrance modifier with calculated parameters
+    @ViewBuilder
+    private func messageEntranceAnimation(for msg: ChatMessage, index: Int) -> some View {
+        let isNew = initialLoadDone && !initialMessageIDs.contains(msg.id)
+        let baseIndex = thread?.messages.firstIndex(where: { initialMessageIDs.contains($0.id) }) ?? 0
+        MessageRow(
+            message: msg,
+            store: store,
+            client: client,
+            modelManager: modelManager,
+            isLastMessage: msg.id == thread?.messages.last?.id,
+            onComment: { commentingMessage = $0 },
+            onReply: { replyingTo = $0; focused = true },
+            searchHighlight: searchHighlightFor(msg),
+            searchQuery: inThreadSearchQuery,
+            isSelecting: isSelecting,
+            isSelected: selectedMessageIDs.contains(msg.id),
+            onToggleSelect: { shiftClick in
+                toggleMessageSelection(msg.id, shiftClick: shiftClick)
+            }
+        )
+        .modifier(MessageEntranceModifier(
+            isNew: isNew,
+            messageIndex: index,
+            baseIndex: baseIndex,
+            isUser: msg.role == .user,
+            reduceMotion: reduceMotion
+        ))
+        .transition(exitTransition(for: msg))
+    }
+
+    /// Direction-aware exit transition based on message role
+    private func exitTransition(for msg: ChatMessage) -> AnyTransition {
+        if reduceMotion {
+            return .opacity
+        }
+        let edge: Edge = msg.role == .user ? .trailing : .leading
+        return .asymmetric(
+            insertion: .move(edge: edge).combined(with: .opacity).combined(with: .scale(scale: 0.95)),
+            removal: .move(edge: edge).combined(with: .opacity).combined(with: .scale(scale: TrinityTheme.messageExitScale))
         )
     }
 
@@ -5019,6 +5088,7 @@ struct MultilineInput: NSViewRepresentable {
     var onSubmit: () -> Void
     var onImagePaste: ((String, String) -> Void)? = nil  // (name, base64) callback
     var onMentionTrigger: ((String?) -> Void)? = nil  // trigger @mention popup (nil = dismiss)
+    var onSlashTrigger: ((String?) -> Void)? = nil  // trigger /command popup (nil = dismiss)
 
     func makeNSView(context: Context) -> NSScrollView {
         let scrollView = NSScrollView()
@@ -5058,6 +5128,7 @@ struct MultilineInput: NSViewRepresentable {
         context.coordinator.placeholder = placeholder
         context.coordinator.onImagePaste = onImagePaste
         context.coordinator.onMentionTrigger = onMentionTrigger
+        context.coordinator.onSlashTrigger = onSlashTrigger
 
         // Update placeholder visibility
         context.coordinator.updatePlaceholder()
@@ -5070,7 +5141,7 @@ struct MultilineInput: NSViewRepresentable {
     }
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(text: $text, onSubmit: onSubmit, placeholder: placeholder, onImagePaste: onImagePaste, onMentionTrigger: onMentionTrigger)
+        Coordinator(text: $text, onSubmit: onSubmit, placeholder: placeholder, onImagePaste: onImagePaste, onMentionTrigger: onMentionTrigger, onSlashTrigger: onSlashTrigger)
     }
 
     class Coordinator: NSObject, NSTextViewDelegate {
@@ -5079,15 +5150,17 @@ struct MultilineInput: NSViewRepresentable {
         var placeholder: String
         var onImagePaste: ((String, String) -> Void)?
         var onMentionTrigger: ((String?) -> Void)?
+        var onSlashTrigger: ((String?) -> Void)?
         weak var textView: NSTextView?
         private var placeholderLayer: CATextLayer?
 
-        init(text: Binding<String>, onSubmit: @escaping () -> Void, placeholder: String, onImagePaste: ((String, String) -> Void)? = nil, onMentionTrigger: ((String?) -> Void)? = nil) {
+        init(text: Binding<String>, onSubmit: @escaping () -> Void, placeholder: String, onImagePaste: ((String, String) -> Void)? = nil, onMentionTrigger: ((String?) -> Void)? = nil, onSlashTrigger: ((String?) -> Void)? = nil) {
             self._text = text
             self.onSubmit = onSubmit
             self.placeholder = placeholder
             self.onImagePaste = onImagePaste
             self.onMentionTrigger = onMentionTrigger
+            self.onSlashTrigger = onSlashTrigger
         }
 
         func textDidChange(_ notification: Notification) {
@@ -5113,6 +5186,34 @@ struct MultilineInput: NSViewRepresentable {
             }
             if !mentionDetected {
                 onMentionTrigger?(String?.none)  // dismiss popup
+            }
+
+            // Detect / slash command trigger
+            var slashDetected = false
+            if cursorPos > 0 && cursorPos <= str.count {
+                let idx = str.index(str.startIndex, offsetBy: cursorPos)
+                let before = str[str.startIndex..<idx]
+                // Check if current line starts with /
+                if let newlineRange = before.range(of: "\n", options: .backwards) {
+                    let afterNewline = String(before[newlineRange.upperBound...])
+                    if afterNewline.hasPrefix("/") {
+                        let query = String(afterNewline.dropFirst())
+                        if !query.contains(" ") {
+                            onSlashTrigger?(query)
+                            slashDetected = true
+                        }
+                    }
+                } else if before.hasPrefix("/") {
+                    // First line starts with /
+                    let query = String(before.dropFirst())
+                    if !query.contains(" ") {
+                        onSlashTrigger?(query)
+                        slashDetected = true
+                    }
+                }
+            }
+            if !slashDetected {
+                onSlashTrigger?(String?.none)  // dismiss popup
             }
 
             // Constrain height to ~8 lines
