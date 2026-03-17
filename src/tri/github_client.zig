@@ -55,6 +55,11 @@ pub const GitHubClient = struct {
 
     /// Initialize client: detect token, owner/repo, select mode
     pub fn init(allocator: std.mem.Allocator, dry_run: bool) !Self {
+        return initWithMode(allocator, dry_run, null);
+    }
+
+    /// Initialize client with explicit mode (null = auto-detect)
+    pub fn initWithMode(allocator: std.mem.Allocator, dry_run: bool, preferred_mode: ?Mode) !Self {
         if (dry_run) {
             const owner_repo = detectOwnerRepo(allocator) catch {
                 return Self{
@@ -99,9 +104,12 @@ pub const GitHubClient = struct {
 
         const owner_repo = try detectOwnerRepo(allocator);
 
-        // Check for GITHUB_USE_CLI env var to force gh_cli mode
-        const use_cli = std.process.hasEnvVarConstant("GITHUB_USE_CLI");
-        const mode: Mode = if (use_cli or token == null) .gh_cli else .native_http;
+        // Determine mode: preferred_mode -> GITHUB_USE_CLI env var -> auto-detect based on token
+        const mode: Mode = blk: {
+            if (preferred_mode) |m| break :blk m;
+            const use_cli = std.process.hasEnvVarConstant("GITHUB_USE_CLI");
+            break :blk if (use_cli or token == null) .gh_cli else .native_http;
+        };
 
         return Self{
             .allocator = allocator,
