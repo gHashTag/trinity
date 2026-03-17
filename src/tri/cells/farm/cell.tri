@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "HSLM training farm: Railway service management, evolution, accounts, SSH"
 capabilities = ["farm", "railway", "evolution"]
-tests = 69
+tests = 73
 owner = "agent:ralph"
 
 [tags]
@@ -16,7 +16,7 @@ scope = "infra"
 type = "domain"
 
 [source]
-file_patterns = ["tri_farm*.zig", "railway_*.zig", "farm_*.zig", "dev_farm*.zig"]
+file_patterns = ["tri_farm*.zig", "tri_farm_deploy.zig", "railway_*.zig", "farm_*.zig", "dev_farm*.zig"]
 
 [contributes]
 commands = ["farm status", "farm evolve", "farm leaderboard", "farm recycle", "farm inject"]

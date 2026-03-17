@@ -20,6 +20,7 @@ type = "tool"
 
 [contributes]
 commands = ["search", "index", "replace"]
+exports = ["randomTritVSA", "zeroTritVSA", "bundle2", "simdCosineDistance", "simdEuclideanDistance"]
 tri_subcommands = ["needle search", "needle replace"]
 events = []
 binaries = ["needle-mcp", "trinity-query", "trinity-search"]
