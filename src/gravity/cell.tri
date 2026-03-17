@@ -18,6 +18,7 @@ type = "library"
 
 [contributes]
 commands = ["pageCurve", "pageTime", "informationRate"]
+exports = ["pageCurve", "pageTime", "informationRate", "islandsFormula", "fineGrainedEntropy"]
 tri_subcommands = []
 events = []
 

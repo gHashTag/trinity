@@ -18,9 +18,18 @@ struct ChatSidebar: View {
     @State private var exportThread: ChatThread? = nil
     @State private var debouncedQuery = ""
     @State private var searchTask: Task<Void, Never>? = nil
+    @AppStorage("threadSortOrder") private var sortOrder: String = "date"
 
     private var filteredThreads: [ChatThread] {
         var base = store.sortedThreads
+        // Apply sort order
+        switch sortOrder {
+        case "name":
+            base.sort { $0.title.localizedCaseInsensitiveCompare($1.title) == .orderedAscending }
+        case "size":
+            base.sort { $0.messages.count > $1.messages.count }
+        default: break  // "date" — already sorted by date
+        }
         if let tag = selectedTag {
             base = base.filter { $0.tags.contains(tag) }
         }
@@ -77,6 +86,25 @@ struct ChatSidebar: View {
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(Color.white)
                 Spacer()
+                Menu {
+                    Button { sortOrder = "date" } label: {
+                        Label("Date", systemImage: sortOrder == "date" ? "checkmark" : "")
+                    }
+                    Button { sortOrder = "name" } label: {
+                        Label("Name", systemImage: sortOrder == "name" ? "checkmark" : "")
+                    }
+                    Button { sortOrder = "size" } label: {
+                        Label("Messages", systemImage: sortOrder == "size" ? "checkmark" : "")
+                    }
+                } label: {
+                    Image(systemName: "arrow.up.arrow.down")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.white.opacity(0.4))
+                }
+                .menuStyle(.borderlessButton)
+                .frame(width: 20)
+                .help("Sort threads")
+
                 Button {
                     withAnimation(.easeInOut(duration: 0.15)) {
                         isSearching.toggle()
@@ -148,6 +176,26 @@ struct ChatSidebar: View {
                 }
                 .buttonStyle(.plain)
                 .help("New folder")
+
+                if !store.allBookmarks().isEmpty {
+                    Menu {
+                        ForEach(store.allBookmarks().prefix(10), id: \.message.id) { item in
+                            Button {
+                                store.activeThreadID = item.thread.id
+                            } label: {
+                                Text(String(item.message.text.prefix(60)))
+                            }
+                        }
+                    } label: {
+                        Image(systemName: "bookmark.fill")
+                            .font(.system(size: 11))
+                            .foregroundStyle(TrinityTheme.golden)
+                            .padding(8)
+                    }
+                    .menuStyle(.borderlessButton)
+                    .frame(width: 28)
+                    .help("Bookmarks (\(store.allBookmarks().count))")
+                }
             }
             .padding(.horizontal, 8)
             .padding(.bottom, 8)

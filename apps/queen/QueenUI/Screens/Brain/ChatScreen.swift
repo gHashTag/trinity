@@ -206,17 +206,18 @@ struct ChatScreen: View {
                                         VStack(alignment: .leading, spacing: 6) {
                                             HStack(spacing: 12) {
                                                 if !client.streamingThinkingText.isEmpty && client.streamingText.isEmpty {
-                                                    // Reasoning mode: show pulsing indicator with elapsed + hint
-                                                    ThinkingDots()
+                                                    // Reasoning mode: pulsing brain + depth counter
+                                                    Image(systemName: "brain.head.profile")
+                                                        .font(.system(size: 14))
+                                                        .foregroundStyle(TrinityTheme.purple)
+                                                        .symbolEffect(.pulse, options: .repeating)
                                                     Text("Reasoning...")
                                                         .font(.caption)
                                                         .foregroundStyle(TrinityTheme.purple)
                                                     StreamingElapsedTimer()
-                                                    if effortLevel == .max || effortLevel == .high {
-                                                        Text("(may take 10-30s)")
-                                                            .font(.system(size: 9))
-                                                            .foregroundStyle(TrinityTheme.textMuted)
-                                                    }
+                                                    Text("\(client.streamingThinkingText.count) chars")
+                                                        .font(.system(size: 9, design: .monospaced))
+                                                        .foregroundStyle(TrinityTheme.textMuted)
                                                 } else if thread?.messages.last?.text.isEmpty ?? false {
                                                     ThinkingDots()
                                                     SpinnerVerb()
@@ -1227,6 +1228,7 @@ struct ChatScreen: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("\(mode.rawValue) mode\(chatMode == mode ? ", selected" : "")")
             }
 
             Spacer()
