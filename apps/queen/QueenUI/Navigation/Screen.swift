@@ -1,6 +1,6 @@
 import Foundation
 
-enum Kingdom: String, CaseIterable, Identifiable {
+enum Kingdom: String, CaseIterable, Identifiable, Codable {
     case brain = "Brain"
     case body = "Body"
     case spirit = "Spirit"
@@ -16,7 +16,7 @@ enum Kingdom: String, CaseIterable, Identifiable {
     }
 }
 
-enum Screen: String, CaseIterable, Identifiable {
+enum Screen: String, CaseIterable, Identifiable, Codable {
     // Brain (9)
     case chat = "Queen Chat"
     case sevoFarm = "SEVO Farm"

@@ -53,6 +53,11 @@ struct ChatSidebar: View {
     @State private var filterModel: String? = nil
     @AppStorage("threadSortOrder") private var sortOrder: String = "date"
 
+    // Realm section collapse states
+    @State private var showBrainRealm = true
+    @State private var showBodyRealm = true
+    @State private var showSpiritRealm = true
+
     /// Number of active metadata filters
     private var activeFilterCount: Int {
         var count = 0
@@ -130,6 +135,35 @@ struct ChatSidebar: View {
         if !week.isEmpty { groups.append(("This Week", week)) }
         if !month.isEmpty { groups.append(("This Month", month)) }
         if !older.isEmpty { groups.append(("Older", older)) }
+        return groups
+    }
+
+    /// Determine realm for a thread based on its screen property
+    private func realm(for thread: ChatThread) -> Kingdom? {
+        return thread.screen?.kingdom
+    }
+
+    /// Group threads by realm
+    private func groupThreadsByRealm(_ threads: [ChatThread]) -> [(Kingdom, [ChatThread])] {
+        var brain: [ChatThread] = []
+        var body: [ChatThread] = []
+        var spirit: [ChatThread] = []
+        var uncategorized: [ChatThread] = []
+
+        for thread in threads {
+            switch realm(for: thread) {
+            case .brain: brain.append(thread)
+            case .body: body.append(thread)
+            case .spirit: spirit.append(thread)
+            case nil: uncategorized.append(thread)
+            }
+        }
+
+        var groups: [(Kingdom, [ChatThread])] = []
+        if !brain.isEmpty { groups.append((.brain, brain)) }
+        if !body.isEmpty { groups.append((.body, body)) }
+        if !spirit.isEmpty { groups.append((.spirit, spirit)) }
+        if !uncategorized.isEmpty { groups.append((.brain, uncategorized)) } // Uncategorized -> Brain
         return groups
     }
 
@@ -534,45 +568,26 @@ struct ChatSidebar: View {
                         folderSection(folder)
                     }
 
-                    // Uncategorized threads (no folder) — grouped by date
+                    // Uncategorized threads (no folder) — grouped by realm
                     let uncategorized = filteredThreads.filter { $0.folderID == nil }
-                    if !uncategorized.isEmpty && !store.folders.isEmpty {
-                        HStack {
-                            Image(systemName: "tray")
-                                .font(.system(size: 9))
-                                .foregroundStyle(Color.white.opacity(0.3))
-                            Text("Uncategorized")
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(Color.white.opacity(0.3))
-                            Spacer()
-                            Text("\(uncategorized.count)")
-                                .font(.system(size: 9, design: .monospaced))
-                                .foregroundStyle(Color.white.opacity(0.2))
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 10)
-                        .padding(.bottom, 4)
-                    }
 
-                    // Date-grouped threads (uncategorized or all if no folders)
+                    // Realm-grouped threads
                     let threadsToGroup = store.folders.isEmpty ? filteredThreads : uncategorized
-                    ForEach(groupThreadsByDate(threadsToGroup), id: \.0) { groupName, threads in
-                        // Date group header
-                        HStack {
-                            Text(groupName)
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(Color.white.opacity(0.3))
-                            Spacer()
-                            Text("\(threads.count)")
-                                .font(.system(size: 9, design: .monospaced))
-                                .foregroundStyle(Color.white.opacity(0.2))
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 10)
-                        .padding(.bottom, 4)
+                    ForEach(groupThreadsByRealm(threadsToGroup), id: \.0) { realm, threads in
+                        let isExpanded: Binding<Bool> = {
+                            switch realm {
+                            case .brain: return $showBrainRealm
+                            case .body: return $showBodyRealm
+                            case .spirit: return $showSpiritRealm
+                            }
+                        }()
 
-                        ForEach(threads) { thread in
-                            threadRow(thread)
+                        RealmHeader(realm: realm, count: threads.count, isExpanded: isExpanded)
+
+                        if isExpanded.wrappedValue {
+                            ForEach(threads) { thread in
+                                threadRow(thread)
+                            }
                         }
                     }
 
@@ -1799,6 +1814,89 @@ private struct TokenSparkline: View {
         }
         .frame(width: 30, height: 12)
         .help("Total: \(totalLabel)")
+    }
+}
+
+// MARK: - Realm Section Header
+
+struct RealmHeader: View {
+    let realm: Kingdom
+    let count: Int
+    @Binding var isExpanded: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var realmColor: Color {
+        switch realm {
+        case .brain: return TrinityTheme.purple
+        case .body: return TrinityTheme.accent
+        case .spirit: return TrinityTheme.golden
+        }
+    }
+
+    private var realmIcon: String {
+        switch realm {
+        case .brain: return "brain.head.profile"
+        case .body: return "figure.strengthtraining.traditional"
+        case .spirit: return "sparkles"
+        }
+    }
+
+    var body: some View {
+        Button {
+            withAnimation(.easeInOut(duration: reduceMotion ? 0 : 0.2)) {
+                isExpanded.toggle()
+            }
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(Color.white.opacity(0.3))
+
+                Text(realm.icon)
+                    .font(.system(size: 11))
+
+                Text("\(realm.rawValue.uppercased())")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(realmColor)
+
+                Spacer()
+
+                Text("\(count)")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.2))
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
+            .padding(.bottom, 6)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("\(realm.rawValue) realm, \(count) threads")
+        .accessibilityHint(isExpanded ? "Tap to collapse" : "Tap to expand")
+
+        RealmDivider(color: realmColor)
+    }
+}
+
+struct RealmDivider: View {
+    let color: Color
+
+    var body: some View {
+        Rectangle()
+            .fill(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        color.opacity(0),
+                        color.opacity(0.3),
+                        color.opacity(0)
+                    ]),
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .frame(height: 1)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 4)
     }
 }
 
