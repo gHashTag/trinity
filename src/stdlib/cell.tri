@@ -1,0 +1,40 @@
+[cell]
+id = "trinity.stdlib"
+name = "Standard Library"
+version = "1.0.0"
+kind = "library"
+path = "src/stdlib"
+min_core_version = "1.0.0"
+status = "stable"
+description = "Generic collections, math, string, and IO utilities for Trinity"
+capabilities = ["collections", "math", "string", "io"]
+files = 5
+tests = 47
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = []
+exports = ["Stack", "Queue", "RingBuffer", "Pair", "Triple", "Optional", "Result"]
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "write"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:adb6802a67eee292a47c52f80f00a93d78ddfac1f8f971a96f4db4086b0fc65f"
