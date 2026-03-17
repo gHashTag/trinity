@@ -186,6 +186,14 @@ pub fn farmFill(buf: *[MAX_OUTPUT]u8) []const u8 {
     return runTriCmd(buf, &.{ "farm", "fill" });
 }
 
+pub fn farmAccounts(buf: *[MAX_OUTPUT]u8) []const u8 {
+    return runTriCmd(buf, &.{ "farm", "status" });
+}
+
+pub fn farmWaveSpawn(buf: *[MAX_OUTPUT]u8, account: []const u8, count: []const u8) []const u8 {
+    return runTriCmd(buf, &.{ "farm", "fill", "--account", account, "--count", count });
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // FPGA (additional commands not in fpga_tools)
 // ═══════════════════════════════════════════════════════════════════════════════
