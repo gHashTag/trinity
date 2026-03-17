@@ -4074,8 +4074,14 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
 
         if (final_score >= 80) grade_a += 1 else if (final_score >= 60) grade_b += 1 else if (final_score >= 40) grade_c += 1 else grade_f += 1;
 
-        std.debug.print("  {s}{s}{s}", .{ WHITE, cell.id, RESET });
-        printPad(cell.id.len, 24);
+        const is_sub = cell.parent.len > 0;
+        if (is_sub) {
+            std.debug.print("    {s}└─ {s}{s}", .{ GRAY, cell.id, RESET });
+            printPad(cell.id.len + 5, 26);
+        } else {
+            std.debug.print("  {s}{s}{s}", .{ WHITE, cell.id, RESET });
+            printPad(cell.id.len, 24);
+        }
         std.debug.print("{d:3}     {d:3}       {d:2}       {d:2}     {s}{d:3}{s}    {s}{s}{s}\n", .{
             health_score, security_score, deps_score, contracts_score,
             grade_color,  final_score,    RESET,
