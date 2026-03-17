@@ -5,6 +5,7 @@ final class ThreadStore: ObservableObject {
     @Published var threads: [ChatThread] = []
     @Published var activeThreadID: UUID?
     @Published var folders: [ThreadFolder] = []
+    @Published var isLoaded: Bool = false
 
     private let storeURL: URL
     private var foldersURL: URL {
@@ -123,6 +124,13 @@ final class ThreadStore: ObservableObject {
             threads[idx].updatedAt = Date()
             save(threads[idx])
         }
+    }
+
+    func deleteMessage(_ messageID: UUID, in threadID: UUID) {
+        guard let tIdx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        threads[tIdx].messages.removeAll { $0.id == messageID }
+        threads[tIdx].updatedAt = Date()
+        save(threads[tIdx])
     }
 
     func toggleLike(_ messageID: UUID, liked: Bool?, in threadID: UUID) {
@@ -661,6 +669,7 @@ final class ThreadStore: ObservableObject {
             .sorted { $0.updatedAt > $1.updatedAt }
 
         activeThreadID = threads.first?.id
+        isLoaded = true
     }
 
     private func save(_ thread: ChatThread) {
