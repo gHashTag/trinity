@@ -16,6 +16,7 @@ struct ChatSidebar: View {
     @State private var importResult = ""
     @State private var showExportFormat = false
     @State private var exportThread: ChatThread? = nil
+    @State private var exportToast = ""
     @State private var debouncedQuery = ""
     @State private var searchTask: Task<Void, Never>? = nil
     @AppStorage("threadSortOrder") private var sortOrder: String = "date"
@@ -287,6 +288,25 @@ struct ChatSidebar: View {
                 .padding(.vertical, 4)
             }
 
+            // Export toast
+            if !exportToast.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 10))
+                        .foregroundStyle(TrinityTheme.statusOK)
+                    Text(exportToast)
+                        .font(.system(size: 10))
+                        .foregroundStyle(TrinityTheme.textPrimary)
+                    Spacer()
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 4)
+                .background(TrinityTheme.statusOK.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .padding(.horizontal, 8)
+                .transition(.opacity)
+            }
+
             // Thread list with folder groups + date groups
             ScrollView {
                 LazyVStack(spacing: 0) {
@@ -367,6 +387,38 @@ struct ChatSidebar: View {
             }
 
             Spacer(minLength: 0)
+
+            // Undo delete toast
+            if store.showUndoToast {
+                HStack(spacing: 10) {
+                    Image(systemName: "trash")
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.white.opacity(0.5))
+                    Text("Thread deleted")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.7))
+                    Spacer()
+                    Button("Undo") {
+                        withAnimation(.easeInOut(duration: 0.2)) {
+                            store.undoDelete()
+                        }
+                    }
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(TrinityTheme.accent)
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 10)
+                .background(TrinityTheme.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
+                .padding(.horizontal, 8)
+                .padding(.bottom, 4)
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
 
             // Network stats bar
             NetworkStatsBar()
@@ -498,16 +550,51 @@ struct ChatSidebar: View {
             matchCount: searchQuery.isEmpty ? 0 : store.matchCount(searchQuery, in: thread),
             isHoveredForPreview: hoveredThread == thread.id,
             onSelect: { store.activeThreadID = thread.id },
-            onDelete: { store.delete(thread) },
+            onDelete: { withAnimation(.easeInOut(duration: 0.2)) { store.delete(thread) } },
             onRename: { store.rename(thread.id, title: $0) },
             onExport: { showExport(thread) },
             onPin: { store.togglePin(thread.id) },
             onAddTag: { store.addTag($0, to: thread.id) },
             onMoveToFolder: { folderID in store.moveThread(thread.id, to: folderID) },
+            onQuickExport: { quickExportMarkdown(thread) },
+            onDuplicate: { store.duplicateThread(thread.id) },
             folders: store.folders
         )
         .onHover { hovering in
             hoveredThread = hovering ? thread.id : nil
+        }
+    }
+
+    private func quickExportMarkdown(_ thread: ChatThread) {
+        guard let md = store.exportAsMarkdown(thread.id) else { return }
+        let sanitized = thread.title
+            .replacingOccurrences(of: "/", with: "-")
+            .replacingOccurrences(of: ":", with: "-")
+            .replacingOccurrences(of: "\\", with: "-")
+            .replacingOccurrences(of: "\"", with: "")
+            .replacingOccurrences(of: "*", with: "")
+            .replacingOccurrences(of: "?", with: "")
+            .replacingOccurrences(of: "<", with: "")
+            .replacingOccurrences(of: ">", with: "")
+            .replacingOccurrences(of: "|", with: "-")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let filename = sanitized.isEmpty ? "thread" : String(sanitized.prefix(60))
+        let downloadsURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first!
+        let fileURL = downloadsURL.appendingPathComponent("\(filename).md")
+        do {
+            try md.write(to: fileURL, atomically: true, encoding: .utf8)
+            NSWorkspace.shared.selectFile(fileURL.path, inFileViewerRootedAtPath: downloadsURL.path)
+            exportToast = "Exported to Downloads"
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(3))
+                exportToast = ""
+            }
+        } catch {
+            exportToast = "Export failed"
+            Task { @MainActor in
+                try? await Task.sleep(for: .seconds(3))
+                exportToast = ""
+            }
         }
     }
 
@@ -704,6 +791,8 @@ struct ThreadRow: View {
     let onPin: () -> Void
     let onAddTag: (String) -> Void
     var onMoveToFolder: ((UUID?) -> Void)? = nil
+    var onQuickExport: (() -> Void)? = nil
+    var onDuplicate: (() -> Void)? = nil
     var folders: [ThreadFolder] = []
 
     @State private var isHovered = false
@@ -834,6 +923,8 @@ struct ThreadRow: View {
             Button(thread.isPinned ? "Unpin" : "Pin") { onPin() }
             Button("Rename") { isRenaming = true }
             Button("Export...") { onExport() }
+            Button("Export as Markdown") { onQuickExport?() }
+            Button("Duplicate") { onDuplicate?() }
             Menu("Add Tag") {
                 ForEach(["hslm", "fpga", "patent", "research", "sevo", "arena", "bug", "feature"], id: \.self) { tag in
                     Button("#\(tag)") { onAddTag(tag) }
