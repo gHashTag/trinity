@@ -250,6 +250,8 @@ struct ChatScreen: View {
                 modelSuggestionDismissed: $modelSuggestionDismissed,
                 taskItems: $taskItems,
                 selectedPersona: $selectedPersona,
+                initialMessageIDs: $initialMessageIDs,
+                isLoadingThread: $isLoadingThread,
                 store: store,
                 client: client
             ))
@@ -471,6 +473,17 @@ struct ChatScreen: View {
 
     private var messageListContent: some View {
         LazyVStack(alignment: .leading, spacing: 0) {
+            // Thread-switching loading skeleton for large threads
+            if isLoadingThread {
+                VStack(spacing: 16) {
+                    ForEach(0..<4, id: \.self) { i in
+                        ThreadLoadingSkeleton(isUser: i % 2 == 0)
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 20)
+            }
+
             if thread?.messages.isEmpty != false {
                 EmptyThreadView(chatMode: $chatMode, onSuggestion: { suggestion in
                     input = suggestion
@@ -2394,6 +2407,7 @@ private struct NotificationReceiversModifier: ViewModifier {
                    let md = store.exportAsMarkdown(threadID) {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(md, forType: .string)
+                    SoundCueManager.shared.playCopy()
                     slashCommandResult = "Thread exported to clipboard as Markdown"
                     Task { @MainActor in
                         try? await Task.sleep(for: .seconds(3))
@@ -2453,6 +2467,8 @@ private struct ChangeTrackersModifier: ViewModifier {
     @Binding var modelSuggestionDismissed: Bool
     @Binding var taskItems: [TaskItem]
     @Binding var selectedPersona: Persona?
+    @Binding var initialMessageIDs: Set<UUID>
+    @Binding var isLoadingThread: Bool
     @ObservedObject var store: ThreadStore
     @ObservedObject var client: ChatClient
 
@@ -2487,6 +2503,16 @@ private struct ChangeTrackersModifier: ViewModifier {
                 // Snapshot all messages of the new thread so we don't animate history
                 if let msgs = store.activeThread()?.messages {
                     initialMessageIDs = Set(msgs.map(\.id))
+                    // Brief loading skeleton for large threads (>50 messages)
+                    if msgs.count > 50 {
+                        isLoadingThread = true
+                        Task { @MainActor in
+                            try? await Task.sleep(for: .milliseconds(150))
+                            withAnimation(.easeOut(duration: 0.2)) { isLoadingThread = false }
+                        }
+                    } else {
+                        isLoadingThread = false
+                    }
                 }
             }
             .onChange(of: selectedPersona) { _, newPersona in
@@ -3131,6 +3157,7 @@ struct MessageRow: View {
                                 Button {
                                     NSPasteboard.general.clearContents()
                                     NSPasteboard.general.setString(message.text, forType: .string)
+                                    SoundCueManager.shared.playCopy()
                                 } label: {
                                     Image(systemName: "doc.on.doc")
                                         .font(.system(size: 10))
@@ -3283,6 +3310,7 @@ struct MessageRow: View {
             Button {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(message.text, forType: .string)
+                SoundCueManager.shared.playCopy()
             } label: {
                 Label("Copy", systemImage: "doc.on.doc")
             }
@@ -5632,6 +5660,7 @@ struct ThinkingTranscriptSheet: View {
                     let all = thinkingEntries.map { "[\($0.model)]\n\($0.thinking)" }.joined(separator: "\n\n---\n\n")
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(all, forType: NSPasteboard.PasteboardType.string)
+                    SoundCueManager.shared.playCopy()
                 } label: {
                     HStack(spacing: 4) {
                         Image(systemName: "doc.on.doc")
@@ -6380,5 +6409,41 @@ private struct ThreadStatsCard: View {
         if model.contains("gpt-4o") { return "gpt-4o" }
         if model.count > 20 { return String(model.prefix(18)) + ".." }
         return model
+    }
+}
+
+// MARK: - Thread Loading Skeleton (shown when switching to large threads)
+
+struct ThreadLoadingSkeleton: View {
+    let isUser: Bool
+    @State private var shimmer = false
+
+    var body: some View {
+        HStack {
+            if isUser { Spacer(minLength: 60) }
+            VStack(alignment: isUser ? .trailing : .leading, spacing: 6) {
+                if !isUser {
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.white.opacity(0.04))
+                        .frame(width: 50, height: 10)
+                }
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color.white.opacity(isUser ? 0.06 : 0.04))
+                    .frame(height: isUser ? 36 : 60)
+                    .frame(maxWidth: isUser ? 280 : .infinity)
+                if !isUser {
+                    RoundedRectangle(cornerRadius: 3)
+                        .fill(Color.white.opacity(0.03))
+                        .frame(width: 80, height: 8)
+                }
+            }
+            if !isUser { Spacer(minLength: 60) }
+        }
+        .opacity(shimmer ? 0.7 : 0.3)
+        .animation(
+            .easeInOut(duration: 0.8).repeatForever(autoreverses: true),
+            value: shimmer
+        )
+        .onAppear { shimmer = true }
     }
 }
