@@ -482,6 +482,75 @@ fn ghGetIssueTitle(allocator: Allocator, issue_str: []const u8, buf: *[512]u8) !
 }
 
 // ============================================================================
+// DAG BUILDER — Phase 2: Parallel execution support
+// ============================================================================
+
+const pipeline_parallel = @import("pipeline_parallel.zig");
+
+/// Build a PipelineDAG from an array of SubTasks grouped by phase.
+/// Tasks in the same phase get the same group_id (parallel execution).
+/// Phase order: RESEARCH(0) || PLAN(0) → IMPLEMENT(1) → TEST(2) || BENCH(2) → VERIFY(3)
+pub fn buildDag(tasks: []const SubTask) pipeline_parallel.PipelineDAG {
+    var dag = pipeline_parallel.PipelineDAG.init();
+
+    for (tasks) |task| {
+        const group_id = phaseToGroup(task.phase);
+        const title = task.title[0..task.title_len];
+
+        // Command = "pipeline run" for IMPLEMENT, "test" for TEST, etc.
+        const cmd = phaseToCommand(task.phase);
+
+        dag.addJob(cmd, title, group_id);
+    }
+
+    return dag;
+}
+
+/// Map phases to execution groups for parallel scheduling.
+/// Same group_id = can run in parallel.
+fn phaseToGroup(phase: Phase) u8 {
+    return switch (phase) {
+        .research, .plan => 0, // RESEARCH || PLAN can run together
+        .implement => 1, // IMPLEMENT is sequential
+        .test_phase => 2, // TEST || BENCH can run together
+        .verify => 3, // VERIFY is final
+        .unknown => 4,
+    };
+}
+
+/// Map phase to tri CLI command
+fn phaseToCommand(phase: Phase) []const u8 {
+    return switch (phase) {
+        .research => "research",
+        .plan => "plan",
+        .implement => "pipeline",
+        .test_phase => "test",
+        .verify => "verify",
+        .unknown => "status",
+    };
+}
+
+/// Sort tasks into topological groups and return group count.
+/// Groups are ordered by phase.order(), same-phase tasks are parallel.
+pub fn topologicalGroupSort(tasks: []SubTask) u8 {
+    // First sort by phase
+    sortByPhase(tasks);
+
+    // Count distinct groups
+    if (tasks.len == 0) return 0;
+    var groups: u8 = 1;
+    var prev_group = phaseToGroup(tasks[0].phase);
+    for (tasks[1..]) |task| {
+        const g = phaseToGroup(task.phase);
+        if (g != prev_group) {
+            groups += 1;
+            prev_group = g;
+        }
+    }
+    return groups;
+}
+
+// ============================================================================
 // TESTS
 // ============================================================================
 
@@ -519,4 +588,37 @@ test "sortByPhase" {
     try std.testing.expectEqual(@as(u32, 2), tasks[1].number);
     try std.testing.expectEqual(@as(u32, 3), tasks[2].number);
     try std.testing.expectEqual(@as(u32, 5), tasks[3].number);
+}
+
+test "buildDag_groups_by_phase" {
+    const tasks = [_]SubTask{
+        .{ .number = 1, .phase = .research },
+        .{ .number = 2, .phase = .plan },
+        .{ .number = 3, .phase = .implement },
+        .{ .number = 4, .phase = .test_phase },
+        .{ .number = 5, .phase = .verify },
+    };
+    const dag = buildDag(&tasks);
+    try std.testing.expectEqual(@as(u8, 5), dag.job_count);
+    // research and plan both in group 0
+    try std.testing.expectEqual(@as(u8, 0), dag.jobs[0].group_id);
+    try std.testing.expectEqual(@as(u8, 0), dag.jobs[1].group_id);
+    // implement in group 1
+    try std.testing.expectEqual(@as(u8, 1), dag.jobs[2].group_id);
+    // test in group 2
+    try std.testing.expectEqual(@as(u8, 2), dag.jobs[3].group_id);
+    // verify in group 3
+    try std.testing.expectEqual(@as(u8, 3), dag.jobs[4].group_id);
+}
+
+test "topologicalGroupSort_counts" {
+    var tasks = [_]SubTask{
+        .{ .number = 3, .phase = .implement },
+        .{ .number = 1, .phase = .research },
+        .{ .number = 4, .phase = .test_phase },
+        .{ .number = 2, .phase = .plan },
+    };
+    const groups = topologicalGroupSort(&tasks);
+    // research+plan=group0, implement=group1, test=group2 → 3 distinct groups
+    try std.testing.expectEqual(@as(u8, 3), groups);
 }

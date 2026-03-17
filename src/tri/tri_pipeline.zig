@@ -18,6 +18,7 @@ const batch_runner = @import("batch_runner.zig");
 const cost_tracker = @import("cost_tracker.zig");
 const toxic_verdict = @import("pathology.zig");
 const loop_decide = @import("loop_decide.zig");
+const pipeline_parallel = @import("pipeline_parallel.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -53,6 +54,8 @@ pub fn runPipelineCommand(allocator: std.mem.Allocator, args: []const []const u8
         runPipelineVersionCmd(allocator, sub_args);
     } else if (std.mem.eql(u8, subcmd, "cost")) {
         runPipelineCost(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcmd, "parallel")) {
+        pipeline_parallel.runParallelPipelineCommand(allocator, sub_args);
     } else {
         std.debug.print("{s}Unknown pipeline subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printPipelineHelp();
@@ -175,8 +178,31 @@ pub fn printPipelineHelp() void {
 
 pub fn runPipelineRun(allocator: std.mem.Allocator, args: []const []const u8) void {
     if (args.len < 1) {
-        std.debug.print("{s}Usage: tri pipeline run <task description>{s}\n", .{ RED, RESET });
+        std.debug.print("{s}Usage: tri pipeline run <task description> [--parallel]{s}\n", .{ RED, RESET });
         std.debug.print("Example: tri pipeline run \"add dark mode toggle\"\n", .{});
+        std.debug.print("         tri pipeline run \"task\" --parallel  (DAG mode)\n", .{});
+        return;
+    }
+
+    // Check for --parallel flag
+    var use_parallel = false;
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--parallel")) {
+            use_parallel = true;
+        }
+    }
+
+    if (use_parallel) {
+        // Filter out --parallel from args before passing
+        var filtered: [32][]const u8 = undefined;
+        var fcount: usize = 0;
+        for (args) |arg| {
+            if (!std.mem.eql(u8, arg, "--parallel")) {
+                filtered[fcount] = arg;
+                fcount += 1;
+            }
+        }
+        pipeline_parallel.runParallelPipelineCommand(allocator, filtered[0..fcount]);
         return;
     }
 

@@ -1230,10 +1230,12 @@ fn runAutoDetectDeps(allocator: Allocator, write_mode: bool) !void {
                     std.mem.eql(u8, import_path, "root"))
                     continue;
 
-                // Check if it's a cross-cell import (contains "../" or is a root-relative path)
-                if (std.mem.startsWith(u8, import_path, "../")) {
-                    // Resolve: cell_path + "/" + import_path → normalize → find owning cell
-                    // Try to match the first directory after going up
+                // Check if it's a cross-cell import (relative or root-relative path)
+                if (std.mem.startsWith(u8, import_path, "../") or
+                    std.mem.startsWith(u8, import_path, "src/") or
+                    std.mem.startsWith(u8, import_path, "libs/") or
+                    std.mem.startsWith(u8, import_path, "fpga/"))
+                {
                     const resolved = resolveImportToCell(import_path, cell_path, &path_to_cell);
                     if (resolved) |dep_cell_id| {
                         if (!std.mem.eql(u8, dep_cell_id, m.id)) {
@@ -1540,7 +1542,11 @@ fn scanCellImportsFiltered(
                 std.mem.eql(u8, import_path, "builtin") or
                 std.mem.eql(u8, import_path, "root")) continue;
 
-            if (std.mem.startsWith(u8, import_path, "../")) {
+            if (std.mem.startsWith(u8, import_path, "../") or
+                std.mem.startsWith(u8, import_path, "src/") or
+                std.mem.startsWith(u8, import_path, "libs/") or
+                std.mem.startsWith(u8, import_path, "fpga/"))
+            {
                 if (resolveImportToCell(import_path, cell_path, path_to_cell)) |dep_cell_id| {
                     if (!std.mem.eql(u8, dep_cell_id, cell_id)) {
                         detected_deps.put(dep_cell_id, {}) catch {};
@@ -1707,13 +1713,41 @@ fn resolveImportToCell(import_path: []const u8, cell_path: []const u8, path_to_c
     // cell_path is like "src/hslm"
     // We need to resolve: "src/hslm" + "../vsa/core.zig" → "src/vsa"
 
-    // Count ../ levels
+    // Handle root-relative paths like "src/vm.zig" or "src/sacred/const.zig"
+    if (std.mem.startsWith(u8, import_path, "src/") or std.mem.startsWith(u8, import_path, "libs/") or
+        std.mem.startsWith(u8, import_path, "fpga/"))
+    {
+        // Extract: "src/sacred/const.zig" → "src/sacred"
+        const after_root = import_path;
+        // Find the second slash: src/<dir>/...
+        if (std.mem.indexOfScalar(u8, after_root, '/')) |first_slash| {
+            const rest = after_root[first_slash + 1 ..];
+            if (std.mem.indexOfScalar(u8, rest, '/')) |second_slash| {
+                // "src" + "/" + "sacred" → "src/sacred"
+                const dir_path = after_root[0 .. first_slash + 1 + second_slash];
+                if (path_to_cell.get(dir_path)) |cell_id| return cell_id;
+            } else {
+                // "src/vm.zig" → strip .zig, try "src/vm"
+                const file_name = rest;
+                if (std.mem.endsWith(u8, file_name, ".zig")) {
+                    var buf2: [512]u8 = undefined;
+                    const dir_path = std.fmt.bufPrint(&buf2, "{s}/{s}", .{
+                        after_root[0..first_slash], file_name[0 .. file_name.len - 4],
+                    }) catch return null;
+                    if (path_to_cell.get(dir_path)) |cell_id| return cell_id;
+                }
+            }
+        }
+    }
+
+    // Handle ../ relative paths
     var remaining = import_path;
     var up_count: usize = 0;
     while (std.mem.startsWith(u8, remaining, "../")) {
         up_count += 1;
         remaining = remaining[3..];
     }
+    if (up_count == 0) return null; // Not a relative path
 
     // Go up from cell_path
     var base = cell_path;
@@ -4997,6 +5031,8 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
             contracts_score -|= 5; // library/tool without exports = incomplete API
         }
         // Check 2: boundary — L0 cells should not depend on L2 cells
+        // Penalty scales by dep kind: library deps get -1 (L2 may be from auxiliary code),
+        // backend/tool deps get -3 (real permission escalation risk)
         if (std.mem.eql(u8, cell.perm_level, "L0")) {
             var dep_it2 = cell_parser.DepIterator.init(cell.dependencies_raw);
             while (dep_it2.next()) |dep| {
@@ -5004,7 +5040,11 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
                     for (ac) |dc| {
                         if (std.mem.eql(u8, dc.manifest.id, dep.id)) {
                             if (std.mem.eql(u8, dc.manifest.perm_level, "L2")) {
-                                contracts_score -|= 3; // L0→L2 boundary violation
+                                const penalty: u8 = if (std.mem.eql(u8, dc.manifest.kind, "library"))
+                                    1 // library→library: L2 likely from aux code, mild penalty
+                                else
+                                    3; // library→backend/tool: real permission escalation
+                                contracts_score -|= penalty;
                             }
                             break;
                         }
@@ -5153,7 +5193,11 @@ fn computeDepsAccuracy(
                 std.mem.eql(u8, import_path, "builtin") or
                 std.mem.eql(u8, import_path, "root")) continue;
 
-            if (std.mem.startsWith(u8, import_path, "../")) {
+            if (std.mem.startsWith(u8, import_path, "../") or
+                std.mem.startsWith(u8, import_path, "src/") or
+                std.mem.startsWith(u8, import_path, "libs/") or
+                std.mem.startsWith(u8, import_path, "fpga/"))
+            {
                 const resolved = resolveImportToCell(import_path, cell_path, path_to_cell);
                 if (resolved) |dep_cell_id| {
                     if (!std.mem.eql(u8, dep_cell_id, cell.id)) {
@@ -5176,6 +5220,21 @@ fn computeDepsAccuracy(
         declared_deps.put(dep_entry.id, {}) catch {};
     }
 
+    // Build parent's declared deps for inheritance (sub-cells resolve modules through parent)
+    var parent_deps = std.StringHashMap(void).init(allocator);
+    defer parent_deps.deinit();
+    if (cell.parent.len > 0) {
+        for (all_cells) |pc| {
+            if (std.mem.eql(u8, pc.manifest.id, cell.parent)) {
+                var parent_dep_it = cell_parser.DepIterator.init(pc.manifest.dependencies_raw);
+                while (parent_dep_it.next()) |pdep| {
+                    parent_deps.put(pdep.id, {}) catch {};
+                }
+                break;
+            }
+        }
+    }
+
     // Count confirmed (declared AND detected)
     var declared_it = declared_deps.iterator();
     while (declared_it.next()) |e| {
@@ -5191,6 +5250,10 @@ fn computeDepsAccuracy(
     var detected_it = detected_deps.iterator();
     while (detected_it.next()) |e| {
         if (!declared_deps.contains(e.key_ptr.*)) {
+            // Sub-cell importing parent is expected, not a missing dep
+            if (cell.parent.len > 0 and std.mem.eql(u8, e.key_ptr.*, cell.parent)) continue;
+            // Deps inherited from parent are not missing — sub-cells resolve through parent build
+            if (parent_deps.contains(e.key_ptr.*)) continue;
             result.missing += 1;
             result.total += 1;
         }
