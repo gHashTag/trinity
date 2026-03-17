@@ -18,6 +18,7 @@ type = "backend"
 
 [contributes]
 commands = ["mapModule", "generateVerilog", "place"]
+exports = ["route", "parseXdc", "parseXdcFromSlice", "parseFasmLine", "lookupFeature"]
 tri_subcommands = []
 events = []
 binaries = ["forge"]
