@@ -1785,6 +1785,7 @@ struct MessageActionBar: View {
     @State private var isSpeaking = false
     @State private var didCopy = false
     @State private var synthesizer: AVSpeechSynthesizer?
+    @State private var showRegenModelPicker = false
 
     private var isLiked: Bool? {
         message.isLiked
@@ -1799,10 +1800,10 @@ struct MessageActionBar: View {
         HStack(spacing: 0) {
             // Left: action buttons
             HStack(spacing: 16) {
-                // Retry — message-level (regenerates from this specific message)
+                // Regenerate — always visible, long-press for model picker
                 actionButton(
                     "arrow.clockwise",
-                    tooltip: "Retry this response",
+                    tooltip: "Regenerate (long-press for model picker)",
                     active: hasError,
                     tint: hasError ? TrinityTheme.statusError : nil
                 ) {
@@ -1813,6 +1814,49 @@ struct MessageActionBar: View {
                         store: store,
                         modelManager: modelManager
                     )
+                }
+                .popover(isPresented: $showRegenModelPicker) {
+                    VStack(spacing: 4) {
+                        Text("Regenerate with")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(Color.white.opacity(0.6))
+                            .padding(.top, 8)
+                        ForEach(modelManager.availableModels.filter { !$0.isImageModel }) { model in
+                            Button {
+                                showRegenModelPicker = false
+                                guard let threadID = store.activeThreadID else { return }
+                                client.regenerateFromWithModel(
+                                    messageID: message.id,
+                                    threadID: threadID,
+                                    store: store,
+                                    modelManager: modelManager,
+                                    withModel: model
+                                )
+                            } label: {
+                                HStack {
+                                    ProviderDot(provider: model.provider)
+                                    Text(model.displayName)
+                                        .font(.system(size: 12))
+                                    Spacer()
+                                    if model.id == message.modelID {
+                                        Text("current")
+                                            .font(.system(size: 9))
+                                            .foregroundStyle(Color.white.opacity(0.3))
+                                    }
+                                }
+                                .foregroundStyle(Color.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.bottom, 8)
+                    .frame(minWidth: 200)
+                    .background(Color(hex: 0x1A1A1A))
+                }
+                .onLongPressGesture(minimumDuration: 0.5) {
+                    showRegenModelPicker = true
                 }
 
                 actionButton(isSpeaking ? "speaker.slash" : "speaker.wave.2", tooltip: isSpeaking ? "Stop" : "Read aloud") {

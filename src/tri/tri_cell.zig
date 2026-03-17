@@ -3435,7 +3435,6 @@ fn runSign(allocator: Allocator, args: []const []const u8) !void {
         if (target_id) |tid| {
             if (!std.mem.eql(u8, cell.id, tid)) continue;
         } else if (sign_all) {
-            if (!std.mem.eql(u8, cell.perm_level, "L2")) continue;
             if (cell.security_signed) continue; // already signed
         }
 
@@ -4223,19 +4222,26 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
 
         // ── Security (max 30) ──
         var security_score: u8 = 0;
-        if (cell.perm_level.len > 0) security_score += 10;
-        const code_perms = inferPermissions(allocator, path);
-        const perms_match = std.mem.eql(u8, cell.perm_level, code_perms.level) and
-            std.mem.eql(u8, cell.perm_network, code_perms.net) and
-            std.mem.eql(u8, cell.perm_process, code_perms.proc);
-        if (perms_match) security_score += 10;
-        if (cell.security_signed) security_score += 5;
-        const no_bind_all = !(scanCodeForPattern(allocator, path, "parseIp4(\"0.0.0.0\"") or
-            scanCodeForPattern(allocator, path, "parseIp(\"0.0.0.0\"") or
-            scanCodeForPattern(allocator, path, "bind_address: []const u8 = \"0.0.0.0\"") or
-            scanCodeForPattern(allocator, path, ".host = \"0.0.0.0\"") or
-            scanCodeForPattern(allocator, path, "listen_address = \"0.0.0.0\""));
-        if (no_bind_all) security_score += 5;
+        if (cell.parent.len > 0) {
+            // Virtual sub-cells: can't scan code (path = parent dir), use declared perms only
+            if (cell.perm_level.len > 0) security_score += 20; // declared = trusted
+            if (cell.security_signed) security_score += 5;
+            security_score += 5; // no bind check for virtual cells
+        } else {
+            if (cell.perm_level.len > 0) security_score += 10;
+            const code_perms = inferPermissions(allocator, path);
+            const perms_match = std.mem.eql(u8, cell.perm_level, code_perms.level) and
+                std.mem.eql(u8, cell.perm_network, code_perms.net) and
+                std.mem.eql(u8, cell.perm_process, code_perms.proc);
+            if (perms_match) security_score += 10;
+            if (cell.security_signed) security_score += 5;
+            const no_bind_all = !(scanCodeForPattern(allocator, path, "parseIp4(\"0.0.0.0\"") or
+                scanCodeForPattern(allocator, path, "parseIp(\"0.0.0.0\"") or
+                scanCodeForPattern(allocator, path, "bind_address: []const u8 = \"0.0.0.0\"") or
+                scanCodeForPattern(allocator, path, ".host = \"0.0.0.0\"") or
+                scanCodeForPattern(allocator, path, "listen_address = \"0.0.0.0\""));
+            if (no_bind_all) security_score += 5;
+        }
         // max 30
 
         // ── Deps accuracy (max 25) ──
@@ -4519,6 +4525,66 @@ const PermResult = struct {
     ffi: []const u8,
     concurrency: []const u8,
 };
+
+/// Like inferPermissions but only scans files matching file_patterns in a flat directory.
+/// Used for virtual cells where path="src" but code lives in specific files.
+fn inferPermissionsFiltered(allocator: Allocator, dir_path: []const u8, file_patterns: []const u8) PermResult {
+    var result = PermResult{
+        .level = "L0",
+        .fs = "read",
+        .net = "none",
+        .proc = "none",
+        .ffi = "none",
+        .concurrency = "none",
+    };
+
+    var dir = std.fs.cwd().openDir(dir_path, .{ .iterate = true }) catch return result;
+    defer dir.close();
+
+    var iter = dir.iterate();
+    while (iter.next() catch null) |entry| {
+        if (entry.kind != .file) continue;
+        if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+        if (!matchesFilePatterns(entry.name, file_patterns)) continue;
+
+        const file_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ dir_path, entry.name }) catch continue;
+        defer allocator.free(file_path);
+        const source = std.fs.cwd().readFileAlloc(allocator, file_path, 1048576) catch continue;
+        defer allocator.free(source);
+
+        if (std.mem.indexOf(u8, source, "createFile") != null or
+            std.mem.indexOf(u8, source, "writeAll") != null or
+            std.mem.indexOf(u8, source, "openFile") != null)
+        {
+            result.fs = "write";
+            if (std.mem.eql(u8, result.level, "L0")) result.level = "L1";
+        }
+        if (std.mem.indexOf(u8, source, "std.net") != null or
+            std.mem.indexOf(u8, source, "std.http") != null)
+        {
+            result.net = "external";
+            result.level = "L2";
+        }
+        if (std.mem.indexOf(u8, source, "std.process") != null or
+            std.mem.indexOf(u8, source, "ChildProcess") != null)
+        {
+            result.proc = "spawn";
+            result.level = "L2";
+        }
+        if (std.mem.indexOf(u8, source, "@cImport") != null or
+            std.mem.indexOf(u8, source, "std.c.") != null)
+        {
+            result.ffi = "native";
+            if (std.mem.eql(u8, result.level, "L0")) result.level = "L1";
+        }
+        if (std.mem.indexOf(u8, source, "std.Thread") != null or
+            std.mem.indexOf(u8, source, "std.event") != null)
+        {
+            result.concurrency = "yes";
+        }
+    }
+    return result;
+}
 
 fn inferPermissions(allocator: Allocator, path: []const u8) PermResult {
     var result = PermResult{
