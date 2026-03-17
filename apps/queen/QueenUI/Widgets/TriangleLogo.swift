@@ -123,83 +123,97 @@ struct TriangleLogo: View {
             let offsetX = geo.size.width / 2
             let offsetY = geo.size.height / 2
 
-            TimelineView(.animation) { timeline in
-                let time = timeline.date.timeIntervalSinceReferenceDate
+            makeTimelineView(scale: scale, offsetX: offsetX, offsetY: offsetY)
+        }
+    }
 
-                ZStack {
-                    // Render 27 petals — exact colors from photon_trinity_canvas.zig
-                    Canvas { context, _ in
-                        for (idx, block) in Self.rawBlocks.enumerated() {
-                            let path = petalPath(block, scale: scale, ox: offsetX, oy: offsetY)
-                            let realm = idx / 9
-                            let isHovered = hoveredBlock == idx
-                            let isSelected = selectedScreen == Screen.screenForBlock(idx)
+    private func makeTimelineView(scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
+        LogoTimelineView { time in
+            makeContentView(time: time, scale: scale, offsetX: offsetX, offsetY: offsetY)
+        }
+    }
 
-                            // Fill: black (normal), white (hover), realm color (selected)
-                            // Matches Zig: logo_petal=(0,0,0), logo_highlight=(255,255,255), realm color on click
-                            let fillColor: Color
-                            if isSelected {
-                                fillColor = Self.realmColors[realm]
-                            } else if isHovered {
-                                fillColor = .white
-                            } else if idx == 2 {
-                                // Ralph pulse: cyan with oscillating alpha sin(t*3)*40+80 → 40-120/255
-                                let alpha = sin(time * 3.0) * (40.0 / 255.0) + (80.0 / 255.0)
-                                fillColor = Color(red: 0, green: 0xCC / 255.0, blue: 1.0).opacity(alpha)
-                            } else {
-                                fillColor = .black
-                            }
+    private func makeContentView(time: TimeInterval, scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
+        ZStack {
+            makePetalCanvas(time: time, scale: scale, offsetX: offsetX, offsetY: offsetY)
+            makeRealmLabels(scale: scale, offsetX: offsetX, offsetY: offsetY)
+            makeTooltipView(scale: scale, offsetX: offsetX, offsetY: offsetY)
+        }
+    }
 
-                            context.fill(path, with: .color(fillColor))
+    private func makePetalCanvas(time: TimeInterval, scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
+        Canvas { context, _ in
+            for (idx, block) in Self.rawBlocks.enumerated() {
+                let path = petalPath(block, scale: scale, ox: offsetX, oy: offsetY)
+                let realm = idx / 9
+                let isHovered = hoveredBlock == idx
+                let isSelected = selectedScreen == Screen.screenForBlock(idx)
 
-                            // Outline: always white, always 1.0px — Zig: logo_outline=(255,255,255), DrawLineEx(..., 1.0)
-                            context.stroke(path, with: .color(.white), lineWidth: 1.0)
-                        }
+                // Fill: black (normal), white (hover), realm color (selected)
+                let fillColor: Color = {
+                    if isSelected {
+                        return Self.realmColors[realm]
+                    } else if isHovered {
+                        return .white
+                    } else if idx == 2 {
+                        // Ralph pulse: cyan with oscillating alpha sin(t*3)*40+80 → 40-120/255
+                        let alpha = sin(time * 3.0) * (40.0 / 255.0) + (80.0 / 255.0)
+                        return Color(red: 0, green: 0xCC / 255.0, blue: 1.0).opacity(alpha)
+                    } else {
+                        return .black
                     }
-                    .onTapGesture { location in
-                        if let idx = hitTest(location, scale: scale, ox: offsetX, oy: offsetY) {
-                            selectedScreen = Screen.screenForBlock(idx)
-                        }
-                    }
-                    .onContinuousHover { phase in
-                        switch phase {
-                        case .active(let loc):
-                            hoveredBlock = hitTest(loc, scale: scale, ox: offsetX, oy: offsetY)
-                        case .ended:
-                            hoveredBlock = nil
-                        @unknown default:
-                            hoveredBlock = nil
-                        }
-                    }
+                }()
 
-                    // Realm labels — exact Zig colors, monospaced bold 10px
-                    realmLabel("RAZUM (phi)", color: Self.realmColors[0],
-                               x: offsetX + (100 - Self.svgCenterX) * scale,
-                               y: offsetY + (60 - Self.svgCenterY) * scale)
-                    realmLabel("MATERIYA (pi)", color: Self.realmColors[1],
-                               x: offsetX + (490 - Self.svgCenterX) * scale,
-                               y: offsetY + (60 - Self.svgCenterY) * scale)
-                    realmLabel("DUKH (e)", color: Self.realmColors[2],
-                               x: offsetX,
-                               y: offsetY + (520 - Self.svgCenterY) * scale)
-
-                    // Tooltip — INVERTED dark theme: white bg (94% alpha), black text
-                    // Zig: tooltip bg = #FFFFFF/0xF0, text = #000000, font = 13px monospaced
-                    if let hov = hoveredBlock, hov >= 0, hov < Self.worlds.count {
-                        let world = Self.worlds[hov]
-                        let screen = Screen.screenForBlock(hov)
-                        Text("\(screen.icon) \(world.name) — \(world.formula)")
-                            .font(.system(size: 13, design: .monospaced))
-                            .foregroundStyle(.black)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.white.opacity(0.94))
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                            .position(tooltipPosition(hov, scale: scale, ox: offsetX, oy: offsetY))
-                            .allowsHitTesting(false)
-                    }
-                }
+                context.fill(path, with: .color(fillColor))
+                // Outline: always white, always 1.0px
+                context.stroke(path, with: .color(.white), lineWidth: 1.0)
             }
+        }
+        .onTapGesture { location in
+            if let idx = hitTest(location, scale: scale, ox: offsetX, oy: offsetY) {
+                selectedScreen = Screen.screenForBlock(idx)
+            }
+        }
+        .onContinuousHover { phase in
+            switch phase {
+            case .active(let loc):
+                hoveredBlock = hitTest(loc, scale: scale, ox: offsetX, oy: offsetY)
+            case .ended:
+                hoveredBlock = nil
+            @unknown default:
+                hoveredBlock = nil
+            }
+        }
+    }
+
+    private func makeRealmLabels(scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
+        ZStack {
+            realmLabel("RAZUM (phi)", color: Self.realmColors[0],
+                       x: offsetX + (100 - Self.svgCenterX) * scale,
+                       y: offsetY + (60 - Self.svgCenterY) * scale)
+            realmLabel("MATERIYA (pi)", color: Self.realmColors[1],
+                       x: offsetX + (490 - Self.svgCenterX) * scale,
+                       y: offsetY + (60 - Self.svgCenterY) * scale)
+            realmLabel("DUKH (e)", color: Self.realmColors[2],
+                       x: offsetX,
+                       y: offsetY + (520 - Self.svgCenterY) * scale)
+        }
+    }
+
+    @ViewBuilder
+    private func makeTooltipView(scale: CGFloat, offsetX: CGFloat, offsetY: CGFloat) -> some View {
+        if let hov = hoveredBlock, hov >= 0, hov < Self.worlds.count {
+            let world = Self.worlds[hov]
+            let screen = Screen.screenForBlock(hov)
+            Text("\(screen.icon) \(world.name) — \(world.formula)")
+                .font(.system(size: 13, design: .monospaced))
+                .foregroundStyle(.black)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.94))
+                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .position(tooltipPosition(hov, scale: scale, ox: offsetX, oy: offsetY))
+                .allowsHitTesting(false)
         }
     }
 
@@ -270,3 +284,23 @@ struct TriangleLogo: View {
             .allowsHitTesting(false)
     }
 }
+
+// MARK: - Logo Timeline View Helper
+
+struct LogoTimelineView<Content: View>: View {
+    let content: (TimeInterval) -> Content
+    @State private var timer: Timer?
+    @State private var startTime = Date()
+
+    init(@ViewBuilder content: @escaping (TimeInterval) -> Content) {
+        self.content = content
+    }
+
+    var body: some View {
+        content(Date().timeIntervalSince(startTime))
+            .onAppear {
+                startTime = Date()
+            }
+    }
+}
+
