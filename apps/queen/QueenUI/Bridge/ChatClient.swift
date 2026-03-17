@@ -1408,6 +1408,20 @@ class ChatClient: ObservableObject {
         }
     }
 
+    // MARK: - Retry Delay Helper
+
+    /// Calculate retry delay: use Retry-After header if present, otherwise exponential backoff (1s, 2s, 4s)
+    private func retryDelay(attempt: Int, retryAfter: Int?) -> UInt64 {
+        if let ra = retryAfter { return UInt64(ra) * 1_000_000_000 }
+        return UInt64(pow(2.0, Double(attempt))) * 1_000_000_000 // 1s, 2s, 4s
+    }
+
+    /// Extract retry-after seconds from APIErrorType
+    private func retryAfterSeconds(from errType: APIErrorType) -> Int? {
+        if case .rateLimited(let retryAfter) = errType { return retryAfter }
+        return nil
+    }
+
     private func updateTokensPerSec() {
         guard let first = firstTokenTime else { return }
         let elapsed = Date().timeIntervalSince(first)
@@ -1781,9 +1795,29 @@ class ChatClient: ObservableObject {
         } catch {
             slowTimer.cancel()
             // Connection error (timeout, no network, etc.)
-            let errType: APIErrorType = error.localizedDescription.contains("timed out")
-                ? .timeout : .connectionFailed
+            let isTimeout = (error as? URLError)?.code == .timedOut
+                || error.localizedDescription.contains("timed out")
+            let errType: APIErrorType = isTimeout ? .timeout : .connectionFailed
             lastError = errType
+
+            // Timeout retry: retry once with 2s delay before failover
+            if isTimeout && retryCount < 1 {
+                let delaySec = retryDelay(attempt: retryCount, retryAfter: nil)
+                let delaySecs = Int(delaySec / 1_000_000_000)
+                store.updateLastMessage(text: "*Timed out, retrying in \(delaySecs)s...*", in: threadID)
+                streamingText = ""
+                streamingOutputTokens = 0
+                firstTokenTime = nil
+                streamingTTFB = 0
+                try await Task.sleep(nanoseconds: delaySec)
+                store.updateLastMessage(text: "", in: threadID)
+                try await streamAnthropic(
+                    history: history, threadID: threadID, store: store,
+                    model: model, key: key, modelManager: modelManager,
+                    mode: mode, retryCount: retryCount + 1, triedModels: triedModels
+                )
+                return
+            }
 
             // Try failover chain
             var tried = triedModels.union([model.id])
@@ -1823,16 +1857,23 @@ class ChatClient: ObservableObject {
                 let errType = APIErrorType.from(statusCode: httpResponse.statusCode, body: errorBody, headers: httpResponse)
                 lastError = errType
 
-                // Retry on 429 or 5xx — try same model first, then failover chain
-                if (httpResponse.statusCode == 429 || httpResponse.statusCode >= 500) && retryCount < 2 {
-                    let delay = [3.0, 8.0][min(retryCount, 1)]
+                // Retry on 429 or 5xx — up to 3 attempts with exponential backoff
+                if (httpResponse.statusCode == 429 || httpResponse.statusCode >= 500) && retryCount < 3 {
+                    let retryAfter = retryAfterSeconds(from: errType)
+                    let delaySec = retryDelay(attempt: retryCount, retryAfter: retryAfter)
+                    let delaySecs = Int(delaySec / 1_000_000_000)
+
+                    // Show user-visible retry status
+                    let statusLabel = httpResponse.statusCode == 429 ? "Rate limited" : "Server error (\(httpResponse.statusCode))"
+                    store.updateLastMessage(text: "*\(statusLabel), retrying in \(delaySecs)s...*", in: threadID)
+
                     streamingText = ""
                     streamingOutputTokens = 0
                     firstTokenTime = nil
                     streamingTTFB = 0
-                    // Don't leave "Reconnecting..." in final message — clear it
+                    try await Task.sleep(nanoseconds: delaySec)
+                    // Clear status text before retry
                     store.updateLastMessage(text: "", in: threadID)
-                    try await Task.sleep(for: .seconds(delay))
 
                     // Try failover chain on 2nd+ retry
                     var retryModel = model
@@ -1982,9 +2023,29 @@ class ChatClient: ObservableObject {
             (bytes, response) = try await URLSession.shared.bytes(for: request)
         } catch {
             slowTimer.cancel()
-            let errType: APIErrorType = error.localizedDescription.contains("timed out")
-                ? .timeout : .connectionFailed
+            let isTimeout = (error as? URLError)?.code == .timedOut
+                || error.localizedDescription.contains("timed out")
+            let errType: APIErrorType = isTimeout ? .timeout : .connectionFailed
             lastError = errType
+
+            // Timeout retry: retry once with 2s delay before failover
+            if isTimeout && retryCount < 1 {
+                let delaySec = retryDelay(attempt: retryCount, retryAfter: nil)
+                let delaySecs = Int(delaySec / 1_000_000_000)
+                store.updateLastMessage(text: "*Timed out, retrying in \(delaySecs)s...*", in: threadID)
+                streamingText = ""
+                streamingOutputTokens = 0
+                firstTokenTime = nil
+                streamingTTFB = 0
+                try await Task.sleep(nanoseconds: delaySec)
+                store.updateLastMessage(text: "", in: threadID)
+                try await streamOpenAI(
+                    history: history, threadID: threadID, store: store,
+                    model: model, key: key, modelManager: modelManager,
+                    mode: mode, retryCount: retryCount + 1, triedModels: triedModels
+                )
+                return
+            }
 
             var tried = triedModels.union([model.id])
             let chain = modelManager.failoverChain(excluding: tried)
@@ -2023,14 +2084,23 @@ class ChatClient: ObservableObject {
                 let errType = APIErrorType.from(statusCode: httpResponse.statusCode, body: errorBody, headers: httpResponse)
                 lastError = errType
 
-                if (httpResponse.statusCode == 429 || httpResponse.statusCode >= 500) && retryCount < 2 {
-                    let delay = [3.0, 8.0][min(retryCount, 1)]
+                // Retry on 429 or 5xx — up to 3 attempts with exponential backoff
+                if (httpResponse.statusCode == 429 || httpResponse.statusCode >= 500) && retryCount < 3 {
+                    let retryAfter = retryAfterSeconds(from: errType)
+                    let delaySec = retryDelay(attempt: retryCount, retryAfter: retryAfter)
+                    let delaySecs = Int(delaySec / 1_000_000_000)
+
+                    // Show user-visible retry status
+                    let statusLabel = httpResponse.statusCode == 429 ? "Rate limited" : "Server error (\(httpResponse.statusCode))"
+                    store.updateLastMessage(text: "*\(statusLabel), retrying in \(delaySecs)s...*", in: threadID)
+
                     streamingText = ""
                     streamingOutputTokens = 0
                     firstTokenTime = nil
                     streamingTTFB = 0
+                    try await Task.sleep(nanoseconds: delaySec)
+                    // Clear status text before retry
                     store.updateLastMessage(text: "", in: threadID)
-                    try await Task.sleep(for: .seconds(delay))
 
                     var retryModel = model
                     var retryKey = key

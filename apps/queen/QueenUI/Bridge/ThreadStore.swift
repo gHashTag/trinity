@@ -6,6 +6,10 @@ final class ThreadStore: ObservableObject {
     @Published var activeThreadID: UUID?
     @Published var folders: [ThreadFolder] = []
     @Published var isLoaded: Bool = false
+    @Published var recentlyDeleted: ChatThread? = nil
+    @Published var showUndoToast: Bool = false
+
+    private var undoTask: Task<Void, Never>? = nil
 
     private let storeURL: URL
     private var foldersURL: URL {
@@ -31,11 +35,47 @@ final class ThreadStore: ObservableObject {
     }
 
     func delete(_ thread: ChatThread) {
+        // Cancel any pending undo from a previous delete
+        commitPendingDelete()
+
         threads.removeAll { $0.id == thread.id }
-        let url = storeURL.appendingPathComponent("\(thread.id).json")
-        try? FileManager.default.removeItem(at: url)
         if activeThreadID == thread.id {
             activeThreadID = threads.first?.id
+        }
+
+        // Soft-delete: keep on disk, store for undo
+        recentlyDeleted = thread
+        showUndoToast = true
+
+        // After 5 seconds, permanently delete from disk
+        undoTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            self?.commitPendingDelete()
+        }
+    }
+
+    func undoDelete() {
+        undoTask?.cancel()
+        undoTask = nil
+        guard let thread = recentlyDeleted else { return }
+        recentlyDeleted = nil
+        showUndoToast = false
+        // Re-insert and save
+        threads.insert(thread, at: 0)
+        save(thread)
+        activeThreadID = thread.id
+    }
+
+    /// Permanently remove the pending soft-deleted thread from disk
+    private func commitPendingDelete() {
+        undoTask?.cancel()
+        undoTask = nil
+        if let deleted = recentlyDeleted {
+            let url = storeURL.appendingPathComponent("\(deleted.id).json")
+            try? FileManager.default.removeItem(at: url)
+            recentlyDeleted = nil
+            showUndoToast = false
         }
     }
 
@@ -47,9 +87,31 @@ final class ThreadStore: ObservableObject {
 
     func appendMessage(_ msg: ChatMessage, to threadID: UUID) {
         guard let idx = threads.firstIndex(where: { $0.id == threadID }) else { return }
+        let countBefore = threads[idx].messages.count
         threads[idx].messages.append(msg)
         threads[idx].updatedAt = Date()
+        // Auto-title: on first user message when title is still default
+        if msg.role == .user
+            && countBefore == 0
+            && threads[idx].title == "New Thread" {
+            threads[idx].title = Self.autoTitle(from: msg.text)
+        }
         save(threads[idx])
+    }
+
+    /// Generate a short title from the first user message (max ~60 chars, word-boundary truncation).
+    private static func autoTitle(from text: String) -> String {
+        let cleaned = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            .components(separatedBy: .newlines).first ?? ""
+        guard !cleaned.isEmpty else { return "New Thread" }
+        if cleaned.count <= 60 { return cleaned }
+        // Find last space within the first 60 characters for clean word boundary
+        let limit = cleaned.index(cleaned.startIndex, offsetBy: 60)
+        let truncated = cleaned[cleaned.startIndex..<limit]
+        if let lastSpace = truncated.lastIndex(of: " "), lastSpace > cleaned.startIndex {
+            return String(truncated[truncated.startIndex..<lastSpace]) + "..."
+        }
+        return String(truncated) + "..."
     }
 
     func updateLastMessage(text: String, in threadID: UUID) {
@@ -639,6 +701,34 @@ final class ThreadStore: ObservableObject {
         threads[tIdx].messages[mIdx].outputTokens = outputTokens
         threads[tIdx].messages[mIdx].totalMs = totalMs
         save(threads[tIdx])
+    }
+
+    /// Duplicate a thread: new UUID, title + " (copy)", same messages/tags/persona
+    @discardableResult
+    func duplicateThread(_ threadID: UUID) -> UUID? {
+        guard let original = threads.first(where: { $0.id == threadID }) else { return nil }
+        var copy = ChatThread(title: original.title + " (copy)")
+        copy.messages = original.messages.map { msg in
+            // Create new message IDs so they are independent
+            var newMsg = ChatMessage(role: msg.role, text: msg.text, modelID: msg.modelID, imageURLs: msg.imageURLs)
+            newMsg.isLiked = msg.isLiked
+            newMsg.isBookmarked = msg.isBookmarked
+            newMsg.thinkingText = msg.thinkingText
+            newMsg.ttfbMs = msg.ttfbMs
+            newMsg.tokPerSec = msg.tokPerSec
+            newMsg.outputTokens = msg.outputTokens
+            newMsg.totalMs = msg.totalMs
+            newMsg.citations = msg.citations
+            newMsg.errorKind = msg.errorKind
+            return newMsg
+        }
+        copy.tags = original.tags
+        copy.personaID = original.personaID
+        copy.folderID = original.folderID
+        threads.insert(copy, at: 0)
+        save(copy)
+        activeThreadID = copy.id
+        return copy.id
     }
 
     func saveThread(_ threadID: UUID) {

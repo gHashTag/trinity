@@ -90,7 +90,23 @@ public struct MainView: View {
     private func installKeyboardMonitor() {
         guard keyMonitor == nil else { return }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { event in
-            guard event.modifierFlags.contains(.command) else { return event }
+            // Non-modifier shortcuts: Escape, Up arrow in empty input
+            if !event.modifierFlags.contains(.command) {
+                // Escape — stop streaming / clear input / close modal
+                if event.keyCode == 53 {
+                    NotificationCenter.default.post(name: .escapeAction, object: nil)
+                    // Don't consume — let .keyboardShortcut(.escape) also work
+                    return event
+                }
+                // Up arrow with no modifiers — recall last user message
+                if event.keyCode == 126 && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == [] {
+                    NotificationCenter.default.post(name: .recallLastMessage, object: nil)
+                    // Don't consume — ChatScreen decides whether to handle it
+                    return event
+                }
+                return event
+            }
+
             guard let chars = event.charactersIgnoringModifiers, let ch = chars.first else { return event }
 
             if ch == "0" {
@@ -135,6 +151,18 @@ public struct MainView: View {
             // Cmd+Shift+; = copy last response
             if ch == ";" && event.modifierFlags.contains(.shift) {
                 NotificationCenter.default.post(name: .copyLastResponse, object: nil)
+                return nil
+            }
+
+            // Cmd+Shift+C = copy last assistant response
+            if (ch == "c" || ch == "C") && event.modifierFlags.contains(.shift) {
+                NotificationCenter.default.post(name: .copyLastResponse, object: nil)
+                return nil
+            }
+
+            // Cmd+E = export thread as Markdown to clipboard
+            if (ch == "e" || ch == "E") && !event.modifierFlags.contains(.shift) {
+                NotificationCenter.default.post(name: .exportThreadClipboard, object: nil)
                 return nil
             }
 
