@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Agent swarm: spawning, orchestration, loop decisions, chimera commands, hub"
 capabilities = ["swarm", "orchestration", "agents"]
-tests = 34
+tests = 39
 owner = "agent:ralph"
 
 [tags]
@@ -16,7 +16,7 @@ scope = "infra"
 type = "agent"
 
 [source]
-file_patterns = ["tri_swarm.zig", "tri_agent_run.zig", "tri_agent_daemon.zig", "mu_agent.zig", "tri_loop.zig", "tri_chimera.zig", "orchestrator*.zig", "ralph_*.zig", "tri_hub.zig"]
+file_patterns = ["tri_swarm.zig", "tri_agent_run.zig", "tri_agent_daemon.zig", "mu_agent.zig", "tri_loop.zig", "tri_chimera.zig", "orchestrator*.zig", "ralph_*.zig", "tri_hub.zig", "phoenix_core.zig", "tri_phoenix.zig"]
 
 [contributes]
 commands = ["swarm", "agent run", "loop", "chimera"]
