@@ -795,6 +795,8 @@ pub fn runMemoryCommand(allocator: Allocator, args: []const []const u8) !void {
         return runMemoryDashboard(allocator);
     } else if (std.mem.eql(u8, subcmd, "consolidate")) {
         return runMemoryConsolidate(allocator);
+    } else if (std.mem.eql(u8, subcmd, "import")) {
+        return runMemoryImport(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -1222,6 +1224,137 @@ fn runMemoryConsolidate(allocator: Allocator) !void {
     print("  {s}Note: Old episodes will be cleaned up by GC when TTL expires.{s}\n\n", .{ DIM, RESET });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// MEMORY IMPORT — Corpus Callosum: external memory → hippocampus (Wave 4)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runMemoryImport(allocator: Allocator, args: []const []const u8) !void {
+    var source: []const u8 = "arena";
+
+    // Parse --source flag
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--source") and i + 1 < args.len) {
+            source = args[i + 1];
+            i += 1;
+        }
+    }
+
+    if (std.mem.eql(u8, source, "arena")) {
+        return importArenaBattles(allocator);
+    }
+
+    print("{s}Unknown source: {s}{s}\n", .{ RED, source, RESET });
+    print("Available sources: arena\n", .{});
+}
+
+/// Import arena battle results as hippocampus episodes (Corpus Callosum bridge)
+fn importArenaBattles(allocator: Allocator) !void {
+    print("\n{s}🌉 CORPUS CALLOSUM: Arena → Hippocampus{s}\n", .{ BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // Read arena history from .trinity/arena/history.jsonl
+    const history_file = std.fs.cwd().openFile(".trinity/arena/history.jsonl", .{}) catch {
+        print("  {s}⚠️  No arena history found.{s}\n", .{ YELLOW, RESET });
+        print("  {s}Hint:{s} Run arena battles first to create history.{s}\n\n", .{ DIM, RESET, RESET });
+        return;
+    };
+    defer history_file.close();
+
+    var buf: [1024 * 64]u8 = undefined;
+    const content = try history_file.readAll(&buf);
+
+    var imported: u32 = 0;
+    var skipped: u32 = 0;
+    var lines = std.mem.splitScalar(u8, content, '\n');
+
+    // Track imported records by hash for deduplication
+    var imported_hashes = std.StringHashMap(void).init(allocator);
+    defer imported_hashes.deinit();
+
+    // Read existing arena episodes to check for duplicates
+    var existing = read(allocator, .{
+        .agent = "arena",
+        .kind = .episode,
+        .limit = 1000,
+    }) catch |err| {
+        if (err != error.FileNotFound) return err;
+        return;
+    };
+    defer existing.deinit(allocator);
+
+    for (existing.items) |rec| {
+        const hash = try recordHash(allocator, rec);
+        try imported_hashes.put(hash, {});
+    }
+
+    while (lines.next()) |line| {
+        if (line.len < 10) continue;
+
+        // Parse JSON line
+        const parsed = std.json.parseFromSlice(std.json.Value, allocator, line, .{}) catch continue;
+        defer parsed.deinit();
+
+        if (parsed.value != .object) continue;
+        const obj = parsed.value.object;
+
+        const winner = getJsonStrObj(obj, "winner");
+        const loser = getJsonStrObj(obj, "loser");
+        const task_id = getJsonStrObj(obj, "task_id");
+        const result = getJsonStrObj(obj, "result"); // "win", "loss", "draw"
+
+        // Create temp record for hash check
+        var temp_rec: MemoryRecord = undefined;
+        const ts: u64 = @intCast(std.time.timestamp());
+        temp_rec.ts = ts;
+        copyToFixed(32, &temp_rec.agent_buf, &temp_rec.agent_len, "arena");
+        copyToFixed(256, &temp_rec.summary_buf, &temp_rec.summary_len,
+            try std.fmt.allocPrint(allocator, "arena: {s} vs {s} → {s}", .{ winner, loser, result }));
+
+        const hash = try recordHash(allocator, &temp_rec);
+        if (imported_hashes.contains(hash)) {
+            skipped += 1;
+            continue;
+        }
+
+        // Write episode to hippocampus
+        var summary_buf: [256]u8 = undefined;
+        const summary = std.fmt.bufPrint(&summary_buf,
+            "arena battle: {s} vs {s} on {s} → {s}",
+            .{ winner, loser, task_id, result }
+        ) catch "arena battle";
+
+        var data_buf: [512]u8 = undefined;
+        const data_json = std.fmt.bufPrint(&data_buf,
+            "{{\"winner\":\"{s}\",\"loser\":\"{s}\",\"task_id\":\"{s}\",\"result\":\"{s}\"}}",
+            .{ winner, loser, task_id, result }
+        ) catch "{}";
+
+        try writeEpisode(allocator, "arena", summary, data_json);
+        try imported_hashes.put(hash, {});
+        imported += 1;
+    }
+
+    print("  {s}✅{s} Imported {d} arena battles → hippocampus (agent: arena)\n", .{ GREEN, RESET, imported });
+    if (skipped > 0) {
+        print("  {s}⊙{s} Skipped {d} duplicates\n", .{ DIM, RESET, skipped });
+    }
+    print("\n", .{});
+}
+
+fn getJsonStrObj(obj: std.json.ObjectMap, key: []const u8) []const u8 {
+    if (obj.get(key)) |val| {
+        if (val == .string) return val.string;
+    }
+    return "";
+}
+
+fn recordHash(allocator: Allocator, rec: *const MemoryRecord) ![]const u8 {
+    var hash_buf: [128]u8 = undefined;
+    const hash_str = try std.fmt.bufPrint(&hash_buf, "{s}_{d}_{s}", .{ rec.agent(), rec.ts, rec.summary() });
+    return allocator.dupe(u8, hash_str);
+}
+
 fn kindColor(kind: MemoryKind) []const u8 {
     return switch (kind) {
         .heartbeat => GREEN,
@@ -1248,9 +1381,10 @@ fn printHelp() void {
         \\  tri memory stats
         \\  tri memory dashboard   Visual summary of all agents and recent activity
         \\  tri memory consolidate Summarize old episodes into permanent rules
+        \\  tri memory import      --source <src>  Import external memory (arena)
         \\
         \\{s}Kinds:{s} heartbeat, learning, episode, rule, error, observation
-        \\{s}Agents:{s} mu, scholar, phoenix-core, queen, oracle, system
+        \\{s}Agents:{s} mu, scholar, phoenix, queen, oracle, arena, cerebellum, hypothalamus
         \\
         \\{s}Default TTLs:{s}
         \\  heartbeat=7d  episode=30d  error=14d  observation=30d  learning/rule=permanent

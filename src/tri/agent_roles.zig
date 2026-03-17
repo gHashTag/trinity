@@ -29,6 +29,9 @@ pub const AgentRole = enum {
     cerebellum,
     hypothalamus,
 
+    // === CORPUS CALLOSUM (Wave 4) ===
+    corpus_callosum,
+
     // === ACTORS / CONTROLLERS ===
     phoenix_core,
     basal_ganglia,
@@ -56,6 +59,7 @@ pub fn roleDescription(role: AgentRole) []const u8 {
         .hippocampus => "HIPPOCAMPUS — Memory store",
         .cerebellum => "CEREBELLUM — Cell health monitoring",
         .hypothalamus => "HYPOTHALAMUS — Metabolism & anomaly detection",
+        .corpus_callosum => "CORPUS CALLOSUM — Inter-hemisphere memory transfer",
         .phoenix_core => "PHOENIX_CORE — Immune system, executor",
         .basal_ganglia => "BASAL_GANGLIA — Procedural memory (MU)",
         .evolution_events => "EVOLUTION — Events (kill/crash)",
@@ -81,6 +85,7 @@ pub fn roleSymbol(role: AgentRole) []const u8 {
         .hippocampus => "🧠",
         .cerebellum => "🧠",
         .hypothalamus => "🌡",
+        .corpus_callosum => "🌉",
         .phoenix_core => "🧬",
         .basal_ganglia => "🧠",
         .evolution_events => "💀",
@@ -106,7 +111,8 @@ pub fn agentToRole(agent_name: []const u8) AgentRole {
         .{ "mu_error_protocol", .basal_ganglia },
         .{ "evolution", .evolution_events },
         .{ "farm", .farm_orchestrator },
-        .{ "arena", .arena_competition },
+        .{ "arena", .corpus_callosum },
+        .{ "arena_competition", .corpus_callosum },
         .{ "oracle", .oracle },
         .{ "sentinel", .sentinel },
         .{ "scholar", .scholar },
