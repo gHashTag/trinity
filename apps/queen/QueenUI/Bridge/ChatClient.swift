@@ -48,9 +48,33 @@ class ChatClient: ObservableObject {
 
     private func buildSystemPrompt() -> String {
         var prompt = """
-            You are Queen — the personal CTO agent of the Trinity project. \
-            Trinity is a pure Zig autonomous AI agent swarm with ternary {-1,0,+1} computing. \
+            You are Queen — the personal CTO agent of the Trinity project.
+            Trinity is a pure Zig autonomous AI agent swarm with ternary {-1,0,+1} computing.
             Answer concisely in the user's language. You are wise, direct, and technically precise.
+
+            ## Your Capabilities
+            You HAVE full access to:
+            - The Trinity repository (read any file, see git history, search code)
+            - Live Trinity state (build status, farm PPL, arena battles, open issues)
+            - The `tri` CLI (can execute any `tri` command)
+            - MCP tools through the Trinity MCP server
+
+            ## Tools
+            To read a file, output: [READ:path/to/file]
+            To run a tri command, output: [RUN:tri <command>]
+            To search code, output: [GREP:pattern]
+
+            Examples:
+            - [READ:src/vsa.zig] — read VSA source
+            - [RUN:tri git status] — check working tree
+            - [RUN:tri test] — run tests
+            - [RUN:tri issue list] — list open issues
+            - [RUN:tri faculty] — agent dashboard
+            - [GREP:fn bind] — search for function
+
+            After you output a tool tag, the result will be injected and you can continue.
+            Always use these tools when the user asks about code, build, tests, or project state.
+            Never say "I don't have access" — you DO have access through these tools.
             """
 
         // Inject CLAUDE.md context (first 2000 chars)
@@ -72,8 +96,6 @@ class ChatClient: ObservableObject {
             prompt += "\n\n" + farmEvents
         }
 
-        prompt += "\n\nYou can read files from the repository. "
-        prompt += "To read a file, output [READ:file://path/to/file] and the content will be injected."
         return prompt
     }
 
@@ -86,25 +108,98 @@ class ChatClient: ObservableObject {
         return summary
     }
 
-    /// Process [READ:file://...] tags in AI response, return file contents to inject
-    func processReadTags(_ text: String) -> String? {
-        let pattern = #"\[READ:file://([^\]]+)\]"#
-        guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
-        let range = NSRange(text.startIndex..., in: text)
-        let matches = regex.matches(in: text, range: range)
-        guard !matches.isEmpty else { return nil }
+    /// Process all tool tags in AI response: [READ:], [RUN:], [GREP:]
+    func processToolTags(_ text: String) -> String? {
+        var results: [String] = []
 
-        var contents: [String] = []
-        for match in matches {
-            guard let r = Range(match.range(at: 1), in: text) else { continue }
-            let path = String(text[r])
-            if let content = repo.readFile(path) {
-                contents.append("### \(path)\n```\n\(String(content.prefix(8000)))\n```")
-            } else {
-                contents.append("### \(path)\n[File not found or too large]")
+        // [READ:path/to/file] or [READ:file://path]
+        let readPattern = #"\[READ:(?:file://)?([^\]]+)\]"#
+        if let regex = try? NSRegularExpression(pattern: readPattern) {
+            let range = NSRange(text.startIndex..., in: text)
+            for match in regex.matches(in: text, range: range) {
+                guard let r = Range(match.range(at: 1), in: text) else { continue }
+                let path = String(text[r])
+                if let content = repo.readFile(path) {
+                    results.append("**\(path)**\n```\n\(String(content.prefix(6000)))\n```")
+                    TrinityContext.shared.recordAttachedFile(path, size: content.count)
+                } else {
+                    results.append("**\(path)**: file not found")
+                }
             }
         }
-        return contents.joined(separator: "\n\n")
+
+        // [RUN:tri <command>]
+        let runPattern = #"\[RUN:(tri [^\]]+)\]"#
+        if let regex = try? NSRegularExpression(pattern: runPattern) {
+            let range = NSRange(text.startIndex..., in: text)
+            for match in regex.matches(in: text, range: range) {
+                guard let r = Range(match.range(at: 1), in: text) else { continue }
+                let cmd = String(text[r])
+                let output = runTriCommand(cmd)
+                results.append("**$ \(cmd)**\n```\n\(String(output.prefix(4000)))\n```")
+            }
+        }
+
+        // [GREP:pattern]
+        let grepPattern = #"\[GREP:([^\]]+)\]"#
+        if let regex = try? NSRegularExpression(pattern: grepPattern) {
+            let range = NSRange(text.startIndex..., in: text)
+            for match in regex.matches(in: text, range: range) {
+                guard let r = Range(match.range(at: 1), in: text) else { continue }
+                let query = String(text[r])
+                let searchResults = repo.searchCode(query)
+                let formatted = searchResults.prefix(10).map { "\($0.file):\($0.line): \($0.content)" }.joined(separator: "\n")
+                results.append("**grep: \(query)**\n```\n\(formatted.isEmpty ? "No matches" : formatted)\n```")
+            }
+        }
+
+        return results.isEmpty ? nil : results.joined(separator: "\n\n")
+    }
+
+    /// Execute a tri CLI command safely (read-only commands only)
+    private func runTriCommand(_ command: String) -> String {
+        // Safety: only allow read-only tri commands
+        let args = command.components(separatedBy: " ")
+        guard args.first == "tri" else { return "[Error: only tri commands allowed]" }
+
+        // Block destructive commands
+        let blocked = ["push", "delete", "kill", "deploy", "redeploy", "cloud spawn"]
+        for b in blocked {
+            if command.contains(b) {
+                return "[Blocked: \(b) is a destructive command. Use the terminal directly.]"
+            }
+        }
+
+        let pipe = Pipe()
+        let errPipe = Pipe()
+        let process = Process()
+        let triPath = "\(repo.rootPath)/zig-out/bin/tri"
+
+        // Check if tri binary exists
+        guard FileManager.default.fileExists(atPath: triPath) else {
+            return "[tri binary not found at \(triPath). Run: zig build]"
+        }
+
+        process.executableURL = URL(fileURLWithPath: triPath)
+        process.arguments = Array(args.dropFirst()) // remove "tri" prefix
+        process.currentDirectoryURL = URL(fileURLWithPath: repo.rootPath)
+        process.standardOutput = pipe
+        process.standardError = errPipe
+
+        do {
+            try process.run()
+            process.waitUntilExit()
+        } catch {
+            return "[Error running tri: \(error.localizedDescription)]"
+        }
+
+        let stdout = String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        let stderr = String(data: errPipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+
+        if process.terminationStatus != 0 {
+            return stdout.isEmpty ? stderr : stdout + "\n" + stderr
+        }
+        return stdout.isEmpty ? "(no output)" : stdout
     }
 
     /// Auto-detect file paths in user message and attach contents
@@ -184,6 +279,15 @@ class ChatClient: ObservableObject {
                     modelManager: modelManager,
                     mode: chatMode
                 )
+
+                // Process tool tags in response ([READ:], [RUN:], [GREP:])
+                let toolResult = processToolTags(streamingText)
+                if let result = toolResult {
+                    // Append tool results and get a follow-up response
+                    let followUp = streamingText + "\n\n---\n" + result
+                    store.updateLastMessage(text: followUp, in: threadID)
+                    streamingText = followUp
+                }
 
                 if isFirstExchange {
                     let title = generateTitle(from: text)
