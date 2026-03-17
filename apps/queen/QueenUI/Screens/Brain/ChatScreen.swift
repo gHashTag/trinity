@@ -1046,16 +1046,12 @@ struct ChatScreen: View {
     @ViewBuilder
     private var mentionPopupSection: some View {
         if showMentionPopup {
-            MentionPopup(
+            EnhancedMentionPopup(
                 query: mentionQuery,
                 isPresented: $showMentionPopup,
                 onSelect: { value in
                     if let atRange = input.range(of: "@\(mentionQuery)", options: .backwards) {
                         input.replaceSubrange(atRange, with: "@\(value)")
-                    }
-                    if value.hasPrefix("grep:") {
-                        let pattern = String(value.dropFirst(5))
-                        MentionPopup.saveGrepPattern(pattern)
                     }
                     showMentionPopup = false
                 },
@@ -1083,6 +1079,9 @@ struct ChatScreen: View {
 
     private var streamingMetricsRow: some View {
         HStack(spacing: 12) {
+            // Compact pulse ring indicator
+            CompactPulseRing(state: client.streamingState)
+
             if !client.streamingThinkingText.isEmpty && client.streamingText.isEmpty {
                 Image(systemName: "brain.head.profile")
                     .font(.system(size: 14))
@@ -1303,55 +1302,19 @@ struct ChatScreen: View {
     @ViewBuilder
     private var stickyStreamingBar: some View {
         if client.isStreaming {
-            HStack(spacing: 16) {
-                HStack(spacing: 4) {
-                    Circle()
-                        .fill(client.streamingState == .connecting ? TrinityTheme.statusWarn : TrinityTheme.statusOK)
-                        .frame(width: 5, height: 5)
-                    Text(client.streamingState == .connecting ? "Connecting..." : "Streaming")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textMuted)
-                }
-                if client.streamingOutputTokens > 0 {
-                    if client.streamingTTFB > 0 {
-                        Text("First token: \(client.streamingTTFB)ms")
-                            .font(.system(size: 10, weight: .medium, design: .monospaced))
-                            .foregroundStyle(ttfbColor(client.streamingTTFB))
-                    }
-                    LiveSpeedIndicator(tokPerSec: client.streamingTokensPerSec)
-                    Text("\(client.streamingOutputTokens) tok")
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundStyle(TrinityTheme.textMuted)
-                    if client.streamingMaxTokens > 0 {
-                        let pct = min(Double(client.streamingOutputTokens) / Double(client.streamingMaxTokens) * 100, 100)
-                        Text(String(format: "~%.0f%%", pct))
-                            .font(.system(size: 10, weight: .medium, design: .monospaced))
-                            .foregroundStyle(TrinityTheme.textMuted)
-                    }
-                }
-                Spacer()
-                Button {
-                    client.stop()
-                } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "stop.circle.fill")
-                            .font(.system(size: 10))
-                        Text("Stop")
-                            .font(.system(size: 10, weight: .bold))
-                    }
-                    .foregroundStyle(.black)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 3)
-                    .background(TrinityTheme.statusError)
-                    .clipShape(Capsule())
-                }
-                .buttonStyle(.plain)
-                .help("Stop generating (Esc)")
-                .keyboardShortcut(.escape, modifiers: [])
-            }
+            PulseRingIndicator(
+                isStreaming: client.isStreaming,
+                streamingState: client.streamingState,
+                onStop: { client.stop() },
+                ttfb: client.streamingTTFB,
+                tokensPerSec: client.streamingTokensPerSec,
+                outputTokens: client.streamingOutputTokens,
+                maxTokens: client.streamingMaxTokens
+            )
             .padding(.horizontal, 60)
-            .padding(.vertical, 4)
-            .background(Color.white.opacity(0.03))
+            .padding(.vertical, 6)
+            .transition(.scale.combined(with: .opacity))
+            .keyboardShortcut(.escape, modifiers: [])
         }
     }
 

@@ -32,6 +32,9 @@ pub const AgentRole = enum {
     // === CORPUS CALLOSUM (Wave 4) ===
     corpus_callosum,
 
+    // === IMMUNE SYSTEM (Wave 5) ===
+    immune_system,
+
     // === ACTORS / CONTROLLERS ===
     phoenix_core,
     basal_ganglia,
@@ -60,6 +63,7 @@ pub fn roleDescription(role: AgentRole) []const u8 {
         .cerebellum => "CEREBELLUM — Cell health monitoring",
         .hypothalamus => "HYPOTHALAMUS — Metabolism & anomaly detection",
         .corpus_callosum => "CORPUS CALLOSUM — Inter-hemisphere memory transfer",
+        .immune_system => "IMMUNE SYSTEM — Auto-healing, regeneration",
         .phoenix_core => "PHOENIX_CORE — Immune system, executor",
         .basal_ganglia => "BASAL_GANGLIA — Procedural memory (MU)",
         .evolution_events => "EVOLUTION — Events (kill/crash)",
@@ -86,6 +90,7 @@ pub fn roleSymbol(role: AgentRole) []const u8 {
         .cerebellum => "🧠",
         .hypothalamus => "🌡",
         .corpus_callosum => "🌉",
+        .immune_system => "🛡️",
         .phoenix_core => "🧬",
         .basal_ganglia => "🧠",
         .evolution_events => "💀",
@@ -120,6 +125,8 @@ pub fn agentToRole(agent_name: []const u8) AgentRole {
         .{ "chronos", .chronos },
         .{ "cerebellum", .cerebellum },
         .{ "hypothalamus", .hypothalamus },
+        .{ "regen", .immune_system },
+        .{ "immune_system", .immune_system },
     };
 
     for (mapping) |entry| {
@@ -138,6 +145,7 @@ test "agent_roles agentToRole returns correct role" {
     try std.testing.expectEqual(agentToRole("cortex"), .cortex);
     try std.testing.expectEqual(agentToRole("mu"), .basal_ganglia);
     try std.testing.expectEqual(agentToRole("phoenix"), .phoenix_core);
+    try std.testing.expectEqual(agentToRole("regen"), .immune_system);
     try std.testing.expectEqual(agentToRole("unknown_agent"), .unknown);
 }
 
@@ -145,10 +153,18 @@ test "agent_roles roleSymbol returns emoji" {
     try std.testing.expectEqual(roleSymbol(.oracle), "🔮");
     try std.testing.expectEqual(roleSymbol(.basal_ganglia), "🧠");
     try std.testing.expectEqual(roleSymbol(.thalamus_relay), "⚛️");
+    try std.testing.expectEqual(roleSymbol(.immune_system), "🛡️");
     try std.testing.expectEqual(roleSymbol(.unknown), "❓");
 }
 
 test "agent_roles roleDescription returns description" {
     const desc = roleDescription(.cortex);
     try std.testing.expect(std.mem.indexOf(u8, desc, "CORTEX") != null);
+}
+
+test "agent_roles immune_system role" {
+    try std.testing.expectEqual(agentToRole("immune_system"), .immune_system);
+    try std.testing.expectEqual(agentToRole("regen"), .immune_system);
+    const desc = roleDescription(.immune_system);
+    try std.testing.expect(std.mem.indexOf(u8, desc, "IMMUNE") != null);
 }

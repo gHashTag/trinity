@@ -12,3 +12,7 @@
 ,"summary":"farm hslm-w7-41: diverged: PPL>1000 at step>5K step=18700"}
 {"id":"mem_1773760556_farm_6996a81a","agent":"farm","kind":"observation","ts":1773760556,"tags":[],"ttl":2592000,"data":{"ts":1773760556558,"type":"health","svc":"hslm-w7-49","detail":"diverged: PPL>1000 at step>5K","step":20900}
 ,"summary":"farm hslm-w7-49: diverged: PPL>1000 at step>5K step=20900"}
+{"id":"mem_1773769936_farm_69964ce6","agent":"farm","kind":"observation","ts":1773769936,"tags":[],"ttl":2592000,"data":{"ts":1773769936224,"type":"health","svc":"hslm-w7-19","detail":"stalled: step unchanged 2+ polls","step":2800}
+,"summary":"farm hslm-w7-19: stalled: step unchanged 2+ polls step=2800"}
+{"id":"mem_1773769936_farm_69964ce6","agent":"farm","kind":"observation","ts":1773769936,"tags":[],"ttl":2592000,"data":{"ts":1773769936224,"type":"health","svc":"hslm-w7-11","detail":"stalled: step unchanged 2+ polls","step":9400}
+,"summary":"farm hslm-w7-11: stalled: step unchanged 2+ polls step=9400"}

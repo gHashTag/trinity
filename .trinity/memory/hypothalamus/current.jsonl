@@ -1,0 +1,15 @@
+{"id":"mem_1773769816_hypothalamus_8cfee4e1","agent":"hypothalamus","kind":"observation","ts":1773769816,"tags":[],"ttl":2592000,"data":{},"summary":"metabolism: ppl=38.61 tok/s=6027 spike=76.2% diversity=0.000 health=40.0"}
+{"id":"mem_1773769816_hypothalamus_8cfee4e1","agent":"hypothalamus","kind":"error","ts":1773769816,"tags":[],"ttl":1209600,"data":{},"summary":"metabolism spike: leader PPL=38.61 spike_rate=76.2% (threshold=20%)"}
+{"id":"mem_1773769816_hypothalamus_8cfee4e1","agent":"hypothalamus","kind":"error","ts":1773769816,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-v11 PPL=357.08 ctx=27 — excluded from ranking"}
+{"id":"mem_1773769816_hypothalamus_8cfee4e1","agent":"hypothalamus","kind":"error","ts":1773769816,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-train PPL=404.27 ctx=27 — excluded from ranking"}
+{"id":"mem_1773769816_hypothalamus_8cfee4e1","agent":"hypothalamus","kind":"error","ts":1773769816,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-r18 PPL=7.40 ctx=27 — excluded from ranking"}
+{"id":"mem_1773769828_hypothalamus_8cfee4dd","agent":"hypothalamus","kind":"observation","ts":1773769828,"tags":[],"ttl":2592000,"data":{},"summary":"metabolism: ppl=38.61 tok/s=6027 spike=81.0% diversity=0.000 health=40.0"}
+{"id":"mem_1773769828_hypothalamus_8cfee4dd","agent":"hypothalamus","kind":"error","ts":1773769828,"tags":[],"ttl":1209600,"data":{},"summary":"metabolism spike: leader PPL=38.61 spike_rate=81.0% (threshold=20%)"}
+{"id":"mem_1773769828_hypothalamus_8cfee4dd","agent":"hypothalamus","kind":"error","ts":1773769828,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-v11 PPL=357.08 ctx=27 — excluded from ranking"}
+{"id":"mem_1773769828_hypothalamus_8cfee4dd","agent":"hypothalamus","kind":"error","ts":1773769828,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-train PPL=404.27 ctx=27 — excluded from ranking"}
+{"id":"mem_1773769828_hypothalamus_8cfee4dd","agent":"hypothalamus","kind":"error","ts":1773769828,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-r18 PPL=7.40 ctx=27 — excluded from ranking"}
+{"id":"mem_1773769936_hypothalamus_8cfee469","agent":"hypothalamus","kind":"observation","ts":1773769936,"tags":[],"ttl":2592000,"data":{},"summary":"metabolism: ppl=45.73 tok/s=6284 spike=84.2% diversity=0.000 health=40.0"}
+{"id":"mem_1773769936_hypothalamus_8cfee469","agent":"hypothalamus","kind":"error","ts":1773769936,"tags":[],"ttl":1209600,"data":{},"summary":"metabolism spike: leader PPL=45.73 spike_rate=84.2% (threshold=20%)"}
+{"id":"mem_1773769936_hypothalamus_8cfee469","agent":"hypothalamus","kind":"error","ts":1773769936,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-v11 PPL=357.08 ctx=27 — excluded from ranking"}
+{"id":"mem_1773769936_hypothalamus_8cfee469","agent":"hypothalamus","kind":"error","ts":1773769936,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-train PPL=404.27 ctx=27 — excluded from ranking"}
+{"id":"mem_1773769936_hypothalamus_8cfee469","agent":"hypothalamus","kind":"error","ts":1773769936,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-r18 PPL=7.40 ctx=27 — excluded from ranking"}

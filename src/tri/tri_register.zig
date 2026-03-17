@@ -904,6 +904,12 @@ const execute_map = [_]ExecuteEntry{
             return commands.runDoctorCommand(a, args);
         }
     }.f },
+    .{ .name = "regen", .execute = struct {
+        fn f(a: std.mem.Allocator, args: []const []const u8) !void {
+            const regen_mod = @import("regen.zig");
+            return regen_mod.runRegenCLI(a, args);
+        }
+    }.f },
     .{ .name = "clean", .execute = struct {
         fn f(a: std.mem.Allocator, args: []const []const u8) !void {
             _ = args;
