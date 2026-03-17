@@ -37,6 +37,8 @@ struct ChatScreen: View {
     @State private var showDraftSaved = false
     @State private var showQueueDrained = false
     @State private var queueDrainedMessageCount = 0
+    @State private var rateLimitDismissed = false
+    @ObservedObject private var networkLog = NetworkLog.shared
     @State private var showInThreadSearch = false
     @State private var inThreadSearchQuery = ""
     @State private var inThreadSearchIndex = 0
@@ -99,8 +101,8 @@ struct ChatScreen: View {
             total + estimateTokens(msg.text)
         }
         let inputTokens = estimateTokens(input)
-        // Add ~200 tokens for system prompt overhead
-        return msgTokens + inputTokens + 200
+        // System prompt baseline: ~200 base instructions + ~500 CLAUDE.md + ~300 state/persona
+        return msgTokens + inputTokens + 500
     }
 
     /// Improved token estimation: code-heavy text has more tokens per char
@@ -109,6 +111,22 @@ struct ChatScreen: View {
         let hasCode = text.contains("```") || text.contains("    ")
         let ratio: Double = hasCode ? 3.2 : 3.8 // chars per token
         return Int(ceil(Double(text.count) / ratio))
+    }
+
+    /// Estimated cost of the next message in USD
+    private var estimatedCostString: String? {
+        let provider = modelManager.selectedModel.provider
+        guard provider != .ollama else { return nil }
+        let inputTokens = estimatedTokens
+        let outputTokens = effortLevel.maxTokens
+        let cost = AIModel.estimateCost(
+            provider: provider.rawValue,
+            inputTokens: inputTokens,
+            outputTokens: outputTokens
+        )
+        if cost < 0.001 { return "<$0.01" }
+        if cost < 0.10 { return String(format: "~$%.2f", cost) }
+        return String(format: "~$%.1f", cost)
     }
 
     /// Dynamic placeholder based on chat mode
@@ -123,466 +141,510 @@ struct ChatScreen: View {
     }
 
     var body: some View {
+        bodyContent
+            .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: showComparison)
+            .background(Color.black)
+            .onAppear { handleOnAppear() }
+            .modifier(NotificationReceiversModifier(
+                store: store,
+                client: client,
+                modelManager: modelManager,
+                input: $input,
+                showCommandPalette: $showCommandPalette,
+                showSidebar: $showSidebar,
+                showInThreadSearch: $showInThreadSearch,
+                inThreadSearchQuery: $inThreadSearchQuery,
+                inThreadSearchIndex: $inThreadSearchIndex,
+                showComparison: $showComparison,
+                showPersonaLibrary: $showPersonaLibrary,
+                showThinkingTranscript: $showThinkingTranscript,
+                commentingMessage: $commentingMessage,
+                slashCommandResult: $slashCommandResult,
+                thread: thread
+            ))
+            .sheet(isPresented: $showThinkingTranscript) {
+                ThinkingTranscriptSheet(messages: thread?.messages ?? [])
+            }
+            .sheet(isPresented: $showOnboarding) {
+                OnboardingWalkthrough(isPresented: $showOnboarding)
+            }
+            .sheet(isPresented: $showPersonaLibrary) {
+                PersonaLibrary(
+                    selectedPersona: $selectedPersona,
+                    isPresented: $showPersonaLibrary,
+                    onSelectTemplate: { template in
+                        input = template
+                    }
+                )
+            }
+            .modifier(ChangeTrackersModifier(
+                input: $input,
+                showDraftSaved: $showDraftSaved,
+                taskItems: $taskItems,
+                selectedPersona: $selectedPersona,
+                store: store,
+                client: client
+            ))
+    }
+
+    // MARK: - Body Content (ZStack)
+
+    private var bodyContent: some View {
         ZStack {
             HStack(spacing: 0) {
-                // Sidebar with context inspector (toggleable)
-                if showSidebar {
-                    VStack(spacing: 0) {
-                        ChatSidebar(store: store, modelManager: modelManager)
-
-                        Rectangle()
-                            .fill(Color.white.opacity(0.06))
-                            .frame(height: 1)
-
-                        ContextInspector()
-                            .frame(maxHeight: 200)
-
-                        Rectangle()
-                            .fill(Color.white.opacity(0.06))
-                            .frame(height: 1)
-
-                        NetworkDashboard(client: client, modelManager: modelManager)
-                            .frame(maxHeight: 220)
-                    }
-                    .frame(width: 240)
-                    .transition(.move(edge: .leading))
-
-                    Rectangle()
-                        .fill(Color.white.opacity(0.06))
-                        .frame(width: 1)
-                }
-
-                // Main chat area
-                ZStack(alignment: .bottomTrailing) {
-                    Color.black.ignoresSafeArea()
-
-                    VStack(spacing: 0) {
-                        // Connection status bar
-                        ConnectionStatusBar(modelManager: modelManager, client: client)
-
-                        // Sticky context meter (always visible when >1K tokens)
-                        ContextBar(tokens: estimatedTokens)
-
-                        // In-thread search bar (Cmd+F)
-                        if showInThreadSearch {
-                            InThreadSearchBar(
-                                query: $inThreadSearchQuery,
-                                currentIndex: $inThreadSearchIndex,
-                                totalMatches: inThreadSearchMatches.count,
-                                onDismiss: {
-                                    showInThreadSearch = false
-                                    inThreadSearchQuery = ""
-                                    inThreadSearchIndex = 0
-                                }
-                            )
-                        }
-
-                        // Messages
-                        ScrollViewReader { proxy in
-                            ScrollView {
-                                LazyVStack(alignment: .leading, spacing: 0) {
-                                    if thread?.messages.isEmpty != false {
-                                        EmptyThreadView(chatMode: $chatMode, onSuggestion: { suggestion in
-                                            input = suggestion
-                                            send()
-                                        })
-                                    }
-                                    ForEach(thread?.messages ?? []) { msg in
-                                        MessageRow(
-                                            message: msg,
-                                            store: store,
-                                            client: client,
-                                            modelManager: modelManager,
-                                            isLastMessage: msg.id == thread?.messages.last?.id,
-                                            onComment: { commentingMessage = $0 }
-                                        )
-                                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 6)))
-                                    }
-
-                                    errorRetryBlock
-
-                                    // Typing indicator + streaming metrics
-                                    if client.isStreaming {
-                                        VStack(alignment: .leading, spacing: 6) {
-                                            HStack(spacing: 12) {
-                                                if !client.streamingThinkingText.isEmpty && client.streamingText.isEmpty {
-                                                    // Reasoning mode: pulsing brain + depth counter
-                                                    Image(systemName: "brain.head.profile")
-                                                        .font(.system(size: 14))
-                                                        .foregroundStyle(TrinityTheme.purple)
-                                                        .symbolEffect(.pulse, options: .repeating)
-                                                    Text("Reasoning...")
-                                                        .font(.caption)
-                                                        .foregroundStyle(TrinityTheme.purple)
-                                                    StreamingElapsedTimer()
-                                                    Text("\(client.streamingThinkingText.count) chars")
-                                                        .font(.system(size: 9, design: .monospaced))
-                                                        .foregroundStyle(TrinityTheme.textMuted)
-                                                } else if thread?.messages.last?.text.isEmpty ?? false {
-                                                    ThinkingDots()
-                                                    SpinnerVerb()
-                                                        .font(.caption)
-                                                        .foregroundStyle(TrinityTheme.textMuted)
-                                                    // Live TTFB counter while waiting for first token
-                                                    LiveTTFBCounter(isWaiting: client.streamingTTFB == 0)
-                                                }
-                                                // Show TTFB after first token arrives
-                                                if client.streamingTTFB > 0 {
-                                                    Text("TTFB \(client.streamingTTFB)ms")
-                                                        .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                                        .foregroundStyle(ttfbColor(client.streamingTTFB))
-                                                }
-                                                if client.streamingTokensPerSec > 0 {
-                                                    Text(String(format: "%.0f tok/s", client.streamingTokensPerSec))
-                                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                                        .foregroundStyle(TrinityTheme.accent)
-                                                }
-                                                if client.streamingOutputTokens > 0 {
-                                                    Text("\(client.streamingOutputTokens) tok")
-                                                        .font(.system(size: 10, design: .monospaced))
-                                                        .foregroundStyle(TrinityTheme.textMuted)
-                                                }
-                                            }
-
-                                            // Slow response warning (>3s for non-reasoning, >10s for reasoning)
-                                            if client.isSlowResponse {
-                                                HStack(spacing: 6) {
-                                                    Image(systemName: "tortoise.fill")
-                                                        .font(.system(size: 10))
-                                                    Text("Slow response")
-                                                        .font(.system(size: 10, weight: .medium))
-                                                    Button {
-                                                        client.stop()
-                                                        if let threadID = store.activeThreadID {
-                                                            store.removeLastAssistantMessage(in: threadID)
-                                                            input = thread?.messages.last(where: { $0.role == .user })?.text ?? ""
-                                                        }
-                                                    } label: {
-                                                        Text("Cancel")
-                                                            .font(.system(size: 10, weight: .bold))
-                                                            .foregroundStyle(.black)
-                                                            .padding(.horizontal, 8)
-                                                            .padding(.vertical, 3)
-                                                            .background(TrinityTheme.statusError)
-                                                            .clipShape(Capsule())
-                                                    }
-                                                    .buttonStyle(.plain)
-                                                    if let fallback = modelManager.failoverModel() {
-                                                        Button {
-                                                            client.stop()
-                                                            modelManager.selectedModel = fallback
-                                                            modelManager.persistSelection()
-                                                            if let threadID = store.activeThreadID {
-                                                                store.removeLastAssistantMessage(in: threadID)
-                                                                input = thread?.messages.last(where: { $0.role == .user })?.text ?? ""
-                                                            }
-                                                        } label: {
-                                                            Text("Try \(fallback.displayName)")
-                                                                .font(.system(size: 10, weight: .bold))
-                                                                .foregroundStyle(.black)
-                                                                .padding(.horizontal, 8)
-                                                                .padding(.vertical, 3)
-                                                                .background(TrinityTheme.statusWarn)
-                                                                .clipShape(Capsule())
-                                                        }
-                                                        .buttonStyle(.plain)
-                                                    }
-                                                }
-                                                .foregroundStyle(TrinityTheme.statusWarn)
-                                                .transition(.opacity)
-                                            }
-                                        }
-                                        .padding(.vertical, 12)
-                                        .transition(.opacity)
-                                    }
-
-                                    // Tool execution timeline
-                                    if !client.activeToolCalls.isEmpty {
-                                        ToolTimeline(steps: client.activeToolCalls)
-                                            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
-                                    }
-
-                                    // Elicitation card (Queen asks a question)
-                                    if let q = client.elicitationQuestion {
-                                        ElicitationCard(
-                                            question: q.question,
-                                            options: q.options,
-                                            onSelect: { answer in
-                                                input = answer
-                                                send()
-                                                client.elicitationQuestion = nil
-                                            }
-                                        )
-                                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
-                                    }
-
-                                    // Follow-up suggestions (after response)
-                                    if !client.isStreaming && !client.followUpSuggestions.isEmpty {
-                                        FollowUpSuggestions(
-                                            suggestions: client.followUpSuggestions,
-                                            onSelect: { suggestion in
-                                                input = suggestion
-                                                send()
-                                                client.followUpSuggestions = []
-                                            }
-                                        )
-                                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
-                                    }
-
-                                    Color.clear.frame(height: 1).id("bottom")
-                                }
-                                .padding(.horizontal, 60)
-                                .padding(.top, 20)
-                                .padding(.bottom, 100)
-                                .background(
-                                    GeometryReader { geo in
-                                        Color.clear
-                                            .preference(key: ScrollOffsetKey.self, value: geo.frame(in: .named("chatScroll")).maxY)
-                                    }
-                                )
-                            }
-                            .coordinateSpace(name: "chatScroll")
-                            .onPreferenceChange(ScrollOffsetKey.self) { maxY in
-                                // Show scroll-to-bottom when content is scrolled up
-                                showScrollToBottom = maxY > 800
-                            }
-                            .onChange(of: thread?.messages.count) {
-                                withAnimation(.easeOut(duration: 0.15)) {
-                                    proxy.scrollTo("bottom", anchor: .bottom)
-                                }
-                            }
-                            .onChange(of: client.streamingText) {
-                                proxy.scrollTo("bottom", anchor: .bottom)
-                            }
-                            .onChange(of: inThreadSearchIndex) { _, newIdx in
-                                let matches = inThreadSearchMatches
-                                if newIdx < matches.count {
-                                    withAnimation(.easeOut(duration: 0.2)) {
-                                        proxy.scrollTo(matches[newIdx].id, anchor: .center)
-                                    }
-                                }
-                            }
-
-                            // Scroll-to-bottom FAB
-                            if showScrollToBottom && !client.isStreaming {
-                                Button {
-                                    withAnimation(.easeOut(duration: 0.3)) {
-                                        proxy.scrollTo("bottom", anchor: .bottom)
-                                    }
-                                } label: {
-                                    Image(systemName: "arrow.down.circle.fill")
-                                        .font(.system(size: 32))
-                                        .foregroundStyle(TrinityTheme.accent)
-                                        .background(Circle().fill(Color.black).padding(4))
-                                        .shadow(color: .black.opacity(0.5), radius: 8)
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityLabel("Scroll to bottom")
-                                .padding(.trailing, 24)
-                                .padding(.bottom, 180)
-                                .transition(.opacity.combined(with: .scale))
-                            }
-                        }
-
-                        Spacer(minLength: 0)
-
-                        // Smart suggestions (proactive actions based on Trinity state)
-                        if thread?.messages.isEmpty != false {
-                            SmartSuggestions { prompt in
-                                input = prompt
-                                send()
-                            }
-                        }
-
-                        // @Mention popup (above input)
-                        if showMentionPopup {
-                            MentionPopup(
-                                query: mentionQuery,
-                                isPresented: $showMentionPopup,
-                                onSelect: { value in
-                                    // Replace @query with @value in input
-                                    if let atRange = input.range(of: "@\(mentionQuery)", options: .backwards) {
-                                        input.replaceSubrange(atRange, with: "@\(value)")
-                                    }
-                                    // Save grep pattern for history
-                                    if value.hasPrefix("grep:") {
-                                        let pattern = String(value.dropFirst(5))
-                                        MentionPopup.saveGrepPattern(pattern)
-                                    }
-                                    showMentionPopup = false
-                                },
-                                repoContext: repoContext,
-                                trinityContext: trinityCtx
-                            )
-                            .padding(.horizontal, 60)
-                            .transition(.opacity.combined(with: .move(edge: .bottom)))
-                        }
-
-                        stickyStreamingBar
-
-                        inputAreaContent
-                        inputBarView
-                        modeBarView
-                    }
-                }
-                .layoutPriority(1)
-                // Drag & drop files onto chat area
-                .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
-                    handleFileDrop(providers)
-                    return true
-                }
-
-                // Comment sidebar (Grok-style)
-                if let msg = commentingMessage {
-                    Rectangle()
-                        .fill(Color.white.opacity(0.06))
-                        .frame(width: 1)
-
-                    CommentSidebar(
-                        message: msg,
-                        store: store,
-                        client: commentClient,
-                        modelManager: modelManager,
-                        onClose: { commentingMessage = nil }
-                    )
-                }
+                sidebarSection
+                mainChatArea
+                commentSidebarSection
             }
             .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: commentingMessage != nil)
 
-            // Shortcuts overlay
-            if showShortcuts {
-                ShortcutsOverlay(isPresented: $showShortcuts)
-            }
+            overlaysLayer
+        }
+    }
 
-            // Command palette (Cmd+K)
-            if showCommandPalette {
-                CommandPalette(
-                    isPresented: $showCommandPalette,
-                    store: store,
-                    modelManager: modelManager
-                ) { action in
-                    handlePaletteAction(action)
+    // MARK: - Main Chat Area
+
+    private var mainChatArea: some View {
+        ZStack(alignment: .bottomTrailing) {
+            Color.black.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Connection status bar
+                ConnectionStatusBar(modelManager: modelManager, client: client)
+
+                // Sticky context meter (always visible when >1K tokens)
+                ContextBar(tokens: estimatedTokens, onCompact: {
+                    guard let tid = store.activeThreadID else { return }
+                    client.checkAutoCompaction(threadID: tid, store: store, modelManager: modelManager)
+                })
+
+                // In-thread search bar (Cmd+F)
+                inThreadSearchSection
+
+                // Messages
+                messageScrollArea
+
+                Spacer(minLength: 0)
+
+                // Smart suggestions (proactive actions based on Trinity state)
+                if thread?.messages.isEmpty != false {
+                    SmartSuggestions { prompt in
+                        input = prompt
+                        send()
+                    }
                 }
-                .transition(.opacity)
-            }
 
-            // Model comparison overlay
-            if showComparison {
-                ModelComparisonView(
-                    prompt: comparisonPrompt,
-                    modelManager: modelManager,
-                    onClose: { showComparison = false }
-                )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+                mentionPopupSection
+
+                stickyStreamingBar
+
+                inputAreaContent
+                rateLimitWarningBar
+                inputBarView
+                modeBarView
             }
         }
-        .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: showComparison)
-        .background(Color.black)
-        .onAppear {
-            if store.threads.isEmpty { store.newThread() }
-            focused = true
-            // Show onboarding on first launch
-            if !UserDefaults.standard.bool(forKey: "onboardingCompleted") {
-                showOnboarding = true
-            }
-            // Defer heavy work off the body evaluation path
-            Task { @MainActor in
-                NotificationService.shared.requestPermission()
-                NetworkLog.shared.checkAllProviders()
-                store.cleanupOldThreads()
-                modelManager.refreshOllamaModels()
-                client.loadPersistedQueue()
-            }
-            startHealthRefreshTimer()
+        .layoutPriority(1)
+        // Drag & drop files onto chat area
+        .onDrop(of: [.fileURL], isTargeted: $isDropTargeted) { providers in
+            handleFileDrop(providers)
+            return true
         }
-        .onReceive(NotificationCenter.default.publisher(for: .toggleCommandPalette)) { _ in
-            showCommandPalette.toggle()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .toggleSidebar)) { _ in
-            withAnimation(.easeInOut(duration: 0.2)) { showSidebar.toggle() }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .newThread)) { _ in
-            store.newThread()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .prevThread)) { _ in
-            let sorted = store.sortedThreads
-            guard let currentID = store.activeThreadID,
-                  let idx = sorted.firstIndex(where: { $0.id == currentID }),
-                  idx > 0 else { return }
-            store.activeThreadID = sorted[idx - 1].id
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .nextThread)) { _ in
-            let sorted = store.sortedThreads
-            guard let currentID = store.activeThreadID,
-                  let idx = sorted.firstIndex(where: { $0.id == currentID }),
-                  idx < sorted.count - 1 else { return }
-            store.activeThreadID = sorted[idx + 1].id
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .searchInThread)) { _ in
-            showInThreadSearch = true
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .copyLastResponse)) { _ in
-            if let last = thread?.messages.last(where: { $0.role == .assistant }) {
-                NSPasteboard.general.clearContents()
-                NSPasteboard.general.setString(last.text, forType: .string)
-            }
-        }
-        .onReceive(NotificationCenter.default.publisher(for: .showThinkingTranscript)) { _ in
-            showThinkingTranscript = true
-        }
-        .sheet(isPresented: $showThinkingTranscript) {
-            ThinkingTranscriptSheet(messages: thread?.messages ?? [])
-        }
-        .sheet(isPresented: $showOnboarding) {
-            OnboardingWalkthrough(isPresented: $showOnboarding)
-        }
-        .sheet(isPresented: $showPersonaLibrary) {
-            PersonaLibrary(
-                selectedPersona: $selectedPersona,
-                isPresented: $showPersonaLibrary,
-                onSelectTemplate: { template in
-                    input = template
+    }
+
+    // MARK: - In-Thread Search
+
+    @ViewBuilder
+    private var inThreadSearchSection: some View {
+        if showInThreadSearch {
+            InThreadSearchBar(
+                query: $inThreadSearchQuery,
+                currentIndex: $inThreadSearchIndex,
+                totalMatches: inThreadSearchMatches.count,
+                onDismiss: {
+                    showInThreadSearch = false
+                    inThreadSearchQuery = ""
+                    inThreadSearchIndex = 0
                 }
             )
         }
-        // Draft auto-save: persist input text per thread
-        .onChange(of: input) { _, newValue in
-            if let tid = store.activeThreadID {
-                UserDefaults.standard.set(newValue, forKey: "draft_\(tid)")
+    }
+
+    // MARK: - Message Scroll Area
+
+    private var messageScrollArea: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                messageListContent
             }
-            // Clear follow-up suggestions when user starts typing
-            if !newValue.isEmpty && !client.followUpSuggestions.isEmpty {
-                client.followUpSuggestions = []
+            .coordinateSpace(name: "chatScroll")
+            .onPreferenceChange(ScrollOffsetKey.self) { maxY in
+                showScrollToBottom = maxY > 200
             }
-            // Draft save indicator
-            if !newValue.isEmpty {
-                showDraftSaved = true
-                Task { @MainActor in
-                    try? await Task.sleep(for: .seconds(2))
-                    showDraftSaved = false
+            .onChange(of: thread?.messages.count) {
+                withAnimation(.easeOut(duration: 0.15)) {
+                    proxy.scrollTo("bottom", anchor: .bottom)
                 }
             }
-        }
-        .onChange(of: client.extractedTasks) { _, newTasks in
-            if !newTasks.isEmpty {
-                taskItems = newTasks.map { TaskItem(title: $0) }
+            .onChange(of: client.streamingText) {
+                if !showScrollToBottom {
+                    proxy.scrollTo("bottom", anchor: .bottom)
+                }
+            }
+            .onChange(of: inThreadSearchIndex) { _, newIdx in
+                let matches = inThreadSearchMatches
+                if newIdx < matches.count {
+                    withAnimation(.easeOut(duration: 0.2)) {
+                        proxy.scrollTo(matches[newIdx].id, anchor: .center)
+                    }
+                }
+            }
+            .overlay(alignment: .bottom) {
+                scrollToBottomButton(proxy: proxy)
             }
         }
-        .onChange(of: store.activeThreadID) { _, newID in
-            // Save current draft before switching
-            // Restore draft for new thread
-            if let tid = newID {
-                let draft = UserDefaults.standard.string(forKey: "draft_\(tid)") ?? ""
-                input = draft
+    }
+
+    // MARK: - Message List Content
+
+    private var messageListContent: some View {
+        LazyVStack(alignment: .leading, spacing: 0) {
+            if thread?.messages.isEmpty != false {
+                EmptyThreadView(chatMode: $chatMode, onSuggestion: { suggestion in
+                    input = suggestion
+                    send()
+                })
+            }
+            ForEach(thread?.messages ?? []) { msg in
+                MessageRow(
+                    message: msg,
+                    store: store,
+                    client: client,
+                    modelManager: modelManager,
+                    isLastMessage: msg.id == thread?.messages.last?.id,
+                    onComment: { commentingMessage = $0 }
+                )
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 6)))
+            }
+
+            errorRetryBlock
+
+            streamingIndicatorView
+
+            toolTimelineSection
+
+            elicitationSection
+
+            followUpSection
+
+            Color.clear.frame(height: 1).id("bottom")
+        }
+        .padding(.horizontal, 60)
+        .padding(.top, 20)
+        .padding(.bottom, 100)
+        .background(
+            GeometryReader { geo in
+                Color.clear
+                    .preference(key: ScrollOffsetKey.self, value: geo.frame(in: .named("chatScroll")).maxY)
+            }
+        )
+    }
+
+    // MARK: - Tool Timeline
+
+    @ViewBuilder
+    private var toolTimelineSection: some View {
+        if !client.activeToolCalls.isEmpty {
+            ToolTimeline(steps: client.activeToolCalls)
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+        }
+    }
+
+    // MARK: - Elicitation Card
+
+    @ViewBuilder
+    private var elicitationSection: some View {
+        if let q = client.elicitationQuestion {
+            ElicitationCard(
+                question: q.question,
+                options: q.options,
+                onSelect: { answer in
+                    input = answer
+                    send()
+                    client.elicitationQuestion = nil
+                }
+            )
+            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+        }
+    }
+
+    // MARK: - Follow-up Suggestions
+
+    @ViewBuilder
+    private var followUpSection: some View {
+        if !client.isStreaming && !client.followUpSuggestions.isEmpty {
+            FollowUpSuggestions(
+                suggestions: client.followUpSuggestions,
+                onSelect: { suggestion in
+                    input = suggestion
+                    send()
+                    client.followUpSuggestions = []
+                }
+            )
+            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+        }
+    }
+
+    // MARK: - Scroll To Bottom Button
+
+    @ViewBuilder
+    private func scrollToBottomButton(proxy: ScrollViewProxy) -> some View {
+        if showScrollToBottom && !client.isStreaming {
+            Button {
+                withAnimation(.easeOut(duration: 0.3)) {
+                    proxy.scrollTo("bottom", anchor: .bottom)
+                }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.down")
+                        .font(.system(size: 13, weight: .semibold))
+                    Text("New messages")
+                        .font(.system(size: 13, weight: .medium))
+                }
+                .foregroundStyle(.black)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .background(TrinityTheme.accent)
+                .clipShape(Capsule())
+                .shadow(color: .black.opacity(0.4), radius: TrinityTheme.shadowMediumRadius, y: 4)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Scroll to bottom")
+            .padding(.bottom, 120)
+            .transition(.opacity.combined(with: .move(edge: .bottom)))
+        }
+    }
+
+    // MARK: - OnAppear Handler
+
+    private func handleOnAppear() {
+        if store.threads.isEmpty { store.newThread() }
+        focused = true
+        if !UserDefaults.standard.bool(forKey: "onboardingCompleted") {
+            showOnboarding = true
+        }
+        Task { @MainActor in
+            NotificationService.shared.requestPermission()
+            NetworkLog.shared.checkAllProviders()
+            store.cleanupOldThreads()
+            modelManager.refreshOllamaModels()
+            client.loadPersistedQueue()
+        }
+        startHealthRefreshTimer()
+    }
+
+    // MARK: - Sidebar Section
+
+    @ViewBuilder
+    private var sidebarSection: some View {
+        if showSidebar {
+            VStack(spacing: 0) {
+                ChatSidebar(store: store, modelManager: modelManager)
+
+                Rectangle()
+                    .fill(Color.white.opacity(0.06))
+                    .frame(height: 1)
+
+                ContextInspector()
+                    .frame(maxHeight: 200)
+
+                Rectangle()
+                    .fill(Color.white.opacity(0.06))
+                    .frame(height: 1)
+
+                NetworkDashboard(client: client, modelManager: modelManager)
+                    .frame(maxHeight: 220)
+            }
+            .frame(width: 240)
+            .transition(.move(edge: .leading))
+
+            Rectangle()
+                .fill(Color.white.opacity(0.06))
+                .frame(width: 1)
+        }
+    }
+
+    // MARK: - Comment Sidebar
+
+    @ViewBuilder
+    private var commentSidebarSection: some View {
+        if let msg = commentingMessage {
+            Rectangle()
+                .fill(Color.white.opacity(0.06))
+                .frame(width: 1)
+
+            CommentSidebar(
+                message: msg,
+                store: store,
+                client: commentClient,
+                modelManager: modelManager,
+                onClose: { commentingMessage = nil }
+            )
+        }
+    }
+
+    // MARK: - Overlays Layer
+
+    @ViewBuilder
+    private var overlaysLayer: some View {
+        if showShortcuts {
+            ShortcutsOverlay(isPresented: $showShortcuts)
+        }
+
+        if showCommandPalette {
+            CommandPalette(
+                isPresented: $showCommandPalette,
+                store: store,
+                modelManager: modelManager
+            ) { action in
+                handlePaletteAction(action)
+            }
+            .transition(.opacity)
+        }
+
+        if showComparison {
+            ModelComparisonView(
+                prompt: comparisonPrompt,
+                modelManager: modelManager,
+                onClose: { showComparison = false }
+            )
+            .transition(.move(edge: .bottom).combined(with: .opacity))
+        }
+    }
+
+    // MARK: - Mention Popup
+
+    @ViewBuilder
+    private var mentionPopupSection: some View {
+        if showMentionPopup {
+            MentionPopup(
+                query: mentionQuery,
+                isPresented: $showMentionPopup,
+                onSelect: { value in
+                    if let atRange = input.range(of: "@\(mentionQuery)", options: .backwards) {
+                        input.replaceSubrange(atRange, with: "@\(value)")
+                    }
+                    if value.hasPrefix("grep:") {
+                        let pattern = String(value.dropFirst(5))
+                        MentionPopup.saveGrepPattern(pattern)
+                    }
+                    showMentionPopup = false
+                },
+                repoContext: repoContext,
+                trinityContext: trinityCtx
+            )
+            .padding(.horizontal, 60)
+            .transition(.opacity.combined(with: .move(edge: .bottom)))
+        }
+    }
+
+    // MARK: - Streaming Indicator
+
+    @ViewBuilder
+    private var streamingIndicatorView: some View {
+        if client.isStreaming {
+            VStack(alignment: .leading, spacing: 6) {
+                streamingMetricsRow
+                slowResponseWarning
+            }
+            .padding(.vertical, 12)
+            .transition(.opacity)
+        }
+    }
+
+    private var streamingMetricsRow: some View {
+        HStack(spacing: 12) {
+            if !client.streamingThinkingText.isEmpty && client.streamingText.isEmpty {
+                Image(systemName: "brain.head.profile")
+                    .font(.system(size: 14))
+                    .foregroundStyle(TrinityTheme.purple)
+                    .symbolEffect(.pulse, options: .repeating)
+                Text("Reasoning...")
+                    .font(.caption)
+                    .foregroundStyle(TrinityTheme.purple)
+                StreamingElapsedTimer()
+                Text("\(client.streamingThinkingText.count) chars")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundStyle(TrinityTheme.textMuted)
+            } else if thread?.messages.last?.text.isEmpty ?? false {
+                QueenThinkingIndicator()
+                LiveTTFBCounter(isWaiting: client.streamingTTFB == 0)
+            }
+            if client.streamingTTFB > 0 {
+                Text("TTFB \(client.streamingTTFB)ms")
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundStyle(ttfbColor(client.streamingTTFB))
+            }
+            if client.streamingTokensPerSec > 0 {
+                Text(String(format: "%.0f tok/s", client.streamingTokensPerSec))
+                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .foregroundStyle(TrinityTheme.accent)
+            }
+            if client.streamingOutputTokens > 0 {
+                Text("\(client.streamingOutputTokens) tok")
+                    .font(.system(size: 10, design: .monospaced))
+                    .foregroundStyle(TrinityTheme.textMuted)
             }
         }
-        .onChange(of: selectedPersona) { _, newPersona in
-            // Save persona to current thread
-            if let tid = store.activeThreadID,
-               let idx = store.threads.firstIndex(where: { $0.id == tid }) {
-                store.threads[idx].personaID = newPersona?.id
-                store.saveThread(tid)
+    }
+
+    @ViewBuilder
+    private var slowResponseWarning: some View {
+        if client.isSlowResponse {
+            HStack(spacing: 6) {
+                Image(systemName: "tortoise.fill")
+                    .font(.system(size: 10))
+                Text("Slow response")
+                    .font(.system(size: 10, weight: .medium))
+                Button {
+                    client.stop()
+                    if let threadID = store.activeThreadID {
+                        store.removeLastAssistantMessage(in: threadID)
+                        input = thread?.messages.last(where: { $0.role == .user })?.text ?? ""
+                    }
+                } label: {
+                    Text("Cancel")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(TrinityTheme.statusError)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                if let fallback = modelManager.failoverModel() {
+                    Button {
+                        client.stop()
+                        modelManager.selectedModel = fallback
+                        modelManager.persistSelection()
+                        if let threadID = store.activeThreadID {
+                            store.removeLastAssistantMessage(in: threadID)
+                            input = thread?.messages.last(where: { $0.role == .user })?.text ?? ""
+                        }
+                    } label: {
+                        Text("Try \(fallback.displayName)")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(TrinityTheme.statusWarn)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
             }
+            .foregroundStyle(TrinityTheme.statusWarn)
+            .transition(.opacity)
         }
     }
 
@@ -1061,6 +1123,76 @@ struct ChatScreen: View {
     }
 
     @ViewBuilder
+
+    // MARK: - Rate Limit Warning Bar
+
+    private var activeProviderRemaining: Int? {
+        let provider = modelManager.selectedModel.provider.rawValue
+        return networkLog.providerHealth[provider]?.remainingRequests
+    }
+
+    private var rateLimitWarningBar: some View {
+        Group {
+            let provider = modelManager.selectedModel.provider.rawValue
+            let remaining = activeProviderRemaining
+            let eta = networkLog.rateLimitETA(provider)
+
+            if let remaining = remaining, remaining <= 0, !rateLimitDismissed {
+                // Rate limited — error style
+                HStack(spacing: 8) {
+                    Text("\u{1F6AB} Rate limited \u{2014} switching provider...")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(TrinityTheme.statusError)
+                    Spacer()
+                    Button {
+                        rateLimitDismissed = true
+                    } label: {
+                        Text("\u{00D7}")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(TrinityTheme.statusError.opacity(0.7))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .background(TrinityTheme.statusError.opacity(0.15))
+                .padding(.horizontal, 60)
+            } else if let remaining = remaining, remaining < 50, !rateLimitDismissed {
+                // Low quota — warning style
+                HStack(spacing: 8) {
+                    if let eta = eta {
+                        Text("\u{26A0} \(remaining) requests remaining (~\(eta) min)")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(TrinityTheme.golden)
+                    } else {
+                        Text("\u{26A0} \(remaining) requests remaining")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(TrinityTheme.golden)
+                    }
+                    Spacer()
+                    Button {
+                        rateLimitDismissed = true
+                    } label: {
+                        Text("\u{00D7}")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundStyle(TrinityTheme.golden.opacity(0.7))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+                .background(TrinityTheme.golden.opacity(0.15))
+                .padding(.horizontal, 60)
+            }
+        }
+        .onChange(of: activeProviderRemaining) { newValue in
+            // Auto-reset when quota recovers (above 50) or data becomes unavailable (nil = fresh state)
+            if newValue == nil || (newValue ?? 0) >= 50 {
+                rateLimitDismissed = false
+            }
+        }
+    }
+
     private var inputBarView: some View {
         HStack(spacing: 0) {
             HStack(spacing: 4) {
@@ -1109,6 +1241,14 @@ struct ChatScreen: View {
                 }
                 .buttonStyle(.plain)
                 .help("Voice input")
+
+                // Estimated cost of next message
+                if let costStr = estimatedCostString, !client.isStreaming {
+                    Text(costStr)
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
+                        .help("Estimated cost of next message")
+                }
 
                 sendButton
 
@@ -1580,6 +1720,151 @@ struct ChatScreen: View {
     }
 }
 
+// MARK: - Notification Receivers Modifier
+
+private struct NotificationReceiversModifier: ViewModifier {
+    @ObservedObject var store: ThreadStore
+    @ObservedObject var client: ChatClient
+    @ObservedObject var modelManager: ModelManager
+    @Binding var input: String
+    @Binding var showCommandPalette: Bool
+    @Binding var showSidebar: Bool
+    @Binding var showInThreadSearch: Bool
+    @Binding var inThreadSearchQuery: String
+    @Binding var inThreadSearchIndex: Int
+    @Binding var showComparison: Bool
+    @Binding var showPersonaLibrary: Bool
+    @Binding var showThinkingTranscript: Bool
+    @Binding var commentingMessage: ChatMessage?
+    @Binding var slashCommandResult: String?
+    var thread: ChatThread?
+
+    func body(content: Content) -> some View {
+        content
+            .onReceive(NotificationCenter.default.publisher(for: .toggleCommandPalette)) { _ in
+                showCommandPalette.toggle()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .toggleSidebar)) { _ in
+                withAnimation(.easeInOut(duration: 0.2)) { showSidebar.toggle() }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .newThread)) { _ in
+                store.newThread()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .prevThread)) { _ in
+                let sorted = store.sortedThreads
+                guard let currentID = store.activeThreadID,
+                      let idx = sorted.firstIndex(where: { $0.id == currentID }),
+                      idx > 0 else { return }
+                store.activeThreadID = sorted[idx - 1].id
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .nextThread)) { _ in
+                let sorted = store.sortedThreads
+                guard let currentID = store.activeThreadID,
+                      let idx = sorted.firstIndex(where: { $0.id == currentID }),
+                      idx < sorted.count - 1 else { return }
+                store.activeThreadID = sorted[idx + 1].id
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .searchInThread)) { _ in
+                showInThreadSearch = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .copyLastResponse)) { _ in
+                if let last = thread?.messages.last(where: { $0.role == .assistant }) {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(last.text, forType: .string)
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .showThinkingTranscript)) { _ in
+                showThinkingTranscript = true
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .exportThreadClipboard)) { _ in
+                if let threadID = store.activeThreadID,
+                   let md = store.exportAsMarkdown(threadID) {
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(md, forType: .string)
+                    slashCommandResult = "Thread exported to clipboard as Markdown"
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(3))
+                        slashCommandResult = nil
+                    }
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .recallLastMessage)) { _ in
+                if input.isEmpty {
+                    if let lastUserMsg = thread?.messages.last(where: { $0.role == .user }) {
+                        input = lastUserMsg.text
+                    }
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .escapeAction)) { _ in
+                if client.isStreaming {
+                    client.stop()
+                } else if showCommandPalette {
+                    showCommandPalette = false
+                } else if showInThreadSearch {
+                    showInThreadSearch = false
+                    inThreadSearchQuery = ""
+                    inThreadSearchIndex = 0
+                } else if showComparison {
+                    showComparison = false
+                } else if showPersonaLibrary {
+                    showPersonaLibrary = false
+                } else if commentingMessage != nil {
+                    commentingMessage = nil
+                } else if !input.isEmpty {
+                    input = ""
+                }
+            }
+    }
+}
+
+// MARK: - Change Trackers Modifier
+
+private struct ChangeTrackersModifier: ViewModifier {
+    @Binding var input: String
+    @Binding var showDraftSaved: Bool
+    @Binding var taskItems: [TaskItem]
+    @Binding var selectedPersona: Persona?
+    @ObservedObject var store: ThreadStore
+    @ObservedObject var client: ChatClient
+
+    func body(content: Content) -> some View {
+        content
+            .onChange(of: input) { _, newValue in
+                if let tid = store.activeThreadID {
+                    UserDefaults.standard.set(newValue, forKey: "draft_\(tid)")
+                }
+                if !newValue.isEmpty && !client.followUpSuggestions.isEmpty {
+                    client.followUpSuggestions = []
+                }
+                if !newValue.isEmpty {
+                    showDraftSaved = true
+                    Task { @MainActor in
+                        try? await Task.sleep(for: .seconds(2))
+                        showDraftSaved = false
+                    }
+                }
+            }
+            .onChange(of: client.extractedTasks) { _, newTasks in
+                if !newTasks.isEmpty {
+                    taskItems = newTasks.map { TaskItem(title: $0) }
+                }
+            }
+            .onChange(of: store.activeThreadID) { _, newID in
+                if let tid = newID {
+                    let draft = UserDefaults.standard.string(forKey: "draft_\(tid)") ?? ""
+                    input = draft
+                }
+            }
+            .onChange(of: selectedPersona) { _, newPersona in
+                if let tid = store.activeThreadID,
+                   let idx = store.threads.firstIndex(where: { $0.id == tid }) {
+                    store.threads[idx].personaID = newPersona?.id
+                    store.saveThread(tid)
+                }
+            }
+    }
+}
+
 // MARK: - Notification for cross-view communication
 
 public extension Notification.Name {
@@ -1592,6 +1877,9 @@ public extension Notification.Name {
     static let prevThread = Notification.Name("prevThread")
     static let nextThread = Notification.Name("nextThread")
     static let searchInThread = Notification.Name("searchInThread")
+    static let exportThreadClipboard = Notification.Name("exportThreadClipboard")
+    static let recallLastMessage = Notification.Name("recallLastMessage")
+    static let escapeAction = Notification.Name("escapeAction")
 }
 
 // MARK: - Scroll Offset Preference Key
@@ -1812,11 +2100,16 @@ struct ContextMeter: View {
     @StateObject private var networkLog = NetworkLog.shared
     private let maxTokens = 180_000
 
+    private var ratio: Double { min(Double(tokens) / Double(maxTokens), 1.0) }
+    private var percent: Int { Int(ratio * 100) }
+
+    private var meterColor: Color {
+        if ratio < 0.70 { return TrinityTheme.accent }
+        if ratio < 0.85 { return TrinityTheme.golden }
+        return TrinityTheme.statusError
+    }
+
     var body: some View {
-        let ratio = min(Double(tokens) / Double(maxTokens), 1.0)
-        let color: Color = ratio < 0.5 ? TrinityTheme.accent
-            : ratio < 0.8 ? TrinityTheme.golden
-            : TrinityTheme.statusError
         let cost = networkLog.todayCostEstimate()
 
         HStack(spacing: 6) {
@@ -1825,15 +2118,17 @@ struct ContextMeter: View {
                     Capsule()
                         .fill(Color.white.opacity(0.06))
                     Capsule()
-                        .fill(color)
+                        .fill(meterColor)
                         .frame(width: geo.size.width * ratio)
+                        .animation(.easeInOut(duration: 0.4), value: ratio)
                 }
             }
             .frame(width: 60, height: 3)
 
-            Text("\(tokens / 1000)K")
+            Text("\(percent)% (\(tokens / 1000)K)")
                 .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(meterColor)
+                .animation(.easeInOut(duration: 0.4), value: meterColor)
 
             if cost > 0.001 {
                 Text(String(format: "$%.2f", cost))
@@ -1849,48 +2144,68 @@ struct ContextMeter: View {
 
 struct ContextBar: View {
     let tokens: Int
+    var onCompact: (() -> Void)? = nil
     private let maxTokens = 180_000
 
     private var ratio: Double { min(Double(tokens) / Double(maxTokens), 1.0) }
     private var percent: Int { Int(ratio * 100) }
 
     private var color: Color {
-        if ratio < 0.5 { return TrinityTheme.accent }
-        if ratio < 0.7 { return TrinityTheme.golden }
-        if ratio < 0.85 { return TrinityTheme.statusWarn }
+        if ratio < 0.70 { return TrinityTheme.accent }
+        if ratio < 0.85 { return TrinityTheme.golden }
         return TrinityTheme.statusError
     }
 
     var body: some View {
         if tokens > 1000 {
-            HStack(spacing: 8) {
-                // Progress bar
-                GeometryReader { geo in
-                    ZStack(alignment: .leading) {
-                        Capsule()
-                            .fill(Color.white.opacity(0.06))
-                        Capsule()
-                            .fill(color)
-                            .frame(width: geo.size.width * ratio)
+            VStack(spacing: 2) {
+                HStack(spacing: 8) {
+                    // Progress bar
+                    GeometryReader { geo in
+                        ZStack(alignment: .leading) {
+                            Capsule()
+                                .fill(Color.white.opacity(0.06))
+                            Capsule()
+                                .fill(color)
+                                .frame(width: geo.size.width * ratio)
+                                .animation(.easeInOut(duration: 0.4), value: ratio)
+                        }
                     }
-                }
-                .frame(height: 3)
+                    .frame(height: 3)
 
-                Text("\(tokens / 1000)K / \(maxTokens / 1000)K")
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundStyle(color)
-                    .fixedSize()
+                    Text("\(tokens / 1000)K / \(maxTokens / 1000)K")
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .foregroundStyle(color)
+                        .fixedSize()
+                        .animation(.easeInOut(duration: 0.4), value: color)
 
-                if ratio >= 0.7 {
                     Text("\(percent)%")
                         .font(.system(size: 9, weight: .bold, design: .monospaced))
                         .foregroundStyle(color)
                         .fixedSize()
+                        .animation(.easeInOut(duration: 0.4), value: color)
+                }
+
+                // CTA when context is filling up (>85%)
+                if ratio > 0.85, let onCompact = onCompact {
+                    HStack(spacing: 4) {
+                        Text("Context filling up —")
+                            .font(.system(size: 9))
+                            .foregroundStyle(TrinityTheme.textMuted)
+                        Button(action: onCompact) {
+                            Text("Clear old messages")
+                                .font(.system(size: 9, weight: .semibold))
+                                .foregroundStyle(TrinityTheme.accent)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
             .padding(.horizontal, 60)
             .padding(.vertical, 4)
             .background(ratio >= 0.7 ? color.opacity(0.04) : Color.clear)
+            .animation(.easeInOut(duration: 0.3), value: ratio > 0.85)
         }
     }
 }
@@ -2155,6 +2470,39 @@ struct MessageRow: View {
                         .textSelection(.enabled)
                         .lineSpacing(4)
                         .padding(.top, 16)
+
+                    // Inline retry button on the last failed assistant message
+                    if isLastMessage, message.hasError, !client.isStreaming,
+                       let errKind = message.errorKind {
+                        Button {
+                            guard let threadID = store.activeThreadID else { return }
+                            client.regenerateFrom(
+                                messageID: message.id,
+                                threadID: threadID,
+                                store: store,
+                                modelManager: modelManager
+                            )
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.system(size: 12, weight: .bold))
+                                Text("Retry")
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                            .foregroundStyle(errKind.color)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 6)
+                            .background(errKind.color.opacity(0.12))
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .transition(.opacity)
+                    }
+
+                    // Branch navigator (when assistant response has alternatives)
+                    if message.branchID != nil, let threadID = store.activeThreadID {
+                        BranchNavigator(message: message, store: store, threadID: threadID)
+                    }
 
                     // Action toolbar (only for non-empty assistant messages)
                     if !message.text.isEmpty {
@@ -3966,6 +4314,29 @@ struct SpinnerVerb: View {
                     }
                 }
             }
+    }
+}
+
+// MARK: - Queen Thinking Indicator
+
+struct QueenThinkingIndicator: View {
+    @State private var opacity: Double = 0.3
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Text("\u{25CF}\u{25CF}\u{25CF}")
+                .foregroundColor(TrinityTheme.accent)
+                .opacity(opacity)
+            Text("Queen is thinking...")
+                .foregroundColor(TrinityTheme.textMuted)
+                .italic()
+                .font(.caption)
+        }
+        .task {
+            withAnimation(.easeInOut(duration: 0.75).repeatForever(autoreverses: true)) {
+                opacity = 1.0
+            }
+        }
     }
 }
 
