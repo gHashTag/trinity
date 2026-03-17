@@ -1,0 +1,16 @@
+[spec]
+name = "hslm_block"
+version = "1.0.0"
+description = "TrinityBlock: attention + feed-forward with RMSNorm"
+
+[interface]
+inputs = ["block_input: [ctx][dim]Trit", "weights: BlockWeights"]
+outputs = ["block_output: [ctx][dim]Trit"]
+
+[invariants]
+residual = "output = input + sublayer(norm(input))"
+norm = "RMSNorm, shift-based approximation"
+ff_ratio = "hidden_dim / embed_dim = 3"
+
+[architecture]
+layers = ["rmsnorm", "sacred_attention", "residual", "rmsnorm", "feed_forward", "residual"]

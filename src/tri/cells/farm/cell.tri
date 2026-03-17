@@ -16,7 +16,7 @@ scope = "infra"
 type = "domain"
 
 [source]
-file_patterns = ["tri_farm*.zig", "tri_farm_deploy.zig", "railway_*.zig", "farm_*.zig", "dev_farm*.zig"]
+file_patterns = ["tri_farm*.zig", "tri_farm_deploy.zig", "railway_*.zig", "farm_*.zig", "dev_farm*.zig", "evolution.zig"]
 
 [contributes]
 commands = ["farm status", "farm evolve", "farm leaderboard", "farm recycle", "farm inject"]
@@ -32,6 +32,10 @@ process = "spawn"
 
 ffi = "none"
 concurrency = "yes"
+[biology]
+system = "body"
+organ = "evolution"
+
 [security]
 signed = true
 signature = "sha256:d324d5cf627581d6f3e68c41bc39b8af7000c7c3cda430cb70f0d104dbc12fc9"

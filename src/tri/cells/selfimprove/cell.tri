@@ -16,7 +16,7 @@ scope = "infra"
 type = "domain"
 
 [source]
-file_patterns = ["self_*.zig"]
+file_patterns = ["self_*.zig", "autophagy.zig", "pathology.zig"]
 
 [contributes]
 commands = ["self-improve", "formulas"]
@@ -32,6 +32,10 @@ process = "spawn"
 
 ffi = "none"
 concurrency = "none"
+[biology]
+system = "immune"
+organ = "pathology"
+
 [security]
 signed = true
 signature = "sha256:0267e16bf8385e3df3926caf1d576e450741aab960d72f7c7046e5be610f67f8"

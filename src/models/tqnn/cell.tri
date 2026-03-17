@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["forward", "createTQNN", "benchmark"]
 tri_subcommands = []
 events = []
 binaries = []
@@ -27,12 +27,12 @@ binaries = []
 trinity.vsa = "^1.0.0"
 
 [permissions]
-level = "L0"
+level = "L1"
 filesystem = "read"
 network = "none"
 process = "none"
 ffi = "none"
-concurrency = "none"
+concurrency = "yes"
 
 [security]
 signed = "true"

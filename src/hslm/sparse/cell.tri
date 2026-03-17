@@ -1,0 +1,34 @@
+[cell]
+id = "trinity.hslm.sparse"
+name = "Sparse Ternary MatMul"
+version = "1.0.0"
+kind = "library"
+path = "src/hslm"
+parent = "trinity.hslm"
+status = "stable"
+description = "Sparse ternary matrix multiplication: branchless 9.2x speedup, 4 variants"
+files = 1
+tests = 20
+owner = "agent:ralph"
+
+[tags]
+scope = "hslm"
+type = "library"
+
+[dna]
+cell_id = "trinity.hslm.sparse"
+source = "specs/hslm/sparse.tri"
+output = "gen/sparse_types.zig"
+regenerable = true
+
+[contract]
+inputs = ["packed_weights: []u2", "activations: []i32"]
+outputs = ["result: []i32"]
+invariants = ["branchless inner loop", "zero multiply ops", "2-bit encoding"]
+
+[dependencies]
+trinity.hslm = "^1.0.0"
+
+[security]
+signed = true
+signature = "sha256:0000000000000000000000000000000000000000000000000000000000000000"

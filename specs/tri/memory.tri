@@ -1,0 +1,20 @@
+[spec]
+name = "tri_memory"
+version = "1.0.0"
+description = "Unified agent memory with JSONL store and TTL management"
+
+[interface]
+inputs = ["agent: str", "kind: MemoryKind", "summary: str"]
+outputs = ["record: MemoryRecord", "id: uuid"]
+
+[invariants]
+heartbeat_ttl = "7 days"
+learning_ttl = "permanent"
+auto_rotate = "at 1MB file size"
+kinds = "heartbeat, learning, episode, rule, handover, error"
+
+[architecture]
+storage = "JSONL append-only log"
+search = "substring match on summary field"
+gc = "remove expired records by TTL"
+stats = "count per kind, total size"

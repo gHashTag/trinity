@@ -16,7 +16,7 @@ scope = "infra"
 type = "infra"
 
 [source]
-file_patterns = ["tri_pipeline.zig", "pipeline_executor.zig", "tri_spec_*.zig", "tri_spec_improve.zig", "golden_chain*.zig", "spec_template*.zig"]
+file_patterns = ["tri_pipeline.zig", "tri_spec_*.zig", "tri_spec_improve.zig", "spec_template*.zig", "dna_polymerase.zig", "rna_polymerase.zig"]
 
 [contributes]
 commands = ["pipeline run", "chain", "decompose", "plan", "verify"]
@@ -32,6 +32,21 @@ process = "spawn"
 
 ffi = "none"
 concurrency = "yes"
+[biology]
+system = "dna"
+organ = "rna_polymerase"
+
+[dna]
+cell_id = "trinity.tri.pipeline"
+source = "specs/tri/pipeline.tri"
+output = "gen/pipeline_types.zig"
+regenerable = true
+
+[contract]
+inputs = ["spec: .tri file", "task: str"]
+outputs = ["generated: .zig file"]
+invariants = ["26-link chain", "build must pass after gen", "zig fmt applied"]
+
 [security]
 signed = true
 signature = "sha256:b17b889dd398e230d6bdfcbed295e826cac17375b9ad0ccb98bc7aa225f0e608"

@@ -35,6 +35,17 @@ process = "none"
 ffi = "none"
 concurrency = "none"
 
+[dna]
+cell_id = "trinity.ternary"
+source = "specs/ternary/logic.tri"
+output = "gen/gates.zig"
+regenerable = true
+
+[contract]
+inputs = ["a: Trit", "b: Trit"]
+outputs = ["result: Trit"]
+invariants = ["tritNot(tritNot(x)) == x", "tritAnd(-1, x) == -1", "tritOr(1, x) == 1"]
+
 [security]
 signed = "true"
 signature = "sha256:e83f468785b49dc00d2c2c0f021a3689f7cccfc130902d5d823054f28af18a06"
