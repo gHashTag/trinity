@@ -116,7 +116,6 @@ const internal_handlers = std.StaticStringMap(SimpleHandler).initComptime(.{
     .{ "mm-orch-bench", &demos.runMMOrchBench },
     // Memory
     .{ "memory-demo", &demos.runMemoryDemo },
-    .{ "memory", &demos.runMemoryDemo },
     .{ "mem", &demos.runMemoryDemo },
     .{ "memory-bench", &demos.runMemoryBench },
     .{ "mem-bench", &demos.runMemoryBench },

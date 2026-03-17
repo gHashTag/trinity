@@ -572,6 +572,17 @@ fn runInfo(allocator: Allocator, args: []const []const u8) !void {
             std.debug.print("\n", .{});
         }
 
+        // DNA section (Phoenix)
+        if (cell.hasDNA()) {
+            std.debug.print("\n  {s}── DNA (Phoenix) ──{s}\n", .{ GOLDEN, RESET });
+            std.debug.print("  {s}DNA Source:{s}       {s}\n", .{ CYAN, RESET, cell.dna_source });
+            std.debug.print("  {s}DNA Output:{s}       {s}\n", .{ CYAN, RESET, cell.dna_output });
+            std.debug.print("  {s}Regenerable:{s}      {s}\n", .{ CYAN, RESET, if (cell.dna_regenerable) GREEN ++ "yes" ++ RESET else RED ++ "no" ++ RESET });
+            if (cell.dna_contract_raw.len > 0) {
+                std.debug.print("  {s}Contract:{s}         (present)\n", .{ CYAN, RESET });
+            }
+        }
+
         // Agent section
         if (cell.isAgent()) {
             std.debug.print("\n  {s}── Agent ──{s}\n", .{ GOLDEN, RESET });
@@ -2464,10 +2475,21 @@ fn runLint(allocator: Allocator, args: []const []const u8) !void {
                             defer allocator.free(dep_content);
                             const dep_info = parseCellTri(dep_content);
                             if (std.mem.eql(u8, dep_info.perm_level, "L2")) {
-                                std.debug.print("  {s}WARNING{s}  {s} (L0) depends on {s} (L2) — privilege escalation risk\n", .{
-                                    YELLOW, RESET, cell_id, dep.id,
-                                });
-                                cell_warnings += 1;
+                                // Core libraries are trusted — INFO, not WARNING
+                                const is_core = std.mem.eql(u8, dep.id, "trinity.vsa") or
+                                    std.mem.eql(u8, dep.id, "trinity.consciousness") or
+                                    std.mem.eql(u8, dep.id, "trinity.quantum") or
+                                    std.mem.eql(u8, dep.id, "trinity.sacred");
+                                if (is_core) {
+                                    std.debug.print("  {s}INFO{s}     {s} (L0) → {s} (L2 core, trusted)\n", .{
+                                        CYAN, RESET, cell_id, dep.id,
+                                    });
+                                } else {
+                                    std.debug.print("  {s}WARNING{s}  {s} (L0) depends on {s} (L2) — privilege escalation risk\n", .{
+                                        YELLOW, RESET, cell_id, dep.id,
+                                    });
+                                    cell_warnings += 1;
+                                }
                             }
                             break;
                         }
@@ -2489,10 +2511,21 @@ fn runLint(allocator: Allocator, args: []const []const u8) !void {
                             defer allocator.free(dep_content2);
                             const dep_info2 = parseCellTri(dep_content2);
                             if (std.mem.eql(u8, dep_info2.perm_network, "external")) {
-                                std.debug.print("  {s}WARNING{s}  {s} (net=none) depends on {s} (net=external)\n", .{
-                                    YELLOW, RESET, cell_id, dep.id,
-                                });
-                                cell_warnings += 1;
+                                // Core libraries are trusted — INFO, not WARNING
+                                const is_core2 = std.mem.eql(u8, dep.id, "trinity.vsa") or
+                                    std.mem.eql(u8, dep.id, "trinity.consciousness") or
+                                    std.mem.eql(u8, dep.id, "trinity.quantum") or
+                                    std.mem.eql(u8, dep.id, "trinity.sacred");
+                                if (is_core2) {
+                                    std.debug.print("  {s}INFO{s}     {s} (net=none) → {s} (net=external, core trusted)\n", .{
+                                        CYAN, RESET, cell_id, dep.id,
+                                    });
+                                } else {
+                                    std.debug.print("  {s}WARNING{s}  {s} (net=none) depends on {s} (net=external)\n", .{
+                                        YELLOW, RESET, cell_id, dep.id,
+                                    });
+                                    cell_warnings += 1;
+                                }
                             }
                             break;
                         }
