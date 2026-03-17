@@ -33,7 +33,7 @@ level = "L0"
 filesystem = "read"
 network = "none"
 process = "none"
-ffi = "native"
+ffi = "none"
 concurrency = "none"
 
 [security]

@@ -26,6 +26,7 @@ events = ["on_step_complete", "on_epoch_end", "on_checkpoint"]
 binaries = ["hslm-train", "hslm-bench", "bpe-train"]
 
 [dependencies]
+trinity.data = "^1.0.0"
 trinity.bench = "^1.0.0"
 trinity.consciousness = "^1.0.0"
 trinity.tri.train = "^1.0.0"

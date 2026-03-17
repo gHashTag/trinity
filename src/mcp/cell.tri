@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["needsRestart", "isOverloaded", "calculateDesiredCount", "start", "stop"]
 tri_subcommands = []
 events = []
 binaries = []
@@ -28,7 +28,7 @@ binaries = []
 [permissions]
 level = "L2"
 filesystem = "read"
-network = "external"
+network = "none"
 process = "spawn"
 ffi = "none"
 concurrency = "none"

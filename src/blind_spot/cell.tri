@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["errorFraction", "consciousnessParam", "gravityParam", "compute", "verify"]
 tri_subcommands = []
 events = []
 binaries = []

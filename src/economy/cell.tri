@@ -18,7 +18,7 @@ type = "library"
 
 [contributes]
 commands = []
-exports = []
+exports = ["amountTri", "totalEarnedTri", "totalClaimedTri", "pendingTri", "recordEarned"]
 tri_subcommands = []
 events = []
 binaries = []
