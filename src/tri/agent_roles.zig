@@ -25,6 +25,10 @@ pub const AgentRole = enum {
     // === MEMORY STORES ===
     hippocampus,
 
+    // === SENSORY INPUT (Wave 3) ===
+    cerebellum,
+    hypothalamus,
+
     // === ACTORS / CONTROLLERS ===
     phoenix_core,
     basal_ganglia,
@@ -50,6 +54,8 @@ pub fn roleDescription(role: AgentRole) []const u8 {
         .voice_narrator => "VOICE — Narrator output",
         .thalamus_relay => "THALAMUS — Signal router",
         .hippocampus => "HIPPOCAMPUS — Memory store",
+        .cerebellum => "CEREBELLUM — Cell health monitoring",
+        .hypothalamus => "HYPOTHALAMUS — Metabolism & anomaly detection",
         .phoenix_core => "PHOENIX_CORE — Immune system, executor",
         .basal_ganglia => "BASAL_GANGLIA — Procedural memory (MU)",
         .evolution_events => "EVOLUTION — Events (kill/crash)",
@@ -73,6 +79,8 @@ pub fn roleSymbol(role: AgentRole) []const u8 {
         .voice_narrator => "🗣️",
         .thalamus_relay => "⚛️",
         .hippocampus => "🧠",
+        .cerebellum => "🧠",
+        .hypothalamus => "🌡",
         .phoenix_core => "🧬",
         .basal_ganglia => "🧠",
         .evolution_events => "💀",
@@ -104,6 +112,8 @@ pub fn agentToRole(agent_name: []const u8) AgentRole {
         .{ "scholar", .scholar },
         .{ "muse", .muse },
         .{ "chronos", .chronos },
+        .{ "cerebellum", .cerebellum },
+        .{ "hypothalamus", .hypothalamus },
     };
 
     for (mapping) |entry| {

@@ -10,6 +10,9 @@ const registry_mod = @import("plugin_registry.zig");
 const loader_mod = @import("plugin_loader.zig");
 const manifest_mod = @import("plugin_manifest.zig");
 
+// Trinity global constants
+const tri_const = @import("../../tri/const.zig");
+
 const Plugin = interface.Plugin;
 const PluginKind = interface.PluginKind;
 const PluginRegistry = registry_mod.PluginRegistry;
@@ -536,7 +539,7 @@ pub fn runPluginCommand(allocator: Allocator, args: []const []const u8) !u8 {
 
 /// Scan cell.tri manifests and register each cell as a plugin
 fn loadCellsIntoRegistry(allocator: Allocator, registry: *PluginRegistry) void {
-    const CELL_SCAN_DIRS = [_][]const u8{ "src", "apps", "tools", "fpga", "libs", "specs", "benchmarks", "papers", "data", "contracts" };
+    const CELL_SCAN_DIRS = tri_const.CELL_SCAN_DIRS;
     const cwd = std.fs.cwd();
 
     for (CELL_SCAN_DIRS) |scan_dir| {
