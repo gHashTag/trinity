@@ -279,10 +279,7 @@ pub fn getDashboardForecast(
     ));
 
     for (forecasts) |fc| {
-        const line = try std.fmt.allocPrint(allocator,
-            "| {d} steps | ×{d:.2} | ×{d:.2} | ×{d:.2} | {d:.6} |\n",
-            .{ fc.time_horizon, fc.predicted_multiplier, fc.confidence_min, fc.confidence_max, fc.growth_rate }
-        );
+        const line = try std.fmt.allocPrint(allocator, "| {d} steps | ×{d:.2} | ×{d:.2} | ×{d:.2} | {d:.6} |\n", .{ fc.time_horizon, fc.predicted_multiplier, fc.confidence_min, fc.confidence_max, fc.growth_rate });
         try lines.append(line);
     }
 
@@ -413,7 +410,7 @@ pub fn generatePasForecast(
 
 /// Check if forecast respects PAS sacred bounds
 pub fn validatePasBounds(forecast: *const PasForecast) bool {
-    return pas_forecast.checkSacredBounds(forecast.*;
+    return pas_forecast.checkSacredBounds(forecast.*);
 }
 
 /// Get Trinity score from history

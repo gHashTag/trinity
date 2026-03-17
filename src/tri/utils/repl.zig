@@ -164,7 +164,7 @@ pub fn processInput(state: anytype, input: []const u8) void {
             }
         },
         .Test => {
-            if (state.agent.test(trimmed)) |tests| {
+            if (state.agent.runTest(trimmed)) |tests| {
                 std.debug.print("\n{s}{s}{s}\n\n", .{ WHITE, tests, RESET });
             } else |err| {
                 std.debug.print("{s}Error: {s}{s}\n", .{ RED, @errorName(err), RESET });
