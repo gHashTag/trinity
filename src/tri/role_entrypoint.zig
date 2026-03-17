@@ -19,8 +19,8 @@
 // =============================================================================
 
 const std = @import("std");
-const golden_chain = @import("golden_chain.zig");
-const pipeline_executor = @import("pipeline_executor.zig");
+const golden_chain = @import("dna_polymerase.zig");
+const pipeline_executor = @import("rna_polymerase.zig");
 const handoff = @import("handoff.zig");
 
 const AgentRole = golden_chain.AgentRole;

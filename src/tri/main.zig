@@ -10,11 +10,11 @@ const commands = @import("tri_commands.zig");
 const pipeline = @import("tri_pipeline.zig");
 const demos = @import("tri_demos.zig");
 const tri_context = @import("tri_context.zig");
-const orchestrator = @import("orchestrator_v2_full.zig");
+const orchestrator = @import("hypothalamus.zig");
 const tri_job = @import("tri_job.zig");
 const tri_register = @import("tri_register.zig");
 const sacred_fpga = @import("tri_sacred_fpga.zig");
-const tri_train = @import("tri_train.zig");
+const tri_train = @import("metabolism.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
 const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
@@ -22,7 +22,7 @@ const tri_dev = @import("tri_dev.zig");
 const swe_arena = @import("swe_arena.zig");
 const code_arena = @import("code_arena.zig");
 const spec_template_match = @import("spec_template_match.zig");
-const tri_loop = @import("tri_loop.zig");
+const tri_loop = @import("heartbeat.zig");
 const tri_experience = @import("tri_experience.zig");
 // P2.9: Namespace-aware command parsing
 const tri_namespace = @import("tri_namespace.zig");
@@ -33,7 +33,7 @@ const tri_research = @import("tri_research.zig");
 const tri_experiment = @import("tri_experiment.zig");
 const mu_agent = @import("mu_agent.zig");
 const github_commands = @import("github_commands.zig");
-const faculty_board = @import("faculty_board.zig");
+const faculty_board = @import("cortex.zig");
 // P2.10: Observability layer
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
@@ -388,7 +388,7 @@ pub fn main() !void {
         if (std.mem.eql(u8, first_arg, "ouroboros")) {
             const ouro_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             logAgentCommand(args[arg_idx..]);
-            const tri_ouroboros = @import("tri_ouroboros.zig");
+            const tri_ouroboros = @import("autophagy.zig");
             try tri_ouroboros.runOuroborosCommand(allocator, ouro_args);
             return;
         }
@@ -420,7 +420,7 @@ pub fn main() !void {
         if (std.mem.eql(u8, first_arg, "memory")) {
             const mem_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             logAgentCommand(args[arg_idx..]);
-            const tri_memory = @import("tri_memory.zig");
+            const tri_memory = @import("hippocampus.zig");
             try tri_memory.runMemoryCommand(allocator, mem_args);
             return;
         }
@@ -442,7 +442,7 @@ pub fn main() !void {
         if (std.mem.eql(u8, first_arg, "cell")) {
             const cell_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             logAgentCommand(args[arg_idx..]);
-            const tri_cell = @import("tri_cell.zig");
+            const tri_cell = @import("cytoplasm.zig");
             try tri_cell.runCellCommand(allocator, cell_args);
             return;
         }

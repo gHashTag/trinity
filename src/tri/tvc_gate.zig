@@ -11,7 +11,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const golden_chain = @import("golden_chain.zig");
+const golden_chain = @import("dna_polymerase.zig");
 const tvc_corpus = @import("tvc_corpus");
 
 const TVCCorpus = tvc_corpus.TVCCorpus;

@@ -34,7 +34,7 @@ const cmd_list = @import("tri_cmd_list.zig");
 const mcp_cmd = @import("tri_mcp.zig");
 const sacred_v2 = @import("tri_sacred_v2.zig");
 const sacred_fpga = @import("tri_sacred_fpga.zig");
-const tri_train = @import("tri_train.zig");
+const tri_train = @import("metabolism.zig");
 const tri_zenodo = @import("tri_zenodo.zig");
 
 // Global state pointer (set by main before registration)

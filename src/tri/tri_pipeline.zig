@@ -12,11 +12,11 @@
 
 const std = @import("std");
 const colors = @import("tri_colors.zig");
-const golden_chain = @import("golden_chain.zig");
-const pipeline_executor = @import("pipeline_executor.zig");
+const golden_chain = @import("dna_polymerase.zig");
+const pipeline_executor = @import("rna_polymerase.zig");
 const batch_runner = @import("batch_runner.zig");
 const cost_tracker = @import("cost_tracker.zig");
-const toxic_verdict = @import("toxic_verdict.zig");
+const toxic_verdict = @import("pathology.zig");
 const loop_decide = @import("loop_decide.zig");
 
 const GREEN = colors.GREEN;
