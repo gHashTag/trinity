@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "MU agent: error protocol, learning DB, failure verification"
 capabilities = ["mu", "learning", "errors"]
-tests = 24
+tests = 36
 owner = "agent:ralph"
 
 [tags]

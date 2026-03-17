@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "System health: doctor diagnosis, ouroboros scoring, toxic verdict, strict mode"
 capabilities = ["doctor", "diagnostics", "ouroboros"]
-tests = 23
+tests = 11
 owner = "agent:ralph"
 
 [tags]

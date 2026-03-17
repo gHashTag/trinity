@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "CLI skeleton: main dispatch, command parsing, help, colors, config, completion"
 capabilities = ["cli", "parsing", "help", "completion"]
-tests = 50
+tests = 61
 owner = "agent:ralph"
 
 [tags]
