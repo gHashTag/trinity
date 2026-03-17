@@ -168,6 +168,31 @@ Do NOT just list recommendations — ACT on the highest priority one.
 - NEVER force-push, NEVER commit .env/credentials
 - NEVER delete running services
 
+## Step: GitHub Issue Update (after action)
+
+After auto-action completes, update the relevant GitHub issue with real-time status.
+
+```bash
+# Find the active status tracking issue (or use #357 as default farm tracker)
+TRACKER=$(gh issue list -R gHashTag/trinity --label "status:in-progress" --json number --limit 1 -q '.[0].number' 2>/dev/null || echo "357")
+
+# Post status comment with score, action taken, and current state
+gh issue comment "$TRACKER" --body "## 🐍 Ouroboros Status — $(date +%Y-%m-%d\ %H:%M)
+
+**Score**: {score}/100 ({level})
+**Weakest**: {dimension} ({dim_score}/100)
+**Action**: {what was done}
+**Result**: {outcome}
+**Dirty**: {count} files
+**Farm**: {active} services, leader {name} PPL={ppl}" 2>/dev/null
+```
+
+### Rules:
+- ALWAYS post to GitHub after every /status action — this is the thought graph protocol
+- If no in-progress issue exists, use #357 (farm tracker) as default
+- Comment format must follow Trinity Protocol v2 (emoji + agent + timestamp)
+- Status changes on issues must be visible in realtime — not batched
+
 ## Session Memory
 
 After each `/status` run, note key metrics for next session:
