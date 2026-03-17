@@ -58,7 +58,6 @@ const TrinityMCPServer = struct {
     }
 
     fn writeToolsList(self: *TrinityMCPServer, id_str: []const u8, writer: anytype) !void {
-        _ = self;
         // Build response with id
         var header_buf: [128]u8 = undefined;
         const header = std.fmt.bufPrint(&header_buf, "{{\"jsonrpc\":\"2.0\",\"id\":{s},\"result\":{{\"tools\":[", .{id_str}) catch return;
@@ -267,20 +266,28 @@ const TrinityMCPServer = struct {
             \\{"name":"farm_idle","description":"List idle farm workers","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"farm_recycle","description":"Recycle underperforming farm workers","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"farm_fill","description":"Fill empty farm slots with new experiments","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"farm_accounts","description":"List all 8 Railway farm accounts and their service counts","inputSchema":{"type":"object","properties":{}}},
+            \\{"name":"farm_wave_spawn","description":"Spawn a wave of training workers on a specific account","inputSchema":{"type":"object","properties":{"account":{"type":"string","description":"Account suffix (e.g. 7 or 8)"},"count":{"type":"string","description":"Number of workers (default 24)"}}}},
             \\{"name":"fpga_synth","description":"Run FPGA synthesis pipeline","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"fpga_status","description":"Get FPGA hardware and synthesis status","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"fpga_build","description":"Build FPGA bitstream","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"fpga_verify","description":"Verify FPGA bitstream against RTL","inputSchema":{"type":"object","properties":{}}},
             \\{"name":"fpga_flash","description":"Flash bitstream to FPGA board","inputSchema":{"type":"object","properties":{"bitstream":{"type":"string","description":"Path to bitstream file"}},"required":["bitstream"]}}
-            \\]}}}}
         ;
-        // Combine header (with id) + tools body and send with Content-Length
-        const total_len = header.len + tools_body.len;
+        const footer = "]}}}\n";
+
+        // Load cell-generated tools from data/cells/mcp_tools.json (Honeycomb v7)
+        const cell_tools_raw = loadCellMcpTools(self.allocator);
+
+        // Combine: header + static tools + cell tools + footer
+        const total_len = header.len + tools_body.len + cell_tools_raw.len + footer.len;
         var len_buf: [32]u8 = undefined;
         const cl_header = std.fmt.bufPrint(&len_buf, "Content-Length: {d}\r\n\r\n", .{total_len}) catch return;
         try writer.writeAll(cl_header);
         try writer.writeAll(header);
         try writer.writeAll(tools_body);
+        try writer.writeAll(cell_tools_raw);
+        try writer.writeAll(footer);
     }
 
     fn handleToolsCall(self: *TrinityMCPServer, tool_name: []const u8, arguments_json: []const u8, writer: anytype) !void {
@@ -1282,6 +1289,12 @@ const TrinityMCPServer = struct {
             try writeJsonResponse(writer, devops.farmRecycle(&buf), false);
         } else if (std.mem.eql(u8, tool_name, "farm_fill")) {
             try writeJsonResponse(writer, devops.farmFill(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "farm_accounts")) {
+            try writeJsonResponse(writer, devops.farmAccounts(&buf), false);
+        } else if (std.mem.eql(u8, tool_name, "farm_wave_spawn")) {
+            const account = extractStringField(arguments_json, "account") orelse "7";
+            const count = extractStringField(arguments_json, "count") orelse "24";
+            try writeJsonResponse(writer, devops.farmWaveSpawn(&buf, account, count), false);
         } else {
             try writeJsonResponse(writer, "Error: Unknown devops tool", true);
         }
@@ -1996,6 +2009,29 @@ fn processMessage(server: *TrinityMCPServer, request: []const u8, writer: anytyp
 }
 
 /// Extract the "id" field from a JSON-RPC request (returns the raw JSON value)
+// =============================================================================
+// CELL MCP TOOLS — Auto-load from data/cells/mcp_tools.json (Honeycomb v7)
+// =============================================================================
+
+/// Load cell-generated MCP tool definitions from data/cells/mcp_tools.json.
+/// Returns a string fragment to append after static tools: ",{tool1},{tool2}..."
+/// Returns empty string if file doesn't exist or is invalid.
+fn loadCellMcpTools(allocator: std.mem.Allocator) []const u8 {
+    const content = std.fs.cwd().readFileAlloc(allocator, "data/cells/mcp_tools.json", 524288) catch return "";
+
+    // Find the tools array content between "tools":[ and ]
+    const tools_start = std.mem.indexOf(u8, content, "[") orelse return "";
+    const tools_end = std.mem.lastIndexOf(u8, content, "]") orelse return "";
+    if (tools_end <= tools_start + 1) return ""; // Empty array
+
+    const tools_inner = std.mem.trim(u8, content[tools_start + 1 .. tools_end], " \n\r\t");
+    if (tools_inner.len == 0) return "";
+
+    // Prepend comma to separate from static tools
+    const result = std.fmt.allocPrint(allocator, ",{s}", .{tools_inner}) catch return "";
+    return result;
+}
+
 fn extractJsonId(json: []const u8) []const u8 {
     const id_key = "\"id\":";
     const id_start = std.mem.indexOf(u8, json, id_key) orelse return "null";
