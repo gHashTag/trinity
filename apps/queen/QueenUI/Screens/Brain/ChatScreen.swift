@@ -24,11 +24,20 @@ struct ChatScreen: View {
     @State private var mentionQuery = ""
     @State private var showSidebar = true
     @State private var showModelPopover = false
+    @State private var slashCommandResult: String? = nil
     @AppStorage("stylePreset") private var stylePresetRaw: String = StylePreset.concise.rawValue
+    @AppStorage("effortLevel") private var effortLevelRaw: String = EffortLevel.medium.rawValue
+    @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @FocusState private var focused: Bool
 
     private var stylePreset: StylePreset {
         get { StylePreset(rawValue: stylePresetRaw) ?? .concise }
+    }
+
+    private var effortLevel: EffortLevel {
+        get { EffortLevel(rawValue: effortLevelRaw) ?? .medium }
+        set { effortLevelRaw = newValue.rawValue }
     }
 
     private var thread: ChatThread? {
@@ -195,7 +204,7 @@ struct ChatScreen: View {
                                                     StreamingElapsedTimer()
                                                 } else if thread?.messages.last?.text.isEmpty ?? false {
                                                     ThinkingDots()
-                                                    Text("Thinking...")
+                                                    SpinnerVerb()
                                                         .font(.caption)
                                                         .foregroundStyle(TrinityTheme.textMuted)
                                                 }
@@ -250,6 +259,25 @@ struct ChatScreen: View {
                                         }
                                         .padding(.vertical, 12)
                                         .transition(.opacity)
+                                    }
+
+                                    // Tool execution timeline
+                                    if !client.activeToolCalls.isEmpty {
+                                        ToolTimeline(steps: client.activeToolCalls)
+                                            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+                                    }
+
+                                    // Follow-up suggestions (after response)
+                                    if !client.isStreaming && !client.followUpSuggestions.isEmpty {
+                                        FollowUpSuggestions(
+                                            suggestions: client.followUpSuggestions,
+                                            onSelect: { suggestion in
+                                                input = suggestion
+                                                send()
+                                                client.followUpSuggestions = []
+                                            }
+                                        )
+                                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
                                     }
 
                                     Color.clear.frame(height: 1).id("bottom")
@@ -352,7 +380,7 @@ struct ChatScreen: View {
                     )
                 }
             }
-            .animation(.easeInOut(duration: 0.2), value: commentingMessage != nil)
+            .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: commentingMessage != nil)
 
             // Shortcuts overlay
             if showShortcuts {
@@ -381,7 +409,7 @@ struct ChatScreen: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: showComparison)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: showComparison)
         .background(Color.black)
         .onAppear {
             if store.threads.isEmpty { store.newThread() }
@@ -390,6 +418,7 @@ struct ChatScreen: View {
             Task { @MainActor in
                 NotificationService.shared.requestPermission()
                 NetworkLog.shared.checkAllProviders()
+                store.cleanupOldThreads()
             }
             startHealthRefreshTimer()
         }
@@ -428,6 +457,139 @@ struct ChatScreen: View {
 
     @ViewBuilder
     private var inputAreaContent: some View {
+        // Slash command result banner
+        if let result = slashCommandResult {
+            HStack(spacing: 8) {
+                Image(systemName: "terminal")
+                    .font(.system(size: 11))
+                    .foregroundStyle(TrinityTheme.accent)
+                Text(result)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(TrinityTheme.textPrimary)
+                Spacer()
+                Button {
+                    slashCommandResult = nil
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 9))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(TrinityTheme.accent.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal, 60)
+            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+        }
+
+        // Slash command autocomplete
+        if input.hasPrefix("/") && !input.contains(" ") && input.count > 1 {
+            let query = input.lowercased()
+            let matches = SlashCommand.allCases.filter { $0.rawValue.hasPrefix(query) }
+            if !matches.isEmpty {
+                HStack(spacing: 6) {
+                    ForEach(matches, id: \.rawValue) { cmd in
+                        Button {
+                            input = cmd.rawValue + " "
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: cmd.icon)
+                                    .font(.system(size: 10))
+                                Text(cmd.rawValue)
+                                    .font(.system(size: 11, weight: .medium))
+                            }
+                            .foregroundStyle(Color.white.opacity(0.7))
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.white.opacity(0.06))
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, 60)
+                .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
+            }
+        }
+
+        // Offline queue banner
+        if client.offlineQueueCount > 0 {
+            OfflineQueueBanner(
+                count: client.offlineQueueCount,
+                onCancelAll: {
+                    for q in client.offlineQueue {
+                        client.cancelQueued(q.id)
+                    }
+                }
+            )
+        }
+
+        // Provider recovery notification
+        if let recovered = NetworkLog.shared.recoveredProviders.first {
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(TrinityTheme.statusOK)
+                Text("\(recovered) is back online")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(TrinityTheme.statusOK)
+                Spacer()
+                if modelManager.selectedModel.provider.rawValue != recovered {
+                    Button {
+                        if let model = modelManager.availableModels.first(where: { $0.provider.rawValue == recovered }) {
+                            modelManager.selectedModel = model
+                            modelManager.persistSelection()
+                        }
+                    } label: {
+                        Text("Switch back")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.black)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(TrinityTheme.statusOK)
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+                Button {
+                    NetworkLog.shared.recoveredProviders.removeAll { $0 == recovered }
+                } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 9))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 6)
+            .background(TrinityTheme.statusOK.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal, 60)
+            .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
+        }
+
+        // Rejection feedback inline
+        if let rejection = client.showRejectionFeedback,
+           let threadID = store.activeThreadID, rejection.threadID == threadID {
+            RejectionFeedbackView(
+                onSubmit: { feedback in
+                    client.resendWithFeedback(
+                        feedback,
+                        originalMessageID: rejection.messageID,
+                        threadID: rejection.threadID,
+                        store: store,
+                        modelManager: modelManager
+                    )
+                },
+                onDismiss: {
+                    client.showRejectionFeedback = nil
+                }
+            )
+        }
+
         // Context overflow warning
         if estimatedTokens > 144_000 { // 80% of 180K
             ContextOverflowBanner(
@@ -647,6 +809,39 @@ struct ChatScreen: View {
 
             Spacer()
 
+            // Effort level picker
+            Menu {
+                ForEach(EffortLevel.allCases) { level in
+                    Button {
+                        effortLevelRaw = level.rawValue
+                        client.effortLevel = level
+                    } label: {
+                        HStack {
+                            Image(systemName: level.icon)
+                            Text(level.rawValue)
+                            if effortLevel == level {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 3) {
+                    Image(systemName: effortLevel.icon)
+                        .font(.system(size: 10))
+                    Text(effortLevel.rawValue)
+                        .font(.system(size: 10, weight: .medium))
+                }
+                .foregroundStyle(effortLevel.color)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(effortLevel.color.opacity(0.12))
+                .clipShape(Capsule())
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+            .help("Effort level: controls reasoning depth")
+
             // Style preset picker
             Menu {
                 ForEach(StylePreset.allCases) { preset in
@@ -689,6 +884,30 @@ struct ChatScreen: View {
         var text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !client.isStreaming else { return }
 
+        // Slash command handling
+        var effortLevelVar = effortLevel
+        var chatModeVar = chatMode
+        if client.executeSlashCommand(
+            text,
+            store: store,
+            modelManager: modelManager,
+            effortBinding: &effortLevelVar,
+            chatModeBinding: &chatModeVar,
+            onResult: { result in
+                slashCommandResult = result
+                // Auto-dismiss after 3s
+                Task { @MainActor in
+                    try? await Task.sleep(for: .seconds(3))
+                    slashCommandResult = nil
+                }
+            }
+        ) {
+            effortLevelRaw = effortLevelVar.rawValue
+            chatMode = chatModeVar
+            input = ""
+            return
+        }
+
         // Compare mode: open side-by-side view instead of sending
         if chatMode == .compare {
             comparisonPrompt = text
@@ -708,9 +927,16 @@ struct ChatScreen: View {
         input = ""
         // Clear draft on send
         UserDefaults.standard.removeObject(forKey: "draft_\(threadID)")
-        // Sync style preset
+        // Sync style preset and effort level
         client.stylePreset = stylePreset
+        client.effortLevel = effortLevel
         client.send(text, threadID: threadID, store: store, modelManager: modelManager, mode: chatMode, modelOverride: modelOverride)
+
+        // Auto-compaction check after send
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1))
+            client.checkAutoCompaction(threadID: threadID, store: store, modelManager: modelManager)
+        }
     }
 
     private func sendWithModel(_ model: AIModel) {
@@ -883,6 +1109,9 @@ struct ChatScreen: View {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(60))
                 NetworkLog.shared.checkAllProviders()
+                // Check for provider recovery after health check
+                try? await Task.sleep(for: .seconds(3))
+                NetworkLog.shared.checkRecovery()
             }
         }
     }
@@ -1010,6 +1239,9 @@ struct ConnectionStatusBar: View {
 
             // Rate limit predictor warning
             RateLimitWarning(modelManager: modelManager)
+
+            // Branch pill (CTO context)
+            BranchPill()
         }
         .onAppear { checkConnection() }
         .onChange(of: client.failoverEvent) {
@@ -1506,12 +1738,16 @@ struct MessageActionBar: View {
 
                 actionButton(
                     "hand.thumbsdown\(isLiked == false ? ".fill" : "")",
-                    tooltip: "Dislike",
+                    tooltip: "Dislike — tell Queen what to do instead",
                     active: isLiked == false
                 ) {
                     guard let threadID = store.activeThreadID else { return }
                     let newVal: Bool? = (isLiked == false) ? nil : false
                     store.toggleLike(message.id, liked: newVal, in: threadID)
+                    // Show rejection feedback input
+                    if newVal == false {
+                        client.showRejectionFeedback = (messageID: message.id, threadID: threadID)
+                    }
                 }
             }
 
@@ -1809,13 +2045,26 @@ struct MultilineInput: NSViewRepresentable {
 
         func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
             if commandSelector == #selector(NSResponder.insertNewline(_:)) {
-                // Shift+Enter = newline, Enter = send
-                if NSEvent.modifierFlags.contains(.shift) {
+                let useCtrlEnter = UserDefaults.standard.bool(forKey: "useCtrlEnterToSend")
+                let modifiers = NSEvent.modifierFlags
+
+                if useCtrlEnter {
+                    // Ctrl+Enter mode: Ctrl+Enter = send, Enter = newline
+                    if modifiers.contains(.control) {
+                        onSubmit()
+                        return true
+                    }
                     textView.insertNewlineIgnoringFieldEditor(nil)
                     return true
+                } else {
+                    // Default mode: Enter = send, Shift+Enter = newline
+                    if modifiers.contains(.shift) {
+                        textView.insertNewlineIgnoringFieldEditor(nil)
+                        return true
+                    }
+                    onSubmit()
+                    return true
                 }
-                onSubmit()
-                return true
             }
             return false
         }
@@ -2551,6 +2800,12 @@ struct RateLimitWarning: View {
                 Text("\(w.provider): \(w.remaining) requests left")
                     .font(.system(size: 10, weight: .medium))
 
+                if let eta = networkLog.rateLimitETA(w.provider) {
+                    Text("(~\(eta) min)")
+                        .font(.system(size: 9, design: .monospaced))
+                        .foregroundStyle(eta < 5 ? TrinityTheme.statusError : TrinityTheme.statusWarn)
+                }
+
                 if let fallback = modelManager.failoverModel() {
                     Button {
                         modelManager.selectedModel = fallback
@@ -2578,5 +2833,305 @@ struct RateLimitWarning: View {
             .padding(.vertical, 4)
             .background(TrinityTheme.statusWarn.opacity(0.06))
         }
+    }
+}
+
+// MARK: - Branch Pill (shows current git branch)
+
+struct BranchPill: View {
+    @State private var branch: String = ""
+
+    var body: some View {
+        Group {
+            if !branch.isEmpty && branch != "main" {
+                HStack(spacing: 4) {
+                    Image(systemName: "arrow.triangle.branch")
+                        .font(.system(size: 8))
+                    Text(branch)
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                }
+                .foregroundStyle(TrinityTheme.purple)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(TrinityTheme.purple.opacity(0.1))
+                .clipShape(Capsule())
+                .padding(.horizontal, 16)
+                .padding(.vertical, 2)
+            }
+        }
+        .onAppear {
+            Task { @MainActor in
+                let repo = RepoContext()
+                branch = repo.currentBranch()
+            }
+        }
+    }
+}
+
+// MARK: - Follow-up Suggestions (after response)
+
+struct FollowUpSuggestions: View {
+    let suggestions: [String]
+    var onSelect: (String) -> Void
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(suggestions, id: \.self) { suggestion in
+                    Button {
+                        onSelect(suggestion)
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.turn.down.right")
+                                .font(.system(size: 9))
+                            Text(suggestion)
+                                .font(.system(size: 11, weight: .medium))
+                        }
+                        .foregroundStyle(Color.white.opacity(0.7))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color.white.opacity(0.06))
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Rejection Feedback (tell Queen what to do instead)
+
+struct RejectionFeedbackView: View {
+    @State private var feedback = ""
+    @FocusState private var isFocused: Bool
+    var onSubmit: (String) -> Void
+    var onDismiss: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Image(systemName: "hand.thumbsdown.fill")
+                    .font(.system(size: 12))
+                    .foregroundStyle(TrinityTheme.statusError)
+                Text("Tell Queen what to do instead:")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundStyle(TrinityTheme.textPrimary)
+                Spacer()
+                Button { onDismiss() } label: {
+                    Image(systemName: "xmark")
+                        .font(.system(size: 10))
+                        .foregroundStyle(Color.white.opacity(0.3))
+                }
+                .buttonStyle(.plain)
+            }
+
+            HStack(spacing: 8) {
+                TextField("e.g. Be more concise, use code examples...", text: $feedback)
+                    .textFieldStyle(.plain)
+                    .font(.system(size: 13))
+                    .foregroundStyle(Color.white)
+                    .padding(8)
+                    .background(Color.white.opacity(0.06))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .focused($isFocused)
+                    .onSubmit {
+                        guard !feedback.isEmpty else { return }
+                        onSubmit(feedback)
+                    }
+
+                Button {
+                    guard !feedback.isEmpty else { return }
+                    onSubmit(feedback)
+                } label: {
+                    Text("Resend")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(TrinityTheme.statusError)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(12)
+        .background(TrinityTheme.statusError.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.horizontal, 60)
+        .onAppear { isFocused = true }
+    }
+}
+
+// MARK: - Spinner Verb (dynamic loading text)
+
+struct SpinnerVerb: View {
+    @State private var verbIndex = 0
+    private let verbs = [
+        "Thinking...",
+        "Analyzing context...",
+        "Crafting response...",
+        "Reading project state...",
+        "Considering options...",
+        "Preparing answer...",
+    ]
+
+    var body: some View {
+        Text(verbs[verbIndex % verbs.count])
+            .onAppear {
+                Task { @MainActor in
+                    while !Task.isCancelled {
+                        try? await Task.sleep(for: .seconds(2.5))
+                        verbIndex += 1
+                    }
+                }
+            }
+    }
+}
+
+// MARK: - Tool Execution Timeline
+
+struct ToolTimeline: View {
+    let steps: [ChatClient.ToolCallStep]
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            ForEach(steps) { step in
+                HStack(spacing: 8) {
+                    // Status icon
+                    Group {
+                        switch step.status {
+                        case .running:
+                            ProgressView()
+                                .scaleEffect(0.5)
+                                .frame(width: 12, height: 12)
+                        case .success:
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(TrinityTheme.statusOK)
+                        case .error:
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.system(size: 11))
+                                .foregroundStyle(TrinityTheme.statusError)
+                        }
+                    }
+                    .frame(width: 14)
+
+                    // Tool name
+                    Text(step.name)
+                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                        .foregroundStyle(TrinityTheme.accent)
+
+                    // Args
+                    Text(step.args)
+                        .font(.system(size: 10, design: .monospaced))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                        .lineLimit(1)
+
+                    Spacer()
+
+                    // Duration
+                    let elapsed = Date().timeIntervalSince(step.startTime)
+                    if elapsed > 0.5 {
+                        Text(String(format: "%.1fs", elapsed))
+                            .font(.system(size: 9, design: .monospaced))
+                            .foregroundStyle(TrinityTheme.textMuted)
+                    }
+                }
+            }
+        }
+        .padding(8)
+        .background(TrinityTheme.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Offline Queue Banner
+
+struct OfflineQueueBanner: View {
+    let count: Int
+    var onCancelAll: () -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "wifi.slash")
+                .font(.system(size: 12))
+                .foregroundStyle(TrinityTheme.statusWarn)
+            Text("\(count) message\(count == 1 ? "" : "s") queued")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundStyle(TrinityTheme.statusWarn)
+            Text("Will send when provider is back")
+                .font(.system(size: 10))
+                .foregroundStyle(TrinityTheme.textMuted)
+            Spacer()
+            Button {
+                onCancelAll()
+            } label: {
+                Text("Cancel All")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(TrinityTheme.statusError)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(TrinityTheme.statusError.opacity(0.12))
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(TrinityTheme.statusWarn.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal, 60)
+    }
+}
+
+// MARK: - Elicitation Card (Queen asks structured questions)
+
+struct ElicitationCard: View {
+    let question: String
+    let options: [String]
+    var onSelect: (String) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 6) {
+                Image(systemName: "questionmark.circle.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(TrinityTheme.purple)
+                Text(question)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(TrinityTheme.textPrimary)
+            }
+
+            HStack(spacing: 8) {
+                ForEach(options, id: \.self) { option in
+                    Button {
+                        onSelect(option)
+                    } label: {
+                        Text(option)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(Color.white.opacity(0.8))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(TrinityTheme.purple.opacity(0.15))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule()
+                                    .stroke(TrinityTheme.purple.opacity(0.3), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(12)
+        .background(TrinityTheme.purple.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
