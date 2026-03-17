@@ -340,6 +340,48 @@ pub fn writeEpisode(allocator: Allocator, agent_name: []const u8, summary_text: 
     try write(allocator, &record);
 }
 
+pub fn writeError(allocator: Allocator, agent_name: []const u8, summary_text: []const u8, data_json: []const u8) !void {
+    var record = MemoryRecord{};
+    const ts: u64 = @intCast(std.time.timestamp());
+    generateId(&record.id_buf, &record.id_len, ts, agent_name);
+    copyToFixed(32, &record.agent_buf, &record.agent_len, agent_name);
+    record.kind = .@"error";
+    record.ts = ts;
+    record.ttl = MemoryKind.@"error".defaultTtl();
+    copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+    copyToFixed(256, &record.summary_buf, &record.summary_len, summary_text);
+
+    try write(allocator, &record);
+}
+
+pub fn writeObservation(allocator: Allocator, agent_name: []const u8, summary_text: []const u8, data_json: []const u8) !void {
+    var record = MemoryRecord{};
+    const ts: u64 = @intCast(std.time.timestamp());
+    generateId(&record.id_buf, &record.id_len, ts, agent_name);
+    copyToFixed(32, &record.agent_buf, &record.agent_len, agent_name);
+    record.kind = .observation;
+    record.ts = ts;
+    record.ttl = MemoryKind.observation.defaultTtl();
+    copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+    copyToFixed(256, &record.summary_buf, &record.summary_len, summary_text);
+
+    try write(allocator, &record);
+}
+
+pub fn writeRule(allocator: Allocator, agent_name: []const u8, summary_text: []const u8, data_json: []const u8) !void {
+    var record = MemoryRecord{};
+    const ts: u64 = @intCast(std.time.timestamp());
+    generateId(&record.id_buf, &record.id_len, ts, agent_name);
+    copyToFixed(32, &record.agent_buf, &record.agent_len, agent_name);
+    record.kind = .rule;
+    record.ts = ts;
+    record.ttl = 0; // permanent
+    copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+    copyToFixed(256, &record.summary_buf, &record.summary_len, summary_text);
+
+    try write(allocator, &record);
+}
+
 pub fn latestHeartbeat(allocator: Allocator, agent_name: []const u8) !?MemoryRecord {
     var results = try read(allocator, .{
         .agent = agent_name,
@@ -653,6 +695,10 @@ pub fn runMemoryCommand(allocator: Allocator, args: []const []const u8) !void {
         return runMemoryGc(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "stats")) {
         return runMemoryStats(allocator);
+    } else if (std.mem.eql(u8, subcmd, "dashboard")) {
+        return runMemoryDashboard(allocator);
+    } else if (std.mem.eql(u8, subcmd, "consolidate")) {
+        return runMemoryConsolidate(allocator);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -934,6 +980,149 @@ fn runMemoryStats(allocator: Allocator) !void {
     print("\n", .{});
 }
 
+fn runMemoryDashboard(allocator: Allocator) !void {
+    print("\n{s}🧠 HIPPOCAMPUS DASHBOARD{s}\n", .{ BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
+
+    // Collect per-agent stats
+    var dir = std.fs.cwd().openDir(MEMORY_ROOT, .{ .iterate = true }) catch {
+        print("{s}No memory store found at {s}{s}\n", .{ YELLOW, MEMORY_ROOT, RESET });
+        return;
+    };
+    defer dir.close();
+
+    const now_ts: u64 = @intCast(std.time.timestamp());
+
+    print("\n{s}  Agent                Records   Last Active{s}\n", .{ BOLD, RESET });
+    print("{s}  ─────────────────────────────────────────────{s}\n", .{ DIM, RESET });
+
+    var total_records: u32 = 0;
+    var dir_iter = dir.iterate();
+    while (try dir_iter.next()) |entry| {
+        if (entry.kind != .directory) continue;
+
+        var agent_results = try read(allocator, .{ .agent = entry.name, .limit = 10000 });
+        defer agent_results.deinit(allocator);
+
+        const count: u32 = @intCast(agent_results.items.len);
+        total_records += count;
+
+        // Find most recent timestamp
+        var last_ts: u64 = 0;
+        for (agent_results.items) |rec| {
+            if (rec.ts > last_ts) last_ts = rec.ts;
+        }
+
+        var age_buf: [16]u8 = undefined;
+        const age_str = if (last_ts > 0) blk: {
+            const age_s = if (now_ts > last_ts) now_ts - last_ts else 0;
+            if (age_s < 60) break :blk std.fmt.bufPrint(&age_buf, "{d}s ago", .{age_s}) catch "?";
+            if (age_s < 3600) break :blk std.fmt.bufPrint(&age_buf, "{d}m ago", .{age_s / 60}) catch "?";
+            if (age_s < 86400) break :blk std.fmt.bufPrint(&age_buf, "{d}h ago", .{age_s / 3600}) catch "?";
+            break :blk std.fmt.bufPrint(&age_buf, "{d}d ago", .{age_s / 86400}) catch "?";
+        } else "never";
+
+        print("  {s}{s:<20}{s}  {d:>5}     {s}\n", .{
+            CYAN, entry.name, RESET, count, age_str,
+        });
+    }
+
+    print("{s}  ─────────────────────────────────────────────{s}\n", .{ DIM, RESET });
+    print("  {s}TOTAL:{s}               {d:>5}\n", .{ BOLD, RESET, total_records });
+
+    // Recent learnings
+    var learnings = try read(allocator, .{ .kind = .learning, .limit = 3 });
+    defer learnings.deinit(allocator);
+    if (learnings.items.len > 0) {
+        print("\n{s}  Recent Learnings:{s}\n", .{ BOLD, RESET });
+        for (learnings.items) |rec| {
+            print("    {s}•{s} {s} {s}({s}){s}\n", .{ GREEN, RESET, rec.summary(), DIM, rec.agent(), RESET });
+        }
+    }
+
+    // Recent errors
+    var errors = try read(allocator, .{ .kind = .@"error", .limit = 3 });
+    defer errors.deinit(allocator);
+    if (errors.items.len > 0) {
+        print("\n{s}  Recent Errors:{s}\n", .{ BOLD, RESET });
+        for (errors.items) |rec| {
+            print("    {s}•{s} {s} {s}({s}){s}\n", .{ RED, RESET, rec.summary(), DIM, rec.agent(), RESET });
+        }
+    }
+
+    print("\n", .{});
+}
+
+fn runMemoryConsolidate(allocator: Allocator) !void {
+    print("\n{s}🧠 HIPPOCAMPUS CONSOLIDATION{s}\n", .{ BOLD, RESET });
+    print("{s}═══════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    const now_ts: u64 = @intCast(std.time.timestamp());
+    const week_ago = now_ts -| (7 * 24 * 3600);
+
+    // Read all episodes older than 7 days
+    var all_episodes = try read(allocator, .{ .kind = .episode, .limit = 10000 });
+    defer all_episodes.deinit(allocator);
+
+    // Group old episodes by agent
+    const AgentStats = struct {
+        name: [32]u8 = undefined,
+        name_len: u8 = 0,
+        count: u32 = 0,
+    };
+    var agent_stats: [32]AgentStats = undefined;
+    var agent_count: usize = 0;
+
+    var old_count: u32 = 0;
+    for (all_episodes.items) |rec| {
+        if (rec.ts >= week_ago) continue; // skip recent
+        old_count += 1;
+
+        // Find or create agent entry
+        var found = false;
+        for (agent_stats[0..agent_count]) |*stat| {
+            if (std.mem.eql(u8, stat.name[0..stat.name_len], rec.agent())) {
+                stat.count += 1;
+                found = true;
+                break;
+            }
+        }
+        if (!found and agent_count < 32) {
+            agent_stats[agent_count] = .{};
+            copyToFixed(32, &agent_stats[agent_count].name, &agent_stats[agent_count].name_len, rec.agent());
+            agent_stats[agent_count].count = 1;
+            agent_count += 1;
+        }
+    }
+
+    if (old_count == 0) {
+        print("  {s}No episodes older than 7 days to consolidate.{s}\n\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    // Generate summary rules for each agent
+    var rules_created: u32 = 0;
+    for (agent_stats[0..agent_count]) |stat| {
+        var summary_buf: [256]u8 = undefined;
+        const agent_name = stat.name[0..stat.name_len];
+        const rule_summary = std.fmt.bufPrint(&summary_buf, "Weekly consolidation: {s} had {d} episodes", .{
+            agent_name, stat.count,
+        }) catch continue;
+
+        var data_buf2: [512]u8 = undefined;
+        const rule_data = std.fmt.bufPrint(&data_buf2, "{{\"agent\":\"{s}\",\"episode_count\":{d},\"period\":\"week\",\"consolidated_at\":{d}}}", .{
+            agent_name, stat.count, now_ts,
+        }) catch continue;
+
+        writeRule(allocator, "consolidation", rule_summary, rule_data) catch continue;
+        rules_created += 1;
+        print("  {s}✅{s} {s}: {d} episodes → rule\n", .{ GREEN, RESET, agent_name, stat.count });
+    }
+
+    print("\n  {s}Consolidated:{s} {d} old episodes → {d} rules\n", .{ BOLD, RESET, old_count, rules_created });
+    print("  {s}Note: Old episodes will be cleaned up by GC when TTL expires.{s}\n\n", .{ DIM, RESET });
+}
+
 fn kindColor(kind: MemoryKind) []const u8 {
     return switch (kind) {
         .heartbeat => GREEN,
@@ -951,12 +1140,14 @@ fn printHelp() void {
         \\{s}TRI MEMORY{s} — Unified Agent Memory Store
         \\
         \\{s}Usage:{s}
-        \\  tri memory list   [--agent <name>] [--kind <kind>] [--tag <tag>] [--limit N]
-        \\  tri memory read   <id>
-        \\  tri memory write  --agent <name> --kind <kind> --summary "text" [--data '{{}}'] [--tag <tag>] [--ttl <sec>]
-        \\  tri memory search <query> [--limit N]
-        \\  tri memory gc     [--agent <name>] [--dry-run]
+        \\  tri memory list        [--agent <name>] [--kind <kind>] [--tag <tag>] [--limit N]
+        \\  tri memory read        <id>
+        \\  tri memory write       --agent <name> --kind <kind> --summary "text" [--data '{{}}'] [--tag <tag>] [--ttl <sec>]
+        \\  tri memory search      <query> [--limit N]
+        \\  tri memory gc          [--agent <name>] [--dry-run]
         \\  tri memory stats
+        \\  tri memory dashboard   Visual summary of all agents and recent activity
+        \\  tri memory consolidate Summarize old episodes into permanent rules
         \\
         \\{s}Kinds:{s} heartbeat, learning, episode, rule, error, observation
         \\{s}Agents:{s} mu, scholar, phoenix-core, queen, oracle, system

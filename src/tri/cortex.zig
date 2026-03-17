@@ -554,6 +554,31 @@ fn renderRaw(ctx: RawContext, buf: []u8) usize {
         append(buf, &pos, "agent_{s}={s}\n", .{ @tagName(a.agent), @tagName(a.status) });
     }
 
+    // === Hippocampus Memory ===
+    {
+        const pa = std.heap.page_allocator;
+        if (hippocampus.read(pa, .{ .kind = .episode, .limit = 3 })) |episodes| {
+            var ep = episodes;
+            defer ep.deinit(pa);
+            append(buf, &pos, "recent_episodes={d}\n", .{ep.items.len});
+        } else |_| {}
+        if (hippocampus.read(pa, .{ .kind = .learning, .limit = 3 })) |learnings| {
+            var lr = learnings;
+            defer lr.deinit(pa);
+            append(buf, &pos, "recent_learnings={d}\n", .{lr.items.len});
+        } else |_| {}
+        if (hippocampus.read(pa, .{ .kind = .@"error", .limit = 3 })) |errors| {
+            var er = errors;
+            defer er.deinit(pa);
+            append(buf, &pos, "recent_errors={d}\n", .{er.items.len});
+        } else |_| {}
+        if (hippocampus.read(pa, .{ .limit = 100000 })) |all| {
+            var a = all;
+            defer a.deinit(pa);
+            append(buf, &pos, "memory_total={d}\n", .{a.items.len});
+        } else |_| {}
+    }
+
     return pos;
 }
 

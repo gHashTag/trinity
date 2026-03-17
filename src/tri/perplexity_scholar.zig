@@ -8,6 +8,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const hippocampus = @import("hippocampus.zig");
 
 // ============================================================================
 // CONSTANTS
@@ -153,6 +154,15 @@ pub const PerplexityScholar = struct {
 
         // Parse response JSON to extract answer
         const answer = try self.parseResponse(response_body);
+
+        // Dual-write: research result → hippocampus (permanent learning)
+        var scholar_summary_buf: [256]u8 = undefined;
+        const scholar_summary = std.fmt.bufPrint(&scholar_summary_buf, "scholar: {s}", .{
+            question[0..@min(question.len, 200)],
+        }) catch "";
+        if (scholar_summary.len > 0) {
+            hippocampus.writeLearning(self.allocator, "scholar", scholar_summary, answer) catch {};
+        }
 
         return ResearchResult{
             .answer = answer,

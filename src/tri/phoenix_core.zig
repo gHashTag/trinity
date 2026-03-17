@@ -172,6 +172,9 @@ pub const PhoenixCore = struct {
         try self.loadPhoenixStatus();
         try self.loadFixPlan();
 
+        // Query hippocampus for recent errors → convert to tasks
+        try self.queryHippocampusErrors();
+
         // Analyze current state
         self.status.state = .analyzing;
         const next_task = try self.selectNextTask();
@@ -301,6 +304,46 @@ pub const PhoenixCore = struct {
 
                 task_idx += 1;
             }
+        }
+    }
+
+    /// Query hippocampus for recent errors and create tasks for them
+    fn queryHippocampusErrors(self: *PhoenixCore) !void {
+        var errors = hippocampus.read(self.allocator, .{
+            .kind = .@"error",
+            .limit = 5,
+        }) catch return;
+        defer errors.deinit(self.allocator);
+
+        for (errors.items) |err| {
+            // Deduplicate: skip if we already have a task with similar summary
+            var duplicate = false;
+            for (self.tasks.items) |existing| {
+                if (std.mem.indexOf(u8, existing.description, err.summary()) != null) {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (duplicate) continue;
+
+            var id_buf: [32]u8 = undefined;
+            const task_id = std.fmt.bufPrint(&id_buf, "HIPP-ERR-{d}", .{err.ts}) catch continue;
+            const id_copy = self.allocator.dupe(u8, task_id) catch continue;
+            const desc_copy = self.allocator.dupe(u8, err.summary()) catch {
+                self.allocator.free(id_copy);
+                continue;
+            };
+
+            self.tasks.append(self.allocator, PhoenixTask{
+                .id = id_copy,
+                .description = desc_copy,
+                .priority = .p2_high,
+                .status = .pending,
+                .tech_tree_id = null,
+                .acceptance_criteria = self.allocator.dupe(u8, "") catch continue,
+                .files = .{},
+                .blocked_by = .{},
+            }) catch continue;
         }
     }
 
