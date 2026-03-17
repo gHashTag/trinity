@@ -21,10 +21,10 @@
 // ============================================================================
 
 const std = @import("std");
-const golden_chain = @import("golden_chain.zig");
+const golden_chain = @import("dna_polymerase.zig");
 const SacredConstants = @import("sacred").math;
 
-pub const PipelineExecutor = @import("pipeline_executor.zig").PipelineExecutor;
+pub const PipelineExecutor = @import("rna_polymerase.zig").PipelineExecutor;
 pub const ChainError = golden_chain.ChainError;
 pub const LinkMetrics = golden_chain.LinkMetrics;
 

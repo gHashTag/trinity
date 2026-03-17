@@ -14,7 +14,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const cell_parser = @import("tri_cell_parser.zig");
+const cell_parser = @import("ribosome.zig");
 const colors = @import("tri_colors.zig");
 
 const Allocator = std.mem.Allocator;

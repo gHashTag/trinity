@@ -729,7 +729,7 @@ pub fn runDistributedCommand(allocator: std.mem.Allocator, args: []const []const
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runDoctorCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    const tri_doctor = @import("tri_doctor.zig");
+    const tri_doctor = @import("leukocyte.zig");
 
     if (args.len == 0) {
         // Backward compatible: no args → status

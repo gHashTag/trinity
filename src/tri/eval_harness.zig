@@ -10,7 +10,7 @@
 // =============================================================================
 
 const std = @import("std");
-const golden_chain = @import("golden_chain.zig");
+const golden_chain = @import("dna_polymerase.zig");
 
 // =============================================================================
 // TYPES

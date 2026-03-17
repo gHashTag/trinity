@@ -18,8 +18,8 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const tri_doctor = @import("tri_doctor.zig");
-const toxic_verdict = @import("toxic_verdict.zig");
+const tri_doctor = @import("leukocyte.zig");
+const toxic_verdict = @import("pathology.zig");
 const experience_hooks = @import("experience_hooks.zig");
 
 const print = std.debug.print;
