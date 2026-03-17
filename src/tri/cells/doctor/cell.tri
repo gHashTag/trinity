@@ -1,0 +1,31 @@
+[cell]
+id = "trinity.tri.doctor"
+name = "Doctor & Diagnostics"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "System health: doctor diagnosis, ouroboros scoring, toxic verdict, strict mode"
+capabilities = ["doctor", "diagnostics", "ouroboros"]
+tests = 10
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "infra"
+
+[source]
+file_patterns = ["tri_doctor.zig", "tri_ouroboros.zig", "toxic_verdict.zig", "tri_strict.zig"]
+
+[contributes]
+commands = ["doctor", "verdict", "ouroboros"]
+exports = ["runDoctorCommand", "runVerdictCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "write"
+network = "none"
+process = "none"

@@ -9,21 +9,82 @@
 //! Sacred Formula: φ² + 1/φ² = 3
 
 const std = @import("std");
-const tri_orchestrator = @import("../vibeec/tri_orchestrator.zig");
 
-// Re-export sacred constants
-pub const PHI = tri_orchestrator.PHI;
-pub const MU = tri_orchestrator.MU;
-pub const SACRED_THRESHOLD = tri_orchestrator.SACRED_THRESHOLD;
-pub const MAX_SUB_AGENTS = tri_orchestrator.MAX_SUB_AGENTS;
-pub const CIRCUIT_BREAK_THRESHOLD = tri_orchestrator.CIRCUIT_BREAK_THRESHOLD;
+// Shared orchestrator types — local copy to avoid circular dep on trinity.vibeec
+// Source of truth: src/vibeec/tri_orchestrator.zig
+pub const PHI = 1.618033988749895;
+pub const MU = 0.0382;
+pub const SACRED_THRESHOLD = 0.95;
+pub const MAX_SUB_AGENTS = 200;
+pub const CIRCUIT_BREAK_THRESHOLD = 10;
 
-pub const Realm = tri_orchestrator.Realm;
-pub const NodeType = tri_orchestrator.NodeType;
-pub const OrchestratorPhase = tri_orchestrator.OrchestratorPhase;
-pub const LoopDecision = tri_orchestrator.LoopDecision;
-pub const AgentVote = tri_orchestrator.AgentVote;
-pub const ConsensusResult = tri_orchestrator.ConsensusResult;
+pub const Realm = enum {
+    razum,
+    materiya,
+    dukh,
+
+    pub fn color(self: Realm) []const u8 {
+        return switch (self) {
+            .razum => "#ffd700",
+            .materiya => "#00ccff",
+            .dukh => "#aa66ff",
+        };
+    }
+    pub fn name(self: Realm) []const u8 {
+        return switch (self) {
+            .razum => "RAZUM",
+            .materiya => "MATERIYA",
+            .dukh => "DUKH",
+        };
+    }
+};
+
+pub const NodeType = enum {
+    alpha,
+    beta,
+    gamma,
+
+    pub fn realm(self: NodeType) Realm {
+        return switch (self) {
+            .alpha => .razum,
+            .beta => .materiya,
+            .gamma => .dukh,
+        };
+    }
+    pub fn phiWeight(self: NodeType) f64 {
+        return switch (self) {
+            .alpha => PHI,
+            .beta => 1.0,
+            .gamma => 1.0 / PHI,
+        };
+    }
+};
+
+pub const OrchestratorPhase = enum {
+    idle, decompose, plan, spec_create, gen, @"test", bench, verdict, git, loop_decide, complete, failed,
+};
+
+pub const LoopDecision = enum { @"continue", stop, retry, skip, circuit_break };
+
+pub const AgentVote = struct {
+    agent_id: []const u8,
+    node_type: NodeType,
+    decision: LoopDecision,
+    confidence: f32,
+    pas_score: f64,
+    reasoning: ?[]const u8,
+    timestamp: i64,
+};
+
+pub const ConsensusResult = struct {
+    final_decision: LoopDecision,
+    consensus_score: f64,
+    phi_weighted_score: f64,
+    participant_count: u32,
+    agreement_level: f64,
+    trinity_verified: bool,
+    timestamp: i64,
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // COORDINATED TASK

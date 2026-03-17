@@ -1547,146 +1547,340 @@ fn resolveImportToCell(import_path: []const u8, cell_path: []const u8, path_to_c
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runGraph(allocator: Allocator) !void {
-    const registry = try loadRegistry(allocator);
-    defer allocator.free(registry);
+    std.debug.print("\n{s}🔗 DEPENDENCY GRAPH (DAG){s}\n", .{ GOLDEN, RESET });
 
-    const parsed = std.json.parseFromSlice(std.json.Value, allocator, registry, .{}) catch {
-        std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit();
+    defer allocator.free(all_cells);
 
-    const cells = (parsed.value.object.get("cells") orelse return).array.items;
-
-    std.debug.print("```mermaid\ngraph LR\n", .{});
-
-    var has_deps = false;
-
-    // Read each cell.tri for dependencies
-    for (cells) |item| {
-        const obj = item.object;
-        const id = jsonStr(obj, "id");
-        const path = jsonStr(obj, "path");
-
-        const tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
-        defer allocator.free(tri_path);
-        const content = std.fs.cwd().readFileAlloc(allocator, tri_path, 65536) catch continue;
-        defer allocator.free(content);
-        const cell = parseCellTri(content);
-
-        if (cell.dependencies_raw.len > 0) {
-            var dep_it = DepIterator.init(cell.dependencies_raw);
-            while (dep_it.next()) |dep| {
-                std.debug.print("  {s} --> {s}\n", .{ id, dep.id });
-                has_deps = true;
-            }
-        }
+    // Build adjacency + reverse adjacency (who depends on me)
+    var deps_of = std.StringHashMap(std.array_list.Managed([]const u8)).init(allocator);
+    defer {
+        var it = deps_of.iterator();
+        while (it.next()) |e| e.value_ptr.deinit();
+        deps_of.deinit();
+    }
+    var depended_by = std.StringHashMap(std.array_list.Managed([]const u8)).init(allocator);
+    defer {
+        var it = depended_by.iterator();
+        while (it.next()) |e| e.value_ptr.deinit();
+        depended_by.deinit();
     }
 
-    if (!has_deps) {
-        // No deps yet — group by tags.scope
-        std.debug.print("  %% No dependencies declared yet — showing cells by scope\n", .{});
-        for (cells) |item| {
-            const obj = item.object;
-            const id = jsonStr(obj, "id");
-            var scope: []const u8 = "";
-            if (jsonObjMap(obj, "tags")) |tags| {
-                if (tags.get("scope")) |sv| {
-                    if (sv == .string) scope = sv.string;
-                }
-            }
-            if (scope.len > 0) {
-                std.debug.print("  subgraph {s}\n    {s}\n  end\n", .{ scope, id });
+    var edge_count: usize = 0;
+    var cells_with_deps: usize = 0;
+
+    for (all_cells) |c| {
+        const m = c.manifest;
+        var list = std.array_list.Managed([]const u8).init(allocator);
+        var dep_it = cell_parser.DepIterator.init(m.dependencies_raw);
+        while (dep_it.next()) |de| {
+            list.append(de.id) catch {};
+            // Reverse edge
+            const rev = depended_by.getPtr(de.id);
+            if (rev) |r| {
+                r.append(m.id) catch {};
             } else {
-                std.debug.print("  {s}\n", .{id});
+                var new_list = std.array_list.Managed([]const u8).init(allocator);
+                new_list.append(m.id) catch {};
+                depended_by.put(de.id, new_list) catch {};
             }
+            edge_count += 1;
+        }
+        if (list.items.len > 0) cells_with_deps += 1;
+        deps_of.put(m.id, list) catch {};
+    }
+
+    // Count roots (cells with deps but nobody depends on them in the connected set)
+    // and leaves (no outgoing deps)
+    var roots = std.array_list.Managed([]const u8).init(allocator);
+    defer roots.deinit();
+    var hubs = std.array_list.Managed([]const u8).init(allocator);
+    defer hubs.deinit();
+    var leaves: usize = 0;
+
+    for (all_cells) |c| {
+        const id = c.manifest.id;
+        const out_deps = deps_of.get(id);
+        const in_deps = depended_by.get(id);
+        const out_count = if (out_deps) |d| d.items.len else 0;
+        const in_count = if (in_deps) |d| d.items.len else 0;
+
+        if (out_count == 0 and in_count == 0) {
+            leaves += 1;
+        } else if (in_count >= 3) {
+            hubs.append(id) catch {};
+        } else if (out_count > 0 and in_count == 0) {
+            roots.append(id) catch {};
         }
     }
 
-    // Style classes
-    std.debug.print("  classDef stable fill:#0f0,color:#000\n", .{});
-    std.debug.print("  classDef experimental fill:#ff0,color:#000\n", .{});
-    for (cells) |item| {
-        const obj = item.object;
-        const id = jsonStr(obj, "id");
-        const status = jsonStr(obj, "status");
-        if (std.mem.eql(u8, status, "stable")) {
-            std.debug.print("  class {s} stable\n", .{id});
-        } else {
-            std.debug.print("  class {s} experimental\n", .{id});
+    // Header
+    std.debug.print("{s}  ═══════════════════════════════════════════════════════════{s}\n", .{ GRAY, RESET });
+    std.debug.print("  {s}Edges:{s} {d}  {s}Cells with deps:{s} {d}  {s}Independent:{s} {d}\n\n", .{
+        CYAN, RESET, edge_count, CYAN, RESET, cells_with_deps, CYAN, RESET, leaves,
+    });
+
+    // Show hubs — most depended-on cells
+    if (hubs.items.len > 0) {
+        std.debug.print("  {s}HUB NODES{s} (3+ dependents)\n", .{ GOLDEN, RESET });
+        for (hubs.items) |hub_id| {
+            const in_deps = depended_by.get(hub_id) orelse continue;
+            std.debug.print("  {s}◆ {s}{s} ", .{ GREEN, hub_id, RESET });
+            std.debug.print("{s}← ", .{GRAY});
+            for (in_deps.items, 0..) |dep, i| {
+                if (i > 0) std.debug.print(", ", .{});
+                if (i >= 5) {
+                    std.debug.print("+{d} more", .{in_deps.items.len - 5});
+                    break;
+                }
+                std.debug.print("{s}", .{dep});
+            }
+            std.debug.print("{s}\n", .{RESET});
         }
+        std.debug.print("\n", .{});
     }
 
-    std.debug.print("```\n", .{});
+    // Show trees: cells with deps → their deps
+    std.debug.print("  {s}DEPENDENCY TREE{s}\n", .{ GOLDEN, RESET });
+
+    for (all_cells) |c| {
+        const id = c.manifest.id;
+        const out_deps = deps_of.get(id) orelse continue;
+        if (out_deps.items.len == 0) continue;
+
+        // Skip sub-cells in tree (show parent only)
+        if (c.manifest.parent.len > 0) continue;
+
+        const in_deps = depended_by.get(id);
+        const in_count = if (in_deps) |d| d.items.len else 0;
+        const kind_color = if (std.mem.eql(u8, c.manifest.status, "stable")) GREEN else YELLOW;
+
+        std.debug.print("  {s}{s}{s}", .{ kind_color, id, RESET });
+        if (in_count > 0) {
+            std.debug.print(" {s}({d} dependents){s}", .{ GRAY, in_count, RESET });
+        }
+        std.debug.print("\n", .{});
+
+        for (out_deps.items, 0..) |dep, i| {
+            const is_last = i == out_deps.items.len - 1;
+            const branch = if (is_last) "└── " else "├── ";
+            const dep_in = depended_by.get(dep);
+            const dep_in_count = if (dep_in) |d| d.items.len else 0;
+            const dep_icon = if (dep_in_count >= 3) "◆" else "○";
+            std.debug.print("  {s}{s}{s}{s} {s}{s}\n", .{
+                GRAY, branch, CYAN, dep_icon, dep, RESET,
+            });
+        }
+        std.debug.print("\n", .{});
+    }
+
+    // Sub-cells
+    var has_sub = false;
+    for (all_cells) |c| {
+        if (c.manifest.parent.len > 0) {
+            if (!has_sub) {
+                std.debug.print("  {s}SUB-CELLS{s}\n", .{ GOLDEN, RESET });
+                has_sub = true;
+            }
+            const out_deps = deps_of.get(c.manifest.id);
+            const dep_count = if (out_deps) |d| d.items.len else 0;
+            std.debug.print("  {s}└─{s} {s}{s}{s} {s}parent={s} deps={d}{s}\n", .{
+                GRAY, RESET, CYAN, c.manifest.id, RESET, GRAY, c.manifest.parent, dep_count, RESET,
+            });
+        }
+    }
+    if (has_sub) std.debug.print("\n", .{});
+
+    // Footer
+    const leaf_pct = if (all_cells.len > 0) leaves * 100 / all_cells.len else 0;
+    std.debug.print("  {s}Independent cells: {d}/{d} ({d}%%) — no deps given or received{s}\n", .{
+        GRAY, leaves, all_cells.len, leaf_pct, RESET,
+    });
+    std.debug.print("  {s}Stable={s}green{s} Experimental={s}yellow{s} Hub(3+)={s}◆{s}{s}\n\n", .{
+        GRAY, GREEN, GRAY, YELLOW, GRAY, CYAN, RESET, RESET,
+    });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // HEALTH — per-cell health score breakdown
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn runHealth(allocator: Allocator, args: []const []const u8) !void {
-    const registry = try loadRegistry(allocator);
-    defer allocator.free(registry);
+fn runHealth(allocator: Allocator, _: []const []const u8) !void {
+    std.debug.print("\n{s}🏥 HONEYCOMB HEALTH v10{s}\n\n", .{ GOLDEN, RESET });
 
-    const parsed = std.json.parseFromSlice(std.json.Value, allocator, registry, .{}) catch {
-        std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit();
+    defer allocator.free(all_cells);
 
-    const cells = (parsed.value.object.get("cells") orelse return).array.items;
-
-    // Optional cell id filter
-    var cell_filter: ?[]const u8 = null;
-    if (args.len > 0) cell_filter = args[0];
-
-    std.debug.print("\n{s}🏥 Cell Health Report{s}\n\n", .{ GOLDEN, RESET });
-
-    var total_score: usize = 0;
-    var count: usize = 0;
-
-    for (cells) |item| {
-        const obj = item.object;
-        const id = jsonStr(obj, "id");
-
-        if (cell_filter) |f| {
-            if (!std.mem.eql(u8, id, f)) continue;
-        }
-
-        const owner = jsonStr(obj, "owner");
-        const tests = jsonInt(obj, "tests");
-        const caps_count = countJsonArray(obj, "capabilities");
-        const content_hash = jsonStr(obj, "content_hash");
-        const has_contrib = hasContributes(obj);
-
-        // Compute individual scores
-        const owner_score: u8 = if (owner.len > 0) 30 else 0;
-        const tests_score: u8 = if (tests > 0) 25 else 0;
-        const cap_raw: usize = if (caps_count >= 5) 20 else @as(usize, caps_count) * 4;
-        const cap_score: u8 = @intCast(cap_raw);
-        const contrib_score: u8 = if (has_contrib) 15 else 0;
-        const hash_score: u8 = if (content_hash.len > 0) 10 else 0;
-        const total: u8 = owner_score + tests_score + cap_score + contrib_score + hash_score;
-
-        const health_color = if (total >= 80) GREEN else if (total >= 50) YELLOW else RED;
-
-        std.debug.print("  {s}{s}{s} — {s}{d}%{s}\n", .{ WHITE, id, RESET, health_color, total, RESET });
-        std.debug.print("    owner={s}{d}{s}/30  tests={s}{d}{s}/25  caps={s}{d}{s}/20  contrib={s}{d}{s}/15  hash={s}{d}{s}/10\n", .{
-            if (owner_score > 0) GREEN else RED,    owner_score,   RESET,
-            if (tests_score > 0) GREEN else RED,    tests_score,   RESET,
-            if (cap_score >= 16) GREEN else YELLOW, cap_score,     RESET,
-            if (contrib_score > 0) GREEN else RED,  contrib_score, RESET,
-            if (hash_score > 0) GREEN else RED,     hash_score,    RESET,
-        });
-
-        total_score += total;
-        count += 1;
+    // Count cells and sub-cells
+    var cell_count: usize = 0;
+    var sub_count: usize = 0;
+    for (all_cells) |c| {
+        if (c.manifest.parent.len > 0) sub_count += 1 else cell_count += 1;
     }
 
-    if (count > 0) {
-        const avg = total_score / count;
-        const avg_color = if (avg >= 80) GREEN else if (avg >= 50) YELLOW else RED;
-        std.debug.print("\n  {s}Average health: {s}{d}%{s} ({d} cells)\n\n", .{ GRAY, avg_color, avg, RESET, count });
+    // Count cycles
+    var path_to_cell = std.StringHashMap([]const u8).init(allocator);
+    defer path_to_cell.deinit();
+    for (all_cells) |c| path_to_cell.put(c.manifest.path, c.manifest.id) catch {};
+
+    var adj = std.StringHashMap(std.array_list.Managed([]const u8)).init(allocator);
+    defer {
+        var it = adj.iterator();
+        while (it.next()) |entry| entry.value_ptr.deinit();
+        adj.deinit();
+    }
+    for (all_cells) |c| {
+        var deps_list = std.array_list.Managed([]const u8).init(allocator);
+        var dep_it = cell_parser.DepIterator.init(c.manifest.dependencies_raw);
+        while (dep_it.next()) |de| deps_list.append(de.id) catch {};
+        adj.put(c.manifest.id, deps_list) catch {};
+    }
+
+    var cycle_count: usize = 0;
+    var cycle_cells_set = std.StringHashMap(void).init(allocator);
+    defer cycle_cells_set.deinit();
+    {
+        var color = std.StringHashMap(u8).init(allocator);
+        defer color.deinit();
+        for (all_cells) |c| color.put(c.manifest.id, 0) catch {};
+        for (all_cells) |c| {
+            if ((color.get(c.manifest.id) orelse 0) != 0) continue;
+            var stack = std.array_list.Managed(struct { id: []const u8, idx: usize }).init(allocator);
+            defer stack.deinit();
+            var path_list = std.array_list.Managed([]const u8).init(allocator);
+            defer path_list.deinit();
+            stack.append(.{ .id = c.manifest.id, .idx = 0 }) catch {};
+            color.put(c.manifest.id, 1) catch {};
+            path_list.append(c.manifest.id) catch {};
+            while (stack.items.len > 0) {
+                const top = &stack.items[stack.items.len - 1];
+                const neighbors = adj.get(top.id);
+                if (neighbors != null and top.idx < neighbors.?.items.len) {
+                    const next = neighbors.?.items[top.idx];
+                    top.idx += 1;
+                    const nc = color.get(next) orelse 0;
+                    if (nc == 1) {
+                        cycle_count += 1;
+                        var in_cycle = false;
+                        for (path_list.items) |p| {
+                            if (std.mem.eql(u8, p, next)) in_cycle = true;
+                            if (in_cycle) cycle_cells_set.put(p, {}) catch {};
+                        }
+                    } else if (nc == 0) {
+                        color.put(next, 1) catch {};
+                        stack.append(.{ .id = next, .idx = 0 }) catch {};
+                        path_list.append(next) catch {};
+                    }
+                } else {
+                    color.put(top.id, 2) catch {};
+                    _ = stack.pop();
+                    if (path_list.items.len > 0) _ = path_list.pop();
+                }
+            }
+        }
+    }
+
+    // Compute average score + grade distribution + weakest
+    var total_score: usize = 0;
+    var scored_count: usize = 0;
+    var grade_a: usize = 0;
+    var grade_b: usize = 0;
+    var grade_c: usize = 0;
+    var grade_f: usize = 0;
+    var weakest_id: []const u8 = "";
+    var weakest_score: usize = 999;
+
+    for (all_cells) |c| {
+        const m = c.manifest;
+        if (std.mem.eql(u8, m.kind, "binary")) continue;
+        const cell = parseCellTri(c.content);
+        if (cell.id.len == 0) continue;
+
+        // Simplified scoring (same formula as runScore)
+        const test_s: u8 = if (cell.tests == 0) 0 else if (cell.tests < 10) 3 else if (cell.tests < 50) 8 else if (cell.tests < 100) 12 else 15;
+        const health: u8 = test_s + (if (cell.owner.len > 0) @as(u8, 5) else 0) + (if (cell.capabilities.len > 2) @as(u8, 5) else 0) + (if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) @as(u8, 5) else 0);
+        const sec: u8 = (if (cell.perm_level.len > 0) @as(u8, 10) else 0) + 10 + (if (cell.security_signed) @as(u8, 5) else 0) + 5;
+        const dep_acc = computeDepsAccuracy(allocator, m.path, cell, all_cells, &path_to_cell);
+        var deps: u8 = if (dep_acc.total == 0) 25 else blk: {
+            const ratio: u8 = @intCast(@min(15, dep_acc.confirmed * 15 / dep_acc.total));
+            break :blk ratio + (if (dep_acc.missing == 0) @as(u8, 10) else 0);
+        };
+        if (cycle_cells_set.contains(cell.id)) deps -|= 5;
+        const contracts: u8 = (if (cell.contributes_exports.len > 0) @as(u8, 10) else 5) + 5;
+        const score: usize = @as(usize, health) + sec + deps + contracts;
+
+        if (score >= 80) grade_a += 1 else if (score >= 60) grade_b += 1 else if (score >= 40) grade_c += 1 else grade_f += 1;
+        total_score += score;
+        scored_count += 1;
+        if (score < weakest_score and cell.parent.len == 0) {
+            weakest_score = score;
+            weakest_id = cell.id;
+        }
+    }
+
+    const avg = if (scored_count > 0) total_score / scored_count else 0;
+    const avg_color = if (avg >= 80) GREEN else if (avg >= 60) YELLOW else RED;
+    const cycle_sym = if (cycle_count == 0) GREEN else RED;
+    const cycle_mark = if (cycle_count == 0) "0 ✓" else "found";
+
+    // Count monolith coverage (files in sub-cells vs total src/tri/)
+    var monolith_total: usize = 0;
+    var monolith_covered: usize = 0;
+    {
+        var tri_dir = std.fs.cwd().openDir("src/tri", .{ .iterate = true }) catch null;
+        if (tri_dir) |*d| {
+            defer d.close();
+            var iter = d.iterate();
+            while (iter.next() catch null) |entry| {
+                if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".zig")) {
+                    monolith_total += 1;
+                    // Check if matched by any sub-cell file_patterns
+                    for (all_cells) |sc| {
+                        if (sc.manifest.parent.len > 0 and sc.manifest.file_patterns.len > 2) {
+                            if (matchesFilePatterns(entry.name, sc.manifest.file_patterns)) {
+                                monolith_covered += 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        // Also count math/ subdir
+        var math_dir = std.fs.cwd().openDir("src/tri/math", .{ .iterate = true }) catch null;
+        if (math_dir) |*md| {
+            defer md.close();
+            var miter = md.iterate();
+            while (miter.next() catch null) |entry| {
+                if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".zig")) {
+                    monolith_total += 1;
+                    monolith_covered += 1; // math sub-cell covers all math/*.zig
+                }
+            }
+        }
+    }
+    const cov_pct = if (monolith_total > 0) monolith_covered * 100 / monolith_total else 0;
+    const cov_color = if (cov_pct >= 60) GREEN else if (cov_pct >= 30) YELLOW else RED;
+
+    std.debug.print("  {s}Score:{s}      {s}{d}/100{s}\n", .{ WHITE, RESET, avg_color, avg, RESET });
+    std.debug.print("  {s}Cells:{s}      {d} + {d} sub-cells | A:{d} B:{d} C:{d} F:{d}\n", .{ WHITE, RESET, cell_count, sub_count, grade_a, grade_b, grade_c, grade_f });
+    std.debug.print("  {s}Cycles:{s}     {s}{s}{s}", .{ WHITE, RESET, cycle_sym, cycle_mark, RESET });
+    if (cycle_count > 0) std.debug.print(" ({d})", .{cycle_count});
+    std.debug.print("\n", .{});
+    std.debug.print("  {s}Monolith:{s}   {s}{d}/{d} files covered ({d}%%){s}\n", .{
+        WHITE, RESET, cov_color, monolith_covered, monolith_total, cov_pct, RESET,
+    });
+    std.debug.print("  {s}Weakest:{s}    {s} ({d})\n", .{ WHITE, RESET, weakest_id, weakest_score });
+    std.debug.print("  {s}Formula:{s}    health(30) + security(30) + deps(25) + contracts(15)\n\n", .{ WHITE, RESET });
+
+    if (cycle_count > 0) {
+        std.debug.print("  {s}Action:{s} run {s}tri cell deps --cycles{s} to see cycle details\n", .{ YELLOW, RESET, CYAN, RESET });
     }
 }
 
@@ -4104,6 +4298,44 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
 
 const DepsAccuracy = struct { confirmed: usize, missing: usize, extra: usize, total: usize };
 
+/// Check if a filename matches any pattern in a file_patterns array like ["tri_farm*.zig", "railway_*.zig"]
+fn matchesFilePatterns(filename: []const u8, patterns_raw: []const u8) bool {
+    var iter = cell_parser.ArrayIterator.init(patterns_raw);
+    while (iter.next()) |pattern| {
+        if (simpleGlobMatch(filename, pattern)) return true;
+    }
+    return false;
+}
+
+/// Simple glob match supporting only '*' wildcard (no ?, no **)
+fn simpleGlobMatch(str: []const u8, pattern: []const u8) bool {
+    // Split pattern by '*'
+    var s_pos: usize = 0;
+    var p_pos: usize = 0;
+
+    while (p_pos < pattern.len) {
+        if (pattern[p_pos] == '*') {
+            p_pos += 1;
+            // If * is at end, match rest
+            if (p_pos >= pattern.len) return true;
+            // Find the next literal segment after *
+            const next_star = std.mem.indexOfScalar(u8, pattern[p_pos..], '*');
+            const segment = if (next_star) |ns| pattern[p_pos .. p_pos + ns] else pattern[p_pos..];
+            // Search for segment in remaining str
+            const found = std.mem.indexOf(u8, str[s_pos..], segment);
+            if (found == null) return false;
+            s_pos += found.? + segment.len;
+            p_pos += segment.len;
+        } else {
+            // Literal match
+            if (s_pos >= str.len or str[s_pos] != pattern[p_pos]) return false;
+            s_pos += 1;
+            p_pos += 1;
+        }
+    }
+    return s_pos == str.len;
+}
+
 fn computeDepsAccuracy(
     allocator: Allocator,
     cell_path: []const u8,
@@ -4121,10 +4353,16 @@ fn computeDepsAccuracy(
     var dir = std.fs.cwd().openDir(cell_path, .{ .iterate = true }) catch return result;
     defer dir.close();
 
+    // For virtual sub-cells with file_patterns, only scan matching files
+    const has_patterns = cell.file_patterns.len > 2; // more than "[]"
+
     var walker = dir.iterate();
     while (walker.next() catch null) |entry| {
         if (entry.kind != .file) continue;
         if (!std.mem.endsWith(u8, entry.name, ".zig")) continue;
+
+        // Filter by file_patterns if this is a virtual sub-cell
+        if (has_patterns and !matchesFilePatterns(entry.name, cell.file_patterns)) continue;
 
         const file_content = dir.readFileAlloc(allocator, entry.name, 1048576) catch continue;
         defer allocator.free(file_content);
