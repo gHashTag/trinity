@@ -4,3 +4,42 @@
 {"ts":$(date +%s),"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK"}
 {"ts":1773658097,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK"}
 {"ts":1773658948,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK"}
+{"ts":1773660960,"agent":"tri-orchestrator","action":"report","detail":"RED","result":"OK"}
+{"ts":1773661628,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK"}
+{"ts:1773662519,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK"}
+{"ts":1773663402,"agent":"tri-orchestrator","action":"report","detail":"YELLOW","result":"OK"}
+{"ts":1773667521,"agent":"tri-orchestrator","action":"report","detail":"YELLOW","result":"OK"}
+{"ts":1773667063,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK"}
+{"ts":1773669282,"agent":"tri-orchestrator","action":"report","detail":"RED","result":"ARENA_BUILD_FAIL","blocker":"src/arena/battle.zig:232"}
+{"ts":1773669736,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK"}
+{"ts":1773671497,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7}
+{"ts":1773672432,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7}
+{"ts":1773672816,"event":"queen_cycle","cycle":1,"build_ok":true,"dirty":33,"issues":67,"alerts":1}
+{"ts":1773673322,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"dirty_files":35,"cli_commands":307,"mcp_tools":209,"skills":23,"test_exit":0}
+{"ts":1773673648,"event":"queen_cycle","cycle":2,"build_ok":true,"dirty":35,"issues":67,"alerts":0}
+{"ts":1773674186,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"dirty_files":35,"cli_commands":86,"mcp_tools":209,"skills":23,"test_exit":0,"issues_open":67,"issues_in_progress":2}
+{"ts":1773674251,"event":"queen_cycle","cycle":3,"build_ok":true,"dirty":35,"issues":67,"alerts":0}
+{"ts":1773674852,"event":"queen_cycle","cycle":4,"build_ok":true,"dirty":35,"issues":67,"alerts":0}
+{"ts":1773675089,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"dirty_files":39,"cli_commands":332,"mcp_tools":209,"skills":23,"test_exit":0,"issues_open":30,"issues_in_progress":19}
+{"ts":1773675454,"event":"queen_cycle","cycle":5,"build_ok":true,"dirty":41,"issues":67,"alerts":0}
+{"ts":1773675977,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"dirty_files":41,"cli_commands":332,"mcp_tools":209,"skills":23,"test_exit":0,"issues_open":67,"issues_in_progress":2}
+{"ts":1773676055,"event":"queen_cycle","cycle":6,"build_ok":true,"dirty":41,"issues":67,"alerts":0}
+{"ts":1773676658,"event":"queen_cycle","cycle":7,"build_ok":true,"dirty":42,"issues":67,"alerts":0}
+{"ts":1773677018,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"dirty_files":43,"cli_commands":332,"mcp_tools":209,"skills":23,"test_exit":0,"issues_open":67,"issues_in_progress":1}
+{"ts":1773677260,"event":"queen_cycle","cycle":8,"build_ok":true,"dirty":42,"issues":67,"alerts":0}
+{"ts":1773677836,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"test_exit":0,"dirty_files":44,"cli_commands":307,"mcp_tools":209,"skills":23,"issues_open":67,"issues_in_progress":2}
+{"ts":1773677862,"event":"queen_cycle","cycle":9,"build_ok":true,"dirty":44,"issues":67,"alerts":0}
+{"ts":1773678463,"event":"queen_cycle","cycle":10,"build_ok":true,"dirty":45,"issues":67,"alerts":0}
+{"ts":1773678748,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"dirty_files":45,"mcp_tools":209,"skills":23,"test_exit":0,"issues_open":67,"issues_in_progress":2}
+{"ts":1773679065,"event":"queen_cycle","cycle":11,"build_ok":true,"dirty":46,"issues":67,"alerts":0}
+{"ts":1773679601,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"test_exit":0,"dirty_files":48,"cli_delegation":29,"mcp_tools":209,"skills":23,"issues_open":67,"issues_in_progress":2}
+{"ts":1773679667,"event":"queen_cycle","cycle":12,"build_ok":true,"dirty":48,"issues":67,"alerts":0}
+{"ts":1773680271,"event":"queen_cycle","cycle":13,"build_ok":true,"dirty":48,"issues":67,"alerts":0}
+{"ts":1773680485,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"dirty_files":48,"cli_commands":307,"mcp_tools":209,"skills":23,"test_exit":0,"issues_open":67,"issues_in_progress":2}
+{"ts":1773680872,"event":"queen_cycle","cycle":14,"build_ok":true,"dirty":48,"issues":67,"alerts":0}
+{"ts":1773681394,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"test_exit":0,"dirty_files":48,"cli_commands":332,"mcp_tools":209,"skills":23,"issues_open":30,"issues_in_progress":1}
+{"ts":1773682309,"agent":"tri-orchestrator","action":"report","detail":"RED","result":"OK","phase":7,"build":"BROKEN","tests":"PASSING","binaries":6,"dirty_files":68,"cli_commands":307,"mcp_tools":209,"skills":23,"issues_open":67,"issues_in_progress":2,"root_cause":"tri_cell.zig + tri_init.zig compilation errors"}
+{"ts":1773683240,"agent":"tri-orchestrator","action":"report","detail":"RED","result":"OK","phase":7,"build":"BROKEN","tests":"PASSING","binaries":6,"dirty_files":71,"cli_commands":307,"mcp_tools":209,"skills":23,"issues_open":67,"issues_in_progress":2,"root_cause":"tri_cell.zig: runToggleEnabled undefined (line 51), jsonBool scope error (line 126)"}
+{"ts":1773684078,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"dirty_files":71,"docs":2508,"tests":1408,"mcp_modules":56,"skills":30,"issues_open":30,"build_exit":0,"test_exit":0}
+{"ts":$(date +%s),"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"build":"PASS","tests":"PASS","binaries":6,"dirty_files":71,"docs":2508,"skills":23,"mcp_modules":27,"cli_commands":39,"issues_open":67,"issues_in_progress":2}
+{"ts":1773684986,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"build":"PASS","tests":"PASS","binaries":6,"dirty_files":71,"docs":2508,"skills":23,"mcp_modules":27,"cli_commands":39,"issues_open":67,"issues_in_progress":2}

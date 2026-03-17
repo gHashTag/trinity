@@ -231,6 +231,11 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "doctor")) return runDoctor(allocator, rest);
     if (std.mem.eql(u8, sub, "explain")) return runExplain(allocator, rest);
     if (std.mem.eql(u8, sub, "map")) return runMap(allocator);
+    if (std.mem.eql(u8, sub, "mcp-gen")) {
+        const cell_dispatch = @import("tri_cell_dispatch.zig");
+        return cell_dispatch.runMcpGenCommand(allocator);
+    }
+    if (std.mem.eql(u8, sub, "commands")) return runCellCommands(allocator);
 
     printHelp();
 }
@@ -273,6 +278,8 @@ fn printHelp() void {
     std.debug.print("  {s}doctor{s}            Full heal cycle: fix→sign→audit→lint→sync→status\n", .{ GREEN, RESET });
     std.debug.print("  {s}explain <id>{s}      Show WHY a cell has its permission level\n", .{ GREEN, RESET });
     std.debug.print("  {s}map{s}               Binary → cell mapping, find orphan binaries\n", .{ GREEN, RESET });
+    std.debug.print("  {s}mcp-gen{s}           Generate MCP tools JSON from cell contributes\n", .{ GREEN, RESET });
+    std.debug.print("  {s}commands{s}          List all cell-contributed tri subcommands\n", .{ GREEN, RESET });
     std.debug.print("  {s}verify{s}            Check content hashes (integrity)\n", .{ GREEN, RESET });
     std.debug.print("  {s}check-boundaries{s}  Validate tag boundary rules\n", .{ GREEN, RESET });
 }
@@ -600,7 +607,7 @@ fn runInfo(allocator: Allocator, args: []const []const u8) !void {
         if (cell.perm_level.len > 0) {
             const lvl_color = if (std.mem.eql(u8, cell.perm_level, "L0")) GREEN else if (std.mem.eql(u8, cell.perm_level, "L1")) YELLOW else RED;
             std.debug.print("  {s}Permissions:{s}     {s}{s}{s} fs={s} net={s} proc={s}", .{
-                CYAN, RESET, lvl_color, cell.perm_level, RESET,
+                CYAN,                 RESET,             lvl_color,         cell.perm_level, RESET,
                 cell.perm_filesystem, cell.perm_network, cell.perm_process,
             });
             if (cell.perm_ffi.len > 0 and !std.mem.eql(u8, cell.perm_ffi, "none")) {
@@ -859,9 +866,8 @@ fn runCheck(allocator: Allocator, args: []const []const u8) !void {
 
             // Build cell JSON entry using writeJsonPretty-style inline
             try writer.print("    {{\"id\": \"{s}\", \"path\": \"{s}\", \"version\": \"{s}\", \"kind\": \"{s}\", \"status\": \"{s}\", \"files\": {d}, \"tests\": {d}, \"enabled\": {s}, \"owner\": \"{s}\", \"spec_version\": 2, \"api_version\": \"{s}\", \"content_hash\": \"{s}\"", .{
-                cell.id, cell.path, cell.version, cell.kind, cell.status, cell.files, cell.tests,
-                if (enabled) "true" else "false",
-                owner, CORE_VERSION, hash_hex[0..64],
+                cell.id,                          cell.path, cell.version, cell.kind,       cell.status, cell.files, cell.tests,
+                if (enabled) "true" else "false", owner,     CORE_VERSION, hash_hex[0..64],
             });
 
             // Capabilities
@@ -897,8 +903,8 @@ fn runCheck(allocator: Allocator, args: []const []const u8) !void {
             // Permissions
             if (cell.perm_level.len > 0) {
                 try writer.print(", \"permissions\": {{\"level\": \"{s}\", \"filesystem\": \"{s}\", \"network\": \"{s}\", \"process\": \"{s}\", \"ffi\": \"{s}\", \"concurrency\": \"{s}\"}}", .{
-                    cell.perm_level, cell.perm_filesystem, cell.perm_network, cell.perm_process,
-                    cell.perm_ffi, cell.perm_concurrency,
+                    cell.perm_level, cell.perm_filesystem,  cell.perm_network, cell.perm_process,
+                    cell.perm_ffi,   cell.perm_concurrency,
                 });
             }
 
@@ -1218,11 +1224,11 @@ fn runHealth(allocator: Allocator, args: []const []const u8) !void {
 
         std.debug.print("  {s}{s}{s} — {s}{d}%{s}\n", .{ WHITE, id, RESET, health_color, total, RESET });
         std.debug.print("    owner={s}{d}{s}/30  tests={s}{d}{s}/25  caps={s}{d}{s}/20  contrib={s}{d}{s}/15  hash={s}{d}{s}/10\n", .{
-            if (owner_score > 0) GREEN else RED,   owner_score,   RESET,
-            if (tests_score > 0) GREEN else RED,   tests_score,   RESET,
-            if (cap_score >= 16) GREEN else YELLOW, cap_score,    RESET,
-            if (contrib_score > 0) GREEN else RED, contrib_score, RESET,
-            if (hash_score > 0) GREEN else RED,    hash_score,    RESET,
+            if (owner_score > 0) GREEN else RED,    owner_score,   RESET,
+            if (tests_score > 0) GREEN else RED,    tests_score,   RESET,
+            if (cap_score >= 16) GREEN else YELLOW, cap_score,     RESET,
+            if (contrib_score > 0) GREEN else RED,  contrib_score, RESET,
+            if (hash_score > 0) GREEN else RED,     hash_score,    RESET,
         });
 
         total_score += total;
@@ -1361,7 +1367,7 @@ fn runVerify(allocator: Allocator) !void {
     }
 
     std.debug.print("\n  {s}Verified: {d}{s} | {s}Failed: {d}{s} | Skipped: {d}\n\n", .{
-        GREEN,                            ok_count,   RESET,
+        GREEN,                             ok_count,   RESET,
         if (fail_count > 0) RED else GRAY, fail_count, RESET,
         skip_count,
     });
@@ -1587,7 +1593,7 @@ fn runLint(allocator: Allocator, args: []const []const u8) !void {
                 pos = abs_pos;
 
                 const end_quote = std.mem.indexOf(u8, source[abs_pos..], "\"") orelse break;
-                const import_path = source[abs_pos..abs_pos + end_quote];
+                const import_path = source[abs_pos .. abs_pos + end_quote];
                 pos = abs_pos + end_quote + 1;
 
                 // Skip std imports and relative imports within same cell
@@ -1709,8 +1715,12 @@ fn runLint(allocator: Allocator, args: []const []const u8) !void {
 
     std.debug.print("\n  Cells: {d} | {s}Violations: {d}{s} | {s}Warnings: {d}{s}\n", .{
         cells_checked,
-        if (total_violations > 0) RED else GREEN, total_violations, RESET,
-        if (total_warnings > 0) YELLOW else GREEN, total_warnings, RESET,
+        if (total_violations > 0) RED else GREEN,
+        total_violations,
+        RESET,
+        if (total_warnings > 0) YELLOW else GREEN,
+        total_warnings,
+        RESET,
     });
     if (total_violations == 0 and total_warnings == 0) {
         std.debug.print("  {s}All cells pass lint checks.{s}\n", .{ GREEN, RESET });
@@ -1845,11 +1855,11 @@ fn runCreate(allocator: Allocator, args: []const []const u8) !void {
         \\concurrency = "{s}"
         \\
     , .{
-        cell_id,     name,         kind,            path,
-        CORE_VERSION, name,         caps_buf[0..caps_pos],
-        stats.files, stats.tests,  scope,           kind,
-        perms.level, perms.fs,     perms.net,       perms.proc,
-        perms.ffi,   perms.concurrency,
+        cell_id,           name,      kind,                  path,
+        CORE_VERSION,      name,      caps_buf[0..caps_pos], stats.files,
+        stats.tests,       scope,     kind,                  perms.level,
+        perms.fs,          perms.net, perms.proc,            perms.ffi,
+        perms.concurrency,
     }) catch return;
     defer allocator.free(content);
 
@@ -2033,11 +2043,11 @@ fn runCreateAll(allocator: Allocator, args: []const []const u8) !void {
             \\concurrency = "{s}"
             \\
         , .{
-            cell_id,     name,         kind,            path,
-            CORE_VERSION, name,         caps_buf[0..caps_pos],
-            stats.files, stats.tests,  scope,           kind,
-            perms.level, perms.fs,     perms.net,       perms.proc,
-            perms.ffi,   perms.concurrency,
+            cell_id,           name,      kind,                  path,
+            CORE_VERSION,      name,      caps_buf[0..caps_pos], stats.files,
+            stats.tests,       scope,     kind,                  perms.level,
+            perms.fs,          perms.net, perms.proc,            perms.ffi,
+            perms.concurrency,
         }) catch continue;
         defer allocator.free(content);
 
@@ -2066,7 +2076,7 @@ fn runAudit(allocator: Allocator, args: []const []const u8) !void {
     }
 
     std.debug.print("\n{s}🔒 SECURITY AUDIT — CVE-Informed Validation{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("  9 checks mapped to real OpenClaw CVEs\n\n", .{ });
+    std.debug.print("  9 checks mapped to real OpenClaw CVEs\n\n", .{});
 
     const discovered = discoverCells(allocator) catch {
         std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
@@ -2097,17 +2107,14 @@ fn runAudit(allocator: Allocator, args: []const []const u8) !void {
 
         // Compute security score
         var sec_score: i16 = blk: {
-            if (std.mem.eql(u8, cell.perm_level, "L0")) break :blk 100
-            else if (std.mem.eql(u8, cell.perm_level, "L1")) break :blk 70
-            else if (std.mem.eql(u8, cell.perm_level, "L2")) break :blk 40
-            else break :blk 50; // unknown
+            if (std.mem.eql(u8, cell.perm_level, "L0")) break :blk 100 else if (std.mem.eql(u8, cell.perm_level, "L1")) break :blk 70 else if (std.mem.eql(u8, cell.perm_level, "L2")) break :blk 40 else break :blk 50; // unknown
         };
 
         // --- Check 1: Permission escalation chains (L0 → L2) ---
         // (checked via lint, but flag here too)
         if (std.mem.eql(u8, cell.perm_level, "L0") and
             (std.mem.eql(u8, cell.perm_network, "external") or
-            std.mem.eql(u8, cell.perm_process, "spawn")))
+                std.mem.eql(u8, cell.perm_process, "spawn")))
         {
             std.debug.print("  {s}ERROR{s}  {s}: L0 cell declares network=external or process=spawn (escalation)\n", .{ RED, RESET, cell.id });
             cell_errors += 1;
@@ -2305,22 +2312,11 @@ fn runStatus(allocator: Allocator) !void {
         if (dep_count > 0) cells_with_deps += 1;
 
         // Permission levels
-        if (std.mem.eql(u8, cell.perm_level, "L0")) l0_count += 1
-        else if (std.mem.eql(u8, cell.perm_level, "L1")) l1_count += 1
-        else if (std.mem.eql(u8, cell.perm_level, "L2")) l2_count += 1;
+        if (std.mem.eql(u8, cell.perm_level, "L0")) l0_count += 1 else if (std.mem.eql(u8, cell.perm_level, "L1")) l1_count += 1 else if (std.mem.eql(u8, cell.perm_level, "L2")) l2_count += 1;
 
         // Scope
         const scope = inferScope(path);
-        const scope_idx: usize = if (std.mem.eql(u8, scope, "vsa")) 0
-            else if (std.mem.eql(u8, scope, "physics")) 1
-            else if (std.mem.eql(u8, scope, "sacred")) 2
-            else if (std.mem.eql(u8, scope, "agent")) 3
-            else if (std.mem.eql(u8, scope, "infra")) 4
-            else if (std.mem.eql(u8, scope, "hslm")) 5
-            else if (std.mem.eql(u8, scope, "fpga")) 6
-            else if (std.mem.eql(u8, scope, "ui")) 7
-            else if (std.mem.eql(u8, scope, "mcp")) 8
-            else 9;
+        const scope_idx: usize = if (std.mem.eql(u8, scope, "vsa")) 0 else if (std.mem.eql(u8, scope, "physics")) 1 else if (std.mem.eql(u8, scope, "sacred")) 2 else if (std.mem.eql(u8, scope, "agent")) 3 else if (std.mem.eql(u8, scope, "infra")) 4 else if (std.mem.eql(u8, scope, "hslm")) 5 else if (std.mem.eql(u8, scope, "fpga")) 6 else if (std.mem.eql(u8, scope, "ui")) 7 else if (std.mem.eql(u8, scope, "mcp")) 8 else 9;
         scope_counts[scope_idx] += 1;
 
         // Quick audit checks (subset — fast)
@@ -2413,11 +2409,15 @@ fn runStatus(allocator: Allocator) !void {
                 var norm_bin: [64]u8 = undefined;
                 const nl = @min(entry.name.len, 63);
                 @memcpy(norm_bin[0..nl], entry.name[0..nl]);
-                for (norm_bin[0..nl]) |*c| if (c.* == '-') { c.* = '_'; };
+                for (norm_bin[0..nl]) |*c| if (c.* == '-') {
+                    c.* = '_';
+                };
                 var norm_dir: [64]u8 = undefined;
                 const dl = @min(dir_name.len, 63);
                 @memcpy(norm_dir[0..dl], dir_name[0..dl]);
-                for (norm_dir[0..dl]) |*c| if (c.* == '-') { c.* = '_'; };
+                for (norm_dir[0..dl]) |*c| if (c.* == '-') {
+                    c.* = '_';
+                };
                 if (std.mem.eql(u8, norm_bin[0..nl], norm_dir[0..dl])) {
                     bin_mapped += 1;
                     break;
@@ -2641,7 +2641,7 @@ fn runExplain(allocator: Allocator, args: []const []const u8) !void {
 
         std.debug.print("\n{s}🔍 Permission Explanation: {s}{s}\n\n", .{ GOLDEN, cell.id, RESET });
         std.debug.print("  {s}Current:{s} level={s} fs={s} net={s} proc={s} ffi={s} conc={s}\n\n", .{
-            CYAN, RESET, cell.perm_level, cell.perm_filesystem, cell.perm_network,
+            CYAN,              RESET,         cell.perm_level,       cell.perm_filesystem, cell.perm_network,
             cell.perm_process, cell.perm_ffi, cell.perm_concurrency,
         });
 
@@ -2692,8 +2692,9 @@ fn runExplain(allocator: Allocator, args: []const []const u8) !void {
                         }
                         const lvl_color = if (std.mem.eql(u8, p.level, "L2")) RED else if (std.mem.eql(u8, p.level, "L1") or std.mem.eql(u8, p.level, "L1+")) YELLOW else GRAY;
                         std.debug.print("  {s}{s}{s}  {s}/{s}:{d}  {s}\n", .{
-                            lvl_color, p.level, RESET,
-                            path, entry.path, line_num, p.label,
+                            lvl_color, p.level,    RESET,
+                            path,      entry.path, line_num,
+                            p.label,
                         });
                         break; // one hit per pattern per file is enough
                     }
@@ -3461,17 +3462,14 @@ fn runScore(allocator: Allocator, args: []const []const u8) !void {
         const grade_char: []const u8 = if (final_score >= 80) "A" else if (final_score >= 60) "B" else if (final_score >= 40) "C" else "F";
         const grade_color = if (final_score >= 80) GREEN else if (final_score >= 60) YELLOW else RED;
 
-        if (final_score >= 80) grade_a += 1
-        else if (final_score >= 60) grade_b += 1
-        else if (final_score >= 40) grade_c += 1
-        else grade_f += 1;
+        if (final_score >= 80) grade_a += 1 else if (final_score >= 60) grade_b += 1 else if (final_score >= 40) grade_c += 1 else grade_f += 1;
 
         std.debug.print("  {s}{s}{s}", .{ WHITE, cell.id, RESET });
         printPad(cell.id.len, 24);
         std.debug.print("{d:3}     {d:3}       {d:2}    {s}{d:3}{s}    {s}{s}{s}\n", .{
             health_score, security_score, deps_score,
-            grade_color, final_score, RESET,
-            grade_color, grade_char, RESET,
+            grade_color,  final_score,    RESET,
+            grade_color,  grade_char,     RESET,
         });
 
         total_score += final_score;
@@ -3668,10 +3666,10 @@ fn inferScope(path: []const u8) []const u8 {
 
     // Physics modules
     const physics_names = [_][]const u8{
-        "gravity",      "string_theory",    "maxwell",    "cosmos",           "biology",
-        "quantum_gravity", "particle_physics", "dark_matter", "plasma",       "qcd",
-        "baryogenesis", "monopoles",        "superconductivity", "hyperspace",
-        "origin",       "vacuum",           "flatness",
+        "gravity",         "string_theory",    "maxwell",           "cosmos",     "biology",
+        "quantum_gravity", "particle_physics", "dark_matter",       "plasma",     "qcd",
+        "baryogenesis",    "monopoles",        "superconductivity", "hyperspace", "origin",
+        "vacuum",          "flatness",
     };
     for (physics_names) |pn| {
         if (std.mem.eql(u8, name, pn)) return "physics";
@@ -3679,7 +3677,7 @@ fn inferScope(path: []const u8) []const u8 {
 
     // VSA modules
     const vsa_names = [_][]const u8{
-        "vsa", "vm", "tvc", "sparse", "simd", "sequence_hdc", "jit",
+        "vsa",         "vm",     "tvc", "sparse", "simd",   "sequence_hdc", "jit",
         "packed_trit", "hybrid", "b2t", "needle", "vibeec", "ternary",
     };
     for (vsa_names) |vn| {
@@ -3688,8 +3686,8 @@ fn inferScope(path: []const u8) []const u8 {
 
     // Sacred / Math
     const sacred_names = [_][]const u8{
-        "sacred", "math", "time", "science", "phi-engine", "phi_loop",
-        "beal", "blind_spot", "reality", "consciousness", "quantum",
+        "sacred", "math",       "time",    "science",       "phi-engine", "phi_loop",
+        "beal",   "blind_spot", "reality", "consciousness", "quantum",
     };
     for (sacred_names) |sn| {
         if (std.mem.eql(u8, name, sn)) return "sacred";
@@ -3697,8 +3695,8 @@ fn inferScope(path: []const u8) []const u8 {
 
     // Agent
     const agent_names = [_][]const u8{
-        "autonomous", "orchestration", "agent_mu", "depin", "mining",
-        "firebird", "trinity_node", "trinity-node", "swarm", "bsd",
+        "autonomous", "orchestration", "agent_mu",     "depin", "mining",
+        "firebird",   "trinity_node",  "trinity-node", "swarm", "bsd",
     };
     for (agent_names) |an| {
         if (std.mem.eql(u8, name, an)) return "agent";
@@ -3768,6 +3766,37 @@ fn writeCellCache(allocator: Allocator, cells_json: []const u8) void {
 
 fn invalidateCellCache() void {
     std.fs.cwd().deleteFile(".trinity/cell_cache.json") catch {};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CELL COMMANDS — list all cell-contributed tri subcommands
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runCellCommands(allocator: Allocator) !void {
+    const cell_dispatch = @import("tri_cell_dispatch.zig");
+    const cmds = try cell_dispatch.listCellCommands(allocator);
+    defer {
+        for (cmds) |c| {
+            allocator.free(c.cell_id);
+            allocator.free(c.cell_path);
+            allocator.free(c.command);
+            allocator.free(c.description);
+        }
+        allocator.free(cmds);
+    }
+
+    std.debug.print("\n{s}🔌 CELL-CONTRIBUTED COMMANDS{s}\n\n", .{ GOLDEN, RESET });
+    std.debug.print("  {s}{s:<25} {s:<25} {s}{s}\n", .{ CYAN, "COMMAND", "CELL", "PATH", RESET });
+    std.debug.print("  {s}{s:->25} {s:->25} {s:->25}{s}\n", .{ GRAY, "", "", "", RESET });
+
+    for (cmds) |cmd| {
+        std.debug.print("  {s}tri {s}{s}", .{ GREEN, cmd.command, RESET });
+        printPad(cmd.command.len + 4, 26);
+        std.debug.print("{s}", .{cmd.cell_id});
+        printPad(cmd.cell_id.len, 26);
+        std.debug.print("{s}{s}{s}\n", .{ GRAY, cmd.cell_path, RESET });
+    }
+    std.debug.print("\n  Total: {d} cell commands\n\n", .{cmds.len});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -4034,28 +4063,13 @@ fn parseCellTri(content: []const u8) CellInfo {
 
         switch (current_section) {
             .cell => {
-                if (std.mem.eql(u8, key, "id")) info.id = value
-                else if (std.mem.eql(u8, key, "name")) info.name = value
-                else if (std.mem.eql(u8, key, "version")) info.version = value
-                else if (std.mem.eql(u8, key, "kind")) info.kind = value
-                else if (std.mem.eql(u8, key, "path")) info.path = value
-                else if (std.mem.eql(u8, key, "status")) info.status = value
-                else if (std.mem.eql(u8, key, "description")) info.description = value
-                else if (std.mem.eql(u8, key, "min_core_version")) info.min_core_version = value
-                else if (std.mem.eql(u8, key, "capabilities")) info.capabilities = value
-                else if (std.mem.eql(u8, key, "owner")) info.owner = value
-                else if (std.mem.eql(u8, key, "files")) info.files = std.fmt.parseInt(u32, value, 10) catch 0
-                else if (std.mem.eql(u8, key, "tests")) info.tests = std.fmt.parseInt(u32, value, 10) catch 0;
+                if (std.mem.eql(u8, key, "id")) info.id = value else if (std.mem.eql(u8, key, "name")) info.name = value else if (std.mem.eql(u8, key, "version")) info.version = value else if (std.mem.eql(u8, key, "kind")) info.kind = value else if (std.mem.eql(u8, key, "path")) info.path = value else if (std.mem.eql(u8, key, "status")) info.status = value else if (std.mem.eql(u8, key, "description")) info.description = value else if (std.mem.eql(u8, key, "min_core_version")) info.min_core_version = value else if (std.mem.eql(u8, key, "capabilities")) info.capabilities = value else if (std.mem.eql(u8, key, "owner")) info.owner = value else if (std.mem.eql(u8, key, "files")) info.files = std.fmt.parseInt(u32, value, 10) catch 0 else if (std.mem.eql(u8, key, "tests")) info.tests = std.fmt.parseInt(u32, value, 10) catch 0;
             },
             .tags => {
-                if (std.mem.eql(u8, key, "scope")) info.tags_scope = value
-                else if (std.mem.eql(u8, key, "type")) info.tags_type = value;
+                if (std.mem.eql(u8, key, "scope")) info.tags_scope = value else if (std.mem.eql(u8, key, "type")) info.tags_type = value;
             },
             .contributes => {
-                if (std.mem.eql(u8, key, "commands")) info.contributes_commands = value
-                else if (std.mem.eql(u8, key, "tri_subcommands")) info.contributes_tri_subcommands = value
-                else if (std.mem.eql(u8, key, "events")) info.contributes_events = value
-                else if (std.mem.eql(u8, key, "binaries")) info.contributes_binaries = value;
+                if (std.mem.eql(u8, key, "commands")) info.contributes_commands = value else if (std.mem.eql(u8, key, "tri_subcommands")) info.contributes_tri_subcommands = value else if (std.mem.eql(u8, key, "events")) info.contributes_events = value else if (std.mem.eql(u8, key, "binaries")) info.contributes_binaries = value;
             },
             .dependencies => {
                 // Track end of dependencies section
@@ -4065,16 +4079,10 @@ fn parseCellTri(content: []const u8) CellInfo {
                 }
             },
             .permissions => {
-                if (std.mem.eql(u8, key, "level")) info.perm_level = value
-                else if (std.mem.eql(u8, key, "filesystem")) info.perm_filesystem = value
-                else if (std.mem.eql(u8, key, "network")) info.perm_network = value
-                else if (std.mem.eql(u8, key, "process")) info.perm_process = value
-                else if (std.mem.eql(u8, key, "ffi")) info.perm_ffi = value
-                else if (std.mem.eql(u8, key, "concurrency")) info.perm_concurrency = value;
+                if (std.mem.eql(u8, key, "level")) info.perm_level = value else if (std.mem.eql(u8, key, "filesystem")) info.perm_filesystem = value else if (std.mem.eql(u8, key, "network")) info.perm_network = value else if (std.mem.eql(u8, key, "process")) info.perm_process = value else if (std.mem.eql(u8, key, "ffi")) info.perm_ffi = value else if (std.mem.eql(u8, key, "concurrency")) info.perm_concurrency = value;
             },
             .security => {
-                if (std.mem.eql(u8, key, "signed")) info.security_signed = std.mem.eql(u8, value, "true")
-                else if (std.mem.eql(u8, key, "signature")) info.security_signature = value;
+                if (std.mem.eql(u8, key, "signed")) info.security_signed = std.mem.eql(u8, value, "true") else if (std.mem.eql(u8, key, "signature")) info.security_signature = value;
             },
         }
     }

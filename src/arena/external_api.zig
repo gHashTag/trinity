@@ -264,12 +264,10 @@ fn httpPost(
     const result = std.process.Child.run(.{
         .allocator = allocator,
         .argv = &.{
-            "curl", "-s", "--max-time", "30",
-            url,
-            "-H", "content-type: application/json",
-            "-H", auth_h,
-            "-H", "anthropic-version: 2023-06-01",
-            "-d", body,
+            "curl", "-s", "--max-time",                     "30",
+            url,    "-H", "content-type: application/json", "-H",
+            auth_h, "-H", "anthropic-version: 2023-06-01",  "-d",
+            body,
         },
         .max_output_bytes = 1024 * 1024,
     }) catch return .{

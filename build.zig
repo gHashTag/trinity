@@ -92,6 +92,46 @@ pub fn build(b: *std.Build) void {
     libvsa_step.dependOn(&install_static.step);
     libvsa_step.dependOn(&install_header.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════
+    // libtrinity-queen — Queen Dashboard C API (shared + static + header)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const queen_api_mod = b.createModule(.{
+        .root_source_file = b.path("src/queen_api.zig"),
+        .target = target,
+        .optimize = .ReleaseFast,
+    });
+
+    const libqueen_shared = b.addLibrary(.{
+        .name = "trinity-queen",
+        .linkage = .dynamic,
+        .root_module = queen_api_mod,
+    });
+    libqueen_shared.linkLibC();
+    const install_queen_shared = b.addInstallArtifact(libqueen_shared, .{});
+
+    const libqueen_static = b.addLibrary(.{
+        .name = "trinity-queen-static",
+        .linkage = .static,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/queen_api.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    libqueen_static.linkLibC();
+    const install_queen_static = b.addInstallArtifact(libqueen_static, .{});
+
+    const install_queen_header = b.addInstallHeaderFile(
+        b.path("libs/c/libtrinityvsa/include/trinity_queen.h"),
+        "trinity_queen.h",
+    );
+
+    const libqueen_step = b.step("libqueen", "Build libtrinity-queen (Queen Dashboard C API)");
+    libqueen_step.dependOn(&install_queen_shared.step);
+    libqueen_step.dependOn(&install_queen_static.step);
+    libqueen_step.dependOn(&install_queen_header.step);
+
     // Cross-platform libvsa release builds
     const libvsa_release_step = b.step("release-libvsa", "Build libtrinity-vsa for all platforms");
 
@@ -152,6 +192,17 @@ pub fn build(b: *std.Build) void {
     });
     const run_vsa_tests = b.addRunArtifact(vsa_tests);
     test_step.dependOn(&run_vsa_tests.step);
+
+    // Queen API tests
+    const queen_api_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/queen_api.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_queen_api_tests = b.addRunArtifact(queen_api_tests);
+    test_step.dependOn(&run_queen_api_tests.step);
 
     // Benchmark tests
     const bench_tests = b.addTest(.{

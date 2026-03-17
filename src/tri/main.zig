@@ -25,6 +25,7 @@ const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
 const tri_dev = @import("tri_dev.zig");
 const swe_arena = @import("swe_arena.zig");
+const code_arena = @import("code_arena.zig");
 const spec_template_match = @import("spec_template_match.zig");
 const tri_loop = @import("tri_loop.zig");
 const tri_experience = @import("tri_experience.zig");
@@ -235,6 +236,38 @@ pub fn main() !void {
             try commands.runGitCommand(allocator, git_sub, git_args);
             return;
         }
+        // ═══════════════════════════════════════════════════════════════════
+        // CELL-FIRST DISPATCH (Honeycomb v7)
+        // ═══════════════════════════════════════════════════════════════════
+        // Cell dispatch runs BEFORE hardcoded if-chains. New cells auto-register
+        // commands via contributes.tri_subcommands without touching main.zig.
+        // Reserved commands (below) fall through to their hardcoded handlers.
+        if (!isReservedCommand(first_arg)) {
+            const cell_dispatch = @import("tri_cell_dispatch.zig");
+            // Try two-word command first ("arena battle"), then single ("arena")
+            const full_cmd = if (arg_idx + 1 < args.len)
+                std.fmt.allocPrint(allocator, "{s} {s}", .{ first_arg, args[arg_idx + 1] }) catch null
+            else
+                null;
+            const found = if (full_cmd) |fc|
+                cell_dispatch.findCellCommand(allocator, fc)
+            else
+                null;
+            const cell_cmd = found orelse cell_dispatch.findCellCommand(allocator, first_arg);
+            if (full_cmd) |fc| allocator.free(fc);
+            if (cell_cmd) |cc| {
+                logAgentCommand(args[arg_idx..]);
+                const extra_args = if (found != null and arg_idx + 2 < args.len)
+                    args[arg_idx + 2 ..]
+                else if (arg_idx + 1 < args.len)
+                    args[arg_idx + 1 ..]
+                else
+                    &[_][]const u8{};
+                try cell_dispatch.executeCellCommand(allocator, cc, extra_args);
+                return;
+            }
+        }
+
         // Deploy namespace: route `tri deploy <action>` to runDeployCommand
         if (std.mem.eql(u8, first_arg, "deploy")) {
             const deploy_sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "status";
@@ -322,6 +355,14 @@ pub fn main() !void {
             try tri_chimera.runChimeraCommand(allocator, chimera_args);
             return;
         }
+        // Queen: autonomous daemon (monitor + alerts + Telegram)
+        if (std.mem.eql(u8, first_arg, "queen")) {
+            const queen_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const queen = @import("queen.zig");
+            try queen.runQueenCommand(allocator, queen_args);
+            return;
+        }
         // Ouroboros: self-evolving recursive improvement loop
         if (std.mem.eql(u8, first_arg, "ouroboros")) {
             const ouro_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
@@ -359,6 +400,45 @@ pub fn main() !void {
             const exp_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             logAgentCommand(args[arg_idx..]);
             try tri_experience.runExperienceCommand(allocator, exp_args);
+            return;
+        }
+        // UI: route `tri ui [build|kill]` to Queen UI launcher
+        if (std.mem.eql(u8, first_arg, "ui")) {
+            const ui_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            try commands.runUiCommand(allocator, ui_args);
+            return;
+        }
+        // Cell: route `tri cell <command>` to Honeycomb module management
+        if (std.mem.eql(u8, first_arg, "cell")) {
+            const cell_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_cell = @import("tri_cell.zig");
+            try tri_cell.runCellCommand(allocator, cell_args);
+            return;
+        }
+        // Plugin: route `tri plugin <command>` to plugin CLI
+        if (std.mem.eql(u8, first_arg, "plugin")) {
+            const plugin_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_plugin = @import("tri_plugin.zig");
+            try tri_plugin.runPluginCommand(allocator, plugin_args);
+            return;
+        }
+        // Events: route `tri events [list|emit|status]` to event bus
+        if (std.mem.eql(u8, first_arg, "events")) {
+            const events_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_events = @import("tri_events.zig");
+            try tri_events.runEventsCommand(allocator, events_args);
+            return;
+        }
+        // Init: route `tri init [--cell <name>]` to scaffolding
+        if (std.mem.eql(u8, first_arg, "init")) {
+            const init_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_init = @import("tri_init.zig");
+            try tri_init.runInitCommand(allocator, init_args);
             return;
         }
         // Version: `tri version`
@@ -433,7 +513,14 @@ pub fn main() !void {
             utils.runChatCommand(&state, args[1..]);
         },
         .chat => utils.runChatCommand(&state, cmd_args),
-        .code => utils.runCodeCommand(&state, cmd_args),
+        .code => {
+            // tri code arena → code arena subcommands
+            if (cmd_args.len > 0 and std.mem.eql(u8, cmd_args[0], "arena")) {
+                try code_arena.runCodeArenaCommand(allocator, cmd_args[1..]);
+            } else {
+                utils.runCodeCommand(&state, cmd_args);
+            }
+        },
         .fix => utils.runSWECommand(&state, .BugFix, cmd_args),
         .explain => utils.runSWECommand(&state, .Explain, cmd_args),
         .test_cmd => try commands.runTestCommand(allocator, cmd_args),
@@ -872,6 +959,48 @@ pub fn main() !void {
 }
 
 // =============================================================================
+// RESERVED COMMANDS — these have hardcoded handlers with complex parsing,
+// cell dispatch must NOT override them. Everything else is cell-first.
+// =============================================================================
+
+fn isReservedCommand(cmd: []const u8) bool {
+    // Commands with complex multi-word parsing or special flag handling
+    const reserved = std.StaticStringMap(void).initComptime(.{
+        // Already handled before cell dispatch (test, job, github, git)
+        .{ "test", {} },
+        .{ "job", {} },
+        .{ "issue", {} },
+        .{ "board", {} },
+        .{ "agent", {} },
+        .{ "protocol", {} },
+        .{ "pr", {} },
+        .{ "check", {} },
+        .{ "dispatch", {} },
+        .{ "graphql", {} },
+        .{ "github", {} },
+        .{ "git", {} },
+        // Meta commands about the cell/plugin system itself
+        .{ "cell", {} },
+        .{ "plugin", {} },
+        .{ "events", {} },
+        .{ "init", {} },
+        // Core infrastructure with special parsing
+        .{ "deploy", {} },
+        .{ "notify", {} },
+        .{ "spec", {} },
+        .{ "bench", {} },
+        // System commands
+        .{ "version", {} },
+        .{ "--version", {} },
+        .{ "-v", {} },
+        .{ "--help", {} },
+        .{ "-h", {} },
+        .{ "help", {} },
+    });
+    return reserved.has(cmd);
+}
+
+// =============================================================================
 // AGENT COMMAND LOGGING — env AGENT_NAME → .trinity/agent_commands.log
 // =============================================================================
 
@@ -1257,6 +1386,11 @@ fn dispatchNamespacedCommand(
             try swe_arena.runArenaCommand(allocator, cmd_args);
             return;
         }
+        // Code Arena: tri dev code-arena battle|leaderboard|tasks|history
+        if (std.mem.eql(u8, cmd_name, "code-arena")) {
+            try code_arena.runCodeArenaCommand(allocator, cmd_args);
+            return;
+        }
         // LLM Battle Arena: tri battle serve|battle|leaderboard|bench|tasks
         if (std.mem.eql(u8, cmd_name, "battle")) {
             const tri_battle = @import("tri_battle.zig");
@@ -1365,7 +1499,14 @@ fn dispatchCommand(
 ) !void {
     return switch (cmd) {
         .chat => utils.runChatCommand(state, cmd_args),
-        .code => utils.runCodeCommand(state, cmd_args),
+        .code => {
+            // tri code arena → code arena subcommands
+            if (cmd_args.len > 0 and std.mem.eql(u8, cmd_args[0], "arena")) {
+                try code_arena.runCodeArenaCommand(allocator, cmd_args[1..]);
+            } else {
+                utils.runCodeCommand(state, cmd_args);
+            }
+        },
         .gen => commands.runGenCommand(allocator, cmd_args),
         .convert => commands.runConvertCommand(cmd_args),
         .serve => commands.runServeCommand(allocator, cmd_args),

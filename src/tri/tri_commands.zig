@@ -1382,15 +1382,25 @@ pub fn runUiCommand(allocator: std.mem.Allocator, args: []const []const u8) !voi
         try uiBuild(allocator);
         return;
     }
+    if (std.mem.eql(u8, sub, "screenshot")) {
+        try uiScreenshot(allocator);
+        return;
+    }
+    if (std.mem.eql(u8, sub, "inspect")) {
+        try uiInspect(allocator);
+        return;
+    }
     if (std.mem.eql(u8, sub, "help") or std.mem.eql(u8, sub, "--help")) {
         std.debug.print(
             \\{s}tri ui{s} — Queen UI launcher
             \\
-            \\  {s}tri ui{s}        build + kill old + copy to .app + open
-            \\  {s}tri ui build{s}  swift build only
-            \\  {s}tri ui kill{s}   kill running Trinity.app
+            \\  {s}tri ui{s}            build + kill old + copy to .app + open
+            \\  {s}tri ui build{s}      swift build only
+            \\  {s}tri ui kill{s}       kill running Trinity.app
+            \\  {s}tri ui screenshot{s} capture window → .trinity/ui_screenshot.png
+            \\  {s}tri ui inspect{s}    diagnostic report (process, daemon, build)
             \\
-        , .{ GREEN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET });
+        , .{ GREEN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET, CYAN, RESET });
         return;
     }
 
@@ -1488,6 +1498,142 @@ fn uiOpen(allocator: std.mem.Allocator) !void {
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UI Self-Debug: screenshot + inspect
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn uiScreenshot(allocator: std.mem.Allocator) !void {
+    // Check if Trinity.app is running
+    const pgrep = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "pgrep", "-x", "trinity" },
+        .max_output_bytes = 4096,
+    }) catch {
+        std.debug.print("{s}✗ Trinity.app not running{s}\n", .{ RED, RESET });
+        return error.NotRunning;
+    };
+    defer allocator.free(pgrep.stdout);
+    defer allocator.free(pgrep.stderr);
+
+    const pgrep_code: u8 = switch (pgrep.term) {
+        .Exited => |c| c,
+        else => 1,
+    };
+
+    if (pgrep_code != 0) {
+        std.debug.print("{s}✗ Trinity.app not running — launch with: tri ui{s}\n", .{ RED, RESET });
+        return error.NotRunning;
+    }
+
+    // Capture screenshot
+    std.fs.cwd().makePath(".trinity") catch {};
+    const result = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "screencapture", "-x", "-o", ".trinity/ui_screenshot.png" },
+        .max_output_bytes = 4096,
+    }) catch |err| {
+        std.debug.print("{s}✗ screencapture failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return err;
+    };
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    const code: u8 = switch (result.term) {
+        .Exited => |c| c,
+        else => 1,
+    };
+
+    if (code != 0) {
+        std.debug.print("{s}✗ screencapture failed (exit {d}){s}\n", .{ RED, code, RESET });
+        return error.ScreenshotFailed;
+    }
+
+    std.debug.print("{s}✓ Screenshot saved: .trinity/ui_screenshot.png{s}\n", .{ GREEN, RESET });
+}
+
+fn uiInspect(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n{s}▸ Queen UI Diagnostic{s}\n\n", .{ GOLDEN, RESET });
+
+    // 1. Process check
+    const pgrep = std.process.Child.run(.{
+        .allocator = allocator,
+        .argv = &.{ "pgrep", "-x", "trinity" },
+        .max_output_bytes = 4096,
+    }) catch null;
+
+    if (pgrep) |p| {
+        defer allocator.free(p.stdout);
+        defer allocator.free(p.stderr);
+        const running: u8 = switch (p.term) {
+            .Exited => |c| c,
+            else => 1,
+        };
+        if (running == 0) {
+            const pid_str = std.mem.trimRight(u8, p.stdout, "\n\r ");
+            std.debug.print("  {s}Process:{s}    {s}RUNNING{s} (PID: {s})\n", .{ GRAY, RESET, GREEN, RESET, pid_str });
+        } else {
+            std.debug.print("  {s}Process:{s}    {s}NOT RUNNING{s}\n", .{ GRAY, RESET, RED, RESET });
+        }
+    } else {
+        std.debug.print("  {s}Process:{s}    {s}NOT RUNNING{s}\n", .{ GRAY, RESET, RED, RESET });
+    }
+
+    // 2. Queen daemon state
+    const state_file = std.fs.cwd().openFile(".trinity/queen_state.json", .{}) catch {
+        std.debug.print("  {s}Daemon:{s}     {s}NO STATE{s}\n", .{ GRAY, RESET, RED, RESET });
+        return;
+    };
+    defer state_file.close();
+
+    var state_buf: [1024]u8 = undefined;
+    const n = state_file.read(&state_buf) catch 0;
+    if (n > 0) {
+        const data = state_buf[0..n];
+        if (qt.findJsonU32(data, "\"cycle\":")) |cycle| {
+            std.debug.print("  {s}Daemon:{s}     cycle #{d}", .{ GRAY, RESET, cycle });
+        }
+        if (qt.findJsonI64(data, "\"started_at\":")) |started| {
+            if (started > 0) {
+                const uptime = std.time.timestamp() - started;
+                std.debug.print(" | uptime {d}h {d}m", .{
+                    @divTrunc(uptime, 3600),
+                    @divTrunc(@mod(uptime, 3600), 60),
+                });
+            }
+        }
+        std.debug.print("\n", .{});
+    }
+
+    // 3. Senses freshness
+    const senses_file = std.fs.cwd().openFile(".trinity/queen/senses.json", .{}) catch {
+        std.debug.print("  {s}Senses:{s}     {s}NOT FOUND{s} (run: tri queen once)\n", .{ GRAY, RESET, RED, RESET });
+        return;
+    };
+    defer senses_file.close();
+    const senses_stat = senses_file.stat() catch {
+        std.debug.print("  {s}Senses:{s}     {s}STAT FAILED{s}\n", .{ GRAY, RESET, RED, RESET });
+        return;
+    };
+    const senses_age = std.time.timestamp() - @as(i64, @intCast(@divTrunc(senses_stat.mtime, std.time.ns_per_s)));
+    const fresh = senses_age < 900;
+    std.debug.print("  {s}Senses:{s}     {s}{s}{s} ({d}s ago)\n", .{
+        GRAY,                      RESET,
+        if (fresh) GREEN else RED, if (fresh) "FRESH" else "STALE",
+        RESET,                     senses_age,
+    });
+
+    // 4. Last 5 audit entries
+    const audit_file = std.fs.cwd().openFile(".trinity/queen/audit.jsonl", .{}) catch {
+        std.debug.print("  {s}Audit:{s}      {s}NO LOG{s}\n", .{ GRAY, RESET, GRAY, RESET });
+        return;
+    };
+    defer audit_file.close();
+    const audit_stat = audit_file.stat() catch return;
+    std.debug.print("  {s}Audit:{s}      {d} bytes\n\n", .{ GRAY, RESET, audit_stat.size });
+}
+
+const qt = @import("queen_types.zig");
 
 // BUILTIN REFERENCE
 // ═══════════════════════════════════════════════════════════════════════════════

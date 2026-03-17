@@ -268,7 +268,77 @@ pub const PluginRegistry = struct {
         // This will be expanded as we create adapter plugins
         _ = self;
     }
+
+    /// Register a cell as a plugin (Cell→Plugin bridge).
+    /// Maps cell kind to PluginKind and registers with PRIORITY_OFFICIAL.
+    pub fn registerFromCell(
+        self: *Self,
+        cell_id: []const u8,
+        cell_name: []const u8,
+        cell_kind: []const u8,
+        cell_version: []const u8,
+        cell_capabilities_raw: []const u8,
+    ) !void {
+        // Skip if already registered
+        if (self.plugins.contains(cell_id)) return;
+
+        // Map cell kind string to PluginKind
+        const kind = mapCellKindToPluginKind(cell_kind);
+
+        // Create a lightweight plugin (no vtable execution — metadata only)
+        const plugin = try self.allocator.create(Plugin);
+        plugin.* = .{
+            .metadata = .{
+                .id = cell_id,
+                .name = cell_name,
+                .version = cell_version,
+                .author = "Trinity Cell",
+                .kind = kind,
+                .capabilities = &[_]PluginCapability{},
+                .dependencies = &[_][]const u8{},
+                .trinity_version = ">=1.0.0",
+            },
+            .state = .{ .loaded = true },
+            .vtable = &cell_vtable,
+            .context = @ptrFromInt(1), // Sentinel — cells don't use vtable
+        };
+        _ = cell_capabilities_raw; // stored in cell registry, not parsed here
+
+        try self.register(plugin, .builtin, PRIORITY_OFFICIAL);
+    }
 };
+
+fn mapCellKindToPluginKind(cell_kind: []const u8) PluginKind {
+    const map = std.StaticStringMap(PluginKind).initComptime(.{
+        .{ "core", .vsa_op },
+        .{ "tool", .tool },
+        .{ "agent", .agent },
+        .{ "lib", .backend },
+        .{ "frontend", .frontend },
+        .{ "codegen", .codegen },
+        .{ "validator", .validator },
+        .{ "extension", .firebird_ext },
+        .{ "optimizer", .optimizer },
+    });
+    return map.get(cell_kind) orelse .tool;
+}
+
+// Cell plugin vtable — cells dispatch commands via tri CLI, not direct invoke
+const cell_vtable = interface.PluginVTable{
+    .init_fn = cellNoop,
+    .deinit_fn = cellNoopDeinit,
+    .invoke_fn = cellInvoke,
+    .capabilities_fn = cellCapabilities,
+};
+
+fn cellNoop(_: *anyopaque, _: std.mem.Allocator, _: []const u8) anyerror!void {}
+fn cellNoopDeinit(_: *anyopaque) void {}
+fn cellInvoke(_: *anyopaque, _: []const u8, _: []const u8) anyerror!interface.PluginResult {
+    return interface.PluginResult.ok("Cell commands dispatched via tri CLI", 0);
+}
+fn cellCapabilities(_: *anyopaque) []const interface.PluginCapability {
+    return &[_]interface.PluginCapability{};
+}
 
 // ============================================================================
 // TESTS

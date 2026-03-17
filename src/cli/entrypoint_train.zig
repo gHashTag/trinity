@@ -73,11 +73,11 @@ const TrainConfig = struct {
     // Gradient clipping
     grad_clip: []const u8 = "1.0",
 
-    // Early kill thresholds (EXP-025: relaxed to match median convergence)
-    kill_ppl_10k: []const u8 = "500",
-    kill_ppl_30k: []const u8 = "200",
-    kill_ppl_60k: []const u8 = "100",
-    kill_ppl_80k: []const u8 = "50",
+    // Early kill thresholds (EXP-026: relaxed further — ctx=243 needs ~250@10K, ~80@30K)
+    kill_ppl_10k: []const u8 = "800",
+    kill_ppl_30k: []const u8 = "400",
+    kill_ppl_60k: []const u8 = "200",
+    kill_ppl_80k: []const u8 = "80",
 };
 
 fn envStr(key: []const u8, default: []const u8) []const u8 {
@@ -147,10 +147,10 @@ fn readConfig() TrainConfig {
         .grad_clip = envStr("HSLM_GRAD_CLIP", "1.0"),
 
         // Early kill thresholds
-        .kill_ppl_10k = envStr("HSLM_KILL_PPL_10K", "500"),
-        .kill_ppl_30k = envStr("HSLM_KILL_PPL_30K", "200"),
-        .kill_ppl_60k = envStr("HSLM_KILL_PPL_60K", "100"),
-        .kill_ppl_80k = envStr("HSLM_KILL_PPL_80K", "50"),
+        .kill_ppl_10k = envStr("HSLM_KILL_PPL_10K", "800"),
+        .kill_ppl_30k = envStr("HSLM_KILL_PPL_30K", "400"),
+        .kill_ppl_60k = envStr("HSLM_KILL_PPL_60K", "200"),
+        .kill_ppl_80k = envStr("HSLM_KILL_PPL_80K", "80"),
     };
 }
 
@@ -324,10 +324,10 @@ pub fn main() !void {
         .{ .flag = "--total-lines", .val = config.total_lines, .default = "15600056" },
         .{ .flag = "--val-split", .val = config.val_split, .default = "0.0" },
         .{ .flag = "--grad-clip", .val = config.grad_clip, .default = "1.0" },
-        .{ .flag = "--kill-ppl-10k", .val = config.kill_ppl_10k, .default = "500" },
-        .{ .flag = "--kill-ppl-30k", .val = config.kill_ppl_30k, .default = "200" },
-        .{ .flag = "--kill-ppl-60k", .val = config.kill_ppl_60k, .default = "100" },
-        .{ .flag = "--kill-ppl-80k", .val = config.kill_ppl_80k, .default = "50" },
+        .{ .flag = "--kill-ppl-10k", .val = config.kill_ppl_10k, .default = "800" },
+        .{ .flag = "--kill-ppl-30k", .val = config.kill_ppl_30k, .default = "400" },
+        .{ .flag = "--kill-ppl-60k", .val = config.kill_ppl_60k, .default = "200" },
+        .{ .flag = "--kill-ppl-80k", .val = config.kill_ppl_80k, .default = "80" },
     };
     for (optionals) |opt| {
         if (!std.mem.eql(u8, opt.val, opt.default)) {
@@ -483,7 +483,7 @@ pub fn main() !void {
             argc += 1;
         }
         log.info("NCA: steps={s} grid={s} states={s} rollout={s} entropy=[{s},{s}]", .{
-            config.nca_steps, config.nca_grid, config.nca_states, config.nca_rollout,
+            config.nca_steps,       config.nca_grid,        config.nca_states, config.nca_rollout,
             config.nca_entropy_min, config.nca_entropy_max,
         });
     }
