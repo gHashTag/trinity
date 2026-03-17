@@ -26,6 +26,7 @@ struct ChatScreen: View {
     @State private var showMentionPopup = false
     @State private var mentionQuery = ""
     @State private var showSidebar = true
+    @State private var focusMode = false
     @State private var showModelPopover = false
     @State private var slashCommandResult: String? = nil
     @State private var showThinkingTranscript = false
@@ -49,6 +50,15 @@ struct ChatScreen: View {
     @State private var showInThreadSearch = false
     @State private var inThreadSearchQuery = ""
     @State private var inThreadSearchIndex = 0
+    @State private var showShareCopied = false
+    @State private var showSystemPrompt = false
+    @State private var systemPromptDraft = ""
+    /// Tracks message IDs present at initial thread load so we only animate new ones
+    @State private var initialMessageIDs: Set<UUID> = []
+    /// Set to true after initial thread load completes
+    @State private var initialLoadDone = false
+    /// Brief loading state when switching to a thread with many messages
+    @State private var isLoadingThread = false
     @AppStorage("stylePreset") private var stylePresetRaw: String = StylePreset.concise.rawValue
     @AppStorage("effortLevel") private var effortLevelRaw: String = EffortLevel.medium.rawValue
     @AppStorage("useCtrlEnterToSend") private var useCtrlEnterToSend = false
@@ -92,12 +102,6 @@ struct ChatScreen: View {
 
     private var thread: ChatThread? {
         store.activeThread()
-    }
-
-    /// All user messages in current thread, newest first (for Up/Down history navigation)
-    private var inputHistory: [String] {
-        guard let msgs = thread?.messages else { return [] }
-        return msgs.filter { $0.role == .user }.map(\.text).reversed()
     }
 
     /// Messages matching in-thread search
@@ -212,6 +216,7 @@ struct ChatScreen: View {
                 input: $input,
                 showCommandPalette: $showCommandPalette,
                 showSidebar: $showSidebar,
+                focusMode: $focusMode,
                 showInThreadSearch: $showInThreadSearch,
                 inThreadSearchQuery: $inThreadSearchQuery,
                 inThreadSearchIndex: $inThreadSearchIndex,
@@ -255,13 +260,66 @@ struct ChatScreen: View {
     private var bodyContent: some View {
         ZStack {
             HStack(spacing: 0) {
-                sidebarSection
+                if !focusMode { sidebarSection }
                 mainChatArea
-                commentSidebarSection
+                if !focusMode { commentSidebarSection }
             }
             .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: commentingMessage != nil)
+            .animation(reduceMotion ? nil : .easeInOut(duration: 0.3), value: focusMode)
 
-            overlaysLayer
+            if !focusMode { overlaysLayer }
+
+            // Focus mode exit pill
+            if focusMode {
+                VStack {
+                    HStack {
+                        Spacer()
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.3)) { focusMode = false }
+                        } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                    .font(.system(size: 10, weight: .semibold))
+                                Text("Exit Focus")
+                                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                            }
+                            .foregroundStyle(.white.opacity(0.6))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(.white.opacity(0.08))
+                            .clipShape(Capsule())
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.top, 8)
+                        .padding(.trailing, 12)
+                    }
+                    Spacer()
+                }
+                .transition(.opacity)
+            }
+
+            // Share copied toast
+            if showShareCopied {
+                VStack {
+                    Spacer()
+                    HStack(spacing: 6) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 13))
+                            .foregroundStyle(TrinityTheme.statusOK)
+                        Text("Conversation copied to clipboard")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(.white)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(TrinityTheme.bgCard)
+                    .clipShape(Capsule())
+                    .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
+                    .padding(.bottom, 80)
+                }
+                .transition(.opacity.combined(with: .move(edge: .bottom)))
+                .allowsHitTesting(false)
+            }
         }
     }
 
@@ -269,17 +327,19 @@ struct ChatScreen: View {
 
     private var mainChatArea: some View {
         ZStack(alignment: .bottomTrailing) {
-            Color.black.ignoresSafeArea()
+            (focusMode ? Color(white: 0.04) : Color.black).ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Connection status bar
-                ConnectionStatusBar(modelManager: modelManager, client: client)
+                if !focusMode {
+                    // Connection status bar
+                    ConnectionStatusBar(modelManager: modelManager, client: client)
 
-                // Sticky context meter (always visible when >1K tokens)
-                ContextBar(tokens: estimatedTokens, onCompact: {
-                    guard let tid = store.activeThreadID else { return }
-                    client.checkAutoCompaction(threadID: tid, store: store, modelManager: modelManager)
-                })
+                    // Sticky context meter (always visible when >1K tokens)
+                    ContextBar(tokens: estimatedTokens, onCompact: {
+                        guard let tid = store.activeThreadID else { return }
+                        client.checkAutoCompaction(threadID: tid, store: store, modelManager: modelManager)
+                    })
+                }
 
                 // In-thread search bar (Cmd+F)
                 inThreadSearchSection
@@ -290,7 +350,7 @@ struct ChatScreen: View {
                 Spacer(minLength: 0)
 
                 // Smart suggestions (proactive actions based on Trinity state)
-                if thread?.messages.isEmpty != false {
+                if !focusMode, thread?.messages.isEmpty != false {
                     SmartSuggestions { prompt in
                         input = prompt
                         send()
@@ -302,12 +362,16 @@ struct ChatScreen: View {
                 stickyStreamingBar
 
                 inputAreaContent
-                rateLimitWarningBar
-                budgetWarningBar
+                if !focusMode {
+                    rateLimitWarningBar
+                    budgetWarningBar
+                }
                 replyPreviewBar
                 inputBarView
-                modelSuggestionView
-                modeBarView
+                if !focusMode {
+                    modelSuggestionView
+                    modeBarView
+                }
             }
         }
         .layoutPriority(1)
@@ -357,7 +421,7 @@ struct ChatScreen: View {
         ScrollViewReader { proxy in
             VStack(spacing: 0) {
                 // Pinned messages strip
-                if let threadID = store.activeThreadID {
+                if !focusMode, let threadID = store.activeThreadID {
                     let pinned = store.pinnedMessages(in: threadID)
                     if !pinned.isEmpty {
                         PinnedMessagesStrip(messages: pinned) { messageID in
@@ -376,7 +440,10 @@ struct ChatScreen: View {
                     showScrollToBottom = maxY > 200
                 }
                 .onChange(of: thread?.messages.count) {
-                    withAnimation(.easeOut(duration: 0.15)) {
+                    let anim: Animation = reduceMotion
+                        ? .easeOut(duration: 0.15)
+                        : .spring(response: 0.35, dampingFraction: 0.8)
+                    withAnimation(anim) {
                         proxy.scrollTo("bottom", anchor: .bottom)
                     }
                 }
@@ -408,12 +475,31 @@ struct ChatScreen: View {
                 EmptyThreadView(chatMode: $chatMode, onSuggestion: { suggestion in
                     input = suggestion
                     send()
+                }, onQuickInsert: { text in
+                    input = text
                 })
             }
             // MARK: Thread Stats Card
-            if let t = thread, t.messages.count >= 4 {
-                ThreadStatsCard(thread: t, isExpanded: $showThreadStats)
-                    .padding(.bottom, 12)
+            if !focusMode, let t = thread, t.messages.count >= 4 {
+                HStack(spacing: 6) {
+                    ThreadStatsCard(thread: t, isExpanded: $showThreadStats)
+                    Button(action: shareConversation) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 11))
+                            .foregroundStyle(TrinityTheme.textMuted)
+                            .padding(6)
+                            .background(TrinityTheme.bgCard)
+                            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
+                                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 0.5)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .help("Share conversation to clipboard")
+                    .accessibilityLabel("Share conversation")
+                }
+                .padding(.bottom, 12)
             }
 
             ForEach(thread?.messages ?? []) { msg in
@@ -427,7 +513,7 @@ struct ChatScreen: View {
                     onReply: { replyingTo = $0; focused = true },
                     searchHighlight: searchHighlightFor(msg)
                 )
-                .transition(reduceMotion ? .opacity : .opacity.combined(with: .offset(y: 6)))
+                .transition(messageTransition(for: msg))
             }
 
             errorRetryBlock
@@ -573,6 +659,11 @@ struct ChatScreen: View {
         if !UserDefaults.standard.bool(forKey: "onboardingCompleted") {
             showOnboarding = true
         }
+        // Snapshot existing messages so we don't animate history on load
+        if let msgs = thread?.messages {
+            initialMessageIDs = Set(msgs.map(\.id))
+        }
+        initialLoadDone = true
         Task { @MainActor in
             NotificationService.shared.requestPermission()
             NetworkLog.shared.checkAllProviders()
@@ -581,6 +672,76 @@ struct ChatScreen: View {
             client.loadPersistedQueue()
         }
         startHealthRefreshTimer()
+    }
+
+    // MARK: - Message Entrance Transition
+
+    /// Returns a direction-aware pop-in transition for new messages only.
+    /// History messages (present at load / thread switch) get identity transition.
+    private func messageTransition(for msg: ChatMessage) -> AnyTransition {
+        // Don't animate messages that were already present when thread loaded
+        guard initialLoadDone, !initialMessageIDs.contains(msg.id) else {
+            return .identity
+        }
+        if reduceMotion {
+            return .opacity
+        }
+        let edge: Edge = msg.role == .user ? .trailing : .leading
+        return .asymmetric(
+            insertion: .move(edge: edge).combined(with: .opacity).combined(with: .scale(scale: 0.95)),
+            removal: .opacity
+        )
+    }
+
+    // MARK: - Share Conversation
+
+    private func shareConversation() {
+        guard let thread = thread else { return }
+        let text = Self.formatShareText(thread: thread)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(text, forType: .string)
+        SoundCueManager.shared.playCopy()
+        withAnimation(.easeInOut(duration: 0.2)) { showShareCopied = true }
+        Task { @MainActor in
+            try? await Task.sleep(for: .seconds(2))
+            withAnimation(.easeInOut(duration: 0.2)) { showShareCopied = false }
+        }
+    }
+
+    static func formatShareText(thread: ChatThread) -> String {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateStyle = .medium
+        dateFormatter.timeStyle = .short
+        let dateStr = dateFormatter.string(from: thread.createdAt)
+        let model = thread.messages.compactMap(\.modelID).last ?? "Unknown"
+        let messages = thread.messages
+        let totalCount = messages.count
+        let maxMessages = 20
+        let shareable: ArraySlice<ChatMessage>
+        let omittedNote: String?
+        if totalCount > maxMessages {
+            shareable = messages.suffix(maxMessages)
+            let omitted = totalCount - maxMessages
+            omittedNote = "... (\(omitted) earlier message\(omitted == 1 ? "" : "s") omitted)\n\n"
+        } else {
+            shareable = messages[messages.startIndex...]
+            omittedNote = nil
+        }
+        var lines: [String] = []
+        lines.append("# \(thread.title)")
+        lines.append("*\(dateStr) \u{00b7} \(totalCount) messages \u{00b7} \(model)*")
+        lines.append("")
+        if let note = omittedNote {
+            lines.append(note)
+        }
+        for msg in shareable {
+            let role = msg.role == .user ? "User" : "Assistant"
+            lines.append("**\(role):** \(msg.text)")
+            lines.append("")
+        }
+        lines.append("---")
+        lines.append("*Shared from Queen UI*")
+        return lines.joined(separator: "\n")
     }
 
     // MARK: - Sidebar Section
@@ -1440,10 +1601,35 @@ struct ChatScreen: View {
     }
 
     private var inputBarView: some View {
-        HStack(spacing: 0) {
+        VStack(spacing: 0) {
+            if showSystemPrompt {
+                systemPromptEditorView
+            }
+            HStack(spacing: 0) {
             HStack(spacing: 4) {
                 ModelPicker(modelManager: modelManager)
                 PersonaPicker(selectedPersona: $selectedPersona, showLibrary: $showPersonaLibrary)
+                Button {
+                    if !showSystemPrompt {
+                        if let tid = store.activeThreadID,
+                           let thread = store.threads.first(where: { $0.id == tid }) {
+                            systemPromptDraft = thread.customSystemPrompt ?? ""
+                        } else {
+                            systemPromptDraft = ""
+                        }
+                    }
+                    showSystemPrompt.toggle()
+                } label: {
+                    Image(systemName: "terminal")
+                        .font(.system(size: 13))
+                        .foregroundStyle(
+                            showSystemPrompt ? TrinityTheme.accent :
+                            (store.activeThread()?.customSystemPrompt != nil ? TrinityTheme.golden : Color.white.opacity(0.4))
+                        )
+                }
+                .buttonStyle(.plain)
+                .help("System prompt editor")
+                .accessibilityLabel("Edit system prompt")
             }
             .padding(.leading, 14)
 
@@ -1533,7 +1719,79 @@ struct ChatScreen: View {
                         .stroke(isDropTargeted ? TrinityTheme.accent : Color.white.opacity(0.08), lineWidth: isDropTargeted ? 2 : 1)
                 )
         )
+        } // VStack
         .padding(.horizontal, 60)
+    }
+
+    // MARK: - System Prompt Editor
+
+    private var systemPromptEditorView: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Image(systemName: "terminal")
+                    .font(.system(size: 11))
+                    .foregroundStyle(TrinityTheme.accent)
+                Text("Custom System Prompt")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(TrinityTheme.textMuted)
+                Spacer()
+                Text("\(systemPromptDraft.count) chars")
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundStyle(TrinityTheme.textMuted)
+                Button {
+                    systemPromptDraft = ""
+                    if let tid = store.activeThreadID,
+                       let idx = store.threads.firstIndex(where: { $0.id == tid }) {
+                        store.threads[idx].customSystemPrompt = nil
+                        store.threads[idx].updatedAt = Date()
+                        store.saveThread(tid)
+                    }
+                } label: {
+                    Text("Reset")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(TrinityTheme.statusWarn)
+                }
+                .buttonStyle(.plain)
+                .help("Clear custom prompt, revert to default")
+                Button {
+                    if let tid = store.activeThreadID,
+                       let idx = store.threads.firstIndex(where: { $0.id == tid }) {
+                        let trimmed = systemPromptDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+                        store.threads[idx].customSystemPrompt = trimmed.isEmpty ? nil : trimmed
+                        store.threads[idx].updatedAt = Date()
+                        store.saveThread(tid)
+                    }
+                    showSystemPrompt = false
+                } label: {
+                    Text("Save")
+                        .font(.system(size: 10, weight: .semibold))
+                        .foregroundStyle(TrinityTheme.accent)
+                }
+                .buttonStyle(.plain)
+                .help("Save custom system prompt for this thread")
+            }
+            TextEditor(text: $systemPromptDraft)
+                .font(.system(size: 12, design: .monospaced))
+                .foregroundStyle(TrinityTheme.textPrimary)
+                .scrollContentBackground(.hidden)
+                .frame(minHeight: 60, maxHeight: 120)
+                .padding(8)
+                .background(
+                    RoundedRectangle(cornerRadius: 8)
+                        .fill(Color(hex: 0x111111))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                        )
+                )
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(hex: 0x1A1A1A))
+        )
+        .padding(.bottom, 4)
     }
 
     @ViewBuilder
@@ -1809,10 +2067,13 @@ struct ChatScreen: View {
             try? await Task.sleep(for: .seconds(1))
             showSentConfirmation = false
         }
-        // Sync style preset, effort level, and persona
+        // Sync style preset, effort level, persona, and custom system prompt
         client.stylePreset = stylePreset
         client.effortLevel = effortLevel
         client.activePersona = selectedPersona
+        if let thread = store.threads.first(where: { $0.id == threadID }) {
+            client.customSystemPrompt = thread.customSystemPrompt
+        }
         client.send(text, threadID: threadID, store: store, modelManager: modelManager, mode: chatMode, modelOverride: modelOverride)
 
         // Auto-compaction check after send
@@ -2065,6 +2326,7 @@ private struct NotificationReceiversModifier: ViewModifier {
     @Binding var input: String
     @Binding var showCommandPalette: Bool
     @Binding var showSidebar: Bool
+    @Binding var focusMode: Bool
     @Binding var showInThreadSearch: Bool
     @Binding var inThreadSearchQuery: String
     @Binding var inThreadSearchIndex: Int
@@ -2091,6 +2353,12 @@ private struct NotificationReceiversModifier: ViewModifier {
             .onReceive(NotificationCenter.default.publisher(for: .toggleSidebar)) { _ in
                 withAnimation(.easeInOut(duration: 0.2)) { showSidebar.toggle() }
             }
+            .onReceive(NotificationCenter.default.publisher(for: .toggleFocusMode)) { _ in
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    focusMode.toggle()
+                    if focusMode { showSidebar = false }
+                }
+            }
             .onReceive(NotificationCenter.default.publisher(for: .newThread)) { _ in
                 store.newThread()
             }
@@ -2115,6 +2383,7 @@ private struct NotificationReceiversModifier: ViewModifier {
                 if let last = thread?.messages.last(where: { $0.role == .assistant }) {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(last.text, forType: .string)
+                    SoundCueManager.shared.playCopy()
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: .showThinkingTranscript)) { _ in
@@ -2153,7 +2422,9 @@ private struct NotificationReceiversModifier: ViewModifier {
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: .escapeAction)) { _ in
-                if client.isStreaming {
+                if focusMode {
+                    withAnimation(.easeInOut(duration: 0.3)) { focusMode = false }
+                } else if client.isStreaming {
                     client.stop()
                 } else if showCommandPalette {
                     showCommandPalette = false
@@ -2213,6 +2484,10 @@ private struct ChangeTrackersModifier: ViewModifier {
                     let draft = UserDefaults.standard.string(forKey: "draft_\(tid)") ?? ""
                     input = draft
                 }
+                // Snapshot all messages of the new thread so we don't animate history
+                if let msgs = store.activeThread()?.messages {
+                    initialMessageIDs = Set(msgs.map(\.id))
+                }
             }
             .onChange(of: selectedPersona) { _, newPersona in
                 if let tid = store.activeThreadID,
@@ -2240,6 +2515,7 @@ public extension Notification.Name {
     static let recallLastMessage = Notification.Name("recallLastMessage")
     static let navigateHistoryDown = Notification.Name("navigateHistoryDown")
     static let escapeAction = Notification.Name("escapeAction")
+    static let toggleFocusMode = Notification.Name("toggleFocusMode")
 }
 
 // MARK: - Scroll Offset Preference Key
@@ -2354,6 +2630,21 @@ struct ConnectionStatusBar: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 5)
                 .background(TrinityTheme.accent.opacity(0.08))
+                .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
+            }
+
+            // Checking connection spinner
+            if isOnline == nil {
+                HStack(spacing: 6) {
+                    ProgressView()
+                        .controlSize(.mini)
+                    Text("Checking connection...")
+                        .font(.caption2)
+                        .foregroundStyle(TrinityTheme.textMuted)
+                    Spacer()
+                }
+                .padding(.horizontal, 16)
+                .padding(.vertical, 4)
                 .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
 
@@ -3369,6 +3660,7 @@ struct MessageActionBar: View {
                 actionButton(didCopy ? "checkmark" : "doc.on.doc", tooltip: "Copy", active: didCopy) {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(message.text, forType: .string)
+                    SoundCueManager.shared.playCopy()
                     didCopy = true
                     Task {
                         try? await Task.sleep(for: .seconds(2))
@@ -3563,6 +3855,7 @@ struct ActionIconStyle: ButtonStyle {
 struct EmptyThreadView: View {
     @Binding var chatMode: ChatMode
     var onSuggestion: ((String) -> Void)?
+    var onQuickInsert: ((String) -> Void)?
     @StateObject private var trinityCtx = TrinityContext.shared
 
     private var suggestions: [(String, String, ChatMode)] {
@@ -3587,22 +3880,56 @@ struct EmptyThreadView: View {
         return Array(items.prefix(6))
     }
 
+    private let quickActions: [(icon: String, label: String)] = [
+        ("chevron.left.forwardslash.chevron.right", "Write code"),
+        ("ladybug", "Debug issue"),
+        ("lightbulb", "Explain concept"),
+        ("doc.text.magnifyingglass", "Review PR"),
+    ]
+
     var body: some View {
         VStack(spacing: 24) {
             Spacer(minLength: 60)
 
             // Logo
-            Text("👑")
+            Text("\u{1F451}")
                 .font(.system(size: 56))
 
             Text("Queen")
                 .font(.system(size: 28, weight: .semibold))
                 .foregroundStyle(Color.white)
-            Text("Personal CTO of Trinity")
+            Text("Start a conversation")
                 .font(.system(size: 15))
-                .foregroundStyle(Color.white.opacity(0.4))
+                .foregroundStyle(TrinityTheme.textMuted)
 
-            // Suggestion chips grid
+            // Quick action chips
+            HStack(spacing: 10) {
+                ForEach(quickActions, id: \.label) { action in
+                    Button {
+                        onQuickInsert?(action.label)
+                    } label: {
+                        HStack(spacing: 5) {
+                            Image(systemName: action.icon)
+                                .font(.system(size: 11))
+                                .foregroundStyle(TrinityTheme.accent)
+                            Text(action.label)
+                                .font(.system(size: 12))
+                                .foregroundStyle(Color.white.opacity(0.7))
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.white.opacity(0.04))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            // Contextual suggestion chips grid
             VStack(spacing: 10) {
                 HStack(spacing: 10) {
                     ForEach(0..<3) { i in
@@ -3615,7 +3942,7 @@ struct EmptyThreadView: View {
                     }
                 }
             }
-            .padding(.top, 16)
+            .padding(.top, 8)
 
             Spacer(minLength: 60)
         }

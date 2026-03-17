@@ -152,6 +152,12 @@ public struct MainView: View {
                 return nil
             }
 
+            // Cmd+\ = toggle focus mode
+            if ch == "\\" {
+                NotificationCenter.default.post(name: .toggleFocusMode, object: nil)
+                return nil
+            }
+
             // Cmd+Shift+; = copy last response
             if ch == ";" && event.modifierFlags.contains(.shift) {
                 NotificationCenter.default.post(name: .copyLastResponse, object: nil)
