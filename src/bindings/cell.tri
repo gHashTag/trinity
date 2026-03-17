@@ -1,0 +1,40 @@
+[cell]
+id = "trinity.bindings"
+name = "Language Bindings"
+version = "1.0.0"
+kind = "library"
+path = "src/bindings"
+min_core_version = "1.0.0"
+status = "stable"
+description = "C ABI exports for Python ctypes: sacred constants, parser, math, arrays"
+capabilities = ["ffi", "python", "ctypes", "export"]
+files = 1
+tests = 5
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = []
+exports = ["iglaTriParse", "iglaFibonacci", "iglaGoldenIdentity", "iglaDotProduct"]
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "native"
+concurrency = "none"
+
+[security]
+signed = "true"
+signature = "sha256:03b0ef5d54beaa5415d89bdc004c92afdb1f5b6a3aed5464828f2092d4663979"
