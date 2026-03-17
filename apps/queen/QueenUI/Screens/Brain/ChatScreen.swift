@@ -981,7 +981,7 @@ struct ChatScreen: View {
                     .fill(Color.white.opacity(0.06))
                     .frame(height: 1)
 
-                NetworkDashboard(client: client, modelManager: modelManager)
+                NetworkDashboard(client: client, modelManager: modelManager, store: store)
                     .frame(maxHeight: 220)
             }
             .frame(width: 240)
@@ -5247,6 +5247,78 @@ struct BuildErrorBanner: View {
     }
 }
 
+// MARK: - Context Overflow Banner
+
+struct ContextOverflowBanner: View {
+    let tokens: Int
+    var onSummarize: () -> Void
+    var onNewThread: () -> Void
+
+    private var percentage: Double {
+        min(Double(tokens) / 180_000.0, 1.0)
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 14))
+                .foregroundStyle(TrinityTheme.golden)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Context overflow warning")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(TrinityTheme.golden)
+                Text("\(tokens) tokens (\(Int(percentage * 100))%)")
+                    .font(.system(size: 10))
+                    .foregroundStyle(Color.white.opacity(0.5))
+            }
+
+            Spacer()
+
+            HStack(spacing: 6) {
+                Button {
+                    onSummarize()
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "text.alignleft")
+                            .font(.system(size: 9))
+                        Text("Summarize")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(TrinityTheme.golden)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    onNewThread()
+                } label: {
+                    Text("New thread")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(TrinityTheme.accent)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.white.opacity(0.08))
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(10)
+        .background(TrinityTheme.golden.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(TrinityTheme.golden.opacity(0.3), lineWidth: 1)
+        )
+        .padding(.horizontal, 60)
+        .padding(.bottom, 8)
+    }
+}
+
 // MARK: - Memory Proposal Card (Feature 8)
 
 struct MemoryProposalCard: View {
@@ -5460,6 +5532,7 @@ struct LiveSpeedIndicator: View {
 struct NetworkDashboard: View {
     @ObservedObject var client: ChatClient
     @ObservedObject var modelManager: ModelManager
+    @ObservedObject var store: ThreadStore
     @StateObject private var networkLog = NetworkLog.shared
     @State private var isExpanded = false
 
@@ -5596,7 +5669,7 @@ struct NetworkDashboard: View {
     @ViewBuilder
     private var offlineQueueSection: some View {
         if !client.offlineQueue.isEmpty {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 8) {
                 Text("Offline Queue (\(client.offlineQueue.count))")
                     .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(TrinityTheme.statusWarn)
@@ -5617,45 +5690,33 @@ struct NetworkDashboard: View {
                         .buttonStyle(.plain)
                     }
                 }
-            }
 
-            // TODO: Re-enable when onSummarize is implemented
-            // Spacer()
-            // Button {
-            //     onSummarize()
-            // } label: {
-            //     Text("Summarize")
-            //         .font(.system(size: 10, weight: .bold))
-            //         .foregroundStyle(.black)
-            //         .padding(.horizontal, 8)
-            //         .padding(.vertical, 4)
-            //         .background(TrinityTheme.golden)
-            //         .clipShape(Capsule())
-            // }
-            // .buttonStyle(.plain)
-
-            Button {
-                onNewThread()
-            } label: {
-                Text("New thread")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(TrinityTheme.accent)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.white.opacity(0.08))
-                    .clipShape(Capsule())
+                HStack {
+                    Spacer()
+                    Button {
+                        store.newThread()
+                    } label: {
+                        Text("New thread")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(TrinityTheme.accent)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.white.opacity(0.08))
+                            .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
             }
-            .buttonStyle(.plain)
+            .padding(10)
+            .background(TrinityTheme.golden.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(TrinityTheme.golden.opacity(0.3), lineWidth: 1)
+            )
+            .padding(.horizontal, 60)
+            .padding(.bottom, 6)
         }
-        .padding(10)
-        .background(TrinityTheme.golden.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(TrinityTheme.golden.opacity(0.3), lineWidth: 1)
-        )
-        .padding(.horizontal, 60)
-        .padding(.bottom, 6)
     }
 }
 
