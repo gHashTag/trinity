@@ -943,6 +943,14 @@ class ChatClient: ObservableObject {
                     duration: duration,
                     model: lastModelID
                 )
+                // Rich notification with thread title and response preview
+                let threadTitle = store.threads.first(where: { $0.id == threadID })?.title ?? "Chat"
+                let preview = String(streamingText.prefix(100))
+                NotificationService.shared.streamCompleted(
+                    threadTitle: threadTitle,
+                    preview: preview,
+                    threadID: threadID
+                )
             }
         }
     }

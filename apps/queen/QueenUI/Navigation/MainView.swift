@@ -98,10 +98,14 @@ public struct MainView: View {
                     // Don't consume — let .keyboardShortcut(.escape) also work
                     return event
                 }
-                // Up arrow with no modifiers — recall last user message
+                // Up arrow with no modifiers — navigate history up
                 if event.keyCode == 126 && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == [] {
                     NotificationCenter.default.post(name: .recallLastMessage, object: nil)
-                    // Don't consume — ChatScreen decides whether to handle it
+                    return event
+                }
+                // Down arrow with no modifiers — navigate history down
+                if event.keyCode == 125 && event.modifierFlags.intersection(.deviceIndependentFlagsMask) == [] {
+                    NotificationCenter.default.post(name: .navigateHistoryDown, object: nil)
                     return event
                 }
                 return event
