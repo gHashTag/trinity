@@ -958,7 +958,7 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     if (kill_stalled and !diagnose_mode) {
         var stalled_killed: usize = 0;
         for (state.services[0..state.service_count]) |*svc| {
-            if (svc.status == .stalled and svc.stall_count >= 3) {
+            if (svc.status == .stalled and svc.stall_count >= 2) {
                 print("  {s}💀 KILL STALLED:{s} {s} (stall_count={d}, step={d}, PPL={d:.1})\n", .{
                     RED, RESET, svc.svcName(), svc.stall_count, svc.current_step, svc.current_ppl,
                 });
@@ -1118,9 +1118,9 @@ pub fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *
             };
             if (svc.status != .running and svc.status != .stalled) continue;
 
-            // Skip stalled services that haven't changed in 3+ polls
-            // Re-poll every 5th cycle to detect recovery
-            if (svc.status == .stalled and svc.stall_count >= 3 and svc.stall_count % 5 != 0) {
+            // Skip stalled services that haven't changed in 2+ polls
+            // Re-poll every 3rd cycle to detect recovery
+            if (svc.status == .stalled and svc.stall_count >= 2 and svc.stall_count % 3 != 0) {
                 continue;
             }
 
@@ -1144,28 +1144,37 @@ pub fn collectMetrics(allocator: Allocator, state: *EvolutionState, api_calls: *
 
             print("  {s}  {s}...{s}", .{ DIM, svc_name, RESET });
 
-            // Rate limit — 200ms between calls (Railway API limit ~10 req/s)
-            std.Thread.sleep(200 * std.time.ns_per_ms);
+            // Rate limit — 300ms between calls (safe for new accounts with stricter limits)
+            std.Thread.sleep(300 * std.time.ns_per_ms);
 
             // Fresh API client per log call (reusing clients causes TLS hangs)
-            var log_api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch {
-                print(" {s}no token{s}\n", .{ RED, RESET });
-                skipped += 1;
-                continue;
-            };
-
-            // I3: Wider log window for leaders and near-rung services
+            // Retry with exponential backoff on failure (429 rate limit on new accounts)
             const log_limit = logLimitForService(svc);
-            const log_resp_result = log_api.getDeploymentLogs(did, log_limit);
-            log_api.deinit();
-
-            const log_resp = log_resp_result catch {
-                print(" {s}logs failed{s}\n", .{ RED, RESET });
+            var log_resp: []const u8 = undefined;
+            var got_logs = false;
+            var backoff_ms: u64 = 600; // start at 2x base throttle
+            for (0..3) |_| {
+                var log_api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch {
+                    print(" {s}no token{s}\n", .{ RED, RESET });
+                    break;
+                };
+                const result = log_api.getDeploymentLogs(did, log_limit);
+                log_api.deinit();
+                if (result) |resp| {
+                    log_resp = resp;
+                    got_logs = true;
+                    break;
+                } else |_| {
+                    std.Thread.sleep(backoff_ms * std.time.ns_per_ms);
+                    backoff_ms *= 2; // 600 → 1200 → 2400ms
+                }
+            }
+            if (!got_logs) {
+                print(" {s}logs failed (3 retries){s}\n", .{ RED, RESET });
                 skipped += 1;
-                // I5: Save partial state before potential hang on next service
                 saveState(state.*) catch {};
                 continue;
-            };
+            }
             defer allocator.free(log_resp);
 
             const log_parsed = std.json.parseFromSlice(std.json.Value, allocator, log_resp, .{}) catch {
@@ -6125,7 +6134,7 @@ fn printHelp() void {
         \\Step options:
         \\  --dry-run        Preview actions without executing
         \\  --sacred         Use sacred φ-weighted fitness + 3^k rungs
-        \\  --kill-stalled   Force-kill all stalled workers (stall_count >= 3)
+        \\  --kill-stalled   Force-kill all stalled workers (stall_count >= 2)
         \\  --issue <N>      Post summary to GitHub issue #N
         \\
         \\Status options:

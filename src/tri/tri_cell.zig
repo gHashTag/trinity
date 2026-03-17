@@ -2334,6 +2334,11 @@ fn runLint(allocator: Allocator, args: []const []const u8) !void {
                     const other_path = jsonStr(other_cell.object, "path");
                     if (std.mem.eql(u8, other_id, cell_id)) continue;
 
+                    // Skip intra-family imports: cells sharing the same path are siblings
+                    // (parent + sub-cells all have path = "src/tri" etc.)
+                    // Cross-imports within one compilation unit are expected, not violations.
+                    if (std.mem.eql(u8, cell_path, other_path)) continue;
+
                     const other_module = if (std.mem.lastIndexOf(u8, other_path, "/")) |slash|
                         other_path[slash + 1 ..]
                     else
