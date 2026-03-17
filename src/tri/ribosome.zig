@@ -12,8 +12,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-/// Directories to scan for cell.tri manifests
-pub const CELL_SCAN_DIRS = [_][]const u8{ "src", "apps", "tools", "fpga", "libs", "specs", "benchmarks", "papers", "data", "contracts" };
+// Re-export from global constants for backward compatibility
+pub const CELL_SCAN_DIRS = @import("const.zig").CELL_SCAN_DIRS;
 
 /// Complete cell manifest — parsed from cell.tri
 /// All string fields are slices into the original content buffer.
