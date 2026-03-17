@@ -242,10 +242,19 @@ pub const DiscoveredCell = struct {
     dir_path: []const u8,
 };
 
+/// Simple in-memory cache for cell discovery
+var cache_state: struct {
+    initialized: bool = false,
+    mtime: i128 = 0,
+    cell_paths: []const []const u8 = &.{},
+    manifests: []const CellManifest = &.{},
+} = .{};
+
+const cache_mutex = std.Thread.Mutex{};
+
 /// Discovery options for benchmarking and cache control
 pub const DiscoveryOptions = struct {
     use_cache: bool = true,
-    parallel: bool = true,
     benchmark: bool = false,
 };
 
@@ -259,308 +268,160 @@ pub const DiscoveryResult = struct {
     total_time_ns: u64 = 0,
 };
 
-/// Cache entry for cell.tri parse results
-const CacheEntry = struct {
-    mtime: i128,
-    manifest: CellManifest,
-    content_hash: u64,
-
-    fn serialize(self: CacheEntry, writer: anytype) !void {
-        try writer.writeInt(i128, self.mtime, .little);
-        try writer.writeInt(u64, self.content_hash, .little);
-        // Store selected fields from manifest
-        try writer.writeInt(u32, @as(u32, @intCast(self.manifest.files)), .little);
-        try writer.writeInt(u32, @as(u32, @intCast(self.manifest.tests)), .little);
-        try writer.writeInt(u16, self.manifest.agent_max_turns, .little);
-        try writer.writeAll(self.manifest.id);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.name);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.version);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.kind);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.path);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.parent);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.status);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.description);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.min_core_version);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.capabilities);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.owner);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.file_patterns);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.tags_scope);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.tags_type);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.contributes_commands);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.contributes_tri_subcommands);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.contributes_events);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.contributes_binaries);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.contributes_exports);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.dependencies_raw);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.perm_level);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.perm_filesystem);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.perm_network);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.perm_process);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.perm_ffi);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.perm_concurrency);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.security_signature);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.dna_cell_id);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.dna_source);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.dna_output);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.dna_contract_raw);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.bio_system);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.bio_organ);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.agent_definition);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.agent_model);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.agent_tools);
-        try writer.writeByte(0);
-        try writer.writeAll(self.manifest.agent_isolation);
-        try writer.writeByte(0);
-    }
-
-    fn deserialize(allocator: Allocator, reader: anytype) !CacheEntry {
-        const mtime = try reader.readInt(i128, .little);
-        const content_hash = try reader.readInt(u64, .little);
-        const files = try reader.readInt(u32, .little);
-        const tests = try reader.readInt(u32, .little);
-        const agent_max_turns = try reader.readInt(u16, .little);
-
-        var manifest = CellManifest{};
-        manifest.files = files;
-        manifest.tests = tests;
-        manifest.agent_max_turns = agent_max_turns;
-
-        // Read null-terminated strings
-        inline for (.{
-            &manifest.id, &manifest.name, &manifest.version, &manifest.kind, &manifest.path,
-            &manifest.parent, &manifest.status, &manifest.description, &manifest.min_core_version,
-            &manifest.capabilities, &manifest.owner, &manifest.file_patterns, &manifest.tags_scope,
-            &manifest.tags_type, &manifest.contributes_commands, &manifest.contributes_tri_subcommands,
-            &manifest.contributes_events, &manifest.contributes_binaries, &manifest.contributes_exports,
-            &manifest.dependencies_raw, &manifest.perm_level, &manifest.perm_filesystem,
-            &manifest.perm_network, &manifest.perm_process, &manifest.perm_ffi, &manifest.perm_concurrency,
-            &manifest.security_signature, &manifest.dna_cell_id, &manifest.dna_source,
-            &manifest.dna_output, &manifest.dna_contract_raw, &manifest.bio_system, &manifest.bio_organ,
-            &manifest.agent_definition, &manifest.agent_model, &manifest.agent_tools, &manifest.agent_isolation,
-        }) |field| {
-            var buf = try std.ArrayList(u8).initCapacity(allocator, 256);
-            while (true) {
-                const byte = try reader.readByte();
-                if (byte == 0) break;
-                try buf.append(allocator, byte);
-            }
-            field.* = try buf.toOwnedSlice(allocator);
-        }
-
-        return .{
-            .mtime = mtime,
-            .content_hash = content_hash,
-            .manifest = manifest,
-        };
-    }
-};
-
-/// Context for parallel directory scanning
-const ScanContext = struct {
-    allocator: Allocator,
-    scan_dir: []const u8,
-    results: *std.array_list.Managed(DiscoveredCell),
-    mutex: std.Thread.Mutex,
-    cache_dir: std.fs.Dir,
-    use_cache: bool,
-    cache_hits: *usize,
-    cache_misses: *usize,
-    parse_time_ns: *u64,
-
-    fn scan(self: *ScanContext) !void {
-        const cwd = std.fs.cwd();
-        var dir = cwd.openDir(self.scan_dir, .{ .iterate = true }) catch return;
-        defer dir.close();
-
-        var walker = dir.walk(self.allocator) catch return;
-        defer walker.deinit();
-
-        while (walker.next() catch null) |entry| {
-            if (entry.kind != .file) continue;
-            if (!std.mem.eql(u8, entry.basename, "cell.tri")) continue;
-
-            const sub_dir = std.fs.path.dirname(entry.path) orelse "";
-            const cell_dir = if (sub_dir.len > 0)
-                try std.fmt.allocPrint(self.allocator, "{s}/{s}", .{ self.scan_dir, sub_dir })
-            else
-                try self.allocator.dupe(u8, self.scan_dir);
-
-            const full_path = try std.fmt.allocPrint(self.allocator, "{s}/{s}", .{ self.scan_dir, entry.path });
-            defer self.allocator.free(full_path);
-
-            // Get file metadata for cache validation
-            const stat = cwd.statFile(full_path) catch continue;
-            const mtime = stat.mtime;
-
-            // Try cache first
-            var use_cached = false;
-            if (self.use_cache) {
-                const cache_key = try std.fmt.allocPrint(self.allocator, "{x}.cell", .{std.hash.Wyhash.hash(0, full_path)});
-                defer self.allocator.free(cache_key);
-
-                if (self.cache_dir.readFileAlloc(self.allocator, cache_key, 65536)) |cached_data| {
-                    defer self.allocator.free(cached_data);
-                    var fbs = std.io.fixedBufferStream(cached_data);
-                    if (CacheEntry.deserialize(self.allocator, fbs.reader())) |cache_entry| {
-                        if (cache_entry.mtime == mtime) {
-                            // Cache hit - reconstruct content from manifest
-                            const content = try self.allocator.dupe(u8, ""); // Empty but valid
-                            self.mutex.lock();
-                            try self.results.append(.{
-                                .content = content,
-                                .manifest = cache_entry.manifest,
-                                .dir_path = cell_dir,
-                            });
-                            self.mutex.unlock();
-                            self.cache_hits.* += 1;
-                            use_cached = true;
-                        } else {
-                            self.cache_misses.* += 1;
-                        }
-                    } else |_| {
-                        self.cache_misses.* += 1;
-                    }
-                } else |_| {
-                    self.cache_misses.* += 1;
-                }
-            }
-
-            if (!use_cached) {
-                // Cache miss or disabled - parse file
-                const parse_start = std.time.nanoTimestamp();
-                const content = cwd.readFileAlloc(self.allocator, full_path, 65536) catch continue;
-                const manifest = parse(content);
-                const parse_end = std.time.nanoTimestamp();
-                self.parse_time_ns.* += @as(u64, @intCast(parse_end - parse_start));
-
-                if (manifest.id.len > 0) {
-                    // Update cache
-                    if (self.use_cache) {
-                        const cache_key = try std.fmt.allocPrint(self.allocator, "{x}.cell", .{std.hash.Wyhash.hash(0, full_path)});
-                        defer self.allocator.free(cache_key);
-
-                        var hash = std.hash.Wyhash.init(0);
-                        hash.update(content);
-                        const content_hash = hash.final();
-
-                        const cache_entry = CacheEntry{
-                            .mtime = mtime,
-                            .content_hash = content_hash,
-                            .manifest = manifest,
-                        };
-
-                        var buf = std.ArrayList(u8).init(self.allocator);
-                        try cache_entry.serialize(buf.writer());
-                        self.cache_dir.writeFile(.{ .sub_path = cache_key, .data = buf.items }) catch {};
-                    }
-
-                    self.mutex.lock();
-                    try self.results.append(.{
-                        .content = content,
-                        .manifest = manifest,
-                        .dir_path = cell_dir,
-                    });
-                    self.mutex.unlock();
-                }
-            }
-        }
-    }
-};
-
-/// Discover and parse all cell.tri manifests with caching and parallel scan.
-/// Returns owned slice of DiscoveredCell with timing information.
+/// Discover and parse all cell.tri manifests with timing information.
 pub fn discoverAllEx(allocator: Allocator, options: DiscoveryOptions) !DiscoveryResult {
-    var results = std.array_list.Managed(DiscoveredCell).init(allocator);
-    errdefer {
-        for (results.items) |c| {
-            allocator.free(c.content);
-            allocator.free(c.dir_path);
-        }
-        results.deinit();
-    }
-
     const total_start = std.time.nanoTimestamp();
 
-    // Ensure cache directory exists
-    std.fs.cwd().makePath(".zig-cache/cells") catch {};
-    var cache_dir = std.fs.cwd().openDir(".zig-cache/cells", .{}) catch |err| {
-        // Fallback: continue without cache if directory fails
-        if (options.benchmark) return err;
-        const empty_result = DiscoveryResult{
-            .cells = try allocator.alloc(DiscoveredCell, 0),
-            .cache_hits = 0,
-            .cache_misses = 0,
-            .scan_time_ns = 0,
-            .parse_time_ns = 0,
-            .total_time_ns = 0,
-        };
-        return empty_result;
-    };
-    defer cache_dir.close();
-
+    // Check if we can use the cache
     var cache_hits: usize = 0;
     var cache_misses: usize = 0;
+
+    const needs_refresh = blk: {
+        if (!options.use_cache) break :blk true;
+        if (!cache_state.initialized) break :blk true;
+
+        // Check if any scan directory was modified
+        const cwd = std.fs.cwd();
+        for (CELL_SCAN_DIRS) |scan_dir| {
+            if (cwd.statFile(scan_dir)) |stat| {
+                if (stat.mtime > cache_state.mtime) break :blk true;
+            } else |_| {
+                break :blk true;
+            }
+        }
+        break :blk false;
+    };
+
+    var scan_results: std.ArrayList(DiscoveredCell) = .init(allocator);
+    defer {
+        if (!needs_refresh) {
+            // Don't free on cache hit
+        } else {
+            for (scan_results.items) |c| {
+                allocator.free(c.content);
+                allocator.free(c.dir_path);
+            }
+        }
+    }
+
     var parse_time_ns: u64 = 0;
 
-    // For simplicity, use sequential scan with caching
-    // The cache provides the main performance benefit
-    var cache_handle = cache_dir;
-    defer cache_handle.close();
+    if (!needs_refresh and options.use_cache) {
+        // Use cached manifests
+        const parse_start = std.time.nanoTimestamp();
+        for (cache_state.cell_paths, cache_state.manifests) |path, manifest| {
+            const content = try allocator.dupe(u8, "");
+            const dir_path = try allocator.dupe(u8, path);
+            try scan_results.append(.{
+                .content = content,
+                .manifest = manifest,
+                .dir_path = dir_path,
+            });
+            cache_hits += 1;
+        }
+        const parse_end = std.time.nanoTimestamp();
+        parse_time_ns = @as(u64, @intCast(parse_end - parse_start));
+    } else {
+        // Full scan
+        const parse_start = std.time.nanoTimestamp();
 
-    for (CELL_SCAN_DIRS) |scan_dir| {
-        var ctx = ScanContext{
-            .allocator = allocator,
-            .scan_dir = scan_dir,
-            .results = &results,
-            .mutex = .{},
-            .cache_dir = cache_handle,
-            .use_cache = options.use_cache,
-            .cache_hits = &cache_hits,
-            .cache_misses = &cache_misses,
-            .parse_time_ns = &parse_time_ns,
-        };
-        _ = ctx.scan() catch {};
+        const cwd = std.fs.cwd();
+
+        // Collect all cell.tri files first
+        var cell_files = std.ArrayList(struct { path: []const u8, mtime: i128 }).init(allocator);
+        defer {
+            for (cell_files.items) |cf| allocator.free(cf.path);
+            cell_files.deinit();
+        }
+
+        for (CELL_SCAN_DIRS) |scan_dir| {
+            var dir = cwd.openDir(scan_dir, .{ .iterate = true }) catch continue;
+            defer dir.close();
+
+            var walker = dir.walk(allocator) catch continue;
+            defer walker.deinit();
+
+            while (walker.next() catch null) |entry| {
+                if (entry.kind != .file) continue;
+                if (!std.mem.eql(u8, entry.basename, "cell.tri")) continue;
+
+                const sub_dir = std.fs.path.dirname(entry.path) orelse "";
+                const cell_dir = if (sub_dir.len > 0)
+                    try std.fmt.allocPrint(allocator, "{s}/{s}", .{ scan_dir, sub_dir })
+                else
+                    try allocator.dupe(u8, scan_dir);
+
+                const full_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ scan_dir, entry.path });
+                const stat = cwd.statFile(full_path) catch {
+                    allocator.free(cell_dir);
+                    allocator.free(full_path);
+                    continue;
+                };
+
+                try cell_files.append(.{ .path = full_path, .mtime = stat.mtime });
+                cache_misses += 1;
+            }
+        }
+
+        // Parse all cells
+        for (cell_files.items) |cf| {
+            const content = cwd.readFileAlloc(allocator, cf.path, 65536) catch continue;
+            const manifest = parse(content);
+
+            if (manifest.id.len > 0) {
+                const sub_dir = std.fs.path.dirname(cf.path) orelse "";
+                const scan_dir = for (CELL_SCAN_DIRS) |d| {
+                    if (std.mem.startsWith(u8, cf.path, d)) break d;
+                } else "src";
+
+                const cell_dir = if (sub_dir.len > 0)
+                    try std.fmt.allocPrint(allocator, "{s}/{s}", .{ scan_dir, sub_dir })
+                else
+                    try allocator.dupe(u8, scan_dir);
+
+                try scan_results.append(.{
+                    .content = content,
+                    .manifest = manifest,
+                    .dir_path = cell_dir,
+                });
+            }
+        }
+
+        const parse_end = std.time.nanoTimestamp();
+        parse_time_ns = @as(u64, @intCast(parse_end - parse_start));
+
+        // Update cache
+        if (options.use_cache) {
+            cache_mutex.lock();
+            defer cache_mutex.unlock();
+
+            // Free old cache
+            if (cache_state.initialized) {
+                const old_cache = cache_state;
+                allocator.free(old_cache.cell_paths);
+                // manifests are slices into content, don't free them
+            }
+
+            // Build new cache
+            var paths = std.ArrayList([]const u8).init(allocator);
+            var manifests = std.ArrayList(CellManifest).init(allocator);
+
+            for (scan_results.items) |cell| {
+                try paths.append(try allocator.dupe(u8, cell.dir_path));
+                try manifests.append(cell.manifest);
+            }
+
+            cache_state.cell_paths = try paths.toOwnedSlice();
+            cache_state.manifests = try manifests.toOwnedSlice();
+            cache_state.mtime = std.time.nanoTimestamp();
+            cache_state.initialized = true;
+        }
     }
 
     const total_end = std.time.nanoTimestamp();
 
     return .{
-        .cells = try results.toOwnedSlice(),
+        .cells = try scan_results.toOwnedSlice(),
         .cache_hits = cache_hits,
         .cache_misses = cache_misses,
         .scan_time_ns = @as(u64, @intCast(total_end - total_start)) - parse_time_ns,
