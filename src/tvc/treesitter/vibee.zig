@@ -85,8 +85,9 @@ pub const TypeInfo = struct {
     name: []const u8,
     kind: TypeKind,
     fields: []FieldInfo,
+};
 
-    pub const TypeKind = enum {
+pub const TypeKind = enum {
         struct,
         enum,
         union,
