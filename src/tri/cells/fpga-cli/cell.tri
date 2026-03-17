@@ -1,0 +1,35 @@
+[cell]
+id = "trinity.tri.fpga-cli"
+name = "FPGA CLI"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "FPGA commands: synthesis, experience tracking, LED test"
+capabilities = ["fpga", "synthesis"]
+tests = 5
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "domain"
+
+[source]
+file_patterns = ["tri_fpga*.zig", "vision_led_test.zig"]
+
+[contributes]
+commands = ["fpga"]
+exports = ["runFpgaCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "none"
+process = "spawn"
+
+[security]
+signed = true
+signature = "sha256:80e58565cb7c6fef5d6de156b6c0b39e4a442396fcf6badd67eddddb91b8f0fe"

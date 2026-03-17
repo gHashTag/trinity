@@ -1,0 +1,35 @@
+[cell]
+id = "trinity.tri.jobs"
+name = "Job System"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Async job runtime: start, status, logs, artifacts, cancel"
+capabilities = ["jobs", "async"]
+tests = 5
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "infra"
+
+[source]
+file_patterns = ["tri_job.zig", "job_*.zig"]
+
+[contributes]
+commands = ["job start", "job status", "job logs"]
+exports = ["runJobCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "none"
+process = "spawn"
+
+[security]
+signed = true
+signature = "sha256:20e2c0aaf55ed0d9bc50750f2a19b033ab1a3c33bfd539984c0aea4fd99769a7"

@@ -1,0 +1,37 @@
+[cell]
+id = "trinity.jit"
+name = "JIT Compiler"
+version = "1.0.0"
+kind = "virtual"
+path = "src"
+status = "experimental"
+description = "JIT compilation: ARM64, x86_64, unified backend, VSA JIT, benchmarks"
+capabilities = ["jit", "codegen", "arm64", "x86_64"]
+files = 6
+tests = 0
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "library"
+
+[source]
+file_patterns = ["jit.zig", "jit_arm64.zig", "jit_x86_64.zig", "jit_unified.zig", "vsa_jit.zig", "bench_jit.zig"]
+
+[contributes]
+exports = ["jit"]
+
+[dependencies]
+trinity.vsa = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "native"
+concurrency = "yes"
+
+[security]
+signed = "true"
+signature = "sha256:0f0018dd3a8ce4dc011d98ba32d677683c81baf3187109aecf5d6603b2f65592"

@@ -30,3 +30,7 @@ network = "none"
 process = "none"
 ffi = "none"
 concurrency = "none"
+
+[security]
+signed = true
+signature = "sha256:20edd31d151d43e5b0b9111e085f5c42ca805830d40515cfe7b58759e15929e4"
