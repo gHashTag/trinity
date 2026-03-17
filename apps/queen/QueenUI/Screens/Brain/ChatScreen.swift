@@ -20,7 +20,16 @@ struct ChatScreen: View {
     @State private var showComparison = false
     @State private var comparisonPrompt = ""
     @State private var showCommandPalette = false
+    @State private var showMentionPopup = false
+    @State private var mentionQuery = ""
+    @State private var showSidebar = true
+    @State private var showModelPopover = false
+    @AppStorage("stylePreset") private var stylePresetRaw: String = StylePreset.concise.rawValue
     @FocusState private var focused: Bool
+
+    private var stylePreset: StylePreset {
+        get { StylePreset(rawValue: stylePresetRaw) ?? .concise }
+    }
 
     private var thread: ChatThread? {
         store.activeThread()
@@ -59,22 +68,32 @@ struct ChatScreen: View {
     var body: some View {
         ZStack {
             HStack(spacing: 0) {
-                // Sidebar with context inspector
-                VStack(spacing: 0) {
-                    ChatSidebar(store: store, modelManager: modelManager)
+                // Sidebar with context inspector (toggleable)
+                if showSidebar {
+                    VStack(spacing: 0) {
+                        ChatSidebar(store: store, modelManager: modelManager)
+
+                        Rectangle()
+                            .fill(Color.white.opacity(0.06))
+                            .frame(height: 1)
+
+                        ContextInspector()
+                            .frame(maxHeight: 200)
+
+                        Rectangle()
+                            .fill(Color.white.opacity(0.06))
+                            .frame(height: 1)
+
+                        NetworkDashboard(client: client)
+                            .frame(maxHeight: 220)
+                    }
+                    .frame(width: 240)
+                    .transition(.move(edge: .leading))
 
                     Rectangle()
                         .fill(Color.white.opacity(0.06))
-                        .frame(height: 1)
-
-                    ContextInspector()
-                        .frame(maxHeight: 200)
+                        .frame(width: 1)
                 }
-                .frame(width: 240)
-
-                Rectangle()
-                    .fill(Color.white.opacity(0.06))
-                    .frame(width: 1)
 
                 // Main chat area
                 ZStack(alignment: .bottomTrailing) {
@@ -82,7 +101,7 @@ struct ChatScreen: View {
 
                     VStack(spacing: 0) {
                         // Connection status bar
-                        ConnectionStatusBar(modelManager: modelManager)
+                        ConnectionStatusBar(modelManager: modelManager, client: client)
 
                         // Messages
                         ScrollViewReader { proxy in
@@ -105,29 +124,128 @@ struct ChatScreen: View {
                                         )
                                     }
 
+                                    // Error retry block (when last assistant message has error)
+                                    if !client.isStreaming,
+                                       let last = thread?.messages.last,
+                                       last.role == .assistant,
+                                       (last.text.hasPrefix("[") && (last.text.contains("Error") || last.text.contains("error") || last.text.contains("timed out") || last.text.contains("key"))) {
+                                        HStack(spacing: 12) {
+                                            Image(systemName: client.lastError?.icon ?? "exclamationmark.triangle.fill")
+                                                .font(.system(size: 14))
+                                                .foregroundStyle(TrinityTheme.statusError)
+                                            Text(client.lastError?.userMessage ?? "Response failed")
+                                                .font(.system(size: 13))
+                                                .foregroundStyle(TrinityTheme.statusError)
+                                                .lineLimit(2)
+                                            Button {
+                                                guard let threadID = store.activeThreadID else { return }
+                                                client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
+                                            } label: {
+                                                HStack(spacing: 4) {
+                                                    Image(systemName: "arrow.clockwise")
+                                                        .font(.system(size: 12, weight: .bold))
+                                                    Text("Retry")
+                                                        .font(.system(size: 12, weight: .bold))
+                                                }
+                                                .foregroundStyle(.black)
+                                                .padding(.horizontal, 14)
+                                                .padding(.vertical, 6)
+                                                .background(TrinityTheme.statusError)
+                                                .clipShape(Capsule())
+                                            }
+                                            .buttonStyle(.plain)
+
+                                            // Smart failover: suggest alternative provider
+                                            if let fallback = modelManager.failoverModel() {
+                                                Button {
+                                                    modelManager.selectedModel = fallback
+                                                    modelManager.persistSelection()
+                                                    guard let threadID = store.activeThreadID else { return }
+                                                    client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
+                                                } label: {
+                                                    HStack(spacing: 4) {
+                                                        Image(systemName: "arrow.triangle.2.circlepath")
+                                                            .font(.system(size: 12, weight: .bold))
+                                                        Text("Try \(fallback.displayName)")
+                                                            .font(.system(size: 12, weight: .bold))
+                                                    }
+                                                    .foregroundStyle(.black)
+                                                    .padding(.horizontal, 14)
+                                                    .padding(.vertical, 6)
+                                                    .background(TrinityTheme.accent)
+                                                    .clipShape(Capsule())
+                                                }
+                                                .buttonStyle(.plain)
+                                            }
+                                        }
+                                        .padding(.vertical, 12)
+                                        .transition(.opacity)
+                                    }
+
                                     // Typing indicator + streaming metrics
                                     if client.isStreaming {
-                                        HStack(spacing: 12) {
-                                            if thread?.messages.last?.text.isEmpty ?? false {
-                                                ThinkingDots()
-                                                Text("Thinking...")
-                                                    .font(.caption)
-                                                    .foregroundStyle(TrinityTheme.textMuted)
+                                        VStack(alignment: .leading, spacing: 6) {
+                                            HStack(spacing: 12) {
+                                                if !client.streamingThinkingText.isEmpty && client.streamingText.isEmpty {
+                                                    // Reasoning mode: show pulsing indicator with elapsed
+                                                    ThinkingDots()
+                                                    Text("Reasoning...")
+                                                        .font(.caption)
+                                                        .foregroundStyle(TrinityTheme.purple)
+                                                    StreamingElapsedTimer()
+                                                } else if thread?.messages.last?.text.isEmpty ?? false {
+                                                    ThinkingDots()
+                                                    Text("Thinking...")
+                                                        .font(.caption)
+                                                        .foregroundStyle(TrinityTheme.textMuted)
+                                                }
+                                                if client.streamingTTFB > 0 {
+                                                    Text("TTFB \(client.streamingTTFB)ms")
+                                                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                                                        .foregroundStyle(client.streamingTTFB > 5000 ? TrinityTheme.statusWarn : TrinityTheme.textMuted)
+                                                }
+                                                if client.streamingTokensPerSec > 0 {
+                                                    Text(String(format: "%.0f tok/s", client.streamingTokensPerSec))
+                                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                                        .foregroundStyle(TrinityTheme.accent)
+                                                }
+                                                if client.streamingOutputTokens > 0 {
+                                                    Text("\(client.streamingOutputTokens) tok")
+                                                        .font(.system(size: 10, design: .monospaced))
+                                                        .foregroundStyle(TrinityTheme.textMuted)
+                                                }
                                             }
-                                            if client.streamingTTFB > 0 {
-                                                Text("TTFB \(client.streamingTTFB)ms")
-                                                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                                    .foregroundStyle(TrinityTheme.textMuted)
-                                            }
-                                            if client.streamingTokensPerSec > 0 {
-                                                Text(String(format: "%.0f tok/s", client.streamingTokensPerSec))
-                                                    .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                                    .foregroundStyle(TrinityTheme.accent)
-                                            }
-                                            if client.streamingOutputTokens > 0 {
-                                                Text("\(client.streamingOutputTokens) tok")
-                                                    .font(.system(size: 10, design: .monospaced))
-                                                    .foregroundStyle(TrinityTheme.textMuted)
+
+                                            // Slow response warning
+                                            if client.isSlowResponse {
+                                                HStack(spacing: 6) {
+                                                    Image(systemName: "tortoise.fill")
+                                                        .font(.system(size: 10))
+                                                    Text("Slow response (>5s)")
+                                                        .font(.system(size: 10, weight: .medium))
+                                                    if let fallback = modelManager.failoverModel() {
+                                                        Button {
+                                                            client.stop()
+                                                            modelManager.selectedModel = fallback
+                                                            modelManager.persistSelection()
+                                                            if let threadID = store.activeThreadID {
+                                                                store.removeLastAssistantMessage(in: threadID)
+                                                                input = thread?.messages.last(where: { $0.role == .user })?.text ?? ""
+                                                            }
+                                                        } label: {
+                                                            Text("Try \(fallback.displayName)")
+                                                                .font(.system(size: 10, weight: .bold))
+                                                                .foregroundStyle(.black)
+                                                                .padding(.horizontal, 8)
+                                                                .padding(.vertical, 3)
+                                                                .background(TrinityTheme.statusWarn)
+                                                                .clipShape(Capsule())
+                                                        }
+                                                        .buttonStyle(.plain)
+                                                    }
+                                                }
+                                                .foregroundStyle(TrinityTheme.statusWarn)
+                                                .transition(.opacity)
                                             }
                                         }
                                         .padding(.vertical, 12)
@@ -191,154 +309,25 @@ struct ChatScreen: View {
                             }
                         }
 
-                        // Attached files chips
-                        if !attachedFiles.isEmpty {
-                            HStack(spacing: 8) {
-                                ForEach(attachedFiles.indices, id: \.self) { idx in
-                                    HStack(spacing: 4) {
-                                        Text("📎")
-                                            .font(.caption2)
-                                        Text(attachedFiles[idx].name)
-                                            .font(.caption2)
-                                            .foregroundStyle(TrinityTheme.accent)
-                                            .lineLimit(1)
-                                        Button {
-                                            attachedFiles.remove(at: idx)
-                                        } label: {
-                                            Image(systemName: "xmark.circle.fill")
-                                                .font(.caption2)
-                                                .foregroundStyle(TrinityTheme.textMuted)
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.white.opacity(0.08))
-                                    .clipShape(Capsule())
+                        // @Mention popup (above input)
+                        if showMentionPopup {
+                            MentionPopup(
+                                query: mentionQuery,
+                                isPresented: $showMentionPopup
+                            ) { value in
+                                // Replace @query with @value in input
+                                if let atRange = input.range(of: "@\(mentionQuery)", options: .backwards) {
+                                    input.replaceSubrange(atRange, with: "@\(value)")
                                 }
-                                Spacer()
+                                showMentionPopup = false
                             }
                             .padding(.horizontal, 60)
-                            .padding(.bottom, 4)
+                            .transition(.opacity.combined(with: .move(edge: .bottom)))
                         }
 
-                        // Input bar — pill shape at bottom
-                        VStack(spacing: 8) {
-                            HStack(spacing: 0) {
-                                // Model picker (left icon area)
-                                ModelPicker(modelManager: modelManager)
-                                    .padding(.leading, 14)
-
-                                TextField(placeholder, text: $input, axis: .vertical)
-                                    .textFieldStyle(.plain)
-                                    .font(.system(size: 15))
-                                    .foregroundStyle(Color.white)
-                                    .focused($focused)
-                                    .lineLimit(1...8)
-                                    .onSubmit { send() }
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 14)
-
-                                // Right utility buttons
-                                HStack(spacing: 8) {
-                                    // Attach
-                                    Button { openFilePicker() } label: {
-                                        Image(systemName: "paperclip")
-                                            .font(.system(size: 15))
-                                            .foregroundStyle(Color.white.opacity(0.4))
-                                    }
-                                    .buttonStyle(.plain)
-                                    .help("Attach file (⌘O)")
-                                    .accessibilityLabel("Attach file")
-
-                                    // Shortcuts
-                                    Button { showShortcuts.toggle() } label: {
-                                        Image(systemName: "keyboard")
-                                            .font(.system(size: 15))
-                                            .foregroundStyle(Color.white.opacity(0.4))
-                                    }
-                                    .buttonStyle(.plain)
-                                    .help("Shortcuts (⌘/)")
-                                    .accessibilityLabel("Keyboard shortcuts")
-
-                                    // Voice
-                                    Button { toggleVoiceInput() } label: {
-                                        Image(systemName: isRecording ? "mic.fill" : "mic")
-                                            .font(.system(size: 15))
-                                            .foregroundStyle(isRecording ? TrinityTheme.statusError : Color.white.opacity(0.4))
-                                    }
-                                    .buttonStyle(.plain)
-                                    .help("Voice input")
-                                    .accessibilityLabel(isRecording ? "Stop recording" : "Voice input")
-
-                                    // Send / Stop button
-                                    Group {
-                                        if client.isStreaming {
-                                            Button(action: { client.stop() }) {
-                                                Image(systemName: "stop.circle.fill")
-                                                    .font(.system(size: 24))
-                                                    .foregroundStyle(TrinityTheme.accent)
-                                            }
-                                            .accessibilityLabel("Stop generating")
-                                        } else {
-                                            Button(action: send) {
-                                                ZStack {
-                                                    Circle()
-                                                        .fill(input.isEmpty ? Color.white.opacity(0.1) : modeColor(chatMode))
-                                                        .frame(width: 32, height: 32)
-                                                    Image(systemName: chatMode == .image ? "photo" : "arrow.up")
-                                                        .font(.system(size: 14, weight: .semibold))
-                                                        .foregroundStyle(input.isEmpty ? Color.white.opacity(0.3) : .black)
-                                                }
-                                            }
-                                            .disabled(input.isEmpty)
-                                            .accessibilityLabel("Send message")
-                                        }
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                                .padding(.trailing, 10)
-                            }
-                            .background(
-                                RoundedRectangle(cornerRadius: 24)
-                                    .fill(Color(hex: 0x1A1A1A))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 24)
-                                            .stroke(isDropTargeted ? TrinityTheme.accent : Color.white.opacity(0.08), lineWidth: isDropTargeted ? 2 : 1)
-                                    )
-                            )
-
-                            // Mode buttons row + context meter
-                            HStack(spacing: 12) {
-                                ForEach(ChatMode.allCases, id: \.rawValue) { mode in
-                                    Button { chatMode = mode } label: {
-                                        HStack(spacing: 4) {
-                                            Image(systemName: mode.icon)
-                                                .font(.system(size: 12))
-                                            Text(mode.rawValue)
-                                                .font(.system(size: 12, weight: .medium))
-                                        }
-                                        .foregroundStyle(chatMode == mode ? .black : Color.white.opacity(0.5))
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 6)
-                                        .background(chatMode == mode ? modeColor(mode) : Color.white.opacity(0.06))
-                                        .clipShape(Capsule())
-                                        .overlay(
-                                            Capsule()
-                                                .stroke(chatMode == mode ? modeColor(mode) : Color.clear, lineWidth: 1.5)
-                                        )
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-
-                                Spacer()
-
-                                // Context meter
-                                ContextMeter(tokens: estimatedTokens)
-                            }
-                        }
-                        .padding(.horizontal, 60)
-                        .padding(.bottom, 16)
+                        inputAreaContent
+                        inputBarView
+                        modeBarView
                     }
                 }
                 .layoutPriority(1)
@@ -407,9 +396,296 @@ struct ChatScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: .toggleCommandPalette)) { _ in
             showCommandPalette.toggle()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .toggleSidebar)) { _ in
+            withAnimation(.easeInOut(duration: 0.2)) { showSidebar.toggle() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .newThread)) { _ in
+            store.newThread()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .copyLastResponse)) { _ in
+            if let last = thread?.messages.last(where: { $0.role == .assistant }) {
+                NSPasteboard.general.clearContents()
+                NSPasteboard.general.setString(last.text, forType: .string)
+            }
+        }
+        // Draft auto-save: persist input text per thread
+        .onChange(of: input) { _, newValue in
+            if let tid = store.activeThreadID {
+                UserDefaults.standard.set(newValue, forKey: "draft_\(tid)")
+            }
+        }
+        .onChange(of: store.activeThreadID) { _, newID in
+            // Save current draft before switching
+            // Restore draft for new thread
+            if let tid = newID {
+                let draft = UserDefaults.standard.string(forKey: "draft_\(tid)") ?? ""
+                input = draft
+            }
+        }
     }
 
-    private func send() {
+    // MARK: - Extracted Input Area Views
+
+    @ViewBuilder
+    private var inputAreaContent: some View {
+        // Context overflow warning
+        if estimatedTokens > 144_000 { // 80% of 180K
+            ContextOverflowBanner(
+                tokens: estimatedTokens,
+                onSummarize: {
+                    input = "Summarize our conversation so far in 3 bullet points, then continue helping me."
+                    send()
+                },
+                onNewThread: {
+                    let summary = thread?.messages.suffix(4).map { "\($0.role == .user ? "User" : "Queen"): \(String($0.text.prefix(100)))" }.joined(separator: "\n") ?? ""
+                    let newThread = store.newThread()
+                    input = "Continue from previous thread:\n\(summary)"
+                    store.activeThreadID = newThread.id
+                }
+            )
+        }
+
+        // Build error banner (above input)
+        BuildErrorBanner { errorPrompt in
+            input = errorPrompt
+            send()
+        }
+
+        // Memory proposal cards
+        if !client.proposedMemories.isEmpty {
+            MemoryProposalCard(
+                memories: client.proposedMemories,
+                onAccept: { entry in
+                    store.saveMemory(entry)
+                    client.proposedMemories.removeAll { $0.id == entry.id }
+                },
+                onDismiss: { entry in
+                    client.proposedMemories.removeAll { $0.id == entry.id }
+                }
+            )
+            .padding(.horizontal, 60)
+        }
+
+        // Attached files chips
+        if !attachedFiles.isEmpty {
+            HStack(spacing: 8) {
+                ForEach(attachedFiles.indices, id: \.self) { idx in
+                    HStack(spacing: 4) {
+                        Image(systemName: "paperclip")
+                            .font(.caption2)
+                        Text(attachedFiles[idx].name)
+                            .font(.caption2)
+                            .foregroundStyle(TrinityTheme.accent)
+                            .lineLimit(1)
+                        Button {
+                            attachedFiles.remove(at: idx)
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.caption2)
+                                .foregroundStyle(TrinityTheme.textMuted)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(Capsule())
+                }
+                Spacer()
+            }
+            .padding(.horizontal, 60)
+            .padding(.bottom, 4)
+        }
+    }
+
+    @ViewBuilder
+    private var inputBarView: some View {
+        HStack(spacing: 0) {
+            ModelPicker(modelManager: modelManager)
+                .padding(.leading, 14)
+
+            MultilineInput(
+                text: $input,
+                placeholder: placeholder,
+                isFocused: $focused,
+                onSubmit: { send() },
+                onImagePaste: { name, _ in
+                    attachedFiles.append((name: name, content: "[Image: \(name)]"))
+                },
+                onMentionTrigger: { query in
+                    mentionQuery = query
+                    showMentionPopup = !query.isEmpty
+                }
+            )
+            .padding(.horizontal, 12)
+            .padding(.vertical, 14)
+
+            HStack(spacing: 8) {
+                Button { openFilePicker() } label: {
+                    Image(systemName: "paperclip")
+                        .font(.system(size: 15))
+                        .foregroundStyle(Color.white.opacity(0.4))
+                }
+                .buttonStyle(.plain)
+                .help("Attach file (⌘O)")
+
+                Button { showShortcuts.toggle() } label: {
+                    Image(systemName: "keyboard")
+                        .font(.system(size: 15))
+                        .foregroundStyle(Color.white.opacity(0.4))
+                }
+                .buttonStyle(.plain)
+                .help("Shortcuts (⌘/)")
+
+                Button { toggleVoiceInput() } label: {
+                    Image(systemName: isRecording ? "mic.fill" : "mic")
+                        .font(.system(size: 15))
+                        .foregroundStyle(isRecording ? TrinityTheme.statusError : Color.white.opacity(0.4))
+                }
+                .buttonStyle(.plain)
+                .help("Voice input")
+
+                sendButton
+            }
+            .padding(.trailing, 10)
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 24)
+                .fill(Color(hex: 0x1A1A1A))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24)
+                        .stroke(isDropTargeted ? TrinityTheme.accent : Color.white.opacity(0.08), lineWidth: isDropTargeted ? 2 : 1)
+                )
+        )
+        .padding(.horizontal, 60)
+    }
+
+    @ViewBuilder
+    private var sendButton: some View {
+        Group {
+            if client.isStreaming {
+                Button(action: { client.stop() }) {
+                    Image(systemName: "stop.circle.fill")
+                        .font(.system(size: 24))
+                        .foregroundStyle(TrinityTheme.accent)
+                }
+            } else {
+                Button(action: { send() }) {
+                    ZStack {
+                        Circle()
+                            .fill(input.isEmpty ? Color.white.opacity(0.1) : modeColor(chatMode))
+                            .frame(width: 32, height: 32)
+                        Image(systemName: chatMode == .image ? "photo" : "arrow.up")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(input.isEmpty ? Color.white.opacity(0.3) : .black)
+                    }
+                }
+                .disabled(input.isEmpty)
+                .popover(isPresented: $showModelPopover) {
+                    VStack(spacing: 4) {
+                        Text("Send with model")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(Color.white.opacity(0.6))
+                            .padding(.top, 8)
+                        ForEach(modelManager.availableModels.filter { modelManager.providerHasKey($0.provider) }) { model in
+                            Button {
+                                showModelPopover = false
+                                sendWithModel(model)
+                            } label: {
+                                HStack {
+                                    Text(model.displayName)
+                                        .font(.system(size: 12))
+                                    if model == modelManager.selectedModel {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 10))
+                                    }
+                                }
+                                .foregroundStyle(Color.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.bottom, 8)
+                    .frame(minWidth: 180)
+                    .background(Color(hex: 0x1A1A1A))
+                }
+                .onLongPressGesture(minimumDuration: 0.5) {
+                    if !input.isEmpty {
+                        showModelPopover = true
+                    }
+                }
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    @ViewBuilder
+    private var modeBarView: some View {
+        HStack(spacing: 12) {
+            ForEach(ChatMode.allCases, id: \.rawValue) { mode in
+                Button { chatMode = mode } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: mode.icon)
+                            .font(.system(size: 12))
+                        Text(mode.rawValue)
+                            .font(.system(size: 12, weight: .medium))
+                    }
+                    .foregroundStyle(chatMode == mode ? .black : Color.white.opacity(0.5))
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(chatMode == mode ? modeColor(mode) : Color.white.opacity(0.06))
+                    .clipShape(Capsule())
+                    .overlay(
+                        Capsule()
+                            .stroke(chatMode == mode ? modeColor(mode) : Color.clear, lineWidth: 1.5)
+                    )
+                }
+                .buttonStyle(.plain)
+            }
+
+            Spacer()
+
+            // Style preset picker
+            Menu {
+                ForEach(StylePreset.allCases) { preset in
+                    Button {
+                        stylePresetRaw = preset.rawValue
+                        client.stylePreset = preset
+                    } label: {
+                        HStack {
+                            Image(systemName: preset.icon)
+                            Text(preset.rawValue)
+                            if stylePreset == preset {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                    }
+                }
+            } label: {
+                HStack(spacing: 3) {
+                    Image(systemName: stylePreset.icon)
+                        .font(.system(size: 10))
+                    Text(stylePreset.rawValue)
+                        .font(.system(size: 10, weight: .medium))
+                }
+                .foregroundStyle(Color.white.opacity(0.5))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.06))
+                .clipShape(Capsule())
+            }
+            .menuStyle(.borderlessButton)
+            .fixedSize()
+
+            ContextMeter(tokens: estimatedTokens)
+        }
+        .padding(.horizontal, 60)
+        .padding(.bottom, 16)
+    }
+
+    private func send(modelOverride: AIModel? = nil) {
         var text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty, !client.isStreaming else { return }
 
@@ -430,7 +706,15 @@ struct ChatScreen: View {
         attachedFiles.removeAll()
 
         input = ""
-        client.send(text, threadID: threadID, store: store, modelManager: modelManager, mode: chatMode)
+        // Clear draft on send
+        UserDefaults.standard.removeObject(forKey: "draft_\(threadID)")
+        // Sync style preset
+        client.stylePreset = stylePreset
+        client.send(text, threadID: threadID, store: store, modelManager: modelManager, mode: chatMode, modelOverride: modelOverride)
+    }
+
+    private func sendWithModel(_ model: AIModel) {
+        send(modelOverride: model)
     }
 
     private func modeColor(_ mode: ChatMode) -> Color {
@@ -450,12 +734,25 @@ struct ChatScreen: View {
         panel.allowedContentTypes = [.plainText, .sourceCode, .json, .yaml, .xml, .png, .jpeg]
         panel.begin { response in
             guard response == .OK else { return }
-            for url in panel.urls.prefix(3) {
-                guard let data = try? Data(contentsOf: url),
-                      let content = String(data: data.prefix(8192), encoding: .utf8) else { continue }
-                let name = url.lastPathComponent
-                DispatchQueue.main.async {
-                    attachedFiles.append((name: name, content: content))
+            let urls = Array(panel.urls.prefix(3))
+            // Load files off main thread
+            Task.detached {
+                for url in urls {
+                    guard let data = try? Data(contentsOf: url) else { continue }
+                    let name = url.lastPathComponent
+                    let size = data.count
+                    if let content = String(data: data.prefix(8192), encoding: .utf8) {
+                        let truncated = size > 8192
+                        let label = truncated ? "\(name) (\(size/1024)KB, truncated to 8KB)" : name
+                        await MainActor.run {
+                            attachedFiles.append((name: label, content: content))
+                        }
+                    } else {
+                        // Binary file — just note the name
+                        await MainActor.run {
+                            attachedFiles.append((name: "\(name) (binary)", content: "[Binary file: \(name), \(size) bytes]"))
+                        }
+                    }
                 }
             }
         }
@@ -467,12 +764,20 @@ struct ChatScreen: View {
         for provider in providers.prefix(3) {
             provider.loadItem(forTypeIdentifier: "public.file-url", options: nil) { item, _ in
                 guard let data = item as? Data,
-                      let url = URL(dataRepresentation: data, relativeTo: nil),
-                      let fileData = try? Data(contentsOf: url),
-                      let content = String(data: fileData.prefix(8192), encoding: .utf8) else { return }
-                let name = url.lastPathComponent
-                DispatchQueue.main.async {
-                    attachedFiles.append((name: name, content: content))
+                      let url = URL(dataRepresentation: data, relativeTo: nil) else { return }
+                // Load off main thread
+                Task.detached {
+                    guard let fileData = try? Data(contentsOf: url) else { return }
+                    let name = url.lastPathComponent
+                    if let content = String(data: fileData.prefix(8192), encoding: .utf8) {
+                        await MainActor.run {
+                            attachedFiles.append((name: name, content: content))
+                        }
+                    } else {
+                        await MainActor.run {
+                            attachedFiles.append((name: "\(name) (binary)", content: "[Binary file: \(name)]"))
+                        }
+                    }
                 }
             }
         }
@@ -588,6 +893,9 @@ struct ChatScreen: View {
 extension Notification.Name {
     static let toggleThreadSearch = Notification.Name("toggleThreadSearch")
     static let toggleCommandPalette = Notification.Name("toggleCommandPalette")
+    static let toggleSidebar = Notification.Name("toggleSidebar")
+    static let copyLastResponse = Notification.Name("copyLastResponse")
+    static let newThread = Notification.Name("newThread")
 }
 
 // MARK: - Scroll Offset Preference Key
@@ -603,8 +911,10 @@ struct ScrollOffsetKey: PreferenceKey {
 
 struct ConnectionStatusBar: View {
     @ObservedObject var modelManager: ModelManager
+    @ObservedObject var client: ChatClient
     @StateObject private var networkLog = NetworkLog.shared
     @State private var isOnline: Bool? = nil  // nil = checking
+    @State private var showFailover = false
 
     private var selectedProviderUp: Bool {
         let provider = modelManager.selectedModel.provider.rawValue
@@ -613,6 +923,39 @@ struct ConnectionStatusBar: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Failover chain notification
+            if let event = client.failoverEvent, showFailover {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.triangle.2.circlepath")
+                        .font(.caption2)
+                    Text(event.from)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(TrinityTheme.statusError)
+                    Image(systemName: "arrow.right")
+                        .font(.system(size: 8))
+                    Text(event.to)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(TrinityTheme.statusOK)
+                    Text("(auto-failover)")
+                        .font(.system(size: 9))
+                        .foregroundStyle(TrinityTheme.textMuted)
+                    Spacer()
+                    Button {
+                        withAnimation { showFailover = false }
+                    } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 9))
+                            .foregroundStyle(Color.white.opacity(0.3))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .foregroundStyle(TrinityTheme.accent)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 5)
+                .background(TrinityTheme.accent.opacity(0.08))
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
             // Offline warning for selected provider
             if let online = isOnline, !online {
                 HStack(spacing: 6) {
@@ -664,8 +1007,21 @@ struct ConnectionStatusBar: View {
                 .padding(.vertical, 4)
                 .background(Color.white.opacity(0.02))
             }
+
+            // Rate limit predictor warning
+            RateLimitWarning(modelManager: modelManager)
         }
         .onAppear { checkConnection() }
+        .onChange(of: client.failoverEvent) {
+            withAnimation(.easeInOut(duration: 0.3)) { showFailover = true }
+            // Auto-dismiss after 8s
+            Task {
+                try? await Task.sleep(for: .seconds(8))
+                await MainActor.run {
+                    withAnimation { showFailover = false }
+                }
+            }
+        }
     }
 
     private func checkConnection() {
@@ -697,6 +1053,7 @@ struct ConnectionStatusBar: View {
 
 struct ContextMeter: View {
     let tokens: Int
+    @StateObject private var networkLog = NetworkLog.shared
     private let maxTokens = 180_000
 
     var body: some View {
@@ -704,8 +1061,9 @@ struct ContextMeter: View {
         let color: Color = ratio < 0.5 ? TrinityTheme.accent
             : ratio < 0.8 ? TrinityTheme.golden
             : TrinityTheme.statusError
+        let cost = networkLog.todayCostEstimate()
 
-        HStack(spacing: 4) {
+        HStack(spacing: 6) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
@@ -720,8 +1078,14 @@ struct ContextMeter: View {
             Text("\(tokens / 1000)K")
                 .font(.system(size: 9, weight: .medium, design: .monospaced))
                 .foregroundStyle(TrinityTheme.textMuted)
+
+            if cost > 0.001 {
+                Text(String(format: "$%.2f", cost))
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundStyle(cost > 1.0 ? TrinityTheme.golden : TrinityTheme.textMuted)
+            }
         }
-        .help("\(tokens) tokens / \(maxTokens / 1000)K context")
+        .help("\(tokens) tokens / \(maxTokens / 1000)K context | Session: $\(String(format: "%.3f", cost))")
     }
 }
 
@@ -729,6 +1093,32 @@ struct ContextMeter: View {
 
 struct ModelPicker: View {
     @ObservedObject var modelManager: ModelManager
+    @StateObject private var networkLog = NetworkLog.shared
+
+    private func providerIsUp(_ provider: AIProvider) -> Bool {
+        networkLog.providerHealth[provider.rawValue]?.isUp ?? true
+    }
+
+    /// Sparkline string using Unicode block chars for TTFB history
+    private func sparkline(for modelID: String) -> String {
+        let points = networkLog.recentTTFB(for: modelID, count: 7)
+        guard points.count >= 2 else { return "" }
+        let bars: [Character] = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]
+        let lo = Double(points.min() ?? 0)
+        let hi = Double(points.max() ?? 1)
+        let range = max(hi - lo, 1)
+        return String(points.map { val in
+            let idx = Int((Double(val) - lo) / range * 7)
+            return bars[min(max(idx, 0), 7)]
+        })
+    }
+
+    /// Average TTFB for display
+    private func avgTTFB(for modelID: String) -> Int? {
+        let points = networkLog.recentTTFB(for: modelID)
+        guard !points.isEmpty else { return nil }
+        return points.reduce(0, +) / points.count
+    }
 
     var body: some View {
         Menu {
@@ -741,7 +1131,19 @@ struct ModelPicker: View {
                                 modelManager.persistSelection()
                             }) {
                                 HStack {
+                                    Circle()
+                                        .fill(providerIsUp(model.provider) ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                                        .frame(width: 6, height: 6)
                                     Text(model.displayName)
+                                    let spark = sparkline(for: model.id)
+                                    if !spark.isEmpty {
+                                        Text(spark)
+                                            .font(.system(size: 9))
+                                        if let avg = avgTTFB(for: model.id) {
+                                            Text("\(avg)ms")
+                                                .font(.system(size: 9, design: .monospaced))
+                                        }
+                                    }
                                     if modelManager.selectedModel == model {
                                         Image(systemName: "checkmark")
                                     }
@@ -753,9 +1155,19 @@ struct ModelPicker: View {
             }
         } label: {
             HStack(spacing: 4) {
+                Circle()
+                    .fill(providerIsUp(modelManager.selectedModel.provider) ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                    .frame(width: 6, height: 6)
                 Text(modelManager.selectedModel.displayName)
                     .font(.system(size: 13, weight: .medium))
                     .foregroundStyle(Color.white.opacity(0.7))
+                // Inline sparkline on picker label
+                let spark = sparkline(for: modelManager.selectedModel.id)
+                if !spark.isEmpty {
+                    Text(spark)
+                        .font(.system(size: 9))
+                        .foregroundStyle(TrinityTheme.accent.opacity(0.7))
+                }
                 Image(systemName: "chevron.down")
                     .font(.system(size: 9, weight: .medium))
                     .foregroundStyle(Color.white.opacity(0.4))
@@ -783,7 +1195,18 @@ struct MessageRow: View {
     @State private var isEditing = false
     @State private var editText = ""
 
+    /// Estimate token share of this message (0...1)
+    private var tokenShare: Double {
+        let chars = Double(message.text.count)
+        guard chars > 0 else { return 0 }
+        let hasCode = message.text.contains("```") || message.text.contains("    ")
+        let ratio: Double = hasCode ? 3.2 : 3.8
+        let tokens = chars / ratio
+        return min(tokens / 180_000.0, 1.0)
+    }
+
     var body: some View {
+        HStack(spacing: 0) {
         VStack(alignment: .leading, spacing: 0) {
             if message.role == .user {
                 // User message — bold, slightly larger
@@ -829,7 +1252,12 @@ struct MessageRow: View {
                                 .multilineTextAlignment(.trailing)
                         }
 
-                        // Timestamp + edit button on hover
+                        // Branch navigator (when message has been edited/forked)
+                        if message.branchID != nil, let threadID = store.activeThreadID {
+                            BranchNavigator(message: message, store: store, threadID: threadID)
+                        }
+
+                        // Timestamp + action buttons on hover
                         if isHovering && !isEditing {
                             HStack(spacing: 8) {
                                 Button {
@@ -842,6 +1270,28 @@ struct MessageRow: View {
                                 }
                                 .buttonStyle(.plain)
                                 .help("Edit & resend")
+
+                                Button {
+                                    NSPasteboard.general.clearContents()
+                                    NSPasteboard.general.setString(message.text, forType: .string)
+                                } label: {
+                                    Image(systemName: "doc.on.doc")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(Color.white.opacity(0.4))
+                                }
+                                .buttonStyle(.plain)
+                                .help("Copy")
+
+                                Button {
+                                    guard let threadID = store.activeThreadID else { return }
+                                    store.toggleBookmark(message.id, in: threadID)
+                                } label: {
+                                    Image(systemName: message.isBookmarked == true ? "bookmark.fill" : "bookmark")
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(message.isBookmarked == true ? TrinityTheme.accent : Color.white.opacity(0.4))
+                                }
+                                .buttonStyle(.plain)
+                                .help("Bookmark")
 
                                 Text(message.timestamp, style: .time)
                                     .font(.system(size: 10))
@@ -894,11 +1344,34 @@ struct MessageRow: View {
                 .fill(Color.white.opacity(0.04))
                 .frame(height: 1)
         }
+
+        // Token budget bar (right edge)
+        if isHovering && !message.text.isEmpty {
+            GeometryReader { geo in
+                let barHeight = max(geo.size.height * min(tokenShare * 50, 1.0), 4)
+                let color: Color = tokenShare < 0.02 ? TrinityTheme.accent.opacity(0.3)
+                    : tokenShare < 0.05 ? TrinityTheme.golden.opacity(0.5)
+                    : TrinityTheme.statusError.opacity(0.5)
+                VStack {
+                    Spacer()
+                    RoundedRectangle(cornerRadius: 1)
+                        .fill(color)
+                        .frame(width: 2, height: barHeight)
+                }
+            }
+            .frame(width: 2)
+            .transition(.opacity)
+        }
+        } // HStack
         .onHover { hovering in
             withAnimation(.easeInOut(duration: 0.15)) {
                 isHovering = hovering
             }
         }
+        // Accessibility
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(message.role == .user ? "You" : "Queen"): \(String(message.text.prefix(200)))")
+        .accessibilityHint(message.role == .user ? "Double-tap to edit" : "Double-tap for actions")
     }
 
     private func submitEdit() {
@@ -912,10 +1385,20 @@ struct MessageRow: View {
     @ViewBuilder
     private var messageContent: some View {
         VStack(alignment: .leading, spacing: 8) {
+            // Thinking/reasoning block (collapsible)
+            if let thinking = message.thinkingText, !thinking.isEmpty {
+                ThinkingBlockView(text: thinking)
+            }
+
+            // Sources panel (shown BEFORE answer for search mode)
+            if let citations = message.citations, !citations.isEmpty {
+                SourcesPanel(citations: citations)
+            }
+
             if message.text.isEmpty {
                 Text(" ")
             } else {
-                MarkdownTextView(text: message.text)
+                MarkdownTextView(text: message.text, citations: message.citations)
             }
 
             // Display attached images (from image generation)
@@ -923,6 +1406,11 @@ struct MessageRow: View {
                 ForEach(urls, id: \.self) { url in
                     ImageBlockView(alt: "Generated Image", url: url)
                 }
+            }
+
+            // Stale data badge
+            if message.role == .assistant, !message.text.isEmpty {
+                StaleBadge(message: message, store: store, client: client, modelManager: modelManager)
             }
         }
     }
@@ -955,15 +1443,20 @@ struct MessageActionBar: View {
         HStack(spacing: 0) {
             // Left: action buttons
             HStack(spacing: 16) {
-                // Retry (shows prominently if error)
+                // Retry — message-level (regenerates from this specific message)
                 actionButton(
                     "arrow.clockwise",
-                    tooltip: "Retry",
+                    tooltip: "Retry this response",
                     active: hasError,
                     tint: hasError ? TrinityTheme.statusError : nil
                 ) {
                     guard let threadID = store.activeThreadID else { return }
-                    client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
+                    client.regenerateFrom(
+                        messageID: message.id,
+                        threadID: threadID,
+                        store: store,
+                        modelManager: modelManager
+                    )
                 }
 
                 actionButton(isSpeaking ? "speaker.slash" : "speaker.wave.2", tooltip: isSpeaking ? "Stop" : "Read aloud") {
@@ -993,6 +1486,15 @@ struct MessageActionBar: View {
                 }
 
                 actionButton(
+                    message.isBookmarked == true ? "bookmark.fill" : "bookmark",
+                    tooltip: "Bookmark",
+                    active: message.isBookmarked == true
+                ) {
+                    guard let threadID = store.activeThreadID else { return }
+                    store.toggleBookmark(message.id, in: threadID)
+                }
+
+                actionButton(
                     "hand.thumbsup\(isLiked == true ? ".fill" : "")",
                     tooltip: "Like",
                     active: isLiked == true
@@ -1014,6 +1516,20 @@ struct MessageActionBar: View {
             }
 
             Spacer()
+
+            // Persisted metrics badge
+            if let ttfb = message.ttfbMs, let tps = message.tokPerSec, let tok = message.outputTokens {
+                HStack(spacing: 6) {
+                    Text("\(ttfb)ms")
+                        .foregroundStyle(TrinityTheme.textMuted)
+                    Text(String(format: "%.0f tok/s", tps))
+                        .foregroundStyle(TrinityTheme.accent)
+                    Text("\(tok) tok")
+                        .foregroundStyle(TrinityTheme.textMuted)
+                }
+                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .padding(.trailing, 8)
+            }
 
             // Right: model badge pill
             if let modelID = message.modelID {
@@ -1177,5 +1693,890 @@ struct EmptyThreadView: View {
             )
         }
         .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Multiline Input (Enter sends, Shift+Enter inserts newline)
+
+struct MultilineInput: NSViewRepresentable {
+    @Binding var text: String
+    var placeholder: String
+    var isFocused: FocusState<Bool>.Binding
+    var onSubmit: () -> Void
+    var onImagePaste: ((String, String) -> Void)? = nil  // (name, base64) callback
+    var onMentionTrigger: ((String) -> Void)? = nil  // trigger @mention popup
+
+    func makeNSView(context: Context) -> NSScrollView {
+        let scrollView = NSScrollView()
+        let textView = NSTextView()
+
+        textView.delegate = context.coordinator
+        textView.isRichText = false
+        textView.font = NSFont.systemFont(ofSize: 15)
+        textView.textColor = .white
+        textView.backgroundColor = .clear
+        textView.drawsBackground = false
+        textView.isVerticallyResizable = true
+        textView.isHorizontallyResizable = false
+        textView.textContainer?.containerSize = NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude)
+        textView.textContainer?.widthTracksTextView = true
+        textView.isAutomaticQuoteSubstitutionEnabled = false
+        textView.isAutomaticDashSubstitutionEnabled = false
+        textView.isAutomaticTextReplacementEnabled = false
+        textView.insertionPointColor = .white
+
+        scrollView.documentView = textView
+        scrollView.hasVerticalScroller = false
+        scrollView.hasHorizontalScroller = false
+        scrollView.drawsBackground = false
+        scrollView.borderType = .noBorder
+
+        context.coordinator.textView = textView
+        return scrollView
+    }
+
+    func updateNSView(_ scrollView: NSScrollView, context: Context) {
+        guard let textView = scrollView.documentView as? NSTextView else { return }
+        if textView.string != text {
+            textView.string = text
+        }
+        context.coordinator.onSubmit = onSubmit
+        context.coordinator.placeholder = placeholder
+        context.coordinator.onImagePaste = onImagePaste
+        context.coordinator.onMentionTrigger = onMentionTrigger
+
+        // Update placeholder visibility
+        context.coordinator.updatePlaceholder()
+
+        if isFocused.wrappedValue {
+            DispatchQueue.main.async {
+                textView.window?.makeFirstResponder(textView)
+            }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(text: $text, onSubmit: onSubmit, placeholder: placeholder, onImagePaste: onImagePaste, onMentionTrigger: onMentionTrigger)
+    }
+
+    class Coordinator: NSObject, NSTextViewDelegate {
+        @Binding var text: String
+        var onSubmit: () -> Void
+        var placeholder: String
+        var onImagePaste: ((String, String) -> Void)?
+        var onMentionTrigger: ((String) -> Void)?
+        weak var textView: NSTextView?
+        private var placeholderLayer: CATextLayer?
+
+        init(text: Binding<String>, onSubmit: @escaping () -> Void, placeholder: String, onImagePaste: ((String, String) -> Void)? = nil, onMentionTrigger: ((String) -> Void)? = nil) {
+            self._text = text
+            self.onSubmit = onSubmit
+            self.placeholder = placeholder
+            self.onImagePaste = onImagePaste
+            self.onMentionTrigger = onMentionTrigger
+        }
+
+        func textDidChange(_ notification: Notification) {
+            guard let textView = notification.object as? NSTextView else { return }
+            text = textView.string
+            updatePlaceholder()
+
+            // Detect @mention trigger
+            let cursorPos = textView.selectedRange().location
+            let str = textView.string
+            if cursorPos > 0 && cursorPos <= str.count {
+                let idx = str.index(str.startIndex, offsetBy: cursorPos)
+                let before = str[str.startIndex..<idx]
+                // Find last @ before cursor
+                if let atRange = before.range(of: "@", options: .backwards) {
+                    let query = String(before[atRange.upperBound...])
+                    if !query.contains(" ") && !query.contains("\n") {
+                        onMentionTrigger?(query)
+                    }
+                }
+            }
+
+            // Constrain height to ~8 lines
+            if let container = textView.textContainer, let layoutManager = textView.layoutManager {
+                layoutManager.ensureLayout(for: container)
+                let rect = layoutManager.usedRect(for: container)
+                let maxHeight: CGFloat = 200  // ~8 lines
+                if let scrollView = textView.enclosingScrollView {
+                    scrollView.hasVerticalScroller = rect.height > maxHeight
+                }
+            }
+        }
+
+        func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+            if commandSelector == #selector(NSResponder.insertNewline(_:)) {
+                // Shift+Enter = newline, Enter = send
+                if NSEvent.modifierFlags.contains(.shift) {
+                    textView.insertNewlineIgnoringFieldEditor(nil)
+                    return true
+                }
+                onSubmit()
+                return true
+            }
+            return false
+        }
+
+        /// Handle paste: intercept images from clipboard
+        func textView(_ textView: NSTextView, shouldChangeTextIn range: NSRange, replacementString text: String?) -> Bool {
+            // Check for image paste on Cmd+V
+            let pb = NSPasteboard.general
+            if text == nil || text?.isEmpty == true {
+                // Check for image data in pasteboard
+                if let tiffData = pb.data(forType: .tiff),
+                   let bitmap = NSBitmapImageRep(data: tiffData),
+                   let pngData = bitmap.representation(using: .png, properties: [:]) {
+                    let name = "clipboard-\(Int(Date().timeIntervalSince1970)).png"
+                    // Save to temp file for attachment
+                    let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+                    try? pngData.write(to: tempURL)
+                    onImagePaste?(name, tempURL.path)
+                    return false // Don't insert text
+                }
+            }
+            return true
+        }
+
+        func updatePlaceholder() {
+            guard let textView = textView else { return }
+            if placeholderLayer == nil {
+                let layer = CATextLayer()
+                layer.font = NSFont.systemFont(ofSize: 15) as CFTypeRef
+                layer.fontSize = 15
+                layer.foregroundColor = NSColor.white.withAlphaComponent(0.3).cgColor
+                layer.contentsScale = NSScreen.main?.backingScaleFactor ?? 2.0
+                textView.wantsLayer = true
+                textView.layer?.addSublayer(layer)
+                placeholderLayer = layer
+            }
+            placeholderLayer?.string = placeholder
+            placeholderLayer?.frame = CGRect(x: 5, y: 0, width: textView.bounds.width - 10, height: 20)
+            placeholderLayer?.isHidden = !text.isEmpty
+        }
+    }
+}
+
+// MARK: - @Mention Popup (Cursor-style context injection)
+
+struct MentionPopup: View {
+    let query: String
+    @Binding var isPresented: Bool
+    var onSelect: (String) -> Void
+
+    private var completions: [(icon: String, label: String, value: String)] {
+        let q = query.lowercased()
+        var items: [(String, String, String)] = []
+
+        // Built-in mention types
+        let types: [(String, String, String)] = [
+            ("doc.text", "file:", "@file:path — attach file content"),
+            ("magnifyingglass", "grep:", "@grep:query — search codebase"),
+            ("terminal", "tri:", "@tri:command — run tri command"),
+            ("hammer", "build", "@build — last build output"),
+            ("chart.bar", "farm", "@farm — farm events snapshot"),
+            ("list.bullet", "issues", "@issues — open GitHub issues"),
+            ("arrow.triangle.branch", "gitdiff", "@gitdiff — current HEAD diff"),
+        ]
+
+        for (icon, prefix, desc) in types {
+            if q.isEmpty || prefix.contains(q) || desc.lowercased().contains(q) {
+                items.append((icon, desc, prefix))
+            }
+        }
+
+        // Common file paths
+        let paths = [
+            "src/vsa.zig", "src/vm.zig", "src/hslm/model.zig",
+            "CLAUDE.md", "build.zig", "src/tri-api/main.zig",
+            "src/arena/arena.zig", ".trinity/ouroboros_state.json",
+        ]
+        for path in paths {
+            if q.isEmpty || path.lowercased().contains(q) {
+                items.append(("doc", path, "file:\(path)"))
+            }
+        }
+
+        return items.prefix(8).map { ($0.0, $0.1, $0.2) }
+    }
+
+    var body: some View {
+        if !completions.isEmpty {
+            VStack(spacing: 0) {
+                ForEach(Array(completions.enumerated()), id: \.offset) { _, item in
+                    Button {
+                        onSelect(item.value)
+                        isPresented = false
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: item.icon)
+                                .font(.system(size: 11))
+                                .foregroundStyle(TrinityTheme.accent)
+                                .frame(width: 16)
+                            Text(item.label)
+                                .font(.system(size: 12))
+                                .foregroundStyle(Color.white.opacity(0.8))
+                                .lineLimit(1)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .background(Color.clear)
+                }
+            }
+            .frame(width: 300)
+            .background(Color(hex: 0x1A1A1A))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+            )
+            .shadow(color: .black.opacity(0.4), radius: 12)
+        }
+    }
+}
+
+// MARK: - Sources Panel (Perplexity-style citations)
+
+struct SourcesPanel: View {
+    let citations: [Citation]
+    @State private var isExpanded = true
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "link")
+                        .font(.system(size: 11))
+                    Text("Sources (\(citations.count))")
+                        .font(.system(size: 12, weight: .medium))
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 9))
+                    Spacer()
+                }
+                .foregroundStyle(TrinityTheme.accent)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                VStack(alignment: .leading, spacing: 4) {
+                    ForEach(Array(citations.prefix(6).enumerated()), id: \.element.id) { idx, citation in
+                        HStack(spacing: 8) {
+                            Text("\(idx + 1)")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundStyle(TrinityTheme.accent)
+                                .frame(width: 16)
+
+                            VStack(alignment: .leading, spacing: 1) {
+                                if let domain = citation.domain {
+                                    Text(domain)
+                                        .font(.system(size: 11, weight: .medium))
+                                        .foregroundStyle(Color.white.opacity(0.7))
+                                }
+                                Text(citation.url)
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(Color.white.opacity(0.3))
+                                    .lineLimit(1)
+                                    .truncationMode(.middle)
+                            }
+
+                            Spacer()
+
+                            Button {
+                                if let url = URL(string: citation.url) {
+                                    NSWorkspace.shared.open(url)
+                                }
+                            } label: {
+                                Image(systemName: "arrow.up.right.square")
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(Color.white.opacity(0.3))
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 4)
+                    }
+                }
+                .padding(.bottom, 8)
+            }
+        }
+        .background(TrinityTheme.accent.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(TrinityTheme.accent.opacity(0.15), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Branch Navigator (ChatGPT-style < 1/2 > arrows)
+
+struct BranchNavigator: View {
+    let message: ChatMessage
+    @ObservedObject var store: ThreadStore
+    let threadID: UUID
+
+    private var branchCount: Int {
+        store.branchCount(for: message.id, in: threadID)
+    }
+
+    private var currentIndex: Int {
+        message.branchIndex ?? 0
+    }
+
+    var body: some View {
+        if message.branchID != nil && branchCount > 1 {
+            HStack(spacing: 4) {
+                Button {
+                    let prev = max(currentIndex - 1, 0)
+                    store.switchBranch(message.id, toIndex: prev, in: threadID)
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(currentIndex > 0 ? Color.white.opacity(0.6) : Color.white.opacity(0.2))
+                }
+                .buttonStyle(.plain)
+                .disabled(currentIndex <= 0)
+
+                Text("\(currentIndex + 1)/\(branchCount)")
+                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.5))
+
+                Button {
+                    let next = min(currentIndex + 1, branchCount - 1)
+                    store.switchBranch(message.id, toIndex: next, in: threadID)
+                } label: {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 9, weight: .bold))
+                        .foregroundStyle(currentIndex < branchCount - 1 ? Color.white.opacity(0.6) : Color.white.opacity(0.2))
+                }
+                .buttonStyle(.plain)
+                .disabled(currentIndex >= branchCount - 1)
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(Color.white.opacity(0.06))
+            .clipShape(Capsule())
+        }
+    }
+}
+
+// MARK: - Thinking Block View (Feature 1)
+
+struct ThinkingBlockView: View {
+    let text: String
+    @State private var isExpanded = false
+
+    var body: some View {
+        DisclosureGroup(isExpanded: $isExpanded) {
+            ScrollView {
+                Text(text)
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.6))
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(10)
+            }
+            .frame(maxHeight: 200)
+        } label: {
+            HStack(spacing: 6) {
+                Image(systemName: "brain")
+                    .font(.system(size: 11))
+                Text("Reasoning")
+                    .font(.system(size: 12, weight: .medium))
+                Text("(\(text.count) chars)")
+                    .font(.system(size: 10))
+                    .foregroundStyle(Color.white.opacity(0.4))
+            }
+            .foregroundStyle(Color.white.opacity(0.5))
+        }
+        .padding(8)
+        .background(Color.white.opacity(0.03))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+        )
+    }
+}
+
+// MARK: - Stale Data Badge (Feature 2)
+
+struct StaleBadge: View {
+    let message: ChatMessage
+    @ObservedObject var store: ThreadStore
+    @ObservedObject var client: ChatClient
+    @ObservedObject var modelManager: ModelManager
+
+    private var isStale: Bool {
+        let age = Date().timeIntervalSince(message.timestamp)
+        guard age > 3600 else { return false }  // 1 hour
+        let keywords = ["PPL", "build", "farm", "Railway", "deploy", "service", "arena", "status", "running", "training"]
+        return keywords.contains(where: { message.text.localizedCaseInsensitiveContains($0) })
+    }
+
+    var body: some View {
+        if isStale {
+            HStack(spacing: 6) {
+                Image(systemName: "clock.badge.exclamationmark")
+                    .font(.system(size: 10))
+                Text("Stale data")
+                    .font(.system(size: 10, weight: .medium))
+
+                Button {
+                    guard let threadID = store.activeThreadID else { return }
+                    client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
+                } label: {
+                    Text("Re-ask")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(TrinityTheme.statusWarn)
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            .foregroundStyle(TrinityTheme.statusWarn)
+            .padding(.top, 4)
+        }
+    }
+}
+
+// MARK: - Build Error Banner (Feature 4)
+
+struct BuildErrorBanner: View {
+    var onFix: (String) -> Void
+    @StateObject private var ctx = TrinityContext.shared
+
+    var body: some View {
+        if ctx.buildOK == false {
+            HStack(spacing: 10) {
+                Image(systemName: "xmark.octagon.fill")
+                    .font(.system(size: 14))
+                    .foregroundStyle(TrinityTheme.statusError)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Build is broken")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(TrinityTheme.statusError)
+                    if let summary = ctx.buildErrorSummary() {
+                        Text(String(summary.prefix(100)))
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundStyle(Color.white.opacity(0.5))
+                            .lineLimit(2)
+                    }
+                }
+
+                Spacer()
+
+                Button {
+                    let error = ctx.buildErrorSummary() ?? "Build is broken"
+                    let prompt = "The build is broken. Fix this error:\n\n```\n\(error)\n```"
+                    onFix(prompt)
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "wrench.fill")
+                            .font(.system(size: 10))
+                        Text("Fix this?")
+                            .font(.system(size: 11, weight: .bold))
+                    }
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(TrinityTheme.statusError)
+                    .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(12)
+            .background(TrinityTheme.statusError.opacity(0.08))
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(TrinityTheme.statusError.opacity(0.3), lineWidth: 1)
+            )
+            .padding(.horizontal, 60)
+            .padding(.bottom, 8)
+        }
+    }
+}
+
+// MARK: - Memory Proposal Card (Feature 8)
+
+struct MemoryProposalCard: View {
+    let memories: [MemoryEntry]
+    var onAccept: (MemoryEntry) -> Void
+    var onDismiss: (MemoryEntry) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 6) {
+                Image(systemName: "brain.head.profile")
+                    .font(.system(size: 11))
+                Text("Remember this?")
+                    .font(.system(size: 11, weight: .bold))
+            }
+            .foregroundStyle(TrinityTheme.purple)
+
+            ForEach(memories) { entry in
+                HStack(spacing: 8) {
+                    Text(String(entry.text.prefix(80)))
+                        .font(.system(size: 11))
+                        .foregroundStyle(Color.white.opacity(0.7))
+                        .lineLimit(2)
+
+                    Spacer()
+
+                    Button {
+                        onAccept(entry)
+                    } label: {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(TrinityTheme.statusOK)
+                    }
+                    .buttonStyle(.plain)
+
+                    Button {
+                        onDismiss(entry)
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Color.white.opacity(0.3))
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.vertical, 4)
+            }
+        }
+        .padding(10)
+        .background(TrinityTheme.purple.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(TrinityTheme.purple.opacity(0.2), lineWidth: 1)
+        )
+        .transition(.opacity.combined(with: .move(edge: .bottom)))
+    }
+}
+
+// MARK: - Streaming Elapsed Timer (Feature W6-1)
+
+struct StreamingElapsedTimer: View {
+    @State private var elapsed: Int = 0
+
+    var body: some View {
+        Text("\(elapsed)s")
+            .font(.system(size: 10, weight: .medium, design: .monospaced))
+            .foregroundStyle(elapsed > 10 ? TrinityTheme.statusWarn : TrinityTheme.textMuted)
+            .task {
+                while !Task.isCancelled {
+                    try? await Task.sleep(for: .seconds(1))
+                    elapsed += 1
+                }
+            }
+    }
+}
+
+// MARK: - Network Dashboard (Feature W6-2)
+
+struct NetworkDashboard: View {
+    @ObservedObject var client: ChatClient
+    @StateObject private var networkLog = NetworkLog.shared
+    @State private var isExpanded = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
+            } label: {
+                HStack(spacing: 6) {
+                    Image(systemName: "network")
+                        .font(.system(size: 10))
+                    Text("Network")
+                        .font(.system(size: 11, weight: .bold))
+                    Spacer()
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.system(size: 8))
+                }
+                .foregroundStyle(Color.white.opacity(0.6))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+            }
+            .buttonStyle(.plain)
+
+            if isExpanded {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 8) {
+                        providerRows
+                        failoverHistory
+                        offlineQueueSection
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 8)
+                }
+            }
+        }
+        .background(Color.black)
+    }
+
+    @ViewBuilder
+    private var providerRows: some View {
+        ForEach(Array(networkLog.providerHealth.values).sorted(by: { $0.name < $1.name }), id: \.name) { status in
+            let stats = networkLog.providerStats(status.name)
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(status.isUp ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                        .frame(width: 5, height: 5)
+                    Text(status.name)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundStyle(Color.white.opacity(0.7))
+                    Spacer()
+                    if let remaining = status.remainingRequests {
+                        Text("\(remaining) left")
+                            .font(.system(size: 8, design: .monospaced))
+                            .foregroundStyle(remaining < 10 ? TrinityTheme.statusError : TrinityTheme.textMuted)
+                    }
+                }
+                HStack(spacing: 8) {
+                    Text("\(stats.requests) req")
+                        .font(.system(size: 8, design: .monospaced))
+                    if stats.errors > 0 {
+                        Text("\(stats.errors) err")
+                            .font(.system(size: 8, design: .monospaced))
+                            .foregroundStyle(TrinityTheme.statusError)
+                    }
+                    if stats.avgTTFB > 0 {
+                        Text("\(stats.avgTTFB)ms")
+                            .font(.system(size: 8, design: .monospaced))
+                    }
+                    if stats.avgTPS > 0 {
+                        Text(String(format: "%.0f t/s", stats.avgTPS))
+                            .font(.system(size: 8, design: .monospaced))
+                            .foregroundStyle(TrinityTheme.accent)
+                    }
+                }
+                .foregroundStyle(TrinityTheme.textMuted)
+
+                // TTFB sparkline
+                let ttfbs = networkLog.recentTTFBForProvider(status.name, count: 10)
+                if ttfbs.count >= 2 {
+                    TTFBSparkline(values: ttfbs)
+                        .frame(height: 16)
+                }
+            }
+            .padding(.vertical, 4)
+        }
+    }
+
+    @ViewBuilder
+    private var failoverHistory: some View {
+        if !client.failoverLog.isEmpty {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Failover Log")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(Color.white.opacity(0.4))
+                ForEach(Array(client.failoverLog.suffix(5).reversed().enumerated()), id: \.offset) { _, event in
+                    HStack(spacing: 4) {
+                        Text(event.from)
+                            .foregroundStyle(TrinityTheme.statusError)
+                        Image(systemName: "arrow.right")
+                            .font(.system(size: 6))
+                        Text(event.to)
+                            .foregroundStyle(TrinityTheme.statusOK)
+                        Spacer()
+                        Text(event.timestamp, style: .time)
+                            .foregroundStyle(TrinityTheme.textMuted)
+                    }
+                    .font(.system(size: 8, design: .monospaced))
+                }
+            }
+            .padding(.top, 4)
+        }
+    }
+
+    @ViewBuilder
+    private var offlineQueueSection: some View {
+        if !client.offlineQueue.isEmpty {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Offline Queue (\(client.offlineQueue.count))")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(TrinityTheme.statusWarn)
+                ForEach(client.offlineQueue) { queued in
+                    HStack(spacing: 4) {
+                        Text(String(queued.text.prefix(30)))
+                            .font(.system(size: 8))
+                            .foregroundStyle(Color.white.opacity(0.5))
+                            .lineLimit(1)
+                        Spacer()
+                        Button {
+                            client.cancelQueued(queued.id)
+                        } label: {
+                            Image(systemName: "xmark.circle")
+                                .font(.system(size: 9))
+                                .foregroundStyle(TrinityTheme.statusError)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .padding(.top, 4)
+        }
+    }
+}
+
+// MARK: - TTFB Sparkline (mini chart)
+
+struct TTFBSparkline: View {
+    let values: [Int]
+
+    var body: some View {
+        GeometryReader { geo in
+            let maxVal = Double(values.max() ?? 1)
+            let minVal = Double(values.min() ?? 0)
+            let range = max(maxVal - minVal, 1)
+            let w = geo.size.width / CGFloat(max(values.count - 1, 1))
+
+            Path { path in
+                for (i, val) in values.enumerated() {
+                    let x = CGFloat(i) * w
+                    let y = geo.size.height * (1 - CGFloat(Double(val) - minVal) / CGFloat(range))
+                    if i == 0 {
+                        path.move(to: CGPoint(x: x, y: y))
+                    } else {
+                        path.addLine(to: CGPoint(x: x, y: y))
+                    }
+                }
+            }
+            .stroke(TrinityTheme.accent.opacity(0.6), lineWidth: 1)
+        }
+    }
+}
+
+// MARK: - Context Overflow Banner (Feature W6-3)
+
+struct ContextOverflowBanner: View {
+    let tokens: Int
+    var onSummarize: () -> Void
+    var onNewThread: () -> Void
+
+    private var percentage: Int {
+        min(Int(Double(tokens) / 180_000 * 100), 100)
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 12))
+                .foregroundStyle(TrinityTheme.golden)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text("Context \(percentage)% full")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(TrinityTheme.golden)
+                Text("\(tokens / 1000)K / 180K tokens")
+                    .font(.system(size: 9, design: .monospaced))
+                    .foregroundStyle(Color.white.opacity(0.4))
+            }
+
+            Spacer()
+
+            Button {
+                onSummarize()
+            } label: {
+                Text("Summarize")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.black)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(TrinityTheme.golden)
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                onNewThread()
+            } label: {
+                Text("New thread")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(TrinityTheme.accent)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.white.opacity(0.08))
+                    .clipShape(Capsule())
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(10)
+        .background(TrinityTheme.golden.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(TrinityTheme.golden.opacity(0.3), lineWidth: 1)
+        )
+        .padding(.horizontal, 60)
+        .padding(.bottom, 6)
+    }
+}
+
+// MARK: - Rate Limit Warning (Feature W6-5)
+
+struct RateLimitWarning: View {
+    @ObservedObject var modelManager: ModelManager
+    @StateObject private var networkLog = NetworkLog.shared
+
+    private var warning: (provider: String, remaining: Int)? {
+        let provider = modelManager.selectedModel.provider.rawValue
+        let (low, remaining) = networkLog.isRateLimitLow(provider)
+        guard low, let r = remaining else { return nil }
+        return (provider, r)
+    }
+
+    var body: some View {
+        if let w = warning {
+            HStack(spacing: 6) {
+                Image(systemName: "gauge.with.needle.fill")
+                    .font(.system(size: 10))
+                Text("\(w.provider): \(w.remaining) requests left")
+                    .font(.system(size: 10, weight: .medium))
+
+                if let fallback = modelManager.failoverModel() {
+                    Button {
+                        modelManager.selectedModel = fallback
+                        modelManager.persistSelection()
+                    } label: {
+                        HStack(spacing: 3) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.system(size: 8))
+                            Text("Switch to \(fallback.displayName)")
+                                .font(.system(size: 9, weight: .bold))
+                        }
+                        .foregroundStyle(.black)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(TrinityTheme.statusWarn)
+                        .clipShape(Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                Spacer()
+            }
+            .foregroundStyle(TrinityTheme.statusWarn)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 4)
+            .background(TrinityTheme.statusWarn.opacity(0.06))
+        }
     }
 }

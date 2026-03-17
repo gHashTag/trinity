@@ -32,6 +32,14 @@ struct ChatThread: Identifiable, Codable {
     }
 }
 
+/// Citation from search mode (Perplexity-style sources)
+struct Citation: Codable, Identifiable {
+    var id: String { url }
+    let url: String
+    let title: String?
+    let domain: String?
+}
+
 struct ChatMessage: Identifiable, Codable {
     var id: UUID
     let role: Role
@@ -42,6 +50,14 @@ struct ChatMessage: Identifiable, Codable {
     var comments: [ChatMessage]?
     var imageURLs: [String]?
     var isBookmarked: Bool?
+    var ttfbMs: Int?
+    var tokPerSec: Double?
+    var outputTokens: Int?
+    var totalMs: Int?
+    var citations: [Citation]?
+    var branchID: UUID?
+    var branchIndex: Int?
+    var thinkingText: String?
 
     enum Role: String, Codable {
         case user, assistant
@@ -57,6 +73,14 @@ struct ChatMessage: Identifiable, Codable {
         self.comments = nil
         self.imageURLs = imageURLs
         self.isBookmarked = nil
+        self.ttfbMs = nil
+        self.tokPerSec = nil
+        self.outputTokens = nil
+        self.totalMs = nil
+        self.citations = nil
+        self.branchID = nil
+        self.branchIndex = nil
+        self.thinkingText = nil
     }
 
     // Backwards-compatible decoding
@@ -71,5 +95,13 @@ struct ChatMessage: Identifiable, Codable {
         comments = try c.decodeIfPresent([ChatMessage].self, forKey: .comments)
         imageURLs = try c.decodeIfPresent([String].self, forKey: .imageURLs)
         isBookmarked = try c.decodeIfPresent(Bool.self, forKey: .isBookmarked)
+        ttfbMs = try c.decodeIfPresent(Int.self, forKey: .ttfbMs)
+        tokPerSec = try c.decodeIfPresent(Double.self, forKey: .tokPerSec)
+        outputTokens = try c.decodeIfPresent(Int.self, forKey: .outputTokens)
+        totalMs = try c.decodeIfPresent(Int.self, forKey: .totalMs)
+        citations = try c.decodeIfPresent([Citation].self, forKey: .citations)
+        branchID = try c.decodeIfPresent(UUID.self, forKey: .branchID)
+        branchIndex = try c.decodeIfPresent(Int.self, forKey: .branchIndex)
+        thinkingText = try c.decodeIfPresent(String.self, forKey: .thinkingText)
     }
 }
