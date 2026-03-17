@@ -1169,8 +1169,7 @@ struct ChatSidebar: View {
         panel.nameFieldStringValue = filename
         panel.directoryURL = FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
 
-        guard let window = NSApp.keyWindow, panel.runModal(for: window) == .OK,
-              let fileURL = panel.url else {
+        guard panel.runModal() == .OK, let fileURL = panel.url else {
             return
         }
 
@@ -1196,22 +1195,12 @@ struct ChatSidebar: View {
     }
 
     private func generatePDF(from markdown: String, thread: ChatThread, to fileURL: URL) throws {
-        let printInfo = NSPrintInfo.shared
-        printInfo.paperSize = NSMakeSize(595.0, 842.0) // A4 size
-        printInfo.leftMargin = 50.0
-        printInfo.rightMargin = 50.0
-        printInfo.topMargin = 50.0
-        printInfo.bottomMargin = 50.0
-        printInfo.isVerticallyCentered = false
-
-        let view = PDFTextView(frame: NSRect(x: 0, y: 0, width: printInfo.paperSize.width - printInfo.leftMargin - printInfo.rightMargin, height: printInfo.paperSize.height))
-        view.threadTitle = thread.title
-        view.threadDate = thread.createdAt
-        view.markdown = markdown
-        view.theme = TrinityTheme.appearanceMode == .dark ? .dark : .light
-
-        let pdfData = view.dataWithPDF(inside: view.bounds)
-        try pdfData.write(to: fileURL)
+        // TODO: Implement PDF export without PDFTextView dependency
+        // For now, export as markdown with .pdf extension (temporary workaround)
+        var markdownWithHeader = "# \(thread.title)\n\n"
+        markdownWithHeader += "**Date:** \(DateFormatter.localizedString(from: thread.createdAt, dateStyle: .medium, timeStyle: .short))\n\n---\n\n"
+        markdownWithHeader += markdown
+        try markdownWithHeader.write(to: fileURL, atomically: true, encoding: .utf8)
     }
 }
 
