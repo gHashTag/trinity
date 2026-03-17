@@ -900,6 +900,23 @@ fn runCheck(allocator: Allocator, args: []const []const u8) !void {
                 });
             }
 
+            // DNA metadata (Phoenix system: regeneration contract)
+            if (cell.hasDNA()) {
+                try writer.print(", \"dna\": {{\"source\": \"{s}\", \"output\": \"{s}\", \"regenerable\": {s}}}", .{
+                    cell.dna_source,
+                    cell.dna_output,
+                    if (cell.dna_regenerable) "true" else "false",
+                });
+            }
+
+            // Biology classification
+            if (cell.bio_system.len > 0) {
+                try writer.print(", \"biology\": {{\"system\": \"{s}\", \"organ\": \"{s}\"}}", .{
+                    cell.bio_system,
+                    cell.bio_organ,
+                });
+            }
+
             try writer.writeAll("}");
         }
 
@@ -5788,10 +5805,22 @@ fn computeHealthScore(obj: std.json.ObjectMap) u8 {
         }
     }
 
-    // Non-agent cells: original scoring
+    // DNA bonus (Phoenix system: +10 for valid DNA, +5 for regenerable)
+    var dna_score: u8 = 0;
+    if (obj.get("dna")) |dna_val| {
+        if (dna_val == .object) {
+            const dna = dna_val.object;
+            const source = jsonStr(dna, "source");
+            if (source.len > 0) dna_score += 10;
+            if (jsonBool(dna, "regenerable")) dna_score += 5;
+        }
+    }
+
+    // Non-agent cells: original scoring + DNA bonus
     const tests_score: u8 = if (tests > 0) 25 else 0;
     const hash_score: u8 = if (content_hash.len > 0) 10 else 0;
-    return owner_score + tests_score + cap_score + contrib_score + hash_score;
+    const base = owner_score + tests_score + cap_score + contrib_score + hash_score + dna_score;
+    return if (base > 100) 100 else base;
 }
 
 fn passesFilters(obj: std.json.ObjectMap, owner_filter: ?[]const u8, scope_filter: ?[]const u8, type_filter: ?[]const u8) bool {

@@ -14,6 +14,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const tri_experience = @import("tri_experience.zig");
 const tri_dev = @import("tri_dev.zig");
+const hippocampus = @import("hippocampus.zig");
 const print = std.debug.print;
 
 const RESET = "\x1b[0m";
@@ -179,6 +180,15 @@ fn runOnce(allocator: Allocator) !void {
 
     // Auto-save experience episode
     saveLoopEpisode(wake_count, results[0..step_count], decision);
+
+    // Dual-write: heartbeat to hippocampus (additive, failure-safe)
+    {
+        const data = std.fmt.allocPrint(allocator, "{{\"wake\":{d},\"ok\":{d},\"fail\":{d},\"decision\":\"{s}\"}}", .{
+            wake_count, ok, fail, decision.toString(),
+        }) catch return;
+        defer allocator.free(data);
+        hippocampus.writeHeartbeat(allocator, "loop", data) catch {};
+    }
 }
 
 fn printStepResult(r: *const StepResult) void {
