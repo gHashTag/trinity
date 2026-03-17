@@ -16,7 +16,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
-const faculty_board = @import("faculty_board.zig");
+const faculty_board = @import("cortex.zig");
 const faculty_types = @import("faculty_types.zig");
 const colors = @import("tri_colors.zig");
 const qt = @import("queen_types.zig");

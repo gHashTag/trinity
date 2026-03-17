@@ -85,7 +85,7 @@ pub fn runChimeraCommand(allocator: Allocator, args: []const []const u8) !void {
 
 fn runFarmCycle(allocator: Allocator) !void {
     const tri_farm = @import("tri_farm.zig");
-    const tri_farm_evolve = @import("tri_farm_evolve.zig");
+    const tri_farm_evolve = @import("evolution.zig");
 
     printChimeraHeader("FARM CYCLE", "status → idle → recycle → evolve", 4);
 
@@ -151,7 +151,7 @@ fn runFarmCycle(allocator: Allocator) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runTrainCycle(allocator: Allocator) !void {
-    const tri_train = @import("tri_train.zig");
+    const tri_train = @import("metabolism.zig");
     const tri_experiment = @import("tri_experiment.zig");
 
     printChimeraHeader("TRAIN CYCLE", "status → loss → diagnose → chart → leaderboard", 5);

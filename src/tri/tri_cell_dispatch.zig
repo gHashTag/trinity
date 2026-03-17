@@ -13,7 +13,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const cell_parser = @import("tri_cell_parser.zig");
+const cell_parser = @import("ribosome.zig");
 const demos = @import("tri_demos.zig");
 const math_commands = @import("math/commands.zig");
 const bio_commands = @import("tri_biology.zig");

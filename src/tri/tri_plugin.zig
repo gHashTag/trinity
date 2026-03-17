@@ -10,7 +10,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
-const cell_parser = @import("tri_cell_parser.zig");
+const cell_parser = @import("ribosome.zig");
 
 const CellPlugin = struct {
     id: []const u8,

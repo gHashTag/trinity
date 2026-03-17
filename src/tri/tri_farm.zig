@@ -45,7 +45,7 @@ pub fn runFarmCommand(allocator: Allocator, args: []const []const u8) !void {
     } else if (std.mem.eql(u8, subcmd, "fill")) {
         return runFarmFill(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "evolve")) {
-        const tri_farm_evolve = @import("tri_farm_evolve.zig");
+        const tri_farm_evolve = @import("evolution.zig");
         return tri_farm_evolve.runEvolveCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();

@@ -23,7 +23,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const experience_hooks = @import("experience_hooks.zig");
 const tri_experience = @import("tri_experience.zig");
-const toxic_verdict = @import("toxic_verdict.zig");
+const toxic_verdict = @import("pathology.zig");
 
 const print = std.debug.print;
 

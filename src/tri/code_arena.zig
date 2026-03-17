@@ -19,7 +19,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const colors = @import("tri_colors.zig");
-const toxic_verdict = @import("toxic_verdict.zig");
+const toxic_verdict = @import("pathology.zig");
 
 const print = std.debug.print;
 
