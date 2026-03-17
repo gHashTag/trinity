@@ -15,6 +15,7 @@ struct ChatThread: Identifiable, Codable {
     var summary: String?
     var customSystemPrompt: String?
     var colorLabel: String?
+    var screen: Screen?
 
     init(id: UUID = UUID(), title: String = "New Thread") {
         self.id = id
@@ -30,6 +31,7 @@ struct ChatThread: Identifiable, Codable {
         self.summary = nil
         self.customSystemPrompt = nil
         self.colorLabel = nil
+        self.screen = nil
     }
 
     // Backwards-compatible decoding (existing threads lack pinned/tags/folderID/personaID)
@@ -48,6 +50,7 @@ struct ChatThread: Identifiable, Codable {
         summary = try c.decodeIfPresent(String.self, forKey: .summary)
         customSystemPrompt = try c.decodeIfPresent(String.self, forKey: .customSystemPrompt)
         colorLabel = try c.decodeIfPresent(String.self, forKey: .colorLabel)
+        screen = try c.decodeIfPresent(Screen.self, forKey: .screen)
     }
 }
 
