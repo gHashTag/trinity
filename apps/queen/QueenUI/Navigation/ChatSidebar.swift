@@ -16,15 +16,17 @@ struct ChatSidebar: View {
     @State private var importResult = ""
     @State private var showExportFormat = false
     @State private var exportThread: ChatThread? = nil
+    @State private var debouncedQuery = ""
+    @State private var searchTask: Task<Void, Never>? = nil
 
     private var filteredThreads: [ChatThread] {
         var base = store.sortedThreads
         if let tag = selectedTag {
             base = base.filter { $0.tags.contains(tag) }
         }
-        if searchQuery.isEmpty { return base }
+        if debouncedQuery.isEmpty { return base }
         // Use fuzzy search for better matching
-        let fuzzyResults = store.fuzzySearch(searchQuery)
+        let fuzzyResults = store.fuzzySearch(debouncedQuery)
         let matchIDs = Set(fuzzyResults.map { $0.thread.id })
         return base.filter { matchIDs.contains($0.id) }
     }
@@ -225,7 +227,7 @@ struct ChatSidebar: View {
             }
 
             // Fuzzy search result count
-            if !searchQuery.isEmpty {
+            if !debouncedQuery.isEmpty {
                 let total = filteredThreads.count
                 HStack {
                     Text("\(total) result\(total == 1 ? "" : "s")")
@@ -328,7 +330,21 @@ struct ChatSidebar: View {
         .onReceive(NotificationCenter.default.publisher(for: .toggleThreadSearch)) { _ in
             withAnimation(.easeInOut(duration: 0.15)) {
                 isSearching.toggle()
-                if !isSearching { searchQuery = "" }
+                if !isSearching { searchQuery = ""; debouncedQuery = "" }
+            }
+        }
+        .onChange(of: searchQuery) { _, newValue in
+            // Debounce fuzzy search by 300ms
+            searchTask?.cancel()
+            if newValue.isEmpty {
+                debouncedQuery = ""
+            } else {
+                searchTask = Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(300))
+                    if !Task.isCancelled {
+                        debouncedQuery = newValue
+                    }
+                }
             }
         }
     }
@@ -753,10 +769,19 @@ struct ThreadRow: View {
         .contextMenu {
             Button(thread.isPinned ? "Unpin" : "Pin") { onPin() }
             Button("Rename") { isRenaming = true }
-            Button("Export as Markdown") { onExport() }
+            Button("Export...") { onExport() }
             Menu("Add Tag") {
                 ForEach(["hslm", "fpga", "patent", "research", "sevo", "arena", "bug", "feature"], id: \.self) { tag in
                     Button("#\(tag)") { onAddTag(tag) }
+                }
+            }
+            if !folders.isEmpty {
+                Menu("Move to Folder") {
+                    ForEach(folders) { folder in
+                        Button(folder.name) { onMoveToFolder?(folder.id) }
+                    }
+                    Divider()
+                    Button("Uncategorized") { onMoveToFolder?(nil) }
                 }
             }
             Divider()
