@@ -281,6 +281,14 @@ pub fn main() !void {
             }
         }
 
+        // Phoenix namespace: route `tri phoenix <subcommand>` to tri_phoenix
+        if (std.mem.eql(u8, first_arg, "phoenix")) {
+            const phoenix_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_phoenix = @import("tri_phoenix.zig");
+            try tri_phoenix.runPhoenixCommand(allocator, phoenix_args);
+            return;
+        }
         // Deploy namespace: route `tri deploy <action>` to runDeployCommand
         if (std.mem.eql(u8, first_arg, "deploy")) {
             const deploy_sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "status";
@@ -406,6 +414,14 @@ pub fn main() !void {
             logAgentCommand(args[arg_idx..]);
             const tri_self = @import("tri_self.zig");
             try tri_self.runSelfCommand(allocator, self_args);
+            return;
+        }
+        // Memory: route `tri memory <list|read|write|search|gc|stats>` to tri_memory
+        if (std.mem.eql(u8, first_arg, "memory")) {
+            const mem_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            const tri_memory = @import("tri_memory.zig");
+            try tri_memory.runMemoryCommand(allocator, mem_args);
             return;
         }
         // Experience: route `tri experience <save|recall|mistakes>` to tri_experience
@@ -928,7 +944,7 @@ fn logAgentCommand(cmd_args: []const []const u8) void {
 
     const emoji: []const u8 = if (std.mem.eql(u8, agent_name, "mu"))
         "\xf0\x9f\xa7\xa0"
-    else if (std.mem.eql(u8, agent_name, "ralph"))
+    else if (std.mem.eql(u8, agent_name, "ralph") or std.mem.eql(u8, agent_name, "phoenix"))
         "\xf0\x9f\xa4\x96"
     else if (std.mem.eql(u8, agent_name, "oracle"))
         "\xf0\x9f\x94\xae"
