@@ -8,7 +8,7 @@ parent = "trinity.tri"
 status = "stable"
 description = "Build pipeline: spec parsing, code generation, golden chain orchestration"
 capabilities = ["pipeline", "codegen", "specs"]
-tests = 62
+tests = 68
 owner = "agent:ralph"
 
 [tags]
@@ -16,7 +16,7 @@ scope = "infra"
 type = "infra"
 
 [source]
-file_patterns = ["tri_pipeline.zig", "tri_spec_*.zig", "tri_spec_improve.zig", "spec_template*.zig", "dna_polymerase.zig", "rna_polymerase.zig"]
+file_patterns = ["tri_pipeline.zig", "pipeline_parallel.zig", "tri_spec_*.zig", "tri_spec_improve.zig", "spec_template*.zig", "dna_polymerase.zig", "rna_polymerase.zig"]
 
 [contributes]
 commands = ["pipeline run", "chain", "decompose", "plan", "verify"]
