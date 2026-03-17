@@ -20,6 +20,8 @@ commands = ["math", "phi", "fib", "lucas", "gematria", "formula", "sacred", "con
 exports = ["runMathCommand", "runPhiCommand", "runFibCommand", "runLucasCommand", "runGematriaTopLevel", "runFormulaCommand", "runSacredCommand", "runConstantsCommand", "runSpiralCommand"]
 
 [dependencies]
+trinity.bsd = "^1.0.0"
+trinity.sacred = "^1.0.0"
 
 [permissions]
 level = "L1"

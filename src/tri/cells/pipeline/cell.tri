@@ -1,0 +1,31 @@
+[cell]
+id = "trinity.tri.pipeline"
+name = "Golden Chain Pipeline"
+version = "5.1.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Build pipeline: spec parsing, code generation, golden chain orchestration"
+capabilities = ["pipeline", "codegen", "specs"]
+tests = 13
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "infra"
+
+[source]
+file_patterns = ["tri_pipeline.zig", "pipeline_executor.zig", "tri_spec_*.zig", "golden_chain*.zig", "spec_template*.zig"]
+
+[contributes]
+commands = ["pipeline run", "chain", "decompose", "plan", "verify"]
+exports = ["runPipelineCommand", "runChainCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "none"
+process = "spawn"

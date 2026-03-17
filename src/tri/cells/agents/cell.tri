@@ -1,0 +1,31 @@
+[cell]
+id = "trinity.tri.agents"
+name = "Agent Orchestration"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Agent swarm: spawning, orchestration, loop decisions, chimera commands, hub"
+capabilities = ["swarm", "orchestration", "agents"]
+tests = 15
+owner = "agent:ralph"
+
+[tags]
+scope = "core"
+type = "agent"
+
+[source]
+file_patterns = ["tri_swarm.zig", "tri_agent_run.zig", "mu_agent.zig", "tri_loop.zig", "tri_chimera.zig", "orchestrator*.zig", "ralph_*.zig", "tri_hub.zig"]
+
+[contributes]
+commands = ["swarm", "agent run", "loop", "chimera"]
+exports = ["runSwarmCommand", "runAgentRunCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
