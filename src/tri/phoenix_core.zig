@@ -240,7 +240,18 @@ pub const PhoenixCore = struct {
         const content = try file.readToEndAlloc(self.allocator, 1024 * 1024);
         defer self.allocator.free(content);
 
-        // DEFERRED: Implement JSON parsing
+        // Parse health_score from JSON
+        if (std.mem.indexOf(u8, content, "\"health_score\":")) |start| {
+            const rest = content[start + 15 ..];
+            var end: usize = 0;
+            while (end < rest.len and ((rest[end] >= '0' and rest[end] <= '9') or rest[end] == '.')) : (end += 1) {}
+            if (end > 0) {
+                const score = std.fmt.parseFloat(f64, rest[0..end]) catch 100.0;
+                if (score < 50.0) {
+                    self.status.circuit_breaker_open = true;
+                }
+            }
+        }
     }
 
     /// Load fix_plan.md and parse tasks
@@ -257,7 +268,40 @@ pub const PhoenixCore = struct {
         const content = try file.readToEndAlloc(self.allocator, 1024 * 100);
         defer self.allocator.free(content);
 
-        // DEFERRED: Implement markdown parsing
+        // Parse markdown checklist: "- [ ] text" = pending, "- [x] text" = done (skip)
+        var task_idx: u32 = 0;
+        var lines = std.mem.splitScalar(u8, content, '\n');
+        while (lines.next()) |line| {
+            const trimmed = std.mem.trimLeft(u8, line, " \t");
+            if (std.mem.startsWith(u8, trimmed, "- [x]") or std.mem.startsWith(u8, trimmed, "- [X]")) {
+                // Done task — skip
+                continue;
+            }
+            if (std.mem.startsWith(u8, trimmed, "- [ ]")) {
+                const desc_raw = trimmed[5..];
+                const desc = std.mem.trim(u8, desc_raw, " \t");
+                if (desc.len == 0) continue;
+
+                const task_id = std.fmt.allocPrint(self.allocator, "FIX-{d}", .{task_idx}) catch continue;
+                const task_desc = self.allocator.dupe(u8, desc) catch {
+                    self.allocator.free(task_id);
+                    continue;
+                };
+
+                self.tasks.append(self.allocator, PhoenixTask{
+                    .id = task_id,
+                    .description = task_desc,
+                    .priority = .p3_normal,
+                    .status = .pending,
+                    .tech_tree_id = null,
+                    .acceptance_criteria = self.allocator.dupe(u8, "") catch continue,
+                    .files = .{},
+                    .blocked_by = .{},
+                }) catch continue;
+
+                task_idx += 1;
+            }
+        }
     }
 
     /// Select next task based on priority and dependencies

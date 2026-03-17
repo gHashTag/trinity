@@ -21,6 +21,10 @@ source = "specs/hslm/sparse.tri"
 output = "gen/sparse_types.zig"
 regenerable = true
 
+[contributes]
+commands = []
+exports = ["matmul", "pack", "unpack", "benchmark"]
+
 [contract]
 inputs = ["packed_weights: []u2", "activations: []i32"]
 outputs = ["result: []i32"]
@@ -28,6 +32,14 @@ invariants = ["branchless inner loop", "zero multiply ops", "2-bit encoding"]
 
 [dependencies]
 trinity.hslm = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
 
 [security]
 signed = true

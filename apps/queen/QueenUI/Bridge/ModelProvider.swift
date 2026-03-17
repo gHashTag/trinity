@@ -129,6 +129,7 @@ class ModelManager: ObservableObject {
             self.ollamaAvailable = true
             return true
         } catch {
+            self.availableModels.removeAll { $0.provider == .ollama }
             self.ollamaAvailable = false
             return false
         }
@@ -136,13 +137,22 @@ class ModelManager: ObservableObject {
 
     /// Start background task that probes Ollama every 60 seconds
     private func startOllamaDetection() {
+        ollamaDetectionTask?.cancel()
         ollamaDetectionTask = Task { [weak self] in
             while !Task.isCancelled {
-                guard let self else { return }
+                guard let self else { break }
                 _ = await self.detectOllama()
-                try? await Task.sleep(for: .seconds(60))
+                do {
+                    try await Task.sleep(for: .seconds(60))
+                } catch {
+                    break  // Task was cancelled
+                }
             }
         }
+    }
+
+    deinit {
+        ollamaDetectionTask?.cancel()
     }
 
     /// Best available Ollama model (prefers larger models)

@@ -583,7 +583,14 @@ fn runInfo(allocator: Allocator, args: []const []const u8) !void {
             std.debug.print("  {s}DNA Output:{s}       {s}\n", .{ CYAN, RESET, cell.dna_output });
             std.debug.print("  {s}Regenerable:{s}      {s}\n", .{ CYAN, RESET, if (cell.dna_regenerable) GREEN ++ "yes" ++ RESET else RED ++ "no" ++ RESET });
             if (cell.dna_contract_raw.len > 0) {
-                std.debug.print("  {s}Contract:{s}         (present)\n", .{ CYAN, RESET });
+                std.debug.print("  {s}Contract:{s}\n", .{ CYAN, RESET });
+                var contract_lines = std.mem.splitScalar(u8, cell.dna_contract_raw, '\n');
+                while (contract_lines.next()) |line| {
+                    const trimmed = std.mem.trim(u8, line, " \t\r");
+                    if (trimmed.len > 0) {
+                        std.debug.print("    {s}\n", .{trimmed});
+                    }
+                }
             }
         }
 

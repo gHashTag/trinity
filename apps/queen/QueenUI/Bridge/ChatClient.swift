@@ -797,6 +797,7 @@ class ChatClient: ObservableObject {
                 // Circuit open on primary but fallback available — use it
                 failoverEvent = FailoverEvent(from: modelManager.selectedModel.displayName, to: fallback.displayName, timestamp: Date())
                 failoverLog.append(failoverEvent!)
+                if failoverLog.count > 100 { failoverLog.removeFirst() }
                 send(text, threadID: threadID, store: store, modelManager: modelManager, mode: mode, modelOverride: fallback)
                 return
             }
@@ -920,6 +921,7 @@ class ChatClient: ObservableObject {
                 lastResponseTruncated = (lastStopReason == "max_tokens")
             } catch {
                 if !Task.isCancelled {
+                    guard let store = activeStreamStore else { return }
                     let kind = errorKind(from: lastError)
                     // Streaming recovery: if we got partial text, try to continue
                     if streamingOutputTokens > 10 {
@@ -977,7 +979,9 @@ class ChatClient: ObservableObject {
     /// Check if context needs compaction (>80% of 180K) and auto-summarize
     func checkAutoCompaction(threadID: UUID, store: ThreadStore, modelManager: ModelManager) {
         guard let thread = store.threads.first(where: { $0.id == threadID }) else { return }
-        let totalChars = thread.messages.reduce(0) { $0 + $1.text.count }
+        // Skip already-compacted summary messages to avoid infinite re-compaction
+        let countableMessages = thread.messages.filter { !$0.text.hasPrefix("*[Context compacted") }
+        let totalChars = countableMessages.reduce(0) { $0 + $1.text.count }
         let estimatedTokens = totalChars / 4 + 200
         let threshold = 144_000 // 80% of 180K
 
@@ -1384,16 +1388,21 @@ class ChatClient: ObservableObject {
                 }
 
                 for queued in drained {
-                    offlineQueue.removeFirst()
-                    offlineQueueCount = offlineQueue.count
                     // Remove the queued placeholder
                     store.removeLastAssistantMessage(in: queued.threadID)
                     // Send normally
                     send(queued.text, threadID: queued.threadID, store: store, modelManager: modelManager, mode: queued.mode)
-                    // Wait for completion
+                    // Wait for completion before removing from queue
                     while isStreaming {
                         try? await Task.sleep(for: .milliseconds(500))
                     }
+                    // Only remove from queue after send completes without error
+                    if case .error = streamingState {
+                        // Send failed — stop draining, will retry on next cycle
+                        break
+                    }
+                    offlineQueue.removeFirst()
+                    offlineQueueCount = offlineQueue.count
                 }
                 if !drained.isEmpty {
                     queueDrainedCount = drained.count
@@ -1440,6 +1449,7 @@ class ChatClient: ObservableObject {
                 saveMetrics(messageID: editAssistantMsgID, threadID: threadID, store: store)
             } catch {
                 if !Task.isCancelled {
+                    guard let store = activeStreamStore else { return }
                     if streamingOutputTokens > 10 {
                         let partial = streamingText
                         store.updateLastMessage(text: partial + "\n\n*[Recovering...]*", in: threadID)
@@ -1728,6 +1738,7 @@ class ChatClient: ObservableObject {
                 saveMetrics(messageID: regenAssistantMsgID, threadID: threadID, store: store)
             } catch {
                 if !Task.isCancelled {
+                    guard let store = activeStreamStore else { return }
                     if streamingOutputTokens > 10 {
                         let partial = streamingText
                         store.updateLastMessage(text: partial + "\n\n*[Recovering...]*", in: threadID)
@@ -1869,20 +1880,20 @@ class ChatClient: ObservableObject {
         lastStopReason = ""
         let inputTokens = history.reduce(0) { $0 + ($1["content"]?.count ?? 0) / 4 }
 
-        // Start slow-response timer
+        // Start slow-response timer (defer ensures cancellation on all exit paths)
         let slowTimer = Task {
             try await Task.sleep(for: .seconds(5))
             if firstTokenTime == nil {
                 await MainActor.run { isSlowResponse = true }
             }
         }
+        defer { slowTimer.cancel(); isSlowResponse = false }
 
         let bytes: URLSession.AsyncBytes
         let response: URLResponse
         do {
             (bytes, response) = try await URLSession.shared.bytes(for: request)
         } catch {
-            slowTimer.cancel()
             // Connection error (timeout, no network, etc.)
             let isTimeout = (error as? URLError)?.code == .timedOut
                 || error.localizedDescription.contains("timed out")
@@ -1916,6 +1927,7 @@ class ChatClient: ObservableObject {
                 store.updateLastMessage(text: "", in: threadID)
                 failoverEvent = FailoverEvent(from: model.displayName, to: next.displayName, timestamp: Date())
                 failoverLog.append(failoverEvent!)
+                if failoverLog.count > 100 { failoverLog.removeFirst() }
                 try await streamAnthropic(
                     history: history, threadID: threadID, store: store,
                     model: next, key: nextKey, modelManager: modelManager,
@@ -1932,9 +1944,6 @@ class ChatClient: ObservableObject {
             )
             return
         }
-
-        slowTimer.cancel()
-        isSlowResponse = false
 
         if let httpResponse = response as? HTTPURLResponse {
             modelManager.parseRateLimitHeaders(httpResponse, provider: model.provider)
@@ -1976,6 +1985,7 @@ class ChatClient: ObservableObject {
                             tried.insert(fallback.id)
                             failoverEvent = FailoverEvent(from: model.displayName, to: fallback.displayName, timestamp: Date())
                             failoverLog.append(failoverEvent!)
+                if failoverLog.count > 100 { failoverLog.removeFirst() }
                         }
                     }
 
@@ -2186,19 +2196,20 @@ class ChatClient: ObservableObject {
         lastError = nil
         let inputTokens = history.reduce(0) { $0 + ($1["content"]?.count ?? 0) / 4 }
 
+        // Start slow-response timer (defer ensures cancellation on all exit paths)
         let slowTimer = Task {
             try await Task.sleep(for: .seconds(5))
             if firstTokenTime == nil {
                 await MainActor.run { isSlowResponse = true }
             }
         }
+        defer { slowTimer.cancel(); isSlowResponse = false }
 
         let bytes: URLSession.AsyncBytes
         let response: URLResponse
         do {
             (bytes, response) = try await URLSession.shared.bytes(for: request)
         } catch {
-            slowTimer.cancel()
             let isTimeout = (error as? URLError)?.code == .timedOut
                 || error.localizedDescription.contains("timed out")
             let errType: APIErrorType = isTimeout ? .timeout : .connectionFailed
@@ -2230,6 +2241,7 @@ class ChatClient: ObservableObject {
                 store.updateLastMessage(text: "", in: threadID)
                 failoverEvent = FailoverEvent(from: model.displayName, to: next.displayName, timestamp: Date())
                 failoverLog.append(failoverEvent!)
+                if failoverLog.count > 100 { failoverLog.removeFirst() }
                 try await streamOpenAI(
                     history: history, threadID: threadID, store: store,
                     model: next, key: nextKey, modelManager: modelManager,
@@ -2246,9 +2258,6 @@ class ChatClient: ObservableObject {
             )
             return
         }
-
-        slowTimer.cancel()
-        isSlowResponse = false
 
         if let httpResponse = response as? HTTPURLResponse {
             modelManager.parseRateLimitHeaders(httpResponse, provider: model.provider)
@@ -2289,6 +2298,7 @@ class ChatClient: ObservableObject {
                             tried.insert(fallback.id)
                             failoverEvent = FailoverEvent(from: model.displayName, to: fallback.displayName, timestamp: Date())
                             failoverLog.append(failoverEvent!)
+                if failoverLog.count > 100 { failoverLog.removeFirst() }
                         }
                     }
 

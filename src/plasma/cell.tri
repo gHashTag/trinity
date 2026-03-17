@@ -2,7 +2,7 @@
 id = "trinity.plasma"
 name = "Plasma Physics"
 version = "1.0.0"
-kind = "library"
+kind = "tool"
 path = "src/plasma"
 min_core_version = "1.0.0"
 status = "experimental"
@@ -24,7 +24,6 @@ events = []
 binaries = []
 
 [dependencies]
-trinity.tri.formulas = "^1.0.0"
 
 [permissions]
 level = "L0"
