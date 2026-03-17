@@ -1287,16 +1287,12 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
             // ═══════════════════════════════════════════════════════════════════════════════
             var buf: [256]u8 = undefined;
             const tok_per_sec: u32 = if (tps_count > 0) @intFromFloat(total_tps / @as(f32, @floatFromInt(tps_count))) else 0;
-            const summary = std.fmt.bufPrint(&buf,
-                "metabolism: ppl={d:.2} tok/s={d} spike={d:.1}% diversity={d:.3} health={d:.1}",
-                .{ best_pop_ppl, tok_per_sec, spike_pct, shannon, health });
+            const summary = std.fmt.bufPrint(&buf, "metabolism: ppl={d:.2} tok/s={d} spike={d:.1}% diversity={d:.3} health={d:.1}", .{ best_pop_ppl, tok_per_sec, spike_pct, shannon, health });
             hippocampus.writeObservation(allocator, "hypothalamus", summary catch "metabolism snapshot", "{}") catch {};
 
             // Spike alert (>20% is concerning)
             if (spike_pct > 20.0) {
-                const spike_msg = std.fmt.bufPrint(&buf,
-                    "metabolism spike: leader PPL={d:.2} spike_rate={d:.1}% (threshold=20%)",
-                    .{ best_pop_ppl, spike_pct });
+                const spike_msg = std.fmt.bufPrint(&buf, "metabolism spike: leader PPL={d:.2} spike_rate={d:.1}% (threshold=20%)", .{ best_pop_ppl, spike_pct });
                 hippocampus.writeError(allocator, "hypothalamus", spike_msg catch "spike detected", "{}") catch {};
             }
 
@@ -1395,9 +1391,7 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
             if (status == 6) {
                 print("   {s}💥 {s}: diverged (PPL={d:.0}) at step {d}{s}\n", .{ RED, name, jsonF32(s, "ppl"), step, RESET });
                 // DUAL-WRITE: diverged alert to hippocampus
-                const div_msg = std.fmt.bufPrint(&buf,
-                    "diverged: {s} PPL={d:.0} at step {d}",
-                    .{ name, jsonF32(s, "ppl"), step });
+                const div_msg = std.fmt.bufPrint(&buf, "diverged: {s} PPL={d:.0} at step {d}", .{ name, jsonF32(s, "ppl"), step });
                 hippocampus.writeError(allocator, "hypothalamus", div_msg catch "diverged detected", "{}") catch {};
             }
             if (status == 7) print("   {s}🔒 {s}: stuck at step=0{s}\n", .{ RED, name, RESET });
@@ -1406,9 +1400,7 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
                 const ctx = if (cfg) |c| jsonU32(c, "ctx") else 0;
                 print("   {s}🎭 {s}: MIRAGE (PPL={d:.2}, ctx={d}) — excluded from ranking{s}\n", .{ YELLOW, name, jsonF32(s, "ppl"), ctx, RESET });
                 // DUAL-WRITE: mirage alert to hippocampus
-                const mirage_msg = std.fmt.bufPrint(&buf,
-                    "mirage: {s} PPL={d:.2} ctx={d} — excluded from ranking",
-                    .{ name, jsonF32(s, "ppl"), ctx });
+                const mirage_msg = std.fmt.bufPrint(&buf, "mirage: {s} PPL={d:.2} ctx={d} — excluded from ranking", .{ name, jsonF32(s, "ppl"), ctx });
                 hippocampus.writeError(allocator, "hypothalamus", mirage_msg catch "mirage detected", "{}") catch {};
             }
         }

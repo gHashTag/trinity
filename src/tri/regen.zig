@@ -53,9 +53,9 @@ pub const FixItem = struct {
 
 pub const Priority = enum(u8) {
     critical = 0, // Build breaks, crashes
-    high = 1,     // Test failures, security issues
-    medium = 2,   // Doctor violations, style issues
-    low = 3,      // Optimizations, nice-to-haves
+    high = 1, // Test failures, security issues
+    medium = 2, // Doctor violations, style issues
+    low = 3, // Optimizations, nice-to-haves
 
     pub fn color(self: Priority) []const u8 {
         return switch (self) {
@@ -77,10 +77,10 @@ pub const Priority = enum(u8) {
 };
 
 pub const FixSource = enum {
-    doctor,      // .doctor/scan_results.json violations
+    doctor, // .doctor/scan_results.json violations
     hippocampus, // Error memories from hippocampus
-    pipeline,    // Failed pipeline runs
-    manual,      // User-reported
+    pipeline, // Failed pipeline runs
+    manual, // User-reported
 
     pub fn label(self: FixSource) []const u8 {
         return switch (self) {
@@ -172,11 +172,8 @@ pub fn executeFixPlan(allocator: Allocator, plan: *const RegenAnalysis) !void {
         if (item.status == .completed) continue;
 
         print("{s}[{d}/{d}]{s} {s} {s} {s}{s} {s}\n", .{
-            DIM, idx + 1, plan.fix_count, RESET,
-            item.source.icon(),
-            item.priority.tag(),
-            item.priority.color(),
-            item.summaryStr(),
+            DIM,                idx + 1,             plan.fix_count,        RESET,
+            item.source.icon(), item.priority.tag(), item.priority.color(), item.summaryStr(),
             RESET,
         });
 
