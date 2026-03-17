@@ -6,7 +6,7 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile.railway"
 
 [deploy]
-startCommand = "python -u trinity-mcp.py"
+startCommand = null  # Use Dockerfile ENTRYPOINT (trinity-mcp Zig binary)
 healthcheckPath = "/health"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"
