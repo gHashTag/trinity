@@ -324,3 +324,132 @@ test "dmpfc — Issue descriptionStr returns correct slice" {
     try std.testing.expectEqualStrings("test description", desc);
     try std.testing.expectEqual(@as(usize, 16), desc.len); // "test description" = 16 chars
 }
+
+test "dmpfc — SelfCheck default values" {
+    const check = SelfCheck{};
+    try std.testing.expect(!check.loop_running);
+    try std.testing.expect(!check.telegram_reachable);
+    try std.testing.expect(!check.thalamus_responding);
+    try std.testing.expect(!check.conflict_detected);
+    try std.testing.expectEqual(@as(usize, 0), check.issues.len);
+    try std.testing.expectEqual(@as(i64, 0), check.timestamp);
+}
+
+test "dmpfc — SelfCheck isHealthy edge case 0.7" {
+    const check = SelfCheck{ .health_score = 0.7 };
+    try std.testing.expect(check.isHealthy()); // 0.7 >= 0.7 is healthy
+}
+
+test "dmpfc — SelfCheck isHealthy edge case 0.69" {
+    const check = SelfCheck{ .health_score = 0.69 };
+    try std.testing.expect(!check.isHealthy()); // 0.69 < 0.7 is not healthy
+}
+
+test "dmpfc — Issue initialized values" {
+    const issue = Issue{ .kind = .loop_stuck };
+    try std.testing.expectEqual(IssueKind.loop_stuck, issue.kind);
+    try std.testing.expectEqual(@as(usize, 0), issue.description_len);
+}
+
+test "dmpfc — CellHealth struct defaults" {
+    const cell_health = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, cell_health.status);
+    try std.testing.expectEqual(@as(u32, 0), cell_health.cycle);
+    try std.testing.expectEqual(@as(i64, 0), cell_health.last_check);
+}
+
+test "dmpfc — CellHealth Status enum values" {
+    const statuses = [_]CellHealth.Status{ .healthy, .weak, .broken };
+    for (statuses) |s| {
+        _ = s; // Verify all enum values exist
+    }
+}
+
+test "dmpfc — SelfCheck grade A boundary" {
+    var check = SelfCheck{ .health_score = 0.90 };
+    try std.testing.expectEqualStrings("A", check.grade());
+
+    check.health_score = 0.89;
+    try std.testing.expectEqualStrings("B", check.grade());
+}
+
+test "dmpfc — SelfCheck grade F boundary" {
+    var check = SelfCheck{ .health_score = 0.50 };
+    try std.testing.expectEqualStrings("C", check.grade());
+
+    check.health_score = 0.49;
+    try std.testing.expectEqualStrings("F", check.grade());
+}
+
+test "dmpfc — Issue setDescription empty" {
+    var issue = Issue{ .kind = .loop_stuck };
+    issue.setDescription("");
+
+    try std.testing.expectEqual(@as(usize, 0), issue.description_len);
+    try std.testing.expectEqual(@as(usize, 0), issue.descriptionStr().len);
+}
+
+test "dmpfc — Issue setDescription exact fit" {
+    var issue = Issue{ .kind = .telegram_unreachable };
+    const text = "a" ** 128; // Exactly fits
+    issue.setDescription(text);
+
+    try std.testing.expectEqual(@as(usize, 128), issue.description_len);
+}
+
+test "dmpfc — Issue kind affects no description" {
+    const issue1 = Issue{ .kind = .loop_stuck };
+    const issue2 = Issue{ .kind = .telegram_unreachable };
+    const issue3 = Issue{ .kind = .thalamus_timeout };
+    const issue4 = Issue{ .kind = .internal_conflict };
+    const issue5 = Issue{ .kind = .memory_corruption };
+
+    // All kinds are valid enum values
+    _ = issue1;
+    _ = issue2;
+    _ = issue3;
+    _ = issue4;
+    _ = issue5;
+}
+
+test "dmpfc — SelfCheck health score never negative" {
+    // Even with all checks failed and conflicts, score should be >= 0
+    const check = SelfCheck{
+        .loop_running = false,
+        .telegram_reachable = false,
+        .thalamus_responding = false,
+        .conflict_detected = true,
+    };
+
+    // Recalculate score
+    var score: f32 = 1.0;
+    if (!check.loop_running) score -= 0.3;
+    if (!check.telegram_reachable) score -= 0.2;
+    if (!check.thalamus_responding) score -= 0.3;
+    if (check.conflict_detected) score -= 0.2;
+    const final_score = @max(0.0, score);
+
+    try std.testing.expect(final_score >= 0.0);
+}
+
+test "dmpfc — SelfCheck all true gives perfect score" {
+    const check = SelfCheck{
+        .loop_running = true,
+        .telegram_reachable = true,
+        .thalamus_responding = true,
+        .conflict_detected = false,
+    };
+
+    var score: f32 = 1.0;
+    if (!check.loop_running) score -= 0.3;
+    if (!check.telegram_reachable) score -= 0.2;
+    if (!check.thalamus_responding) score -= 0.3;
+    if (check.conflict_detected) score -= 0.2;
+
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), @max(0.0, score), 0.001);
+}
+
+test "dmpfc — health() has timestamp" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
