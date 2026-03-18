@@ -233,9 +233,9 @@ struct DataPieChart: View {
         }
     }
 
-    private func angle(for values: [(Double)]) -> Double {
-        let total = values.reduce(into: 0.0) { $0 + $1.value }
-        return values.reduce(into: 0.0) { $0 + ($1.value / total) * 360 }
+    private func angle(for values: [Double]) -> Double {
+        let total = values.reduce(into: 0.0) { $0 + $1 }
+        return values.reduce(into: 0.0) { $0 + ($1 / total) * 360 }
     }
 }
 
@@ -305,9 +305,9 @@ struct DonutChart: View {
         .frame(width: 200, height: 200)
     }
 
-    private func angle(for values: [(Double)]) -> Double {
-        let total = values.reduce(into: 0.0) { $0 + $1.value }
-        return values.reduce(into: 0.0) { $0 + ($1.value / total) * 360 }
+    private func angle(for values: [Double]) -> Double {
+        let total = values.reduce(into: 0.0) { $0 + $1 }
+        return values.reduce(into: 0.0) { $0 + ($1 / total) * 360 }
     }
 }
 
