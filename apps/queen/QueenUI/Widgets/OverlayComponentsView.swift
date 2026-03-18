@@ -56,12 +56,12 @@ struct Popover: View {
 
 // MARK: - Popover Modifier
 
-struct PopoverModifier<BaseView: View, PopoverContent: View>: ViewModifier {
+struct PopoverModifier<PopoverContent: View>: ViewModifier {
     let popoverContent: PopoverContent
     let arrowEdge: Edge
     @Binding var isPresented: Bool
 
-    func body(content: BaseView) -> some View {
+    func body(content: Content) -> some View {
         ZStack {
             content
 
@@ -601,9 +601,12 @@ struct DrawerModifier<DrawerContent: View>: ViewModifier {
             content
 
             if isOpen {
-                Drawer(position: position, width: width) {
-                    drawerContent
-                } isOpen: $isOpen
+                Drawer(
+                    position: position,
+                    width: width,
+                    content: { drawerContent },
+                    isOpen: $isOpen
+                )
                 .zIndex(999)
             }
         }
