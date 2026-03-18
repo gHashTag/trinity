@@ -122,14 +122,19 @@ public final class ScenarioEngine {
     private func executeInput(element: String, text: String, context: AutomationScenarioContext) async throws -> [AutomationScenarioStep] {
         var steps: [AutomationScenarioStep] = []
 
-        // Step 1: Find and focus element
+        // Get persona parameters
+        let proficiency = context.persona?.proficiency ?? .average
+        let explorationTendency = (context.persona as? EnhancedPersona)?.explorationTendency ?? 0.5
+
+        // Step 1: Find and focus element (with persona-based delay)
         let findTime = HumanBehaviorModel.decisionTime(complexity: .medium)
+        let dwellTime = HumanBehaviorModel.dwellTimeBeforeAction(complexity: .medium, confidence: 0.7)
         steps.append(AutomationScenarioStep(
             action: "locate",
             desc: "Locating input field: \(element)",
-            duration: findTime
+            duration: findTime + dwellTime
         ))
-        try await Task.sleep(nanoseconds: UInt64(findTime * 1_000_000_000))
+        try await Task.sleep(nanoseconds: UInt64((findTime + dwellTime) * 1_000_000_000))
 
         // Step 2: Click to focus
         let clickStart = Date()
@@ -147,18 +152,33 @@ public final class ScenarioEngine {
             duration: clickDuration
         ))
 
-        // Step 3: Read existing content (if any)
+        // Step 3: Read existing content (if any) with adaptive reading
         let readTime = HumanBehaviorModel.readingTime(for: "")
         try await Task.sleep(nanoseconds: UInt64(readTime * 1_000_000_000))
 
-        // Step 4: Type text with realistic timing
+        // Step 4: Type text with realistic timing sequence
         let typeStart = Date()
-        let typeResult = await UIAutomation.shared.type(element: element, text: text)
-        let typeDuration = Date().timeIntervalSince(typeStart)
+        let typingActions = HumanBehaviorModel.realisticTypingSequence(for: text, proficiency: proficiency)
 
-        guard typeResult["success"] as? Bool == true else {
-            throw AutomationScenarioError.inputFailed(element)
+        for action in typingActions {
+            switch action {
+            case .type(let chars):
+                let typeResult = await UIAutomation.shared.type(element: element, text: chars)
+                guard typeResult["success"] as? Bool == true else {
+                    throw AutomationScenarioError.inputFailed(element)
+                }
+            case .pause(let duration):
+                try await Task.sleep(nanoseconds: UInt64(duration * 1_000_000_000))
+            case .delete(let count):
+                // Simulate backspace
+                for _ in 0..<count {
+                    // Send backspace via clipboard or keyboard
+                    try? await Task.sleep(nanoseconds: 50_000_000)
+                }
+            }
         }
+
+        let typeDuration = Date().timeIntervalSince(typeStart)
 
         steps.append(AutomationScenarioStep(
             action: "type",
@@ -166,9 +186,15 @@ public final class ScenarioEngine {
             duration: typeDuration
         ))
 
-        // Step 5: Verify input
-        let verifyTime = HumanBehaviorModel.randomDelay(mean: 300, stdDev: 100)
+        // Step 5: Verify input with persona-based verification time
+        let verifyTime = HumanBehaviorModel.verificationTime(for: "type")
         try await Task.sleep(nanoseconds: UInt64(verifyTime * 1_000_000_000))
+
+        // Step 6: Post-action dwell based on exploration tendency
+        let postActionDwell = explorationTendency > 0.5 ? HumanBehaviorModel.randomDelay(mean: 500, stdDev: 200) : 0
+        if postActionDwell > 0 {
+            try await Task.sleep(nanoseconds: UInt64(postActionDwell * 1_000_000_000))
+        }
 
         return steps
     }
@@ -454,6 +480,28 @@ public struct TestPersona {
     public static let novice = TestPersona(name: "Novice", proficiency: .novice, complexityPreference: .simple, reflective: true, patience: 30)
     public static let expert = TestPersona(name: "Expert", proficiency: .expert, complexityPreference: .medium, reflective: false, patience: 10)
     public static let elderly = TestPersona(name: "Elderly", proficiency: .novice, complexityPreference: .simple, reflective: true, patience: 60)
+
+    // Convert to EnhancedPersona
+    public func toEnhanced() -> EnhancedPersona {
+        switch name.lowercased() {
+        case "novice":
+            return .carefulNovice
+        case "expert":
+            return .powerUser
+        case "elderly":
+            return .elderlyUser
+        default:
+            return EnhancedPersona(
+                name: name,
+                proficiency: proficiency,
+                readingSpeed: .average,
+                decisionSpeed: .normal,
+                errorRate: .normal,
+                patience: patience,
+                explorationTendency: 0.5
+            )
+        }
+    }
 }
 
 public struct RageClickEvent {

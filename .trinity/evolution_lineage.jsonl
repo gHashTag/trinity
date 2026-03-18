@@ -110,3 +110,5 @@
 {"gen":1,"child":"w8-mock-14","parent":"w7-51","parent_ppl":5.89,"sacred":false,"mutations":{"lr":"1e-3->8.29e-4","grad_clip":"1.2->1.6","warmup":"1500->1680","schedule":"cosine","context":"27"},"timestamp":1773584021285}
 {"gen":1,"child":"w8-mock-15","parent":"w7-03","parent_ppl":6.12,"sacred":false,"mutations":{"lr":"5e-4->6.09e-4","grad_clip":"1.0->1.2","warmup":"3000->2788","schedule":"cosine","context":"27"},"timestamp":1773584021285}
 {"gen":1,"child":"w8-mock-16","parent":"w7-66","parent_ppl":6.44,"sacred":false,"mutations":{"lr":"1e-3->9.26e-4","grad_clip":"1.0->1.0","warmup":"2000->1665","schedule":"cosine","context":"27"},"timestamp":1773584021285}
+{"gen":2,"type":"sevo_batch","configs_injected":19,"mutations":{"baseline":"LAMB 1e-3 cosine ctx=81","conservative":"LAMB 5e-4 cosine ctx=81","aggressive":"LAMB 2e-3 cosine ctx=81","large_batch":"b=128","small_batch":"b=32"},"timestamp":1773856282}
+{"gen":2,"type":"sevo_recycle","workers_recycled":27,"config":{"lr":"1e-3","optimizer":"LAMB","schedule":"cosine","batch":66,"ctx":81,"warmup":2000,"steps":100000},"seeds":{"start":601,"end":619},"timestamp":1773856576}

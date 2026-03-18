@@ -97,3 +97,79 @@ Changes not staged for commit:
 {"ts":1773856066,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
 {"ts":1773856071,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
 {"ts":1773856072,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856127,"kind":"auto","action":"farm evolve step","verdict":"OK","success":true,"detail":"
+[1m🧬 EVOLUTION STEP 97[0m
+[2m═════════════════════�"}
+{"ts":1773856157,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856161,"kind":"auto-action","action":"farm recycle","verdict":"OK","success":true,"detail":"Many idle workers, recycling for efficiency"}
+{"ts":1773856161,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856175,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856180,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856185,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856194,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773856195,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773856353,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773856375,"kind":"auto","action":"experience save","verdict":"OK","success":true,"detail":"[31mError: --task is required[0m
+"}
+{"ts":1773856377,"kind":"auto-action","action":"notify","verdict":"OK","success":true,"detail":"Celebrating farm progress"}
+{"ts":1773856572,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773856666,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856671,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856675,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856680,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856730,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773856741,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856748,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856753,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856760,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856764,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773856764,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773856910,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773856923,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856930,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856937,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856943,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856948,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856954,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857027,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857033,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773857053,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857055,"kind":"auto","action":"experience save","verdict":"OK","success":true,"detail":"[31mError: --task is required[0m
+"}
+{"ts":1773857057,"kind":"auto-action","action":"notify","verdict":"OK","success":true,"detail":"Celebrating farm progress"}
+{"ts":1773857059,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857064,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857077,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857083,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857089,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857091,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857097,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857103,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857109,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857263,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857287,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773857288,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773857289,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857294,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857337,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773857338,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773857368,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773857370,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773857593,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773857594,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773857641,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773857642,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773857661,"kind":"auto","action":"experience save","verdict":"OK","success":true,"detail":"[31mError: --task is required[0m
+"}
+{"ts":1773857664,"kind":"auto-action","action":"notify","verdict":"OK","success":true,"detail":"Celebrating farm progress"}
+{"ts":1773857721,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857727,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857740,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857747,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857753,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773857897,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773857898,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773857945,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773857946,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773857972,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773857973,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
