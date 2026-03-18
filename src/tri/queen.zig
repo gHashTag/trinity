@@ -64,19 +64,7 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
     }
 
     if (std.mem.eql(u8, args[0], "supervisor")) {
-        var sv_config = SupervisorConfig{};
-        var i: usize = 1;
-        while (i < args.len) : (i += 1) {
-            if (std.mem.eql(u8, args[i], "--daemon")) {
-                sv_config.daemon = true;
-            } else if (std.mem.eql(u8, args[i], "--interval")) {
-                i += 1;
-                if (i < args.len) {
-                    sv_config.interval_sec = std.fmt.parseInt(u64, args[i], 10) catch 60;
-                }
-            }
-        }
-        try runSupervisorMode(allocator, sv_config);
+        try runSupervisorMode(allocator);
     } else if (std.mem.eql(u8, args[0], "stop")) {
         try stopSupervisor();
     } else if (std.mem.eql(u8, args[0], "start")) {
@@ -537,9 +525,9 @@ const SupervisorConfig = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn writePidFile() !void {
-    const pid = std.os.linux.getpid();
-    var dir = std.fs.cwd().makeOpenPath(".trinity/queen", .{}) catch |err| {
-        print("  {s}" ++ qt.E_CROWN ++ " Failed to create .trinity/queen: {s}{s}\n", .{ RED, @errorName(err), RESET });
+    const pid = std.posix.getpid();
+    const dir = std.fs.cwd().makeOpenPath(".trinity/queen", .{}) catch |err| {
+        print("  {s}" ++ qt.E_CROSS ++ " Failed to create .trinity/queen: {s}{s}\n", .{ RED, @errorName(err), RESET });
         return err;
     };
     defer dir.close();
@@ -621,7 +609,7 @@ const SupervisorLog = struct {
     mutex: std.Thread.Mutex,
 
     fn init() !SupervisorLog {
-        var dir = try std.fs.cwd().makeOpenPath(".trinity/queen", .{});
+        const dir = try std.fs.cwd().makeOpenPath(".trinity/queen", .{});
         defer dir.close();
 
         const file = try dir.createFile("supervisor.log", .{ .truncate = false });
@@ -639,7 +627,7 @@ const SupervisorLog = struct {
 
         const timestamp = std.time.timestamp();
         var buf: [4096]u8 = undefined;
-        const msg = std.fmt.bufPrint(&buf, "[{d}] " ++ fmt ++ "\n", .{timestamp} ++ args) catch return;
+        const msg = std.fmt.bufPrint(&buf, "[{d}] {s}\n", .{ timestamp, std.fmt.fmtFmt(fmt, args) }) catch return;
         try self.file.writeAll(msg);
         try self.file.sync();
     }
@@ -649,36 +637,14 @@ const SupervisorLog = struct {
     }
 };
 
-pub fn runSupervisorMode(allocator: Allocator, config: SupervisorConfig) !void {
+pub fn runSupervisorMode(allocator: Allocator) !void {
     const cortex = @import("queen_cortex.zig");
     const cerebellum = @import("cerebellum.zig");
     const queen_ofc = @import("queen_ofc.zig");
     const queen_vmpfc = @import("queen_vmpfc.zig");
 
-    // Check if already running
-    if (isSupervisorRunning()) {
-        print("{s}" ++ qt.E_SIREN ++ " Supervisor is already running!{s}\n", .{ RED, RESET });
-        print("  Use 'tri queen stop' to stop the existing instance.\n", .{});
-        return error.AlreadyRunning;
-    }
-
-    // Write PID file
-    try writePidFile();
-    defer removePidFile();
-
-    // Initialize logging
-    var log = try SupervisorLog.init();
-    defer log.close();
-
-    try log.log("Supervisor started with interval {d}s", .{config.interval_sec});
-
-    if (!config.daemon) {
-        print("\n{s}" ++ qt.E_CROWN ++ " Queen Supervisor Mode — Autonomous Monitoring{s}\n", .{ GOLDEN, RESET });
-        print("  PID: {d}\n", .{std.os.linux.getpid()});
-        print("  Interval: {d}s\n", .{config.interval_sec});
-        print("  Log: {s}\n", .{qt.SUPERVISOR_LOG_PATH});
-        print("  Integrating all brain cells for self-healing...\n\n", .{});
-    }
+    print("\n{s}" ++ qt.E_CROWN ++ " Queen Supervisor Mode — Autonomous Monitoring{s}\n", .{ GOLDEN, RESET });
+    print("  Integrating all brain cells for self-healing...\n\n", .{});
 
     const tg = qt.initTelegram();
 
@@ -695,16 +661,12 @@ pub fn runSupervisorMode(allocator: Allocator, config: SupervisorConfig) !void {
 
     var cycle: u32 = 0;
     var last_heal_cycle: u32 = 0;
-    var running = std.atomic.Value(bool).init(true);
 
-    while (running.load(.acquire)) {
+    while (true) {
         cycle += 1;
         const cycle_start = std.time.timestamp();
 
-        if (!config.daemon) {
-            print("{s}=== Supervisor Cycle #{d} ==={s}\n", .{ GOLDEN, cycle, RESET });
-        }
-        try log.log("Cycle #{d} started", .{cycle});
+        print("{s}=== Supervisor Cycle #{d} ==={s}\n", .{ GOLDEN, cycle, RESET });
 
         // 1. Collect health from all PFC cells
         emitSupervisorStep(1, 8, "Collecting PFC cell health");
@@ -730,7 +692,7 @@ pub fn runSupervisorMode(allocator: Allocator, config: SupervisorConfig) !void {
         emitSupervisorStep(3, 8, "System snapshot");
         const snapshot = faculty_board.collectSnapshot(allocator) catch |err| {
             print("  {s}" ++ qt.E_CROSS ++ " Snapshot failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
-            sleepInterruptible(&running, config.interval_sec);
+            sleepInterval(300);
             continue;
         };
 
@@ -811,49 +773,20 @@ pub fn runSupervisorMode(allocator: Allocator, config: SupervisorConfig) !void {
         }
 
         // 10. Report status summary
-        if (!config.daemon) {
-            print("  {s}" ++ qt.E_CHECK ++ " Cycle {d}: {s} | Critical: {d} | Warnings: {d}{s}\n\n", .{
-                if (health_analysis.critical_count == 0) GREEN else RED,
-                cycle,
-                if (all_healthy) "HEALTHY" else "RECOVERING",
-                health_analysis.critical_count,
-                health_analysis.warning_count,
-                RESET,
-            });
-        }
-        try log.log("Cycle #{d}: {s} critical={d} warnings={d}", .{
+        print("  {s}" ++ qt.E_CHECK ++ " Cycle {d}: {s} | Critical: {d} | Warnings: {d}{s}\n\n", .{
+            if (health_analysis.critical_count == 0) GREEN else RED,
             cycle,
             if (all_healthy) "HEALTHY" else "RECOVERING",
             health_analysis.critical_count,
             health_analysis.warning_count,
+            RESET,
         });
 
         // 11. Save supervisor state
         saveSupervisorState(cycle, pfc_health, health_analysis);
 
-        // 12. Check if we should stop (PID file removed = stop request)
-        if (!isPidFileValid()) {
-            try log.log("PID file removed, shutting down gracefully", .{});
-            running.store(false, .release);
-            break;
-        }
-
-        // Sleep before next cycle
-        try log.log("Sleeping for {d}s", .{config.interval_sec});
-        sleepInterruptible(&running, config.interval_sec);
-    }
-
-    // Shutdown notification
-    try log.log("Supervisor stopped after {d} cycles", .{cycle});
-    if (tg.enabled) {
-        var buf: [128]u8 = undefined;
-        const msg = std.fmt.bufPrint(&buf, qt.E_CROWN ++ " Supervisor \xd0\xbe\xd1\x81\xd1\x82\xd0\xb0\xd0\xbd\xd0\xbe\xd0\xb2\xd0\xbb\xd0\xb5\xd0\xbd\n\n" ++ // остановлен
-            "Cycles: {d}", .{cycle}) catch "";
-        queen_telegram.tgSend(tg, msg);
-    }
-
-    if (!config.daemon) {
-        print("\n{s}" ++ qt.E_CHECK ++ " Supervisor stopped after {d} cycles{s}\n", .{ GREEN, cycle, RESET });
+        // Sleep before next cycle (5 min default for supervisor)
+        sleepInterval(300);
     }
 }
 
@@ -1794,10 +1727,11 @@ fn isPidFileValid() bool {
     if (n == 0) return false;
 
     const pid_str = buf[0..n];
-    const file_pid = std.fmt.parseInt(i32, pid_str, 10) catch return false;
-    const my_pid = std.os.linux.getpid();
+    const pid = std.fmt.parseInt(i32, pid_str, 10) catch return false;
 
-    return file_pid == my_pid;
+    // Check if process exists by sending signal 0
+    const result = std.posix.kill(pid, 0);
+    return result == 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
