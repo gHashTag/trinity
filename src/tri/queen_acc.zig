@@ -522,3 +522,193 @@ test "ACC — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
 }
+
+test "ACC — ConflictKind enum coverage" {
+    const kinds = [_]ConflictKind{
+        .mutual_exclusion,
+        .sequential,
+        .resource_contention,
+        .redundancy,
+        .unknown,
+    };
+    for (kinds) |k| {
+        _ = k; // Verify all enum values exist
+    }
+}
+
+test "ACC — Conflict Severity enum values" {
+    try std.testing.expectEqual(@as(u8, 0), @intFromEnum(Conflict.Severity.low));
+    try std.testing.expectEqual(@as(u8, 1), @intFromEnum(Conflict.Severity.medium));
+    try std.testing.expectEqual(@as(u8, 2), @intFromEnum(Conflict.Severity.high));
+}
+
+test "ACC — ErrorSeverity enum coverage" {
+    const severities = [_]ErrorSeverity{ .info, .warning, .err, .critical };
+    for (severities) |s| {
+        _ = s; // Verify all enum values exist
+    }
+}
+
+test "ACC — ControlSignal default values" {
+    const signal = ControlSignal{};
+    try std.testing.expect(!signal.inhibit);
+    try std.testing.expect(!signal.boost);
+    try std.testing.expectEqual(@as(usize, 0), signal.reason.len);
+}
+
+test "ACC — detectConflicts no conflicts" {
+    const candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .farm_status, .urgency = .normal },
+        .{ .kind = .arena_status, .urgency = .normal },
+    };
+
+    const conflicts = try detectConflicts(std.testing.allocator, &candidates);
+    defer std.testing.allocator.free(conflicts);
+
+    try std.testing.expectEqual(@as(usize, 0), conflicts.len);
+}
+
+test "ACC — detectConflicts dangerous pair" {
+    const candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .farm_recycle, .urgency = .normal },
+        .{ .kind = .cloud_spawn, .urgency = .normal },
+    };
+
+    const conflicts = try detectConflicts(std.testing.allocator, &candidates);
+    defer std.testing.allocator.free(conflicts);
+
+    try std.testing.expect(conflicts.len > 0);
+}
+
+test "ACC — shouldSuppress low severity" {
+    const conflicts = [_]Conflict{
+        .{
+            .kind = .redundancy,
+            .action1 = .doctor_quick,
+            .action2 = .doctor_heal,
+            .reason = "both fix build",
+            .severity = .low,
+        },
+    };
+
+    // Low severity should not suppress
+    try std.testing.expect(!shouldSuppress(.doctor_heal, .doctor_quick, &conflicts));
+}
+
+test "ACC — suppressConflicting preserves selected" {
+    var candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .cloud_spawn, .urgency = .normal, .suppressed = false },
+        .{ .kind = .cloud_kill, .urgency = .normal, .suppressed = false },
+    };
+
+    try suppressConflicting(&candidates, .cloud_spawn);
+
+    // Selected action should not be suppressed
+    try std.testing.expect(!candidates[0].suppressed);
+}
+
+test "ACC — suppressConflicting dangerous operations" {
+    var candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .farm_recycle, .urgency = .normal, .suppressed = false },
+        .{ .kind = .cloud_spawn, .urgency = .normal, .suppressed = false },
+        .{ .kind = .cloud_kill, .urgency = .normal, .suppressed = false },
+    };
+
+    try suppressConflicting(&candidates, .farm_recycle);
+
+    // All dangerous operations should be suppressed
+    try std.testing.expect(candidates[1].suppressed);
+    try std.testing.expect(candidates[2].suppressed);
+}
+
+test "ACC — ErrorMonitor init creates empty monitor" {
+    var monitor = ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+
+    try std.testing.expectEqual(@as(usize, 0), monitor.errors.items.len);
+    try std.testing.expectEqual(@as(i64, 0), monitor.last_check);
+}
+
+test "ACC — ErrorMonitor countBySeverity empty" {
+    var monitor = ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+
+    try std.testing.expectEqual(@as(usize, 0), monitor.countBySeverity(.err));
+    try std.testing.expectEqual(@as(usize, 0), monitor.countBySeverity(.warning));
+}
+
+test "ACC — ErrorMonitor threshold with multiple errors" {
+    var monitor = ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+
+    try monitor.addError("test", "error1", .err);
+    try monitor.addError("test", "error2", .err);
+    try std.testing.expect(!monitor.thresholdExceeded());
+
+    try monitor.addError("test", "error3", .err);
+    try std.testing.expect(monitor.thresholdExceeded());
+}
+
+test "ACC — generateControlSignals no conflicts" {
+    const candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .farm_status, .urgency = .normal },
+        .{ .kind = .doctor_scan, .urgency = .normal },
+    };
+
+    var monitor = ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+
+    const signals = try generateControlSignals(std.testing.allocator, &candidates, &monitor);
+    defer std.testing.allocator.free(signals);
+
+    try std.testing.expectEqual(@as(usize, 2), signals.len);
+    // No conflicts means no inhibitions
+    try std.testing.expect(!signals[0].inhibit);
+    try std.testing.expect(!signals[1].inhibit);
+}
+
+test "ACC — generateControlSignals with error threshold" {
+    const candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .farm_recycle, .urgency = .normal },
+    };
+
+    var monitor = ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+    try monitor.addError("test", "critical", .critical);
+
+    const signals = try generateControlSignals(std.testing.allocator, &candidates, &monitor);
+    defer std.testing.allocator.free(signals);
+
+    // Dangerous action should be inhibited when error threshold exceeded
+    try std.testing.expect(signals[0].inhibit);
+}
+
+test "ACC — generateControlSignals boosts critical urgency" {
+    const candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .doctor_heal, .urgency = .critical },
+    };
+
+    var monitor = ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+    try monitor.addError("test", "critical", .critical);
+
+    const signals = try generateControlSignals(std.testing.allocator, &candidates, &monitor);
+    defer std.testing.allocator.free(signals);
+
+    // Critical urgency actions should be boosted during error recovery
+    try std.testing.expect(signals[0].boost);
+}
+
+test "ACC — CellHealth struct defaults" {
+    const cell_health = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, cell_health.status);
+    try std.testing.expectEqual(@as(u32, 0), cell_health.cycle);
+    try std.testing.expectEqual(@as(i64, 0), cell_health.last_check);
+}
+
+test "ACC — CellHealth Status enum values" {
+    const statuses = [_]CellHealth.Status{ .healthy, .weak, .broken };
+    for (statuses) |s| {
+        _ = s; // Verify all enum values exist
+    }
+}
