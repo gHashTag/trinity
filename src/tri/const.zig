@@ -16,6 +16,18 @@ pub const CELL_SCAN_DIRS = [_][]const u8{
     "papers", // Research paper artifacts
     "data", // Training data, datasets
     "contracts", // Smart contracts and chain artifacts
+    // Queen Unification v1 — brain cells (Batch 1: Prefrontal + Raphe)
+    "src/tri/queen_dlpfc",
+    "src/tri/queen_vmpfc",
+    "src/tri/queen_ofc",
+    "src/tri/queen_vlpfc",
+    "src/tri/queen_dmpfc",
+    "src/tri/phoenix_medulla",
+    "src/tri/phoenix_pons",
+    "src/tri/phoenix_locus_coeruleus",
+    "src/tri/reticular_aras",
+    "src/tri/reticular_raphe",
+    "src/tri/reticular_gigantocellular",
 };
 
 /// Count of scan directories
