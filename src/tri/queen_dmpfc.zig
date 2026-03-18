@@ -154,7 +154,7 @@ fn thalamusGetMuHeartbeat(allocator: Allocator) anyerror!void {
 pub fn recordSelfCheck(allocator: Allocator, check: SelfCheck) !void {
     const data = try std.fmt.allocPrint(
         allocator,
-        "{{"health_score":{d:.2},"grade":"{s}","issues":{d}}",
+        "{{\"health_score\":{d:.2},\"grade\":\"{s}\",\"issues\":{d}}}",
         .{ check.health_score, check.grade(), check.issues.len },
     );
     defer allocator.free(data);

@@ -81,7 +81,6 @@ pub fn formatStatusReport(
     farm_services: u8,
     best_ppl: f32,
 ) ![]const u8 {
-    _ = allocator;
     const mood = inferMood(build_ok, ouroboros_score, false);
 
     // Build report inline (no allocator needed for static buffer)

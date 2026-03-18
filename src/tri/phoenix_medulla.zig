@@ -73,7 +73,7 @@ pub fn sleepCycle(allocator: Allocator) !void {
     // Write sleep summary to hippocampus
     const data = try std.fmt.allocPrint(
         allocator,
-        "{{"nrem_rules":{d},"rem_tasks_dreamed":{d}}}",
+        "{{\"nrem_rules\":{d},\"rem_tasks_dreamed\":{d}}}",
         .{ rules_created, tasks_dreamed },
     );
     defer allocator.free(data);
@@ -90,7 +90,7 @@ pub fn sleepCycle(allocator: Allocator) !void {
 pub fn heartbeatPing(allocator: Allocator) !void {
     const data = try std.fmt.allocPrint(
         allocator,
-        "{{"wake":{d},"fixes_applied":0,\"errors_scanned\":0,\"test_ok\":true,\"build_ok\":true}}",
+        "{{\"wake\":{d},\"fixes_applied\":0,\"errors_scanned\":0,\"test_ok\":true,\"build_ok\":true}}",
         .{ std.time.timestamp() },
     );
     defer allocator.free(data);
