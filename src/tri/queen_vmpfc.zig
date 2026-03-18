@@ -221,3 +221,97 @@ test "vmpfc — phiWeightedScore constants" {
     // Score of 2 should be 2*phi
     try std.testing.expectApproxEqAbs(2.0 * phi, phiWeightedScore(2.0), 0.001);
 }
+
+test "vmpfc — ValueAssessment default values" {
+    const assessment = ValueAssessment{};
+    try std.testing.expectEqual(@as(f32, 0.0), assessment.roi);
+    try std.testing.expectEqual(@as(f32, 0.0), assessment.confidence);
+    try std.testing.expectEqual(Recommendation.wait, assessment.recommendation);
+    try std.testing.expectEqual(@as(usize, 0), assessment.reason_len);
+}
+
+test "vmpfc — ValueAssessment reasonStr empty" {
+    var assessment = ValueAssessment{};
+    assessment.setReason("");
+    try std.testing.expectEqual(@as(usize, 0), assessment.reason_len);
+    try std.testing.expectEqual(@as(usize, 0), assessment.reasonStr().len);
+}
+
+test "vmpfc — ValueAssessment reasonStr returns slice" {
+    var assessment = ValueAssessment{};
+    assessment.setReason("test reason");
+    try std.testing.expectEqualStrings("test reason", assessment.reasonStr());
+}
+
+test "vmpfc — FarmAction enum coverage" {
+    const actions = [_]FarmAction{ .inject, .recycle, .evolve };
+    for (actions) |action| {
+        _ = action; // Verify all enum values exist
+    }
+}
+
+test "vmpfc — CellHealth struct defaults" {
+    const cell_health = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, cell_health.status);
+    try std.testing.expectEqual(@as(u32, 0), cell_health.cycle);
+    try std.testing.expectEqual(@as(i64, 0), cell_health.last_check);
+}
+
+test "vmpfc — CellHealth Status enum values" {
+    const statuses = [_]CellHealth.Status{ .healthy, .weak, .broken };
+    for (statuses) |s| {
+        _ = s; // Verify all enum values exist
+    }
+}
+
+test "vmpfc — phiWeightedScore with negative" {
+    const result = phiWeightedScore(-1.0);
+    try std.testing.expect(result < 0.0);
+    try std.testing.expectApproxEqAbs(@as(f32, -1.618), result, 0.01);
+}
+
+test "vmpfc — phiWeightedScore large values" {
+    const result = phiWeightedScore(100.0);
+    try std.testing.expect(result > 100.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 161.8), result, 0.1);
+}
+
+test "vmpfc — assessFarmAction all actions return valid confidence" {
+    const actions = [_]FarmAction{ .inject, .recycle, .evolve };
+    for (actions) |action| {
+        const assessment = try assessFarmAction(std.testing.allocator, action, 5.0);
+        try std.testing.expect(assessment.confidence >= 0.0);
+        try std.testing.expect(assessment.confidence <= 1.0);
+    }
+}
+
+test "vmpfc — assessFarmAction reason is set" {
+    const actions = [_]FarmAction{ .inject, .recycle, .evolve };
+    for (actions) |action| {
+        const assessment = try assessFarmAction(std.testing.allocator, action, 5.0);
+        try std.testing.expect(assessment.reason_len > 0);
+        try std.testing.expect(assessment.reasonStr().len > 0);
+    }
+}
+
+test "vmpfc — assessFarmAction ROI non-negative" {
+    const actions = [_]FarmAction{ .inject, .recycle, .evolve };
+    for (actions) |action| {
+        const assessment = try assessFarmAction(std.testing.allocator, action, 5.0);
+        try std.testing.expect(assessment.roi >= 0.0);
+    }
+}
+
+test "vmpfc — ValueAssessment setReason with exact fit" {
+    var assessment = ValueAssessment{};
+    const text = "a" ** 127; // Exactly fits
+    assessment.setReason(text);
+    try std.testing.expectEqual(@as(usize, 127), assessment.reason_len);
+}
+
+test "vmpfc — ValueAssessment setReason truncation" {
+    var assessment = ValueAssessment{};
+    const text = "a" ** 200; // Should be truncated
+    assessment.setReason(text);
+    try std.testing.expectEqual(@as(usize, 128), assessment.reason_len);
+}
