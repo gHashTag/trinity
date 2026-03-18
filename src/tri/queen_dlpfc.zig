@@ -305,9 +305,18 @@ pub fn readSenses(allocator: Allocator, ctx: *DecisionContext) !void {
 
     // Derived metrics
     ctx.build_ok = ctx.mu_heartbeat.build_ok;
-    // TODO: Get ouroboros_score and dirty_files from actual sensors
-    ctx.ouroboros_score = 75.0; // Default healthy
-    ctx.dirty_files = 0;
+
+    // Get ouroboros_score from ouroboros module
+    const ouroboros = @import("queen_ouroboros.zig");
+    const ouroboros_state = ouroboros.fetch();
+    ctx.ouroboros_score = ouroboros.getScore(ouroboros_state);
+
+    // Get dirty_files from faculty metrics
+    if (ctx.faculty_metrics) |metrics| {
+        ctx.dirty_files = metrics.dirty_files;
+    } else {
+        ctx.dirty_files = 0;
+    }
 
     // Phase 3.5: Collect faculty metrics from faculty board
     ctx.faculty_metrics = collectFacultyMetrics(allocator);

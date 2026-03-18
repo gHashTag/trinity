@@ -415,7 +415,7 @@ test "vlpfc — CellHealth from health() function" {
 }
 
 test "vlpfc — FilterConfig with suppress list" {
-    const suppress_list = &[_][]const u8{"unused", "noise"};
+    const suppress_list = &[_][]const u8{ "unused", "noise" };
 
     var config = FilterConfig{};
     config.suppress = suppress_list;

@@ -379,17 +379,10 @@ public final class ControlServer: ObservableObject {
 
         // NEW: Adaptive action suggestion
         case "/suggest-action":
-            let analysis = await ScreenAnalyzer.shared.analyzeCurrentScreen()
-            return httpResponse(json: [
-                "success": true,
-                "analysis": analysis.toJSON()
-            ])
-
-        // NEW: Adaptive action suggestion
-        case "/suggest-action":
             if let body = body,
                let params = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
                let goal = params["goal"] as? String {
+                // Return specific suggestion for goal
                 if let suggestion = await ScreenAnalyzer.shared.suggestNextAction(goal: goal) {
                     return httpResponse(json: [
                         "success": true,
@@ -402,6 +395,13 @@ public final class ControlServer: ObservableObject {
                         ]
                     ])
                 }
+            } else {
+                // Return general analysis
+                let analysis = await ScreenAnalyzer.shared.analyzeCurrentScreen()
+                return httpResponse(json: [
+                    "success": true,
+                    "analysis": analysis.toJSON()
+                ])
             }
             return httpResponse(status: 400, json: ["error": "Could not generate suggestion"])
 
@@ -414,6 +414,90 @@ public final class ControlServer: ObservableObject {
                 return httpResponse(json: result)
             }
             return httpResponse(status: 400, json: ["error": "Invalid user flow request"])
+
+        // NEW: Autonomous UI Explorer endpoints
+        case "/explore/start":
+            if let body = body,
+               let params = try? JSONSerialization.jsonObject(with: body) as? [String: Any] {
+                // Parse mode
+                let modeString = params["mode"] as? String ?? "adaptive"
+                let mode: UIExplorer.ExplorationMode = switch modeString {
+                case "systematic": .systematic
+                case "random": .random
+                case "focused": .focused
+                case "adaptive": .adaptive
+                default: .adaptive
+                }
+
+                // Parse duration
+                let duration = params["duration"] as? Double
+
+                let result = await UIExplorer.shared.startExploration(mode: mode, duration: duration)
+                return httpResponse(json: [
+                    "success": result.success,
+                    "result": result.toJSON()
+                ])
+            }
+            // Start without params (defaults)
+            let result = await UIExplorer.shared.startExploration(mode: .adaptive, duration: nil)
+            return httpResponse(json: [
+                "success": result.success,
+                "result": result.toJSON()
+            ])
+
+        case "/explore/map":
+            let map = await UIExplorer.shared.getExplorationMap()
+            return httpResponse(json: [
+                "success": true,
+                "map": [
+                    "elements": map.elements.map { $0.toJSON() },
+                    "lastUpdated": ISO8601DateFormatter().string(from: map.lastUpdated)
+                ]
+            ])
+
+        case "/explore/heatmap":
+            let heatmap = await UIExplorer.shared.getClickHeatmap()
+            return httpResponse(json: [
+                "success": true,
+                "heatmap": heatmap
+            ])
+
+        case "/explore/report":
+            let report = await UIExplorer.shared.exportExplorationReport()
+            return httpResponse(json: [
+                "success": true,
+                "report": report
+            ])
+
+        case "/explore/discover-screens":
+            let screens = await UIExplorer.shared.discoverAllScreens()
+            return httpResponse(json: [
+                "success": true,
+                "screens": screens
+            ])
+
+        case "/explore/suggest":
+            if let body = body,
+               let params = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+               let goalString = params["goal"] as? String {
+                let goal: ExplorationGoal = switch goalString {
+                case "discoverNew": .discoverNew
+                case "exploreHotspots": .exploreHotspots
+                case "verifyElements": .verifyElements
+                default: .discoverNew
+                }
+
+                if let suggestion = await UIExplorer.shared.suggestNextClick(goal: goal) {
+                    return httpResponse(json: [
+                        "success": true,
+                        "suggestion": [
+                            "x": suggestion.x,
+                            "y": suggestion.y
+                        ]
+                    ])
+                }
+            }
+            return httpResponse(status: 400, json: ["error": "Could not generate suggestion"])
 
         default:
             return httpResponse(status: 404, json: ["error": "Not found"])
