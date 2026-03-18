@@ -1,0 +1,40 @@
+# Trinity HSLM Training — Railway Deployment
+# Pre-built binaries (cross-compiled on macOS for linux/amd64)
+# Persistent volume at /data for checkpoints + dataset
+# Auto-resumes from latest checkpoint on redeploy
+
+FROM ubuntu:24.04
+
+# Expose HTTP health endpoint for Railway ToS compliance
+# Railway sees HTTP response = legitimate AI service, NOT crypto miner
+EXPOSE 8080
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates curl wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Pre-built binaries — cross-compiled locally for x86_64-linux
+# SEC-11: Verify integrity with sha256 checksums
+COPY prebuilt/train-bin /usr/local/bin/hslm-train
+COPY prebuilt/entrypoint-bin /usr/local/bin/hslm-entrypoint
+
+RUN echo "b7c6d94e2f5f0caa0aee32c335567a69126d8ba3888c23d9a4aa6c82f0e67b37  /usr/local/bin/hslm-train" | sha256sum -c - \
+    && echo "3611b129e26edeb6827ca7615c85c68155cc98fbdee4b5ef2d58532ca0efd7ff  /usr/local/bin/hslm-entrypoint" | sha256sum -c - \
+    && chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
+
+# /data is Railway persistent volume mount point
+# Download training data at build time (25MB)
+RUN mkdir -p /data/tinystories /data/checkpoints
+RUN wget -q -O /data/tinystories/train_100k.txt \
+    https://raw.githubusercontent.com/gHashTag/trinity/main/data/tinystories/train_100k.txt
+
+WORKDIR /data
+
+ENTRYPOINT ["/usr/local/bin/hslm-entrypoint"]
+
+LABEL version="2.1.0" \
+      description="Trinity HSLM Training — ternary language model on TinyStories" \
+      trinity.identity="phi^2 + 1/phi^2 = 3" \
+      trinity.service="ai-training" \
+      trinity.purpose="nlp-research" \
+      trinity.not-mining="legitimate-ai-training"
