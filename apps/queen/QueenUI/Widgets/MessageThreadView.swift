@@ -318,7 +318,7 @@ struct ThreadReplyCell: View {
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(TrinityTheme.bgCardBorder.opacity(0.5))
-                                .clipShape(Capsule())
+                                .clipShape(SwiftUI.Capsule())
                         }
                     }
                 }

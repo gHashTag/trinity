@@ -116,9 +116,9 @@ struct PulseRingIndicator: View {
                 if maxTokens > 0 {
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            Capsule()
+                            SwiftUI.Capsule()
                                 .fill(Color.white.opacity(0.08))
-                            Capsule()
+                            SwiftUI.Capsule()
                                 .fill(
                                     LinearGradient(
                                         colors: [primaryColor, primaryColor.opacity(0.6)],
@@ -174,7 +174,7 @@ struct PulseRingIndicator: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 7)
                 .background(TrinityTheme.statusError)
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Stop generating")

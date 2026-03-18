@@ -194,3 +194,7 @@
 ,"summary":"farm hslm-w7-60: stalled: step unchanged 2+ polls step=31200"}
 {"id":"mem_1773806873_farm_6995fd2f","agent":"farm","kind":"observation","ts":1773806873,"tags":[],"ttl":2592000,"data":{"ts":1773806873976,"type":"health","svc":"hslm-w7-13","detail":"stalled: step unchanged 2+ polls","step":1300}
 ,"summary":"farm hslm-w7-13: stalled: step unchanged 2+ polls step=1300"}
+{"id":"mem_1773831680_farm_69955e36","agent":"farm","kind":"observation","ts":1773831680,"tags":[],"ttl":2592000,"data":{"ts":1773831680823,"type":"health","svc":"hslm-r30","detail":"stalled: step unchanged 2+ polls","step":80200}
+,"summary":"farm hslm-r30: stalled: step unchanged 2+ polls step=80200"}
+{"id":"mem_1773831680_farm_69955e36","agent":"farm","kind":"observation","ts":1773831680,"tags":[],"ttl":2592000,"data":{"ts":1773831680824,"type":"health","svc":"hslm-r23","detail":"stalled: step unchanged 2+ polls","step":80000}
+,"summary":"farm hslm-r23: stalled: step unchanged 2+ polls step=80000"}

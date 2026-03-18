@@ -54,7 +54,7 @@ struct CountBadge: View {
                 .padding(.horizontal, size.padding)
                 .frame(minWidth: size.minWidth)
                 .background(
-                    Capsule()
+                    SwiftUI.Capsule()
                         .fill(color)
                 )
                 .accessibilityLabel("Notification count")
@@ -151,7 +151,7 @@ struct StatusIndicator: View {
         .padding(.horizontal, size.padding.horizontal)
         .padding(.vertical, size.padding.vertical)
         .background(
-            Capsule()
+            SwiftUI.Capsule()
                 .fill(status.color.opacity(0.15))
         )
         .accessibilityLabel("Status")
@@ -212,7 +212,7 @@ struct PillBadge: View {
             .padding(.horizontal, size.padding.horizontal)
             .padding(.vertical, size.padding.vertical)
             .background(
-                Capsule()
+                SwiftUI.Capsule()
                     .fill(color.opacity(0.15))
             )
             .accessibilityLabel("Badge")
@@ -280,7 +280,7 @@ struct IconBadge: View {
                     .padding(.horizontal, 3)
                     .padding(.vertical, 1)
                     .background(
-                        Capsule()
+                        SwiftUI.Capsule()
                             .fill(color)
                     )
                     .offset(x: 4, y: -4)

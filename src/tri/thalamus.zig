@@ -219,11 +219,13 @@ test "thalamus countFarmEvents returns zero or more" {
 // RELAY 6: MU patterns — hippocampus "mu_pattern" → fallback DB file
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub fn getMuPatterns(allocator: Allocator, limit: u32) !struct { items: [][]const u8, count: u32 } {
+pub const MuPatternsResult = struct { items: [][]const u8, count: u32 };
+
+pub fn getMuPatterns(allocator: Allocator, limit: u32) !MuPatternsResult {
     var results = hippocampus.read(allocator, .{
         .agent = "mu_pattern",
         .limit = limit,
-    }) catch return getMuPatternsFallback(limit);
+    }) catch return getMuPatternsFallback(allocator, limit);
     defer results.deinit(allocator);
 
     if (results.items.len > 0) {
@@ -237,7 +239,7 @@ pub fn getMuPatterns(allocator: Allocator, limit: u32) !struct { items: [][]cons
     return getMuPatternsFallback(allocator, limit);
 }
 
-fn getMuPatternsFallback(allocator: Allocator, limit: u32) !struct { items: [][]const u8, count: u32 } {
+fn getMuPatternsFallback(allocator: Allocator, limit: u32) !MuPatternsResult {
     const DB_PATH = ".trinity/mu/learning_db.json";
     const file = std.fs.cwd().openFile(DB_PATH, .{}) catch {
         return .{ .items = &.{}, .count = 0 };
@@ -516,7 +518,7 @@ pub fn getLastSleepInfo(allocator: Allocator) ?SleepInfo {
         .episodes_consolidated = parseMetricU32(d, "old_episodes") orelse 0,
         .rules_created = parseMetricU32(d, "rules_created") orelse 0,
         .errors_dreamed = parseMetricU32(d, "errors_dreamed") orelse 0,
-        .hours_since = (now - @as(i64, @intCast(rec.ts))) / 3600,
+        .hours_since = @divTrunc(now - @as(i64, @intCast(rec.ts)), 3600),
     };
 }
 

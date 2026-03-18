@@ -243,7 +243,7 @@ struct SettingsScreen: View {
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(TrinityTheme.purple)
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
 
@@ -545,7 +545,7 @@ struct SettingsScreen: View {
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 6)
                                     .background(TrinityTheme.accent)
-                                    .clipShape(Capsule())
+                                    .clipShape(SwiftUI.Capsule())
                             }
                             .buttonStyle(.plain)
                         }
@@ -616,7 +616,7 @@ struct SettingsScreen: View {
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(Color.white.opacity(0.08))
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
 
@@ -633,7 +633,7 @@ struct SettingsScreen: View {
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(TrinityTheme.statusError.opacity(0.15))
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
 

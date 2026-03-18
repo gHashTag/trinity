@@ -233,7 +233,7 @@ struct QueenScreen: View {
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(verdictColor(verdict).opacity(0.15))
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
             }
         }
         .padding(.horizontal, 12)
@@ -291,7 +291,7 @@ struct QueenScreen: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 2)
                         .background(TrinityTheme.golden.opacity(0.15))
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                 }
             }
             .padding(.horizontal)

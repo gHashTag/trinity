@@ -46,7 +46,7 @@ struct NetworkStatusIndicator: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
-            Capsule()
+            SwiftUI.Capsule()
                 .fill(TrinityTheme.bgCard)
         )
     }
@@ -138,7 +138,7 @@ struct ConnectionQualityBadge: View {
         .padding(.horizontal, 6)
         .padding(.vertical, 3)
         .background(
-            Capsule()
+            SwiftUI.Capsule()
                 .fill(quality.color.opacity(0.15))
         )
     }

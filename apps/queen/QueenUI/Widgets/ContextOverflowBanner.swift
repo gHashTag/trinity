@@ -291,7 +291,7 @@ struct SimpleActionButton: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 5)
             .background(Color.white.opacity(0.08))
-            .clipShape(Capsule())
+            .clipShape(SwiftUI.Capsule())
         }
         .buttonStyle(.plain)
         .accessibilityLabel("\(title) action")
