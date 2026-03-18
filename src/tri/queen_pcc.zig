@@ -758,3 +758,179 @@ test "pcc — Capabilities connectivity checks" {
     // Should be able to call all check functions without panic
     try std.testing.expect(true);
 }
+
+test "pcc — AgentRole enum coverage" {
+    const roles = [_]SelfModel.AgentRole{
+        .autonomous_swarm,
+        .training_farm,
+        .arena_evaluator,
+        .cloud_orchestrator,
+    };
+    for (roles) |r| {
+        _ = r.label(); // Verify all roles have labels
+    }
+}
+
+test "pcc — AgentRole label strings" {
+    try std.testing.expectEqualStrings("Autonomous Agent Swarm", SelfModel.AgentRole.autonomous_swarm.label());
+    try std.testing.expectEqualStrings("Training Farm Manager", SelfModel.AgentRole.training_farm.label());
+    try std.testing.expectEqualStrings("Arena Evaluator", SelfModel.AgentRole.arena_evaluator.label());
+    try std.testing.expectEqualStrings("Cloud Orchestrator", SelfModel.AgentRole.cloud_orchestrator.label());
+}
+
+test "pcc — CurrentState Mode enum coverage" {
+    const modes = [_]SelfModel.CurrentState.Mode{
+        .idle,
+        .monitoring,
+        .deciding,
+        .acting,
+        .sleeping,
+        .emergency,
+    };
+    for (modes) |m| {
+        _ = m; // Verify all modes exist
+    }
+}
+
+test "pcc — ConsciousnessState default values" {
+    const state = ConsciousnessState{};
+
+    try std.testing.expectEqual(ConsciousnessState.Status.conscious, state.status);
+    try std.testing.expectEqual(@as(i64, 0), state.stuck_duration_seconds);
+    try std.testing.expectEqual(@as(i64, 0), state.last_progress);
+    try std.testing.expect(!state.loop_detected);
+    try std.testing.expect(!state.dead_end_detected);
+}
+
+test "pcc — LoopDetector with custom threshold" {
+    var detector = LoopDetector{ .loop_threshold = 2 };
+
+    // Record same action 2 times (threshold)
+    const action = .doctor_quick;
+    _ = detector.record(action);
+    const is_loop = detector.record(action);
+
+    try std.testing.expect(is_loop); // Should detect loop at threshold
+}
+
+test "pcc — SelfModel Identity empty strings" {
+    const identity = SelfModel.Identity{};
+
+    try std.testing.expectEqual(@as(usize, 0), identity.name_len);
+    try std.testing.expectEqual(@as(usize, 0), identity.version_len);
+    try std.testing.expectEqual(@as(usize, 0), identity.nameStr().len);
+    try std.testing.expectEqual(@as(usize, 0), identity.versionStr().len);
+}
+
+test "pcc — SelfModel Identity with populated fields" {
+    var identity = SelfModel.Identity{};
+    const name = "Queen";
+    const version = "1.0.0";
+
+    @memcpy(identity.name[0..name.len], name);
+    identity.name_len = name.len;
+    @memcpy(identity.version[0..version.len], version);
+    identity.version_len = version.len;
+
+    try std.testing.expectEqualStrings("Queen", identity.nameStr());
+    try std.testing.expectEqualStrings("1.0.0", identity.versionStr());
+}
+
+test "pcc — CurrentState activityStr method" {
+    var state = SelfModel.CurrentState{};
+    const activity = "monitoring system";
+
+    @memcpy(state.activity[0..activity.len], activity);
+    state.activity_len = activity.len;
+
+    try std.testing.expectEqualStrings("monitoring system", state.activityStr());
+}
+
+test "pcc — Goals struct fields" {
+    var goals = SelfModel.Goals{};
+    goals.primary_progress = 0.5;
+    goals.secondary_progress = 0.75;
+
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), goals.primary_progress, 0.01);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.75), goals.secondary_progress, 0.01);
+}
+
+test "pcc — LearningState struct fields" {
+    var state = SelfModel.LearningState{};
+    state.total_memories = 100;
+    state.recent_memories = 10;
+    state.episode_success_rate = 0.85;
+
+    try std.testing.expectEqual(@as(u32, 100), state.total_memories);
+    try std.testing.expectEqual(@as(u8, 10), state.recent_memories);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.85), state.episode_success_rate, 0.01);
+}
+
+test "pcc — Capabilities struct default values" {
+    const caps = SelfModel.Capabilities{};
+
+    try std.testing.expectEqual(@as(u8, 0), caps.binaries_available);
+    try std.testing.expectEqual(@as(u8, 6), caps.binaries_total);
+    try std.testing.expectEqual(@as(u8, 0), caps.mcp_servers);
+}
+
+test "pcc — ConsciousnessState isHealthy edge cases" {
+    var state = ConsciousnessState{};
+
+    // Default state should be healthy
+    try std.testing.expect(state.isHealthy());
+
+    // Change status to looping
+    state.status = .looping;
+    try std.testing.expect(!state.isHealthy());
+
+    // Change status to stuck
+    state.status = .stuck;
+    try std.testing.expect(!state.isHealthy());
+
+    // Back to conscious
+    state.status = .conscious;
+    try std.testing.expect(state.isHealthy());
+}
+
+test "pcc — LoopDetector record method" {
+    var detector = LoopDetector{};
+
+    // Record same action 4 times
+    const action = .introspection;
+    _ = detector.record(action);
+    _ = detector.record(action);
+    _ = detector.record(action);
+    const is_loop = detector.record(action);
+
+    try std.testing.expect(is_loop); // Should detect loop
+}
+
+test "pcc — LoopDetector different actions no loop" {
+    var detector = LoopDetector{};
+
+    // Record different actions
+    _ = detector.record(.farm_status);
+    _ = detector.record(.doctor_scan);
+    _ = detector.record(.introspection);
+    const is_loop = detector.record(.arena_status);
+
+    try std.testing.expect(!is_loop); // Should not detect loop
+}
+
+test "pcc — SelfModel struct initialization" {
+    const model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{},
+        .goals = .{},
+        .learning_state = .{},
+    };
+
+    // All fields should be accessible
+    _ = model.identity;
+    _ = model.current_state;
+    _ = model.capabilities;
+    _ = model.goals;
+    _ = model.learning_state;
+}
