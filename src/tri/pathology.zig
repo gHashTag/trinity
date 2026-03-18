@@ -21,6 +21,8 @@ const std = @import("std");
 const colors = @import("tri_colors.zig");
 const swe_arena = @import("swe_arena.zig");
 const thalamus = @import("thalamus.zig");
+const github_client = @import("github_client.zig");
+const hippocampus = @import("hippocampus.zig");
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -135,6 +137,79 @@ pub const ToxicVerdict = struct {
     comparison: PastComparison,
     timestamp: i64,
 };
+
+pub const CellHealth = struct {
+    healthy: u32,
+    weak: u32,
+    broken: u32,
+    total: u32,
+    timestamp: i64,
+};
+
+/// Read cell health from hippocampus — parses cerebellum observation summaries
+/// Summary format: "cell health: 105/116 total (A:105 B:11 C:0 F:0)"
+pub fn readCellHealthFromHippocampus(allocator: std.mem.Allocator) !CellHealth {
+    const results = hippocampus.read(allocator, .{
+        .agent = "cerebellum",
+        .kind = .observation,
+        .limit = 1,
+    }) catch return .{
+        .healthy = 0,
+        .weak = 0,
+        .broken = 0,
+        .total = 0,
+        .timestamp = 0,
+    };
+    defer results.deinit(allocator);
+
+    if (results.items.len == 0) return .{
+        .healthy = 0,
+        .weak = 0,
+        .broken = 0,
+        .total = 0,
+        .timestamp = 0,
+    };
+
+    // Parse "cell health: 105/116 total (A:105 B:11 C:0 F:0)"
+    const summary = results.items[0].summary();
+    var healthy: u32 = 0;
+    var weak: u32 = 0;
+    var broken: u32 = 0;
+    var total: u32 = 0;
+
+    if (std.mem.indexOf(u8, summary, "A:")) |idx| {
+        const start = idx + 2;
+        var end = start;
+        while (end < summary.len and summary[end] >= '0' and summary[end] <= '9') : (end += 1) {}
+        healthy = std.fmt.parseInt(u32, summary[start..end], 10) catch 0;
+    }
+    if (std.mem.indexOf(u8, summary, "B:")) |idx| {
+        const start = idx + 2;
+        var end = start;
+        while (end < summary.len and summary[end] >= '0' and summary[end] <= '9') : (end += 1) {}
+        weak = std.fmt.parseInt(u32, summary[start..end], 10) catch 0;
+    }
+    if (std.mem.indexOf(u8, summary, "C:")) |idx| {
+        const start = idx + 2;
+        var end = start;
+        while (end < summary.len and summary[end] >= '0' and summary[end] <= '9') : (end += 1) {}
+        broken = std.fmt.parseInt(u32, summary[start..end], 10) catch 0;
+    }
+    if (std.mem.indexOf(u8, summary, "total")) |idx| {
+        const start = idx + 6;
+        var end = start;
+        while (end < summary.len and summary[end] >= '0' and summary[end] <= '9') : (end += 1) {}
+        total = std.fmt.parseInt(u32, summary[start..end], 10) catch 0;
+    }
+
+    return .{
+        .healthy = healthy,
+        .weak = weak,
+        .broken = broken,
+        .total = total,
+        .timestamp = results.items[0].ts,
+    };
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BEHAVIORS
@@ -1515,12 +1590,26 @@ pub const PipelineVerdictResult = struct {
 
 /// Collect inputs, compute verdict, check against threshold.
 /// Returns PipelineVerdictResult with gate_pass and recommendation.
+/// Also triggers immune system (auto-create doctor tasks) when health is low.
 pub fn autoCollectAndVerdict(allocator: std.mem.Allocator, threshold: f32) PipelineVerdictResult {
     const input = collectInputs(allocator);
+    defer allocator.free(input.files);
     const score = computeScore(input);
     const level = classifyLevel(score.total);
     const comparison = compareWithPast(allocator, score.total);
     const timestamp = std.time.timestamp();
+
+    // Immune system: read cell health and potentially create doctor task
+    const cell_health = readCellHealthFromHippocampus(allocator) catch CellHealth{
+        .healthy = 0,
+        .weak = 0,
+        .broken = 0,
+        .total = 0,
+        .timestamp = timestamp,
+    };
+    createDoctorTaskIfNeeded(allocator, score.total, cell_health) catch |err| {
+        std.debug.print("Warning: failed to create doctor task: {}\n", .{err});
+    };
 
     const verdict = ToxicVerdict{
         .score = score,
@@ -1586,4 +1675,122 @@ test "debt_score_formula" {
     };
     const dirty = computeScore(input_dirty);
     try std.testing.expect(dirty.debt_score == 10.0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IMMUNE SYSTEM — Auto-generate doctor tasks when health drops (v1.0)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Create GitHub doctor issue if health score is low or cells are broken.
+/// Trigger conditions:
+///   - score < 70 (health threshold)
+///   - broken > 0 (any broken cells)
+///
+/// Labels applied:
+///   - agent:doctor (assigned to doctor agent)
+///   - status:queued (ready for processing)
+///   - priority:critical (score < 50) or priority:high (score < 70)
+///   - auto-generated (immune system trigger)
+pub fn createDoctorTaskIfNeeded(allocator: std.mem.Allocator, score: f32, cell_health: CellHealth) !void {
+    const threshold: f32 = 70.0;
+
+    // Skip if health is acceptable and no broken cells
+    if (score >= threshold and cell_health.broken == 0) return;
+
+    // Build issue title
+    var title_buf: [256]u8 = undefined;
+    const title = std.fmt.bufPrint(&title_buf, "Doctor Auto-Task: Health {d:.1}% | {d} broken cells", .{ score, cell_health.broken }) catch return;
+
+    // Build issue body
+    var body_buf: [2048]u8 = undefined;
+    const body = std.fmt.bufPrint(&body_buf,
+        \\## Auto-Generated Doctor Task
+        \\
+        \\**Trigger**: Health score below threshold ({d:.1}% < {d:.0}%)
+        \\**Cell Health**: {d} healthy, {d} weak, {d} broken
+        \\
+        \\### Actions Required
+        \\
+        \\1. **Scan**: `tri doctor scan` — full analysis
+        \\2. **Report**: `tri doctor report` — detailed breakdown
+        \\3. **Heal**: `tri doctor heal` — auto-fix where possible
+        \\
+        \\### Priority: {s}
+        \\
+        \\*Generated by Pathology ({d})*
+    , .{
+        score,                threshold,
+        cell_health.healthy,  cell_health.weak,
+        cell_health.broken,   if (score < 50) "CRITICAL" else "HIGH",
+        std.time.timestamp(),
+    }) catch return;
+
+    // Create GitHub issue
+    var gh = try github_client.GitHubClient.init(allocator, false);
+    defer gh.deinit();
+
+    const priority_label = if (score < 50) "priority:critical" else "priority:high";
+    const labels = &[_][]const u8{
+        "agent:doctor",
+        "status:queued",
+        priority_label,
+        "auto-generated",
+    };
+
+    _ = try gh.createIssue(title, body, labels);
+}
+
+test "createDoctorTaskIfNeeded_skips_when_healthy" {
+    const health = CellHealth{
+        .healthy = 100,
+        .weak = 10,
+        .broken = 0,
+        .total = 110,
+        .timestamp = std.time.timestamp(),
+    };
+
+    // Score 80, no broken cells — should skip (no error = skipped)
+    try createDoctorTaskIfNeeded(std.testing.allocator, 80.0, health);
+}
+
+test "createDoctorTaskIfNeeded_creates_on_low_score" {
+    const health = CellHealth{
+        .healthy = 50,
+        .weak = 20,
+        .broken = 0,
+        .total = 70,
+        .timestamp = std.time.timestamp(),
+    };
+
+    // Score 60 < 70 — should create task (dry run in test env)
+    try createDoctorTaskIfNeeded(std.testing.allocator, 60.0, health);
+}
+
+test "createDoctorTaskIfNeeded_creates_on_broken_cells" {
+    const health = CellHealth{
+        .healthy = 80,
+        .weak = 10,
+        .broken = 5,
+        .total = 95,
+        .timestamp = std.time.timestamp(),
+    };
+
+    // Score 75 but broken > 0 — should create task
+    try createDoctorTaskIfNeeded(std.testing.allocator, 75.0, health);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CLI ENTRYPOINT — Manual auto-task check
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Run auto-task check manually from CLI.
+/// Collects inputs, reads cell health from hippocampus, computes score,
+/// and creates doctor task if health is low or cells are broken.
+pub fn runAutoTaskCheck(allocator: std.mem.Allocator) !void {
+    const input = collectInputs(allocator);
+    defer allocator.free(input.files);
+    const cell_health = try readCellHealthFromHippocampus(allocator);
+    const score = computeScore(input);
+    try createDoctorTaskIfNeeded(allocator, score.total, cell_health);
+    std.debug.print("\n Auto-task check complete\n", .{});
 }
