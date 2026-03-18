@@ -244,3 +244,123 @@ test "Queen Ouroboros — fmtTelegram handles negative delta" {
     // Should show -10.0 delta
     try std.testing.expect(std.mem.indexOf(u8, msg, "-10.0") != null);
 }
+
+test "Queen Ouroboros — fmtTelegram with zero delta" {
+    var buf: [512]u8 = undefined;
+    const state = OuroborosState{
+        .score = 75.0,
+        .initial = 75.0,
+        .cycle = 5,
+        .stagnation = 0,
+    };
+
+    const msg = fmtTelegram(&buf, state);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "+0.0") != null or std.mem.indexOf(u8, msg, "-0.0") != null);
+}
+
+test "Queen Ouroboros — fmtTelegram includes all fields" {
+    var buf: [512]u8 = undefined;
+    var state = OuroborosState{
+        .score = 50.0,
+        .initial = 40.0,
+        .cycle = 15,
+        .stagnation = 3,
+    };
+    @memcpy(state.strategy[0.."test_strategy".len], "test_strategy");
+    state.strategy_len = "test_strategy".len;
+
+    const msg = fmtTelegram(&buf, state);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Cycle 15") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "50.0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "test_strategy") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Stagnation: 3") != null);
+}
+
+test "Queen Ouroboros — OuroborosState all dimensions default to zero" {
+    const state = OuroborosState{};
+    try std.testing.expectEqual(@as(f32, 0.0), state.efficiency);
+    try std.testing.expectEqual(@as(f32, 0.0), state.build_health);
+    try std.testing.expectEqual(@as(f32, 0.0), state.test_coverage);
+    try std.testing.expectEqual(@as(f32, 0.0), state.doc_quality);
+    try std.testing.expectEqual(@as(f32, 0.0), state.spec_compliance);
+    try std.testing.expectEqual(@as(f32, 0.0), state.git_cleanliness);
+    try std.testing.expectEqual(@as(f32, 0.0), state.farm_productivity);
+    try std.testing.expectEqual(@as(f32, 0.0), state.arena_activity);
+    try std.testing.expectEqual(@as(f32, 0.0), state.experience_growth);
+    try std.testing.expectEqual(@as(f32, 0.0), state.sacred_balance);
+    try std.testing.expectEqual(@as(f32, 0.0), state.network_health);
+}
+
+test "Queen Ouroboros — findJsonI64 returns null for missing" {
+    const data = "{\"no_started\":1700000000}";
+    try std.testing.expectEqual(@as(?i64, null), findJsonI64(data, "\"started\":"));
+}
+
+test "Queen Ouroboros — findJsonF32 handles negative" {
+    const data = "{\"score\":-10.5}";
+    const result = findJsonF32(data, "\"score\":");
+    try std.testing.expect(result != null);
+    try std.testing.expectApproxEqAbs(@as(f32, -10.5), result.?, 0.01);
+}
+
+test "Queen Ouroboros — findJsonF32 handles zero" {
+    const data = "{\"score\":0.0}";
+    const result = findJsonF32(data, "\"score\":");
+    try std.testing.expect(result != null);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), result.?, 0.001);
+}
+
+test "Queen Ouroboros — findJsonF32 empty data" {
+    const data = "";
+    try std.testing.expectEqual(@as(?f32, null), findJsonF32(data, "\"x\":"));
+}
+
+test "Queen Ouroboros — findJsonU32 handles large numbers" {
+    const data = "{\"cycle\":999999}";
+    const result = findJsonU32(data, "\"cycle\":");
+    try std.testing.expect(result != null);
+    try std.testing.expectEqual(@as(u32, 999999), result.?);
+}
+
+test "Queen Ouroboros — findJsonStr empty string" {
+    const data = "{\"strategy\":\"\"}";
+    const result = findJsonStr(data, "\"strategy\":\"");
+    try std.testing.expectEqual(@as(usize, 0), result.?.len);
+}
+
+test "Queen Ouroboros — OuroborosState strategyStr" {
+    var state = OuroborosState{};
+    @memcpy(state.strategy[0.."test".len], "test");
+    state.strategy_len = "test".len;
+
+    try std.testing.expectEqualStrings("test", state.strategyStr());
+}
+
+test "Queen Ouroboros — OuroborosState strategyStr empty" {
+    const state = OuroborosState{};
+    try std.testing.expectEqual(@as(usize, 0), state.strategyStr().len);
+}
+
+test "Queen Ouroboros — fmtTelegram buffer overflow returns empty" {
+    var tiny_buf: [10]u8 = undefined;
+    const state = OuroborosState{
+        .score = 50.0,
+        .initial = 40.0,
+        .cycle = 1,
+    };
+
+    const msg = fmtTelegram(&tiny_buf, state);
+    // Should return empty string if buffer too small
+    try std.testing.expect(msg.len == 0);
+}
+
+test "Queen Ouroboros — getScore with zero state" {
+    const state = OuroborosState{};
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), getScore(state), 0.001);
+}
+
+test "Queen Ouroboros — getScore with max score" {
+    const state = OuroborosState{ .score = 100.0 };
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), getScore(state), 0.01);
+}
