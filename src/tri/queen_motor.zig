@@ -641,3 +641,150 @@ test "Motor — PlanExecutionResult failure" {
     try std.testing.expectEqual(@as(u8, 2), result.steps_executed);
     try std.testing.expectEqual(@as(u8, 2), result.failed_at.?);
 }
+
+test "Motor — MotorCommand subcommandStr empty" {
+    const cmd = MotorCommand.init();
+    try std.testing.expectEqual(@as(usize, 0), cmd.subcommand_len);
+    try std.testing.expectEqual(@as(usize, 0), cmd.subcommandStr().len);
+}
+
+test "Motor — MotorCommand fromAction with single word" {
+    const cmd = MotorCommand.fromAction(.introspection);
+    try std.testing.expectEqualStrings("introspection", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 0), cmd.arg_count);
+}
+
+test "Motor — MotorCommand toArgv with no args" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0..6], "status");
+    cmd.subcommand_len = 6;
+
+    const argv = try cmd.toArgv(std.testing.allocator);
+    defer std.testing.allocator.free(argv);
+
+    try std.testing.expectEqual(@as(usize, 2), argv.len);
+    try std.testing.expectEqualStrings("tri", argv[0]);
+    try std.testing.expectEqualStrings("status", argv[1]);
+}
+
+test "Motor — MotorCommand toArgv with args" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0..4], "farm");
+    cmd.subcommand_len = 4;
+    @memcpy(cmd.args[0][0..6], "status");
+    cmd.arg_lens[0] = 6;
+    cmd.arg_count = 1;
+
+    const argv = try cmd.toArgv(std.testing.allocator);
+    defer std.testing.allocator.free(argv);
+
+    try std.testing.expectEqual(@as(usize, 3), argv.len);
+    try std.testing.expectEqualStrings("tri", argv[0]);
+    try std.testing.expectEqualStrings("farm", argv[1]);
+    try std.testing.expectEqualStrings("status", argv[2]);
+}
+
+test "Motor — MotorCommand format with args" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0..3], "git");
+    cmd.subcommand_len = 3;
+    @memcpy(cmd.args[0][0..6], "commit");
+    cmd.arg_lens[0] = 6;
+    @memcpy(cmd.args[1][0..2], "-m");
+    cmd.arg_lens[1] = 2;
+    @memcpy(cmd.args[2][0..4], "test");
+    cmd.arg_lens[2] = 4;
+    cmd.arg_count = 3;
+
+    var buf: [128]u8 = undefined;
+    const formatted = cmd.format(&buf);
+
+    try std.testing.expect(std.mem.indexOf(u8, formatted, "git") != null);
+    try std.testing.expect(std.mem.indexOf(u8, formatted, "commit") != null);
+}
+
+test "Motor — MotorCommand format single word" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0..6], "status");
+    cmd.subcommand_len = 6;
+
+    var buf: [64]u8 = undefined;
+    const formatted = cmd.format(&buf);
+
+    try std.testing.expectEqualStrings("tri status", formatted);
+}
+
+test "Motor — ExecutionResult all fields populated" {
+    const result = ExecutionResult{
+        .success = true,
+        .duration_ms = 100,
+        .error_msg = "",
+        .has_output = true,
+    };
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(@as(u64, 100), result.duration_ms);
+    try std.testing.expect(result.has_output);
+}
+
+test "Motor — ExecutionResult with failure" {
+    const result = ExecutionResult{
+        .success = false,
+        .duration_ms = 50,
+        .error_msg = "Command failed",
+        .has_output = false,
+    };
+
+    try std.testing.expect(!result.success);
+    try std.testing.expectEqual(@as(u64, 50), result.duration_ms);
+}
+
+test "Motor — PlanExecutionResult with no failures" {
+    const result = PlanExecutionResult{
+        .success = true,
+        .steps_executed = 5,
+        .total_duration_ms = 1000,
+    };
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(@as(u8, 5), result.steps_executed);
+    try std.testing.expect(result.failed_at == null);
+}
+
+test "Motor — PlanExecutionResult zero steps" {
+    const result = PlanExecutionResult{
+        .success = true,
+        .steps_executed = 0,
+        .total_duration_ms = 0,
+    };
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(@as(u8, 0), result.steps_executed);
+}
+
+test "Motor — MotorCommand max args" {
+    var cmd = MotorCommand.init();
+    cmd.arg_count = MAX_CMD_ARGS;
+
+    try std.testing.expectEqual(@as(u8, MAX_CMD_ARGS), cmd.arg_count);
+}
+
+test "Motor — MAX_CMD_ARGS and MAX_ARG_LEN constants" {
+    try std.testing.expect(MAX_CMD_ARGS > 0);
+    try std.testing.expect(MAX_ARG_LEN > 0);
+    try std.testing.expect(MAX_ARG_LEN >= 32); // Should fit reasonable args
+}
+
+test "Motor — MotorCommand fromAction all action kinds compile" {
+    // Just verify that fromAction doesn't crash for various action kinds
+    _ = MotorCommand.fromAction(.farm_status);
+    _ = MotorCommand.fromAction(.doctor_scan);
+    _ = MotorCommand.fromAction(.git_commit_state);
+    _ = MotorCommand.fromAction(.introspection);
+}
+
+test "Motor — MotorExecutor init creates valid executor" {
+    _ = MotorExecutor.init(std.testing.allocator);
+
+    // Just verify it initializes without crashing
+}
