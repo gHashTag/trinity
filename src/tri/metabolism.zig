@@ -1222,6 +1222,7 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
             // Mutation yield: % of G1+ with PPL < median(G0)
             // Sort G0 ppls to find median
             var g0_median: f32 = 999;
+            var has_g0_baseline = false;
             if (g0_count_y > 0) {
                 // Simple sort for median
                 var si2: usize = 1;
@@ -1235,10 +1236,16 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
                     g0_ppls[ji] = kv;
                 }
                 g0_median = g0_ppls[g0_count_y / 2];
+                has_g0_baseline = true;
+            } else if (best_pop_ppl < 998) {
+                // No G0 workers: use best overall PPL as fallback baseline
+                // This happens when farm has fully evolved (all workers are G1+)
+                g0_median = best_pop_ppl * 1.1; // 10% above best as threshold
+                has_g0_baseline = true;
             }
 
             // Count G1+ below G0 median (second pass)
-            if (gn_total > 0 and g0_median < 999) {
+            if (gn_total > 0 and has_g0_baseline) {
                 for (svcs) |s| {
                     if (jsonU32(s, "status") != 0) continue;
                     const ppl_v = jsonF32(s, "ppl");
@@ -1272,14 +1279,27 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
             // Three key metrics
             print("   Diversity (H):      {s}{d:.3}{s} / {d:.3}  ({d:.0}%)\n", .{ if (shannon_norm > 0.5) GREEN else YELLOW, shannon, RESET, max_shannon, shannon_norm * 100 });
             print("   Elite Concentration: {d:.2}x  (PPL₁={d:.2} / PPL₁₀={d:.2})\n", .{ elite_conc, best_pop_ppl, rank10_ppl });
-            print("   Mutation Yield:     {s}{d:.1}%{s}  ({d}/{d} G1+ beat G0 median={d:.1})\n\n", .{
-                if (mutation_yield > 30) GREEN else if (mutation_yield > 10) YELLOW else RED,
-                mutation_yield,
-                RESET,
-                gn_below_median,
-                gn_total,
-                g0_median,
-            });
+            if (g0_count_y == 0) {
+                // No G0 workers: farm has fully evolved
+                print("   Mutation Yield:     {s}{d:.1}%{s}  ({d}/{d} G1+ beat best*1.1={d:.1}) {s}[no G0, evolved]{s}\n\n", .{
+                    if (mutation_yield > 30) GREEN else if (mutation_yield > 10) YELLOW else RED,
+                    mutation_yield,
+                    RESET,
+                    gn_below_median,
+                    gn_total,
+                    g0_median,
+                    DIM, RESET,
+                });
+            } else {
+                print("   Mutation Yield:     {s}{d:.1}%{s}  ({d}/{d} G1+ beat G0 median={d:.1})\n\n", .{
+                    if (mutation_yield > 30) GREEN else if (mutation_yield > 10) YELLOW else RED,
+                    mutation_yield,
+                    RESET,
+                    gn_below_median,
+                    gn_total,
+                    g0_median,
+                });
+            }
             print("   Leader PPL: {s}{d:.2}{s}  │  Mean PPL: {d:.1}  │  Spike rate: {d:.1}%\n\n", .{ GREEN, best_pop_ppl, RESET, mean, spike_pct });
 
             // ═══════════════════════════════════════════════════════════════════════════════
