@@ -33,11 +33,25 @@ pub const FocusArea = enum {
 
 /// Filtered state — only relevant data
 pub const FilteredState = struct {
-    priority_relays: []const PriorityRelay = &.{},
+    priority_relays: []PriorityRelay = &.{},
+    priority_relays_allocated: []PriorityRelay = &.{}, // Store original allocation for freeing
     alert_count: u8 = 0,
     mood: qt.AlertKind = .build_broken, // Reuse as "primary concern"
     summary: [256]u8 = undefined,
     summary_len: usize = 0,
+
+    pub fn deinit(self: *FilteredState, allocator: Allocator) void {
+        for (self.priority_relays) |relay| {
+            if (relay.value_is_owned) {
+                allocator.free(relay.value);
+            }
+        }
+        if (self.priority_relays_allocated.len > 0) {
+            allocator.free(self.priority_relays_allocated);
+        }
+        self.priority_relays = &.{};
+        self.priority_relays_allocated = &.{};
+    }
 
     pub fn summaryStr(self: *const FilteredState) []const u8 {
         return self.summary[0..self.summary_len];
@@ -54,6 +68,7 @@ pub const PriorityRelay = struct {
     name: []const u8,
     value: []const u8,
     score: f32, // 0-1 relevance
+    value_is_owned: bool = false, // true if value was allocated and needs freeing
 };
 
 /// Filter Thalamus state by focus area
@@ -78,6 +93,7 @@ pub fn filterRelays(
                     .name = "mu_heartbeat",
                     .value = try fmtHeartbeat(allocator, mu_hb.wake, mu_hb.age_s),
                     .score = 0.7,
+                    .value_is_owned = true,
                 };
                 relay_idx += 1;
             }
@@ -89,6 +105,7 @@ pub fn filterRelays(
                         .name = "metabolism",
                         .value = try fmtMetabolism(allocator, snap.ppl, snap.tok_per_sec),
                         .score = 0.8,
+                        .value_is_owned = true,
                     };
                     relay_idx += 1;
                 }
@@ -100,6 +117,7 @@ pub fn filterRelays(
                     .name = "cell_health",
                     .value = try fmtCellHealth(allocator, cell_health.total, cell_health.healthy),
                     .score = 0.6,
+                    .value_is_owned = true,
                 };
                 relay_idx += 1;
             }
@@ -111,6 +129,7 @@ pub fn filterRelays(
                 .name = "farm_status",
                 .value = try fmtFarmStatus(allocator, farm.total_services, farm.active, farm.best_ppl),
                 .score = 1.0,
+                .value_is_owned = true,
             };
             relay_idx += 1;
         },
@@ -122,6 +141,7 @@ pub fn filterRelays(
                     .name = "ppl_metrics",
                     .value = try fmtMetabolism(allocator, snap.ppl, snap.tok_per_sec),
                     .score = 1.0,
+                    .value_is_owned = true,
                 };
                 relay_idx += 1;
             }
@@ -133,6 +153,7 @@ pub fn filterRelays(
                 .name = "github_issues",
                 .value = try fmtIssues(allocator, issues.open, issues.agent_spawn),
                 .score = 1.0,
+                .value_is_owned = true,
             };
             relay_idx += 1;
         },
@@ -148,6 +169,7 @@ pub fn filterRelays(
     }
 
     result.priority_relays = relays[0..relay_idx];
+    result.priority_relays_allocated = relays; // Store full allocation for cleanup
     result.setSummary("Filtered by focus area");
     return result;
 }
@@ -225,21 +247,16 @@ pub const CellHealth = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "vlpfc — filterRelays all focus" {
-    const result = try filterRelays(std.testing.allocator, .{ .focus = .all });
-    defer std.testing.allocator.free(result.priority_relays);
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .all });
+    defer result.deinit(std.testing.allocator);
 
     try std.testing.expect(result.priority_relays.len > 0);
     try std.testing.expect(result.summaryStr().len > 0);
 }
 
 test "vlpfc — filterRelays farm focus" {
-    const result = try filterRelays(std.testing.allocator, .{ .focus = .farm });
-    defer {
-        for (result.priority_relays) |r| {
-            std.testing.allocator.free(r.value);
-        }
-        std.testing.allocator.free(result.priority_relays);
-    }
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .farm });
+    defer result.deinit(std.testing.allocator);
 
     try std.testing.expect(result.priority_relays.len > 0);
     try std.testing.expect(std.mem.indexOf(u8, result.priority_relays[0].name, "farm") != null);
@@ -260,13 +277,8 @@ test "vlpfc — FilteredState setSummary truncates" {
 }
 
 test "vlpfc — filterRelays training focus" {
-    const result = try filterRelays(std.testing.allocator, .{ .focus = .training });
-    defer {
-        for (result.priority_relays) |r| {
-            std.testing.allocator.free(r.value);
-        }
-        std.testing.allocator.free(result.priority_relays);
-    }
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .training });
+    defer result.deinit(std.testing.allocator);
 
     try std.testing.expect(result.priority_relays.len > 0);
     if (result.priority_relays.len > 0) {
@@ -275,13 +287,8 @@ test "vlpfc — filterRelays training focus" {
 }
 
 test "vlpfc — filterRelays github focus" {
-    const result = try filterRelays(std.testing.allocator, .{ .focus = .github });
-    defer {
-        for (result.priority_relays) |r| {
-            std.testing.allocator.free(r.value);
-        }
-        std.testing.allocator.free(result.priority_relays);
-    }
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .github });
+    defer result.deinit(std.testing.allocator);
 
     try std.testing.expect(result.priority_relays.len > 0);
     if (result.priority_relays.len > 0) {
@@ -290,8 +297,8 @@ test "vlpfc — filterRelays github focus" {
 }
 
 test "vlpfc — filterRelays self_check focus" {
-    const result = try filterRelays(std.testing.allocator, .{ .focus = .self_check });
-    defer std.testing.allocator.free(result.priority_relays);
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .self_check });
+    defer result.deinit(std.testing.allocator);
 
     try std.testing.expect(result.priority_relays.len > 0);
     try std.testing.expectEqualStrings("queen_heartbeat", result.priority_relays[0].name);
