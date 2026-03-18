@@ -15,6 +15,7 @@ const std = @import("std");
 const colors = @import("tri_colors.zig");
 const cell_parser = @import("ribosome.zig");
 const hippocampus = @import("hippocampus.zig");
+const registry_mod = @import("cytoplasm_registry.zig");
 
 const Allocator = std.mem.Allocator;
 
@@ -192,6 +193,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "find")) return runFind(allocator, rest);
     if (std.mem.eql(u8, sub, "templates")) return runTemplates(allocator, rest);
     if (std.mem.eql(u8, sub, "batch")) return runBatch(allocator, rest);
+    if (std.mem.eql(u8, sub, "registry")) return registry_mod.runRegistry(allocator, rest);
 
     printHelp();
 }
