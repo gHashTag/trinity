@@ -36,6 +36,7 @@ pub const E_DISK = "\xf0\x9f\x92\xbe"; // 💾
 pub const E_NET = "\xf0\x9f\x8c\x90"; // 🌐
 pub const E_GEAR = "\xe2\x9a\x99\xef\xb8\x8f"; // ⚙️
 pub const E_HAND = "\xe2\x9c\x8b"; // ✋
+pub const E_CHART = "\xf0\x9f\x93\x88"; // 📈
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
