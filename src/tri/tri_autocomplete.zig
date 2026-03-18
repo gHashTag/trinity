@@ -25,6 +25,7 @@ const RESET = "\x1b[0m";
 const GREEN = "\x1b[32m";
 const CYAN = "\x1b[36m";
 const YELLOW = "\x1b[33m";
+const GOLDEN = "\x1b[38;5;220m";
 const BOLD = "\x1b[1m";
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -593,8 +594,6 @@ fn getCommandsList(allocator: Allocator) ![]const u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn generateZshCompletion(allocator: Allocator, writer: anytype) !void {
-    _ = allocator;
-
     try writer.print(
         \\#compdef tri
         \\# tri zsh completion
@@ -836,8 +835,6 @@ fn uninstallCompletion(shell: Shell) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runAutocompleteCommand(allocator: Allocator, args: []const []const u8) !void {
-    _ = allocator;
-
     if (args.len == 0) {
         std.debug.print("{s}Usage: tri autocomplete [--print|--install|--uninstall]{s}\n", .{ GOLDEN, RESET });
         std.debug.print("\n", .{});
@@ -880,7 +877,8 @@ pub fn runAutocompleteCommand(allocator: Allocator, args: []const []const u8) !v
 
     switch (action) {
         .print => {
-            const stdout = std.io.getStdOut().writer();
+            const stdout_file = std.io.getStdOut();
+            const stdout = stdout_file.writer();
             const detected = if (shell == .auto) Shell.detect() else shell;
             switch (detected) {
                 .bash => try generateBashCompletion(allocator, stdout),
