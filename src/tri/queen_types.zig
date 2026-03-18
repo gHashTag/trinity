@@ -186,6 +186,42 @@ pub const SenseResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// OUROBOROS — 12-dimension health score
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Ouroboros state with 12 dimensions
+/// Moved here from queen_ouroboros.zig for shared use (avoids circular deps)
+pub const OuroborosState = struct {
+    // Primary metrics
+    score: f32 = 0.0, // current aggregate score (0-100)
+    initial: f32 = 0.0, // initial score at cycle start
+    cycle: u32 = 0, // current cycle number
+
+    // Dimensions (12 total for health calculation)
+    efficiency: f32 = 0.0, // code efficiency
+    build_health: f32 = 0.0, // build passes
+    test_coverage: f32 = 0.0, // test pass rate
+    doc_quality: f32 = 0.0, // documentation completeness
+    spec_compliance: f32 = 0.0, // specs vs generated ratio
+    git_cleanliness: f32 = 0.0, // few dirty files
+    farm_productivity: f32 = 0.0, // PPL improvement
+    arena_activity: f32 = 0.0, // battle frequency
+    experience_growth: f32 = 0.0, // episodes logged
+    sacred_balance: f32 = 0.0, // predictions vs reality
+    network_health: f32 = 0.0, // external connectivity
+
+    // Meta
+    stagnation: u8 = 0, // cycles without improvement
+    strategy: [32]u8 = undefined, // current strategy name
+    strategy_len: usize = 0,
+    started_ts: i64 = 0, // timestamp of cycle start
+
+    pub fn strategyStr(self: *const OuroborosState) []const u8 {
+        return self.strategy[0..self.strategy_len];
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // ACTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
