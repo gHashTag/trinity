@@ -954,7 +954,7 @@ struct ChatSidebar: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 3)
         .background(isActive ? TrinityTheme.accent : Color.white.opacity(0.06))
-        .clipShape(Capsule())
+        .clipShape(SwiftUI.Capsule())
     }
 
     private func tagChip(_ tag: String?, label: String) -> some View {
@@ -968,7 +968,7 @@ struct ChatSidebar: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(isActive ? TrinityTheme.accent : Color.white.opacity(0.06))
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
         }
         .buttonStyle(.plain)
     }
@@ -1644,7 +1644,7 @@ struct ThreadRow: View {
                                     .padding(.horizontal, 3)
                                     .padding(.vertical, 1)
                                     .background(TrinityTheme.purple.opacity(0.1))
-                                    .clipShape(Capsule())
+                                    .clipShape(SwiftUI.Capsule())
                             }
                             if !searchQuery.isEmpty && matchCount > 0 {
                                 Text("\(matchCount) match\(matchCount == 1 ? "" : "es")")

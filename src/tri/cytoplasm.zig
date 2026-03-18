@@ -639,7 +639,7 @@ fn runSearch(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = (parsed.value.object.get("cells") orelse return).array.items;
 
@@ -3789,7 +3789,7 @@ fn runTrends(allocator: Allocator, args: []const []const u8) !void {
 
     // Get all cell health records from hippocampus
     var health_records = try hippocampus.getAllCellHealth(allocator, opts.days);
-    defer health_records.deinit();
+    defer health_records.deinit(allocator);
 
     if (health_records.items.len == 0) {
         std.debug.print("{s}No health records found in hippocampus.{s}\n", .{ YELLOW, RESET });
