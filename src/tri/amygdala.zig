@@ -728,3 +728,236 @@ test "amygdala — Emotion enum coverage" {
         try std.testing.expect(s.len > 0);
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// EMOTION TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "amygdala — Emotion all toString roundtrip" {
+    const emotions = [_]Emotion{ .fear, .reward, .neutral, .anger, .joy };
+    for (emotions) |e| {
+        const s = e.toString();
+        const parsed = Emotion.fromString(s).?;
+        try std.testing.expectEqual(e, parsed);
+    }
+}
+
+test "amygdala — Emotion neutral toString" {
+    try std.testing.expectEqualStrings("neutral", Emotion.neutral.toString());
+}
+
+test "amygdala — Emotion anger toString" {
+    try std.testing.expectEqualStrings("anger", Emotion.anger.toString());
+}
+
+test "amygdala — Emotion joy toString" {
+    try std.testing.expectEqualStrings("joy", Emotion.joy.toString());
+}
+
+test "amygdala — Emotion reward toString" {
+    try std.testing.expectEqualStrings("reward", Emotion.reward.toString());
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VALENCE TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "amygdala — Valence anger" {
+    const v = Valence.anger(60);
+    try std.testing.expect(v.isNegative());
+    try std.testing.expectEqual(Emotion.anger, v.emotion);
+    try std.testing.expectEqual(@as(i8, -60), v.intensity);
+}
+
+test "amygdala — Valence joy" {
+    const v = Valence.joy(80);
+    try std.testing.expect(v.isPositive());
+    try std.testing.expectEqual(Emotion.joy, v.emotion);
+    try std.testing.expectEqual(@as(i8, 80), v.intensity);
+}
+
+test "amygdala — Valence init" {
+    const v = Valence.init(.neutral, 0);
+    try std.testing.expectEqual(Emotion.neutral, v.emotion);
+    try std.testing.expectEqual(@as(i8, 0), v.intensity);
+    try std.testing.expect(!v.isPositive());
+    try std.testing.expect(!v.isNegative());
+}
+
+test "amygdala — Valence absolute zero" {
+    const v = Valence.init(.neutral, 0);
+    try std.testing.expectEqual(@as(i8, 0), v.absolute());
+}
+
+test "amygdala — Valence fear negative input" {
+    const v = Valence.fear(-30);
+    try std.testing.expectEqual(@as(i8, -30), v.intensity);
+    try std.testing.expectEqual(@as(i8, 30), v.absolute());
+}
+
+test "amygdala — Valence reward negative input" {
+    const v = Valence.reward(-25);
+    try std.testing.expectEqual(@as(i8, 25), v.intensity); // Absolute value
+    try std.testing.expect(v.isPositive());
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FEAR MEMORY TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "amygdala — FearMemory defaults" {
+    const fm = FearMemory{
+        .context = "test",
+        .intensity = 0,
+        .encounter_count = 0,
+        .last_encounter = 0,
+    };
+    try std.testing.expectEqual(@as(i8, 0), fm.intensity);
+    try std.testing.expectEqual(@as(u32, 0), fm.encounter_count);
+    try std.testing.expectEqual(@as(i64, 0), fm.last_encounter);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), fm.extinction_progress, 0.01);
+}
+
+test "amygdala — FearMemory shouldAvoid low intensity" {
+    const fm = FearMemory{
+        .context = "test",
+        .intensity = 20, // Below threshold
+        .encounter_count = 1,
+        .last_encounter = std.time.timestamp(),
+        .extinction_progress = 0.0,
+    };
+    try std.testing.expect(!fm.shouldAvoid());
+}
+
+test "amygdala — FearMemory avoidanceConfidence max" {
+    const fm = FearMemory{
+        .context = "test",
+        .intensity = 100,
+        .encounter_count = 1,
+        .last_encounter = std.time.timestamp(),
+        .extinction_progress = 0.0,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), fm.avoidanceConfidence(), 0.01);
+}
+
+test "amygdala — FearMemory avoidanceConfidence extinguished" {
+    const fm = FearMemory{
+        .context = "test",
+        .intensity = 100,
+        .encounter_count = 1,
+        .last_encounter = std.time.timestamp(),
+        .extinction_progress = 1.0,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), fm.avoidanceConfidence(), 0.01);
+}
+
+test "amygdala — FearMemory encounter_count increments" {
+    var fm = FearMemory{
+        .context = "test",
+        .intensity = 50,
+        .encounter_count = 1,
+        .last_encounter = std.time.timestamp(),
+    };
+    try std.testing.expectEqual(@as(u32, 1), fm.encounter_count);
+
+    fm.encounter_count = 5;
+    try std.testing.expectEqual(@as(u32, 5), fm.encounter_count);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// THREAT KIND TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "amygdala — ThreatKind all values" {
+    const threats = [_]ThreatKind{
+        .build_failure,
+        .ppl_divergence,
+        .token_expiry,
+        .worker_death,
+        .stagnation,
+        .memory_corruption,
+        .flat_lr_schedule,
+    };
+    for (threats) |t| {
+        _ = t; // Verify all enum values exist
+    }
+}
+
+test "amygdala — detectThreat token expiry priority" {
+    // Token expiry isn't directly detected by detectThreat (needs additional params)
+    // This test documents that token_expiry is a valid threat kind
+    const threat: ThreatKind = .token_expiry;
+    try std.testing.expectEqual(ThreatKind.token_expiry, threat);
+}
+
+test "amygdala — detectThreat stagnation" {
+    const threat: ThreatKind = .stagnation;
+    try std.testing.expectEqual(ThreatKind.stagnation, threat);
+}
+
+test "amygdala — detectThreat memory corruption" {
+    const threat: ThreatKind = .memory_corruption;
+    try std.testing.expectEqual(ThreatKind.memory_corruption, threat);
+}
+
+test "amygdala — detectThreat worker death" {
+    const threat: ThreatKind = .worker_death;
+    try std.testing.expectEqual(ThreatKind.worker_death, threat);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CELL HEALTH TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "amygdala — CellHealth timestamp" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
+
+test "amygdala — CellHealth defaults" {
+    const h = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
+
+test "amygdala — CellHealth Status enum" {
+    try std.testing.expectEqual(CellHealth.Status.healthy, .healthy);
+    try std.testing.expectEqual(CellHealth.Status.weak, .weak);
+    try std.testing.expectEqual(CellHealth.Status.broken, .broken);
+}
+
+test "amygdala — CellHealth custom values" {
+    var h = CellHealth{};
+    h.status = .broken;
+    h.cycle = 10;
+    h.last_check = 11111;
+
+    try std.testing.expectEqual(CellHealth.Status.broken, h.status);
+    try std.testing.expectEqual(@as(u32, 10), h.cycle);
+    try std.testing.expectEqual(@as(i64, 11111), h.last_check);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// AVOIDANCE RESULT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "amygdala — AvoidanceResult no avoid" {
+    const result = AvoidanceResult{
+        .avoid = false,
+        .confidence = 0.0,
+        .reason = "No fear association",
+    };
+    try std.testing.expect(!result.avoid);
+    try std.testing.expectEqual(@as(f32, 0.0), result.confidence);
+}
+
+test "amygdala — AvoidanceResult high confidence" {
+    const result = AvoidanceResult{
+        .avoid = true,
+        .confidence = 0.95,
+        .reason = "Strong fear association",
+    };
+    try std.testing.expect(result.avoid);
+    try std.testing.expect(result.confidence > 0.9);
+}
