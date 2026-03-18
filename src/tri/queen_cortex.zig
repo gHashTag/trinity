@@ -194,3 +194,146 @@ test "integration with faculty_types FacultySnapshot pattern" {
     _ = snap;
     try std.testing.expect(true); // Type check passed
 }
+
+test "statusStr returns grade A when all cells healthy" {
+    var h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 1 },
+        .vmpfc = .{ .status = .healthy, .cycle = 1 },
+        .ofc = .{ .status = .healthy, .cycle = 1 },
+        .vlpfc = .{ .status = .healthy, .cycle = 1 },
+        .dmpfc = .{ .status = .healthy, .cycle = 1 },
+        .acc = .{ .status = .healthy, .cycle = 1 },
+    };
+
+    const s = try statusStr(&h, std.testing.allocator);
+    defer std.testing.allocator.free(s);
+    try std.testing.expectEqualStrings("Cortex: 6/6 healthy (A)", s);
+}
+
+test "statusStr returns grade C when less than 4 cells healthy" {
+    var h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 1 },
+        .vmpfc = .{ .status = .broken, .cycle = 1 },
+        .ofc = .{ .status = .broken, .cycle = 1 },
+        .vlpfc = .{ .status = .weak, .cycle = 1 },
+        .dmpfc = .{ .status = .healthy, .cycle = 1 },
+        .acc = .{ .status = .healthy, .cycle = 1 },
+    };
+
+    const s = try statusStr(&h, std.testing.allocator);
+    defer std.testing.allocator.free(s);
+    // Only 3/6 healthy (dlpfc, dmpfc, acc)
+    try std.testing.expectEqualStrings("Cortex: 3/6 healthy (C)", s);
+}
+
+test "statusStr returns grade C when most cells unhealthy" {
+    var h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 1 },
+        .vmpfc = .{ .status = .broken, .cycle = 1 },
+        .ofc = .{ .status = .broken, .cycle = 1 },
+        .vlpfc = .{ .status = .broken, .cycle = 1 },
+        .dmpfc = .{ .status = .weak, .cycle = 1 },
+        .acc = .{ .status = .broken, .cycle = 1 },
+    };
+
+    const s = try statusStr(&h, std.testing.allocator);
+    defer std.testing.allocator.free(s);
+    // Only 1/6 healthy (dlpfc)
+    try std.testing.expectEqualStrings("Cortex: 1/6 healthy (C)", s);
+}
+
+test "combinedCycle handles zero cycles" {
+    var h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 0 },
+        .vmpfc = .{ .status = .healthy, .cycle = 0 },
+        .ofc = .{ .status = .healthy, .cycle = 0 },
+        .vlpfc = .{ .status = .healthy, .cycle = 0 },
+        .dmpfc = .{ .status = .healthy, .cycle = 0 },
+        .acc = .{ .status = .healthy, .cycle = 0 },
+    };
+    try std.testing.expectEqual(@as(u32, 0), combinedCycle(&h));
+}
+
+test "combinedCycle with mixed values" {
+    var h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 100 },
+        .vmpfc = .{ .status = .healthy, .cycle = 50 },
+        .ofc = .{ .status = .weak, .cycle = 25 },
+        .vlpfc = .{ .status = .healthy, .cycle = 10 },
+        .dmpfc = .{ .status = .healthy, .cycle = 5 },
+        .acc = .{ .status = .broken, .cycle = 1 },
+    };
+    try std.testing.expectEqual(@as(u32, 191), combinedCycle(&h));
+}
+
+test "isHealthy false when multiple cells unhealthy" {
+    var h: CellHealth = .{
+        .dlpfc = .{ .status = .weak, .cycle = 1 },
+        .vmpfc = .{ .status = .healthy, .cycle = 1 },
+        .ofc = .{ .status = .broken, .cycle = 1 },
+        .vlpfc = .{ .status = .healthy, .cycle = 1 },
+        .dmpfc = .{ .status = .healthy, .cycle = 1 },
+        .acc = .{ .status = .healthy, .cycle = 1 },
+    };
+    try std.testing.expect(!isHealthy(&h));
+}
+
+test "isHealthy false when all cells broken" {
+    var h: CellHealth = .{
+        .dlpfc = .{ .status = .broken, .cycle = 0 },
+        .vmpfc = .{ .status = .broken, .cycle = 0 },
+        .ofc = .{ .status = .broken, .cycle = 0 },
+        .vlpfc = .{ .status = .broken, .cycle = 0 },
+        .dmpfc = .{ .status = .broken, .cycle = 0 },
+        .acc = .{ .status = .broken, .cycle = 0 },
+    };
+    try std.testing.expect(!isHealthy(&h));
+}
+
+test "health() returns valid CellHealth structure" {
+    const h = try health(std.testing.allocator);
+
+    // Check that all fields are accessible
+    _ = h.dlpfc;
+    _ = h.vmpfc;
+    _ = h.ofc;
+    _ = h.vlpfc;
+    _ = h.dmpfc;
+    _ = h.acc;
+
+    // Status enum should be one of the three valid values
+    const valid_status = h.dlpfc.status == .healthy or h.dlpfc.status == .weak or h.dlpfc.status == .broken;
+    try std.testing.expect(valid_status);
+}
+
+test "CellHealth weak status affects isHealthy" {
+    var h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 1 },
+        .vmpfc = .{ .status = .healthy, .cycle = 1 },
+        .ofc = .{ .status = .healthy, .cycle = 1 },
+        .vlpfc = .{ .status = .healthy, .cycle = 1 },
+        .dmpfc = .{ .status = .healthy, .cycle = 1 },
+        .acc = .{ .status = .weak, .cycle = 1 },
+    };
+    // Weak should make isHealthy return false
+    try std.testing.expect(!isHealthy(&h));
+}
+
+test "CellHealth field independence" {
+    // Each cell's status is independent
+    const h1: CellHealth = .{
+        .dlpfc = .{ .status = .broken, .cycle = 1 },
+        .vmpfc = .{ .status = .healthy, .cycle = 2 },
+        .ofc = .{ .status = .weak, .cycle = 3 },
+        .vlpfc = .{ .status = .healthy, .cycle = 4 },
+        .dmpfc = .{ .status = .healthy, .cycle = 5 },
+        .acc = .{ .status = .healthy, .cycle = 6 },
+    };
+
+    try std.testing.expectEqual(dlpfc.CellHealth.Status.broken, h1.dlpfc.status);
+    try std.testing.expectEqual(vmpfc.CellHealth.Status.healthy, h1.vmpfc.status);
+    try std.testing.expectEqual(ofc.CellHealth.Status.weak, h1.ofc.status);
+    try std.testing.expectEqual(@as(u32, 1), h1.dlpfc.cycle);
+    try std.testing.expectEqual(@as(u32, 2), h1.vmpfc.cycle);
+    try std.testing.expectEqual(@as(u32, 3), h1.ofc.cycle);
+}
