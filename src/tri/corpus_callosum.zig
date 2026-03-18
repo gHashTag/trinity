@@ -326,10 +326,10 @@ test "corpus_callosum — Synapse captures timestamp" {
 
 test "corpus_callosum — Module enum coverage" {
     const modules = [_]Module{
-        .queen_dlpfc, .queen_vmpfc, .queen_vlpfc, .queen_dmpfc,
-        .queen_ofc, .phoenix_locus_coeruleus, .phoenix_medulla, .phoenix_pons,
-        .hippocampus, .thalamus, .reticular_aras, .reticular_raphe,
-        .reticular_gigantocellular, .basal_ganglia, .cerebellum,
+        .queen_dlpfc,               .queen_vmpfc,             .queen_vlpfc,     .queen_dmpfc,
+        .queen_ofc,                 .phoenix_locus_coeruleus, .phoenix_medulla, .phoenix_pons,
+        .hippocampus,               .thalamus,                .reticular_aras,  .reticular_raphe,
+        .reticular_gigantocellular, .basal_ganglia,           .cerebellum,
     };
 
     for (modules) |m| {
