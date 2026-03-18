@@ -399,8 +399,10 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
         });
     }
 
-    // Rule 3: Best PPL record → celebrate (low urgency, just notification)
-    if (ctx.farm.best_ppl < 5.0) {
+    // Rule 3: Active farm with good PPL → celebrate (only if training is happening!)
+    const has_active_training = ctx.farm.active > 0;
+    const has_good_ppl = ctx.farm.best_ppl > 0.0 and ctx.farm.best_ppl < 10.0;
+    if (has_active_training and has_good_ppl) {
         try candidates.append(.{
             .kind = .notify,
             .urgency = .normal,
@@ -445,13 +447,7 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
             }
         }
 
-        const reason = switch (action) {
-            .doctor_quick => "Build broken, needs healing",
-            .farm_recycle => "Farm has idle/crashed workers",
-            .notify => "Celebrating farm progress",
-            .cloud_spawn => "Agent spawn issues detected",
-            else => "Routine action",
-        };
+        const reason = getContextualReason(action, ctx);
 
         return Decision{
             .action = action,
@@ -521,83 +517,195 @@ pub fn act(ctx: *DecisionContext, decision: Decision) !qt.ActionResult {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// CONTEXT-AWARE MESSAGING — Human-like voice
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Get contextual reason that explains WHAT and WHY
+fn getContextualReason(action: qt.ActionKind, ctx: *const DecisionContext) []const u8 {
+    return switch (action) {
+        .doctor_quick => buildBrokenReason(ctx),
+        .farm_recycle => farmRecycleReason(ctx),
+        .notify => celebrationReason(ctx),
+        .cloud_spawn => cloudSpawnReason(ctx),
+        else => "Routine action",
+    };
+}
+
+/// Explain why build healing is needed
+fn buildBrokenReason(ctx: *const DecisionContext) []const u8 {
+    if (ctx.faculty_metrics) |m| {
+        if (m.compile_rate < 50) {
+            return "Compile rate very low, needs immediate attention";
+        }
+        if (m.dirty_files > 100) {
+            return "Too many dirty files, build unstable";
+        }
+    }
+    return "Build broken, running quick heal";
+}
+
+/// Explain farm recycling decision
+fn farmRecycleReason(ctx: *const DecisionContext) []const u8 {
+    const crashed = ctx.farm.crashed;
+    const total = ctx.farm.total_services;
+    const active = ctx.farm.active;
+    const idle = total - active - crashed;
+
+    if (crashed > 5) {
+        return "Many workers crashed, recycling farm";
+    }
+    if (idle > 10) {
+        return "Many idle workers, recycling for efficiency";
+    }
+    return "Farm needs optimization";
+}
+
+/// Explain celebration (only when there's something to celebrate!)
+fn celebrationReason(ctx: *const DecisionContext) []const u8 {
+    if (ctx.farm.active == 0) {
+        return "Farm is idle - nothing to celebrate";
+    }
+
+    const ppl = ctx.farm.best_ppl;
+    if (ppl < 3.0) {
+        return "Excellent PPL achieved!";
+    }
+    if (ppl < 5.0) {
+        return "Good progress on PPL";
+    }
+    return "Training running smoothly";
+}
+
+/// Explain cloud spawn decision
+fn cloudSpawnReason(ctx: *const DecisionContext) []const u8 {
+    const issues = ctx.issues.agent_spawn;
+    const finished = if (ctx.farm.total_services > 0) ctx.farm.total_services else 0;
+
+    if (issues > 3) {
+        return "Multiple agent spawn issues detected";
+    }
+    if (finished > 0) {
+        return "Spawning replacements for finished containers";
+    }
+    return "Agent spawn needed";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // SPEAK PHASE — Report decision and result via OFC
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn speak(ctx: *DecisionContext, decision: ?Decision, result: qt.ActionResult) !void {
-    const mood = queen_ofc.inferMood(ctx.build_ok, ctx.ouroboros_score, false);
+    // Generate human-like report
+    var report_buf: [1536]u8 = undefined;
+    const report = formatHumanReport(&report_buf, ctx, decision, result) catch return;
 
-    var report_buf: [1024]u8 = undefined;
+    // Send via OFC
+    ctx.state.cycle +|= 1;
+    try queen_ofc.send(ctx.allocator, .group, report);
+}
+
+/// Format human-like report that explains WHAT happened and WHY
+fn formatHumanReport(
+    buf: []u8,
+    ctx: *const DecisionContext,
+    decision: ?Decision,
+    result: qt.ActionResult,
+) ![]const u8 {
     var offset: usize = 0;
 
-    // Header
-    const header = std.fmt.bufPrint(
-        report_buf[offset..],
-        "{s} Queen {s} — Cycle #{d}\n\n",
-        .{ mood.emoji(), mood.label(), ctx.state.cycle },
-    ) catch return;
-    offset += header.len;
-
-    // Farm status
-    const farm_line = std.fmt.bufPrint(
-        report_buf[offset..],
-        "{s} Farm: {d}/{d} active, PPL {d:.1}",
-        .{ qt.E_DNA, ctx.farm.active, ctx.farm.total_services, ctx.farm.best_ppl },
-    ) catch return;
-    offset += farm_line.len;
-
-    if (ctx.farm.best_ppl_service_len > 0) {
-        const best_line = std.fmt.bufPrint(
-            report_buf[offset..],
-            " ({s})\n",
-            .{ctx.farm.bestPplServiceStr()},
-        ) catch return;
-        offset += best_line.len;
-    } else {
-        const newline = "\n";
-        if (offset + newline.len <= report_buf.len) {
-            @memcpy(report_buf[offset..][0..newline.len], newline);
-            offset += newline.len;
-        }
+    // Context-aware header
+    const header = getContextualHeader(ctx);
+    if (offset + header.len <= buf.len) {
+        @memcpy(buf[offset..][0..header.len], header);
+        offset += header.len;
     }
 
-    // Mu heartbeat
-    const mu_line = std.fmt.bufPrint(
-        report_buf[offset..],
-        "{s} Build: {s} | Wake #{d}\n",
-        .{ qt.E_BRAIN, if (ctx.build_ok) "OK" else "FAIL", ctx.mu_heartbeat.wake },
-    ) catch return;
-    offset += mu_line.len;
+    // Farm status (human-readable)
+    const farm_status = formatFarmStatus(ctx);
+    if (offset + farm_status.len <= buf.len) {
+        @memcpy(buf[offset..][0..farm_status.len], farm_status);
+        offset += farm_status.len;
+    }
 
-    // Decision report
+    // Build status
+    const build_status = if (ctx.build_ok)
+        "\n✅ Build is healthy"
+    else
+        "\n❌ Build broken - will attempt healing";
+    if (offset + build_status.len <= buf.len) {
+        @memcpy(buf[offset..][0..build_status.len], build_status);
+        offset += build_status.len;
+    }
+
+    // Action explanation
     if (decision) |d| {
-        const decision_line = std.fmt.bufPrint(
-            report_buf[offset..],
-            "{s} Action: {s} ({s})\n",
-            .{ d.action.emojiIcon(), d.action.label(), d.reason },
-        ) catch return;
-        offset += decision_line.len;
-
-        // Result
-        const result_line = std.fmt.bufPrint(
-            report_buf[offset..],
-            "  Result: {s} ({d}ms)\n",
-            .{ if (result.success) "OK" else "FAIL", result.duration_ms },
-        ) catch return;
-        offset += result_line.len;
+        const action_text = formatActionExplanation(d, result);
+        if (offset + action_text.len <= buf.len) {
+            @memcpy(buf[offset..][0..action_text.len], action_text);
+            offset += action_text.len;
+        }
     } else {
-        const no_action = "No action needed\n";
-        if (offset + no_action.len <= report_buf.len) {
-            @memcpy(report_buf[offset..][0..no_action.len], no_action);
+        const no_action = "\n\n🧠 Standing by. No action needed.";
+        if (offset + no_action.len <= buf.len) {
+            @memcpy(buf[offset..][0..no_action.len], no_action);
             offset += no_action.len;
         }
     }
 
-    const report = report_buf[0..offset];
+    return buf[0..offset];
+}
 
-    // Send via OFC
-    ctx.state.cycle +|= 1;
-    try queen_ofc.sendReport(ctx.allocator, mood, report);
+/// Get header based on actual system state (not generic mood)
+fn getContextualHeader(ctx: *const DecisionContext) []const u8 {
+    const farm_active = ctx.farm.active;
+    const farm_total = ctx.farm.total_services;
+
+    if (farm_active == 0 and farm_total > 0) {
+        // Farm is idle
+        return "🧠 Farm Status Update\n\nTraining farm is idle. ";
+    } else if (farm_active > 0) {
+        // Farm is running
+        return "🧠 Farm Status Update\n\nTraining is active. ";
+    } else {
+        // No farm at all
+        return "🧠 System Status\n\n";
+    }
+}
+
+/// Format farm status in human-readable way
+fn formatFarmStatus(ctx: *const DecisionContext) []const u8 {
+    if (ctx.farm.active == 0 and ctx.farm.total_services == 0) {
+        return "No training services configured.";
+    }
+
+    if (ctx.farm.active == 0) {
+        if (ctx.farm.best_ppl < 999.0) {
+            // Has results but not currently training
+            return "Farm is sleeping. ";
+        }
+        return "Farm is offline. ";
+    }
+
+    // Active training
+    return "Training in progress. ";
+}
+
+/// Explain what action was taken and why
+fn formatActionExplanation(d: Decision, result: qt.ActionResult) []const u8 {
+    _ = result; // Available for future enhancement (e.g., show result emoji)
+    return switch (d.action) {
+        .doctor_quick => "\n\n🔧 Running quick heal to fix build issues...",
+        .farm_recycle => "\n\n♻️ Recycling farm to recover idle/crashed workers.",
+        .notify => "\n\n📊 Status update - all systems nominal.",
+        .cloud_spawn => "\n\n🚀 Spawning new agent containers.",
+        .doctor_heal => "\n\n🏥 Running deep heal to recover codebase.",
+        .git_commit_state => "\n\n💾 Committing state to preserve work.",
+        .git_push => "\n\n☁️ Pushing changes to remote.",
+        .issue_comment => "\n\n📝 Updating GitHub issue tracker.",
+        .arena_battle => "\n\n⚔️ Running arena battles for evaluation.",
+        .ouroboros_cycle => "\n\n🔄 Running Ouroboros health cycle.",
+        else => "\n\nExecuting routine action.",
+    };
 }
 
 /// Format decision report for Telegram
