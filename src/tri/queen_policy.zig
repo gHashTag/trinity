@@ -723,9 +723,127 @@ test "Policy — fmtPolicyTelegram" {
 }
 
 test "Policy — fmtHistoryTelegram empty" {
-    const m = IncidentMemory.init();
+    const m = IncidentMemory{};
     var buf: [1024]u8 = undefined;
     const msg = fmtHistoryTelegram(&buf, &m);
     try std.testing.expect(msg.len > 0);
     try std.testing.expect(std.mem.indexOf(u8, msg, "no incidents") != null);
+}
+
+test "Policy — IncidentMemory multiple incidents" {
+    var m = IncidentMemory{};
+
+    m.record(.auto_action, .doctor_quick, true, "test 1");
+    m.record(.auto_action, .farm_status, false, "test 2");
+    m.record(.approval, .git_push, true, "test 3");
+
+    try std.testing.expectEqual(@as(usize, 3), m.count);
+
+    var buf: [MAX_INCIDENTS]Incident = undefined;
+    const n = m.lastN(&buf);
+    try std.testing.expectEqual(@as(u32, 3), n);
+    // buf[0] is most recent (git_push), buf[2] is oldest (doctor_quick)
+    try std.testing.expectEqual(.approval, buf[0].kind);
+    try std.testing.expectEqual(.git_push, buf[0].action);
+    try std.testing.expectEqual(.auto_action, buf[2].kind);
+    try std.testing.expectEqual(.doctor_quick, buf[2].action);
+}
+
+test "Policy — ActionCounters default and record" {
+    var counters = ActionCounters{};
+
+    try std.testing.expectEqual(@as(u8, 0), counters.getCount(.doctor_quick));
+    try std.testing.expectEqual(@as(u8, 0), counters.getCount(.farm_status));
+
+    counters.record(.doctor_quick);
+    counters.record(.doctor_quick);
+    counters.record(.farm_status);
+
+    try std.testing.expectEqual(@as(u8, 2), counters.getCount(.doctor_quick));
+    try std.testing.expectEqual(@as(u8, 1), counters.getCount(.farm_status));
+}
+
+test "Policy — PendingQueue operations" {
+    var q = PendingQueue.init();
+
+    const id1 = q.add(.doctor_quick, "");
+    const id2 = q.add(.farm_recycle, "");
+
+    try std.testing.expect(id1 != null);
+    try std.testing.expect(id2 != null);
+    try std.testing.expect(id1.? != id2.?);
+
+    // Approve first
+    const action1 = q.approve(id1.?);
+    try std.testing.expect(action1 != null);
+    try std.testing.expectEqual(.doctor_quick, action1.?);
+
+    // Deny second
+    try std.testing.expect(q.deny(id2.?));
+
+    // Second should be gone after deny
+    const result2 = q.approve(id2.?);
+    try std.testing.expect(result2 == null);
+}
+
+test "Policy — PendingQueue full" {
+    var q = PendingQueue.init();
+
+    var i: u8 = 0;
+    while (i < 16) : (i += 1) {
+        _ = q.add(.doctor_quick, "");
+    }
+
+    // Try to add one more - should return null (full)
+    const result = q.add(.farm_status, "");
+    try std.testing.expect(result == null);
+}
+
+test "Policy — checkPolicy Level0 allowed" {
+    const config = qt.QueenConfig{
+        .max_auto_level = 2, // full access
+        .allow_auto_actions = true,
+        .daemon = false,
+    };
+    var counters = ActionCounters{};
+    var incidents = IncidentMemory{};
+
+    const verdict = checkPolicy(.farm_status, config, &counters, &incidents);
+    try std.testing.expect(verdict.isAllowed());
+}
+
+test "Policy — checkPolicy Level2 blocked in locked mode" {
+    const config = qt.QueenConfig{
+        .max_auto_level = 0, // read-only
+        .require_human_approval = true,
+        .daemon = false,
+    };
+    var counters = ActionCounters{};
+    var incidents = IncidentMemory{};
+
+    const verdict = checkPolicy(.farm_recycle, config, &counters, &incidents);
+    try std.testing.expect(!verdict.isAllowed());
+}
+
+test "Policy — fmtHistoryTelegram with incidents" {
+    var m = IncidentMemory{};
+    m.record(.auto_action, .doctor_quick, true, "test incident");
+    m.record(.approval, .git_push, false, "failed action");
+
+    var buf: [1024]u8 = undefined;
+    const msg = fmtHistoryTelegram(&buf, &m);
+    try std.testing.expect(msg.len > 0);
+    // Output contains "24h:" header when incidents exist
+    try std.testing.expect(std.mem.indexOf(u8, msg, "24h:") != null);
+}
+
+test "Policy — PendingQueue approve non-existent" {
+    var q = PendingQueue.init();
+    const result = q.approve(999);
+    try std.testing.expect(result == null);
+}
+
+test "Policy — PendingQueue deny non-existent" {
+    var q = PendingQueue.init();
+    try std.testing.expect(!q.deny(999));
 }
