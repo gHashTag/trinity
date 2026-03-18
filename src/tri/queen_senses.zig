@@ -508,3 +508,87 @@ test "Queen senses — fmtSensesTelegram" {
     try std.testing.expect(std.mem.indexOf(u8, msg, "4.6") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "HEALTHY") != null);
 }
+
+test "Queen senses — fmtSensesTelegram critical state" {
+    var buf: [2048]u8 = undefined;
+    const s = SenseResult{
+        .build_ok = false,
+        .test_rate = 45,
+        .dirty_files = 50,
+        .open_issues = 15,
+        .agent_count = 0,
+        .farm_services = 2,
+        .farm_best_ppl = 99.9,
+        .arena_battles = 0,
+        .ouroboros_score = 25.0,
+        .disk_free_gb = 5.0,
+        .keys_present = 2,
+        .keys_total = 5,
+        .experience_count = 0,
+    };
+    const msg = fmtSensesTelegram(&buf, s);
+    try std.testing.expect(msg.len > 0);
+    // Should show ❌ emoji for failed build
+    try std.testing.expect(std.mem.indexOf(u8, msg, "\xe2\x9d\x8c") != null);
+}
+
+test "Queen senses — SenseResult default values" {
+    const s = SenseResult{};
+    try std.testing.expectEqual(@as(u8, 0), s.farm_idle_count);
+    try std.testing.expectEqual(@as(u16, 0), s.stale_arena_hours);
+}
+
+test "Queen senses — countFarmIdleServices returns non-negative" {
+    const count = countFarmIdleServices();
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — calcStaleArenaHours returns non-negative" {
+    const hours = calcStaleArenaHours();
+    try std.testing.expect(hours >= 0);
+}
+
+test "Queen senses — readDiskFreeGb returns reasonable value" {
+    const gb = readDiskFreeGb(std.testing.allocator);
+    try std.testing.expect(gb >= 0.0);
+    try std.testing.expect(gb < 10000.0); // Sanity check
+}
+
+test "Queen senses — countAliveAgents non-negative" {
+    const count = countAliveAgents();
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — countArenaResults non-negative" {
+    const count = countArenaResults();
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — SenseResult all fields set" {
+    var s = SenseResult{};
+    s.build_ok = true;
+    s.test_rate = 90;
+    s.dirty_files = 5;
+    s.open_issues = 2;
+    s.agent_count = 4;
+    s.farm_services = 10;
+    s.farm_best_ppl = 5.5;
+    s.arena_battles = 15;
+    s.ouroboros_score = 80.0;
+    s.disk_free_gb = 50.0;
+    s.keys_present = 5;
+    s.keys_total = 5;
+    s.experience_count = 20;
+    s.farm_idle_count = 3;
+    s.stale_arena_hours = 12;
+
+    try std.testing.expect(s.build_ok);
+    try std.testing.expectEqual(@as(u8, 90), s.test_rate);
+    try std.testing.expectEqual(@as(u16, 5), s.dirty_files);
+    try std.testing.expectEqual(@as(u16, 2), s.open_issues);
+    try std.testing.expectEqual(@as(u8, 4), s.agent_count);
+    try std.testing.expectEqual(@as(u8, 10), s.farm_services);
+    try std.testing.expectApproxEqAbs(@as(f32, 5.5), s.farm_best_ppl, 0.01);
+    try std.testing.expectEqual(@as(u16, 15), s.arena_battles);
+    try std.testing.expectApproxEqAbs(@as(f32, 80.0), s.ouroboros_score, 0.01);
+}
