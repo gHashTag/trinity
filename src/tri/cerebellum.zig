@@ -75,8 +75,6 @@ pub fn planCoordination(
     allocator: Allocator,
     actions: []const qt.ActionKind,
 ) !CoordinationPlan {
-    _ = allocator;
-
     var plan = CoordinationPlan{};
 
     // Estimate duration based on action types
