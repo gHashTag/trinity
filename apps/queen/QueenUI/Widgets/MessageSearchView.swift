@@ -101,7 +101,7 @@ struct MessageSearchView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
                 .background(
-                    Capsule()
+                    SwiftUI.Capsule()
                         .fill(searchScope == scope ? TrinityTheme.accent : TrinityTheme.bgCard)
                 )
         }

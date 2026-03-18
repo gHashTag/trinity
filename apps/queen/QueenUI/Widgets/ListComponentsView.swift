@@ -322,12 +322,14 @@ struct DNDListRow<Content: View>: View {
                 .stroke(isDragging ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: isDragging ? 2 : 1)
         )
         .scaleEffect(isDragging ? 1.02 : 1)
-        .gesture(DragGesture(minimumDistance: 0)
-            onChanged { _ in
-                if isDragging {
+        .gesture(
+            DragGesture(minimumDistance: 20)
+                .onChanged { _ in
+                    isDragging = true
+                }
+                .onEnded { _ in
                     onDrag()
                 }
-            }
         )
         .onDrop(of: [UTType.text], delegate: ListDropDelegate(onDrop: onDrop))
     }
