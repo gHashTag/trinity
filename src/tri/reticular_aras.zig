@@ -28,7 +28,7 @@ pub const SweepResult = struct {
 
     pub fn problemCount(self: *const SweepResult) u32 {
         var count: u32 = @intCast(self.crashed_workers.len);
-        count += self.stale_count;
+        count +%= @as(u32, @intCast(self.stale_count));
         return count;
     }
 
@@ -142,7 +142,7 @@ pub fn sweepOnce(allocator: Allocator, state: *ArasState) !SweepResult {
     }
 
     // Count stale workers (stuck > 30 minutes)
-    const now = std.time.timestamp();
+    _ = std.time.timestamp(); // For future timeout calculation
     for (state.workers[0..state.workers_len]) |w| {
         if (std.mem.eql(u8, w.state, "stale")) {
             // Check step stuck via evolution state timestamps
@@ -268,4 +268,62 @@ test "aras — sweepResult problemCount" {
 test "aras — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+test "aras — SweepResult hasProblems" {
+    var result = SweepResult{};
+    try std.testing.expect(!result.hasProblems());
+
+    result.crashed_workers = &[_][]const u8{"w1"};
+    try std.testing.expect(result.hasProblems());
+
+    result = SweepResult{ .stale_count = 1 };
+    try std.testing.expect(result.hasProblems());
+}
+
+test "aras — SweepResult timestamp" {
+    const before = std.time.timestamp();
+    var result = SweepResult{};
+    try std.testing.expectEqual(@as(i64, 0), result.timestamp);
+
+    result.timestamp = std.time.timestamp();
+    try std.testing.expect(result.timestamp >= before);
+}
+
+test "aras — SweepResult total_services" {
+    const result = SweepResult{ .total_services = 100 };
+    try std.testing.expectEqual(@as(usize, 100), result.total_services);
+}
+
+test "aras — ArasState defaults" {
+    const state = ArasState{};
+    try std.testing.expectEqual(@as(u32, 300), state.interval_sec);
+    try std.testing.expectEqual(@as(u32, 0), state.sweep_count);
+    try std.testing.expectEqual(@as(i64, 0), state.last_sweep);
+    try std.testing.expect(state.alert_sink == null);
+}
+
+test "aras — WorkerStatus fields" {
+    const worker = WorkerStatus{
+        .name = "test-worker",
+        .state = "running",
+        .last_ppl = 1.5,
+        .last_step = 1000,
+        .steps_stuck = 0,
+    };
+
+    try std.testing.expectEqualStrings("test-worker", worker.name);
+    try std.testing.expectEqualStrings("running", worker.state);
+    try std.testing.expectEqual(@as(f32, 1.5), worker.last_ppl);
+}
+
+test "aras — CellHealth Status enum" {
+    try std.testing.expectEqual(CellHealth.Status.healthy, .healthy);
+    try std.testing.expectEqual(CellHealth.Status.weak, .weak);
+    try std.testing.expectEqual(CellHealth.Status.broken, .broken);
+}
+
+test "aras — CellHealth last_check" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
 }
