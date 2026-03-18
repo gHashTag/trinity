@@ -592,3 +592,112 @@ test "Queen senses — SenseResult all fields set" {
     try std.testing.expectEqual(@as(u16, 15), s.arena_battles);
     try std.testing.expectApproxEqAbs(@as(f32, 80.0), s.ouroboros_score, 0.01);
 }
+
+test "Queen senses — SenseResult v4 fields" {
+    var s = SenseResult{};
+    s.agent_spawn_issues = 5;
+    s.last_git_push_ts = 1700000000;
+    s.finished_containers = 10;
+    s.last_issue_comment_ts = 1700000100;
+
+    try std.testing.expectEqual(@as(u8, 5), s.agent_spawn_issues);
+    try std.testing.expectEqual(@as(i64, 1700000000), s.last_git_push_ts);
+    try std.testing.expectEqual(@as(u8, 10), s.finished_containers);
+    try std.testing.expectEqual(@as(i64, 1700000100), s.last_issue_comment_ts);
+}
+
+test "Queen senses — SenseResult healthEmoji mapping" {
+    var s = SenseResult{};
+    s.build_ok = true;
+    s.ouroboros_score = 95.0;
+    try std.testing.expectEqualStrings(qt.E_STAR, s.healthEmoji());
+
+    s.ouroboros_score = 75.0;
+    try std.testing.expectEqualStrings(qt.E_STAR, s.healthEmoji());
+
+    s.ouroboros_score = 50.0;
+    try std.testing.expectEqualStrings(qt.E_CHECK, s.healthEmoji());
+
+    s.ouroboros_score = 30.0;
+    try std.testing.expectEqualStrings(qt.E_WRENCH, s.healthEmoji());
+}
+
+test "Queen senses — SenseResult healthEmoji edge cases" {
+    var s = SenseResult{};
+    s.build_ok = true;
+
+    s.ouroboros_score = 70.0; // boundary
+    try std.testing.expectEqualStrings(qt.E_STAR, s.healthEmoji());
+
+    s.ouroboros_score = 69.9; // just below
+    try std.testing.expectEqualStrings(qt.E_CHECK, s.healthEmoji());
+
+    s.ouroboros_score = 40.0; // boundary
+    try std.testing.expectEqualStrings(qt.E_CHECK, s.healthEmoji());
+
+    s.ouroboros_score = 39.9; // just below
+    try std.testing.expectEqualStrings(qt.E_WRENCH, s.healthEmoji());
+
+    s.build_ok = false; // build broken overrides score
+    try std.testing.expectEqualStrings(qt.E_CROSS, s.healthEmoji());
+}
+
+test "Queen senses — SenseResult default values all zero" {
+    const s = SenseResult{};
+
+    try std.testing.expect(!s.build_ok);
+    try std.testing.expectEqual(@as(u8, 0), s.test_rate);
+    try std.testing.expectEqual(@as(u16, 0), s.dirty_files);
+    try std.testing.expectEqual(@as(u16, 0), s.open_issues);
+    try std.testing.expectEqual(@as(u8, 0), s.agent_count);
+    try std.testing.expectEqual(@as(u8, 0), s.farm_services);
+    try std.testing.expectEqual(@as(u8, 0), s.farm_idle_count);
+    try std.testing.expectEqual(@as(u8, 0), s.agent_spawn_issues);
+    try std.testing.expectEqual(@as(u8, 0), s.finished_containers);
+    try std.testing.expectEqual(@as(u16, 0), s.arena_battles);
+    try std.testing.expectEqual(@as(u16, 0), s.experience_count);
+    try std.testing.expectEqual(@as(f32, 0.0), s.ouroboros_score);
+    try std.testing.expectEqual(@as(f32, 999.0), s.farm_best_ppl); // Default is 999.0
+    try std.testing.expectEqual(@as(f32, 0.0), s.disk_free_gb);
+}
+
+test "Queen senses — countEnvKeys returns non-negative" {
+    const keys = countEnvKeys();
+    try std.testing.expect(keys.present <= keys.total);
+}
+
+test "Queen senses — readEvolutionInfo returns valid struct" {
+    const info = readEvolutionInfo();
+
+    // All fields should be non-negative
+    try std.testing.expect(info.best_ppl >= 0.0);
+    try std.testing.expect(info.best_step >= 0);
+    try std.testing.expect(info.total_configs >= 0);
+    try std.testing.expect(info.service_count >= 0);
+}
+
+test "Queen senses — EvolutionInfo bestNameStr returns slice" {
+    var info = qt.EvolutionInfo{};
+    const name = "test_config";
+    @memcpy(info.best_name[0..name.len], name);
+    info.best_name_len = name.len;
+
+    const result = info.bestNameStr();
+    try std.testing.expectEqualStrings("test_config", result);
+}
+
+test "Queen senses — EvolutionInfo bestNameStr empty when len zero" {
+    const info = qt.EvolutionInfo{};
+    try std.testing.expectEqual(@as(usize, 0), info.bestNameStr().len);
+}
+
+test "Queen senses — countAliveAgents returns reasonable value" {
+    const count = countAliveAgents();
+    // Should be between 0 and total possible agents
+    try std.testing.expect(count >= 0 and count <= 10);
+}
+
+test "Queen senses — readDiskFreeGb returns non-negative" {
+    const gb = readDiskFreeGb(std.testing.allocator);
+    try std.testing.expect(gb >= 0.0);
+}
