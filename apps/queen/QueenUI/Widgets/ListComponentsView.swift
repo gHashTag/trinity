@@ -281,18 +281,23 @@ struct SelectableRow: View {
     }
 }
 
-// MARK: - Draggable List Row
+// MARK: - DnD List Row
 
-struct DraggableListRow<Content: View>: View {
+struct DNDListRow<Content: View>: View {
     let content: Content
-    let isDragging: Bool
+    let onDrag: () -> Void
+    let onDrop: () -> Bool
+
+    @State private var isDragging = false
 
     init(
         @ViewBuilder content: () -> Content,
-        isDragging: Bool = false
+        onDrag: @escaping () -> Void,
+        onDrop: @escaping () -> Bool
     ) {
         self.content = content()
-        self.isDragging = isDragging
+        self.onDrag = onDrag
+        self.onDrop = onDrop
     }
 
     var body: some View {
@@ -317,6 +322,25 @@ struct DraggableListRow<Content: View>: View {
                 .stroke(isDragging ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: isDragging ? 2 : 1)
         )
         .scaleEffect(isDragging ? 1.02 : 1)
+        .onDragGesture {
+            if $0.translation.width > 20 {
+                isDragging = true
+                onDrag()
+            }
+        }
+        .onDrop(of: [UTType.text], delegate: DropDelegate(onDrop: onDrop))
+    }
+}
+
+struct DropDelegate: SwiftUI.DropDelegate {
+    let onDrop: () -> Bool
+
+    func performDrop(info: [NSItemProvider], in location: CGPoint) -> Bool {
+        onDrop()
+    }
+
+    func validateDrop(info: [NSItemProvider], in location: CGPoint) -> Bool {
+        return true
     }
 }
 
