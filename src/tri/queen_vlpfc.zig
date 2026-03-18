@@ -249,3 +249,57 @@ test "vlpfc — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
 }
+
+test "vlpfc — FilteredState setSummary truncates" {
+    var state = FilteredState{};
+    const long_text = "This is a very long summary that should be truncated to fit in the 256 byte array provided for the summary field";
+    state.setSummary(long_text);
+
+    try std.testing.expect(state.summary_len <= 256);
+    try std.testing.expect(state.summaryStr().len > 0);
+}
+
+test "vlpfc — filterRelays training focus" {
+    const result = try filterRelays(std.testing.allocator, .{ .focus = .training });
+    defer {
+        for (result.priority_relays) |r| {
+            std.testing.allocator.free(r.value);
+        }
+        std.testing.allocator.free(result.priority_relays);
+    }
+
+    try std.testing.expect(result.priority_relays.len > 0);
+    if (result.priority_relays.len > 0) {
+        try std.testing.expect(std.mem.indexOf(u8, result.priority_relays[0].name, "ppl") != null);
+    }
+}
+
+test "vlpfc — filterRelays github focus" {
+    const result = try filterRelays(std.testing.allocator, .{ .focus = .github });
+    defer {
+        for (result.priority_relays) |r| {
+            std.testing.allocator.free(r.value);
+        }
+        std.testing.allocator.free(result.priority_relays);
+    }
+
+    try std.testing.expect(result.priority_relays.len > 0);
+    if (result.priority_relays.len > 0) {
+        try std.testing.expect(std.mem.indexOf(u8, result.priority_relays[0].name, "github") != null);
+    }
+}
+
+test "vlpfc — filterRelays self_check focus" {
+    const result = try filterRelays(std.testing.allocator, .{ .focus = .self_check });
+    defer std.testing.allocator.free(result.priority_relays);
+
+    try std.testing.expect(result.priority_relays.len > 0);
+    try std.testing.expectEqualStrings("queen_heartbeat", result.priority_relays[0].name);
+}
+
+test "vlpfc — FocusArea enum coverage" {
+    const focus_areas = [_]FocusArea{ .all, .farm, .training, .github, .self_check };
+    for (focus_areas) |fa| {
+        _ = fa; // Just verify all enum values exist
+    }
+}

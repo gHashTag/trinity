@@ -2582,4 +2582,22 @@ pub fn build(b: *std.Build) void {
     const run_arena_tests = b.addRunArtifact(arena_tests);
     test_step.dependOn(&run_arena_tests.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // RAILWAY RENAME — Bulk rename hslm-* services to trinity-train-{N}
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const railway_rename = b.addExecutable(.{
+        .name = "railway-rename",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cli/railway_rename.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(railway_rename);
+    const run_railway_rename = b.addRunArtifact(railway_rename);
+    if (b.args) |args| run_railway_rename.addArgs(args);
+    const railway_rename_step = b.step("railway-rename", "Run Railway Rename — Bulk rename hslm-* services");
+    railway_rename_step.dependOn(&run_railway_rename.step);
+
 }

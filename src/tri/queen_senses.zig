@@ -205,12 +205,9 @@ fn countEnvKeys() KeyCheck {
 }
 
 fn readOuroborosScore() f32 {
-    const file = std.fs.cwd().openFile(".trinity/ouroboros_state.json", .{}) catch return 0.0;
-    defer file.close();
-
-    var buf: [2048]u8 = undefined;
-    const n = file.read(&buf) catch return 0.0;
-    return qt.findJsonF32(buf[0..n], "\"score\":") orelse 0.0;
+    const ouroboros = @import("queen_ouroboros.zig");
+    const state = ouroboros.fetch();
+    return ouroboros.getScore(state);
 }
 
 fn countExperienceEpisodes() u32 {

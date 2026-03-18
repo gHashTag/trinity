@@ -165,3 +165,58 @@ test "vmpfc — health returns healthy" {
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
     try std.testing.expect(h.last_check > 0);
 }
+
+test "vmpfc — ValueAssessment setReason truncates" {
+    var assessment = ValueAssessment{};
+    const long_text = "This is a very long reason that should be truncated to fit in the 128 byte array provided for the reason field in ValueAssessment";
+    assessment.setReason(long_text);
+
+    try std.testing.expect(assessment.reason_len <= 128);
+    try std.testing.expect(assessment.reasonStr().len > 0);
+}
+
+test "vmpfc — assessFarmAction recycle decision" {
+    const assessment = try assessFarmAction(
+        std.testing.allocator,
+        .recycle,
+        10.0,
+    );
+    defer std.testing.allocator.free(assessment.reasonStr());
+
+    // Should return a valid assessment
+    try std.testing.expect(assessment.roi >= 0.0);
+    try std.testing.expect(assessment.confidence >= 0.0);
+    try std.testing.expect(assessment.confidence <= 1.0);
+}
+
+test "vmpfc — assessFarmAction evolve always executes" {
+    const assessment = try assessFarmAction(
+        std.testing.allocator,
+        .evolve,
+        5.0,
+    );
+    defer std.testing.allocator.free(assessment.reasonStr());
+
+    try std.testing.expectEqual(Recommendation.execute, assessment.recommendation);
+    try std.testing.expect(assessment.roi > 0.0);
+}
+
+test "vmpfc — Recommendation enum coverage" {
+    const recommendations = [_]Recommendation{ .execute, .wait, .skip };
+    for (recommendations) |rec| {
+        _ = rec; // Verify all enum values exist
+    }
+}
+
+test "vmpfc — phiWeightedScore constants" {
+    const phi: f32 = 1.618033988749895;
+
+    // Score of 0 should stay 0
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), phiWeightedScore(0.0), 0.001);
+
+    // Score of 1 should be phi
+    try std.testing.expectApproxEqAbs(phi, phiWeightedScore(1.0), 0.001);
+
+    // Score of 2 should be 2*phi
+    try std.testing.expectApproxEqAbs(2.0 * phi, phiWeightedScore(2.0), 0.001);
+}

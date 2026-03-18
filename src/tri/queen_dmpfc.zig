@@ -224,3 +224,48 @@ test "dmpfc — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
 }
+
+test "dmpfc — SelfCheck isHealthy thresholds" {
+    var check = SelfCheck{ .health_score = 0.8 };
+    try std.testing.expect(check.isHealthy());
+
+    check.health_score = 0.6;
+    try std.testing.expect(!check.isHealthy());
+
+    check.health_score = 0.95;
+    try std.testing.expect(check.isHealthy());
+}
+
+test "dmpfc — Issue setDescription truncates" {
+    var issue = Issue{ .kind = .loop_stuck };
+    const long_text = "This is a very long description that should be truncated to fit in the 128 byte array";
+    issue.setDescription(long_text);
+
+    try std.testing.expect(issue.description_len <= 128);
+    try std.testing.expectEqualStrings(long_text[0..@min(long_text.len, 128)], issue.descriptionStr());
+}
+
+test "dmpfc — SelfCheck grade boundaries" {
+    var check = SelfCheck{ .health_score = 0.95 };
+    try std.testing.expectEqualStrings("A", check.grade());
+
+    check.health_score = 0.70;
+    try std.testing.expectEqualStrings("B", check.grade());
+
+    check.health_score = 0.50;
+    try std.testing.expectEqualStrings("C", check.grade());
+
+    check.health_score = 0.49;
+    try std.testing.expectEqualStrings("F", check.grade());
+}
+
+test "dmpfc — CellHealth Status enum" {
+    const h1 = CellHealth{ .status = .healthy };
+    try std.testing.expectEqual(CellHealth.Status.healthy, h1.status);
+
+    const h2 = CellHealth{ .status = .weak };
+    try std.testing.expectEqual(CellHealth.Status.weak, h2.status);
+
+    const h3 = CellHealth{ .status = .broken };
+    try std.testing.expectEqual(CellHealth.Status.broken, h3.status);
+}
