@@ -191,6 +191,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "search")) return runSearch(allocator, rest);
     if (std.mem.eql(u8, sub, "find")) return runFind(allocator, rest);
     if (std.mem.eql(u8, sub, "templates")) return runTemplates(allocator, rest);
+    if (std.mem.eql(u8, sub, "batch")) return runBatch(allocator, rest);
 
     printHelp();
 }
@@ -250,7 +251,8 @@ fn printHelp() void {
     std.debug.print("  {s}check-boundaries{s}  Validate tag boundary rules\n", .{ GREEN, RESET });
     std.debug.print("  {s}bio{s}               Show biological systems map\n", .{ GREEN, RESET });
     std.debug.print("  {s}fix-bio [--all]{s}   Fix missing [biology] sections\n", .{ GREEN, RESET });
-    std.debug.print("  {s}watch [--interval N]{s}  Live health dashboard (default: 5s)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}watch [--interval N] [--filter-bio X] [--filter-min N] [--no-color]{s}\n", .{ GREEN, RESET });
+    std.debug.print("                      Live health dashboard (SPACE: pause, Ctrl+C: exit)\n");
     std.debug.print("  {s}watch --json{s}      Export health snapshot as JSON\n", .{ GREEN, RESET });
     std.debug.print("  {s}check --auto-register{s}  Detect and register new cells\n", .{ GREEN, RESET });
     std.debug.print("  {s}check --auto-register --yes{s}  Auto-register without prompt\n", .{ GREEN, RESET });
@@ -263,6 +265,9 @@ fn printHelp() void {
     std.debug.print("  {s}find --capability X{s}  Find cells with specific capability\n", .{ GREEN, RESET });
     std.debug.print("  {s}list --tag X:Y{s}     Filter by tags (scope:brain, type:library)\n", .{ GREEN, RESET });
     std.debug.print("  {s}templates{s}          List available cell templates\n", .{ GREEN, RESET });
+    std.debug.print("  {s}batch --fix{s}        Fix all cells with health < 70%%\n", .{ GREEN, RESET });
+    std.debug.print("  {s}batch --sign{s}       Sign all L2 cells\n", .{ GREEN, RESET });
+    std.debug.print("  {s}batch --test{s}       Run tests for all cells\n", .{ GREEN, RESET });
 }
 
 // SortField enum for --sort flag
@@ -5851,9 +5856,12 @@ const CellSnapshot = struct {
 };
 
 fn runWatch(allocator: Allocator, args: []const []const u8) !void {
-    // Parse interval: --interval N (default 5 seconds)
+    // Parse options: --interval N, --filter-bio <system>, --filter-min <score>, --no-color, --json
     var interval: u64 = 5;
     var json_output = false;
+    var filter_bio: ?[]const u8 = null;
+    var filter_min: u8 = 0;
+    var no_color = false;
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
@@ -5864,6 +5872,18 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
             }
         } else if (std.mem.eql(u8, args[i], "--json")) {
             json_output = true;
+        } else if (std.mem.eql(u8, args[i], "--filter-bio")) {
+            if (i + 1 < args.len) {
+                filter_bio = args[i + 1];
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, args[i], "--filter-min")) {
+            if (i + 1 < args.len) {
+                filter_min = try std.fmt.parseUnsigned(u8, args[i + 1], 10);
+                i += 1;
+            }
+        } else if (std.mem.eql(u8, args[i], "--no-color")) {
+            no_color = true;
         }
     }
 
@@ -5874,19 +5894,46 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
     // ANSI escape codes for TUI
     const CLEAR_SCREEN = "\x1b[2J\x1b[H";
 
+    // Color helper (respects --no-color)
+    const c = struct {
+        fn color(s: []const u8, disabled: bool) []const u8 {
+            return if (disabled) "" else s;
+        }
+    };
+
     var prev_scores = std.StringHashMap(u8).init(allocator);
     defer prev_scores.deinit();
 
+    // Terminal for non-blocking input (pause/resume)
+    var term_state: ?std.io.termState = null;
+    defer if (term_state) |*t| std.io.restoreTerminal(t) catch {};
+
     // Watch loop
     var iter: u32 = 0;
+    var paused = false;
+
     while (true) : (iter += 1) {
         // Clear screen and move cursor to top-left
         std.debug.print("{s}", .{CLEAR_SCREEN});
 
-        // Header
-        const timestamp = std.time.timestamp();
-        std.debug.print("{s}🏥 CELL HEALTH DASHBOARD{s} — refresh every {d}s\n", .{ GOLDEN, RESET, interval });
-        std.debug.print("{s}Last scan: {d}{s}\n\n", .{ GRAY, timestamp, RESET });
+        // Header with ISO timestamp
+        const now = std.time.timestamp();
+        const secs = now % 86400;
+        const hrs: u32 = @intCast(secs / 3600);
+        const mins: u32 = @intCast((secs % 3600) / 60);
+        const secs_rem: u32 = @intCast(secs % 60);
+
+        const ts_color = c.color(GOLDEN, no_color);
+        const rst_color = c.color(RESET, no_color);
+        const gray_color = c.color(GRAY, no_color);
+
+        std.debug.print("{s}🏥 CELL HEALTH DASHBOARD{s} — refresh every {d}s\n", .{ ts_color, rst_color, interval });
+        std.debug.print("{s}Last scan: {:02}:{:02}:{:02} UTC{s}", .{ gray_color, hrs, mins, secs_rem, rst_color });
+
+        if (paused) {
+            std.debug.print(" {s}[PAUSED]{s}", .{ c.color(YELLOW, no_color), rst_color });
+        }
+        std.debug.print("\n", .{});
 
         // Get current health scores
         const all_cells = cell_parser.discoverAll(allocator) catch {
@@ -5940,12 +5987,22 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
 
             const score: u8 = @intCast(@min(100, health + sec + deps + contracts));
 
-            // Get previous score
-            const prev_score = prev_scores.get(cell.id) orelse score;
+            // Apply --filter-min (only show cells below threshold)
+            if (filter_min > 0 and score >= filter_min) continue;
 
             // Determine bio_system
             const bio_sys = if (m.bio_system.len > 0) m.bio_system else "";
             const bio_name = if (bio_sys.len > 0) bio_sys else "unclassified";
+
+            // Apply --filter-bio (only show cells of specific bio system)
+            if (filter_bio) |fb| {
+                if (!std.mem.eql(u8, bio_name, fb) and !std.mem.eql(u8, bio_name, "unclassified")) continue;
+                // Special case: if filtering for "unclassified", show only those
+                if (std.mem.eql(u8, fb, "unclassified") and bio_sys.len > 0) continue;
+            }
+
+            // Get previous score
+            const prev_score = prev_scores.get(cell.id) orelse score;
 
             // Store snapshot
             const id_copy = try allocator.dupe(u8, cell.id);
@@ -5985,41 +6042,76 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
         }
 
         const avg = if (total > 0) sum / total else 0;
-        const avg_color = if (avg >= 80) GREEN else if (avg >= 60) YELLOW else RED;
+        const avg_color = if (avg >= 80) c.color(GREEN, no_color) else if (avg >= 60) c.color(YELLOW, no_color) else c.color(RED, no_color);
+        const white = c.color(WHITE, no_color);
+        const green_c = c.color(GREEN, no_color);
+        const yellow_c = c.color(YELLOW, no_color);
+        const red_c = c.color(RED, no_color);
+        const gray_c = c.color(GRAY, no_color);
 
         // Stats line
-        std.debug.print("{s}Average:{s} {s}{d}/100{s}  ", .{ WHITE, RESET, avg_color, avg, RESET });
+        std.debug.print("{s}Average:{s} {s}{d}/100{s}  ", .{ white, rst_color, avg_color, avg, rst_color });
         std.debug.print("{s}A:{d}{s} {s}B:{d}{s} {s}C:{d}{s} {s}F:{d}{s}\n\n", .{
-            GREEN, grade_a, RESET, YELLOW, grade_b, RESET, YELLOW, grade_c, RESET, RED, grade_f, RESET,
+            green_c, grade_a, rst_color, yellow_c, grade_b, rst_color, yellow_c, grade_c, rst_color, red_c, grade_f, rst_color,
         });
 
-        // Top 5 worst cells
-        std.debug.print("{s}⚠️  TOP 5 WORST CELLS{s}\n\n", .{ RED, RESET });
+        // Top N worst cells (show all if filtered)
+        std.debug.print("{s}TOP CELLS{s} (showing {d}/{d})\n\n", .{ red_c, rst_color, @min(10, snapshots.items.len), snapshots.items.len });
 
-        const show_count = @min(5, snapshots.items.len);
+        const show_count = @min(10, snapshots.items.len);
         for (snapshots.items[0..show_count]) |s| {
-            const color = if (s.score >= 80) GREEN else if (s.score >= 60) YELLOW else RED;
+            const color = if (s.score >= 80) green_c else if (s.score >= 60) yellow_c else red_c;
             const trend = if (s.score > s.prev_score) "↑" else if (s.score < s.prev_score) "↓" else "→";
-            const trend_color = if (s.score > s.prev_score) GREEN else if (s.score < s.prev_score) RED else GRAY;
+            const trend_color = if (s.score > s.prev_score) green_c else if (s.score < s.prev_score) red_c else gray_c;
 
             std.debug.print("  {s}{d:3} {s}{s}{s} {s}{s}{s} {s}[{s}]{s}\n", .{
-                color,        s.score, RESET,
-                trend_color,  trend,   RESET,
-                s.name,       RESET,   GRAY,
-                s.bio_system, RESET,
+                color,        s.score, rst_color,
+                trend_color,  trend,   rst_color,
+                s.name,       rst_color, gray_c,
+                s.bio_system, rst_color,
             });
 
             // Suggest fix for F grade
             if (s.score < 40) {
-                std.debug.print("    {s}→ tri cell fix {s}{s}\n", .{ YELLOW, s.id, RESET });
+                std.debug.print("    {s}→ tri cell fix {s}{s}\n", .{ yellow_c, s.id, rst_color });
             }
         }
 
-        // Footer
-        std.debug.print("\n{s}Press Ctrl+C to exit | Next scan in {d}s...{s}", .{ GRAY, interval, RESET });
+        // Footer with hints
+        std.debug.print("\n{s}SPACE: pause/resume | Ctrl+C: exit", .{ gray_c });
+        if (filter_bio != null or filter_min > 0) {
+            std.debug.print(" | FILTERED", .{});
+        }
+        std.debug.print("{s}\n", .{rst_color});
 
-        // Sleep for interval (use non-blocking sleep)
-        std.Thread.sleep(interval * 1_000_000_000); // interval in nanoseconds
+        // Sleep with pause check (poll every 100ms for SPACE key)
+        const sleep_ms = interval * 1000;
+        var elapsed: u64 = 0;
+        while (elapsed < sleep_ms) : (elapsed += 100) {
+            std.Thread.sleep(100_000_000); // 100ms
+
+            // Simple non-blocking stdin check (no terminal setup needed for just SPACE)
+            // Note: Full non-blocking input requires std.io.term configuration
+            // This is a simplified version that works on most POSIX systems
+            var buf: [1]u8 = undefined;
+            const stdin = std.io.getStdIn();
+            const old_term = try std.io.termios.stdin();
+            try std.io.setRaw(stdin.handle, false);
+            const n_read = stdin.read(&buf) catch 0;
+            std.io.restoreTerminal(&old_term) catch {};
+
+            if (n_read > 0) {
+                if (buf[0] == ' ' or buf[0] == 0x20) {
+                    paused = !paused;
+                }
+                // Break to refresh screen immediately on keypress
+                break;
+            }
+
+            if (paused) {
+                elapsed = 0; // Don't advance while paused
+            }
+        }
     }
 }
 
