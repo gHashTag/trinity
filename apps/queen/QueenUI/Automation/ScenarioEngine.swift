@@ -70,7 +70,7 @@ public final class ScenarioEngine {
     // MARK: - Persona Application
 
     /// Apply persona to action execution
-    public func executeAsPersona(_ persona: TestingPersona, action: @escaping () async throws -> Void) async throws {
+    public func executeAsPersona(_ persona: TestPersona, action: @escaping () async throws -> Void) async throws {
         // Apply persona-specific delays
         let delay = HumanBehaviorModel.decisionTime(complexity: persona.complexityPreference)
         try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
@@ -341,9 +341,11 @@ public final class ScenarioEngine {
 
         return bins.map { key, count in
             let parts = key.split(separator: "x").compactMap { Int($0) }
+            let xVal = parts.count > 0 ? parts[0] : 0
+            let yVal = parts.count > 1 ? parts[1] : 0
             return HeatmapPoint(
-                x: CGFloat(parts[0] ?? 0) * binSize,
-                y: CGFloat(parts[1] ?? 0) * binSize,
+                x: CGFloat(xVal) * binSize,
+                y: CGFloat(yVal) * binSize,
                 intensity: count
             )
         }
@@ -372,11 +374,11 @@ public enum AutomationScenarioGoal {
 }
 
 public struct AutomationScenarioContext {
-    public let persona: TestingPersona?
+    public let persona: TestPersona?
     public let startingScreen: String?
     public let userState: AutomationUserState
 
-    public init(persona: TestingPersona? = nil, startingScreen: String? = nil, userState: AutomationUserState = .normal) {
+    public init(persona: TestPersona? = nil, startingScreen: String? = nil, userState: AutomationUserState = .normal) {
         self.persona = persona
         self.startingScreen = startingScreen
         self.userState = userState
@@ -442,16 +444,16 @@ public enum AutomationScenarioError: Error {
     case timeout(TimeInterval)
 }
 
-public struct TestingPersona {
+public struct TestPersona {
     public let name: String
     public let proficiency: TypingProficiency
     public let complexityPreference: ActionComplexity
     public let reflective: Bool
     public let patience: TimeInterval
 
-    public static let novice = TestingPersona(name: "Novice", proficiency: .novice, complexityPreference: .simple, reflective: true, patience: 30)
-    public static let expert = TestingPersona(name: "Expert", proficiency: .expert, complexityPreference: .medium, reflective: false, patience: 10)
-    public static let elderly = TestingPersona(name: "Elderly", proficiency: .novice, complexityPreference: .simple, reflective: true, patience: 60)
+    public static let novice = TestPersona(name: "Novice", proficiency: .novice, complexityPreference: .simple, reflective: true, patience: 30)
+    public static let expert = TestPersona(name: "Expert", proficiency: .expert, complexityPreference: .medium, reflective: false, patience: 10)
+    public static let elderly = TestPersona(name: "Elderly", proficiency: .novice, complexityPreference: .simple, reflective: true, patience: 60)
 }
 
 public struct RageClickEvent {
@@ -471,10 +473,10 @@ public struct HeatmapPoint {
 // MARK: - Click History Tracker
 
 private class AutomationClickHistoryTracker {
-    private var events: [ClickEvent] = []
+    private var events: [AutomationClickEvent] = []
     private let lock = NSLock()
 
-    func addEvent(_ event: ClickEvent) {
+    func addEvent(_ event: AutomationClickEvent) {
         lock.lock()
         events.append(event)
         if events.count > 100 {
@@ -483,11 +485,25 @@ private class AutomationClickHistoryTracker {
         lock.unlock()
     }
 
-    func getRecentEvents(timeWindow: TimeInterval) -> [ClickEvent] {
+    func getRecentEvents(timeWindow: TimeInterval) -> [AutomationClickEvent] {
         lock.lock()
         let now = Date()
         let recent = events.filter { now.timeIntervalSince($0.timestamp) <= timeWindow }
         lock.unlock()
         return recent
+    }
+}
+
+// MARK: - Click Event Type
+
+public struct AutomationClickEvent {
+    public let timestamp: Date
+    public let x: CGFloat
+    public let y: CGFloat
+
+    public init(timestamp: Date, x: CGFloat, y: CGFloat) {
+        self.timestamp = timestamp
+        self.x = x
+        self.y = y
     }
 }

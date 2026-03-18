@@ -161,8 +161,8 @@ pub const ModuleHealth = struct {
     /// Overall health label
     pub fn overallLabel(self: *const ModuleHealth) []const u8 {
         const score = self.overallScore();
-        if (score >= 90) return "All modules OK";
-        if (score >= 70) return "Minor issues";
+        if (score == 100) return "All modules OK";
+        if (score >= 80) return "Minor issues";
         if (score >= 50) return "Some problems";
         return "Critical failures";
     }
