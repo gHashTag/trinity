@@ -28,5 +28,9 @@ process = "none"
 ffi = "none"
 concurrency = "none"
 
+
+[biology]
+system = "immune"
+organ = "leukocyte"
 [security]
 signed = "true"

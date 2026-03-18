@@ -50,6 +50,9 @@ inputs = ["config: Config", "tokens: []u32"]
 outputs = ["logits: []f32", "loss: f32"]
 invariants = ["vocab_size == 729", "embed_dim == 243", "hidden_dim == 729", "context_len == 81"]
 
+
+[biology]
+system = "body"
 [security]
 signed = true
 signature = "sha256:f894d8c156f9a23b8399fcbe962ff03ff43073826953fdcea65d503cfdeb514a"

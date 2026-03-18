@@ -41,6 +41,9 @@ process = "spawn"
 ffi = "native"
 concurrency = "yes"
 
+
+[biology]
+system = "body"
 [security]
 signed = true
 signature = "sha256:a8ff2089fef78643c066346eabcc9d77808e427b2cf01d4b56c845f8f8f758fe"
