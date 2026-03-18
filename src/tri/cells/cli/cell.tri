@@ -1,0 +1,41 @@
+[cell]
+id = "trinity.tri.cli"
+name = "CLI Framework"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "CLI skeleton: main dispatch, command parsing, help, colors, config, completion"
+capabilities = ["cli", "parsing", "help", "completion"]
+tests = 61
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "infra"
+
+[source]
+file_patterns = ["main.zig", "tri_utils.zig", "tri_commands.zig", "tri_help*.zig", "tri_cli_*.zig", "tri_colors.zig", "tri_config.zig", "tri_completion.zig", "tri_exit_codes.zig", "tri_error.zig", "tri_cmd_list.zig", "tri_namespace.zig", "heartbeat.zig"]
+
+[contributes]
+commands = ["help", "version", "commands"]
+exports = ["printBanner", "printHelp", "printVersion", "printInfo", "parseCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+
+ffi = "none"
+concurrency = "yes"
+[biology]
+system = "body"
+organ = "heartbeat"
+
+[security]
+signed = true
+signature = "sha256:26f23f53550d82f078dd4e1f717dc59d6aeccd5ea75b5828b06d88231834871b"

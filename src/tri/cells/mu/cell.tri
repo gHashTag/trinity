@@ -1,0 +1,41 @@
+[cell]
+id = "trinity.tri.mu"
+name = "MU Agent Helpers"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "MU agent: error protocol, learning DB, failure verification"
+capabilities = ["mu", "learning", "errors"]
+tests = 36
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "agent"
+
+[source]
+file_patterns = ["mu_*.zig", "hippocampus.zig", "thalamus.zig"]
+
+[contributes]
+commands = ["mu"]
+exports = ["learnFromErrors", "applyFixes", "applyFixesAll", "runMuLearnCommand", "runMuFixCommand"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "none"
+process = "spawn"
+
+ffi = "none"
+concurrency = "none"
+[biology]
+system = "brain"
+organ = "hippocampus"
+
+[security]
+signed = true
+signature = "sha256:5a70356f06cec03b9b14e22cdbc134cca92207bc1b172b0ace8aeab3808f4d12"
