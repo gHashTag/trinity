@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // T-JEPA — Ternary Joint-Embedding Predictive Architecture
 // First ternary world model: prediction of representations, not tokens
 // Online encoder (gradient) + Target encoder (EMA) + Predictor

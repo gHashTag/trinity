@@ -2,6 +2,7 @@
 //!
 //! Single source of truth for project-wide constants.
 //! All modules must import from here to avoid duplication drift.
+// @origin(manual) @regen(pending)
 
 /// Directory scan scope for cell discovery
 /// Used by: ribosome.discoverAll(), cytoplasm.runBio(), plugin.loadCellsIntoRegistry()

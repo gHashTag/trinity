@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // env_loader.zig — Load .env into process environment at startup
 // Silently skips if .env not found. Process env always wins over .env values.
 

@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN DLPFC (Dorsolateral Prefrontal Cortex) — Autonomous Decision Engine
 // ═══════════════════════════════════════════════════════════════════════════════

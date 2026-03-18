@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM Reference — Optimizer Implementations
 // Migrated from archive/implementations/zig/src/optimizers.zig
 // AdamW, Lion (memory-efficient), SGD with momentum

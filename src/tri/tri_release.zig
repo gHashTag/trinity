@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity Release — tri release create/deploy/verify
 // Migrated from scripts/final_release.sh, deploy-gh-pages.sh, deploy-flyio.sh, verify-deploy.sh
 //
