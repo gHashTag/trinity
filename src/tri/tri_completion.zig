@@ -120,8 +120,10 @@ pub const CompletionGenerator = struct {
 
     /// Print completion scripts to stdout
     pub fn printCompletions(self: *const CompletionGenerator, shell: []const u8) !void {
-        const file = std.io.getStdOut();
-        const writer = file.writer();
+        // Zig 0.15.2: use std.io.BufferedWriter with explicit type
+        const stdout = std.io.getStdOut();
+        var buffered = std.io.bufferedWriter(stdout);
+        const writer = buffered.writer();
 
         if (std.mem.eql(u8, shell, "bash")) {
             try self.generateBash(writer);
@@ -133,6 +135,7 @@ pub const CompletionGenerator = struct {
             tri_colors.printRed("Unknown shell: {s}\n", .{shell});
             tri_colors.printGray("Supported: bash, zsh, fish\n", .{});
         }
+        try buffered.flush();
     }
 
     /// Display installation instructions
