@@ -849,3 +849,124 @@ test "queen_cron — CronStatus fields" {
     try std.testing.expect(status.is_active);
     try std.testing.expectEqual(@as(u32, 42), status.run_count);
 }
+
+test "queen_cron — CronStatus default values" {
+    const status = CronStatus{};
+
+    try std.testing.expectEqualStrings("tamagotchi-report", status.job_id);
+    try std.testing.expectEqual(@as(i64, 0), status.next_run);
+    try std.testing.expectEqual(@as(i64, 0), status.last_run);
+    try std.testing.expectEqual(@as(u32, 0), status.run_count);
+    try std.testing.expect(!status.is_active);
+}
+
+test "queen_cron — CronStatus format" {
+    const status = CronStatus{
+        .job_id = "test",
+        .run_count = 10,
+        .last_run = 100,
+        .next_run = 200,
+        .is_active = true,
+    };
+
+    const formatted = try status.format(std.testing.allocator);
+    defer std.testing.allocator.free(formatted);
+
+    try std.testing.expect(std.mem.indexOf(u8, formatted, "test") != null);
+    try std.testing.expect(std.mem.indexOf(u8, formatted, "ACTIVE") != null);
+}
+
+test "queen_cron — TamagotchiStage all stages" {
+    const stages = [_]TamagotchiState.Stage{
+        .egg, .baby, .child, .teen, .adult,
+    };
+
+    for (stages) |s| {
+        _ = s; // Verify all stages exist
+    }
+}
+
+test "queen_cron — TamagotchiStage emoji returns non-empty" {
+    const stages = [_]TamagotchiState.Stage{
+        .egg, .baby, .child, .teen, .adult,
+    };
+
+    for (stages) |s| {
+        const emoji = s.emoji();
+        try std.testing.expect(emoji.len > 0);
+    }
+}
+
+test "queen_cron — TamagotchiStage label returns non-empty" {
+    const stages = [_]TamagotchiState.Stage{
+        .egg, .baby, .child, .teen, .adult,
+    };
+
+    for (stages) |s| {
+        const label = s.label();
+        try std.testing.expect(label.len > 0);
+    }
+}
+
+test "queen_cron — TamagotchiState age progression" {
+    var state = TamagotchiState{};
+
+    state.age_hours = 0;
+    state.updateStage();
+    try std.testing.expectEqual(TamagotchiState.Stage.egg, state.stage);
+
+    state.age_hours = 3;
+    state.updateStage();
+    try std.testing.expectEqual(TamagotchiState.Stage.baby, state.stage);
+
+    state.age_hours = 10;
+    state.updateStage();
+    try std.testing.expectEqual(TamagotchiState.Stage.child, state.stage);
+}
+
+test "queen_cron — TamagotchiState max health returns Thriving" {
+    var state = TamagotchiState{};
+    state.health = 100;
+    state.hunger = 100;
+
+    const status = state.healthStatus();
+    try std.testing.expectEqualStrings("Thriving", status);
+}
+
+test "queen_cron — TamagotchiState low health returns Critical" {
+    var state = TamagotchiState{};
+    state.health = 10;
+    state.hunger = 10;
+
+    const status = state.healthStatus();
+    try std.testing.expectEqualStrings("Critical", status);
+}
+
+test "queen_cron — ScheduleField is_all returns true for wildcard" {
+    const field = ScheduleField{ .is_all = true };
+
+    try std.testing.expect(field.is_all);
+}
+
+test "queen_cron — ScheduleField is_all returns false for specific" {
+    var field = ScheduleField{};
+    field.values[5] = true;
+
+    try std.testing.expect(!field.is_all);
+}
+
+test "queen_cron — CronSchedule init with valid spec" {
+    const schedule = try CronSchedule.init("*/15 * * * *");
+
+    try std.testing.expect(schedule.minute.is_all or schedule.minute.values[0]);
+}
+
+test "queen_cron — CronSchedule init with daily spec" {
+    const schedule = try CronSchedule.init("0 9 * * *");
+
+    try std.testing.expect(!schedule.minute.is_all);
+    // Day/month/dow are wildcards
+    try std.testing.expect(schedule.day_of_month.is_all);
+    try std.testing.expect(schedule.month.is_all);
+    try std.testing.expect(schedule.day_of_week.is_all);
+}
