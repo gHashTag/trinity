@@ -46,7 +46,6 @@ pub fn assessFarmAction(
     action: FarmAction,
     current_ppl: f32,
 ) !ValueAssessment {
-    _ = allocator;
     var assessment = ValueAssessment{};
 
     // Get farm status for context

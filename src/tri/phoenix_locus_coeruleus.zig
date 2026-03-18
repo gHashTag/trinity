@@ -127,14 +127,15 @@ pub fn triggerAlarm(
     message: []const u8,
     level: ?ArousalLevel, // Use caller's level or default based on severity
 ) !void {
-    const alert_level = level orelse {
-        .emergency, .alarm, .alert => blk: {
-            if (kind.severity() >= 5) return .emergency;
-            if (kind.severity() >= 4) return .alarm;
-            return .alert;
-        }
-        .normal, .idle, .sleep => return .normal,
-    };
+    const alert_level = level orelse inferArousal(kind);
+
+    fn inferArousal(kind: AlertKind) ArousalLevel {
+        const severity = kind.severity();
+        if (severity >= 5) return .emergency;
+        if (severity >= 4) return .alarm;
+        if (severity >= 3) return .alert;
+        return .normal;
+    }
 
     // Build alert payload
     var alert = Alert{

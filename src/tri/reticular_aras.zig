@@ -112,16 +112,18 @@ pub fn sweepOnce(allocator: Allocator, state: *ArasState) !SweepResult {
                     // Parse PPL if available
                     const ppl_pos = std.mem.indexOfPos(u8, evo_data, status_end + 1, "\"ppl\":");
                     if (ppl_pos) |pp| {
-                        const ppl_end = std.mem.indexOfScalarPos(u8, evo_data, pp + 5, '"') orelse evo_data.len;
-                        worker.last_ppl = qt.findJsonF32(evo_data[pp + 5 .. ppl_end]) orelse 999.0;
-                    };
+                        const search_start = pp + 5;
+                        const ppl_end = std.mem.indexOfScalarPos(u8, evo_data, search_start, '"') orelse evo_data.len;
+                        worker.last_ppl = qt.findJsonF32(evo_data[search_start..ppl_end]) orelse 999.0;
+                    }
 
                     // Parse step if available
                     const step_pos = std.mem.indexOfPos(u8, evo_data, status_end + 1, "\"step\":");
                     if (step_pos) |sp| {
-                        const step_end = std.mem.indexOfScalarPos(u8, evo_data, sp + 7, ','') orelse evo_data.len;
-                        worker.last_step = qt.findJsonU32(evo_data[sp + 7 .. step_end]) orelse 0;
-                    };
+                        const search_start = sp + 7;
+                        const step_end = std.mem.indexOfScalarPos(u8, evo_data, search_start, ',') orelse evo_data.len;
+                        worker.last_step = qt.findJsonU32(evo_data[search_start..step_end]) orelse 0;
+                    }
 
                     state.workers[state.workers_len] = worker;
                     state.workers_len += 1;
