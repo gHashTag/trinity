@@ -142,7 +142,7 @@ pub const PriorityQueue = struct {
         else
             self.count;
 
-        for (insert_at .. self.count) |i| {
+        for (insert_at..self.count) |i| {
             const target = if (i >= move_from and i > insert_at)
                 i - 1
             else
@@ -220,7 +220,7 @@ pub fn readPhase(allocator: Allocator, state: *LoopState) !void {
     offset += try std.fmt.bufPrint(
         buf[offset..],
         "{s} GitHub: {d} open issues\\n",
-        .{ github_issues.open },
+        .{github_issues.open},
     );
     offset += try std.fmt.bufPrint(
         buf[offset..],
@@ -230,7 +230,7 @@ pub fn readPhase(allocator: Allocator, state: *LoopState) !void {
     offset += try std.fmt.bufPrint(
         buf[offset..],
         "{s} Sleep: {d}h ago\\n",
-        .{ if (sleep_info) |s| s.hours_since else 999 },
+        .{if (sleep_info) |s| s.hours_since else 999},
     );
 
     // Log to hippocampus
@@ -315,7 +315,7 @@ pub fn speakPhase(allocator: Allocator, state: *LoopState) ![]const u8 {
     offset += try std.fmt.bufPrint(
         buf[offset..],
         "{s} Unified Queen Loop — {s}\\n",
-        .{ qt.E_CROWN },
+        .{qt.E_CROWN},
     );
     offset += try std.fmt.bufPrint(
         buf[offset..],
@@ -338,7 +338,7 @@ pub fn speakPhase(allocator: Allocator, state: *LoopState) ![]const u8 {
         offset += try std.fmt.bufPrint(
             buf[offset..],
             "    Reason: {s}\\n",
-            .{ dec.reasonStr() },
+            .{dec.reasonStr()},
         );
 
         _ = state.queue.pop();
@@ -369,7 +369,7 @@ pub fn runUnifiedLoop(allocator: Allocator, interval_sec: u32) !void {
         const report = try speakPhase(allocator, &state);
 
         // TODO: Send to Telegram in Phase 2
-        std.debug.print("{s}\n", .{ report });
+        std.debug.print("{s}\n", .{report});
     }
 }
 

@@ -32,10 +32,10 @@ const CellHealth = struct {
 // All healthy if each cell reports healthy
 pub fn isHealthy(self: *const CellHealth) bool {
     return self.dlpfc.status == .healthy and
-           self.vmpfc.status == .healthy and
-           self.ofc.status == .healthy and
-           self.vlpfc.status == .healthy and
-           self.dmpfc.status == .healthy;
+        self.vmpfc.status == .healthy and
+        self.ofc.status == .healthy and
+        self.vlpfc.status == .healthy and
+        self.dmpfc.status == .healthy;
 }
 
 // Get overall status string
@@ -60,8 +60,8 @@ pub fn statusStr(self: *const CellHealth) []const u8 {
 // Get combined cycle number (sum of all cells)
 pub fn combinedCycle(self: *const CellHealth) u32 {
     return self.dlpfc.cycle +
-           self.vmpfc.cycle +
-           self.ofc.cycle +
-           self.vlpfc.cycle +
-           self.dmpfc.cycle;
+        self.vmpfc.cycle +
+        self.ofc.cycle +
+        self.vlpfc.cycle +
+        self.dmpfc.cycle;
 }
