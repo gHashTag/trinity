@@ -96,23 +96,44 @@ pub fn planCoordination(
 fn estimateDuration(action: qt.ActionKind) u32 {
     return switch (action) {
         // Read-only: fast
-        .farm_status, .arena_status, .doctor_scan, .train_status, .train_diagnose,
-        .experiment_chart, .patent_status, .research_sacred, .ouroboros_status,
-        .experience_recall, .farm_evolve_status, .swarm_status,
+        .farm_status,
+        .arena_status,
+        .doctor_scan,
+        .train_status,
+        .train_diagnose,
+        .experiment_chart,
+        .patent_status,
+        .research_sacred,
+        .ouroboros_status,
+        .experience_recall,
+        .farm_evolve_status,
+        .swarm_status,
         => 5,
 
         // Soft writes: medium
-        .doctor_quick, .doctor_heal, .git_commit_state, .arena_battle,
-        .experience_save, .fmt,
+        .doctor_quick,
+        .doctor_heal,
+        .git_commit_state,
+        .arena_battle,
+        .experience_save,
+        .fmt,
         => 30,
 
         // Network writes: slower
-        .git_push, .issue_comment, .notify, .ouroboros_cycle,
+        .git_push,
+        .issue_comment,
+        .notify,
+        .ouroboros_cycle,
         => 60,
 
         // Dangerous: slowest
-        .farm_recycle, .farm_evolve_step, .cloud_spawn, .cloud_kill,
-        .cloud_cleanup, .issue_create, .swarm_decompose,
+        .farm_recycle,
+        .farm_evolve_step,
+        .cloud_spawn,
+        .cloud_kill,
+        .cloud_cleanup,
+        .issue_create,
+        .swarm_decompose,
         => 120,
     };
 }
@@ -203,7 +224,7 @@ test "cerebellum — estimateDuration" {
 test "cerebellum — CoordinationPlan canRunParallel" {
     var plan = CoordinationPlan{
         .parallel_slots = 4,
-        .queue = &[_]qt.ActionKind{.farm_status, .arena_status},
+        .queue = &[_]qt.ActionKind{ .farm_status, .arena_status },
     };
 
     try std.testing.expect(plan.canRunParallel(2)); // 2 + 2 = 4, fits

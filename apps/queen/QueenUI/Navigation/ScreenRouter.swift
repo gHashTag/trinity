@@ -29,6 +29,8 @@ struct ScreenRouter: View {
             ScholarScreen()
         case .build:
             BuildScreen()
+        case .triTools:
+            TriToolsScreen()
         case .issues:
             IssuesScreen()
         case .git:
