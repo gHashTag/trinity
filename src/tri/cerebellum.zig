@@ -23,7 +23,7 @@ pub const ResourcePool = struct {
     crashed_workers: u32 = 0,
     total_ppl: f32 = 0.0,
 
-    pub fn utilization(self: *const ResourcePool) f32 {
+    pub inline fn utilization(self: *const ResourcePool) f32 {
         if (self.total_workers == 0) return 0.0;
         return @as(f32, @floatFromInt(self.active_workers)) /
             @as(f32, @floatFromInt(self.total_workers));
@@ -36,7 +36,7 @@ pub const ResourcePool = struct {
         return @max(0.0, util_score - crash_penalty);
     }
 
-    pub fn avgPpl(self: *const ResourcePool) f32 {
+    pub inline fn avgPpl(self: *const ResourcePool) f32 {
         if (self.active_workers == 0) return 0.0;
         return self.total_ppl / @as(f32, @floatFromInt(self.active_workers));
     }
@@ -180,7 +180,7 @@ pub const MovementPattern = struct {
     success_count: u32 = 0,
     failure_count: u32 = 0,
 
-    pub fn successRate(self: *const MovementPattern) f32 {
+    pub inline fn successRate(self: *const MovementPattern) f32 {
         const total = self.success_count + self.failure_count;
         if (total == 0) return 0.5; // Neutral prior
         return @as(f32, @floatFromInt(self.success_count)) / @as(f32, @floatFromInt(total));
@@ -195,7 +195,7 @@ pub const SequenceCoordinator = struct {
     timing_adjust: f32 = 1.0,
 
     /// Get next action in sequence
-    pub fn sequenceNext(self: *SequenceCoordinator) ?qt.ActionKind {
+    pub inline fn sequenceNext(self: *SequenceCoordinator) ?qt.ActionKind {
         if (self.state != .executing) return null;
         if (self.current_index >= self.pattern.actions.len) {
             self.state = .completed;

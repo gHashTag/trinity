@@ -23,7 +23,7 @@ pub const ActionCandidate = struct {
     cost: f32 = 0.0, // 0-1 estimated cost
     suppressed: bool = false,
 
-    pub fn score(self: ActionCandidate) f32 {
+    pub inline fn score(self: ActionCandidate) f32 {
         if (self.suppressed) return -1.0;
         return self.value - (self.cost * 0.5);
     }
@@ -35,7 +35,7 @@ pub const Urgency = enum(u8) {
     normal = 2,
     low = 3,
 
-    pub fn weight(self: Urgency) f32 {
+    pub inline fn weight(self: Urgency) f32 {
         return switch (self) {
             .critical => 4.0,
             .high => 2.0,
