@@ -1074,3 +1074,178 @@ test "Queen telegram — parseUpdates handles /q command" {
     const cmd = q.pop().?;
     try std.testing.expectEqualStrings("/q farm", cmd.textStr());
 }
+
+test "Queen telegram — TgCommand empty text" {
+    const cmd: TgCommand = .{};
+    try std.testing.expectEqual(@as(usize, 0), cmd.text_len);
+    try std.testing.expectEqual(@as(usize, 0), cmd.textStr().len);
+}
+
+test "Queen telegram — TgCommand max length text" {
+    var cmd: TgCommand = .{};
+    const long_text = "a" ** MAX_CMD_LEN;
+    @memcpy(cmd.text[0..], long_text);
+    cmd.text_len = MAX_CMD_LEN;
+
+    try std.testing.expectEqual(@as(usize, MAX_CMD_LEN), cmd.text_len);
+    try std.testing.expectEqual(@as(usize, MAX_CMD_LEN), cmd.textStr().len);
+}
+
+test "Queen telegram — TgCommand chat_id methods" {
+    var cmd: TgCommand = .{};
+    const chat_id = "test_chat_123";
+    @memcpy(cmd.chat_id[0..chat_id.len], chat_id);
+    cmd.chat_id_len = chat_id.len;
+
+    try std.testing.expectEqual(@as(usize, chat_id.len), cmd.chat_id_len);
+}
+
+test "Queen telegram — CommandQueue single item" {
+    var q = CommandQueue{};
+    var cmd: TgCommand = .{
+        .text_len = 4,
+        .update_id = 100,
+    };
+    @memcpy(cmd.text[0..4], "test");
+
+    try std.testing.expect(q.push(cmd));
+    const popped = q.pop().?;
+    try std.testing.expectEqual(@as(i64, 100), popped.update_id);
+    try std.testing.expectEqualStrings("test", popped.textStr());
+}
+
+test "Queen telegram — CommandQueue push after pop" {
+    var q = CommandQueue{};
+
+    var cmd1: TgCommand = .{ .text_len = 1, .update_id = 1 };
+    @memcpy(cmd1.text[0..1], "a");
+
+    var cmd2: TgCommand = .{ .text_len = 1, .update_id = 2 };
+    @memcpy(cmd2.text[0..1], "b");
+
+    try std.testing.expect(q.push(cmd1));
+    _ = q.pop();
+    try std.testing.expect(q.push(cmd2));
+
+    const popped = q.pop().?;
+    try std.testing.expectEqual(@as(i64, 2), popped.update_id);
+}
+
+test "Queen telegram — PollContext structure" {
+    var q = CommandQueue{};
+    var last_id = std.atomic.Value(i64).init(0);
+    var running = std.atomic.Value(bool).init(false);
+
+    const ctx = PollContext{
+        .tg = .{ .bot_token = "token", .chat_id = "456", .enabled = true },
+        .queue = &q,
+        .last_update_id = &last_id,
+        .allowed_chat_id = "456",
+        .running = &running,
+    };
+
+    try std.testing.expectEqual(@as(i64, 0), ctx.last_update_id.load(.acquire));
+    try std.testing.expect(!ctx.running.load(.acquire));
+}
+
+test "Queen telegram — parseActionKind unknown command" {
+    const result = parseActionKind("/unknown_command");
+    try std.testing.expect(result == null); // unknown commands return null
+}
+
+test "Queen telegram — parseActionKind empty string" {
+    const result = parseActionKind("");
+    try std.testing.expect(result == null); // empty string returns null
+}
+
+test "Queen telegram — parseActionKind case sensitive" {
+    const result = parseActionKind("/FARM_STATUS");
+    try std.testing.expect(result == null); // wrong case returns null
+}
+
+test "Queen telegram — fmtActionResult with long output" {
+    var result = qt.ActionResult{
+        .success = true,
+        .duration_ms = 100,
+    };
+    const long_output = "x" ** 300;
+    @memcpy(result.output[0..long_output.len], long_output);
+    result.output_len = 300;
+
+    var buf: [256]u8 = undefined;
+    const formatted = fmtActionResult(&buf, .doctor_quick, result);
+
+    // Should be truncated to fit buffer
+    try std.testing.expect(formatted.len <= buf.len);
+}
+
+test "Queen telegram — fmtActionResult with zero duration" {
+    const result = qt.ActionResult{
+        .success = true,
+        .duration_ms = 0,
+    };
+
+    var buf: [128]u8 = undefined;
+    const formatted = fmtActionResult(&buf, .farm_status, result);
+
+    try std.testing.expect(formatted.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, formatted, "0ms") != null);
+}
+
+test "Queen telegram — TgConfig enabled field" {
+    var cfg: qt.TgConfig = .{
+        .bot_token = "test_token",
+        .chat_id = "123",
+        .enabled = false,
+    };
+
+    try std.testing.expect(!cfg.enabled);
+    cfg.enabled = true;
+    try std.testing.expect(cfg.enabled);
+}
+
+test "Queen telegram — parseUpdates with empty result array" {
+    var q = CommandQueue{};
+    var last_id = std.atomic.Value(i64).init(0);
+    var running = std.atomic.Value(bool).init(true);
+
+    var ctx = PollContext{
+        .tg = .{ .bot_token = "test", .chat_id = "123", .enabled = true },
+        .queue = &q,
+        .last_update_id = &last_id,
+        .allowed_chat_id = "123",
+        .running = &running,
+    };
+
+    const body = "{\"ok\":true,\"result\":[]}";
+
+    parseUpdates(&ctx, body);
+
+    try std.testing.expect(q.pop() == null);
+}
+
+test "Queen telegram — parseUpdates with ok:false" {
+    var q = CommandQueue{};
+    var last_id = std.atomic.Value(i64).init(0);
+    var running = std.atomic.Value(bool).init(true);
+
+    var ctx = PollContext{
+        .tg = .{ .bot_token = "test", .chat_id = "123", .enabled = true },
+        .queue = &q,
+        .last_update_id = &last_id,
+        .allowed_chat_id = "123",
+        .running = &running,
+    };
+
+    const body = "{\"ok\":false,\"description\":\"Error\"}";
+
+    parseUpdates(&ctx, body);
+
+    try std.testing.expect(q.pop() == null);
+}
+
+test "Queen telegram — CommandQueue initial state" {
+    const q = CommandQueue{};
+    try std.testing.expectEqual(@as(u32, 0), q.head.load(.monotonic));
+    try std.testing.expectEqual(@as(u32, 0), q.tail.load(.monotonic));
+}
