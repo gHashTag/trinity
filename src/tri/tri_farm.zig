@@ -755,7 +755,26 @@ fn padTo(current: usize, target: usize) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const DAEMON_PID_FILE = ".trinity/farm/watch_daemon.pid";
+const DAEMON_LOG_FILE = ".trinity/farm/watch_daemon.jsonl";
 const DAEMON_INTERVAL_SEC: u32 = 300; // 5 minutes
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// JSONL LOGGING — For "brain" integration (Mu/Queen/Scholar can read this)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn logDaemonEvent(allocator: Allocator, event_type: []const u8, event: []const u8, data: []const u8) !void {
+    _ = allocator;
+    const timestamp = std.time.timestamp();
+    var msg_buf: [512]u8 = undefined;
+    const msg = try std.fmt.bufPrint(&msg_buf,
+        \\{{"type":"{s}","event":"{s}","data":"{s}","timestamp":{d}}}
+    , .{ event_type, event, data, timestamp });
+
+    const log_file = try std.fs.cwd().createFile(DAEMON_LOG_FILE, .{ .truncate = false });
+    defer log_file.close();
+    try log_file.seekFromEnd(0);
+    try log_file.writeAll(msg);
+}
 
 fn runWatchDaemonCommand(allocator: Allocator, args: []const []const u8) !void {
     const action = if (args.len > 0) args[0] else "status";
@@ -827,14 +846,17 @@ fn daemonStart(allocator: Allocator) !void {
 
         print("{s}🔄 Sweep #{d}{s}\n", .{ DIM, sweep_count, RESET });
 
-        // Run evolve watch with --once flag
-        const watch_args = &[_][]const u8{ "--once", "--sacred", "--objective", "ntp" };
+        // Run evolve watch with --once flag + Telegram notifications
+        const watch_args = &[_][]const u8{ "--once", "--sacred", "--objective", "ntp", "--notify" };
         tri_farm_evolve.runEvolveCommand(allocator, watch_args) catch |err| {
             print("   {s}⚠️  Sweep error: {}{s}\n", .{ YELLOW, err, RESET });
         };
 
         const elapsed_ms = @as(u64, @intCast(@divTrunc(@as(i128, std.time.nanoTimestamp() - sweep_start), 1_000_000)));
         print("   {s}Sweep done in {d}ms{s}\n", .{ DIM, elapsed_ms, RESET });
+
+        // Log sweep event to JSONL for "brain" integration
+        logDaemonEvent(allocator, "sweep", "sweep_completed", std.fmt.allocPrint(allocator, "sweep_{d}_ms_{d}", .{ sweep_count, elapsed_ms }) catch "") catch {};
 
         print("   Sleeping {d}s...\n\n", .{DAEMON_INTERVAL_SEC});
         std.Thread.sleep(@as(u64, DAEMON_INTERVAL_SEC) * std.time.ns_per_s);
