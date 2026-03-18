@@ -25,6 +25,7 @@ const queen_senses = @import("queen_senses.zig");
 const queen_actions = @import("queen_actions.zig");
 const queen_telegram = @import("queen_telegram.zig");
 const queen_policy = @import("queen_policy.zig");
+const queen_issues = @import("queen_issues.zig");
 
 // Phase 2: Brain motor hierarchy
 const queen_premotor = @import("queen_premotor.zig");
@@ -62,7 +63,9 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
         return;
     }
 
-    if (std.mem.eql(u8, args[0], "start")) {
+    if (std.mem.eql(u8, args[0], "supervisor")) {
+        try runSupervisorMode(allocator);
+    } else if (std.mem.eql(u8, args[0], "start")) {
         var config = QueenConfig{};
         var i: usize = 1;
         while (i < args.len) : (i += 1) {
@@ -113,6 +116,7 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
 fn printUsage() void {
     print("{s}" ++ qt.E_CROWN ++ " Queen v4 — Maximum Autonomy{s}\n\n" ++
         "{s}Usage:{s}\n" ++
+        "  tri queen supervisor           Autonomous monitoring + self-healing\n" ++
         "  tri queen start [--daemon] [--interval <sec>] [--god-mode]\n" ++
         "  tri queen status\n" ++
         "  tri queen once\n" ++
@@ -502,6 +506,387 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
 
         sleepInterval(config.interval_sec);
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUPERVISOR MODE — Autonomous monitoring + self-healing
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runSupervisorMode(allocator: Allocator) !void {
+    const cortex = @import("queen_cortex.zig");
+    const cerebellum = @import("cerebellum.zig");
+    const queen_ofc = @import("queen_ofc.zig");
+    const queen_vmpfc = @import("queen_vmpfc.zig");
+
+    print("\n{s}" ++ qt.E_CROWN ++ " Queen Supervisor Mode — Autonomous Monitoring{s}\n", .{ GOLDEN, RESET });
+    print("  Integrating all brain cells for self-healing...\n\n", .{});
+
+    const tg = qt.initTelegram();
+
+    // Initial notification
+    if (tg.enabled) {
+        var buf: [256]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buf, qt.E_CROWN ++ " Supervisor \xd0\xb7\xd0\xb0\xd0\xbf\xd1\x83\xd1\x89\xd0\xb5\xd0\xbd\n\n" ++ // запущен
+            qt.E_BRAIN ++ " 5 PFC cells\n" ++
+            qt.E_DNA ++ " Cerebellum coordinator\n" ++
+            qt.E_CYCLE ++ " PMC + M1 motor hierarchy\n" ++
+            qt.E_EYE ++ " Continuous health monitoring", .{}) catch "";
+        queen_telegram.tgSend(tg, msg);
+    }
+
+    var cycle: u32 = 0;
+    var last_heal_cycle: u32 = 0;
+
+    while (true) {
+        cycle += 1;
+        const cycle_start = std.time.timestamp();
+
+        print("{s}=== Supervisor Cycle #{d} ==={s}\n", .{ GOLDEN, cycle, RESET });
+
+        // 1. Collect health from all PFC cells
+        emitSupervisorStep(1, 8, "Collecting PFC cell health");
+        const pfc_health = cortex.health(allocator) catch blk: {
+            print("  {s}" ++ qt.E_CROSS ++ " Cortex health collection failed{s}\n", .{ RED, RESET });
+            break :blk cortex.CellHealth{
+                .dlpfc = .{ .status = .broken, .cycle = 0, .last_check = cycle_start },
+                .vmpfc = .{ .status = .broken, .cycle = 0, .last_check = cycle_start },
+                .ofc = .{ .status = .broken, .cycle = 0, .last_check = cycle_start },
+                .vlpfc = .{ .status = .broken, .cycle = 0, .last_check = cycle_start },
+                .dmpfc = .{ .status = .broken, .cycle = 0, .last_check = cycle_start },
+            };
+        };
+
+        const all_healthy = cortex.isHealthy(&pfc_health);
+        const grade = if (all_healthy) "A" else "C";
+
+        // 2. Collect Cerebellum status
+        emitSupervisorStep(2, 8, "Checking Cerebellum coordination");
+        const cerebellum_health = cerebellum.health();
+
+        // 3. Get system snapshot
+        emitSupervisorStep(3, 8, "System snapshot");
+        const snapshot = faculty_board.collectSnapshot(allocator) catch |err| {
+            print("  {s}" ++ qt.E_CROSS ++ " Snapshot failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            sleepInterval(300);
+            continue;
+        };
+
+        const senses = queen_senses.collectAllSenses(allocator, snapshot);
+
+        // 4. Analyze system health
+        emitSupervisorStep(4, 8, "Analyzing system health");
+        const health_analysis = analyzeSystemHealth(snapshot, senses, pfc_health, cerebellum_health);
+
+        // 5. Print health dashboard
+        printSupervisorDashboard(cycle, pfc_health, cerebellum_health, health_analysis, senses);
+
+        // 6. Self-healing actions
+        emitSupervisorStep(5, 8, "Executing self-healing");
+        if (health_analysis.critical_count > 0 or health_analysis.warning_count > 2) {
+            if (cycle - last_heal_cycle >= 3) { // Rate limit healing
+                const healing_result = executeSelfHealing(allocator, health_analysis, senses, snapshot);
+                last_heal_cycle = cycle;
+
+                // Report healing via OFC
+                if (tg.enabled) {
+                    var report_buf: [512]u8 = undefined;
+                    const mood = queen_ofc.inferMood(snapshot.build_ok, senses.ouroboros_score, false);
+                    const report = std.fmt.bufPrint(&report_buf,
+                        "{s} Supervisor Healing #{d}\n\n" ++
+                        "{s} Actions: {d}\n" ++
+                        "{s} Success: {d} | Fail: {d}\n" ++
+                        "PFC Grade: {s}",
+                        .{
+                        mood.emoji(),
+                        cycle,
+                        qt.E_WRENCH,
+                        healing_result.actions_taken,
+                        if (healing_result.all_success) qt.E_CHECK else qt.E_CROSS,
+                        healing_result.success_count,
+                        healing_result.failure_count,
+                        grade,
+                        }
+                    ) catch "";
+                    queen_telegram.tgSend(tg, report);
+                }
+            }
+        }
+
+        // 7. Value assessment via VMPFC
+        emitSupervisorStep(6, 8, "VMPFC value assessment");
+        if (cycle % 10 == 0) { // Every 10 cycles, do farm value assessment
+            const farm_value = queen_vmpfc.assessFarmAction(allocator, .recycle, senses.farm_best_ppl) catch continue;
+            defer allocator.free(farm_value.reasonStr());
+
+            if (farm_value.recommendation == .execute and farm_value.roi > 3.0) {
+                print("  " ++ qt.E_DNA ++ " VMPFC recommends farm recycle (ROI: {d:.1})\n", .{farm_value.roi});
+            }
+        }
+
+        // 8. Resource coordination via Cerebellum
+        emitSupervisorStep(7, 8, "Cerebellum resource check");
+        const resource_pool = cerebellum.getResourcePool(allocator) catch .{};
+        const utilization = resource_pool.utilization();
+        const health_score = resource_pool.healthScore();
+
+        print("  " ++ qt.E_DNA ++ " Resources: {d:.0}% util | Score: {d:.1}\n", .{ utilization * 100, health_score });
+
+        // 9. Plan next action via PMC if needed
+        emitSupervisorStep(8, 8, "PMC goal planning");
+        if (health_analysis.critical_count > 0) {
+            const goal = determineGoal(snapshot, EvolutionInfo{}, &queen_policy.IncidentMemory.init());
+            if (goal) |g| {
+                print("  " ++ qt.E_BRAIN ++ " PMC Goal: {s} (priority {d})\n", .{ g.label(), g.priority() });
+
+                // Create motor plan via PMC
+                const plan = queen_premotor.MotorPlan.init(g);
+
+                // In god-mode, would execute via M1 here
+                _ = plan;
+                _ = queen_motor;
+            }
+        }
+
+        // 10. Report status summary
+        print("  {s}" ++ qt.E_CHECK ++ " Cycle {d}: {s} | Critical: {d} | Warnings: {d}{s}\n\n", .{
+            if (health_analysis.critical_count == 0) GREEN else RED,
+            cycle,
+            if (all_healthy) "HEALTHY" else "RECOVERING",
+            health_analysis.critical_count,
+            health_analysis.warning_count,
+            RESET,
+        });
+
+        // 11. Save supervisor state
+        saveSupervisorState(cycle, pfc_health, health_analysis);
+
+        // Sleep before next cycle (5 min default for supervisor)
+        sleepInterval(300);
+    }
+}
+
+const HealthAnalysis = struct {
+    overall_status: Status = .healthy,
+    critical_count: u8 = 0,
+    warning_count: u8 = 0,
+    issues: [16]Issue = undefined,
+    issue_count: u8 = 0,
+
+    const Status = enum {
+        healthy,
+        warning,
+        critical,
+    };
+
+    const Issue = struct {
+        source: []const u8,
+        description: [128]u8 = undefined,
+        desc_len: usize = 0,
+        severity: Status = .warning,
+    };
+};
+
+fn analyzeSystemHealth(
+    snap: FacultySnapshot,
+    senses: qt.SenseResult,
+    pfc_health: anytype,
+    cerebellum_health: anytype,
+) HealthAnalysis {
+    _ = cerebellum_health; // Currently unused, reserved for future use
+    var analysis = HealthAnalysis{};
+
+    // Build status
+    if (!snap.build_ok) {
+        addIssue(&analysis, "Build", "Build broken - zig build fails", .critical);
+    }
+
+    // PFC cells
+    if (pfc_health.dlpfc.status != .healthy) {
+        addIssue(&analysis, "DLPFC", "Decision engine unhealthy", .warning);
+    }
+    if (pfc_health.vmpfc.status != .healthy) {
+        addIssue(&analysis, "VMPFC", "Value assessment impaired", .warning);
+    }
+    if (pfc_health.ofc.status != .healthy) {
+        addIssue(&analysis, "OFC", "Communication degraded", .warning);
+    }
+
+    // Ouroboros score
+    if (senses.ouroboros_score < 40) {
+        addIssue(&analysis, "Ouroboros", "System health critical", .critical);
+    } else if (senses.ouroboros_score < 70) {
+        addIssue(&analysis, "Ouroboros", "System health degraded", .warning);
+    }
+
+    // Farm issues
+    if (senses.farm_idle_count > 5) {
+        addIssue(&analysis, "Farm", "Many idle workers", .warning);
+    }
+    if (senses.farm_best_ppl > 20.0) {
+        addIssue(&analysis, "Farm", "Poor best PPL", .warning);
+    }
+
+    // Dirty files
+    if (senses.dirty_files > 100) {
+        addIssue(&analysis, "Git", "Excessive dirty files", .warning);
+    }
+
+    // Keys
+    if (senses.keys_present < 3) {
+        addIssue(&analysis, "Auth", "Many keys expired", .critical);
+    }
+
+    // Determine overall status
+    if (analysis.critical_count > 0) {
+        analysis.overall_status = .critical;
+    } else if (analysis.warning_count > 0) {
+        analysis.overall_status = .warning;
+    }
+
+    return analysis;
+}
+
+fn addIssue(analysis: *HealthAnalysis, source: []const u8, desc: []const u8, severity: HealthAnalysis.Status) void {
+    if (analysis.issue_count >= 16) return;
+
+    var issue = HealthAnalysis.Issue{
+        .source = source,
+        .severity = severity,
+    };
+    const len = @min(desc.len, issue.description.len);
+    @memcpy(issue.description[0..len], desc[0..len]);
+    issue.desc_len = len;
+
+    analysis.issues[analysis.issue_count] = issue;
+    analysis.issue_count += 1;
+
+    if (severity == .critical) {
+        analysis.critical_count += 1;
+    } else {
+        analysis.warning_count += 1;
+    }
+}
+
+const HealingResult = struct {
+    actions_taken: u8 = 0,
+    success_count: u8 = 0,
+    failure_count: u8 = 0,
+    all_success: bool = true,
+};
+
+fn executeSelfHealing(
+    allocator: Allocator,
+    analysis: HealthAnalysis,
+    senses: qt.SenseResult,
+    snapshot: FacultySnapshot,
+) HealingResult {
+    _ = senses; // Reserved for future healing logic
+    _ = snapshot; // Reserved for future healing logic
+    var result = HealingResult{};
+
+    for (analysis.issues[0..analysis.issue_count]) |issue| {
+        // Only auto-heal warnings and some critical issues
+        if (issue.severity == .critical and std.mem.eql(u8, issue.source, "Auth")) continue;
+
+        // Map issues to actions
+        const action = switch (issue.severity) {
+            .healthy => continue,
+            .warning => qt.ActionKind.doctor_quick,
+            .critical => qt.ActionKind.doctor_heal,
+        };
+
+        print("  {s}" ++ qt.E_WRENCH ++ " Healing: {s} - {s}{s}\n", .{
+            GOLDEN, issue.source, issue.description[0..issue.desc_len], RESET,
+        });
+
+        const exec_result = queen_actions.execute(allocator, action);
+        result.actions_taken += 1;
+
+        if (exec_result.success) {
+            result.success_count += 1;
+            print("    " ++ qt.E_CHECK ++ " Success ({d}ms)\n", .{exec_result.duration_ms});
+        } else {
+            result.failure_count += 1;
+            result.all_success = false;
+            print("    " ++ qt.E_CROSS ++ " Failed: {s}\n", .{exec_result.outputStr()});
+        }
+
+        // Small delay between actions
+        std.Thread.sleep(1 * std.time.ns_per_s);
+    }
+
+    return result;
+}
+
+fn printSupervisorDashboard(
+    cycle: u32,
+    pfc_health: anytype,
+    cerebellum_health: anytype,
+    analysis: HealthAnalysis,
+    senses: qt.SenseResult,
+) void {
+    print("\n  {s}" ++ qt.E_CROWN ++ " Supervisor Dashboard #{d}{s}\n", .{ GOLDEN, cycle, RESET });
+
+    // PFC Status
+    const pfc_status = if (pfc_health.dlpfc.status == .healthy) qt.E_CHECK else qt.E_CROSS;
+    print("    {s} PFC: {s} DLPFC={s} VMPFC={s} OFC={s}\n", .{
+        qt.E_BRAIN,
+        pfc_status,
+        statusEmoji(pfc_health.dlpfc.status),
+        statusEmoji(pfc_health.vmpfc.status),
+        statusEmoji(pfc_health.ofc.status),
+    });
+
+    // Cerebellum
+    print("    {s} Cerebellum: {s}\n", .{ qt.E_DNA, statusEmoji(cerebellum_health.status) });
+
+    // System status
+    const sys_status = switch (analysis.overall_status) {
+        .healthy => qt.E_CHECK,
+        .warning => qt.E_WRENCH,
+        .critical => qt.E_SIREN,
+    };
+    print("    {s} System: {s} ({d} critical, {d} warnings)\n", .{
+        qt.E_EYE,
+        sys_status,
+        analysis.critical_count,
+        analysis.warning_count,
+    });
+
+    // Key metrics
+    print("    {s} Build: {s} | Ouroboros: {d:.0} | Dirty: {d}\n", .{
+        qt.E_CLIP,
+        if (senses.build_ok) "OK" else "FAIL",
+        senses.ouroboros_score,
+        senses.dirty_files,
+    });
+}
+
+fn statusEmoji(status: anytype) []const u8 {
+    return switch (status) {
+        .healthy => qt.E_CHECK,
+        .weak => qt.E_WRENCH,
+        .broken => qt.E_CROSS,
+    };
+}
+
+fn saveSupervisorState(cycle: u32, pfc_health: anytype, analysis: HealthAnalysis) void {
+    _ = pfc_health; // Currently unused, reserved for future use
+    const path = ".trinity/queen/supervisor_state.json";
+    const file = std.fs.cwd().createFile(path, .{}) catch return;
+    defer file.close();
+
+    var buf: [512]u8 = undefined;
+    const data = std.fmt.bufPrint(&buf,
+        \\{{"cycle":{d},"critical_count":{d},"warning_count":{d},"pfc_healthy":{s}}}
+    , .{
+        cycle,
+        analysis.critical_count,
+        analysis.warning_count,
+        if (analysis.overall_status == .healthy) "true" else "false",
+    }) catch return;
+
+    _ = file.write(data) catch {};
 }
 
 fn runOneCycle(allocator: Allocator, config: QueenConfig) !void {
@@ -913,6 +1298,25 @@ fn emitStep(state: *QueenState, step: u8, total: u8, text: []const u8) void {
     , .{
         std.time.timestamp(),
         state.event_seq,
+        step,
+        total,
+        text,
+    }) catch return;
+    _ = file.write(line) catch {};
+}
+
+// Helper for supervisor mode (stateless logging)
+fn emitSupervisorStep(step: u8, total: u8, text: []const u8) void {
+    const file = std.fs.cwd().openFile(".trinity/event_log.jsonl", .{ .mode = .read_write }) catch return;
+    defer file.close();
+    file.seekFromEnd(0) catch return;
+
+    var buf: [512]u8 = undefined;
+    const line = std.fmt.bufPrint(&buf,
+        \\{{"ts":{d},"agent":"supervisor","kind":"supervisor_cycle","step":{d},"total":{d},"text":"{s}"}}
+        \\
+    , .{
+        std.time.timestamp(),
         step,
         total,
         text,

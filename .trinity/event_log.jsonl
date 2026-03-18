@@ -43,3 +43,19 @@
 {"ts":1773684078,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"binaries":6,"dirty_files":71,"docs":2508,"tests":1408,"mcp_modules":56,"skills":30,"issues_open":30,"build_exit":0,"test_exit":0}
 {"ts":$(date +%s),"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"build":"PASS","tests":"PASS","binaries":6,"dirty_files":71,"docs":2508,"skills":23,"mcp_modules":27,"cli_commands":39,"issues_open":67,"issues_in_progress":2}
 {"ts":1773684986,"agent":"tri-orchestrator","action":"report","detail":"GREEN","result":"OK","phase":7,"build":"PASS","tests":"PASS","binaries":6,"dirty_files":71,"docs":2508,"skills":23,"mcp_modules":27,"cli_commands":39,"issues_open":67,"issues_in_progress":2}
+{"ts":1773848084,"agent":"supervisor","kind":"supervisor_cycle","step":1,"total":8,"text":"Collecting PFC cell health"}
+{"ts":1773848084,"agent":"supervisor","kind":"supervisor_cycle","step":2,"total":8,"text":"Checking Cerebellum coordination"}
+{"ts":1773848084,"agent":"supervisor","kind":"supervisor_cycle","step":3,"total":8,"text":"System snapshot"}
+{"ts":1773848086,"agent":"supervisor","kind":"supervisor_cycle","step":4,"total":8,"text":"Analyzing system health"}
+{"ts":1773848086,"agent":"supervisor","kind":"supervisor_cycle","step":5,"total":8,"text":"Executing self-healing"}
+{"ts":1773848086,"agent":"supervisor","kind":"supervisor_cycle","step":6,"total":8,"text":"VMPFC value assessment"}
+{"ts":1773848086,"agent":"supervisor","kind":"supervisor_cycle","step":7,"total":8,"text":"Cerebellum resource check"}
+{"ts":1773848086,"agent":"supervisor","kind":"supervisor_cycle","step":8,"total":8,"text":"PMC goal planning"}
+{"ts":1773848311,"agent":"supervisor","kind":"supervisor_cycle","step":1,"total":8,"text":"Collecting PFC cell health"}
+{"ts":1773848311,"agent":"supervisor","kind":"supervisor_cycle","step":2,"total":8,"text":"Checking Cerebellum coordination"}
+{"ts":1773848311,"agent":"supervisor","kind":"supervisor_cycle","step":3,"total":8,"text":"System snapshot"}
+{"ts":1773848313,"agent":"supervisor","kind":"supervisor_cycle","step":4,"total":8,"text":"Analyzing system health"}
+{"ts":1773848313,"agent":"supervisor","kind":"supervisor_cycle","step":5,"total":8,"text":"Executing self-healing"}
+{"ts":1773848313,"agent":"supervisor","kind":"supervisor_cycle","step":6,"total":8,"text":"VMPFC value assessment"}
+{"ts":1773848313,"agent":"supervisor","kind":"supervisor_cycle","step":7,"total":8,"text":"Cerebellum resource check"}
+{"ts":1773848313,"agent":"supervisor","kind":"supervisor_cycle","step":8,"total":8,"text":"PMC goal planning"}
