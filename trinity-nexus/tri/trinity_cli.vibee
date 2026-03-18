@@ -1,0 +1,809 @@
+# ============================================================================
+# Trinity CLI - Unified Command Line Interface
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: trinity_cli
+version: "1.0.0"
+language: zig
+module: trinity_cli
+
+description: |
+  Trinity CLI - Unified command-line interface for Trinity development workflow.
+  Provides commands for code generation, reasoning, explanation, debugging,
+  testing, optimization, refactoring, documentation, and deployment.
+
+  Architecture:
+    CLI parses commands -> Routes to appropriate handler
+    Each handler returns SWEResponse with status, output, and suggestions
+    State persists across commands in CLIState
+
+  Integration:
+    - VIBEE compiler for code generation
+    - HDC/VSA for semantic code understanding
+    - SWE Agent for autonomous code modification
+    - Ternary VM for efficient execution
+
+  Philosophy:
+    - Specifications are the SINGLE SOURCE OF TRUTH
+    - All code is generated from .vibee files
+    - 16-step development cycle is mandatory
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+constants:
+  # Version info
+  VERSION: "1.0.0"
+  BUILD_DATE: "2026-02-06"
+
+  # Sacred constants
+  PHI: 1.6180339887498948482
+  TRINITY: 3.0
+
+  # CLI defaults
+  DEFAULT_DIMENSION: 10000
+  DEFAULT_CONTEXT_SIZE: 8
+  MAX_OUTPUT_LENGTH: 65536
+  DEFAULT_TIMEOUT_MS: 30000
+
+  # File paths
+  SPECS_DIR: "specs/tri/"
+  OUTPUT_DIR: "trinity/output/"
+  GENERATED_DIR: "generated/"
+
+  # Response codes
+  SUCCESS: 0
+  ERROR_PARSE: 1
+  ERROR_EXECUTION: 2
+  ERROR_TIMEOUT: 3
+  ERROR_NOT_FOUND: 4
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+types:
+  # Core CLI State
+  CLIState:
+    description: "Persistent state for CLI session"
+    fields:
+      current_dir: String
+      loaded_specs: List<String>
+      history: List<CLICommand>
+      context: CodeContext
+      swe_agent: Option<SWEAgentState>
+      config: CLIConfig
+      session_id: String
+      start_time: u64
+
+  CLIConfig:
+    description: "CLI configuration options"
+    fields:
+      verbose: Bool
+      color_output: Bool
+      auto_format: Bool
+      parallel_jobs: usize
+      timeout_ms: u64
+      output_format: OutputFormat
+
+  OutputFormat:
+    description: "Output format options"
+    variants:
+      - pretty       # Human-readable with colors
+      - json         # JSON output for tooling
+      - minimal      # Compact output
+      - markdown     # Markdown formatted
+
+  # Commands
+  CLICommand:
+    description: "Parsed CLI command"
+    variants:
+      - code: CodeRequest
+      - reason: ReasonRequest
+      - explain: ExplainRequest
+      - debug: DebugRequest
+      - test: TestRequest
+      - optimize: OptimizeRequest
+      - refactor: RefactorRequest
+      - docs: DocsRequest
+      - deploy: DeployRequest
+      - gen: GenRequest
+      - chat: ChatRequest
+      - serve: ServeRequest
+      - koschei: KoscheiRequest
+
+  # Code Command
+  CodeRequest:
+    description: "Request for code generation or modification"
+    fields:
+      action: CodeAction
+      target: String
+      spec_file: Option<String>
+      language: String
+      options: CodeOptions
+
+  CodeAction:
+    description: "Type of code operation"
+    variants:
+      - generate    # Generate new code from spec
+      - modify      # Modify existing code
+      - complete    # Complete partial code
+      - translate   # Translate between languages
+
+  CodeOptions:
+    description: "Options for code generation"
+    fields:
+      dry_run: Bool
+      force: Bool
+      include_tests: Bool
+      include_docs: Bool
+      optimization_level: u8
+
+  # Reason Command
+  ReasonRequest:
+    description: "Request for code reasoning and analysis"
+    fields:
+      query: String
+      context_files: List<String>
+      depth: ReasoningDepth
+      include_suggestions: Bool
+
+  ReasoningDepth:
+    description: "Depth of reasoning analysis"
+    variants:
+      - shallow     # Quick surface-level analysis
+      - medium      # Standard analysis
+      - deep        # Thorough multi-pass analysis
+      - exhaustive  # Complete analysis with proofs
+
+  # Explain Command
+  ExplainRequest:
+    description: "Request for code explanation"
+    fields:
+      target: String
+      level: ExplainLevel
+      format: OutputFormat
+      include_examples: Bool
+
+  ExplainLevel:
+    description: "Level of explanation detail"
+    variants:
+      - beginner    # Simple, no jargon
+      - intermediate # Standard detail
+      - expert      # Technical depth
+      - academic    # Formal with citations
+
+  # Debug Command
+  DebugRequest:
+    description: "Request for debugging assistance"
+    fields:
+      target: String
+      error_message: Option<String>
+      stack_trace: Option<String>
+      context: List<String>
+      auto_fix: Bool
+
+  # Test Command
+  TestRequest:
+    description: "Request for test generation or execution"
+    fields:
+      target: String
+      test_type: TestType
+      coverage_target: Option<Float>
+      generate_only: Bool
+
+  TestType:
+    description: "Type of tests to generate/run"
+    variants:
+      - unit        # Unit tests
+      - integration # Integration tests
+      - e2e         # End-to-end tests
+      - property    # Property-based tests
+      - fuzz        # Fuzz tests
+      - benchmark   # Performance tests
+
+  # Optimize Command
+  OptimizeRequest:
+    description: "Request for code optimization"
+    fields:
+      target: String
+      optimization_goal: OptimizationGoal
+      constraints: List<String>
+      benchmark_before: Bool
+
+  OptimizationGoal:
+    description: "Optimization objectives"
+    variants:
+      - speed       # Execution speed
+      - memory      # Memory usage
+      - size        # Binary/code size
+      - energy      # Energy efficiency
+      - balanced    # Balance all factors
+
+  # Refactor Command
+  RefactorRequest:
+    description: "Request for code refactoring"
+    fields:
+      target: String
+      refactor_type: RefactorType
+      scope: RefactorScope
+      preview: Bool
+
+  RefactorType:
+    description: "Type of refactoring operation"
+    variants:
+      - rename          # Rename symbol
+      - extract         # Extract function/module
+      - inline          # Inline function
+      - move            # Move code
+      - simplify        # Simplify logic
+      - modernize       # Update to modern patterns
+      - dedup           # Remove duplication
+
+  RefactorScope:
+    description: "Scope of refactoring"
+    variants:
+      - local       # Current file only
+      - module      # Current module
+      - project     # Entire project
+
+  # Docs Command
+  DocsRequest:
+    description: "Request for documentation generation"
+    fields:
+      target: String
+      doc_type: DocType
+      output_path: Option<String>
+      include_diagrams: Bool
+
+  DocType:
+    description: "Type of documentation"
+    variants:
+      - api         # API reference
+      - guide       # User guide
+      - tutorial    # Step-by-step tutorial
+      - readme      # README file
+      - changelog   # Changelog entry
+      - spec        # Technical specification
+
+  # Deploy Command
+  DeployRequest:
+    description: "Request for deployment"
+    fields:
+      target: DeployTarget
+      environment: String
+      dry_run: Bool
+      rollback: Bool
+
+  DeployTarget:
+    description: "Deployment targets"
+    variants:
+      - local       # Local development
+      - staging     # Staging environment
+      - production  # Production environment
+      - wasm        # WebAssembly target
+      - fpga        # FPGA bitstream
+      - depin       # DePIN network
+
+  # Gen Command (VIBEE)
+  GenRequest:
+    description: "Request for VIBEE code generation"
+    fields:
+      spec_path: String
+      output_dir: Option<String>
+      languages: List<String>
+      verify: Bool
+
+  # Chat Command
+  ChatRequest:
+    description: "Interactive chat with model"
+    fields:
+      model_path: String
+      system_prompt: Option<String>
+      temperature: Float
+      max_tokens: usize
+
+  # Serve Command
+  ServeRequest:
+    description: "Start HTTP API server"
+    fields:
+      port: u16
+      host: String
+      cors_enabled: Bool
+      api_key: Option<String>
+
+  # Koschei Command
+  KoscheiRequest:
+    description: "Display 16-step development cycle"
+    fields:
+      step: Option<usize>
+      verbose: Bool
+
+  # SWE Request/Response
+  SWERequest:
+    description: "Software Engineering task request"
+    fields:
+      task_type: SWETaskType
+      description: String
+      context: CodeContext
+      constraints: List<String>
+      priority: Priority
+      auto_apply: Bool
+
+  SWETaskType:
+    description: "Type of SWE task"
+    variants:
+      - bug_fix           # Fix a bug
+      - feature_add       # Add new feature
+      - refactor          # Refactor code
+      - test_add          # Add tests
+      - doc_update        # Update documentation
+      - perf_optimize     # Performance optimization
+      - security_fix      # Security vulnerability fix
+      - dependency_update # Update dependencies
+      - migration         # Code migration
+
+  SWEResponse:
+    description: "Response from SWE operation"
+    fields:
+      status: ResponseStatus
+      output: String
+      changes: List<CodeChange>
+      suggestions: List<Suggestion>
+      metrics: SWEMetrics
+      elapsed_ms: u64
+
+  ResponseStatus:
+    description: "Status of response"
+    variants:
+      - success
+      - partial_success
+      - failure
+      - timeout
+      - cancelled
+
+  CodeChange:
+    description: "A code change to apply"
+    fields:
+      file_path: String
+      old_content: String
+      new_content: String
+      change_type: ChangeType
+      line_start: usize
+      line_end: usize
+
+  ChangeType:
+    description: "Type of code change"
+    variants:
+      - add
+      - modify
+      - delete
+      - rename
+      - move
+
+  Suggestion:
+    description: "Suggested improvement"
+    fields:
+      severity: Severity
+      message: String
+      location: Option<String>
+      fix: Option<String>
+
+  Severity:
+    description: "Severity level"
+    variants:
+      - info
+      - warning
+      - error
+      - critical
+
+  Priority:
+    description: "Task priority"
+    variants:
+      - low
+      - medium
+      - high
+      - critical
+
+  SWEMetrics:
+    description: "Metrics from SWE operation"
+    fields:
+      files_analyzed: usize
+      files_modified: usize
+      lines_added: usize
+      lines_removed: usize
+      tests_passed: usize
+      tests_failed: usize
+      coverage_percent: Option<Float>
+
+  # Code Context
+  CodeContext:
+    description: "Context for code understanding"
+    fields:
+      files: List<FileInfo>
+      symbols: List<Symbol>
+      dependencies: List<Dependency>
+      project_type: String
+      language: String
+
+  FileInfo:
+    description: "Information about a file"
+    fields:
+      path: String
+      language: String
+      size_bytes: usize
+      last_modified: u64
+      checksum: String
+
+  Symbol:
+    description: "Code symbol (function, type, etc.)"
+    fields:
+      name: String
+      kind: SymbolKind
+      location: String
+      signature: Option<String>
+      doc_comment: Option<String>
+
+  SymbolKind:
+    description: "Kind of symbol"
+    variants:
+      - function
+      - type
+      - constant
+      - variable
+      - module
+      - interface
+      - enum
+
+  Dependency:
+    description: "Project dependency"
+    fields:
+      name: String
+      version: String
+      source: String
+      dev_only: Bool
+
+  # SWE Agent State
+  SWEAgentState:
+    description: "State of SWE Agent"
+    fields:
+      task_queue: List<SWERequest>
+      completed_tasks: List<SWEResponse>
+      current_task: Option<SWERequest>
+      knowledge_base: KnowledgeBase
+      metrics: AgentMetrics
+
+  KnowledgeBase:
+    description: "Agent's accumulated knowledge"
+    fields:
+      code_patterns: List<CodePattern>
+      bug_patterns: List<BugPattern>
+      fix_templates: List<FixTemplate>
+      project_context: String
+
+  CodePattern:
+    description: "Recognized code pattern"
+    fields:
+      name: String
+      description: String
+      regex: String
+      category: String
+
+  BugPattern:
+    description: "Common bug pattern"
+    fields:
+      name: String
+      description: String
+      detection_rule: String
+      fix_strategy: String
+      severity: Severity
+
+  FixTemplate:
+    description: "Template for fixing issues"
+    fields:
+      name: String
+      applies_to: String
+      template: String
+      variables: List<String>
+
+  AgentMetrics:
+    description: "Agent performance metrics"
+    fields:
+      tasks_completed: usize
+      tasks_failed: usize
+      avg_completion_time_ms: u64
+      success_rate: Float
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  # CLI Initialization
+  - name: init_cli
+    given: Optional configuration path
+    when: Starting CLI session
+    then: Return initialized CLIState with defaults or loaded config
+
+  - name: parse_command
+    given: Command line arguments as string slice
+    when: User enters command
+    then: Return parsed CLICommand or error
+
+  - name: execute_command
+    given: CLICommand and CLIState
+    when: Command is validated
+    then: Execute command, return SWEResponse, update state
+
+  # Code Commands
+  - name: cmd_code_generate
+    given: CodeRequest with spec_file
+    when: User runs "/code generate <spec>"
+    then: Generate code from VIBEE spec, return generated files
+
+  - name: cmd_code_modify
+    given: CodeRequest with target and description
+    when: User runs "/code modify <file> <description>"
+    then: Analyze code, apply modifications, return changes
+
+  - name: cmd_code_complete
+    given: Partial code and context
+    when: User runs "/code complete <file>"
+    then: Complete code using HDC semantic understanding
+
+  - name: cmd_code_translate
+    given: Source file and target language
+    when: User runs "/code translate <file> --to <lang>"
+    then: Translate code preserving semantics
+
+  # Reason Commands
+  - name: cmd_reason
+    given: ReasonRequest with query
+    when: User runs "/reason <query>"
+    then: Analyze codebase, provide reasoning with evidence
+
+  - name: cmd_reason_about
+    given: Code snippet or file
+    when: User runs "/reason about <target>"
+    then: Explain design decisions and rationale
+
+  - name: cmd_reason_why
+    given: Code behavior question
+    when: User runs "/reason why <behavior>"
+    then: Trace execution path, explain causality
+
+  # Explain Commands
+  - name: cmd_explain
+    given: ExplainRequest with target
+    when: User runs "/explain <target>"
+    then: Generate explanation at specified level
+
+  - name: cmd_explain_function
+    given: Function name or signature
+    when: User runs "/explain function <name>"
+    then: Explain function purpose, params, return, side effects
+
+  - name: cmd_explain_architecture
+    given: Module or project path
+    when: User runs "/explain architecture"
+    then: Generate architecture overview with diagrams
+
+  # Debug Commands
+  - name: cmd_debug
+    given: DebugRequest with error info
+    when: User runs "/debug <error>"
+    then: Analyze error, identify root cause, suggest fixes
+
+  - name: cmd_debug_trace
+    given: Stack trace
+    when: User runs "/debug trace <stacktrace>"
+    then: Parse trace, identify failure point, suggest fix
+
+  - name: cmd_debug_auto
+    given: Test failure or runtime error
+    when: User runs "/debug auto"
+    then: Automatically diagnose and fix if possible
+
+  # Test Commands
+  - name: cmd_test_generate
+    given: TestRequest with target
+    when: User runs "/test generate <target>"
+    then: Generate tests for target code
+
+  - name: cmd_test_run
+    given: Test file or directory
+    when: User runs "/test run [target]"
+    then: Execute tests, report results
+
+  - name: cmd_test_coverage
+    given: Project path
+    when: User runs "/test coverage"
+    then: Run tests with coverage, generate report
+
+  # Optimize Commands
+  - name: cmd_optimize
+    given: OptimizeRequest with target
+    when: User runs "/optimize <target>"
+    then: Analyze code, apply optimizations, report improvements
+
+  - name: cmd_optimize_profile
+    given: Code path
+    when: User runs "/optimize profile <target>"
+    then: Profile execution, identify bottlenecks
+
+  - name: cmd_optimize_ternary
+    given: Zig code path
+    when: User runs "/optimize ternary <target>"
+    then: Convert to ternary ops where beneficial
+
+  # Refactor Commands
+  - name: cmd_refactor
+    given: RefactorRequest
+    when: User runs "/refactor <type> <target>"
+    then: Perform refactoring, preview changes
+
+  - name: cmd_refactor_rename
+    given: Old name and new name
+    when: User runs "/refactor rename <old> <new>"
+    then: Rename symbol across project
+
+  - name: cmd_refactor_extract
+    given: Code selection
+    when: User runs "/refactor extract <selection>"
+    then: Extract to function/module
+
+  # Docs Commands
+  - name: cmd_docs_generate
+    given: DocsRequest
+    when: User runs "/docs generate <target>"
+    then: Generate documentation
+
+  - name: cmd_docs_update
+    given: Changed files
+    when: User runs "/docs update"
+    then: Update existing docs to match code
+
+  # Deploy Commands
+  - name: cmd_deploy
+    given: DeployRequest
+    when: User runs "/deploy <target>"
+    then: Build and deploy to target
+
+  - name: cmd_deploy_wasm
+    given: Zig source
+    when: User runs "/deploy wasm"
+    then: Compile to WASM, optimize
+
+  - name: cmd_deploy_fpga
+    given: VIBEE spec with varlog
+    when: User runs "/deploy fpga"
+    then: Generate Verilog, synthesize
+
+  # VIBEE Commands
+  - name: cmd_gen
+    given: GenRequest with spec path
+    when: User runs "gen <spec.vibee>"
+    then: Generate code from VIBEE specification
+
+  - name: cmd_gen_multi
+    given: Spec path and language list
+    when: User runs "gen-multi <spec> all"
+    then: Generate code for multiple languages
+
+  # Chat/Serve Commands
+  - name: cmd_chat
+    given: ChatRequest
+    when: User runs "chat --model <path>"
+    then: Start interactive chat session
+
+  - name: cmd_serve
+    given: ServeRequest
+    when: User runs "serve --port <port>"
+    then: Start HTTP API server
+
+  # Koschei Command
+  - name: cmd_koschei
+    given: KoscheiRequest
+    when: User runs "koschei"
+    then: Display 16-step development cycle
+
+  # Utility Functions
+  - name: load_context
+    given: File paths
+    when: Building code context
+    then: Parse files, extract symbols, build context
+
+  - name: save_state
+    given: CLIState
+    when: Session ends or checkpoint
+    then: Persist state for session recovery
+
+  - name: format_output
+    given: SWEResponse and OutputFormat
+    when: Displaying results
+    then: Format according to output preference
+
+  - name: validate_spec
+    given: VIBEE spec path
+    when: Before code generation
+    then: Validate spec syntax and semantics
+
+# ============================================================================
+# COMMAND ALIASES
+# ============================================================================
+
+aliases:
+  "/c": "/code"
+  "/r": "/reason"
+  "/e": "/explain"
+  "/d": "/debug"
+  "/t": "/test"
+  "/o": "/optimize"
+  "/rf": "/refactor"
+  "/doc": "/docs"
+  "/dp": "/deploy"
+  "/g": "/gen"
+  "/ch": "/chat"
+  "/s": "/serve"
+  "/k": "/koschei"
+
+# ============================================================================
+# EXAMPLES
+# ============================================================================
+
+examples:
+  - command: "/code generate specs/tri/hdc_classifier.vibee"
+    description: "Generate Zig code from VIBEE specification"
+
+  - command: "/reason why does similarity decrease with dimension?"
+    description: "Analyze and explain code behavior"
+
+  - command: "/explain function vsa.bind"
+    description: "Explain the bind function in VSA module"
+
+  - command: "/debug 'index out of bounds at line 42'"
+    description: "Debug error with context"
+
+  - command: "/test generate src/vsa.zig"
+    description: "Generate tests for VSA module"
+
+  - command: "/optimize ternary src/forward_pass.zig"
+    description: "Optimize using ternary operations"
+
+  - command: "/refactor rename getVec getVector --scope project"
+    description: "Rename symbol across project"
+
+  - command: "/docs generate src/sdk.zig"
+    description: "Generate API documentation"
+
+  - command: "/deploy wasm --optimize"
+    description: "Deploy as optimized WASM"
+
+# ============================================================================
+# INTEGRATION POINTS
+# ============================================================================
+
+integration:
+  - target: vibee_parser.zig
+    description: "Parse VIBEE specifications"
+
+  - target: zig_codegen.zig
+    description: "Generate Zig code from specs"
+
+  - target: vsa.zig
+    description: "VSA operations for semantic understanding"
+
+  - target: sdk.zig
+    description: "High-level API for code manipulation"
+
+  - target: vm.zig
+    description: "Ternary VM for execution"
+
+  - target: http_server.zig
+    description: "HTTP API server"
+
+  - target: gguf_chat.zig
+    description: "Chat with GGUF models"

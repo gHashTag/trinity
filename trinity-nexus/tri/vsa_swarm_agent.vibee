@@ -1,0 +1,318 @@
+# ============================================================================
+# VSA Swarm Agent - Production Trinity Component
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_swarm_agent
+version: "1.0.0"
+language: zig
+module: vsa_swarm_agent
+
+description: |
+  Production VSA (Vector Symbolic Architecture) swarm agent for Trinity.
+  Agents communicate via hypervector similarity, form consensuses,
+  and self-heal using phi-spiral planning.
+
+constants:
+  HYPERVECTOR_DIM: 10000
+  NUM_AGENTS: 33
+  CONSENSUS_THRESHOLD: 0.8
+  PHI: 1.618033988749895
+  TAU: 6.283185307179586
+  HEAL_THRESHOLD: 0.618
+
+types:
+  HyperVector:
+    description: "Ternary hypervector [-1, 0, +1]^N"
+    fields:
+      data: List<Int>
+      dimension: Int
+
+  AgentState:
+    description: "Current agent state"
+    enum:
+      - idle
+      - processing
+      - consensus
+      - healing
+
+  AgentMessage:
+    description: "Message between agents"
+    fields:
+      sender_id: Int
+      receiver_id: Int
+      hypervector: HyperVector
+      timestamp: Int
+      message_type: String
+
+  ConsensusResult:
+    description: "Result of consensus vote"
+    fields:
+      agreement: Float
+      decision_vector: HyperVector
+      participants: List<Int>
+
+  SpiralPlan:
+    description: "Phi-spiral planning trajectory"
+    fields:
+      points: List<List<Float>>
+      current_step: Int
+      total_steps: Int
+
+  SwarmConfig:
+    description: "Swarm configuration"
+    fields:
+      num_agents: Int
+      hypervector_dim: Int
+      consensus_threshold: Float
+      heal_threshold: Float
+
+  SwarmStats:
+    description: "Swarm statistics"
+    fields:
+      total_agents: Int
+      active_agents: Int
+      idle_agents: Int
+      processing_agents: Int
+      consensus_agents: Int
+      healing_agents: Int
+      avg_similarity: Float
+
+behaviors:
+  - name: initSwarm
+    given: swarm configuration
+    when: Initializing agent swarm
+    then: Return initialized agents with unique hypervectors
+    implementation: |
+        pub fn initSwarm(config: SwarmConfig) !void {
+            _ = config;
+        }
+
+  - name: agentBind
+    given: agent hypervector, task vector
+    when: Associating agent with task
+    then: Return bound hypervector using VSA bind operation
+    implementation: |
+        pub fn agentBind(agent: *const HyperVector, task: *const HyperVector) HyperVector {
+            _ = agent;
+            _ = task;
+            return HyperVector{};
+        }
+
+  - name: agentUnbind
+    given: bound hypervector, task vector
+    when: Retrieving agent signature
+    then: Return agent hypervector using VSA unbind
+    implementation: |
+        pub fn agentUnbind(bound: *const HyperVector, task: *const HyperVector) HyperVector {
+            _ = bound;
+            _ = task;
+            return HyperVector{};
+        }
+
+  - name: swarmBundle
+    given: list of agent hypervectors
+    when: Computing majority consensus
+    then: Return bundled hypervector using VSA bundle
+    implementation: |
+        pub fn swarmBundle(vectors: []const HyperVector) HyperVector {
+            _ = vectors;
+            return HyperVector{};
+        }
+
+  - name: cosineSimilarity
+    given: two hypervectors
+    when: Measuring similarity
+    then: Return similarity in [-1, 1]
+    implementation: |
+        pub fn cosineSimilarity(a: *const HyperVector, b: *const HyperVector) f32 {
+            _ = a;
+            _ = b;
+            return 0.0;
+        }
+
+  - name: consensusVote
+    given: agent opinions as hypervectors
+    when: Reaching consensus decision
+    then: Return ConsensusResult with agreement score
+    implementation: |
+        pub fn consensusVote(opinions: []const HyperVector) ConsensusResult {
+            _ = opinions;
+            return ConsensusResult{};
+        }
+
+  - name: phiSpiralPlan
+    given: current state, goal state
+    when: Planning trajectory
+    then: Return SpiralPlan with phi-proportioned steps
+    implementation: |
+        pub fn phiSpiralPlan(start: *const HyperVector, goal: *const HyperVector, steps: usize) SpiralPlan {
+            _ = start;
+            _ = goal;
+            _ = steps;
+            return SpiralPlan{};
+        }
+
+  - name: executeSpiralStep
+    given: SpiralPlan, current step
+    when: Moving along trajectory
+    then: Return intermediate hypervector
+    implementation: |
+        pub fn executeSpiralStep(plan: SpiralPlan, step: usize) HyperVector {
+            _ = plan;
+            _ = step;
+            return HyperVector{};
+        }
+
+  - name: selfHeal
+    given: agent state, neighbor states
+    when: Detecting agent failure
+    then: Return healed state using neighbor consensus
+    implementation: |
+        pub fn selfHeal(agent: *const HyperVector, neighbors: []const HyperVector) HyperVector {
+            _ = agent;
+            _ = neighbors;
+            return HyperVector{};
+        }
+
+  - name: detectFailure
+    given: agent hypervector, expected pattern
+    when: Checking agent health
+    then: Return true if similarity < threshold
+    implementation: |
+        pub fn detectFailure(agent: *const HyperVector, expected: *const HyperVector, threshold: f32) bool {
+            _ = agent;
+            _ = expected;
+            _ = threshold;
+            return false;
+        }
+
+  - name: sendMessage
+    given: sender id, receiver id, hypervector
+    when: Communicating between agents
+    then: Deliver message to receiver queue
+    implementation: |
+        pub fn sendMessage(sender: usize, receiver: usize, vec: *const HyperVector) !void {
+            _ = sender;
+            _ = receiver;
+            _ = vec;
+        }
+
+  - name: receiveMessage
+    given: agent id
+    when: Processing incoming messages
+    then: Return next message from queue or null
+    implementation: |
+        pub fn receiveMessage(agent_id: usize) ?AgentMessage {
+            _ = agent_id;
+            return null;
+        }
+
+  - name: permuteVector
+    given: hypervector, rotation count
+    when: Generating position-dependent encoding
+    then: Return cyclically permuted vector
+    implementation: |
+        pub fn permuteVector(vec: HyperVector, count: usize) HyperVector {
+            _ = vec;
+            _ = count;
+            return HyperVector{};
+        }
+
+  - name: randomHyperVector
+    given: dimension, seed
+    when: Creating new agent identity
+    then: Return random ternary hypervector
+    implementation: |
+        pub fn randomHyperVector(dimension: usize, seed: u64) HyperVector {
+            _ = dimension;
+            _ = seed;
+            return HyperVector{};
+        }
+
+  - name: getAgentState
+    given: agent id
+    when: Querying agent status
+    then: Return current AgentState
+    implementation: |
+        pub fn getAgentState(agent_id: usize) AgentState {
+            _ = agent_id;
+            return .idle;
+        }
+
+  - name: setAgentState
+    given: agent id, new state
+    when: Updating agent status
+    then: Update agent state
+    implementation: |
+        pub fn setAgentState(agent_id: usize, state: AgentState) void {
+            _ = agent_id;
+            _ = state;
+        }
+
+  - name: getSwarmStats
+    given: none
+    when: Querying swarm metrics
+    then: Return statistics about agent states
+    implementation: |
+        pub fn getSwarmStats() SwarmStats {
+            return SwarmStats{};
+        }
+
+test_cases:
+  - name: bind_unbind_roundtrip
+    given: "agent A, task T"
+    expected: "unbind(bind(A, T), T) ≈ A (similarity > 0.9)"
+
+  - name: bundle_converges
+    given: "10 similar vectors"
+    expected: "bundle amplifies common signal"
+
+  - name: consensus_agreement
+    given: "33 agents, 80% agree"
+    expected: "consensus.agreement > 0.8"
+
+  - name: phi_spiral_steps
+    given: "start, goal, 10 steps"
+    expected: "steps follow phi progression"
+
+  - name: self_heal_recovers
+    given: "failed agent, 5 healthy neighbors"
+    expected: "healed state similar to neighbors"
+
+  - name: message_delivery
+    given: "agent 0 sends to agent 5"
+    expected: "agent 5 receives message"
+
+cli:
+  flags:
+    - name: num-agents
+      short: n
+      type: Int
+      default: 33
+      description: Number of swarm agents
+
+    - name: dimension
+      short: d
+      type: Int
+      default: 10000
+      description: Hypervector dimension
+
+    - name: consensus-threshold
+      short: c
+      type: Float
+      default: 0.8
+      description: Minimum agreement for consensus
+
+    - name: interactive
+      short: i
+      type: Bool
+      default: false
+      description: Run in interactive mode
+
+spinner_frames:
+  - "◌"
+  - "◎"
+  - "◉"
+  - "◎"

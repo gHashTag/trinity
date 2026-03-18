@@ -1,0 +1,124 @@
+name: mcp_rag
+version: "1.0.0"
+language: zig
+module: mcp_rag
+description: RAG (Retrieval-Augmented Generation) MCP tools for knowledge management and vector search
+
+types:
+  RAGConfig:
+    description: RAG system configuration
+    fields:
+      embedding_model: String
+      vector_db_url: String
+      chunk_size: Int
+      chunk_overlap: Int
+      top_k: Int
+
+  Document:
+    description: Document for indexing
+    fields:
+      id: String
+      content: String
+      metadata: Map<String, String>
+      source: String
+      created_at: String
+
+  Chunk:
+    description: Text chunk with embedding
+    fields:
+      id: String
+      document_id: String
+      content: String
+      embedding: List<Float>
+      position: Int
+      metadata: Map<String, String>
+
+  SearchResult:
+    description: Search result with relevance score
+    fields:
+      chunk: Chunk
+      score: Float
+      document: Document
+
+  Embedding:
+    description: Text embedding vector
+    fields:
+      text: String
+      vector: List<Float>
+      model: String
+      dimensions: Int
+
+  Collection:
+    description: Document collection
+    fields:
+      id: String
+      name: String
+      description: String
+      document_count: Int
+      chunk_count: Int
+      created_at: String
+
+  IndexStats:
+    description: Index statistics
+    fields:
+      total_documents: Int
+      total_chunks: Int
+      total_size_bytes: Int
+      last_updated: String
+
+behaviors:
+  - name: document_management
+  - name: index_document
+  - name: config
+  - name: document
+  - name: delete_document
+  - name: config
+  - name: document_id
+  - name: get_document
+  - name: config
+  - name: document_id
+  - name: list_documents
+  - name: config
+  - name: limit
+  - name: offset
+  - name: search_operations
+  - name: search
+  - name: config
+  - name: query
+  - name: search_with_filter
+  - name: config
+  - name: query
+  - name: filters
+  - name: semantic_search
+  - name: config
+  - name: query
+  - name: threshold
+  - name: embedding_operations
+  - name: create_embedding
+  - name: config
+  - name: text
+  - name: batch_create_embeddings
+  - name: config
+  - name: texts
+  - name: collection_management
+  - name: create_collection
+  - name: config
+  - name: name
+  - name: description
+  - name: delete_collection
+  - name: config
+  - name: collection_id
+  - name: get_index_stats
+  - name: config
+  - name: index_document
+  - name: delete_document
+  - name: get_document
+  - name: list_documents
+  - name: search
+  - name: search_with_filter
+  - name: semantic_search
+  - name: create_embedding
+  - name: batch_create_embeddings
+  - name: create_collection
+  - name: delete_collection
+  - name: get_index_stats

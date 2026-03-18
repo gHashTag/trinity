@@ -1,0 +1,26 @@
+name: tri_biology
+version: "14.0.0"
+language: zig
+module: tri.biology
+
+description: |
+  Sacred Biology — CLI Commands.
+
+  DNA, RNA, and protein analysis with sacred mathematics.
+  DNA is a double golden spiral (34 A pitch).
+
+  Commands:
+    tri bio          — biology dashboard
+    tri bio dna      — DNA analysis with phi-spiral
+    tri bio rna      — RNA secondary structure
+    tri bio protein  — protein folding angles
+    tri bio codons   — codon table with sacred numerology
+
+behaviors:
+  - name: runBiologyCommand
+    given: Allocator and args slice
+    when: User runs `tri bio <subcommand>`
+    then: Dispatches to biology subcommand handler
+
+export_functions:
+  - runBiologyCommand

@@ -1,0 +1,48 @@
+name: nexus_006_network
+version: "1.0.0"
+language: zig
+module: trinity-network
+
+description: >
+  NEXUS-006: Network module migration to trinity-nexus/network/src/.
+  DHT routing, P2P communication, sharding, consensus, repair,
+  distributed transactions, token economics, monitoring.
+  52 files from src/trinity_node/ + 7 from src/vibeec/, src/firebird/, src/tvc/, src/.
+
+types:
+  NetworkModule:
+    fields:
+      name: String
+      source_dirs: List<String>
+      file_count: Int
+      line_count: Int
+      categories: List<String>
+
+  MigrationManifest:
+    fields:
+      source: String
+      destination: String
+      files_copied: Int
+      self_contained: Int
+      deferred: Int
+
+behaviors:
+  - name: migrate_network_files
+    given: Source files in src/trinity_node/, src/vibeec/, src/firebird/, src/tvc/, src/
+    when: NEXUS-006 migration executed
+    then: 59 files copied to trinity-nexus/network/src/
+
+  - name: verify_imports
+    given: Copied files in trinity-nexus/network/src/
+    when: Static import analysis run
+    then: Self-contained vs external dependency report generated
+
+  - name: update_root_exports
+    given: Verified module files
+    when: root.zig updated with pub exports
+    then: All self-contained modules exported, deferred modules commented
+
+  - name: validate_structure
+    given: Complete network module
+    when: Directory listing verified
+    then: All 59 files present with correct structure

@@ -1,0 +1,41 @@
+[cell]
+id = "trinity.reality"
+name = "Reality Model"
+version = "1.0.0"
+kind = "library"
+path = "src/reality"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Hierarchical reality model with 140 sacred formulas"
+capabilities = ["vsa", "reality", "sacred-geometry"]
+files = 1
+tests = 12
+owner = "agent:ralph"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = []
+exports = ["formulaCount", "startFormulaId", "displayName", "emoji", "color"]
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "write"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = "true"
+signature = "sha256:18d2b575172746ab3678a4e0ba3f5435fea55e1b9fd0a8911f9d8427ea69de53"

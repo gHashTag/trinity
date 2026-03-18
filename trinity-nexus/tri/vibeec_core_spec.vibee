@@ -1,0 +1,128 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+  Spec:
+    description: Complete specification from spec.yml
+    fields:
+      name: String
+      version: String
+      description: String
+      types: List(TypeDef)
+      functions: List(FunctionSpec)
+      behaviors: List(Behavior)
+      dependencies: List(String)
+
+  TypeDef:
+    description: Custom type definition
+    fields:
+      name: String
+      description: String
+      fields: List(#(String, String))
+
+  FunctionSpec:
+    description: Function specification
+    fields:
+      name: String
+      signature: String
+      description: String
+      examples: List(String)
+
+  Behavior:
+    description: Behavior-driven specification
+    fields:
+      name: String
+      given: String
+      when: String
+      then: String
+      test_cases: List(TestCase)
+
+  TestCase:
+    description: Individual test case
+    fields:
+      name: String
+      input: String
+      expected: String
+
+  GenerationResult:
+    description: Result of code generation
+    fields:
+      code: String
+      tests: String
+      docs: String
+      stats: GenerationStats
+
+  GenerationStats:
+    description: Statistics about generation
+    fields:
+      spec_lines: Int
+      code_lines: Int
+      test_lines: Int
+      doc_lines: Int
+      generation_time_ms: Int
+      speedup_factor: Float
+
+behaviors:
+  - name: parse_spec_yaml
+    given: A valid spec.yml file exists
+    when: Parser reads the file
+    then: Spec structure is created successfully
+  - name: parse_simple_spec
+  - name: parse_spec_with_types
+
+types:
+
+behaviors:
+  - name: create_user
+    given: Valid user data
+    when: create_user is called
+    then: User is created successfully
+  - name: generate_code_from_spec
+    given: A parsed Spec structure
+    when: Code generator processes the spec
+    then: Valid Gleam code is generated
+  - name: generate_empty_module
+  - name: generate_module_with_types
+  - name: generate_module_with_functions
+  - name: generate_tests_from_spec
+    given: A spec with test_cases
+    when: Test generator processes the spec
+    then: Complete test suite is generated
+  - name: generate_test_for_behavior
+  - name: generate_multiple_tests
+  - name: generate_docs_from_spec
+    given: A spec with descriptions
+    when: Doc generator processes the spec
+    then: Markdown documentation is generated
+  - name: generate_module_docs
+  - name: generate_function_docs
+  - name: watch_spec_changes
+    given: Watch mode is enabled
+    when: spec.yml file changes
+    then: Code is automatically regenerated
+  - name: detect_file_change
+  - name: regenerate_on_change
+  - name: run_cli_command
+    given: VIBEEC CLI is installed
+    when: User runs vibeec command
+    then: Appropriate action is executed
+  - name: generate_command
+  - name: watch_command
+  - name: init_command
+  - name: parse_spec_file
+  - name: parse_yaml_to_spec
+  - name: generate_code
+  - name: generate_header
+  - name: generate_types
+  - name: generate_functions
+  - name: generate_behaviors
+  - name: generate_tests
+  - name: generate_test_case
+  - name: generate_docs
+  - name: watch_file
+  - name: run_cli
+  - name: init_spec_template
+  - name: calculate_stats
+  - name: validate_spec

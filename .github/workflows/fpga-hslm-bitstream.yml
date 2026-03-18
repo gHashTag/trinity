@@ -1,0 +1,135 @@
+# HSLM Full Pipeline Bitstream Generation
+# Runs openXC7 toolchain (Yosys + nextpnr + fasm2frames + xc7frames2bit)
+# on native x86_64 Ubuntu runner — ARM Mac Rosetta too slow for nextpnr.
+#
+# Trigger: workflow_dispatch (manual) or push to fpga/openxc7-synth/*.v
+
+name: FPGA HSLM Bitstream
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'fpga/openxc7-synth/hslm_full_top.v'
+      - 'fpga/openxc7-synth/tmu.v'
+      - 'fpga/openxc7-synth/tmu_top.v'
+      - 'fpga/openxc7-synth/trinity_block.v'
+
+jobs:
+  bitstream:
+    name: Generate HSLM Bitstream
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Restore column weight files
+        run: |
+          # Column .mem files are tracked in git, wide files are generated
+          cd fpga/openxc7-synth
+          ls -la *.mem | head -5
+
+      - name: Build weight converter
+        run: |
+          cc -O2 -o fpga/tools/weight_col2wide fpga/tools/weight_col2wide.c
+
+      - name: Generate wide .mem files
+        run: |
+          cd fpga/openxc7-synth
+          for prefix in tmu_w_b1_up tmu_w_b1_down tmu_w_b2_up tmu_w_b2_down tmu_w_b3_up tmu_w_b3_down lm_head; do
+            ../tools/weight_col2wide "$prefix" 16
+          done
+          # Create dummy files for default TMU parameters (needed by Yosys elaboration)
+          echo "00000000000000000000000000000000" > tmu_w_wide.mem
+          echo "00000000000000000000000000000000" > tmu_w_up_wide.mem
+          echo "00000000000000000000000000000000" > tmu_w_down_wide.mem
+
+      - name: Pull openXC7 Docker image
+        run: docker pull regymm/openxc7:latest
+
+      - name: Yosys synthesis
+        run: |
+          docker run --rm \
+            -v "$PWD/fpga/openxc7-synth:/work" -w /work \
+            regymm/openxc7 \
+            yosys -p "
+              read_verilog tmu.v tmu_top.v ternary_activation.v ternary_rmsnorm.v \
+                trinity_block.v embedding_lookup.v argmax_unit.v hslm_full_top.v;
+              synth_xilinx -flatten -abc9 -arch xc7 -top hslm_full_top;
+              setundef -zero -params;
+              write_json hslm_full_top.json
+            " 2>&1 | tee /tmp/yosys.log
+          grep "Estimated number of LCs" /tmp/yosys.log
+
+      - name: Generate chipdb
+        run: |
+          mkdir -p fpga/openxc7-synth/chipdb
+          docker run --rm \
+            -v "$PWD/fpga/openxc7-synth:/work" -w /work \
+            regymm/openxc7 \
+            bash -c "
+              cd /nextpnr-xilinx && \
+              python3 xilinx/python/bbaexport.py --device xc7a100tfgg676-1 --bba /work/chipdb/xc7a100tfgg676-1.bba && \
+              bbasm -l /work/chipdb/xc7a100tfgg676-1.bba /work/chipdb/xc7a100tfgg676-1.bin
+            "
+          ls -lh fpga/openxc7-synth/chipdb/xc7a100tfgg676-1.bin
+
+      - name: nextpnr place and route
+        run: |
+          docker run --rm \
+            -v "$PWD/fpga/openxc7-synth:/work" -w /work \
+            regymm/openxc7 \
+            nextpnr-xilinx \
+              --chipdb /work/chipdb/xc7a100tfgg676-1.bin \
+              --xdc /work/hslm_full_top.xdc \
+              --json /work/hslm_full_top.json \
+              --write /work/hslm_full_top_routed.json \
+              --fasm /work/hslm_full_top.fasm \
+              --freq 81.25 --seed 1 --placer sa --force 2>&1 | tee /tmp/nextpnr.log
+          grep "Max frequency" /tmp/nextpnr.log || true
+
+      - name: fasm2frames + xc7frames2bit
+        run: |
+          docker run --rm \
+            -v "$PWD/fpga/openxc7-synth:/work" -w /work \
+            regymm/openxc7 \
+            bash -c "
+              source /prjxray/env/bin/activate && \
+              fasm2frames \
+                --db-root /nextpnr-xilinx/xilinx/external/prjxray-db/artix7 \
+                --part xc7a100tfgg676-1 \
+                /work/hslm_full_top.fasm \
+                /work/hslm_full_top.frames && \
+              /prjxray/build/tools/xc7frames2bit \
+                --part_file /nextpnr-xilinx/xilinx/external/prjxray-db/artix7/xc7a100tfgg676-1/part.yaml \
+                --part_name xc7a100tfgg676-1 \
+                --frm_file /work/hslm_full_top.frames \
+                --output_file /work/hslm_full_top.bit
+            "
+
+      - name: Verify bitstream
+        run: |
+          ls -lh fpga/openxc7-synth/hslm_full_top.bit
+          file fpga/openxc7-synth/hslm_full_top.bit
+
+      - name: Upload bitstream
+        uses: actions/upload-artifact@v4
+        with:
+          name: hslm-bitstream
+          path: |
+            fpga/openxc7-synth/hslm_full_top.bit
+            fpga/openxc7-synth/hslm_full_top.fasm
+          retention-days: 30
+
+      - name: Upload synthesis reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: synthesis-reports
+          path: |
+            /tmp/yosys.log
+            /tmp/nextpnr.log
+          retention-days: 7

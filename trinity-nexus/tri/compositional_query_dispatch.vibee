@@ -1,0 +1,57 @@
+name: compositional_query_dispatch
+version: "1.0.0"
+language: zig
+module: compositional_query_dispatch
+description: "Level 11.20 — Compositional Query Dispatch. Tests a unified query interface handling 4 distinct query types: direct lookup (1-hop), inverse lookup (permutation-based), multi-relation per entity, and analogy-style reasoning. Uses 20 entities (animals, habitats, foods, traits) with per-relation memories and permutation inverse encoding. Direct 10/10, Inverse 5/5, Multi-relation 5/5, Analogies 0/4. Total 20/24 (83%)."
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 20
+  SHIFT_HABITAT_INV: 10
+
+types:
+  DispatchQuery:
+    fields:
+      query_type: String
+      subject: String
+      answer: String
+      correct: Bool
+      description: "A compositional query dispatched through a unified interface."
+
+behaviors:
+  - name: directLookup
+    given: 20 entities (5 animals, 5 habitats, 5 foods, 5 traits). Per-relation memories for lives_in, eats, has_trait.
+    when: Query lives_in(animal) for 5 animals and has_trait(animal) for 5 animals
+    then: 10/10 (100%) — all direct 1-hop lookups resolve correctly
+
+  - name: inverseLookup
+    given: habitat_inv_mem built with permutation shift=10 for inverse relation (habitat→animal).
+    when: Query animal_in(habitat) for all 5 habitats using permuted comparison
+    then: 5/5 (100%) — permutation-based inverse lookups all correct
+
+  - name: multiRelation
+    given: Same entities with lives_in and eats memories.
+    when: For each animal, query both lives_in AND eats simultaneously
+    then: 5/5 (100%) — each animal resolves both habitat and food correctly
+
+  - name: analogyQueries
+    given: Entity vectors used for analogy-style reasoning (A:B :: C:?).
+    when: Compute relation = unbind(B,A), apply to C, find closest entity
+    then: 0/4 (0%) — analogy approach requires shared memory structure, per-relation memories break analogy signal
+
+test_cases:
+  - name: test_direct_10_10
+    input: "Run 10 direct 1-hop lookup queries"
+    expected: "10/10 (100%)"
+
+  - name: test_inverse_5_5
+    input: "Run 5 inverse permutation-based lookup queries"
+    expected: "5/5 (100%)"
+
+  - name: test_multi_relation_5_5
+    input: "Run 5 multi-relation queries per entity"
+    expected: "5/5 (100%)"
+
+  - name: test_total_20_24
+    input: "Total compositional query dispatch accuracy"
+    expected: "20/24 (83%)"

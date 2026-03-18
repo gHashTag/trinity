@@ -1,0 +1,187 @@
+name: vsa_uart_operations
+version: "3.0.0"
+language: varlog
+module: vsa_uart_top
+
+types:
+  # Trit encoding (2 bits per trit)
+  Trit:
+    type: enum
+    values:
+      - NEGATIVE  # -1 (10 binary)
+      - ZERO      #  0 (00 binary)
+      - POSITIVE  # +1 (01 binary)
+    fields:
+      - name: value
+        type: u2
+
+  # VSA Commands (Day 3)
+  VsaCommand:
+    type: enum
+    values:
+      - BIND    # 0x02: Bind two vectors
+      - BUNDLE  # 0x03: Bundle two vectors
+    fields:
+      - name: cmd_byte
+        type: u8
+
+  # Vector format (256 trits = 64 bytes)
+  Vector256:
+    type: struct
+    fields:
+      - name: data
+        type: u8
+        size: 64  # 256 trits × 2 bits/trit = 512 bits = 64 bytes
+
+  # UART Packet format
+  UartPacket:
+    type: struct
+    fields:
+      - name: header
+        type: u8
+        const: 0xAA  # Sync byte
+      - name: cmd
+        type: u8     # 0x02=BIND, 0x03=BUNDLE
+      - name: len_h
+        type: u8     # Length high byte (always 0x00)
+      - name: len_l
+        type: u8     # Length low byte (0x80 for 128 bytes)
+      - name: vector_a
+        type: Vector256
+      - name: vector_b
+        type: Vector256
+      - name: crc_l
+        type: u8     # CRC-16 low byte
+      - name: crc_h
+        type: u8     # CRC-16 high byte
+
+  # Response format
+  VsaResponse:
+    type: struct
+    fields:
+      - name: status
+        type: u8     # 0x00=OK, 0xFF=CRC error, 0xFE=invalid cmd
+      - name: result
+        type: Vector256
+      - name: crc_l
+        type: u8
+      - name: crc_h
+        type: u8
+
+behaviors:
+  - name: decode_bind_command
+    given: UART receiver receives BIND command (0x02)
+    when: header equals 0xAA and cmd equals 0x02
+    then:
+      - enter DATA state to receive 128 bytes
+      - store first 64 bytes in vector_a buffer
+      - store next 64 bytes in vector_b buffer
+      - receive and verify CRC-16
+      - trigger bind operation
+
+  - name: decode_bundle_command
+    given: UART receiver receives BUNDLE command (0x03)
+    when: header equals 0xAA and cmd equals 0x03
+    then:
+      - enter DATA state to receive 128 bytes
+      - store first 64 bytes in vector_a buffer
+      - store next 64 bytes in vector_b buffer
+      - receive and verify CRC-16
+      - trigger bundle operation
+
+  - name: execute_bind_operation
+    given: Two vectors received and CRC verified
+    when: bind trigger activated
+    then:
+      - for each trit i from 0 to 255
+      - result[i] = bind_trit(vector_a[i], vector_b[i])
+      - bind_trit truth table:
+        - (-1, -1) → +1  (negative × negative = positive)
+        - (-1,  0) →  0  (zero absorbs)
+        - (-1, +1) → -1  (opposing signs = negative)
+        - ( 0,  x) →  0  (zero absorbs all)
+        - (+1, -1) → -1  (opposing signs = negative)
+        - (+1,  0) →  0  (zero absorbs)
+        - (+1, +1) → +1  (positive × positive = positive)
+      - pipeline result to output register
+
+  - name: execute_bundle_operation
+    given: Two vectors received and CRC verified
+    when: bundle trigger activated
+    then:
+      - for each trit i from 0 to 255
+      - result[i] = bundle_trit(vector_a[i], vector_b[i])
+      - bundle_trit truth table (majority vote):
+        - (-1, -1) → -1  (both negative)
+        - (-1,  0) → -1  (negative + zero = negative)
+        - (-1, +1) →  0  (opposing cancel)
+        - ( 0, -1) → -1  (zero + negative = negative)
+        - ( 0,  0) →  0  (both zero)
+        - ( 0, +1) → +1  (zero + positive = positive)
+        - (+1, -1) →  0  (opposing cancel)
+        - (+1,  0) → +1  (positive + zero = positive)
+        - (+1, +1) → +1  (both positive)
+      - pipeline result to output register
+
+  - name: calculate_crc16
+    given: Any packet data
+    when: data byte received
+    then:
+      - update CRC-16 accumulator with polynomial 0x1021
+      - initial value: 0xFFFF
+      - algorithm: for each bit, if MSB set then shift and XOR with 0x1021
+      - final CRC transmitted as little-endian (low byte first)
+
+  - name: verify_crc
+    given: Complete packet received
+    when: CRC bytes received
+    then:
+      - compare calculated CRC with received CRC
+      - if match: proceed to EXECUTE state
+      - if mismatch: send error response (status 0xFF)
+
+  - name: send_vsa_response
+    given: VSA operation complete
+    when: result ready in output register
+    then:
+      - send status byte 0x00 (OK)
+      - send 64 bytes of result data
+      - send CRC-16 of (status + data)
+      - return to IDLE state
+
+  - name: uart_state_machine_day3
+    given: 50MHz clock and UART at 115200 baud
+    when: system running
+    then:
+      - IDLE: wait for header 0xAA
+      - HDR: receive and verify sync byte
+      - CMD: receive command byte (0x02 or 0x03)
+      - LEN_H: receive length high (should be 0x00)
+      - LEN_L: receive length low (should be 0x80)
+      - DATA: receive 128 bytes (64 + 64)
+      - CRC_L: receive CRC low byte
+      - CRC_H: receive CRC high byte
+      - CHECK: verify CRC
+      - EXECUTE: run bind or bundle operation
+      - RESPONSE: send result back via UART
+
+  - name: trit_encoding
+    given: Trit value
+    when: encoding for UART transmission
+    then:
+      - NEGATIVE (-1) → 10 binary (0x02)
+      - ZERO (0)     → 00 binary (0x00)
+      - POSITIVE (+1) → 01 binary (0x01)
+      - 11 binary is reserved (unused)
+
+  - name: resource_estimates
+    given: 256-dimension VSA operations
+    when: synthesized to Artix-7
+    then:
+      - UART RX: ~80 LUTs, 40 FFs
+      - UART TX: ~60 LUTs, 35 FFs
+      - CRC-16: ~50 LUTs, 20 FFs
+      - Command decoder: ~120 LUTs, 180 FFs
+      - Bind 256-dim: ~256 LUTs, 514 FFs
+      - Bundle 256-dim: ~512 LUTs, 514 FFs
+      - Total: ~1078 LUTs, ~1303 FFs (< 1% of FPGA)

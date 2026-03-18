@@ -1,0 +1,50 @@
+name: string_dualities
+version: "1.1.0"
+language: zig
+module: string.dualities
+
+description: |
+  String Dualities — S/T/U duality coupling constants via golden ratio.
+
+  g_s at φ-point = φ/π ≈ 0.51503    (S-duality coupling)
+  S-dual coupling = 1/g_s = π/φ     (inverse under S-duality)
+  Self-dual check: true when |g_s - 1| < tolerance
+
+  Uses SacredConstants for PHI.
+
+types:
+  CouplingConstant:
+    fields: {}
+
+behaviors:
+  - name: stringCouplingAtPhi
+    given: No input
+    when: Called
+    then: Returns g_s = φ/π ≈ 0.51503
+    note: S-duality coupling at golden ratio fixed point
+
+  - name: sDualCoupling
+    given: No input
+    when: Called
+    then: Returns 1/g_s = π/φ ≈ 1.94091
+    note: S-dual partner of stringCouplingAtPhi
+
+  - name: isSelfDual
+    given: g_s (f64) — a coupling constant
+    when: Called
+    then: Returns true if |g_s - 1/g_s| < 0.01
+    note: Self-dual point is g_s = 1
+
+tests:
+  - "stringCouplingAtPhi is phi/pi"
+  - "S-dual coupling is pi/phi"
+  - "S-duality product is 1"
+  - "self-dual at g_s=1"
+
+export_types:
+  - CouplingConstant
+
+export_functions:
+  - stringCouplingAtPhi
+  - sDualCoupling
+  - isSelfDual

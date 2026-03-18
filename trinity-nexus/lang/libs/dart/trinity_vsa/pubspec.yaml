@@ -1,0 +1,7 @@
+name: trinity_vsa
+description: Vector Symbolic Architecture with balanced ternary arithmetic
+version: 0.1.0
+homepage: https://github.com/gHashTag/trinity
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'

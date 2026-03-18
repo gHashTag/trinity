@@ -1,0 +1,56 @@
+name: e2e_negative_tests
+version: "1.0.0"
+language: zig
+module: e2e_negative_tests
+
+types: {}
+
+behaviors:
+  - name: "e2e.negative.job_cancel_nonexistent"
+    given: "Fresh JobManager, no jobs started"
+    when: "cancel('nonexistent_job_id_12345') is called"
+    then: "Returns false without error (graceful no-op)"
+
+  - name: "e2e.negative.status_nonexistent_job"
+    given: "Fresh JobManager"
+    when: "status(allocator, 'fake_job_id_xyz') is called"
+    then: "Returns null (not an error)"
+
+  - name: "e2e.negative.logs_nonexistent_job"
+    given: "Fresh JobManager"
+    when: "getLogs(allocator, 'fake_job_id_xyz') is called"
+    then: "Returns non-null JobLogs with stdout.len==0 and stderr.len==0 (empty strings, not crash)"
+
+  - name: "e2e.negative.artifacts_nonexistent_job"
+    given: "Fresh JobManager"
+    when: "getArtifacts(allocator, 'fake_job_id_xyz') is called"
+    then: "Returns empty slice (len==0) without error"
+
+  - name: "e2e.negative.job_ids_are_unique"
+    given: "Fresh JobManager"
+    when: "Manager is inspected and .trinity/jobs directory is opened"
+    then: "Job manager initializes successfully; .trinity/jobs directory exists on disk"
+
+  - name: "e2e.negative.empty_job_manager_operations"
+    given: "Fresh JobManager with no jobs"
+    when: "cancel, status, getLogs, getArtifacts all called with arbitrary job ID"
+    then: |
+      All operations handle empty state gracefully:
+      - cancel returns false
+      - status returns null
+      - getLogs returns non-null with empty stdout and stderr
+      - getArtifacts returns empty list
+
+  - name: "e2e.negative.job_manager_reinit"
+    given: "No precondition"
+    when: "JobManager.init() and .deinit() called 3 times in sequence"
+    then: "No resource leaks; all three init/deinit cycles complete without error"
+
+notes: |
+  These tests are limited to safe (no subprocess) paths due to known bugs:
+  - P0.1: Unknown commands not validated before execution (subprocess crash)
+  - P0.3: Subprocess abort trap causes segfault during cleanup
+  - P0.4: Memory leak in JobManager.init (jobs_dir_path not freed on success path)
+  - P0.5: Double free on working_dir in deinit
+  - P0.6: detectProjectRoot ownership ambiguity
+  Full P1.7 coverage requires P0.x fixes.

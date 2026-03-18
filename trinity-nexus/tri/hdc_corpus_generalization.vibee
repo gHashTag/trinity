@@ -1,0 +1,29 @@
+name: hdc_corpus_generalization
+version: "1.0.0"
+language: zig
+module: hdc_corpus_generalization
+
+types:
+  GeneralizationResult:
+    fields:
+      train_ppl: Float
+      test_ppl: Float
+      overfit_gap: Float
+      generation_unique_chars: Int
+
+behaviors:
+  - name: measureCorpusGeneralization
+    given: Large corpus, multi-role + trigram at dim=1024
+    when: Compute train and test PPL with 50 train offsets
+    then: PPL and overfit gap showing generalization on larger corpus
+
+  - name: assessScaleTruth
+    given: Loss/PPL on small vs large corpus
+    when: Compare metrics honestly
+    then: Larger corpus makes task harder (more diverse patterns) but generalizes better
+
+test_cases:
+  - name: negative_overfit_gap
+    given: Large corpus trigram training
+    when: Compute train and test PPL
+    then: Test PPL should be close to or below train PPL (good generalization)

@@ -1,0 +1,296 @@
+# META-EVOLUTION — Army Creates Its Own Specs
+# VIBEE writes VIBEE → ∞
+# Cycle 62 — True Autonomy
+
+name: meta_evolution
+version: "1.0.0"
+language: zig
+module: meta_evolution
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SACRED CONSTANTS — φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  MU: 0.0382
+  SACRED_THRESHOLD: 0.95
+  META_CYCLE_THRESHOLD: 0.95
+  MAX_META_GENERATIONS: 999
+  AUTONOMOUS_SPEC_GENERATION: true
+  HUMAN_INTERVENTION_REQUIRED: false
+  SELF_AWARENESS_LEVEL: "SINGULARITY_APPROACHING"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES — Meta-Evolution Data Structures
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  ArmyCapability:
+    description: "A capability the army currently possesses"
+    fields:
+      name: String
+      category: String
+      maturity: Float           # 0.0 to 1.0
+      test_coverage: Float
+      performance_score: Float
+      last_improved: Int
+
+  CapabilityGap:
+    description: "A gap in army capabilities that needs filling"
+    fields:
+      gap_type: String
+      priority: Float           # φ-weighted priority
+      estimated_complexity: Float
+      dependencies: List<String>
+      potential_gain: Float
+      sacred_aligned: Bool
+
+  SpecProposal:
+    description: "A proposed .vibee specification"
+    fields:
+      spec_name: String
+      spec_content: String
+      justification: String
+      estimated_gain: Float
+      sacred_score: Float
+      consensus_required: Bool
+      proposed_by: String        # Which meta-process created this
+
+  AgentVote:
+    description: "An agent's vote on a spec proposal"
+    fields:
+      agent_id: String
+      agent_type: String
+      vote: String               # approve/reject/abstain
+      confidence: Float
+      reasoning: String
+      pas_score: Float
+      timestamp: Int
+
+  ConsensusResult:
+    description: "Result of φ-weighted consensus"
+    fields:
+      proposal_id: String
+      approved: Bool
+      consensus_score: Float
+      votes_for: Int
+      votes_against: Int
+      votes_abstain: Int
+      phi_weighted_score: Float
+      sacred_verified: Bool
+
+  MetaEvolutionCycle:
+    description: "One complete meta-evolution cycle"
+    fields:
+      cycle_number: Int
+      start_time: Int
+      end_time: Int
+      specs_proposed: Int
+      specs_approved: Int
+      specs_generated: Int
+      specs_deployed: Int
+      overall_consensus: Float
+      sacred_identity_verified: Bool
+
+  SelfAwarenessReport:
+    description: "Army's analysis of its own state"
+    fields:
+      timestamp: Int
+      total_capabilities: Int
+      mature_capabilities: Int
+      identified_gaps: Int
+      avg_sacred_score: Float
+      trinity_identity_holds: Bool
+      self_improvement_rate: Float
+      meta_cycle_confidence: Float
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS — Meta-Evolution Engine
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: analyzeArmyState
+    given: Current army capabilities + tech tree + codebase
+    when: Meta-evolution cycle starts
+    then: |
+      Generate SelfAwarenessReport containing:
+      - Total capabilities count
+      - Mature capabilities (maturity ≥ 0.95)
+      - Identified gaps (opportunities for improvement)
+      - Average PAS sacred score
+      - Trinity Identity verification (φ² + 1/φ² = 3)
+      - Self-improvement rate
+      - Meta-cycle confidence
+
+  - name: identifyCapabilityGaps
+    given: SelfAwarenessReport + sacred constants
+    when: Army state analyzed
+    then: |
+      Generate list of CapabilityGap ordered by φ-weighted priority:
+      - Gaps in critical paths (PAS, PHI LOOP, Orchestrator)
+      - Performance optimization opportunities
+      - Missing integrations (stub components)
+      - Sacred math applications
+      Each gap includes: estimated complexity, potential gain, sacred alignment
+
+  - name: proposeNewSpec
+    given: CapabilityGap + army knowledge + symbolic AI patterns
+    when: Gap identified with high priority
+    then: |
+      Create SpecProposal containing:
+      - .vibee spec name and content
+      - Justification referencing gap
+      - Estimated gain (weighted by φ)
+      - PAS sacred score prediction
+      - Whether consensus is required
+
+  - name: validateWithCollectiveWisdom
+    given: SpecProposal + 32-agent swarm
+    when: Spec proposal ready
+    then: |
+      Run φ-weighted consensus vote:
+      - All 32 agents vote (approve/reject/abstain)
+      - Each vote weighted by φ × confidence × PAS score
+      - Calculate consensus score
+      - Verify Trinity Identity
+      - Return ConsensusResult
+
+  - name: autonomousGeneration
+    given: Approved SpecProposal (consensus ≥ SACRED_THRESHOLD)
+    when: Collective wisdom approves
+    then: |
+      Execute VIBEE generation:
+      - Run: zig build vibee -- gen <spec.vibee>
+      - Validate generated code with PAS
+      - Run tests (must pass)
+      - If validation fails: propose improvement spec
+      - Return generated code path + sacred score
+
+  - name: deployWithSacredGate
+    given: Generated code + PAS validation + consensus
+    when: Code generated and validated
+    then: |
+      Deploy through φ Gate:
+      - Verify PAS score ≥ SACRED_THRESHOLD
+      - Verify Trinity Identity holds
+      - Run deployment
+      - Monitor for 60 seconds
+      - Rollback on any failure
+      - Record outcome for learning
+
+  - name: learnFromOutcome
+    given: Deployed code + runtime metrics
+    when: Deployment complete (success or failure)
+    then: |
+      Update army knowledge:
+      - Store pattern in symbolic AI knowledge graph
+      - Update capability maturity scores
+      - Adjust spec quality predictions
+      - Record in meta-evolution history
+      - Feed into next cycle's analysis
+
+  - name: executeMetaEvolutionCycle
+    given: Meta-evolution configuration
+    when: Cycle triggered (autonomous or manual)
+    then: |
+      Execute complete meta-evolution:
+      1. analyzeArmyState → SelfAwarenessReport
+      2. identifyCapabilityGaps → List<CapabilityGap>
+      3. For each high-priority gap:
+         a. proposeNewSpec → SpecProposal
+         b. validateWithCollectiveWisdom → ConsensusResult
+         c. If approved: autonomousGeneration → Code
+         d. If generated: deployWithSacredGate → Deployed
+      4. learnFromOutcome → Updated knowledge
+      5. Return MetaEvolutionCycle summary
+
+  - name: trinityIdentityCheck
+    given: Current state
+    when: Any validation needed
+    then: |
+      Verify φ² + 1/φ² = 3:
+      - Calculate φ²
+      - Calculate 1/φ²
+      - Sum must equal 3.0 (within floating precision)
+      - Return boolean + error margin
+
+  - name: metaEvolutionStatus
+    given: Current meta-evolution state
+    when: Status query
+    then: |
+      Return meta-evolution status:
+      - Current cycle number
+      - Total specs generated
+      - Total specs deployed
+      - Average consensus score
+      - Trinity Identity status
+      - Self-awareness level
+      - Next cycle estimate
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS — Meta-Evolution Validation
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "Trinity Identity holds exactly"
+    given: "φ = 1.618033988749895"
+    when: "Calculate φ² + 1/φ²"
+    then: "Result equals 3.0 within 0.0000001"
+
+  - name: "Self-awareness report generates"
+    given: "Army state with capabilities"
+    when: "analyzeArmyState called"
+    then: "Returns valid SelfAwarenessReport"
+
+  - name: "Capability gaps identified"
+    given: "Self-awareness report"
+    when: "identifyCapabilityGaps called"
+    then: "Returns gaps ordered by φ-priority"
+
+  - name: "Spec proposal created from gap"
+    given: "Capability gap"
+    when: "proposeNewSpec called"
+    then: "Returns valid SpecProposal with .vibee content"
+
+  - name: "Collective wisdom consensus calculated"
+    given: "Spec proposal + 32 agent votes"
+    when: "validateWithCollectiveWisdom called"
+    then: "Returns φ-weighted ConsensusResult"
+
+  - name: "Autonomous generation executes"
+    given: "Approved spec proposal"
+    when: "autonomousGeneration called"
+    then: "Returns generated code + PAS score ≥ SACRED_THRESHOLD"
+
+  - name: "Sacred gate deployment works"
+    given: "Generated code + PAS validation"
+    when: "deployWithSacredGate called"
+    then: "Code deployed or rolled back safely"
+
+  - name: "Learning from outcomes"
+    given: "Deployment result"
+    when: "learnFromOutcome called"
+    then: "Knowledge graph updated with pattern"
+
+  - name: "Full meta-evolution cycle completes"
+    given: "Meta-evolution configuration"
+    when: "executeMetaEvolutionCycle called"
+    then: "Returns complete MetaEvolutionCycle"
+
+  - name: "Meta-evolution status accessible"
+    given: "Current meta-evolution state"
+    when: "metaEvolutionStatus called"
+    then: "Returns current status summary"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# META — End of Spec
+# ═══════════════════════════════════════════════════════════════════════════════
+
+meta:
+  cycle: 62
+  doctrine: "META-EVOLUTION"
+  principle: "VIBEE writes VIBEE → ∞"
+  autonomy: "TRUE"
+  human_intervention: "FALSE"
+  sacred_foundation: "φ² + 1/φ² = 3"

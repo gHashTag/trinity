@@ -1,0 +1,16 @@
+# VIBEE Specification (auto-generated)
+name: FPGA_d6_blink_success_LED_D6_on_R23_blinking_at_3Hz_openXC7_too
+version: "1.0.0"
+language: zig
+module: FPGA_d6_blink_success_LED_D6_on_R23_blinking_at_3Hz_openXC7_too
+
+types:
+  GeneratedConfig:
+    fields:
+      task: String
+
+behaviors:
+  - name: execute
+    given: allocator
+    when: task description
+    then: implementation

@@ -1,0 +1,12 @@
+{
+  "timestamp": "mu5_gen_21",
+  "spec": "specs/tri/treesitter/hnsw_core.tri",
+  "link": 7,
+  "link_name": "code_generate",
+  "error_category": "GEN_FAILURE",
+  "error_message": "  Input:  specs/tri/treesitter/hnsw_core.tri\n  Output: generated/hnsw_core.zig\n  AGENT MU: Verification FAILED\n    Error: formatting check failed (run 'zig fmt generated/hnsw_core.zig' to fix)\n    Att",
+  "error_line": 0,
+  "generated_file": "",
+  "fix_attempted": false,
+  "fix_result": ""
+}

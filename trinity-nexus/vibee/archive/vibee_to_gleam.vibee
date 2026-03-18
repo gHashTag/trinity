@@ -1,0 +1,79 @@
+name: vibee_to_gleam
+version: "1.0.0"
+language: zig
+module: vibee_to_gleam
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: compile_file
+    given: Input data provided
+    when: compile_file function called
+    then: Result returned
+    test_cases:
+      - name: test_compile_file
+        input: {}
+        expected: {}
+
+  - name: vibee_to_gleam
+    given: Input data provided
+    when: vibee_to_gleam function called
+    then: Result returned
+    test_cases:
+      - name: test_vibee_to_gleam
+        input: {}
+        expected: {}
+
+  - name: convert_line
+    given: Input data provided
+    when: convert_line function called
+    then: Result returned
+    test_cases:
+      - name: test_convert_line
+        input: {}
+        expected: {}
+
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+    test_cases:
+      - name: test_main
+        input: {}
+        expected: {}
+
+types:
+functions:
+  - name: compile_file
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: vibee_to_gleam
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: convert_line
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: main
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/io
+  # gleam/string
+  # gleam/list
+  # gleam/result
+  # simplifile
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

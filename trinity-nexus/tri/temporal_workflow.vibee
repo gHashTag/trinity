@@ -1,0 +1,434 @@
+# ============================================================================
+# Temporal Workflow Engine - Cycle 52
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: temporal_workflow
+version: "1.0.0"
+language: zig
+module: temporal_workflow
+
+description: |
+  Temporal Workflow Engine — Durable workflow execution with checkpoints,
+  activity scheduling with retry policies, workflow versioning and migration,
+  signal and query support, and child workflow management.
+
+  Architecture:
+    Workflow Execution:
+      Deterministic replay from event history
+      Durable timers surviving process restarts
+      Automatic retry with configurable backoff
+      Workflow-as-code (imperative style)
+      Long-running workflows (hours to months)
+
+    Activity System:
+      Non-deterministic side effects isolated in activities
+      Activity task queues with worker pools
+      Heartbeat for long-running activities
+      Local and remote activity execution
+      Activity timeout and retry policies
+
+    Checkpointing:
+      Periodic state snapshots for fast recovery
+      Incremental checkpoints (delta only)
+      Checkpoint compaction to limit storage
+      Resume from latest checkpoint on restart
+      Checkpoint verification via hash
+
+    Versioning:
+      Workflow definition versions (v1, v2, ...)
+      Patching: run old code for in-flight, new for fresh
+      Migration: transform state from v(n) to v(n+1)
+      Deprecation: mark old versions as end-of-life
+      Compatibility checks before deployment
+
+    Signals & Queries:
+      External signals to running workflows
+      Synchronous queries for workflow state
+      Signal channels with buffering
+      Query handlers registered per workflow
+      Signal-based workflow control (pause/resume/cancel)
+
+    Child Workflows:
+      Parent-child relationship tracking
+      Child cancellation on parent cancel
+      Result propagation to parent
+      Detached children (survive parent)
+      Parallel child execution with join
+
+    Timer System:
+      Durable timers (persist across restarts)
+      Cron schedules for recurring workflows
+      Timer coalescing for efficiency
+      Deadline timers with cancellation
+      Sleep with wake-on-signal
+
+  Safety:
+    - Max workflow duration: 31536000000ms (365 days)
+    - Max activities per workflow: 10000
+    - Max pending activities: 1000
+    - Activity timeout: 300000ms (5 min)
+    - Activity heartbeat timeout: 60000ms
+    - Max retry attempts: 10
+    - Retry initial interval: 1000ms
+    - Retry max interval: 300000ms
+    - Retry backoff coefficient: 2.0
+    - Max child workflows: 100
+    - Max signal buffer: 1000
+    - Checkpoint interval: 100 events
+    - Max checkpoint size: 10485760 (10MB)
+    - Max workflow history: 50000 events
+    - Max concurrent workflows: 10000
+    - Timer resolution: 100ms
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_WORKFLOW_DURATION_MS: 31536000000
+  MAX_ACTIVITIES_PER_WORKFLOW: 10000
+  MAX_PENDING_ACTIVITIES: 1000
+  ACTIVITY_TIMEOUT_MS: 300000
+  ACTIVITY_HEARTBEAT_TIMEOUT_MS: 60000
+  MAX_RETRY_ATTEMPTS: 10
+  RETRY_INITIAL_INTERVAL_MS: 1000
+  RETRY_MAX_INTERVAL_MS: 300000
+  RETRY_BACKOFF_COEFFICIENT: 2.0
+  MAX_CHILD_WORKFLOWS: 100
+  MAX_SIGNAL_BUFFER: 1000
+  CHECKPOINT_INTERVAL_EVENTS: 100
+  MAX_CHECKPOINT_SIZE_BYTES: 10485760
+  MAX_WORKFLOW_HISTORY_EVENTS: 50000
+  MAX_CONCURRENT_WORKFLOWS: 10000
+
+types:
+  WorkflowState:
+    enum:
+      - created
+      - running
+      - paused
+      - completed
+      - failed
+      - cancelled
+      - timed_out
+      - terminated
+
+  ActivityState:
+    enum:
+      - scheduled
+      - started
+      - completed
+      - failed
+      - timed_out
+      - cancelled
+      - retrying
+
+  CheckpointState:
+    enum:
+      - creating
+      - valid
+      - compacting
+      - corrupted
+      - deleted
+
+  TimerType:
+    enum:
+      - sleep
+      - deadline
+      - cron
+      - heartbeat
+      - workflow_timeout
+
+  SignalType:
+    enum:
+      - external
+      - internal
+      - cancel
+      - pause
+      - resume
+
+  VersionState:
+    enum:
+      - active
+      - deprecated
+      - migrating
+      - retired
+
+  WorkflowExecution:
+    fields:
+      workflow_id: Int
+      workflow_type_hash: Int
+      state: WorkflowState
+      version: Int
+      started_ms: Int
+      completed_ms: Int
+      activities_total: Int
+      activities_completed: Int
+      checkpoint_count: Int
+      parent_workflow_id: Int
+
+  ActivityExecution:
+    fields:
+      activity_id: Int
+      workflow_id: Int
+      state: ActivityState
+      attempt: Int
+      max_retries: Int
+      scheduled_ms: Int
+      started_ms: Int
+      timeout_ms: Int
+      last_heartbeat_ms: Int
+
+  Checkpoint:
+    fields:
+      checkpoint_id: Int
+      workflow_id: Int
+      state: CheckpointState
+      event_sequence: Int
+      size_bytes: Int
+      created_ms: Int
+      hash: Int
+      is_incremental: Bool
+
+  WorkflowTimer:
+    fields:
+      timer_id: Int
+      workflow_id: Int
+      timer_type: TimerType
+      fire_at_ms: Int
+      created_ms: Int
+      cancelled: Bool
+      cron_expression_hash: Int
+
+  WorkflowSignal:
+    fields:
+      signal_id: Int
+      workflow_id: Int
+      signal_type: SignalType
+      payload_size: Int
+      sent_ms: Int
+      received_ms: Int
+      processed: Bool
+
+  WorkflowVersion:
+    fields:
+      version_id: Int
+      workflow_type_hash: Int
+      version_number: Int
+      state: VersionState
+      created_ms: Int
+      deprecated_ms: Int
+      active_instances: Int
+      migrated_count: Int
+
+  ChildWorkflow:
+    fields:
+      child_id: Int
+      parent_id: Int
+      workflow_id: Int
+      state: WorkflowState
+      detached: Bool
+      started_ms: Int
+      completed_ms: Int
+
+  WorkflowMetrics:
+    fields:
+      total_workflows: Int
+      active_workflows: Int
+      completed_workflows: Int
+      failed_workflows: Int
+      total_activities: Int
+      total_checkpoints: Int
+      total_signals: Int
+      total_timers: Int
+      avg_workflow_duration_ms: Float
+      avg_activity_duration_ms: Float
+      checkpoint_recovery_count: Int
+      version_migrations: Int
+
+  WorkflowConfig:
+    fields:
+      max_duration_ms: Int
+      max_activities: Int
+      activity_timeout_ms: Int
+      max_retries: Int
+      retry_initial_ms: Int
+      retry_backoff: Float
+      checkpoint_interval: Int
+      max_children: Int
+      enable_versioning: Bool
+      enable_cron: Bool
+
+behaviors:
+  - name: start_workflow
+    given: Workflow definition and input
+    when: Workflow execution requested
+    then: Workflow created, first activity scheduled
+
+  - name: execute_activity
+    given: Scheduled activity and worker
+    when: Activity dispatched to worker
+    then: Activity executed, result recorded in history
+
+  - name: create_checkpoint
+    given: Workflow at checkpoint interval
+    when: Checkpoint triggered
+    then: State snapshot persisted with hash verification
+
+  - name: recover_workflow
+    given: Workflow with checkpoint after crash
+    when: Recovery initiated
+    then: State restored from checkpoint, replay remaining events
+
+  - name: retry_activity
+    given: Failed activity with retries remaining
+    when: Retry triggered after backoff
+    then: Activity rescheduled with incremented attempt
+
+  - name: send_signal
+    given: External signal and target workflow
+    when: Signal delivery requested
+    then: Signal buffered and delivered to workflow handler
+
+  - name: query_workflow
+    given: Query request and running workflow
+    when: Synchronous query received
+    then: Query handler returns current workflow state
+
+  - name: start_child_workflow
+    given: Parent workflow and child definition
+    when: Child workflow spawned
+    then: Child created with parent tracking
+
+  - name: set_timer
+    given: Workflow and timer configuration
+    when: Timer creation requested
+    then: Durable timer persisted, fires at scheduled time
+
+  - name: migrate_version
+    given: Workflow on version N, version N+1 available
+    when: Migration triggered
+    then: State transformed to new version format
+
+  - name: cancel_workflow
+    given: Running workflow and cancel signal
+    when: Cancellation requested
+    then: Workflow cancelled, children cancelled, cleanup run
+
+  - name: get_workflow_metrics
+    given: Workflow engine state
+    when: Metrics requested
+    then: Returns WorkflowMetrics with execution stats
+
+tests:
+  # Workflow Execution (4)
+  - name: basic_workflow
+    category: execution
+    input: "Start workflow with 3 sequential activities"
+    expected: "All activities complete, workflow succeeds"
+    description: Basic workflow execution
+
+  - name: long_running
+    category: execution
+    input: "Workflow with durable timer (1 hour)"
+    expected: "Timer persists, workflow resumes after timer"
+    description: Long-running workflow with timer
+
+  - name: parallel_activities
+    category: execution
+    input: "5 activities scheduled in parallel"
+    expected: "All complete concurrently, join succeeds"
+    description: Parallel activity execution
+
+  - name: workflow_timeout
+    category: execution
+    input: "Workflow exceeds max duration"
+    expected: "Workflow timed out, cleanup executed"
+    description: Workflow timeout handling
+
+  # Checkpointing (3)
+  - name: checkpoint_create
+    category: checkpointing
+    input: "Workflow at 100 events"
+    expected: "Checkpoint created with hash verification"
+    description: Periodic checkpoint creation
+
+  - name: checkpoint_recover
+    category: checkpointing
+    input: "Crash after 250 events, checkpoint at 200"
+    expected: "Restore from checkpoint, replay 50 events"
+    description: Recovery from checkpoint
+
+  - name: incremental_checkpoint
+    category: checkpointing
+    input: "Delta since last full checkpoint"
+    expected: "Incremental checkpoint smaller than full"
+    description: Incremental checkpoint efficiency
+
+  # Retry & Resilience (4)
+  - name: activity_retry
+    category: retry
+    input: "Activity fails twice, succeeds on 3rd attempt"
+    expected: "Exponential backoff, success on retry 3"
+    description: Activity retry with backoff
+
+  - name: retry_exhausted
+    category: retry
+    input: "Activity fails all 10 retry attempts"
+    expected: "Activity marked failed, workflow handles error"
+    description: Retry exhaustion handling
+
+  - name: heartbeat_timeout
+    category: retry
+    input: "Long activity stops sending heartbeats"
+    expected: "Timeout detected, activity rescheduled"
+    description: Heartbeat timeout detection
+
+  - name: cancel_propagation
+    category: retry
+    input: "Parent cancelled with 3 running children"
+    expected: "All children cancelled, cleanup complete"
+    description: Cancellation propagation to children
+
+  # Versioning (3)
+  - name: version_migration
+    category: versioning
+    input: "Migrate 50 workflows from v1 to v2"
+    expected: "State transformed, all workflows on v2"
+    description: Workflow version migration
+
+  - name: version_compatibility
+    category: versioning
+    input: "Deploy v2 with v1 workflows in flight"
+    expected: "v1 workflows continue on v1, new on v2"
+    description: Version compatibility patching
+
+  - name: version_deprecation
+    category: versioning
+    input: "Deprecate v1, no active instances"
+    expected: "v1 marked retired, no new starts allowed"
+    description: Version deprecation lifecycle
+
+  # Integration (4)
+  - name: workflow_with_events
+    category: integration
+    input: "Workflow history as event stream"
+    expected: "Events stored in Cycle 47 event store"
+    description: Integration with event sourcing (Cycle 47)
+
+  - name: workflow_with_contracts
+    category: integration
+    input: "Activity SLA enforced via contract"
+    expected: "Penalty on SLA violation"
+    description: Integration with contracts (Cycle 51)
+
+  - name: workflow_with_txn
+    category: integration
+    input: "Checkpoint within distributed transaction"
+    expected: "Atomic checkpoint commit"
+    description: Integration with transactions (Cycle 49)
+
+  - name: workflow_with_cache
+    category: integration
+    input: "Workflow state cached for fast queries"
+    expected: "Cache hit on repeated queries"
+    description: Integration with caching (Cycle 50)

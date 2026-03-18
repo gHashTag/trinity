@@ -1,0 +1,32 @@
+name: sentence_coherence
+version: "1.0.0"
+language: zig
+module: sentence_coherence
+
+types:
+  CoherenceMetrics:
+    fields:
+      word_ppl_train: Float
+      word_ppl_eval: Float
+      overfit_gap: Float
+      unique_words_generated: Int
+
+behaviors:
+  - name: measureWordPerplexity
+    given: Word-level bigram model trained on Shakespeare corpus
+    when: Compute exp(avg(-log(P(word|prev)))) on train and eval splits
+    then: Word-level perplexity (train and eval) with overfit gap analysis
+
+  - name: assessCoherence
+    given: Generated word sequence from word bigram sampling
+    when: Check for real vocabulary, word boundaries, and repetition patterns
+    then: Coherence assessment (real words but no grammar structure)
+
+test_cases:
+  - name: word_ppl_reasonable
+    input: "Word PPL on 5014-char Shakespeare corpus"
+    expected: "Train PPL < 30, Eval PPL < 20 (word-level, 256 vocab)"
+
+  - name: temperature_diversity
+    input: "T=0.8 vs T=0.3 generation"
+    expected: "T=0.8 diverse vocabulary, T=0.3 degenerate repetition"

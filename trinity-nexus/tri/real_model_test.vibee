@@ -1,0 +1,100 @@
+name: real_model_test
+version: "1.0.0"
+language: zig
+module: real_model_test
+author: Dmitrii Vasilev
+description: Real model testing infrastructure for validating end-to-end inference
+
+types:
+  ModelInfo:
+    description: Information about a model file
+    fields:
+      path: String
+      format: String
+      size_bytes: Int
+      total_params: Int
+      vocab_size: Int
+      hidden_size: Int
+      num_layers: Int
+
+  TestConfig:
+    description: Configuration for model testing
+    fields:
+      prompt: String
+      max_tokens: Int
+      temperature: Float
+      top_p: Float
+      num_runs: Int
+      noise_level: Float
+
+  TestResult:
+    description: Result of a single test run
+    fields:
+      model_name: String
+      tokens_generated: Int
+      total_time_ms: Float
+      tokens_per_second: Float
+      memory_peak_mb: Float
+      first_token_latency_ms: Float
+
+  BenchmarkSuite:
+    description: Complete benchmark results
+    fields:
+      model_info: ModelInfo
+      test_config: TestConfig
+      results: List<TestResult>
+      avg_tokens_per_second: Float
+      avg_memory_mb: Float
+      noise_robustness_score: Float
+
+  NoiseTest:
+    description: Noise robustness test result
+    fields:
+      noise_level: Float
+      accuracy_before: Float
+      accuracy_after: Float
+      degradation_percent: Float
+
+behaviors:
+  - name: load_model_info
+    given: Path to model file (.tri or .gguf)
+    when: Inspecting model before loading
+    then: Return ModelInfo with metadata
+
+  - name: run_generation_test
+    given: Loaded model and TestConfig
+    when: Running inference benchmark
+    then: Return TestResult with metrics
+
+  - name: run_noise_robustness_test
+    given: Loaded model and noise level (0.0-1.0)
+    when: Testing trit flip tolerance
+    then: Return NoiseTest with accuracy comparison
+
+  - name: run_benchmark_suite
+    given: Model path and TestConfig
+    when: Running complete benchmark
+    then: Return BenchmarkSuite with all results
+
+  - name: compare_with_baseline
+    given: Current results and baseline results
+    when: Comparing performance
+    then: Return improvement percentages
+
+  - name: generate_report
+    given: BenchmarkSuite
+    when: Creating documentation
+    then: Return markdown report string
+
+constants:
+  DEFAULT_PROMPT: "Hello Trinity, please explain"
+  DEFAULT_MAX_TOKENS: 100
+  DEFAULT_TEMPERATURE: 0.7
+  DEFAULT_TOP_P: 0.9
+  DEFAULT_NUM_RUNS: 5
+  NOISE_LEVELS: [0.0, 0.1, 0.2, 0.3]
+  TARGET_TOKENS_PER_SECOND: 400
+  TARGET_MEMORY_MB: 2000
+  PHI: 1.618033988749895
+  TRINITY: 3.0
+  GOLDEN_IDENTITY: "φ² + 1/φ² = 3"

@@ -1,0 +1,134 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Track C: Brute + SIMD (Optimized Baseline)
+# ═══════════════════════════════════════════════════════════════════════════════
+# Brute-force search with SIMD vectorized distance computation
+#
+# Provides exact nearest neighbor search with SIMD acceleration.
+# Competitive performance up to 10k vectors, serves as accuracy baseline.
+#
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: ann_brute_simd
+version: "1.0.0"
+language: zig
+module: needle.ann_brute_simd
+
+description: |
+  Optimized brute-force search using Zig's SIMD for vectorized
+  distance computation. Provides accuracy baseline and is
+  competitive for datasets up to 10k vectors.
+
+types:
+  BruteConfig:
+    fields:
+      dim: usize                    # Vector dimension (384)
+      distance_metric: DistanceMetric
+      use_simd: Bool                # Enable SIMD acceleration
+      batch_size: usize             # Batch size for SIMD ops
+
+  BruteIndex:
+    fields:
+      config: BruteConfig
+      vectors: Map<u64, List<Float>>     # vector_id -> vector
+      symbol_ids: Map<u64, String>        # vector_id -> symbol name
+      vector_list: List<u64>              # Ordered list for iteration
+      allocator: Allocator
+      total_vectors: usize
+
+behaviors:
+  - name: brute_init
+    given: BruteConfig with allocator
+    when: Creating new brute index
+    then: Return initialized empty index
+
+  - name: brute_insert
+    given: Vector ID, symbol ID, vector data
+    when: Adding to index
+    then: |
+      1. Store vector in map (deep copy)
+      2. Store symbol ID (deep copy)
+      3. Add to ordered list
+      O(1) complexity
+
+  - name: brute_search
+    given: Query vector and k results
+    when: Searching index
+    then: |
+      1. For each vector in index:
+         - Compute distance (SIMD if enabled)
+         - Track top-k candidates
+      2. Sort candidates by distance
+      3. Return top-k results
+      O(N) complexity, exact results
+
+  - name: brute_search_simd_cosine
+    given: Two vectors
+    when: Computing cosine distance
+    then: |
+      Use SIMD vectorization:
+      1. Load chunks of 8 floats (@Vector(8, f32))
+      2. Compute dot product in parallel
+      3. Compute norms in parallel
+      4. Return 1 - cosine_similarity
+
+  - name: brute_search_simd_euclidean
+    given: Two vectors
+    when: Computing L2 distance
+    then: |
+      Use SIMD vectorization:
+      1. Load chunks of 8 floats
+      2. Compute differences in parallel
+      3. Sum squared differences
+      4. Return sqrt(sum)
+
+  - name: brute_get_stats
+    given: Brute index
+    when: Querying status
+    then: Return ANNStats with vector count, memory
+
+test_cases:
+  - name: brute_basic_insert_search
+    given: Empty index, 100 vectors
+    when: Insert all, search with query
+    then: |
+      Returns k results
+      Results sorted by distance
+      Exact nearest neighbors found
+
+  - name: brute_simd_matches_scalar
+    given: Same vectors
+    when: Computing distance with SIMD vs scalar
+    then: |
+      Results match within tolerance
+      SIMD is faster
+
+  - name: brute_handles_empty
+    given: Empty index
+    when: Searching
+    then: Returns empty result list
+
+examples:
+  - description: "Initialize Brute+SIMD index"
+    code: |
+      const config = BruteConfig{
+          .dim = 384,
+          .distance_metric = .cosine,
+          .use_simd = true,
+          .batch_size = 8,
+      };
+      var index = try BruteIndex.init(allocator, config);
+      defer index.deinit();
+
+exit_criteria:
+  brute_init_works: true
+  brute_insert_works: true
+  brute_search_exact: true
+  simd_faster_than_scalar: true
+  search_time_lt_500ms_for_10k: true
+  cosine_distance_correct: true
+  euclidean_distance_correct: true
+
+sacred:
+  phi: 1.618033988749895
+  batch_size_formula: "round(phi^3)"

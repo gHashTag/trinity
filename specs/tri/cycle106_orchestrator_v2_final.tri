@@ -1,0 +1,491 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRINITY ORCHESTRATOR v2.0 - FINAL IMPLEMENTATION SPECIFICATION
+# ═══════════════════════════════════════════════════════════════════════════════
+# Cycle 106 - Full implementation with all 135 commands
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: orchestrator_v2
+version: "2.0.0"
+language: zig
+module: orchestrator_v2_full
+
+description: |
+  Universal command orchestrator for TRINITY CLI with 135 commands registered.
+  Supports sequential, parallel, conditional, and adaptive execution strategies.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # Command Categories (14 total)
+  CommandCategory:
+    enum:
+      - core          # chat, code, gen
+      - swe_agent     # fix, explain, test, doc, refactor, reason
+      - golden_chain  # pipeline, decompose, plan, verify, verdict, spec_create, loop_decide
+      - sacred_math   # math, constants, phi, fib, lucas, spiral, gematria, formula, sacred
+      - git           # commit, diff, status, log
+      - demo          # 100+ demo commands
+      - bench         # 100+ benchmark commands
+      - tvc           # tvc_demo, tvc_stats
+      - intelligence  # intelligence command
+      - dev_util      # doctor, clean, fmt, stats, igla, test_repl
+      - analysis      # analyze, search_cmd, context_info
+      - autonomous    # auto_commit, ml_optimize, deploy_dashboard, self_host
+      - info          # deps, info, version, help
+      - orchestrator  # orchestrate_v2
+
+  # Risk Levels
+  RiskLevel:
+    enum:
+      - safe
+      - low
+      - medium
+      - high
+      - critical
+
+  # Sacred Realms
+  Realm:
+    enum:
+      - razum     # Mind - weight × φ = 1.618
+      - materiya  # Matter - weight × 1.0
+      - dukh      # Spirit - weight × 1/φ = 0.618
+      - universal # All realms - weight × 1.0
+
+  # Execution Strategy
+  ExecutionStrategy:
+    enum:
+      - sequential   # Execute in dependency order
+      - parallel     # Execute independent steps concurrently
+      - conditional  # If/then/else branching
+      - adaptive     # Auto-select based on analysis
+
+  # Command Metadata
+  CommandMetadata:
+    fields:
+      name: String
+      category: CommandCategory
+      realm: Realm
+      sacred_weight: Float
+      risk_level: RiskLevel
+      min_args: Int
+      max_args: Int
+      description: String
+      executor_id: Int
+
+  # Command Registry
+  CommandRegistry:
+    fields:
+      commands: HashMap<String, CommandMetadata>
+      by_category: List<List<CommandMetadata>>
+      by_realm: List<List<CommandMetadata>>
+      alias_map: HashMap<String, String>
+      total_count: Int
+      sacred_score: Float
+      trinity_verified: Bool
+      allocator: Allocator
+
+  # Workflow Step
+  WorkflowStep:
+    fields:
+      name: String
+      command: String
+      args: List<String>
+      depends_on: List<String>
+      condition: Option<String>
+      continue_on_failure: Bool
+      timeout_ms: Int
+
+  # Workflow Definition
+  Workflow:
+    fields:
+      name: String
+      description: String
+      steps: List<WorkflowStep>
+      strategy: ExecutionStrategy
+      rollback_enabled: Bool
+
+  # Execution Result
+  ExecutionResult:
+    fields:
+      step_name: String
+      success: Bool
+      duration_ms: Int
+      sacred_score: Float
+      output: String
+      error_msg: Option<String>
+
+  # Orchestrator Result
+  OrchestratorResult:
+    fields:
+      success: Bool
+      steps_completed: Int
+      steps_total: Int
+      duration_ms: Int
+      sacred_score: Float
+      output: String
+      error: Option<String>
+
+  # Workflow Executor
+  WorkflowExecutor:
+    fields:
+      allocator: Allocator
+      registry_id: Int
+      workflow_id: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+
+  # ─── Registry Management ───
+
+  - name: init_registry
+    given: Allocator
+    when: Initializing empty command registry
+    then: Returns CommandRegistry with empty HashMaps and 14 category buckets
+
+  - name: register_command
+    given: CommandRegistry and CommandMetadata
+    when: Registering a new command
+    then: Adds to HashMap, categorizes by realm and category, updates sacred score
+
+  - name: get_command
+    given: CommandRegistry and command name
+    when: Looking up a command by name
+    then: Returns CommandMetadata or null if not found
+
+  - name: deinit_registry
+    given: CommandRegistry
+    when: Cleaning up registry
+    then: Frees all command names, descriptions, and HashMaps
+
+  # ─── Workflow Execution ───
+
+  - name: execute_workflow
+    given: WorkflowExecutor with workflow and registry
+    when: Executing a workflow
+    then: Returns ExecutionResult array based on strategy
+
+  - name: execute_sequential
+    given: Workflow with sequential strategy
+    when: Executing steps in dependency order
+    then: Returns results in topological sort order, stops on failure
+
+  - name: execute_parallel
+    given: Workflow with parallel strategy
+    when: Executing independent steps concurrently
+    then: Groups steps by level, spawns threads, joins and aggregates results
+
+  - name: execute_conditional
+    given: Workflow with conditional strategy
+    when: Executing steps based on conditions
+    then: Parses and evaluates conditions, skips steps that don't match
+
+  - name: execute_adaptive
+    given: Workflow with adaptive strategy
+    when: Auto-selecting execution strategy
+    then: Analyzes workflow and selects optimal strategy
+
+  # ─── Dependency Resolution ───
+
+  - name: resolve_dependencies
+    given: Workflow with steps that have depends_on
+    when: Computing execution order
+    then: Returns step indices in topological sort order
+
+  - name: visit
+    given: Step index and visited array
+    when: DFS traversing dependency graph
+    then: Marks visited and appends to order after dependencies
+
+  - name: find_step_index
+    given: Step name
+    when: Looking up step by name
+    then: Returns step index or null
+
+  # ─── Parallel Execution Details ───
+
+  - name: compute_execution_levels
+    given: Workflow with dependencies
+    when: Grouping steps by dependency level
+    then: Returns list of level lists using Kahn's algorithm
+
+  - name: init_parallel_context
+    given: Allocator and step indices
+    when: Creating thread-safe shared state
+    then: Returns ParallelContext with mutex, atomic counters, and result array
+
+  - name: spawn_worker_threads
+    given: Level steps and max threads
+    when: Creating worker threads
+    then: Spawns min(level_size, max_threads) threads
+
+  - name: thread_task_run
+    given: ThreadTask with context and step
+    when: Executing step in worker thread
+    then: Runs command, stores result in context with mutex protection
+
+  - name: join_and_collect_results
+    given: Threads and context
+    when: Waiting for completion
+    then: Joins threads and returns aggregated results
+
+  # ─── Conditional Execution Details ───
+
+  - name: parse_condition
+    given: Condition expression string
+    when: Parsing condition to AST
+    then: Returns ConditionAST with boolean, comparison, logical, or reference node
+
+  - name: evaluate_condition
+    given: ConditionAST and previous results
+    when: Determining if step should execute
+    then: Returns true if condition evaluates to true
+
+  - name: evaluate_comparison
+    given: Left value, operator, right value
+    when: Comparing numeric or boolean values
+    then: Returns comparison result
+
+  - name: evaluate_logical
+    given: Operator and left/right conditions
+    when: Evaluating AND/OR expression
+    then: Returns logical combination
+
+  - name: evaluate_reference
+    given: Reference string and results
+    when: Looking up step result or field
+    then: Returns referenced value
+
+  - name: evaluate_contains
+    given: Field reference and pattern
+    when: Checking if output contains pattern
+    then: Returns true if pattern found in output
+
+  - name: evaluate_phi_call
+    given: Phi exponent and comparison
+    when: Evaluating φ(n) comparison
+    then: Returns result of phi(n) comparison
+
+  # ─── Adaptive Execution Details ───
+
+  - name: analyze_workflow
+    given: Workflow
+    when: Analyzing workflow characteristics
+    then: Returns analysis with has_conditions, parallelizable_ratio, avg_complexity, sacred_alignment
+
+  - name: select_strategy_sequential
+    given: Analysis with low parallelizability or low sacred score
+    when: Conditions favor sequential execution
+    then: Returns sequential strategy
+
+  - name: select_strategy_parallel
+    given: Analysis with high parallelizability and high sacred score
+    when: Conditions favor parallel execution
+    then: Returns parallel strategy
+
+  - name: select_strategy_conditional
+    given: Analysis with conditions present
+    when: Workflow has conditional branching
+    then: Returns conditional strategy
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SACRED CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  PHI_INV: 0.618033988749895
+  PHI_SQ: 2.618033988749895
+  TRINITY: 3.0
+  MU: 0.0382
+  CHI: 0.0618
+  SACRED_THRESHOLD: 0.95
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONDITION SYNTAX
+# ═══════════════════════════════════════════════════════════════════════════════
+
+condition_syntax:
+  - success: Execute if previous step succeeded
+  - failed: Execute if previous step failed
+  - "sacred_score > 0.9": Execute if sacred score exceeds threshold
+  - "output contains 'pattern'": Execute if output contains substring
+  - "step('build').success": Execute if specific step succeeded
+  - "phi(2) > 2.6": Execute if φ² exceeds threshold
+  - "success && score > 0.8": Logical AND combination
+  - "success || failed": Logical OR combination
+  - "!success": Negation
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# COMMANDS REGISTERED (135 total)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+commands_by_category:
+  core:
+    - chat
+    - code
+    - gen
+    - convert
+    - serve
+    - bench
+    - evolve
+    - distributed
+
+  swe_agent:
+    - fix
+    - explain
+    - test_cmd
+    - doc
+    - refactor
+    - reason
+
+  golden_chain:
+    - pipeline
+    - decompose
+    - plan
+    - verify
+    - verdict
+    - spec_create
+    - loop_decide
+
+  sacred_math:
+    - math
+    - constants_cmd
+    - phi
+    - fib
+    - lucas
+    - spiral
+    - gematria
+    - formula_cmd
+    - sacred
+
+  git:
+    - commit
+    - diff
+    - status
+    - log
+
+  intelligence:
+    - intelligence
+
+  dev_util:
+    - doctor
+    - clean
+    - fmt_cmd
+    - stats_cmd
+    - igla
+    - test_repl
+
+  analysis:
+    - analyze
+    - search_cmd
+    - context_info
+
+  autonomous:
+    - auto_commit
+    - ml_optimize
+    - deploy_dashboard
+    - self_host
+    - safeguards_show
+    - safeguards_disable
+
+  sacred_agents:
+    - identity
+    - swarm
+    - govern
+    - dashboard
+    - omega
+    - math_agent
+
+  info:
+    - deps
+    - info
+    - version
+    - help
+
+  orchestrator:
+    - orchestrate_v2
+
+  demo:
+    - tvc_demo
+    - agents_demo
+    - context_demo
+    - rag_demo
+    - voice_demo
+    - sandbox_demo
+    - stream_demo
+    - vision_demo
+    - finetune_demo
+    - batched_demo
+    - priority_demo
+    - deadline_demo
+    - multimodal_demo
+    - tooluse_demo
+    - unified_demo
+    - autonomous_demo
+    - orchestration_demo
+    - mm_orch_demo
+    - memory_demo
+    - persist_demo
+    - spawn_demo
+    - cluster_demo
+    - worksteal_demo
+    - plugin_demo
+    - comms_demo
+    - observe_demo
+    - consensus_demo
+    - specexec_demo
+    - governor_demo
+    - fedlearn_demo
+    - eventsrc_demo
+    - capsec_demo
+    - dtxn_demo
+    - cache_demo
+    - contract_demo
+    - workflow_demo
+
+  bench:
+    - tvc_stats
+    - agents_bench
+    - context_bench
+    - rag_bench
+    - voice_bench
+    - sandbox_bench
+    - stream_bench
+    - vision_bench
+    - finetune_bench
+    - batched_bench
+    - priority_bench
+    - deadline_bench
+    - multimodal_bench
+    - tooluse_bench
+    - unified_bench
+    - autonomous_bench
+    - orchestration_bench
+    - mm_orch_bench
+    - memory_bench
+    - persist_bench
+    - spawn_bench
+    - cluster_bench
+    - worksteal_bench
+    - plugin_bench
+    - comms_bench
+    - observe_bench
+    - consensus_bench
+    - specexec_bench
+    - governor_bench
+    - fedlearn_bench
+    - eventsrc_bench
+    - capsec_bench
+    - dtxn_bench
+    - cache_bench
+    - contract_bench
+    - workflow_bench
+
+  multi_cluster:
+    - multi_cluster

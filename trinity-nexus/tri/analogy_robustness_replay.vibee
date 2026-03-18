@@ -1,0 +1,48 @@
+name: analogy_robustness_replay
+version: "1.0.0"
+language: zig
+module: analogy_robustness_replay
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 200
+  NUM_RELATIONS: 10
+  PAIRS_PER_RELATION: 10
+  SIM_THRESHOLD: 0.10
+
+types:
+  ReplayResult:
+    fields:
+      first_run: Int
+      second_run: Int
+      identical: Bool
+    description: "Comparison of two identical query runs for determinism verification."
+
+  SimilarityDistribution:
+    fields:
+      avg: Float
+      min_val: Float
+      max_val: Float
+      above_threshold: Int
+    description: "Distribution statistics for similarity scores."
+
+behaviors:
+  - name: deterministicReplay200
+    given: 100 forward analogy queries executed twice.
+    when: Compare first-run and second-run results for all 100 queries
+    then: 200/200 (100%) — 100 correct results + 100 identical replays
+
+  - name: similarityDistribution
+    given: All 100 forward query similarity scores.
+    when: Compute avg, min, max, threshold count, and spread
+    then: 25/25 — avg 0.27 > 0.15, min 0.20 > 0.05, max 0.44 < 1.0, 100/100 above 0.10, spread 0.24 < 0.8
+
+  - name: largeCandidatePoolRobustness
+    given: 100 forward queries against full 200-entity candidate pool.
+    when: Verify correct entity found despite 2x larger search space
+    then: 100/100 (100%) — DIM=4096 provides sufficient signal even in large pools
+
+  - name: cumulativeBenchmarkMilestone
+    given: Query counts from Tests 133-135 combined.
+    when: Verify total exceeds 700+ queries
+    then: 10/10 — Test 135 alone contributes 325+, estimated total 745+

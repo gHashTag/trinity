@@ -1,0 +1,13 @@
+# Hello World Example
+
+behavior HelloWorld {
+    test "should print hello world" {
+        given message = "Hello, World!"
+        when result = print(message)
+        then result |> should.be_ok
+    }
+}
+
+fn main() {
+    print("Hello, World!")
+}

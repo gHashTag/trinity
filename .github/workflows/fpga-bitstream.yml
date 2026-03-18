@@ -1,0 +1,188 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# AUTOMATED BITSTREAM GENERATION
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Generates bitstreams when .vibee specs change.
+# Uploads bitstreams as artifacts for hardware testing.
+#
+# Note: Full synthesis requires Docker with openXC7 toolchain.
+# This workflow validates the pipeline without requiring hardware.
+#
+# φ² + 1/φ² = 3 = TRINITY
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: FPGA Bitstream Generation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'specs/fpga/**/*.vibee'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'specs/fpga/**/*.vibee'
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: 'Specific spec to build (e.g., test_blink)'
+        required: false
+        type: string
+      consciousness:
+        description: 'Consciousness level'
+        required: false
+        type: choice
+        options:
+          - transcendent
+          - enlightened
+          - aware
+          - conscious
+          - awakening
+          - dormant
+        default: 'aware'
+
+env:
+  CONSCIOUSNESS_DEFAULT: 'aware'
+
+jobs:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # EXTRACT CHANGED SPECS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  detect-changes:
+    name: Detect Changed Specs
+    runs-on: ubuntu-latest
+    outputs:
+      specs: ${{ steps.changed.outputs.specs }}
+      count: ${{ steps.changed.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Detect changed .vibee files
+        id: changed
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.spec }}" ]; then
+            # Manual trigger with specific spec
+            echo "specs=${{ inputs.spec }}" >> $GITHUB_OUTPUT
+            echo "count=1" >> $GITHUB_OUTPUT
+          else
+            # Detect changes
+            specs=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} | grep 'specs/fpga/.*\.vibee$' | sed 's|specs/fpga/||' | sed 's|\.vibee$||' | tr '\n' ' ')
+            if [ -z "$specs" ]; then
+              # Fallback: all specs
+              specs=$(ls specs/fpga/*.vibee 2>/dev/null | xargs -n1 basename | sed 's|\.vibee$||' | tr '\n' ' ')
+            fi
+            echo "specs=$specs" >> $GITHUB_OUTPUT
+            echo "count=$(echo $specs | wc -w)" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Show detected specs
+        run: |
+          echo "Changed specs: ${{ steps.changed.outputs.specs }}"
+          echo "Count: ${{ steps.changed.outputs.count }}"
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # GENERATE VERILOG AND XDC
+  # ═══════════════════════════════════════════════════════════════════════════════
+  generate-artifacts:
+    name: Generate Artifacts
+    runs-on: ubuntu-latest
+    needs: detect-changes
+    strategy:
+      matrix:
+        spec: ${{ fromJson(format('[{0}]', needs.detect-changes.outputs.specs)) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.15.2
+
+      - name: Build
+        run: zig build -Dci=true
+
+      - name: Generate Verilog
+        run: |
+          ./zig-out/bin/vibee gen specs/fpga/${{ matrix.spec }}.vibee
+
+      - name: Check outputs
+        run: |
+          if [ -f "trinity/output/fpga/${{ matrix.spec }}.v" ]; then
+            echo "✓ Verilog generated"
+            wc -l "trinity/output/fpga/${{ matrix.spec }}.v"
+          else
+            echo "✗ Verilog not found"
+            exit 1
+          fi
+
+      - name: Upload Verilog
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.spec }}-verilog
+          path: trinity/output/fpga/${{ matrix.spec }}.v
+
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # DOCKER SYNTHESIS (OPTIONAL - requires self-hosted runner with Docker)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  synthesize-bitstream:
+    name: Synthesize Bitstream
+    runs-on: ubuntu-latest
+    needs: [detect-changes, generate-artifacts]
+    if: false  # Disabled by default - enable with self-hosted runner
+    strategy:
+      matrix:
+        spec: ${{ fromJson(format('[{0}]', needs.detect-changes.outputs.specs)) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ${{ matrix.spec }}-*
+          path: fpga/openxc7-synth/
+
+      - name: Prepare synthesis
+        run: |
+          cd fpga/openxc7-synth
+          mv ${{ matrix.spec }}-verilog/${{ matrix.spec }}.v ./
+
+      - name: Synthesize with Docker
+        run: |
+          cd fpga/openxc7-synth
+          docker pull regymm/openxc7:latest
+          ./synth.sh ${{ matrix.spec }}.v ${{ matrix.spec }}
+
+      - name: Upload bitstream
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.spec }}-bitstream
+          path: fpga/openxc7-synth/${{ matrix.spec }}.bit
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SUMMARY
+  # ═══════════════════════════════════════════════════════════════════════════════
+  summary:
+    name: Bitstream Summary
+    runs-on: ubuntu-latest
+    needs: [detect-changes, generate-artifacts]
+    if: always()
+    steps:
+      - name: Generate summary
+        run: |
+          echo "═══════════════════════════════════════════════════════════"
+          echo "  BITSTREAM GENERATION SUMMARY"
+          echo "═══════════════════════════════════════════════════════════"
+          echo ""
+          echo "  Spec(s):        ${{ needs.detect-changes.outputs.specs }}"
+          echo "  Count:          ${{ needs.detect-changes.outputs.count }}"
+          echo "  Artifact gen:   ${{ needs.generate-artifacts.result }}"
+          echo ""
+          echo "  Artifacts available:"
+          echo "    - Verilog source files"
+          echo ""
+          echo "φ² + 1/φ² = 3 = TRINITY"
+          echo "═══════════════════════════════════════════════════════════"

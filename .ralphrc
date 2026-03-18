@@ -1,0 +1,33 @@
+# W1 Worker Configuration
+PROJECT_NAME="trinity-w1"
+PROJECT_TYPE="zig"
+MAX_CALLS_PER_HOUR=100
+CLAUDE_TIMEOUT_MINUTES=30
+CLAUDE_OUTPUT_FORMAT="json"
+ALLOWED_TOOLS="Write,Read,Edit,Grep,Glob,Bash(git *),Bash(zig *),Bash(ls *),Bash(cat *)"
+SESSION_CONTINUITY=true
+SESSION_EXPIRY_HOURS=24
+TASK_SOURCES="local"
+CB_NO_PROGRESS_THRESHOLD=5
+CB_SAME_ERROR_THRESHOLD=7
+CLAUDE_MIN_VERSION="2.0.76"
+RALPH_VERBOSE=true
+
+# ============================================================================
+# RALPH PULSE OF LIFE - Telegram Nervous System v1.0
+# ============================================================================
+
+# Telegram Bot Configuration (use env vars, never hardcode tokens)
+# Set RALPH_TELEGRAM_BOT_TOKEN and RALPH_TELEGRAM_CHAT_ID as environment variables
+RALPH_TELEGRAM_BOT_TOKEN="${RALPH_TELEGRAM_BOT_TOKEN}"
+RALPH_TELEGRAM_CHAT_ID="${RALPH_TELEGRAM_CHAT_ID}"
+RALPH_TELEGRAM_BOT_USERNAME="vibee_dev_bot"
+
+# Pulse Mode Configuration
+# Options: full (все мысли), filtered (только важное), minimal (только критичное)
+RALPH_PULSE_MODE="full"
+RALPH_PULSE_ENABLED=true
+
+# Pulse Emission Settings
+RALPH_HEARTBEAT_INTERVAL_SECONDS=30
+RALPH_TELEGRAM_VERBOSE_LOGGING=true

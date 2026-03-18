@@ -1,0 +1,117 @@
+name: codegen
+version: "1.0.0"
+language: zig
+module: codegen
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: generate
+    given: Input data provided
+    when: generate function called
+    then: Result returned
+    test_cases:
+      - name: test_generate
+        input: {}
+        expected: {}
+
+  - name: parse_spec
+    given: Input data provided
+    when: parse_spec function called
+    then: Result returned
+    test_cases:
+      - name: test_parse_spec
+        input: {}
+        expected: {}
+
+  - name: extract_value
+    given: Input data provided
+    when: extract_value function called
+    then: Result returned
+    test_cases:
+      - name: test_extract_value
+        input: {}
+        expected: {}
+
+  - name: generate_vibee
+    given: Input data provided
+    when: generate_vibee function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_vibee
+        input: {}
+        expected: {}
+
+  - name: generate_run_vibee
+    given: Input data provided
+    when: generate_run_vibee function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_run_vibee
+        input: {}
+        expected: {}
+
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+    test_cases:
+      - name: test_main
+        input: {}
+        expected: {}
+
+types:
+  Plugin:
+    # TODO: Define fields
+
+  Function:
+    # TODO: Define fields
+
+  Param:
+    # TODO: Define fields
+
+functions:
+  - name: generate
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: parse_spec
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: extract_value
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_vibee
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_run_vibee
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: main
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/io
+  # gleam/string
+  # gleam/list
+  # gleam/result
+  # simplifile
+  # " <> plugin.name <> "/" <> plugin.name <> " as plugin
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

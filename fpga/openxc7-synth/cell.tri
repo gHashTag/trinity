@@ -1,0 +1,54 @@
+[cell]
+id = "trinity.fpga"
+name = "FPGA Pipeline"
+version = "1.0.0"
+kind = "backend"
+path = "fpga/openxc7-synth"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Zero-DSP FPGA inference pipeline with ternary MAC units"
+capabilities = ["fpga", "synthesis", "inference", "verilog"]
+files = 39
+tests = 106
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "fpga"
+type = "backend"
+
+[contributes]
+commands = ["synth", "flash", "program"]
+exports = ["temperatureAt", "acceptanceProbability", "isConverged", "setupMarginNs", "holdMarginNs"]
+tri_subcommands = ["fpga synth", "fpga flash"]
+events = ["on_synthesis_complete", "on_flash_complete"]
+
+[dependencies]
+trinity.infra = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "none"
+process = "spawn"
+
+ffi = "none"
+concurrency = "none"
+[dna]
+cell_id = "trinity.fpga"
+source = "specs/fpga/synthesis.tri"
+output = "gen/fpga_params.v"
+regenerable = true
+
+[contract]
+inputs = ["weights: packed ternary", "input_tokens: [ctx]u32"]
+outputs = ["logits: [vocab]fixed", "bitstream: .bit"]
+invariants = ["zero DSP blocks", "LUT < 63K (Artix-7)", "5000 tok/s @ 100MHz"]
+
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:58b08f989423d39d596e77cccfb5c4191b5525379f857423bd19846796569158"

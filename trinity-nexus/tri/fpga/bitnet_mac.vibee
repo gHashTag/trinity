@@ -1,0 +1,302 @@
+name: bitnet_mac
+version: "1.0.0"
+language: varlog
+module: bitnet_mac
+
+description: |
+  BitNet MAC Unit - Multiply-Accumulate for Ternary Neural Networks
+  
+  This is the workhorse of Trinity AI inference.
+  Processes 256 ternary weights × 256 ternary activations per cycle.
+  
+  Key insight: BitNet uses {-1, 0, +1} weights, which maps perfectly
+  to balanced ternary. No multiplication needed - just sign selection!
+  
+  Performance target:
+  - 256 MACs per cycle @ 100MHz = 25.6 GMAC/s per unit
+  - 16 units = 409.6 GMAC/s total
+  - Compare to CPU: ~1 GMAC/s (400x speedup!)
+  
+  φ² + 1/φ² = 3 = TRINITY
+
+constants:
+  VECTOR_DIM: 256
+  ACCUMULATOR_WIDTH: 32
+  NUM_MAC_UNITS: 16
+  PIPELINE_STAGES: 3
+
+types:
+  TritVector:
+    description: "256 balanced ternary values"
+    fields:
+      pos_bits: Int
+      neg_bits: Int
+    width: 512
+
+  Accumulator:
+    description: "32-bit signed accumulator"
+    fields:
+      value: Int
+      overflow: Bool
+    width: 33
+
+  MACState:
+    description: "MAC unit state"
+    variants:
+      - IDLE
+      - MULTIPLY
+      - REDUCE
+      - ACCUMULATE
+      - DONE
+
+  MACConfig:
+    description: "MAC unit configuration"
+    fields:
+      clear_acc: Bool
+      enable: Bool
+      saturate: Bool
+
+signals:
+  - name: clk
+    width: 1
+    direction: input
+  
+  - name: rst_n
+    width: 1
+    direction: input
+  
+  - name: enable
+    width: 1
+    direction: input
+    description: "Enable MAC operation"
+  
+  - name: clear
+    width: 1
+    direction: input
+    description: "Clear accumulator"
+  
+  - name: weights
+    width: 512
+    direction: input
+    description: "256-trit weight vector"
+  
+  - name: activations
+    width: 512
+    direction: input
+    description: "256-trit activation vector"
+  
+  - name: accumulator
+    width: 32
+    direction: output
+    description: "Current accumulator value"
+  
+  - name: valid
+    width: 1
+    direction: output
+    description: "Result valid"
+  
+  - name: overflow
+    width: 1
+    direction: output
+    description: "Accumulator overflow"
+
+behaviors:
+  # THE CORE BITNET OPERATION
+  - name: ternary_mac
+    given: Weight vector W and activation vector A
+    when: enable asserted
+    then: Accumulates W · A into accumulator
+    implementation: |
+      // BitNet MAC is beautifully simple in ternary:
+      //
+      // For each element i:
+      //   W[i] ∈ {-1, 0, +1}
+      //   A[i] ∈ {-1, 0, +1}
+      //   product = W[i] * A[i] ∈ {-1, 0, +1}
+      //
+      // No actual multiplication needed!
+      // Just XOR the sign bits, AND with non-zero mask
+      //
+      // Stage 1: Element-wise "multiply" (1 cycle)
+      //   pos_result = (w_pos & a_pos) | (w_neg & a_neg)
+      //   neg_result = (w_pos & a_neg) | (w_neg & a_pos)
+      //   zero_mask = w_zero | a_zero
+      //   pos_result &= ~zero_mask
+      //   neg_result &= ~zero_mask
+      //
+      // Stage 2: Popcount reduction (2 cycles)
+      //   pos_count = popcount(pos_result)  // 0-256
+      //   neg_count = popcount(neg_result)  // 0-256
+      //
+      // Stage 3: Accumulate (1 cycle)
+      //   dot_product = pos_count - neg_count  // -256 to +256
+      //   accumulator += dot_product
+      //
+      // Total: 4 cycles latency, 1 cycle throughput (pipelined)
+
+  # Parallel element-wise multiply
+  - name: parallel_trit_multiply
+    given: 256 weight trits and 256 activation trits
+    when: Stage 1 of MAC
+    then: Produces 256 product trits
+    implementation: |
+      // All 256 multiplications in parallel!
+      // Each trit multiply is 2 LUTs
+      // Total: 512 LUTs for this stage
+      //
+      // Encoding reminder:
+      //   trit[1:0] = {neg_bit, pos_bit}
+      //   00 = zero, 01 = +1, 10 = -1, 11 = invalid
+
+  # Tree reduction via popcount
+  - name: tree_reduce
+    given: 256 product trits
+    when: Stage 2 of MAC
+    then: Produces pos_count and neg_count
+    implementation: |
+      // Separate the 256 products into pos and neg bits
+      // Run parallel popcount on each
+      //
+      // Popcount tree for 256 bits:
+      //   Level 1: 256 -> 128 (3-bit sums)
+      //   Level 2: 128 -> 64 (4-bit sums)
+      //   Level 3: 64 -> 32 (5-bit sums)
+      //   Level 4: 32 -> 16 (6-bit sums)
+      //   Level 5: 16 -> 8 (7-bit sums)
+      //   Level 6: 8 -> 4 (8-bit sums)
+      //   Level 7: 4 -> 2 (9-bit sums)
+      //   Level 8: 2 -> 1 (9-bit final)
+      //
+      // ~180 LUTs per popcount, 2 cycle latency
+
+  # Accumulate with saturation
+  - name: accumulate
+    given: Dot product result and current accumulator
+    when: Stage 3 of MAC
+    then: Updates accumulator with saturation
+    implementation: |
+      // acc_new = acc_old + dot_product
+      // 
+      // Saturation logic:
+      //   if (acc_new > MAX_INT) acc_new = MAX_INT
+      //   if (acc_new < MIN_INT) acc_new = MIN_INT
+      //
+      // Overflow detection for error reporting
+
+  # Clear accumulator
+  - name: clear_accumulator
+    given: Clear signal asserted
+    when: Starting new computation
+    then: Sets accumulator to zero
+    implementation: |
+      // Synchronous clear
+      // accumulator <= 32'b0
+
+  # Read accumulator
+  - name: read_result
+    given: Computation complete
+    when: Valid signal asserted
+    then: Accumulator value available on output
+
+fsm:
+  - name: MACFSM
+    initial: IDLE
+    encoding: onehot
+    states:
+      - IDLE
+      - MULTIPLY
+      - REDUCE
+      - ACCUMULATE
+      - DONE
+    transitions:
+      - from: IDLE
+        to: MULTIPLY
+        condition: enable == 1
+      - from: MULTIPLY
+        to: REDUCE
+        condition: always
+      - from: REDUCE
+        to: ACCUMULATE
+        condition: reduce_done == 1
+      - from: ACCUMULATE
+        to: DONE
+        condition: always
+      - from: DONE
+        to: IDLE
+        condition: always
+
+# Pipeline timing
+pipeline:
+  stages: 4
+  throughput: 1
+  latency: 4
+  diagram: |
+    Cycle:  1        2        3        4        5        6
+    Op1:    MUL      RED1     RED2     ACC      DONE
+    Op2:             MUL      RED1     RED2     ACC      DONE
+    Op3:                      MUL      RED1     RED2     ACC
+
+tests:
+  - name: test_mac_all_ones
+    description: "MAC with all +1 weights and activations"
+    input:
+      weights: "256 x +1"
+      activations: "256 x +1"
+      clear: true
+    expected:
+      accumulator: 256
+      overflow: false
+
+  - name: test_mac_all_neg
+    description: "MAC with all -1 weights and +1 activations"
+    input:
+      weights: "256 x -1"
+      activations: "256 x +1"
+      clear: true
+    expected:
+      accumulator: -256
+      overflow: false
+
+  - name: test_mac_zeros
+    description: "MAC with zero weights"
+    input:
+      weights: "256 x 0"
+      activations: "256 x +1"
+      clear: true
+    expected:
+      accumulator: 0
+      overflow: false
+
+  - name: test_mac_accumulate
+    description: "Multiple MAC operations accumulating"
+    sequence:
+      - {weights: "256 x +1", activations: "256 x +1", clear: true}
+      - {weights: "256 x +1", activations: "256 x +1", clear: false}
+      - {weights: "256 x +1", activations: "256 x +1", clear: false}
+    expected:
+      accumulator: 768
+      overflow: false
+
+  - name: test_mac_overflow
+    description: "Accumulator overflow detection"
+    sequence:
+      - repeat: 10000
+        input: {weights: "256 x +1", activations: "256 x +1", clear: false}
+    expected:
+      overflow: true
+
+resources:
+  # Per MAC unit
+  luts_multiply: 512
+  luts_popcount: 360
+  luts_accumulate: 64
+  luts_control: 32
+  luts_total: 968
+  ffs: 256
+  
+  # 16 MAC units total
+  total_luts: 15488
+  total_ffs: 4096
+  
+  # Fits in Artix-7 35T (20800 LUTs)
+  utilization_percent: 74

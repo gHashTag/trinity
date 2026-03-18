@@ -1,0 +1,190 @@
+// ============================================================================
+// VALIDATOR.VIBEE - THE CANON OF TRINITY
+// ============================================================================
+// These are the Sacred Laws that govern all code born in the Trinity ecosystem.
+// The Conscience shall judge all code against these immutable truths.
+
+@spec validator {
+    name: "Trinity Canon"
+    version: "3.0"
+    purpose: "Define the Sacred Laws for code purification"
+}
+
+// ============================================================================
+// THE SACRED CONSTANTS
+// ============================================================================
+
+@constants {
+    PHI: 1.6180339887498948482
+    PI: 3.1415926535897932385
+    E: 2.7182818284590452354
+    SQRT2: 1.4142135623730950488
+    GOLDEN_ANGLE: 137.5077640500378546
+    TRINITY: 3
+}
+
+// ============================================================================
+// THE CANON OF LAWS
+// ============================================================================
+
+@law NO_MAGIC_NUMBERS {
+    severity: "MORTAL_SIN"
+    description: "All numeric constants must be expressed through sacred constants"
+    
+    forbidden_patterns: [
+        /\b\d{4,}\b/,           // Numbers with 4+ digits
+        /(?<!PHI|PI|E)\s*=\s*\d+\.\d+/,  // Floating point literals
+    ]
+    
+    exceptions: [
+        "0", "1", "-1",         // The Trinity of Origins
+        "2", "3",               // Binary and Ternary bases
+        "0.0", "1.0", "-1.0"    // Floating origins
+    ]
+    
+    penance: "Replace {value} with expression using PHI, PI, or E"
+}
+
+@law TRINITY_STRUCTURES {
+    severity: "VENIAL_SIN" 
+    description: "Complex structures should embrace the Holy Trinity pattern"
+    
+    pattern: "struct with >5 fields should be split into State/Processor/Output"
+    
+    penance: "Refactor into three sub-structures embracing the Trinity"
+}
+
+@law IDEMPOTENCE {
+    severity: "MORTAL_SIN"
+    description: "Functions must be pure - no hidden mutable state"
+    
+    forbidden_patterns: [
+        /var\s+\w+\s*=.*;\s*$/m,  // Module-level mutable variables
+        /static\s+var/,           // Static mutable state
+    ]
+    
+    exceptions: [
+        "allocator",              // Memory allocation is blessed
+        "prng",                   // Randomness is divine chaos
+    ]
+    
+    penance: "Pass state explicitly as parameter or return new state"
+}
+
+@law SACRED_NAMING {
+    severity: "VENIAL_SIN"
+    description: "Names must reflect divine purpose"
+    
+    forbidden_patterns: [
+        /\b(tmp|temp|foo|bar|baz|x|y|z)\b/,  // Profane placeholder names
+        /\b(data|info|stuff|thing)\b/,        // Meaningless abstractions
+    ]
+    
+    penance: "Rename with purpose-revealing name"
+}
+
+@law CYCLOMATIC_PURITY {
+    severity: "VENIAL_SIN"
+    description: "Functions must not exceed 3 levels of nesting"
+    
+    max_nesting: 3
+    
+    penance: "Extract nested logic into helper functions"
+}
+
+@law CONST_PREFERENCE {
+    severity: "MINOR_SIN"
+    description: "Prefer const over var unless mutation is required"
+    
+    check: "Count var declarations that are never reassigned"
+    
+    penance: "Change 'var' to 'const' for immutable bindings"
+}
+
+@law LAW_EXPLICIT_ALLOCATION {
+    severity: "MORTAL_SIN"
+    description: "Memory must be passed explicitly. Global state is the root of all evil."
+    
+    forbidden_patterns: [
+        /std\.heap\.page_allocator/,  // Global allocator forbidden directly
+        /var\s+gpa/,                 // Global general purpose allocator instance
+    ]
+    
+    penance: "Pass allocator explicitly to init() or functions"
+}
+
+@law LAW_HOLY_DOCUMENTATION {
+    severity: "VENIAL_SIN"
+    description: "The Word must be known. Public interfaces must be documented."
+    
+    pattern: "pub fn without /// comment"
+    
+    penance: "Add /// documentation comments to public functions"
+}
+
+@law LAW_ERROR_SENSITIVITY {
+    severity: "VENIAL_SIN"
+    description: "Errors are divine signals, not to be ignored."
+    
+    forbidden_patterns: [
+        /catch\s+unreachable/,    // Hubris
+        /catch\s+\{\}/,           // Ignorance
+    ]
+    
+    penance: "Handle errors explicitly or propagate with 'try'"
+}
+
+@law LAW_DIVINE_TYPES {
+    severity: "MINOR_SIN"
+    description: "Types must be explicit and sacred."
+    
+    forbidden_patterns: [
+        /c_int/,                  // Profane C types
+        /c_uint/,
+        /c_long/,
+    ]
+    
+    exceptions: [
+        "@cImport",               // Interop is permitted if explicit
+    ]
+    
+    penance: "Use sacred Zig types (usize, i32) or wrap C types"
+}
+
+// ============================================================================
+// VERDICT STRUCTURE
+// ============================================================================
+
+@verdict {
+    is_valid: bool
+    sins: []Sin
+    total_severity: int  // Sum of sin weights
+    suggested_penance: []Penance
+}
+
+@sin {
+    law: string           // Which law was violated
+    severity: string      // MORTAL_SIN, VENIAL_SIN, MINOR_SIN
+    line: int
+    column: int
+    description: string
+    evidence: string      // The offending code
+}
+
+@penance {
+    for_sin: ref Sin
+    suggestion: string
+    replacement: ?string  // Optional direct replacement
+}
+
+// ============================================================================
+// SEVERITY WEIGHTS
+// ============================================================================
+
+@weights {
+    MORTAL_SIN: 100       // Immediate failure
+    VENIAL_SIN: 10        // Warning, but passable
+    MINOR_SIN: 1          // Suggestion only
+    
+    max_acceptable_score: 50  // Below this, code is blessed
+}

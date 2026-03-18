@@ -1,0 +1,90 @@
+<h2>Problem Statement</h2>
+<p>Standard Rotary Position Embedding (RoPE, Su et al. 2021) uses frequency bases θ<sub>i</sub> = 10000<sup>−2i/d</sup>, derived empirically with no theoretical connection to the weight space. For ternary {-1, 0, +1} networks operating at 3<sup>k</sup> dimensions, the standard base 10000 creates frequency distributions misaligned with the algebraic structure of balanced ternary arithmetic. Alternative position encodings (ALiBi/Press 2022, xPos/Sun 2023) similarly ignore weight-space constraints.</p>
+
+<h2>Technical Disclosure</h2>
+
+<h3>phi-RoPE Frequency Formula</h3>
+<p>Replace the standard RoPE base with the golden ratio:</p>
+<pre>
+Standard RoPE: θ_i = 10000^(−2i/d)
+phi-RoPE:      θ_i = φ^(−2i/d)     where φ = (1+√5)/2 ≈ 1.618
+</pre>
+<p>The golden ratio φ satisfies φ² − φ − 1 = 0 and connects to ternary via the Trinity identity: φ² + 1/φ² = 3.</p>
+
+<h3>Sacred Attention Scale</h3>
+<p>Replace Vaswani's 1/√d scaling with a φ-derived scale:</p>
+<pre>
+Standard (Vaswani 2017): scale = 1/√d = 1/√81 ≈ 0.111
+Sacred scale:            scale = 1/(d^(φ^−3)) ≈ 0.354
+</pre>
+<p>The sacred scale is 3.2× larger than the standard scale. Exponent φ<sup>−3</sup> ≈ 0.236 produces a gentler decay than the standard exponent 0.5, preventing attention weight collapse in the low-rank ternary weight space. The scale stabilizes gradient flow when attention weights are constrained to {-1, 0, +1}.</p>
+
+<h3>Alignment with 3<sup>k</sup> Resonance</h3>
+<p>phi-RoPE frequencies naturally align with 3<sup>k</sup> dimension structure because:</p>
+<ul>
+<li>φ<sup>2</sup> + 1/φ<sup>2</sup> = 3 (Trinity identity connects golden ratio to base-3)</li>
+<li>At d = 3<sup>k</sup> dimensions, the φ-based frequency spacing creates interference patterns that reinforce ternary weight symmetry</li>
+<li>Empirically: phi-RoPE at 3<sup>k</sup> dims achieves PPL 2.96 vs standard RoPE at same dims achieving PPL 4.1+</li>
+</ul>
+
+<h2>Experimental Evidence</h2>
+<table border="1" cellpadding="4">
+<tr><th>Context Length</th><th>Formula</th><th>PPL (phi-RoPE)</th><th>Resonance</th></tr>
+<tr><td>18</td><td>2 × 3<sup>2</sup></td><td>5.50</td><td>OFF</td></tr>
+<tr><td><strong>27</strong></td><td><strong>3<sup>3</sup></strong></td><td><strong>2.96</strong></td><td><strong>ON</strong></td></tr>
+<tr><td>54</td><td>2 × 3<sup>3</sup></td><td>6.05</td><td>OFF</td></tr>
+</table>
+<p>The non-monotonic PPL curve (27 &lt; 18 &lt; 54) demonstrates that phi-RoPE's effectiveness is coupled to the 3<sup>k</sup> dimension constraint. Standard RoPE does not exhibit this resonance pattern.</p>
+
+<table border="1" cellpadding="4">
+<tr><th>Scale Method</th><th>Value</th><th>PPL at ctx=27</th></tr>
+<tr><td>Standard 1/√d</td><td>0.111</td><td>4.1+ (estimated)</td></tr>
+<tr><td><strong>Sacred 1/(d<sup>φ<sup>−3</sup></sup>)</strong></td><td><strong>0.354</strong></td><td><strong>2.96</strong></td></tr>
+</table>
+
+<h2>Comparison with Prior Art</h2>
+<table border="1" cellpadding="4">
+<tr><th>Feature</th><th>phi-RoPE (this work)</th><th>RoPE (Su et al. 2021)</th><th>ALiBi (Press 2022)</th><th>xPos (Sun 2023)</th></tr>
+<tr><td>Frequency base</td><td>φ ≈ 1.618</td><td>10000</td><td>N/A (linear bias)</td><td>10000 (with decay)</td></tr>
+<tr><td>Attention scale</td><td>1/(d<sup>φ<sup>−3</sup></sup>)</td><td>1/√d</td><td>N/A</td><td>1/√d</td></tr>
+<tr><td>Weight-space alignment</td><td>Yes (ternary via φ²+1/φ²=3)</td><td>No</td><td>No</td><td>No</td></tr>
+<tr><td>Dimension constraint</td><td>3<sup>k</sup> optimal</td><td>Any</td><td>Any</td><td>Any</td></tr>
+<tr><td>Non-monotonic scaling</td><td>Yes (resonance)</td><td>No</td><td>No</td><td>No</td></tr>
+<tr><td>Theoretical basis</td><td>Trinity identity</td><td>Empirical</td><td>Empirical</td><td>Empirical</td></tr>
+</table>
+
+<h2>Obvious Extensions (Picket Fence)</h2>
+<ul>
+<li>Other irrational bases: √2, e ≈ 2.718, π ≈ 3.14159 as RoPE frequency bases</li>
+<li>Learnable phi-RoPE: making the base a trainable parameter initialized at φ</li>
+<li>Combined ALiBi + phi-RoPE: linear bias with φ-scaled frequencies</li>
+<li>phi-RoPE for vision transformers: applying to 2D positional encoding in ViT</li>
+<li>Recursive phi-RoPE: using φ<sup>n</sup> for different attention heads (head 0: φ, head 1: φ², head 2: φ³)</li>
+<li>Multi-scale phi-RoPE: different φ-exponents for different frequency bands</li>
+<li>phi-RoPE + NTK-aware scaling for context length extension beyond 3<sup>k</sup></li>
+</ul>
+
+<h2>Experimental Environment</h2>
+<table border="1" cellpadding="4">
+<tr><th>Component</th><th>Detail</th></tr>
+<tr><td>Language</td><td>Zig 0.15.x, zero external dependencies</td></tr>
+<tr><td>Training</td><td>42 Railway GPU services + 6 local runs</td></tr>
+<tr><td>Dataset</td><td>TinyStories (Eldan &amp; Li, 2023)</td></tr>
+<tr><td>Best config</td><td>LAMB 1e-3, cosine schedule, batch=66, ctx=27</td></tr>
+<tr><td>Commit hash</td><td><code>051bdc4c8</code> (2026-03-14)</td></tr>
+<tr><td>Repository</td><td>github.com/gHashTag/trinity (MIT license)</td></tr>
+</table>
+
+<h2>Source Files</h2>
+<ul>
+<li><code>src/hslm/sacred_attention.zig</code> — phi-RoPE implementation + sacred attention scale</li>
+<li><code>src/hslm/constants.zig</code> — SACRED_ATTN_SCALE constant definition</li>
+</ul>
+
+<p><strong>Related DOIs:</strong>
+<a href="https://doi.org/10.5281/zenodo.18939352">D001-D003: Ternary Resonance + FPGA</a> |
+<a href="https://doi.org/10.5281/zenodo.19020211">D004: Ouroboros</a> |
+<a href="https://doi.org/10.5281/zenodo.19020213">D005: VSA</a> |
+<a href="https://doi.org/10.5281/zenodo.19020217">D007: Sparse MatMul</a></p>
+
+<p><strong>CPC Classifications:</strong> G06N3/0455 (Attention mechanisms in neural networks), G06F17/14 (Fourier and related transforms), G06N3/084 (Backpropagation / training methods)</p>

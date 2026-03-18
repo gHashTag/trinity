@@ -1,0 +1,41 @@
+[cell]
+id = "trinity.origin"
+name = "Origin of Life"
+version = "1.0.0"
+kind = "library"
+path = "src/origin"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Chemical-to-biological transition at phi critical thresholds"
+capabilities = ["vsa", "origin", "sacred-geometry"]
+files = 1
+tests = 24
+owner = "agent:ralph"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = []
+exports = ["phaseDescription", "aminoAcidStabilitySeconds", "rnaHalfLifeSeconds", "chiralityBias", "peptideBondEnergyKJmol"]
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = "true"
+signature = "sha256:59bea1aced144d089de50cd148afc2c567ba0562aa475cc5bb70fe7f8358effa"

@@ -1,0 +1,23 @@
+name: economy_global_engine
+version: "4.0.0"
+language: zig
+module: tri.economy_global_engine
+
+description: |
+  Sacred economy global engine for Trinity.
+  Implements economic simulation using sacred formula V = n * 3^k * pi^m * phi^p * e^q.
+
+behaviors:
+  - name: runEconomy
+    given: Economic parameters and sacred constants
+    when: Global economy simulation is triggered
+    then: Computes economic state evolution
+
+  - name: calculateRewards
+    given: Agent contributions and sacred multipliers
+    when: Reward distribution is requested
+    then: Returns rewards weighted by sacred formula
+
+export_functions:
+  - runEconomy
+  - calculateRewards

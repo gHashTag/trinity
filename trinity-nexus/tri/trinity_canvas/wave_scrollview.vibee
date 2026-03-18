@@ -1,0 +1,219 @@
+name: wave_scrollview
+version: "1.0.0"
+language: zig
+module: wave_scrollview
+description: |
+  Emergent Wave ScrollView v1.0
+  Content items as localized wave packets, scroll as global phase shift.
+  SIMD-accelerated (Vec8f) 120 FPS with phi-based inertia and damping.
+  phi^2 + 1/phi^2 = 3 = TRINITY
+
+# =============================================================================
+# EMERGENT WAVE SCROLLVIEW
+# Content = waves. Scroll = phase shift. No grid. Pure wave field.
+# "This is not a scroll — this is a wave of time!"
+# =============================================================================
+
+imports:
+  - theme
+  - types
+
+types:
+  ContentWaveType:
+    description: "Content type determines wave parameters"
+    enum:
+      - text_standing        # Standing wave, low frequency (PHI Hz)
+      - image_interference   # Spatial interference, high frequency (TAU Hz)
+      - voice_modulated      # Frequency-modulated carrier (TAU*PHI Hz)
+      - code_banded          # Syntax-colored wave bands (TRINITY Hz)
+      - separator            # Low-energy separator wave (PHI_INV Hz)
+
+  WavePacket:
+    description: "Localized wave packet representing a content item"
+    fields:
+      base_y: Float              # Rest position (index * item_height)
+      amplitude: Float           # Visibility/prominence [0, 1]
+      phase: Float               # Individual wave phase [0, TAU]
+      frequency: Float           # Spatial frequency (content-type dependent)
+      sigma: Float               # Gaussian envelope width (item_height * PHI)
+      content_type: ContentWaveType
+      content_index: USize       # Index into content data array
+      energy: Float              # Interaction energy
+      hue: Float                 # Color hue for glow effect [0, 360]
+      item_height: Float         # Height of this content item
+
+  WaveScrollState:
+    description: "Global wave scroll state — replaces legacy scroll_y/scroll_target"
+    fields:
+      scroll_phase: Float        # Cumulative scroll offset (replaces scroll_y)
+      scroll_velocity: Float     # Current scroll speed (px/sec)
+      scroll_acceleration: Float # Impulse from input
+      damping_factor: Float      # PHI_INV = 0.618 (golden damping)
+      inertia_mass: Float        # PHI = 1.618 (golden inertia)
+      max_velocity: Float        # Velocity cap (5000 px/sec)
+      bounce_phase: Float        # Edge bounce wave phase
+      bounce_amplitude: Float    # Edge bounce wave amplitude
+      total_content_height: Float # Total virtual height of all items
+      viewport_height: Float     # Visible area height
+      rubber_offset: Float       # iOS-style rubber-band displacement at edges
+
+  WaveScrollView:
+    description: "Complete Wave ScrollView with SIMD-optimized packet evaluation"
+    fields:
+      state: WaveScrollState
+      packets: Array<WavePacket, 1024>     # Visible subset of wave packets
+      packet_count: USize
+      total_items: USize                   # Total items (supports 100K+)
+      visible_start: USize                 # First visible packet index
+      visible_end: USize                   # Last visible packet index
+      viewport_x: Float
+      viewport_y: Float
+      viewport_width: Float
+      viewport_height: Float
+      y_buffer: Array<Float, 1024>         # SIMD: viewport-relative Y positions
+      amp_buffer: Array<Float, 1024>       # SIMD: evaluated amplitudes
+      interference: Array<Float, 256>      # Interference field (viewport rows)
+      interference_rows: USize
+      wave_time: Float                     # Global wave animation time
+      default_item_height: Float           # Default item height for uniform lists
+      needs_eval: Bool                     # Dirty flag — skip SIMD when idle
+      snap_points: Array<Float, 64>        # Y positions of section snap boundaries
+      snap_count: USize                    # Number of active snap points
+      snap_enabled: Bool                   # Enable scroll snap behavior
+
+constants:
+  # Physics (phi-based)
+  SCROLL_DAMPING: 0.6180339887           # PHI_INV — golden ratio damping
+  SCROLL_INERTIA_MASS: 1.6180339887      # PHI — golden ratio inertia
+  SCROLL_MAX_VELOCITY: 5000.0            # Max scroll speed (px/sec)
+  SCROLL_IMPULSE_SCALE: 40.0             # Mouse wheel impulse multiplier
+  BOUNCE_STIFFNESS: 3.0                  # TRINITY = phi^2 + 1/phi^2
+  BOUNCE_DAMPING: 0.6180339887           # PHI_INV — golden bounce decay
+
+  # Wave packets
+  DEFAULT_SIGMA_MULT: 1.6180339887       # PHI — envelope = item_height * PHI
+  DEFAULT_FREQUENCY: 1.6180339887        # PHI — base spatial frequency
+  CULLING_SIGMA_MULT: 3.0               # TRINITY — cull beyond 3*sigma
+
+  # SIMD
+  SIMD_WIDTH: 8                          # Vec8f lanes
+  MAX_VISIBLE: 1024                      # Max packets in viewport
+  MAX_INTERFERENCE: 256                  # Max interference field rows
+
+behaviors:
+  - name: init
+    given: viewport_x, viewport_y, viewport_width, viewport_height
+    when: Creating new WaveScrollView
+    then: Initialize state with phi-based defaults, zero all buffers
+
+  - name: add_item
+    given: ContentWaveType, item_height
+    when: Adding content item
+    then: Create WavePacket with content-type wave parameters, increment total_items
+
+  - name: set_total_items
+    given: Total count, item_height
+    when: Setting up large/infinite scroll (100K+ items)
+    then: Store total, compute total_content_height procedurally
+
+  - name: apply_impulse
+    given: Impulse value (mouse wheel or touch delta)
+    when: User scrolls
+    then: Add impulse * SCROLL_IMPULSE_SCALE to scroll_acceleration
+
+  - name: update_physics
+    given: Delta time (dt)
+    when: Each frame
+    then: |
+      Phi-damped velocity integration:
+        drag = -PHI_INV * velocity
+        bounce = -TRINITY * overshoot
+        acceleration = (impulse + drag + bounce) / PHI
+        velocity += acceleration * dt
+        phase += velocity * dt
+      Reset impulse, update bounce animation.
+
+  - name: update_visible_range
+    given: Nothing
+    when: After physics update
+    then: |
+      Spatial culling: only packets within viewport +/- TRINITY*sigma.
+      Compute visible_start, visible_end. Populate packets array.
+
+  - name: evaluate_packets_simd
+    given: Nothing
+    when: After visible range update
+    then: |
+      SIMD (Vec8f) Gaussian envelope evaluation:
+        rel_y = base_y - scroll_phase
+        amplitude = fast_exp(-(rel_y - center)^2 / (2*sigma^2))
+      Process 8 packets per iteration. Scalar fallback for remainder.
+
+  - name: compute_interference
+    given: Nothing
+    when: After packet evaluation
+    then: |
+      Sum wave contributions at each viewport row:
+        interference[row] += amplitude * envelope * sin(freq*y + phase + time*freq)
+      Clamp to [0, 1] for rendering.
+
+  - name: get_item_y
+    given: Item index
+    when: Querying item position for rendering
+    then: Return viewport-relative Y from y_buffer
+
+  - name: get_item_amplitude
+    given: Item index
+    when: Querying item visibility
+    then: Return amplitude from amp_buffer
+
+  - name: get_interference_at
+    given: Viewport row index
+    when: Querying wave interference for glow effect
+    then: Return interference field value
+
+  - name: scroll_to_item
+    given: Item index
+    when: Programmatic scroll
+    then: Set velocity = delta * PHI for phi-based ease-out
+
+  - name: set_viewport
+    given: x, y, width, height
+    when: Panel resize
+    then: Update viewport dimensions and interference_rows
+
+  - name: add_snap_point
+    given: Y position
+    when: Adding section boundary for scroll snap
+    then: Append to snap_points array, increment snap_count
+
+  - name: find_nearest_snap
+    given: Current scroll phase
+    when: Velocity drops below snap threshold
+    then: Return nearest snap_point Y value
+
+  - name: get_scroll_y_with_rubber
+    given: Nothing
+    when: Querying effective scroll position for rendering
+    then: Return scroll_phase + rubber_offset (iOS-style rubber-band at edges)
+
+test_cases:
+  - name: phi_damping_convergence
+    given: "Initial impulse 1.0, simulate 60 frames at 60 FPS"
+    expected: "Velocity decays (golden ratio decay), scroll_phase moves"
+
+  - name: trinity_bounce_spring
+    given: "scroll_phase = 100 beyond max_scroll"
+    expected: "Restoring force pulls back, velocity < 0"
+
+  - name: simd_scalar_equivalence
+    given: "100 packets evaluated"
+    expected: "All amplitudes in [0, 1]"
+
+  - name: visible_range_culling
+    given: "100K items, scroll to middle"
+    expected: "packet_count << 100K, visible_start > 0"
+
+  - name: golden_identity
+    given: "PHI = 1.618..."
+    expected: "PHI^2 + 1/PHI^2 = 3.0 (TRINITY)"

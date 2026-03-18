@@ -1,0 +1,97 @@
+name: cycle99_background_daemon
+version: "99.0.0"
+language: zig
+module: background_daemon
+
+types:
+  DaemonConfig:
+    fields:
+      service_name: String
+      executable_path: String
+      working_directory: String
+      user: Option<String>
+      group: Option<String>
+      auto_restart: Bool
+      restart_delay_sec: Int
+      environment: Map<String, String>
+
+  DaemonStatus:
+    fields:
+      is_running: Bool
+      pid: Option<Int>
+      uptime_seconds: Int
+      memory_usage_mb: Float
+      last_restart: Option<String>
+      restart_count: Int
+
+  ServiceFile:
+    fields:
+      platform: String           # "linux" or "macos"
+      file_type: String          # "systemd" or "launchd"
+      content: String
+      install_path: String
+
+  LogConfig:
+    fields:
+      log_file: String
+      max_size_mb: Int
+      max_files: Int
+      compress: Bool
+      timestamp_format: String
+
+  PidFile:
+    fields:
+      path: String
+      pid: Int
+      created_at: String
+
+behaviors:
+  - name: install_service
+    given: DaemonConfig with platform-specific settings
+    when: Installing the daemon service
+    then: Creates systemd service file (Linux) or launchd plist (macOS) in system directory and enables service
+
+  - name: uninstall_service
+    given: Previously installed service name
+    when: Uninstalling the daemon service
+    then: Disables and removes service file from system directory, keeping config files for backup
+
+  - name: start_daemon
+    given: Installed service and optional DaemonConfig overrides
+    when: Starting the daemon process
+    then: Launches daemon process, writes PID file, initializes logging, returns success status
+
+  - name: stop_daemon
+    given: Running daemon with known PID
+    when: Stopping the daemon gracefully
+    then: Sends SIGTERM, waits for graceful_shutdown completion, verifies process termination, cleans up PID file
+
+  - name: restart_daemon
+    given: Running or stopped daemon
+    when: Restarting the daemon
+    then: Executes stop_daemon, waits restart_delay_sec, executes start_daemon, increments restart_count
+
+  - name: get_status
+    given: Service name
+    when: Querying daemon status
+    then: Returns DaemonStatus with running state, PID, uptime, memory usage, restart count
+
+  - name: write_pid_file
+    given: Process ID and PID file path
+    when: Starting daemon or updating PID
+    then: Creates PID file with current PID and timestamp, verifies write success, handles concurrent access
+
+  - name: setup_logging
+    given: LogConfig with file paths and rotation settings
+    when: Initializing daemon logging
+    then: Opens log file, sets up rotation hooks, configures timestamps, creates log directory if needed
+
+  - name: handle_signal
+    given: Signal number (SIGTERM, SIGINT, SIGHUP, SIGUSR1)
+    when: Daemon receives OS signal
+    then: Routes to appropriate handler (shutdown for SIGTERM/SIGINT, reload config for SIGHUP, custom for SIGUSR1)
+
+  - name: graceful_shutdown
+    given: Shutdown signal received
+    when: Daemon is terminating
+    then: Stops accepting new connections, completes active tasks, closes sockets, flushes logs, removes PID file, exits with code 0

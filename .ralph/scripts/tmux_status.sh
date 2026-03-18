@@ -1,0 +1,317 @@
+#!/bin/bash
+# tmux_status.sh - Output formatted status for Ralph Dashboard panels
+# Usage: ./tmux_status.sh <panel_name|statusline>
+
+RALPH_DIR="/Users/playra/trinity"
+cd "$RALPH_DIR" 2>/dev/null || exit 1
+
+# Trinity colors (ANSI)
+GOLD="\033[38;5;220m"    # RAZUM
+CYAN="\033[38;5;075m"    # MATERIYA
+PURPLE="\033[38;5;141m"  # DUKH
+GREEN="\033[38;5;042m"
+RED="\033[38;5;196m"
+ORANGE="\033[38;5;208m"
+YELLOW="\033[38;5;226m"
+BLUE="\033[38;5;039m"
+GRAY="\033[38;5;244m"
+RESET="\033[0m"
+BOLD="\033[1m"
+
+panel0_loop_status() {
+    # Panel 0: Ralph Loop Status (RAZUM)
+    local status_file=".ralph/logs/status.json"
+    local loop="?"
+    local api="?/100"
+    local cb="UNKNOWN"
+    local last_action="unknown"
+    local status="unknown"
+    local next_reset="?"
+
+    if [ -f "$status_file" ]; then
+        loop=$(jq -r '.loop_count // "?"' "$status_file" 2>/dev/null)
+        local calls=$(jq -r '.calls_made_this_hour // "?"' "$status_file" 2>/dev/null)
+        api="${calls}/100"
+        status=$(jq -r '.status // "unknown"' "$status_file" 2>/dev/null)
+        last_action=$(jq -r '.last_action // "unknown"' "$status_file" 2>/dev/null)
+        next_reset=$(jq -r '.next_reset // "?"' "$status_file" 2>/dev/null)
+    fi
+
+    # Check circuit breaker state
+    local cb_state="CLOSED"
+    if [ -f ".ralph/internal/.circuit_breaker_state" ]; then
+        cb_state=$(jq -r '.state // "CLOSED"' ".ralph/internal/.circuit_breaker_state" 2>/dev/null || echo "CLOSED")
+    fi
+
+    # Color code status
+    local status_color="$GREEN"
+    if [ "$status" != "running" ]; then
+        status_color="$ORANGE"
+    fi
+    if [ "$cb_state" = "OPEN" ]; then
+        status_color="$RED"
+    fi
+
+    echo -e "${BOLD}${GOLD}RAZUM: Ralph Loop Status${RESET}"
+    echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+    echo -e "Loop Count:     ${BOLD}${loop}${RESET}"
+    echo -e "API Calls:      ${api} ($(echo "$api" | cut -d/ -f1 | awk '{print $1*1"%"}') used)"
+    echo -e "Circuit Breaker:${status_color} ${cb_state}${RESET}"
+    echo -e "Last Action:    ${last_action}"
+    echo -e "Status:         ${status_color}${status}${RESET}"
+    echo -e "Next Reset:     ${next_reset}"
+
+    # Session info
+    if [ -f ".ralph/internal/.ralph_session" ]; then
+        local last_used=$(jq -r '.last_used // "unknown"' ".ralph/internal/.ralph_session" 2>/dev/null)
+        echo -e "Session Last:    ${last_used}"
+    fi
+}
+
+
+panel1_workers() {
+    # Panel 1: Worker Agents (MATERIYA)
+    echo -e "${BOLD}${CYAN}MATERIYA: Worker Agents${RESET}"
+    echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+
+    # Show fix_plan tasks instead of non-existent worker files
+    local fix_plan=""
+    if [ -f ".ralph/internal/fix_plan.md" ]; then
+        fix_plan=".ralph/internal/fix_plan.md"
+    elif [ -f ".ralph/fix_plan.md" ]; then
+        fix_plan=".ralph/fix_plan.md"
+    fi
+
+    if [ -n "$fix_plan" ]; then
+        # Count active tasks
+        local total=$(grep -c "^- \[ \]" "$fix_plan" 2>/dev/null || echo "0")
+        local done=$(grep -c "^- \[x\]" "$fix_plan" 2>/dev/null || echo "0")
+        echo -e "Active Tasks:   ${GREEN}${done}/${total} done${RESET}"
+        echo -e ""
+        echo -e "Recent P1 tasks:"
+        grep "^\- \[ \] \[P1\]" "$fix_plan" 2>/dev/null | head -3 | while read -r line; do
+            task=$(echo "$line" | sed 's/.*- \[ \] \[P1\] //' | cut -d: -f1)
+            echo -e "  ${RED}[P1]${RESET} ${task}"
+        done
+    else
+        echo -e "${RED}No fix_plan.md found${RESET}"
+    fi
+}
+
+panel2_tasks() {
+    # Panel 2: Active Tasks (DUKH)
+    echo -e "${BOLD}${PURPLE}DUKH: Active Tasks (fix_plan.md)${RESET}"
+    echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+
+    # Check for fix_plan.md in both locations
+    local fix_plan=""
+    if [ -f ".ralph/internal/fix_plan.md" ]; then
+        fix_plan=".ralph/internal/fix_plan.md"
+    elif [ -f ".ralph/fix_plan.md" ]; then
+        fix_plan=".ralph/fix_plan.md"
+    else
+        echo -e "${RED}No fix_plan.md found${RESET}"
+        return
+    fi
+
+    # Count P1, P2, P3 tasks
+    local p1_count=$(grep -c "^\- \[ \] \[P1\]" "$fix_plan" 2>/dev/null || echo "0")
+    local p2_count=$(grep -c "^\- \[ \] \[P2\]" "$fix_plan" 2>/dev/null || echo "0")
+    local p3_count=$(grep -c "^\- \[ \] \[P3\]" "$fix_plan" 2>/dev/null || echo "0")
+
+    # Show P1 tasks
+    if [ "$p1_count" -gt 0 ]; then
+        echo -e "${RED}P1 (${p1_count} tasks):${RESET}"
+        grep "^\- \[ \] \[P1\]" "$fix_plan" 2>/dev/null | head -5 | while read -r line; do
+            task=$(echo "$line" | sed 's/.*- \[ \] \[P1\] //' | cut -d: -f1)
+            echo -e "  ${GRAY}[ ]${RESET} ${task}"
+        done
+        echo ""
+    fi
+
+    # Show P2 tasks
+    if [ "$p2_count" -gt 0 ]; then
+        echo -e "${ORANGE}P2 (${p2_count} tasks):${RESET}"
+        grep "^\- \[ \] \[P2\]" "$fix_plan" 2>/dev/null | head -3 | while read -r line; do
+            task=$(echo "$line" | sed 's/.*- \[ \] \[P2\] //' | cut -d: -f1)
+            echo -e "  ${GRAY}[ ]${RESET} ${task}"
+        done
+        echo ""
+    fi
+
+    # Show P3 tasks
+    if [ "$p3_count" -gt 0 ]; then
+        echo -e "${YELLOW}P3 (${p3_count} tasks):${RESET}"
+        grep "^\- \[ \] \[P3\]" "$fix_plan" 2>/dev/null | head -2 | while read -r line; do
+            task=$(echo "$line" | sed 's/.*- \[ \] \[P3\] //' | cut -d: -f1)
+            echo -e "  ${GRAY}[ ]${RESET} ${task}"
+        done
+    fi
+
+    if [ "$p1_count" -eq 0 ] && [ "$p2_count" -eq 0 ] && [ "$p3_count" -eq 0 ]; then
+        echo -e "${GREEN}No pending tasks!${RESET}"
+    fi
+}
+
+
+panel3_techtree() {
+    # Panel 3: Tech Tree Progress (RAZUM)
+    echo -e "${BOLD}${GOLD}RAZUM: Tech Tree Progress${RESET}"
+    echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+
+    if [ ! -f ".ralph/TECH_TREE.md" ]; then
+        echo -e "${RED}No TECH_TREE.md found${RESET}"
+        return
+    fi
+
+    # Show recently completed nodes (from table)
+    echo -e "Recently Completed:"
+    grep -E '\|\s*\*\*[^*]+\*\*' ".ralph/TECH_TREE.md" 2>/dev/null | grep -i "COMPLETED\|Done" | head -5 | while read -r line; do
+        # Extract node ID and name from table row
+        echo -e "${GREEN}✓${RESET} ${line}"
+    done
+
+    echo ""
+    echo -e "Available Nodes:"
+    local available=$(grep -c "Available Nodes" ".ralph/TECH_TREE.md" 2>/dev/null || echo "0")
+    echo -e "  ${available} nodes available"
+}
+
+panel4_memory() {
+    # Panel 4: Memory Systems (RAZUM)
+    echo -e "${BOLD}${GOLD}RAZUM: Memory Systems${RESET}"
+    echo -e "${GRAY}━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RESET}"
+
+    # SUCCESS_HISTORY
+    local success_count=0
+    if [ -f ".ralph/memory/SUCCESS_HISTORY.md" ]; then
+        success_count=$(grep -c "^-" ".ralph/memory/SUCCESS_HISTORY.md" 2>/dev/null || echo "0")
+        echo -e "${GREEN}SUCCESS_HISTORY:${RESET}     ${success_count} entries"
+        echo -e "${GRAY}Recent:${RESET}"
+        grep "^-" ".ralph/memory/SUCCESS_HISTORY.md" 2>/dev/null | tail -2 | while read -r line; do
+            echo -e "  ${GREEN}✓${RESET} ${line}"
+        done
+    else
+        echo -e "${GREEN}SUCCESS_HISTORY:${RESET}     No file"
+    fi
+
+    echo ""
+
+    # REGRESSION_PATTERNS
+    local regression_count=0
+    if [ -f ".ralph/memory/REGRESSION_PATTERNS.md" ]; then
+        regression_count=$(grep -c "^-" ".ralph/memory/REGRESSION_PATTERNS.md" 2>/dev/null || echo "0")
+        echo -e "${RED}REGRESSION_PATTERNS:${RESET}  ${regression_count} patterns"
+        echo -e "${GRAY}Recent:${RESET}"
+        grep "^-" ".ralph/memory/REGRESSION_PATTERNS.md" 2>/dev/null | tail -2 | while read -r line; do
+            echo -e "  ${RED}✗${RESET} ${line}"
+        done
+    else
+        echo -e "${RED}REGRESSION_PATTERNS:${RESET}  No file"
+    fi
+}
+
+statusline() {
+    # Status line for tmux status bar
+    local loop="#?"
+    local api="?/100"
+    local cb="CLOSED"
+    local p1=0 p2=0 p3=0
+    local branch=$(git branch --show-current 2>/dev/null || echo "no-git")
+    local changes=0
+
+    # Parse status.json
+    if [ -f ".ralph/logs/status.json" ]; then
+        loop=$(jq -r '.loop_count // "#?"' ".ralph/logs/status.json" 2>/dev/null)
+        local calls=$(jq -r '.calls_made_this_hour // "?"' ".ralph/logs/status.json" 2>/dev/null)
+        api="${calls}/100"
+        local status=$(jq -r '.status // "unknown"' ".ralph/logs/status.json" 2>/dev/null)
+    fi
+
+    # Parse circuit breaker
+    if [ -f ".ralph/internal/.circuit_breaker_state" ]; then
+        cb=$(jq -r '.state // "CLOSED"' ".ralph/internal/.circuit_breaker_state" 2>/dev/null || echo "CLOSED")
+    fi
+
+    # Count tasks
+    local fix_plan=""
+    if [ -f ".ralph/internal/fix_plan.md" ]; then
+        fix_plan=".ralph/internal/fix_plan.md"
+    elif [ -f ".ralph/fix_plan.md" ]; then
+        fix_plan=".ralph/fix_plan.md"
+    fi
+
+    if [ -n "$fix_plan" ]; then
+        p1=$(grep -c "^\- \[ \] \[P1\]" "$fix_plan" 2>/dev/null || echo "0")
+        p2=$(grep -c "^\- \[ \] \[P2\]" "$fix_plan" 2>/dev/null || echo "0")
+        p3=$(grep -c "^\- \[ \] \[P3\]" "$fix_plan" 2>/dev/null || echo "0")
+    fi
+
+    # Git changes
+    changes=$(git status --short 2>/dev/null | wc -l | xargs || echo "0")
+
+    # Worker status
+    local w1="idle" w2="idle" w3="idle"
+    [ -f ".ralph/DONE_W1" ] || w1="act"
+    [ -f ".ralph/DONE_W2" ] || w2="act"
+    [ -f ".ralph/DONE_W3" ] || w3="act"
+
+    # Format: Loop:#15 API:38/100 CB:CLOSED P1:3 P2:1 Tech:93% W1:act W2:idle W3:idle main Changes:5
+    echo "Loop:${loop} API:${api} CB:${cb} P1:${p1} P2:${p2} P3:${p3} W1:${w1} W2:${w2} W3:${w3} ${branch} Chg:${changes}"
+}
+
+panel_welcome() {
+  clear
+  echo -e "${BOLD}${GOLD}╔════════════════════════════════════════════════════════════════════════════╗${RESET}"
+  echo -e "${BOLD}${GOLD}║${RESET}               ${BOLD}RALPH AUTONOMOUS DEVELOPMENT SYSTEM${RESET}               ${BOLD}${GOLD}║${RESET}"
+  echo -e "${BOLD}${GOLD}║${RESET}                    ${CYAN}v10.6 — TRUTH MODE${RESET}                     ${BOLD}${GOLD}║${RESET}"
+  echo -e "${BOLD}${GOLD}╚════════════════════════════════════════════════════════════════════════════╝${RESET}"
+  echo ""
+
+  echo -e "${BOLD}⚡ QUICK STATUS${RESET}"
+  echo -e "${GRAY}────────────────────────────────────────────────────────────────────────────${RESET}"
+  .ralph/scripts/tmux_status.sh panel0 2>/dev/null | tail -8 || echo "  Status: initializing..."
+  echo ""
+
+  echo -e "${BOLD}📺 WINDOWS GUIDE${RESET}"
+  echo -e "${GRAY}────────────────────────────────────────────────────────────────────────────${RESET}"
+  echo -e " ${CYAN}[0] HOME${RESET}     → Эта админка (ты здесь)"
+  echo -e " ${CYAN}[1] Loop${RESET}     → Ralph Golden Chain, API, Circuit Breaker, Workers"
+  echo -e " ${CYAN}[2] Tasks${RESET}    → Активные задачи из fix_plan.md (P1/P2/P3)"
+  echo -e " ${CYAN}[3] Memory${RESET}   → SUCCESS_HISTORY + REGRESSION_PATTERNS"
+  echo -e " ${CYAN}[4] Log${RESET}      → Полный live-лог всей армии"
+  echo ""
+
+  echo -e "${BOLD}🎨 COLOR LEGEND${RESET}"
+  echo -e "${GRAY}────────────────────────────────────────────────────────────────────────────${RESET}"
+  echo -e " ${GOLD}🟡 GOLD${RESET}   = RAZUM (Mind)   — интеллект, routing, решения"
+  echo -e " ${CYAN}🔵 CYAN${RESET}   = MATERIYA (Matter) — инфраструктура, данные, файлы"
+  echo -e " ${PURPLE}🟣 PURPLE${RESET} = DUKH (Spirit)  — действия, инструменты, доказательства"
+  echo ""
+
+  echo -e "${BOLD}⌨️  KEYBINDINGS${RESET}"
+  echo -e "${GRAY}────────────────────────────────────────────────────────────────────────────${RESET}"
+  echo -e " ${BOLD}Ctrl+b${RESET} ${CYAN}0-4${RESET}   → Переключение окон"
+  echo -e " ${BOLD}Ctrl+b${RESET} ${CYAN}|${RESET}       → Разделить горизонтально"
+  echo -e " ${BOLD}Ctrl+b${RESET} ${CYAN}-${RESET}       → Разделить вертикально"
+  echo -e " ${BOLD}Ctrl+b${RESET} ${CYAN}q${RESET}       → Показать номера панелей"
+  echo -e " ${BOLD}Ctrl+b${RESET} ${CYAN}d${RESET}       → Отсоединиться от сессии"
+  echo -e " ${BOLD}Ctrl+b${RESET} ${CYAN}?${RESET}       → Все клавиши tmux"
+  echo ""
+  echo -e "${GREEN}Присоединяйся: tmux attach -t ralph${RESET}"
+}
+
+# Main router
+case "$1" in
+    welcome|home|panel_welcome) panel_welcome ;;
+    panel0|loop)    panel0_loop_status ;;
+    panel1|workers) panel1_workers ;;
+    panel2|tasks)   panel2_tasks ;;
+    panel3|techtreet|techtree) panel3_techtree ;;
+    panel4|memory)  panel4_memory ;;
+    statusline)     statusline ;;
+    *)
+        echo "Usage: $0 {welcome|panel0|panel1|panel2|panel3|panel4|statusline}"
+        exit 1
+        ;;
+esac

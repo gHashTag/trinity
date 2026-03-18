@@ -1,0 +1,103 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# COUNTER — 8-Bit Binary Counter Example
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Displays an 8-bit binary counter on LED bar
+# Target: QMTECH Artix-7 XC7A100T
+#
+# Shows binary counting: 00000000 → 00000001 → 00000010 → ... → 11111111
+#
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: counter_8bit
+version: "1.0.0"
+language: varlog
+fpga_target: xilinx
+target_frequency: 50
+
+# Port definitions
+signals:
+  - name: clk
+    width: 1
+    direction: input
+    description: "50 MHz oscillator (U22)"
+
+  - name: led
+    width: 8
+    direction: output
+    description: "8-bit LED output (D6-D5-D4-D3-D2-D1-D0-D7)"
+
+# Pin constraints for QMTECH XC7A100T FGG676
+# Using available LEDs in order: D6(R23), D5(T23), D4(P24), D3(R24), D2(N22), D1(P22), D0(M24), D7(N24)
+constraints:
+  - port: clk
+    pin: U22
+    iostandard: LVCMOS33
+
+  - port: led[0]
+    pin: R23
+    iostandard: LVCMOS33
+    description: "LED D6 (PRIMARY)"
+
+  - port: led[1]
+    pin: T23
+    iostandard: LVCMOS33
+    description: "LED D5"
+
+  - port: led[2]
+    pin: P24
+    iostandard: LVCMOS33
+    description: "LED D4"
+
+  - port: led[3]
+    pin: R24
+    iostandard: LVCMOS33
+    description: "LED D3"
+
+  - port: led[4]
+    pin: N22
+    iostandard: LVCMOS33
+    description: "LED D2"
+
+  - port: led[5]
+    pin: P22
+    iostandard: LVCMOS33
+    description: "LED D1"
+
+  - port: led[6]
+    pin: M24
+    iostandard: LVCMOS33
+    description: "LED D0"
+
+  - port: led[7]
+    pin: N24
+    iostandard: LVCMOS33
+    description: "LED D7"
+
+# Behavioral description
+behaviors:
+  - name: counter_behavior
+    description: "8-bit binary counter with active-low LED inversion"
+    given: "50 MHz clock input"
+    when: "posedge clk"
+    then: "Count from 0 to 255, displaying binary on LEDs"
+    implementation: |
+      // 27-bit counter for timing (divide down 50 MHz to ~4 Hz)
+      // Bit 27: 2^27 / 50MHz ≈ 2.7 seconds per full count
+      reg [26:0] counter = 27'h0;
+
+      // Divide by 256 to get counter enable
+      // This makes LEDs update at ~10 Hz (readable)
+      reg [23:0] slow_counter = 24'h0;
+
+      always @(posedge clk) begin
+          counter <= counter + 1'b1;
+          if (counter[23] == 1'b1) begin
+              slow_counter <= slow_counter + 1'b1;
+          end
+      end
+
+      // LEDs are active-low, so invert the counter value
+      // led[0] = LSB (D6), led[7] = MSB (D7)
+      assign led = ~slow_counter[7:0];

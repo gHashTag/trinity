@@ -1,0 +1,25 @@
+# Exclude ALL large directories and non-essential files
+fpga/
+trinity-nexus/
+.trinity-nexus/
+.git/
+.zig-cache/
+zig-out/
+node_modules/
+src/
+specs/
+docs/
+tests/
+website/
+release/
+telegram-bridge/
+bin/
+.ralph/
+*.zig
+*.md
+*.egg-info
+*.json
+!.railwayignore
+!trinity-mcp.py
+!Dockerfile.railway
+!railway.json

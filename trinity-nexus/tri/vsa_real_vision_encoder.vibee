@@ -1,0 +1,144 @@
+# ============================================================================
+# VSA Real Vision Encoder - Cycle 51
+# Real @import("vsa") integration for patch-based image encoding
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_real_vision_encoder
+version: "1.0.0"
+language: zig
+module: vsa_real_vision_encoder
+
+imports:
+  - name: vsa
+    path: "../src/vsa.zig"
+
+description: |
+  Vision encoder using real VSA operations via @import("vsa").
+  Patch-based: image → patches → quantize to ternary → bind with position → bundle.
+
+constants:
+  DEFAULT_DIMENSION: 1024
+  PATCH_SIZE: 8
+  MAX_PATCHES: 256
+  PHI: 1.6180339887498948482
+
+types:
+  VisionEncoderConfig:
+    fields:
+      dimension: Int
+      patch_size: Int
+
+  PatchInfo:
+    fields:
+      x: Int
+      y: Int
+      mean_intensity: Float
+
+behaviors:
+  - name: realBind
+    given: Patch vector and position vector
+    when: Binding patch content with spatial position
+    then: Use vsa.bind for position-aware encoding
+
+  - name: realBundle2
+    given: Two patch hypervectors
+    when: Combining patches
+    then: Use vsa.bundle2 for majority vote
+
+  - name: realBundle3
+    given: Three patch hypervectors
+    when: Combining three patches
+    then: Use vsa.bundle3 for majority vote
+
+  - name: realPermute
+    given: Hypervector and patch index
+    when: Encoding spatial position
+    then: Use vsa.permute for position encoding
+
+  - name: realRandomVector
+    given: Patch seed value
+    when: Generating base vector for patch
+    then: Use vsa.randomVector for deterministic patch vector
+
+  - name: realCosineSimilarity
+    given: Two image hypervectors
+    when: Comparing image similarity
+    then: Use vsa.cosineSimilarity
+
+  - name: realHammingDistance
+    given: Two image hypervectors
+    when: Measuring image distance
+    then: Use vsa.hammingDistance
+
+  - name: realEncodeText
+    given: Patch pixel data as text representation
+    when: Encoding patch content
+    then: Use vsa.encodeText as base encoder
+
+  - name: realCharToVector
+    given: Quantized pixel value
+    when: Mapping pixel intensity to vector
+    then: Use vsa.charToVector for ternary mapping
+
+  - name: realImageSelfSimilarity
+    given: Same image encoded twice
+    when: Verifying determinism
+    then: Cosine similarity = 1.0
+
+  - name: realImageComparison
+    given: Two different images
+    when: Comparing via VSA
+    then: Returns valid similarity score
+
+  - name: realPatchEncoding
+    given: Single image patch
+    when: Encoding patch to hypervector
+    then: Bind quantized pixels with position
+
+  - name: realPatchBundling
+    given: Multiple patch vectors
+    when: Combining into image vector
+    then: Bundle all patches via majority vote
+
+  - name: realTextSimilarity
+    given: Two patch descriptions
+    when: Comparing patch content
+    then: Use vsa text similarity as proxy
+
+tests:
+  - name: test_patch_vector
+    given: Patch seed 42
+    then: vsa.randomVector returns deterministic vector
+
+  - name: test_bind_patch_position
+    given: Patch vector and position 5
+    then: vsa.bind produces valid result
+
+  - name: test_bundle_patches
+    given: Two patch vectors
+    then: vsa.bundle2 produces valid result
+
+  - name: test_permute_spatial
+    given: Vector and position index
+    then: vsa.permute shifts correctly
+
+  - name: test_image_self_similarity
+    given: Same image encoded twice
+    then: Cosine similarity = 1.0
+
+  - name: test_image_comparison
+    given: Two different image encodings
+    then: Returns valid similarity in [-1, 1]
+
+  - name: test_pixel_to_vector
+    given: Pixel value as char
+    then: vsa.charToVector maps correctly
+
+  - name: test_hamming_patches
+    given: Two patch vectors
+    then: vsa.hammingDistance returns valid count
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

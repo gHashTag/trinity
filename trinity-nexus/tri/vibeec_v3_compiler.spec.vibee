@@ -1,0 +1,98 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: tokenize_source
+    given: Valid VIBEEC source code
+    when: Lexer processes input
+    then: Token stream generated with positions
+  - name: simple_function
+  - name: with_types
+  - name: invalid_syntax
+  - name: parse_tokens
+    given: Valid token stream
+    when: Parser processes tokens
+    then: AST generated with type information
+  - name: function_definition
+  - name: type_definition
+  - name: syntax_error
+  - name: analyze_semantics
+    given: Valid AST
+    when: Semantic analyzer processes AST
+    then: Type-checked AST with annotations
+  - name: valid_types
+  - name: type_mismatch
+  - name: undefined_type
+  - name: optimize_ast
+    given: Type-checked AST
+    when: Optimizer processes AST
+    then: Optimized AST with better performance
+  - name: constant_folding
+  - name: dead_code_elimination
+  - name: tail_call_optimization
+  - name: generate_erlang
+    given: Optimized AST
+    when: Code generator processes AST
+    then: Erlang code generated
+  - name: simple_function
+  - name: with_pattern_matching
+  - name: with_types
+  - name: parse_spec_yaml
+    given: Valid spec.yml file
+    when: Spec parser processes YAML
+    then: Spec structure with behaviors and types
+  - name: valid_spec
+  - name: with_behaviors
+  - name: invalid_yaml
+  - name: validate_spec
+    given: Parsed spec structure
+    when: Validator checks spec
+    then: Validation result with errors
+  - name: valid_spec
+  - name: missing_name
+  - name: invalid_version
+  - name: generate_from_spec
+    given: Valid spec with behaviors
+    when: Spec code generator processes spec
+    then: Complete code with tests and docs
+  - name: simple_spec
+  - name: complex_spec
+  - name: with_imports
+  - name: ai_generate_spec
+    given: Natural language prompt
+    when: AI assistant processes prompt
+    then: Complete spec.yml generated
+  - name: simple_prompt
+  - name: complex_prompt
+  - name: ambiguous_prompt
+  - name: watch_and_reload
+    given: Spec file being watched
+    when: File changes detected
+    then: Code regenerated automatically
+  - name: file_changed
+  - name: no_changes
+  - name: invalid_change
+
+types:
+    description: str
+  tokenize_source:
+
+  parse_tokens:
+
+  analyze_semantics:
+
+  optimize_ast:
+
+  generate_erlang:
+
+  parse_spec_yaml:
+
+  validate_spec:
+
+  generate_from_spec:
+
+  ai_generate_spec:
+
+  watch_and_reload:

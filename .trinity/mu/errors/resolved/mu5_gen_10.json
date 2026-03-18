@@ -1,0 +1,12 @@
+{
+  "timestamp": "mu5_gen_10",
+  "spec": "specs/tri/codegen_engine_final_upgrade.tri",
+  "link": 7,
+  "link_name": "code_generate",
+  "error_category": "UNDEFINED_IDENTIFIER",
+  "error_message": "  Input:  specs/tri/codegen_engine_final_upgrade.tri\n  Output: generated/codegen_engine_final_upgrade.zig\n  AGENT MU: Verification FAILED\n    Error: use of undeclared identifier 'eqlPrimitive'\n    Att",
+  "error_line": 0,
+  "generated_file": "",
+  "fix_attempted": false,
+  "fix_result": ""
+}

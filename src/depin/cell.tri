@@ -1,0 +1,40 @@
+[cell]
+id = "trinity.depin"
+name = "depin"
+version = "0.1.0"
+kind = "library"
+path = "src/depin"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "DePIN node management and compute reward distribution"
+capabilities = ["main", "detectPlatform", "detectArch", "detectCPUCores", "detectMemoryMB"]
+files = 5
+tests = 20
+owner = "agent:ralph"
+
+[tags]
+scope = "agent"
+type = "agent"
+
+[contributes]
+commands = ["main", "detectPlatform", "detectArch"]
+exports = ["trit_and", "trit_or", "trit_not", "trit_xor", "verifyTrinity"]
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "read"
+network = "external"
+process = "spawn"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:2de8fec123c0aac849699cb342538e45353866ff31511b771ce8aada7b1bbb50"

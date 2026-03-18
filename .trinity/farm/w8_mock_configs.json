@@ -1,0 +1,18 @@
+[
+  {"name":"w8-mock-01","parent":"w7-35","lr":"1.00e-3","grad_clip":1.00,"warmup":2187,"context":27,"lr_schedule":"cosine","seed":1315917216,"kill_ppl_30k":999.00,"sacred":true},
+  {"name":"w8-mock-02","parent":"w7-21","lr":"2.62e-3","grad_clip":1.62,"warmup":729,"context":27,"lr_schedule":"cosine","seed":822002377,"kill_ppl_30k":999.00,"sacred":true},
+  {"name":"w8-mock-03","parent":"w7-08","lr":"1.89e-4","grad_clip":1.00,"warmup":2187,"context":27,"lr_schedule":"cosine","seed":3714588805,"kill_ppl_30k":999.00,"sacred":true},
+  {"name":"w8-mock-04","parent":"w7-42","lr":"3.82e-4","grad_clip":0.62,"warmup":729,"context":27,"lr_schedule":"cosine","seed":3970685054,"kill_ppl_30k":999.00,"sacred":true},
+  {"name":"w8-mock-05","parent":"w7-17","lr":"1.20e-3","grad_clip":1.62,"warmup":243,"context":27,"lr_schedule":"cosine","seed":2471426652,"kill_ppl_30k":999.00,"sacred":true},
+  {"name":"w8-mock-06","parent":"w7-51","lr":"4.24e-3","grad_clip":1.62,"warmup":2187,"context":27,"lr_schedule":"cosine","seed":1102872805,"kill_ppl_30k":999.00,"sacred":true},
+  {"name":"w8-mock-07","parent":"w7-03","lr":"1.18e-4","grad_clip":1.62,"warmup":2187,"context":27,"lr_schedule":"cosine","seed":224888718,"kill_ppl_30k":999.00,"sacred":true},
+  {"name":"w8-mock-08","parent":"w7-66","lr":"1.62e-3","grad_clip":0.62,"warmup":2187,"context":27,"lr_schedule":"cosine","seed":3532801706,"kill_ppl_30k":999.00,"sacred":true},
+  {"name":"w8-mock-09","parent":"w7-35","lr":"8.19e-4","grad_clip":0.75,"warmup":1660,"context":27,"lr_schedule":"cosine","seed":1148821856,"kill_ppl_30k":999.00,"sacred":false},
+  {"name":"w8-mock-10","parent":"w7-21","lr":"9.84e-4","grad_clip":1.10,"warmup":2258,"context":27,"lr_schedule":"cosine","seed":2359257139,"kill_ppl_30k":999.00,"sacred":false},
+  {"name":"w8-mock-11","parent":"w7-08","lr":"8.12e-4","grad_clip":1.19,"warmup":1582,"context":27,"lr_schedule":"cosine","seed":1346197856,"kill_ppl_30k":999.00,"sacred":false},
+  {"name":"w8-mock-12","parent":"w7-42","lr":"1.06e-3","grad_clip":0.87,"warmup":1965,"context":27,"lr_schedule":"phi_restart","seed":3714041729,"kill_ppl_30k":999.00,"sacred":false},
+  {"name":"w8-mock-13","parent":"w7-17","lr":"1.37e-3","grad_clip":0.81,"warmup":1842,"context":27,"lr_schedule":"cosine","seed":3722749367,"kill_ppl_30k":999.00,"sacred":false},
+  {"name":"w8-mock-14","parent":"w7-51","lr":"8.29e-4","grad_clip":1.60,"warmup":1680,"context":27,"lr_schedule":"cosine","seed":3985593569,"kill_ppl_30k":999.00,"sacred":false},
+  {"name":"w8-mock-15","parent":"w7-03","lr":"6.09e-4","grad_clip":1.20,"warmup":2788,"context":27,"lr_schedule":"cosine","seed":30609761,"kill_ppl_30k":999.00,"sacred":false},
+  {"name":"w8-mock-16","parent":"w7-66","lr":"9.26e-4","grad_clip":1.02,"warmup":1665,"context":27,"lr_schedule":"cosine","seed":989036879,"kill_ppl_30k":999.00,"sacred":false}
+]

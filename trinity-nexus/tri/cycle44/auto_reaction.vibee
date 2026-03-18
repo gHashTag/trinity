@@ -1,0 +1,50 @@
+# Auto-Reaction Engine (MGEN-007)
+# Circuit breaker + automatic agent restart on critical alerts
+
+name: auto_reaction
+version: "1.0.0"
+language: zig
+module: auto_reaction
+
+types:
+  CircuitBreakerState:
+    fields:
+      is_tripped: Bool
+      critical_count: Int
+      last_trip_time: Int
+      cooldown_remaining: Int
+
+  Alert:
+    fields:
+      severity: String
+      message: String
+      timestamp: Int
+      source: String
+
+  ReactionConfig:
+    fields:
+      max_critical: Int
+      cooldown_seconds: Int
+      auto_restart: Bool
+      notify_telegram: Bool
+
+behaviors:
+  - name: process_alert
+    given: incoming alert with severity
+    when: severity is critical and threshold exceeded
+    then: trip circuit breaker and trigger restart
+
+  - name: check_cooldown
+    given: circuit breaker is tripped
+    when: checking if cooldown period has elapsed
+    then: returns true if ready to reset
+
+  - name: reset_breaker
+    given: circuit breaker in tripped state
+    when: cooldown period has elapsed
+    then: reset to normal state
+
+  - name: trigger_restart
+    given: critical alert tripped the breaker
+    when: auto_restart is enabled
+    then: restart the affected agent

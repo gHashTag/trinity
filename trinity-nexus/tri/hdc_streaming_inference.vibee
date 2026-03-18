@@ -1,0 +1,186 @@
+name: hdc_streaming_inference
+version: "1.0.0"
+language: zig
+module: hdc_streaming_inference
+
+description: |
+  HDC Streaming Inference — Level 10A.1.1: Real-Time Token Generation.
+  Autoregressive generation loop with KV-cache, phi-rank decoding,
+  and token-by-token output for interactive chat.
+
+  === STREAMING ARCHITECTURE ===
+  Standard LLM streaming: generate one token, yield, append, repeat.
+  HDC streaming: same pattern but all ops are ternary bind/bundle.
+
+  Loop:
+    1. Encode context tokens via codebook (cached after first pass)
+    2. Forward pass through L transformer blocks
+    3. Decode output HV at last position → next token
+    4. Yield token to caller (streaming callback)
+    5. Append token to context, shift window if > context_length
+    6. Repeat until EOS or max_length
+
+  === KV-CACHE (HDC-NATIVE) ===
+  Standard KV-cache stores float K and V matrices per layer.
+  HDC KV-cache stores trit vectors (5 trits/byte):
+    cache[layer][head][position] = (K_hv, V_hv)  -- 2 * D trits per entry
+  Memory for D=256, n=512, H=3, L=2:
+    2 * 256 * 512 * 3 * 2 = 1,572,864 trits = ~314KB packed
+  vs float32 KV-cache: 2 * 256 * 512 * 3 * 2 * 4 = 6.3MB
+  Savings: ~20x memory reduction.
+
+  Cache update: only compute K,V for new token (incremental bind).
+  Attention: reuse cached K,V for all previous positions.
+  Invalidation: slide window, evict oldest entries.
+
+  === DECODING STRATEGIES ===
+  1. Greedy: argmax(similarity(output_hv, codebook))
+  2. Phi-Rank Sampling: weight candidates by phi^(-rank/T), sample
+  3. Top-K: restrict to K most similar, sample uniformly
+  4. Nucleus (Top-P): accumulate phi-weights until sum > P, sample from set
+  5. Repetition Penalty: reduce similarity for recently generated tokens
+
+  === STOP CONDITIONS ===
+  - EOS token detected (codebook.decode returns "<eos>")
+  - max_length reached
+  - Confidence below threshold (similarity < 0.1 = model is lost)
+  - Repetition loop detected (same 3+ tokens repeated)
+
+  === PERFORMANCE (D=256, L=2, H=3) ===
+  First token (full context): ~3.7ms (16 tokens * 2 blocks * 115us)
+  Subsequent tokens (with KV-cache): ~0.23ms (1 token * 2 blocks * 115us)
+  Streaming throughput: ~4,300 tokens/sec
+  Time to first token: 3.7ms (interactive-grade)
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  StreamConfig:
+    fields:
+      max_length: usize
+      temperature: Float
+      top_k: usize
+      top_p: Float
+      repetition_penalty: Float
+      stop_tokens: List<String>
+      min_confidence: Float
+      use_kv_cache: Bool
+
+  KVCacheEntry:
+    fields:
+      position: usize
+      key_hv: List<i8>
+      value_hv: List<i8>
+
+  KVCache:
+    fields:
+      entries: List<List<List<KVCacheEntry>>>
+      num_layers: usize
+      num_heads: usize
+      max_positions: usize
+      current_length: usize
+
+  StreamToken:
+    fields:
+      token: String
+      confidence: Float
+      position: usize
+      elapsed_ns: u64
+
+  StreamState:
+    fields:
+      context: List<String>
+      generated: List<StreamToken>
+      kv_cache: KVCache
+      total_tokens: usize
+      is_finished: Bool
+      stop_reason: String
+
+  StreamStats:
+    fields:
+      tokens_generated: usize
+      time_to_first_token_ms: Float
+      avg_token_latency_ms: Float
+      peak_memory_bytes: u64
+      cache_hit_rate: Float
+      avg_confidence: Float
+
+  HDCStreamingEngine:
+    fields:
+      allocator: Allocator
+      config: StreamConfig
+      engine: HDCForwardEngine
+      state: StreamState
+      recent_tokens: List<String>
+
+behaviors:
+  - name: initStreaming
+    given: StreamConfig and HDCForwardEngine reference
+    when: Initializes KV-cache, sets decoding params, clears state
+    then: Streaming engine ready for generation
+
+  - name: initKVCache
+    given: Number of layers, heads, max positions, dimension
+    when: Allocates cache entries as packed trit arrays
+    then: Empty KV-cache ready for incremental fill
+
+  - name: encodeNewToken
+    given: Token string and position
+    when: Encodes via codebook, computes K and V projections for all heads/layers
+    then: Returns K,V hypervectors and updates KV-cache
+
+  - name: forwardWithCache
+    given: New token position and existing KV-cache
+    when: Computes attention using cached K,V for old positions, only bind new token
+    then: Returns output HV with O(1) new computation per cached position
+
+  - name: decodeGreedy
+    given: Output hypervector
+    when: Finds nearest symbol in codebook via argmax cosine similarity
+    then: Returns token string and confidence score
+
+  - name: decodePhiRank
+    given: Output hypervector, temperature, codebook
+    when: Ranks all codebook entries by similarity, assigns phi^(-rank/T) weights, samples
+    then: Returns sampled token with selection probability
+
+  - name: decodeTopK
+    given: Output hypervector, k, codebook
+    when: Selects top-k most similar codebook entries, samples uniformly
+    then: Returns sampled token from top-k set
+
+  - name: decodeNucleus
+    given: Output hypervector, p threshold, temperature, codebook
+    when: Accumulates phi-rank weights until sum > p, samples from nucleus set
+    then: Returns sampled token from nucleus
+
+  - name: applyRepetitionPenalty
+    given: Candidate similarities and recent_tokens list
+    when: Divides similarity by penalty factor for tokens in recent window
+    then: Returns adjusted similarities (penalized tokens less likely)
+
+  - name: checkStopCondition
+    given: Generated token and StreamState
+    when: Checks EOS, max_length, min_confidence, repetition loop
+    then: Returns whether to stop and reason string
+
+  - name: generateStep
+    given: Current StreamState
+    when: Encode new token (or use cache), forward, decode, check stop
+    then: Returns StreamToken and updated StreamState
+
+  - name: generateStream
+    given: Seed text and StreamConfig
+    when: Runs generateStep in loop, yields tokens via callback
+    then: Returns StreamStats when finished
+
+  - name: slideWindow
+    given: Current context exceeding max context_length
+    when: Evicts oldest tokens from context and KV-cache, shifts positions
+    then: Context and cache trimmed to fit within window
+
+  - name: getStreamStats
+    given: Completed or in-progress StreamState
+    when: Computes timing, memory, cache hit rate, avg confidence
+    then: Returns StreamStats

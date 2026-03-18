@@ -1,0 +1,23 @@
+name: mcp_filesystem
+version: "1.0.0"
+language: zig
+module: mcp_filesystem
+description: Filesystem operations MCP tools
+
+types:
+  FileInfo:
+    fields:
+      path: String
+      size: Int
+      is_directory: Bool
+
+  FileContent:
+    fields:
+      path: String
+      content: String
+
+behaviors:
+  - name: file_operations
+  - name: read_file
+  - name: path
+  - name: read_file

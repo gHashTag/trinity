@@ -1,0 +1,223 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: create_graphql_schema
+    given: Input data provided
+    when: create_graphql_schema function called
+    then: Result returned
+  - name: test_create_graphql_schema
+  - name: generate_graphql_sdl
+    given: Input data provided
+    when: generate_graphql_sdl function called
+    then: Result returned
+  - name: test_generate_graphql_sdl
+  - name: type_to_sdl
+    given: Input data provided
+    when: type_to_sdl function called
+    then: Result returned
+  - name: test_type_to_sdl
+  - name: field_to_sdl
+    given: Input data provided
+    when: field_to_sdl function called
+    then: Result returned
+  - name: test_field_to_sdl
+  - name: query_to_sdl
+    given: Input data provided
+    when: query_to_sdl function called
+    then: Result returned
+  - name: test_query_to_sdl
+  - name: mutation_to_sdl
+    given: Input data provided
+    when: mutation_to_sdl function called
+    then: Result returned
+  - name: test_mutation_to_sdl
+  - name: subscription_to_sdl
+    given: Input data provided
+    when: subscription_to_sdl function called
+    then: Result returned
+  - name: test_subscription_to_sdl
+  - name: argument_to_sdl
+    given: Input data provided
+    when: argument_to_sdl function called
+    then: Result returned
+  - name: test_argument_to_sdl
+  - name: create_grpc_service
+    given: Input data provided
+    when: create_grpc_service function called
+    then: Result returned
+  - name: test_create_grpc_service
+  - name: generate_proto_definition
+    given: Input data provided
+    when: generate_proto_definition function called
+    then: Result returned
+  - name: test_generate_proto_definition
+  - name: message_to_proto
+    given: Input data provided
+    when: message_to_proto function called
+    then: Result returned
+  - name: test_message_to_proto
+  - name: field_to_proto
+    given: Input data provided
+    when: field_to_proto function called
+    then: Result returned
+  - name: test_field_to_proto
+  - name: method_to_proto
+    given: Input data provided
+    when: method_to_proto function called
+    then: Result returned
+  - name: test_method_to_proto
+  - name: create_websocket_handler
+    given: Input data provided
+    when: create_websocket_handler function called
+    then: Result returned
+  - name: test_create_websocket_handler
+  - name: parse_websocket_message
+    given: Input data provided
+    when: parse_websocket_message function called
+    then: Result returned
+  - name: test_parse_websocket_message
+  - name: format_websocket_message
+    given: Input data provided
+    when: format_websocket_message function called
+    then: Result returned
+  - name: test_format_websocket_message
+  - name: create_sse_handler
+    given: Input data provided
+    when: create_sse_handler function called
+    then: Result returned
+  - name: test_create_sse_handler
+  - name: format_sse_event
+    given: Input data provided
+    when: format_sse_event function called
+    then: Result returned
+  - name: test_format_sse_event
+  - name: parse_sse_event
+    given: Input data provided
+    when: parse_sse_event function called
+    then: Result returned
+  - name: test_parse_sse_event
+  - name: create_webhook_config
+    given: Input data provided
+    when: create_webhook_config function called
+    then: Result returned
+  - name: test_create_webhook_config
+  - name: generate_webhook_signature
+    given: Input data provided
+    when: generate_webhook_signature function called
+    then: Result returned
+  - name: test_generate_webhook_signature
+  - name: verify_webhook_signature
+    given: Input data provided
+    when: verify_webhook_signature function called
+    then: Result returned
+  - name: test_verify_webhook_signature
+  - name: format_webhook_payload
+    given: Input data provided
+    when: format_webhook_payload function called
+    then: Result returned
+  - name: test_format_webhook_payload
+  - name: send_webhook
+    given: Input data provided
+    when: send_webhook function called
+    then: Result returned
+  - name: test_send_webhook
+  - name: create_api_gateway
+    given: Input data provided
+    when: create_api_gateway function called
+    then: Result returned
+  - name: test_create_api_gateway
+  - name: generate_gateway_config
+    given: Input data provided
+    when: generate_gateway_config function called
+    then: Result returned
+  - name: test_generate_gateway_config
+  - name: hmac_sha256
+    given: Input data provided
+    when: hmac_sha256 function called
+    then: Result returned
+  - name: test_hmac_sha256
+
+types:
+  create_graphql_schema:
+    description: Auto-generated
+
+  generate_graphql_sdl:
+    description: Auto-generated
+
+  type_to_sdl:
+    description: Auto-generated
+
+  field_to_sdl:
+    description: Auto-generated
+
+  query_to_sdl:
+    description: Auto-generated
+
+  mutation_to_sdl:
+    description: Auto-generated
+
+  subscription_to_sdl:
+    description: Auto-generated
+
+  argument_to_sdl:
+    description: Auto-generated
+
+  create_grpc_service:
+    description: Auto-generated
+
+  generate_proto_definition:
+    description: Auto-generated
+
+  message_to_proto:
+    description: Auto-generated
+
+  field_to_proto:
+    description: Auto-generated
+
+  method_to_proto:
+    description: Auto-generated
+
+  create_websocket_handler:
+    description: Auto-generated
+
+  parse_websocket_message:
+    description: Auto-generated
+
+  format_websocket_message:
+    description: Auto-generated
+
+  create_sse_handler:
+    description: Auto-generated
+
+  format_sse_event:
+    description: Auto-generated
+
+  parse_sse_event:
+    description: Auto-generated
+
+  create_webhook_config:
+    description: Auto-generated
+
+  generate_webhook_signature:
+    description: Auto-generated
+
+  verify_webhook_signature:
+    description: Auto-generated
+
+  format_webhook_payload:
+    description: Auto-generated
+
+  send_webhook:
+    description: Auto-generated
+
+  create_api_gateway:
+    description: Auto-generated
+
+  generate_gateway_config:
+    description: Auto-generated
+
+  hmac_sha256:
+    description: Auto-generated

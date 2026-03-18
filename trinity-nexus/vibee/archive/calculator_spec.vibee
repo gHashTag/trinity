@@ -1,0 +1,152 @@
+# Calculator Module Specification
+# Simple calculator to demonstrate spec-driven development
+
+name: calculator
+version: 1.0.0
+description: Simple calculator with basic arithmetic operations
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+types:
+  - name: Operation
+    description: Arithmetic operation type
+    fields:
+      - name: operator
+        type: String
+        description: Operation symbol (+, -, *, /)
+      - name: operand1
+        type: Float
+        description: First operand
+      - name: operand2
+        type: Float
+        description: Second operand
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  - name: add
+    description: Add two numbers
+    given: Two numbers a and b
+    when: add function is called
+    then: Sum of a and b is returned
+    test_cases:
+      - name: add_positive_numbers
+        input:
+          a: "5"
+          b: "3"
+        expected:
+          result: "8"
+      
+      - name: add_negative_numbers
+        input:
+          a: "-5"
+          b: "-3"
+        expected:
+          result: "-8"
+      
+      - name: add_zero
+        input:
+          a: "5"
+          b: "0"
+        expected:
+          result: "5"
+  
+  - name: subtract
+    description: Subtract two numbers
+    given: Two numbers a and b
+    when: subtract function is called
+    then: Difference of a and b is returned
+    test_cases:
+      - name: subtract_positive_numbers
+        input:
+          a: "10"
+          b: "3"
+        expected:
+          result: "7"
+  
+  - name: multiply
+    description: Multiply two numbers
+    given: Two numbers a and b
+    when: multiply function is called
+    then: Product of a and b is returned
+    test_cases:
+      - name: multiply_positive_numbers
+        input:
+          a: "5"
+          b: "3"
+        expected:
+          result: "15"
+  
+  - name: divide
+    description: Divide two numbers
+    given: Two numbers a and b where b is not zero
+    when: divide function is called
+    then: Quotient of a and b is returned
+    test_cases:
+      - name: divide_positive_numbers
+        input:
+          a: "10"
+          b: "2"
+        expected:
+          result: "5"
+      
+      - name: divide_by_zero
+        input:
+          a: "10"
+          b: "0"
+        expected:
+          error: "Division by zero"
+
+# ============================================================================
+# FUNCTIONS
+# ============================================================================
+
+functions:
+  - name: add
+    signature: "add(a: Float, b: Float) -> Float"
+    description: Add two numbers
+    examples:
+      - "add(5.0, 3.0) // returns 8.0"
+  
+  - name: subtract
+    signature: "subtract(a: Float, b: Float) -> Float"
+    description: Subtract b from a
+    examples:
+      - "subtract(10.0, 3.0) // returns 7.0"
+  
+  - name: multiply
+    signature: "multiply(a: Float, b: Float) -> Float"
+    description: Multiply two numbers
+    examples:
+      - "multiply(5.0, 3.0) // returns 15.0"
+  
+  - name: divide
+    signature: "divide(a: Float, b: Float) -> Result(Float, String)"
+    description: Divide a by b (returns error if b is zero)
+    examples:
+      - "divide(10.0, 2.0) // returns Ok(5.0)"
+      - "divide(10.0, 0.0) // returns Error(\"Division by zero\")"
+
+# ============================================================================
+# DEPENDENCIES
+# ============================================================================
+
+dependencies:
+  - gleam_stdlib
+
+# ============================================================================
+# METADATA
+# ============================================================================
+
+metadata:
+  author: VIBEE Team
+  license: MIT
+  category: utilities
+  tags:
+    - calculator
+    - math
+    - arithmetic

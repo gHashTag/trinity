@@ -1,0 +1,37 @@
+name: honest_generalization
+version: "1.0.0"
+language: zig
+module: honest_generalization
+
+description: >
+  Context overlap analysis revealing memorization structure.
+  Splits eval tokens by whether their n-gram context was
+  seen during training, measuring PPL separately for each group.
+
+types:
+  OverlapAnalysis:
+    fields:
+      seen_count: Int
+      unseen_count: Int
+      seen_ppl: Float
+      unseen_ppl: Float
+      memorization_ratio: Float
+
+constants:
+  TRAIN_SPLIT: "80%"
+  EVAL_SPLIT: "20%"
+
+behaviors:
+  - name: analyzeContextOverlap
+    given: 80/20 train/eval split with hash-based context tracking
+    when: Classify eval tokens by seen vs unseen trigram/4-gram context
+    then: 74.2% trigram contexts seen, 45.8% 4-gram contexts seen
+
+  - name: revealMemorizationStructure
+    given: Unseen contexts have fewer possible successors (singletons)
+    when: Compare seen PPL vs unseen PPL
+    then: Unseen PPL (1.32) lower than seen PPL (7.63) — confirms memorization
+
+test_cases:
+  - input: "80/20 split, KN trigram"
+    expected: "seen PPL 7.63, unseen PPL 1.32, ratio 5.80x"

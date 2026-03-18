@@ -1,0 +1,167 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: review_code
+    given: Input data provided
+    when: review_code function called
+    then: Result returned
+  - name: test_review_code
+  - name: analyze_issues
+    given: Input data provided
+    when: analyze_issues function called
+    then: Result returned
+  - name: test_analyze_issues
+  - name: check_security
+    given: Input data provided
+    when: check_security function called
+    then: Result returned
+  - name: test_check_security
+  - name: check_performance
+    given: Input data provided
+    when: check_performance function called
+    then: Result returned
+  - name: test_check_performance
+  - name: check_bug_risks
+    given: Input data provided
+    when: check_bug_risks function called
+    then: Result returned
+  - name: test_check_bug_risks
+  - name: check_code_style
+    given: Input data provided
+    when: check_code_style function called
+    then: Result returned
+  - name: test_check_code_style
+  - name: check_complexity
+    given: Input data provided
+    when: check_complexity function called
+    then: Result returned
+  - name: test_check_complexity
+  - name: count_nesting
+    given: Input data provided
+    when: count_nesting function called
+    then: Result returned
+  - name: test_count_nesting
+  - name: generate_suggestions
+    given: Input data provided
+    when: generate_suggestions function called
+    then: Result returned
+  - name: test_generate_suggestions
+  - name: calculate_metrics
+    given: Input data provided
+    when: calculate_metrics function called
+    then: Result returned
+  - name: test_calculate_metrics
+  - name: calculate_cyclomatic_complexity
+    given: Input data provided
+    when: calculate_cyclomatic_complexity function called
+    then: Result returned
+  - name: test_calculate_cyclomatic_complexity
+  - name: calculate_cognitive_complexity
+    given: Input data provided
+    when: calculate_cognitive_complexity function called
+    then: Result returned
+  - name: test_calculate_cognitive_complexity
+  - name: calculate_maintainability_index
+    given: Input data provided
+    when: calculate_maintainability_index function called
+    then: Result returned
+  - name: test_calculate_maintainability_index
+  - name: calculate_score
+    given: Input data provided
+    when: calculate_score function called
+    then: Result returned
+  - name: test_calculate_score
+  - name: format_review
+    given: Input data provided
+    when: format_review function called
+    then: Result returned
+  - name: test_format_review
+  - name: format_issues
+    given: Input data provided
+    when: format_issues function called
+    then: Result returned
+  - name: test_format_issues
+  - name: format_suggestions
+    given: Input data provided
+    when: format_suggestions function called
+    then: Result returned
+  - name: test_format_suggestions
+  - name: format_metrics
+    given: Input data provided
+    when: format_metrics function called
+    then: Result returned
+  - name: test_format_metrics
+  - name: review_files
+    given: Input data provided
+    when: review_files function called
+    then: Result returned
+  - name: test_review_files
+  - name: summary_report
+    given: Input data provided
+    when: summary_report function called
+    then: Result returned
+  - name: test_summary_report
+
+types:
+  review_code:
+    description: Auto-generated
+
+  analyze_issues:
+    description: Auto-generated
+
+  check_security:
+    description: Auto-generated
+
+  check_performance:
+    description: Auto-generated
+
+  check_bug_risks:
+    description: Auto-generated
+
+  check_code_style:
+    description: Auto-generated
+
+  check_complexity:
+    description: Auto-generated
+
+  count_nesting:
+    description: Auto-generated
+
+  generate_suggestions:
+    description: Auto-generated
+
+  calculate_metrics:
+    description: Auto-generated
+
+  calculate_cyclomatic_complexity:
+    description: Auto-generated
+
+  calculate_cognitive_complexity:
+    description: Auto-generated
+
+  calculate_maintainability_index:
+    description: Auto-generated
+
+  calculate_score:
+    description: Auto-generated
+
+  format_review:
+    description: Auto-generated
+
+  format_issues:
+    description: Auto-generated
+
+  format_suggestions:
+    description: Auto-generated
+
+  format_metrics:
+    description: Auto-generated
+
+  review_files:
+    description: Auto-generated
+
+  summary_report:
+    description: Auto-generated

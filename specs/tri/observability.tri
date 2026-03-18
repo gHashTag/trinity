@@ -1,0 +1,131 @@
+name: observability
+version: "1.0.0"
+language: zig
+module: observability
+
+description: >
+  P2.10 Observability Layer. Provides unified telemetry for all TRI operations:
+  unique request_id per operation, high-precision duration tracking, POSIX exit
+  code standardization, artifact hash verification (xxhash64/sha256/blake3),
+  and structured log export.
+
+types:
+  ExitCode:
+    description: "POSIX exit codes from sysexits.h"
+    variants:
+      - success(0)
+      - err(1)
+      - usage(64)
+      - data_error(65)
+      - no_input(66)
+      - no_user(67)
+      - no_host(68)
+      - unavailable(69)
+      - software(70)
+      - os_err(71)
+      - os_file(72)
+      - cant_create(73)
+      - io_error(74)
+      - temp_fail(75)
+      - protocol(76)
+      - no_perm(77)
+      - config(78)
+
+  HashAlgorithm:
+    description: "Supported hash algorithms"
+    variants:
+      - sha256
+      - sha512
+      - blake3
+      - xxhash64
+
+  ArtifactHash:
+    fields:
+      algorithm: HashAlgorithm
+      bytes: "[64]u8"
+      len: usize
+
+  Duration:
+    fields:
+      start_time: "std.time.Instant"
+      end_time: "?std.time.Instant"
+      elapsed_ns: u64
+
+  RequestId:
+    fields:
+      value: "[24]u8"
+    description: "Base64url-encoded UUID v4 identifier"
+
+  OperationContext:
+    fields:
+      allocator: "std.mem.Allocator"
+      request_id: RequestId
+      command: "[]const u8"
+      args: "[]const []const u8"
+      duration: Duration
+      exit_code: ExitCode
+      artifacts: "StringHashMap(ArtifactHash)"
+      metadata: "StringHashMap([]const u8)"
+      start_time: i64
+
+  StructuredLog:
+    fields:
+      request_id: "[24]u8"
+      timestamp: i64
+      command: "[]const u8"
+      args: "[]const []const u8"
+      duration_ns: u64
+      exit_code: u8
+      artifacts: "StringHashMap(ArtifactHash)"
+      metadata: "StringHashMap([]const u8)"
+
+behaviors:
+  RequestId.init:
+    given: "current timestamp as RNG seed"
+    when: "called"
+    then: "generates a UUID v4 and encodes it as 24-char base64url string"
+
+  Duration.start:
+    given: "nothing"
+    when: "called"
+    then: "captures current instant and returns Duration with null end_time"
+
+  Duration.stop:
+    given: "running Duration"
+    when: "called"
+    then: "captures end instant and sets elapsed_ns"
+
+  Duration.elapsedMs:
+    given: "Duration (stopped or running)"
+    when: "called"
+    then: "returns elapsed nanoseconds divided by 1_000_000"
+
+  hashFile:
+    given: "allocator, file path, HashAlgorithm"
+    when: "called"
+    then: "reads file content and returns ArtifactHash"
+
+  hashBytes:
+    given: "bytes slice and HashAlgorithm"
+    when: "called"
+    then: "returns ArtifactHash computed via xxhash64 (or algorithm)"
+
+  OperationContext.init:
+    given: "allocator, command string, args slice"
+    when: "called"
+    then: "creates context with fresh RequestId and started Duration"
+
+  OperationContext.complete:
+    given: "ExitCode"
+    when: "called at end of operation"
+    then: "stops duration and stores exit code"
+
+  OperationContext.addArtifact:
+    given: "file path and HashAlgorithm"
+    when: "called"
+    then: "hashes the file and stores the hash under the path key"
+
+  OperationContext.toStructured:
+    given: "completed OperationContext"
+    when: "called"
+    then: "returns an immutable StructuredLog snapshot"

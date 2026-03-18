@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.agent.tri-doctor"
+name = "Tri Doctor Agent"
+version = "1.0.0"
+kind = "agent"
+path = "tools/agents/tri-doctor"
+status = "stable"
+description = "Coder agent — fixes broken builds, handlers, tests. Reads .ralph/memory/ for patterns"
+capabilities = ["build-fix", "test-fix", "zig", "diagnostics"]
+owner = "agent:ralph"
+
+[tags]
+scope = "agent"
+type = "agent"
+
+[agent]
+definition = ".claude/agents/tri-doctor.md"
+model = "sonnet"
+max_turns = 25
+tools = "Bash,Read,Edit,Write,Glob,Grep"
+isolation = ""
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "immune"
+organ = "leukocyte"
+[security]
+signed = "true"

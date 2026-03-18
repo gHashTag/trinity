@@ -1,0 +1,121 @@
+name: agent_mu_real_tool_use
+version: "8.25.0"
+language: zig
+module: agent_mu.tool_layer
+
+description: |
+  Real Tool Use Integration Layer for AGENT MU v8.25
+  Enables file reading, command execution, web search via sub-agents.
+  This module implements the TOOL phase in the AGENT MU Golden Chain:
+  V01 -> Phi02 -> Pi03 -> TOOL -> Mu05 -> Sigma07 -> Chi06
+
+types:
+  ToolType:
+    enum: [file_read, command_exec, web_search, git_op, code_analysis]
+
+  ToolRequest:
+    fields:
+      tool_type: ToolType
+      target: String
+      parameters: Map<String, String>
+      confidence: Float
+      timestamp_ms: Int
+
+  ToolResponse:
+    fields:
+      success: Bool
+      output: String
+      error: String
+      execution_time_ms: Int
+      tool_type: ToolType
+
+  ToolConfig:
+    fields:
+      min_confidence: Float
+      max_command_timeout_ms: Int
+      max_file_size_bytes: Int
+      sacred_log_path: String
+
+  SubAgentTask:
+    fields:
+      agent_type: String
+      task_description: String
+      timeout_ms: Int
+      retry_count: Int
+
+behaviors:
+  - name: execute_tool
+    given: ToolRequest with confidence >= 0.95
+    when: AGENT MU needs external information or action
+    then: Routes to appropriate sub-agent and returns ToolResponse
+    description: Main tool execution router with safety validation
+
+  - name: read_file_safe
+    given: File path within repository
+    when: Need to read source code, config, or documentation
+    then: Returns file contents with line numbers
+    description: Safe file reading with path validation and size limits
+
+  - name: exec_command_safely
+    given: Command string and timeout limit
+    when: Need to run zig build, zig test, git operations
+    then: Executes command in subprocess, returns stdout/stderr
+    description: Sandboxed command execution with resource limits
+
+  - name: search_web_for_solutions
+    given: Error message or technical question
+    when: Need to find similar issues or documentation
+    then: Returns relevant search results and documentation links
+    description: Web search via MCP web_reader tool
+
+  - name: analyze_code_with_context
+    given: File path and error context
+    when: Need semantic understanding of code issue
+    then: Returns analysis with suggested fixes
+    description: Code analysis using pattern matching from REGRESSION_PATTERNS.md
+
+  - name: log_tool_call_to_sacred_log
+    given: ToolRequest and ToolResponse
+    when: After every tool execution
+    then: Logs to .ralph/logs/sacred_tool_calls.log with timestamp
+    description: Sacred logging for all tool interactions
+
+  - name: spawn_sub_agent
+    given: SubAgentTask with timeout and retry config
+    when: Need specialized processing via MCP agent spawn
+    then: Creates sub-agent, executes task, terminates agent
+    description: Sub-agent lifecycle management
+
+constants:
+  MIN_CONFIDENCE: 0.95
+  MAX_COMMAND_TIMEOUT_MS: 30000
+  SACRED_LOG: .ralph/logs/sacred_tool_calls.log
+  MAX_FILE_SIZE_BYTES: 1048576
+  MAX_SUB_AGENTS: 5
+  DEFAULT_SUB_AGENT_TIMEOUT_MS: 10000
+
+tests:
+  - name: file_read_test
+    given: Path to CLAUDE.md
+    when: Testing file reading
+    then: Returns first 10 lines successfully
+
+  - name: command_exec_test
+    given: Command "echo 'test'"
+    when: Testing command execution
+    then: Returns "test" in output
+
+  - name: confidence_gate_test
+    given: ToolRequest with confidence 0.8
+    when: Testing safety validation
+    then: Rejects request as below threshold
+
+  - name: sub_agent_spawn_test
+    given: SubAgentTask for code analysis
+    when: Testing MCP agent spawn
+    then: Agent created, task executed, agent terminated
+
+  - name: sacred_log_test
+    given: Successful tool execution
+    when: Testing log persistence
+    then: Entry written to sacred_tool_calls.log

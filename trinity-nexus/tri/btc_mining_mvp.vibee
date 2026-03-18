@@ -1,0 +1,184 @@
+name: btc_mining_mvp
+version: "1.0.0"
+language: zig
+module: btc_mining_mvp
+
+# BTC Mining MVP for Trinity Node
+# Idle-mode mining with testnet pool support and $TRI bonus rewards
+# φ² + 1/φ² = 3 = TRINITY
+
+imports:
+  - pas_mining_core
+  - thread_pool
+
+constants:
+  PHI: 1.6180339887498949
+  PHI_SQ: 2.6180339887498949
+  PHI_INV_SQ: 0.3819660112501051
+  TRINITY: 3.0
+  IDLE_THRESHOLD: 40
+  TRI_BONUS_PER_MH: 10
+  TESTNET_POOL: "stratum+tcp://signet.slushpool.com:3333"
+  WORKER_PREFIX: "trinity_node_"
+
+types:
+  MiningConfig:
+    fields:
+      btc_address: String
+      worker_name: String
+      pool_url: String
+      idle_threshold_percent: Int
+      tri_bonus_enabled: Bool
+
+  MiningStats:
+    fields:
+      hashes_computed: Int
+      hashrate_hs: Float
+      shares_submitted: Int
+      shares_accepted: Int
+      tri_bonus_earned: Float
+      energy_harvested: Float
+      uptime_seconds: Int
+
+  IdleMonitor:
+    fields:
+      cpu_usage_percent: Float
+      is_idle: Bool
+      last_check_timestamp: Int
+
+  StratumJob:
+    fields:
+      job_id: String
+      prev_hash: String
+      coinbase1: String
+      coinbase2: String
+      merkle_branches: List<String>
+      version: String
+      nbits: String
+      ntime: String
+      clean_jobs: Bool
+
+  StratumShare:
+    fields:
+      job_id: String
+      extranonce2: String
+      ntime: String
+      nonce: Int
+
+  MiningState:
+    fields:
+      is_running: Bool
+      is_paused: Bool
+      current_job: Option<StratumJob>
+      stats: MiningStats
+      config: MiningConfig
+
+behaviors:
+  - name: init_miner
+    given: MiningConfig with BTC address and pool URL
+    when: Node starts or mining enabled
+    then: Initialize PASSHA256 hasher, connect to pool, start idle monitor
+
+  - name: check_idle_status
+    given: IdleMonitor instance
+    when: Every 1 second
+    then: Return true if CPU usage below idle_threshold_percent
+
+  - name: start_mining
+    given: MiningState is not running and system is idle
+    when: Idle detected
+    then: Set is_running=true, request work from pool
+
+  - name: pause_mining
+    given: MiningState is running and system not idle
+    when: CPU usage exceeds threshold (AI inference active)
+    then: Set is_paused=true, stop hashing, preserve state
+
+  - name: resume_mining
+    given: MiningState is paused and system becomes idle
+    when: CPU usage drops below threshold
+    then: Set is_paused=false, continue from last nonce
+
+  - name: process_stratum_job
+    given: StratumJob from pool
+    when: New job received via stratum
+    then: Build block header, start nonce search
+
+  - name: mine_nonce_range
+    given: Block header and nonce range (start, end)
+    when: Mining active
+    then: Hash with PASSHA256, check against target, return if found
+
+  - name: submit_share
+    given: Valid nonce found
+    when: Hash meets pool difficulty
+    then: Send StratumShare to pool, increment shares_submitted
+
+  - name: calculate_tri_bonus
+    given: MiningStats with hashrate
+    when: Every 60 seconds
+    then: tri_bonus = (hashrate_hs / 1_000_000) * TRI_BONUS_PER_MH
+
+  - name: distribute_work
+    given: List of peer nodes
+    when: Distributed mining enabled
+    then: Split nonce range among peers, aggregate results
+
+  - name: get_mining_stats
+    given: MiningState
+    when: Stats requested
+    then: Return current MiningStats with hashrate, shares, TRI bonus
+
+  - name: shutdown_miner
+    given: MiningState is running
+    when: Node shutdown or mining disabled
+    then: Disconnect from pool, save stats, cleanup
+
+workflow:
+  1. Initialize with config (BTC address, pool, thresholds)
+  2. Start idle monitor thread
+  3. When idle detected -> connect to testnet pool
+  4. Receive stratum job -> build header
+  5. Mine nonces using PASSHA256 (phi-modulated)
+  6. If share found -> submit to pool
+  7. Calculate $TRI bonus every minute
+  8. If CPU busy -> pause mining
+  9. When idle again -> resume
+  10. On shutdown -> save stats, disconnect
+
+stratum_protocol:
+  subscribe: '{"id": 1, "method": "mining.subscribe", "params": []}'
+  authorize: '{"id": 2, "method": "mining.authorize", "params": ["ADDRESS.WORKER", "x"]}'
+  submit: '{"id": N, "method": "mining.submit", "params": ["ADDRESS.WORKER", "JOB_ID", "EXTRANONCE2", "NTIME", "NONCE"]}'
+
+tri_bonus_formula:
+  description: "Reward nodes for green BTC mining contribution"
+  formula: "TRI_BONUS = (HASHRATE_MH/s) * 10 $TRI per hour"
+  example: "1 MH/s = 10 $TRI/hour, 10 MH/s = 100 $TRI/hour"
+  purpose: "Incentivize participation even without BTC profit"
+
+tests:
+  - name: test_idle_detection
+    assert: "CPU < 40% returns is_idle=true"
+  
+  - name: test_passha256_correctness
+    assert: "Hash matches standard SHA256 test vectors"
+  
+  - name: test_stratum_connect
+    assert: "Successfully subscribe and authorize to testnet pool"
+  
+  - name: test_share_submission
+    assert: "Valid share accepted by pool"
+  
+  - name: test_tri_bonus_calculation
+    assert: "1 MH/s for 1 hour = 10 $TRI"
+  
+  - name: test_pause_resume
+    assert: "Mining pauses when CPU > 40%, resumes when < 40%"
+
+metrics:
+  target_hashrate_single: "10-20 KH/s (CPU)"
+  target_hashrate_distributed: "200 KH/s (10 nodes)"
+  tri_bonus_rate: "10 $TRI per MH/s per hour"
+  idle_check_interval: "1 second"
+  stats_report_interval: "60 seconds"

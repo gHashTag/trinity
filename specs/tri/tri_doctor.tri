@@ -1,0 +1,145 @@
+name: tri_doctor
+version: "2.0.0"
+language: zig
+module: tri_doctor
+
+# SUPERVISOR MODE — tri doctor
+# Codebase health scanner, marker, healer
+# Enforces pipeline-first: manual .zig files must go through .tri specs
+# phi^2 + 1/phi^2 = 3
+
+types:
+  FileOrigin:
+    fields:
+      tag: "enum: [generated, manual, mixed, exempt]"
+
+  RegenStatus:
+    fields:
+      tag: "enum: [pending, exempt, done, failed]"
+
+  FileMarker:
+    fields:
+      path: String
+      origin: FileOrigin
+      regen: RegenStatus
+      spec_path: Option[String]
+      link: Option[Int]
+
+  ScanResult:
+    fields:
+      files: List[FileMarker]
+      generated_count: Int
+      manual_count: Int
+      mixed_count: Int
+      exempt_count: Int
+
+  HealthScore:
+    fields:
+      total: Int
+      generated_ratio: Float
+      compliance_rate: Float
+      specs_coverage: Float
+      tests_passing: Float
+      grade: "enum: [healthy, recovering, infected, critical]"
+
+  Violation:
+    fields:
+      timestamp: Int
+      agent: String
+      file: String
+      action: String
+      blocked: Bool
+
+  MigrationItem:
+    fields:
+      source_path: String
+      spec_path: String
+      status: RegenStatus
+      attempts: Int
+      last_error: Option[String]
+
+behaviors:
+  init:
+    given: "fresh project, no .doctor/"
+    when: "first run"
+    then: "scan + mark + report (all-in-one)"
+
+  scan:
+    given: "project dir with .zig files"
+    when: "invoked"
+    then: "classify all .zig files → ScanResult, save .doctor/scan_results.json"
+
+  mark:
+    given: "ScanResult exists"
+    when: "invoked"
+    then: "insert @origin/@regen markers after doc-comments, run zig build, revert if fails"
+
+  report:
+    given: "ScanResult + violations"
+    when: "invoked"
+    then: "compute health score, display emoji dashboard"
+
+  plan:
+    given: "manual files list"
+    when: "invoked"
+    then: "reverse-engineer .tri specs → migration_queue.json"
+
+  heal:
+    given: "scan results exist with manual files"
+    when: "invoked"
+    then: |
+      For each manual file with a matching spec:
+        1. Check if @origin marker exists — skip if already marked
+        2. Prepend @origin(spec:<basename>.tri) @regen(manual-impl)
+        3. Run zig fmt on the file
+        4. Run zig build — if fails, revert the marker change
+      After all files processed:
+        5. Re-scan to update .doctor/scan_results.json
+        6. Report: healed N files, new health score
+        7. Git commit healed files automatically
+
+  enforce:
+    given: "hooks not registered"
+    when: "invoked"
+    then: "register tri doctor enforce-check as hook command"
+
+  status:
+    given: "last scan exists"
+    when: "invoked"
+    then: "one-line: grade icon + score + counts + violations"
+
+  enforce-check:
+    given: "JSON on stdin from Claude Code hook"
+    when: "Write/Edit tool used"
+    then: "check rules, output JSON permit/deny on stdout"
+
+health_formula: |
+  health = 100 * (0.4 * generated_ratio + 0.3 * compliance_rate
+                + 0.2 * specs_coverage + 0.1 * tests_passing)
+  90+  → healthy
+  70-89 → recovering
+  50-69 → infected
+  0-49  → critical
+
+exempt_files:
+  - src/tri/main.zig
+  - src/tri/tri_utils.zig
+  - build.zig
+  - tools/mcp/trinity_mcp/server.zig
+  - src/tri-api/main.zig
+  - src/tri-api/tui.zig
+  - src/vsa.zig
+  - src/vm.zig
+  - src/hybrid.zig
+  - src/sdk.zig
+  - src/tri-api/permissions.zig
+  - src/tri-api/checkpoint.zig
+  - src/tri-api/session_store.zig
+  - src/tri-api/mcp_client.zig
+  - src/tri-api/context.zig
+  - src/tri-api/claude_md.zig
+  - src/tri-api/memory.zig
+  - src/tri-api/tool_executor.zig
+  - src/tri-api/tool_protocol.zig
+  - tools/mcp/trinity_mcp/transport.zig
+  - tools/mcp/trinity_mcp/errors.zig

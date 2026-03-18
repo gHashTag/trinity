@@ -1,0 +1,123 @@
+name: trinity_chat_v2_1
+version: "2.1.0"
+language: zig
+module: igla_hybrid_chat
+
+# Trinity Chat v2.1 — Multi-Modal + Tools + Enhanced Self-Reflection
+# Extends v2.0 (3-level cache + self-learning + multi-provider LLM)
+# Adds: Vision (Claude/GPT-4o), Voice (Whisper STT), Tool detection, Quality-filtered reflection
+# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS ENERGY IMMORTAL
+
+types:
+  InputModality:
+    variants:
+      - Text
+      - Image
+      - Audio
+
+  ChatTool:
+    variants:
+      - Time
+      - Date
+      - SystemInfo
+      - FileRead
+      - FileList
+      - ZigBuild
+      - ZigTest
+
+  ResponseSource:
+    description: "Extended from v2.0 with Tool, Vision, Whisper"
+    variants:
+      - Symbolic       # Pattern matcher (0.0001 Wh)
+      - TVCCorpus      # VSA-cached response (0.001 Wh)
+      - Tool           # NEW: local tool execution (0.0005 Wh)
+      - Vision         # NEW: cloud vision API (0.15 Wh)
+      - Whisper        # NEW: audio transcription (0.12 Wh)
+      - LocalLLM       # Local GGUF model (0.05 Wh)
+      - GroqAPI        # Groq cloud (0.1 Wh)
+      - ClaudeAPI      # Anthropic Claude (0.1 Wh)
+      - Error          # Error occurred
+
+  ReflectionFilter:
+    description: "Quality gate for TVC saves — prevents bloat"
+    fields:
+      min_response_length: Int     # default: 10
+      min_confidence: Float        # default: 0.7
+      max_save_similarity: Float   # default: 0.85 (dedup threshold)
+
+  VisionRequest:
+    fields:
+      query: String
+      image_path: String
+
+  AudioRequest:
+    fields:
+      audio_path: String
+
+  MultipartField:
+    fields:
+      name: String
+      value: String
+
+behaviors:
+  - name: respondWithImage
+    given: Text query and image file path
+    when: User sends --image flag with chat command
+    then: Read image, base64 encode, send to Claude/GPT-4o vision API, save text to TVC, return response
+
+  - name: respondWithAudio
+    given: Audio file path (WAV/MP3/M4A)
+    when: User sends --voice flag with chat command
+    then: Upload to Whisper API via multipart/form-data, get transcript, feed to respond()
+
+  - name: detectTool
+    given: Text query
+    when: Query matches tool keyword pattern
+    then: Return matched ChatTool or null
+
+  - name: executeTool
+    given: ChatTool and original query
+    when: Tool detected in respond() flow
+    then: Execute tool locally, return result string
+
+  - name: saveToTVCFiltered
+    given: Query, response, and confidence score
+    when: LLM response ready for TVC save
+    then: Apply quality filters (length, confidence, dedup, error-check), save if passed
+
+  - name: postMultipart
+    given: URL, file data, extra fields, auth token
+    when: Whisper API call needed
+    then: Build multipart/form-data body, POST via HTTP, return response
+
+# Architecture Flow v2.1:
+#
+# USER QUERY (text / image / audio)
+#     |
+#     v
+# [0] INPUT ROUTER
+#     |-- text → normal flow
+#     |-- image → respondWithImage()
+#     |-- audio → respondWithAudio() → Whisper → text → respond()
+#     |
+#     v (text)
+# [1] SYMBOLIC (0.0001 Wh)
+#     v (miss)
+# [1.5] TOOL DETECTOR (0.0005 Wh) ← NEW
+#     v (no match)
+# [2] TVC CORPUS (0.001 Wh)
+#     v (miss)
+# [3] LLM CASCADE (0.05-0.1 Wh)
+#     v
+# ENHANCED SELF-REFLECTION (quality filter → TVC)
+#     v
+# RESPONSE + SOURCE + ENERGY
+
+# Energy Cost Summary:
+# Symbolic:    0.0001 Wh (1000x cheaper than cloud)
+# Tool:        0.0005 Wh (200x cheaper than cloud)
+# TVC Cache:   0.001  Wh (100x cheaper than cloud)
+# Local GGUF:  0.05   Wh
+# Cloud LLM:   0.1    Wh (baseline)
+# Whisper STT: 0.12   Wh
+# Vision API:  0.15   Wh

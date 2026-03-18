@@ -1,0 +1,53 @@
+name: real_world_hybrid_testing
+version: "1.0.0"
+language: zig
+module: real_world_hybrid_testing
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REAL WORLD HYBRID TESTING - Level 11.36 Test Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+# Tests 160-162: KG triple encoding, multi-hop chains, hybrid routing.
+# Validates per-relation bundled memory with real-world data.
+#
+# Test 160: 10 countries/capitals, forward + cross-rejection queries (20/20)
+# Test 161: 5 countries, capitals, continents, 2 relations (10/10)
+# Test 162: 20 facts, 4 relations, routing + community gates (40/40)
+#
+# Total: 70/70 perfect score required for Level 11.36 pass
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  DIM: 4096
+  SIM_THRESHOLD: 0.08
+  NUM_RELATIONS: 4
+
+types:
+  RoutingResult:
+    fields:
+      source: String
+      correct: Bool
+      similarity: Float
+
+  GateResult:
+    fields:
+      gate: String
+      passed: Bool
+
+behaviors:
+  # Test 160: KG Triple Encoding with per-relation memory
+  - name: kgTripleEncoding
+    given: 10 countries, 10 capitals, 1 relation (capital_of) encoded in per-relation bundled memory
+    when: 10 forward queries + 10 cross-rejection queries
+    then: 20/20 -- all forward and rejection queries correct (Test 160)
+
+  # Test 161: KG Multi-Hop Chain queries
+  - name: kgMultiHopChain
+    given: 5 countries, 5 capitals, 3 continents, 2 relations (capital_of, continent_of)
+    when: 5 single-hop capital + 5 single-hop continent queries
+    then: 10/10 -- all single-hop queries correct (Test 161)
+
+  # Test 162: Real-World Hybrid Routing + Community Gates
+  - name: realWorldHybridRouting
+    given: 20 facts across 4 relation types in per-relation memories
+    when: 15 in-KG queries + 15 out-of-KG queries + 10 community readiness gates
+    then: 40/40 -- perfect routing accuracy + all gates pass (Test 162)

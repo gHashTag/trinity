@@ -1,0 +1,145 @@
+// MCP Tool Registry
+// Central registry for all MCP tools
+
+import mcp/types/mcp_types.{Tool, ToolRegistry, ToolResult, ToolCategory}
+
+// Create empty registry
+fn create() → ToolRegistry {
+  ToolRegistry {
+    tools: dict.new(),
+    categories: dict.new()
+  }
+}
+
+// Register a tool
+fn register(registry: ToolRegistry, tool: Tool) → result(ToolRegistry, str) {
+  let name = tool.name
+  
+  // Check if already registered
+  case dict.get(registry.tools, name) {
+    Ok(_) → Error("Tool already registered: " + name)
+    Error(_) → {
+      // Add tool
+      let tools = dict.insert(registry.tools, name, tool)
+      
+      // Add category
+      let category = mcp_types.get_tool_category(name)
+      let categories = dict.insert(registry.categories, name, category)
+      
+      Ok(ToolRegistry {
+        tools: tools,
+        categories: categories
+      })
+    }
+  }
+}
+
+// Get tool by name
+fn get(registry: ToolRegistry, name: str) → result(Tool, str) {
+  case dict.get(registry.tools, name) {
+    Ok(tool) → Ok(tool)
+    Error(_) → Error("Tool not found: " + name)
+  }
+}
+
+// List all tools
+fn list_all(registry: ToolRegistry) → list(Tool) {
+  dict.values(registry.tools)
+}
+
+// List tools by category
+fn list_by_category(registry: ToolRegistry, category: ToolCategory) → list(Tool) {
+  registry.tools
+  · dict.to_list()
+  · list.filter(fn(pair) {
+    let #(name, _) = pair
+    case dict.get(registry.categories, name) {
+      Ok(cat) → cat == category
+      Error(_) → false
+    }
+  })
+  · list.map(fn(pair) {
+    let #(_, tool) = pair
+    tool
+  })
+}
+
+// Execute tool
+fn execute(registry: ToolRegistry, name: str, params: Json) → result(ToolResult, str) {
+  case get(registry, name) {
+    Ok(tool) → {
+      // Execute tool handler
+      let result = tool.handler(params)
+      Ok(result)
+    }
+    Error(e) → Error(e)
+  }
+}
+
+// Get tool count
+fn count(registry: ToolRegistry) → int {
+  dict.size(registry.tools)
+}
+
+// Get tool names
+fn get_names(registry: ToolRegistry) → list(str) {
+  dict.keys(registry.tools)
+}
+
+// Check if tool exists
+fn has_tool(registry: ToolRegistry, name: str) → bool {
+  case dict.get(registry.tools, name) {
+    Ok(_) → true
+    Error(_) → false
+  }
+}
+
+// Remove tool
+fn unregister(registry: ToolRegistry, name: str) → result(ToolRegistry, str) {
+  case dict.get(registry.tools, name) {
+    Ok(_) → {
+      let tools = dict.delete(registry.tools, name)
+      let categories = dict.delete(registry.categories, name)
+      
+      Ok(ToolRegistry {
+        tools: tools,
+        categories: categories
+      })
+    }
+    Error(_) → Error("Tool not found: " + name)
+  }
+}
+
+// Get category for tool
+fn get_category(registry: ToolRegistry, name: str) → result(ToolCategory, str) {
+  case dict.get(registry.categories, name) {
+    Ok(cat) → Ok(cat)
+    Error(_) → Error("Tool not found: " + name)
+  }
+}
+
+// Get tools count by category
+fn count_by_category(registry: ToolRegistry, category: ToolCategory) → int {
+  list_by_category(registry, category)
+  · list.length()
+}
+
+// Get all categories
+fn get_categories(registry: ToolRegistry) → list(ToolCategory) {
+  registry.categories
+  · dict.values()
+  · list.unique()
+}
+
+// Validate registry
+fn validate(registry: ToolRegistry) → result(Nil, str) {
+  // Check all tools have valid names
+  let invalid_tools = registry.tools
+    · dict.keys()
+    · list.filter(fn(name) { name == "" })
+  
+  case list.is_empty(invalid_tools) {
+    true → Ok(Nil)
+    false → Error("Registry contains tools with empty names")
+  }
+}

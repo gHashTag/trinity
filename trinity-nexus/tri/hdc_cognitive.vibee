@@ -1,0 +1,160 @@
+name: hdc_cognitive
+version: "1.0.0"
+language: zig
+module: hdc_cognitive
+
+description: |
+  HDC Cognitive Architecture — Unified Cognitive Loop from 24 Modules.
+  The capstone of the Trinity HDC system: perception, memory,
+  classification, anomaly detection, explanation, and learning
+  wired into a single processing pipeline.
+
+  Cognitive Loop:
+    Input Text
+        ↓
+    [1. PERCEIVE] — Encode text → text_hv (shared encoder)
+        ↓
+    [2. CLASSIFY] — Match against class prototypes → category + confidence
+        ↓
+    [3. REMEMBER] — Query associative memory → similar past inputs
+        ↓
+    [4. DETECT] — Anomaly score against normal profile → novelty
+        ↓
+    [5. EXPLAIN] — Word attribution for classification → why this class?
+        ↓
+    [6. LEARN] — Bundle text_hv into class prototype → incremental update
+        ↓
+    CognitiveResponse (all results)
+
+  Architecture (Shared Encoder):
+    All subsystems share ONE encoder (same ItemMemory + NGramEncoder).
+    This ensures consistent vector space across all operations.
+    The text is encoded ONCE, then the same text_hv feeds all subsystems.
+
+  Subsystems:
+    - Classifier: HDC text classification (class prototypes)
+    - EpisodicMemory: stores past inputs for recall (FIFO buffer of HVs)
+    - AnomalyProfile: normal pattern prototype + threshold
+    - WordAttribution: per-word cosine for explanation
+
+  Learning Modes:
+    - supervised: user provides label → trains classifier
+    - self_supervised: uses predicted label → trains classifier
+    - memory_only: stores in episodic memory, no classification training
+
+  Properties:
+    - Single encoding pass per input
+    - All subsystems share consistent vector space
+    - Incremental: learns from each input without retraining
+    - Explainable: every decision has word attributions
+    - Anomaly-aware: detects out-of-distribution inputs
+    - Episodic memory: recalls similar past experiences
+
+types:
+  CognitiveResponse:
+    fields:
+      input_text: String
+      classification: Option<ClassResult>
+      memory_recall: Option<MemoryRecall>
+      anomaly_score: Float
+      is_anomaly: Bool
+      explanation: List<WordScore>
+      learned: Bool
+
+  ClassResult:
+    fields:
+      label: String
+      confidence: Float
+
+  MemoryRecall:
+    fields:
+      best_match: String
+      similarity: Float
+      match_count: usize
+
+  WordScore:
+    fields:
+      word: String
+      score: Float
+
+  EpisodicEntry:
+    fields:
+      text: String
+      hv: Ptr<HybridBigInt>
+      label: Option<String>
+      timestamp: usize
+
+  LearningMode:
+    enum:
+      - supervised          # User provides label
+      - self_supervised     # Uses predicted label
+      - memory_only         # Only stores in memory
+
+  CognitiveStats:
+    fields:
+      total_processed: usize
+      num_classes: usize
+      memory_size: usize
+      anomalies_detected: usize
+
+  HDCCognitiveAgent:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      encoder: HDCTextEncoder
+      # Classifier subsystem
+      class_protos: HashMap<String, ClassProto>
+      # Episodic memory
+      episodic: List<EpisodicEntry>
+      max_memory: usize
+      # Anomaly detection
+      normal_proto: Option<Ptr<HybridBigInt>>
+      normal_count: u32
+      anomaly_threshold: Float
+      # Stats
+      total_processed: usize
+      anomalies_detected: usize
+      learning_mode: LearningMode
+
+behaviors:
+  - name: process
+    given: Input text and optional label
+    when: Runs full cognitive loop (perceive → classify → remember → detect → explain → learn)
+    then: Returns CognitiveResponse with all subsystem results
+
+  - name: train
+    given: Label and text
+    when: Trains classifier prototype for given class
+    then: Prototype updated
+
+  - name: classify
+    given: Text
+    when: Encodes and compares to class prototypes
+    then: Returns ClassResult
+
+  - name: recall
+    given: Text
+    when: Searches episodic memory for similar past inputs
+    then: Returns MemoryRecall
+
+  - name: detectAnomaly
+    given: Text HV
+    when: Compares to normal profile prototype
+    then: Returns anomaly score
+
+  - name: explain
+    given: Text and predicted class
+    when: Computes per-word attribution to class prototype
+    then: Returns sorted word scores
+
+  - name: setLearningMode
+    given: LearningMode
+    when: Changes how the agent learns from new inputs
+    then: Mode updated
+
+  - name: stats
+    given: Nothing
+    when: Computes cognitive agent statistics
+    then: Returns CognitiveStats

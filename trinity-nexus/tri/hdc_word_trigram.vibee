@@ -1,0 +1,33 @@
+name: hdc_word_trigram
+version: "1.0.0"
+language: zig
+module: hdc_word_trigram
+
+types:
+  WordTrigramResult:
+    fields:
+      tri_eval_ce: Float
+      tri_train_ce: Float
+      trigram_slots: Int
+      trigram_hit_rate: Float
+      generation: String
+
+behaviors:
+  - name: wordTrigramProb
+    given: Two previous words (prev2, prev1) and target word from corpus
+    when: Compute P(target|prev2,prev1) from sparse hash table with bigram fallback
+    then: Probability with Laplace smoothing (trigram → bigram → uniform fallback)
+
+  - name: wordTrigramSample
+    given: Two previous words and temperature parameter
+    when: Build distribution from trigram slot, apply temperature in log-space, sample
+    then: Next word sampled from conditioned distribution
+
+test_cases:
+  - name: trigram_coverage
+    input: "988 tokens from Shakespeare corpus"
+    expected: "645 unique (prev2,prev1) pairs, 975 observations"
+
+  - name: trigram_generation
+    input: "start='to be', T=0.3"
+    expected: "Recalled Shakespeare phrases from Hamlet soliloquy"

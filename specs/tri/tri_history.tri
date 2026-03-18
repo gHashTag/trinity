@@ -1,0 +1,40 @@
+name: tri_history
+version: "1.0.0"
+language: zig
+module: tri.history
+
+description: |
+  TRI CLI — Command History.
+
+  Persistent history with search and navigation for TRI REPL.
+  Max 1000 entries, saved to .trinity/history.
+
+types:
+  CommandHistory:
+    fields:
+      entries: "ArrayList([]const u8)"
+      max_size: usize    # default 1000
+
+behaviors:
+  - name: add
+    given: A command string
+    when: Called after command execution
+    then: Appends to history, trims if over max_size
+
+  - name: search
+    given: A query string
+    when: Called
+    then: Returns matching history entries
+
+  - name: save
+    given: File path
+    when: Called
+    then: Persists history to disk
+
+  - name: load
+    given: File path
+    when: Called
+    then: Loads history from disk
+
+export_types:
+  - CommandHistory

@@ -1,0 +1,814 @@
+// Proactive Analyzer
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants// Analyzes incoming messages and suggests helpful actions to the type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  // AI Suggestion: Replace magic numbers with named constants  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}
+// Examples: reply reminders, lead detection, deal follow-ups
+// Converted from infra/agent/proactive_analyzer.gleam → dsl/infra/agent/proactive_analyzer.vibee
+
+// =============================================================================
+// Types
+// =============================================================================
+
+/// Suggestion types for proactive agent actions
+@enum
+type SuggestionType {
+  ReplyReminder        // type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}n't replied to an important message
+  LeadDetected         // Potential business lead detected
+  DealFollowUp         // Follow up on a previous deal discussion
+  ScheduleReminder     // Meeting or call reminder from chat
+  ContactReactivation  // Suggest reaching out to inactive important contact
+}
+
+/// A proactive suggestion for the type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}
+derive(Json)
+type Suggestion {
+  Suggestion(
+    suggestion_type: SuggestionType,
+    priority: int = 5,              // 1-10, higher = more urgent
+    contact_id: int?,
+    dialog_id: int?,
+    message_id: int?,
+    title: str!,
+    description: str!,
+    suggested_action: str!,         // What the agent proposes to do
+    suggested_message: str?         // Draft message if applicable
+  )
+}
+
+/// Incoming message for analysis
+
+type IncomingMessage {
+  IncomingMessage(
+    message_id: int,
+    dialog_id: int,
+    sender_id: int,
+    sender_name: str!,
+    text: str!,
+    timestamp: str!,
+    is_from_me: bool = false
+  )
+}
+fn new() · Self {
+    suggestion_type: suggestion_type,
+    priority: priority,
+    contact_id: contact_id,
+    dialog_id: dialog_id,
+    message_id: message_id,
+    title: title,
+    description: description,
+    suggested_action: suggested_action,
+    suggested_message: suggested_message
+  
+}
+
+  # Auto-generated getters
+fn suggestion_type(self) · self.suggestion_type
+
+
+  # Auto-generated getters
+fn message_id(self) · self.message_id
+
+
+  # Auto-generated getters
+fn owner_id(self) · self.owner_id
+
+fn int(self) · self.int
+
+fn dialog_id(self) · self.dialog_id
+
+fn sender_id(self) · self.sender_id
+
+fn sender_name(self) · self.sender_name
+
+fn text(self) · self.text
+
+fn timestamp(self) · self.timestamp
+
+fn is_from_me(self) · self.is_from_me
+
+fn priority(self) · self.priority
+
+fn contact_id(self) · self.contact_id
+
+fn dialog_id(self) · self.dialog_id
+
+fn message_id(self) · self.message_id
+
+fn title(self) · self.title
+
+fn description(self) · self.description
+
+fn suggested_action(self) · self.suggested_action
+
+fn suggested_message(self) · self.suggested_message
+
+
+/// Context for analysis
+
+type AnalysisContext {
+  AnalysisContext(
+    owner_id: int,
+    recent_messages: [IncomingMessage],
+    contact_importance: {int: float},  // contact_id → importance
+    pending_suggestions: [Suggestion]
+  )
+}
+
+// =============================================================================
+// Main Analysis Functions
+// =============================================================================
+
+@spec analyze_message(pool: DbPool, owner_id: int, message: IncomingMessage) → [Suggestion] {
+  /// Analyze a new incoming message and generate suggestions
+  given: Database pool, owner ID, and incoming message
+  when: Processing new message
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} generated suggestions
+}
+
+@impl {
+  let suggestions = []
+
+  // 1. Check for lead indicators
+  let suggestions = match detect_lead(message) {
+    ☐suggestion) → [suggestion | suggestions]
+    ∅-> suggestions
+  }
+
+  // 2. Check if this needs a reply reminder (if from important contact)
+  let suggestions = match owner_id, message · should_remind_reply {
+    ☐suggestion) → [suggestion | suggestions]
+    ∅-> suggestions
+  }
+
+  // 3. Check for deal-related content
+  let suggestions = match detect_deal_content(message) {
+    ☐suggestion) → [suggestion | suggestions]
+    ∅-> suggestions
+  }
+
+  // Save suggestions to database
+  list.fn(s · each { owner_id, s · save_suggestion }
+
+  suggestions
+}
+
+@spec get_pending_suggestions(pool: DbPool, owner_id: int) → Result([Suggestion], str) {
+  /// Get pending suggestions for a type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}
+  given: Database pool and owner ID
+  when: Fetching pending suggestions
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} pending suggestions or error
+}
+
+@impl {
+  let sql = "
+    SELECT id, suggestion_type, priority, contact_id, dialog_id, message_id,
+           title, description, suggested_action, suggested_message
+    FROM proactive_suggestions
+    WHERE owner_id = $1 AND status = 'pending'
+    ORDER BY priority DESC, created_at DESC
+    LIMIT 10
+  "
+
+  match pog.query(sql)
+    · pog.parameter(pog.int(owner_id))
+    · pog.execute(pool) {
+    ✅pog._rows · Returned) → {
+      // Would decode rows here
+      ✅[])
+    }
+    ❌_) → ❌"Database error")
+  }
+}
+
+@spec mark_shown(pool: DbPool, suggestion_id: int) → str · Result {
+  /// Mark a suggestion as shown to type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}
+  given: Database pool and suggestion ID
+  when: type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} sees suggestion
+  then: Returns success or error
+}
+
+@impl {
+  let sql = "UPDATE proactive_suggestions SET status = 'shown', shown_at = NOW() WHERE id = $1"
+
+  match pog.query(sql)
+    · pog.parameter(pog.int(suggestion_id))
+    · pog.execute(pool) {
+    ✅_) → ✅Nil)
+    ❌_) → ❌"Failed to update suggestion")
+  }
+}
+
+@spec respond_to_suggestion(pool: DbPool, suggestion_id: int, approved: bool) → str · Result {
+  /// Mark a suggestion as approved/rejected
+  given: Database pool, suggestion ID, and approval status
+  when: type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} responds to suggestion
+  then: Returns success or error
+}
+
+@impl {
+  let status = match approved {
+    true → "approved"
+    false → "rejected"
+  }
+
+  let sql = "UPDATE proactive_suggestions SET status = $2, responded_at = NOW(), type type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_response = $2 WHERE id = $1"
+
+  match pog.query(sql)
+    · pog.parameter(pog.int(suggestion_id))
+    · pog.parameter(pog.text(status))
+    · pog.execute(pool) {
+    ✅_) → ✅Nil)
+    ❌_) → ❌"Failed to update suggestion")
+  }
+}
+
+// =============================================================================
+// Detection Functions
+// =============================================================================
+
+@spec detect_lead(message: IncomingMessage) → Suggestion? {
+  /// Detect potential business leads for Digital Clone services
+  given: Incoming message
+  when: Analyzing message content
+  then: Returns ☐Suggestion) if lead detected, ∅otherwise
+}
+
+@impl {
+  let text = string.lowercase(message.text)
+
+  // Lead indicators for Digital Clone / AI Avatar services
+  let clone_indicators = [
+    "andin ", "digital clone", "in", "avatar",
+    "notwith", "ai ", " for", "infromandI",
+    "digital twin", "virtual and", "-"
+  ]
+
+  // Lead indicators for video/content creation
+  let video_indicators = [
+    "andwith", "reels", "inand", "", "tiktok", "and",
+    "goin[CYR:I]and in", "lip sync", "inand from "
+  ]
+
+  // General service request indicators
+  let service_indicators = [
+    " ", "and [CYR:work]and", " [CYR:acts]",
+    "withl] withand", "[CYR:can] withate]", "on infromandI"
+  ]
+
+  let has_clone_lead = list.fn(indicator · any {
+    string.indicator · contains
+  }
+
+  let has_video_lead = list.fn(indicator · any {
+    string.indicator · contains
+  }
+
+  let has_service_lead = list.fn(indicator · any {
+    string.indicator · contains
+  }
+
+  match true {
+    _ if has_clone_lead → {
+      ☐Suggestion(
+        suggestion_type: LeadDetected,
+        priority: 9,
+        contact_id: ☐message.sender_id),
+        dialog_id: ☐message.dialog_id),
+        message_id: ☐message.message_id),
+        title: "and on Digital Clone",
+        description: message.{ sender_name }" andwithI andiny /in",
+        suggested_action: "and withand andin[CYR:go] on",
+        suggested_message: ☐"andin! [CYR:Doing] andiny in - AI-in[CYR:y] which withI how y. withate] not?")
+      ))
+    }
+    _ if has_video_lead → {
+      ☐Suggestion(
+        suggestion_type: LeadDetected,
+        priority: 8,
+        contact_id: ☐message.sender_id),
+        dialog_id: ☐message.dialog_id),
+        message_id: ☐message.message_id),
+        title: "and on AI-inand",
+        description: message.{ sender_name }" andwithI inand-",
+        suggested_action: "and withand AI-inand",
+        suggested_message: ☐"[CYR:Doing] goin[CYR:I]and in[CYR:y] and andwithy with notwith. with?")
+      ))
+    }
+    _ if has_service_lead → {
+      ☐Suggestion(
+        suggestion_type: LeadDetected,
+        priority: 7,
+        contact_id: ☐message.sender_id),
+        dialog_id: ☐message.dialog_id),
+        message_id: ☐message.message_id),
+        title: "and[CYR:al] client",
+        description: message.{ sender_name }" and with",
+        suggested_action: "on and query",
+        suggested_message: ∅))
+    }
+    _ → ∅}
+}
+
+@spec should_remind_reply(pool: DbPool, owner_id: int, message: IncomingMessage) → Suggestion? {
+  /// Check if we should remind about replying
+  given: Database pool, owner ID, and message
+  when: Message is from someone else
+  then: Returns ☐Suggestion) if important contact, ∅otherwise
+}
+
+@impl {
+  // Don't remind about own messages
+  match message.is_from_me {
+    true → ∅false → {
+      // Check if this contact is important (top 20% by messages)
+      match owner_id, message.sender_id · is_important_contact {
+        true → {
+          ☐Suggestion(
+            suggestion_type: ReplyReminder,
+            priority: 5,
+            contact_id: ☐message.sender_id),
+            dialog_id: ☐message.dialog_id),
+            message_id: ☐message.message_id),
+            title: "in withand  "{ message }".sender_name,
+            description: truncate(message.text, 100),
+            suggested_action: "inand on withand",
+            suggested_message: ∅))
+        }
+        false → ∅}
+    }
+  }
+}
+
+@spec detect_deal_content(message: IncomingMessage) → Suggestion? {
+  /// Detect deal-related content for follow-up
+  given: Incoming message
+  when: Analyzing for deal mentions
+  then: Returns ☐Suggestion) if deal detected, ∅otherwise
+}
+
+@impl {
+  let text = string.lowercase(message.text)
+
+  // Deal indicators
+  let deal_indicators = [
+    "with", "[CYR:go]inorwith", "", "in", " ",
+    "inand", "[CYR:go]in", "in with", "on not"
+  ]
+
+  let has_deal = list.fn(indicator · any {
+    string.indicator · contains
+  }
+
+  match has_deal {
+    true → {
+      ☐Suggestion(
+        suggestion_type: DealFollowUp,
+        priority: 6,
+        contact_id: ☐message.sender_id),
+        dialog_id: ☐message.dialog_id),
+        message_id: ☐message.message_id),
+        title: "[CYR:can]onI with with "{ message }".sender_name,
+        description: "on andonand withand or [CYR:go]inwithand",
+        suggested_action: "withand with withand",
+        suggested_message: ∅))
+    }
+    false → ∅}
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec is_important_contact(pool: DbPool, owner_id: int, contact_id: int) → bool {
+  /// Check if contact is in top 20% by message frequency
+  given: Database pool, owner ID, and contact ID
+  when: Checking contact importance
+  then: Returns true if important, false otherwise
+}
+
+@impl {
+  let sql = "SELECT is_frequent FROM contact_graph WHERE owner_id = $1 AND contact_id = $2"
+
+  match pog.query(sql)
+    · pog.parameter(pog.int(owner_id))
+    · pog.parameter(pog.int(contact_id))
+    · pog.execute(pool) {
+    ✅pog.[_row] · Returned) → true  // Simplified - would decode is_frequent
+    _ → false
+  }
+}
+
+@spec truncate(text: str, max_len: int) → str {
+  /// Truncate text to max length with ellipsis
+  given: Text and max length
+  when: Formatting for display
+  then: Returns truncated text
+}
+
+@impl {
+  match len(text) > max_len {
+    true → text[:max_len] + "..."
+    false → text
+  }
+}
+
+@spec suggestion_type_$(st: SuggestionType) → str {
+  /// Convert suggestion type to string for database
+  given: SuggestionType
+  when: Storing in database
+  then: Returns string representation
+}
+
+@impl {
+  match st {
+    ReplyReminder → "reply_reminder"
+    LeadDetected → "lead_detected"
+    DealFollowUp → "deal_follow_up"
+    ScheduleReminder → "schedule_reminder"
+    ContactReactivation → "contact_reactivation"
+  }
+}
+
+// =============================================================================
+// Database Operations
+// =============================================================================
+
+@spec save_suggestion(pool: DbPool, owner_id: int, suggestion: Suggestion) → str · Result {
+  /// Save suggestion to database
+  given: Database pool, owner ID, and suggestion
+  when: Persisting suggestion
+  then: Returns success or error
+}
+
+@impl {
+  let sql = "
+    INSERT INTO proactive_suggestions (
+      owner_id, suggestion_type, priority, contact_id, dialog_id, message_id,
+      title, description, suggested_action, suggested_message, status
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'pending')
+  "
+
+  let suggested_msg = match suggestion.suggested_message {
+    ☐msg) → msg
+    ∅-> ""
+  }
+
+  match pog.query(sql)
+    · pog.parameter(pog.int(owner_id))
+    · pog.parameter(pog.text(suggestion_type_$(suggestion.suggestion_type)))
+    · pog.parameter(pog.int(suggestion.priority))
+    · pog.parameter(pog.nullable(pog.int, suggestion.contact_id))
+    · pog.parameter(pog.nullable(pog.int, suggestion.dialog_id))
+    · pog.parameter(pog.nullable(pog.int, suggestion.message_id))
+    · pog.parameter(pog.text(suggestion.title))
+    · pog.parameter(pog.text(suggestion.description))
+    · pog.parameter(pog.text(suggestion.suggested_action))
+    · pog.parameter(pog.text(suggested_msg))
+    · pog.execute(pool) {
+    ✅_) → ✅Nil)
+    ❌_) → ❌"Failed to save suggestion")
+  }
+}
+
+// =============================================================================
+// Scheduled Analysis
+// =============================================================================
+
+@spec analyze_unanswered(pool: DbPool, owner_id: int) → [Suggestion] {
+  /// Analyze unanswered messages (run periodically)
+  given: Database pool and owner ID
+  when: Running scheduled analysis
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} suggestions for unanswered messages
+}
+
+@impl {
+  // Find messages from important contacts that haven't been replied to in 2+ hours
+  let sql = "
+    SELECT DISTINCT m.dialog_id, m.sender_id, m.sender_name, m.text_content,
+           m.timestamp::text
+    FROM telegram_messages m
+    JOIN contact_graph c ON c.owner_id = m.owner_id AND c.contact_id = m.sender_id
+    WHERE m.owner_id = $1
+      AND m.sender_id != $1
+      AND c.is_frequent = true
+      AND m.timestamp > NOW() - INTERVAL '24 hours'
+      AND NOT EXISTS (
+        SELECT 1 FROM telegram_messages reply
+        WHERE reply.dialog_id = m.dialog_id
+          AND reply.sender_id = $1
+          AND reply.timestamp > m.timestamp
+      )
+    ORDER BY m.timestamp DESC
+    LIMIT 5
+  "
+
+  match pog.query(sql)
+    · pog.parameter(pog.int(owner_id))
+    · pog.execute(pool) {
+    ✅pog.rows · Returned) → {
+      // Would decode rows and create suggestions
+      []
+    }
+    ❌_) → []
+  }
+}
+
+@spec suggest_reactivation(pool: DbPool, owner_id: int) → [Suggestion] {
+  /// Suggest reaching out to inactive important contacts (run daily)
+  given: Database pool and owner ID
+  when: Running daily reactivation check
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} reactivation suggestions
+}
+
+@impl {
+  let sql = "
+    SELECT contact_id, contact_name, last_interaction_at
+    FROM contact_graph
+    WHERE owner_id = $1
+      AND is_important = true
+      AND last_interaction_at < NOW() - INTERVAL '7 days'
+    ORDER BY importance_score DESC
+    LIMIT 3
+  "
+
+  match pog.query(sql)
+    · pog.parameter(pog.int(owner_id))
+    · pog.execute(pool) {
+    ✅pog._rows · Returned) → {
+      // Would decode and create ContactReactivation suggestions
+      []
+    }
+    ❌_) → []
+  }
+}
+
+# v8.0
+
+# v8.0
+# v9.0 - Macro-Automation
+
+# v10.0 - ML-Powered Migration

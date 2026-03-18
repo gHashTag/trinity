@@ -1,0 +1,29 @@
+name: tri_zenodo
+version: "1.0.0"
+language: zig
+module: tri.tri_zenodo
+
+description: |
+  DOI Publishing CLI for Zenodo integration.
+  Creates versions, uploads artifacts, and publishes records.
+
+behaviors:
+  - name: zenodoPublish
+    given: Version string and repository artifacts
+    when: User runs tri zenodo publish <version>
+    then: Creates new version on Zenodo, uploads files, and publishes
+
+  - name: zenodoStatus
+    given: Zenodo API token and record ID
+    when: User runs tri zenodo status
+    then: Displays current record info and DOI
+
+  - name: zenodoDraft
+    given: Version string
+    when: User runs tri zenodo draft <version>
+    then: Creates draft record without publishing
+
+export_functions:
+  - zenodoPublish
+  - zenodoStatus
+  - zenodoDraft

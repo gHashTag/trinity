@@ -1,0 +1,16 @@
+{
+  "name": "trinity-kg-visualizer",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "d3": "^7.8.5"
+  },
+  "devDependencies": {
+    "vite": "^5.0.0"
+  }
+}

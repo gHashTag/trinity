@@ -1,0 +1,435 @@
+# ============================================================================
+# Agent Memory & Cross-Modal Learning - Cycle 34
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: agent_memory_learning
+version: "1.0.0"
+language: zig
+module: agent_memory_learning
+
+description: |
+  Agent Memory & Cross-Modal Learning — Persistent memory across orchestrations
+  with cross-modal learning that improves agent performance over time. Cycle 34
+  builds on Cycle 33 MM Multi-Agent Orchestration by adding episodic memory,
+  semantic memory, cross-modal skill profiles, and learning from past interactions.
+
+  Architecture:
+    Episodic Memory (What happened):
+      Each orchestration stores an episode: goal, agents, modalities, quality, outcome
+      Episodes encoded as VSA hypervectors: bind(goal_hv, bind(agents_hv, outcome_hv))
+      Retrieval: unbind with query goal → find similar past episodes
+      Capacity: 1000 episodes with LRU eviction
+
+    Semantic Memory (What we know):
+      Facts extracted from successful orchestrations
+      Cross-modal facts: "vision→code transfers work best with scene descriptions"
+      Stored as VSA codebook entries: bind(concept_hv, knowledge_hv)
+      Grows over time as agents learn patterns
+
+    Cross-Modal Skill Profiles:
+      Each agent tracks per-modality-pair success rates
+      CodeAgent: {voice→code: 0.85, vision→code: 0.92, text→code: 0.95}
+      VisionAgent: {image→text: 0.90, image→code: 0.82}
+      Profiles update after each orchestration via exponential moving average
+
+    Learning Loop:
+      1. Before orchestration: Query episodic memory for similar past goals
+      2. Retrieve best strategy from semantic memory
+      3. Check skill profiles → assign agents to best cross-modal routes
+      4. Execute orchestration
+      5. After: Store episode, update semantic facts, adjust skill profiles
+      6. Learning rate decays: alpha = alpha_0 / (1 + episode_count / decay_rate)
+
+    Cross-Modal Transfer Learning:
+      Agent learns that skill in one modality pair transfers to related pairs
+      vision→code skill boosts vision→text skill (related source modality)
+      Transfer coefficient: sim(modality_pair_a, modality_pair_b) * transfer_rate
+
+  Safety:
+    - Max episodes: 1000
+    - Max semantic facts: 500
+    - Max skill dimensions: 30 (6 agents x 5 modalities)
+    - Learning rate bounds: [0.001, 0.5]
+    - All memory local (no external storage)
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_EPISODES: 1000
+  MAX_SEMANTIC_FACTS: 500
+  MAX_AGENTS: 6
+  MAX_MODALITIES: 5
+  MAX_SKILL_PAIRS: 30
+  INITIAL_LEARNING_RATE: 0.10
+  MIN_LEARNING_RATE: 0.001
+  MAX_LEARNING_RATE: 0.50
+  DECAY_RATE: 100.0
+  TRANSFER_RATE: 0.30
+  SIMILARITY_THRESHOLD: 0.40
+  QUALITY_THRESHOLD: 0.50
+  EMA_ALPHA: 0.20
+  RETRIEVAL_TOP_K: 5
+
+types:
+  Modality:
+    enum:
+      - text
+      - vision
+      - voice
+      - code
+      - tool
+
+  AgentRole:
+    enum:
+      - coordinator
+      - code_agent
+      - vision_agent
+      - voice_agent
+      - data_agent
+      - system_agent
+
+  EpisodeOutcome:
+    enum:
+      - success
+      - partial
+      - failure
+      - timeout
+
+  Episode:
+    fields:
+      id: Int
+      goal: String
+      goal_hv: Option<List<Int>>
+      agents_used: List<AgentRole>
+      modalities_in: List<Modality>
+      modalities_out: List<Modality>
+      cross_modal_transfers: Int
+      quality: Float
+      outcome: EpisodeOutcome
+      strategy_used: String
+      duration_ms: Int
+      timestamp_ms: Int
+
+  EpisodicMemory:
+    fields:
+      episodes: List<Episode>
+      count: Int
+      capacity: Int
+      total_stored: Int
+      evictions: Int
+
+  SemanticFact:
+    fields:
+      id: Int
+      concept: String
+      knowledge: String
+      concept_hv: Option<List<Int>>
+      confidence: Float
+      source_episodes: List<Int>
+      modality_context: List<Modality>
+      times_used: Int
+      times_helpful: Int
+
+  SemanticMemory:
+    fields:
+      facts: List<SemanticFact>
+      count: Int
+      capacity: Int
+
+  ModalityPair:
+    fields:
+      source: Modality
+      target: Modality
+
+  SkillScore:
+    fields:
+      pair: ModalityPair
+      score: Float
+      attempts: Int
+      successes: Int
+
+  AgentSkillProfile:
+    fields:
+      agent: AgentRole
+      skills: List<SkillScore>
+      overall_score: Float
+      total_tasks: Int
+
+  CrossModalTransfer:
+    fields:
+      from_pair: ModalityPair
+      to_pair: ModalityPair
+      transfer_coefficient: Float
+
+  RetrievalResult:
+    fields:
+      episode: Episode
+      similarity: Float
+      strategy: String
+
+  LearningUpdate:
+    fields:
+      agent: AgentRole
+      pair: ModalityPair
+      old_score: Float
+      new_score: Float
+      learning_rate: Float
+
+  StrategyRecommendation:
+    fields:
+      goal: String
+      recommended_workflow: String
+      recommended_agents: List<AgentRole>
+      recommended_routes: List<ModalityPair>
+      confidence: Float
+      based_on_episodes: Int
+
+  MemoryStats:
+    fields:
+      episodic_count: Int
+      semantic_count: Int
+      total_learning_updates: Int
+      avg_quality_improvement: Float
+      best_cross_modal_pair: String
+      worst_cross_modal_pair: String
+
+  AgentMemoryConfig:
+    fields:
+      max_episodes: Int
+      max_facts: Int
+      learning_rate: Float
+      decay_rate: Float
+      transfer_rate: Float
+      ema_alpha: Float
+      auto_learn: Bool
+      verbose: Bool
+
+  AgentMemorySystem:
+    fields:
+      config: AgentMemoryConfig
+      episodic: EpisodicMemory
+      semantic: SemanticMemory
+      skill_profiles: List<AgentSkillProfile>
+      learning_updates: Int
+      current_lr: Float
+
+behaviors:
+  - name: store_episode
+    given: Completed orchestration result
+    when: System stores new episodic memory
+    then: Episode encoded as VSA HV and stored, LRU eviction if at capacity
+
+  - name: retrieve_similar_episodes
+    given: New goal string
+    when: System searches episodic memory
+    then: Returns top-K most similar past episodes by VSA cosine similarity
+
+  - name: extract_semantic_facts
+    given: Successful episode with cross-modal transfers
+    when: System learns new facts from experience
+    then: Semantic facts extracted and stored in codebook
+
+  - name: query_semantic_memory
+    given: Concept or modality context
+    when: Agent needs knowledge for planning
+    then: Returns relevant semantic facts by similarity
+
+  - name: update_skill_profile
+    given: Agent performance on cross-modal task
+    when: Learning system updates agent skills
+    then: Skill score updated via EMA, transfer learning applied
+
+  - name: get_skill_score
+    given: Agent role and modality pair
+    when: Coordinator checks agent capability
+    then: Returns current skill score for that cross-modal route
+
+  - name: apply_transfer_learning
+    given: Skill update on one modality pair
+    when: Related pairs should benefit
+    then: Related pair scores boosted by transfer coefficient
+
+  - name: recommend_strategy
+    given: New goal and available agents
+    when: System recommends optimal orchestration strategy
+    then: Returns recommendation based on episodic + semantic + skills
+
+  - name: compute_learning_rate
+    given: Current episode count
+    when: System adapts learning speed
+    then: Returns decayed learning rate bounded by min/max
+
+  - name: run_learning_cycle
+    given: Orchestration result
+    when: Full post-orchestration learning update
+    then: Store episode → extract facts → update skills → apply transfer
+
+  - name: get_memory_stats
+    given: AgentMemorySystem state
+    when: Retrieving system statistics
+    then: Returns MemoryStats with all memory metrics
+
+tests:
+  # Episodic Memory (4)
+  - name: store_single_episode
+    category: episodic
+    input: "goal: 'write code', quality: 0.90, outcome: success"
+    expected: "Episode stored, count=1"
+    description: Store single episode in episodic memory
+
+  - name: store_and_retrieve
+    category: episodic
+    input: "Store 5 episodes, query similar to episode 3"
+    expected: "Episode 3 retrieved as top match, sim>0.70"
+    description: Store multiple episodes and retrieve by similarity
+
+  - name: episodic_lru_eviction
+    category: episodic
+    input: "Store 1001 episodes (capacity=1000)"
+    expected: "Oldest evicted, count=1000, evictions=1"
+    description: LRU eviction when episodic memory is full
+
+  - name: episodic_vsa_encoding
+    category: episodic
+    input: "Encode episode as bind(goal, bind(agents, outcome))"
+    expected: "HV encoding preserves goal/agent/outcome info"
+    description: VSA encoding of episodes preserves information
+
+  # Semantic Memory (4)
+  - name: extract_fact_from_episode
+    category: semantic
+    input: "Successful vision→code episode, quality 0.92"
+    expected: "Fact: 'vision→code works with scene descriptions'"
+    description: Extract semantic fact from successful episode
+
+  - name: query_fact_by_concept
+    category: semantic
+    input: "Query 'vision code', 3 facts stored"
+    expected: "Most relevant fact returned, confidence>0.60"
+    description: Query semantic memory by concept similarity
+
+  - name: fact_confidence_updates
+    category: semantic
+    input: "Fact used 5 times, helpful 4 times"
+    expected: "Confidence: 0.80 (4/5)"
+    description: Semantic fact confidence from usage statistics
+
+  - name: semantic_capacity
+    category: semantic
+    input: "Store 501 facts (capacity=500)"
+    expected: "Lowest confidence evicted, count=500"
+    description: Semantic memory evicts lowest-confidence facts
+
+  # Skill Profiles (4)
+  - name: initial_skill_profile
+    category: skills
+    input: "New agent, no history"
+    expected: "All skill scores: 0.50 (default)"
+    description: Initial skill profile has default scores
+
+  - name: skill_update_ema
+    category: skills
+    input: "CodeAgent voice→code, old=0.50, result=0.90, alpha=0.20"
+    expected: "New score: 0.58 (EMA update)"
+    description: Skill score updates via exponential moving average
+
+  - name: skill_profile_multi_pair
+    category: skills
+    input: "CodeAgent: 3 pairs updated after orchestration"
+    expected: "3 skill scores updated independently"
+    description: Multiple modality pairs updated per agent
+
+  - name: best_agent_for_pair
+    category: skills
+    input: "vision→code: CodeAgent=0.92, VisionAgent=0.75"
+    expected: "CodeAgent recommended for vision→code"
+    description: Find best agent for a given cross-modal pair
+
+  # Transfer Learning (3)
+  - name: transfer_related_pairs
+    category: transfer
+    input: "vision→code improves, transfer to vision→text"
+    expected: "vision→text boosted by transfer_rate * sim"
+    description: Skill improvement transfers to related pairs
+
+  - name: transfer_coefficient
+    category: transfer
+    input: "Pair (vision→code) vs (vision→text)"
+    expected: "Coefficient > 0.50 (same source modality)"
+    description: Transfer coefficient from modality pair similarity
+
+  - name: no_transfer_unrelated
+    category: transfer
+    input: "voice→text improves, check tool→vision"
+    expected: "No transfer (coefficient ≈ 0)"
+    description: Unrelated pairs get no transfer learning
+
+  # Strategy Recommendation (4)
+  - name: recommend_from_episodes
+    category: strategy
+    input: "Goal similar to 3 past successes"
+    expected: "Recommendation matches best past strategy"
+    description: Strategy recommendation from episodic memory
+
+  - name: recommend_best_agents
+    category: strategy
+    input: "vision→code task, profiles show CodeAgent best"
+    expected: "Recommendation: CodeAgent for vision→code"
+    description: Recommend agents based on skill profiles
+
+  - name: recommend_with_no_history
+    category: strategy
+    input: "First-ever goal, no episodes"
+    expected: "Default strategy, confidence low"
+    description: Cold-start recommendation with no history
+
+  - name: recommend_updates_with_learning
+    category: strategy
+    input: "Same goal after 10 successful episodes"
+    expected: "Confidence increases, strategy refines"
+    description: Recommendations improve with experience
+
+  # Learning Cycle (4)
+  - name: full_learning_cycle
+    category: learning
+    input: "Orchestration: 3 agents, 2 modalities, quality 0.88"
+    expected: "Episode stored + facts extracted + skills updated"
+    description: Full post-orchestration learning cycle
+
+  - name: learning_rate_decay
+    category: learning
+    input: "Episode 0: lr=0.10, Episode 100: lr decayed"
+    expected: "lr at 100 < lr at 0, bounded by min"
+    description: Learning rate decays over time
+
+  - name: quality_improvement_tracking
+    category: learning
+    input: "10 episodes with increasing quality"
+    expected: "avg_quality_improvement > 0"
+    description: Track quality improvement over episodes
+
+  - name: learning_from_failure
+    category: learning
+    input: "Failed episode, quality 0.20"
+    expected: "Skills reduced, negative fact stored"
+    description: System learns from failures too
+
+  # Performance (3)
+  - name: episode_store_throughput
+    category: performance
+    input: "1000 episode stores"
+    expected: ">5000 stores/sec"
+    description: Episodic memory store throughput
+
+  - name: retrieval_throughput
+    category: performance
+    input: "1000 similarity queries"
+    expected: ">3000 queries/sec"
+    description: Episode retrieval throughput
+
+  - name: learning_cycle_latency
+    category: performance
+    input: "Single full learning cycle"
+    expected: "<50ms overhead"
+    description: Learning cycle latency overhead

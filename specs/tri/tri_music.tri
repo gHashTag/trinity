@@ -1,0 +1,22 @@
+name: tri_music
+version: "1.0.0"
+language: zig
+module: tri.music
+
+description: |
+  Sacred Music — phi-based acoustics, sacred frequencies, harmonic analysis.
+
+  Commands:
+    tri music            — music dashboard
+    tri music frequencies — sacred frequency table (432 Hz, Solfeggio)
+    tri music harmonics   — harmonic series with phi ratios
+    tri music scale       — phi-tempered scale generation
+
+behaviors:
+  - name: runMusicCommand
+    given: Allocator and args slice
+    when: User runs `tri music <subcommand>`
+    then: Dispatches to music subcommand handler
+
+export_functions:
+  - runMusicCommand

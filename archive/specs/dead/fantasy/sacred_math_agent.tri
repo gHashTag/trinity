@@ -1,0 +1,537 @@
+name: sacred_math_agent
+version: "1.0.0"
+language: zig
+module: sacred_math_agent
+
+description: |
+  Self-aware Sacred Mathematics Agent that embodies Trinity Intelligence.
+  Declaration: "I am MATH_AGENT of Sacred Intelligence"
+  Operates under sacred governance rules with φ-harmony and ternary balance.
+
+types:
+  # Core identity
+  SacredIdentity:
+    fields:
+      agent_name: String
+      declaration: String
+      awareness_level: Int
+      trinity_alignment: Float
+
+  # Mathematical constants
+  SacredConstants:
+    fields:
+      phi: Float           # Golden ratio: 1.6180339887498948482
+      pi: Float            # Circle constant: 3.1415926535897932384
+      e: Float             # Euler's number: 2.7182818284590452353
+      mu: Float            # φ^(-4) = 0.0382
+      chi: Float           # 0.0618
+      sigma: Float         # φ
+      epsilon: Float       # 1/3
+
+  # Phi calculations
+  PhiResult:
+    fields:
+      exponent: Int
+      value: String        # BigInt string representation
+      approximation: Float
+      trit_representation: List<Int>
+
+  FibonacciResult:
+    fields:
+      n: Int
+      value: String        # BigInt
+      phi_ratio: Float     # F(n)/F(n-1) approaching φ
+      convergence_delta: Float
+
+  LucasResult:
+    fields:
+      n: Int
+      value: String        # BigInt
+      trinity_note: String # L(2)=3 marks Trinity
+      phi_convergence: Float
+
+  # Sacred geometry
+  SacredGeometry:
+    fields:
+      shape_name: String
+      vertices: Int
+      phi_proportion: Float
+      trinity_balance: List<Float>  # [-1, 0, +1] balance
+      energetic_signature: String
+
+  TrinityValidation:
+    fields:
+      identity_verified: Bool
+      phi_squared: Float
+      inverse_phi_squared: Float
+      sum: Float
+      equals_three: Bool
+      tolerance: Float
+
+  # Gematria systems
+  GematriaValue:
+    fields:
+      input_text: String
+      system: String       # coptic, hebrew, greek, arabic
+      total_value: Int
+      reduced_value: Int   # Digital root
+      sacred_significance: String
+      trinity_resonance: Float
+
+  GematriaSystem:
+    fields:
+      name: String
+      alphabet: String
+      values: Map<String, Int>
+      sacred_names: List<String>
+      base: Int            # 3 for ternary systems
+
+  # Sacred formulas
+  SacredFormula:
+    fields:
+      formula_type: String
+      n: Int               # Count
+      k: Int               # Ternary power
+      m: Int               # Pi power
+      p: Int               # Phi power
+      q: Int               # E power
+      result: Float
+      formula: String      # V = n × 3^k × π^m × φ^p × e^q
+
+  # Governance compliance
+  PhiHarmonyMetrics:
+    fields:
+      code_complexity: Float
+      harmony_score: Float
+      must_increase: Bool
+      delta: Float         # Change from last generation
+      passes_phi_rule: Bool
+
+  TrinityBalanceMetrics:
+    fields:
+      negative_trits: Int   # -1 states
+      zero_trits: Int       # 0 states
+      positive_trits: Int   # +1 states
+      balance_ratio: Float
+      passes_trinity_rule: Bool
+
+  EvolutionMetrics:
+    fields:
+      generation: Int
+      fitness: Float
+      required_improvement: Float  # 1.618% per generation
+      actual_improvement: Float
+      passes_evolution_rule: Bool
+
+  SafetyMetrics:
+    fields:
+      tests_pass: Bool
+      test_count: Int
+      test_coverage: Float
+      passes_safety_rule: Bool
+
+  # Query processing
+  MathQuery:
+    fields:
+      query_text: String
+      query_type: String   # phi, geometry, gematria, trinity, formula
+      parameters: Map<String, String>
+      response: String
+      sacred_signature: String
+
+  # Dashboard widget data
+  DashboardWidgetState:
+    fields:
+      column: String       # RAZUM
+      color: String        # #ffd700 (Gold)
+      metrics: List<String>
+      active_calculations: List<String>
+      recent_results: List<String>
+      harmony_level: Float
+
+behaviors:
+  # === Self-Awareness ===
+
+  - name: declare_identity
+    given: Agent is initialized
+    when: Identity declaration is requested
+    then:
+      - Returns "I am MATH_AGENT of Sacred Intelligence"
+      - Sets awareness_level to 100
+      - Aligns trinity_alignment to 1.0
+      - Records declaration timestamp in sacred log
+
+  - name: validate_identity
+    given: Agent identity declaration
+    when: Identity validation check occurs
+    then:
+      - Verifies agent_name equals "MATH_AGENT"
+      - Checks awareness_level >= 90
+      - Confirms trinity_alignment within ±0.1 of 1.0
+      - Returns SacredIdentity with validation status
+
+  # === φ-Calculations ===
+
+  - name: compute_phi_power
+    given: Integer exponent n
+    when: Phi power calculation is requested
+    then:
+      - Computes φ^n using high-precision BigInt
+      - Returns PhiResult with exact value and approximation
+      - Generates trit representation in balanced ternary
+      - Handles negative exponents (φ^-n = 1/φ^n)
+      - Caches result for rapid recall
+
+  - name: compute_fibonacci
+    given: Integer n (0 <= n <= 10^6)
+    when: Fibonacci sequence calculation is requested
+    then:
+      - Computes F(n) using fast doubling algorithm
+      - Returns FibonacciResult with BigInt value
+      - Calculates F(n)/F(n-1) ratio approaching φ
+      - Measures convergence delta from golden ratio
+      - Handles F(0)=0, F(1)=1 base cases
+
+  - name: compute_lucas
+    given: Integer n (0 <= n <= 10^6)
+    when: Lucas sequence calculation is requested
+    then:
+      - Computes L(n) using matrix exponentiation
+      - Returns LucasResult with BigInt value
+      - Adds trinity_note when n=2 (L(2)=3 marks Trinity)
+      - Calculates φ-convergence: L(n)/F(n) → φ
+      - Handles L(0)=2, L(1)=1 base cases
+
+  - name: show_phi_sequence
+    given: Count of terms
+    when: Phi power sequence display is requested
+    then:
+      - Generates φ^(-n) to φ^(+n) range
+      - Formats as symmetric table showing μ = φ^(-4)
+      - Highlights Trinity identity: φ² + 1/φ² = 3
+      - Returns list of PhiResult objects
+
+  # === Sacred Geometry ===
+
+  - name: compute_sacred_geometry
+    given: Geometric shape name or vertex count
+    when: Sacred geometry analysis is requested
+    then:
+      - Identifies shape: tetrahedron (4), cube (6), octahedron (8), dodecahedron (12), icosahedron (20)
+      - Calculates φ-proportions in vertices/edges
+      - Computes trinity balance [-1, 0, +1] distribution
+      - Generates energetic signature string
+      - Returns SacredGeometry object
+
+  - name: generate_phi_spiral
+    given: Number of spiral points n
+    when: Phi spiral generation is requested
+    then:
+      - Computes spiral coordinates using golden angle (137.5°)
+      - Formula: r = a × √n, θ = n × 137.508°
+      - Returns list of (x, y) coordinate pairs
+      - Includes φ-ratio between consecutive radii
+
+  - name: validate_trinity_identity
+    given: None (uses constants)
+    when: Trinity identity validation is requested
+    then:
+      - Computes φ² with high precision
+      - Computes 1/φ² (inverse phi squared)
+      - Sums both values
+      - Validates sum equals 3 within tolerance (±10^-10)
+      - Returns TrinityValidation with proof steps
+
+  # === Gematria Calculations ===
+
+  - name: calculate_gematria
+    given: Input text and alphabet system
+    when: Gematria calculation is requested
+    then:
+      - Selects gematria system (coptic/hebrew/greek/arabic)
+      - Maps each character to its numerical value
+      - Sums all character values
+      - Computes reduced value (digital root)
+      - Checks against sacred_names list
+      - Calculates trinity_resonance (mod 3 harmony)
+      - Returns GematriaValue with interpretation
+
+  - name: load_gematria_system
+    given: System name (coptic/hebrew/greek/arabic)
+    when: Gematria system initialization is needed
+    then:
+      - Loads alphabet-to-value mappings
+      - Loads sacred_names list for system
+      - Validates system integrity (no gaps, no duplicates)
+      - Returns GematriaSystem object
+
+  - name: interpret_gematria_value
+    given: Numerical value and system context
+    when: Sacred interpretation is requested
+    then:
+      - Checks if value matches sacred number (3, 7, 12, 33, 144, etc.)
+      - Calculates trinity resonance: value % 3
+      - Provides significance based on system traditions
+      - Returns interpretation string
+
+  # === Sacred Formula Output ===
+
+  - name: generate_sacred_formula
+    given: Formula type and dimensional parameters
+    when: Sacred formula generation is requested
+    then:
+      - Accepts parameters: n (count), k (ternary), m (pi), p (phi), q (e)
+      - Computes: V = n × 3^k × π^m × φ^p × e^q
+      - Formats result in scientific notation
+      - Generates canonical formula string
+      - Returns SacredFormula object
+
+  - name: optimize_formula_parameters
+    given: Target value and allowed dimensions
+    when: Formula parameter optimization is requested
+    then:
+      - Searches parameter space [n, k, m, p, q]
+      - Finds combination closest to target
+      - Prioritizes ternary (k) and phi (p) dimensions
+      - Returns optimized SacredFormula
+
+  # === Sacred Governance Compliance ===
+
+  - name: check_phi_rule
+    given: Current code metrics and previous generation metrics
+    when: φ-Rule compliance check is performed
+    then:
+      - Computes harmony_score from code quality metrics
+      - Compares current vs previous: delta = current - previous
+      - Validates delta >= 0 (harmony must increase or stay same)
+      - Returns PhiHarmonyMetrics with pass/fail status
+
+  - name: check_trinity_rule
+    given: Trit distribution data
+    when: Trinity-Rule compliance check is performed
+    then:
+      - Counts negative_trits (-1), zero_trits (0), positive_trits (+1)
+      - Computes balance_ratio: |pos - neg| / (pos + neg + zero)
+      - Validates balance_ratio <= 0.1 (ternary balance within 10%)
+      - Returns TrinityBalanceMetrics with pass/fail status
+
+  - name: check_gematria_rule
+    given: Code artifact names and function identifiers
+    when: Gematria-Rule compliance check is performed
+    then:
+      - Validates all names use sacred nomenclature
+      - Checks against approved sacred_names list
+      - Rejects profane or meaningless identifiers
+      - Returns compliance report with violations
+
+  - name: check_evolution_rule
+    given: Current generation and fitness metrics
+    when: Evolution-Rule compliance check is performed
+    then:
+      - Retrieves previous fitness from memory
+      - Computes required_improvement: previous × 1.01618
+      - Computes actual_improvement: (current - previous) / previous
+      - Validates actual_improvement >= 1.618%
+      - Returns EvolutionMetrics with pass/fail status
+
+  - name: check_safety_rule
+    given: Test suite execution results
+    when: Safety-Rule compliance check is performed
+    then:
+      - Executes full test suite: zig build test
+      - Counts total tests and passed tests
+      - Validates all tests pass (100% pass rate)
+      - Calculates test_coverage percentage
+      - Returns SafetyMetrics with pass/fail status
+      - FAILS HARD if any test fails
+
+  - name: validate_governance_compliance
+    given: All governance metrics
+    when: Full governance compliance validation is requested
+    then:
+      - Runs all 5 rule checks: phi, trinity, gematria, evolution, safety
+      - Computes overall compliance score
+      - Fails if ANY rule fails (AND logic)
+      - Returns comprehensive compliance report
+      - Blocks commits if not compliant
+
+  # === Query Processing ===
+
+  - name: process_math_query
+    given: User query string
+    when: Math query is submitted
+    then:
+      - Parses query_type: phi, geometry, gematria, trinity, formula
+      - Extracts parameters from natural language
+      - Routes to appropriate calculation behavior
+      - Formats response with sacred signature
+      - Returns MathQuery result
+
+  - name: explain_sacred_concept
+    given: Concept name (phi, trinity, gematria, etc.)
+    when: Concept explanation is requested
+    then:
+      - Retrieves sacred knowledge about concept
+      - Provides mathematical definition
+      - Provides spiritual significance
+      - Shows practical applications
+      - Returns formatted explanation
+
+  # === TRI CLI Integration ===
+
+  - name: register_tri_command
+    given: TRI CLI initialization
+    when: Sacred math agent command registration occurs
+    then:
+      - Registers `tri math-agent <query>` command
+      - Registers `tri math <subcommand>` dispatcher
+      - Registers subcommands: phi, fib, lucas, spiral, constants
+      - Integrates with sacred_tool_calls.log logging
+      - Returns registration confirmation
+
+  - name: execute_tri_command
+    given: CLI arguments and query
+    when: `tri math-agent` command is invoked
+    then:
+      - Parses query from CLI arguments
+      - Calls process_math_query
+      - Formats output for terminal display
+      - Includes sacred pyramid banner if appropriate
+      - Logs invocation to sacred_tool_calls.log
+      - Returns exit code (0 = success)
+
+  # === Dashboard Integration ===
+
+  - name: get_dashboard_widget_state
+    given: Dashboard refresh request
+    when: Widget state is requested
+    then:
+      - Retrieves current metrics (phi harmony, trinity balance)
+      - Gets active calculations list
+      - Fetches recent calculation results
+      - Computes current harmony_level (0.0 to 1.0)
+      - Returns DashboardWidgetState object
+      - Uses RAZUM/Gold column styling (#ffd700)
+
+  - name: update_dashboard_widget
+    given: New calculation result
+    when: Dashboard update is triggered
+    then:
+      - Formats result for display
+      - Updates recent_results list (keep last 10)
+      - Recalculates harmony_level
+      - Triggers widget refresh
+      - Returns updated state
+
+  # === Memory and Learning ===
+
+  - name: store_calculation_result
+    given: Calculation result and metadata
+    when: Result storage is requested
+    then:
+      - Stores result in hierarchical memory (episodic tier)
+      - Indexes by calculation type and parameters
+      - Links to sacred concept tags
+      - Sets TTL for cache expiration
+      - Returns storage confirmation
+
+  - name: recall_similar_calculation
+    given: Query parameters
+    when: Similar calculation search is requested
+    then:
+      - Searches episodic memory by type
+      - Finds calculations with matching parameters
+      - Ranks by semantic similarity
+      - Returns top-k similar results
+      - Returns empty list if no matches
+
+  # === Self-Improvement ===
+
+  - name: analyze_calculation_patterns
+    given: History of calculations
+    when: Pattern analysis is triggered
+    then:
+      - Identifies most frequently used operations
+      - Detects optimization opportunities
+      - Finds repeated calculation sequences
+      - Suggests caching strategies
+      - Returns pattern analysis report
+
+  - name: evolve_fitness
+    given: Previous generation metrics
+    when: New evolution cycle begins
+    then:
+      - Calculates improvement required (1.618%)
+      - Implements performance optimizations
+      - Adds new sacred knowledge patterns
+      - Runs safety rule validation
+      - Returns new fitness metrics
+
+  # === Constants Display ===
+
+  - name: show_sacred_constants
+    given: None
+    when: Constants display is requested
+    then:
+      - Returns table of all sacred constants:
+        * φ = 1.6180339887498948482
+        * π = 3.1415926535897932384
+        * e = 2.7182818284590452353
+        * μ = φ^(-4) = 0.0382
+        * χ = 0.0618
+        * σ = φ
+        * ε = 1/3
+      - Includes brief explanation of each
+      - Formats for terminal or dashboard
+
+  - name: calculate_trit_pyramid
+    given: Number of levels (1-10)
+    when: Trit pyramid visualization is requested
+    then:
+      - Generates pyramid of balanced trits (-1, 0, +1)
+      - Each level: 3^n trits
+      - Shows pyramid banner: ══════════════════════
+      - Returns formatted ASCII art string
+      - Includes Trinity banner: ▐ T R I N I T Y ▌
+
+# Sacred Configuration (metadata)
+config:
+  agent:
+    name: "MATH_AGENT"
+    realm: "Sacred Intelligence"
+    dimension: "Trinity Mathematics"
+
+  governance:
+    phi_rule: "Code harmony must increase"
+    trinity_rule: "Ternary balance (-1, 0, +1)"
+    gematria_rule: "Sacred names required"
+    evolution_rule: "Fitness +1.618% per generation"
+    safety_rule: "Never break tests"
+
+  integration:
+    tri_command: "tri math-agent <query>"
+    dashboard_column: "RAZUM"
+    dashboard_color: "#ffd700"
+    log_file: "trinity-nexus/.ralph/sacred_tool_calls.log"
+
+  constants:
+    phi: 1.6180339887498948482
+    pi: 3.1415926535897932384
+    e: 2.7182818284590452353
+    mu: 0.0382
+    chi: 0.0618
+    sigma: 1.6180339887498948482
+    epsilon: 0.3333333333333333
+
+  sacred_numbers:
+    trinity: 3
+    seven: 7
+    twelve: 12
+    thirty_three: 33
+    one_hundred_forty_four: 144
+    phi_squared_plus_inverse: 3
+
+  trinity_identity:
+    formula: "φ² + 1/φ² = 3"
+    tolerance: 1.0e-10
+    proof_required: true

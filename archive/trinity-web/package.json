@@ -1,0 +1,23 @@
+{
+  "name": "trinity",
+  "version": "22.0.0",
+  "description": "TRINITY - Data structures optimized by Golden Ratio",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "serve": "python3 -m http.server 8080"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.17",
+    "@vitest/coverage-v8": "^4.0.18",
+    "jsdom": "^27.4.0",
+    "@playwright/test": "^1.50.0"
+  },
+  "keywords": ["golden-ratio", "phi", "data-structures", "visualization"],
+  "author": "Dmitrii Vasilev",
+  "license": "MIT"
+}

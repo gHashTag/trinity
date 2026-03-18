@@ -1,0 +1,102 @@
+name: trinity_chat_v2_4
+version: "2.4.0"
+language: zig
+module: igla_hybrid_chat
+
+# Trinity Chat v2.4 — Self-Reflection Visibility + Tool Metadata + Multi-Modal UI
+# Extends v2.3 (context + augmented prompts + HTTP /chat + Cosmic UI)
+# Adds: ReflectionStatus return, tool_name in response, multi-modal UI inputs
+# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS ENERGY IMMORTAL
+
+types:
+  ReflectionStatus:
+    description: "Result of self-reflection quality filter — visible to user"
+    variants:
+      - Saved              # Response saved to TVC corpus (LEARNED)
+      - FilteredLength     # Too short (< min_response_length)
+      - FilteredConfidence # Confidence below threshold
+      - FilteredError      # Response looks like error text
+      - FilteredDedup      # Similar query already in TVC
+      - NoCorpus           # No TVC corpus available
+      - Disabled           # enable_reflection = false
+      - NotApplicable      # Non-LLM source (Tool, Symbolic, TVC)
+
+  HybridResponseV24:
+    description: "Extended response with reflection status and tool name"
+    fields:
+      response: String
+      source: ResponseSource
+      language: Language
+      confidence: Float
+      latency_us: Int
+      tvc_similarity: Float
+      tool_name: Option<String>           # NEW v2.4: specific tool name
+      reflection: ReflectionStatus         # NEW v2.4: self-reflection result
+
+  ChatHttpResponseV24:
+    description: "JSON response from POST /chat with v2.4 fields"
+    fields:
+      response: String
+      source: String
+      confidence: Float
+      latency_us: Int
+      tool_name: Option<String>           # NEW v2.4
+      reflection: String                   # NEW v2.4: ReflectionStatus name
+      learned: Bool                        # NEW v2.4: true if Saved
+
+behaviors:
+  - name: save_to_tvc_filtered_with_status
+    given: "LLM response + query + confidence"
+    when: "Self-reflection quality filter runs"
+    then: "Returns ReflectionStatus instead of void — Saved, FilteredLength, FilteredConfidence, FilteredError, FilteredDedup, NoCorpus"
+
+  - name: respond_with_reflection
+    given: "User query via respond()"
+    when: "LLM cascade returns response"
+    then: "HybridResponse includes reflection status and tool_name"
+
+  - name: http_chat_v24_response
+    given: "POST /chat request"
+    when: "chat_server serializes response to JSON"
+    then: "JSON includes tool_name, reflection, learned fields"
+
+  - name: cosmic_ui_reflection_badge
+    given: "Assistant message displayed in Cosmic Chat UI"
+    when: "Response has reflection status"
+    then: "Green LEARNED badge if saved, dim FILTERED badge if filtered"
+
+  - name: cosmic_ui_tool_badge
+    given: "Tool-sourced response in Cosmic Chat UI"
+    when: "tool_name is present in response"
+    then: "Blue badge showing specific tool name (time, date, etc.)"
+
+  - name: cosmic_ui_multimodal_input
+    given: "User wants to send image or audio path"
+    when: "User clicks attachment toggle in ChatInput"
+    then: "Expandable inputs for image_path and audio_path appear"
+
+# Architecture: Self-Reflection Loop
+#
+# USER QUERY
+#     |
+#     v
+# [0] TOOL → response + tool_name
+# [1] SYMBOLIC → response (reflection: NotApplicable)
+# [2] TVC CORPUS → response (reflection: NotApplicable)
+# [3] LLM CASCADE → response
+#         |
+#         v
+#     SELF-REFLECTION (saveToTVCFiltered)
+#         |
+#         +--→ Saved (LEARNED badge, green wave)
+#         +--→ FilteredLength / FilteredConfidence / FilteredError / FilteredDedup
+#         +--→ NoCorpus / Disabled
+#         |
+#         v
+#     HybridResponse { .reflection = status, .tool_name = name }
+#         |
+#         v
+#     JSON { "reflection": "Saved", "learned": true, "tool_name": "time" }
+#         |
+#         v
+#     COSMIC UI: [LEARNED] badge + green reflection wave

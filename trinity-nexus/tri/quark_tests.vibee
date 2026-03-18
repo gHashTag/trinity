@@ -1,0 +1,149 @@
+name: quark_tests
+version: "2.0.0"
+language: zig
+module: quark_tests
+
+imports:
+  - name: vsa
+    path: "src/vsa.zig"
+
+description: |
+  Quark Test Framework — Real VSA Proof Suite v2.0 (SIMD-Wired)
+
+  === PURPOSE ===
+  End-to-end mathematical proofs for VSA (Vector Symbolic Architecture) operations.
+  Each "quark" is an atomic, provable property of the ternary hypervector algebra.
+
+  === SELF-CONTAINED PROOFS (Q1-Q12) ===
+  Q1: Bind Self-Inverse     — unbind(bind(A, B), B) ~= A  (cosine >= 0.95)
+  Q2: Bind Commutativity    — bind(A, B) == bind(B, A)    (exact for ternary multiply)
+  Q3: Bundle Majority       — bundle3(A, A, B) more similar to A than to B
+  Q4: Permute Cycle         — permute(permute^{-1}(A)) == A
+  Q5: Similarity Identity   — cosineSimilarity(A, A) == 1.0
+  Q6: Orthogonality         — random A, B: cosineSimilarity(A, B) ~= 0.0
+  Q7: Dimension Scaling     — accuracy improves with sqrt(D)
+  Q8: Noise Tolerance       — bind recovers under 10% noise
+  Q9: Trit Arithmetic       — exhaustive 3^2=9 cases for AND/OR/NOT/XOR
+  Q10: Trinity Identity     — phi^2 + 1/phi^2 = 3
+  Q11: Composition Chain    — unbind(bind(permute(A, k), B), B) ~= permute(A, k)
+  Q12: Codebook Roundtrip   — encode then decode recovers original symbol
+
+  === SIMD-WIRED PROOFS (Q13-Q18) ===
+  Q13: SIMD Bind Self-Inverse   — vsa.bind + vsa.unbind + vsa.cosineSimilarity (NEON)
+  Q14: SIMD Bundle Majority     — vsa.bundle3 + vsa.cosineSimilarity (NEON)
+  Q15: SIMD Permute Cycle       — vsa.permute + vsa.inversePermute + vsa.hammingDistance
+  Q16: SIMD Similarity Identity — vsa.cosineSimilarity(A, A) == 1.0 via HybridBigInt
+  Q17: SIMD Orthogonality       — vsa.randomVector + vsa.cosineSimilarity ~= 0.0
+  Q18: SIMD Composition Chain   — vsa.permute + vsa.bind + vsa.unbind chain
+
+  === IMPLEMENTATION ===
+  Q1-Q12: Self-contained proofs using i8 arrays (pure math).
+  Q13-Q18: SIMD-wired proofs via @import("vsa") HybridBigInt (ARM64 NEON).
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  QuarkProofResult:
+    fields:
+      quark_name: String
+      passed: Bool
+      similarity: Float
+      threshold: Float
+      dimension: Int
+
+  VSAVector:
+    fields:
+      dimension: Int
+      data: String
+
+behaviors:
+  - name: quarkBindSelfInverse
+    given: Two random ternary hypervectors A and B of dimension D
+    when: Computes bind(A, B) then unbind(result, B) and measures cosine similarity with A
+    then: Cosine similarity >= 0.95 proving bind is self-inverse in ternary algebra
+
+  - name: quarkBindCommutativity
+    given: Two random ternary hypervectors A and B
+    when: Computes bind(A, B) and bind(B, A) element-wise and compares
+    then: Results are identical proving ternary multiply is commutative
+
+  - name: quarkBundleMajority
+    given: Two random ternary hypervectors A and B
+    when: Computes bundle3(A, A, B) via majority vote and measures similarity to A vs B
+    then: Bundle is more similar to A (majority donor) than to B
+
+  - name: quarkPermuteCycle
+    given: Random ternary hypervector A and shift count k
+    when: Applies permute(A, k) then permute(result, D-k) to reverse the cyclic shift
+    then: Result equals original A exactly (permute is invertible)
+
+  - name: quarkSimilarityIdentity
+    given: Random ternary hypervector A
+    when: Computes cosine similarity of A with itself via dot product
+    then: Cosine similarity equals exactly 1.0
+
+  - name: quarkOrthogonality
+    given: Two independently random ternary hypervectors A and B of large dimension D
+    when: Computes cosine similarity between A and B
+    then: Cosine similarity near 0.0 (within 0.15) proving random HVs are quasi-orthogonal
+
+  - name: quarkDimensionScaling
+    given: Pairs of random hypervectors at dimensions 64, 256, 1024
+    when: Measures standard deviation of cosine similarity across trials
+    then: Variance decreases as dimension increases proving sqrt(D) scaling
+
+  - name: quarkNoiseTolerance
+    given: Random ternary hypervector A and bound pair bind(A, B)
+    when: Flips 10 percent of trits in bound vector then unbinds with B
+    then: Recovered vector still has cosine similarity >= 0.80 with original A
+
+  - name: quarkTritArithmetic
+    given: All 9 combinations of Trit pairs from the set negative zero positive
+    when: Tests AND OR NOT XOR operations exhaustively
+    then: All 9x4 equals 36 test cases pass matching ternary logic truth tables
+
+  - name: quarkTrinityIdentity
+    given: Golden ratio phi equals 1.618033988749895
+    when: Computes phi squared plus one over phi squared
+    then: Result equals exactly 3.0 within tolerance 1e-10
+
+  - name: quarkCompositionChain
+    given: Random hypervectors A and B and shift count k
+    when: Computes unbind(bind(permute(A, k), B), B) and compares to permute(A, k)
+    then: Cosine similarity >= 0.95 proving bind-unbind preserves permuted structure
+
+  - name: quarkCodebookRoundtrip
+    given: A set of 8 random symbol hypervectors as codebook entries
+    when: Encodes symbol 3 via codebook then decodes by finding max cosine similarity
+    then: Decoded index equals 3 proving codebook encode-decode roundtrip works
+
+  - name: quarkSIMDBindSelfInverse
+    given: Two random HybridBigInt vectors A and B via vsa.randomVector
+    when: Calls vsa.bind then vsa.unbind and measures vsa.cosineSimilarity with A
+    then: Cosine similarity >= 0.55 proving SIMD bind works with ternary loss at zero trits
+
+  - name: quarkSIMDBundleMajority
+    given: Two random HybridBigInt vectors A and B via vsa.randomVector
+    when: Calls vsa.bundle3 with A A B then measures vsa.cosineSimilarity to A vs B
+    then: Bundle is more similar to A than to B via SIMD majority vote
+
+  - name: quarkSIMDPermuteCycle
+    given: Random HybridBigInt vector A via vsa.randomVector and shift k
+    when: Calls vsa.permute then vsa.inversePermute and checks vsa.hammingDistance
+    then: Hamming distance equals 0 proving SIMD permute is perfectly invertible
+
+  - name: quarkSIMDSimilarityIdentity
+    given: Random HybridBigInt vector A via vsa.randomVector
+    when: Calls vsa.cosineSimilarity with A and A
+    then: Cosine similarity equals exactly 1.0 via SIMD dot product
+
+  - name: quarkSIMDOrthogonality
+    given: Two independently random HybridBigInt vectors via vsa.randomVector
+    when: Calls vsa.cosineSimilarity between them
+    then: Cosine similarity near 0.0 within 0.15 via SIMD computation
+
+  - name: quarkSIMDCompositionChain
+    given: Two random HybridBigInt vectors A and B via vsa.randomVector and shift k
+    when: Calls vsa.unbind of vsa.bind of vsa.permute A k with B and compares to vsa.permute A k
+    then: Cosine similarity >= 0.50 proving SIMD composition works with ternary loss

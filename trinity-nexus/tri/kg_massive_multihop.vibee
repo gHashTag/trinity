@@ -1,0 +1,60 @@
+name: kg_massive_multihop
+version: "1.0.0"
+language: zig
+module: kg_massive_multihop
+description: "Level 11.13 — Multi-hop traversal on massive indexed KG with 6 layers and chained relation composition"
+
+constants:
+  DIM: 1024
+  LAYERS: 6
+  ENTS_LAYER: 20
+
+types:
+  MassiveMultiHopResult:
+    fields:
+      hops: Int
+      correct: Int
+      total: Int
+      accuracy: Float
+      description: "Multi-hop traversal result on massive indexed KG. Tests chain composition from 1 to 5 hops across 6 entity layers of 20 entities each."
+
+behaviors:
+  - name: singleHopMassive
+    given: 6 layers of 20 bipolar entities each, with 5 inter-layer relation memories (layer0->layer1, ..., layer4->layer5)
+    when: For each layer transition, unbind source entity from relation memory and match against next layer codebook
+    then: 100% accuracy per layer (20/20 for each of 5 transitions) — each relation memory holds exactly 20 pairs, well within capacity
+
+  - name: multiHopChain
+    given: 20 entity chains spanning 1 to 5 hops across 6 indexed layers
+    when: Compose relations sequentially (unbind at each hop) to traverse from source in layer 0 to target in layer N
+    then: 1-hop 100%, 2-hop >= 98%, 3-hop >= 95%, 4-hop >= 92%, 5-hop >= 90% — bipolar composition preserves signal through deep chains
+
+  - name: relationDiscoveryMassive
+    given: 225 triples distributed across 5 relation memories (45 per relation from 3 sub-domains)
+    when: For each (entity, object) pair, probe bind(entity, object) against all 5 relation memories to identify the correct relation
+    then: 225/225 relations correctly identified (100%) — indexed memories provide clean separation even at scale
+
+test_cases:
+  - name: test_single_hop_100_percent
+    input: "Query all 20 entities through each of 5 layer transitions"
+    expected: "100/100 correct (20 per layer x 5 layers), accuracy = 100%"
+
+  - name: test_2_hop_chain
+    input: "Traverse 20 entities from layer 0 to layer 2 via 2-hop composition"
+    expected: "Accuracy >= 98% (at least 19/20 correct)"
+
+  - name: test_3_hop_chain
+    input: "Traverse 20 entities from layer 0 to layer 3 via 3-hop composition"
+    expected: "Accuracy >= 95% (at least 19/20 correct)"
+
+  - name: test_5_hop_chain
+    input: "Traverse 20 entities from layer 0 to layer 5 via 5-hop composition"
+    expected: "Accuracy >= 90% (at least 18/20 correct)"
+
+  - name: test_relation_discovery_225
+    input: "Probe 225 triples against 5 relation memories"
+    expected: "225/225 correctly identified, 100% relation discovery"
+
+  - name: test_hop_degradation_curve
+    input: "Measure accuracy at hops 1, 2, 3, 4, 5"
+    expected: "Monotonically non-increasing: 100% >= 98% >= 95% >= 92% >= 90%"

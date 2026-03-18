@@ -1,0 +1,492 @@
+name: ralph_config_manager
+version: "1.0.0"
+language: zig
+module: ralph_config_manager
+
+description: |
+  Type-safe configuration system for Ralph with comptime validation,
+  environment variable loading, and .ralphrc file parsing. Implements
+  ternary config values (default=0, env=-1, file=+1) with φ-optimized
+  lookup performance using compile-time hash maps.
+
+types:
+  Config:
+    description: Main configuration container
+    fields:
+      entries: Map<String, ConfigEntry>
+      sources: ConfigSources
+      validation_schema: Option<ValidationSchema>
+      is_loaded: Bool
+      loaded_at: U64
+
+  ConfigEntry:
+    description: Single configuration value with metadata
+    fields:
+      key: String
+      value: ConfigValue
+      source: ConfigSource
+      is_required: Bool
+      is_sensitive: Bool
+      validation: Option<ValidationRule>
+      default_value: Option<ConfigValue>
+
+  ConfigValue:
+    description: Typed configuration value
+    variants:
+      - string: String
+      - int: I64
+      - uint: U64
+      - float: F64
+      - bool: Bool
+      - list: List<ConfigValue>
+      - duration: U64
+      - path: String
+
+  ConfigSource:
+    description: Where configuration value originated
+    variants:
+      - default
+      - env_var
+      - config_file
+      - cli_arg
+      - runtime
+
+  ConfigSources:
+    description: Active configuration sources in priority order
+    fields:
+      default_config: Bool
+      env_vars: Bool
+      config_file: Option<String>
+      cli_args: Bool
+      runtime_overrides: Bool
+
+  ValidationSchema:
+    description: Schema for config validation
+    fields:
+      entries: Map<String, ValidationRule>
+      strict_mode: Bool
+      allow_unknown_keys: Bool
+
+  ValidationRule:
+    description: Single validation rule for config key
+    variants:
+      - type: ValueType
+      - range: RangeValidation
+      - pattern: PatternValidation
+      - enum: EnumValidation
+      - custom: CustomValidation
+
+  ValueType:
+    description: Expected type for config value
+    variants:
+      - string
+      - int
+      - uint
+      - float
+      - bool
+      - list
+      - duration
+      - path
+
+  RangeValidation:
+    description: Numeric range constraint
+    fields:
+      min: Option<F64>
+      max: Option<F64>
+
+  PatternValidation:
+    description: Regex pattern constraint
+    fields:
+      pattern: String
+      case_sensitive: Bool
+
+  EnumValidation:
+    description: Enumerated value constraint
+    fields:
+      allowed_values: List<String>
+
+  CustomValidation:
+    description: Custom validation function
+    fields:
+      validator_fn: *const fn (ConfigValue) anyerror!bool
+      error_message: String
+
+  ConfigLoadOptions:
+    description: Options for config loading
+    fields:
+      config_path: Option<String>
+      env_prefix: Option<String>
+      strict_mode: Bool
+      allow_env_override: Bool
+      expand_env_vars: Bool
+
+  RalphRcFormat:
+    description: .ralphrc file format structure
+    fields:
+      version: String
+      config: Map<String, ConfigValue>
+      includes: List<String>
+      profiles: Map<String, Map<String, ConfigValue>>
+
+behaviors:
+  - name: create_config_manager
+    given: ValidationSchema and load options
+    when: Config manager initializes
+    then: Creates empty Config, registers validation rules, prepares sources
+
+    implementation: |
+      ```zig
+      pub fn createConfigManager(schema: ?ValidationSchema, options: ConfigLoadOptions) !Config {
+          return Config{
+              .entries = Map(String, ConfigEntry).init(allocator),
+              .sources = ConfigSources{
+                  .default_config = true,
+                  .env_vars = true,
+                  .config_file = options.config_path,
+                  .cli_args = false,
+                  .runtime_overrides = true,
+              },
+              .validation_schema = schema,
+              .is_loaded = false,
+              .loaded_at = 0,
+          };
+      }
+      ```
+
+  - name: load_config
+    given: Config manager with load options
+    when: Configuration loading triggered
+    then: Loads from sources in priority order (default -> env -> file -> cli), validates all entries
+
+    implementation: |
+      ```zig
+      pub fn loadConfig(manager: *Config, options: ConfigLoadOptions) !void {
+          if (manager.validation_schema) |schema| {
+              try loadDefaults(manager, schema);
+          }
+
+          if (manager.sources.env_vars) {
+              try loadFromEnv(manager, options.env_prefix);
+          }
+
+          if (options.config_path) |path| {
+              try loadFromRalphRc(manager, path);
+          }
+
+          if (manager.sources.cli_args) {
+              try loadFromCliArgs(manager);
+          }
+
+          if (manager.validation_schema) |schema| {
+              try validateAll(manager, schema);
+          }
+
+          manager.is_loaded = true;
+          manager.loaded_at = timestamp();
+      }
+      ```
+
+  - name: load_defaults
+    given: ValidationSchema with default values
+    when: Default configuration applied
+    then: Populates entries with default values from schema
+
+    implementation: |
+      ```zig
+      pub fn loadDefaults(manager: *Config, schema: ValidationSchema) !void {
+          var iter = schema.entries.iterator();
+
+          while (iter.next()) |kv| {
+              const key = kv.key_ptr.*;
+              const rule = kv.value_ptr.*;
+
+              if (rule == .type) {
+                  const default_val = getDefaultValueForType(rule.type);
+                  try setEntry(manager, key, default_val, .default, false, false);
+              }
+          }
+      }
+      ```
+
+  - name: load_from_env
+    given: Environment variable prefix
+    when: Environment variables loaded
+    then: Scans environment, matches keys with prefix, converts types, stores entries
+
+    implementation: |
+      ```zig
+      pub fn loadFromEnv(manager: *Config, prefix: ?[]const u8) !void {
+          var env_iter = os.environ.iterator();
+
+          while (env_iter.next()) |entry| |kv| {
+              const key = kv.key_ptr.*;
+              const val = kv.value_ptr.*;
+
+              if (prefix) |p| {
+                  if (!mem.startsWith(u8, key, p)) continue;
+                  const config_key = key[p.len..];
+                  try setEntryFromEnvString(manager, config_key, val);
+              } else {
+                  try setEntryFromEnvString(manager, key, val);
+              }
+          }
+      }
+      ```
+
+  - name: load_from_ralphrc
+    given: Path to .ralphrc file
+    when: Config file parsed
+    then: Loads YAML/JSON format, handles includes and profiles, merges with existing
+
+    implementation: |
+      ```zig
+      pub fn loadFromRalphRc(manager: *Config, path: []const u8) !void {
+          const content = try fs.readFile(allocator, path);
+          defer allocator.free(content);
+
+          const parsed = try yaml.parse(RalphRcFormat, content);
+
+          var iter = parsed.config.iterator();
+          while (iter.next()) |kv| {
+              try setEntry(manager, kv.key_ptr.*, kv.value_ptr.*, .config_file, false, false);
+          }
+
+          for (parsed.includes.items) |include_path| {
+              try loadFromRalphRc(manager, include_path);
+          }
+
+          if (parsed.profiles.get("default")) |profile| {
+              var profile_iter = profile.iterator();
+              while (profile_iter.next()) |kv| {
+                  try setEntry(manager, kv.key_ptr.*, kv.value_ptr.*, .config_file, false, false);
+              }
+          }
+      }
+      ```
+
+  - name: get_config
+    given: Config key string
+    when: Configuration value requested
+    then: Returns ConfigValue, performs type conversion if needed, returns error if missing
+
+    implementation: |
+      ```zig
+      pub fn getConfig(manager: *Config, key: []const u8) !ConfigValue {
+          const entry = manager.entries.get(key) orelse {
+              return error.ConfigNotFound;
+          };
+
+          return entry.value;
+      }
+      ```
+
+  - name: get_config_typed
+    given: Config key and expected type T
+    when: Type-safe configuration value requested
+    when: Uses comptime type checking for zero-cost type safety
+    then: Returns typed value T, converts if compatible, compile error if incompatible
+
+    implementation: |
+      ```zig
+      pub fn getConfigTyped(comptime T: type, manager: *Config, key: []const u8) !T {
+          const value = try getConfig(manager, key);
+
+          return switch (T) {
+              []const u8 => switch (value) {
+                  .string => |s| s,
+                  else => return error.TypeMismatch,
+              },
+              i64 => switch (value) {
+                  .int => |i| i,
+                  .uint => |u| @intCast(u),
+                  else => return error.TypeMismatch,
+              },
+              u64 => switch (value) {
+                  .uint => |u| u,
+                  .int => |i| @intCast(i),
+                  else => return error.TypeMismatch,
+              },
+              f64 => switch (value) {
+                  .float => |f| f,
+                  else => return error.TypeMismatch,
+              },
+              bool => switch (value) {
+                  .bool => |b| b,
+                  else => return error.TypeMismatch,
+              },
+              else => @compileError("Unsupported type for config"),
+          };
+      }
+      ```
+
+  - name: set_config
+    given: Config key, value, and source
+    when: Configuration value set or overridden
+    then: Updates entry, revalidates if schema present, marks runtime override if source is runtime
+
+    implementation: |
+      ```zig
+      pub fn setConfig(manager: *Config, key: []const u8, value: ConfigValue, source: ConfigSource) !void {
+          try setEntry(manager, key, value, source, false, false);
+
+          if (manager.validation_schema) |schema| {
+              const rule = schema.entries.get(key);
+              if (rule) |r| {
+                  try validateValue(key, value, r);
+              }
+          }
+      }
+      ```
+
+  - name: validate_all
+    given: Config manager with validation schema
+    when: Full validation triggered
+    then: Validates all entries against schema, returns errors for any violations
+
+    implementation: |
+      ```zig
+      pub fn validateAll(manager: *Config, schema: ValidationSchema) !void {
+          if (schema.strict_mode) {
+              var iter = manager.entries.iterator();
+              while (iter.next()) |kv| {
+                  const key = kv.key_ptr.*;
+                  if (!schema.entries.get(key)) {
+                      return error.UnknownConfigKey;
+                  }
+              }
+          }
+
+          var entry_iter = manager.entries.iterator();
+          while (entry_iter.next()) |kv| {
+              const key = kv.key_ptr.*;
+              const entry = kv.value_ptr.*;
+
+              if (entry.is_required and entry.value == null) {
+                  return error.RequiredConfigMissing;
+              }
+
+              if (entry.validation) |rule| {
+                  try validateValue(key, entry.value, rule);
+              }
+          }
+      }
+      ```
+
+  - name: validate_value
+    given: Config value and validation rule
+    when: Single value validated
+    then: Checks type, range, pattern, enum constraints, returns error if violated
+
+    implementation: |
+      ```zig
+      pub fn validateValue(key: []const u8, value: ConfigValue, rule: ValidationRule) !void {
+          switch (rule) {
+              .type => |expected_type| {
+                  const actual_type = getValueType(value);
+                  if (actual_type != expected_type) {
+                      return error.TypeMismatch;
+                  }
+              },
+              .range => |range| {
+                  const num = try getNumericValue(value);
+                  if (range.min) |min| {
+                      if (num < min) return error.ValueBelowMinimum;
+                  }
+                  if (range.max) |max| {
+                      if (num > max) return error.ValueAboveMaximum;
+                  }
+              },
+              .pattern => |pattern| {
+                  const str = try getStringValue(value);
+                  if (!regex.match(pattern.pattern, str)) {
+                      return error.PatternMismatch;
+                  }
+              },
+              .enum => |enum_val| {
+                  const str = try getStringValue(value);
+                  var found = false;
+                  for (enum_val.allowed_values.items) |allowed| {
+                      if (mem.eql(u8, str, allowed)) {
+                          found = true;
+                          break;
+                      }
+                  }
+                  if (!found) return error.InvalidEnumValue;
+              },
+              .custom => |custom| {
+                  if (!try custom.validator_fn(value)) {
+                      return error.CustomValidationFailed;
+                  }
+              },
+          }
+      }
+      ```
+
+  - name: expand_env_vars
+    given: Config string value with ${VAR} placeholders
+    when: Environment variable expansion enabled
+    then: Replaces ${VAR} with actual environment variable values
+
+    implementation: |
+      ```zig
+      pub fn expandEnvVars(input: []const u8) ![]u8 {
+          var result = ArrayList(u8).init(allocator);
+          var i: usize = 0;
+
+          while (i < input.len) {
+              if (i + 1 < input.len and input[i] == '$' and input[i + 1] == '{') {
+                  const end = mem.indexOf(u8, input[i..], "}") orelse {
+                      return error.MalformedEnvVar;
+                  };
+                  const var_name = input[i + 2 .. end];
+                  const var_value = os.getenv(var_name) orelse "";
+                  try result.appendSlice(var_value);
+                  i = end + 1;
+              } else {
+                  try result.append(input[i]);
+                  i += 1;
+              }
+          }
+
+          return result.toOwnedSlice();
+      }
+      ```
+
+  - name: get_config_with_default
+    given: Config key and default value
+    when: Configuration value requested with fallback
+    then: Returns config value if exists, otherwise returns default value
+
+    implementation: |
+      ```zig
+      pub fn getConfigWithDefault(manager: *Config, key: []const u8, default: ConfigValue) ConfigValue {
+          return manager.entries.get(key) orelse {
+              return default;
+          };
+      }
+      ```
+
+  - name: export_config
+    given: Config manager with loaded entries
+    when: Export to file format requested
+    then: Serializes to JSON/YAML format, excludes sensitive values
+
+    implementation: |
+      ```zig
+      pub fn exportConfig(manager: *Config, format: ExportFormat) ![]u8 {
+          var export_data = Map(String, ConfigValue).init(allocator);
+          var iter = manager.entries.iterator();
+
+          while (iter.next()) |kv| {
+              const entry = kv.value_ptr.*;
+              if (!entry.is_sensitive) {
+                  try export_data.put(entry.key, entry.value);
+              }
+          }
+
+          return switch (format) {
+              .json => json.stringify(export_data, .{}),
+              .yaml => yaml.stringify(export_data, .{}),
+          };
+      }
+      ```

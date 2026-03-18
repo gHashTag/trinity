@@ -1,0 +1,152 @@
+name: hdc_symbolic_reasoning
+version: "1.0.0"
+language: zig
+module: hdc_symbolic_reasoning
+
+description: |
+  HDC Symbolic Reasoning Engine — Logic & Analogy via VSA Algebra.
+  Encodes structured knowledge as role-filler bindings and performs
+  reasoning operations (query, analogy, composition) purely in HD space.
+
+  Core Insight (VSA as a Symbolic Substrate):
+    Neural networks: subsymbolic, no variable binding, no compositionality.
+    Classical AI: symbolic, brittle, no noise tolerance.
+    HDC/VSA: BOTH symbolic AND distributed.
+
+    bind(role, filler) → role-filler pair (like a slot)
+    bundle(bind(r1,f1), bind(r2,f2), ...) → frame (like a record/struct)
+    unbind(frame, role) → approximate filler (like field access)
+
+  Role-Filler Binding:
+    For concept "king":
+      king_frame = bundle(
+        bind(gender_hv, male_hv),
+        bind(royalty_hv, monarch_hv),
+        bind(species_hv, human_hv)
+      )
+
+  Frame Query (Slot Access):
+    query(king_frame, gender_role) = unbind(king_frame, gender_hv)
+    ≈ male_hv (closest match in vocabulary)
+
+    Why it works:
+      unbind(bundle(bind(A,X), bind(B,Y)), A)
+      = unbind(bind(A,X), A) + unbind(bind(B,Y), A)
+      = X + noise
+      X is recoverable because noise terms are quasi-orthogonal
+
+  Analogy (The Crown Jewel):
+    "king is to man as queen is to ?"
+    relation = unbind(king_hv, man_hv)    # extracts "royalty" relation
+    answer = bind(relation, woman_hv)      # applies to woman
+    find_nearest(answer, vocabulary) → queen_hv
+
+    Algebraically:
+      king ≈ bind(man, royalty)
+      unbind(king, man) ≈ royalty
+      bind(royalty, woman) ≈ queen
+
+  Sequence Reasoning:
+    If A→B encoded as bind(A, B)
+    If B→C encoded as bind(B, C)
+    Then A→C ≈ bind(unbind(bind(A,B), B), C) ??? No — transitive closure
+    Better: store implications, chain lookup
+
+  Properties:
+    - Compositionality: complex structures from simple primitives
+    - Graceful degradation: noise tolerance from high dimensionality
+    - Variable binding: roles and fillers are first-class
+    - Content-addressable: query by partial information
+    - Analogy as first-class operation
+
+types:
+  Concept:
+    fields:
+      name: String
+      hv: Ptr<HybridBigInt>
+
+  RoleFiller:
+    fields:
+      role: String
+      filler: String
+
+  Frame:
+    fields:
+      name: String
+      bindings: List<RoleFiller>
+      hv: Ptr<HybridBigInt>         # composed frame vector
+
+  AnalogyQuery:
+    fields:
+      a: String          # a is to
+      b: String          # b as
+      c: String          # c is to ?
+
+  AnalogyResult:
+    fields:
+      answer: String
+      confidence: Float
+      relation_name: String   # optional human-readable
+
+  QueryResult:
+    fields:
+      filler: String
+      similarity: Float
+      rank: usize
+
+  ReasoningChain:
+    fields:
+      steps: List<String>
+      conclusion: String
+      confidence: Float
+
+  HDCSymbolicReasoner:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      vocabulary: HashMap<String, Ptr<HybridBigInt>>
+      frames: HashMap<String, Frame>
+      role_hvs: HashMap<String, Ptr<HybridBigInt>>
+
+behaviors:
+  - name: addConcept
+    given: Concept name (string)
+    when: Creates or retrieves a unique HV for the concept
+    then: Concept registered in vocabulary
+
+  - name: addRole
+    given: Role name (string)
+    when: Creates or retrieves a unique HV for the role
+    then: Role registered for use in bindings
+
+  - name: composeFrame
+    given: Frame name and list of (role, filler) pairs
+    when: Binds each role-filler, bundles all bindings
+    then: Frame stored with composed HV
+
+  - name: queryFrame
+    given: Frame name and role to query
+    when: Unbinds role from frame HV, finds nearest concept in vocabulary
+    then: Returns QueryResult with recovered filler
+
+  - name: solveAnalogy
+    given: "a is to b as c is to ?"
+    when: Computes relation = unbind(a, b), applies bind(relation, c), finds nearest
+    then: Returns AnalogyResult with answer and confidence
+
+  - name: findSimilar
+    given: Concept name and k
+    when: Computes cosine similarity to all vocabulary concepts
+    then: Returns top-k most similar concepts
+
+  - name: composeRelation
+    given: Two concepts (source, target)
+    when: Creates relation HV = bind(source, target)
+    then: Returns relation vector (can be applied to other concepts)
+
+  - name: applyRelation
+    given: Relation HV and concept
+    when: Binds relation with concept
+    then: Returns transformed concept, finds nearest in vocabulary

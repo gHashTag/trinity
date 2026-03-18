@@ -1,0 +1,81 @@
+name: tvc_gate
+version: "1.0.0"
+language: zig
+module: tvc_gate
+
+description: >
+  TVC Gate — mandatory first link in the Golden Chain pipeline.
+  All queries are checked against the TVC Corpus before continuing the pipeline.
+  Cache hit returns a cached response; miss lets the pipeline proceed and stores
+  the result for future queries.
+
+constants:
+  TVC_GATE_THRESHOLD: "phi^-1 (golden ratio inverse) — default similarity threshold"
+  TVC_AUTOSAVE_INTERVAL: 10
+
+types:
+  TVCGateResult:
+    description: "Union(hit | miss) result of gate execution"
+    variants:
+      hit:
+        fields:
+          response: "[]const u8"
+          similarity: f64
+          entry_id: u64
+      miss: void
+
+  TVCGate:
+    fields:
+      corpus: "*TVCCorpus"
+      similarity_threshold: f64
+      autosave_path: "?[]const u8"
+      stores_since_save: u32
+      total_hits: u64
+      total_misses: u64
+      total_stores: u64
+      verbose: bool
+
+  TVCGateStats:
+    fields:
+      total_hits: u64
+      total_misses: u64
+      total_stores: u64
+      hit_rate: f64
+      corpus_size: usize
+      threshold: f64
+
+behaviors:
+  TVCGate.init:
+    given: "a TVCCorpus pointer"
+    when: "called"
+    then: "returns a gate with default threshold and zeroed statistics"
+
+  TVCGate.initWithThreshold:
+    given: "corpus pointer and custom threshold f64"
+    when: "called"
+    then: "returns a gate with the given threshold"
+
+  TVCGate.execute:
+    given: "a query string"
+    when: "called"
+    then: "searches corpus; returns TVCGateResult.hit with cached response if similarity >= threshold, otherwise TVCGateResult.miss"
+
+  TVCGate.storeResponse:
+    given: "query and response strings"
+    when: "called after pipeline completes"
+    then: "stores the pair in the corpus; triggers auto-save if stores_since_save >= TVC_AUTOSAVE_INTERVAL"
+
+  TVCGate.executeAsLink:
+    given: "a query string"
+    when: "called as a Golden Chain link"
+    then: "returns LinkMetrics with improvement_rate=1.0 on hit, 0.0 on miss"
+
+  TVCGate.getHitRate:
+    given: "accumulated statistics"
+    when: "called"
+    then: "returns total_hits / (total_hits + total_misses) as f64"
+
+  TVCGate.save:
+    given: "a file path"
+    when: "called"
+    then: "persists the corpus to disk and resets stores_since_save"

@@ -1,0 +1,123 @@
+# MATH SEQUENCES — Number Theory Extensions v6.0
+# Pell, Tribonacci, Padovan, Perrin, Catalan, Bernoulli, Euler, Motzkin, Narayana
+
+name: math_sequences
+version: "6.0.0"
+language: zig
+module: sacred.sequences
+
+types:
+  SequenceResult:
+    description: "Result of sequence calculation"
+    fields:
+      n: Int           # Index
+      value: Int       # Result value
+      formula: String  # Formula used
+      name: String     # Sequence name
+
+behaviors:
+  # Pell Numbers: P(n) = 2P(n-1) + P(n-2), P(0)=0, P(1)=1
+  # Sequence: 0, 1, 2, 5, 12, 29, 70, 169, 408, 985, 2378, 5741, 13860, 33461, 80782...
+  - name: pell
+    given: "Index n (u32)"
+    when: "Calculate Pell number P(n)"
+    then: "Return P(n) using P(n) = 2P(n-1) + P(n-2)"
+    notes: "Related to √2 approximation: P(n)/P(n-1) → 1+√2"
+
+  # Pell-Lucas Numbers: Q(n) = 2Q(n-1) + Q(n-2), Q(0)=2, Q(1)=2
+  # Sequence: 2, 2, 6, 14, 34, 82, 198, 478, 1154, 2786, 6726...
+  - name: pellLucas
+    given: "Index n (u32)"
+    when: "Calculate Pell-Lucas number Q(n)"
+    then: "Return Q(n) using Q(n) = 2Q(n-1) + Q(n-2)"
+
+  # Tribonacci: T(n) = T(n-1) + T(n-2) + T(n-3), T(0)=0, T(1)=0, T(2)=1
+  # Sequence: 0, 0, 1, 1, 2, 4, 7, 13, 24, 44, 81, 149, 274, 504, 927, 1705, 3136...
+  - name: tribonacci
+    given: "Index n (u32)"
+    when: "Calculate Tribonacci number T(n)"
+    then: "Return T(n) using 3-term recurrence"
+    notes: "Tetranratio → 1.83929 (analogous to golden ratio)"
+
+  # Padovan: P(n) = P(n-2) + P(n-3), P(0)=1, P(1)=1, P(2)=1
+  # Sequence: 1, 1, 1, 2, 2, 3, 4, 5, 7, 9, 12, 16, 21, 28, 37, 49, 65, 86, 114, 151...
+  - name: padovan
+    given: "Index n (u32)"
+    when: "Calculate Padovan number P(n)"
+    then: "Return P(n) using P(n) = P(n-2) + P(n-3)"
+    notes: "Plastic number ≈ 1.3247 (cubic golden ratio)"
+
+  # Perrin: P(n) = P(n-2) + P(n-3), P(0)=3, P(1)=0, P(2)=2
+  # Sequence: 3, 0, 2, 3, 2, 5, 5, 7, 10, 12, 17, 22, 29, 39, 51, 68, 90, 119...
+  - name: perrin
+    given: "Index n (u32)"
+    when: "Calculate Perrin number P(n)"
+    then: "Return P(n) using P(n) = P(n-2) + P(n-3)"
+    notes: "If n is prime, P(n) is divisible by n (primality test)"
+
+  # Catalan: C(n) = (2n)! / ((n+1)! n!)
+  # Sequence: 1, 1, 2, 5, 14, 42, 132, 429, 1430, 4862, 16796, 58786, 208012...
+  - name: catalan
+    given: "Index n (u32)"
+    when: "Calculate Catalan number C(n)"
+    then: "Return C(n) = (2n)!/((n+1)!n!)"
+    notes: "Binary tree counting, Dyck paths, valid parentheses"
+
+  # Bernoulli Numbers B_n (rational numbers)
+  # B_0=1, B_1=-1/2, B_2=1/6, B_4=-1/30, B_6=1/42, B_8=-1/30, B_10=5/66...
+  # All odd B_n (n>1) = 0
+  - name: bernoulli
+    given: "Index n (u32)"
+    when: "Calculate Bernoulli number B_n"
+    then: "Return B_n as f64"
+    notes: "Sum of powers: Σk^p = B_{p+1}(n+1)/(p+1)"
+
+  # Euler Numbers E_n (secant/tangent numbers)
+  # E_0=1, E_2=-1, E_4=5, E_6=-61, E_8=1385, E_10=-50521, E_12=2702765...
+  - name: euler
+    given: "Index n (u32)"
+    when: "Calculate Euler number E_n"
+    then: "Return E_n (even n only, odd = 0)"
+    notes: "Alternating permutations, sec(x) expansion"
+
+  # Motzkin: M(n) = M(n-1) + ΣM(i)M(n-2-i), M(0)=1
+  # Sequence: 1, 1, 2, 4, 9, 21, 51, 127, 323, 835, 2188, 5798, 15511...
+  - name: motzkin
+    given: "Index n (u32)"
+    when: "Calculate Motzkin number M(n)"
+    then: "Return M(n) - ways to draw non-crossing chords"
+    notes: "Path counting on integer lattice"
+
+  # Narayana: N(n,k) = (1/n) * C(n,k) * C(n,k-1)
+  - name: narayana
+    given: "Parameters n (u32), k (u32)"
+    when: "Calculate Narayana number N(n,k)"
+    then: "Return N(n,k)"
+    notes: "Catalan decomposition: C(n) = Σ N(n,k)"
+
+  # Jacobsthal: J(n) = J(n-1) + 2J(n-2), J(0)=0, J(1)=1
+  # Sequence: 0, 1, 1, 3, 5, 11, 21, 43, 85, 171, 341, 683, 1365, 2731...
+  - name: jacobsthal
+    given: "Index n (u32)"
+    when: "Calculate Jacobsthal number J(n)"
+    then: "Return J(n) = J(n-1) + 2J(n-2)"
+    notes: "J(n) = (2^n - (-1)^n)/3"
+
+  # Newman-Shanks-Williams: NSW primes related
+  - name: nsw
+    given: "Index n (u32)"
+    when: "Calculate NSW number"
+    then: "Return S(n) = S(n-1) + 2S(n-2)"
+    notes: "Related to Pell numbers"
+
+  # Golden ratio powered sequences
+  - name: goldenPower
+    given: "Base index n (u32), exponent e (u32)"
+    when: "Calculate φ^e term in sequence"
+    then: "Return φ^e value"
+
+  # Compare sequences
+  - name: compareSequences
+    given: "Two sequence names and index n"
+    when: "Compare values at same index"
+    then: "Return table showing ratio/approximation"

@@ -1,0 +1,156 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEEDLE Pattern Language — Query Syntax for Structural Code Search
+# ═══════════════════════════════════════════════════════════════════════════════
+# Supports: Tree-sitter S-expressions, regex, and plain text queries
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: needle-pattern-language
+version: "1.0.0"
+language: zig
+module: trinity.needle.pattern
+description: Query language for NEEDLE structural code search
+
+types:
+  Query:
+    fields:
+      raw: String
+      kind: Enum[sexpr, regex, plain_text]
+      parsed: SExpression
+
+  SExpression:
+    fields:
+      type_name: String              # e.g., "function_declaration"
+      captures: Map[String, SExpression]  # Named captures
+      children: List[SExpression]     # Child nodes
+      predicates: List[Predicate]     # #match?, #not-match? etc.
+
+  Predicate:
+    fields:
+      kind: Enum[match, not_match, eq, any_of]
+      arguments: List[String]
+
+  Capture:
+    fields:
+      name: String                    # @capture_name
+      node: SExpression
+
+constants:
+  # Zig node types (tree-sitter-zig grammar)
+  FUNCTION_DECLARATION: function_declaration
+  FUNCTION_DEFINITION: function_definition
+  FN_PROTO: FnProto
+  CALL_EXPRESSION: call_expression
+  ASSIGNMENT_EXPRESSION: assignment_expression
+  VAR_DECL: VarDecl
+  CONST_DECL: ConstDecl
+  IDENTIFIER: identifier
+  STRING_LITERAL: string_literal
+  NUMBER_LITERAL: integer
+  BLOCK: Block
+  IF_STATEMENT: IfStatement
+  WHILE_EXPRESSION: WhileExpression
+  FOR_EXPRESSION: ForExpression
+  SWITCH_EXPRESSION: SwitchExpression
+
+behaviors:
+  - name: parse_query
+    given: "Raw query string"
+    when: "User provides search query"
+    then: |
+      Determine query kind:
+      1. If starts with '(' → sexpr (tree-sitter S-expression)
+      2. If contains regex metachars /[.*+?^${}()|[\]\\]/ → regex
+      3. Otherwise → plain_text
+      Return Query with kind and parsed representation
+    implementation: |
+      if std.mem.startsWith(u8, query, "("):
+          return Query{ .kind = .sexpr, .parsed = parse_sexp(query) };
+      if contains_regex_chars(query):
+          return Query{ .kind = .regex, .raw = query };
+      return Query{ .kind = .plain_text, .raw = query };
+
+  - name: execute_query
+    given: "Query + parsed AST"
+    when: "User runs search"
+    then: |
+      Execute based on query kind:
+      - sexpr: Run tree-sitter query on AST
+      - regex: Match regex against source lines
+      - plain_text: Use layered fuzzy matching
+      Return list of MatchResult
+    implementation: |
+      switch (query.kind) {
+          case .sexpr:
+              return tree_sitter_query(ast, query.parsed);
+          case .regex:
+              return regex_search(source, query.raw);
+          case .plain_text:
+              return fuzzy_search(source, query.raw);
+      }
+
+algorithms:
+  - name: tree_sitter_query
+    input: AST + SExpression
+    output: MatchResult list
+    steps:
+      - name: build_query
+        action: "Convert SExpression to tree-sitter query string"
+      - name: execute_query
+        action: "Run ts_query_cursor_exec"
+      - name: extract_matches
+        action: "Extract captures and compute positions"
+      - name: build_results
+        action: "Create MatchResult for each capture"
+
+  - name: regex_search
+    input: source + regex pattern
+    output: MatchResult list
+    steps:
+      - name: compile_regex
+        action: "Compile regex pattern"
+      - name: iterate_lines
+        action: "For each line, try regex match"
+      - name: build_results
+        action: "Create MatchResult for each match"
+
+  - name: fuzzy_search
+    input: source + query text
+    output: MatchResult list
+    steps:
+      - name: exact_match
+        action: "Check if query exactly matches line (confidence=1.0)"
+      - name: word_level
+        action: "Check if all query words in line (confidence=0.8)"
+      - name: fuzzy_ratio
+        action: "Compute SequenceMatcher-style ratio (confidence=ratio*0.6)"
+      - name: filter_threshold
+        action: "Return matches with confidence >= 0.5"
+
+test_cases:
+  - name: parse_sexp_query
+    given: "Query = '(function_declaration name: (identifier) @fn_name)'"
+    when: "Parse query"
+    then: "Query.kind = sexpr, parsed.type_name = 'function_declaration'"
+
+  - name: parse_regex_query
+    given: "Query = 'fn\\s+\\w+'"
+    when: "Parse query"
+    then: "Query.kind = regex"
+
+  - name: parse_plain_text_query
+    given: "Query = 'add two numbers'"
+    when: "Parse query"
+    then: "Query.kind = plain_text"
+
+benchmarks:
+  suite: query_performance
+  metrics:
+    - parse_time_ms: "Time to parse query"
+    - execute_time_ms: "Time to execute query"
+    - match_count: "Number of results"
+    - avg_confidence: "Average match confidence"
+
+integration:
+  used_by:
+    - needle: find_matches behavior
+    - needle-search: tri command

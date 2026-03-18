@@ -1,0 +1,248 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# GLOBAL MESH v1.0 — 10+ Devices + $TRI Wallet + Claim Dashboard + Omega Economy
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Scale Trinity DePIN to 10+ devices globally with live wallet integration
+# Platforms: Raspberry Pi, macOS, Linux (distributed worldwide)
+# Discovery: UDP 9333 + mesh relay
+# Wallet: MetaMask, Phantom, WalletConnect integration
+# Dashboard: Live $TRI balance, claim history, node status
+#
+# ⚠️  GOLDEN CHAIN COMPLIANCE:
+#   - This is the ONLY source of truth
+#   - All Zig code MUST be generated via: tri gen specs/depin/global-mesh-v1.tri
+#   - NO manual .zig files allowed
+#   - PAS Score must be >= 0.950
+#
+# Ω OMEGA ECONOMY ACTIVATION:
+#   - Global mesh routing for maximum resilience
+#   - Reputation-based reward multiplier
+#   - Cross-region latency optimization
+#   - Automatic failover
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: global_mesh_v1
+version: "1.0.0"
+language: zig
+module: global_mesh
+
+types:
+  MeshNode:
+    fields:
+      node_id: String
+      ip: String
+      http_port: Int
+      udp_port: Int
+      platform: String
+      arch: String
+      region: String  # us-east, us-west, eu-central, asia-pacific
+      role: String
+      reputation: Float  # 0.0 to 1.0
+      status: String
+      uptime_seconds: Int
+      tri_earned: Float
+      last_heartbeat: Int
+
+  WalletInfo:
+    fields:
+      address: String
+      balance: Float
+      pending: Float
+      claimed_total: Float
+      last_claim: Int
+      wallet_type: String  # metamask, phantom, walletconnect
+
+  ClaimTransaction:
+    fields:
+      tx_hash: String
+      node_id: String
+      wallet: String
+      amount: Float
+      timestamp: Int
+      status: String  # pending, confirmed, failed
+      block_number: Int
+
+  DashboardData:
+    fields:
+      total_nodes: Int
+      active_nodes: Int
+      total_tri_earned: Float
+      total_tri_claimed: Float
+      avg_reputation: Float
+      regions: Map<String, Int>
+      top_earners: List<MeshNode>
+
+  RelayPacket:
+    fields:
+      source_id: String
+      target_id: String
+      original_sender: String
+      hop_count: Int
+      ttl: Int
+      payload: String
+
+behaviors:
+  - name: startGlobalMesh
+    given: 10+ devices distributed across regions
+    when: Each device runs hardware-deploy with mesh enabled
+    then: UDP discovery + relay forms global mesh, regions auto-detected
+
+  - name: relayDiscoveryPacket
+    given: RelayPacket with ttl > 0
+    when: Discovery packet received from non-local region
+    then: Decrement ttl, increment hop_count, rebroadcast to local region
+
+  - name: calculateRegionAwareRewards
+    given: MeshNode in region with latency requirements
+    when: Rewards tick every 60 seconds
+    then: Apply region multiplier + reputation multiplier to base rate
+
+  - name: integrateWallet
+    given: WalletInfo with provider (MetaMask, Phantom)
+    when: User connects wallet via dashboard
+    then: Link wallet to node_id, enable claim functionality
+
+  - name: claimViaWallet
+    given: Connected wallet with pending $TRI
+    when: User clicks claim button in dashboard
+    then: Sign transaction with wallet, broadcast to blockchain
+
+  - name: serveDashboard
+    given: HTTP request to /dashboard
+    when: Dashboard loaded or refreshed
+    then: Return DashboardData with live cluster metrics
+
+  - name: activateOmegaEconomy
+    given: Mesh with 10+ nodes and reputation tracking
+    when: Omega threshold reached (1000 total reputation)
+    then: Enable reputation multipliers, global routing, premium rewards
+
+test_cases:
+  - name: global_mesh_10_nodes
+    given:
+      nodes: [
+        { region: "us-east", count: 3 },
+        { region: "us-west", count: 2 },
+        { region: "eu-central", count: 3 },
+        { region: "asia-pacific", count: 2 }
+      ]
+    expected:
+      all_discovered: true
+      mesh_formed: true
+      cross_region_latency: < 500ms
+
+  - name: wallet_claim_real
+    given:
+      wallet: "0x1234567890abcdef"
+      provider: "metamask"
+      pending: 50.0
+    expected:
+      claim_succeeds: true
+      tx_confirmed: true
+      wallet_received: 50.0
+
+  - name: omega_economy_activation
+    given:
+      total_reputation: 1200.0
+      nodes: 15
+    expected:
+      omega_enabled: true
+      reputation_multipliers: active
+      premium_rewards: enabled
+
+implementation: |
+  const std = @import("std");
+  const Allocator = std.mem.Allocator;
+  
+  pub fn startGlobalMesh(allocator: Allocator, config: MeshConfig) !DashboardData {
+      _ = allocator;
+      
+      // 1. Detect region
+      const region = detectRegion();
+      
+      // 2. Start UDP discovery with relay
+      try startUDPRelay(config.udp_port);
+      
+      // 3. Connect to wallet
+      const wallet = try connectWallet(config.wallet_provider);
+      
+      // 4. Join global mesh
+      try joinGlobalMesh(config);
+      
+      // 5. Start earning with multipliers
+      try startEarningWithMultipliers(region);
+      
+      return DashboardData{
+          .total_nodes = 10,
+          .active_nodes = 10,
+          .total_tri_earned = 0.0,
+          .total_tri_claimed = 0.0,
+          .avg_reputation = 0.5,
+          .regions = @constCast(&@TypeOf(DashboardData.RegionsMap)),
+          .top_earners = &[_]MeshNode{},
+      };
+  }
+  
+  pub fn calculateRegionAwareRewards(node: MeshNode, region: Region) f64 {
+      const base_rate = 0.001;  // $TRI per second
+      const role_mult = getRoleMultiplier(node.role);
+      const region_mult = getRegionMultiplier(region);
+      const reput_mult = node.reputation + 0.5;  // Reputation bonus
+      
+      return @as(f64, @floatFromInt(node.uptime_seconds)) * base_rate * role_mult * region_mult * reput_mult;
+  }
+  
+  pub fn claimViaWallet(wallet: WalletInfo, amount: Float) !ClaimTransaction {
+      // Sign transaction with wallet
+      const signature = try signWithWallet(wallet, amount);
+      
+      // Broadcast to blockchain
+      const tx_hash = try broadcastToBlockchain(wallet.address, amount, signature);
+      
+      return ClaimTransaction{
+          .tx_hash = tx_hash,
+          .node_id = "",
+          .wallet = wallet.address,
+          .amount = amount,
+          .timestamp = 0,
+          .status = "pending",
+          .block_number = 0,
+      };
+  }
+  
+  pub fn serveDashboard(nodes: []const MeshNode) DashboardData {
+      var total_tri: f64 = 0;
+      var reputations: f64 = 0;
+      
+      for (nodes) |node| {
+          total_tri += node.tri_earned;
+          reputations += node.reputation;
+      }
+      
+      return DashboardData{
+          .total_nodes = nodes.len,
+          .active_nodes = nodes.len,
+          .total_tri_earned = total_tri,
+          .total_tri_claimed = 0.0,
+          .avg_reputation = reputations / @as(f64, @floatFromInt(nodes.len)),
+          .regions = @constCast(&@TypeOf(DashboardData.RegionsMap)),
+          .top_earners = &[_]MeshNode{},
+      };
+  }
+  
+  fn getRegionMultiplier(region: Region) f64 {
+      return switch (region) {
+          .us_east => 1.0,
+          .us_west => 1.0,
+          .eu_central => 1.2,  // Premium region
+          .asia_pacific => 1.3,  // Premium region
+      };
+  }
+  
+  fn detectRegion() Region {
+      // TODO: GeoIP detection or manual configuration
+      return .us_east;
+  }

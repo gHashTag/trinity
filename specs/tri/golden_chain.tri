@@ -1,0 +1,61 @@
+name: golden_chain
+version: "4.4.0"
+language: zig
+module: golden_chain
+
+description: |
+  Golden Chain — 26-Link Development Pipeline State Machine.
+  Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+  Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+
+  Links 0-25: TVC_GATE → BASELINE → METRICS → PAS_ANALYZE → TECH_TREE
+  → STRICT_CHECK → SPEC_CREATE → CODE_GENERATE → SACRED_ANALYZE
+  → TEST_RUN → BENCHMARK_PREV → SWE_FIX → BENCHMARK_EXTERNAL
+  → BENCHMARK_THEORETICAL → DELTA_REPORT → OPTIMIZE → DOCS
+  → TOXIC_VERDICT → GIT → LOOP_DECISION → FLY_DEPLOY
+  → ETERNAL_SELF_EVOLUTION → SELF_REFERENTIAL_EVOLUTION
+  → VISION_LED_TEST → PERPLEXITY_SCHOLAR → SPEC_LINT
+
+  v5.0 Role Split: Planner/Coder/Reviewer/Tester/Integrator
+
+dependencies:
+  - sacred
+
+types:
+  ChainLink:
+    kind: enum(u8)
+    count: 26
+
+  AgentRole:
+    kind: enum
+    variants: [Planner, Coder, Reviewer, Tester, Integrator]
+
+  ChainState:
+    fields:
+      current_link: ChainLink
+      completed: "[26]bool"
+      version: UInt32
+
+behaviors:
+  - name: ChainLink.getName
+    given: A ChainLink value
+    when: Called
+    then: Returns the link's display name string
+
+  - name: ChainLink.getEmoji
+    given: A ChainLink value
+    when: Called
+    then: Returns the link's status emoji
+
+  - name: runChain
+    given: Allocator and initial state
+    when: Called
+    then: Executes the pipeline from link 0 through link 25
+
+export_types:
+  - ChainLink
+  - AgentRole
+  - ChainState
+
+export_functions:
+  - runChain

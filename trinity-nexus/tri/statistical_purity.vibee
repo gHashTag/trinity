@@ -1,0 +1,23 @@
+name: statistical_purity
+version: "1.0.0"
+language: zig
+module: statistical_purity
+
+types:
+  PurityComparison:
+    fields:
+      raw_freq_loss: Float
+      vsa_trigram_loss: Float
+      encoding_overhead: Float
+      generation_quality: String
+
+behaviors:
+  - name: compareRawVsVSA
+    given: Raw frequency decoding and VSA pure trigram on same eval split
+    when: Compute loss metrics in both paradigms
+    then: Quantified VSA encoding overhead (information lost in ternary encoding)
+
+  - name: assessGenerationQuality
+    given: Raw frequency generation at multiple temperatures
+    when: Examine output for English words, word boundaries, and coherence
+    then: Generation quality assessment (raw freq produces real English fragments)

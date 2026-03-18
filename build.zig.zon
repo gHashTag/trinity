@@ -1,0 +1,16 @@
+.{
+    .name = .trinity,
+    .version = "0.15.2",
+    .dependencies = .{
+        .emsdk = .{
+            .url = "git+https://github.com/emscripten-core/emsdk?ref=4.0.9#3bcf1dcd01f040f370e10fe673a092d9ed79ebb5",
+            .hash = "N-V-__8AAJl1DwBezhYo_VE6f53mPVm00R-Fk28NPW7P14EQ",
+        },
+        .raylib = .{
+            .url = "git+https://github.com/raylib-zig/raylib-zig#cd71c85d571027ac8033357f83b124ee051825b3",
+            .hash = "raylib_zig-5.6.0-dev-KE8REENOBQC-m5nK7M2b5aKSIubJPbPLUYcRhT7aT3RN",
+        },
+    },
+    .paths = .{""},
+    .fingerprint = 0xa9f69745ba7ed82d,
+}

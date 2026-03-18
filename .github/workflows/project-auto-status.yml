@@ -1,0 +1,237 @@
+# Auto-update Project #6 status when PRs merge or issues close.
+#
+# - PR merged → linked issues + PR move to "Done"
+# - Issue closed → move to "Done"
+# - PR opened → move to "In review"
+#
+# Requires PROJECT_TOKEN secret (classic PAT with `project` scope).
+
+name: Auto-update Project Status
+
+on:
+  issues:
+    types: [closed, labeled]
+  pull_request:
+    types: [opened, closed]
+
+env:
+  PROJECT_ID: PVT_kwHOAGdgHc4A-axm
+  STATUS_FIELD_ID: PVTSSF_lAHOAGdgHc4A-axmzgx076o
+  DONE_OPTION_ID: "98236657"
+  IN_REVIEW_OPTION_ID: aba860b9
+  IN_PROGRESS_OPTION_ID: "47fc9ee4"
+
+jobs:
+  # When an issue gets agent:spawn label → set "In Progress"
+  agent-started:
+    if: github.event_name == 'issues' && github.event.action == 'labeled' && github.event.label.name == 'agent:spawn'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get project item ID
+        id: get-item
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          ITEM_ID=$(gh api graphql -f query='
+            query($url: URI!) {
+              resource(url: $url) {
+                ... on Issue {
+                  projectItems(first: 10) {
+                    nodes { id }
+                  }
+                }
+              }
+            }' -f url="${{ github.event.issue.html_url }}" \
+            --jq '.data.resource.projectItems.nodes[0].id' 2>/dev/null || true)
+
+          echo "item_id=$ITEM_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Set status to In Progress
+        if: steps.get-item.outputs.item_id != '' && steps.get-item.outputs.item_id != 'null'
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          gh api graphql -f query='
+            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $projectId
+                itemId: $itemId
+                fieldId: $fieldId
+                value: { singleSelectOptionId: $optionId }
+              }) {
+                projectV2Item { id }
+              }
+            }' \
+            -f projectId="$PROJECT_ID" \
+            -f itemId="${{ steps.get-item.outputs.item_id }}" \
+            -f fieldId="$STATUS_FIELD_ID" \
+            -f optionId="$IN_PROGRESS_OPTION_ID"
+          echo "Issue moved to In Progress"
+
+  # When a PR is opened → set "In review"
+  pr-opened:
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get project item ID
+        id: get-item
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          ITEM_ID=$(gh api graphql -f query='
+            query($url: URI!) {
+              resource(url: $url) {
+                ... on PullRequest {
+                  projectItems(first: 10) {
+                    nodes { id }
+                  }
+                }
+              }
+            }' -f url="${{ github.event.pull_request.html_url }}" \
+            --jq '.data.resource.projectItems.nodes[0].id')
+
+          echo "item_id=$ITEM_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Set status to In review
+        if: steps.get-item.outputs.item_id != '' && steps.get-item.outputs.item_id != 'null'
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          gh api graphql -f query='
+            mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+              updateProjectV2ItemFieldValue(input: {
+                projectId: $projectId
+                itemId: $itemId
+                fieldId: $fieldId
+                value: { singleSelectOptionId: $optionId }
+              }) {
+                projectV2Item { id }
+              }
+            }' \
+            -f projectId="$PROJECT_ID" \
+            -f itemId="${{ steps.get-item.outputs.item_id }}" \
+            -f fieldId="$STATUS_FIELD_ID" \
+            -f optionId="$IN_REVIEW_OPTION_ID"
+
+  # When a PR is merged → set PR + linked issues to "Done"
+  pr-merged:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move PR to Done
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          # Get PR's project item ID
+          ITEM_ID=$(gh api graphql -f query='
+            query($url: URI!) {
+              resource(url: $url) {
+                ... on PullRequest {
+                  projectItems(first: 10) {
+                    nodes { id }
+                  }
+                }
+              }
+            }' -f url="${{ github.event.pull_request.html_url }}" \
+            --jq '.data.resource.projectItems.nodes[0].id')
+
+          if [ -n "$ITEM_ID" ] && [ "$ITEM_ID" != "null" ]; then
+            gh api graphql -f query='
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId
+                  itemId: $itemId
+                  fieldId: $fieldId
+                  value: { singleSelectOptionId: $optionId }
+                }) {
+                  projectV2Item { id }
+                }
+              }' \
+              -f projectId="$PROJECT_ID" \
+              -f itemId="$ITEM_ID" \
+              -f fieldId="$STATUS_FIELD_ID" \
+              -f optionId="$DONE_OPTION_ID"
+            echo "PR moved to Done"
+          fi
+
+      - name: Move closed issues to Done
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          # Extract "Closes #N" references from PR body
+          BODY='${{ github.event.pull_request.body }}'
+          NUMBERS=$(echo "$BODY" | grep -oiE '(closes|fixes|resolves)\s+#[0-9]+' | grep -oE '[0-9]+' || true)
+
+          for NUM in $NUMBERS; do
+            ISSUE_URL="https://github.com/${{ github.repository }}/issues/$NUM"
+            ITEM_ID=$(gh api graphql -f query='
+              query($url: URI!) {
+                resource(url: $url) {
+                  ... on Issue {
+                    projectItems(first: 10) {
+                      nodes { id }
+                    }
+                  }
+                }
+              }' -f url="$ISSUE_URL" \
+              --jq '.data.resource.projectItems.nodes[0].id' 2>/dev/null || true)
+
+            if [ -n "$ITEM_ID" ] && [ "$ITEM_ID" != "null" ]; then
+              gh api graphql -f query='
+                mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                  updateProjectV2ItemFieldValue(input: {
+                    projectId: $projectId
+                    itemId: $itemId
+                    fieldId: $fieldId
+                    value: { singleSelectOptionId: $optionId }
+                  }) {
+                    projectV2Item { id }
+                  }
+                }' \
+                -f projectId="$PROJECT_ID" \
+                -f itemId="$ITEM_ID" \
+                -f fieldId="$STATUS_FIELD_ID" \
+                -f optionId="$DONE_OPTION_ID"
+              echo "Issue #$NUM moved to Done"
+            fi
+          done
+
+  # When an issue is closed directly → set to "Done"
+  issue-closed:
+    if: github.event_name == 'issues' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Move issue to Done
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+        run: |
+          ITEM_ID=$(gh api graphql -f query='
+            query($url: URI!) {
+              resource(url: $url) {
+                ... on Issue {
+                  projectItems(first: 10) {
+                    nodes { id }
+                  }
+                }
+              }
+            }' -f url="${{ github.event.issue.html_url }}" \
+            --jq '.data.resource.projectItems.nodes[0].id')
+
+          if [ -n "$ITEM_ID" ] && [ "$ITEM_ID" != "null" ]; then
+            gh api graphql -f query='
+              mutation($projectId: ID!, $itemId: ID!, $fieldId: ID!, $optionId: String!) {
+                updateProjectV2ItemFieldValue(input: {
+                  projectId: $projectId
+                  itemId: $itemId
+                  fieldId: $fieldId
+                  value: { singleSelectOptionId: $optionId }
+                }) {
+                  projectV2Item { id }
+                }
+              }' \
+              -f projectId="$PROJECT_ID" \
+              -f itemId="$ITEM_ID" \
+              -f fieldId="$STATUS_FIELD_ID" \
+              -f optionId="$DONE_OPTION_ID"
+            echo "Issue moved to Done"
+          fi

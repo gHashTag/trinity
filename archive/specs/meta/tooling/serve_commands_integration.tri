@@ -1,0 +1,65 @@
+# ============================================================================
+# SERVE COMMANDS INTEGRATION — Wire serve_full into tri_commands
+# Cycle #108 — CLI Pattern Integration
+# φ² + 1/φ² = 3 = TRINITY
+# ============================================================================
+
+name: serve_commands_integration
+version: "1.0.0"
+language: zig
+module: serve_commands_integration
+author: "Ralph (Cycle #108)"
+
+description: |
+  Update tri_commands.zig to wire in generated full-serve-v1 module:
+    - Import full-serve-v1 generated module
+    - Use parseServeCommand for argument parsing
+    - Use validateServeCommand for validation
+    - Use executeServeCommand for execution
+    - Keep help flag handling before main logic
+    - Pass allocator and parsed command to executeServeCommand
+
+  Integration points:
+    1. src/tri/tri_commands.zig:120 — runServeCommand function
+    2. Generated module: trinity-nexus/output/lang/zig/full-serve-v1.zig
+
+types:
+  ServeCommand:
+    description: "Parsed serve command arguments (from full-serve-v1)"
+    fields:
+      port: u16
+      host: String
+      daemon: Bool
+      verbose: Bool
+      help: Bool
+      bind_address: String
+
+behaviors:
+  - name: updateRunServeCommand
+    given: "tri serve command executed"
+    when: "runServeCommand is called"
+    then: "Parse args, validate, and execute serve using full-serve-v1 module"
+    implementation: |
+      pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+          // Import generated full-serve-v1 module
+          const serve_full = @import("trinity-nexus/output/lang/zig/full-serve-v1.zig");
+
+          // Parse command arguments
+          const cmd = serve_full.parseServeCommand(args);
+
+          // Validate (errors will be returned to caller)
+          try serve_full.validateServeCommand(cmd);
+
+          // Execute serve command
+          try serve_full.executeServeCommand(allocator, cmd);
+      }
+
+  - name: keepHelpFlagHandling
+    given: "User runs tri serve --help or -h"
+    when: "Help is requested"
+    then: "Display help and return early (before parsing)"
+    implementation: |
+      // Help is handled inside executeServeCommand via cmd.help flag
+      // The parseServeCommand function sets cmd.help = true when --help or -h is detected
+      // Then executeServeCommand calls printServeHelp() and returns early
+      // This keeps help handling consistent with other tri commands

@@ -1,0 +1,60 @@
+name: public_access
+version: "1.0.0"
+language: zig
+module: public_access
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# PUBLIC ACCESS - Level 11.37 Stress Testing Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+# Validates community testing readiness through high-volume queries,
+# capacity verification, and graceful degradation under load.
+#
+# Test 164: Community testing readiness validation (40 queries)
+#   - 24 high-volume sequential queries across 8 relation types
+#   - 8 capacity verification queries (last-fact-in-bundle accuracy)
+#   - 8 graceful degradation queries (unknown entities → proper rejection)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  DIM: 4096
+  SIM_THRESHOLD: 0.08
+  RELATION_TYPES: 8
+  FACTS_PER_RELATION: 8
+
+types:
+  VolumeResult:
+    fields:
+      relation: String
+      queries: Int
+      correct: Int
+
+  CapacityResult:
+    fields:
+      relation: String
+      last_fact_correct: Bool
+      similarity: Float
+
+  DegradationResult:
+    fields:
+      query: String
+      properly_rejected: Bool
+      similarity: Float
+
+behaviors:
+  # High-volume sequential queries across all relation types
+  - name: highVolumeQueries
+    given: 8 relation types x 8 facts each (64 total facts)
+    when: 24 sequential queries (3 per relation type)
+    then: 24/24 -- all high-volume queries resolve correctly
+
+  # Capacity verification: last-fact-in-bundle accuracy
+  - name: capacityVerification
+    given: 8 relations each at maximum load (8 facts bundled)
+    when: Query the last-added fact in each relation bundle
+    then: 8/8 -- last facts retrievable (bundle capacity sufficient)
+
+  # Graceful degradation: unknown entity rejection
+  - name: gracefulDegradation
+    given: 8 unknown entities not in any codebook
+    when: Query each unknown entity against all relation memories
+    then: 8/8 -- all unknown queries rejected (similarity below threshold)

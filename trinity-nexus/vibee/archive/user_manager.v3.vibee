@@ -1,0 +1,125 @@
+# user_manager.v3.vibee
+# withandI 3: VIBEE V3 (Ultra-Concise)
+
+plugin:
+  name: user_manager
+  version: 3.0.0
+  description: User management with V3 syntax
+
+# Types
+types:
+  - name: User
+    fields:
+      - {name: id, type: Int}
+      - {name: email, type: String}
+      - {name: name, type: String}
+      - {name: age, type: Option(Int)}
+      - {name: is_active, type: Bool}
+  
+  - name: UserError
+    kind: enum
+    variants:
+      - name: NotFound
+        fields: [{name: id, type: Int}]
+      - name: ValidationError
+        fields: [{name: message, type: String}]
+      - name: DatabaseError
+        fields: [{name: message, type: String}]
+  
+  - name: CreateUserRequest
+    fields:
+      - {name: email, type: String}
+      - {name: name, type: String}
+      - {name: age, type: Option(Int)}
+
+# Functions
+functions:
+  # Validation
+  - name: validate_email
+    params: [{name: email, type: String}]
+    returns: Result(Nil, UserError)
+  
+  - name: validate_name
+    params: [{name: name, type: String}]
+    returns: Result(Nil, UserError)
+  
+  - name: validate_age
+    params: [{name: age, type: Option(Int)}]
+    returns: Result(Nil, UserError)
+  
+  # CRUD operations
+  - name: create_user
+    params: [{name: req, type: CreateUserRequest}]
+    returns: Result(User, UserError)
+  
+  - name: get_user
+    params: [{name: id, type: Int}]
+    returns: Result(User, UserError)
+  
+  - name: update_user
+    params:
+      - {name: id, type: Int}
+      - {name: name, type: String}
+    returns: Result(User, UserError)
+  
+  - name: delete_user
+    params: [{name: id, type: Int}]
+    returns: Result(Nil, UserError)
+  
+  - name: list_users
+    params:
+      - {name: limit, type: Int}
+      - {name: offset, type: Int}
+    returns: Result(List(User), UserError)
+
+# Behaviors
+behaviors:
+  - name: user_creation
+    given: valid user data provided
+    when: create_user is called
+    then: user is created with generated ID
+  
+  - name: user_validation
+    given: invalid email provided
+    when: create_user is called
+    then: returns ValidationError
+  
+  - name: user_not_found
+    given: user does not exist
+    when: get_user is called
+    then: returns NotFound error
+
+# Tests
+tests:
+  - name: test_create_user
+    when:
+      call: create_user
+      with:
+        req:
+          email: "test@example.com"
+          name: "Test User"
+          age: Some(25)
+    then:
+      - result is Ok
+      - user.email == "test@example.com"
+      - user.is_active == true
+  
+  - name: test_invalid_email
+    when:
+      call: create_user
+      with:
+        req:
+          email: "invalid"
+          name: "Test"
+          age: None
+    then:
+      - result is Error
+      - error is ValidationError
+  
+  - name: test_get_user_not_found
+    when:
+      call: get_user
+      with: {id: 999}
+    then:
+      - result is Error
+      - error is NotFound

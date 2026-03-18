@@ -1,0 +1,157 @@
+# VIBEE Emitter Full - Complete Code Generator Spec (Cycle 51)
+# Full specification of emitter.zig generated from .vibee
+# THIS IS THE SOURCE OF TRUTH - emitter.zig is regenerated from this
+
+name: emitter_full
+version: "1.0.0"
+language: zig
+module: emitter_full
+
+types:
+  SelfGenResult:
+    fields:
+      success: Bool
+      generated_path: String
+      bytes_written: Int
+      compile_success: Bool
+
+  FnSignature:
+    fields:
+      is_full_definition: Bool
+      name: String
+      params: String
+      return_type: String
+
+behaviors:
+  - name: is_full_function_definition
+    given: implementation block text
+    when: checking if it contains a complete function definition
+    then: returns true if starts with "pub fn" or "fn" after trimming whitespace
+    implementation: |
+      pub fn isFullFunctionDefinition(implementation: []const u8) bool {
+          var start: usize = 0;
+          while (start < implementation.len and (
+              implementation[start] == ' ' or
+              implementation[start] == '\t' or
+              implementation[start] == '\n'
+          )) : (start += 1) {}
+
+          if (start + 6 > implementation.len) return false;
+
+          // Check for "pub fn" or just "fn"
+          var fn_start = start;
+          if (std.mem.eql(u8, implementation[start..start + 3], "pub")) {
+              // Skip "pub"
+              var i = start + 3;
+              while (i < implementation.len and (
+                  implementation[i] == ' ' or
+                  implementation[i] == '\t'
+              )) : (i += 1) {}
+              fn_start = i;
+          }
+
+          if (fn_start + 2 > implementation.len) return false;
+          return std.mem.eql(u8, implementation[fn_start..fn_start + 2], "fn");
+      }
+
+  - name: write_behavior_functions
+    given: array of behaviors from parsed spec
+    when: generating behavior function section
+    then: writes each behavior implementation or stub
+    implementation: |
+      pub fn writeBehaviorFunctions(self: *Self, behaviors: []const Behavior) !void {
+          try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
+          try self.builder.writeLine("// BEHAVIOR FUNCTIONS - Generated from behaviors");
+          try self.builder.writeLine("// ═══════════════════════════════════════════════════════════════════════════════");
+          try self.builder.newline();
+
+          var pattern_matcher = PatternMatcher.init(&self.builder);
+
+          for (behaviors) |b| {
+              try self.generateBehaviorImplementation(&pattern_matcher, &b);
+          }
+      }
+
+  - name: generate_behavior_implementation
+    given: single behavior with optional implementation block
+    when: generating the function code
+    then: writes implementation directly if full fn, otherwise wraps in stub
+    implementation: |
+      pub fn generateBehaviorImplementation(self: *Self, pattern_matcher: *PatternMatcher, b: *const Behavior) !void {
+          // Try DSL patterns first (these are spec-level patterns)
+          if (try pattern_matcher.generateFromDsLPattern(b)) {
+              try self.builder.newline();
+              return;
+          }
+
+          // Try when/then patterns
+          const name = b.name;
+
+          // RL patterns are self-contained
+          const patterns_rl = @import("patterns/rl.zig");
+          if (patterns_rl.isRlBehavior(name)) {
+              if (try pattern_matcher.generateFromWhenThenPattern(b)) {
+                  try self.builder.newline();
+                  return;
+              }
+          }
+
+          // Safe patterns
+          const is_safe_pattern = std.mem.eql(u8, name, "detectInputLanguage") or
+              std.mem.eql(u8, name, "detectLanguage");
+
+          if (is_safe_pattern) {
+              if (try pattern_matcher.generateFromWhenThenPattern(b)) {
+                  try self.builder.newline();
+                  return;
+              }
+          }
+
+          // Try VSA behavior patterns
+          if (try self.tryGenerateVSABehavior(b)) {
+              try self.builder.newline();
+              return;
+          }
+
+          // Generate real implementation from given/when/then semantics
+          try self.builder.writeFmt("/// {s}\n", .{b.given});
+          try self.builder.writeFmt("/// When: {s}\n", .{b.when});
+          try self.builder.writeFmt("/// Then: {s}\n", .{b.then});
+
+          // Check for manual implementation in spec
+          if (b.implementation.len > 0) {
+              // CRITICAL FIX: If implementation contains a full function definition, write it directly
+              if (isFullFunctionDefinition(b.implementation)) {
+                  try self.builder.writeLine(b.implementation);
+              } else {
+                  // Wrap partial implementation in function stub
+                  try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
+                  self.builder.incIndent();
+                  try self.builder.writeLine(b.implementation);
+                  self.builder.decIndent();
+                  try self.builder.writeLine("}");
+              }
+          } else {
+              // Generate auto-body from behavior semantics
+              try self.builder.writeFmt("pub fn {s}() !void {{\n", .{b.name});
+              self.builder.incIndent();
+              try self.generateRealBody(b);
+              self.builder.decIndent();
+              try self.builder.writeLine("}");
+          }
+          try self.builder.newline();
+      }
+
+test_cases:
+  - name: full_fn_with_pub
+    input: "pub fn myFunc(x: i32) void { return x; }"
+    expected: "true"
+  - name: full_fn_without_pub
+    input: "fn inner() void { }"
+    expected: "true"
+  - name: indented_full_fn
+    input: "    pub fn spaced() void { }"
+    expected: "true"
+  - name: partial_impl
+    input: "const x = 42;"
+    expected: "false"

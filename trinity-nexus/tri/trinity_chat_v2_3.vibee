@@ -1,0 +1,168 @@
+name: trinity_chat_v2_3
+version: "2.3.0"
+language: zig
+module: igla_hybrid_chat
+description: |
+  Trinity Chat v2.3 — Conversation Context + Cosmic UI + HTTP Chat Endpoint
+  Extends v2.1 (Multi-Modal + Tools + Enhanced Self-Reflection)
+  Adds: Sliding window context (20 messages + summary), augmented LLM prompts,
+        HTTP /chat endpoint with CORS for Cosmic UI, session management.
+  phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS ENERGY IMMORTAL
+
+constants:
+  WINDOW_SIZE: 20
+  MAX_SUMMARY_LENGTH: 500
+  MAX_KEY_FACTS: 10
+  MAX_CONTEXT_PROMPT_LENGTH: 2048
+  ENERGY_SYMBOLIC_WH: 0.0001
+  ENERGY_TOOL_WH: 0.0005
+  ENERGY_TVC_WH: 0.001
+  ENERGY_LOCAL_LLM_WH: 0.05
+  ENERGY_CLOUD_LLM_WH: 0.1
+  ENERGY_WHISPER_WH: 0.12
+  ENERGY_VISION_WH: 0.15
+
+types:
+  ContextConfig:
+    description: "v2.3 context configuration"
+    fields:
+      enable_context: Bool
+      max_context_prompt_length: Int
+
+  ContextStats:
+    description: "v2.3 context tracking statistics"
+    fields:
+      context_enabled: Bool
+      total_messages: Int
+      window_messages: Int
+      summarized_messages: Int
+      key_facts: Int
+
+  ChatRequest:
+    description: "HTTP /chat JSON request body"
+    fields:
+      message: String
+      image_path: Option<String>
+      audio_path: Option<String>
+
+  ChatHttpResponse:
+    description: "HTTP /chat JSON response body"
+    fields:
+      response: String
+      source: String
+      confidence: Float
+      latency_us: Int
+
+  ResponseSource:
+    description: "Extended from v2.1 — all response source types"
+    variants:
+      - Symbolic
+      - Tool
+      - TVCCorpus
+      - Vision
+      - LocalLLM
+      - GroqAPI
+      - ClaudeAPI
+      - Error
+
+behaviors:
+  - name: respond_with_context
+    description: "Respond with conversation history injected into LLM prompt"
+    given: User query string and existing conversation context (sliding window + summary)
+    when: respond() is called
+    then: |
+      1. Push user message to ContextManager sliding window
+      2. Run 4-level cache: Tools -> Symbolic -> TVC -> LLM Cascade
+      3. For LLM cascade: build augmented system prompt from summary + key facts + recent messages
+      4. Pass augmented prompt to Groq/Claude/local GGUF
+      5. Push assistant response to sliding window
+      6. Return response with source metadata
+
+  - name: build_augmented_system_prompt
+    description: "Build system prompt with conversation context for LLM providers"
+    given: ContextManager with sliding window (20 messages) + ConversationSummary
+    when: LLM cascade triggered (no cache hit at levels 0-2)
+    then: |
+      Concatenate: base_system_prompt + "\n\n--- Context ---\n"
+      + conversation summary (compressed older messages)
+      + key facts (UserInfo, Decisions, Code facts)
+      + last 5 recent messages (User/Assistant prefix + content truncated to 200 chars)
+      Truncate total to max_context_prompt_length (2048 chars)
+
+  - name: http_chat_endpoint
+    description: "POST /chat endpoint for Cosmic UI"
+    given: JSON body with message, optional image_path, optional audio_path
+    when: HTTP POST /chat received by server
+    then: |
+      1. Lazy-init IglaHybridChat engine on first request
+      2. Parse JSON body (extract message, image_path, audio_path)
+      3. Route by modality: audio -> respondWithAudio, image -> respondWithImage, text -> respond
+      4. Build JSON response with CORS headers
+      5. Return {response, source, confidence, latency_us}
+
+  - name: clear_context
+    description: "Clear conversation context for new session"
+    given: Active conversation with messages in sliding window
+    when: clearContext() called or POST /chat/clear received
+    then: Reset sliding window, summary, key facts, message counters
+
+  - name: cosmic_chat_ui
+    description: "React page with QuantumCanvas wave animation"
+    given: Website running on localhost
+    when: User navigates to /chat route
+    then: |
+      1. Full-screen QuantumCanvas backdrop with 'chat-wave' mode (800 particles)
+      2. Message bubbles with glassmorphism (golden user, green assistant)
+      3. Source badges on assistant messages (Tool, Symbolic, TVC, LLM variants)
+      4. Wave ring animations on canvas triggered by message send/receive
+      5. Connection status indicator (health check every 10s)
+      6. Input field with Enter-to-send
+
+# Architecture Flow v2.3:
+#
+# USER QUERY (text / image / audio) <-- via CLI or HTTP /chat or Cosmic UI
+#     |
+#     v
+# CONTEXT MANAGER: push(User, query)
+#     |
+#     v
+# [0] TOOL DETECTOR (0.0005 Wh)
+#     v (no match)
+# [1] SYMBOLIC (0.0001 Wh)
+#     v (miss)
+# [2] TVC CORPUS (0.001 Wh)
+#     v (miss)
+# [3] LLM CASCADE with AUGMENTED SYSTEM PROMPT
+#     |-- augmented = system + summary + key_facts + recent_5_messages
+#     |-- Local GGUF -> Groq -> Claude
+#     v
+# CONTEXT MANAGER: push(Assistant, response)
+# ENHANCED SELF-REFLECTION (quality filter -> TVC save)
+#     v
+# RESPONSE + SOURCE + ENERGY + CONTEXT_STATS
+
+integration:
+  - target: igla_long_context_engine.zig
+    description: "ContextManager, SlidingWindow (20 msgs), Summarizer, KeyFact tracking"
+  - target: http_server.zig
+    description: "New /chat POST endpoint with CORS, /chat/clear, session state"
+  - target: igla_hybrid_chat.zig
+    description: "Core engine: context field, augmented prompt builder, context stats"
+  - target: website/src/pages/CosmicChat.tsx
+    description: "React page with QuantumCanvas chat-wave mode"
+  - target: website/src/components/QuantumCanvas.tsx
+    description: "New chat-wave visualization mode with wave ring effects"
+
+business_value:
+  for_users:
+    - "Conversation history preserved across messages (20-message window + summary)"
+    - "Cosmic visual chat experience with wave animations"
+    - "Source transparency: see where each response comes from"
+  for_operators:
+    - "HTTP API enables web UI integration without CLI"
+    - "Context stats track conversation depth and summarization"
+    - "Session management via /chat/clear endpoint"
+  for_investors:
+    - "Visual demo of Trinity AI capabilities"
+    - "Multi-modal + contextual chat differentiator"
+    - "Energy metrics visible in UI (green moat)"

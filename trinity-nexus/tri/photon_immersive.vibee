@@ -1,0 +1,170 @@
+name: photon_immersive
+version: "2.0.0"
+language: zig
+module: photon_immersive
+description: "Immersive cosmic canvas — pure emergent wave intelligence. No UI panels. Entire screen IS the AI. Particle systems, cursor trails, oscillating glyphs. Borderless fullscreen."
+
+imports:
+  - raylib
+
+types:
+  Particle:
+    fields:
+      x: Float
+      y: Float
+      vx: Float
+      vy: Float
+      life: Float        # 0-1 decay
+      hue: Float         # HSV color
+      size: Float
+      is_orbiting: Bool
+      orbit_center_x: Float
+      orbit_center_y: Float
+      orbit_radius: Float
+      orbit_speed: Float
+      orbit_angle: Float
+  TrailPoint:
+    fields:
+      x: Float
+      y: Float
+      life: Float
+      hue: Float
+  EmergentGlyph:
+    fields:
+      x: Float
+      y: Float
+      char: Int
+      amplitude: Float
+      phase: Float
+      life: Float
+
+behaviors:
+  # === Window Lifecycle ===
+  - name: init_window
+    given: title="EMERGENT PHOTON AI v0.3 | IMMERSIVE COSMIC CANVAS"
+    when: Application starts
+    then: SetConfigFlags(BORDERLESS_WINDOWED|VSYNC|MSAA_4X) + InitWindow(0,0) for native resolution
+
+  - name: close_window
+    given: Nothing
+    when: Application exits
+    then: Close raylib window
+
+  - name: should_close
+    given: Nothing
+    when: Main loop
+    then: WindowShouldClose
+
+  - name: get_screen_size
+    given: Nothing
+    when: After window init
+    then: GetScreenWidth + GetScreenHeight for native resolution
+
+  - name: hide_cursor
+    given: Nothing
+    when: Immersion mode activated
+    then: HideCursor for clean experience
+
+  - name: init_audio
+    given: Nothing
+    when: Audio system starts
+    then: InitAudioDevice
+
+  - name: close_audio
+    given: Nothing
+    when: Audio cleanup
+    then: CloseAudioDevice
+
+  # === Frame ===
+  - name: setup_frame
+    given: bg_color=VOID_BLACK
+    when: Frame begins
+    then: BeginDrawing + ClearBackground
+
+  - name: end_frame
+    given: Nothing
+    when: Frame ends
+    then: EndDrawing
+
+  - name: get_frame_time
+    given: Nothing
+    when: Physics delta
+    then: Return GetFrameTime
+
+  # === Immersive Grid Rendering ===
+  - name: render_gradient
+    given: grid, pixel_size, time
+    when: Drawing full-screen photon field
+    then: Skip low amplitude (<0.01), HSV color from hue+phase+time, glow effect for high amplitude, DrawRectangle per pixel
+
+  # === Particle System ===
+  - name: draw_circle
+    given: x, y, radius, color
+    when: Rendering particle with glow
+    then: Outer glow circle (alpha/4) + inner circle (full alpha)
+
+  # === Cursor Trail ===
+  - name: draw_circle
+    given: trail_point.x, trail_point.y, 4, color
+    when: Rendering trail segment
+    then: Glow ring (8px, alpha/4) + core dot (4px)
+
+  # === Photon Cursor (custom cursor) ===
+  - name: draw_circle
+    given: mx, my, pulsating_radius, color
+    when: Drawing custom cursor probe
+    then: 2 outer glows + 2 inner ring lines + center white dot
+
+  # === Corner Glyphs (emergent text) ===
+  - name: draw_text
+    given: text="phi", x=10, y=10, size=12, alpha=oscillating
+    when: Drawing corner hints
+    then: Draw barely-visible text at 4 corners with oscillating alpha
+
+  # === Input ===
+  - name: handle_mouse
+    given: grid, particles, trail
+    when: Mouse interaction
+    then: LMB=wave source + spawn particles + add trail, RMB=wave sink, wheel=frequency modulation
+
+  - name: handle_keyboard
+    given: grid, emergent_text
+    when: Key shortcuts
+    then: T=spawn emergent text, G=golden spiral, W=wave pulse, R=cosmic rebirth, I=export image, A=export audio
+
+  - name: handle_scroll
+    given: Nothing
+    when: Mouse wheel moved
+    then: GetMouseWheelMove for frequency modulation
+
+  # === Color Utility ===
+  - name: color_from_hsv
+    given: h, s, v
+    when: Converting HSV to RGB
+    then: Return [3]u8 RGB values
+
+test_cases:
+  - name: particles_spawn_on_click
+    given: LMB held at (400, 300)
+    when: handle_mouse processed
+    then: New particle spawned at cursor with current hue
+
+  - name: trail_fades_over_time
+    given: Trail with points added 1s ago
+    when: trail.update(1.0) called
+    then: Trail points have life reduced by dt*2.0
+
+  - name: emergent_text_spawns
+    given: KEY_T pressed at cursor (500, 400)
+    when: handle_keyboard processed
+    then: "EMERGENCE" glyphs spawned centered at cursor
+
+  - name: grid_fills_screen
+    given: Native resolution 1512x982, pixel_size=4
+    when: Grid initialized
+    then: Grid dimensions = 378x245
+
+  - name: hsv_to_rgb_correct
+    given: h=120, s=1.0, v=1.0
+    when: color_from_hsv called
+    then: Returns [0, 255, 0] (pure green)

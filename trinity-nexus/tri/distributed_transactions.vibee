@@ -1,0 +1,407 @@
+# ============================================================================
+# Distributed Transaction Coordinator - Cycle 49
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: distributed_transactions
+version: "1.0.0"
+language: zig
+module: distributed_transactions
+
+description: |
+  Distributed Transaction Coordinator — Two-phase commit across agents,
+  saga orchestration for long-running transactions, compensating actions
+  for rollback, distributed deadlock detection, and transaction isolation.
+
+  Architecture:
+    Two-Phase Commit (2PC):
+      Coordinator sends PREPARE to all participants
+      Participants vote COMMIT or ABORT
+      Unanimous COMMIT: coordinator sends COMMIT
+      Any ABORT: coordinator sends ROLLBACK
+      Timeout on prepare: presumed abort
+      Write-ahead log for crash recovery
+
+    Saga Orchestration:
+      Long-running transactions as step sequences
+      Each step has a forward action and compensating action
+      On failure: compensate completed steps in reverse
+      Choreography mode: events trigger next step
+      Orchestrator mode: central coordinator drives steps
+      Nested sagas with parent-child relationship
+
+    Deadlock Detection:
+      Wait-for graph construction
+      Cycle detection via DFS traversal
+      Victim selection (youngest transaction)
+      Periodic detection interval
+      Distributed wait-for graph merging
+      Timeout-based deadlock prevention
+
+    Transaction Isolation:
+      Read Committed: no dirty reads
+      Repeatable Read: no phantom reads within txn
+      Serializable: full isolation via ordering
+      Snapshot Isolation: consistent point-in-time view
+      Optimistic concurrency control (OCC)
+
+    Recovery:
+      Write-ahead log (WAL) for durability
+      Redo/undo log entries
+      Checkpoint for fast recovery
+      In-doubt transaction resolution
+      Coordinator crash recovery via log replay
+
+  Safety:
+    - Max participants per transaction: 32
+    - Max saga steps: 16
+    - Max concurrent transactions: 1024
+    - Prepare timeout: 5000ms
+    - Commit timeout: 10000ms
+    - Saga step timeout: 30000ms
+    - Deadlock detection interval: 1000ms
+    - Max transaction duration: 300000ms
+    - WAL max size: 100MB
+    - Checkpoint interval: 1000 transactions
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_PARTICIPANTS: 32
+  MAX_SAGA_STEPS: 16
+  MAX_CONCURRENT_TRANSACTIONS: 1024
+  PREPARE_TIMEOUT_MS: 5000
+  COMMIT_TIMEOUT_MS: 10000
+  SAGA_STEP_TIMEOUT_MS: 30000
+  DEADLOCK_DETECTION_INTERVAL_MS: 1000
+  MAX_TRANSACTION_DURATION_MS: 300000
+  WAL_MAX_SIZE_BYTES: 104857600
+  CHECKPOINT_INTERVAL: 1000
+  MAX_RETRIES: 3
+  RETRY_BACKOFF_MS: 100
+  LOCK_TIMEOUT_MS: 5000
+  MAX_NESTED_SAGA_DEPTH: 4
+  VICTIM_SELECTION_YOUNGEST: 1
+
+types:
+  TransactionState:
+    enum:
+      - initiated
+      - preparing
+      - prepared
+      - committing
+      - committed
+      - aborting
+      - aborted
+      - in_doubt
+
+  ParticipantVote:
+    enum:
+      - pending
+      - commit
+      - abort
+      - timeout
+
+  SagaStepState:
+    enum:
+      - pending
+      - executing
+      - completed
+      - compensating
+      - compensated
+      - failed
+
+  IsolationLevel:
+    enum:
+      - read_committed
+      - repeatable_read
+      - serializable
+      - snapshot_isolation
+
+  LockType:
+    enum:
+      - shared
+      - exclusive
+      - intent_shared
+      - intent_exclusive
+
+  WalEntryType:
+    enum:
+      - begin
+      - prepare
+      - commit
+      - abort
+      - redo
+      - undo
+      - checkpoint
+
+  Transaction:
+    fields:
+      txn_id: Int
+      coordinator_id: Int
+      state: TransactionState
+      isolation_level: IsolationLevel
+      participants_count: Int
+      votes_received: Int
+      started_ms: Int
+      timeout_ms: Int
+      retry_count: Int
+
+  Participant:
+    fields:
+      txn_id: Int
+      agent_id: Int
+      vote: ParticipantVote
+      prepared: Bool
+      committed: Bool
+      response_ms: Int
+
+  SagaDefinition:
+    fields:
+      saga_id: Int
+      name_hash: Int
+      total_steps: Int
+      current_step: Int
+      completed_steps: Int
+      compensated_steps: Int
+      state: SagaStepState
+      started_ms: Int
+      parent_saga_id: Int
+
+  SagaStep:
+    fields:
+      saga_id: Int
+      step_index: Int
+      state: SagaStepState
+      agent_id: Int
+      forward_duration_ms: Int
+      compensate_duration_ms: Int
+      retry_count: Int
+
+  DeadlockInfo:
+    fields:
+      cycle_length: Int
+      victim_txn_id: Int
+      detected_ms: Int
+      txn_ids_in_cycle: Int
+      resolution_ms: Int
+
+  LockEntry:
+    fields:
+      resource_id: Int
+      txn_id: Int
+      lock_type: LockType
+      granted: Bool
+      queued_ms: Int
+      granted_ms: Int
+
+  WalEntry:
+    fields:
+      lsn: Int
+      txn_id: Int
+      entry_type: WalEntryType
+      data_size: Int
+      timestamp_ms: Int
+
+  TransactionMetrics:
+    fields:
+      total_transactions: Int
+      committed_count: Int
+      aborted_count: Int
+      in_doubt_count: Int
+      total_sagas: Int
+      sagas_completed: Int
+      sagas_compensated: Int
+      deadlocks_detected: Int
+      deadlocks_resolved: Int
+      avg_commit_latency_ms: Float
+      avg_saga_duration_ms: Float
+      lock_contention_rate: Float
+
+  TransactionConfig:
+    fields:
+      max_participants: Int
+      max_saga_steps: Int
+      prepare_timeout_ms: Int
+      commit_timeout_ms: Int
+      saga_step_timeout_ms: Int
+      deadlock_interval_ms: Int
+      max_duration_ms: Int
+      default_isolation: IsolationLevel
+      enable_deadlock_detection: Bool
+      checkpoint_interval: Int
+
+behaviors:
+  - name: begin_transaction
+    given: Transaction request with participants
+    when: New distributed transaction initiated
+    then: Transaction created with unique ID and WAL entry
+
+  - name: prepare_phase
+    given: Active transaction with all participants
+    when: Coordinator initiates prepare
+    then: PREPARE sent to all participants, votes collected
+
+  - name: commit_phase
+    given: All participants voted COMMIT
+    when: Unanimous commit votes received
+    then: COMMIT sent to all, transaction committed
+
+  - name: abort_transaction
+    given: Any participant voted ABORT or timeout
+    when: Abort condition detected
+    then: ROLLBACK sent to all, transaction aborted
+
+  - name: start_saga
+    given: Saga definition with steps
+    when: Long-running transaction initiated
+    then: First saga step executed
+
+  - name: execute_saga_step
+    given: Current saga step and agent
+    when: Step execution triggered
+    then: Forward action executed, step marked complete
+
+  - name: compensate_saga
+    given: Saga step failed
+    when: Compensation triggered
+    then: Completed steps compensated in reverse order
+
+  - name: detect_deadlock
+    given: Wait-for graph with lock entries
+    when: Detection interval reached
+    then: Cycles detected, victim selected and aborted
+
+  - name: acquire_lock
+    given: Transaction and resource
+    when: Lock requested
+    then: Lock granted or queued based on compatibility
+
+  - name: write_wal
+    given: Transaction state change
+    when: State transition occurs
+    then: WAL entry persisted before state change
+
+  - name: recover_from_crash
+    given: WAL entries after crash
+    when: System restart
+    then: In-doubt transactions resolved via log replay
+
+  - name: get_transaction_metrics
+    given: Transaction coordinator state
+    when: Metrics requested
+    then: Returns TransactionMetrics with coordinator stats
+
+tests:
+  # 2PC (4)
+  - name: basic_2pc_commit
+    category: two_phase_commit
+    input: "3 participants, all vote commit"
+    expected: "Transaction committed successfully"
+    description: Basic 2PC commit
+
+  - name: 2pc_abort_on_vote
+    category: two_phase_commit
+    input: "3 participants, 1 votes abort"
+    expected: "Transaction aborted, all rolled back"
+    description: 2PC abort on negative vote
+
+  - name: 2pc_prepare_timeout
+    category: two_phase_commit
+    input: "Participant fails to respond in 5s"
+    expected: "Presumed abort, transaction rolled back"
+    description: Prepare phase timeout
+
+  - name: 2pc_coordinator_crash
+    category: two_phase_commit
+    input: "Coordinator crashes after prepare"
+    expected: "Recovery from WAL, in-doubt resolved"
+    description: Coordinator crash recovery
+
+  # Sagas (4)
+  - name: saga_complete
+    category: sagas
+    input: "4-step saga, all succeed"
+    expected: "All steps completed, saga done"
+    description: Successful saga execution
+
+  - name: saga_compensate
+    category: sagas
+    input: "4-step saga, step 3 fails"
+    expected: "Steps 1-2 compensated in reverse"
+    description: Saga compensation on failure
+
+  - name: saga_nested
+    category: sagas
+    input: "Parent saga spawns child saga at step 2"
+    expected: "Child completes before parent continues"
+    description: Nested saga execution
+
+  - name: saga_step_retry
+    category: sagas
+    input: "Step fails, retried 3 times"
+    expected: "Succeeds on retry 2, saga continues"
+    description: Saga step retry with backoff
+
+  # Deadlock (3)
+  - name: deadlock_detect
+    category: deadlock
+    input: "Txn A waits for B, B waits for A"
+    expected: "Cycle detected, youngest aborted"
+    description: Basic deadlock detection
+
+  - name: deadlock_multi_party
+    category: deadlock
+    input: "A->B->C->A cycle"
+    expected: "3-party cycle detected, victim selected"
+    description: Multi-party deadlock
+
+  - name: lock_timeout_prevention
+    category: deadlock
+    input: "Lock held beyond 5s timeout"
+    expected: "Lock released, waiting txn proceeds"
+    description: Timeout-based deadlock prevention
+
+  # Isolation (4)
+  - name: read_committed
+    category: isolation
+    input: "Read during concurrent write"
+    expected: "Only committed data visible"
+    description: Read committed isolation
+
+  - name: repeatable_read
+    category: isolation
+    input: "Two reads within same transaction"
+    expected: "Both reads return same result"
+    description: Repeatable read isolation
+
+  - name: snapshot_isolation
+    category: isolation
+    input: "Snapshot at transaction start"
+    expected: "Consistent view throughout transaction"
+    description: Snapshot isolation
+
+  - name: serializable_order
+    category: isolation
+    input: "Concurrent conflicting transactions"
+    expected: "Equivalent to serial execution order"
+    description: Serializable isolation
+
+  # Integration (3)
+  - name: txn_with_events
+    category: integration
+    input: "Transaction commits events atomically"
+    expected: "Events appended only on commit"
+    description: Integration with event sourcing
+
+  - name: txn_with_capsec
+    category: integration
+    input: "Transaction requires write capability"
+    expected: "Unauthorized participants rejected"
+    description: Integration with capability security
+
+  - name: txn_with_consensus
+    category: integration
+    input: "Coordinator elected via Raft"
+    expected: "Leader serves as transaction coordinator"
+    description: Integration with consensus protocol

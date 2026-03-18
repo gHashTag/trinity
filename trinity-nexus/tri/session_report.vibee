@@ -1,0 +1,83 @@
+name: session_report
+version: "1.0.0"
+language: zig
+module: session_report
+author: Ona AI Agent
+description: Session report specification for 2026-02-03 work
+
+types:
+  TranslatedDocument:
+    fields:
+      original_path: String
+      translated_path: String
+      language_from: String
+      language_to: String
+      word_count: Int
+      status: String
+
+  BenchmarkResult:
+    fields:
+      dimension: Int
+      iterations: Int
+      bind_time_us: Int
+      dot_product_us: Int
+      memory_per_vector_kb: Int
+      timestamp: Timestamp
+
+  EvolutionResult:
+    fields:
+      dimension: Int
+      population: Int
+      generations: Int
+      final_fitness: Float
+      human_similarity: Float
+      total_time_ms: Int
+      converged: Bool
+
+  ToxicVerdict:
+    fields:
+      what_done: List<String>
+      what_failed: List<String>
+      metrics: Map<String, String>
+      self_criticism: List<String>
+      score: Int
+
+  TechTreeOption:
+    fields:
+      id: String
+      name: String
+      complexity: Int
+      potential: String
+      dependencies: List<String>
+      impact: String
+
+behaviors:
+  - name: record_translation
+    given: Russian document path
+    when: Translation completed
+    then: Return TranslatedDocument with status
+
+  - name: run_benchmark
+    given: Dimension and iterations
+    when: Benchmark executed
+    then: Return BenchmarkResult with timings
+
+  - name: run_evolution
+    given: Evolution parameters
+    when: Evolution completed
+    then: Return EvolutionResult with fitness
+
+  - name: generate_toxic_verdict
+    given: Session work summary
+    when: All tasks completed
+    then: Return ToxicVerdict with score
+
+  - name: propose_tech_tree
+    given: Current state analysis
+    when: Next steps needed
+    then: Return list of TechTreeOption
+
+constants:
+  PHI: 1.618033988749895
+  TRINITY: 3.0
+  GOLDEN_IDENTITY: "φ² + 1/φ² = 3"

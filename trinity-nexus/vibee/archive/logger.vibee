@@ -1,0 +1,417 @@
+name: logger
+version: "1.0.0"
+language: zig
+module: logger
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: new
+    given: Input data provided
+    when: new function called
+    then: Result returned
+    test_cases:
+      - name: test_new
+        input: {}
+        expected: {}
+
+  - name: production
+    given: Input data provided
+    when: production function called
+    then: Result returned
+    test_cases:
+      - name: test_production
+        input: {}
+        expected: {}
+
+  - name: development
+    given: Input data provided
+    when: development function called
+    then: Result returned
+    test_cases:
+      - name: test_development
+        input: {}
+        expected: {}
+
+  - name: debug
+    given: Input data provided
+    when: debug function called
+    then: Result returned
+    test_cases:
+      - name: test_debug
+        input: {}
+        expected: {}
+
+  - name: debug_with_fields
+    given: Input data provided
+    when: debug_with_fields function called
+    then: Result returned
+    test_cases:
+      - name: test_debug_with_fields
+        input: {}
+        expected: {}
+
+  - name: info
+    given: Input data provided
+    when: info function called
+    then: Result returned
+    test_cases:
+      - name: test_info
+        input: {}
+        expected: {}
+
+  - name: info_with_fields
+    given: Input data provided
+    when: info_with_fields function called
+    then: Result returned
+    test_cases:
+      - name: test_info_with_fields
+        input: {}
+        expected: {}
+
+  - name: warn
+    given: Input data provided
+    when: warn function called
+    then: Result returned
+    test_cases:
+      - name: test_warn
+        input: {}
+        expected: {}
+
+  - name: warn_with_fields
+    given: Input data provided
+    when: warn_with_fields function called
+    then: Result returned
+    test_cases:
+      - name: test_warn_with_fields
+        input: {}
+        expected: {}
+
+  - name: error
+    given: Input data provided
+    when: error function called
+    then: Result returned
+    test_cases:
+      - name: test_error
+        input: {}
+        expected: {}
+
+  - name: error_with_error
+    given: Input data provided
+    when: error_with_error function called
+    then: Result returned
+    test_cases:
+      - name: test_error_with_error
+        input: {}
+        expected: {}
+
+  - name: error_with_fields_and_error
+    given: Input data provided
+    when: error_with_fields_and_error function called
+    then: Result returned
+    test_cases:
+      - name: test_error_with_fields_and_error
+        input: {}
+        expected: {}
+
+  - name: fatal
+    given: Input data provided
+    when: fatal function called
+    then: Result returned
+    test_cases:
+      - name: test_fatal
+        input: {}
+        expected: {}
+
+  - name: log
+    given: Input data provided
+    when: log function called
+    then: Result returned
+    test_cases:
+      - name: test_log
+        input: {}
+        expected: {}
+
+  - name: should_log
+    given: Input data provided
+    when: should_log function called
+    then: Result returned
+    test_cases:
+      - name: test_should_log
+        input: {}
+        expected: {}
+
+  - name: level_to_int
+    given: Input data provided
+    when: level_to_int function called
+    then: Result returned
+    test_cases:
+      - name: test_level_to_int
+        input: {}
+        expected: {}
+
+  - name: level_to_string
+    given: Input data provided
+    when: level_to_string function called
+    then: Result returned
+    test_cases:
+      - name: test_level_to_string
+        input: {}
+        expected: {}
+
+  - name: format_json
+    given: Input data provided
+    when: format_json function called
+    then: Result returned
+    test_cases:
+      - name: test_format_json
+        input: {}
+        expected: {}
+
+  - name: escape_json_string
+    given: Input data provided
+    when: escape_json_string function called
+    then: Result returned
+    test_cases:
+      - name: test_escape_json_string
+        input: {}
+        expected: {}
+
+  - name: format_text
+    given: Input data provided
+    when: format_text function called
+    then: Result returned
+    test_cases:
+      - name: test_format_text
+        input: {}
+        expected: {}
+
+  - name: output_log
+    given: Input data provided
+    when: output_log function called
+    then: Result returned
+    test_cases:
+      - name: test_output_log
+        input: {}
+        expected: {}
+
+  - name: get_timestamp
+    given: Input data provided
+    when: get_timestamp function called
+    then: Result returned
+    test_cases:
+      - name: test_get_timestamp
+        input: {}
+        expected: {}
+
+  - name: fields
+    given: Input data provided
+    when: fields function called
+    then: Result returned
+    test_cases:
+      - name: test_fields
+        input: {}
+        expected: {}
+
+  - name: add_field
+    given: Input data provided
+    when: add_field function called
+    then: Result returned
+    test_cases:
+      - name: test_add_field
+        input: {}
+        expected: {}
+
+  - name: log_http_request
+    given: Input data provided
+    when: log_http_request function called
+    then: Result returned
+    test_cases:
+      - name: test_log_http_request
+        input: {}
+        expected: {}
+
+  - name: log_error_with_context
+    given: Input data provided
+    when: log_error_with_context function called
+    then: Result returned
+    test_cases:
+      - name: test_log_error_with_context
+        input: {}
+        expected: {}
+
+  - name: log_metric
+    given: Input data provided
+    when: log_metric function called
+    then: Result returned
+    test_cases:
+      - name: test_log_metric
+        input: {}
+        expected: {}
+
+types:
+  LogLevel:
+    # TODO: Define fields
+
+  LogEntry:
+    # TODO: Define fields
+
+  LoggerConfig:
+    # TODO: Define fields
+
+  LogFormat:
+    # TODO: Define fields
+
+  LogOutput:
+    # TODO: Define fields
+
+functions:
+  - name: new
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: production
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: development
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: debug
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: debug_with_fields
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: info
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: info_with_fields
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: warn
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: warn_with_fields
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: error
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: error_with_error
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: error_with_fields_and_error
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: fatal
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: log
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: should_log
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: level_to_int
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: level_to_string
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_json
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: escape_json_string
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_text
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: output_log
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_timestamp
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: fields
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: add_field
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: log_http_request
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: log_error_with_context
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: log_metric
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/io
+  # gleam/string
+  # gleam/int
+  # gleam/dict.{type Dict}
+  # gleam/option.{type Option, None, Some}
+  # gleam/list
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

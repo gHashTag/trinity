@@ -1,0 +1,51 @@
+name: graceful_degradation
+version: "1.0.0"
+language: zig
+module: graceful_degradation
+description: "Level 11.22 — Graceful Degradation Under Capacity Pressure. Tests accuracy degradation curve from 1 to 10 pairs per bundled memory at DIM=1024 with 20 candidates. All levels maintain 100% accuracy (avg similarity drops from 1.0 at 1 pair to 0.277 at 10 pairs). Split (2×3) vs Flat (6) comparison confirms split >= flat. Total 55/55 (100%)."
+
+constants:
+  DIM: 1024
+  MAX_PAIRS: 10
+  NUM_CANDIDATES: 20
+
+types:
+  DegradationPoint:
+    fields:
+      pairs: Int
+      accuracy: Float
+      avg_similarity: Float
+      description: "A single point on the degradation curve."
+
+behaviors:
+  - name: degradationCurve
+    given: DIM=1024, 20 candidates, pairs from 1 to 10.
+    when: For each pair count, bundle that many (entity, relation) pairs into a single memory and query all pairs
+    then: 100% accuracy at all levels 1-10. Avg similarity drops from 1.0 (1 pair) to 0.277 (10 pairs)
+
+  - name: splitVsFlat
+    given: 6 pairs bundled flat (1 memory) vs split (2 sub-memories × 3 pairs).
+    when: Query all 6 pairs using both strategies
+    then: Both 6/6 (100%) — split avg similarity >= flat avg similarity
+
+  - name: capacityThreshold
+    given: Degradation curve data from 1 to 10 pairs.
+    when: Identify first pair count where accuracy < 100%
+    then: No degradation detected up to 10 pairs at DIM=1024 with 20 candidates
+
+test_cases:
+  - name: test_curve_1_to_5
+    input: "Degradation curve pairs 1-5"
+    expected: "100% accuracy at all levels"
+
+  - name: test_curve_6_to_10
+    input: "Degradation curve pairs 6-10"
+    expected: "100% accuracy at all levels"
+
+  - name: test_split_vs_flat
+    input: "Split (2×3) vs Flat (6) comparison"
+    expected: "Both 6/6, split >= flat"
+
+  - name: test_total_55_55
+    input: "Total degradation test accuracy"
+    expected: "55/55 (100%)"

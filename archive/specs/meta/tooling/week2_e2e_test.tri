@@ -1,0 +1,151 @@
+# ============================================================================
+# Week 2 E2E Test — Complete End-to-End Test Suite
+# ============================================================================
+
+name: week2_e2e_test
+version: "1.0.0"
+language: zig
+module: week2_e2e_test
+
+description: |
+  Complete end-to-end test suite for Week 2 production release.
+  Tests all UART commands, VSA operations, TQNN inference, and LED modes.
+
+types:
+  E2ETestResult:
+    description: Single E2E test result
+    fields:
+      name: String
+      passed: Bool
+      duration_ms: Float64
+      error_message: String
+
+  E2ETestSuite:
+    description: Complete E2E test suite
+    fields:
+      uart_tests: Array[TestResult][10]
+      vsa_tests: Array[TestResult][10]
+      tqnn_tests: Array[TestResult][10]
+      led_tests: Array[TestResult][5]
+      integration_tests: Array[TestResult][10]
+
+constants:
+  TEST_TIMEOUT_MS: 5000
+  RETRY_COUNT: 3
+
+behaviors:
+  - name: test_uart_ping
+    given: UART connection
+    when: CMD_PING sent
+    then: ACK received, firmware_version = 0x02 0x00
+
+  - name: test_uart_vsa_bind
+    given: UART connection
+    when: CMD_VSA_BIND sent with 10K trits
+    then: Similarity returned (0-65535)
+
+  - name: test_uart_vsa_bundle
+    given: UART connection
+    when: CMD_VSA_BUNDLE sent with 2 vectors
+    then: Bundled result returned
+
+  - name: test_uart_tqnn_forward
+    given: UART connection
+    when: CMD_TQNN_FORWARD sent with 16 floats
+    then: Quantum state returned (pos+neg+zero=16)
+
+  - name: test_uart_read_state
+    given: UART connection
+    when: CMD_READ_STATE sent
+    then: Current quantum state returned
+
+  - name: test_uart_led_off
+    given: UART connection
+    when: CMD_LED_CONTROL with mode=0
+    then: LED turns off
+
+  - name: test_uart_led_on
+    given: UART connection
+    when: CMD_LED_CONTROL with mode=1
+    then: LED turns on
+
+  - name: test_uart_led_blink_fast
+    given: UART connection
+    when: CMD_LED_CONTROL with mode=2
+    then: LED blinks at ~3Hz
+
+  - name: test_uart_led_blink_slow
+    given: UART connection
+    when: CMD_LED_CONTROL with mode=3
+    then: LED blinks at ~0.75Hz
+
+  - name: test_crc_validation
+    given: Valid packet with CRC
+    when: Sent
+    then: Packet accepted
+
+  - name: test_crc_error
+    given: Corrupted CRC
+    when: Sent
+    then: Error returned, NAK sent
+
+  - name: test_multi_packet
+    given: Large payload (>256 bytes)
+    when: Sent
+    then: Split into multiple packets
+
+  - name: test_vsa_bind_consistency
+    given: Same input 10 times
+    when: VSA bind executed
+    then: All results identical
+
+  - name: test_vsa_similarity_range
+    given: Random vectors
+    when: Similarity computed
+    then: Result in [0, 65535]
+
+  - name: test_tqnn_quantum_conservation
+    given: 16 floats
+    when: TQNN forward executed
+    then: pos+neg+zero=16
+
+  - name: test_tqnn_coherence_check
+    given: Coherent input
+    when: TQNN forward executed
+    then: coherence flag set correctly
+
+test_cases:
+  - name: all_uart_commands_pass
+    given: All UART tests
+    when: Executed
+    then: All 10 tests pass
+
+  - name: all_vsa_tests_pass
+    given: All VSA tests
+    when: Executed
+    then: All tests pass
+
+  - name: all_tqnn_tests_pass
+    given: All TQNN tests
+    when: Executed
+    then: All tests pass
+
+  - name: e2e_integration_pass
+    given: Full integration test
+    when: Executed
+    then: All subsystems work together
+
+algorithms:
+  - name: e2e_test_pipeline
+    description: Complete E2E test execution
+    steps:
+      - Open UART connection
+      - Run UART ping test
+      - Run VSA bind test (10 iterations)
+      - Run VSA bundle test
+      - Run TQNN forward test (positive/negative/zero)
+      - Run LED control test (all 4 modes)
+      - Run CRC validation test
+      - Run multi-packet test
+      - Close UART connection
+      - Generate report with pass/fail for each test

@@ -1,0 +1,49 @@
+name: benchmark
+version: "1.0.0"
+language: zig
+module: benchmark
+
+types:
+  BenchmarkResult:
+    fields:
+      operations: usize
+      total_time_ns: u64
+
+behaviors:
+  - name: main
+    given: No arguments
+    when: Entry point is invoked
+    then: Calls runBenchmarks and prints a summary of average performance across all three suites
+
+  - name: runBenchmarks
+    given: No arguments
+    when: Called from main
+    then: |
+      Runs three benchmarks sequentially:
+      1. Formula Discovery (sqrt computation over 10M iterations)
+      2. Sacred Economy (principal * rate * staked/1000 over 10M iterations)
+      3. Self-Improver (importance update over 10M iterations)
+      Prints per-benchmark results in box-drawing table format.
+      Computes and prints aggregate average time (ms) and average ns/op.
+
+  - name: benchmarkFormulaDiscovery
+    given: NUM_ITERATIONS = 10_000_000
+    when: Called to measure floating-point sqrt throughput
+    then: Times std.math.sqrt over 10M iterations using nanoTimestamp; returns BenchmarkResult with operations=10_000_000 and elapsed ns
+
+  - name: benchmarkSacredEconomy
+    given: NUM_ITERATIONS = 10_000_000
+    when: Called to measure compound APY calculation throughput
+    then: Times (principal * rate * staked/1000.0) over 10M iterations; returns BenchmarkResult
+
+  - name: benchmarkSelfImprover
+    given: NUM_ITERATIONS = 10_000_000
+    when: Called to measure importance-update computation throughput
+    then: Times (old_importance + 0.1 * current_loss) over 10M iterations; returns BenchmarkResult
+
+  - name: printBenchmarkResult
+    given: Name string and BenchmarkResult
+    when: Called after each benchmark completes
+    then: |
+      Prints operations count, total time (adaptive unit: ms/μs/ns), average ns/op, and ops/sec.
+      Uses box-drawing output matching the surrounding table style.

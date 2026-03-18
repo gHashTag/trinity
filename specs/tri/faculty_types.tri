@@ -1,0 +1,139 @@
+name: faculty_types
+version: "1.0.0"
+language: zig
+module: faculty_types
+
+types:
+  Agent:
+    kind: enum
+    variants:
+      - ralph    # "Ralph" / "🔧"
+      - scholar  # "Scholar" / "📚"
+      - mu       # "Agent TRI" / "🧠"
+      - oracle   # "Oracle" / "🔮"
+      - swarm    # "Swarm" / "🐝"
+      - linter   # "Linter" / "🔍"
+
+  AgentStatus:
+    kind: enum
+    variants:
+      - up    # "UP"   / green  #00E599
+      - down  # "DOWN" / red    #EF4444
+      - stub  # "STUB" / gold   #FFD700
+      - tbd   # "TBD"  / gray   #9C9C9C
+
+  CycleType:
+    kind: enum
+    variants:
+      - quiet      # "QUIET"
+      - working    # "WORKING"
+      - emergency  # "EMERGENCY"
+
+  VZone:
+    kind: enum
+    variants:
+      - gold    # v > 1.5   / gold  #FFD700
+      - stable  # v 1.0-1.5 / green #00E599
+      - drift   # v < 1.0   / red   #EF4444
+
+  AgentState:
+    fields:
+      agent: Agent
+      status: AgentStatus
+      last_action: []const u8
+
+  FacultySnapshot:
+    fields:
+      agents: [6]AgentState
+      build_ok: bool
+      binaries: u8
+      compile_pass: u16
+      compile_total: u16
+      compile_rate: u8        # 0-100
+      v_number: f64           # φ·(rate/100)²
+      v_zone: VZone
+      git_branch: []const u8
+      dirty_files: u16
+      open_issues: u16
+      mu_patterns: u16
+      cycle: CycleType
+
+  FacultyDelta:
+    fields:
+      has_prev: bool        # default: false
+      seconds_ago: i64      # default: 0
+      compile_rate_delta: i16  # default: 0
+      active_delta: i8      # default: 0
+      dirty_delta: i32      # default: 0
+      compile_frozen: bool  # default: false
+      prev_compile_rate: u8  # default: 0
+      prev_active: u8        # default: 0
+      prev_dirty: u16        # default: 0
+      prev_compile_pass: u16 # default: 0
+      prev_compile_total: u16 # default: 0
+      prev_issues: u16       # default: 0
+
+behaviors:
+  - name: Agent.name
+    given: Agent variant
+    when: Called to get display name
+    then: Returns human-readable string (ralph→"Ralph", scholar→"Scholar", mu→"Agent TRI", oracle→"Oracle", swarm→"Swarm", linter→"Linter")
+    test_cases:
+      - name: test_ralph_name
+        expected: "Ralph"
+      - name: test_mu_name
+        expected: "Agent TRI"
+
+  - name: Agent.emoji
+    given: Agent variant
+    when: Called to get icon
+    then: Returns UTF-8 emoji string for each agent
+    test_cases:
+      - name: test_ralph_emoji
+        expected: "🔧"
+      - name: test_mu_emoji
+        expected: "🧠"
+
+  - name: AgentStatus.label
+    given: AgentStatus variant
+    when: Called to get status label
+    then: Returns uppercase string (up→"UP", down→"DOWN", stub→"STUB", tbd→"TBD")
+    test_cases:
+      - name: test_up_label
+        expected: "UP"
+      - name: test_tbd_label
+        expected: "TBD"
+
+  - name: AgentStatus.color
+    given: AgentStatus variant
+    when: Called to get ANSI color escape sequence
+    then: Returns non-empty ANSI 24-bit color code string for terminal rendering
+
+  - name: CycleType.label
+    given: CycleType variant
+    when: Called to get cycle label
+    then: Returns uppercase string (quiet→"QUIET", working→"WORKING", emergency→"EMERGENCY")
+
+  - name: VZone.label
+    given: VZone variant
+    when: Called to get zone label
+    then: Returns uppercase string (gold→"GOLD", stable→"STABLE", drift→"DRIFT")
+    test_cases:
+      - name: test_gold_label
+        expected: "GOLD"
+      - name: test_drift_label
+        expected: "DRIFT"
+
+  - name: VZone.color
+    given: VZone variant
+    when: Called to get ANSI color escape sequence
+    then: Returns non-empty ANSI 24-bit color code for gold/green/red respectively
+
+  - name: FacultySnapshot.activeFaculty
+    given: FacultySnapshot with [6]AgentState
+    when: Called to count running agents
+    then: Returns u8 count of agents whose status == .up
+    test_cases:
+      - name: test_three_up
+        given: "ralph=up, scholar=tbd, mu=stub, oracle=up, swarm=tbd, linter=up"
+        expected: 3

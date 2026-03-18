@@ -1,0 +1,84 @@
+# VIBEE Test Generator Bootstrap - Implementation Block Support (Cycle 50)
+# Upgrades tests_gen.zig to skip stub generation when implementation: exists
+
+name: tests_gen_bootstrap
+version: "1.0.0"
+language: zig
+module: tests_gen_bootstrap
+
+types:
+  BehaviorMetadata:
+    fields:
+      name: String
+      has_implementation: Bool
+      implementation_code: String
+      line_number: Int
+
+  TestGenConfig:
+    fields:
+      skip_stubs_with_impl: Bool
+      generate_impl_tests: Bool
+      preserve_doc_comments: Bool
+
+behaviors:
+  - name: detect_implementation_block
+    given: behavior text from .vibee spec
+    when: scanning for implementation marker
+    then: returns true if implementation: block exists
+    implementation: |
+      pub fn detectImplementationBlock(behavior_text: []const u8) bool {
+          const impl_marker = "implementation:";
+          return std.mem.indexOf(u8, behavior_text, impl_marker) != null;
+      }
+
+  - name: extract_implementation_code
+    given: behavior text with implementation: | marker
+    when: parsing code block after marker
+    then: returns the implementation code as string
+    implementation: |
+      pub fn extractImplementationCode(allocator: Allocator, behavior_text: []const u8) ![]const u8 {
+          const impl_marker = "implementation:";
+          const impl_start = std.mem.indexOf(u8, behavior_text, impl_marker) orelse return error.NoImplementation;
+          
+          const after_marker = behavior_text[impl_start + impl_marker.len..];
+          var code_start: usize = 0;
+          
+          // Skip whitespace and pipe
+          while (code_start < after_marker.len and (
+              after_marker[code_start] == ' ' or
+              after_marker[code_start] == '\t' or
+              after_marker[code_start] == '\n' or
+              after_marker[code_start] == '|'
+          )) : (code_start += 1) {}
+          
+          // Find end (next behavior or end of text)
+          const next_behavior = std.mem.indexOf(u8, after_marker[code_start..], "\n  - name:");
+          const code_end = if (next_behavior) |nb| code_start + nb else after_marker.len - code_start;
+          
+          return allocator.dupe(u8, after_marker[code_start..code_start + code_end]);
+      }
+
+  - name: should_skip_stub_generation
+    given: behavior metadata
+    when: deciding whether to generate stub function
+    then: returns true if implementation exists and config says skip
+    implementation: |
+      pub fn shouldSkipStubGeneration(meta: BehaviorMetadata, config: TestGenConfig) bool {
+          return config.skip_stubs_with_impl and meta.has_implementation;
+      }
+
+  - name: generate_test_for_impl_behavior
+    given: behavior with implementation block
+    when: generating test case
+    then: creates test that calls the implementation function
+    implementation: |
+      pub fn generateTestForImplBehavior(
+          writer: anytype,
+          behavior_name: []const u8,
+      ) !void {
+          try writer.print("test \"{s}_behavior\" {{\n", .{behavior_name});
+          try.writer.writeAll("    // Test that implementation function exists and is callable\n");
+          try writer.print("    const func = @TypeOf({s});\n", .{behavior_name});
+          try.writer.writeAll("    try std.testing.expect(func != void);\n");
+          try.writer.writeAll("}\n\n");
+      }

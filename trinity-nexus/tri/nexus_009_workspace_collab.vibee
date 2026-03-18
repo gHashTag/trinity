@@ -1,0 +1,53 @@
+name: nexus_009_workspace_collab
+version: "1.0.0"
+language: zig
+module: trinity-nexus-collab
+
+description: >
+  NEXUS-009: Configure user + openclaw workspace for internal collaboration.
+  Extends workspace.toml with external workspace references, creates agent
+  config (config.toml), and adds CI/CD workflows for GitHub Actions.
+  Enables Ralph and clawd agents to build/test all 6 Nexus modules.
+
+types:
+  AgentConfig:
+    fields:
+      name: String
+      role: String
+      permissions: List<String>
+      workspace_access: List<String>
+
+  ExternalWorkspace:
+    fields:
+      name: String
+      path: String
+      optional: Bool
+      integration: String
+
+  CIWorkflow:
+    fields:
+      name: String
+      trigger: String
+      steps: List<String>
+      modules: List<String>
+
+behaviors:
+  - name: configure_external_workspace
+    given: workspace.toml with 6 internal Nexus modules
+    when: openclaw external workspace path added
+    then: Agents can reference openclaw tools from trinity workspace
+
+  - name: create_agent_config
+    given: Ralph and clawd agents need workspace coordination
+    when: .trinity/config.toml created with agent definitions
+    then: Both agents have defined roles, permissions, and module access
+
+  - name: setup_ci_workflow
+    given: No CI/CD for trinity-nexus modules
+    when: GitHub Actions workflow created
+    then: All 6 modules build and test on push/PR to ralph/* branches
+
+  - name: validate_workspace_coherence
+    given: Internal modules + external openclaw reference
+    when: Workspace validation runs
+    then: All paths resolve, optional externals gracefully skipped if missing

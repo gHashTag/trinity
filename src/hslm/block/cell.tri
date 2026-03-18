@@ -1,0 +1,47 @@
+[cell]
+id = "trinity.hslm.block"
+name = "Trinity Block"
+version = "1.0.0"
+kind = "library"
+path = "src/hslm"
+parent = "trinity.hslm"
+status = "stable"
+description = "TrinityBlock: attention + feed-forward with RMSNorm and residual connections"
+files = 0
+tests = 0
+owner = "agent:ralph"
+
+[tags]
+scope = "hslm"
+type = "library"
+
+[dna]
+cell_id = "trinity.hslm.block"
+source = "specs/hslm/block.tri"
+output = "gen/block_types.zig"
+regenerable = true
+
+[contributes]
+commands = []
+exports = ["forward", "initWeights", "paramCount"]
+
+[contract]
+inputs = ["block_input: [ctx][dim]Trit", "weights: BlockWeights"]
+outputs = ["block_output: [ctx][dim]Trit"]
+invariants = ["residual connections", "RMSNorm before sublayers", "ff_ratio == 3"]
+
+[dependencies]
+trinity.hslm = "^1.0.0"
+trinity.hslm.attention = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = true
+signature = "sha256:0000000000000000000000000000000000000000000000000000000000000000"

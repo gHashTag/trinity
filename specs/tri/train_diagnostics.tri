@@ -1,0 +1,29 @@
+name: train_diagnostics
+version: "1.0.0"
+language: zig
+module: tri.train_diagnostics
+
+description: |
+  HSLM Training Diagnostics with phi-aware anomaly detection.
+  Monitors training runs and detects anomalies using sacred constant thresholds.
+
+behaviors:
+  - name: detectAnomalies
+    given: A stream of TrainLogEntry records
+    when: Analyzed against phi-derived thresholds
+    then: Returns detected anomalies with severity levels
+
+  - name: checkLossSpike
+    given: Current and previous loss values
+    when: Loss ratio exceeds phi-squared threshold
+    then: Flags a loss spike anomaly
+
+  - name: reportDiagnostics
+    given: Training log entries
+    when: Diagnostics report is requested
+    then: Outputs formatted anomaly report with recommendations
+
+export_functions:
+  - detectAnomalies
+  - checkLossSpike
+  - reportDiagnostics

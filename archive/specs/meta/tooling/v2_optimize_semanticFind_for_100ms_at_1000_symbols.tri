@@ -1,0 +1,16 @@
+# VIBEE Specification (auto-generated)
+name: v2_optimize_semanticFind_for_100ms_at_1000_symbols
+version: "1.0.0"
+language: zig
+module: v2_optimize_semanticFind_for_100ms_at_1000_symbols
+
+types:
+  GeneratedConfig:
+    fields:
+      task: String
+
+behaviors:
+  - name: execute
+    given: allocator
+    when: task description
+    then: implementation

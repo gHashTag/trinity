@@ -1,0 +1,177 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Track A: IVF + PQ (Inverted File + Product Quantization)
+# ═══════════════════════════════════════════════════════════════════════════════
+# ANN Alternative to HNSW for large-scale semantic search
+#
+# Inverted File Index partitions vectors into clusters (Voronoi cells),
+# then searches only nearby clusters. Product Quantization compresses
+# vectors for memory efficiency.
+#
+# φ² + 1/φ² = 3 | TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: ann_ivf_pq
+version: "1.0.0"
+language: zig
+module: needle.ann_ivf_pq
+
+description: |
+  Inverted File Index with Product Quantization for memory-efficient
+  approximate nearest neighbor search. Ideal for 10k+ vectors.
+
+types:
+  IVFConfig:
+    fields:
+      dim: usize                    # Vector dimension (384)
+      nlist: usize                  # Number of clusters (default: sqrt(N))
+      nprobe: usize                 # Clusters to search (default: 1-16)
+      m: usize                      # PQ sub-vectors (default: 8-32)
+      nbits: u8                     # Bits per PQ code (default: 8)
+      distance_metric: DistanceMetric
+      max_iterations: usize         # K-means max iterations
+      convergence_threshold: Float  # K-means convergence
+
+  VoronoiCell:
+    fields:
+      center_id: u64
+      center: List<Float>           # Cluster centroid
+      vector_ids: List<u64>         # Vectors in this cluster
+
+  PQCodebook:
+    fields:
+      centroids: List<List<List<Float>>>  # [m][k][sub_dim]
+      m: usize                      # Number of sub-vectors
+      nbits: u8                     # Bits per code
+      k: usize                      # Centroids per subvector
+      sub_dim: usize                # Dimension of each sub-vector
+
+  PQCode:
+    fields:
+      codes: List<u8]               # m codes (each nbits wide)
+
+  IVFPQIndex:
+    fields:
+      config: IVFConfig
+      voronoi_cells: List<VoronoiCell>
+      pq_codebook: Option<PQCodebook>
+      pq_codes: Map<u64, PQCode>    # vector_id -> PQ code
+      original_vectors: Map<u64, List<Float>>  # Optional
+      is_trained: Bool
+      allocator: Allocator
+      total_vectors: usize
+
+behaviors:
+  - name: ivf_pq_init
+    given: IVFConfig with allocator
+    when: Creating new IVF+PQ index
+    then: |
+      Return initialized empty index with:
+      - Empty Voronoi cells
+      - Null codebook (not trained yet)
+      - is_trained = false
+
+  - name: ivf_pq_train
+    given: Training vectors (typically all data vectors)
+    when: Index not yet trained
+    then: |
+      1. Run k-means clustering to find nlist centroids
+      2. Create Voronoi cells with centroids
+      3. Assign each vector to nearest centroid
+      4. Build PQ codebook:
+         - Split vectors into m sub-vectors
+         - Run k-means on each sub-vector dimension
+         - Store centroids for encoding
+      5. Set is_trained = true
+
+  - name: ivf_pq_encode
+    given: Vector and trained PQ codebook
+    when: Encoding vector for storage
+    then: |
+      1. Split vector into m sub-vectors
+      2. For each sub-vector:
+         - Find nearest centroid in codebook
+         - Store centroid index as code
+      3. Return PQCode with m codes
+
+  - name: ivf_pq_insert
+    given: Vector ID, symbol ID, and vector data
+    when: Adding to trained index
+    then: |
+      1. If not trained, auto-train with this vector
+      2. Encode vector using PQ
+      3. Find nearest Voronoi cell (cluster)
+      4. Add vector ID to cell
+      5. Store PQ code
+
+  - name: ivf_pq_search
+    given: Query vector and k results
+    when: Searching index
+    then: |
+      1. Find nprobe nearest Voronoi cells to query
+      2. Collect all vector IDs from those cells
+      3. Compute distances using asymmetric estimator:
+         - Decode PQ codes on-the-fly
+         - Use table lookup for speed
+      4. Return top-k results by distance
+
+  - name: ivf_pq_get_stats
+    given: IVF+PQ index
+    when: Querying index status
+    then: Return ANNStats with:
+      - Compression ratio (original / compressed)
+      - Memory usage
+      - Cluster distribution
+
+test_cases:
+  - name: ivf_pq_basic_train
+    given: 1000 training vectors, nlist=10, m=8
+    when: Calling train()
+    then: |
+      is_trained = true
+      voronoi_cells.len = 10
+      pq_codebook.m = 8
+
+  - name: ivf_pq_encode_decode
+    given: Trained codebook, test vector
+    when: Encoding then decoding
+    then: Reconstruction error < 0.1
+
+  - name: ivf_pq_search_accuracy
+    given: Index with 10k vectors, query
+    when: Searching with k=10, nprobe=5
+    then: |
+      Returns 10 results
+      Recall@10 > 80% (vs brute force)
+
+examples:
+  - description: "Initialize IVF+PQ for 384-dim vectors"
+    code: |
+      const config = IVFConfig{
+          .dim = 384,
+          .nlist = 100,
+          .nprobe = 10,
+          .m = 16,
+          .nbits = 8,
+          .distance_metric = .cosine,
+          .max_iterations = 25,
+          .convergence_threshold = 0.001,
+      };
+      var index = try IVFPQIndex.init(allocator, config);
+      defer index.deinit();
+
+exit_criteria:
+  ivf_pq_init_works: true
+  kmeans_clustering_converges: true
+  pq_encoding_decodes: true
+  ivf_pq_search_returns_results: true
+  compression_ratio_gt_10x: true
+  recall_at_10_gt_80_percent: true
+  build_time_lt_1s_for_10k: true
+  search_time_lt_100ms: true
+
+sacred:
+  phi: 1.618033988749895
+  nlist_formula: "sqrt(N) * phi"
+  m_formula: "dim / (phi^4)"
+  nprobe_default: 8
+  max_iterations: 25

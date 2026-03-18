@@ -1,0 +1,11 @@
+.{
+    .name = .trinity_canvas,
+    .version = "0.1.0",
+    .dependencies = .{
+        .trinity_core = .{
+            .path = "../core",
+        },
+    },
+    .paths = .{""},
+    .fingerprint = 0xbdeb04cc2964d43f,
+}

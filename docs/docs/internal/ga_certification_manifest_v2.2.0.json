@@ -1,0 +1,161 @@
+{
+  "manifest_version": "1.0",
+  "release": {
+    "name": "Trinity v2.2.0",
+    "codename": "FORGE UNITY",
+    "ga_date": "2026-03-08",
+    "status": "GA-certified with documented caveats",
+    "certification_commit": "d4a8545b1",
+    "tag": "v2.2.0-ga-final"
+  },
+  "canonical_metrics": {
+    "test_results": {
+      "total": 3610,
+      "passed": 3600,
+      "failed": 10,
+      "pass_rate_percent": 99.72,
+      "threshold_percent": 99.0,
+      "status": "PASS",
+      "evidence_commit": "d4a8545b1",
+      "evidence_task": "TODO 5 SA-5"
+    },
+    "contract_tests": {
+      "total": 19,
+      "passed": 19,
+      "pass_rate_percent": 100.0,
+      "status": "PASS",
+      "evidence_commit": "f667b7ad4",
+      "evidence_task": "TODO 4"
+    },
+    "vsabenchmarks": {
+      "BIND": {
+        "value": 264000,
+        "unit": "ops/sec",
+        "baseline_value": 365000,
+        "delta_percent": -27.7,
+        "status": "ACCEPTABLE"
+      },
+      "BUNDLE": {
+        "value": 235000,
+        "unit": "ops/sec",
+        "baseline_value": 455000,
+        "delta_percent": -48.4,
+        "status": "ACCEPTABLE"
+      },
+      "PERMUTE": {
+        "value": 2960000000,
+        "unit": "ops/sec",
+        "baseline_value": 2930000000,
+        "delta_percent": +1.0,
+        "status": "STABLE"
+      },
+      "SIMILARITY": {
+        "value": 26300000,
+        "unit": "ops/sec",
+        "baseline_value": 26000000,
+        "delta_percent": +1.2,
+        "status": "STABLE"
+      },
+      "evidence_commit": "d4a8545b1",
+      "evidence_task": "TODO 5 SA-7"
+    },
+    "idiom_compliance": {
+      "value": 100.0,
+      "scope": "codegen_only",
+      "evidence_task": "TODO 5 SA-4"
+    },
+    "fpga_pipeline": {
+      "status": "PASS_WITH_WORKAROUND",
+      "toolchain": "openXC7 Docker",
+      "caveat": "FORGE Zig toolchain has OLOGIC bugs for complex designs",
+      "synthesis_verified": true,
+      "evidence_task": "TODO 5 SA-6"
+    },
+    "ai_chat_e2e": {
+      "status": "PASS",
+      "evidence_task": "TODO 5 SA-6"
+    }
+  },
+  "caveats": [
+    {
+      "id": "C1",
+      "component": "FORGE Zig Toolchain",
+      "issue": "OLOGIC bugs for complex designs",
+      "impact": "LED mapping incorrect",
+      "workaround": "Use openXC7 Docker for production",
+      "status": "DOCUMENTED"
+    },
+    {
+      "id": "C2",
+      "component": "BatchProcessor.init()",
+      "issue": "VIBEE doesn't generate init() for ArrayList fields",
+      "impact": "Manual implementation required",
+      "workaround": "User provides init() with jobs field",
+      "status": "DOCUMENTED"
+    },
+    {
+      "id": "C3",
+      "component": "BIND/BUNDLE",
+      "issue": "Contract overhead causes 27-48% slowdown",
+      "impact": "Reduced but acceptable performance (200K+ ops/sec)",
+      "workaround": "Acceptable for GA, optimize post-GA",
+      "status": "DOCUMENTED"
+    }
+  ],
+  "certification_history": {
+    "rc1": {
+      "date": "2026-03-07",
+      "test_pass_rate": 99.83,
+      "total_tests": 3588,
+      "passed_tests": 3582,
+      "failed_tests": 6
+    },
+    "rc2": {
+      "date": "2026-03-07",
+      "test_pass_rate": 100.0,
+      "note": "Timing-dependent tests stabilized"
+    },
+    "ga": {
+      "date": "2026-03-08",
+      "test_pass_rate": 99.72,
+      "total_tests": 3610,
+      "passed_tests": 3600,
+      "failed_tests": 10,
+      "certification": "COMPLETE_WITH_CAVEATS"
+    }
+  },
+  "provenance": {
+    "baseline_commit": "f667b7ad4",
+    "certification_commit": "d4a8545b1",
+    "cleanup_commit": "06872ffeb",
+    "documents": [
+      "RELEASES.md",
+      "fpga/openxc7-synth/docs/architecture/GA_FINAL_VERDICT.md",
+      "fpga/openxc7-synth/docs/architecture/GA_CERTIFICATION_v2.2.0.md",
+      "docs/release/ga_metrics_inventory_v2.2.0.md",
+      "docs/release/ga_certification_manifest_v2.2.0.json"
+    ]
+  },
+  "validation_rules": {
+    "forbidden_phrases": [
+      "100% certified",
+      "100% clean green",
+      "no known issues",
+      "perfect green",
+      "absolutely zero bugs"
+    ],
+    "required_phrases": [
+      "certified with documented caveats",
+      "production-ready with known issues"
+    ],
+    "metric_tolerance": {
+      "pass_rate": 0.1,
+      "benchmarks": 0.05
+    }
+  },
+  "_meta": {
+    "generated_by": "TODO 6 SA-3",
+    "schema_version": "1.0",
+    "last_updated": "2026-03-08"
+  }
+}

@@ -1,0 +1,226 @@
+name: marketplace_search_engine
+version: 1.0.0
+description: Advanced search and filtering for VIBEE Marketplace templates
+
+metadata:
+  author: VIBEE Team
+  category: marketplace
+  tags: [search, filter, discovery, elasticsearch]
+  created: 2024-01-10
+
+types:
+  SearchQuery:
+    query: string
+    category: optional<string>
+    author: optional<string>
+    min_rating: optional<number>
+    tags: optional<list<string>>
+    sort_by: optional<string>  # downloads, rating, recent
+    page: optional<number>
+    limit: optional<number>
+
+  SearchResult:
+    templates: list<Template>
+    total: number
+    page: number
+    has_more: boolean
+    facets: Facets
+
+  Facets:
+    categories: map<string, number>
+    authors: map<string, number>
+    tags: map<string, number>
+    rating_distribution: map<string, number>
+
+  Template:
+    id: string
+    name: string
+    description: string
+    category: string
+    author: string
+    version: string
+    downloads: number
+    rating: number
+    tags: list<string>
+    created_at: timestamp
+    updated_at: timestamp
+
+behaviors:
+  search_templates:
+    input: SearchQuery
+    output: SearchResult
+    description: Search templates with advanced filtering
+    steps:
+      - Parse search query and filters
+      - Apply category filter if specified
+      - Apply author filter if specified
+      - Apply rating filter if specified
+      - Apply tag filters if specified
+      - Sort results by specified criteria
+      - Calculate facets for refinement
+      - Paginate results
+      - Return search results with facets
+
+  autocomplete:
+    input:
+      partial_query: string
+      limit: optional<number>
+    output:
+      suggestions: list<string>
+    description: Provide autocomplete suggestions
+    steps:
+      - Analyze partial query
+      - Search template names and descriptions
+      - Search tags and categories
+      - Rank suggestions by relevance
+      - Return top suggestions
+
+  get_trending:
+    input:
+      period: string  # day, week, month
+      limit: optional<number>
+    output:
+      templates: list<Template>
+    description: Get trending templates
+    steps:
+      - Calculate download velocity
+      - Factor in recent ratings
+      - Consider new templates
+      - Sort by trending score
+      - Return top trending templates
+
+  get_similar:
+    input:
+      template_id: string
+      limit: optional<number>
+    output:
+      templates: list<Template>
+    description: Find similar templates
+    steps:
+      - Load template metadata
+      - Extract tags and category
+      - Find templates with similar tags
+      - Calculate similarity scores
+      - Sort by similarity
+      - Return similar templates
+
+functions:
+  - name: build_search_index
+    params:
+      templates: list<Template>
+    returns: SearchIndex
+    description: Build search index from templates
+
+  - name: calculate_relevance_score
+    params:
+      template: Template
+      query: SearchQuery
+    returns: number
+    description: Calculate relevance score for ranking
+
+  - name: apply_filters
+    params:
+      templates: list<Template>
+      filters: SearchQuery
+    returns: list<Template>
+    description: Apply filters to template list
+
+  - name: calculate_facets
+    params:
+      templates: list<Template>
+    returns: Facets
+    description: Calculate facets for search refinement
+
+tests:
+  - name: search_by_keyword
+    behavior: search_templates
+    input:
+      query: "authentication"
+      limit: 10
+    expected:
+      total: 15
+      templates[0].name: "user_auth"
+      templates[0].category: "authentication"
+
+  - name: filter_by_category
+    behavior: search_templates
+    input:
+      query: ""
+      category: "crud"
+      limit: 10
+    expected:
+      templates: all_match(category == "crud")
+      facets.categories["crud"]: 23
+
+  - name: filter_by_rating
+    behavior: search_templates
+    input:
+      query: ""
+      min_rating: 4.5
+      limit: 10
+    expected:
+      templates: all_match(rating >= 4.5)
+
+  - name: sort_by_downloads
+    behavior: search_templates
+    input:
+      query: ""
+      sort_by: "downloads"
+      limit: 5
+    expected:
+      templates: sorted_by(downloads, desc)
+
+  - name: autocomplete_suggestions
+    behavior: autocomplete
+    input:
+      partial_query: "auth"
+      limit: 5
+    expected:
+      suggestions: contains("authentication", "authorization")
+
+  - name: trending_templates
+    behavior: get_trending
+    input:
+      period: "week"
+      limit: 10
+    expected:
+      templates: length == 10
+      templates[0].downloads: > 100
+
+  - name: similar_templates
+    behavior: get_similar
+    input:
+      template_id: "user_auth"
+      limit: 5
+    expected:
+      templates: length == 5
+      templates: all_match(category == "authentication")
+
+  - name: pagination
+    behavior: search_templates
+    input:
+      query: ""
+      page: 2
+      limit: 10
+    expected:
+      page: 2
+      has_more: true
+      templates: length == 10
+
+  - name: tag_filtering
+    behavior: search_templates
+    input:
+      query: ""
+      tags: ["jwt", "oauth"]
+      limit: 10
+    expected:
+      templates: all_match(tags.contains_any(["jwt", "oauth"]))
+
+  - name: empty_search
+    behavior: search_templates
+    input:
+      query: ""
+      limit: 20
+    expected:
+      total: 65
+      facets.categories: has_keys(["authentication", "crud", "api", "database", "ai"])

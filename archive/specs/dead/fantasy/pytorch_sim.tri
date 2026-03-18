@@ -1,0 +1,117 @@
+name: pytorch_quantum_sim
+version: "1.0.0"
+language: python
+module: quantum.sim
+
+types:
+  QutritState:
+    description: Single qutrit quantum state
+    fields:
+      amplitudes: Tensor(shape=[3], dtype=complex128, device=cpu)
+      device: String
+
+  QutritGate:
+    description: 3×3 unitary gate for qutrits
+    fields:
+      matrix: Tensor(shape=[3,3], dtype=complex128)
+      params: Tensor  # Trainable parameters
+
+  QuantumCircuit:
+    description: Sequence of qutrit gates
+    fields:
+      gates: List(QutritGate)
+      num_qutrits: Int
+      depth: Int
+
+  Measurement:
+    description: Measurement operation
+    fields:
+      basis: String  # "computational", "golden", "fourier"
+      shots: Int
+
+behaviors:
+  - name: apply_gate
+    description: Apply single-qutrit gate to state
+    given:
+      - state: QutritState
+      - gate: QutritGate
+    when: Matrix multiplication U|ψ⟩
+    then:
+      - Returns evolved QutritState
+      - Preserves normalization
+      - Supports autograd
+
+  - name: apply_circuit
+    description: Apply full circuit to state
+    given:
+      - initial_state: QutritState
+      - circuit: QuantumCircuit
+    when: Sequential gate application
+    then:
+      - Returns final QutritState
+      - Tracks intermediate states
+      - Differentiable through all gates
+
+  - name: golden_gate
+    description: Create golden ratio rotation gate
+    given: angle: Float64
+    when: Build SU(3) rotation
+    then:
+      - Returns QutritGate
+      - Uses golden angle θ = 360°/φ² = 137.507764°
+      - Matrix is unitary
+
+  - name: trinity_phase_gate
+    description: Create TRINITY phase gate
+    given: None
+    when: Build cube root phase
+    then:
+      - Returns QutritGate
+      - Applies phases [1, ω, ω²] where ω = e^(2πi/3)
+      - Related to φ² + 1/φ² = 3
+
+  - name: gradient_descent
+    description: Optimize gate parameters via gradient descent
+    given:
+      - circuit: QuantumCircuit
+      - target_state: QutritState
+      - learning_rate: Float64
+      - epochs: Int
+    when: Training loop
+    then:
+      - Returns trained QuantumCircuit
+      - Minimizes |⟨ψ_target|U(θ)|ψ_init⟩|²
+      - Uses PyTorch autograd
+
+  - name: quantum_ml_layer
+    description: Qutrit circuit as ML layer
+    given:
+      - input_data: Tensor
+      - qutrit_circuit: QuantumCircuit
+    when: Forward pass through quantum layer
+    then:
+      - Returns classification logits
+      - End-to-end differentiable
+      - Supports batch processing
+
+  - name: measure
+    description: Collapse state via measurement
+    given:
+      - state: QutritState
+      - measurement: Measurement
+    when: Sample from probability distribution
+    then:
+      - Returns outcome {-1, 0, +1}
+      - Probabilities = |amplitudes|²
+      - Collapses state to outcome basis
+
+  - name: fidelity
+    description: Calculate state overlap
+    given:
+      - state1: QutritState
+      - state2: QutritState
+    when: Compute |⟨ψ₁|ψ₂⟩|²
+    then:
+      - Returns Float64 in [0, 1]
+      - 1 = identical states
+      - 0 = orthogonal states

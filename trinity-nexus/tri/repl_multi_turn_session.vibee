@@ -1,0 +1,53 @@
+name: repl_multi_turn_session
+version: "1.0.0"
+language: zig
+module: repl_multi_turn_session
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 30
+  NUM_RELATIONS: 5
+  DIRECT_QUERIES: 10
+  CHAIN_QUERIES: 5
+  MIXED_QUERIES: 15
+  DETERMINISM_QUERIES: 15
+
+types:
+  REPLQuery:
+    fields:
+      entity: String
+      relation: String
+      expected: String
+      result: String
+      similarity: Float
+      correct: Bool
+    description: "A single REPL query with expected and actual result."
+
+  REPLSession:
+    fields:
+      queries: List<REPLQuery>
+      total_correct: Int
+      total_queries: Int
+      accuracy: Float
+    description: "A multi-turn REPL session tracking sequential queries."
+
+behaviors:
+  - name: sequentialDirectQueries
+    given: 10 direct query scenarios across all 5 relations, executed sequentially as a user would in REPL.
+    when: Execute each query in order (Paris capital_of, Eiffel landmark_in, Sushi cuisine_of, etc.)
+    then: 10/10 (100%) — all sequential queries resolve correctly regardless of order
+
+  - name: sequentialChainQueries
+    given: 5 landmark→city→country chain queries executed in REPL.
+    when: For each landmark, chain 2 hops checking both intermediate and final result
+    then: 10/10 (100%) — all 5 chains resolve both hops correctly (Eiffel→Paris→France, etc.)
+
+  - name: mixedSessionQueries
+    given: Alternating direct and chain queries within one REPL session.
+    when: Execute 5 cuisine queries, then 5 city→country→language chains (15 checks total)
+    then: 15/15 (100%) — interleaved query types don't interfere
+
+  - name: deterministicReplay
+    given: 15 queries (10 direct + 5 chain first-hops) re-executed within same session.
+    when: Compare results of repeated queries against initial results
+    then: 15/15 (100%) — deterministic execution verified across session

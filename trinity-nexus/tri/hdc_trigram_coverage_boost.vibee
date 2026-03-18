@@ -1,0 +1,24 @@
+name: hdc_trigram_coverage_boost
+version: "1.0.0"
+language: zig
+module: hdc_trigram_coverage_boost
+
+types:
+  CoverageMetrics:
+    fields:
+      small_keys: Int
+      large_keys: Int
+      coverage_boost: Float
+      bigram_pairs: Int
+
+behaviors:
+  - name: measureTrigramCoverage
+    given: Small and large corpora
+    when: Count unique trigram keys with data
+    then: Coverage comparison showing boost from larger corpus
+
+test_cases:
+  - name: coverage_nearly_doubles
+    given: 527-char vs 5014-char corpus
+    when: Build trigram counts
+    then: Large corpus has approximately 2x trigram keys

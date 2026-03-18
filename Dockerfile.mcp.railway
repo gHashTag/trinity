@@ -1,0 +1,57 @@
+# Trinity MCP Server — Railway Deployment
+# Multi-stage build: Zig 0.15.2 → minimal runtime
+# φ² + 1/φ² = 3 = TRINITY
+
+# Stage 1: Build
+FROM ubuntu:24.04 AS builder
+
+RUN apt-get update && apt-get install -y \
+    wget xz-utils git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Zig 0.15.2 — SEC-11: verify sha256 checksum
+RUN wget -q -O /tmp/zig.tar.xz \
+    https://ziglang.org/download/0.15.2/zig-x86_64-linux-0.15.2.tar.xz \
+    && echo "02aa270f183da276e5b5920b1dac44a63f1a49e55050ebde3aecc9eb82f93239  /tmp/zig.tar.xz" | sha256sum -c - \
+    && tar -xf /tmp/zig.tar.xz -C /usr/local \
+    && rm /tmp/zig.tar.xz
+
+ENV PATH="/usr/local/zig-x86_64-linux-0.15.2:${PATH}"
+
+WORKDIR /app
+COPY . .
+
+# Build trinity-mcp with ReleaseSafe (Zig 0.15 syntax)
+RUN zig build -Doptimize=ReleaseSafe trinity-mcp
+
+# Stage 2: Runtime
+FROM ubuntu:24.04 AS runtime
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates curl \
+    && rm -rf /var/lib/apt/lists/* \
+    && update-ca-certificates
+
+RUN useradd -m -u 1001 trinity
+
+COPY --from=builder /app/zig-out/bin/trinity-mcp /usr/local/bin/trinity-mcp
+
+RUN chmod +x /usr/local/bin/trinity-mcp
+
+USER trinity
+WORKDIR /home/trinity
+
+# MCP HTTP transport port
+ENV TRINITY_MCP_PORT=8899
+ENV TRINITY_MCP_HTTP=1
+EXPOSE 8899
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD curl -sf http://localhost:8899/health || exit 1
+
+ENTRYPOINT ["/usr/local/bin/trinity-mcp"]
+
+LABEL version="2.2.0" \
+      description="Trinity MCP Server (Zig) — Railway Cloud" \
+      trinity.identity="phi^2 + 1/phi^2 = 3"

@@ -1,0 +1,81 @@
+name: e2e_registry_tests
+version: "1.0.0"
+language: zig
+module: e2e_registry_tests
+
+description: >
+  End-to-end contract tests for the Trinity registry. Validates the full pipeline:
+  registry → MCP export, CLI help output, job lifecycle, artifact validation,
+  unified output format, backward compatibility, and golden snapshot comparison.
+
+types:
+  TestResult:
+    fields:
+      name: "[]const u8"
+      passed: bool
+      error_msg: "?[]const u8"
+      duration_ms: u64
+
+  TestSuite:
+    fields:
+      results: "[]TestResult"
+      total: usize
+      passed: usize
+      failed: usize
+
+  GoldenSnapshot:
+    fields:
+      name: "[]const u8"
+      content: "[]const u8"
+      hash: "[]const u8"
+
+behaviors:
+  runE2ETests:
+    given: "allocator and args slice"
+    when: "invoked via `tri test e2e`"
+    then: "runs all contract tests, prints per-test pass/fail, prints summary, exits non-zero on failure"
+
+  testRegistryMcpExport:
+    given: "allocator"
+    when: "called"
+    then: "invokes registry export, validates output matches MCP tool schema contract"
+
+  testCliHelp:
+    given: "allocator"
+    when: "called"
+    then: "runs `tri --help` and each subcommand `--help`, asserts exit 0 and non-empty output"
+
+  testJobLifecycle:
+    given: "allocator"
+    when: "called"
+    then: "creates a test job, advances through queued→running→done states, validates transitions"
+
+  testArtifactValidation:
+    given: "allocator"
+    when: "called"
+    then: "generates a test artifact, hashes it, verifies hash matches stored value"
+
+  testUnifiedOutputFormat:
+    given: "allocator"
+    when: "called"
+    then: "runs a command with --json flag and validates output matches unified JSON schema"
+
+  testBackwardCompatibility:
+    given: "allocator"
+    when: "called"
+    then: "reads stored v1 format fixtures, deserializes with current parser, asserts no data loss"
+
+  testGoldenSnapshots:
+    given: "allocator"
+    when: "called"
+    then: "runs golden commands, compares output hash to stored GoldenSnapshot; fails on mismatch"
+
+  collectTestSuite:
+    given: "slice of TestResult"
+    when: "called"
+    then: "aggregates into TestSuite with pass/fail counts"
+
+  printTestSummary:
+    given: "writer and TestSuite"
+    when: "called"
+    then: "prints ANSI-colored summary line: N passed, M failed"

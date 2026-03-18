@@ -1,0 +1,165 @@
+name: manifest_validator
+version: "1.0.0"
+language: zig
+module: manifest_validator
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: validate_name
+    given: Input data provided
+    when: validate_name function called
+    then: Result returned
+    test_cases:
+      - name: test_validate_name
+        input: {}
+        expected: {}
+
+  - name: validate_version
+    given: Input data provided
+    when: validate_version function called
+    then: Result returned
+    test_cases:
+      - name: test_validate_version
+        input: {}
+        expected: {}
+
+  - name: validate_category
+    given: Input data provided
+    when: validate_category function called
+    then: Result returned
+    test_cases:
+      - name: test_validate_category
+        input: {}
+        expected: {}
+
+  - name: validate_dependency
+    given: Input data provided
+    when: validate_dependency function called
+    then: Result returned
+    test_cases:
+      - name: test_validate_dependency
+        input: {}
+        expected: {}
+
+  - name: validate_export
+    given: Input data provided
+    when: validate_export function called
+    then: Result returned
+    test_cases:
+      - name: test_validate_export
+        input: {}
+        expected: {}
+
+  - name: check_duplicates
+    given: Input data provided
+    when: check_duplicates function called
+    then: Result returned
+    test_cases:
+      - name: test_check_duplicates
+        input: {}
+        expected: {}
+
+  - name: find_duplicate
+    given: Input data provided
+    when: find_duplicate function called
+    then: Result returned
+    test_cases:
+      - name: test_find_duplicate
+        input: {}
+        expected: {}
+
+  - name: validate_manifest
+    given: Input data provided
+    when: validate_manifest function called
+    then: Result returned
+    test_cases:
+      - name: test_validate_manifest
+        input: {}
+        expected: {}
+
+  - name: format_error
+    given: Input data provided
+    when: format_error function called
+    then: Result returned
+    test_cases:
+      - name: test_format_error
+        input: {}
+        expected: {}
+
+types:
+  PluginManifest:
+    # TODO: Define fields
+
+  Category:
+    # TODO: Define fields
+
+  Command:
+    # TODO: Define fields
+
+  Events:
+    # TODO: Define fields
+
+  ValidationError:
+    # TODO: Define fields
+
+functions:
+  - name: validate_name
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: validate_version
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: validate_category
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: validate_dependency
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: validate_export
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: check_duplicates
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: find_duplicate
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: validate_manifest
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_error
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/json
+  # gleam/result
+  # gleam/list
+  # gleam/string
+  # gleam/regexp
+  # gleam/dict.{type Dict}
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

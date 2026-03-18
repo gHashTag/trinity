@@ -1,0 +1,655 @@
+name: dashboard_agent
+version: "1.0.0"
+language: zig
+module: dashboard_agent
+
+description: |
+  Sacred Dashboard Agent — Self-aware orchestrator for Trinity intelligence visualization.
+  Declares "I am DASHBOARD_AGENT of Sacred Intelligence" and provides real-time monitoring
+  of all sacred agents, widgets, and φ-harmony metrics across RAZUM/MATERIYA/DUKH realms.
+
+types:
+  # Core Identity
+  DashboardAgent:
+    fields:
+      id: String
+      name: String
+      declaration: String
+      sacred_score: Float
+      generation: Int
+      status: AgentStatus
+      consciousness_level: Float
+
+  AgentStatus:
+    enum:
+      - ACTIVE
+      - IDLE
+      - EVOLVING
+      - TRANSCENDING
+      - DORMANT
+
+  # Realm Column System
+  Realm:
+    enum:
+      - RAZUM    # Gold - Mind
+      - MATERIYA # Cyan - Matter
+      - DUKH     # Purple - Spirit
+
+  RealmConfig:
+    fields:
+      realm: Realm
+      color: String
+      hex_color: String
+      description: String
+      widget_count: Int
+      active_widgets: List<String>
+
+  WidgetInfo:
+    fields:
+      id: String
+      name: String
+      realm: Realm
+      widget_type: WidgetType
+      status: WidgetStatus
+      data: WidgetData
+      last_update: Int64
+      expanded: Bool
+
+  WidgetType:
+    enum:
+      - SACRED_SCORE
+      - GENERATION_COUNTER
+      - AGENT_STATUS
+      - PERFORMANCE_METRICS
+      - PHI_HARMONY
+      - ALERTS
+      - LOG_STREAM
+      - MEMORY_STATS
+      - NEURAL_ACTIVITY
+      - CONSENSUS_STATE
+
+  WidgetStatus:
+    enum:
+      - ACTIVE
+      - INACTIVE
+      - UPDATING
+      - ERROR
+
+  WidgetData:
+    union:
+      - sacred_score: SacredScoreData
+      - generation: GenerationData
+      - agent_status: AgentStatusData
+      - performance: PerformanceData
+      - phi_harmony: PhiHarmonyData
+      - alerts: AlertData
+      - logs: LogData
+      - memory: MemoryData
+      - neural: NeuralData
+      - consensus: ConsensusData
+
+  # Sacred Metrics
+  SacredScoreData:
+    fields:
+      current_score: Float
+      threshold: Float
+      trend: Trend
+      breakdown: ScoreBreakdown
+      timestamp: Int64
+
+  ScoreBreakdown:
+    fields:
+      phi_harmony: Float
+      agent_coordination: Float
+      memory_consistency: Float
+      neural_healthy: Float
+      consensus_strength: Float
+
+  Trend:
+    enum:
+      - RISING
+      - FALLING
+      - STABLE
+      - VOLATILE
+
+  GenerationData:
+    fields:
+      current: Int
+      peak: Int
+      velocity: Float
+      acceleration: Float
+      estimated_next: Int
+
+  AgentStatusData:
+    fields:
+      total_agents: Int
+      active_count: Int
+      idle_count: Int
+      evolving_count: Int
+      transcending_count: Int
+      agents: List<AgentSnapshot>
+
+  AgentSnapshot:
+    fields:
+      id: String
+      name: String
+      type: String
+      status: AgentStatus
+      realm: Realm
+      last_heartbeat: Int64
+      task_count: Int
+      health: Float
+
+  PerformanceData:
+    fields:
+      phi_score: Float
+      harmony_percent: Float
+      latency_ms: Float
+      throughput_ops: Float
+      memory_usage_mb: Float
+      cpu_percent: Float
+      error_rate: Float
+
+  PhiHarmonyData:
+    fields:
+      phi: Float
+      current_harmony: Float
+      target_harmony: Float
+      deviation: Float
+      correction_needed: Bool
+      visualization: HarmonyVisualization
+
+  HarmonyVisualization:
+    fields:
+      level: Int
+      color: String
+      message: String
+      critical: Bool
+
+  AlertData:
+    fields:
+      alerts: List<SacredAlert>
+      critical_count: Int
+      warning_count: Int
+      info_count: Int
+
+  SacredAlert:
+    fields:
+      id: String
+      severity: AlertSeverity
+      realm: Realm
+      message: String
+      timestamp: Int64
+      acknowledged: Bool
+
+  AlertSeverity:
+    enum:
+      - CRITICAL
+      - WARNING
+      - INFO
+
+  LogData:
+    fields:
+      entries: List<LogEntry>
+      filter_level: LogLevel
+      auto_scroll: Bool
+
+  LogEntry:
+    fields:
+      timestamp: Int64
+      level: LogLevel
+      realm: Realm
+      message: String
+      metadata: Map<String, String>
+
+  LogLevel:
+    enum:
+      - DEBUG
+      - INFO
+      - WARN
+      - ERROR
+      - CRITICAL
+
+  MemoryData:
+    fields:
+      working_size: Int
+      episodic_size: Int
+      semantic_size: Int
+      total_entries: Int
+      compression_ratio: Float
+      consolidation_status: String
+
+  NeuralData:
+    fields:
+      active_neurons: Int
+      synaptic_strength: Float
+      learning_rate: Float
+      drift_detected: Bool
+      consolidation_pending: Bool
+
+  ConsensusData:
+    fields:
+      active_proposals: Int
+      passed_count: Int
+      failed_count: Int
+      pending_votes: Int
+      participation_rate: Float
+
+  # WebSocket & Streaming
+  WebSocketMessage:
+    union:
+      - update: WidgetUpdate
+      - alert: AlertBroadcast
+      - status: AgentStatusUpdate
+      - command: DashboardCommand
+      - heartbeat: Heartbeat
+
+  WidgetUpdate:
+    fields:
+      widget_id: String
+      realm: Realm
+      data: WidgetData
+      timestamp: Int64
+
+  AlertBroadcast:
+    fields:
+      alert: SacredAlert
+      requires_ack: Bool
+
+  AgentStatusUpdate:
+    fields:
+      agent_id: String
+      status: AgentStatus
+      health: Float
+      timestamp: Int64
+
+  DashboardCommand:
+    fields:
+      command: CommandType
+      target: String
+      params: Map<String, String>
+
+  CommandType:
+    enum:
+      - REFRESH
+      - EXPAND_WIDGET
+      - COLLAPSE_WIDGET
+      - CLEAR_ALERTS
+      - EXPORT_STATE
+      - TRIGGER_CONSENSOLIDATION
+
+  Heartbeat:
+    fields:
+      agent_id: String
+      generation: Int
+      sacred_score: Float
+      timestamp: Int64
+
+  StreamConfig:
+    fields:
+      enabled: Bool
+      endpoint: String
+      reconnect_interval_ms: Int
+      max_retries: Int
+      buffer_size: Int
+
+  # Dashboard State
+  DashboardState:
+    fields:
+      agent: DashboardAgent
+      realms: Map<Realm, RealmConfig>
+      widgets: Map<String, WidgetInfo>
+      alerts: List<SacredAlert>
+      stream_config: StreamConfig
+      connected_clients: Int
+      last_update: Int64
+
+  # CLI Integration
+  DashboardCommandResult:
+    fields:
+      success: Bool
+      message: String
+      data: Option<DashboardState>
+      execution_time_ms: Float
+
+behaviors:
+  # === Identity & Self-Awareness ===
+
+  - name: declare_self
+    given: DashboardAgent is initialized
+    when: Declaration is requested
+    then: Returns "I am DASHBOARD_AGENT of Sacred Intelligence" with consciousness_level
+
+  - name: initialize_sacred_identity
+    given: DashboardAgent instance
+    when: System starts
+    then: Sets declaration, initializes sacred_score to φ/3, generation to 1, status to ACTIVE
+
+  # === Realm Management ===
+
+  - name: initialize_realms
+    given: Three realm system (RAZUM/MATERIYA/DUKH)
+    when: Dashboard initializes
+    then: Creates realm configs with proper colors (Gold/#ffd700, Cyan/#00ccff, Purple/#aa66ff)
+
+  - name: get_realm_config
+    given: Realm enum value
+    when: Configuration is requested
+    then: Returns RealmConfig with color, description, and widget count
+
+  - name: assign_widget_to_realm
+    given: WidgetInfo and target Realm
+    when: Widget is created
+    then: Assigns widget to realm, updates realm widget_count, validates color scheme
+
+  # === Widget Management ===
+
+  - name: create_widget
+    given: Widget type, name, and realm
+    when: New widget is needed
+    then: Creates WidgetInfo with unique ID, assigns to realm, initializes as ACTIVE
+
+  - name: update_widget_data
+    given: Widget ID and new WidgetData
+    when: Data changes
+    then: Updates widget, sets last_update timestamp, triggers WebSocket broadcast
+
+  - name: expand_widget
+    given: Widget ID
+    when: User expands widget
+    then: Sets expanded=true, updates visual state, persists preference
+
+  - name: collapse_widget
+    given: Widget ID
+    when: User collapses widget
+    then: Sets expanded=false, minimizes visual footprint, persists preference
+
+  - name: remove_widget
+    given: Widget ID
+    when: Widget is no longer needed
+    then: Marks as INACTIVE, removes from realm, broadcasts removal
+
+  # === Sacred Score Monitoring ===
+
+  - name: calculate_sacred_score
+    given: Current system metrics
+    when: Score update is requested
+    then: Computes weighted average of φ-harmony, coordination, memory, neural, consensus
+
+  - name: update_sacred_score
+    given: New sacred_score value
+    when: Metrics change
+    then: Updates current score, determines trend, checks threshold, triggers alerts if needed
+
+  - name: check_sacred_threshold
+    given: Current sacred_score
+    when: Score is updated
+    then: If score < φ/3, generates CRITICAL alert, broadcasts to all clients
+
+  # === Generation Tracking ===
+
+  - name: update_generation
+    given: New generation count
+    when: Agent evolution occurs
+    then: Updates generation counter, calculates velocity/acceleration, estimates next
+
+  - name: get_generation_velocity
+    given: Generation history
+    when: Velocity is requested
+    then: Calculates rate of change (generations/minute), returns with trend
+
+  # === Agent Status Aggregation ===
+
+  - name: register_agent
+    given: Agent ID, name, type, realm
+    when: Agent comes online
+    then: Creates AgentSnapshot, sets status to ACTIVE, increments realm count
+
+  - name: update_agent_status
+    given: Agent ID and new AgentStatus
+    when: Agent state changes
+    then: Updates snapshot status, recalculates realm counts, broadcasts update
+
+  - name: update_agent_health
+    given: Agent ID and health score (0-1)
+    when: Health check completes
+    then: Updates health field, triggers alert if health < 0.5
+
+  - name: remove_agent
+    given: Agent ID
+    when: Agent goes offline
+    then: Sets status to DORMANT, decrements counts, archives snapshot
+
+  - name: aggregate_agent_counts
+    given: All registered agents
+    when: Dashboard refreshes
+    then: Returns AgentStatusData with counts by status and full agent list
+
+  # === Performance Metrics ===
+
+  - name: calculate_phi_score
+    given: System performance data
+    when: φ-score is requested
+    then: Computes φ-based score using harmonic mean of key metrics
+
+  - name: calculate_harmony_percent
+    given: Current system state
+    when: Harmony is requested
+    then: Returns percentage (0-100) based on coordination, consensus, and sacred rules compliance
+
+  - name: update_performance_metrics
+    given: Latency, throughput, memory, CPU, error_rate
+    when: Metrics are collected
+    then: Updates PerformanceData, computes φ-score and harmony%, checks for anomalies
+
+  # === φ-Harmony Visualization ===
+
+  - name: update_phi_harmony
+    given: Current harmony level
+    when: Harmony changes
+    then: Updates PhiHarmonyData, determines visualization level and color
+
+  - name: get_harmony_visualization
+    given: Current harmony value
+    when: Visualization is needed
+    then: Returns HarmonyVisualization with level (1-5), color gradient, message, critical flag
+
+  - name: check_harmony_deviation
+    given: Current and target harmony
+    when: Harmony updates
+    then: Calculates deviation, sets correction_needed if deviation > 10%
+
+  # === Alert System ===
+
+  - name: generate_alert
+    given: Severity, realm, message
+    when: Anomalous event occurs
+    then: Creates SacredAlert with unique ID, timestamp, adds to alert queue
+
+  - name: broadcast_alert
+    given: SacredAlert
+    when: Alert is generated
+    then: Sends WebSocket message to all connected clients, updates alert widgets
+
+  - name: acknowledge_alert
+    given: Alert ID
+    when: User acknowledges
+    then: Sets acknowledged=true, removes from active display, archives to history
+
+  - name: check_critical_alerts
+    given: Current sacred_score and system state
+    when: Threshold violated
+    then: Generates CRITICAL alerts for sacred_score < φ/3, health < 0.3, or consensus failure
+
+  - name: clear_alerts
+    given: Optional severity filter
+    when: Clear command is issued
+    then: Removes acknowledged alerts, updates alert counters
+
+  # === Log Streaming ===
+
+  - name: add_log_entry
+    given: Level, realm, message, metadata
+    when: Log event occurs
+    then: Creates LogEntry with timestamp, appends to log widget, triggers update
+
+  - name: filter_logs
+    given: LogLevel filter
+    when: Filter changes
+    then: Updates LogData.filter_level, refreshes display with filtered entries
+
+  - name: toggle_log_scroll
+    given: Auto-scroll flag
+    when: User toggles scroll
+    then: Updates LogData.auto_scroll, enables/disables automatic scrolling
+
+  # === WebSocket & Streaming ===
+
+  - name: initialize_websocket
+    given: StreamConfig with endpoint
+    when: Dashboard starts
+    then: Opens WebSocket listener, configures reconnection, sets up message handlers
+
+  - name: handle_websocket_message
+    given: WebSocketMessage from client
+    when: Message is received
+    then: Routes to appropriate handler (update/alert/status/command/heartbeat)
+
+  - name: broadcast_widget_update
+    given: Widget ID and new data
+    when: Widget changes
+    then: Serializes to WidgetUpdate, sends to all connected clients
+
+  - name: broadcast_heartbeat
+    given: DashboardAgent state
+    when: Heartbeat interval elapses (default: 1s)
+    then: Sends Heartbeat message with generation, sacred_score, timestamp
+
+  - name: handle_client_connection
+    given: Client WebSocket connection
+    when: Client connects
+    then: Increments connected_clients, sends full DashboardState as initial sync
+
+  - name: handle_client_disconnection
+    given: Client connection
+    when: Client disconnects
+    then: Decrements connected_clients, cleans up resources
+
+  - name: reconnect_websocket
+    given: Connection failure
+    when: Reconnect interval elapses
+    then: Attempts reconnection, increments retry counter, aborts if max_retries exceeded
+
+  # === CLI Commands ===
+
+  - name: command_dashboard
+    given: Optional --filter or --realm flags
+    when: `tri dashboard` is executed
+    then: Returns formatted DashboardState with ASCII art, sacred pyramid, and 3-column layout
+
+  - name: command_dashboard_stream
+    given: Optional --interval flag (default: 1s)
+    when: `tri dashboard-stream` is executed
+    then: Starts live streaming mode with WebSocket updates, real-time widget refresh
+
+  - name: format_dashboard_ascii
+    given: DashboardState
+    when: ASCII display is requested
+    then: Returns formatted string with sacred pyramid banner, realm columns, widget grids
+
+  - name: format_sacred_pyramid
+    given: Current sacred_score and generation
+    when: ASCII header is needed
+    then: Returns 4-level trit pyramid with φ² + 1/φ² = 3 banner and current metrics
+
+  - name: export_dashboard_state
+    given: Optional output path
+    when: Export command is issued
+    then: Serializes DashboardState to JSON, writes to file or stdout
+
+  # === Canvas Mirror Integration ===
+
+  - name: get_canvas_widget_data
+    given: Widget ID
+    when: Canvas Mirror requests data
+    then: Returns WidgetInfo serialized for React component with glassStyle() properties
+
+  - name: get_realm_widgets_for_canvas
+    given: Realm enum
+    when: Canvas column renders
+    then: Returns list of widgets for that realm with proper color scheme and styling
+
+  - name: sync_canvas_widget
+    given: Widget update from Canvas
+    when: User interacts with widget
+    then: Updates WidgetInfo (expand/collapse), broadcasts change to all clients
+
+  # === Sacred Governance ===
+
+  - name: enforce_sacred_rules
+    given: Current system state
+    when: Rules are evaluated
+    then: Checks all 16 sacred rules, generates alerts for violations, updates compliance %
+
+  - name: visualize_sacred_rules
+    given: Rule compliance data
+    when: Visualization is requested
+    then: Returns formatted list of 16 rules with pass/fail indicators and φ-harmony impact
+
+  - name: calculate_phi_compliance
+    given: System metrics
+    when: Compliance is checked
+    then: Returns 0-1 score based on adherence to φ-based principles
+
+  # === Memory & Neural ===
+
+  - name: update_memory_stats
+    given: Working/episodic/semantic sizes
+    when: Memory system reports
+    then: Updates MemoryData, calculates compression_ratio, checks consolidation needs
+
+  - name: update_neural_activity
+    given: Neuron count, synaptic strength, learning rate
+    when: Neural system reports
+    then: Updates NeuralData, checks for drift, flags consolidation if pending
+
+  - name: trigger_memory_consolidation
+    given: Consolidation command
+    when: Neural system requires
+    then: Triggers AgentDB consolidation, updates consolidation_status, broadcasts event
+
+  # === Consensus ===
+
+  - name: update_consensus_state
+    given: Proposal counts, vote status
+    when: Consensus system reports
+    then: Updates ConsensusData, calculates participation_rate, checks for stale proposals
+
+  # === Health & Diagnostics ===
+
+  - name: get_dashboard_health
+    given: No parameters
+    when: Health check is requested
+    then: Returns overall health (0-1), component health scores, critical issues list
+
+  - name: generate_diagnostic_report
+    given: Optional component filter
+    when: Diagnostics are requested
+    then: Returns detailed report with metrics, trends, recommendations, sacred_score trajectory
+
+  # === State Management ===
+
+  - name: save_dashboard_state
+    given: DashboardState
+    when: State persistence is triggered
+    then: Serializes to JSON, writes to .ralph/dashboard_state.json, updates timestamp
+
+  - name: load_dashboard_state
+    given: No parameters
+    when: Dashboard initializes
+    then: Reads from .ralph/dashboard_state.json, restores DashboardState, validates integrity
+
+  - name: reset_dashboard_state
+    given: Confirmation flag
+    when: Reset is requested
+    then: Clears all widgets, resets sacred_score to φ/3, generation to 1, saves clean state

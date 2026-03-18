@@ -1,0 +1,329 @@
+name: compiler_v3_1
+version: "1.0.0"
+language: zig
+module: compiler_v3_1
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: parse_string_interpolation
+    given: Input data provided
+    when: parse_string_interpolation function called
+    then: Result returned
+    test_cases:
+      - name: test_parse_string_interpolation
+        input: {}
+        expected: {}
+
+  - name: parse_string_parts
+    given: Input data provided
+    when: parse_string_parts function called
+    then: Result returned
+    test_cases:
+      - name: test_parse_string_parts
+        input: {}
+        expected: {}
+
+  - name: parse_interpolation
+    given: Input data provided
+    when: parse_interpolation function called
+    then: Result returned
+    test_cases:
+      - name: test_parse_interpolation
+        input: {}
+        expected: {}
+
+  - name: parse_literal_until_brace
+    given: Input data provided
+    when: parse_literal_until_brace function called
+    then: Result returned
+    test_cases:
+      - name: test_parse_literal_until_brace
+        input: {}
+        expected: {}
+
+  - name: parse_simple_expr
+    given: Input data provided
+    when: parse_simple_expr function called
+    then: Result returned
+    test_cases:
+      - name: test_parse_simple_expr
+        input: {}
+        expected: {}
+
+  - name: parse_error_propagation
+    given: Input data provided
+    when: parse_error_propagation function called
+    then: Result returned
+    test_cases:
+      - name: test_parse_error_propagation
+        input: {}
+        expected: {}
+
+  - name: parse_result_pipeline
+    given: Input data provided
+    when: parse_result_pipeline function called
+    then: Result returned
+    test_cases:
+      - name: test_parse_result_pipeline
+        input: {}
+        expected: {}
+
+  - name: generate
+    given: Input data provided
+    when: generate function called
+    then: Result returned
+    test_cases:
+      - name: test_generate
+        input: {}
+        expected: {}
+
+  - name: generate_string_interpolation
+    given: Input data provided
+    when: generate_string_interpolation function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_string_interpolation
+        input: {}
+        expected: {}
+
+  - name: generate_error_propagation
+    given: Input data provided
+    when: generate_error_propagation function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_error_propagation
+        input: {}
+        expected: {}
+
+  - name: generate_result_pipeline
+    given: Input data provided
+    when: generate_result_pipeline function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_result_pipeline
+        input: {}
+        expected: {}
+
+  - name: generate_case
+    given: Input data provided
+    when: generate_case function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_case
+        input: {}
+        expected: {}
+
+  - name: generate_branch
+    given: Input data provided
+    when: generate_branch function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_branch
+        input: {}
+        expected: {}
+
+  - name: generate_pattern
+    given: Input data provided
+    when: generate_pattern function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_pattern
+        input: {}
+        expected: {}
+
+  - name: optimize
+    given: Input data provided
+    when: optimize function called
+    then: Result returned
+    test_cases:
+      - name: test_optimize
+        input: {}
+        expected: {}
+
+  - name: all_literals
+    given: Input data provided
+    when: all_literals function called
+    then: Result returned
+    test_cases:
+      - name: test_all_literals
+        input: {}
+        expected: {}
+
+  - name: concat_literals
+    given: Input data provided
+    when: concat_literals function called
+    then: Result returned
+    test_cases:
+      - name: test_concat_literals
+        input: {}
+        expected: {}
+
+  - name: optimize_part
+    given: Input data provided
+    when: optimize_part function called
+    then: Result returned
+    test_cases:
+      - name: test_optimize_part
+        input: {}
+        expected: {}
+
+  - name: optimize_branch
+    given: Input data provided
+    when: optimize_branch function called
+    then: Result returned
+    test_cases:
+      - name: test_optimize_branch
+        input: {}
+        expected: {}
+
+  - name: compile
+    given: Input data provided
+    when: compile function called
+    then: Result returned
+    test_cases:
+      - name: test_compile
+        input: {}
+        expected: {}
+
+  - name: uses_v3_1_features
+    given: Input data provided
+    when: uses_v3_1_features function called
+    then: Result returned
+    test_cases:
+      - name: test_uses_v3_1_features
+        input: {}
+        expected: {}
+
+types:
+  Expr:
+    # TODO: Define fields
+
+  StringPart:
+    # TODO: Define fields
+
+  CaseBranch:
+    # TODO: Define fields
+
+  Pattern:
+    # TODO: Define fields
+
+functions:
+  - name: parse_string_interpolation
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: parse_string_parts
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: parse_interpolation
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: parse_literal_until_brace
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: parse_simple_expr
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: parse_error_propagation
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: parse_result_pipeline
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_string_interpolation
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_error_propagation
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_result_pipeline
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_case
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_branch
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_pattern
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: optimize
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: all_literals
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: concat_literals
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: optimize_part
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: optimize_branch
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: compile
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: uses_v3_1_features
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/int
+  # gleam/list
+  # gleam/string
+  # gleam/result
+  # gleam/option.{type Option, None, Some}
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

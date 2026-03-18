@@ -1,0 +1,242 @@
+# TRI Reward Distribution (MGEN-008)
+# Distribute rewards to peers based on contribution
+
+name: reward_distribution
+version: "1.0.0"
+language: zig
+module: reward_distribution
+
+types:
+  Contribution:
+    fields:
+      peer_id: String
+      triples_stored: Int
+      triples_retrieved: Int
+      uptime_seconds: Int
+      storage_bytes: Int
+      network_bytes: Int
+      last_verified: Int
+      verification_count: Int
+
+  DistributionConfig:
+    fields:
+      reward_per_triple: Int
+      reward_per_retrieval: Int
+      reward_per_uptime_hour: Int
+      reward_per_storage_mb: Int
+      reward_per_network_mb: Int
+      reward_pool: Int
+      min_contribution_threshold: Float
+      max_reward_per_peer: Int
+
+  DistributionResult:
+    fields:
+      peer_id: String
+      reward_amount: Int
+      contribution_score: Float
+      rank: Int
+      breakdown: ContributionBreakdown
+
+  ContributionBreakdown:
+    fields:
+      storage_reward: Int
+      retrieval_reward: Int
+      uptime_reward: Int
+      network_reward: Int
+      bonus_multiplier: Float
+
+  DistributionRound:
+    fields:
+      round_id: Int
+      start_time: Int
+      end_time: Int
+      total_rewards: Int
+      num_peers: Int
+      results: List<DistributionResult>
+      claimed_count: Int
+      status: String
+
+behaviors:
+  - name: calculate_reward
+    given: peer contribution and config
+    when: calculating reward for round
+    then: returns reward amount based on weighted contribution score
+    implementation: |
+      pub fn calculateReward(contribution: Contribution, config: DistributionConfig) !DistributionResult {
+          // Calculate base rewards
+          const storage_mb = @as(f64, @floatFromInt(contribution.storage_bytes)) / (1024 * 1024);
+          const storage_reward = @floatToInt(i64, @floor(storage_mb * @as(f64, @floatFromInt(config.reward_per_storage_mb))));
+
+          const retrieval_reward = contribution.triples_retrieved * config.reward_per_retrieval;
+
+          const uptime_hours = @as(f64, @floatFromInt(contribution.uptime_seconds)) / 3600;
+          const uptime_reward = @floatToInt(i64, @floor(uptime_hours * @as(f64, @floatFromInt(config.reward_per_uptime_hour))));
+
+          const network_mb = @as(f64, @floatFromInt(contribution.network_bytes)) / (1024 * 1024);
+          const network_reward = @floatToInt(i64, @floor(network_mb * @as(f64, @floatFromInt(config.reward_per_network_mb))));
+
+          // Calculate weighted score (0-100)
+          var score: f64 = 0;
+          score += @min(storage_mb / 1000, 1.0) * 30;  // max 30 points for storage
+          score += @min(@as(f64, @floatFromInt(contribution.triples_retrieved)) / 10000, 1.0) * 25;  // max 25 for retrieval
+          score += @min(uptime_hours / 720, 1.0) * 25;  // max 25 for 30 days uptime
+          score += @min(network_mb / 100, 1.0) * 20;  // max 20 for network
+
+          if (score < config.min_contribution_threshold) return error.ContributionTooLow;
+
+          const base_total = storage_reward + retrieval_reward + uptime_reward + network_reward;
+          const capped_total = @min(base_total, config.max_reward_per_peer);
+
+          const breakdown = ContributionBreakdown{
+              .storage_reward = storage_reward,
+              .retrieval_reward = retrieval_reward,
+              .uptime_reward = uptime_reward,
+              .network_reward = network_reward,
+              .bonus_multiplier = 1.0,
+          };
+
+          return .{
+              .peer_id = contribution.peer_id,
+              .reward_amount = capped_total,
+              .contribution_score = score,
+              .rank = 0,  // filled after sorting
+              .breakdown = breakdown,
+          };
+      }
+
+  - name: distribute_round
+    given: list of contributions, reward pool, and config
+    when: running distribution round
+    then: calculates all rewards, assigns ranks, returns DistributionRound
+    implementation: |
+      pub fn distributeRound(allocator: Allocator, contributions: []Contribution, config: DistributionConfig, round_id: i64) !DistributionRound {
+          var results = try std.ArrayList(DistributionResult).initCapacity(allocator, contributions.len);
+          defer results.deinit();
+
+          var total_rewards: i64 = 0;
+          var valid_count: usize = 0;
+
+          // Calculate reward for each peer
+          for (contributions) |contrib| {
+              const result = calculateReward(contrib, config) catch |err| {
+                  std.log.debug("Skipping peer {s}: {}", .{contrib.peer_id, err});
+                  continue;
+              };
+              try results.append(result);
+              total_rewards += result.reward_amount;
+              valid_count += 1;
+          }
+
+          // Sort by contribution_score descending
+          std.sort.insert(DistributionResult, results.items, {}, struct {
+              fn compare(_: void, a: DistributionResult, b: DistributionResult) bool {
+                  return a.contribution_score > b.contribution_score;
+              }
+          }.compare);
+
+          // Assign ranks
+          for (results.items, 0..) |*result, i| {
+              result.rank = @intCast(i + 1);
+          }
+
+          // Clone results for return
+          const final_results = try allocator.dupe(DistributionResult, results.items);
+
+          return .{
+              .round_id = round_id,
+              .start_time = std.time.timestamp(),
+              .end_time = 0,
+              .total_rewards = @min(total_rewards, config.reward_pool),
+              .num_peers = @intCast(valid_count),
+              .results = final_results,
+              .claimed_count = 0,
+              .status = "pending",
+          };
+      }
+
+  - name: get_leaderboard
+    given: distribution round and limit N
+    when: getting top peers
+    then: returns sorted list top N by reward amount
+    implementation: |
+      pub fn getLeaderboard(round: DistributionRound, limit: usize) []DistributionResult {
+          const count = @min(limit, round.results.len);
+          return round.results[0..count];
+      }
+
+  - name: verify_contribution
+    given: peer contribution claim and verification data
+    when: verifying triple storage on DHT
+    then: returns true if at least 90% of claimed triples are found
+    implementation: |
+      pub fn verifyContribution(contrib: Contribution, samples: []const []const u8) !bool {
+          if (samples.len == 0) return error.NoSamples;
+          var found: usize = 0;
+          for (samples) |triple_key| {
+              // TODO: Actual DHT lookup
+              _ = triple_key;
+              found += 1;  // Simulate found
+          }
+          const ratio = @as(f64, @floatFromInt(found)) / @as(f64, @floatFromInt(samples.len));
+          return ratio >= 0.9;
+      }
+
+  - name: claim_reward
+    given: peer_id, round_id, and wallet
+    when: peer claims reward
+    then: transfers reward to wallet, marks claimed, or returns error if already claimed
+    implementation: |
+      pub fn claimReward(round: *DistributionRound, peer_id: []const u8, wallet: *Wallet) !i64 {
+          // Find peer result
+          for (round.results) |*result| {
+              if (std.mem.eql(u8, result.peer_id, peer_id)) {
+                  // Check if already claimed
+                  if (result.reward_amount == 0) return error.AlreadyClaimed;
+
+                  const amount = result.reward_amount;
+                  result.reward_amount = 0;  // Mark as claimed
+                  round.claimed_count += 1;
+
+                  // Transfer to wallet
+                  wallet.balance_wei += amount;
+                  wallet.total_earned += amount;
+                  return amount;
+              }
+          }
+          return error.PeerNotFound;
+      }
+
+  - name: finalize_round
+    given: distribution round
+    when: round period ends
+    then: calculates remaining unclaimed pool, updates status to completed
+    implementation: |
+      pub fn finalizeRound(round: *DistributionRound) !void {
+          if (std.mem.eql(u8, round.status, "completed")) return error.AlreadyFinalized;
+
+          var claimed_total: i64 = 0;
+          for (round.results) |result| {
+              if (result.reward_amount == 0) {
+                  // Already claimed - need to track original amount
+                  // For now, just count claims
+                  _ = result;
+              }
+          }
+
+          round.end_time = std.time.timestamp();
+          round.status = "completed";
+      }
+
+  - name: get_peer_rank
+    given: round and peer_id
+    when: querying peer rank
+    then: returns rank or error if not found
+    implementation: |
+      pub fn getPeerRank(round: DistributionRound, peer_id: []const u8) !usize {
+          for (round.results) |result| {
+              if (std.mem.eql(u8, result.peer_id, peer_id)) {
+                  return result.rank;
+              }
+          }
+          return error.PeerNotFound;
+      }

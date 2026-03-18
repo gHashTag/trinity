@@ -14,6 +14,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const issue_planner = @import("issue_planner.zig");
 const FarmTask = issue_planner.FarmTask;
+const queen_ofc = @import("queen_ofc.zig");
 
 /// Notify Telegram when a farm task starts
 pub fn notifyTaskStart(allocator: Allocator, task: FarmTask) !void {
@@ -93,70 +94,11 @@ pub fn notifyTaskComplete(allocator: Allocator, task: FarmTask, success: bool, e
     try sendNotification(allocator, message);
 }
 
-/// Send notification via Telegram Bot API
+/// Send notification via Queen OFC (unified Telegram router)
 fn sendNotification(allocator: Allocator, message: []const u8) !void {
-    const bot_token = std.posix.getenv("TELEGRAM_BOT_TOKEN") orelse return error.NoBotToken;
-    const chat_id = std.posix.getenv("TELEGRAM_CHAT_ID") orelse return error.NoChatId;
-
-    var client = std.http.Client{ .allocator = allocator };
-    defer client.deinit();
-
-    var url_buf: [512]u8 = undefined;
-    const url = std.fmt.bufPrint(&url_buf, "https://api.telegram.org/bot{s}/sendMessage", .{bot_token}) catch return error.InvalidUrl;
-
-    // Build JSON body
-    var body_buf: [8192]u8 = undefined;
-    var body_fbs = std.io.fixedBufferStream(&body_buf);
-    const body_writer = body_fbs.writer();
-
-    // Start JSON
-    body_writer.writeAll("{\"chat_id\":\"") catch return error.BodyTooLarge;
-    body_writer.writeAll(chat_id) catch return error.BodyTooLarge;
-    body_writer.writeAll("\",\"parse_mode\":\"HTML\",\"text\":\"") catch return error.BodyTooLarge;
-
-    // Escape message
-    for (message) |c| {
-        switch (c) {
-            '"' => body_writer.writeAll("\\\"") catch return error.BodyTooLarge,
-            '\\' => body_writer.writeAll("\\\\") catch return error.BodyTooLarge,
-            '\n' => body_writer.writeAll("\\n") catch return error.BodyTooLarge,
-            '<' => body_writer.writeAll("&lt;") catch return error.BodyTooLarge,
-            '>' => body_writer.writeAll("&gt;") catch return error.BodyTooLarge,
-            '&' => body_writer.writeAll("&amp;") catch return error.BodyTooLarge,
-            else => body_writer.writeByte(c) catch return error.BodyTooLarge,
-        }
-    }
-
-    body_writer.writeAll("\"}") catch return error.BodyTooLarge;
-
-    const body_written = body_fbs.getWritten();
-    const body = body_buf[0..body_written.len];
-
-    const uri = std.Uri.parse(url) catch return error.InvalidUrl;
-    var req = client.request(.POST, uri, .{
-        .extra_headers = &.{
-            .{ .name = "Content-Type", .value = "application/json" },
-        },
-        .redirect_behavior = .unhandled,
-    }) catch return error.RequestFailed;
-    defer req.deinit();
-
-    // Send request body
-    req.transfer_encoding = .{ .content_length = body.len };
-    var body_writer_req = req.sendBodyUnflushed(&.{}) catch return error.RequestFailed;
-    body_writer_req.writer.writeAll(body) catch return error.RequestFailed;
-    body_writer_req.end() catch return error.RequestFailed;
-    if (req.connection) |conn| conn.flush() catch return error.RequestFailed;
-
-    // Receive response
-    var redirect_buf: [0]u8 = .{};
-    const response = req.receiveHead(&redirect_buf) catch return error.RequestFailed;
-
-    const status_code = @intFromEnum(response.head.status);
-    if (status_code != 200) {
-        std.debug.print("\x1b[38;2;255;85;85mTelegram API error: {d}\x1b[0m\n", .{status_code});
-        return error.TelegramError;
-    }
+    // Use Queen OFC for unified Telegram routing
+    // Farm notifications go to group chat
+    try queen_ofc.send(allocator, .group, message);
 }
 
 /// Get emoji for objective type

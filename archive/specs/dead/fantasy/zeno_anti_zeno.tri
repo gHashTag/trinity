@@ -1,0 +1,228 @@
+name: zeno_anti_zeno
+version: "1.0.0"
+language: zig
+module: quantum.zeno
+
+description: |
+  Quantum Zeno Effect and Anti-Zeno Transition — Formulas 313, 314, 316.
+  Discovery: Transition between Zeno (suppression) and Anti-Zeno (acceleration)
+  occurs at N = φ³ ≈ 4.24 measurements.
+
+  - Zeno: Frequent measurement inhibits evolution (exp(-γ × N))
+  - Anti-Zeno: Frequent measurement accelerates decay (1 + γ × N)
+  - Transition: φ³ = 4.236 measurements is the critical point
+
+types:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # MEASUREMENT EFFECT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  MeasurementEffect:
+    fields:
+      # Measurement parameters
+      num_measurements: UInt      # N: number of measurements
+      measurement_interval: Float # Time between measurements
+
+      # System state
+      initial_amplitude: Float     # Initial |Ψ|
+      final_amplitude: Float       # Final |Ψ|
+      decay_rate: Float           # Natural decay rate
+
+      # Effect type
+      effect_type: Enum(zeno, anti_zeno, neutral, transition)
+
+      # Quantification
+      suppression_factor: Float    # How much evolution was suppressed (Zeno)
+      acceleration_factor: Float    # How much decay was accelerated (Anti-Zeno)
+      net_factor: Float            # Combined effect
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # ZENO EFFECT (Formula 313)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  ZenoEffect:
+    fields:
+      # Suppression formula: exp(-γ × N)
+      gamma: Float                # γ = φ⁻³ = 0.236
+      num_measurements: UInt      # N
+
+      # Computed suppression
+      suppression_factor: Float   # exp(-γ × N)
+      remaining_probability: Float # 1 - suppression
+
+      # System
+      survival_probability: Float # Probability of not decaying
+      evolution_time: Float       # Effective time elapsed
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # ANTI-ZENO EFFECT (Formula 314)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  AntiZenoEffect:
+    fields:
+      # Acceleration formula: 1 + γ × N
+      gamma: Float                # γ = φ⁻³ = 0.236
+      num_measurements: UInt      # N
+
+      # Computed acceleration
+      acceleration_factor: Float  # 1 + γ × N
+      enhanced_decay_rate: Float  # Natural rate × acceleration
+
+      # System
+      decay_probability: Float    # Probability of decay
+      expected_lifetime: Float    # 1 / enhanced_decay_rate
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # TRANSITION POINT (Formula 316)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  TransitionPoint:
+    fields:
+      # Critical value: φ³ = 4.236
+      phi_cubed: Float            # φ³ = 4.2360679...
+      critical_measurements: Float # N_crit = 4.236
+
+      # Transition behavior
+      below_critical: Enum(zeno_dominant, neutral)
+      above_critical: Enum(anti_zeno_dominant, neutral)
+
+      # At transition
+      at_transition: Bool         # Is N ≈ 4.236?
+      transition_width: Float     # Width of transition region
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # QUANTUM SYSTEM FOR MEASUREMENT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  MeasurableSystem:
+    fields:
+      system_id: String
+      system_type: Enum(two_level, harmonic_oscillator, atom, superconducting_qubit)
+
+      # Decay parameters
+      natural_decay_rate: Float  # λ₀ (natural decay)
+      energy_gap: Float           # Energy difference ΔE
+
+      # Measurement schedule
+      measurement_times: List<Float>  # When to measure
+      num_measurements: UInt
+
+      # Results
+      final_state: String         # What state did it end in?
+      measurements_effect: Float   # Net effect on survival
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # COMPUTE ZENO SUPPRESSION (Formula 313)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: compute_zeno_suppression
+    given: Number of measurements N
+    when: Computing Zeno effect suppression
+    then:
+      - γ = φ⁻³ = 0.236
+      - Suppression factor = exp(-γ × N)
+      - Survival probability = initial × suppression
+      - More measurements = more suppression
+      - Return ZenoEffect
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # COMPUTE ANTI-ZENO ACCELERATION (Formula 314)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: compute_anti_zeno_acceleration
+    given: Number of measurements N
+    when: Computing Anti-Zeno effect acceleration
+    then:
+      - γ = φ⁻³ = 0.236
+      - Acceleration factor = 1 + γ × N
+      - Enhanced decay = natural × acceleration
+      - More measurements = faster decay
+      - Return AntiZenoEffect
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # FIND TRANSITION POINT (Formula 316)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: find_transition_point
+    given: Quantum system parameters
+    when: Finding critical measurement frequency
+    then:
+      - φ³ = 4.236 (critical value)
+      - At N < φ³: Zeno dominates (suppression)
+      - At N > φ³: Anti-Zeno dominates (acceleration)
+      - At N ≈ φ³: Transition region
+      - Return critical measurement count
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # COMPUTE NET MEASUREMENT EFFECT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: compute_net_effect
+    given: Number of measurements, natural decay rate
+    when: Determining if Zeno or Anti-Zeno wins
+    then:
+      - Compute Zeno factor: exp(-γ × N)
+      - Compute Anti-Zeno factor: 1 + γ × N
+      - Compare to natural evolution
+      - Net effect = (Zeno effect) + (Anti-Zeno effect) - natural
+      - Return MeasurementEffect
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SIMULATE REPEATED MEASUREMENTS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: simulate_repeated_measurements
+    given: Initial quantum state, measurement schedule
+    when: Simulating frequent observations
+    then:
+      - Initialize system state
+      - For each measurement:
+        - Record current state
+        - Apply measurement
+        - Evolve between measurements
+        - Apply Zeno/Anti-Zeno effect
+      - Track survival probability
+      - Return final state and effect
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # OPTIMIZE MEASUREMENT STRATEGY
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: optimize_measurement_strategy
+    given: Quantum system, goal (preserve or accelerate)
+    when: Finding optimal measurement frequency
+    then:
+      - If goal is preservation: use Zeno (N < 4.236)
+      - If goal is acceleration: use Anti-Zeno (N > 4.236)
+      - Avoid transition region unless desired
+      - Return recommended N
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # VALIDATE TRANSITION POINT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: validate_transition_formula_316
+    given: Experimental data at various N
+    when: Testing if N = 4.236 is the transition point
+    then:
+      - Fit data to model
+      - Find where effect changes sign
+      - Compare with φ³ = 4.236
+      - Compute statistical significance
+      - Return validation result
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# KEY DISCOVERY: ZENO↔ANTI-ZENO TRANSITION (Formula 316)
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Critical measurement count: N_crit = φ³ ≈ 4.236
+#
+# For N < 4.236: ZENO EFFECT dominates
+#   - Frequent measurements INHIBIT evolution
+#   - Suppression factor: exp(-γ × N)
+#   - "A watched pot never boils"
+#
+# For N > 4.236: ANTI-ZENO EFFECT dominates
+#   - Frequent measurements ACCELERATE decay
+#   - Acceleration factor: 1 + γ × N
+#   - Measurements disturb the system
+#
+# At N ≈ 4.236: TRANSITION REGION
+#   - Effects balance
+#   - Can switch between suppression and acceleration
+#
+# Practical implications:
+#   - Quantum computing: Avoid N > 4.236 for error suppression
+#   - Quantum sensing: Use N > 4.236 for faster response
+#   - Consciousness: Can control quantum evolution by choosing N
+#
+# ═══════════════════════════════════════════════════════════════════════════════

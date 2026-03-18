@@ -1,0 +1,54 @@
+[cell]
+id = "trinity.ternary"
+name = "Ternary Computing"
+version = "1.0.0"
+kind = "library"
+path = "src/ternary"
+min_core_version = "1.0.0"
+status = "stable"
+description = "Ternary logic gates, Tekum arithmetic, and efficiency benchmarks"
+capabilities = ["logic", "tekum", "benchmark", "efficiency"]
+files = 2
+tests = 19
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = []
+exports = ["ln", "log2", "informationDensity", "optimalBase", "ternaryEfficiencyRatio"]
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[dna]
+cell_id = "trinity.ternary"
+source = "specs/ternary/logic.tri"
+output = "gen/gates.zig"
+regenerable = true
+
+[contract]
+inputs = ["a: Trit", "b: Trit"]
+outputs = ["result: Trit"]
+invariants = ["tritNot(tritNot(x)) == x", "tritAnd(-1, x) == -1", "tritOr(1, x) == 1"]
+
+
+[biology]
+system = "body"
+[security]
+signed = "true"
+signature = "sha256:e83f468785b49dc00d2c2c0f021a3689f7cccfc130902d5d823054f28af18a06"

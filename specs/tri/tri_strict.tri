@@ -1,0 +1,36 @@
+name: tri_strict
+version: "1.0.0"
+language: zig
+module: tri.tri_strict
+
+description: |
+  Strict Mode enforcement for VIBEE-first workflow.
+  Ensures all development goes through .tri specifications first.
+  Protects generated paths from direct editing.
+
+behaviors:
+  - name: strictEnable
+    given: Trinity repository
+    when: User runs tri strict enable
+    then: Activates strict mode by creating .trinity-strict-mode marker
+
+  - name: strictDisable
+    given: Active strict mode
+    when: User runs tri strict disable
+    then: Deactivates strict mode by removing marker file
+
+  - name: strictStatus
+    given: Repository state
+    when: User runs tri strict status
+    then: Shows current mode and enforcement rules
+
+  - name: strictCheck
+    given: Pending file changes
+    when: User runs tri strict check
+    then: Validates VIBEE-first compliance on all changed files
+
+export_functions:
+  - strictEnable
+  - strictDisable
+  - strictStatus
+  - strictCheck

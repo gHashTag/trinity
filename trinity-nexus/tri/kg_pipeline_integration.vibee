@@ -1,0 +1,41 @@
+name: kg_pipeline_integration
+version: "1.0.0"
+language: zig
+module: kg_pipeline
+
+description: >
+  Wire triples_parser.extractTriples() into igla_hybrid_chat respond()
+  pipeline. After LLM response passes quality filters, auto-extract triples
+  and store in ChatKnowledgeGraph via addFact(). Confidence threshold filtering.
+  Tech Tree node SYM-004 (Symbolic branch, unlocks SYM-005).
+
+constants:
+  MIN_TRIPLE_CONFIDENCE: 0.6
+  MAX_TRIPLES_PER_RESPONSE: 16
+
+types:
+  PipelineStats:
+    fields:
+      responses_processed: Int
+      triples_extracted: Int
+      triples_stored: Int
+      triples_filtered: Int
+
+behaviors:
+  - name: extractAndStoreTriples
+    given: LLM response text and a mutable ChatKnowledgeGraph reference
+    when: extractTriples() returns triples with confidence above threshold
+    then: Each qualifying triple is stored via addFact(subject, predicate, object)
+
+  - name: filterByConfidence
+    given: An ExtractedTriple with confidence score
+    when: Confidence is below MIN_TRIPLE_CONFIDENCE threshold
+    then: Triple is skipped (not stored in KG)
+
+test_cases:
+  - input: "Paris is the capital of France"
+    expected: "1 triple stored in KG as (paris, is_capital_of, france)"
+  - input: "Hi"
+    expected: "0 triples extracted, nothing stored"
+  - input: "Python is a programming language. Dogs are mammals."
+    expected: "2 triples stored in KG"

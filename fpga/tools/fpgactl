@@ -1,0 +1,320 @@
+#!/bin/bash
+# ============================================================================
+# TRINITY FPGA CONTROL CLI — Cycle 123
+# Simple interface to FPGA Monitor Daemon
+# phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DAEMON="$SCRIPT_DIR/fpga_monitor_daemon.sh"
+PIPE="/tmp/fpga_control_pipe"
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+# ============================================================================
+# HELP
+# ============================================================================
+
+show_help() {
+    cat << EOF
+${CYAN}TRINITY FPGA CONTROL${NC} — Cycle 123
+phi^2 + 1/phi^2 = 3 = TRINITY
+
+${GREEN}USAGE:${NC}
+    fpgactl <command> [options]
+
+${GREEN}MONITOR COMMANDS:${NC}
+    fpgactl monitor start      Start FPGA monitor daemon
+    fpgactl monitor stop       Stop FPGA monitor daemon
+    fpgactl monitor restart    Restart FPGA monitor daemon
+    fpgactl monitor status     Show daemon status
+    fpgactl monitor logs       Show recent logs
+
+${GREEN}FLASH COMMANDS:${NC}
+    fpgactl flash separable    Flash quantum_bridge_separable.bit
+    fpgactl flash violation    Flash quantum_bridge_violation.bit
+    fpgactl flash zero         Flash quantum_bridge_zero.bit
+    fpgactl flash negative     Flash quantum_bridge_negative.bit
+    fpgactl flash <file>       Flash custom bitstream file
+
+${GREEN}STATUS COMMANDS:${NC}
+    fpgactl status             Show FPGA and daemon status
+    fpgactl health             Run health check on JTAG cable
+    fpgactl info               Show bitstream info
+
+${GREEN}QUANTUM BRIDGE:${NC}
+    fpgactl quantum            Run quantum bridge runner (CGLMP test)
+
+${GREEN}EXAMPLES:${NC}
+    fpgactl monitor start
+    fpgactl flash violation
+    fpgactl status
+
+${YELLOW}PIPE DIRECT ACCESS:${NC}
+    echo 'flash:violation' > $PIPE
+    echo 'status' > $PIPE
+    echo 'health' > $PIPE
+
+EOF
+}
+
+# ============================================================================
+# SEND COMMAND TO DAEMON
+# ============================================================================
+
+send_command() {
+    local cmd="$1"
+    if [ -p "$PIPE" ]; then
+        echo "$cmd" > "$PIPE"
+        sleep 0.5
+    else
+        echo -e "${RED}Error: Daemon not running (pipe not found)${NC}"
+        echo "Start daemon: fpgactl monitor start"
+        return 1
+    fi
+}
+
+# ============================================================================
+# FLASH COMMAND
+# ============================================================================
+
+cmd_flash() {
+    local name="$1"
+
+    # Check if daemon is running first
+    if [ -p "$PIPE" ]; then
+        # Use daemon
+        case "$name" in
+            separable|violation|zero|negative)
+                echo -e "${CYAN}Flashing: quantum_bridge_${name}.bit${NC}"
+                send_command "flash:$name"
+                ;;
+            *)
+                # Direct file
+                if [ -f "$name" ]; then
+                    echo -e "${CYAN}Flashing: $name${NC}"
+                    "$SCRIPT_DIR/flash_no_sudo.sh" "$name"
+                else
+                    echo -e "${RED}Error: Bitstream not found: $name${NC}"
+                    return 1
+                fi
+                ;;
+        esac
+    else
+        # Daemon not running, use direct flash
+        echo -e "${YELLOW}Daemon not running, using direct flash${NC}"
+        case "$name" in
+            separable|violation|zero|negative)
+                local bitfile="$SCRIPT_DIR/../openxc7-synth/quantum_bridge_${name}.bit"
+                ;;
+            *)
+                local bitfile="$name"
+                ;;
+        esac
+
+        if [ -f "$bitfile" ]; then
+            "$SCRIPT_DIR/flash_no_sudo.sh" "$bitfile"
+        else
+            echo -e "${RED}Error: Bitstream not found: $bitfile${NC}"
+            return 1
+        fi
+    fi
+}
+
+# ============================================================================
+# STATUS COMMAND
+# ============================================================================
+
+cmd_status() {
+    echo -e "${CYAN}=== FPGA STATUS ===${NC}"
+    echo ""
+
+    # Daemon status
+    echo -e "${BLUE}Daemon:${NC}"
+    "$DAEMON" status 2>/dev/null || echo "  stopped"
+    echo ""
+
+    # JTAG Cable
+    echo -e "${BLUE}JTAG Cable:${NC}"
+    local pid
+    pid=$(python3 -c "import usb.core; dev = usb.core.find(idVendor=0x03fd); print(hex(dev.idProduct))" 2>/dev/null || echo "none")
+    if [ "$pid" = "none" ]; then
+        echo -e "  ${RED}✗ Not found${NC}"
+    elif [ "$pid" = "0x13" ]; then
+        echo -e "  ${YELLOW}⚠ Not initialized (PID 0x0013)${NC}"
+    else
+        echo -e "  ${GREEN}✓ OK (PID $pid)${NC}"
+    fi
+    echo ""
+
+    # Current state
+    local state_file="$HOME/.trinity/fpga/current_state.json"
+    if [ -f "$state_file" ]; then
+        echo -e "${BLUE}Current State:${NC}"
+        cat "$state_file" | python3 -m json.tool 2>/dev/null || cat "$state_file"
+    fi
+}
+
+# ============================================================================
+# HEALTH CHECK
+# ============================================================================
+
+cmd_health() {
+    echo -e "${CYAN}=== FPGA HEALTH CHECK ===${NC}"
+    echo ""
+
+    # Cable check
+    local pid
+    pid=$(python3 -c "import usb.core; dev = usb.core.find(idVendor=0x03fd); print(hex(dev.idProduct))" 2>/dev/null || echo "none")
+
+    echo -n "Cable: "
+    if [ "$pid" = "none" ]; then
+        echo -e "${RED}NOT FOUND${NC}"
+        return 1
+    elif [ "$pid" = "0x13" ]; then
+        echo -e "${YELLOW}NOT INITIALIZED (needs fxload)${NC}"
+        return 2
+    else
+        echo -e "${GREEN}OK (PID $pid)${NC}"
+    fi
+
+    # Bitstreams check
+    echo ""
+    echo -n "Bitstreams: "
+    local bit_dir="$SCRIPT_DIR/../openxc7-synth"
+    local count=$(ls "$bit_dir"/quantum_bridge_*.bit 2>/dev/null | wc -l)
+    if [ "$count" -ge 4 ]; then
+        echo -e "${GREEN}OK ($count bitstreams)${NC}"
+    else
+        echo -e "${YELLOW}WARNING: Only $count bitstreams found${NC}"
+    fi
+}
+
+# ============================================================================
+# INFO COMMAND
+# ============================================================================
+
+cmd_info() {
+    local bit_dir="$SCRIPT_DIR/../openxc7-synth"
+
+    echo -e "${CYAN}=== QUANTUM BRIDGE BITSTREAMS ===${NC}"
+    echo ""
+
+    printf "%-20s %-10s %s\n" "Bitstream" "State" "Freq"
+    echo "----------------------------------------"
+
+    for file in "$bit_dir"/quantum_bridge_*.bit; do
+        if [ -f "$file" ]; then
+            local name=$(basename "$file" .bit)
+            local state="${name#quantum_bridge_}"
+            local freq=""
+            case "$state" in
+                separable) freq="~3 Hz" ;;
+                violation) freq="~6 Hz" ;;
+                zero) freq="~0.4 Hz" ;;
+                negative) freq="steady ON" ;;
+            esac
+            local size=$(ls -lh "$file" | awk '{print $5}')
+            printf "%-20s %-10s %s (%s)\n" "$name" "($state)" "$freq" "$size"
+        fi
+    done
+}
+
+# ============================================================================
+# MONITOR COMMANDS
+# ============================================================================
+
+cmd_monitor() {
+    local action="$1"
+    case "$action" in
+        start)
+            echo -e "${CYAN}Starting FPGA monitor daemon...${NC}"
+            "$DAEMON" start
+            ;;
+        stop)
+            echo -e "${CYAN}Stopping FPGA monitor daemon...${NC}"
+            "$DAEMON" stop
+            ;;
+        restart)
+            echo -e "${CYAN}Restarting FPGA monitor daemon...${NC}"
+            "$DAEMON" restart
+            ;;
+        status)
+            "$DAEMON" status
+            ;;
+        logs)
+            echo -e "${CYAN}=== FPGA Monitor Logs ===${NC}"
+            echo ""
+            "$DAEMON" logs
+            ;;
+        *)
+            echo -e "${RED}Unknown monitor command: $action${NC}"
+            echo "Usage: fpgactl monitor {start|stop|restart|status|logs}"
+            return 1
+            ;;
+    esac
+}
+
+# ============================================================================
+# QUANTUM BRIDGE RUNNER
+# ============================================================================
+
+cmd_quantum() {
+    local runner="$SCRIPT_DIR/../../zig-out/bin/quantum-bridge-runner"
+    if [ -f "$runner" ]; then
+        echo -e "${CYAN}Running Quantum Bridge...${NC}"
+        "$runner"
+    else
+        echo -e "${YELLOW}Quantum bridge runner not built${NC}"
+        echo "Build it: zig build"
+        return 1
+    fi
+}
+
+# ============================================================================
+# ENTRY POINT
+# ============================================================================
+
+case "${1:-}" in
+    help|--help|-h|"")
+        show_help
+        ;;
+    monitor)
+        if [ -z "${2:-}" ]; then
+            echo "Usage: fpgactl monitor {start|stop|restart|status|logs}"
+            exit 1
+        fi
+        cmd_monitor "$2"
+        ;;
+    flash)
+        if [ -z "${2:-}" ]; then
+            echo "Usage: fpgactl flash <separable|violation|zero|negative|file>"
+            exit 1
+        fi
+        cmd_flash "$2"
+        ;;
+    status)
+        cmd_status
+        ;;
+    health)
+        cmd_health
+        ;;
+    info)
+        cmd_info
+        ;;
+    quantum)
+        cmd_quantum
+        ;;
+    *)
+        echo -e "${RED}Unknown command: $1${NC}"
+        echo ""
+        show_help
+        exit 1
+        ;;
+esac

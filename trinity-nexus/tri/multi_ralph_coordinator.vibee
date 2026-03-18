@@ -1,0 +1,132 @@
+name: multi_ralph_coordinator
+version: "1.0.0"
+language: zig
+module: agent_mu_multi_ralph
+
+description: Multi-Ralph coordination protocol for distributed autonomous development agents
+
+types:
+  NodeStatus:
+    fields:
+      state: String
+      last_heartbeat: Int64
+      load: Float
+
+  RalphNode:
+    fields:
+      id: String
+      address: String
+      port: UInt16
+      status: NodeStatus
+      term: UInt64
+      voted_for: Option<String>
+
+  CoordinatorConfig:
+    fields:
+      node_id: String
+      listen_address: String
+      listen_port: UInt16
+      heartbeat_interval_ms: UInt64
+      election_timeout_ms: UInt64
+      max_nodes: UInt8
+
+behaviors:
+  - name: initialize_coordinator
+    given: A coordinator configuration
+    when: The coordinator is started
+    then: Initialize the node with the given ID and begin listening for connections
+
+  - name: discover_peer_nodes
+    given: A network address range
+    when: The coordinator scans for peers
+    then: Return a list of available Ralph nodes
+
+  - name: send_heartbeat
+    given: A target node ID
+    when: The heartbeat interval elapses
+    then: Send a heartbeat message to the target node
+
+  - name: receive_heartbeat
+    given: A heartbeat message from a peer
+    when: A heartbeat is received
+    then: Update the node's last_heartbeat timestamp and status
+
+  - name: start_election
+    given: No leader is detected
+    when: The election timeout expires
+    then: Increment term, vote for self, and request votes from peers
+
+  - name: request_vote
+    given: A peer node
+    when: Starting an election
+    then: Send a RequestVote RPC with term and candidate ID
+
+  - name: handle_vote_request
+    given: A RequestVote RPC from a candidate
+    when: A vote is requested
+    then: Grant vote if the candidate's term is >= current term and we haven't voted yet
+
+  - name: become_leader
+    given: Majority of votes received
+    when: Election succeeds
+    then: Transition to leader state and begin sending heartbeats
+
+  - name: become_follower
+    given: A higher term is discovered
+    when: A leader with higher term is detected
+    then: Update term and transition to follower state
+
+  - name: broadcast_task
+    given: A task specification
+    when: Leader distributes work
+    then: Send task to the least-loaded node
+
+  - name: receive_task
+    given: A task from the leader
+    when: A follower receives a task
+    then: Add task to local queue and acknowledge receipt
+
+  - name: report_task_completion
+    given: A completed task ID
+    when: A task is finished
+    then: Send completion report to leader
+
+  - name: sync_state
+    given: A state snapshot
+    when: Leader requests synchronization
+    then: Send local state to leader for consensus
+
+  - name: get_cluster_status
+    given: No parameters
+    when: Status is requested
+    then: Return cluster state including leader, nodes, and health
+
+  - name: handle_node_failure
+    given: A node ID that has timed out
+    when: Heartbeat timeout expires
+    then: Mark node as offline and redistribute its tasks
+
+test_cases:
+  - name: single_node_becomes_leader
+    description: A single node should become leader immediately
+    input:
+      nodes: 1
+    expected:
+      leader_id: "ralph-0"
+      state: "LEADER"
+
+  - name: three_node_election
+    description: Three nodes should elect a leader via majority vote
+    input:
+      nodes: 3
+    expected:
+      leader_exists: true
+      term: 1
+
+  - name: heartbeat_timeout_detection
+    description: Leader should detect follower failure
+    input:
+      nodes: 3
+      failed_node: "ralph-1"
+    expected:
+      offline_nodes: ["ralph-1"]

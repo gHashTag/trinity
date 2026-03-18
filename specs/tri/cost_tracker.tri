@@ -1,0 +1,89 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE Specification — cost_tracker
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: cost_tracker
+version: "1.0.0"
+language: zig
+module: cost_tracker
+
+description: |
+  Cost Tracker v5.1 — per-issue token and USD tracking for Golden Chain agents.
+  Accumulates input/output token counts per AgentRole (planner/coder/reviewer/
+  tester/integrator), estimates USD cost using hardcoded per-model rates, and
+  writes cost_summary.json to the handoff directory.
+  Models: glm-5, claude-sonnet, claude-opus, claude-haiku (rates as of 2026-03).
+
+types:
+  ModelRates:
+    fields:
+      input_per_1k: "f64"
+      output_per_1k: "f64"
+
+  CostEntry:
+    fields:
+      role: "AgentRole"
+      tokens_in: "u64"
+      tokens_out: "u64"
+      model: "[64]u8"
+      model_len: "usize"
+      usd: "f64"
+
+  CostTracker:
+    fields:
+      issue_number: "u32"
+      entries: "[5]CostEntry"
+      started_at: "i64"
+
+behaviors:
+  getRates:
+    given: "model name string"
+    when: "rate lookup requested"
+    then: "returns ModelRates for glm-5/claude-sonnet/claude-opus/claude-haiku; defaults to cheapest for unknown"
+
+  CostEntry_init:
+    given: "AgentRole"
+    when: "new entry created"
+    then: "returns zero-initialized CostEntry for given role"
+
+  CostEntry_setModel:
+    given: "CostEntry and model name string"
+    when: "model assignment requested"
+    then: "copies model name into fixed [64]u8 buffer with len tracking"
+
+  CostEntry_addTokens:
+    given: "tokens_in and tokens_out counts"
+    when: "token accumulation requested"
+    then: "adds to running totals and recalculates USD cost using model rates"
+
+  CostTracker_init:
+    given: "issue_number u32"
+    when: "tracker created"
+    then: "initializes one CostEntry per AgentRole, records start timestamp"
+
+  CostTracker_addTokens:
+    given: "role, model name, tokens_in, tokens_out"
+    when: "API response token counts received"
+    then: "looks up entry by role, sets model, accumulates token counts"
+
+  CostTracker_totalUSD:
+    given: "CostTracker with accumulated entries"
+    when: "total cost requested"
+    then: "sums usd across all five role entries"
+
+  CostTracker_writeSummary:
+    given: "CostTracker and handoff directory"
+    when: "summary persistence requested"
+    then: "writes cost_summary.json to .trinity/handoff/issue-{N}/ with all role breakdowns"
+
+  CostTracker_printTable:
+    given: "CostTracker with non-zero entries"
+    when: "cost display requested"
+    then: "prints ANSI-colored table of role/model/tokens/USD to stdout; skips zero-token roles"
+
+  readCostSummary:
+    given: "allocator and issue_number"
+    when: "cost summary load requested"
+    then: "reads cost_summary.json from handoff dir, returns CostTracker; null if file missing"
