@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity Hardware Deploy — tri hardware single/multi/status/stop-all
 // Migrated from scripts/hardware-deploy.sh, fpga_benchmark_compare.sh, validate_verilog.sh
 //

@@ -4,7 +4,13 @@ import QueenUILib
 @main
 struct QueenApp: App {
     @StateObject private var watcher = StateWatcher()
+    @StateObject private var server = ControlServer.shared
     @AppStorage("appearanceMode") private var appearanceModeRaw: String = AppearanceMode.dark.rawValue
+
+    private var isPuppetMode: Bool {
+        ProcessInfo.processInfo.environment["PUPPET_MODE"] != nil ||
+        ProcessInfo.processInfo.arguments.contains("--puppet")
+    }
 
     private var resolvedScheme: ColorScheme? {
         switch AppearanceMode(rawValue: appearanceModeRaw) ?? .dark {
@@ -16,10 +22,11 @@ struct QueenApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainView()
-                .environmentObject(watcher)
-                .environmentObject(AccessibilityManager.shared)
-                .preferredColorScheme(resolvedScheme)
+            content
+                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didFinishLaunchingNotification)) { _ in
+                    // Start server after app finishes launching
+                    server.startIfPuppetMode()
+                }
         }
         .windowStyle(.titleBar)
         .commands {
@@ -92,6 +99,27 @@ struct QueenApp: App {
                 }
                 .keyboardShortcut("]", modifiers: .command)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var content: some View {
+        ZStack {
+            MainView()
+                .environmentObject(watcher)
+                .environmentObject(AccessibilityManager.shared)
+                .environmentObject(server)
+                .preferredColorScheme(resolvedScheme)
+
+            // Show automation overlay only in puppet mode
+            if isPuppetMode {
+                AutomationOverlay()
+                    .allowsHitTesting(false)
+            }
+        }
+        .onAppear {
+            // Also try onAppear as fallback
+            server.startIfPuppetMode()
         }
     }
 }

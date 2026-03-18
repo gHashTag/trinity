@@ -14,12 +14,12 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Pre-built binaries — cross-compiled locally for x86_64-linux
-# SEC-11: Verify integrity with sha256 checksums
-COPY prebuilt/train-bin /usr/local/bin/hslm-train
-COPY prebuilt/entrypoint-bin /usr/local/bin/hslm-entrypoint
+# CACHE-BUST v2: new paths to force Railway rebuild
+COPY prebuilt/v2/train-bin /usr/local/bin/hslm-train
+COPY prebuilt/v2/entrypoint-bin /usr/local/bin/hslm-entrypoint
 
-RUN echo "d7d358e80071d0d5da102492759f913b5ce25914748afa660192ba233b448e20  /usr/local/bin/hslm-train" | sha256sum -c - \
-    && echo "5521384a8089f3143cbf2204f304ee8887f0f16dc43d7667ff9f00907db85140  /usr/local/bin/hslm-entrypoint" | sha256sum -c - \
+RUN echo "dadd1b5b28380dbc22619105c21b9543da81fd95d3d39e7f1ab01f43abe3fb53  /usr/local/bin/hslm-train" | sha256sum -c - \
+    && echo "37c0c840f402b83879589859d88b6e578a5eac1490a4cde75688576b878793af  /usr/local/bin/hslm-entrypoint" | sha256sum -c - \
     && chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
 # /data is Railway persistent volume mount point
@@ -30,9 +30,12 @@ WORKDIR /data
 
 ENTRYPOINT ["/usr/local/bin/hslm-entrypoint"]
 
-LABEL version="2.1.0" \
+LABEL version="2.2.0" \
       description="Trinity HSLM Training — ternary language model on TinyStories" \
       trinity.identity="phi^2 + 1/phi^2 = 3" \
       trinity.service="ai-training" \
       trinity.purpose="nlp-research" \
-      trinity.not-mining="legitimate-ai-training"
+      trinity.not-mining="legitimate-ai-training" \
+      build.timestamp="2026-03-19T12:30:00Z" \
+      build.arch="x86_64-linux" \
+      cache.bust="v2-path-change-2026-03-19"

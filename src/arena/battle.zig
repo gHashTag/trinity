@@ -86,6 +86,7 @@ pub const Arena = struct {
             .fighter_b = fighter_b_name,
             .status = .running,
             .created_at = std.time.timestamp(),
+            .allocator = self.allocator,
         };
         self.next_battle_id += 1;
 
@@ -104,6 +105,9 @@ pub const Arena = struct {
         };
         battle.response_a = result_a.response;
         battle.latency_a_ms = result_a.latency_ms;
+        // Cleanup result_a allocations (response is now owned by battle)
+        self.allocator.free(result_a.model);
+        if (result_a.error_msg) |em| self.allocator.free(em);
 
         // Run fighter B
         const result_b = external_api.complete(
@@ -120,6 +124,9 @@ pub const Arena = struct {
         };
         battle.response_b = result_b.response;
         battle.latency_b_ms = result_b.latency_ms;
+        // Cleanup result_b allocations
+        self.allocator.free(result_b.model);
+        if (result_b.error_msg) |em| self.allocator.free(em);
 
         battle.status = .complete;
         battle.completed_at = std.time.timestamp();

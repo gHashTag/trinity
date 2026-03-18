@@ -20,7 +20,7 @@ type = "ui"
 
 [contributes]
 commands = ["launch", "build"]
-tri_subcommands = ["queen start", "ui"]
+tri_subcommands = ["ui"]
 events = ["on_ui_ready"]
 
 [dependencies]

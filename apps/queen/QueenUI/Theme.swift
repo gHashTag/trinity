@@ -174,7 +174,7 @@ struct TrinityTheme {
 
     /// Returns reduced motion setting (respects system preference if not manually overridden)
     static var reduceMotion: Bool {
-        reduceMotionEnabled || NSAccessibility.isReduceMotionEnabled
+        reduceMotionEnabled || NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
 
     /// Returns appropriate animation based on reduce motion setting

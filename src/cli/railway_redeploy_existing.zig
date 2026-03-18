@@ -32,7 +32,7 @@ pub fn main() !void {
     {
         const result = try std.process.Child.run(.{
             .allocator = allocator,
-            .argv = &.{"curl", "-s", "-X", "POST", "-H", auth_header, "-H", "Content-Type: application/json", "-d", image_query, "https://backboard.railway.app/graphql/v2"},
+            .argv = &.{ "curl", "-s", "-X", "POST", "-H", auth_header, "-H", "Content-Type: application/json", "-d", image_query, "https://backboard.railway.app/graphql/v2" },
         });
         defer allocator.free(result.stderr);
         defer allocator.free(result.stdout);
@@ -45,12 +45,12 @@ pub fn main() !void {
     // Get service name for logs
     const deploy_query = std.fmt.allocPrint(allocator,
         \\{{"query": "mutation($projectId: String!, $serviceId: String!) {{ deploymentCreate(projectId: $projectId, serviceId: $serviceId) {{ id status }} }}", "variables": {{"projectId": "{s}", "serviceId": "{s}"}}}}
-    , .{project_id, service_id}) catch return error.OutOfMemory;
+    , .{ project_id, service_id }) catch return error.OutOfMemory;
     defer allocator.free(deploy_query);
 
     const result = try std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &.{"curl", "-s", "-X", "POST", "-H", auth_header, "-H", "Content-Type: application/json", "-d", deploy_query, "https://backboard.railway.app/graphql/v2"},
+        .argv = &.{ "curl", "-s", "-X", "POST", "-H", auth_header, "-H", "Content-Type: application/json", "-d", deploy_query, "https://backboard.railway.app/graphql/v2" },
     });
     defer allocator.free(result.stderr);
 

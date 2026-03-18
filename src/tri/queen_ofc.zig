@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN OFC (Orbitofrontal Cortex) — Unified Telegram Router
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -11,6 +12,9 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const qt = @import("queen_types.zig");
+
+// Import Locus Coeruleus for ArousalLevel
+const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // CHAT ROUTING — Where messages go
@@ -76,13 +80,28 @@ pub const Mood = enum {
     }
 };
 
-/// Infer mood from system state
+/// Infer mood from system state (context-aware)
 pub fn inferMood(build_ok: bool, ouroboros_score: f32, ppl_record: bool) Mood {
     if (!build_ok) return .alarm;
     if (ppl_record) return .euphoria;
     if (ouroboros_score < 40) return .alarm;
     if (ouroboros_score < 70) return .alert;
     return .calm;
+}
+
+/// Get mood label that explains actual state (human-readable)
+pub fn moodLabelWithExplanation(mood: Mood, farm_active: u8, farm_total: u8) []const u8 {
+    return switch (mood) {
+        .calm => if (farm_active > 0)
+            "Running smoothly"
+        else if (farm_total > 0)
+            "Farm idle"
+        else
+            "System normal",
+        .alert => "Needs attention",
+        .alarm => "Critical issue",
+        .euphoria => "Great progress!",
+    };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -109,7 +128,7 @@ pub const Report = struct {
     }
 };
 
-/// Format status report for Telegram
+/// Format status report for Telegram (human-readable)
 pub fn formatStatusReport(
     allocator: Allocator,
     build_ok: bool,
@@ -117,48 +136,108 @@ pub fn formatStatusReport(
     farm_services: u8,
     best_ppl: f32,
 ) ![]const u8 {
-    const mood = inferMood(build_ok, ouroboros_score, false);
+    _ = ouroboros_score; // Not used in simplified version
+    return formatStatusReportWithArousal(
+        allocator,
+        build_ok,
+        0.0, // ouroboros_score placeholder
+        farm_services,
+        best_ppl,
+        locus_coeruleus.ArousalLevel.normal,
+    );
+}
+
+/// Format status report with arousal-aware tone
+pub fn formatStatusReportWithArousal(
+    allocator: Allocator,
+    build_ok: bool,
+    ouroboros_score: f32,
+    farm_services: u8,
+    best_ppl: f32,
+    arousal: locus_coeruleus.ArousalLevel,
+) ![]const u8 {
+    _ = ouroboros_score; // Use mood inference for now
 
     // Build report inline (no allocator needed for static buffer)
-    var buf: [1024]u8 = undefined;
+    var buf: [2048]u8 = undefined;
     var offset: usize = 0;
 
-    // Header
-    const header = std.fmt.bufPrint(
-        buf[offset..],
-        "{s} Queen {s} — {s}\n\n",
-        .{ mood.emoji(), mood.label(), qt.E_CROWN },
-    ) catch return error.BufferTooSmall;
-    offset += header.len;
+    // Header with arousal-based tone
+    const header = getArousalHeader(arousal);
+    const header_len = @min(header.len, buf.len);
+    @memcpy(buf[0..header_len], header);
+    offset = header_len;
 
     // Build status
     const build_line = std.fmt.bufPrint(
         buf[offset..],
-        "{s} Build: {s}\n",
+        "\n{s} Build: {s}",
         .{ if (build_ok) qt.E_CHECK else qt.E_CROSS, if (build_ok) "OK" else "FAIL" },
     ) catch return error.BufferTooSmall;
     offset += build_line.len;
 
-    // Ouroboros
-    const ouro_line = std.fmt.bufPrint(
-        buf[offset..],
-        "{s} Ouroboros: {d:.1}\n",
-        .{ qt.E_CYCLE, ouroboros_score },
-    ) catch return error.BufferTooSmall;
-    offset += ouro_line.len;
-
-    // Farm
+    // Farm (human-readable)
     const farm_line = std.fmt.bufPrint(
         buf[offset..],
-        "{s} Farm: {d} srv, PPL {d:.1}\n",
-        .{ qt.E_DNA, farm_services, best_ppl },
+        "\n{s} {s}",
+        .{ qt.E_DNA, formatFarmStatusHuman(farm_services, best_ppl) },
     ) catch return error.BufferTooSmall;
     offset += farm_line.len;
+
+    // Add action guidance based on arousal
+    const guidance = getArousalGuidance(arousal);
+    if (guidance.len > 0) {
+        const guidance_line = std.fmt.bufPrint(
+            buf[offset..],
+            "\n\n{s}",
+            .{guidance},
+        ) catch return error.BufferTooSmall;
+        offset += guidance_line.len;
+    }
 
     // Allocate and copy
     const result = try allocator.alloc(u8, offset);
     @memcpy(result, buf[0..offset]);
     return result;
+}
+
+/// Get header based on arousal level
+fn getArousalHeader(arousal: locus_coeruleus.ArousalLevel) []const u8 {
+    return switch (arousal) {
+        .emergency => "\xf0\x9f\x94\xa5" ++ " CRITICAL - IMMEDIATE ACTION REQUIRED\n\n", // 🔥
+        .alarm => "\xf0\x9f\x9a\xa8" ++ " ALERT - Needs attention\n\n", // 🚨
+        .alert => "\xe2\x9a\xa0\xef\xb8\x8f" ++ " Warning - Check needed\n\n", // ⚠️
+        .normal => "\xf0\x9f\xa7\xa0" ++ " Queen Status Briefing\n\n", // 🧠
+        .idle => "\xe2\x8f\xb1" ++ " Queen Status Update\n\n", // ⏱
+        .sleep => "\xf0\x9f\x8c\x99" ++ " Queen Dormant\n\n", // 🌙
+    };
+}
+
+/// Get action guidance based on arousal
+fn getArousalGuidance(arousal: locus_coeruleus.ArousalLevel) []const u8 {
+    return switch (arousal) {
+        .emergency => "\xe2\x9d\x8c" ++ " Critical failure detected. Manual intervention required.", // ❌
+        .alarm => "\xf0\x9f\x94\xa7" ++ " Multiple issues detected. Auto-recovery in progress.", // 🔧
+        .alert => "\xf0\x9f\x94\x8d" ++ " Some issues detected. Monitoring.", // 🔍
+        else => "", // No guidance needed
+    };
+}
+
+/// Format farm status in human-readable way
+fn formatFarmStatusHuman(services: u8, ppl: f32) []const u8 {
+    if (services == 0) {
+        if (ppl < 999.0) {
+            return "Farm idle. Last training complete.";
+        }
+        return "Farm offline. No workers running.";
+    }
+    if (ppl < 3.0) {
+        return "Training running well! Excellent PPL.";
+    }
+    if (ppl < 10.0) {
+        return "Training in progress.";
+    }
+    return "Training running.";
 }
 
 /// Format alert for Telegram (urgent notification)
@@ -335,6 +414,89 @@ fn buildBody(buf: []u8, chat_id: []const u8, text: []const u8) ![]const u8 {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// REWARD PREDICTION — Orbitofrontal Cortex core function
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Reward prediction model with adaptive learning rate
+pub const RewardPrediction = struct {
+    /// Expected reward value (0-100)
+    expected: f32 = 50.0,
+    /// Learning rate for prediction updates (0-1)
+    learning_rate: f32 = 0.1,
+    /// Confidence in prediction (0-1)
+    confidence: f32 = 0.5,
+    /// Total number of predictions made
+    prediction_count: u32 = 0,
+    /// Cumulative prediction error
+    total_error: f32 = 0.0,
+
+    /// Initialize a new reward prediction model
+    pub fn init(initial_expected: f32) RewardPrediction {
+        return .{
+            .expected = std.math.clamp(initial_expected, 0.0, 100.0),
+        };
+    }
+
+    /// Predict reward for a given action/state
+    pub fn predictReward(self: *const RewardPrediction) f32 {
+        return self.expected;
+    }
+
+    /// Compare expected vs actual reward, return prediction error
+    pub fn compareExpectedVsActual(self: *const RewardPrediction, actual: f32) PredictionError {
+        const error_val = actual - self.expected;
+        const abs_error = if (error_val < 0) -error_val else error_val;
+
+        return .{
+            .expected = self.expected,
+            .actual = actual,
+            .error_value = error_val,
+            .absolute_error = abs_error,
+            .is_accurate = abs_error < 10.0, // Within 10% = accurate
+        };
+    }
+
+    /// Update prediction model based on actual reward
+    pub fn updatePredictionModel(self: *RewardPrediction, actual: f32) void {
+        const error_val = actual - self.expected;
+
+        // Update expected value using learning rate
+        self.expected += self.learning_rate * error_val;
+        self.expected = std.math.clamp(self.expected, 0.0, 100.0);
+
+        // Update confidence based on accuracy
+        const abs_error = if (error_val < 0) -error_val else error_val;
+        if (abs_error < 10.0) {
+            // Increase confidence on accurate predictions
+            self.confidence += 0.05 * (1.0 - self.confidence);
+        } else {
+            // Decrease confidence on inaccurate predictions
+            self.confidence *= 0.9;
+        }
+        self.confidence = std.math.clamp(self.confidence, 0.0, 1.0);
+
+        // Track statistics
+        self.prediction_count += 1;
+        self.total_error += abs_error;
+    }
+
+    /// Get mean absolute error across all predictions
+    pub fn meanAbsoluteError(self: *const RewardPrediction) f32 {
+        if (self.prediction_count == 0) return 0.0;
+        return self.total_error / @as(f32, @floatFromInt(self.prediction_count));
+    }
+};
+
+/// Result of comparing expected vs actual reward
+pub const PredictionError = struct {
+    expected: f32,
+    actual: f32,
+    error_value: f32, // signed error (actual - expected)
+    absolute_error: f32,
+    is_accurate: bool,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CELL HEALTH
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -382,7 +544,9 @@ test "ofc — formatStatusReport" {
     defer std.testing.allocator.free(report);
 
     try std.testing.expect(report.len > 0);
-    try std.testing.expect(std.mem.indexOf(u8, report, "CALM") != null);
+    // New format uses human-readable messages like "Training in progress" instead of "CALM"
+    try std.testing.expect(std.mem.indexOf(u8, report, "Training") != null or
+        std.mem.indexOf(u8, report, "smoothly") != null);
 }
 
 test "ofc — formatAlert" {
@@ -414,4 +578,129 @@ test "ofc — buildBody JSON escape" {
     const body = try buildBody(&buf, "123", "hello\"world");
     try std.testing.expect(std.mem.indexOf(u8, body, "\\\"") != null);
     try std.testing.expect(std.mem.indexOf(u8, body, "chat_id") != null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REWARD PREDICTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ofc — RewardPrediction init" {
+    const rp = RewardPrediction.init(75.0);
+    try std.testing.expectEqual(75.0, rp.expected);
+    try std.testing.expectEqual(0.1, rp.learning_rate);
+    try std.testing.expectEqual(0, rp.prediction_count);
+}
+
+test "ofc — RewardPrediction init clamps to 100" {
+    const rp = RewardPrediction.init(150.0);
+    try std.testing.expectEqual(100.0, rp.expected);
+}
+
+test "ofc — RewardPrediction init clamps to 0" {
+    const rp = RewardPrediction.init(-50.0);
+    try std.testing.expectEqual(0.0, rp.expected);
+}
+
+test "ofc — predictReward returns expected value" {
+    var rp = RewardPrediction.init(42.0);
+    const prediction = rp.predictReward();
+    try std.testing.expectEqual(42.0, prediction);
+}
+
+test "ofc — compareExpectedVsActual positive error" {
+    var rp = RewardPrediction.init(50.0);
+    const result = rp.compareExpectedVsActual(70.0);
+
+    try std.testing.expectEqual(50.0, result.expected);
+    try std.testing.expectEqual(70.0, result.actual);
+    try std.testing.expectEqual(20.0, result.error_value);
+    try std.testing.expectEqual(20.0, result.absolute_error);
+    try std.testing.expect(!result.is_accurate); // 20 > 10 threshold
+}
+
+test "ofc — compareExpectedVsActual negative error" {
+    var rp = RewardPrediction.init(50.0);
+    const result = rp.compareExpectedVsActual(30.0);
+
+    try std.testing.expectEqual(50.0, result.expected);
+    try std.testing.expectEqual(30.0, result.actual);
+    try std.testing.expectEqual(-20.0, result.error_value);
+    try std.testing.expectEqual(20.0, result.absolute_error);
+    try std.testing.expect(!result.is_accurate);
+}
+
+test "ofc — compareExpectedVsActual accurate" {
+    var rp = RewardPrediction.init(50.0);
+    const result = rp.compareExpectedVsActual(55.0);
+
+    try std.testing.expectEqual(50.0, result.expected);
+    try std.testing.expectEqual(55.0, result.actual);
+    try std.testing.expectEqual(5.0, result.error_value);
+    try std.testing.expectEqual(5.0, result.absolute_error);
+    try std.testing.expect(result.is_accurate); // 5 < 10 threshold
+}
+
+test "ofc — updatePredictionModel increases expected on positive error" {
+    var rp = RewardPrediction.init(50.0);
+    rp.updatePredictionModel(70.0);
+
+    // expected = 50 + 0.1 * (70 - 50) = 50 + 2 = 52
+    try std.testing.expectEqual(52.0, rp.expected);
+    try std.testing.expectEqual(1, rp.prediction_count);
+}
+
+test "ofc — updatePredictionModel decreases expected on negative error" {
+    var rp = RewardPrediction.init(50.0);
+    rp.updatePredictionModel(30.0);
+
+    // expected = 50 + 0.1 * (30 - 50) = 50 - 2 = 48
+    try std.testing.expectEqual(48.0, rp.expected);
+}
+
+test "ofc — updatePredictionModel increases confidence on accuracy" {
+    var rp = RewardPrediction{ .expected = 50.0, .confidence = 0.5 };
+    rp.updatePredictionModel(55.0); // Small error = accurate
+
+    try std.testing.expect(rp.confidence > 0.5);
+}
+
+test "ofc — updatePredictionModel decreases confidence on inaccuracy" {
+    var rp = RewardPrediction{ .expected = 50.0, .confidence = 0.8 };
+    rp.updatePredictionModel(80.0); // Large error = inaccurate
+
+    try std.testing.expect(rp.confidence < 0.8);
+}
+
+test "ofc — updatePredictionModel clamps expected to 100" {
+    var rp = RewardPrediction.init(95.0);
+    rp.updatePredictionModel(200.0);
+
+    try std.testing.expectEqual(100.0, rp.expected);
+}
+
+test "ofc — updatePredictionModel clamps expected to 0" {
+    var rp = RewardPrediction.init(5.0);
+    rp.updatePredictionModel(-100.0);
+
+    try std.testing.expectEqual(0.0, rp.expected);
+}
+
+test "ofc — meanAbsoluteError calculates correctly" {
+    var rp = RewardPrediction.init(50.0);
+    rp.updatePredictionModel(60.0);
+    rp.updatePredictionModel(40.0);
+    rp.updatePredictionModel(45.0);
+
+    const mae = rp.meanAbsoluteError();
+    // MAE should be positive and reasonable (between 0 and 100)
+    try std.testing.expect(mae > 0.0);
+    try std.testing.expect(mae < 100.0);
+    // With 3 updates, total_error > 0
+    try std.testing.expect(rp.total_error > 0.0);
+    try std.testing.expectEqual(3, rp.prediction_count);
+}
+
+test "ofc — meanAbsoluteError zero when no predictions" {
+    const rp = RewardPrediction.init(50.0);
+    try std.testing.expectEqual(0.0, rp.meanAbsoluteError());
 }

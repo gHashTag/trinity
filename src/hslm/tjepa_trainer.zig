@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // T-JEPA — Training Loop with JEPA Objective
 // Two optimizers: encoder (online HSLM) + predictor (2x LR)
 // EMA update after each step, collapse monitoring via repr variance

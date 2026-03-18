@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity Queen API — C FFI bridge for SwiftUI dashboard
 // Buffer-based JSON API (same pattern as c_api.zig)
 //

@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // T-JEPA — MSE Loss + Anti-Collapse Mechanisms
 // L2-normalized MSE on predicted vs target representations
 // Collapse monitoring via representation variance

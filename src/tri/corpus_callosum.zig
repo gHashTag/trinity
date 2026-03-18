@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // CORPUS CALLOSUM — Inter-Hemisphere Communication
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -138,15 +139,10 @@ pub const CommBus = struct {
 
     /// Get signals for a specific module
     pub fn getSignals(self: *const CommBus, target: Module) []const Synapse {
-        var count: usize = 0;
-        for (self.signals) |s| {
-            if (s.to == target) count += 1;
-        }
-
-        if (count == 0) return &.{};
-
-        // Note: In real implementation, would return slice
-        _ = count;
+        _ = self;
+        _ = target;
+        // TODO: Implement signal filtering
+        // Note: In real implementation, would return filtered slice
         return &.{};
     }
 };
@@ -291,4 +287,91 @@ test "corpus_callosum — BridgeState needsSync" {
 test "corpus_callosum — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+test "corpus_callosum — Signal urgency levels" {
+    const critical = Signal{
+        .kind = .alert,
+        .data = "critical",
+        .urgency = .critical,
+    };
+    try std.testing.expect(critical.isAlert());
+
+    const high = Signal{
+        .kind = .alert,
+        .data = "warning",
+        .urgency = .high,
+    };
+    try std.testing.expect(high.isAlert());
+
+    const normal = Signal{
+        .kind = .heartbeat,
+        .data = "ok",
+        .urgency = .normal,
+    };
+    try std.testing.expect(!normal.isAlert());
+}
+
+test "corpus_callosum — Synapse captures timestamp" {
+    const before = std.time.timestamp();
+    const syn = Synapse.init(.queen_dlpfc, .hippocampus, .{
+        .kind = .heartbeat,
+        .data = "test",
+    });
+    const after = std.time.timestamp();
+
+    try std.testing.expect(syn.timestamp >= before);
+    try std.testing.expect(syn.timestamp <= after);
+}
+
+test "corpus_callosum — Module enum coverage" {
+    const modules = [_]Module{
+        .queen_dlpfc,               .queen_vmpfc,             .queen_vlpfc,     .queen_dmpfc,
+        .queen_ofc,                 .phoenix_locus_coeruleus, .phoenix_medulla, .phoenix_pons,
+        .hippocampus,               .thalamus,                .reticular_aras,  .reticular_raphe,
+        .reticular_gigantocellular, .basal_ganglia,           .cerebellum,
+    };
+
+    for (modules) |m| {
+        const label = m.label();
+        try std.testing.expect(label.len > 0);
+    }
+}
+
+test "corpus_callosum — SignalKind enum coverage" {
+    const kinds = [_]SignalKind{
+        .heartbeat, .alert, .request, .response, .command, .done,
+    };
+
+    for (kinds) |kind| {
+        _ = kind.emoji(); // Verify all have emojis
+    }
+}
+
+test "corpus_callosum — PhoenixSleepState enum coverage" {
+    const states = [_]PhoenixSleepState{
+        .awake, .sleeping, .waking,
+    };
+
+    for (states) |s| {
+        _ = s; // Verify all enum values exist
+    }
+}
+
+test "corpus_callosum — BridgeState defaults" {
+    const state = BridgeState{};
+    try std.testing.expectEqual(@as(u32, 0), state.queen_cycle);
+    try std.testing.expectEqual(PhoenixSleepState.awake, state.phoenix_sleep_state);
+    try std.testing.expectEqual(@as(i64, 0), state.last_sync);
+    try std.testing.expectEqual(@as(u32, 0), state.sync_count);
+}
+
+test "corpus_callosum — CommBus initialization" {
+    const bus = try initCommBus(std.testing.allocator);
+    defer {
+        std.testing.allocator.free(bus.signals);
+    }
+
+    try std.testing.expectEqual(@as(usize, 0), bus.signals.len);
+    try std.testing.expectEqual(@as(i64, 0), bus.last_broadcast);
 }

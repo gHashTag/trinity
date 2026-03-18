@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN TYPES — Shared types, emoji consts, JSON helpers
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -35,12 +36,15 @@ pub const E_DISK = "\xf0\x9f\x92\xbe"; // 💾
 pub const E_NET = "\xf0\x9f\x8c\x90"; // 🌐
 pub const E_GEAR = "\xe2\x9a\x99\xef\xb8\x8f"; // ⚙️
 pub const E_HAND = "\xe2\x9c\x8b"; // ✋
+pub const E_CHART = "\xf0\x9f\x93\x88"; // 📈
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TYPES
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const STATE_PATH = ".trinity/queen_state.json";
+pub const SUPERVISOR_PID_PATH = ".trinity/queen/supervisor.pid";
+pub const SUPERVISOR_LOG_PATH = ".trinity/queen/supervisor.log";
 
 pub const QueenConfig = struct {
     interval_sec: u64 = 600, // 10 min
@@ -143,6 +147,8 @@ pub const QueenState = struct {
     tg_last_update_id: i64 = 0,
     // v3: event stream seq counter
     event_seq: u32 = 0,
+    // v4: Phoenix integration
+    last_sleep_ts: i64 = 0,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -182,6 +188,42 @@ pub const SenseResult = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// OUROBOROS — 12-dimension health score
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Ouroboros state with 12 dimensions
+/// Moved here from queen_ouroboros.zig for shared use (avoids circular deps)
+pub const OuroborosState = struct {
+    // Primary metrics
+    score: f32 = 0.0, // current aggregate score (0-100)
+    initial: f32 = 0.0, // initial score at cycle start
+    cycle: u32 = 0, // current cycle number
+
+    // Dimensions (12 total for health calculation)
+    efficiency: f32 = 0.0, // code efficiency
+    build_health: f32 = 0.0, // build passes
+    test_coverage: f32 = 0.0, // test pass rate
+    doc_quality: f32 = 0.0, // documentation completeness
+    spec_compliance: f32 = 0.0, // specs vs generated ratio
+    git_cleanliness: f32 = 0.0, // few dirty files
+    farm_productivity: f32 = 0.0, // PPL improvement
+    arena_activity: f32 = 0.0, // battle frequency
+    experience_growth: f32 = 0.0, // episodes logged
+    sacred_balance: f32 = 0.0, // predictions vs reality
+    network_health: f32 = 0.0, // external connectivity
+
+    // Meta
+    stagnation: u8 = 0, // cycles without improvement
+    strategy: [32]u8 = undefined, // current strategy name
+    strategy_len: usize = 0,
+    started_ts: i64 = 0, // timestamp of cycle start
+
+    pub fn strategyStr(self: *const OuroborosState) []const u8 {
+        return self.strategy[0..self.strategy_len];
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // ACTIONS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -197,31 +239,32 @@ pub const ActionKind = enum(u8) {
     research_sacred = 7,
     ouroboros_status = 8,
     experience_recall = 9,
-    farm_evolve_status = 10,
-    swarm_status = 11,
+    introspection = 10, // PCC self-awareness check
+    farm_evolve_status = 11,
+    swarm_status = 12,
 
     // Level 1 — Soft Write (auto-allowed with --allow-auto-actions)
-    doctor_quick = 12,
-    doctor_heal = 13,
-    ouroboros_cycle = 14,
-    git_commit_state = 15,
-    git_push = 16,
-    issue_comment = 17,
-    notify = 18,
-    arena_battle = 19,
-    experience_save = 20,
-    fmt = 21,
+    doctor_quick = 13,
+    doctor_heal = 14,
+    ouroboros_cycle = 15,
+    git_commit_state = 16,
+    git_push = 17,
+    issue_comment = 18,
+    notify = 19,
+    arena_battle = 20,
+    experience_save = 21,
+    fmt = 22,
 
     // Level 2 — Dangerous (needs /queen approve or --no-approval)
-    farm_recycle = 22,
-    farm_evolve_step = 23,
-    cloud_spawn = 24,
-    cloud_kill = 25,
-    cloud_cleanup = 26,
-    issue_create = 27,
-    swarm_decompose = 28,
+    farm_recycle = 23,
+    farm_evolve_step = 24,
+    cloud_spawn = 25,
+    cloud_kill = 26,
+    cloud_cleanup = 27,
+    issue_create = 28,
+    swarm_decompose = 29,
 
-    pub const COUNT = 29;
+    pub const COUNT = 30;
 
     pub fn label(self: ActionKind) []const u8 {
         return switch (self) {
@@ -235,6 +278,7 @@ pub const ActionKind = enum(u8) {
             .research_sacred => "research sacred",
             .ouroboros_status => "ouroboros status",
             .experience_recall => "experience recall",
+            .introspection => "introspection",
             .farm_evolve_status => "farm evolve status",
             .swarm_status => "swarm status",
             .doctor_quick => "doctor quick",
@@ -269,6 +313,7 @@ pub const ActionKind = enum(u8) {
             .research_sacred => E_BOLT,
             .ouroboros_status => E_CYCLE,
             .experience_recall => E_BRAIN,
+            .introspection => E_EYE,
             .farm_evolve_status => E_DNA,
             .swarm_status => E_ROBOT,
             .doctor_quick => E_WRENCH,
@@ -502,7 +547,7 @@ test "Queen types — ActionKind label" {
 }
 
 test "Queen types — ActionKind COUNT" {
-    try std.testing.expectEqual(@as(u8, 29), ActionKind.COUNT);
+    try std.testing.expectEqual(@as(u8, 30), ActionKind.COUNT);
 }
 
 test "Queen types — QueenConfig god mode" {

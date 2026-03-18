@@ -198,3 +198,37 @@
 ,"summary":"farm hslm-r30: stalled: step unchanged 2+ polls step=80200"}
 {"id":"mem_1773831680_farm_69955e36","agent":"farm","kind":"observation","ts":1773831680,"tags":[],"ttl":2592000,"data":{"ts":1773831680824,"type":"health","svc":"hslm-r23","detail":"stalled: step unchanged 2+ polls","step":80000}
 ,"summary":"farm hslm-r23: stalled: step unchanged 2+ polls step=80000"}
+{"id":"mem_1773847395_farm_69951b55","agent":"farm","kind":"observation","ts":1773847395,"tags":[],"ttl":2592000,"data":{"ts":1773847395277,"type":"health","svc":"hslm-r12","detail":"stalled: step unchanged 2+ polls","step":30000}
+,"summary":"farm hslm-r12: stalled: step unchanged 2+ polls step=30000"}
+{"id":"mem_1773847395_farm_69951b55","agent":"farm","kind":"observation","ts":1773847395,"tags":[],"ttl":2592000,"data":{"ts":1773847395280,"type":"health","svc":"hslm-r34","detail":"stalled: step unchanged 2+ polls","step":25100}
+,"summary":"farm hslm-r34: stalled: step unchanged 2+ polls step=25100"}
+{"id":"mem_1773847395_farm_69951b55","agent":"farm","kind":"observation","ts":1773847395,"tags":[],"ttl":2592000,"data":{"ts":1773847395280,"type":"health","svc":"hslm-r36","detail":"stalled: step unchanged 2+ polls","step":22400}
+,"summary":"farm hslm-r36: stalled: step unchanged 2+ polls step=22400"}
+{"id":"mem_1773847395_farm_69951b55","agent":"farm","kind":"observation","ts":1773847395,"tags":[],"ttl":2592000,"data":{"ts":1773847395280,"type":"health","svc":"hslm-r22","detail":"stalled: step unchanged 2+ polls","step":40000}
+,"summary":"farm hslm-r22: stalled: step unchanged 2+ polls step=40000"}
+{"id":"mem_1773847395_farm_69951b55","agent":"farm","kind":"observation","ts":1773847395,"tags":[],"ttl":2592000,"data":{"ts":1773847395280,"type":"health","svc":"hslm-r25","detail":"stalled: step unchanged 2+ polls","step":16500}
+,"summary":"farm hslm-r25: stalled: step unchanged 2+ polls step=16500"}
+{"id":"mem_1773847395_farm_69951b55","agent":"farm","kind":"observation","ts":1773847395,"tags":[],"ttl":2592000,"data":{"ts":1773847395280,"type":"health","svc":"hslm-r27","detail":"stalled: step unchanged 2+ polls","step":35500}
+,"summary":"farm hslm-r27: stalled: step unchanged 2+ polls step=35500"}
+{"id":"mem_1773847395_farm_69951b55","agent":"farm","kind":"observation","ts":1773847395,"tags":[],"ttl":2592000,"data":{"ts":1773847395280,"type":"health","svc":"hslm-r29","detail":"stalled: step unchanged 2+ polls","step":45000}
+,"summary":"farm hslm-r29: stalled: step unchanged 2+ polls step=45000"}
+{"id":"mem_1773847395_farm_69951b55","agent":"farm","kind":"observation","ts":1773847395,"tags":[],"ttl":2592000,"data":{"ts":1773847395280,"type":"health","svc":"hslm-r20","detail":"stalled: step unchanged 2+ polls","step":39500}
+,"summary":"farm hslm-r20: stalled: step unchanged 2+ polls step=39500"}
+{"id":"mem_1773847395_farm_69951b55","agent":"farm","kind":"observation","ts":1773847395,"tags":[],"ttl":2592000,"data":{"ts":1773847395281,"type":"health","svc":"hslm-r17","detail":"stalled: step unchanged 2+ polls","step":14400}
+,"summary":"farm hslm-r17: stalled: step unchanged 2+ polls step=14400"}
+{"id":"mem_1773847894_farm_69951d60","agent":"farm","kind":"observation","ts":1773847894,"tags":[],"ttl":2592000,"data":{"ts":1773847894362,"type":"health","svc":"hslm-r35","detail":"stalled: step unchanged 2+ polls","step":80500}
+,"summary":"farm hslm-r35: stalled: step unchanged 2+ polls step=80500"}
+{"id":"mem_1773847894_farm_69951d60","agent":"farm","kind":"observation","ts":1773847894,"tags":[],"ttl":2592000,"data":{"ts":1773847894363,"type":"health","svc":"hslm-r28","detail":"stalled: step unchanged 2+ polls","step":80000}
+,"summary":"farm hslm-r28: stalled: step unchanged 2+ polls step=80000"}
+{"id":"mem_1773848051_farm_69951dc5","agent":"farm","kind":"observation","ts":1773848051,"tags":[],"ttl":2592000,"data":{"ts":1773848051606,"type":"health","svc":"hslm-r6","detail":"stalled: step unchanged 2+ polls","step":35000}
+,"summary":"farm hslm-r6: stalled: step unchanged 2+ polls step=35000"}
+{"id":"mem_1773852094_farm_69950d88","agent":"farm","kind":"observation","ts":1773852094,"tags":[],"ttl":2592000,"data":{"ts":1773852094653,"type":"health","svc":"hslm-r10","detail":"stalled: step unchanged 2+ polls","step":80500}
+,"summary":"farm hslm-r10: stalled: step unchanged 2+ polls step=80500"}
+{"id":"mem_1773855262_farm_69953a28","agent":"farm","kind":"observation","ts":1773855262,"tags":[],"ttl":2592000,"data":{"ts":1773855262874,"type":"health","svc":"hslm-r33","detail":"stalled: step unchanged 2+ polls","step":67900}
+,"summary":"farm hslm-r33: stalled: step unchanged 2+ polls step=67900"}
+{"id":"mem_1773855262_farm_69953a28","agent":"farm","kind":"observation","ts":1773855262,"tags":[],"ttl":2592000,"data":{"ts":1773855262875,"type":"health","svc":"hslm-r31","detail":"stalled: step unchanged 2+ polls","step":54800}
+,"summary":"farm hslm-r31: stalled: step unchanged 2+ polls step=54800"}
+{"id":"mem_1773855262_farm_69953a28","agent":"farm","kind":"observation","ts":1773855262,"tags":[],"ttl":2592000,"data":{"ts":1773855262875,"type":"health","svc":"hslm-r19","detail":"stalled: step unchanged 2+ polls","step":47900}
+,"summary":"farm hslm-r19: stalled: step unchanged 2+ polls step=47900"}
+{"id":"mem_1773855262_farm_69953a28","agent":"farm","kind":"observation","ts":1773855262,"tags":[],"ttl":2592000,"data":{"ts":1773855262875,"type":"health","svc":"hslm-r26","detail":"stalled: step unchanged 2+ polls","step":35000}
+,"summary":"farm hslm-r26: stalled: step unchanged 2+ polls step=35000"}

@@ -21,7 +21,7 @@ pub fn main() !void {
 
     const query = std.fmt.allocPrint(allocator,
         \\{{"query": "mutation($projectId: String!, $envId: String!, $name: String!, $input: ServiceCreateInput!) {{ serviceCreate(projectId: $projectId, envId: $envId, name: $name, input: $input) {{ id name }} }}", "variables": {{"projectId": "{s}", "envId": "{s}", "name": "{s}", "input": {{"buildConfig": {{"builder": "DOCKERFILE", "dockerfilePath": "Dockerfile.hslm-train"}}, "startCommand": null}}}}}}
-    , .{project_id, env_id, name}) catch return error.OutOfMemory;
+    , .{ project_id, env_id, name }) catch return error.OutOfMemory;
     defer allocator.free(query);
 
     std.debug.print("🔧 Creating service '{s}' with DOCKERFILE builder...\n", .{name});
@@ -31,7 +31,7 @@ pub fn main() !void {
 
     const result = try std.process.Child.run(.{
         .allocator = allocator,
-        .argv = &.{"curl", "-s", "-X", "POST", "-H", auth_header, "-H", "Content-Type: application/json", "-d", query, "https://backboard.railway.app/graphql/v2"},
+        .argv = &.{ "curl", "-s", "-X", "POST", "-H", auth_header, "-H", "Content-Type: application/json", "-d", query, "https://backboard.railway.app/graphql/v2" },
     });
     defer allocator.free(result.stderr);
 

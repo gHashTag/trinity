@@ -44,7 +44,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./zig-out/bin/ralph-hook post-edit"
+            "command": "/Users/playra/trinity-w1/zig-out/bin/ralph-hook post-edit"
           }
         ]
       }
@@ -54,7 +54,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./zig-out/bin/ralph-hook stop"
+            "command": "/Users/playra/trinity-w1/zig-out/bin/ralph-hook stop"
           }
         ]
       }

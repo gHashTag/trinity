@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Build exclusion module — tri_zenodo.zig temporarily excluded due to Zig 0.15 syntax errors
 //
 // This module exports the 'build' function that can be imported in build.zig

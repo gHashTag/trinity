@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════
 // ARAS (ASCENDING RETICULAR ACTIVATING SYSTEM) — Vigilance Sweep
 // ═══════════════════════════════════════════════════════════════════════
