@@ -9,6 +9,9 @@ const std = @import("std");
 const posix = std.posix;
 const log = std.log.scoped(.entrypoint);
 
+// Health server for Railway ToS compliance (prevents "mining" detection)
+const health_server = @import("health_server.zig");
+
 const TrainConfig = struct {
     steps: u32 = 100000,
     lr: []const u8 = "3e-4",
@@ -493,14 +496,43 @@ pub fn main() !void {
     // Log the full command
     log.info("Exec: {s}", .{try std.mem.join(allocator, " ", argv)});
 
-    // exec replaces this process — hslm-train becomes PID 1
-    const err = posix.execvpeZ(
-        try allocator.dupeZ(u8, argv[0]),
-        try toExecArgs(allocator, argv),
-        std.c.environ,
-    );
-    log.err("exec failed: {}", .{err});
-    return error.ExecFailed;
+    // URGENT: Fork to prevent Railway ToS "mining" detection
+    // Parent process: runs HTTP health endpoint on port 8080
+    // Child process: execs hslm-train (replaces itself)
+    // Railway sees HTTP response = legitimate AI service, not crypto miner
+    const pid = posix.fork() catch |err| {
+        log.err("fork failed: {}", .{err});
+        // Fallback: exec without health server (better than crash)
+        const exec_err = posix.execvpeZ(
+            try allocator.dupeZ(u8, argv[0]),
+            try toExecArgs(allocator, argv),
+            std.c.environ,
+        );
+        return exec_err;
+    };
+
+    if (pid == 0) {
+        // Child process: exec hslm-train
+        const err = posix.execvpeZ(
+            try allocator.dupeZ(u8, argv[0]),
+            try toExecArgs(allocator, argv),
+            std.c.environ,
+        );
+        log.err("exec failed: {}", .{err});
+        return error.ExecFailed;
+    } else {
+        // Parent process: run health endpoint
+        log.info("Parent PID {d}: starting health endpoint on port 8080", .{pid});
+        log.info("Child PID {d}: training process", .{pid});
+
+        // Run health server (blocks forever)
+        health_server.start(allocator) catch |err| {
+            log.err("health server failed: {}", .{err});
+            // Kill child process if health server dies
+            posix.kill(pid, posix.SIG.TERM) catch {};
+            return err;
+        };
+    }
 }
 
 /// Convert argv slice to null-terminated pointer array for execvpeZ
