@@ -461,3 +461,111 @@ test "Queen actions — desiredAction edge case exactly 3 idle services" {
     const action = desiredAction(&state, senses);
     try std.testing.expect(action == null or action.? != .farm_recycle);
 }
+
+test "actions — kindToArgv for farm_status" {
+    const argv = kindToArgv(.farm_status);
+    try std.testing.expectEqual(@as(usize, 3), argv.len);
+    try std.testing.expectEqualStrings("tri", argv[0][argv[0].len - 3 ..]);
+}
+
+test "actions — kindToArgv for arena_status" {
+    const argv = kindToArgv(.arena_status);
+    try std.testing.expectEqual(@as(usize, 3), argv.len);
+    try std.testing.expectEqualStrings("arena", argv[1]);
+}
+
+test "actions — kindToArgv for doctor_scan" {
+    const argv = kindToArgv(.doctor_scan);
+    try std.testing.expectEqual(@as(usize, 3), argv.len);
+    try std.testing.expectEqualStrings("doctor", argv[1]);
+}
+
+test "actions — AutoDecision struct fields" {
+    const decision = AutoDecision{
+        .action = .farm_status,
+        .verdict = .allowed,
+    };
+
+    try std.testing.expectEqual(ActionKind.farm_status, decision.action);
+    try std.testing.expect(decision.verdict.isAllowed());
+}
+
+test "actions — desiredAction with farm idle threshold" {
+    const state = qt.QueenState{};
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .ouroboros_score = 80.0,
+        .farm_idle_count = 5, // More than 3
+        .experience_count = 0,
+    };
+
+    const action = desiredAction(&state, senses);
+    try std.testing.expect(action == null or action.? == .farm_recycle);
+}
+
+test "actions — ActionResult with output" {
+    var result = ActionResult{
+        .success = true,
+        .duration_ms = 100,
+    };
+    const msg = "test output";
+    @memcpy(result.output[0..msg.len], msg);
+    result.output_len = msg.len;
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(@as(usize, msg.len), result.output_len);
+    try std.testing.expectEqualStrings("test output", result.output[0..result.output_len]);
+}
+
+test "actions — maybeAutoAction with blocked action" {
+    const state = qt.QueenState{};
+    const senses = qt.SenseResult{
+        .build_ok = false,
+        .ouroboros_score = 30.0, // Low score
+    };
+    const config = qt.QueenConfig{
+        .max_auto_level = 0, // Read-only mode
+        .allow_auto_actions = false,
+        .daemon = false,
+    };
+    var counters = queen_policy.ActionCounters{};
+    const memory = queen_policy.IncidentMemory.init();
+    const decision = maybeAutoAction(&state, senses, config, &counters, &memory);
+    // With build broken and low score, doctor_quick should be triggered
+    try std.testing.expect(decision != null);
+}
+
+test "actions — printActionResult doesn't crash" {
+    const result = ActionResult{
+        .success = true,
+        .duration_ms = 50,
+    };
+    printActionResult(.doctor_quick, result);
+    // Just verify it doesn't crash
+}
+
+test "actions — recordAutoAction with git_commit_state" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    recordAutoAction(&state, .git_commit_state, &counters);
+
+    try std.testing.expectEqual(@as(u8, 1), state.auto_actions_this_hour);
+    try std.testing.expectEqual(@as(u8, 1), counters.getCount(.git_commit_state));
+}
+
+test "actions — AutoDecision all verdicts" {
+    const verdicts = [_]queen_policy.PolicyVerdict{
+        .allowed,
+        .denied_level,
+        .denied_rate,
+        .denied_cooldown,
+    };
+
+    for (verdicts) |v| {
+        const decision = AutoDecision{
+            .action = .farm_status,
+            .verdict = v,
+        };
+        _ = decision;
+    }
+}
