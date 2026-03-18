@@ -3811,7 +3811,7 @@ fn runTrends(allocator: Allocator, args: []const []const u8) !void {
         const parsed = hippocampus.ParsedCellHealth.fromRecord(&rec) catch continue;
         var buf: [256]u8 = undefined;
         const cell_id_slice = parsed.cell_id[0..@min(parsed.cell_id.len, 256)];
-        @memcpy(&buf, cell_id_slice);
+        std.mem.copyForwards(u8, &buf, cell_id_slice);
         try parsed_records.append(allocator, .{
             .cell_id_buf = buf,
             .cell_id_len = cell_id_slice.len,
