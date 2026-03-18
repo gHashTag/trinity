@@ -315,3 +315,99 @@ test "vmpfc — ValueAssessment setReason truncation" {
     assessment.setReason(text);
     try std.testing.expectEqual(@as(usize, 128), assessment.reason_len);
 }
+
+test "vmpfc — Recommendation all values" {
+    const recommendations = [_]Recommendation{
+        .execute, .wait, .skip,
+    };
+
+    for (recommendations) |r| {
+        _ = r; // Verify all recommendations exist
+    }
+}
+
+test "vmpfc — ValueAssessment with execute recommendation" {
+    const assessment = ValueAssessment{
+        .roi = 10.0,
+        .confidence = 0.9,
+        .recommendation = .execute,
+    };
+
+    try std.testing.expectEqual(Recommendation.execute, assessment.recommendation);
+    try std.testing.expectApproxEqAbs(@as(f32, 10.0), assessment.roi, 0.01);
+}
+
+test "vmpfc — ValueAssessment with skip recommendation" {
+    const assessment = ValueAssessment{
+        .roi = 0.0,
+        .confidence = 0.95,
+        .recommendation = .skip,
+    };
+
+    try std.testing.expectEqual(Recommendation.skip, assessment.recommendation);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), assessment.roi, 0.01);
+}
+
+test "vmpfc — FarmAction all values" {
+    const actions = [_]FarmAction{
+        .inject, .recycle, .evolve,
+    };
+
+    for (actions) |a| {
+        _ = a; // Verify all actions exist
+    }
+}
+
+test "vmpfc — phiWeightedScore with zero" {
+    const score = phiWeightedScore(0.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), score, 0.01);
+}
+
+test "vmpfc — phiWeightedScore edge cases" {
+    // Zero
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), phiWeightedScore(0.0), 0.01);
+
+    // Small positive
+    const small = phiWeightedScore(0.1);
+    try std.testing.expect(small > 0.0);
+
+    // Large value
+    const large = phiWeightedScore(100.0);
+    try std.testing.expect(large > 50.0); // Should be significantly higher
+}
+
+test "vmpfc — CellHealth with broken status" {
+    const h = CellHealth{ .status = .broken };
+
+    try std.testing.expectEqual(CellHealth.Status.broken, h.status);
+}
+
+test "vmpfc — CellHealth last_check timestamp" {
+    const h = CellHealth{};
+
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
+
+test "vmpfc — CellHealth from health() has timestamp" {
+    const h = health();
+
+    try std.testing.expect(h.last_check > 0);
+}
+
+test "vmpfc — ValueAssessment setReason empty" {
+    var assessment = ValueAssessment{};
+    const empty = "";
+
+    assessment.setReason(empty);
+
+    try std.testing.expectEqual(@as(usize, 0), assessment.reason_len);
+}
+
+test "vmpfc — ValueAssessment setReason with special chars" {
+    var assessment = ValueAssessment{};
+    const text = "Test: φ² + 1/φ² = 3";
+
+    assessment.setReason(text);
+
+    try std.testing.expectEqualStrings(text, assessment.reasonStr());
+}
