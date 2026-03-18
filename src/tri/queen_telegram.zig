@@ -853,3 +853,224 @@ test "Queen telegram — fmtActionResult" {
     try std.testing.expect(std.mem.indexOf(u8, msg, "OK") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "42") != null);
 }
+
+test "Queen telegram — TgCommand textStr" {
+    var cmd = TgCommand{};
+    const text = "/q farm";
+    @memcpy(cmd.text[0..text.len], text);
+    cmd.text_len = text.len;
+    try std.testing.expectEqualStrings("/q farm", cmd.textStr());
+}
+
+test "Queen telegram — TgCommand with chat_id" {
+    var cmd = TgCommand{
+        .update_id = 123,
+    };
+    const text = "/queen score";
+    const chat_id = "-1001234567890";
+    @memcpy(cmd.text[0..text.len], text);
+    cmd.text_len = text.len;
+    @memcpy(cmd.chat_id[0..chat_id.len], chat_id);
+    cmd.chat_id_len = chat_id.len;
+
+    try std.testing.expectEqual(@as(i64, 123), cmd.update_id);
+    try std.testing.expectEqualStrings(text, cmd.textStr());
+    try std.testing.expectEqualStrings(chat_id, cmd.chat_id[0..cmd.chat_id_len]);
+}
+
+test "Queen telegram — CommandQueue empty pop" {
+    var q = CommandQueue{};
+    try std.testing.expect(q.pop() == null);
+}
+
+test "Queen telegram — CommandQueue wraparound" {
+    var q = CommandQueue{};
+    var i: u32 = 0;
+    // Fill and drain to test wraparound
+    while (i < MAX_COMMANDS) : (i += 1) {
+        const cmd = TgCommand{ .update_id = @intCast(i) };
+        _ = q.push(cmd);
+    }
+    // Drain half
+    var j: u32 = 0;
+    while (j < MAX_COMMANDS / 2) : (j += 1) {
+        _ = q.pop();
+    }
+    // Push more
+    const cmd2 = TgCommand{ .update_id = 999 };
+    try std.testing.expect(q.push(cmd2));
+}
+
+test "Queen telegram — CommandQueue concurrent fields" {
+    var q = CommandQueue{};
+    // Test that atomic fields are properly initialized
+    try std.testing.expectEqual(@as(u32, 0), q.head.load(.monotonic));
+    try std.testing.expectEqual(@as(u32, 0), q.tail.load(.monotonic));
+}
+
+test "Queen telegram — parseActionKind known actions" {
+    const test_cases = [_]struct {
+        input: []const u8,
+        expected: ?qt.ActionKind,
+    }{
+        .{ .input = "farm_status", .expected = .farm_status },
+        .{ .input = "doctor_quick", .expected = .doctor_quick },
+        .{ .input = "farm_recycle", .expected = .farm_recycle },
+        .{ .input = "unknown_action", .expected = null },
+        .{ .input = "", .expected = null },
+    };
+
+    for (test_cases) |tc| {
+        const result = parseActionKind(tc.input);
+        if (tc.expected) |exp| {
+            try std.testing.expectEqual(exp, result.?);
+        } else {
+            try std.testing.expect(result == null);
+        }
+    }
+}
+
+test "Queen telegram — parseActionKind all L0 actions" {
+    const l0_actions = [_][]const u8{
+        "farm_status", "arena_status", "doctor_scan", "train_status",
+        "train_diagnose", "experiment_chart", "patent_status", "research_sacred",
+        "ouroboros_status", "experience_recall", "farm_evolve_status", "swarm_status",
+    };
+
+    for (l0_actions) |action_str| {
+        const result = parseActionKind(action_str);
+        try std.testing.expect(result != null);
+    }
+}
+
+test "Queen telegram — parseActionKind L1 actions" {
+    const l1_actions = [_][]const u8{
+        "doctor_quick", "doctor_heal", "ouroboros_cycle", "git_commit",
+        "git_push", "issue_comment", "notify", "arena_battle",
+        "experience_save", "fmt",
+    };
+
+    for (l1_actions) |action_str| {
+        const result = parseActionKind(action_str);
+        try std.testing.expect(result != null);
+    }
+}
+
+test "Queen telegram — parseActionKind L2 dangerous actions" {
+    const l2_actions = [_][]const u8{
+        "farm_recycle", "farm_evolve_step", "cloud_spawn", "cloud_kill",
+        "cloud_cleanup", "issue_create", "swarm_decompose",
+    };
+
+    for (l2_actions) |action_str| {
+        const result = parseActionKind(action_str);
+        try std.testing.expect(result != null);
+    }
+}
+
+test "Queen telegram — tgSend with disabled config" {
+    const config = qt.TgConfig{
+        .bot_token = "test",
+        .chat_id = "123",
+        .enabled = false,
+    };
+
+    // Should not crash when disabled
+    tgSend(config, "test message");
+
+    // Capture version should also return null
+    const result = tgSendCapture(config, "test");
+    try std.testing.expect(result == null);
+}
+
+test "Queen telegram — fmtActionResult with failure" {
+    var buf: [512]u8 = undefined;
+    var result = qt.ActionResult{
+        .success = false,
+        .duration_ms = 100,
+    };
+    const output = "error occurred";
+    @memcpy(result.output[0..output.len], output);
+    result.output_len = output.len;
+
+    const msg = fmtActionResult(&buf, .doctor_scan, result);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "FAIL") != null);
+}
+
+test "Queen telegram — fmtActionResult output truncation" {
+    var buf: [512]u8 = undefined;
+    var result = qt.ActionResult{ .success = true };
+    // Create long output
+    var long_output: [1000]u8 = undefined;
+    @memset(long_output[0..500], 'A');
+    @memset(long_output[500..1000], 'B');
+    const output = long_output[0..];
+
+    @memcpy(result.output[0..output.len], output);
+    result.output_len = output.len;
+
+    const msg = fmtActionResult(&buf, .farm_status, result);
+    try std.testing.expect(msg.len > 0);
+    // Should truncate to 400 chars preview
+    try std.testing.expect(std.mem.indexOf(u8, msg, "AAAA") != null);
+}
+
+test "Queen telegram — TgCommand init zeros" {
+    const cmd = TgCommand{};
+    try std.testing.expectEqual(@as(usize, 0), cmd.text_len);
+    try std.testing.expectEqual(@as(usize, 0), cmd.chat_id_len);
+    try std.testing.expectEqual(@as(i64, 0), cmd.update_id);
+}
+
+test "Queen telegram — MAX_CMD_LEN and MAX_COMMANDS constants" {
+    try std.testing.expect(MAX_CMD_LEN == 128);
+    try std.testing.expect(MAX_COMMANDS == 8);
+}
+
+test "Queen telegram — parseUpdates filters non-queen commands" {
+    var q = CommandQueue{};
+    var last_id = std.atomic.Value(i64).init(0);
+    var running = std.atomic.Value(bool).init(true);
+
+    var ctx = PollContext{
+        .tg = .{ .bot_token = "test", .chat_id = "123", .enabled = true },
+        .queue = &q,
+        .last_update_id = &last_id,
+        .allowed_chat_id = "123",
+        .running = &running,
+    };
+
+    // Non-/queen command should not be added
+    const body =
+        \\{"ok":true,"result":[{"update_id":200,"message":{"chat":{"id":123},"text":"/some_other_command"}}]}
+    ;
+
+    parseUpdates(&ctx, body);
+
+    try std.testing.expectEqual(@as(i64, 200), last_id.load(.acquire));
+    try std.testing.expect(q.pop() == null);
+}
+
+test "Queen telegram — parseUpdates handles /q command" {
+    var q = CommandQueue{};
+    var last_id = std.atomic.Value(i64).init(0);
+    var running = std.atomic.Value(bool).init(true);
+
+    var ctx = PollContext{
+        .tg = .{ .bot_token = "test", .chat_id = "123", .enabled = true },
+        .queue = &q,
+        .last_update_id = &last_id,
+        .allowed_chat_id = "123",
+        .running = &running,
+    };
+
+    const body =
+        \\{"ok":true,"result":[{"update_id":300,"message":{"chat":{"id":123},"text":"/q farm"}}]}
+    ;
+
+    parseUpdates(&ctx, body);
+
+    const cmd = q.pop().?;
+    try std.testing.expectEqualStrings("/q farm", cmd.textStr());
+}
