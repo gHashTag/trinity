@@ -107,6 +107,7 @@ fn estimateDuration(action: qt.ActionKind) u32 {
         .experience_recall,
         .farm_evolve_status,
         .swarm_status,
+        .introspection,
         => 5,
 
         // Soft writes: medium
