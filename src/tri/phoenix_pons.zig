@@ -22,41 +22,110 @@ pub fn bridgeToCerebellum(
     allocator: Allocator,
     farm_results: FarmSweepResults,
 ) !void {
-    // TODO: Update cerebellum cell health via hippocampus
-    // For Phase 1: just log observation
+    // Write cell health updates for each farm account
+    // Format: "cell_health: <name>: A|B|C|F"
 
-    // Cerebellum expects structured updates like:
-    // "cell_health: <name>: A|B|C|F"
+    // Determine overall farm health
+    const problem_count = farm_results.problemCount();
+    const overall_status = if (problem_count == 0) "A" else if (problem_count < 5) "B" else if (problem_count < 10) "C" else "F";
 
-    // For now, write generic observation
-    const data = try std.fmt.allocPrint(
+    // Write overall farm health
+    const health_data = try std.fmt.allocPrint(
         allocator,
-        "{{\"farm_stale\":{d},\"farm_crashed\":{d}}}",
-        .{ farm_results.stale_count, farm_results.crashed_workers.len },
+        "{{\"farm_stale\":{d},\"farm_crashed\":{d},\"overall_status\":\"{s}\"}}",
+        .{ farm_results.stale_count, farm_results.crashed_workers.len, overall_status },
     );
-    defer allocator.free(data);
+    defer allocator.free(health_data);
 
-    _ = try hippocampus.writeObservation(allocator, "phoenix_pons", "cerebellum bridge", data);
+    const health_summary = try std.fmt.allocPrint(
+        allocator,
+        "cell_health: farm: {s}",
+        .{overall_status},
+    );
+    defer allocator.free(health_summary);
+
+    _ = try hippocampus.writeObservation(allocator, "phoenix_pons", health_summary, health_data);
+
+    // Write individual crashed worker entries
+    for (farm_results.crashed_workers) |worker| {
+        const crash_data = try std.fmt.allocPrint(
+            allocator,
+            "{{\"worker\":\"{s}\",\"status\":\"F\"}}",
+            .{worker},
+        );
+        defer allocator.free(crash_data);
+
+        const crash_summary = try std.fmt.allocPrint(
+            allocator,
+            "cell_health: {s}: F",
+            .{worker},
+        );
+        defer allocator.free(crash_summary);
+
+        _ = try hippocampus.writeObservation(allocator, "phoenix_pons", crash_summary, crash_data);
+    }
 }
 
 /// REM dreaming — generate fix_plan.md from fresh errors
 pub fn remDreaming(allocator: Allocator, fresh_errors: []const Error) !void {
-    // TODO: Generate fix_plan.md entries
-    // For Phase 1: just log observation
+    // Generate structured fix plan entries
+    // Format: "- [] Fix <error_description>\n  Context: ...\n  Suggestion: ..."
 
-    // fix_plan.md format:
-    // - [] Fix <error_description>
-    //   Context: ...
-    //   Suggestion: ...
+    if (fresh_errors.len == 0) {
+        // No errors to process
+        const data = try std.fmt.allocPrint(
+            allocator,
+            "{{\"dream_count\":0,\"fixes_required\":false}}",
+            .{},
+        );
+        defer allocator.free(data);
+        _ = try hippocampus.writeObservation(allocator, "phoenix_pons", "REM dreaming — no errors", data);
+        return;
+    }
+
+    // Generate fix plan entries for each error
+    var fix_plan = try std.ArrayList(u8).initCapacity(allocator, 256);
+    defer fix_plan.deinit(allocator);
+
+    for (fresh_errors) |err| {
+        try fix_plan.appendSlice(allocator, "- ");
+        try fix_plan.appendSlice(allocator, "[] Fix ");
+        try fix_plan.appendSlice(allocator, err.code);
+        try fix_plan.appendSlice(allocator, ": ");
+        try fix_plan.appendSlice(allocator, err.messageStr());
+        try fix_plan.appendSlice(allocator, "\n");
+
+        // Add context
+        try fix_plan.appendSlice(allocator, "  Context: Detected during REM sleep analysis\n");
+
+        // Add suggestion based on error code
+        try fix_plan.appendSlice(allocator, "  Suggestion: ");
+        if (std.mem.eql(u8, err.code, "BUILD_FAIL")) {
+            try fix_plan.appendSlice(allocator, "Check build log for compilation errors\n");
+        } else if (std.mem.eql(u8, err.code, "TEST_FAIL")) {
+            try fix_plan.appendSlice(allocator, "Review failing test and fix implementation\n");
+        } else if (std.mem.eql(u8, err.code, "DEADLOCK")) {
+            try fix_plan.appendSlice(allocator, "Analyze lock acquisition order and add timeouts\n");
+        } else {
+            try fix_plan.appendSlice(allocator, "Investigate error and implement appropriate fix\n");
+        }
+    }
 
     const data = try std.fmt.allocPrint(
         allocator,
-        "\\\"dream_count\\\":{d}",
-        .{fresh_errors.len},
+        "{{\"dream_count\":{d},\"fixes_required\":true,\"entries\":{d}}}",
+        .{ fresh_errors.len, fresh_errors.len },
     );
     defer allocator.free(data);
 
-    _ = try hippocampus.writeObservation(allocator, "phoenix_pons", "REM dreaming", data);
+    const summary = try std.fmt.allocPrint(
+        allocator,
+        "REM dreaming: {d} errors → fix plan",
+        .{fresh_errors.len},
+    );
+    defer allocator.free(summary);
+
+    _ = try hippocampus.writeObservation(allocator, "phoenix_pons", summary, data);
 }
 
 /// Farm sweep results from ARAS
@@ -66,7 +135,7 @@ pub const FarmSweepResults = struct {
 
     pub fn problemCount(self: *const FarmSweepResults) u32 {
         var count: u32 = @intCast(self.crashed_workers.len);
-        count += self.stale_count;
+        count +%= @as(u32, @intCast(self.stale_count));
         return count;
     }
 };
