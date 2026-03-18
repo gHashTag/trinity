@@ -147,6 +147,8 @@ pub const QueenState = struct {
     tg_last_update_id: i64 = 0,
     // v3: event stream seq counter
     event_seq: u32 = 0,
+    // v4: Phoenix integration
+    last_sleep_ts: i64 = 0,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

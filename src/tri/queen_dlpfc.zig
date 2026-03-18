@@ -23,6 +23,11 @@ const basal_ganglia = @import("basal_ganglia.zig");
 const cerebellum = @import("cerebellum.zig");
 const queen_policy = @import("queen_policy.zig");
 
+// Phoenix brainstem modules
+const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
+const medulla = @import("phoenix_medulla.zig");
+const pons = @import("phoenix_pons.zig");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // DECISION — What Queen wants to do
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -57,9 +62,18 @@ pub const DecisionContext = struct {
     faculty_metrics: ?FacultyMetrics = null,
     trend_analysis: ?TrendAnalysis = null,
 
+    // Phoenix brainstem integration
+    locus_state: locus_coeruleus.LocusState = .{},
+    last_sleep_ts: i64 = 0,
+
     /// Check if we should take any auto-action
     pub fn shouldAutoAct(self: *const DecisionContext) bool {
         return self.config.allow_auto_actions and self.config.daemon;
+    }
+
+    /// Get current arousal level
+    pub fn getArousal(self: *const DecisionContext) locus_coeruleus.ArousalLevel {
+        return locus_coeruleus.getArousal(&self.locus_state);
     }
 };
 
@@ -168,6 +182,15 @@ pub const CycleState = struct {
 // MAIN AUTONOMOUS LOOP — READ → THINK → ACT → SPEAK
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// Alert sink for Locus Coeruleus — receives alarm notifications
+fn locusAlertSink(alert: locus_coeruleus.Alert, arousal: locus_coeruleus.ArousalLevel) void {
+    _ = alert;
+    _ = arousal;
+    // This is called by LC when alarm is triggered
+    // The arousal level is passed to OFC for tone adjustment
+    // In daemon mode, this will trigger immediate Telegram notification
+}
+
 pub fn runUnifiedLoop(allocator: Allocator, config: qt.QueenConfig) !void {
     var state = qt.QueenState{
         .started_at = std.time.timestamp(),
@@ -175,6 +198,9 @@ pub fn runUnifiedLoop(allocator: Allocator, config: qt.QueenConfig) !void {
     var counters = queen_policy.ActionCounters{};
     var incidents = queen_policy.IncidentMemory.init();
     var cycle_state = CycleState.init();
+
+    // Initialize Locus Coeruleus with alert sink
+    var locus_state = locus_coeruleus.init(locusAlertSink);
 
     const print = std.debug.print;
 
@@ -197,9 +223,16 @@ pub fn runUnifiedLoop(allocator: Allocator, config: qt.QueenConfig) !void {
             .state = &state,
             .counters = &counters,
             .incidents = &incidents,
+            .locus_state = locus_state,
+            .last_sleep_ts = state.last_sleep_ts,
         };
 
         // PHASE 1: READ — Gather all sensor data
+        // Medulla heartbeat at start of each cycle
+        if (config.daemon) {
+            _ = medulla.heartbeatPing(allocator);
+        }
+
         try readSenses(allocator, &ctx);
 
         // PHASE 2: THINK — Decide what to do
@@ -215,6 +248,24 @@ pub fn runUnifiedLoop(allocator: Allocator, config: qt.QueenConfig) !void {
 
         // PHASE 4: SPEAK — Report via OFC
         try speak(&ctx, decision, result);
+
+        // Save locus state and last_sleep_ts
+        locus_state = ctx.locus_state;
+        state.last_sleep_ts = ctx.last_sleep_ts;
+
+        // Sleep cycle every 24 hours
+        if (config.daemon) {
+            const now = std.time.timestamp();
+            const hours_since_sleep = if (ctx.last_sleep_ts > 0)
+                @divTrunc(now - ctx.last_sleep_ts, 3600)
+            else
+                25; // Trigger on first run
+            if (hours_since_sleep >= 24) {
+                _ = medulla.sleepCycle(allocator);
+                ctx.last_sleep_ts = now;
+                state.last_sleep_ts = now;
+            }
+        }
 
         // Sleep until next cycle
         if (!config.daemon) {
@@ -366,6 +417,55 @@ fn determineTrend(current: f32, previous: f32) TrendAnalysis.Trend {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// LOCUS COERULEUS INTEGRATION — Alarm triggers for critical events
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Trigger LC alarms based on system state
+fn triggerLocusAlarms(ctx: *DecisionContext) !void {
+    // Critical: Build broken
+    if (!ctx.build_ok) {
+        try locus_coeruleus.triggerAlarm(
+            &ctx.locus_state,
+            .build_broken,
+            "Build system failed - training stopped",
+            null, // Use default severity-based arousal
+        );
+    }
+
+    // Critical: Mass worker crash (>10 crashed)
+    if (ctx.farm.crashed > 10) {
+        var msg_buf: [256]u8 = undefined;
+        const msg = try std.fmt.bufPrint(
+            &msg_buf,
+            "{d} workers crashed - mass failure detected",
+            .{ctx.farm.crashed},
+        );
+        try locus_coeruleus.triggerAlarm(
+            &ctx.locus_state,
+            .worker_crashed,
+            msg,
+            .emergency,
+        );
+    }
+
+    // Alarm: Token expired (check via environment)
+    const has_token = std.posix.getenv("RAILWAY_TOKEN_1") orelse
+        std.posix.getenv("RAILWAY_TOKEN_2") orelse
+        std.posix.getenv("ZAI_KEY_1") orelse null;
+    if (has_token == null) {
+        try locus_coeruleus.triggerAlarm(
+            &ctx.locus_state,
+            .token_expired,
+            "API token expired or missing - cannot communicate with Railway",
+            .alarm,
+        );
+    }
+
+    // Decay arousal over time (natural relaxation)
+    locus_coeruleus.decayArousal(&ctx.locus_state, 300);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // THINK PHASE — Decision engine using Basal Ganglia
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -373,6 +473,9 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
     if (!ctx.shouldAutoAct()) {
         return null;
     }
+
+    // Trigger LC alarms for critical events
+    try triggerLocusAlarms(ctx);
 
     // Collect candidates from observations
     const CandidateList = array_list.AlignedManaged(basal_ganglia.ActionCandidate, null);
@@ -493,6 +596,16 @@ pub fn act(ctx: *DecisionContext, decision: Decision) !qt.ActionResult {
     // Execute action
     const result = queen_actions.execute(ctx.allocator, decision.action);
 
+    // Pons bridge: after farm recycle, send results to cerebellum
+    if (decision.action == .farm_recycle) {
+        // Build simple crashed worker list (for Phase 1, just use count)
+        const bridge_results = pons.FarmSweepResults{
+            .stale_count = @intCast(ctx.farm.stale_count),
+            .crashed_workers = &[_][]const u8{},
+        };
+        _ = try pons.bridgeToCerebellum(ctx.allocator, bridge_results);
+    }
+
     // Record action
     queen_actions.recordAutoAction(ctx.state, decision.action, ctx.counters);
 
@@ -595,13 +708,31 @@ fn cloudSpawnReason(ctx: *const DecisionContext) []const u8 {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn speak(ctx: *DecisionContext, decision: ?Decision, result: qt.ActionResult) !void {
-    // Generate human-like report
-    var report_buf: [1536]u8 = undefined;
-    const report = formatHumanReport(&report_buf, ctx, decision, result) catch return;
+    _ = decision; // Available for future enhancements
+    _ = result; // Available for future enhancements
 
-    // Send via OFC
+    // Generate arousal-aware report
+    const arousal = ctx.getArousal();
+
+    // Use OFC's arousal-aware formatting
+    const report = queen_ofc.formatStatusReportWithArousal(
+        ctx.allocator,
+        ctx.build_ok,
+        ctx.ouroboros_score,
+        @intCast(ctx.farm.active),
+        ctx.farm.best_ppl,
+        arousal,
+    ) catch return;
+    defer ctx.allocator.free(report);
+
+    // Send via OFC with appropriate routing based on arousal
+    const route = if (arousal == .emergency or arousal == .alarm)
+        queen_ofc.ChatRoute.alert
+    else
+        queen_ofc.ChatRoute.group;
+
     ctx.state.cycle +|= 1;
-    try queen_ofc.send(ctx.allocator, .group, report);
+    try queen_ofc.send(ctx.allocator, route, report);
 }
 
 /// Format human-like report that explains WHAT happened and WHY

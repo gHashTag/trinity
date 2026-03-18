@@ -107,7 +107,12 @@ pub const Alert = struct {
 pub const LocusState = struct {
     arousal: ArousalLevel = .normal,
     alert_count: u32 = 0,
-    last_alert: Alert = Alert{},
+    last_alert: Alert = Alert{
+        .kind = .worker_crashed,
+        .level = .normal,
+        .message_len = 0,
+        .timestamp = 0,
+    },
     alert_sink: ?AlertSink = null,
 };
 
@@ -150,7 +155,7 @@ pub fn triggerAlarm(
     alert.message_len = len;
 
     // Raise arousal
-    if (alert_level > state.arousal) {
+    if (@intFromEnum(alert_level) > @intFromEnum(state.arousal)) {
         state.arousal = alert_level;
     }
 
@@ -179,13 +184,15 @@ pub fn getAlertCount(state: *const LocusState) u32 {
 
 /// Decay arousal over time (natural relaxation)
 pub fn decayArousal(state: *LocusState, decay_sec: u32) void {
+    _ = decay_sec;
     const now = std.time.timestamp();
     const last_alert_age = now - state.last_alert.timestamp;
 
     // Fast decay: lose 1 level per 5 minutes of no alerts
     if (last_alert_age > 300) {
-        if (state.arousal > .sleep) {
-            state.arousal = @intFromEnum(@intFromEnum(state.arousal) - 1);
+        const current_level = @intFromEnum(state.arousal);
+        if (current_level > 0) {
+            state.arousal = @as(ArousalLevel, @enumFromInt(current_level - 1));
         }
     }
 }
@@ -199,12 +206,7 @@ fn logToHippocampus(state: *const LocusState, kind: AlertKind, message: []const 
     );
     defer std.heap.page_allocator.free(data);
 
-    _ = try hippocampus.write(std.heap.page_allocator, .{
-        .agent = "locus_coeruleus",
-        .kind = .@"error",
-        .summary = "alert triggered",
-        .data = data,
-    });
+    _ = try hippocampus.writeError(std.heap.page_allocator, "locus_coeruleus", "alert triggered", data);
 }
 
 // ═════════════════════════════════════════════════════════════════
