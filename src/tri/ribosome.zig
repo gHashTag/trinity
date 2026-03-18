@@ -369,15 +369,12 @@ pub fn discoverAllEx(allocator: Allocator, options: DiscoveryOptions) !Discovery
             const manifest = parse(content);
 
             if (manifest.id.len > 0) {
-                const sub_dir = std.fs.path.dirname(cf.path) orelse "";
-                const scan_dir = for (CELL_SCAN_DIRS) |d| {
-                    if (std.mem.startsWith(u8, cf.path, d)) break d;
-                } else "src";
-
-                const cell_dir = if (sub_dir.len > 0)
-                    try std.fmt.allocPrint(allocator, "{s}/{s}", .{ scan_dir, sub_dir })
-                else
-                    try allocator.dupe(u8, scan_dir);
+                // cf.path is like "src/research/cell.tri"
+                // We need to extract "src/research" as the cell directory
+                const cell_dir_with_file = std.fs.path.dirname(cf.path) orelse "";
+                // cell_dir_with_file is now "src/research"
+                // Just use it directly (no need to prepend scan_dir again)
+                const cell_dir = try allocator.dupe(u8, cell_dir_with_file);
 
                 try scan_results.append(.{
                     .content = content,
