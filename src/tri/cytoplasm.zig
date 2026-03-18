@@ -203,6 +203,9 @@ fn printHelp() void {
     std.debug.print("  {s}list --health{s}     Show health score per cell\n", .{ GREEN, RESET });
     std.debug.print("  {s}list --scope X{s}    Filter by tags.scope\n", .{ GREEN, RESET });
     std.debug.print("  {s}list --type Y{s}     Filter by tags.type\n", .{ GREEN, RESET });
+    std.debug.print("  {s}list --json{s}       Export cell data as JSON array\n", .{ GREEN, RESET });
+    std.debug.print("  {s}list --sort <field>{s}  Sort by: name, health, grade, tests, files, caps, id\n", .{ GREEN, RESET });
+    std.debug.print("  {s}list --filter-min N{s}  Show only cells with health < N%%\n", .{ GREEN, RESET });
     std.debug.print("  {s}info <id>{s}         Show cell details (tags, deps, health)\n", .{ GREEN, RESET });
     std.debug.print("  {s}init <id>{s}         Scaffold a new cell (cell.tri + src + test)\n", .{ GREEN, RESET });
     std.debug.print("  {s}init <id> --with-test{s}  Also create <name>.test.zig\n", .{ GREEN, RESET });

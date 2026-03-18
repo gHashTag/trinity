@@ -2066,7 +2066,7 @@ pub fn parseTrainingLine(line: []const u8) ?TrainingMetrics {
     for (line, 0..) |c, ci| {
         if (c == '|') {
             if (col_idx < 8) {
-                columns[col_idx] = std.mem.trim(u8, line[start..ci], &[_]u8{' ', '\t'});
+                columns[col_idx] = std.mem.trim(u8, line[start..ci], &[_]u8{ ' ', '\t' });
                 col_idx += 1;
             }
             start = ci + 1;
@@ -2074,7 +2074,7 @@ pub fn parseTrainingLine(line: []const u8) ?TrainingMetrics {
     }
     // Last column
     if (col_idx < 8 and start < line.len) {
-        columns[col_idx] = std.mem.trim(u8, line[start..], &[_]u8{' ', '\t'});
+        columns[col_idx] = std.mem.trim(u8, line[start..], &[_]u8{ ' ', '\t' });
         col_idx += 1;
     }
 

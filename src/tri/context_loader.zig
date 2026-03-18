@@ -115,7 +115,7 @@ pub fn findRelevantSpecs(allocator: std.mem.Allocator, words: []const []const u8
                 if (std.mem.indexOf(u8, content, "description:")) |desc_start| {
                     const after = content[@min(desc_start + 12, content.len)..];
                     const line_end = std.mem.indexOf(u8, after, "\n") orelse after.len;
-                    const desc = std.mem.trim(u8, after[0..@min(line_end, 200)], &[_]u8{' ', '|', '\n'});
+                    const desc = std.mem.trim(u8, after[0..@min(line_end, 200)], &[_]u8{ ' ', '|', '\n' });
                     copyFixed(&sm.description, &sm.desc_len, desc);
                 }
             }

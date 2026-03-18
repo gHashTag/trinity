@@ -1834,7 +1834,7 @@ fn cloudMonitor(allocator: Allocator) !void {
     if (std.mem.indexOf(u8, output, "===BRIDGE===")) |_| {
         const bridge_start = (std.mem.indexOf(u8, output, "===BRIDGE===") orelse 0) + 12;
         const bridge_end = std.mem.indexOfPos(u8, output, bridge_start, "===TMUX===") orelse output.len;
-        const bridge_section = std.mem.trim(u8, output[bridge_start..bridge_end], &[_]u8{' ', '\n', '\r', '\t'});
+        const bridge_section = std.mem.trim(u8, output[bridge_start..bridge_end], &[_]u8{ ' ', '\n', '\r', '\t' });
 
         if (std.mem.indexOf(u8, bridge_section, "\"status\":\"ok\"") != null) {
             // Extract queue info
@@ -1851,7 +1851,7 @@ fn cloudMonitor(allocator: Allocator) !void {
     if (std.mem.indexOf(u8, output, "===TMUX===")) |_| {
         const tmux_start = (std.mem.indexOf(u8, output, "===TMUX===") orelse 0) + 10;
         const tmux_end = std.mem.indexOfPos(u8, output, tmux_start, "===PROCS===") orelse output.len;
-        const tmux_section = std.mem.trim(u8, output[tmux_start..tmux_end], &[_]u8{' ', '\n', '\r', '\t'});
+        const tmux_section = std.mem.trim(u8, output[tmux_start..tmux_end], &[_]u8{ ' ', '\n', '\r', '\t' });
 
         if (std.mem.eql(u8, tmux_section, "NO_TMUX")) {
             print(" tmux:   {s}{s}  No sessions{s}\n", .{ RED, "❌", RESET });
@@ -1891,7 +1891,7 @@ fn cloudMonitor(allocator: Allocator) !void {
     if (std.mem.indexOf(u8, output, "===PROCS===")) |_| {
         const procs_start = (std.mem.indexOf(u8, output, "===PROCS===") orelse 0) + 11;
         const procs_end = std.mem.indexOfPos(u8, output, procs_start, "===DISK===") orelse output.len;
-        const procs_section = std.mem.trim(u8, output[procs_start..procs_end], &[_]u8{' ', '\n', '\r', '\t'});
+        const procs_section = std.mem.trim(u8, output[procs_start..procs_end], &[_]u8{ ' ', '\n', '\r', '\t' });
 
         const has_mcp = std.mem.indexOf(u8, procs_section, "NO_TRINITY_MCP") == null;
         const has_api = std.mem.indexOf(u8, procs_section, "NO_TRI_API") == null;
@@ -1910,7 +1910,7 @@ fn cloudMonitor(allocator: Allocator) !void {
     // === DISK ===
     if (std.mem.indexOf(u8, output, "===DISK===")) |_| {
         const disk_start = (std.mem.indexOf(u8, output, "===DISK===") orelse 0) + 10;
-        const disk_section = std.mem.trim(u8, output[disk_start..], &[_]u8{' ', '\n', '\r', '\t'});
+        const disk_section = std.mem.trim(u8, output[disk_start..], &[_]u8{ ' ', '\n', '\r', '\t' });
 
         // Extract percentage — look for pattern like "XX%"
         var pct: u32 = 0;

@@ -194,7 +194,7 @@ pub const WorkflowParser = struct {
                     var kv_it = std.mem.tokenize(u8, var_pair, "=");
                     if (kv_it.next()) |key| {
                         if (kv_it.next()) |value| {
-                            try options.variables.put(try allocator.dupe(u8, std.mem.trim(u8, key, &[_]u8{' ', '\t', '"', '\''})), try allocator.dupe(u8, std.mem.trim(u8, value, &[_]u8{' ', '\t', '"', '\''})));
+                            try options.variables.put(try allocator.dupe(u8, std.mem.trim(u8, key, &[_]u8{ ' ', '\t', '"', '\'' })), try allocator.dupe(u8, std.mem.trim(u8, value, &[_]u8{ ' ', '\t', '"', '\'' })));
                         }
                     }
                 }
@@ -212,7 +212,7 @@ pub const WorkflowParser = struct {
 
             // Parse resume_from_step
             if (root.get("resume_from_step")) |resume_str| {
-                options.resume_from_step = try allocator.dupe(u8, std.mem.trim(u8, resume_str, &[_]u8{' ', '\t', '"', '\''}));
+                options.resume_from_step = try allocator.dupe(u8, std.mem.trim(u8, resume_str, &[_]u8{ ' ', '\t', '"', '\'' }));
             }
 
             // Parse timeout_ms
@@ -246,12 +246,12 @@ pub const WorkflowParser = struct {
         defer stack.deinit();
 
         while (lines.next()) |line| {
-            const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t'});
+            const trimmed = std.mem.trim(u8, line, &[_]u8{ ' ', '\t' });
             if (trimmed.len == 0 or std.mem.startsWith(u8, trimmed, "#")) {
                 continue; // Skip empty lines and comments
             }
 
-            const indent = std.mem.trim(u8, line, &[_]u8{' ', '\t'}).ptr - line.ptr;
+            const indent = std.mem.trim(u8, line, &[_]u8{ ' ', '\t' }).ptr - line.ptr;
             const content = trimmed;
 
             if (std.mem.startsWith(u8, content, "- ")) {
@@ -267,14 +267,14 @@ pub const WorkflowParser = struct {
                 const key = content[0..colon_pos];
                 const value = content[colon_pos + 1 ..];
 
-                if (std.mem.trim(u8, value, &[_]u8{' ', '\t'}).len == 0) {
+                if (std.mem.trim(u8, value, &[_]u8{ ' ', '\t' }).len == 0) {
                     // Object - push to stack
                     const new_map = StringHashMap([]const u8).init(allocator);
                     try stack.append(.{ .indent = indent, .map = new_map });
                     try doc.root.object.put(key, try allocator.dupe(u8, ""));
                 } else {
                     // Scalar value
-                    try doc.root.object.put(key, try allocator.dupe(u8, std.mem.trim(u8, value, &[_]u8{' ', '\t', '"', '\''})));
+                    try doc.root.object.put(key, try allocator.dupe(u8, std.mem.trim(u8, value, &[_]u8{ ' ', '\t', '"', '\'' })));
                 }
             } else {
                 return ParserError.InvalidYaml;
@@ -286,7 +286,7 @@ pub const WorkflowParser = struct {
 
     /// Parse workflow strategy from string
     fn parseStrategy(strategy_str: []const u8) !workflow.WorkflowStrategy {
-        const normalized = std.mem.trim(u8, strategy_str, &[_]u8{' ', '\t', '"', '\''});
+        const normalized = std.mem.trim(u8, strategy_str, &[_]u8{ ' ', '\t', '"', '\'' });
         if (std.mem.eql(u8, normalized, "sequential")) {
             return .sequential;
         } else if (std.mem.eql(u8, normalized, "parallel")) {
@@ -302,7 +302,7 @@ pub const WorkflowParser = struct {
 
     /// Parse workflow realm from string
     fn parseRealm(realm_str: []const u8) !workflow.WorkflowRealm {
-        const normalized = std.mem.trim(u8, realm_str, &[_]u8{' ', '\t', '"', '\''});
+        const normalized = std.mem.trim(u8, realm_str, &[_]u8{ ' ', '\t', '"', '\'' });
         if (std.mem.eql(u8, normalized, "razum")) {
             return .razum;
         } else if (std.mem.eql(u8, normalized, "materiya")) {
@@ -318,7 +318,7 @@ pub const WorkflowParser = struct {
 
     /// Parse boolean value from string
     fn parseBoolean(value_str: []const u8) !bool {
-        const normalized = std.mem.trim(u8, value_str, &[_]u8{' ', '\t', '"', '\''});
+        const normalized = std.mem.trim(u8, value_str, &[_]u8{ ' ', '\t', '"', '\'' });
         if (std.mem.eql(u8, normalized, "true") or std.mem.eql(u8, normalized, "1")) {
             return true;
         } else if (std.mem.eql(u8, normalized, "false") or std.mem.eql(u8, normalized, "0")) {
@@ -330,7 +330,7 @@ pub const WorkflowParser = struct {
 
     /// Parse integer value from string
     fn parseInteger(comptime T: type, value_str: []const u8) !T {
-        const normalized = std.mem.trim(u8, value_str, &[_]u8{' ', '\t', '"', '\''});
+        const normalized = std.mem.trim(u8, value_str, &[_]u8{ ' ', '\t', '"', '\'' });
         return std.fmt.parseInt(T, normalized, 10) catch return ParserError.InvalidFieldType;
     }
 
@@ -341,7 +341,7 @@ pub const WorkflowParser = struct {
         // Simple variables parsing: key=value pairs separated by newlines
         var it = std.mem.tokenize(u8, vars_str, "\n");
         while (it.next()) |line| {
-            const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t'});
+            const trimmed = std.mem.trim(u8, line, &[_]u8{ ' ', '\t' });
             if (trimmed.len == 0) continue;
 
             const equal_pos = std.mem.indexOf(u8, trimmed, "=");
@@ -349,8 +349,8 @@ pub const WorkflowParser = struct {
                 const key = trimmed[0..pos];
                 const value = trimmed[pos + 1 ..];
 
-                const var_name = std.mem.trim(u8, key, &[_]u8{' ', '\t', '"', '\''});
-                const var_value = std.mem.trim(u8, value, &[_]u8{' ', '\t', '"', '\''});
+                const var_name = std.mem.trim(u8, key, &[_]u8{ ' ', '\t', '"', '\'' });
+                const var_value = std.mem.trim(u8, value, &[_]u8{ ' ', '\t', '"', '\'' });
 
                 if (var_name.len > workflow.MAX_VARIABLE_NAME_LENGTH) {
                     return ParserError.InvalidVariableName;
@@ -376,7 +376,7 @@ pub const WorkflowParser = struct {
         var step_index: usize = 0;
 
         while (lines.next()) |line| {
-            const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t'});
+            const trimmed = std.mem.trim(u8, line, &[_]u8{ ' ', '\t' });
             if (trimmed.len == 0 or std.mem.startsWith(u8, trimmed, "#")) {
                 continue;
             }
@@ -425,7 +425,7 @@ pub const WorkflowParser = struct {
         // Parse step properties
         const lines = std.mem.splitScalar(u8, step_yaml, '\n');
         while (lines.next()) |line| {
-            const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t'});
+            const trimmed = std.mem.trim(u8, line, &[_]u8{ ' ', '\t' });
             if (trimmed.len == 0) continue;
 
             if (std.mem.indexOf(u8, trimmed, ":") != null) {
@@ -433,8 +433,8 @@ pub const WorkflowParser = struct {
                 const key = trimmed[0..colon_pos];
                 const value = trimmed[colon_pos + 1 ..];
 
-                const normalized_key = std.mem.trim(u8, key, &[_]u8{' ', '\t'});
-                const normalized_value = std.mem.trim(u8, value, &[_]u8{' ', '\t', '"', '\''});
+                const normalized_key = std.mem.trim(u8, key, &[_]u8{ ' ', '\t' });
+                const normalized_value = std.mem.trim(u8, value, &[_]u8{ ' ', '\t', '"', '\'' });
 
                 if (std.mem.eql(u8, normalized_key, "id")) {
                     step.id = try allocator.dupe(u8, normalized_value);
@@ -450,7 +450,7 @@ pub const WorkflowParser = struct {
                 } else if (std.mem.eql(u8, normalized_key, "depends_on")) {
                     var deps = std.mem.tokenize(u8, normalized_value, ", ");
                     while (deps.next()) |dep| {
-                        const dep_trimmed = std.mem.trim(u8, dep, &[_]u8{' ', '\t', '"', '\''});
+                        const dep_trimmed = std.mem.trim(u8, dep, &[_]u8{ ' ', '\t', '"', '\'' });
                         try step.depends_on.append(try allocator.dupe(u8, dep_trimmed));
                     }
                 } else if (std.mem.eql(u8, normalized_key, "realm")) {
@@ -489,7 +489,7 @@ pub const WorkflowParser = struct {
     /// Parse array item (for steps)
     fn parseArrayItem(self: *WorkflowParser, map: *StringHashMap([]const u8), item: []const u8, indent: usize) !void {
         const allocator = self.allocator;
-        const trimmed = std.mem.trim(u8, item, &[_]u8{' ', '\t'});
+        const trimmed = std.mem.trim(u8, item, &[_]u8{ ' ', '\t' });
 
         // Handle object array items
         if (std.mem.indexOf(u8, trimmed, ":") != null) {
@@ -497,8 +497,8 @@ pub const WorkflowParser = struct {
             const key = trimmed[0..colon_pos];
             const value = trimmed[colon_pos + 1 ..];
 
-            const normalized_key = std.mem.trim(u8, key, &[_]u8{' ', '\t'});
-            const normalized_value = std.mem.trim(u8, value, &[_]u8{' ', '\t', '"', '\''});
+            const normalized_key = std.mem.trim(u8, key, &[_]u8{ ' ', '\t' });
+            const normalized_value = std.mem.trim(u8, value, &[_]u8{ ' ', '\t', '"', '\'' });
 
             try map.put(normalized_key, normalized_value);
         }
@@ -510,7 +510,7 @@ pub const WorkflowParser = struct {
 
         var lines = std.mem.tokenize(u8, config_str, "\n");
         while (lines.next()) |line| {
-            const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t'});
+            const trimmed = std.mem.trim(u8, line, &[_]u8{ ' ', '\t' });
             if (trimmed.len == 0) continue;
 
             if (std.mem.indexOf(u8, trimmed, ":") != null) {
@@ -518,8 +518,8 @@ pub const WorkflowParser = struct {
                 const key = trimmed[0..colon_pos];
                 const value = trimmed[colon_pos + 1 ..];
 
-                const normalized_key = std.mem.trim(u8, key, &[_]u8{' ', '\t'});
-                const normalized_value = std.mem.trim(u8, value, &[_]u8{' ', '\t', '"', '\''});
+                const normalized_key = std.mem.trim(u8, key, &[_]u8{ ' ', '\t' });
+                const normalized_value = std.mem.trim(u8, value, &[_]u8{ ' ', '\t', '"', '\'' });
 
                 if (std.mem.eql(u8, normalized_key, "max_concurrent_steps")) {
                     config.max_concurrent_steps = try parseInteger(u32, normalized_value);

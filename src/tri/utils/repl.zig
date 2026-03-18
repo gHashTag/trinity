@@ -120,7 +120,7 @@ pub fn detectMode(input: []const u8) ?std.meta.DeclEnum(@import("../trinity_swe"
 }
 
 pub fn processInput(state: anytype, input: []const u8) void {
-    const trimmed = std.mem.trim(u8, input, &[_]u8{' ', '\t', '\n', '\r'});
+    const trimmed = std.mem.trim(u8, input, &[_]u8{ ' ', '\t', '\n', '\r' });
     if (trimmed.len == 0) return;
 
     // Check for REPL commands
@@ -210,7 +210,7 @@ pub fn runInteractiveMode(state: anytype) !void {
             else => return err,
         };
 
-        const input = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
+        const input = std.mem.trim(u8, line, &[_]u8{ ' ', '\t', '\r' });
 
         if (input.len == 0) continue;
 

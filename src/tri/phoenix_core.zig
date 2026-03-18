@@ -297,7 +297,7 @@ pub const PhoenixCore = struct {
             }
             if (std.mem.startsWith(u8, trimmed, "- [ ]")) {
                 const desc_raw = trimmed[5..];
-                const desc = std.mem.trim(u8, desc_raw, &[_]u8{' ', '\t'});
+                const desc = std.mem.trim(u8, desc_raw, &[_]u8{ ' ', '\t' });
                 if (desc.len == 0) continue;
 
                 const task_id = std.fmt.allocPrint(self.allocator, "FIX-{d}", .{task_idx}) catch continue;

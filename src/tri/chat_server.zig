@@ -878,27 +878,27 @@ pub const ChatServer = struct {
             var line_iter = std.mem.splitScalar(u8, code, '\n');
             while (line_iter.next()) |line| {
                 lines_count += 1;
-                const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
+                const trimmed = std.mem.trim(u8, line, &[_]u8{ ' ', '\t', '\r' });
                 if (trimmed.len == 0 or trimmed[0] == '#') continue;
 
                 // Top-level keys
                 if (std.mem.startsWith(u8, trimmed, "name:")) {
-                    name = std.mem.trim(u8, trimmed[5..], &[_]u8{' ', '\t'});
+                    name = std.mem.trim(u8, trimmed[5..], &[_]u8{ ' ', '\t' });
                     has_name = true;
                     in_types = false;
                     in_behaviors = false;
                 } else if (std.mem.startsWith(u8, trimmed, "version:")) {
-                    const v = std.mem.trim(u8, trimmed[8..], &[_]u8{' ', '\t', '"'});
+                    const v = std.mem.trim(u8, trimmed[8..], &[_]u8{ ' ', '\t', '"' });
                     if (v.len > 0) version = v;
                     has_version = true;
                     in_types = false;
                     in_behaviors = false;
                 } else if (std.mem.startsWith(u8, trimmed, "language:")) {
-                    lang = std.mem.trim(u8, trimmed[9..], &[_]u8{' ', '\t'});
+                    lang = std.mem.trim(u8, trimmed[9..], &[_]u8{ ' ', '\t' });
                     in_types = false;
                     in_behaviors = false;
                 } else if (std.mem.startsWith(u8, trimmed, "module:")) {
-                    module = std.mem.trim(u8, trimmed[7..], &[_]u8{' ', '\t'});
+                    module = std.mem.trim(u8, trimmed[7..], &[_]u8{ ' ', '\t' });
                     in_types = false;
                     in_behaviors = false;
                 } else if (std.mem.eql(u8, trimmed, "types:")) {

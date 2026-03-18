@@ -888,7 +888,7 @@ pub const TriSpecParser = struct {
             if (c == '#') break;
             self.pos += 1;
         }
-        return std.mem.trim(u8, self.source[start..self.pos], &[_]u8{' ', '\t'});
+        return std.mem.trim(u8, self.source[start..self.pos], &[_]u8{ ' ', '\t' });
     }
 
     fn readQuotedValue(self: *Self) []const u8 {
@@ -922,7 +922,7 @@ pub const TriSpecParser = struct {
         while (idx < val.len and (val[idx] == '[' or val[idx] == ' ')) : (idx += 1) {}
         const start1 = idx;
         while (idx < val.len and val[idx] != ',' and val[idx] != ']') : (idx += 1) {}
-        const num1 = std.mem.trim(u8, val[start1..idx], &[_]u8{' ', '\t'});
+        const num1 = std.mem.trim(u8, val[start1..idx], &[_]u8{ ' ', '\t' });
         result[0] = std.fmt.parseInt(i8, num1, 10) catch 0;
 
         // Skip comma
@@ -930,7 +930,7 @@ pub const TriSpecParser = struct {
         while (idx < val.len and val[idx] == ' ') : (idx += 1) {}
         const start2 = idx;
         while (idx < val.len and val[idx] != ']' and val[idx] != ' ') : (idx += 1) {}
-        const num2 = std.mem.trim(u8, val[start2..idx], &[_]u8{' ', '\t', ']'});
+        const num2 = std.mem.trim(u8, val[start2..idx], &[_]u8{ ' ', '\t', ']' });
         result[1] = std.fmt.parseInt(i8, num2, 10) catch 0;
 
         return result;
