@@ -321,10 +321,7 @@ const CellCache = struct {
         try root.put("cells", std.json.Value{ .array = cells_array });
 
         const root_value = std.json.Value{ .object = root };
-        var list = std.ArrayList(u8).initCapacity(allocator, 1024) catch unreachable;
-        defer list.deinit(allocator);
-        try std.json.stringify(root_value, .{ .whitespace = .indent_2 }, list.writer());
-        return list.toOwnedSlice(allocator);
+        return std.json.Stringify.valueAlloc(allocator, root_value, .{ .whitespace = .indent_2 });
     }
 
     /// Deserialize cache from JSON
