@@ -698,3 +698,20 @@ test "thalamus GitHubCache TTL works" {
     const result2 = try cache.get(std.testing.allocator);
     try std.testing.expectEqual(@as(usize, 0), result2.open); // No GitHub client yet
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RELAY 14: Locus Coeruleus Arousal — load state, apply decay, return level
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
+
+pub fn getLocusArousal() locus_coeruleus.ArousalLevel {
+    // Load state from file (returns default if missing)
+    var state = locus_coeruleus.loadState();
+
+    // Apply decay before reading arousal (5 min = -1 level)
+    locus_coeruleus.decayArousal(&state, 300);
+
+    // Return decayed arousal level
+    return locus_coeruleus.getArousal(&state);
+}

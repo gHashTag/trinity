@@ -229,16 +229,8 @@ fn cmdTamagotchiReport(allocator: Allocator) !void {
     // Health = build ok + faculty count
     const health_ok = snap.build_ok and snap.activeFaculty() >= 3;
 
-    // Arousal assessment based on system state
-    // TODO: Integrate with Locus Coeruleus arousal tracking
-    const arousal = if (!snap.build_ok)
-        locus_coeruleus.ArousalLevel.alarm
-    else if (snap.dirty_files > 50 or snap.open_issues > 20)
-        locus_coeruleus.ArousalLevel.alarm
-    else if (snap.v_zone == .drift)
-        locus_coeruleus.ArousalLevel.alert
-    else
-        locus_coeruleus.ArousalLevel.normal;
+    // Arousal from Locus Coeruleus (time-decayed state, not raw issue count)
+    const arousal = thalamus.getLocusArousal();
 
     // Stage based on uptime
     const stage = stageFromUptime(uptime);
