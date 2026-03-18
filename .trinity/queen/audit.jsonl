@@ -64,3 +64,12 @@
 Changes not staged for commit:
   (use "git add <file>..." to up"}
 {"ts":1773854832,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773855085,"kind":"auto","action":"experience save","verdict":"OK","success":true,"detail":"[31mError: --task is required[0m
+"}
+{"ts":1773855089,"kind":"auto-action","action":"notify","verdict":"OK","success":true,"detail":"Celebrating farm progress"}
+{"ts":1773855131,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773855132,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773855137,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773855138,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773855258,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773855260,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
