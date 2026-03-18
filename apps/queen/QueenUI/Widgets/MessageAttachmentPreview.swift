@@ -709,7 +709,7 @@ struct FileMetadataBadge: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 4)
         .background(
-            Capsule()
+            SwiftUI.Capsule()
                 .fill(attachment.fileType.color.opacity(0.15))
         )
         .accessibilityLabel("File type: \(attachment.fileType.accessibilityLabel), Size: \(attachment.formattedSize)")
