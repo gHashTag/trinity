@@ -32,6 +32,9 @@ process = "none"
 ffi = "none"
 concurrency = "none"
 
+
+[biology]
+system = "body"
 [security]
 signed = true
 signature = "sha256:e295599f8a903a6e3becb219d895b7128ecc81b9dcf126f1571e7e9c93d5bb57"

@@ -32,6 +32,9 @@ process = "spawn"
 
 ffi = "none"
 concurrency = "none"
+
+[biology]
+system = "body"
 [security]
 signed = true
 signature = "sha256:3874bb88511779edc00651e06a7d7e529fca9aef428e8f78314fa0775b96017e"

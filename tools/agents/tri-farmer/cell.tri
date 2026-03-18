@@ -28,5 +28,9 @@ process = "none"
 ffi = "none"
 concurrency = "none"
 
+
+[biology]
+system = "body"
+organ = "evolution"
 [security]
 signed = "true"
