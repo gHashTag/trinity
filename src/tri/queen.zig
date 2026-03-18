@@ -65,6 +65,8 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
 
     if (std.mem.eql(u8, args[0], "supervisor")) {
         try runSupervisorMode(allocator);
+    } else if (std.mem.eql(u8, args[0], "stop")) {
+        try stopSupervisor();
     } else if (std.mem.eql(u8, args[0], "start")) {
         var config = QueenConfig{};
         var i: usize = 1;
@@ -118,6 +120,7 @@ fn printUsage() void {
         "{s}Usage:{s}\n" ++
         "  tri queen supervisor           Autonomous monitoring + self-healing\n" ++
         "  tri queen start [--daemon] [--interval <sec>] [--god-mode]\n" ++
+        "  tri queen stop                                      Stop supervisor daemon\n" ++
         "  tri queen status\n" ++
         "  tri queen once\n" ++
         "  tri queen senses\n" ++
@@ -511,6 +514,128 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 // SUPERVISOR MODE — Autonomous monitoring + self-healing
 // ═══════════════════════════════════════════════════════════════════════════════
+
+const SupervisorConfig = struct {
+    daemon: bool = false,
+    interval_sec: u64 = 60, // 1 min default for supervisor (faster than main loop)
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PID FILE MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn writePidFile() !void {
+    const pid = std.posix.getpid();
+    const dir = std.fs.cwd().makeOpenPath(".trinity/queen", .{}) catch |err| {
+        print("  {s}" ++ qt.E_CROSS ++ " Failed to create .trinity/queen: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return err;
+    };
+    defer dir.close();
+
+    var file = try dir.createFile("supervisor.pid", .{ .truncate = true });
+    defer file.close();
+    var buf: [32]u8 = undefined;
+    const pid_str = std.fmt.bufPrint(&buf, "{d}", .{pid}) catch return error.InvalidPid;
+    try file.writeAll(pid_str);
+}
+
+fn removePidFile() void {
+    std.fs.cwd().deleteFile(qt.SUPERVISOR_PID_PATH) catch {};
+}
+
+fn isSupervisorRunning() bool {
+    const file = std.fs.cwd().openFile(qt.SUPERVISOR_PID_PATH, .{}) catch return false;
+    defer file.close();
+
+    var buf: [32]u8 = undefined;
+    const n = file.read(&buf) catch return false;
+    if (n == 0) return false;
+
+    const pid_str = buf[0..n];
+    const pid = std.fmt.parseInt(i32, pid_str, 10) catch return false;
+
+    // Check if process is running by sending signal 0
+    // Returns void on success (process exists), error on failure
+    std.posix.kill(pid, 0) catch return false;
+    return true;
+}
+
+fn stopSupervisor() !void {
+    if (!isSupervisorRunning()) {
+        print("{s}" ++ qt.E_CROSS ++ " Supervisor is not running{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const file = std.fs.cwd().openFile(qt.SUPERVISOR_PID_PATH, .{}) catch |err| {
+        print("  {s}" ++ qt.E_CROSS ++ " Failed to read PID file: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return err;
+    };
+    defer file.close();
+
+    var buf: [32]u8 = undefined;
+    const n = file.read(&buf) catch return error.ReadError;
+    const pid_str = buf[0..n];
+    const pid = std.fmt.parseInt(i32, pid_str, 10) catch return error.InvalidPid;
+
+    print("{s}" ++ qt.E_STOP ++ " Stopping supervisor (PID {d})...{s}\n", .{ GOLDEN, pid, RESET });
+
+    // Send SIGTERM (15) for graceful shutdown
+    if (std.posix.kill(pid, 15)) |_| {
+        // Success
+    } else |err| {
+        print("  {s}" ++ qt.E_CROSS ++ " Failed to stop supervisor: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return error.StopFailed;
+    }
+
+    // Wait a bit for process to exit
+    std.Thread.sleep(2 * std.time.ns_per_s);
+
+    if (isSupervisorRunning()) {
+        print("  {s}" ++ qt.E_SIREN ++ " Supervisor still running, try SIGKILL{s}\n", .{ RED, RESET });
+        _ = std.posix.kill(pid, 9) catch {}; // SIGKILL
+    } else {
+        print("  {s}" ++ qt.E_CHECK ++ " Supervisor stopped{s}\n", .{ GREEN, RESET });
+    }
+
+    removePidFile();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOGGING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const SupervisorLog = struct {
+    file: std.fs.File,
+    mutex: std.Thread.Mutex,
+
+    fn init() !SupervisorLog {
+        const dir = try std.fs.cwd().makeOpenPath(".trinity/queen", .{});
+        defer dir.close();
+
+        const file = try dir.createFile("supervisor.log", .{ .truncate = false });
+        try file.seekFromEnd(0);
+
+        return SupervisorLog{
+            .file = file,
+            .mutex = std.Thread.Mutex{},
+        };
+    }
+
+    fn log(self: *SupervisorLog, comptime fmt: []const u8, args: anytype) !void {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        const timestamp = std.time.timestamp();
+        var buf: [4096]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buf, "[{d}] {s}\n", .{ timestamp, std.fmt.fmtFmt(fmt, args) }) catch return;
+        try self.file.writeAll(msg);
+        try self.file.sync();
+    }
+
+    fn close(self: *SupervisorLog) void {
+        self.file.close();
+    }
+};
 
 pub fn runSupervisorMode(allocator: Allocator) !void {
     const cortex = @import("queen_cortex.zig");
@@ -1575,6 +1700,38 @@ fn writeAuditSummary(config: qt.QueenConfig, counters: *const queen_policy.Actio
 
 fn sleepInterval(sec: u64) void {
     std.Thread.sleep(sec * std.time.ns_per_s);
+}
+
+// Sleep that can be interrupted by checking running flag
+fn sleepInterruptible(running: *const std.atomic.Value(bool), interval_sec: u64) void {
+    const chunk_ns = 1 * std.time.ns_per_s; // Check every second
+    const total_ns = interval_sec * std.time.ns_per_s;
+    var elapsed: u64 = 0;
+
+    while (elapsed < total_ns) {
+        if (!running.load(.acquire)) return;
+        const remain = total_ns - elapsed;
+        const sleep_time = if (remain > chunk_ns) chunk_ns else remain;
+        std.Thread.sleep(sleep_time);
+        elapsed += sleep_time;
+    }
+}
+
+// Check if our PID file is still valid (exists and process is running)
+fn isPidFileValid() bool {
+    const file = std.fs.cwd().openFile(qt.SUPERVISOR_PID_PATH, .{}) catch return false;
+    defer file.close();
+
+    var buf: [32]u8 = undefined;
+    const n = file.read(&buf) catch return false;
+    if (n == 0) return false;
+
+    const pid_str = buf[0..n];
+    const pid = std.fmt.parseInt(i32, pid_str, 10) catch return false;
+
+    // Check if process exists by sending signal 0
+    const result = std.posix.kill(pid, 0);
+    return result == 0;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
