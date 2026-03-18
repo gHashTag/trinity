@@ -413,3 +413,142 @@ test "vlpfc — CellHealth from health() function" {
     try std.testing.expect(h.last_check != 0); // Should have timestamp
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
 }
+
+test "vlpfc — FilterConfig with suppress list" {
+    const suppress_list = &[_][]const u8{"unused", "noise"};
+
+    var config = FilterConfig{};
+    config.suppress = suppress_list;
+    config.max_relay_count = 5;
+
+    try std.testing.expectEqual(@as(usize, 2), config.suppress.len);
+    try std.testing.expectEqual(@as(u8, 5), config.max_relay_count);
+}
+
+test "vlpfc — FocusArea all values" {
+    const areas = [_]FocusArea{ .all, .farm, .training, .github, .self_check };
+    for (areas) |a| {
+        _ = a; // Verify all focus areas exist
+    }
+}
+
+test "vlpfc — PriorityRelay with owned value" {
+    const relay = PriorityRelay{
+        .name = "test_relay",
+        .value = "test_value",
+        .score = 0.75,
+        .value_is_owned = true,
+    };
+
+    try std.testing.expectEqual(@as(f32, 0.75), relay.score);
+    try std.testing.expect(relay.value_is_owned);
+}
+
+test "vlpfc — PriorityRelay with borrowed value" {
+    const relay = PriorityRelay{
+        .name = "borrowed",
+        .value = "borrowed_value",
+        .score = 0.5,
+        .value_is_owned = false,
+    };
+
+    try std.testing.expect(!relay.value_is_owned);
+    try std.testing.expectEqual(@as(f32, 0.5), relay.score);
+}
+
+test "vlpfc — FilteredState deinit handles empty" {
+    var state = FilteredState{};
+    state.deinit(std.testing.allocator);
+
+    // Should not crash
+}
+
+test "vlpfc — FilteredState deinit with owned values" {
+    var state = FilteredState{};
+    state.priority_relays_allocated = try std.testing.allocator.alloc(PriorityRelay, 1);
+    state.priority_relays = state.priority_relays_allocated;
+
+    state.priority_relays[0] = PriorityRelay{
+        .name = "owned",
+        .value = try std.testing.allocator.dupe(u8, "allocated_value"),
+        .score = 0.8,
+        .value_is_owned = true,
+    };
+
+    state.deinit(std.testing.allocator);
+
+    // Should free the allocated value
+}
+
+test "vlpfc — FilteredState alert count max" {
+    var state = FilteredState{};
+    state.alert_count = 255;
+
+    try std.testing.expectEqual(@as(u8, 255), state.alert_count);
+}
+
+test "vlpfc — FilteredState mood all AlertKind values" {
+    var state = FilteredState{};
+
+    const moods = [_]qt.AlertKind{
+        .build_broken,
+        .new_ppl_record,
+        .senior_killed,
+        .arena_upset,
+        .blocked_issue,
+        .dirty_overload,
+        .key_expired,
+    };
+
+    for (moods) |m| {
+        state.mood = m;
+        try std.testing.expectEqual(m, state.mood);
+    }
+}
+
+test "vlpfc — FilteredState setSummary with exact fit" {
+    var state = FilteredState{};
+    const text = "exact fit";
+
+    state.setSummary(text);
+
+    try std.testing.expectEqual(@as(usize, text.len), state.summary_len);
+    try std.testing.expectEqualStrings("exact fit", state.summaryStr());
+}
+
+test "vlpfc — FilteredState setSummary with truncation" {
+    var state = FilteredState{};
+    // Create text longer than summary array
+    const long_text = "x" ** 300;
+
+    state.setSummary(long_text);
+
+    // Should be truncated to summary array size
+    try std.testing.expectEqual(@as(usize, 256), state.summary_len);
+}
+
+test "vlpfc — CellHealth weak status" {
+    const h = CellHealth{ .status = .weak };
+
+    try std.testing.expectEqual(CellHealth.Status.weak, h.status);
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
+
+test "vlpfc — CellHealth broken status" {
+    const h = CellHealth{ .status = .broken };
+
+    try std.testing.expectEqual(CellHealth.Status.broken, h.status);
+}
+
+test "vlpfc — filterRelays with zero max_relay_count" {
+    const config = FilterConfig{
+        .focus = .all,
+        .max_relay_count = 0,
+    };
+
+    var result = try filterRelays(std.testing.allocator, config);
+    defer result.deinit(std.testing.allocator);
+
+    // Should succeed (returns empty set)
+    try std.testing.expectEqual(@as(usize, 0), result.priority_relays.len);
+}
