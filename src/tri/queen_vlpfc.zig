@@ -310,3 +310,106 @@ test "vlpfc — FocusArea enum coverage" {
         _ = fa; // Just verify all enum values exist
     }
 }
+
+test "vlpfc — FilterConfig default values" {
+    const config = FilterConfig{};
+    try std.testing.expectEqual(FocusArea.all, config.focus);
+    try std.testing.expectEqual(@as(usize, 0), config.suppress.len);
+    try std.testing.expectEqual(@as(u8, 3), config.max_relay_count);
+}
+
+test "vlpfc — PriorityRelay struct fields" {
+    const relay = PriorityRelay{
+        .name = "test",
+        .value = "value",
+        .score = 0.5,
+        .value_is_owned = false,
+    };
+
+    try std.testing.expectEqualStrings("test", relay.name);
+    try std.testing.expectEqualStrings("value", relay.value);
+    try std.testing.expectEqual(@as(f32, 0.5), relay.score);
+    try std.testing.expect(!relay.value_is_owned);
+}
+
+test "vlpfc — FilteredState default initialization" {
+    const state = FilteredState{};
+    try std.testing.expectEqual(@as(usize, 0), state.priority_relays.len);
+    try std.testing.expectEqual(@as(u8, 0), state.alert_count);
+    try std.testing.expectEqual(qt.AlertKind.build_broken, state.mood);
+    try std.testing.expectEqual(@as(usize, 0), state.summary_len);
+}
+
+test "vlpfc — FilteredState summaryStr returns slice" {
+    var state = FilteredState{};
+    state.setSummary("test");
+
+    const summary = state.summaryStr();
+    try std.testing.expectEqualStrings("test", summary);
+    try std.testing.expect(summary.len > 0);
+}
+
+test "vlpfc — FilteredState setSummary empty" {
+    var state = FilteredState{};
+    state.setSummary("");
+
+    try std.testing.expectEqual(@as(usize, 0), state.summary_len);
+    try std.testing.expectEqual(@as(usize, 0), state.summaryStr().len);
+}
+
+test "vlpfc — CellHealth struct defaults" {
+    const cell_health = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, cell_health.status);
+    try std.testing.expectEqual(@as(u32, 0), cell_health.cycle);
+    try std.testing.expectEqual(@as(i64, 0), cell_health.last_check);
+}
+
+test "vlpfc — CellHealth Status enum values" {
+    const statuses = [_]CellHealth.Status{ .healthy, .weak, .broken };
+    for (statuses) |s| {
+        _ = s; // Verify all enum values exist
+    }
+}
+
+test "vlpfc — filterRelays with max_relay_count=1" {
+    const config = FilterConfig{
+        .focus = .all,
+        .max_relay_count = 1,
+    };
+    var result = try filterRelays(std.testing.allocator, config);
+    defer result.deinit(std.testing.allocator);
+
+    try std.testing.expect(result.priority_relays.len <= 1);
+}
+
+test "vlpfc — filterRelays with max_relay_count=10" {
+    const config = FilterConfig{
+        .focus = .all,
+        .max_relay_count = 10,
+    };
+    var result = try filterRelays(std.testing.allocator, config);
+    defer result.deinit(std.testing.allocator);
+
+    try std.testing.expect(result.priority_relays.len <= 10);
+}
+
+test "vlpfc — PriorityRelay score range" {
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .all });
+    defer result.deinit(std.testing.allocator);
+
+    for (result.priority_relays) |relay| {
+        try std.testing.expect(relay.score >= 0.0 and relay.score <= 1.0);
+    }
+}
+
+test "vlpfc — FilteredState mood field" {
+    var state = FilteredState{};
+    state.mood = qt.AlertKind.new_ppl_record;
+    try std.testing.expectEqual(qt.AlertKind.new_ppl_record, state.mood);
+}
+
+test "vlpfc — CellHealth from health() function" {
+    const h = health();
+    try std.testing.expect(h.last_check != 0); // Should have timestamp
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
