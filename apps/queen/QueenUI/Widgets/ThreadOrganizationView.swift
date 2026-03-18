@@ -169,7 +169,7 @@ struct FlowLayout: Layout {
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let result = FlowResult(
-            maxWidth: proposal.replacingUnspecifiedDimensions().width ?? 0,
+            maxWidth: proposal.replacingUnspecifiedDimensions().width,
             subviews: subviews,
             spacing: spacing
         )
@@ -386,8 +386,8 @@ struct ThreadPriorityBadge: View {
         .padding(.horizontal, 6)
         .padding(.vertical, 3)
         .background(
-            Capsule()
-                .fill(priority.color.opacity(0.15))
+            priority.color.opacity(0.15),
+            in: SwiftUI.Capsule()
         )
     }
 }
