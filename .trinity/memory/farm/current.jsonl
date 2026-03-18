@@ -222,3 +222,5 @@
 ,"summary":"farm hslm-r28: stalled: step unchanged 2+ polls step=80000"}
 {"id":"mem_1773848051_farm_69951dc5","agent":"farm","kind":"observation","ts":1773848051,"tags":[],"ttl":2592000,"data":{"ts":1773848051606,"type":"health","svc":"hslm-r6","detail":"stalled: step unchanged 2+ polls","step":35000}
 ,"summary":"farm hslm-r6: stalled: step unchanged 2+ polls step=35000"}
+{"id":"mem_1773852094_farm_69950d88","agent":"farm","kind":"observation","ts":1773852094,"tags":[],"ttl":2592000,"data":{"ts":1773852094653,"type":"health","svc":"hslm-r10","detail":"stalled: step unchanged 2+ polls","step":80500}
+,"summary":"farm hslm-r10: stalled: step unchanged 2+ polls step=80500"}

@@ -1381,8 +1381,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
     } else if (std.mem.eql(u8, subcommand, "uart")) {
         return tri_fpga.runFpgaUartCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "power")) {
-        // TODO: Implement runFpgaPowerCommand
-        return tri_fpga.runFpgaStatusCommand(allocator, sub_args);
+        return tri_fpga.runFpgaPowerCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "infer")) {
         return tri_fpga.runFpgaInferCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "status")) {

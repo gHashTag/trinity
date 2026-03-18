@@ -246,7 +246,7 @@ test "locus_coeruleus — init sets sink" {
 
 test "locus_coeruleus — triggerAlarm raises arousal" {
     // Use a simple sink that just verifies it was called
-    const state = init(sinkFn);
+    var state = init(sinkFn);
 
     try triggerAlarm(&state, .worker_crashed, "Worker crashed", .alarm);
     try std.testing.expectEqual(ArousalLevel.alarm, state.arousal);

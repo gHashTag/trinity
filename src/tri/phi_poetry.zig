@@ -132,7 +132,7 @@ test "phi poetry — near phi" {
 
 test "FacultySnapshot struct" {
     const snap = makeSnap(4, 0.5, true, 85);
-    try std.testing.expect(snap.activeFaculty == 4);
+    try std.testing.expect(snap.activeFaculty() == 4);
 }
 
 test "phi poetry — drift zone" {

@@ -714,7 +714,7 @@ fn dispatchBrain(ctx: DispatchContext, buf: []u8) void {
 
     // Combined cycles
     const combined = dlpfc_health.cycle + vmpfc_health.cycle + ofc_health.cycle +
-                     vlpfc_health.cycle + dmpfc_health.cycle;
+        vlpfc_health.cycle + dmpfc_health.cycle;
 
     const msg = std.fmt.bufPrint(buf,
         \\{s} Brain Cells Status

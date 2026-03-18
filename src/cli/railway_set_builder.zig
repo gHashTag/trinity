@@ -39,7 +39,7 @@ pub fn main() !void {
         \\    }}
         \\  }}
         \\}}
-    , .{service_id, dockerfile_path}) catch return error.OutOfMemory;
+    , .{ service_id, dockerfile_path }) catch return error.OutOfMemory;
     defer allocator.free(query);
 
     std.debug.print("🔧 Setting builder for service {s}...\n", .{service_id});
@@ -51,11 +51,9 @@ pub fn main() !void {
     defer allocator.free(auth_header);
 
     const result = execCurl(allocator, &.{
-        "curl", "-s", "-X", "POST",
-        "-H", auth_header,
-        "-H", "Content-Type: application/json",
-        "-d", query,
-        "https://backboard.railway.app/graphql/v2",
+        "curl", "-s",        "-X",                                       "POST",
+        "-H",   auth_header, "-H",                                       "Content-Type: application/json",
+        "-d",   query,       "https://backboard.railway.app/graphql/v2",
     }) catch |err| {
         std.debug.print("❌ Failed to execute curl: {}\n", .{err});
         return err;

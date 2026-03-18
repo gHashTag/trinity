@@ -168,7 +168,7 @@ test "TrainLogEntry initialization" {
     };
 
     var buf = [_]u8{0} ** 1024;
-    _ = entry.toJson(&buf) catch unreachable;
+    _ = entry.toJson(&buf); // toJson returns []const u8, not error union
     const expected_json = "{\"step\":100}";
     try std.testing.expectEqualStrings(expected_json, entry.toJson(&buf));
 }

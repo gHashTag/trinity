@@ -128,10 +128,12 @@ test "pons — bridgeToCerebellum logs" {
 }
 
 test "pons — remDreaming logs" {
-    const errors = [_]Error{
-        .{ .code = "E001", .message = .{"Test error"} },
-        .{ .code = "E002", .message = .{"Another error"} },
+    var errors = [_]Error{
+        .{ .code = "E001" },
+        .{ .code = "E002" },
     };
+    errors[0].setMessage("Test error");
+    errors[1].setMessage("Another error");
 
     _ = try remDreaming(std.testing.allocator, &errors);
 

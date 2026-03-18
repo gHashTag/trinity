@@ -1,0 +1,1 @@
+{"task":"Queen auto-battle","winner":"BASELINE","timestamp":1773850674,"baseline":{"build":true,"test":true,"test_count":1,"diff":0,"ms":261419,"toxic":84.1,"score":0.714},"gladiator":{"build":true,"test":true,"test_count":1,"diff":0,"ms":267667,"toxic":69.1,"score":0.676}}

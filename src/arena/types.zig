@@ -165,6 +165,22 @@ pub const Battle = struct {
     latency_b_ms: u64 = 0,
     created_at: i64 = 0, // unix timestamp
     completed_at: ?i64 = null,
+    allocator: ?std.mem.Allocator = null, // for cleanup
+
+    /// Free allocated strings (call when done with battle)
+    /// Note: uses const_cast because allocator.free doesn't need mutability
+    pub fn deinit(self: *const Battle) void {
+        if (self.allocator) |alloc| {
+            if (self.response_a) |r| alloc.free(r);
+            if (self.response_b) |r| alloc.free(r);
+            if (self.judge_reasoning) |r| alloc.free(r);
+        }
+    }
+
+    /// Cleanup helper for const battle results
+    pub fn cleanup(self: *const Battle) void {
+        self.deinit();
+    }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
