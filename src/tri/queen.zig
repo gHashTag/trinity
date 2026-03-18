@@ -402,14 +402,14 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
             // READ phase
             queen_dlpfc.readSenses(allocator, &dlpfc_ctx) catch |err| {
                 if (!config.daemon) {
-                    print("  {s} DLPFC READ failed: {s}\n", .{qt.E_WRENCH, @errorName(err)});
+                    print("  {s} DLPFC READ failed: {s}\n", .{ qt.E_WRENCH, @errorName(err) });
                 }
             };
 
             // THINK phase
             const decision = queen_dlpfc.decide(&dlpfc_ctx) catch |err| blk: {
                 if (!config.daemon) {
-                    print("  {s} DLPFC THINK failed: {s}\n", .{qt.E_WRENCH, @errorName(err)});
+                    print("  {s} DLPFC THINK failed: {s}\n", .{ qt.E_WRENCH, @errorName(err) });
                 }
                 break :blk null;
             };
@@ -424,7 +424,7 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
                 // SPEAK phase
                 queen_dlpfc.speak(&dlpfc_ctx, d, act_result) catch |err| {
                     if (!config.daemon) {
-                        print("  {s} DLPFC SPEAK failed: {s}\n", .{qt.E_WRENCH, @errorName(err)});
+                        print("  {s} DLPFC SPEAK failed: {s}\n", .{ qt.E_WRENCH, @errorName(err) });
                     }
                 };
 
@@ -716,12 +716,10 @@ pub fn runSupervisorMode(allocator: Allocator) !void {
                 if (tg.enabled) {
                     var report_buf: [512]u8 = undefined;
                     const mood = queen_ofc.inferMood(snapshot.build_ok, senses.ouroboros_score, false);
-                    const report = std.fmt.bufPrint(&report_buf,
-                        "{s} Supervisor Healing #{d}\n\n" ++
+                    const report = std.fmt.bufPrint(&report_buf, "{s} Supervisor Healing #{d}\n\n" ++
                         "{s} Actions: {d}\n" ++
                         "{s} Success: {d} | Fail: {d}\n" ++
-                        "PFC Grade: {s}",
-                        .{
+                        "PFC Grade: {s}", .{
                         mood.emoji(),
                         cycle,
                         qt.E_WRENCH,
@@ -730,8 +728,7 @@ pub fn runSupervisorMode(allocator: Allocator) !void {
                         healing_result.success_count,
                         healing_result.failure_count,
                         grade,
-                        }
-                    ) catch "";
+                    }) catch "";
                     queen_telegram.tgSend(tg, report);
                 }
             }
@@ -1116,48 +1113,64 @@ fn sendAlerts(tg: qt.TgConfig, alerts: *const [8]Alert, count: usize) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn fmtHeartbeat(buf: []u8, snap: FacultySnapshot, evo: EvolutionInfo, arena: ArenaInfo, senses: qt.SenseResult) []const u8 {
-    const ts = std.time.timestamp();
-    const day_sec: u64 = @intCast(@mod(ts, 86400));
-    const hour = day_sec / 3600;
-    const minute = (day_sec % 3600) / 60;
+    _ = snap;
+    _ = arena;
 
-    const build_icon = if (snap.build_ok) qt.E_CHECK else qt.E_CROSS;
+    // Human-readable status briefing (scientific tone)
+    const farm_active = senses.farm_services - senses.farm_idle_count;
+    const training_status = if (farm_active == 0)
+        "Farm idle. Last training complete."
+    else if (evo.best_ppl < 3.0)
+        "Training running well! Excellent PPL."
+    else if (evo.best_ppl < 10.0)
+        "Training in progress."
+    else
+        "Training running.";
 
-    return std.fmt.bufPrint(buf, qt.E_CROWN ++ " Queen v2 | {d:0>2}:{d:0>2}\n" ++
-        "\n" ++
-        qt.E_BRAIN ++ " SEVO\n" ++
-        "   {s} \xe2\x80\x94 PPL {d:.1} (\xd1\x88\xd0\xb0\xd0\xb3 {d}K)\n" ++ // — PPL ... (шаг ...K)
-        "   {d} \xd0\xba\xd0\xbe\xd0\xbd\xd1\x84\xd0\xb8\xd0\xb3\xd0\xbe\xd0\xb2 | {d} \xd1\x81\xd0\xb5\xd1\x80\xd0\xb2\xd0\xb8\xd1\x81\xd0\xbe\xd0\xb2\n" ++ // конфигов | сервисов
-        "\n" ++
-        qt.E_SWORDS ++ " Arena: {d} \xd0\xb1\xd0\xbe\xd1\x91\xd0\xb2\n" ++ // боёв
-        "\n" ++
-        qt.E_CLIP ++ " Issues: {d} | Dirty: {d}\n" ++
-        "{s} Build {s} | V={d:.2} | {d}/6 \xd0\xb0\xd0\xb3\xd0\xb5\xd0\xbd\xd1\x82\xd0\xbe\xd0\xb2\n" ++ // агентов
-        "\n" ++
-        qt.E_EYE ++ " Senses: {d}%% tests | {d:.1}GB disk\n" ++
-        qt.E_KEY ++ " Keys: {d}/{d} | XP: {d}\n" ++
-        "{s} {s}", .{
-        hour,
-        minute,
+    const build_status = if (senses.build_ok)
+        "Build is healthy."
+    else
+        "Build broken - healing in progress.";
+
+    const system_status = if (!senses.build_ok)
+        "⚠️ System needs attention."
+    else if (senses.ouroboros_score >= 70)
+        "✅ All systems nominal."
+    else if (senses.ouroboros_score >= 40)
+        "⚠️ System recovering."
+    else
+        "🚨 Critical attention needed.";
+
+    return std.fmt.bufPrint(buf,
+        \\🧠 Queen Status Briefing
+        \\
+        \\{s}
+        \\
+        \\{s}
+        \\  • {s} — PPL {d:.1} ({d}K steps)
+        \\  • {d} configs tested | {d} workers
+        \\
+        \\{s}
+        \\  • Tests: {d}%% | Disk: {d:.1}GB
+        \\  • Issues: {d} | Dirty files: {d}
+        \\  • XP: {d} episodes
+        \\
+        \\{s}
+    , .{
+        training_status,
+        build_status,
         evo.bestNameStr(),
         evo.best_ppl,
         evo.best_step / 1000,
         evo.total_configs,
-        evo.service_count,
-        arena.total_battles,
-        snap.open_issues,
-        snap.dirty_files,
-        build_icon,
-        if (snap.build_ok) "OK" else "FAIL",
-        snap.v_number,
-        snap.activeFaculty(),
+        senses.farm_services,
+        system_status,
         senses.test_rate,
         senses.disk_free_gb,
-        senses.keys_present,
-        senses.keys_total,
+        senses.open_issues,
+        senses.dirty_files,
         senses.experience_count,
         senses.healthEmoji(),
-        if (!senses.build_ok) "BUILD BROKEN" else if (senses.ouroboros_score >= 70) "HEALTHY" else "RECOVERING",
     }) catch buf[0..0];
 }
 
