@@ -4194,8 +4194,8 @@ fn runCacheStats(allocator: Allocator) !void {
     std.debug.print("  {s}Cache file:{s}    {s}Exists{s}\n", .{ CYAN, RESET, GREEN, RESET });
     std.debug.print("  {s}File size:{s}     {s}{d} KB{s}\n", .{ CYAN, RESET, YELLOW, stats.file_size / 1024, RESET });
     std.debug.print("  {s}Total entries:{s} {d}\n", .{ CYAN, RESET, stats.total_entries });
-    std.debug.print("  {s}Valid entries:{s} {s}{d}{s}\n", .{ CYAN, RESET, GREEN, RESET, stats.valid_entries });
-    std.debug.print("  {s}Stale entries:{s} {s}{d}{s}\n", .{ CYAN, RESET, YELLOW, RESET, stats.stale_entries });
+    std.debug.print("  {s}Valid entries:{s} {s}{d}{s}\n", .{ CYAN, RESET, GREEN, stats.valid_entries, RESET });
+    std.debug.print("  {s}Stale entries:{s} {s}{d}{s}\n", .{ CYAN, RESET, YELLOW, stats.stale_entries, RESET });
 
     const hit_rate: f64 = if (stats.total_entries > 0)
         @as(f64, @floatFromInt(stats.valid_entries)) / @as(f64, @floatFromInt(stats.total_entries)) * 100.0
@@ -4203,7 +4203,7 @@ fn runCacheStats(allocator: Allocator) !void {
         0.0;
 
     const rate_color = if (hit_rate >= 90) GREEN else if (hit_rate >= 70) YELLOW else RED;
-    std.debug.print("  {s}Hit rate:{s}      {s}{f:.1}%{s}\n\n", .{ CYAN, RESET, rate_color, hit_rate, RESET });
+    std.debug.print("  {s}Hit rate:{s}      {s}{d:.1}%{s}\n\n", .{ CYAN, RESET, rate_color, hit_rate, RESET });
 
     if (stats.stale_entries > 0) {
         std.debug.print("  {s}Tip:{s} Run {s}tri cell cache --refresh{s} to update stale entries.\n\n", .{ YELLOW, RESET, CYAN, RESET });
@@ -4259,7 +4259,7 @@ fn runCacheRefresh(allocator: Allocator) !void {
         return;
     }
 
-    std.debug.print("Force refreshing all cached cells...\n", .{ YELLOW, RESET });
+    std.debug.print("{s}Force refreshing all cached cells...{s}\n", .{ YELLOW, RESET });
 
     const result = try cell_parser.discoverCached(allocator, .{
         .use_cache = true,
@@ -4274,7 +4274,7 @@ fn runCacheRefresh(allocator: Allocator) !void {
     }
 
     const ms = @as(f64, @floatFromInt(result.total_time_ns)) / 1_000_000.0;
-    std.debug.print("\n{s}Refreshed {d} cells in {d:.2} ms{s}\n\n", .{ GREEN, RESET, result.cells.len, ms, RESET });
+    std.debug.print("\n{s}Refreshed {d} cells in {d:.2} ms{s}\n\n", .{ GREEN, result.cells.len, ms, RESET });
 }
 // ENABLE/DISABLE — JSON roundtrip (no string hacks)
 // ═══════════════════════════════════════════════════════════════════════════════
