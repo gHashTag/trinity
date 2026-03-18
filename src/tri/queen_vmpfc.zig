@@ -148,7 +148,8 @@ test "vmpfc — assessFarmAction inject with gap" {
         .inject,
         5.0, // current_ppl
     );
-    defer std.testing.allocator.free(assessment.reasonStr());
+    // Note: assessment.reason is a fixed-size array, not heap-allocated
+    // No need to free it
 
     // Should recommend something (depends on farm state)
     try std.testing.expect(assessment.confidence >= 0.0);
@@ -181,7 +182,7 @@ test "vmpfc — assessFarmAction recycle decision" {
         .recycle,
         10.0,
     );
-    defer std.testing.allocator.free(assessment.reasonStr());
+    // Note: assessment.reason is a fixed-size array, not heap-allocated
 
     // Should return a valid assessment
     try std.testing.expect(assessment.roi >= 0.0);
@@ -195,7 +196,7 @@ test "vmpfc — assessFarmAction evolve always executes" {
         .evolve,
         5.0,
     );
-    defer std.testing.allocator.free(assessment.reasonStr());
+    // Note: assessment.reason is a fixed-size array, not heap-allocated
 
     try std.testing.expectEqual(Recommendation.execute, assessment.recommendation);
     try std.testing.expect(assessment.roi > 0.0);
