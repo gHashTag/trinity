@@ -748,6 +748,179 @@ fn padTo(current: usize, target: usize) void {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// WATCH DAEMON — 24/7 autonomous farm monitoring
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const DAEMON_PID_FILE = ".trinity/farm/watch_daemon.pid";
+const DAEMON_INTERVAL_SEC: u32 = 300; // 5 minutes
+
+fn runWatchDaemonCommand(allocator: Allocator, args: []const []const u8) !void {
+    const action = if (args.len > 0) args[0] else "status";
+
+    if (std.mem.eql(u8, action, "start")) {
+        return daemonStart(allocator);
+    } else if (std.mem.eql(u8, action, "stop")) {
+        return daemonStop();
+    } else if (std.mem.eql(u8, action, "status")) {
+        return daemonStatus();
+    } else if (std.mem.eql(u8, action, "restart")) {
+        try daemonStop();
+        return daemonStart(allocator);
+    } else {
+        print("{s}Usage: tri farm watch-daemon <start|stop|status|restart>{s}\n", .{ YELLOW, RESET });
+        print("\nCommands:\n", .{});
+        print("  start    Launch background daemon (runs evolve watch every 5min)\n", .{});
+        print("  stop     Shutdown running daemon\n", .{});
+        print("  status   Check if daemon is running\n", .{});
+        print("  restart  Stop then start daemon\n", .{});
+    }
+}
+
+fn daemonStart(allocator: Allocator) !void {
+    // Check if already running
+    const pid_file = std.fs.cwd().openFile(DAEMON_PID_FILE, .{}) catch |err| {
+        if (err == error.FileNotFound) {
+            // No daemon running, good to start
+        } else {
+            print("{s}⚠️  Cannot check PID file: {}{s}\n", .{ YELLOW, err, RESET });
+        }
+        const existing_pid = getExistingPid() catch null;
+        if (existing_pid) |pid| {
+            if (isProcessAlive(pid)) {
+                print("{s}⚠️  Watch daemon already running (PID {d}){s}\n", .{ YELLOW, pid, RESET });
+                print("   Run 'tri farm watch-daemon stop' first\n", .{});
+                return;
+            }
+        }
+    };
+    if (pid_file) |f| f.close();
+
+    print("{s}🚀 Starting watch daemon...{s}\n", .{ GREEN, RESET });
+
+    // Fork to background (Unix only - simplified)
+    // For now, run in foreground with instructions
+    print("{s}⚠️  Running in foreground. Press Ctrl+C to stop.{s}\n", .{ YELLOW, RESET });
+    print("{s}   For background: nohup tri farm watch-daemon start >/dev/null 2>&1 &{s}\n", .{ DIM, RESET });
+    print("\n", .{});
+
+    const self_pid = std.os.linux.getpid() catch std.os.darwin.getpid() catch {
+        print("{s}❌ Cannot get process ID — unsupported platform{s}\n", .{ RED, RESET });
+        return error.ProcessIdFailed;
+    };
+
+    // Write PID file
+    {
+        const new_pid_file = try std.fs.cwd().createFile(DAEMON_PID_FILE, .{});
+        defer new_pid_file.close();
+        const pid_str = try std.fmt.allocPrint(allocator, "{d}\n", .{self_pid});
+        defer allocator.free(pid_str);
+        try new_pid_file.writeAll(pid_str);
+    }
+
+    print("   {s}✅ Daemon started (PID {d}){s}\n", .{ GREEN, self_pid, RESET });
+    print("   {s}→ Run: tri farm watch-daemon stop{s}\n", .{ DIM, RESET });
+    print("   {s}→ Interval: {d} seconds{s}\n", .{ DIM, DAEMON_INTERVAL_SEC, RESET });
+    print("\n", .{});
+
+    // Main daemon loop
+    const tri_farm_evolve = @import("evolution.zig");
+    var sweep_count: u32 = 0;
+
+    while (true) {
+        sweep_count += 1;
+        const sweep_start = std.time.nanoTimestamp();
+
+        print("{s}🔄 Sweep #{d}{s}\n", .{ DIM, sweep_count, RESET });
+
+        // Run evolve watch with --once flag
+        const watch_args = &[_][]const u8{ "--once", "--sacred", "--objective", "ntp" };
+        tri_farm_evolve.runEvolveCommand(allocator, watch_args) catch |err| {
+            print("   {s}⚠️  Sweep error: {}{s}\n", .{ YELLOW, err, RESET });
+        };
+
+        const elapsed_ms = @as(u64, @intCast((std.time.nanoTimestamp() - sweep_start) / 1_000_000));
+        print("   {s}Sweep done in {d}ms{s}\n", .{ DIM, elapsed_ms, RESET });
+
+        print("   Sleeping {d}s...\n\n", .{DAEMON_INTERVAL_SEC});
+        std.Thread.sleep(DAEMON_INTERVAL_SEC * std.time.ns_per_s);
+    }
+}
+
+fn daemonStop() !void {
+    const pid_file = std.fs.cwd().openFile(DAEMON_PID_FILE, .{}) catch |err| {
+        if (err == error.FileNotFound) {
+            print("{s}⚠️  Watch daemon not running (no PID file){s}\n", .{ YELLOW, RESET });
+            return;
+        }
+        return err;
+    };
+    defer pid_file.close();
+
+    var pid_buf: [32]u8 = undefined;
+    const pid_str = try pid_file.readAll(&pid_buf);
+    const pid = try std.fmt.parseInt(u32, std.mem.trim(u8, pid_str), 10);
+
+    if (!isProcessAlive(pid)) {
+        print("{s}⚠️  Daemon PID {d} not alive (stale lock){s}\n", .{ YELLOW, pid, RESET });
+        std.fs.cwd().deleteFile(DAEMON_PID_FILE) catch {};
+        return;
+    }
+
+    print("{s}🛑 Stopping watch daemon (PID {d})...{s}\n", .{ YELLOW, pid, RESET });
+
+    // Send SIGTERM
+    std.os.kill(pid, std.os.SIG.TERM) catch |err| {
+        print("{s}⚠️  Failed to send SIGTERM: {}{s}\n", .{ YELLOW, err, RESET });
+    };
+
+    // Wait a bit for graceful shutdown
+    std.Thread.sleep(2 * std.time.ns_per_s);
+
+    // Force kill if still alive
+    if (isProcessAlive(pid)) {
+        print("   Force killing...", .{});
+        std.os.kill(pid, std.os.SIG.KILL) catch {};
+    }
+
+    std.fs.cwd().deleteFile(DAEMON_PID_FILE) catch {};
+    print("{s}✅ Daemon stopped{s}\n", .{ GREEN, RESET });
+}
+
+fn daemonStatus() !void {
+    const pid = getExistingPid() catch {
+        print("{s}⚠️  Watch daemon not running{s}\n", .{ YELLOW, RESET });
+        return;
+    };
+
+    if (isProcessAlive(pid)) {
+        print("{s}✅ Watch daemon running (PID {d}){s}\n", .{ GREEN, pid, RESET });
+        print("   Stop with: tri farm watch-daemon stop\n", .{});
+    } else {
+        print("{s}⚠️  PID file exists but process {d} not alive (stale lock){s}\n", .{ YELLOW, pid, RESET });
+        print("   Clean with: tri farm watch-daemon stop\n", .{});
+    }
+}
+
+fn getExistingPid() !u32 {
+    const pid_file = try std.fs.cwd().openFile(DAEMON_PID_FILE, .{});
+    defer pid_file.close();
+
+    var pid_buf: [32]u8 = undefined;
+    const pid_str = try pid_file.readAll(&pid_buf);
+    return try std.fmt.parseInt(u32, std.mem.trim(u8, pid_str), 10);
+}
+
+fn isProcessAlive(pid: u32) bool {
+    // Send signal 0 to check if process exists
+    std.os.kill(pid, 0) catch |err| {
+        if (err == error.ProcessNotFound) return false;
+        // Other errors might mean process exists
+        return true;
+    };
+    return true;
+}
+
 fn printHelp() void {
     print(
         \\
@@ -758,7 +931,8 @@ fn printHelp() void {
         \\  idle             Show only finished/idle services (for recycling)
         \\  recycle          Set training vars + redeploy all idle services
         \\  fill             Create NEW services to fill empty slots (up to 25/account)
-        \\  evolve           ASHA+PBT evolution (init/status/step/mock/history)
+        \\  evolve           ASHA+PBT evolution (init/status/step/watch/history)
+        \\  watch-daemon     24/7 autonomous monitoring (start/stop/status)
         \\  from-issues      Execute farm tasks from GitHub Issues (farm-task label)
         \\  help             Show this help
         \\
