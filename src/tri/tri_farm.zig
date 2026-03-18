@@ -217,18 +217,20 @@ pub fn runFarmStatus(allocator: Allocator, idle_only: bool) !void {
 // RECYCLE — set training vars + redeploy idle/crashed services
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Usage: tri farm recycle [--lr 3e-4] [--batch 128] [--ctx 81] [--optimizer lamb]
+// Usage: tri farm recycle [--lr 1e-3] [--batch 66] [--ctx 27] [--optimizer lamb]
 //                         [--warmup 2000] [--wd 0.01] [--steps 100000]
 //                         [--include-primary] [--force]
 //
 // Finds idle (REMOVED/NONE) and crashed (CRASHED/FAILED) services and redeploys.
 // Use --force to also recycle SUCCESS (running) services.
+//
+// DEFAULTS are PROVEN config: ctx=27 (stable), LAMB 1e-3 cosine, batch=66
 
 pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
-    // Parse optional overrides
-    var lr: []const u8 = "3e-4";
-    var batch: []const u8 = "128";
-    var ctx: []const u8 = "81";
+    // Parse optional overrides - PROVEN config (R33 KING)
+    var lr: []const u8 = "1e-3";
+    var batch: []const u8 = "66";
+    var ctx: []const u8 = "27";
     var optimizer: []const u8 = "lamb";
     var warmup: []const u8 = "2000";
     var wd: []const u8 = "0.01";
