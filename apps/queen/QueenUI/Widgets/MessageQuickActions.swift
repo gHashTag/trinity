@@ -284,11 +284,11 @@ struct ActionResultToast: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 10)
         .background(
-            Capsule()
+            SwiftUI.Capsule()
                 .fill(TrinityTheme.bgCard)
         )
         .overlay(
-            Capsule()
+            SwiftUI.Capsule()
                 .stroke(isSuccess ? .green.opacity(0.5) : TrinityTheme.statusError.opacity(0.5), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.2), radius: 10, y: 4)
