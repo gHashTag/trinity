@@ -350,7 +350,7 @@ fn runList(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse data/cells/registry.json\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const root = parsed.value.object;
     const cells = root.get("cells") orelse {
@@ -639,7 +639,7 @@ fn runSearch(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = (parsed.value.object.get("cells") orelse return).array.items;
 
@@ -746,7 +746,7 @@ fn runFind(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = (parsed.value.object.get("cells") orelse return).array.items;
 
@@ -878,7 +878,7 @@ fn runInfo(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("  Quick fix: {s}tri cell check --regenerate {s}\n\n", .{ CYAN, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = (parsed.value.object.get("cells") orelse {
         std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ RED, RESET });
@@ -1610,7 +1610,7 @@ fn runDeps(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = (parsed.value.object.get("cells") orelse return).array.items;
 
@@ -4168,7 +4168,7 @@ fn runToggleEnabled(allocator: Allocator, args: []const []const u8, enable: bool
         std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const root = &parsed.value;
     const cells = (root.object.get("cells") orelse return).array.items;
@@ -4230,7 +4230,7 @@ fn runVerify(allocator: Allocator) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = (parsed.value.object.get("cells") orelse return).array.items;
     var ok_count: usize = 0;
@@ -4293,7 +4293,7 @@ fn runCheckBoundaries(allocator: Allocator) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const root = parsed.value.object;
     const cells = (root.get("cells") orelse return).array.items;
@@ -4426,7 +4426,7 @@ fn runLint(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = (parsed.value.object.get("cells") orelse return).array.items;
 
@@ -5829,7 +5829,7 @@ fn runExplain(allocator: Allocator, args: []const []const u8) !void {
         const registry = loadRegistry(allocator) catch return;
         defer allocator.free(registry);
         const parsed = std.json.parseFromSlice(std.json.Value, allocator, registry, .{}) catch return;
-        defer parsed.deinit(allocator);
+        defer parsed.deinit();
         const cells = (parsed.value.object.get("cells") orelse return).array.items;
 
         var dep_count: usize = 0;
@@ -8370,7 +8370,7 @@ fn runCoverage(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry.json\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = parsed.value.object.get("cells") orelse {
         std.debug.print("{s}ERROR{s}: 'cells' key missing\n", .{ RED, RESET });
@@ -8457,7 +8457,7 @@ fn runVersion(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry.json\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = parsed.value.object.get("cells") orelse {
         std.debug.print("{s}ERROR{s}: 'cells' key missing\n", .{ RED, RESET });
@@ -8502,7 +8502,7 @@ fn runOutdated(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry.json\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = parsed.value.object.get("cells") orelse {
         std.debug.print("{s}ERROR{s}: 'cells' key missing\n", .{ RED, RESET });
@@ -8599,7 +8599,7 @@ fn runRegenerate(allocator: Allocator, args: []const []const u8) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry.json\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const cells = parsed.value.object.get("cells") orelse {
         std.debug.print("{s}ERROR{s}: 'cells' key missing\n", .{ RED, RESET });
@@ -9128,7 +9128,7 @@ fn runAutoRegister(allocator: Allocator, dry_run: bool, auto_yes: bool) !void {
         std.debug.print("{s}ERROR{s}: Failed to parse registry.json\n", .{ RED, RESET });
         return;
     };
-    defer parsed.deinit(allocator);
+    defer parsed.deinit();
 
     const existing_cells = parsed.value.object.get("cells") orelse return;
     var registered_ids = std.StringHashMap(void).init(allocator);
