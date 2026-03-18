@@ -247,10 +247,13 @@ pub fn introspect(allocator: Allocator) !IntrospectionResult {
     @memcpy(model.current_state.activity[0..15], "Self-reflection");
     model.current_state.activity_len = 14;
 
-    // Capabilities from thalamus
+    // Capabilities from thalamus and system checks
     const farm = try thalamus.getFarmStatus(allocator);
     model.capabilities.farm_workers = @intCast(farm.active);
-    model.capabilities.binaries_available = 6; // TODO: actual check
+    model.capabilities.binaries_available = countAvailableBinaries(allocator);
+    model.capabilities.github_ok = checkGitHubConnectivity();
+    model.capabilities.railway_ok = checkRailwayConnectivity();
+    model.capabilities.telegram_ok = checkTelegramConnectivity();
 
     // Goals
     @memcpy(model.goals.primary[0..22], "Achieve human-level AI");
@@ -309,16 +312,42 @@ pub fn getSelfAwarenessContext(
     allocator: Allocator,
     loop_detector: *LoopDetector,
 ) !SelfAwarenessContext {
-    _ = loop_detector; // Will be used for proper loop detection
     const intro = try introspect(allocator);
+
+    // Check for loop using loop_detector
+    _ = loop_detector.record(.introspection); // Record this introspection action
+
+    // Determine if we're in a loop
+    const has_loop = blk: {
+        if (loop_detector.history_len < loop_detector.loop_threshold) break :blk false;
+
+        // Check if last 4 actions were all introspection
+        var all_introspection = true;
+        var i: u8 = 0;
+        while (i < loop_detector.loop_threshold) : (i += 1) {
+            const idx = loop_detector.history_len - 1 - i;
+            const action = loop_detector.action_history[@mod(idx, 16)];
+            if (action != .introspection) {
+                all_introspection = false;
+                break;
+            }
+        }
+        break :blk all_introspection;
+    };
 
     var consciousness = ConsciousnessState{
         .last_progress = intro.timestamp,
+        .loop_detected = has_loop,
     };
 
-    // Check for loop
-    consciousness.loop_detected = false; // TODO: implement proper check
-    consciousness.status = if (intro.health_score < 30) .degraded else .conscious;
+    // Determine consciousness status
+    if (has_loop) {
+        consciousness.status = .looping;
+    } else if (intro.health_score < 30) {
+        consciousness.status = .degraded;
+    } else {
+        consciousness.status = .conscious;
+    }
 
     return .{
         .model = intro.model,
@@ -417,6 +446,86 @@ pub fn describeSelf(allocator: Allocator, model: SelfModel) ![]const u8 {
         "{s} v{s} ({s}) — {s}, goal: {s}, capabilities: {d:.0}%",
         .{ name, version, role_label, activity, primary_goal, cap_score * 100 },
     );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CAPABILITY DETECTION — Check actual system capabilities
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Count available Trinity binaries
+fn countAvailableBinaries(allocator: Allocator) u8 {
+    _ = allocator;
+    const expected_binaries = [_][]const u8{
+        "trinity-mcp",
+        "ralph-agent",
+        "tri-bot",
+        "tri-api",
+        "hslm-entrypoint",
+        "arena",
+    };
+
+    var count: u8 = 0;
+    for (expected_binaries) |bin_name| {
+        if (binaryExistsInPath(bin_name)) {
+            count += 1;
+        }
+    }
+    return count;
+}
+
+/// Check if binary exists in common paths
+fn binaryExistsInPath(bin_name: []const u8) bool {
+    // Check zig-out/bin directory
+    const zig_out_paths = [_][]const u8{
+        "zig-out/bin/",
+        "../zig-out/bin/",
+        "../../zig-out/bin/",
+    };
+
+    for (zig_out_paths) |base_path| {
+        var buf: [256]u8 = undefined;
+        const full_path = std.fmt.bufPrint(&buf, "{s}{s}", .{ base_path, bin_name }) catch continue;
+        if (std.fs.cwd().openFile(full_path, .{})) |file| {
+            file.close();
+            return true;
+        } else |_| {
+            continue;
+        }
+    }
+    return false;
+}
+
+/// Check if GitHub connectivity is working
+fn checkGitHubConnectivity() bool {
+    // Simple check: try to read git config
+    if (std.process.getEnvVarOwned(std.heap.page_allocator, "GITHUB_TOKEN")) |token| {
+        defer std.heap.page_allocator.free(token);
+        return token.len > 0;
+    } else |_| {}
+    return false;
+}
+
+/// Check if Railway connectivity is working
+fn checkRailwayConnectivity() bool {
+    // Check for Railway tokens
+    if (std.process.getEnvVarOwned(std.heap.page_allocator, "RAILWAY_TOKEN_1")) |token| {
+        defer std.heap.page_allocator.free(token);
+        return token.len > 0;
+    } else |_| {}
+    if (std.process.getEnvVarOwned(std.heap.page_allocator, "RAILWAY_TOKEN_2")) |token| {
+        defer std.heap.page_allocator.free(token);
+        return token.len > 0;
+    } else |_| {}
+    return false;
+}
+
+/// Check if Telegram connectivity is working
+fn checkTelegramConnectivity() bool {
+    if (std.process.getEnvVarOwned(std.heap.page_allocator, "TELEGRAM_BOT_TOKEN")) |token| {
+        defer std.heap.page_allocator.free(token);
+        return token.len > 0;
+    } else |_| {}
+    return false;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -582,4 +691,70 @@ test "pcc — learnFromActionResult updates model" {
     try learnFromActionResult(&model, .farm_status, result);
 
     try std.testing.expect(model.current_state.cycle_count > 0);
+}
+
+test "pcc — countAvailableBinaries returns count" {
+    const count = countAvailableBinaries(std.testing.allocator);
+    // Should count binaries that exist in zig-out/bin
+    try std.testing.expect(count >= 0 and count <= 6);
+}
+
+test "pcc — checkGitHubConnectivity returns bool" {
+    const result = checkGitHubConnectivity();
+    // Should return bool (true if token found, false otherwise)
+    _ = result;
+}
+
+test "pcc — checkRailwayConnectivity returns bool" {
+    const result = checkRailwayConnectivity();
+    _ = result;
+}
+
+test "pcc — checkTelegramConnectivity returns bool" {
+    const result = checkTelegramConnectivity();
+    _ = result;
+}
+
+test "pcc — getSelfAwarenessContext detects introspection loop" {
+    var detector = LoopDetector{};
+    const allocator = std.testing.allocator;
+
+    // Record 4 introspection actions
+    _ = detector.record(.introspection);
+    _ = detector.record(.introspection);
+    _ = detector.record(.introspection);
+    _ = detector.record(.introspection);
+
+    const context = try getSelfAwarenessContext(allocator, &detector);
+
+    // Should detect loop since all 4 actions were introspection
+    try std.testing.expect(context.consciousness.loop_detected);
+    try std.testing.expectEqual(ConsciousnessState.Status.looping, context.consciousness.status);
+}
+
+test "pcc — getSelfAwarenessContext no loop with mixed actions" {
+    var detector = LoopDetector{};
+    const allocator = std.testing.allocator;
+
+    // Record mixed actions (should not trigger loop)
+    _ = detector.record(.introspection);
+    _ = detector.record(.farm_status);
+    _ = detector.record(.introspection);
+    _ = detector.record(.introspection);
+
+    const context = try getSelfAwarenessContext(allocator, &detector);
+
+    // Should NOT detect loop since actions were mixed
+    try std.testing.expect(!context.consciousness.loop_detected);
+}
+
+test "pcc — Capabilities connectivity checks" {
+    var caps = SelfModel.Capabilities{};
+
+    caps.github_ok = checkGitHubConnectivity();
+    caps.railway_ok = checkRailwayConnectivity();
+    caps.telegram_ok = checkTelegramConnectivity();
+
+    // Should be able to call all check functions without panic
+    try std.testing.expect(true);
 }

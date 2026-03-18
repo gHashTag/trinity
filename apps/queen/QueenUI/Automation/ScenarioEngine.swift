@@ -136,7 +136,7 @@ public final class ScenarioEngine {
         let clickResult = await UIAutomation.shared.click(element: element, x: nil, y: nil)
         let clickDuration = Date().timeIntervalSince(clickStart)
 
-        guard clickResult["success"] as? Bool == true else {
+        if clickResult["success"] as? Bool != true {
             // Try fallback: click center screen
             _ = await UIAutomation.shared.click(element: nil, x: 400, y: 300)
         }

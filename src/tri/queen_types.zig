@@ -239,31 +239,32 @@ pub const ActionKind = enum(u8) {
     research_sacred = 7,
     ouroboros_status = 8,
     experience_recall = 9,
-    farm_evolve_status = 10,
-    swarm_status = 11,
+    introspection = 10, // PCC self-awareness check
+    farm_evolve_status = 11,
+    swarm_status = 12,
 
     // Level 1 — Soft Write (auto-allowed with --allow-auto-actions)
-    doctor_quick = 12,
-    doctor_heal = 13,
-    ouroboros_cycle = 14,
-    git_commit_state = 15,
-    git_push = 16,
-    issue_comment = 17,
-    notify = 18,
-    arena_battle = 19,
-    experience_save = 20,
-    fmt = 21,
+    doctor_quick = 13,
+    doctor_heal = 14,
+    ouroboros_cycle = 15,
+    git_commit_state = 16,
+    git_push = 17,
+    issue_comment = 18,
+    notify = 19,
+    arena_battle = 20,
+    experience_save = 21,
+    fmt = 22,
 
     // Level 2 — Dangerous (needs /queen approve or --no-approval)
-    farm_recycle = 22,
-    farm_evolve_step = 23,
-    cloud_spawn = 24,
-    cloud_kill = 25,
-    cloud_cleanup = 26,
-    issue_create = 27,
-    swarm_decompose = 28,
+    farm_recycle = 23,
+    farm_evolve_step = 24,
+    cloud_spawn = 25,
+    cloud_kill = 26,
+    cloud_cleanup = 27,
+    issue_create = 28,
+    swarm_decompose = 29,
 
-    pub const COUNT = 29;
+    pub const COUNT = 30;
 
     pub fn label(self: ActionKind) []const u8 {
         return switch (self) {
@@ -277,6 +278,7 @@ pub const ActionKind = enum(u8) {
             .research_sacred => "research sacred",
             .ouroboros_status => "ouroboros status",
             .experience_recall => "experience recall",
+            .introspection => "introspection",
             .farm_evolve_status => "farm evolve status",
             .swarm_status => "swarm status",
             .doctor_quick => "doctor quick",
@@ -311,6 +313,7 @@ pub const ActionKind = enum(u8) {
             .research_sacred => E_BOLT,
             .ouroboros_status => E_CYCLE,
             .experience_recall => E_BRAIN,
+            .introspection => E_EYE,
             .farm_evolve_status => E_DNA,
             .swarm_status => E_ROBOT,
             .doctor_quick => E_WRENCH,
@@ -544,7 +547,7 @@ test "Queen types — ActionKind label" {
 }
 
 test "Queen types — ActionKind COUNT" {
-    try std.testing.expectEqual(@as(u8, 29), ActionKind.COUNT);
+    try std.testing.expectEqual(@as(u8, 30), ActionKind.COUNT);
 }
 
 test "Queen types — QueenConfig god mode" {

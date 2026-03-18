@@ -309,3 +309,91 @@
 {"id":"mem_1773848032_hypothalamus_8cfdb559","agent":"hypothalamus","kind":"error","ts":1773848032,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r20 at step 39500"}
 {"id":"mem_1773848032_hypothalamus_8cfdb559","agent":"hypothalamus","kind":"error","ts":1773848032,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r17 at step 14400"}
 {"id":"mem_1773848032_hypothalamus_8cfdb559","agent":"hypothalamus","kind":"error","ts":1773848032,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r23 at step 80000"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"observation","ts":1773855215,"tags":[],"ttl":2592000,"data":{},"summary":"metabolism: ppl=34.63 tok/s=6724 spike=57.6% diversity=0.000 health=50.0"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"metabolism spike: leader PPL=34.63 spike_rate=57.6% (threshold=20%)"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-v11 PPL=357.08 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-train PPL=404.27 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r10 at step 80500"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r6 at step 35000"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r35 at step 80500"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r12 at step 30000"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-r18 PPL=7.40 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r34 at step 25100"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r36 at step 22400"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r30 at step 80200"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r22 at step 40000"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r25 at step 16500"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r27 at step 35500"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r28 at step 80000"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r29 at step 45000"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r20 at step 39500"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r17 at step 14400"}
+{"id":"mem_1773855215_hypothalamus_8cfd9156","agent":"hypothalamus","kind":"error","ts":1773855215,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r23 at step 80000"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"observation","ts":1773855222,"tags":[],"ttl":2592000,"data":{},"summary":"metabolism: ppl=34.63 tok/s=6724 spike=57.6% diversity=0.000 health=50.0"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"metabolism spike: leader PPL=34.63 spike_rate=57.6% (threshold=20%)"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-v11 PPL=357.08 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-train PPL=404.27 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r10 at step 80500"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r6 at step 35000"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r35 at step 80500"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r12 at step 30000"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-r18 PPL=7.40 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r34 at step 25100"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r36 at step 22400"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r30 at step 80200"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r22 at step 40000"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r25 at step 16500"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r27 at step 35500"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r28 at step 80000"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r29 at step 45000"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r20 at step 39500"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r17 at step 14400"}
+{"id":"mem_1773855222_hypothalamus_8cfd914f","agent":"hypothalamus","kind":"error","ts":1773855222,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r23 at step 80000"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"observation","ts":1773855262,"tags":[],"ttl":2592000,"data":{},"summary":"metabolism: ppl=31.32 tok/s=6820 spike=59.7% diversity=0.000 health=40.0"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"metabolism spike: leader PPL=31.32 spike_rate=59.7% (threshold=20%)"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-v11 PPL=357.08 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-train PPL=404.27 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r10 at step 80500"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r33 at step 67900"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r6 at step 35000"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r31 at step 54800"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r35 at step 80500"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r12 at step 30000"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r19 at step 47900"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-r18 PPL=7.40 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r34 at step 25100"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r36 at step 22400"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r26 at step 35000"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r30 at step 80200"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r22 at step 40000"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r25 at step 16500"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r27 at step 35500"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r28 at step 80000"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r29 at step 45000"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r20 at step 39500"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r17 at step 14400"}
+{"id":"mem_1773855262_hypothalamus_8cfd92a7","agent":"hypothalamus","kind":"error","ts":1773855262,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r23 at step 80000"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"observation","ts":1773855266,"tags":[],"ttl":2592000,"data":{},"summary":"metabolism: ppl=31.32 tok/s=6820 spike=59.7% diversity=0.000 health=40.0"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"metabolism spike: leader PPL=31.32 spike_rate=59.7% (threshold=20%)"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-v11 PPL=357.08 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-train PPL=404.27 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r10 at step 80500"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r33 at step 67900"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r6 at step 35000"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r31 at step 54800"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r35 at step 80500"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r12 at step 30000"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r19 at step 47900"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"mirage: hslm-r18 PPL=7.40 ctx=27 — excluded from ranking"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r34 at step 25100"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r36 at step 22400"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r26 at step 35000"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r30 at step 80200"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r22 at step 40000"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r25 at step 16500"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r27 at step 35500"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r28 at step 80000"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r29 at step 45000"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r20 at step 39500"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r17 at step 14400"}
+{"id":"mem_1773855266_hypothalamus_8cfd929b","agent":"hypothalamus","kind":"error","ts":1773855266,"tags":[],"ttl":1209600,"data":{},"summary":"stalled: hslm-r23 at step 80000"}
