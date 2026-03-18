@@ -97,7 +97,7 @@ pub const CommandRegistry = struct {
             self.allocator.free(entry.value_ptr.name);
             self.allocator.free(entry.value_ptr.description);
         }
-        self.commands.deinit();
+        self.commands.deinit(self.allocator);
 
         for (&self.by_category) |*list| {
             list.deinit(self.allocator);
@@ -110,7 +110,7 @@ pub const CommandRegistry = struct {
         while (alias_it.next()) |entry| {
             self.allocator.free(entry.key_ptr.*);
         }
-        self.alias_map.deinit();
+        self.alias_map.deinit(self.allocator);
     }
 
     pub fn registerCommand(self: *CommandRegistry, metadata: CommandMetadata) !void {
@@ -200,7 +200,7 @@ fn noopExecutor(_: Allocator, args: [][]const u8) anyerror!OrchestratorResult {
 
 pub fn registerAllCommands(allocator: Allocator) !CommandRegistry {
     var registry = try CommandRegistry.init(allocator);
-    errdefer registry.deinit();
+    errdefer registry.deinit(allocator);
 
     // Core commands (15)
     const core_names = [_][]const u8{
@@ -404,8 +404,7 @@ pub fn registerAllCommands(allocator: Allocator) !CommandRegistry {
 
 pub fn runOrchestrateCommand(args: [][]const u8) !void {
     _ = args;
-    const stdout = std.io.getStdOut().writer();
-    try stdout.print("Orchestrate command (simplified)\n", .{});
+    std.debug.print("Orchestrate command (simplified)\n", .{});
 }
 
 pub fn runPipelineCommand(args: [][]const u8) !void {
@@ -424,7 +423,7 @@ pub fn runPipelineCommand(args: [][]const u8) !void {
     std.debug.print("{s}\n", .{"═" ** 70});
 
     var registry = try registerAllCommands(allocator);
-    defer registry.deinit();
+    defer registry.deinit(allocator);
     registry.printStats();
 
     std.debug.print("\n\x1b[33m{s} Golden Chain initiated for: {s} \x1b[0m\n", .{ "✓", task });
@@ -733,7 +732,7 @@ pub const WorkflowExecutor = struct {
             // Multiple steps - execute in parallel
             const threads_to_spawn = @min(level.items.len, max_threads);
             var context = try ParallelContext.init(self.allocator, self, level.items);
-            defer context.deinit();
+            defer context.deinit(self.allocator);
 
             var threads = try self.allocator.alloc(std.Thread, threads_to_spawn);
             defer self.allocator.free(threads);
@@ -1193,7 +1192,7 @@ test "Trinity Identity" {
 test "Command Registry" {
     const allocator = std.testing.allocator;
     var registry = try CommandRegistry.init(allocator);
-    defer registry.deinit();
+    defer registry.deinit(allocator);
 
     try std.testing.expectEqual(registry.total_count, 0);
 }
@@ -1201,7 +1200,7 @@ test "Command Registry" {
 test "Register All Commands" {
     const allocator = std.testing.allocator;
     var registry = try registerAllCommands(allocator);
-    defer registry.deinit();
+    defer registry.deinit(allocator);
 
     try std.testing.expect(registry.total_count >= 130);
     try std.testing.expect(registry.trinity_verified);
