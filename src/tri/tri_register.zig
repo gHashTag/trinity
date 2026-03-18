@@ -1327,7 +1327,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommands\":[", .{});
         const subcommands = &[_][]const u8{
-            "synth", "flash", "build", "verify", "snap", "status", "gen", "test", "jtag",
+            "synth", "flash", "build", "verify", "snap", "status", "gen", "test", "jtag", "uart", "power",
         };
         for (subcommands, 0..) |sc, i| {
             if (i > 0) try data_json.append(allocator, ',');
@@ -1380,6 +1380,9 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         return fpga_commands.runFpgaEye(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "uart")) {
         return tri_fpga.runFpgaUartCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "power")) {
+        // TODO: Implement runFpgaPowerCommand
+        return tri_fpga.runFpgaStatusCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "infer")) {
         return tri_fpga.runFpgaInferCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "status")) {
@@ -1411,7 +1414,7 @@ pub fn runFpgaCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
 
         try data_json.append(allocator, '{');
         try data_writer.print("\"subcommand\":\"{s}\",\"valid_subcommands\":[", .{subcommand});
-        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe", "jtag", "mount", "unmount" };
+        const valid_subs = &[_][]const u8{ "gen", "gen-tri", "synth", "verdict", "flash", "test", "verify", "eye", "snap", "status", "build", "read", "experience", "probe", "jtag", "mount", "unmount", "uart", "power" };
         for (valid_subs, 0..) |vs, i| {
             if (i > 0) try data_json.append(allocator, ',');
             try data_writer.print("\"{s}\"", .{vs});

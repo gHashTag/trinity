@@ -167,10 +167,10 @@ test "TrainLogEntry initialization" {
         .ts = "2024-01-01T00:00:00",
     };
 
-    const buf = [_]u8{0} ** 1024;
-    _ = entry.toJson(buf) catch unreachable;
+    var buf = [_]u8{0} ** 1024;
+    _ = entry.toJson(&buf) catch unreachable;
     const expected_json = "{\"step\":100}";
-    try std.testing.expectEqual(entry.toJson(buf), expected_json);
+    try std.testing.expectEqualStrings(expected_json, entry.toJson(&buf));
 }
 
 test "JSON formatting" {
@@ -181,6 +181,7 @@ test "JSON formatting" {
         .ppl = 2.0,
         .tok_per_sec = 100.0,
     };
-    const json = entry.toJson(null);
+    var buf: [512]u8 = undefined;
+    const json = entry.toJson(&buf);
     try std.testing.expect(json.len > 0);
 }
