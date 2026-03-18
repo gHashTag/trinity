@@ -1,1 +1,0 @@
-{"schema_version":"tri-cli-json-v1","status":"success","command":"phi","namespace":"core","exit_code":0,"summary":"phi^5 = 11.0901699437494750","started_at":1772952206,"finished_at":1772952206,"duration_ms":0,"metrics":{"power_n":5,"duration_ms":0},"data":{"n":5,"result":11.0901699437494750,"expression":"phi^5","note":null}}
