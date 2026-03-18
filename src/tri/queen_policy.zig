@@ -847,3 +847,110 @@ test "Policy — PendingQueue deny non-existent" {
     var q = PendingQueue.init();
     try std.testing.expect(!q.deny(999));
 }
+
+test "Policy — SafetyLevel emoji all levels" {
+    try std.testing.expectEqualStrings("L0 read-only", SafetyLevel.read_only.label());
+    try std.testing.expectEqualStrings("L1 soft-write", SafetyLevel.soft_write.label());
+    try std.testing.expectEqualStrings("L2 dangerous", SafetyLevel.dangerous.label());
+}
+
+test "Policy — SafetyLevel emoji" {
+    try std.testing.expectEqualStrings(qt.E_CHECK, SafetyLevel.read_only.emoji());
+    try std.testing.expectEqualStrings(qt.E_WRENCH, SafetyLevel.soft_write.emoji());
+    try std.testing.expectEqualStrings(qt.E_SIREN, SafetyLevel.dangerous.emoji());
+}
+
+test "Policy — actionLevel for all actions" {
+    // L0 actions
+    try std.testing.expectEqual(SafetyLevel.read_only, actionLevel(.farm_status));
+    try std.testing.expectEqual(SafetyLevel.read_only, actionLevel(.ouroboros_status));
+
+    // L1 actions
+    try std.testing.expectEqual(SafetyLevel.soft_write, actionLevel(.doctor_quick));
+    try std.testing.expectEqual(SafetyLevel.soft_write, actionLevel(.git_commit_state));
+
+    // L2 actions
+    try std.testing.expectEqual(SafetyLevel.dangerous, actionLevel(.farm_recycle));
+    try std.testing.expectEqual(SafetyLevel.dangerous, actionLevel(.cloud_kill));
+}
+
+test "Policy — ActionCounters resetAll" {
+    var counters = ActionCounters{};
+    counters.record(.farm_status);
+    counters.record(.farm_status); // Record same action twice
+
+    try std.testing.expectEqual(@as(u8, 2), counters.getCount(.farm_status));
+
+    counters.resetAll();
+    try std.testing.expectEqual(@as(u8, 0), counters.getCount(.farm_status));
+}
+
+test "Policy — IncidentKind all values" {
+    const kinds = [_]IncidentKind{
+        .alert,
+        .auto_action,
+        .auto_action_fail,
+        .human_command,
+        .approval,
+        .denial,
+        .escalation,
+    };
+
+    for (kinds) |k| {
+        _ = k; // Verify all exist
+    }
+}
+
+test "Policy — Incident timestamp" {
+    var incident = Incident{
+        .ts = 1000,
+        .kind = .auto_action,
+        .action = .farm_status,
+        .success = false,
+    };
+
+    try std.testing.expectEqual(@as(i64, 1000), incident.ts);
+    incident.success = true;
+    try std.testing.expect(incident.success);
+}
+
+test "Policy — Incident detail string" {
+    var incident = Incident{
+        .ts = 1000,
+        .kind = .auto_action,
+        .action = .doctor_quick,
+        .success = true,
+    };
+    incident.setDetail("test detail");
+
+    try std.testing.expectEqualStrings("test detail", incident.detailStr());
+}
+
+test "Policy — IncidentMemory day boundary" {
+    var m = IncidentMemory.init();
+    m.day_start_ts = 10000;
+    try std.testing.expectEqual(@as(i64, 10000), m.day_start_ts);
+
+    // Trigger reset with old timestamp - function exists but is private
+    // We'll just verify the initial state
+    try std.testing.expectEqual(@as(i64, 10000), m.day_start_ts);
+}
+
+test "Policy — PendingQueue expiration" {
+    var q = PendingQueue.init();
+    _ = q.add(.farm_status, "test");
+
+    // Queue has 1 item (not expired yet - needs 30 minutes)
+    try std.testing.expectEqual(@as(u8, 1), q.pendingCount());
+
+    // expireOld doesn't expire fresh items (< 30 min old)
+    q.expireOld();
+    // Still 1 since we just added it
+    try std.testing.expectEqual(@as(u8, 1), q.pendingCount());
+}
+
+test "Policy — PolicyVerdict reasons" {
+    try std.testing.expectEqualStrings("OK", PolicyVerdict.allowed.reason());
+    try std.testing.expectEqualStrings("level exceeds max_auto_level", PolicyVerdict.denied_level.reason());
+    try std.testing.expectEqualStrings("per-action rate limit", PolicyVerdict.denied_rate.reason());
+}

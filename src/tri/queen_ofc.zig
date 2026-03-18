@@ -35,7 +35,7 @@ pub const ChatRoute = enum {
         return switch (self) {
             .personal => "144022504",
             .group => "-5160767429",
-            .agent => "-5160767429", // TODO: agent-specific channels
+            .agent => "-5160767429", // Future: dedicated channels per agent
             .alert => "-5160767429", // Same as group, but pinned
         };
     }

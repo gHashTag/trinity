@@ -335,10 +335,30 @@ pub const MotorExecutor = struct {
         return best_ppl;
     }
 
-    /// Get stale arena hours (simplified - just returns 0 for now)
+    /// Get stale arena hours by checking arena last battle timestamp
     fn checkStaleArenaHours(self: *MotorExecutor) !u16 {
         _ = self;
-        // TODO: Parse actual timestamp from arena status
+        // Check arena status file for last battle time
+        const arena_file = std.fs.cwd().openFile(".trinity/arena_status.json", .{}) catch return 0;
+        defer arena_file.close();
+
+        var buf: [2048]u8 = undefined;
+        const n = arena_file.read(&buf) catch return 0;
+        const data = buf[0..n];
+
+        // Parse last_battle_ts from JSON
+        if (std.mem.indexOf(u8, data, "\"last_battle_ts\":")) |idx| {
+            const after_colon = data[idx + 16 ..];
+            const ts_end = std.mem.indexOfScalar(u8, after_colon, ',') orelse after_colon.len;
+            const ts_end2 = std.mem.indexOfScalar(u8, after_colon[0..ts_end], '}') orelse ts_end;
+            const ts_str = std.mem.trim(u8, after_colon[0..ts_end2], &std.ascii.whitespace);
+            const last_ts = std.fmt.parseInt(i64, ts_str, 10) catch return 0;
+
+            const now = std.time.timestamp();
+            const hours_ago = @as(u16, @intCast(@divTrunc(now - last_ts, 3600)));
+            return hours_ago;
+        }
+
         return 0;
     }
 

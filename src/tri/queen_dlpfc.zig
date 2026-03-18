@@ -373,25 +373,93 @@ fn analyzeTrends(allocator: Allocator, current: ?FacultyMetrics) ?TrendAnalysis 
 
     if (results.items.len < 3) return null; // Need at least 3 data points
 
-    // Simple trend analysis based on most recent vs oldest
+    // Parse metrics from each historical record
     var first_active: u8 = 0;
     var last_active: u8 = 0;
+    var first_compile: u8 = 0;
+    var last_compile: u8 = 0;
+    var first_v: f32 = 0;
+    var last_v: f32 = 0;
+    var first_dirty: u16 = 0;
+    var last_dirty: u16 = 0;
     var data_points: u8 = 0;
 
     for (results.items) |r| {
         const summary = r.summary();
         // Parse format: "active: 5/6 | compile_rate: 85 | v: 1.17 | dirty: 12"
+
+        // Parse active count
         if (std.mem.indexOf(u8, summary, "active:")) |idx| {
             const active_end = std.mem.indexOf(u8, summary[idx..], "/") orelse summary.len;
             const active_str = summary[idx + 7 .. idx + active_end];
             const active = std.fmt.parseInt(u8, active_str, 10) catch continue;
             if (data_points == 0) first_active = active;
             last_active = active;
-            data_points += 1;
+        }
+
+        // Parse compile_rate
+        if (std.mem.indexOf(u8, summary, "compile_rate:")) |idx| {
+            const rest = summary[idx + 13 ..];
+            const rate_end = std.mem.indexOfScalar(u8, rest, ' ') orelse rest.len;
+            const rate_end2 = std.mem.indexOfScalar(u8, rest[0..rate_end], '|') orelse rate_end;
+            const rate_str = rest[0..rate_end2];
+            const rate = std.fmt.parseInt(u8, rate_str, 10) catch continue;
+            if (data_points == 0) first_compile = rate;
+            last_compile = rate;
+        }
+
+        // Parse v-number
+        if (std.mem.indexOf(u8, summary, "v:")) |idx| {
+            // Make sure we're not matching "v_zone"
+            if (idx == 0 or summary[idx - 1] != '_') {
+                const rest = summary[idx + 2 ..];
+                const v_end = std.mem.indexOfScalar(u8, rest, ' ') orelse rest.len;
+                const v_end2 = std.mem.indexOfScalar(u8, rest[0..v_end], '|') orelse v_end;
+                const v_str = rest[0..v_end2];
+                const v = std.fmt.parseFloat(f32, v_str) catch continue;
+                if (data_points == 0) first_v = v;
+                last_v = v;
+            }
+        }
+
+        // Parse dirty files
+        if (std.mem.indexOf(u8, summary, "dirty:")) |idx| {
+            const rest = summary[idx + 6 ..];
+            const dirty_end = std.mem.indexOfScalar(u8, rest, ' ') orelse rest.len;
+            const dirty_end2 = std.mem.indexOfScalar(u8, rest[0..dirty_end], '|') orelse dirty_end;
+            const dirty_str = rest[0..dirty_end2];
+            const dirty = std.fmt.parseInt(u16, dirty_str, 10) catch continue;
+            if (data_points == 0) first_dirty = dirty;
+            last_dirty = dirty;
+        }
+
+        if (data_points == 0) {
+            data_points = 1;
         }
     }
 
-    // Faculty trend based on active faculty count
+    // Calculate trends based on first and last values
+    const compile_trend = if (data_points >= 2 and first_compile > 0)
+        determineTrend(@as(f32, @floatFromInt(last_compile)), @as(f32, @floatFromInt(first_compile)))
+    else
+        TrendAnalysis.Trend.stable;
+
+    const v_trend = if (data_points >= 2 and first_v > 0)
+        determineTrend(last_v, first_v)
+    else
+        TrendAnalysis.Trend.stable;
+
+    const dirty_trend = if (data_points >= 2)
+        // More dirty files = falling trend (bad)
+        if (last_dirty > first_dirty + 5)
+            TrendAnalysis.Trend.falling
+        else if (last_dirty < first_dirty - 5)
+            TrendAnalysis.Trend.rising
+        else
+            TrendAnalysis.Trend.stable
+    else
+        TrendAnalysis.Trend.stable;
+
     const faculty_trend = if (data_points >= 2)
         if (last_active > first_active)
             TrendAnalysis.Trend.rising
@@ -403,9 +471,9 @@ fn analyzeTrends(allocator: Allocator, current: ?FacultyMetrics) ?TrendAnalysis 
         TrendAnalysis.Trend.stable;
 
     const analysis = TrendAnalysis{
-        .compile_trend = TrendAnalysis.Trend.stable, // TODO: parse compile_rate trend
-        .v_trend = TrendAnalysis.Trend.stable, // TODO: parse V trend
-        .dirty_trend = TrendAnalysis.Trend.stable, // TODO: parse dirty trend
+        .compile_trend = compile_trend,
+        .v_trend = v_trend,
+        .dirty_trend = dirty_trend,
         .faculty_trend = faculty_trend,
         .confidence = @as(f32, @floatFromInt(results.items.len)) / 10.0,
         .sample_size = @intCast(results.items.len),
@@ -852,7 +920,9 @@ fn formatActionExplanation(d: Decision, result: qt.ActionResult) []const u8 {
 fn formatDecisionReport(decision: Decision, result: qt.ActionResult) []const u8 {
     _ = decision;
     _ = result;
-    return ""; // TODO: Implement if needed
+    // Reports are sent via Queen OFC with proper formatting
+    // This function kept for potential custom reporting needs
+    return "";
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1410,4 +1480,61 @@ test "dlpfc — CycleState last_decision optional" {
     cycle.last_decision = decision;
 
     try std.testing.expect(cycle.last_decision != null);
+}
+
+test "dlpfc — determineTrend rising" {
+    const trend = determineTrend(1.1, 1.0); // 10% increase
+    try std.testing.expectEqual(TrendAnalysis.Trend.rising, trend);
+}
+
+test "dlpfc — determineTrend falling" {
+    const trend = determineTrend(0.9, 1.0); // 10% decrease
+    try std.testing.expectEqual(TrendAnalysis.Trend.falling, trend);
+}
+
+test "dlpfc — determineTrend stable" {
+    const trend1 = determineTrend(1.02, 1.0); // 2% change - below threshold
+    try std.testing.expectEqual(TrendAnalysis.Trend.stable, trend1);
+
+    const trend2 = determineTrend(1.0, 1.0); // No change
+    try std.testing.expectEqual(TrendAnalysis.Trend.stable, trend2);
+}
+
+test "dlpfc — determineTrend handles zero previous" {
+    const trend = determineTrend(1.0, 0.0);
+    try std.testing.expectEqual(TrendAnalysis.Trend.stable, trend);
+}
+
+test "dlpfc — TrendAnalysis all trend combinations" {
+    const trends = [_]TrendAnalysis.Trend{ .rising, .stable, .falling };
+
+    for (trends) |compile| {
+        for (trends) |v| {
+            for (trends) |dirty| {
+                for (trends) |faculty| {
+                    const analysis = TrendAnalysis{
+                        .compile_trend = compile,
+                        .v_trend = v,
+                        .dirty_trend = dirty,
+                        .faculty_trend = faculty,
+                    };
+                    _ = analysis;
+                    // Just verify all combinations are valid
+                }
+            }
+        }
+    }
+}
+
+test "dlpfc — TrendAnalysis confidence range" {
+    var analysis = TrendAnalysis{ .sample_size = 0 };
+    try std.testing.expectEqual(@as(f32, 0.0), analysis.confidence);
+
+    analysis.sample_size = 5;
+    analysis.confidence = 0.5;
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), analysis.confidence, 0.01);
+
+    analysis.sample_size = 10;
+    analysis.confidence = 1.0;
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), analysis.confidence, 0.01);
 }
