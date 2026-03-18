@@ -443,9 +443,9 @@ pub fn getCellHistory(allocator: Allocator, cell_id: []const u8, days: u32) !std
     const since_ts: u64 = @intCast(now - (@as(u64, days) * 24 * 3600));
 
     var records = try read(allocator, .{
-        .kind_filter = .cellhealth,
+        .kind = .cellhealth,
         .since_ts = since_ts,
-        .agent_filter = "cytoplasm",
+        .agent = "cytoplasm",
     });
 
     // Filter by cell_id (done in-memory since data_json contains cell_id)
@@ -459,6 +459,105 @@ pub fn getCellHistory(allocator: Allocator, cell_id: []const u8, days: u32) !std
     records.deinit();
 
     return filtered;
+}
+
+/// Parsed cell health data from a memory record
+pub const ParsedCellHealth = struct {
+    cell_id: []const u8,
+    cell_name: []const u8,
+    health_score: u8,
+    health_delta: i8,
+    bio_system: []const u8,
+    trigger: []const u8,
+    files_total: u32,
+    files_generated: u32,
+    files_manual: u32,
+    tests_passing: bool,
+    ts: u64,
+
+    /// Parse cell health from JSON data in memory record
+    pub fn fromRecord(rec: *const MemoryRecord) !ParsedCellHealth {
+        // Parse the JSON data string
+        // Format: {"cell_id":"...","cell_name":"...","health":...,"delta":...,"bio_system":"...","trigger":"...","files":{"total":...,"generated":...,"manual":...},"tests_passing":...}
+        const data = rec.data_buf[0..rec.data_len];
+
+        var self: ParsedCellHealth = undefined;
+
+        // Simple parsing - extract values using string search (no full JSON parser needed)
+        // cell_id
+        if (std.mem.indexOf(u8, data, "\"cell_id\":\"")) |start| {
+            const val_start = start + 11;
+            const val_end = std.mem.indexOf(u8, data[val_start..], "\"") orelse return error.ParseError;
+            self.cell_id = data[val_start .. val_start + val_end];
+        } else return error.ParseError;
+
+        // cell_name
+        if (std.mem.indexOf(u8, data, "\"cell_name\":\"")) |start| {
+            const val_start = start + 13;
+            const val_end = std.mem.indexOf(u8, data[val_start..], "\"") orelse return error.ParseError;
+            self.cell_name = data[val_start .. val_start + val_end];
+        } else return error.ParseError;
+
+        // health
+        if (std.mem.indexOf(u8, data, "\"health\":")) |start| {
+            const val_start = start + 9;
+            const val_end = if (std.mem.indexOf(u8, data[val_start..], ",")) |idx| idx else if (std.mem.indexOf(u8, data[val_start..], "}")) |idx| idx else return error.ParseError;
+            self.health_score = try std.fmt.parseInt(u8, data[val_start .. val_start + val_end], 10);
+        } else return error.ParseError;
+
+        // delta
+        if (std.mem.indexOf(u8, data, "\"delta\":")) |start| {
+            const val_start = start + 8;
+            const val_end = if (std.mem.indexOf(u8, data[val_start..], ",")) |idx| idx else if (std.mem.indexOf(u8, data[val_start..], "}")) |idx| idx else return error.ParseError;
+            self.health_delta = try std.fmt.parseInt(i8, data[val_start .. val_start + val_end], 10);
+        } else return error.ParseError;
+
+        // bio_system
+        if (std.mem.indexOf(u8, data, "\"bio_system\":\"")) |start| {
+            const val_start = start + 14;
+            const val_end = std.mem.indexOf(u8, data[val_start..], "\"") orelse return error.ParseError;
+            self.bio_system = data[val_start .. val_start + val_end];
+        } else return error.ParseError;
+
+        // trigger
+        if (std.mem.indexOf(u8, data, "\"trigger\":\"")) |start| {
+            const val_start = start + 11;
+            const val_end = std.mem.indexOf(u8, data[val_start..], "\"") orelse return error.ParseError;
+            self.trigger = data[val_start .. val_start + val_end];
+        } else return error.ParseError;
+
+        // files.total
+        if (std.mem.indexOf(u8, data, "\"files\":{\"total\":")) |start| {
+            const val_start = start + 18;
+            const val_end = std.mem.indexOf(u8, data[val_start..], ",") orelse return error.ParseError;
+            self.files_total = try std.fmt.parseInt(u32, data[val_start .. val_start + val_end], 10);
+        } else return error.ParseError;
+
+        // tests_passing
+        if (std.mem.indexOf(u8, data, "\"tests_passing\":")) |start| {
+            const val_start = start + 16;
+            self.tests_passing = std.mem.eql(u8, data[val_start .. val_start + 4], "true");
+        } else return error.ParseError;
+
+        self.ts = rec.ts;
+
+        return self;
+    }
+};
+
+/// Get all cell health records within the given time period
+/// Returns records sorted by timestamp (newest first)
+pub fn getAllCellHealth(allocator: Allocator, days: u32) !std.ArrayList(MemoryRecord) {
+    const now: i64 = std.time.timestamp();
+    const seconds_back: i64 = @as(i64, days) * 24 * 3600;
+    const since_ts: u64 = @intCast(@max(0, now - seconds_back));
+
+    return read(allocator, .{
+        .kind = .cellhealth,
+        .since_ts = since_ts,
+        .agent = "cytoplasm",
+        .limit = 100000, // Large limit to get all records
+    });
 }
 
 pub fn writeRule(allocator: Allocator, agent_name: []const u8, summary_text: []const u8, data_json: []const u8) !void {
