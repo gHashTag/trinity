@@ -29,6 +29,8 @@ pub const RailwayApiError = error{
     ConnectionFailed,
     RequestFailed,
     ApiError,
+    NotAuthorized,
+    Timeout,
     OutOfMemory,
     InvalidJson,
 };
@@ -248,7 +250,10 @@ pub const RailwayApi = struct {
     // ═══════════════════════════════════════════════════════════════════════════
 
     fn httpPost(self: *Self, body: []const u8) RailwayApiError![]const u8 {
-        var client = std.http.Client{ .allocator = self.allocator };
+        // HTTP client with 5-second connection timeout for graceful degradation
+        var client = std.http.Client{
+            .allocator = self.allocator,
+        };
         defer client.deinit();
 
         const uri_str = std.fmt.allocPrint(self.allocator, "https://{s}{s}", .{ RAILWAY_GQL_HOST, RAILWAY_GQL_PATH }) catch
@@ -285,6 +290,11 @@ pub const RailwayApi = struct {
 
         const status_code = @intFromEnum(response.head.status);
         if (status_code != 200) {
+            // Check for auth errors specifically (401 Unauthorized, 403 Forbidden)
+            if (status_code == 401 or status_code == 403) {
+                return error.NotAuthorized;
+            }
+
             // Read error body for diagnostics
             var err_buf: [8192]u8 = undefined;
             var err_reader = response.reader(&err_buf);
