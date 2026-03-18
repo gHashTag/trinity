@@ -139,9 +139,9 @@ struct SmartSuggestionBar: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(suggestion.urgent ? suggestion.color : suggestion.color.opacity(0.12))
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                             .overlay(
-                                Capsule()
+                                SwiftUI.Capsule()
                                     .stroke(suggestion.color.opacity(0.3), lineWidth: suggestion.urgent ? 0 : 1)
                             )
                         }
