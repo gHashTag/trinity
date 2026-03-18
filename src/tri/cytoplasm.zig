@@ -5796,11 +5796,11 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
         const timestamp = std.time.timestamp();
         const elapsed = timestamp - start_time;
 
-        // Format elapsed time as H:MM:SS (no sign for positive)
-        const uptime_abs = if (elapsed < 0) -elapsed else elapsed;
-        const hours = @divTrunc(uptime_abs, 3600);
-        const mins = @divTrunc(@rem(uptime_abs, 3600), 60);
-        const secs = @rem(uptime_abs, 60);
+        // Format elapsed time as H:MM:SS (unsigned to avoid + sign)
+        const uptime_abs: u64 = if (elapsed < 0) @as(u64, @intCast(-elapsed)) else @as(u64, @intCast(elapsed));
+        const hours = uptime_abs / 3600;
+        const mins = (uptime_abs % 3600) / 60;
+        const secs = uptime_abs % 60;
 
         std.debug.print("{s}🏥 CELL HEALTH DASHBOARD{s} — refresh every {d}s\n", .{ GOLDEN, RESET, interval });
         std.debug.print("{s}Scan: {d}  |  Iteration: {d}  |  Uptime: {d}:{d:0>2}:{d:0>2}{s}\n\n", .{ GRAY, timestamp, iter + 1, hours, mins, secs, RESET });
