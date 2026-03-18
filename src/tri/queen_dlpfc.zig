@@ -67,12 +67,12 @@ pub const DecisionContext = struct {
     last_sleep_ts: i64 = 0,
 
     /// Check if we should take any auto-action
-    pub fn shouldAutoAct(self: *const DecisionContext) bool {
+    pub inline fn shouldAutoAct(self: *const DecisionContext) bool {
         return self.config.allow_auto_actions and self.config.daemon;
     }
 
     /// Get current arousal level
-    pub fn getArousal(self: *const DecisionContext) locus_coeruleus.ArousalLevel {
+    pub inline fn getArousal(self: *const DecisionContext) locus_coeruleus.ArousalLevel {
         return locus_coeruleus.getArousal(&self.locus_state);
     }
 };
@@ -96,7 +96,7 @@ pub const FacultyMetrics = struct {
     pub const FacultyCycle = enum { working, evaluating, sleeping };
 
     /// Calculate overall health score (0-100)
-    pub fn healthScore(self: *const FacultyMetrics) f32 {
+    pub inline fn healthScore(self: *const FacultyMetrics) f32 {
         var score: f32 = 0.0;
         score += @as(f32, @floatFromInt(self.active_count)) * 15.0; // 0-90 points
         score += self.build_health * 0.1; // 0-10 points
@@ -104,7 +104,7 @@ pub const FacultyMetrics = struct {
     }
 
     /// Get V-zone description
-    pub fn vZoneStr(self: *const FacultyMetrics) []const u8 {
+    pub inline fn vZoneStr(self: *const FacultyMetrics) []const u8 {
         return switch (self.v_zone) {
             .gold => "GOLD",
             .stable => "STABLE",
@@ -138,7 +138,7 @@ pub const TrendAnalysis = struct {
     }
 
     /// Check if any metric is trending negatively
-    pub fn hasProblemTrends(self: *const TrendAnalysis) bool {
+    pub inline fn hasProblemTrends(self: *const TrendAnalysis) bool {
         return self.compile_trend == .falling or
             self.v_trend == .falling or
             self.dirty_trend == .rising or
@@ -146,7 +146,7 @@ pub const TrendAnalysis = struct {
     }
 
     /// Calculate urgency score based on trends (0-10)
-    pub fn urgencyScore(self: *const TrendAnalysis) u8 {
+    pub inline fn urgencyScore(self: *const TrendAnalysis) u8 {
         var score: u8 = 0;
         if (self.compile_trend == .falling) score += 3;
         if (self.v_trend == .falling) score += 2;
@@ -173,7 +173,7 @@ pub const CycleState = struct {
         };
     }
 
-    pub fn uptimeSeconds(self: *const CycleState) i64 {
+    pub inline fn uptimeSeconds(self: *const CycleState) i64 {
         return std.time.timestamp() - self.start_time;
     }
 };
