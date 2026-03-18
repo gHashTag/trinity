@@ -4908,8 +4908,8 @@ fn runAudit(allocator: Allocator, args: []const []const u8) !void {
 fn runStatus(allocator: Allocator, args: []const []const u8) !void {
     // Parse flags
     const perf_flags = perf_mod.PerfFlags.parse(args);
-    var benchmark = perf_flags.benchmark;
-    var profile_mode = perf_flags.profile;
+    const benchmark = perf_flags.benchmark;
+    const profile_mode = perf_flags.profile;
     var use_cache = true;
     for (args) |arg| {
         if (std.mem.eql(u8, arg, "--no-cache")) use_cache = false;
