@@ -6,20 +6,33 @@
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════
 
+const std = @import("std");
+
 pub const dlpfc = @import("queen_dlpfc.zig");
 pub const vmpfc = @import("queen_vmpfc.zig");
 pub const ofc = @import("queen_ofc.zig");
 pub const vlpfc = @import("queen_vlpfc.zig");
 pub const dmpfc = @import("queen_dmpfc.zig");
 
-// Re-export all health functions
-pub fn health() struct {
-    dlpfc: dlpfc.health(),
-    vmpfc: vmpfc.health(),
-    ofc: ofc.health(),
-    vlpfc: vlpfc.health(),
-    dmpfc: dmpfc.health(),
+/// Combined health status for all PFC cells
+pub const CellHealth = struct {
+    dlpfc: dlpfc.CellHealth,
+    vmpfc: vmpfc.CellHealth,
+    ofc: ofc.CellHealth,
+    vlpfc: vlpfc.CellHealth,
+    dmpfc: dmpfc.CellHealth,
 };
+
+/// Collect health from all PFC cells
+pub fn health(allocator: std.mem.Allocator) !CellHealth {
+    return .{
+        .dlpfc = try dlpfc.health(allocator),
+        .vmpfc = try vmpfc.health(allocator),
+        .ofc = try ofc.health(allocator),
+        .vlpfc = try vlpfc.health(allocator),
+        .dmpfc = try dmpfc.health(allocator),
+    };
+}
 
 const CellHealth = struct {
     dlpfc: dlpfc.CellHealth,
@@ -38,8 +51,8 @@ pub fn isHealthy(self: *const CellHealth) bool {
         self.dmpfc.status == .healthy;
 }
 
-// Get overall status string
-pub fn statusStr(self: *const CellHealth) []const u8 {
+/// Get overall status string
+pub fn statusStr(self: *const CellHealth, allocator: std.mem.Allocator) ![]const u8 {
     const total: u8 = 5;
     var healthy_count: u8 = 0;
 
@@ -51,7 +64,7 @@ pub fn statusStr(self: *const CellHealth) []const u8 {
 
     const grade = if (healthy_count == 5) "A" else if (healthy_count >= 3) "B" else "C";
     return std.fmt.allocPrint(
-        std.heap.page_allocator,
+        allocator,
         "Cortex: {d}/{d} healthy ({s})",
         .{ healthy_count, total, grade },
     );

@@ -1,5 +1,0 @@
-version       = "0.1.0"
-author        = "Trinity Project"
-description   = "Vector Symbolic Architecture with balanced ternary arithmetic"
-license       = "MIT"
-srcDir        = "src"

@@ -1,7 +1,0 @@
-#!/bin/execlineb -P
-# s6 service script for LLM inference server
-# Port 8080
-
-s6-envdir /etc/s6-overlay/env
-fdmove -c 2 1
-tri_inference

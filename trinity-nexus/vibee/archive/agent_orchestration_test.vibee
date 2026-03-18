@@ -1,8 +1,0 @@
-// Tests for agent_orchestration plugin
-
-
-
-// TODO: Add tests
-pub fn placeholder_test() {
-  should.be_true(True)
-}
