@@ -3805,7 +3805,7 @@ fn runTrends(allocator: Allocator, args: []const []const u8) !void {
         health_score: u8,
         ts: u64,
     }).initCapacity(allocator, 0);
-    defer parsed_records.deinit();
+    defer parsed_records.deinit(allocator);
 
     for (health_records.items) |rec| {
         const parsed = hippocampus.ParsedCellHealth.fromRecord(&rec) catch continue;
