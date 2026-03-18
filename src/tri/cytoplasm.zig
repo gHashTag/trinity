@@ -3805,15 +3805,16 @@ fn runTrends(allocator: Allocator, args: []const []const u8) !void {
         health_score: u8,
         ts: u64,
     }).initCapacity(allocator, 0);
-    defer parsed_records.deinit(allocator);
+    defer parsed_records.deinit();
 
     for (health_records.items) |rec| {
         const parsed = hippocampus.ParsedCellHealth.fromRecord(&rec) catch continue;
         var buf: [256]u8 = undefined;
-        @memcpy(&buf, parsed.cell_id[0..@min(parsed.cell_id.len, 256)]);
+        const cell_id_slice = parsed.cell_id[0..@min(parsed.cell_id.len, 256)];
+        @memcpy(&buf, cell_id_slice);
         try parsed_records.append(allocator, .{
             .cell_id_buf = buf,
-            .cell_id_len = parsed.cell_id.len,
+            .cell_id_len = cell_id_slice.len,
             .cell_name = parsed.cell_name,
             .health_score = parsed.health_score,
             .ts = parsed.ts,
