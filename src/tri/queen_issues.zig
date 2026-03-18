@@ -653,7 +653,7 @@ pub const IssueTracker = struct {
         defer self.allocator.free(resp_body);
 
         // Parse JSON array of issues
-        var issues = std.ArrayList(IssueStatus).init(self.allocator);
+        var issues = std.ArrayList(IssueStatus).init(self.allocator, 0);
 
         var pos: usize = 0;
         while (pos < resp_body.len) {
@@ -704,7 +704,7 @@ pub const IssueTracker = struct {
 
     /// List issues using gh CLI fallback
     fn listIssuesGh(self: *Self, label_filter: ?[]const u8) ![]IssueStatus {
-        var argv = std.ArrayList([]const u8).init(self.allocator);
+        var argv = std.ArrayList([]const u8).init(self.allocator, 0);
         defer argv.deinit();
 
         try argv.appendSlice(self.allocator, &.{ "gh", "issue", "list", "--state", "open", "--json", "number,state,title,labels", "--limit", "100" });

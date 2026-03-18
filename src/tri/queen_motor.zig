@@ -29,9 +29,15 @@ pub const MotorCommand = struct {
     arg_lens: [MAX_CMD_ARGS]usize = [_]usize{0} ** MAX_CMD_ARGS,
     arg_count: u8 = 0,
 
-    /// Initialize args array
+    /// Initialize command with zeroed memory
     pub fn init() MotorCommand {
-        var cmd: MotorCommand = undefined;
+        var cmd: MotorCommand = .{
+            .subcommand = undefined,
+            .subcommand_len = 0,
+            .args = undefined,
+            .arg_lens = [_]usize{0} ** MAX_CMD_ARGS,
+            .arg_count = 0,
+        };
         @memset(&cmd.subcommand, 0);
         for (0..MAX_CMD_ARGS) |i| {
             @memset(&cmd.args[i], 0);
@@ -449,5 +455,7 @@ test "Motor — MotorCommand fromAction" {
 test "Motor — MotorExecutor init" {
     const allocator = std.testing.allocator;
     const exec = MotorExecutor.init(allocator);
-    try std.testing.expect(exec.context.build_ok);
+    // Context has default values (build_ok=false until refreshed)
+    try std.testing.expect(exec.context.build_ok == false);
+    try std.testing.expect(exec.context.farm_idle_count == 0);
 }
