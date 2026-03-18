@@ -676,8 +676,7 @@ fn dispatchForecast(ctx: DispatchContext, buf: []u8) void {
         \\{s} Forecast: {d:.1}
         \\{s} Confidence: {s}
         \\
-        \\Recommendation:
-        \\  {s}
+        \\Recommendation: {s}
         \\
         \\Strategy: {s}
     , .{
@@ -687,7 +686,6 @@ fn dispatchForecast(ctx: DispatchContext, buf: []u8) void {
         forecast,
         conf_emoji,
         confidence,
-        if (delta >= 0) qt.E_CHECK else qt.E_WRENCH,
         rec,
         state.strategyStr(),
     }) catch "";
@@ -696,58 +694,60 @@ fn dispatchForecast(ctx: DispatchContext, buf: []u8) void {
 
 /// /queen brain — status of all brain cells
 fn dispatchBrain(ctx: DispatchContext, buf: []u8) void {
-    const cortex_health = queen_cortex.health(ctx.allocator) catch |err| {
-        const msg = std.fmt.bufPrint(buf, "{s} Cortex health error: {}\n", .{ qt.E_CROSS, err }) catch "";
-        tgSend(ctx.tg, msg);
-        return;
-    };
+    // Get health directly from each cell (they don't take allocator)
+    const dlpfc_health = queen_cortex.dlpfc.health();
+    const vmpfc_health = queen_cortex.vmpfc.health();
+    const ofc_health = queen_cortex.ofc.health();
+    const vlpfc_health = queen_cortex.vlpfc.health();
+    const dmpfc_health = queen_cortex.dmpfc.health();
 
     // Count healthy cells
-    const healthy: u8 = blk: {
-        var count: u8 = 0;
-        if (cortex_health.dlpfc.status == .healthy) count += 1;
-        if (cortex_health.vmpfc.status == .healthy) count += 1;
-        if (cortex_health.ofc.status == .healthy) count += 1;
-        if (cortex_health.vlpfc.status == .healthy) count += 1;
-        if (cortex_health.dmpfc.status == .healthy) count += 1;
-        break :blk count;
-    };
+    var healthy: u8 = 0;
+    if (dlpfc_health.status == .healthy) healthy += 1;
+    if (vmpfc_health.status == .healthy) healthy += 1;
+    if (ofc_health.status == .healthy) healthy += 1;
+    if (vlpfc_health.status == .healthy) healthy += 1;
+    if (dmpfc_health.status == .healthy) healthy += 1;
 
     const grade = if (healthy == 5) "A" else if (healthy >= 3) "B" else "C";
     const grade_emoji = if (grade[0] == 'A') qt.E_STAR else if (grade[0] == 'B') qt.E_CHECK else qt.E_WRENCH;
+
+    // Combined cycles
+    const combined = dlpfc_health.cycle + vmpfc_health.cycle + ofc_health.cycle +
+                     vlpfc_health.cycle + dmpfc_health.cycle;
 
     const msg = std.fmt.bufPrint(buf,
         \\{s} Brain Cells Status
         \\
         \\Overall: {d}/5 healthy ({s})
         \\
-        \\{s} DLPFC: {s}
-        \\{s} VMPFC: {s}
-        \\{s} OFC: {s}
-        \\{s} VLPFC: {s}
-        \\{s} DMPFC: {s}
+        \\{s} DLPFC: {s} (cycle {d})
+        \\{s} VMPFC: {s} (cycle {d})
+        \\{s} OFC: {s} (cycle {d})
+        \\{s} VLPFC: {s} (cycle {d})
+        \\{s} DMPFC: {s} (cycle {d})
         \\
         \\Combined cycles: {d}
     , .{
         grade_emoji,
         healthy,
         grade,
-        cellEmoji(cortex_health.dlpfc.status),
-        "DLPFC",
-        statusStr(cortex_health.dlpfc.status),
-        cellEmoji(cortex_health.vmpfc.status),
-        "VMPFC",
-        statusStr(cortex_health.vmpfc.status),
-        cellEmoji(cortex_health.ofc.status),
-        "OFC",
-        statusStr(cortex_health.ofc.status),
-        cellEmoji(cortex_health.vlpfc.status),
-        "VLPFC",
-        statusStr(cortex_health.vlpfc.status),
-        cellEmoji(cortex_health.dmpfc.status),
-        "DMPFC",
-        statusStr(cortex_health.dmpfc.status),
-        queen_cortex.combinedCycle(&cortex_health),
+        cellEmoji(dlpfc_health.status),
+        statusStr(dlpfc_health.status),
+        dlpfc_health.cycle,
+        cellEmoji(vmpfc_health.status),
+        statusStr(vmpfc_health.status),
+        vmpfc_health.cycle,
+        cellEmoji(ofc_health.status),
+        statusStr(ofc_health.status),
+        ofc_health.cycle,
+        cellEmoji(vlpfc_health.status),
+        statusStr(vlpfc_health.status),
+        vlpfc_health.cycle,
+        cellEmoji(dmpfc_health.status),
+        statusStr(dmpfc_health.status),
+        dmpfc_health.cycle,
+        combined,
     }) catch "";
     tgSend(ctx.tg, msg);
 }
@@ -757,19 +757,14 @@ fn cellEmoji(status: anytype) []const u8 {
     if (@hasField(Status, "healthy")) {
         return if (status == .healthy) qt.E_CHECK else qt.E_CROSS;
     }
-    // Fallback for enum without .healthy
     return qt.E_EYE;
 }
 
 fn statusStr(status: anytype) []const u8 {
-    const T = @TypeOf(status);
-    return switch (T) {
-        else => switch (status) {
-            .healthy => "OK",
-            .degraded => "SLOW",
-            .failed => "FAIL",
-            else => "???",
-        },
+    return switch (status) {
+        .healthy => "OK",
+        .weak => "SLOW",
+        .broken => "FAIL",
     };
 }
 
