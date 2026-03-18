@@ -184,7 +184,7 @@ struct ReactionBadge: View {
                 .padding(.horizontal, 6)
                 .padding(.vertical, 3)
                 .background(
-                    Capsule()
+                    SwiftUI.Capsule()
                         .fill(TrinityTheme.bgCard.opacity(0.5))
                 )
             }
