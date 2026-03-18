@@ -1,0 +1,1 @@
+ast-check failures usually mean: 1) missing imports (@import not found), 2) syntax errors (unclosed braces, missing semicolons), 3) Zig version incompatibility (0.14 vs 0.15 API changes like Child.run vs Child.exec). Fix: check generated code imports and Zig 0.15 API.

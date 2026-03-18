@@ -1,0 +1,90 @@
+name: igla_knowledge_graph_chat
+version: "1.0.0"
+language: zig
+module: igla_knowledge_graph_chat
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IGLA KNOWLEDGE GRAPH CHAT - Level 11.36 KG Integration
+# ═══════════════════════════════════════════════════════════════════════════════
+# KG module for IGLA Chat: per-relation bundled memory, NL query parsing,
+# 145 real-world facts across 13 relation types.
+#
+# Architecture:
+#   fact_hv = bind(bind(subject_hv, relation_hv), object_hv)
+#   relation_memory[r] = bundle(fact_1, fact_2, ..., fact_N)
+#   query(S, R) = unbind(relation_memory[R], bind(S_hv, R_hv)) -> decode
+#
+# Energy: 0.0008 Wh per query (ternary add-only, no multiply)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  DIM: 4096
+  KG_SIMILARITY_THRESHOLD: 0.10
+  KG_ENERGY_WH: 0.0008
+  NUM_RELATIONS: 13
+  NUM_FACTS: 145
+
+types:
+  TritVec:
+    fields:
+      data: List<Int>
+    invariants:
+      - all(t in data: t in [-1, 0, 1])
+      - len(data) == 4096
+
+  Codebook:
+    fields:
+      entries: Map<String, TritVec>
+
+  KGQueryResult:
+    fields:
+      answer: String
+      similarity: Float
+      relation: String
+      subject: String
+      multi_hop: Bool
+
+  KGStats:
+    fields:
+      num_facts: Int
+      num_entities: Int
+      num_relations: Int
+      query_count: Int
+      hit_count: Int
+
+  ChatKnowledgeGraph:
+    fields:
+      entity_codebook: Codebook
+      relation_codebook: Codebook
+      fact_count: Int
+
+behaviors:
+  # Add a single (subject, relation, object) fact to per-relation memory
+  - name: addFact
+    given: Subject, relation, object strings
+    when: Encode via bind(bind(subject_hv, relation_hv), object_hv) into per-relation bundled memory
+    then: Fact stored in per-relation memory, fact_count incremented
+
+  # Query a triple pattern (subject, relation, ?)
+  - name: queryTriple
+    given: Subject and relation strings
+    when: Unbind per-relation memory with bind(subject_hv, relation_hv), decode against entity codebook
+    then: Returns KGQueryResult with answer, similarity > 0.10
+
+  # Natural language query interface
+  - name: queryNaturalLanguage
+    given: Natural language query string (e.g. "capital of France")
+    when: Parse NL query to extract subject+relation, call queryTriple
+    then: Returns KGQueryResult or null if no match
+
+  # Load the full 145-fact dataset
+  - name: loadDataset
+    given: Empty knowledge graph
+    when: Load 145 hardcoded facts (geography, science, history)
+    then: 145 facts across 13 relation types loaded
+
+  # Get statistics about the knowledge graph
+  - name: getStats
+    given: Populated knowledge graph
+    when: Compute statistics about stored facts and query performance
+    then: Returns KGStats with num_facts, num_entities, num_relations, query_count, hit_count

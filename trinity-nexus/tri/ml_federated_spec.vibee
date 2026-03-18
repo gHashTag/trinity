@@ -1,0 +1,118 @@
+name: ml_federated
+version: "1.0.0"
+language: zig
+module: ml_federated
+description: Federated learning system for privacy-preserving distributed ML
+
+types:
+  FederatedServer:
+    description: Federated learning server
+    fields:
+      id: String
+      model: Model
+      aggregation_strategy: String
+      privacy_config: PrivacyConfig
+      clients: List<ClientInfo>
+      current_round: Int
+      total_rounds: Int
+
+  Model:
+    description: ML model
+    fields:
+      id: String
+      weights: List<Float>
+      architecture: String
+      version: Int
+
+  PrivacyConfig:
+    description: Privacy configuration
+    fields:
+      differential_privacy: Bool
+      epsilon: Float
+      delta: Float
+      secure_aggregation: Bool
+      homomorphic_encryption: Bool
+
+  ClientInfo:
+    description: Federated client information
+    fields:
+      id: String
+      dataset_size: Int
+      last_update_round: Int
+      contribution_weight: Float
+      status: String
+
+  FederatedClient:
+    description: Federated learning client
+    fields:
+      id: String
+      server_url: String
+      local_model: Model
+      local_dataset_size: Int
+      privacy_budget: Float
+
+  ModelUpdate:
+    description: Model update from client
+    fields:
+      client_id: String
+      round: Int
+      weight_deltas: List<Float>
+      samples_used: Int
+      loss: Float
+      accuracy: Float
+
+  AggregationResult:
+    description: Aggregation result
+    fields:
+      round: Int
+      aggregated_weights: List<Float>
+      participating_clients: Int
+      average_loss: Float
+      average_accuracy: Float
+
+behaviors:
+  - name: server_operations
+  - name: create_server
+  - name: initial_model
+  - name: aggregation_strategy
+  - name: privacy_config
+  - name: total_rounds
+  - name: register_client
+  - name: server_id
+  - name: client_info
+  - name: start_round
+  - name: server_id
+  - name: aggregate_updates
+  - name: server_id
+  - name: updates
+  - name: client_operations
+  - name: create_client
+  - name: server_url
+  - name: local_dataset_size
+  - name: download_model
+  - name: client_id
+  - name: server_id
+  - name: train_local_model
+  - name: client_id
+  - name: epochs
+  - name: upload_update
+  - name: client_id
+  - name: server_id
+  - name: update
+  - name: privacy_operations
+  - name: apply_differential_privacy
+  - name: updates
+  - name: epsilon
+  - name: delta
+  - name: secure_aggregate
+  - name: updates
+  - name: create_server
+  - name: register_client
+  - name: start_round
+  - name: aggregate_updates
+  - name: create_client
+  - name: download_model
+  - name: train_local_model
+  - name: upload_update
+  - name: apply_differential_privacy
+  - name: secure_aggregate

@@ -1,0 +1,29 @@
+{
+  "issue": 358,
+  "task": "Competitive research: AI agents + ternary computing 2025-2026",
+  "verdict": "PASS",
+  "steps": [
+    "Researched 7 AI agent orchestrators (Kiro, Antigravity, Codex, Cursor, Claude Code, Devin, CrewAI)",
+    "Researched spec-first development tools (Kiro EARS, Red Hat spec coding)",
+    "Researched ternary/HDC papers (BitNet b1.58, TENET, Tequila, Sherry, DecoHD)",
+    "Researched self-improving agents (Reflexion, ADAS, AgentTrek, ExpeL, Self-Refine)"
+  ],
+  "learnings": [
+    "Kiro uses markdown EARS specs — Trinity .tri DSL is more powerful but less known",
+    "BitNet b1.58 is the key ternary benchmark — 2B params, {-1,0,+1}, matches full-precision",
+    "TENET Sparse Ternary LUT: 4.3x energy efficiency on FPGA — directly applicable to hslm_ternary_mac.v",
+    "Tequila fixes dead weights at deadzone boundary — may improve HSLM convergence",
+    "DecoHD decomposed encoding: 277x energy gains — could reduce FPGA BRAM from 95%",
+    "Error cascading is primary failure mode — per-link Golden Chain checkpoints address this",
+    "AgentTrek: generate specs from successful runs — experience-to-spec pipeline",
+    "No competitor does spec round-tripping (code drift → spec update) — first-mover opportunity"
+  ],
+  "strategic_actions": [
+    "Publish .tri spec format as open standard",
+    "Benchmark HSLM vs BitNet b1.58 with honest numbers",
+    "Implement structured failure memory (queryable DB)",
+    "Study TENET for FPGA pipeline optimization",
+    "Add spec round-tripping (code drift detection)"
+  ],
+  "timestamp": "2026-03-14"
+}

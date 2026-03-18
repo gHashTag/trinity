@@ -1,0 +1,633 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# GGUF TO TRI CONVERTER - Universal Model Quantization
+# Convert any GGUF model to sacred ternary .tri format
+# 16x memory savings, 5-10x speedup via elimination of multiplications
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# This is the SINGLE SOURCE OF TRUTH for GGUF → .tri conversion.
+# All implementation code MUST be generated from this specification.
+#
+# Supported input formats:
+#   - GGUF v2/v3 (llama.cpp ecosystem)
+#   - Tensor types: F32, F16, BF16, Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, Q4_K, Q5_K, Q6_K
+#
+# Output format:
+#   - .tri (Trinity Ternary Format)
+#   - 2-bit weights {-1, 0, +1} packed 4 per byte
+#   - Per-group scaling factors (group_size=128)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: gguf_to_tri
+version: "2.0.0"
+language: zig
+module: gguf_to_tri
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+config:
+  # Quantization parameters
+  GROUP_SIZE: 128           # Elements per quantization group
+  THRESHOLD_PERCENTILE: 0.7 # Absmax threshold for ternary conversion
+  
+  # GGUF constants
+  GGUF_MAGIC: 0x46554747    # "GGUF" little-endian
+  GGUF_VERSION_MIN: 2
+  GGUF_VERSION_MAX: 3
+  
+  # TRI format constants
+  TRI_MAGIC: 0x54524933     # "TRI3"
+  TRI_VERSION: 2
+  
+  # Thread pool for parallel quantization
+  USE_THREAD_POOL: true
+  MIN_TENSOR_SIZE_FOR_PARALLEL: 1048576  # 1M elements
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # GGUF tensor types supported for conversion
+  GGMLType:
+    enum:
+      - F32: 0       # 32-bit float
+      - F16: 1       # 16-bit float
+      - Q4_0: 2      # 4-bit quantized (block size 32)
+      - Q4_1: 3      # 4-bit quantized with min
+      - Q5_0: 6      # 5-bit quantized
+      - Q5_1: 7      # 5-bit quantized with min
+      - Q8_0: 8      # 8-bit quantized
+      - Q8_1: 9      # 8-bit quantized with min
+      - Q2_K: 10     # K-quant 2-bit
+      - Q3_K: 11     # K-quant 3-bit
+      - Q4_K: 12     # K-quant 4-bit
+      - Q5_K: 13     # K-quant 5-bit
+      - Q6_K: 14     # K-quant 6-bit
+      - Q8_K: 15     # K-quant 8-bit
+      - TQ1_0: 16    # Native ternary (already quantized)
+      - TQ2_0: 17    # Ternary with scale
+      - BF16: 30     # Brain float 16
+      
+  # GGUF header structure
+  GGUFHeader:
+    fields:
+      magic: Int
+      version: Int
+      tensor_count: Int
+      metadata_kv_count: Int
+      
+  # Tensor info from GGUF
+  TensorInfo:
+    fields:
+      name: String
+      n_dims: Int
+      dims: List<Int>
+      tensor_type: Int
+      offset: Int
+      
+  # TRI file header
+  TriHeader:
+    fields:
+      magic: Int
+      version: Int
+      model_type: Int
+      vocab_size: Int
+      hidden_size: Int
+      intermediate_size: Int
+      num_layers: Int
+      num_heads: Int
+      num_kv_heads: Int
+      head_dim: Int
+      context_length: Int
+      rope_theta: Float
+      rms_norm_eps: Float
+      total_params: Int
+      ternary_size: Int
+      group_size: Int
+      num_groups: Int
+      
+  # Quantization group with scale
+  QuantGroup:
+    fields:
+      scale: Float          # Absmax scale for dequantization
+      packed_trits: List<Int>  # 4 trits per byte
+      
+  # Ternary layer weights
+  TernaryLayer:
+    fields:
+      # Norms (kept in f32 for quality)
+      attn_norm: List<Float>
+      ffn_norm: List<Float>
+      
+      # Attention weights (ternary packed)
+      wq: List<Int>
+      wk: List<Int>
+      wv: List<Int>
+      wo: List<Int>
+      
+      # Attention scales (per group)
+      scales_q: List<Float>
+      scales_k: List<Float>
+      scales_v: List<Float>
+      scales_o: List<Float>
+      
+      # FFN weights (ternary packed)
+      w_gate: List<Int>
+      w_up: List<Int>
+      w_down: List<Int>
+      
+      # FFN scales (per group)
+      scales_gate: List<Float>
+      scales_up: List<Float>
+      scales_down: List<Float>
+      
+  # Full ternary model
+  TernaryModel:
+    fields:
+      header: Object
+      token_embedding: List<Float>  # Keep embeddings in f32
+      output_norm: List<Float>
+      output_weight: List<Int>      # Ternary packed
+      output_scales: List<Float>
+      layers: List<Object>
+      
+  # Conversion statistics
+  ConversionStats:
+    fields:
+      input_size_bytes: Int
+      output_size_bytes: Int
+      compression_ratio: Float
+      num_tensors_converted: Int
+      num_groups: Int
+      sparsity_ratio: Float  # Percentage of zeros
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS - GGUF Parsing
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # GGUF HEADER PARSING
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: parse_gguf_header
+    given: File handle to GGUF file
+    when: Starting conversion
+    then: |
+      1. Read 4 bytes as magic (little-endian u32)
+      2. Verify magic == GGUF_MAGIC (0x46554747)
+      3. Read version (u32), verify 2 <= version <= 3
+      4. Read tensor_count (u64)
+      5. Read metadata_kv_count (u64)
+      6. Return GGUFHeader struct
+    error_handling: Return error.InvalidMagic or error.UnsupportedVersion
+    
+  - name: parse_gguf_metadata
+    given: File handle, metadata_kv_count
+    when: After header parsing
+    then: |
+      For each KV pair:
+        1. Read key string (u64 length + bytes)
+        2. Read value type (u32)
+        3. Read value based on type
+        4. Store in metadata hashmap
+      Extract model config from metadata:
+        - vocab_size from "llama.vocab_size"
+        - hidden_size from "llama.embedding_length"
+        - num_layers from "llama.block_count"
+        - num_heads from "llama.attention.head_count"
+        - etc.
+    important_keys:
+      - "general.architecture"
+      - "llama.vocab_size"
+      - "llama.embedding_length"
+      - "llama.block_count"
+      - "llama.attention.head_count"
+      - "llama.attention.head_count_kv"
+      - "llama.rope.freq_base"
+      - "llama.attention.layer_norm_rms_epsilon"
+      
+  - name: parse_tensor_infos
+    given: File handle, tensor_count
+    when: After metadata parsing
+    then: |
+      For each tensor:
+        1. Read name string
+        2. Read n_dims (u32)
+        3. Read dims[4] (u64 each)
+        4. Read tensor_type (u32 -> GGMLType)
+        5. Read offset (u64)
+        6. Store TensorInfo
+      Calculate data_offset = current_position aligned to 32 bytes
+    tensor_naming_convention: |
+      "token_embd.weight" -> token embedding
+      "blk.{N}.attn_norm.weight" -> layer N attention norm
+      "blk.{N}.attn_q.weight" -> layer N query projection
+      "blk.{N}.attn_k.weight" -> layer N key projection
+      "blk.{N}.attn_v.weight" -> layer N value projection
+      "blk.{N}.attn_output.weight" -> layer N output projection
+      "blk.{N}.ffn_gate.weight" -> layer N FFN gate
+      "blk.{N}.ffn_up.weight" -> layer N FFN up
+      "blk.{N}.ffn_down.weight" -> layer N FFN down
+      "blk.{N}.ffn_norm.weight" -> layer N FFN norm
+      "output_norm.weight" -> final layer norm
+      "output.weight" -> output projection (lm_head)
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # TENSOR DEQUANTIZATION
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: dequantize_tensor
+    given: Packed tensor data, GGMLType, num_elements
+    when: Loading tensor for conversion
+    then: |
+      Switch on tensor_type:
+        F32: Direct copy (no conversion)
+        F16: Convert each f16 to f32
+        BF16: Convert each bf16 to f32
+        Q4_0: Dequantize 4-bit blocks (block_size=32)
+        Q4_1: Dequantize 4-bit blocks with min
+        Q5_0: Dequantize 5-bit blocks
+        Q5_1: Dequantize 5-bit blocks with min
+        Q8_0: Dequantize 8-bit blocks
+        Q4_K: Dequantize K-quant 4-bit (block_size=256)
+        Q5_K: Dequantize K-quant 5-bit
+        Q6_K: Dequantize K-quant 6-bit
+        TQ1_0: Already ternary, just unpack
+        TQ2_0: Unpack ternary with scale
+    output: f32 array of dequantized values
+    
+  - name: dequantize_q4_0
+    given: Packed Q4_0 data, num_elements
+    when: Tensor type is Q4_0
+    then: |
+      block_size = 32
+      For each block:
+        1. Read scale (f16 -> f32)
+        2. Read 16 bytes (32 4-bit values)
+        3. For each nibble:
+           value = (nibble - 8) * scale
+    formula: |
+      output[i] = (nibble[i] - 8) * scale
+      
+  - name: dequantize_q8_0
+    given: Packed Q8_0 data, num_elements
+    when: Tensor type is Q8_0
+    then: |
+      block_size = 32
+      For each block:
+        1. Read scale (f16 -> f32)
+        2. Read 32 bytes (32 int8 values)
+        3. For each byte:
+           value = int8 * scale
+    formula: |
+      output[i] = int8[i] * scale
+      
+  - name: dequantize_q4_k
+    given: Packed Q4_K data, num_elements
+    when: Tensor type is Q4_K
+    then: |
+      block_size = 256
+      For each superblock:
+        1. Read d (f16) and dmin (f16)
+        2. Read scales (12 bytes for 8 sub-blocks)
+        3. Read 128 bytes (256 4-bit values)
+        4. Dequantize using nested scales
+    complexity: More complex than Q4_0 due to nested quantization
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # TERNARY QUANTIZATION
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: quantize_to_ternary
+    given: f32 tensor, group_size
+    when: Converting weight tensor to ternary
+    then: |
+      num_groups = ceil(tensor.len / group_size)
+      For each group:
+        1. Calculate absmax = max(|values|) in group
+        2. threshold = absmax * THRESHOLD_PERCENTILE
+        3. For each value in group:
+           if value > threshold: trit = +1
+           elif value < -threshold: trit = -1
+           else: trit = 0
+        4. Pack 4 trits per byte (2 bits each)
+        5. Store scale = absmax for dequantization
+    encoding: |
+      00 = 0 (zero)
+      01 = +1 (positive)
+      10 = -1 (negative)
+      11 = reserved
+    output: packed_trits[], scales[]
+    
+  - name: calculate_threshold
+    given: f32 tensor slice (one group)
+    when: Determining ternary threshold
+    then: |
+      absmax = 0
+      For each value:
+        absmax = max(absmax, |value|)
+      threshold = absmax * THRESHOLD_PERCENTILE
+      Return threshold
+    note: THRESHOLD_PERCENTILE=0.7 gives good balance of sparsity and accuracy
+    
+  - name: pack_trits
+    given: Array of trits {-1, 0, +1}
+    when: Packing for storage
+    then: |
+      For each group of 4 trits:
+        byte = 0
+        byte |= encode(trit[0]) << 0
+        byte |= encode(trit[1]) << 2
+        byte |= encode(trit[2]) << 4
+        byte |= encode(trit[3]) << 6
+        output.append(byte)
+    encoding_function: |
+      encode(trit):
+        if trit == 0: return 0b00
+        if trit == 1: return 0b01
+        if trit == -1: return 0b10
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PARALLEL QUANTIZATION
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: parallel_quantize_tensor
+    given: f32 tensor, group_size, thread_pool
+    when: Tensor size >= MIN_TENSOR_SIZE_FOR_PARALLEL
+    then: |
+      num_groups = ceil(tensor.len / group_size)
+      work_queue = WorkQueue.init(num_groups)
+      
+      For each thread:
+        while work_queue.getNext() -> group_idx:
+          start = group_idx * group_size
+          end = min(start + group_size, tensor.len)
+          group_data = tensor[start:end]
+          
+          # Quantize this group
+          threshold = calculate_threshold(group_data)
+          packed = quantize_group(group_data, threshold)
+          
+          # Store results (thread-safe)
+          output_packed[group_idx] = packed
+          output_scales[group_idx] = threshold
+          
+      Barrier: wait for all threads
+    speedup: ~4x on 8-core CPU for large tensors
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # TRI FILE WRITING
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: write_tri_header
+    given: TernaryModel, output file
+    when: Starting .tri file write
+    then: |
+      Write TriHeader struct (packed, little-endian):
+        magic: TRI_MAGIC
+        version: TRI_VERSION
+        model_type: detected from GGUF
+        vocab_size, hidden_size, etc. from config
+        total_params: sum of all tensor elements
+        ternary_size: total packed bytes
+        group_size: GROUP_SIZE
+        num_groups: total groups across all tensors
+        
+  - name: write_tri_embeddings
+    given: Token embeddings (f32), output file
+    when: After header
+    then: |
+      # Embeddings kept in f32 for quality
+      Write embedding_size (u64)
+      Write embeddings as f32 array
+    note: Embeddings are NOT quantized - quality critical
+    
+  - name: write_tri_layer
+    given: TernaryLayer, layer_index, output file
+    when: Writing layer weights
+    then: |
+      # Norms (f32)
+      Write attn_norm as f32 array
+      Write ffn_norm as f32 array
+      
+      # Attention weights (ternary)
+      Write num_groups_q (u32)
+      Write scales_q as f32 array
+      Write wq as packed bytes
+      
+      # Repeat for wk, wv, wo
+      
+      # FFN weights (ternary)
+      Write num_groups_gate (u32)
+      Write scales_gate as f32 array
+      Write w_gate as packed bytes
+      
+      # Repeat for w_up, w_down
+      
+  - name: write_tri_output
+    given: Output projection, output norm, output file
+    when: After all layers
+    then: |
+      Write output_norm as f32 array
+      Write num_groups_output (u32)
+      Write output_scales as f32 array
+      Write output_weight as packed bytes
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # METADATA EXTRACTION
+  # ─────────────────────────────────────────────────────────────────────────────
+  
+  - name: extract_tokenizer
+    given: GGUF metadata
+    when: Tokenizer info needed
+    then: |
+      Extract from metadata:
+        - "tokenizer.ggml.model" -> tokenizer type (BPE, etc.)
+        - "tokenizer.ggml.tokens" -> vocabulary tokens
+        - "tokenizer.ggml.scores" -> token scores
+        - "tokenizer.ggml.merges" -> BPE merges
+        - "tokenizer.ggml.bos_token_id" -> BOS token
+        - "tokenizer.ggml.eos_token_id" -> EOS token
+        - "tokenizer.ggml.padding_token_id" -> PAD token
+    output: Write to separate tokenizer.json or embed in .tri
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CLI INTERFACE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+cli:
+  command: "gguf-convert"
+  usage: "vibee gguf-convert <input.gguf> [output.tri] [options]"
+  
+  arguments:
+    - name: input
+      required: true
+      description: "Path to input GGUF file"
+      
+    - name: output
+      required: false
+      description: "Path to output .tri file (default: input_name.tri)"
+      
+  options:
+    - name: --group-size
+      short: -g
+      default: 128
+      description: "Quantization group size"
+      
+    - name: --threshold
+      short: -t
+      default: 0.7
+      description: "Ternary threshold percentile (0.0-1.0)"
+      
+    - name: --threads
+      short: -j
+      default: 0
+      description: "Number of threads (0 = auto-detect)"
+      
+    - name: --verbose
+      short: -v
+      description: "Print detailed progress"
+      
+    - name: --validate
+      description: "Validate output by running test inference"
+      
+  examples:
+    - "vibee gguf-convert llama-3-8b.Q4_K_M.gguf"
+    - "vibee gguf-convert mistral-7b.gguf mistral-7b.tri -g 256 -t 0.8"
+    - "vibee gguf-convert model.gguf -j 8 --validate"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MEMORY ANALYSIS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+memory_analysis:
+  compression_ratios:
+    F32_to_ternary: "16x (32 bits -> 2 bits)"
+    F16_to_ternary: "8x (16 bits -> 2 bits)"
+    Q8_to_ternary: "4x (8 bits -> 2 bits)"
+    Q4_to_ternary: "2x (4 bits -> 2 bits)"
+    
+  model_size_examples:
+    Llama_7B:
+      original_f16: "14 GB"
+      ternary: "1.65 GB"
+      savings: "8.5x"
+    Llama_13B:
+      original_f16: "26 GB"
+      ternary: "3.1 GB"
+      savings: "8.4x"
+    Mistral_7B:
+      original_f16: "14 GB"
+      ternary: "1.65 GB"
+      savings: "8.5x"
+    Llama_3_8B:
+      original_f16: "16 GB"
+      ternary: "1.9 GB"
+      savings: "8.4x"
+      
+  scale_overhead:
+    per_group: "4 bytes (f32 scale)"
+    group_size_128: "3.1% overhead"
+    group_size_256: "1.6% overhead"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: test_gguf_header_parsing
+    description: Verify GGUF header is correctly parsed
+    input: Valid GGUF file
+    expected: Correct magic, version, tensor_count
+    
+  - name: test_invalid_magic
+    description: Reject files with wrong magic number
+    input: File with wrong magic
+    expected: error.InvalidMagic
+    
+  - name: test_dequantize_f32
+    description: F32 tensors pass through unchanged
+    input: F32 tensor data
+    expected: Identical output
+    
+  - name: test_dequantize_q4_0
+    description: Q4_0 dequantization is correct
+    input: Known Q4_0 block
+    expected: Values within tolerance of original
+    
+  - name: test_dequantize_q8_0
+    description: Q8_0 dequantization is correct
+    input: Known Q8_0 block
+    expected: Values within tolerance of original
+    
+  - name: test_ternary_quantization
+    description: Ternary quantization produces valid trits
+    input: Random f32 tensor
+    expected: All values in {-1, 0, +1}, correct packing
+    
+  - name: test_ternary_roundtrip
+    description: Quantize then dequantize preserves sign
+    input: f32 tensor
+    expected: sign(dequant(quant(x))) == sign(x) for |x| > threshold
+    
+  - name: test_group_scaling
+    description: Per-group scales are correctly computed
+    input: Tensor with varying magnitudes
+    expected: Each group has correct absmax scale
+    
+  - name: test_tri_header_write
+    description: TRI header is correctly written
+    input: Model config
+    expected: Valid TRI file header
+    
+  - name: test_full_conversion
+    description: End-to-end GGUF to TRI conversion
+    input: Small test GGUF model
+    expected: Valid .tri file, loadable for inference
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION POINTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+integration:
+  gguf_reader:
+    file: src/vibeec/gguf_reader.zig
+    functions: [GGUFReader, TensorInfo, GGMLType]
+    
+  ternary_weights:
+    file: src/vibeec/ternary_weights.zig
+    functions: [quantizeToTernary, calculateThreshold, packTrits]
+    
+  thread_pool:
+    file: src/vibeec/bitnet_pipeline.zig
+    functions: [initThreadPool, WorkQueue, getPoolThreadCount]
+    
+  trinity_format:
+    file: src/vibeec/trinity_format.zig
+    functions: [TriHeader, loadTri, saveTri]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REFERENCES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+references:
+  - title: "GGUF Format Specification"
+    url: "https://github.com/ggerganov/ggml/blob/master/docs/gguf.md"
+    
+  - title: "BitNet: Scaling 1-bit Transformers"
+    authors: "Wang et al."
+    year: 2023
+    url: "https://arxiv.org/abs/2310.11453"
+    
+  - title: "The Era of 1-bit LLMs"
+    authors: "Ma et al."
+    year: 2024
+    url: "https://arxiv.org/abs/2402.17764"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════

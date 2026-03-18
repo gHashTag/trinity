@@ -1,0 +1,14 @@
+{
+    "name": "trinity/vsa",
+    "description": "Vector Symbolic Architecture with balanced ternary arithmetic",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Trinity\\VSA\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=8.0"
+    }
+}

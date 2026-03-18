@@ -1,0 +1,26 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+
+constants:
+
+behaviors:
+  - name: parse_vibee_code
+  - name: apply_regex_rule
+  - name: apply_ast_rule
+  - name: calculate_code_metrics
+  - name: backup_directory
+  - name: migrate_function_stub
+  - name: migrate_multiple_rules
+  - name: migrate_entire_codebase
+  - name: validate_semantics_preserved
+  - name: rollback_on_failure
+  - name: generate_migration_diff
+  - name: "--output"
+  - name: "--dry-run"
+  - name: "--backup"
+  - name: "--rules"
+  - name: "--report"

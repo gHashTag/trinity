@@ -1,0 +1,221 @@
+# JS Integration Layer Specification
+# JavaScript wrapper for NeoDetect WASM module
+# φ² + 1/φ² = 3 = TRINITY
+
+name: js_integration
+version: "1.0.0"
+language: javascript
+module: neodetect_loader
+
+description: |
+  JavaScript integration layer for NeoDetect WASM module.
+  Provides async API for loading WASM and calling exported functions.
+  Used by content.js, popup.js, and service-worker.js.
+
+constants:
+  WASM_PATH: "wasm/neodetect.wasm"
+  DEFAULT_SEED: 12345
+  DEFAULT_OS: 0
+  DEFAULT_HW: 0
+  DEFAULT_GPU: 0
+
+types:
+  NeoDetectConfig:
+    description: "Configuration for NeoDetect initialization"
+    fields:
+      seed: number
+      osType: number
+      hwType: number
+      gpuType: number
+  
+  ProfileData:
+    description: "Browser profile data from WASM"
+    fields:
+      platform: string
+      userAgent: string
+      screenWidth: number
+      screenHeight: number
+      pixelRatio: number
+      colorDepth: number
+      hardwareConcurrency: number
+      deviceMemory: number
+      timezoneOffset: number
+      languageIndex: number
+      gpuVendor: string
+      gpuRenderer: string
+      canvasHash: bigint
+      webglHash: bigint
+      audioHash: bigint
+      similarity: number
+  
+  MousePath:
+    description: "Generated mouse movement path"
+    fields:
+      points: Array<{x: number, y: number}>
+      durations: Array<number>
+  
+  EvolutionResult:
+    description: "Result of fingerprint evolution"
+    fields:
+      similarity: number
+      generations: number
+
+api:
+  # Initialization
+  - name: loadWasm
+    async: true
+    params: []
+    returns: boolean
+    description: "Load and instantiate WASM module"
+  
+  - name: init
+    async: true
+    params:
+      - seed: number
+    returns: boolean
+    description: "Initialize NeoDetect with seed"
+  
+  # Profile Management
+  - name: createProfile
+    params:
+      - config: NeoDetectConfig
+    returns: boolean
+    description: "Create browser profile with configuration"
+  
+  - name: getProfileData
+    returns: ProfileData
+    description: "Get current profile data"
+  
+  # Fingerprint Hashes
+  - name: getCanvasHash
+    returns: bigint
+    description: "Get canvas fingerprint hash"
+  
+  - name: getWebGLHash
+    returns: bigint
+    description: "Get WebGL fingerprint hash"
+  
+  - name: getAudioHash
+    returns: bigint
+    description: "Get audio fingerprint hash"
+  
+  # Noise Generation
+  - name: getCanvasNoise
+    params:
+      - pixelIndex: number
+    returns: number
+    description: "Get canvas noise for pixel"
+  
+  - name: getAudioNoise
+    params:
+      - sampleIndex: number
+    returns: number
+    description: "Get audio noise for sample"
+  
+  # Behavior Simulation
+  - name: initBehavior
+    params:
+      - seed: number
+    returns: boolean
+    description: "Initialize behavior simulation"
+  
+  - name: generateMousePath
+    params:
+      - startX: number
+      - startY: number
+      - endX: number
+      - endY: number
+    returns: MousePath
+    description: "Generate human-like mouse path"
+  
+  - name: generateTypingDelay
+    params:
+      - prevChar: string
+      - nextChar: string
+    returns: number
+    description: "Generate typing delay between characters"
+  
+  - name: shouldMakeTypo
+    returns: boolean
+    description: "Check if typo should occur"
+  
+  # Evolution
+  - name: evolveFingerprint
+    params:
+      - targetSimilarity: number
+      - maxGenerations: number
+    returns: EvolutionResult
+    description: "Evolve fingerprint towards target"
+  
+  - name: getSimilarity
+    returns: number
+    description: "Get current similarity score"
+  
+  # AI Evolution
+  - name: initAIModel
+    params:
+      - vocabSize: number
+      - hiddenDim: number
+      - numLayers: number
+      - seed: number
+    returns: boolean
+    description: "Initialize AI model"
+  
+  - name: aiEvolve
+    params:
+      - targetSimilarity: number
+    returns: number
+    description: "AI-powered evolution"
+  
+  - name: predictDetection
+    returns: number
+    description: "Predict detection probability"
+  
+  # Cleanup
+  - name: cleanup
+    returns: void
+    description: "Cleanup WASM resources"
+
+# OS Type constants
+os_types:
+  WINDOWS_10: 0
+  WINDOWS_11: 1
+  MACOS: 2
+  LINUX: 3
+
+# Hardware Type constants
+hw_types:
+  INTEL_I5: 0
+  INTEL_I7: 1
+  INTEL_I9: 2
+  AMD_RYZEN_5: 3
+  AMD_RYZEN_7: 4
+  AMD_RYZEN_9: 5
+  APPLE_M1: 6
+  APPLE_M2: 7
+  APPLE_M3: 8
+
+# GPU Type constants
+gpu_types:
+  NVIDIA_RTX_3060: 0
+  NVIDIA_RTX_4070: 1
+  NVIDIA_RTX_4090: 2
+  AMD_RX_6700: 3
+  AMD_RX_7900: 4
+  INTEL_UHD_770: 5
+  APPLE_M1: 6
+  APPLE_M2: 7
+  APPLE_M3: 8
+
+# Language codes
+languages:
+  - "en-US"
+  - "en-GB"
+  - "de-DE"
+  - "fr-FR"
+  - "es-ES"
+  - "it-IT"
+  - "pt-BR"
+  - "ru-RU"
+  - "zh-CN"
+  - "ja-JP"

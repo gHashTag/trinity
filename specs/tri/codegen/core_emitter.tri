@@ -1,0 +1,226 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# CORE EMITTER - VIBEE Codegen Module Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Module: core_emitter.zig
+# Purpose: Main code generation orchestration - coordinate all emission phases
+#
+# φ² + 1/φ² = 3
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: core_emitter
+version: "10.1.0"
+language: zig
+module: vibeec.codegen.core_emitter
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEPENDENCIES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+dependencies:
+  - module: std
+    used_as: standard library
+  - module: vibeec.codegen.builder
+    used_as: CodeBuilder for output
+  - module: vibeec.codegen.type_emitter
+    used_as: Type emission logic
+  - module: vibeec.codegen.tests_gen
+    used_as: Test generation
+  - module: vibeec.codegen.types
+    used_as: VibeeSpec, TypeDef, Behavior definitions
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  ZigCodeGen:
+    description: "Main Zig code generator orchestrator"
+    fields:
+      allocator: Allocator
+      builder: CodeBuilder
+      spec_types: []const TypeDef
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS - Main Generation Loop
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: generate
+    given: Parsed VibeeSpec with types, behaviors, constants
+    when: Main generation entry point called
+    then:
+      - Store spec.types for signature inference
+      - Call writeHeader to emit file header
+      - Call writeImports to emit import statements
+      - Call writeConstants to emit constant definitions
+      - Call writeTypes to emit type definitions
+      - Call writeMemoryBuffers to emit WASM exports
+      - Call writeCreationPatterns to emit pattern functions
+      - Call writeBehaviorFunctions to emit behavior implementations
+      - Call TestGenerator.writeTests for behavior tests
+      - Call TestGenerator.writeSpecLevelTests for integration tests
+      - Return complete generated source code as string
+
+  - name: writeHeader
+    given: VibeeSpec metadata
+    when: Starting code generation
+    then:
+      - Write sacred formula banner
+      - Write module name and version
+      - Write golden identity comment
+      - Write author name
+      - Write "DO NOT EDIT" warning
+      - Add blank line after header
+
+  - name: writeImports
+    given: VibeeSpec with optional imports array
+    when: After header, before constants
+    then:
+      - Always emit: std, math, Allocator
+      - For each custom import:
+        - If raylib: Use @cImport with @cInclude("raylib.h")
+        - Otherwise: Use @import with module name
+      - Add blank line after imports
+
+  - name: writeConstants
+    given: Array of Constant definitions
+    when: After imports, before types
+    then:
+      - Write section header "КОНСТАНТЫ"
+      - For each constant:
+        - Write description as /// comment if present
+        - Emit as pub const NAME: f64 = value;
+      - Add blank line after each constant
+      - If sacred constants not defined:
+        - Auto-add PHI, PHI_INV, PHI_SQ, TRINITY, SQRT5, TAU, PI, E, PHOENIX
+
+  - name: writeTypes
+    given: Array of TypeDef definitions
+    when: After constants, before memory buffers
+    then:
+      - Write section header "ТИПЫ"
+      - For each type:
+        - If has base: Emit type alias
+        - If has enum variants: Emit enum definition
+        - Otherwise: Emit struct definition with fields
+      - Apply type mapping for VIBEE types
+      - Add blank line after each type
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# GENERATION PIPELINE ORDER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+generation_pipeline:
+  steps:
+    1. writeHeader          # File header with metadata
+    2. writeImports         # Import statements
+    3. writeConstants       # Constant definitions
+    4. writeTypes           # Type definitions (structs, enums, aliases)
+    5. writeMemoryBuffers   # WASM memory exports
+    6. writeCreationPatterns # Sacred formula pattern functions
+    7. writeBehaviorFunctions # Behavior implementations
+    8. writeTests           # Test functions (via TestGenerator)
+
+  output_format: |
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // module v1.0.0 - Generated from .vibee specification
+    // ═══════════════════════════════════════════════════════════════════════════════
+    //
+    // Священная формула: V = n × 3^k × π^m × φ^p × e^q
+    // Золотая идентичность: φ² + 1/φ² = 3
+    //
+    // Author: name
+    // DO NOT EDIT - This file is auto-generated
+    //
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const std = @import("std");
+    ... (imports)
+    ... (constants)
+    ... (types)
+    ... (memory)
+    ... (patterns)
+    ... (behaviors)
+    ... (tests)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SACRED CONSTANTS (Auto-included if not specified)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+sacred_constants:
+  PHI: 1.618033988749895
+  PHI_INV: 0.618033988749895
+  PHI_SQ: 2.618033988749895
+  TRINITY: 3.0
+  SQRT5: 2.2360679774997896
+  TAU: 6.283185307179586
+  PI: 3.141592653589793
+  E: 2.718281828459045
+  PHOENIX: 999
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SPECIAL IMPORT HANDLING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+special_imports:
+  raylib:
+    format: c_import
+    template: |
+      const rl = @cImport({
+          @cInclude("raylib.h");
+      });
+
+  standard:
+    format: zig_import
+    template: "const {name} = @import(\"{name}\");"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TEST CASES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  SimpleSpec:
+    description: "Test spec for core generation"
+    fields:
+      name: String
+      value: Float
+
+behaviors:
+  - name: generation_pipeline_test
+    given: VIBEE spec with types, constants, behaviors
+    when: generate() is called
+    then:
+      - Header is written with correct metadata
+      - Imports include std and any custom imports
+      - Constants are emitted with f64 type
+      - Types are emitted with proper field mappings
+      - Memory buffers exported for WASM
+      - Behavior functions generated
+      - Test functions included
+      - Complete source code returned
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPLEMENTATION NOTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+implementation:
+  cycle: "73"
+  status: "specification"
+  extracted_from: "src/vibeec/codegen/emitter.zig"
+  lines: 997-1153 (generate loop and section writers)
+  complexity: "medium"
+
+  notes: |
+    This is the ORCHESTRATION module that coordinates all other emitters:
+
+    1. It calls type_emitter for type definitions
+    2. It calls tests_gen for test generation
+    3. It manages the overall generation pipeline order
+    4. It ensures consistent output formatting
+
+    The actual emission logic for types is delegated to type_emitter.zig.
+    The actual test generation logic is delegated to tests_gen.zig.
+
+    This module is the CONDUCTOR that ensures all parts play together.

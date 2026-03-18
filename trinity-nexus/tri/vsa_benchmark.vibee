@@ -1,0 +1,117 @@
+name: vsa_benchmark
+version: "1.0.0"
+language: zig
+module: vsa_benchmark
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# VSA Benchmark Suite — MATH-003
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Quantifies ternary VSA advantage vs float32 / binary alternatives.
+# Measures: throughput, latency, memory, recall, convergence.
+#
+# in[CYR:I]onI : V = n × 3^k × π^m × φ^p × e^q
+# [CYR:I] andwith: φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  BenchConfig:
+    fields:
+      warmup_iters: Int
+      bench_iters: Int
+      dimensions: List<Int>
+
+  OperationResult:
+    fields:
+      name: String
+      dimension: Int
+      ops_per_sec: Float
+      ns_per_op: Float
+      total_ms: Float
+
+  MemoryComparison:
+    fields:
+      dimension: Int
+      ternary_bytes: Int
+      float32_bytes: Int
+      compression_ratio: Float
+      bits_per_element: Float
+
+  RecallResult:
+    fields:
+      n_vectors: Int
+      dimension: Int
+      recall_pct: Float
+      avg_similarity: Float
+      expected_recall: Float
+
+  ConvergencePoint:
+    fields:
+      n_vectors: Int
+      recall_pct: Float
+      theory_recall: Float
+      deviation_pct: Float
+
+  BenchmarkReport:
+    fields:
+      operations: List<OperationResult>
+      memory: List<MemoryComparison>
+      recall_curve: List<RecallResult>
+      convergence: List<ConvergencePoint>
+      total_time_ms: Float
+
+behaviors:
+  - name: bench_bind_throughput
+    given: Two random ternary vectors of dimension D
+    when: Bind operation executed BENCH_ITERATIONS times after warmup
+    then: Report ops/sec and ns/op for each dimension
+
+  - name: bench_unbind_throughput
+    given: A bound vector and its key
+    when: Unbind operation executed BENCH_ITERATIONS times
+    then: Report ops/sec, verify correctness (similarity > 0.6)
+
+  - name: bench_bundle2_throughput
+    given: Two random ternary vectors
+    when: Bundle2 majority vote executed BENCH_ITERATIONS times
+    then: Report ops/sec and ns/op
+
+  - name: bench_bundle_n_throughput
+    given: N random vectors (N=10, 50, 100, 500)
+    when: BundleN accumulator executed with all vectors
+    then: Report ops/sec, total time, memory per accumulator
+
+  - name: bench_similarity_throughput
+    given: Two random ternary vectors
+    when: Cosine similarity computed BENCH_ITERATIONS times
+    then: Report ops/sec and ns/op
+
+  - name: bench_permute_throughput
+    given: A random ternary vector and shift K
+    when: Permute operation executed BENCH_ITERATIONS times
+    then: Report ops/sec and ns/op
+
+  - name: bench_memory_efficiency
+    given: Vectors of dimensions 1024, 4096, 10000
+    when: Compare ternary packed storage vs float32
+    then: Report compression ratio (expect > 20x), bits/element
+
+  - name: bench_recall_curve
+    given: N vectors bundled (N = 3, 5, 10, 25, 50, 100, 250, 500, 1000)
+    when: Check how many inputs have positive similarity with bundle
+    then: Report recall percentage and 1/sqrt(N) theoretical comparison
+
+  - name: bench_convergence_validation
+    given: Recall curve data points
+    when: Compare empirical recall against 1/sqrt(N) theory
+    then: Report deviation percentage, validate convergence model
+
+  - name: bench_proof_verification_time
+    given: 12 mathematical proofs (MATH-001)
+    when: Each proof executed with timing
+    then: Report verification time per proof, total suite time
+
+  - name: report_comparison_table
+    given: All benchmark results collected
+    when: Format results as Ternary vs Float32 comparison
+    then: Print formatted table with advantage ratios

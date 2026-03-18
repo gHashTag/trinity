@@ -1,0 +1,107 @@
+name: tvc_service_integration
+version: "1.0.0"
+language: zig
+module: tvc.service
+
+description: |
+  Complete TVC Semantic Service integration.
+  Combines HTTP API, Mesh, Staking, and Rewards into unified service.
+
+types:
+  ServiceConfig:
+    fields:
+      http_port: Int = 8080
+      mesh_port: Int = 8081
+      data_dir: String = "./tvc_data"
+      max_peers: Int = 50
+      bootstrap_peers: List<String>
+
+  TVCService:
+    fields:
+      config: ServiceConfig
+      http_server: HttpServer
+      mesh_node: MeshNode
+      staking_engine: StakingEngine
+      reward_ledger: RewardLedger
+      indexer: CodeIndexer
+
+  ServiceStatus:
+    fields:
+      running: Bool
+      uptime_seconds: Int
+      http_requests_served: Int
+      mesh_messages_sent: Int
+      mesh_messages_received: Int
+      total_staked: Int
+      total_rewards_earned: Int
+
+  ServiceMetrics:
+    fields:
+      api_latency_p50_ms: Float
+      api_latency_p99_ms: Float
+      queries_per_second: Float
+      index_updates_per_second: Float
+      active_connections: Int
+
+behaviors:
+  - name: start_service
+    given: Valid ServiceConfig
+    when: tri tvc serve executed
+    then: Starts HTTP server, mesh, and loads persisted state
+
+  - name: stop_service
+    given: Running service
+    when: SIGTERM received
+    then: Gracefully shuts down all components
+
+  - name: handle_search_with_rewards
+    given: Search request from consumer
+    when: Query processed
+    then: Returns results AND rewards provider/consumer
+
+  - name: handle_index_with_rewards
+    given: Index request from contributor
+    when: File indexed
+    then: Adds symbols AND rewards contributor AND publishes to mesh
+
+  - name: sync_index_from_mesh
+    given: Index update message
+    when: Received from mesh peer
+    then: Applies update to local indexer
+
+  - name: persist_state
+    given: Service running
+    when: Every 60 seconds
+    then: Saves indexer, stakes, and rewards to disk
+
+  - name: load_state
+    given: Data directory with persisted state
+    when: Service starts
+    then: Restores indexer, stakes, and rewards
+
+  - name: health_check
+    given: GET /health
+    when: Health check requested
+    then: Returns ServiceStatus with all metrics
+
+  - name: metrics_endpoint
+    given: GET /metrics
+    when: Metrics requested
+    then: Returns ServiceMetrics in Prometheus format
+
+  - name: stake_via_api
+    given: POST /api/v1/stake
+    when: Valid stake request
+    then: Creates stake and returns new position
+
+  - name: rewards_via_api
+    given: GET /api/v1/rewards
+    when: Rewards requested
+    then: Returns RewardBalance for node
+
+constants:
+  DEFAULT_HTTP_PORT: 8080
+  DEFAULT_MESH_PORT: 8081
+  STATE_PERSIST_INTERVAL_MS: 60000
+  HEALTH_CHECK_INTERVAL_MS: 10000
+  MAX_IN_MEMORY_INDEX_SIZE: 1000000

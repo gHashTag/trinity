@@ -1,0 +1,25 @@
+name: tri_config
+version: "1.0.0"
+language: zig
+module: tri.config
+
+description: |
+  TRI CLI — Configuration File Support.
+
+  Supports ~/.trirc and .trirc.local files.
+  Key-value config with section support.
+
+behaviors:
+  - name: loadConfig
+    given: Allocator
+    when: Called at CLI startup
+    then: Loads ~/.trirc then .trirc.local (local overrides global)
+
+  - name: getConfigValue
+    given: Key string
+    when: Called
+    then: Returns value for key or null
+
+export_functions:
+  - loadConfig
+  - getConfigValue

@@ -1,0 +1,24 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+
+constants:
+
+behaviors:
+  - name: parse_and_validate
+  - name: match_deprecated_pattern
+  - name: format_error_message
+  - name: extract_code_snippet
+  - name: reject_old_function_stub
+  - name: warn_deprecated_in_permissive_mode
+  - name: detect_multiple_violations
+  - name: generate_helpful_error
+  - name: suggest_automatic_fix
+  - name: batch_compile_directory
+  - name: "vibee compile"
+  - name: "vibee check"
+  - name: "Strict Mode Compilation"
+  - name: "Permissive Mode Compilation"

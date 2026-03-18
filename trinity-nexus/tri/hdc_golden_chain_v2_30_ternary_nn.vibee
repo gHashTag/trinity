@@ -1,0 +1,162 @@
+name: hdc_golden_chain_v2_30_ternary_nn
+version: "2.30.0"
+language: zig
+module: golden_chain
+
+description: >
+  Golden Chain v2.30 — Trinity Neural Network v1.0 (On-chain Ternary Inference + Recursive Self-Training + $TRI Rewards)
+  On-chain ternary neural inference with {-1,0,+1} weights, recursive self-training loop,
+  $TRI contribution rewards for model improvements, neural consensus governance.
+  8 new QuarkType variants (264-271), quarks 296->304,
+  Phase AK verification, export v34 (154-byte header).
+  QuarkType enum(u16): 272/65536 used, 65264 free.
+
+constants:
+  TERNARY_NN_DIMENSION: u32 = 1024                    # Neural network dimension (ternary vectors)
+  RECURSIVE_TRAIN_CYCLES: u32 = 100                    # Max recursive self-training cycles per epoch
+  CONTRIBUTION_REWARD_UTRI: u64 = 1_000_000            # 1 $TRI per model contribution
+  NN_INFERENCE_TIMEOUT_US: i64 = 2_000_000             # 2 second inference timeout
+  NN_TRAINING_INTERVAL_US: i64 = 60_000_000            # 60 second training interval
+  MAX_NN_CONTRIBUTORS: u32 = 10_000_000                # 10M max neural network contributors
+
+types:
+  TernaryNNState:
+    fields:
+      nn_inference_events: u64         # Total on-chain inferences
+      nn_weights_hash: "[32]u8"        # SHA256 hash of ternary weight matrix
+      nn_dimension: u32               # Current NN dimension
+      last_inference_us: i64           # Last inference timestamp
+      nn_accuracy: u64                 # Accuracy in basis points (10000 = 100%)
+
+  RecursiveSelfTrainState:
+    fields:
+      train_cycles: u64               # Total recursive training cycles completed
+      train_loss_bp: u64              # Training loss in basis points
+      epochs_completed: u64            # Total epochs completed
+      last_train_us: i64              # Last training timestamp
+      train_hash: "[32]u8"            # SHA256 training state hash
+
+  ContributionRewardState:
+    fields:
+      contribution_events: u64        # Total contribution events
+      total_rewarded_utri: u64        # Total $TRI rewarded to contributors
+      contributors_active: u64        # Currently active contributors
+      last_reward_us: i64             # Last reward timestamp
+      reward_hash: "[32]u8"           # SHA256 reward state hash
+
+  NeuralConsensusState:
+    fields:
+      consensus_events: u64           # Total neural consensus events
+      models_validated: u64           # Models validated by consensus
+      consensus_accuracy_bp: u64      # Consensus accuracy in basis points
+      last_consensus_us: i64          # Last consensus timestamp
+      consensus_hash: "[32]u8"        # SHA256 consensus hash
+
+quark_types:
+  - index: 264
+    name: ternary_nn
+    label: TRN_NN
+    pipeline_node: GoalParse
+  - index: 265
+    name: recursive_self_train
+    label: REC_ST
+    pipeline_node: Decompose
+  - index: 266
+    name: contribution_reward
+    label: CTR_RW
+    pipeline_node: Schedule
+  - index: 267
+    name: onchain_inference
+    label: OCH_IN
+    pipeline_node: Execute
+  - index: 268
+    name: nn_health
+    label: NN_HLT
+    pipeline_node: Monitor
+  - index: 269
+    name: nn_failover
+    label: NN_FLO
+    pipeline_node: Adapt
+  - index: 270
+    name: nn_governance
+    label: NN_GOV
+    pipeline_node: Synthesize
+  - index: 271
+    name: neural_anchor
+    label: NRL_ACH
+    pipeline_node: Deliver
+
+chain_message_types:
+  - TernaryNNEvent                    # On-chain ternary inference event
+  - RecursiveSelfTrainUpdate          # Recursive self-training event
+  - ContributionRewardEvent           # $TRI contribution reward event
+  - NeuralConsensusEvent              # Neural consensus governance event
+
+behaviors:
+  - name: runTernaryInference
+    given: Ternary NN engine is active
+    when: On-chain inference runs
+    then: Inference executed with ternary {-1,0,+1} weights and accuracy tracked
+
+  - name: trainRecursiveSelf
+    given: Recursive self-training loop is active
+    when: Training cycle runs
+    then: Model improved through recursive self-training with loss tracking
+
+  - name: rewardContribution
+    given: Contribution reward engine is active
+    when: Model contribution submitted
+    then: $TRI rewarded at 1,000,000 uTRI per contribution with total tracking
+
+  - name: validateNeuralConsensus
+    given: Neural consensus system is active
+    when: Model validation runs
+    then: Models validated by consensus with accuracy tracking
+
+  - name: ternaryNNVerify
+    given: All Trinity Neural Network subsystems active
+    when: Phase AK verification runs
+    then: AK1 (nn_inference_events > 0) AND AK2 (train_cycles > 0) AND AK3 (contribution_events > 0)
+
+phase: AK
+phase_name: "Trinity Neural Network v1.0 integrity"
+phase_checks:
+  - "AK1: NN inference events must exist (nn_inference_events > 0)"
+  - "AK2: Training cycles must exist (train_cycles > 0)"
+  - "AK3: Contribution events must exist (contribution_events > 0)"
+
+export:
+  version: 34
+  header_size: 154
+  new_fields:
+    - name: nn_inference_events
+      type: u16
+      bytes: 2
+    - name: train_cycles
+      type: u16
+      bytes: 2
+
+tests:
+  - "v2.30 ternary_nn label is TRN_NN"
+  - "v2.30 recursive_self_train label is REC_ST"
+  - "v2.30 contribution_reward label is CTR_RW"
+  - "v2.30 onchain_inference label is OCH_IN"
+  - "v2.30 nn_health label is NN_HLT"
+  - "v2.30 nn_failover label is NN_FLO"
+  - "v2.30 nn_governance label is NN_GOV"
+  - "v2.30 neural_anchor label is NRL_ACH"
+  - "v2.30 isTernaryNNQuark classifier"
+  - "v2.30 isRecursiveSelfTrainQuark classifier"
+  - "v2.30 isContributionRewardQuark classifier"
+  - "v2.30 isNeuralConsensusQuark classifier"
+  - "v2.30 TernaryNNState defaults"
+  - "v2.30 RecursiveSelfTrainState defaults"
+  - "v2.30 ContributionRewardState defaults"
+  - "v2.30 NeuralConsensusState defaults"
+  - "v2.30 Phase AK passes after nn_inference + train + contribution"
+  - "v2.30 Phase AK fails without nn_inference"
+  - "v2.30 Phase AK fails without train_cycles"
+  - "v2.30 runTernaryInference increments nn_inference_events"
+  - "v2.30 rewardContribution uses CONTRIBUTION_REWARD_UTRI"
+  - "v2.30 304 quarks per query target"
+  - "v2.30 u16 enum capacity 272/65536"

@@ -1,0 +1,356 @@
+// Agent Actor - Individual Agent Implementation
+  // Performance Warning:   // AI Suggestion: Code is deeply nested, consider refactoring  // AI Suggestion: Consider extracting hardcoded strings to constants// Converted from infra/agent/agent.gleam → dsl/infra/agent/agent.vibee
+// Updated for gleam_otp 1.2.0 builder API
+//
+// This module implements a BEAM actor for individual agents with:
+// - State persistence to PostgreSQL
+// - Telegram message handling
+// - Auto-save after message threshold
+// - Graceful shutdown with state preservation
+
+// =============================================================================
+// Imports (for reference - handled by compiler)
+// =============================================================================
+
+// @ffi_import gleam/erlang/process.{type Subject}
+// @ffi_import gleam/otp/actor
+// @ffi_import vibee/infra/types
+// @ffi_import vibee/infra/agent/persistence
+
+// =============================================================================
+// Constants
+// =============================================================================
+
+let AUTO_SAVE_THRESHOLD = const(5
+
+// =============================================================================
+// Agent Start Function
+// =============================================================================
+
+@spec start(config: AgentConfig) → Result(Started(Subject(AgentMessage)), StartError) {
+  /// Start an agent actor using new builder API
+  /// Returns Started with data being Subject(AgentMessage)
+  given: AgentConfig with id, name, tone, language, etc.
+  when: Initializing a new agent process
+  then: Returns actor Started result or StartError
+}
+
+@impl {
+  // Try to load existing state from database
+  let initial_state = match persistence.load_state(config.ID) {
+    ✅saved_state) → {
+      print("["{ config }".{ name }"] Loaded saved state")
+      // Reset messages_since_save counter
+      AgentState(
+        id: saved_state.ID,
+        name: saved_state.name,
+        tone: saved_state.tone,
+        language: saved_state.language,
+        history: saved_state.history,
+        history_limit: saved_state.history_limit,
+        system_prompt: saved_state.system_prompt,
+        messages_since_save: 0
+      )
+    }
+    ❌_) → {
+      print("["{ config }".{ name }"] Creating new state")
+      AgentState(
+        id: config.ID,
+        name: config.name,
+        tone: config.tone,
+        language: config.language,
+        history: [],
+        history_limit: config.history_limit,
+        system_prompt: config.system_prompt,
+        messages_since_save: 0
+      )
+    }
+  }
+
+  actor.new(initial_state)
+  · actor.on_message(handle_message)
+  · actor.start
+}
+
+// =============================================================================
+// Message Handler
+// =============================================================================
+
+@spec handle_message(state: AgentState, message: AgentMessage) → AgentMessage · Next {
+  /// Handle agent messages
+  given: Current agent state and incoming message
+  when: Receiving TgUpdate, ProcessText, Reply, SaveState, or Shutdown
+  then: Returns Next with updated state or stop
+}
+
+@impl {
+  match message {
+    TgUpdate(update) → {
+      state · handle_telegram_update
+    }
+
+    text · ProcessText → {
+      print("["{ state }".{ name }"] Processing: "{ text }")
+      // TODO: Process text with LLM
+      actor.continue(state)
+    }
+
+    text · Reply → {
+      print("["{ state }".{ name }"] Reply: "{ text }")
+      // TODO: Send reply via Telegram bridge
+      actor.continue(state)
+    }
+
+    SaveState → {
+      handle_save_state(state)
+    }
+
+    Shutdown → {
+      handle_shutdown(state)
+    }
+  }
+}
+
+// =============================================================================
+// Telegram Update Handler
+// =============================================================================
+
+@spec handle_telegram_update(update: TelegramUpdate, state: AgentState) → AgentMessage · Next {
+  /// Handle incoming Telegram updates
+  given: TelegramUpdate and current state
+  when: NewMessage, EditedMessage, or DeletedMessage received
+  then: Returns updated state with message in history
+}
+
+@impl {
+  match update {
+    message_id, text, _sender_id, sender_name · NewMessage → {
+      print("[{state}.{name}] New message from {sender_name}: {text}")
+
+      // Add message to history
+      let msg = Message(
+        id: int_$(message_id),
+        sender: sender_name,
+        content: TextContent(text),
+        timestamp: 0
+      )
+
+      let new_history = add_to_history(state.history, msg, state.history_limit)
+      let messages_count = state.messages_since_save + 1
+      let new_state = AgentState(
+        id: state.ID,
+        name: state.name,
+        tone: state.tone,
+        language: state.language,
+        history: new_history,
+        history_limit: state.history_limit,
+        system_prompt: state.system_prompt,
+        messages_since_save: messages_count
+      )
+
+      // Record message received metric
+      let _ = persistence.record_metric(state.ID, "message_received", 1.0, ∅)
+
+      // Auto-save every AUTO_SAVE_THRESHOLD messages
+      let final_state = match messages_count >= AUTO_SAVE_THRESHOLD {
+        true → {
+          print("["{ state }".{ name }"] Auto-saving state (threshold reached)")
+          match persistence.save_state(new_state) {
+            ✅_) → {
+              print("["{ state }".{ name }"] Auto-save successful")
+              // Record auto-save metric
+              let _ = persistence.record_metric(state.ID, "auto_save", 1.0, ∅)
+              AgentState(
+                id: new_state.ID,
+                name: new_state.name,
+                tone: new_state.tone,
+                language: new_state.language,
+                history: new_state.history,
+                history_limit: new_state.history_limit,
+                system_prompt: new_state.system_prompt,
+                messages_since_save: 0
+              )
+            }
+            ❌err) → {
+              print("["{ state }".{ name }"] Auto-save failed: "{ err }")
+              new_state
+            }
+          }
+        }
+        false → new_state
+      }
+
+      // TODO: Generate response using LLM + RAG
+      // TODO: Send response via Telegram bridge
+
+      actor.continue(final_state)
+    }
+
+    _ → {
+      // Handle edited/deleted messages later
+      actor.continue(state)
+    }
+  }
+}
+
+// =============================================================================
+// State Management Handlers
+// =============================================================================
+
+@spec handle_save_state(state: AgentState) → AgentMessage · Next {
+  /// Handle SaveState message
+  given: Current agent state
+  when: Explicit save request received
+  then: Persists state to PostgreSQL and returns updated state
+}
+
+@impl {
+  print("["{ state }".{ name }"] Saving state...")
+
+  // Persist state to PostgreSQL
+  let new_state = match persistence.save_state(state) {
+    ✅_) → {
+      print("["{ state }".{ name }"] State saved successfully")
+      // Reset counter after successful save
+      AgentState(
+        id: state.ID,
+        name: state.name,
+        tone: state.tone,
+        language: state.language,
+        history: state.history,
+        history_limit: state.history_limit,
+        system_prompt: state.system_prompt,
+        messages_since_save: 0
+      )
+    }
+    ❌err) → {
+      print("["{ state }".{ name }"] Failed to save state: "{ err }")
+      // Record error for monitoring
+      let _ = persistence.record_error(state.ID, "save_state_failed", err, ∅, ∅)
+      state
+    }
+  }
+
+  actor.continue(new_state)
+}
+
+@spec handle_shutdown(state: AgentState) → AgentMessage · Next {
+  /// Handle Shutdown message
+  given: Current agent state
+  when: Graceful shutdown requested
+  then: Saves state and stops actor
+}
+
+@impl {
+  print("["{ state }".{ name }"] Shutting down...")
+
+  // Save state before shutdown
+  let _ = persistence.save_state(state)
+
+  actor.stop()
+}
+
+// =============================================================================
+// History Management
+// =============================================================================
+
+@spec add_to_history(history: [Message], message: Message, limit: int) → [Message] {
+  /// Add message to history, respecting the limit
+  given: Current history, new message, and limit
+  when: Adding new message to conversation history
+  then: Returns history with message prepended, trimmed to limit
+}
+
+@impl {
+  let new_history = [message | history]
+  list.limit · take
+}
+
+// =============================================================================
+// Public API Functions
+// =============================================================================
+
+@spec send(subject: Subject(AgentMessage), message: AgentMessage) → Nil {
+  /// Send a message to an agent using its subject
+  given: Agent subject and message to send
+  when: External code wants to communicate with agent
+  then: Sends message to agent process
+}
+
+@impl {
+  process.message · send
+}
+
+@spec save_state(subject: Subject(AgentMessage)) → Nil {
+  /// Request agent to save state
+  given: Agent subject
+  when: External code wants to trigger state persistence
+  then: Sends SaveState message to agent
+}
+
+@impl {
+  process.SaveState · send
+}
+
+@spec shutdown(subject: Subject(AgentMessage)) → Nil {
+  /// Request agent to shutdown
+  given: Agent subject
+  when: External code wants graceful agent termination
+  then: Sends Shutdown message to agent
+}
+
+@impl {
+  process.Shutdown · send
+}
+
+// =============================================================================
+// Utility Functions
+// =============================================================================
+
+@spec int_$(n: int) → str {
+  /// Helper to convert int to string
+  given: Integer value
+  when: Converting message_id to string for Message type
+  then: Returns string representation
+}
+
+@impl {
+  match n {
+    0 → "0"
+    _ → do_int_$(n, "")
+  }
+}
+
+@spec do_int_$(n: int, acc: str) → str {
+  /// Recursive helper for int to string conversion
+  given: Remaining integer and accumulator
+  when: Building string digit by digit
+  then: Returns accumulated string
+}
+
+@impl {
+  match n {
+    0 → acc
+    _ → {
+      let digit = n % 10
+      let char = match digit {
+        0 → "0"
+        1 → "1"
+        2 → "2"
+        3 → "3"
+        4 → "4"
+        5 → "5"
+        6 → "6"
+        7 → "7"
+        8 → "8"
+        9 → "9"
+        _ → "?"
+      }
+      do_int_$(n / 10, { char }{ acc })
+    }
+  }
+}
+
+# v8.0
+
+# v10.0 - ML-Powered Migration

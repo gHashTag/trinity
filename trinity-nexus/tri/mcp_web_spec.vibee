@@ -1,0 +1,127 @@
+name: mcp_web
+version: "1.0.0"
+language: zig
+module: mcp_web
+description: Web scraping and browsing MCP tools for HTML parsing, screenshots, and automation
+
+types:
+  WebConfig:
+    description: Web scraping configuration
+    fields:
+      user_agent: String
+      timeout_ms: Int
+      follow_redirects: Bool
+      max_redirects: Int
+      javascript_enabled: Bool
+
+  WebPage:
+    description: Web page content and metadata
+    fields:
+      url: String
+      title: String
+      html: String
+      text: String
+      status_code: Int
+      headers: Map<String, String>
+      load_time_ms: Int
+
+  Element:
+    description: HTML element
+    fields:
+      tag: String
+      text: String
+      html: String
+      attributes: Map<String, String>
+      children: List<Element>
+
+  Screenshot:
+    description: Page screenshot
+    fields:
+      url: String
+      data: String
+      format: String
+      width: Int
+      height: Int
+      size_bytes: Int
+
+  FormData:
+    description: HTML form data
+    fields:
+      action: String
+      method: String
+      fields: Map<String, String>
+      encoding: String
+
+  Link:
+    description: Extracted link
+    fields:
+      url: String
+      text: String
+      title: String
+      is_external: Bool
+
+  ScrapedData:
+    description: Scraped data from page
+    fields:
+      url: String
+      data: Map<String, String>
+      timestamp: String
+
+behaviors:
+  - name: page_fetching
+  - name: fetch_page
+  - name: config
+  - name: url
+  - name: fetch_with_javascript
+  - name: config
+  - name: url
+  - name: wait_ms
+  - name: html_parsing
+  - name: parse_html
+  - name: html
+  - name: select_elements
+  - name: html
+  - name: selector
+  - name: extract_text
+  - name: html
+  - name: extract_links
+  - name: html
+  - name: base_url
+  - name: screenshot_operations
+  - name: take_screenshot
+  - name: config
+  - name: url
+  - name: width
+  - name: height
+  - name: take_element_screenshot
+  - name: config
+  - name: url
+  - name: selector
+  - name: form_operations
+  - name: extract_form
+  - name: html
+  - name: form_selector
+  - name: submit_form
+  - name: config
+  - name: form_data
+  - name: values
+  - name: scraping_operations
+  - name: scrape_data
+  - name: config
+  - name: url
+  - name: selectors
+  - name: scrape_table
+  - name: html
+  - name: table_selector
+  - name: fetch_page
+  - name: fetch_with_javascript
+  - name: parse_html
+  - name: select_elements
+  - name: extract_text
+  - name: extract_links
+  - name: take_screenshot
+  - name: take_element_screenshot
+  - name: extract_form
+  - name: submit_form
+  - name: scrape_data
+  - name: scrape_table

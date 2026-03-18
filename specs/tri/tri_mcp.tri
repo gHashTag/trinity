@@ -1,0 +1,41 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE Specification — tri_mcp
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: tri_mcp
+version: "1.0.0"
+language: zig
+module: tri_mcp
+
+description: |
+  TRI MCP Commands — P1.6 management commands for the MCP server integration.
+  Provides export, doctor health-check, and tools listing subcommands.
+  Dispatches to `tri mcp export|doctor|tools|help`.
+
+behaviors:
+  runMcpCommand:
+    given: "allocator and args slice with subcommand"
+    when: "invoked as CLI entry point"
+    then: "dispatches to export, doctor, tools, or help; emits unified output"
+
+  runExportCommand:
+    given: "optional output path (or '-' for stdout)"
+    when: "tri mcp export [output.json] called"
+    then: "generates all MCP schemas and writes to file or stdout"
+
+  runDoctorCommand:
+    given: "registry.json and mcp_schemas.json expected on disk"
+    when: "tri mcp doctor called"
+    then: "checks file existence, JSON validity, MCP count, schema drift; returns success/partial/failure"
+
+  runToolsCommand:
+    given: "command registry initialized with mcp_enabled commands"
+    when: "tri mcp tools called"
+    then: "lists all MCP-enabled tool names and descriptions"
+
+  showMcpHelp:
+    given: "any context"
+    when: "tri mcp help called or unknown subcommand"
+    then: "prints usage text to stderr"

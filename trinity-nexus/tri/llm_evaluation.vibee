@@ -1,0 +1,127 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# LLM BASE MODEL EVALUATION — VIBEE SPECIFICATION
+# Task: LLM-001
+# Purpose: Evaluate open-source LLMs for Trinity ternary integration
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: llm_evaluation
+version: "1.0.0"
+language: zig
+module: llm_evaluation
+
+description: |
+  LLM-001: Base model evaluation pipeline for LMSYS Arena victory.
+
+  Candidates (open-weight, commercially licensable):
+    1. Llama 3.1 70B  — Meta, best general performance, Apache 2.0-like
+    2. Qwen 2.5 72B   — Alibaba, strong multilingual + code, Apache 2.0
+    3. Mistral Large   — Mistral AI, strong reasoning, Apache 2.0
+    4. DeepSeek V3     — DeepSeek, MoE architecture, MIT license
+
+  Evaluation Criteria (weighted scoring):
+    - Arena relevance (30%): how well model performs on conversational tasks
+    - Ternary compatibility (25%): ease of weight quantization to {-1,0,+1}
+    - Code generation (20%): coding benchmarks (HumanEval, MBPP)
+    - Reasoning (15%): math/logic (GSM8K, MATH, ARC)
+    - License flexibility (10%): can we modify, retrain, distribute?
+
+  Ternary Quantization Strategy:
+    Binary: float16 → int8 → int4 → int2
+    Trinity: float16 → trit (-1, 0, +1) = 1.58 bits/trit
+    Expected: 10x compression vs float16, 3-5% accuracy loss
+
+  Decision Matrix:
+    Score = Σ(criterion_weight × criterion_score) for each model
+    Select model with highest composite score
+
+types:
+  ModelCandidate:
+    fields:
+      name: String
+      version: String
+      params_billions: Float
+      architecture: String     # transformer, moe, etc.
+      license: String
+      download_url: String
+      gguf_available: Bool
+
+  BenchmarkResult:
+    fields:
+      benchmark_name: String   # humaneval, gsm8k, mmlu, etc.
+      score: Float             # 0.0 - 1.0
+      baseline_score: Float    # GPT-4o reference score
+      delta: Float             # score - baseline
+
+  TernaryProfile:
+    fields:
+      model_name: String
+      original_size_gb: Float
+      ternary_size_gb: Float
+      compression_ratio: Float
+      accuracy_retention: Float  # % of original accuracy kept
+      inference_speed_tps: Float # tokens per second
+
+  EvaluationCriteria:
+    fields:
+      arena_relevance: Float    # 0-10, weight 0.30
+      ternary_compat: Float     # 0-10, weight 0.25
+      code_generation: Float    # 0-10, weight 0.20
+      reasoning: Float          # 0-10, weight 0.15
+      license_score: Float      # 0-10, weight 0.10
+
+  ModelEvaluation:
+    fields:
+      candidate: ModelCandidate
+      benchmarks: List<BenchmarkResult>
+      ternary: TernaryProfile
+      criteria: EvaluationCriteria
+      composite_score: Float    # Weighted sum
+      recommendation: String    # proceed | consider | reject
+
+  EvaluationReport:
+    fields:
+      evaluations: List<ModelEvaluation>
+      winner: String
+      justification: String
+      next_steps: List<String>
+
+behaviors:
+  - name: load_gguf_model
+    given: GGUF model file path
+    when: Loading model for evaluation
+    then: Parse GGUF header, extract architecture info, load weights
+
+  - name: run_benchmark_suite
+    given: Loaded model
+    when: Running evaluation benchmarks
+    then: Execute HumanEval, GSM8K, MMLU, ARC and record scores
+
+  - name: evaluate_ternary_quantization
+    given: Model weights in float16/int8
+    when: Testing ternary conversion feasibility
+    then: Convert sample layers to trit, measure accuracy retention
+
+  - name: calculate_composite_score
+    given: All criteria scores for a model
+    when: Computing final ranking
+    then: Return weighted composite score
+    implementation: |
+        // score = arena_relevance * 0.30
+        //       + ternary_compat * 0.25
+        //       + code_generation * 0.20
+        //       + reasoning * 0.15
+        //       + license_score * 0.10
+
+  - name: generate_evaluation_report
+    given: All model evaluations complete
+    when: Ready to make selection decision
+    then: Produce ranked report with winner and next steps
+
+  - name: compare_with_gpt4o_baseline
+    given: Model benchmark results
+    when: Need Arena-relative performance estimate
+    then: Calculate Elo estimate based on benchmark deltas
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 | TRINITY | LLM-001
+# ═══════════════════════════════════════════════════════════════════════════════

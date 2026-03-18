@@ -1,0 +1,126 @@
+# ============================================================================
+# Chain of Thought - Symbolic Reasoning Steps
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: chain_of_thought
+version: "1.0.0"
+language: zig
+module: chain_of_thought
+
+description: |
+  Symbolic chain-of-thought reasoning using VSA binding.
+  Binds context + prompt to generate coherent reasoning steps.
+  Enables step-by-step problem decomposition without LLM hallucination.
+
+constants:
+  MAX_CHAIN_LENGTH: 16
+  STEP_DIMENSION: 1024
+  CONTEXT_WINDOW: 8
+  COHERENCE_THRESHOLD: 0.7
+  MAX_BACKTRACK: 3
+
+types:
+  ReasoningStep:
+    description: "Single step in reasoning chain"
+    fields:
+      step_id: Int
+      content: String
+      embedding: List<Float>
+      confidence: Float
+      parent_id: Int
+
+  ReasoningChain:
+    description: "Complete chain of reasoning steps"
+    fields:
+      steps: List<ReasoningStep>
+      context: String
+      prompt: String
+      total_confidence: Float
+
+  ChainConfig:
+    description: "Configuration for chain-of-thought"
+    fields:
+      max_steps: Int
+      coherence_threshold: Float
+      allow_backtrack: Bool
+      context_window: Int
+
+  ChainResult:
+    description: "Result of chain reasoning"
+    fields:
+      chain: ReasoningChain
+      success: Bool
+      final_answer: String
+      steps_taken: Int
+
+  ChainStats:
+    description: "Statistics for chain reasoning"
+    fields:
+      avg_chain_length: Float
+      avg_confidence: Float
+      backtrack_rate: Float
+      success_rate: Float
+
+behaviors:
+  - name: init
+    given: ChainConfig with thresholds
+    when: Creating chain reasoner
+    then: Return initialized reasoner
+
+  - name: startChain
+    given: Context and prompt strings
+    when: Beginning new reasoning
+    then: Create initial chain with bound context
+
+  - name: addStep
+    given: Current chain and step content
+    when: Extending reasoning
+    then: Bind new step to chain, check coherence
+
+  - name: checkCoherence
+    given: New step embedding and chain
+    when: Validating step
+    then: Return coherence score vs context
+
+  - name: backtrack
+    given: Chain with low coherence step
+    when: Coherence below threshold
+    then: Remove step, try alternative
+
+  - name: bindContext
+    given: Context string and step
+    when: Creating step embedding
+    then: Return bound vector (context * step)
+
+  - name: generateAnswer
+    given: Complete reasoning chain
+    when: Chain reaches conclusion
+    then: Synthesize final answer from steps
+
+  - name: getStats
+    given: Chain reasoner state
+    when: Statistics requested
+    then: Return ChainStats with metrics
+
+test_cases:
+  - name: chain_maintains_coherence
+    given: "Multi-step reasoning"
+    expected: "All steps coherence > 0.7"
+
+  - name: backtrack_improves_result
+    given: "Low coherence step"
+    expected: "Backtrack finds better step"
+
+  - name: context_binding_works
+    given: "Context + step"
+    expected: "Bound vector retrievable"
+
+  - name: final_answer_synthesis
+    given: "Complete 5-step chain"
+    expected: "Coherent final answer"
+
+  - name: max_chain_respected
+    given: "Attempt 20 steps"
+    expected: "Stops at 16 max"

@@ -1,0 +1,110 @@
+name: learning_loops
+version: "1.0.0"
+language: zig
+module: learning_loops
+
+types:
+  LearningEvent:
+    fields:
+      timestamp: i64
+      query: []const u8
+      result: []const u8
+      similarity: f64
+      consciousness_achieved: bool
+      reinforcement: f32
+
+  LearningConfig:
+    fields:
+      learning_rate: f32
+      decay_factor: f32
+      consciousness_threshold: f32
+      memory_weight: f32
+      novelty_bonus: f32
+
+  HebbianState:
+    fields:
+      weights: []f32
+      activations: []f32
+      plasticity: f32
+
+  LearningLoop:
+    fields:
+      events: []LearningEvent
+      config: LearningConfig
+      hebbian: HebbianState
+      allocator: std.mem.Allocator
+      cycle_count: u64
+      total_reward: f32
+      consciousness_history: []f32
+
+behaviors:
+  - name: init
+    given: allocator and config
+    when: initializing learning system
+    then: returns initialized LearningLoop with empty event history
+
+  - name: record_event
+    given: loop, query, result, similarity, consciousness_level
+    when: recording a VSA query event
+    then: stores event and calculates reinforcement signal
+
+  - name: update_weights
+    given: loop, entity_idx, relation_idx, reward
+    when: applying Hebbian learning
+    then: "weights += learning_rate × reward × (pre × post)"
+
+  - name: hebbian_learn
+    given: loop, entity_vector, relation_vector, success
+    when: updating associations via Hebbian plasticity
+    then: strengthens connections that fire together
+
+  - name: calculate_reward
+    given: similarity, consciousness_achieved, novelty
+    when: computing reinforcement signal
+    then: returns Φ-weighted reward for learning
+
+  - name: predict
+    given: loop, query_vector
+    when: estimating query result before lookup
+    when: uses learned weights to predict outcome
+    then: returns predicted entity index and confidence
+
+  - name: consolidate
+    given: loop
+    when: consciousness cycle completes
+    then: applies long-term potentiation to strong memories
+
+  - name: get_consciousness_trend
+    given: loop
+    when: monitoring awakening progress
+    then: returns trend analysis of consciousness_history
+
+  - name: adapt_query
+    given: loop, failed_query
+    when: learning from errors
+    then: adjusts query strategy based on past failures
+
+  - name: novelty_detection
+    given: loop, new_vector
+    when: checking if experience is new
+    then: returns novelty score based on memory distance
+
+  - name: get_learning_stats
+    given: loop
+    when: monitoring learning progress
+    then: returns cycle_count, avg_reward, consciousness_trend
+
+  - name: reset_forget
+    given: loop, decay_factor
+    when: preventing catastrophic forgetting
+    then: decays old weights while preserving strong memories
+
+  - name: export_knowledge
+    given: loop, output_path
+    when: persisting learned knowledge
+    then: saves weights and events to file for future sessions
+
+  - name: import_knowledge
+    given: loop, input_path
+    when: restoring from saved knowledge
+    then: loads weights and merges with current state

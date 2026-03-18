@@ -1,0 +1,24 @@
+name: tri_register
+version: "3.0.0"
+language: zig
+module: tri.tri_register
+
+description: |
+  Unified Command Registration for TRI CLI.
+  Reads command metadata from the unified command_table (single source of truth)
+  and wires execute function pointers for CLI dispatch.
+
+behaviors:
+  - name: registerCommands
+    given: CommandRegistry and command_table metadata
+    when: CLI initialization occurs
+    then: Wires all execute function pointers into the registry
+
+  - name: lookupCommand
+    given: Command name string
+    when: User enters a tri subcommand
+    then: Returns the matching command entry with its executor
+
+export_functions:
+  - registerCommands
+  - lookupCommand

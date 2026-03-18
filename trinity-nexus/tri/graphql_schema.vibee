@@ -1,0 +1,71 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: create_schema
+    given: Input data provided
+    when: create_schema function called
+    then: Result returned
+  - name: test_create_schema
+  - name: example_queries
+    given: Input data provided
+    when: example_queries function called
+    then: Result returned
+  - name: test_example_queries
+  - name: resolve_canvas
+    given: Input data provided
+    when: resolve_canvas function called
+    then: Result returned
+  - name: test_resolve_canvas
+  - name: resolve_metrics
+    given: Input data provided
+    when: resolve_metrics function called
+    then: Result returned
+  - name: test_resolve_metrics
+  - name: resolve_health
+    given: Input data provided
+    when: resolve_health function called
+    then: Result returned
+  - name: test_resolve_health
+  - name: format_response
+    given: Input data provided
+    when: format_response function called
+    then: Result returned
+  - name: test_format_response
+  - name: format_error
+    given: Input data provided
+    when: format_error function called
+    then: Result returned
+  - name: test_format_error
+  - name: validate_query
+    given: Input data provided
+    when: validate_query function called
+    then: Result returned
+  - name: test_validate_query
+
+types:
+  create_schema:
+    description: Auto-generated
+
+  example_queries:
+    description: Auto-generated
+
+  resolve_canvas:
+    description: Auto-generated
+
+  resolve_metrics:
+    description: Auto-generated
+
+  resolve_health:
+    description: Auto-generated
+
+  format_response:
+    description: Auto-generated
+
+  format_error:
+    description: Auto-generated
+
+  validate_query:
+    description: Auto-generated

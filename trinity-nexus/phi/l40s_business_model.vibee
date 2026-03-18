@@ -1,0 +1,89 @@
+name: l40s_business_model
+version: "1.0.0"
+language: zig
+module: L40SBusinessModel
+description: |
+  Business model calculations for L40S $0.01/hr rental in Trinity.
+  ROI projections with parallel rendering for inference/mining.
+  Target: >145% ROI year 1 with dual income (inference + mining).
+
+constants:
+  L40S_COST_PER_HOUR: 0.01
+  L40S_TOKENS_PER_SEC: 525000
+  PRICE_PER_1K_TOKENS: 0.001
+  HOURS_PER_MONTH: 720
+  MINING_REWARD_PER_HOUR: 0.005
+  PHI: 1.618033988749895
+
+types:
+  CostProjection:
+    fields:
+      hours: Int
+      gpu_cost: Float
+      electricity_cost: Float
+      total_cost: Float
+
+  RevenueProjection:
+    fields:
+      hours: Int
+      inference_revenue: Float
+      mining_revenue: Float
+      total_revenue: Float
+
+  ROICalculation:
+    fields:
+      period_months: Int
+      total_cost: Float
+      total_revenue: Float
+      net_profit: Float
+      roi_percent: Float
+
+  BusinessMetrics:
+    fields:
+      tokens_generated: Int
+      cost_per_million_tokens: Float
+      revenue_per_million_tokens: Float
+      profit_margin: Float
+
+behaviors:
+  - name: calc_l40s_cost
+    given: Hours of operation
+    when: Compute GPU rental + electricity
+    then: Return total cost in USD
+
+  - name: calc_inference_revenue
+    given: Hours, tokens/s rate, price per 1K
+    when: Compute tokens * price
+    then: Return inference revenue in USD
+
+  - name: calc_mining_revenue
+    given: Hours, mining reward rate
+    when: Compute hours * reward
+    then: Return mining revenue in USD
+
+  - name: calc_l40s_roi
+    given: Hours, tokens/s, prices
+    when: Compute revenue - cost
+    then: ROI >145% year 1
+
+  - name: compare_vs_cloud
+    given: Cloud API price (e.g., $0.002/1K)
+    when: Compare L40S self-hosted vs cloud
+    then: Show savings percentage
+
+tests:
+  - name: test_monthly_roi
+    input: 720 hours (1 month)
+    expected: profit > $350, ROI > 4000%
+
+  - name: test_yearly_roi
+    input: 8640 hours (1 year)
+    expected: savings >= $143751 vs cloud
+
+  - name: test_break_even
+    input: variable hours
+    expected: break_even < 1 hour
+
+  - name: test_dual_income
+    input: inference + mining
+    expected: combined revenue > inference alone by 50%

@@ -1,0 +1,41 @@
+[cell]
+id = "trinity.physics"
+name = "Physics"
+version = "0.1.0"
+kind = "library"
+path = "src/gravity"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Unified physics: gravity, cosmology, QCD, dark matter, quantum gravity, particle physics, origin, string theory, hyperspace, biology, baryogenesis, plasma, monopoles, superconductivity"
+capabilities = ["pageCurve", "pageTime", "informationRate", "islandsFormula", "fineGrainedEntropy", "totalDensityParameter", "thetaQCDExact", "particleMass", "strongCoupling", "baryonAsymmetry", "diracCharge", "criticalTemperature", "plasmaFrequency", "phiCoordinates"]
+files = 9
+tests = 90
+owner = "agent:ralph"
+
+[tags]
+scope = "physics"
+type = "library"
+
+[contributes]
+commands = ["pageCurve", "pageTime", "informationRate"]
+exports = ["pageCurve", "pageTime", "informationRate", "islandsFormula", "fineGrainedEntropy"]
+tri_subcommands = []
+events = []
+
+[dependencies]
+trinity.vsa = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = "true"
+signature = "sha256:b07765ee49791522dd89c6b2d7bc7f76e8ca202689aadeec1c3ea4c4858d6929"

@@ -1,0 +1,58 @@
+name: inference
+version: "1.0.0"
+language: zig
+module: inference
+
+description: |
+  Inference job specification for Trinity Network.
+  Defines how inference requests are processed.
+
+types:
+  InferenceRequest:
+    fields:
+      model_id: String
+      prompt: String
+      max_tokens: Int
+      temperature: Float
+
+  InferenceJob:
+    fields:
+      job_id: String
+      request: InferenceRequest
+      assigned_node: String
+      created_at: Int
+
+  InferenceResult:
+    fields:
+      job_id: String
+      output: String
+      tokens_generated: Int
+      latency_ms: Int
+
+  ModelShard:
+    fields:
+      model_id: String
+      shard_index: Int
+      total_shards: Int
+      data_hash: String
+
+behaviors:
+  - name: create_job
+    given: InferenceRequest
+    when: User submits request
+    then: Returns InferenceJob with assigned node
+
+  - name: process_job
+    given: InferenceJob and ModelShard
+    when: Node processes inference
+    then: Returns InferenceResult
+
+  - name: verify_result
+    given: InferenceResult
+    when: Validating output
+    then: Returns true if valid
+
+  - name: calculate_reward
+    given: InferenceResult
+    when: Computing $TRI reward
+    then: Returns reward amount based on tokens processed

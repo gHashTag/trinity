@@ -1,0 +1,43 @@
+# simple_plugin.vibee
+# with example andon on [CYR:language] VIBEE
+
+plugin:
+  name: simple_plugin
+  version: 1.0.0
+  description: Simple example plugin
+
+types:
+  - name: User
+    kind: record
+    fields:
+      - name: id
+        type: Int
+      - name: email
+        type: String
+
+functions:
+  - name: create_user
+    params:
+      - name: email
+        type: String
+    returns: Result(User, String)
+  
+  - name: get_user
+    params:
+      - name: id
+        type: Int
+    returns: Result(User, String)
+
+behaviors:
+  - name: user_creation
+    given: valid email provided
+    when: create_user is called
+    then: user is created
+
+tests:
+  - name: test_create_user
+    when:
+      call: create_user
+      with: {email: "test@example.com"}
+    then:
+      - result is Ok

@@ -1,0 +1,148 @@
+name: e2e_real_models
+version: "2.0.0"
+language: zig
+module: e2e_real_models
+
+description: |
+  End-to-end testing specification for real ternary models.
+  Tests inference throughput, memory usage, noise robustness, and mining hashrate.
+  Single source of truth - generates Zig test code.
+
+types:
+  ModelConfig:
+    fields:
+      name: String
+      size_params: Int
+      hidden_dim: Int
+      num_layers: Int
+      vocab_size: Int
+      format: String
+
+  BenchmarkResult:
+    fields:
+      model_name: String
+      tokens_per_second: Float
+      latency_ms: Float
+      memory_mb: Float
+      noise_accuracy_30pct: Float
+      hashrate_mh_s: Float
+
+  TestConfig:
+    fields:
+      num_tokens: Int
+      batch_size: Int
+      warmup_iterations: Int
+      benchmark_iterations: Int
+      noise_levels: List<Float>
+
+constants:
+  MODELS:
+    - name: "tiny-ternary"
+      size_params: 8000
+      hidden_dim: 64
+      num_layers: 2
+      vocab_size: 256
+      format: "tri"
+    - name: "small-ternary-1B"
+      size_params: 1000000000
+      hidden_dim: 2048
+      num_layers: 24
+      vocab_size: 32000
+      format: "gguf"
+    - name: "medium-ternary-3B"
+      size_params: 3000000000
+      hidden_dim: 3072
+      num_layers: 32
+      vocab_size: 32000
+      format: "gguf"
+    - name: "large-ternary-7B"
+      size_params: 7000000000
+      hidden_dim: 4096
+      num_layers: 32
+      vocab_size: 32000
+      format: "gguf"
+
+  TEST_CONFIG:
+    num_tokens: 1000
+    batch_size: 32
+    warmup_iterations: 10
+    benchmark_iterations: 100
+    noise_levels: [0.0, 0.10, 0.20, 0.30]
+
+  VERSION_BASELINES:
+    v1_0_baseline:
+      tokens_per_second: 1000
+      description: "Initial implementation"
+    v1_1_tq:
+      tokens_per_second: 3700
+      speedup: 3.7
+      description: "SIMD ternary quantization"
+    v1_2_kquant:
+      tokens_per_second: 5000
+      speedup: 5.0
+      description: "K-quantization support"
+    v1_3_forward:
+      tokens_per_second: 10000
+      speedup: 10.0
+      description: "Full forward pass integration"
+    v2_0_gpu:
+      tokens_per_second: 298052
+      speedup: 298.0
+      description: "RTX 3090 GPU acceleration"
+
+behaviors:
+  - name: load_model
+    given: Model path and format
+    when: loadModel called
+    then: Returns loaded model or error
+
+  - name: run_inference
+    given: Loaded model and input tokens
+    when: generate called with num_tokens
+    then: Returns generated tokens and timing stats
+
+  - name: measure_throughput
+    given: Model and test config
+    when: Benchmark iterations complete
+    then: Returns tokens/second metric
+
+  - name: measure_memory
+    given: Model loaded
+    when: Memory sampled during inference
+    then: Returns peak memory in MB
+
+  - name: test_noise_robustness
+    given: Model and noise levels
+    when: Trits flipped at each noise level
+    then: Returns accuracy retention percentage
+
+  - name: run_mining_benchmark
+    given: TriHash configuration
+    when: Mining iterations complete
+    then: Returns hashrate in MH/s
+
+  - name: compare_versions
+    given: Current results and version baselines
+    when: Comparison requested
+    then: Returns speedup ratios and delta table
+
+tests:
+  - name: test_tiny_model_inference
+    setup: Load tiny-ternary model
+    action: Generate 100 tokens
+    verify: tokens_per_second > 10000
+
+  - name: test_noise_robustness_30pct
+    setup: Load model with 30% trit flip
+    action: Run inference
+    verify: accuracy > 0.70
+
+  - name: test_memory_efficiency
+    setup: Load 1B model
+    action: Measure memory
+    verify: memory_mb < 500
+
+  - name: test_version_comparison
+    setup: Run benchmarks
+    action: Compare vs v1.0 baseline
+    verify: speedup > 1.0

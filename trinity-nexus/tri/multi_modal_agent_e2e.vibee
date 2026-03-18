@@ -1,0 +1,275 @@
+# ============================================================================
+# Multi-Modal Agent E2E Tests - Cycle 48
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: multi_modal_agent_e2e
+version: "1.0.0"
+language: zig
+module: multi_modal_agent_e2e
+
+description: |
+  End-to-end test suite for Multi-Modal Unified Agent.
+  50 test scenarios covering all 5 modalities, cross-modal routing,
+  tool orchestration, chain execution, and edge cases.
+
+constants:
+  TOTAL_SCENARIOS: 50
+  MODALITY_COUNT: 5
+  MAX_CHAIN_DEPTH: 8
+  CONFIDENCE_THRESHOLD: 0.6
+  PHI: 1.6180339887498948482
+
+types:
+  E2EScenario:
+    description: "End-to-end test scenario"
+    fields:
+      name: String
+      input: String
+      expected_modality: String
+      expected_agent: String
+      expected_chain: Bool
+
+  E2EResult:
+    description: "E2E test result"
+    fields:
+      scenario_name: String
+      passed: Bool
+      actual_modality: String
+      actual_agent: String
+      confidence: Float
+      elapsed_ms: Int
+
+  ModalityTestCase:
+    description: "Test case for modality detection"
+    fields:
+      input: String
+      expected: String
+      description: String
+
+  ChainTestCase:
+    description: "Test case for chain execution"
+    fields:
+      input: String
+      expected_agents: String
+      expected_steps: Int
+
+  ToolTestCase:
+    description: "Test case for tool invocation"
+    fields:
+      input: String
+      expected_tool: String
+      expected_output_type: String
+
+behaviors:
+  # Text Modality Detection (10 cases)
+  - name: detectTextGreeting
+    given: "Hello, how are you today?"
+    when: Detecting modality
+    then: Returns text modality with confidence > 0.8
+
+  - name: detectTextQuestion
+    given: "What is the capital of France?"
+    when: Detecting modality
+    then: Returns text modality
+
+  - name: detectTextSummary
+    given: "Summarize the following article about AI"
+    when: Detecting modality
+    then: Returns text modality with summarize intent
+
+  - name: detectTextTranslation
+    given: "Translate this to Spanish"
+    when: Detecting modality
+    then: Returns text modality with translation intent
+
+  - name: detectTextAnalysis
+    given: "Analyze the sentiment of this review"
+    when: Detecting modality
+    then: Returns text modality with analysis intent
+
+  # Code Modality Detection (10 cases)
+  - name: detectCodeGeneration
+    given: "Write a fibonacci function in Python"
+    when: Detecting modality
+    then: Returns code modality
+
+  - name: detectCodeExplanation
+    given: "Explain this function: def sort(arr)"
+    when: Detecting modality
+    then: Returns code modality with explain intent
+
+  - name: detectCodeFix
+    given: "Fix this bug in my JavaScript code"
+    when: Detecting modality
+    then: Returns code modality with fix intent
+
+  - name: detectCodeReview
+    given: "Review this pull request code"
+    when: Detecting modality
+    then: Returns code modality with review intent
+
+  - name: detectCodeRefactor
+    given: "Refactor this class to use dependency injection"
+    when: Detecting modality
+    then: Returns code modality with refactor intent
+
+  # Vision Modality Detection (8 cases)
+  - name: detectVisionDescribe
+    given: "Describe this image"
+    when: Detecting modality
+    then: Returns vision modality
+
+  - name: detectVisionAnalyze
+    given: "What objects are in this photo?"
+    when: Detecting modality
+    then: Returns vision modality with analysis intent
+
+  - name: detectVisionOCR
+    given: "Read the text in this screenshot"
+    when: Detecting modality
+    then: Returns vision modality with OCR intent
+
+  - name: detectVisionCompare
+    given: "Compare these two images"
+    when: Detecting modality
+    then: Returns vision modality with compare intent
+
+  - name: detectVisionChart
+    given: "Analyze this chart and extract data"
+    when: Detecting modality
+    then: Returns vision modality with chart intent
+
+  - name: detectVisionDiagram
+    given: "Explain this architecture diagram"
+    when: Detecting modality
+    then: Returns vision modality
+
+  - name: detectVisionUI
+    given: "Review this UI mockup"
+    when: Detecting modality
+    then: Returns vision modality with UI intent
+
+  - name: detectVisionDocument
+    given: "Extract information from this document scan"
+    when: Detecting modality
+    then: Returns vision modality with document intent
+
+  # Voice Modality Detection (5 cases)
+  - name: detectVoiceTranscribe
+    given: "Transcribe this audio recording"
+    when: Detecting modality
+    then: Returns voice modality
+
+  - name: detectVoiceSpeak
+    given: "Read this text aloud"
+    when: Detecting modality
+    then: Returns voice modality with synthesis intent
+
+  - name: detectVoiceDictation
+    given: "Take dictation from this voice memo"
+    when: Detecting modality
+    then: Returns voice modality with dictation intent
+
+  - name: detectVoiceTranslateSpoken
+    given: "Translate this spoken audio to English"
+    when: Detecting modality
+    then: Returns voice modality with translation intent
+
+  - name: detectVoiceSummarizeAudio
+    given: "Summarize this podcast episode"
+    when: Detecting modality
+    then: Returns voice modality with summarize intent
+
+  # Tool Modality Detection (5 cases)
+  - name: detectToolWebSearch
+    given: "Search the web for latest AI news"
+    when: Detecting modality
+    then: Returns tool modality with search intent
+
+  - name: detectToolCalculate
+    given: "Calculate the compound interest on $10000"
+    when: Detecting modality
+    then: Returns tool modality with calculate intent
+
+  - name: detectToolFileOps
+    given: "List all Python files in the project"
+    when: Detecting modality
+    then: Returns tool modality with file intent
+
+  - name: detectToolAPI
+    given: "Call the weather API for Tokyo"
+    when: Detecting modality
+    then: Returns tool modality with API intent
+
+  - name: detectToolDatabase
+    given: "Query the database for user records"
+    when: Detecting modality
+    then: Returns tool modality with database intent
+
+  # Cross-Modal Chain Tests (7 cases)
+  - name: chainImageToCode
+    given: "Look at this chart and write Python code to replicate it"
+    when: Executing cross-modal chain
+    then: Vision agent then code agent, 2 steps
+
+  - name: chainCodeToVoice
+    given: "Explain this code and read the explanation aloud"
+    when: Executing cross-modal chain
+    then: Code agent then voice agent, 2 steps
+
+  - name: chainVoiceToText
+    given: "Transcribe this audio and summarize it"
+    when: Executing cross-modal chain
+    then: Voice agent then text agent, 2 steps
+
+  - name: chainImageToText
+    given: "Describe this image in detail and translate to French"
+    when: Executing cross-modal chain
+    then: Vision agent then text agent, 2 steps
+
+  - name: chainTextToCodeToVoice
+    given: "Write a sorting algorithm and explain it aloud"
+    when: Executing 3-step chain
+    then: Text agent then code agent then voice agent, 3 steps
+
+  - name: chainToolToText
+    given: "Search for weather data and write a summary report"
+    when: Executing cross-modal chain
+    then: Tool agent then text agent, 2 steps
+
+  - name: chainDepthLimit
+    given: Chain exceeding MAX_CHAIN_DEPTH
+    when: Validating chain depth
+    then: Returns error before exceeding limit
+
+  # Edge Cases (5 cases)
+  - name: edgeEmptyInput
+    given: Empty string input
+    when: Detecting modality
+    then: Falls back to text modality with low confidence
+
+  - name: edgeAmbiguousInput
+    given: "Process this data"
+    when: Detecting modality with ambiguous input
+    then: Returns text modality as default fallback
+
+  - name: edgeLowConfidence
+    given: Input with no clear modality signals
+    when: Confidence below threshold
+    then: Routes to text agent as fallback
+
+  - name: edgeMultipleModalities
+    given: "Look at image, write code, and read it aloud"
+    when: Multiple modalities detected
+    then: Creates chain with 3 agents
+
+  - name: edgeToolNotFound
+    given: Request for non-existent tool
+    when: Tool selection fails
+    then: Returns error with available tools list
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

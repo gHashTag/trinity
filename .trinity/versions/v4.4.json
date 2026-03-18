@@ -1,0 +1,33 @@
+{
+  "version": "4.4",
+  "codename": "Spec Lint Gate",
+  "date": "2026-03-10",
+  "changes": [
+    "26 chain links (0-25)",
+    "Spec lint blocks codegen (Link 25 → Link 7)",
+    "Perplexity Scholar integration (Link 24)",
+    "Vision LED test (Link 23)",
+    "Self-referential evolution (Link 22)"
+  ],
+  "metrics": {
+    "chain_links": 26,
+    "time_to_pr_min": 60,
+    "success_rate_pct": 40,
+    "tests_passing_pct": 75,
+    "compilation_gate_pct": 70,
+    "telegram_msgs_per_issue": 3,
+    "cost_per_issue_usd": 0.80,
+    "vulnerabilities": 23,
+    "loc_entrypoint": 996,
+    "role_isolation": false,
+    "research_context": false,
+    "a2a_compatible": false,
+    "cli_per_link": false
+  },
+  "architecture": {
+    "agent_model": "monolith (Ralph = all roles)",
+    "roles": 1,
+    "entrypoint": "deploy/agent-entrypoint.sh",
+    "deriveSpecName_copies": 6
+  }
+}

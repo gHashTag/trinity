@@ -1,0 +1,214 @@
+name: b2t_prompts
+version: "1.0.0"
+language: zig
+
+types:
+  PromptRole:
+  PromptSection:
+    fields:
+      role: PromptRole
+      content: String
+      priority: Int
+      required: Bool
+      max_tokens: Option<Int>
+  PromptConfig:
+    fields:
+      max_total_tokens: Int
+      temperature: Float
+      top_p: Float
+      presence_penalty: Float
+      frequency_penalty: Float
+  DistortionTemplate:
+    fields:
+      distortion_type: String
+      detection_prompt: String
+      correction_prompt: String
+      validation_prompt: String
+      examples: List<DistortionExample>
+  DistortionExample:
+    fields:
+      distorted_code: String
+      corrected_code: String
+      explanation: String
+      distortion_markers: List<String>
+  ReasoningStep:
+    fields:
+      step_number: Int
+      description: String
+      expected_output: String
+  ChainOfThought:
+    fields:
+      task: String
+      steps: List<ReasoningStep>
+      final_instruction: String
+  CoTParseResult:
+    fields:
+      steps: List<ReasoningStep>
+      final_answer: String
+      reasoning: String
+
+behaviors:
+  - name: build_system_prompt
+    given: [CYR:l] [CYR:agent] and andI
+    when: and withandwithgo] [CYR:pro]
+    then: in[CYR:acts] PromptSection with role=system
+    implementation: |
+                    pub fn build_system_prompt(role: []const u8, constraints: []const u8) PromptSection {
+                        _ = role;
+                        _ = constraints;
+                        return PromptSection{};
+                    }
+            
+            
+      
+      
+
+  - name: build_context_section
+    given: SemanticContext from b2t_llm_assist
+    when: andinand with
+    then: in[CYR:acts] PromptSection with role=context
+    implementation: |
+                    pub fn build_context_section(context: anytype) PromptSection {
+                        _ = context;
+                        return PromptSection{};
+                    }
+            
+            
+      
+      
+
+  - name: build_icl_examples
+    given: List<SimilarCode> and max_examples
+    when: andinand examplein for ICL
+    then: in[CYR:acts] PromptSection with role=example
+    implementation: |
+                    pub fn build_icl_examples(examples: anytype, max_examples: usize) PromptSection {
+                        _ = examples;
+                        _ = max_examples;
+                        return PromptSection{};
+                    }
+            
+            
+      
+      
+
+  - name: build_query
+    given: orin[CYR:ny] code and task
+    when: andinand query
+    then: in[CYR:acts] PromptSection with role=query
+    implementation: |
+                    pub fn build_query(code: []const u8, task: []const u8) PromptSection {
+                        _ = code;
+                        _ = task;
+                        return PromptSection{};
+                    }
+            
+            
+      
+      
+
+  - name: assemble_prompt
+    given: List<PromptSection> and PromptConfig
+    when:  andon[CYR:lnogo] [CYR:pro] with  andin
+    then: in[CYR:acts] String [CYR:pro]
+    implementation: |
+                    pub fn assemble_prompt(sections: []const PromptSection, config: PromptConfig) []const u8 {
+                        _ = sections;
+                        _ = config;
+                        return "";
+                    }
+            
+            
+      
+      
+
+  - name: get_distortion_template
+    given: DistortionType
+    when: and on for [CYR:go] andwithandI
+    then: in[CYR:acts] DistortionTemplate
+    implementation: |
+                    pub fn get_distortion_template(dist_type: anytype) DistortionTemplate {
+                        _ = dist_type;
+                        return DistortionTemplate{};
+                    }
+            
+            
+      
+      
+
+  - name: format_detection_prompt
+    given: [CYR:Code] and DistortionTemplate
+    when: and [CYR:pro] for and andwithand
+    then: in[CYR:acts] String [CYR:pro]
+    implementation: |
+                    pub fn format_detection_prompt(code: []const u8, template: anytype) []const u8 {
+                        _ = code;
+                        _ = template;
+                        return "";
+                    }
+            
+            
+      
+      
+
+  - name: format_correction_prompt
+    given: [CYR:Code], andwithandI and DistortionTemplate
+    when: and [CYR:pro] for andwithlaw]inandI
+    then: in[CYR:acts] String [CYR:pro]
+    implementation: |
+                    pub fn format_correction_prompt(code: []const u8, distortions: anytype, template: anytype) []const u8 {
+                        _ = code;
+                        _ = distortions;
+                        _ = template;
+                        return "";
+                    }
+            
+            
+      
+      
+
+  - name: format_validation_prompt
+    given: andon, fix and DistortionTemplate
+    when: and [CYR:pro] for inandand
+    then: in[CYR:acts] String [CYR:pro]
+    implementation: |
+                    pub fn format_validation_prompt(original: []const u8, corrected: []const u8, template: anytype) []const u8 {
+                        _ = original;
+                        _ = corrected;
+                        _ = template;
+                        return "";
+                    }
+            
+            
+      
+      
+
+  - name: create_cot_prompt
+    given:  and ChainOfThought
+    when: and [CYR:pro] with stepiny withand
+    then: in[CYR:acts] String [CYR:pro]
+    implementation: |
+                    pub fn create_cot_prompt(task: []const u8, cot: anytype) []const u8 {
+                        _ = task;
+                        _ = cot;
+                        return "";
+                    }
+            
+            
+      
+      
+
+  - name: parse_cot_response
+    given: in LLM with withandIand
+    when: in[CYR:chen]and stepin and andon[CYR:lnogo] response
+    then: in[CYR:acts] withandin[CYR:ny] result
+    implementation: |
+                    pub fn parse_cot_response(response: []const u8) CoTParseResult {
+                        _ = response;
+                        return CoTParseResult{};
+                    }
+            
+            
+      
+      
+

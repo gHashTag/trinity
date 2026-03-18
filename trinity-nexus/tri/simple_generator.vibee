@@ -1,0 +1,55 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: generate
+    given: Input data provided
+    when: generate function called
+    then: Result returned
+  - name: test_generate
+  - name: parse_spec
+    given: Input data provided
+    when: parse_spec function called
+    then: Result returned
+  - name: test_parse_spec
+  - name: extract_value
+    given: Input data provided
+    when: extract_value function called
+    then: Result returned
+  - name: test_extract_value
+  - name: generate_gleam
+    given: Input data provided
+    when: generate_gleam function called
+    then: Result returned
+  - name: test_generate_gleam
+  - name: hello
+    given: Input data provided
+    when: hello function called
+    then: Result returned
+  - name: test_hello
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+  - name: test_main
+
+types:
+  generate:
+    description: Auto-generated
+
+  parse_spec:
+    description: Auto-generated
+
+  extract_value:
+    description: Auto-generated
+
+  generate_gleam:
+    description: Auto-generated
+
+  hello:
+    description: Auto-generated
+
+  main:
+    description: Auto-generated

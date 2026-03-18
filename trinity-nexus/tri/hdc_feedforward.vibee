@@ -1,0 +1,145 @@
+name: hdc_feedforward
+version: "1.0.0"
+language: zig
+module: hdc_feedforward
+
+description: |
+  HDC Feed-Forward Network — Ternary Linear Transform via Bind Operations.
+  Replaces standard MLP layers (W*x + b) with VSA algebraic equivalents.
+
+  === CORE INSIGHT ===
+  Standard MLP:
+    y = W_2 * ReLU(W_1 * x + b_1) + b_2
+    Requires: matrix multiply (O(d^2)), float arithmetic, backprop for training.
+
+  HDC Feed-Forward:
+    y = bind(ternary_relu(bind(x, W_1)), W_2)
+    Requires: element-wise trit multiply (O(D)), ternary-only, no backprop.
+
+  === WHY BIND = LINEAR TRANSFORM ===
+  bind(x, W) performs element-wise multiplication of trit vectors:
+    y[i] = x[i] * W[i]  where x[i], W[i], y[i] in {-1, 0, +1}
+  This is a diagonal linear transform: y = diag(W) * x
+  In high dimensions (D >> 1000), diagonal transforms are surprisingly powerful:
+    - Each dimension acts as an independent feature gate
+    - W[i] = +1: pass through (identity)
+    - W[i] = -1: negate (feature flip)
+    - W[i] = 0: mask out (feature selection)
+  Random weight vectors create diverse feature transformations.
+
+  === TERNARY ACTIVATIONS ===
+  1. Ternary ReLU: negative -> 0, zero -> 0, positive -> +1
+     Equivalent to max(0, x) quantized to {0, +1}
+  2. Ternary Tanh: identity (already in {-1, 0, +1})
+  3. Ternary Step: x != 0 -> sign(x), 0 -> 0
+     Full ternary activation preserving sign information.
+
+  === MULTI-LAYER ===
+  Stack N feed-forward blocks:
+    layer_1 = bind(x, W_1_a), activate, bind(result, W_1_b)
+    layer_2 = bind(layer_1_out, W_2_a), activate, bind(result, W_2_b)
+    ...
+  Each layer uses independent weight vectors (2 per layer).
+
+  === TRAINING (NO BACKPROP) ===
+  Weight update via error-driven bundling:
+    error = bind(target, negate(output))  — what's different?
+    W_new = bundle(W_old, scale(error, lr))  — shift toward correction
+  Converges in O(sqrt(D)) examples.
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  ActivationType:
+    enum:
+      - ternary_relu
+      - ternary_tanh
+      - ternary_step
+
+  FFConfig:
+    fields:
+      dimension: usize
+      num_layers: usize
+      activation: ActivationType
+      learning_rate: Float
+
+  FFLayer:
+    fields:
+      layer_id: usize
+      weight_in: List<i8>
+      weight_out: List<i8>
+      activation: ActivationType
+      dimension: usize
+
+  FFOutput:
+    fields:
+      hv: List<i8>
+      pre_activation_density: Float
+      post_activation_density: Float
+      layer_id: usize
+
+  FFStack:
+    fields:
+      layers: List<FFLayer>
+      config: FFConfig
+
+  FFStats:
+    fields:
+      num_layers: usize
+      dimension: usize
+      total_weights: u64
+      avg_sparsity: Float
+      activation_type: ActivationType
+
+  HDCFeedForward:
+    fields:
+      allocator: Allocator
+      stack: FFStack
+      config: FFConfig
+
+behaviors:
+  - name: initFF
+    given: FFConfig with dimension, num_layers, activation type
+    when: Creates N layers with random ternary weight vectors
+    then: Feed-forward stack initialized and ready for forward pass
+
+  - name: forwardLayer
+    given: Input hypervector and FFLayer
+    when: Applies bind(input, W_in), activation, bind(result, W_out)
+    then: Returns FFOutput with transformed vector and density stats
+
+  - name: forward
+    given: Input hypervector
+    when: Passes through all layers sequentially
+    then: Returns final FFOutput after full stack
+
+  - name: ternaryReluActivation
+    given: Trit vector
+    when: Maps -1 -> 0, 0 -> 0, +1 -> +1
+    then: Returns sparsified vector (only positive trits survive)
+
+  - name: ternaryTanhActivation
+    given: Trit vector
+    when: Identity function (already ternary)
+    then: Returns input unchanged (no-op for ternary)
+
+  - name: ternaryStepActivation
+    given: Trit vector
+    when: Preserves sign: -1 stays -1, 0 stays 0, +1 stays +1
+    then: Returns input unchanged (identity for balanced ternary)
+
+  - name: updateWeights
+    given: Target hypervector, actual output, learning rate
+    when: Computes error = bind(target, negate(output)), bundles with current weights
+    then: Weights shifted toward target representation
+
+  - name: trainStep
+    given: Input-output pair (input_hv, target_hv)
+    when: Forward pass, compute error, update all layer weights
+    then: Returns loss value (1 - similarity(output, target))
+
+  - name: stats
+    given: Nothing
+    when: Computes stack-wide statistics
+    then: Returns FFStats with dimensions, weights, sparsity

@@ -1,0 +1,159 @@
+name: quantum_rl
+version: "1.0.0"
+language: python
+module: quantum.rl
+
+types:
+  QNetwork:
+    description: Quantum Q-network for DQN
+    fields:
+      quantum_layers: List(QutritGate)
+      action_space: Int
+      state_space: Int
+      replay_buffer: ReplayBuffer
+
+  ReplayBuffer:
+    description: Experience replay buffer
+    fields:
+      states: Tensor
+      actions: Tensor
+      rewards: Tensor
+      next_states: Tensor
+      dones: Tensor
+      capacity: Int
+      size: Int
+
+  Trajectory:
+    description: Single episode trajectory
+    fields:
+      states: List(Tensor)
+      actions: List(Int)
+      rewards: List(Float64)
+      log_probs: List(Tensor)
+
+  QutritPolicy:
+    description: Policy gradient network
+    fields:
+      actor: QuantumCircuit  # Policy π(a|s)
+      critic: QuantumCircuit  # Value V(s)
+      entropy_coeff: Float64
+
+behaviors:
+  - name: select_action
+    description: Select action via epsilon-greedy or policy
+    given:
+      - state: Tensor
+      - epsilon: Float64  # Exploration rate
+      - q_network: QNetwork
+    when: Choose action
+    then:
+      - Returns action index
+      - With prob ε: random action
+      - With prob 1-ε: argmax_a Q(s, a)
+
+  - name: update_q_network
+    description: Q-learning update with quantum network
+    given:
+      - trajectory: Trajectory
+      - gamma: Float64  # Discount factor
+      - learning_rate: Float64
+    when: Compute TD error and backprop
+    then:
+      - Returns updated QNetwork
+      - Loss: L = E[(r + γ max_a' Q(s',a') - Q(s,a))²]
+      - Gradient descent on loss
+
+  - name: quantum_dqn
+    description: Deep Q-Network with quantum layers
+    given:
+      - env: Environment
+      - num_episodes: Int
+      - batch_size: Int
+      - gamma: Float64
+      - epsilon_start: Float64
+      - epsilon_end: Float64
+      - epsilon_decay: Float64
+    when: Training loop
+    then:
+      - Returns trained QNetwork
+      - Returns reward history
+      - Epsilon anneals during training
+
+  - name: reinforce
+    description: REINFORCE policy gradient with quantum policy
+    given:
+      - env: Environment
+      - policy: QutritPolicy
+      - num_episodes: Int
+      - gamma: Float64
+    when: Monte Carlo policy gradient
+    then:
+      - Returns updated policy
+      - Gradient: ∇θ J = E[∇θ log π(a|s) × G_t]
+      - G_t = discounted return
+
+  - name: actor_critic
+    description: Actor-critic with quantum networks
+    given:
+      - env: Environment
+      - policy: QutritPolicy
+      - num_episodes: Int
+    when: Alternating updates
+    then:
+      - Returns trained actor and critic
+      - Actor: maximize reward
+      - Critic: estimate value function
+      - Reduces variance vs REINFORCE
+
+  - name: quantum_advantage_actor_critic
+    description: A3C with quantum advantage estimation
+    given:
+      - num_workers: Int
+      - env: Environment
+      - policy: QutritPolicy
+    when: Parallel training
+    then:
+      - Returns trained policy
+      - Multiple actors explore in parallel
+      - Central critic updates
+      - Asynchronous gradient updates
+
+  - name: compute_gae
+    description: Generalized Advantage Estimation
+    given:
+      - rewards: List(Float64)
+      - values: List(Tensor)
+      - gamma: Float64
+      - lambda_gae: Float64
+    when: Compute advantage estimates
+    then:
+      - Returns advantages Tensor
+      - A_t = Σ (γλ)^l δ_{t+l}
+      - δ_t = r_t + γV(s_{t+1}) - V(s_t)
+      - Reduces variance, controls bias
+
+  - name: ppo_loss
+    description: Proximal Policy Optimization loss
+    given:
+      - old_log_probs: Tensor
+      - new_log_probs: Tensor
+      - advantages: Tensor
+      - clip_epsilon: Float64
+    when: Compute clipped surrogate loss
+    then:
+      - Returns loss Tensor
+      - L_clip = min(r_t A_t, clip(r_t, 1-ε, 1+ε) A_t)
+      - r_t = π_new(a|s) / π_old(a|s)
+      - Prevents large policy updates
+
+  - name: exploration_bonus
+    description: Add intrinsic exploration bonus
+    given:
+      - state: Tensor
+      - visit_counts: Dict
+      - beta: Float64
+    when: Compute exploration bonus
+    then:
+      - Returns bonus reward
+      - Bonus ~ 1/√N(s) (count-based)
+      - Or uses prediction error novelty

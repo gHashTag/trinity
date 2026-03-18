@@ -1,0 +1,223 @@
+// RL Agent for FrozenLake - VIBEE .999
+// φ² + 1/φ² = 3 | TRINITY
+// Optimal params: lr=0.5, gamma=0.95, epsilon_decay=0.99
+
+// FrozenLake 4x4 grid
+// S=start(0), F=frozen, H=hole, G=goal(15)
+// Actions: 0=left, 1=down, 2=right, 3=up
+
+fn create_env() {
+    return {
+        "grid": ["SFFF", "FHFH", "FFFH", "HFFG"],
+        "state": 0,
+        "n_states": 16,
+        "n_actions": 4
+    }
+}
+
+fn reset_env(env) {
+    env["state"] = 0
+    return 0
+}
+
+fn step_env(env, action) {
+    state = env["state"]
+    row = state / 4
+    col = state % 4
+    
+    // Apply action
+    if action == 0 {
+        // left
+        if col > 0 {
+            col = col - 1
+        }
+    }
+    if action == 1 {
+        // down
+        if row < 3 {
+            row = row + 1
+        }
+    }
+    if action == 2 {
+        // right
+        if col < 3 {
+            col = col + 1
+        }
+    }
+    if action == 3 {
+        // up
+        if row > 0 {
+            row = row - 1
+        }
+    }
+    
+    new_state = row * 4 + col
+    env["state"] = new_state
+    
+    // Check cell type
+    grid_row = env["grid"][row]
+    cell = grid_row[col]
+    
+    reward = -0.01
+    done = false
+    
+    if cell == "H" {
+        reward = -1.0
+        done = true
+    }
+    if cell == "G" {
+        reward = 10.0
+        done = true
+    }
+    
+    return {"state": new_state, "reward": reward, "done": done}
+}
+
+// Q-Learning Agent
+fn create_agent() {
+    // Initialize Q-table (16 states x 4 actions)
+    q_table = []
+    s = 0
+    while s < 16 {
+        q_table = q_table + [[0.0, 0.0, 0.0, 0.0]]
+        s = s + 1
+    }
+    
+    return {
+        "q_table": q_table,
+        "lr": 0.5,
+        "gamma": 0.95,
+        "epsilon": 1.0,
+        "epsilon_min": 0.01,
+        "epsilon_decay": 0.99
+    }
+}
+
+fn choose_action(agent, state) {
+    // Epsilon-greedy
+    if random_float() < agent["epsilon"] {
+        return random_int(0, 3)
+    }
+    
+    // Greedy - find best action
+    q_values = agent["q_table"][state]
+    best_action = 0
+    best_value = q_values[0]
+    
+    a = 1
+    while a < 4 {
+        if q_values[a] > best_value {
+            best_value = q_values[a]
+            best_action = a
+        }
+        a = a + 1
+    }
+    
+    return best_action
+}
+
+fn learn(agent, state, action, reward, next_state, done) {
+    // Q-learning update
+    current_q = agent["q_table"][state][action]
+    
+    target = reward
+    if done == false {
+        // Find max Q for next state
+        next_q = agent["q_table"][next_state]
+        max_next_q = next_q[0]
+        a = 1
+        while a < 4 {
+            if next_q[a] > max_next_q {
+                max_next_q = next_q[a]
+            }
+            a = a + 1
+        }
+        target = reward + agent["gamma"] * max_next_q
+    }
+    
+    // Update Q-value
+    new_q = current_q + agent["lr"] * (target - current_q)
+    agent["q_table"][state][action] = new_q
+    
+    return agent
+}
+
+fn decay_epsilon(agent) {
+    new_eps = agent["epsilon"] * agent["epsilon_decay"]
+    if new_eps < agent["epsilon_min"] {
+        new_eps = agent["epsilon_min"]
+    }
+    agent["epsilon"] = new_eps
+    return agent
+}
+
+// Main training loop
+fn train(n_episodes) {
+    env = create_env()
+    agent = create_agent()
+    
+    wins = 0
+    total_reward = 0.0
+    
+    episode = 0
+    while episode < n_episodes {
+        state = reset_env(env)
+        episode_reward = 0.0
+        step = 0
+        
+        while step < 100 {
+            action = choose_action(agent, state)
+            result = step_env(env, action)
+            
+            next_state = result["state"]
+            reward = result["reward"]
+            done = result["done"]
+            
+            agent = learn(agent, state, action, reward, next_state, done)
+            
+            episode_reward = episode_reward + reward
+            state = next_state
+            step = step + 1
+            
+            if done {
+                break
+            }
+        }
+        
+        agent = decay_epsilon(agent)
+        total_reward = total_reward + episode_reward
+        
+        if episode_reward > 5.0 {
+            wins = wins + 1
+        }
+        
+        // Progress every 100 episodes
+        if (episode + 1) % 100 == 0 {
+            win_rate = wins * 100 / (episode + 1)
+            print("Episode " + str(episode + 1) + " | Wins: " + str(wins) + " | Rate: " + str(win_rate) + "%")
+        }
+        
+        episode = episode + 1
+    }
+    
+    print("")
+    print("=== FINAL RESULTS ===")
+    print("Episodes: " + str(n_episodes))
+    print("Wins: " + str(wins))
+    print("Win Rate: " + str(wins * 100 / n_episodes) + "%")
+    print("Avg Reward: " + str(total_reward / n_episodes))
+    
+    return {"wins": wins, "rate": wins * 100 / n_episodes}
+}
+
+// Run training
+print("╔══════════════════════════════════════════════════════════════╗")
+print("║     RL FROZEN LAKE - VIBEE .999                              ║")
+print("║     φ² + 1/φ² = 3 | TRINITY                                  ║")
+print("╚══════════════════════════════════════════════════════════════╝")
+print("")
+print("Training Q-Learning agent...")
+print("Params: lr=0.5, gamma=0.95, epsilon_decay=0.99")
+print("")
+
+result = train(1000)

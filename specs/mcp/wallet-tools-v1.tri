@@ -1,0 +1,190 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# MCP WALLET TOOLS v1.0 — MCP Server Tools for Wallet Management
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: MCP server tools for AI agent access to wallet features
+# Server: tools/mcp/trinity_mcp/server.zig
+#
+# Tools:
+#   wallet_connect        - Connect wallet provider
+#   wallet_balance        - Get wallet balance
+#   wallet_claim          - Claim rewards
+#   wallet_address        - Get wallet address
+#   wallet_history        - Get claim history
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: mcp_wallet_tools
+version: "1.0.0"
+language: zig
+module: mcp_wallet_tools
+
+types:
+  WalletConnectResult:
+    fields:
+      connected: Bool
+      provider: String
+      address: String
+      chain_id: Int
+
+  WalletBalanceResult:
+    fields:
+      address: String
+      balance: Float
+      pending: Float
+      claimed: Float
+      last_updated: Int
+
+  WalletClaimResult:
+    fields:
+      success: Bool
+      tx_hash: String
+      amount: Float
+      status: String
+      error: String
+
+  WalletAddressResult:
+    fields:
+      address: String
+      provider: String
+      chain_id: Int
+      connected: Bool
+
+  WalletHistoryResult:
+    fields:
+      transactions: List<ClaimTransaction>
+      total_claims: Int
+      total_claimed: Float
+
+  ClaimTransaction:
+    fields:
+      tx_hash: String
+      amount: Float
+      timestamp: Int
+      status: String
+
+behaviors:
+  - name: mcpWalletConnect
+    given: MCP tool call with provider
+    when: Agent calls wallet_connect
+    then: Initiate wallet connection, return address
+
+  - name: mcpWalletBalance
+    given: MCP tool call with address
+    when: Agent calls wallet_balance
+    then: Return balance, pending, claimed totals
+
+  - name: mcpWalletClaim
+    given: MCP tool call with address and amount
+    when: Agent calls wallet_claim
+    then: Sign transaction, broadcast, return tx_hash
+
+  - name: mcpWalletAddress
+    given: MCP tool call
+    when: Agent calls wallet_address
+    then: Return connected wallet address
+
+  - name: mcpWalletHistory
+    given: MCP tool call with address
+    when: Agent calls wallet_history
+    then: Return list of claim transactions
+
+test_cases:
+  - name: mcp_wallet_connect_tool
+    given:
+      provider: "metamask"
+    expected:
+      connected: true
+      address_returned: true
+      chain_id: 1
+
+  - name: mcp_wallet_balance_tool
+    given:
+      address: "0x1234567890abcdef"
+    expected:
+      balance: 100.0
+      pending: 50.0
+      claimed: 150.0
+
+  - name: mcp_wallet_claim_tool
+    given:
+      address: "0x1234567890abcdef"
+      amount: 50.0
+    expected:
+      success: true
+      tx_hash_valid: true
+      status: "pending"
+
+implementation: |
+  const std = @import("std");
+  const Allocator = std.mem.Allocator;
+
+  pub fn mcpWalletConnect(allocator: Allocator, provider: []const u8) !WalletConnectResult {
+      _ = allocator;
+      _ = provider;
+
+      // TODO: Implement actual Web3 connection
+      return WalletConnectResult{
+          .connected = true,
+          .provider = "metamask",
+          .address = "0x1234567890abcdef",
+          .chain_id = 1,
+      };
+  }
+
+  pub fn mcpWalletBalance(allocator: Allocator, address: []const u8) !WalletBalanceResult {
+      _ = allocator;
+      _ = address;
+
+      // TODO: Query actual balance from blockchain/node
+      return WalletBalanceResult{
+          .address = address,
+          .balance = 100.0,
+          .pending = 50.0,
+          .claimed = 150.0,
+          .last_updated = 0,
+      };
+  }
+
+  pub fn mcpWalletClaim(allocator: Allocator, address: []const u8, amount: f64) !WalletClaimResult {
+      _ = allocator;
+      _ = address;
+
+      // TODO: Sign and broadcast actual transaction
+      return WalletClaimResult{
+          .success = true,
+          .tx_hash = "0xabcdef1234567890",
+          .amount = amount,
+          .status = "pending",
+          .error = "",
+      };
+  }
+
+  pub fn mcpWalletAddress(allocator: Allocator) !WalletAddressResult {
+      _ = allocator;
+
+      // TODO: Return connected wallet address
+      return WalletAddressResult{
+          .address = "0x1234567890abcdef",
+          .provider = "metamask",
+          .chain_id = 1,
+          .connected = true,
+      };
+  }
+
+  pub fn mcpWalletHistory(allocator: Allocator, address: []const u8) !WalletHistoryResult {
+      _ = allocator;
+      _ = address;
+
+      // TODO: Query actual transaction history
+      return WalletHistoryResult{
+          .transactions = &[_]ClaimTransaction{
+              .{ .tx_hash = "0xabc...", .amount = 50.0, .timestamp = 0, .status = "confirmed" },
+              .{ .tx_hash = "0xdef...", .amount = 30.0, .timestamp = 0, .status = "confirmed" },
+          },
+          .total_claims = 2,
+          .total_claimed = 80.0,
+      };
+  }

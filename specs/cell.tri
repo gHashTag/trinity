@@ -1,0 +1,43 @@
+[cell]
+id = "trinity.specs"
+name = "Specifications"
+version = "1.0.0"
+kind = "library"
+path = "specs"
+min_core_version = "1.0.0"
+status = "stable"
+description = "Source-of-truth .tri specifications for codegen pipeline"
+capabilities = ["spec", "codegen", "validate"]
+files = 0
+tests = 0
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = ["spec list", "spec validate"]
+exports = []
+tri_subcommands = ["pipeline run", "vibee gen"]
+events = ["on_spec_change"]
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = "true"
+signature = "sha256:06b3e19f165c64bbd20c64028b3558806eb008f3b5fff4ef38cf685fab17f4ad"

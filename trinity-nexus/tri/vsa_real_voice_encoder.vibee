@@ -1,0 +1,146 @@
+# ============================================================================
+# VSA Real Voice Encoder - Cycle 51
+# Real @import("vsa") integration for frame-based audio encoding
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_real_voice_encoder
+version: "1.0.0"
+language: zig
+module: vsa_real_voice_encoder
+
+imports:
+  - name: vsa
+    path: "../src/vsa.zig"
+
+description: |
+  Voice encoder using real VSA operations via @import("vsa").
+  Frame-based: audio → frames → energy/ZCR features → bind with temporal position → bundle.
+
+constants:
+  DEFAULT_DIMENSION: 1024
+  FRAME_SIZE: 256
+  HOP_SIZE: 128
+  MAX_FRAMES: 512
+  PHI: 1.6180339887498948482
+
+types:
+  VoiceEncoderConfig:
+    fields:
+      dimension: Int
+      frame_size: Int
+      hop_size: Int
+
+  FrameFeatures:
+    fields:
+      energy: Float
+      zero_crossing_rate: Float
+      frame_index: Int
+
+behaviors:
+  - name: realBind
+    given: Frame feature vector and temporal position vector
+    when: Binding audio features with time position
+    then: Use vsa.bind for temporal encoding
+
+  - name: realBundle2
+    given: Two frame hypervectors
+    when: Combining frames
+    then: Use vsa.bundle2 for majority vote
+
+  - name: realBundle3
+    given: Three frame hypervectors
+    when: Combining three frames
+    then: Use vsa.bundle3 for majority vote
+
+  - name: realPermute
+    given: Hypervector and frame index
+    when: Encoding temporal position
+    then: Use vsa.permute for time encoding
+
+  - name: realRandomVector
+    given: Frame seed value
+    when: Generating base vector for frame features
+    then: Use vsa.randomVector for deterministic frame vector
+
+  - name: realCosineSimilarity
+    given: Two audio hypervectors
+    when: Comparing audio similarity
+    then: Use vsa.cosineSimilarity
+
+  - name: realHammingDistance
+    given: Two audio hypervectors
+    when: Measuring audio distance
+    then: Use vsa.hammingDistance
+
+  - name: realCharToVector
+    given: Quantized audio feature
+    when: Mapping feature to base vector
+    then: Use vsa.charToVector for ternary mapping
+
+  - name: realEncodeText
+    given: Frame feature string representation
+    when: Encoding frame content
+    then: Use vsa.encodeText as feature encoder
+
+  - name: realAudioSelfSimilarity
+    given: Same audio encoded twice
+    when: Verifying determinism
+    then: Cosine similarity = 1.0
+
+  - name: realAudioComparison
+    given: Two different audio clips
+    when: Comparing via VSA
+    then: Returns valid similarity score
+
+  - name: realFrameEncoding
+    given: Single audio frame features
+    when: Encoding frame to hypervector
+    then: Bind feature vectors with temporal position
+
+  - name: realFrameBundling
+    given: Multiple frame vectors
+    when: Combining into audio vector
+    then: Bundle all frames via majority vote
+
+  - name: realTextSimilarity
+    given: Two frame descriptions
+    when: Comparing frame content
+    then: Use vsa text similarity as proxy
+
+tests:
+  - name: test_frame_vector
+    given: Frame seed 42
+    then: vsa.randomVector returns deterministic vector
+
+  - name: test_bind_frame_time
+    given: Frame vector and time position 10
+    then: vsa.bind produces valid result
+
+  - name: test_bundle_frames
+    given: Two frame vectors
+    then: vsa.bundle2 produces valid result
+
+  - name: test_permute_temporal
+    given: Vector and frame index
+    then: vsa.permute shifts correctly
+
+  - name: test_audio_self_similarity
+    given: Same audio encoded twice
+    then: Cosine similarity = 1.0
+
+  - name: test_audio_comparison
+    given: Two different audio encodings
+    then: Returns valid similarity in [-1, 1]
+
+  - name: test_feature_to_vector
+    given: Quantized energy value
+    then: vsa.charToVector maps correctly
+
+  - name: test_hamming_frames
+    given: Two frame vectors
+    then: vsa.hammingDistance returns valid count
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

@@ -1,0 +1,261 @@
+name: multi_objective
+version: "1.0.0"
+language: zig
+module: multi_objective
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: list_at
+    given: Input data provided
+    when: list_at function called
+    then: Result returned
+    test_cases:
+      - name: test_list_at
+        input: {}
+        expected: {}
+
+  - name: run_nsga2
+    given: Input data provided
+    when: run_nsga2 function called
+    then: Result returned
+    test_cases:
+      - name: test_run_nsga2
+        input: {}
+        expected: {}
+
+  - name: evaluate_solution
+    given: Input data provided
+    when: evaluate_solution function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_solution
+        input: {}
+        expected: {}
+
+  - name: fast_non_dominated_sort
+    given: Input data provided
+    when: fast_non_dominated_sort function called
+    then: Result returned
+    test_cases:
+      - name: test_fast_non_dominated_sort
+        input: {}
+        expected: {}
+
+  - name: is_dominated_by_any
+    given: Input data provided
+    when: is_dominated_by_any function called
+    then: Result returned
+    test_cases:
+      - name: test_is_dominated_by_any
+        input: {}
+        expected: {}
+
+  - name: dominates
+    given: Input data provided
+    when: dominates function called
+    then: Result returned
+    test_cases:
+      - name: test_dominates
+        input: {}
+        expected: {}
+
+  - name: calculate_crowding_distance
+    given: Input data provided
+    when: calculate_crowding_distance function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_crowding_distance
+        input: {}
+        expected: {}
+
+  - name: calculate_crowding_distance_for_objective
+    given: Input data provided
+    when: calculate_crowding_distance_for_objective function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_crowding_distance_for_objective
+        input: {}
+        expected: {}
+
+  - name: maximize_visual_appeal
+    given: Input data provided
+    when: maximize_visual_appeal function called
+    then: Result returned
+    test_cases:
+      - name: test_maximize_visual_appeal
+        input: {}
+        expected: {}
+
+  - name: maximize_usability
+    given: Input data provided
+    when: maximize_usability function called
+    then: Result returned
+    test_cases:
+      - name: test_maximize_usability
+        input: {}
+        expected: {}
+
+  - name: maximize_accessibility
+    given: Input data provided
+    when: maximize_accessibility function called
+    then: Result returned
+    test_cases:
+      - name: test_maximize_accessibility
+        input: {}
+        expected: {}
+
+  - name: maximize_performance
+    given: Input data provided
+    when: maximize_performance function called
+    then: Result returned
+    test_cases:
+      - name: test_maximize_performance
+        input: {}
+        expected: {}
+
+  - name: minimize_complexity
+    given: Input data provided
+    when: minimize_complexity function called
+    then: Result returned
+    test_cases:
+      - name: test_minimize_complexity
+        input: {}
+        expected: {}
+
+  - name: get_pareto_optimal
+    given: Input data provided
+    when: get_pareto_optimal function called
+    then: Result returned
+    test_cases:
+      - name: test_get_pareto_optimal
+        input: {}
+        expected: {}
+
+  - name: select_most_diverse
+    given: Input data provided
+    when: select_most_diverse function called
+    then: Result returned
+    test_cases:
+      - name: test_select_most_diverse
+        input: {}
+        expected: {}
+
+  - name: select_closest_to_ideal
+    given: Input data provided
+    when: select_closest_to_ideal function called
+    then: Result returned
+    test_cases:
+      - name: test_select_closest_to_ideal
+        input: {}
+        expected: {}
+
+types:
+  MultiObjectiveSolution:
+    # TODO: Define fields
+
+  ParetoFront:
+    # TODO: Define fields
+
+  MultiObjectiveConfig:
+    # TODO: Define fields
+
+  ObjectiveFunction:
+    # TODO: Define fields
+
+functions:
+  - name: list_at
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: run_nsga2
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_solution
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: fast_non_dominated_sort
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: is_dominated_by_any
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: dominates
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_crowding_distance
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_crowding_distance_for_objective
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: maximize_visual_appeal
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: maximize_usability
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: maximize_accessibility
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: maximize_performance
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: minimize_complexity
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_pareto_optimal
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: select_most_diverse
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: select_closest_to_ideal
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/list
+  # gleam/float
+  # gleam/int
+  # gleam/result
+  # gleam/order
+  # gleam/option.{type Option, None, Some}
+  # honeycomb/ui/ui_evolution.{type ComponentGenes, type FitnessScore}
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

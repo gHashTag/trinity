@@ -1,0 +1,119 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: new_cache
+    given: Input data provided
+    when: new_cache function called
+    then: Result returned
+  - name: test_new_cache
+  - name: calculate_hash
+    given: Input data provided
+    when: calculate_hash function called
+    then: Result returned
+  - name: test_calculate_hash
+  - name: needs_recompilation
+    given: Input data provided
+    when: needs_recompilation function called
+    then: Result returned
+  - name: test_needs_recompilation
+  - name: update_cache
+    given: Input data provided
+    when: update_cache function called
+    then: Result returned
+  - name: test_update_cache
+  - name: get_current_timestamp
+    given: Input data provided
+    when: get_current_timestamp function called
+    then: Result returned
+  - name: test_get_current_timestamp
+  - name: compile_incremental
+    given: Input data provided
+    when: compile_incremental function called
+    then: Result returned
+  - name: test_compile_incremental
+  - name: extract_dependencies
+    given: Input data provided
+    when: extract_dependencies function called
+    then: Result returned
+  - name: test_extract_dependencies
+  - name: compile_batch
+    given: Input data provided
+    when: compile_batch function called
+    then: Result returned
+  - name: test_compile_batch
+  - name: compile_batch_helper
+    given: Input data provided
+    when: compile_batch_helper function called
+    then: Result returned
+  - name: test_compile_batch_helper
+  - name: calculate_hit_rate
+    given: Input data provided
+    when: calculate_hit_rate function called
+    then: Result returned
+  - name: test_calculate_hit_rate
+  - name: calculate_time_saved
+    given: Input data provided
+    when: calculate_time_saved function called
+    then: Result returned
+  - name: test_calculate_time_saved
+  - name: calculate_total_time
+    given: Input data provided
+    when: calculate_total_time function called
+    then: Result returned
+  - name: test_calculate_total_time
+  - name: generate_report
+    given: Input data provided
+    when: generate_report function called
+    then: Result returned
+  - name: test_generate_report
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+  - name: test_main
+
+types:
+  new_cache:
+    description: Auto-generated
+
+  calculate_hash:
+    description: Auto-generated
+
+  needs_recompilation:
+    description: Auto-generated
+
+  update_cache:
+    description: Auto-generated
+
+  get_current_timestamp:
+    description: Auto-generated
+
+  compile_incremental:
+    description: Auto-generated
+
+  extract_dependencies:
+    description: Auto-generated
+
+  compile_batch:
+    description: Auto-generated
+
+  compile_batch_helper:
+    description: Auto-generated
+
+  calculate_hit_rate:
+    description: Auto-generated
+
+  calculate_time_saved:
+    description: Auto-generated
+
+  calculate_total_time:
+    description: Auto-generated
+
+  generate_report:
+    description: Auto-generated
+
+  main:
+    description: Auto-generated

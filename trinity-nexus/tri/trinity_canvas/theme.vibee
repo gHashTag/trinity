@@ -1,0 +1,191 @@
+name: trinity_theme
+version: "2.0.0"
+language: zig
+module: theme
+description: "Single source of truth for Trinity Canvas UI - colors, fonts, styles"
+
+# =============================================================================
+# TRINITY THEME — HYPER TERMINAL STYLE
+# Single source of truth for ALL colors, fonts, and styles
+# =============================================================================
+
+types:
+  Color:
+    description: "RGBA Color (Raylib compatible)"
+    fields:
+      r: U8
+      g: U8
+      b: U8
+      a: U8
+
+  ColorPalette:
+    description: "Complete color palette for Hyper terminal style"
+    fields:
+      # Backgrounds
+      bg: Color
+      bg_panel: Color
+      bg_input: Color
+      bg_bar: Color
+
+      # Text
+      text: Color
+      text_muted: Color
+      text_dim: Color
+
+      # Borders
+      border: Color
+      border_focus: Color
+
+      # Accent colors (Hyper style)
+      magenta: Color
+      cyan: Color
+      green: Color
+      yellow: Color
+      red: Color
+      blue: Color
+
+      # Semantic aliases
+      success: Color
+      warning: Color
+      error: Color
+      info: Color
+      primary: Color
+
+  FontConfig:
+    description: "Font configuration"
+    fields:
+      path_regular: String
+      path_mono: String
+      size_title: Int
+      size_body: Int
+      size_small: Int
+      size_tiny: Int
+      size_code: Int
+      spacing: Float
+
+  PanelStyle:
+    description: "Panel visual style configuration"
+    fields:
+      radius: Float
+      border_width: Float
+      title_height: Float
+      padding: Float
+      glow_alpha: U8
+      btn_close: Color
+      btn_minimize: Color
+      btn_maximize: Color
+      btn_radius: Float
+      btn_spacing: Float
+
+  StatusBarStyle:
+    description: "Status bar configuration"
+    fields:
+      height: Float
+      padding: Float
+
+  AnimConfig:
+    description: "Animation parameters"
+    fields:
+      morph_speed: Float
+      glow_decay: Float
+      ring_rotation: Float
+      focus_lerp: Float
+
+  Theme:
+    description: "Complete theme configuration"
+    fields:
+      colors: ColorPalette
+      fonts: FontConfig
+      panel: PanelStyle
+      status_bar: StatusBarStyle
+      anim: AnimConfig
+
+constants:
+  # Math constants
+  PHI: 1.6180339887
+  PHI_INV: 0.6180339887
+  TAU: 6.28318530718
+
+  # Hyper Terminal Colors
+  COLOR_BG: { r: 0x00, g: 0x00, b: 0x00, a: 0xFF }
+  COLOR_BG_PANEL: { r: 0x0D, g: 0x0D, b: 0x0D, a: 0xF5 }
+  COLOR_BG_INPUT: { r: 0x10, g: 0x10, b: 0x10, a: 0xFF }
+  COLOR_BG_BAR: { r: 0x1A, g: 0x1A, b: 0x1A, a: 0xFF }
+
+  COLOR_TEXT: { r: 0xFF, g: 0xFF, b: 0xFF, a: 0xFF }
+  COLOR_TEXT_MUTED: { r: 0x6B, g: 0x6B, b: 0x6B, a: 0xFF }
+  COLOR_TEXT_DIM: { r: 0x50, g: 0x50, b: 0x50, a: 0xFF }
+
+  COLOR_BORDER: { r: 0x33, g: 0x33, b: 0x33, a: 0xFF }
+  COLOR_BORDER_FOCUS: { r: 0xF8, g: 0x1C, b: 0xE5, a: 0xFF }
+
+  COLOR_MAGENTA: { r: 0xF8, g: 0x1C, b: 0xE5, a: 0xFF }
+  COLOR_CYAN: { r: 0x50, g: 0xFA, b: 0xFA, a: 0xFF }
+  COLOR_GREEN: { r: 0x50, g: 0xFA, b: 0x7B, a: 0xFF }
+  COLOR_YELLOW: { r: 0xF1, g: 0xFA, b: 0x8C, a: 0xFF }
+  COLOR_RED: { r: 0xFF, g: 0x55, b: 0x55, a: 0xFF }
+  COLOR_BLUE: { r: 0x8B, g: 0xE9, b: 0xFD, a: 0xFF }
+
+  # Panel button colors
+  COLOR_BTN_CLOSE: { r: 0xFF, g: 0x5F, b: 0x57, a: 0xFF }
+  COLOR_BTN_MINIMIZE: { r: 0xFE, g: 0xBC, b: 0x2E, a: 0xFF }
+  COLOR_BTN_MAXIMIZE: { r: 0x28, g: 0xC8, b: 0x40, a: 0xFF }
+
+  # Font paths
+  FONT_REGULAR: "assets/fonts/Outfit-Regular.ttf"
+  FONT_MONO: "assets/fonts/JetBrainsMono-Regular.ttf"
+
+  # Font sizes
+  FONT_SIZE_TITLE: 14
+  FONT_SIZE_BODY: 12
+  FONT_SIZE_SMALL: 11
+  FONT_SIZE_TINY: 10
+  FONT_SIZE_CODE: 11
+  FONT_SPACING: 0.5
+
+  # Panel style
+  PANEL_RADIUS: 12.0
+  PANEL_BORDER_WIDTH: 1.0
+  PANEL_TITLE_HEIGHT: 32.0
+  PANEL_PADDING: 16.0
+  PANEL_GLOW_ALPHA: 40
+
+  # Button style
+  BTN_RADIUS: 6.0
+  BTN_SPACING: 20.0
+
+  # Status bar
+  STATUS_BAR_HEIGHT: 24.0
+  STATUS_BAR_PADDING: 12.0
+
+  # Animation
+  ANIM_MORPH_SPEED: 2.5
+  ANIM_GLOW_DECAY: 1.2
+  ANIM_RING_ROTATION: 2.0
+  ANIM_FOCUS_LERP: 4.0
+
+behaviors:
+  - name: cpu_color
+    given: CPU usage percentage (0-100)
+    when: Determining status color
+    then: Return green if < 50, yellow if < 80, red otherwise
+
+  - name: mem_color
+    given: Memory usage percentage (0-1)
+    when: Determining status color
+    then: Return magenta if < 0.5, yellow if < 0.8, red otherwise
+
+  - name: temp_color
+    given: Temperature in Celsius
+    when: Determining status color
+    then: Return cyan if < 60, yellow if < 80, red otherwise
+
+  - name: with_alpha
+    given: Base color and alpha value
+    when: Creating transparent variant
+    then: Return color with modified alpha
+
+  - name: get_default_theme
+    given: Nothing
+    when: Initializing theme
+    then: Return complete default Hyper theme configuration

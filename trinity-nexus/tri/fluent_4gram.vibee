@@ -1,0 +1,32 @@
+name: fluent_4gram
+version: "1.0.0"
+language: zig
+module: fluent_4gram
+
+types:
+  FourgramGenSample:
+    fields:
+      temperature: Float
+      text: String
+      unique_count: Int
+      is_memorized_chain: Bool
+
+behaviors:
+  - name: generate4gram
+    given: 4-gram KN (D=0.25, lambda=0.7) + penalty (alpha=1.5) + blocking
+    when: Generate 30 words from "to be or" at T=0.3 and T=0.8
+    then: T=0.3 recalls Hamlet soliloquy (memorized chain), T=0.8 diverse
+
+  - name: assessChainRecall
+    given: 4-gram generation at low temperature follows memorized training paths
+    when: Compare output to training corpus text
+    then: Output is verbatim Shakespeare — memorized, not generated
+
+test_cases:
+  - name: hamlet_recall_t03
+    input: "4-gram KN, T=0.3, start 'to be or', 30 words"
+    expected: "Recalls 'not to be that is the question whether tis nobler in the mind to suffer the slings and arrows of outrageous fortune'"
+
+  - name: diverse_t08
+    input: "4-gram KN, T=0.8, start 'to be or', 30 words"
+    expected: "22/33 unique words, mixed Shakespeare vocabulary"

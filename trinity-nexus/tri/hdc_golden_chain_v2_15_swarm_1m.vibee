@@ -1,0 +1,213 @@
+name: hdc_golden_chain_v2_15_swarm_1m
+version: "2.15.0"
+language: zig
+module: golden_chain
+
+description: |
+  Golden Chain v2.15 — Swarm 1M + Community 500k
+  Scale to 1,000,000 nodes with hierarchical gossip, multi-layer DHT,
+  geographic sharding, and 500k community nodes.
+  Agent #24 (Harper) — Cycle 71
+
+  Builds on v2.14 Dynamic Shard Rebalancing v1.0:
+  - 8 new QuarkType variants (indices 144-151)
+  - QuarkType enum(u8): 152/256 used, 104 free
+  - MAX_QUARK_RECORDS: 184 (was 176)
+  - Phase V: Swarm 1M + Community 500k integrity
+  - Export v19: 94-byte header (+4 from v18)
+  - 4 new ChainMessageTypes (80 total)
+
+quark_types:
+  - index: 144
+    name: swarm_million
+    label: SWM_1M
+    pipeline_node: GoalParse
+    description: Swarm 1M node initialization
+
+  - index: 145
+    name: hierarchical_gossip
+    label: HIR_GSP
+    pipeline_node: Decompose
+    description: Hierarchical gossip propagation
+
+  - index: 146
+    name: community_node
+    label: COM_NOD
+    pipeline_node: Schedule
+    description: Community node join/heartbeat
+
+  - index: 147
+    name: massive_scale
+    label: MAS_SCL
+    pipeline_node: Execute
+    description: Massive scale orchestration
+
+  - index: 148
+    name: multi_layer_dht
+    label: ML_DHT
+    pipeline_node: Monitor
+    description: Multi-layer DHT routing
+
+  - index: 149
+    name: geographic_shard
+    label: GEO_SHD
+    pipeline_node: Adapt
+    description: Geographic shard rebalancing
+
+  - index: 150
+    name: swarm_consensus
+    label: SWM_CON
+    pipeline_node: Synthesize
+    description: Swarm consensus protocol
+
+  - index: 151
+    name: community_anchor
+    label: COM_ACH
+    pipeline_node: Deliver
+    description: Community anchor record
+
+types:
+  SwarmMillionState:
+    fields:
+      target_nodes: u32
+      active_nodes: u32
+      layers: u16
+      last_swarm_us: i64
+      swarm_hash: "[32]u8"
+
+  CommunityNodeState:
+    fields:
+      community_nodes: u32
+      heartbeats: u64
+      joined: u32
+      last_heartbeat_us: i64
+      community_hash: "[32]u8"
+
+  HierarchicalGossipState:
+    fields:
+      gossip_layers: u16
+      messages_propagated: u64
+      layer_hops: u32
+      last_gossip_us: i64
+      gossip_hash: "[32]u8"
+
+  GeographicShardState:
+    fields:
+      regions: u16
+      geo_shards: u32
+      rebalances: u32
+      last_geo_us: i64
+      geo_hash: "[32]u8"
+
+chain_message_types:
+  - SwarmMillionEvent
+  - CommunityNodeUpdate
+  - HierarchicalGossipEvent
+  - GeographicShardEvent
+
+constants:
+  SWARM_TARGET_NODES: 1_000_000
+  COMMUNITY_TARGET_NODES: 500_000
+  HIERARCHICAL_GOSSIP_LAYERS: 8
+  GEOGRAPHIC_SHARD_REGIONS: 256
+  SWARM_CONSENSUS_TIMEOUT_US: 60_000_000
+  COMMUNITY_HEARTBEAT_INTERVAL_US: 30_000_000
+
+behaviors:
+  - name: initSwarmMillion
+    given: Agent receives SwarmMillionEvent
+    when: Swarm initialization triggered
+    then: Increment active_nodes+layers, compute swarm_hash via SHA256
+
+  - name: joinCommunityNode
+    given: Agent receives CommunityNodeUpdate
+    when: Community node join/heartbeat
+    then: Increment community_nodes+joined, update community_hash
+
+  - name: propagateHierarchicalGossip
+    given: Agent receives HierarchicalGossipEvent
+    when: Hierarchical gossip propagation triggered
+    then: Increment messages_propagated+layer_hops, update gossip_hash
+
+  - name: rebalanceGeographicShard
+    given: Agent receives GeographicShardEvent
+    when: Geographic shard rebalance triggered
+    then: Increment geo_shards+rebalances, update geo_hash
+
+  - name: swarmMillionVerify
+    given: Phase V verification
+    when: Quark chain verification runs
+    then: V1 active_nodes>0, V2 community_nodes>0, V3 messages_propagated>0
+
+verification:
+  phase: V
+  label: "Swarm 1M + Community 500k integrity"
+  checks:
+    - id: V1
+      condition: "active_nodes > 0"
+      description: "Swarm must have active nodes"
+    - id: V2
+      condition: "community_nodes > 0"
+      description: "Community must have nodes"
+    - id: V3
+      condition: "messages_propagated > 0"
+      description: "Hierarchical gossip must have propagated"
+
+export:
+  version: 19
+  header_size: 94
+  new_fields:
+    - name: active_nodes
+      type: u16
+      size: 2
+    - name: community_nodes
+      type: u16
+      size: 2
+
+tests:
+  - name: test_swarm_million_label
+    verify: "QuarkType.swarm_million.getLabel() == SWM_1M"
+  - name: test_hierarchical_gossip_label
+    verify: "QuarkType.hierarchical_gossip.getLabel() == HIR_GSP"
+  - name: test_community_node_label
+    verify: "QuarkType.community_node.getLabel() == COM_NOD"
+  - name: test_massive_scale_label
+    verify: "QuarkType.massive_scale.getLabel() == MAS_SCL"
+  - name: test_multi_layer_dht_label
+    verify: "QuarkType.multi_layer_dht.getLabel() == ML_DHT"
+  - name: test_geographic_shard_label
+    verify: "QuarkType.geographic_shard.getLabel() == GEO_SHD"
+  - name: test_swarm_consensus_label
+    verify: "QuarkType.swarm_consensus.getLabel() == SWM_CON"
+  - name: test_community_anchor_label
+    verify: "QuarkType.community_anchor.getLabel() == COM_ACH"
+  - name: test_swarm_million_classifier
+    verify: "QuarkType.swarm_million.isSwarmMillionQuark() == true"
+  - name: test_hierarchical_gossip_classifier
+    verify: "QuarkType.hierarchical_gossip.isHierarchicalGossipQuark() == true"
+  - name: test_massive_scale_classifier
+    verify: "QuarkType.massive_scale.isMassiveScaleQuark() == true"
+  - name: test_multi_layer_dht_classifier
+    verify: "QuarkType.multi_layer_dht.isMultiLayerDHTQuark() == true"
+  - name: test_swarm_million_state_defaults
+    verify: "SwarmMillionState defaults to zero"
+  - name: test_community_node_state_defaults
+    verify: "CommunityNodeState defaults to zero"
+  - name: test_hierarchical_gossip_state_defaults
+    verify: "HierarchicalGossipState defaults to zero"
+  - name: test_geographic_shard_state_defaults
+    verify: "GeographicShardState defaults to zero"
+  - name: test_phase_v_pass
+    verify: "Phase V passes after init+join+propagate"
+  - name: test_phase_v_fail
+    verify: "Phase V fails on fresh agent"
+  - name: test_export_v19
+    verify: "Export v19 produces 94-byte header"
+  - name: test_184_quark_distribution
+    verify: "184 quarks distributed 23+23+23+24+23+22+23+23"
+  - name: test_u8_capacity_152
+    verify: "152/256 QuarkType slots used"
+  - name: test_init_swarm_million
+    verify: "initSwarmMillion increments active_nodes"
+  - name: test_join_community_node
+    verify: "joinCommunityNode increments community_nodes"

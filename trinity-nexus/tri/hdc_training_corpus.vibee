@@ -1,0 +1,264 @@
+name: hdc_training_corpus
+version: "1.0.0"
+language: zig
+module: hdc_training_corpus
+
+description: |
+  HDC Training Corpus — Level 10A.2.1: Real Text Training with Loss Curves.
+  Trains the HDC transformer on actual text data using no-backprop error-driven
+  bundling, tracks train/eval loss per epoch, measures perplexity on held-out text.
+
+  === TRAINING PROTOCOL (REAL EXECUTION) ===
+
+  Data Pipeline:
+    1. Load text corpus (char-level tokenization for simplicity)
+    2. Split: train 80% / eval 10% / test 10%
+    3. Create sliding window samples: context[0..n-1] → target[n]
+    4. Shuffle train samples per epoch
+
+  Training Loop (No-Backprop):
+    For each epoch (1..max_epochs):
+      For each batch of samples:
+        1. Forward pass: embed → attention → ffn → decode
+        2. Compute error_hv = bind(target_hv, negate(output_hv))
+           -- error captures "what's different" between expected and actual
+        3. Sparsify: zero out (1-lr) fraction of error trits
+           -- lr=0.1 → keep 10% of error signal
+        4. Update roles: role_new = bundle2(role_old, sparse_error)
+           -- shift role vectors toward correct mapping
+        5. Accumulate batch_loss += (1.0 - cosineSimilarity(output, target))
+
+      Evaluate on eval set:
+        eval_loss = avg(1.0 - cosineSimilarity(output, target))
+        eval_ppl = exp(-1/N * sum(log(P(target|context))))
+        eval_acc = count(top1_correct) / total
+
+      Track: LossCurvePoint(epoch, train_loss, eval_loss, eval_ppl, eval_acc)
+
+      Early stopping: if eval_loss increases for patience=3 epochs, stop
+
+  === REAL vsa.zig TRAINING CALLS ===
+  error_hv:
+    target = codebook.encode(target_token)       -- sdk.Codebook.encode
+    output = forward_result.output_hvs[-1]       -- from forwardFull
+    neg_output = vsa.negate(output)              -- HybridBigInt.negate
+    error = vsa.bind(target, neg_output)         -- vsa.bind
+
+  sparsify (lr as sparsity):
+    For i in 0..D:
+      if random.float() > lr:
+        error.setTrit(i, 0)                      -- HybridBigInt.setTrit
+
+  update role:
+    role_new = vsa.bundle2(role_old, error)      -- vsa.bundle2
+
+  === CONVERGENCE THEORY ===
+  Kanerva (2009): D=256 converges in ~16 examples per class
+  Our context: each "class" is a token prediction context
+  Expected: meaningful loss reduction within 50-100 samples
+  Target: train_loss < 0.5 (cosine-based) within 500 samples
+
+  === PERPLEXITY CALCULATION ===
+  For each eval sample (context → target):
+    output_hv = forwardFull(context).output_hvs[-1]
+    For each vocab symbol s:
+      sim[s] = cosineSimilarity(output_hv, codebook.encode(s))
+    P(target) = phi^(-rank(target)/T) / sum_k phi^(-k/T)
+    log_prob += log(P(target))
+  PPL = exp(-log_prob / N)
+
+  Targets:
+    Random (vocab=95 chars): PPL = 95
+    After training: PPL < 40 (decent)
+    Good convergence: PPL < 20
+
+  === CORPUS SOURCES ===
+  Minimal: Shakespeare excerpt (10KB, ~10k chars)
+  Standard: WikiText-2 subset (100KB, ~100k chars)
+  Full: WikiText-103 subset (1MB, ~1M chars)
+
+  For demo: use inline Shakespeare text to avoid external dependencies.
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  TrainingConfig:
+    fields:
+      dimension: usize
+      num_heads: usize
+      num_blocks: usize
+      context_size: usize
+      learning_rate: Float
+      batch_size: usize
+      max_epochs: usize
+      patience: usize
+      temperature: Float
+      train_split: Float
+      eval_split: Float
+      test_split: Float
+
+  TextCorpus:
+    fields:
+      raw_text: String
+      tokens: List<String>
+      vocab: List<String>
+      vocab_size: usize
+      total_chars: u64
+
+  TrainSample:
+    fields:
+      context_tokens: List<String>
+      target_token: String
+      sample_index: usize
+
+  CorpusSplit:
+    fields:
+      train_samples: List<TrainSample>
+      eval_samples: List<TrainSample>
+      test_samples: List<TrainSample>
+      vocab_size: usize
+      total_samples: usize
+
+  EpochResult:
+    fields:
+      epoch: usize
+      train_loss: Float
+      eval_loss: Float
+      eval_perplexity: Float
+      eval_accuracy_top1: Float
+      eval_accuracy_top5: Float
+      samples_trained: u64
+      elapsed_ms: u64
+      learning_rate: Float
+
+  LossCurve:
+    fields:
+      epochs: List<EpochResult>
+      best_epoch: usize
+      best_eval_loss: Float
+      best_eval_ppl: Float
+      converged: Bool
+      early_stopped: Bool
+      total_samples_seen: u64
+
+  TrainedModel:
+    fields:
+      role_vectors_q: List<List<i8>>
+      role_vectors_k: List<List<i8>>
+      role_vectors_v: List<List<i8>>
+      ff_roles: List<List<i8>>
+      codebook_entries: List<String>
+      training_config: TrainingConfig
+      final_loss: Float
+      final_perplexity: Float
+
+  PerplexityBreakdown:
+    fields:
+      overall_ppl: Float
+      avg_log_prob: Float
+      num_tokens_evaluated: usize
+      top1_accuracy: Float
+      top5_accuracy: Float
+      worst_predictions: List<String>
+      best_predictions: List<String>
+
+  HDCTrainingCorpus:
+    fields:
+      allocator: Allocator
+      config: TrainingConfig
+      forward_engine: HDCRealForward
+      corpus: CorpusSplit
+      loss_curve: LossCurve
+      current_model: TrainedModel
+
+behaviors:
+  - name: initTraining
+    given: TrainingConfig, HDCRealForward reference
+    when: Initializes loss curve tracking, sets learning rate schedule
+    then: Training pipeline ready
+
+  - name: loadCorpus
+    given: Raw text string (inline or file path)
+    when: Tokenizes at character level, builds vocab, creates sliding window samples
+    then: Returns TextCorpus with tokens and vocab
+
+  - name: splitCorpus
+    given: TextCorpus and split ratios (80/10/10)
+    when: Shuffles samples, partitions into train/eval/test by ratio
+    then: Returns CorpusSplit with non-overlapping partitions
+
+  - name: createSlidingWindows
+    given: Token sequence and context_size
+    when: For each position i >= context_size, creates (tokens[i-ctx..i-1], tokens[i])
+    then: Returns list of TrainSample pairs
+
+  - name: trainEpoch
+    given: Train samples, current model state, learning rate
+    when: For each sample: forward → compute error → sparsify → bundle update
+    then: Returns epoch train_loss and updated role vectors
+
+  - name: computeError
+    given: Forward output HV and target token HV
+    when: error = bind(target_hv, negate(output_hv)) via real vsa.bind + negate
+    then: Returns error hypervector capturing prediction difference
+
+  - name: sparsifyError
+    given: Error HV and learning rate (0.0-1.0)
+    when: For each trit, zero out with probability (1-lr) using PRNG
+    then: Returns sparsified error (lr fraction of trits preserved)
+
+  - name: updateRoles
+    given: Current role vectors and sparsified error
+    when: role_new = bundle2(role_old, sparse_error) for each role vector
+    then: Role vectors shifted toward correct prediction
+
+  - name: batchUpdate
+    given: List of errors from batch_size samples
+    when: Bundle all errors (majority vote), then apply single update
+    then: Batch-averaged role update (odd batch_size for clean majority)
+
+  - name: evaluateEpoch
+    given: Eval samples and current model
+    when: Forward pass on each sample, compute loss and accuracy (no updates)
+    then: Returns eval_loss, eval_accuracy, eval_perplexity
+
+  - name: computePerplexity
+    given: Eval samples, model, temperature
+    when: For each sample, compute P(target) via phi-rank over codebook similarities
+    then: Returns PPL = exp(-avg(log(P(target))))
+
+  - name: phiRankProbability
+    given: Output HV, target token, codebook, temperature
+    when: Sort all vocab entries by cosine similarity, find target rank, compute phi^(-rank/T) / Z
+    then: Returns calibrated probability P(target|context)
+
+  - name: earlyStoppingCheck
+    given: Loss curve and patience parameter
+    when: If eval_loss increased for patience consecutive epochs
+    then: Returns true (stop training) or false (continue)
+
+  - name: trainFull
+    given: TrainingConfig and corpus
+    when: Run trainEpoch + evaluateEpoch in loop with early stopping
+    then: Returns LossCurve and TrainedModel
+
+  - name: evaluateTest
+    given: Test samples and trained model
+    when: Compute perplexity and accuracy on held-out test set
+    then: Returns PerplexityBreakdown with detailed metrics
+
+  - name: saveModel
+    given: TrainedModel
+    when: Serializes role vectors and codebook entries as packed trits
+    then: Model persisted to disk for inference
+
+  - name: loadModel
+    given: Model file path
+    when: Deserializes packed trit role vectors and codebook
+    then: TrainedModel restored for inference or continued training
+
+  - name: generateReport
+    given: LossCurve and PerplexityBreakdown
+    when: Formats as markdown with loss curve table, perplexity, accuracy
+    then: Returns report string for documentation

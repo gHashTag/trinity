@@ -1,0 +1,1 @@
+{"agent":"batch_runner","action":"batch_run","timestamp":1773137317,"total":373,"filtered":373,"passed":316,"failed":27,"skipped":30,"rate":84,"workers":4,"duration_ns":580851289000}

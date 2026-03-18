@@ -1,0 +1,48 @@
+name: e2e_kg_nl_pipeline
+version: "1.0.0"
+language: zig
+module: e2e_kg_nl_pipeline
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# E2E KG NATURAL LANGUAGE PIPELINE - End-to-End Test Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+# Tests the REAL ChatKnowledgeGraph module with 145 hardcoded facts,
+# NL query parser, and full query→answer pipeline. Not synthetic VSA ops —
+# actual module initialization, dataset loading, and NL query resolution.
+#
+# Test 172: E2E KG NL Pipeline (40 queries)
+#   - 20 geography NL queries (capitals, languages, continents, currencies)
+#   - 10 science NL queries (element symbols)
+#   - 10 rejection + stats verification (5 unknown entities + 5 stat gates)
+#
+# Honest results: ~57% due to VSA interference at 20 facts/bundle at DIM=4096
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  DIM: 4096
+  FACTS_LOADED: 145
+  SIMILARITY_THRESHOLD: 0.10
+
+types:
+  NLQueryResult:
+    fields:
+      query: String
+      expected: String
+      actual: String
+      correct: Bool
+
+behaviors:
+  - name: geographyNLQueries
+    given: Real KG with 145 facts loaded via loadDataset()
+    when: 20 NL queries ("capital of X", "language of X", "continent of X", "currency of X")
+    then: >= 6/20 -- honest result reflecting 20 capitals in single bundle at DIM=4096
+
+  - name: scienceNLQueries
+    given: Real KG with 20 element facts loaded
+    when: 10 NL queries ("symbol of X")
+    then: >= 3/10 -- honest result reflecting 20 elements in single bundle
+
+  - name: rejectionAndStats
+    given: Real KG queried with 5 unknown entities + stats verification
+    when: 5 rejection queries + 5 stats gates
+    then: >= 8/10 -- rejection perfect (5/5), stats accurate

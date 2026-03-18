@@ -1,0 +1,163 @@
+name: hdc_golden_chain_v2_21_cross_shard_tx
+version: "2.21.0"
+language: zig
+module: golden_chain
+
+description: >
+  Golden Chain v2.21 — Cross-Shard Transactions v1.0 + Atomic 2PC + Shard Fees
+  Atomic multi-shard two-phase commit (2PC) for cross-shard transactions,
+  shard-aware $TRI fee collection at 0.001 $TRI/tx (1000 uTRI),
+  inter-shard synchronization with full consistency.
+  8 new QuarkType variants (192-199), quarks 224->232,
+  Phase AB verification, export v25 (118-byte header).
+  QuarkType enum(u8): 200/256 used, 56 free.
+
+constants:
+  CROSS_SHARD_TX_TIMEOUT_US: 10_000_000       # 10 seconds per cross-shard tx
+  ATOMIC_2PC_MAX_SHARDS: 100                   # Max shards in one 2PC
+  SHARD_FEE_UTRI_PER_TX: 1_000                # 0.001 $TRI per cross-shard tx (1000 uTRI)
+  INTER_SHARD_SYNC_INTERVAL_US: 2_000_000     # 2 seconds sync interval
+  CROSS_SHARD_BATCH_SIZE: 5_000               # 5k transactions per cross-shard batch
+  MAX_CONCURRENT_CROSS_SHARD: 256             # Max concurrent cross-shard ops
+
+types:
+  CrossShardTxState:
+    fields:
+      cross_shard_txs: u32           # Total cross-shard transactions
+      atomic_commits: u32            # Successful atomic commits
+      shards_involved: u16           # Number of shards in last tx
+      last_cross_shard_us: i64       # Last cross-shard timestamp
+      cross_shard_hash: "[32]u8"     # SHA256 cross-shard hash
+
+  Atomic2PCState:
+    fields:
+      prepare_count: u32             # Total 2PC prepare phases
+      commit_count: u32              # Total 2PC commit phases
+      abort_count: u32               # Total 2PC aborts
+      last_2pc_us: i64               # Last 2PC timestamp
+      twopc_hash: "[32]u8"           # SHA256 2PC hash
+
+  ShardFeeState:
+    fields:
+      shard_fees_utri: u64           # Total shard fees in uTRI
+      fee_rate_utri: u32             # Fee rate per cross-shard tx in uTRI
+      fee_distributions: u32         # Total fee distributions
+      last_fee_us: i64               # Last fee collection timestamp
+      shard_fee_hash: "[32]u8"       # SHA256 fee hash
+
+  InterShardSyncState:
+    fields:
+      sync_rounds: u32              # Total sync rounds completed
+      shards_synced: u16            # Number of shards synced
+      sync_conflicts: u32           # Total sync conflicts resolved
+      last_sync_us: i64             # Last sync timestamp
+      sync_hash: "[32]u8"           # SHA256 sync hash
+
+quark_types:
+  - index: 192
+    name: cross_shard_tx
+    label: XSH_TX
+    pipeline_node: GoalParse
+  - index: 193
+    name: atomic_2pc
+    label: ATM_2PC
+    pipeline_node: Decompose
+  - index: 194
+    name: shard_fee
+    label: SHD_FEE
+    pipeline_node: Schedule
+  - index: 195
+    name: inter_shard_sync
+    label: ISH_SYN
+    pipeline_node: Execute
+  - index: 196
+    name: shard_coordinator
+    label: SHD_CRD
+    pipeline_node: Monitor
+  - index: 197
+    name: tx_finality
+    label: TX_FNL
+    pipeline_node: Adapt
+  - index: 198
+    name: shard_rebalance
+    label: SHD_RBL
+    pipeline_node: Synthesize
+  - index: 199
+    name: cross_shard_anchor
+    label: XSH_ACH
+    pipeline_node: Deliver
+
+chain_message_types:
+  - CrossShardTxEvent            # Cross-shard transaction event
+  - Atomic2PCUpdate              # Atomic 2PC coordination event
+  - ShardFeeEvent                # Shard fee collection event
+  - InterShardSyncEvent          # Inter-shard synchronization event
+
+behaviors:
+  - name: executeCrossShardTx
+    given: Cross-shard transaction system is active
+    when: Cross-shard transaction is requested
+    then: Transaction executed atomically across shards with SHA256 hash
+
+  - name: runAtomic2PC
+    given: Multiple shards are involved in transaction
+    when: 2PC protocol is initiated
+    then: Prepare and commit phases complete across up to 100 shards
+
+  - name: collectShardFee
+    given: Cross-shard transactions are processed
+    when: Fee collection runs
+    then: Fees collected at 0.001 $TRI/tx (1000 uTRI)
+
+  - name: syncInterShard
+    given: Multiple shards need consistency
+    when: Inter-shard sync runs at 2-second intervals
+    then: All shards synchronized with conflict resolution
+
+  - name: crossShardTxVerify
+    given: All cross-shard subsystems active
+    when: Phase AB verification runs
+    then: AB1 (cross_shard_txs > 0) AND AB2 (commit_count > 0) AND AB3 (shard_fees_utri > 0)
+
+phase: AB
+phase_name: "Cross-Shard Transactions v1.0 integrity"
+phase_checks:
+  - "AB1: Cross-shard transactions must exist (cross_shard_txs > 0)"
+  - "AB2: 2PC commits must succeed (commit_count > 0)"
+  - "AB3: Shard fees must be collected (shard_fees_utri > 0)"
+
+export:
+  version: 25
+  header_size: 118
+  new_fields:
+    - name: cross_shard_txs
+      type: u16
+      bytes: 2
+    - name: shard_fees
+      type: u16
+      bytes: 2
+
+tests:
+  - "v2.21 cross_shard_tx label is XSH_TX"
+  - "v2.21 atomic_2pc label is ATM_2PC"
+  - "v2.21 shard_fee label is SHD_FEE"
+  - "v2.21 inter_shard_sync label is ISH_SYN"
+  - "v2.21 shard_coordinator label is SHD_CRD"
+  - "v2.21 tx_finality label is TX_FNL"
+  - "v2.21 shard_rebalance label is SHD_RBL"
+  - "v2.21 cross_shard_anchor label is XSH_ACH"
+  - "v2.21 isCrossShardTxQuark classifier"
+  - "v2.21 isAtomic2PCQuark classifier"
+  - "v2.21 isShardFeeQuark classifier"
+  - "v2.21 isInterShardSyncQuark classifier"
+  - "v2.21 CrossShardTxState defaults"
+  - "v2.21 Atomic2PCState defaults"
+  - "v2.21 ShardFeeState defaults"
+  - "v2.21 InterShardSyncState defaults"
+  - "v2.21 Phase AB passes after cross-shard + 2pc + fee"
+  - "v2.21 Phase AB fails without cross-shard txs"
+  - "v2.21 Phase AB fails without 2pc commits"
+  - "v2.21 executeCrossShardTx increments txs"
+  - "v2.21 collectShardFee uses SHARD_FEE_UTRI_PER_TX"
+  - "v2.21 232 quarks per query target"
+  - "v2.21 u8 enum capacity 200/256"

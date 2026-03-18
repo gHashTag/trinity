@@ -1,0 +1,359 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: validate
+    given: Input data provided
+    when: validate function called
+    then: Result returned
+  - name: test_validate
+  - name: validate_function
+    given: Input data provided
+    when: validate_function function called
+    then: Result returned
+  - name: test_validate_function
+  - name: validate_type
+    given: Input data provided
+    when: validate_type function called
+    then: Result returned
+  - name: test_validate_type
+  - name: is_snake_case
+    given: Input data provided
+    when: is_snake_case function called
+    then: Result returned
+  - name: test_is_snake_case
+  - name: is_pascal_case
+    given: Input data provided
+    when: is_pascal_case function called
+    then: Result returned
+  - name: test_is_pascal_case
+  - name: is_lowercase_or_underscore
+    given: Input data provided
+    when: is_lowercase_or_underscore function called
+    then: Result returned
+  - name: test_is_lowercase_or_underscore
+  - name: is_uppercase
+    given: Input data provided
+    when: is_uppercase function called
+    then: Result returned
+  - name: test_is_uppercase
+  - name: is_digit
+    given: Input data provided
+    when: is_digit function called
+    then: Result returned
+  - name: test_is_digit
+  - name: default_config
+    given: Input data provided
+    when: default_config function called
+    then: Result returned
+  - name: test_default_config
+  - name: print
+    given: Input data provided
+    when: print function called
+    then: Result returned
+  - name: test_print
+  - name: print_with_config
+    given: Input data provided
+    when: print_with_config function called
+    then: Result returned
+  - name: test_print_with_config
+  - name: print_doc_comment
+    given: Input data provided
+    when: print_doc_comment function called
+    then: Result returned
+  - name: test_print_doc_comment
+  - name: print_import
+    given: Input data provided
+    when: print_import function called
+    then: Result returned
+  - name: test_print_import
+  - name: print_import_item
+    given: Input data provided
+    when: print_import_item function called
+    then: Result returned
+  - name: test_print_import_item
+  - name: print_type
+    given: Input data provided
+    when: print_type function called
+    then: Result returned
+  - name: test_print_type
+  - name: print_variant
+    given: Input data provided
+    when: print_variant function called
+    then: Result returned
+  - name: test_print_variant
+  - name: print_type_field
+    given: Input data provided
+    when: print_type_field function called
+    then: Result returned
+  - name: test_print_type_field
+  - name: print_type_expr
+    given: Input data provided
+    when: print_type_expr function called
+    then: Result returned
+  - name: test_print_type_expr
+  - name: print_const
+    given: Input data provided
+    when: print_const function called
+    then: Result returned
+  - name: test_print_const
+  - name: print_function
+    given: Input data provided
+    when: print_function function called
+    then: Result returned
+  - name: test_print_function
+  - name: print_param
+    given: Input data provided
+    when: print_param function called
+    then: Result returned
+  - name: test_print_param
+  - name: print_expr
+    given: Input data provided
+    when: print_expr function called
+    then: Result returned
+  - name: test_print_expr
+  - name: print_binary_op
+    given: Input data provided
+    when: print_binary_op function called
+    then: Result returned
+  - name: test_print_binary_op
+  - name: print_unary_op
+    given: Input data provided
+    when: print_unary_op function called
+    then: Result returned
+  - name: test_print_unary_op
+  - name: print_call_arg
+    given: Input data provided
+    when: print_call_arg function called
+    then: Result returned
+  - name: test_print_call_arg
+  - name: print_case_clause
+    given: Input data provided
+    when: print_case_clause function called
+    then: Result returned
+  - name: test_print_case_clause
+  - name: print_pattern
+    given: Input data provided
+    when: print_pattern function called
+    then: Result returned
+  - name: test_print_pattern
+  - name: escape_string
+    given: Input data provided
+    when: escape_string function called
+    then: Result returned
+  - name: test_escape_string
+  - name: float_to_string
+    given: Input data provided
+    when: float_to_string function called
+    then: Result returned
+  - name: test_float_to_string
+  - name: empty_module
+    given: Input data provided
+    when: empty_module function called
+    then: Result returned
+  - name: test_empty_module
+  - name: add_import
+    given: Input data provided
+    when: add_import function called
+    then: Result returned
+  - name: test_add_import
+  - name: add_type
+    given: Input data provided
+    when: add_type function called
+    then: Result returned
+  - name: test_add_type
+  - name: add_function
+    given: Input data provided
+    when: add_function function called
+    then: Result returned
+  - name: test_add_function
+  - name: add_const
+    given: Input data provided
+    when: add_const function called
+    then: Result returned
+  - name: test_add_const
+  - name: pub_fn
+    given: Input data provided
+    when: pub_fn function called
+    then: Result returned
+  - name: test_pub_fn
+  - name: priv_fn
+    given: Input data provided
+    when: priv_fn function called
+    then: Result returned
+  - name: test_priv_fn
+  - name: param
+    given: Input data provided
+    when: param function called
+    then: Result returned
+  - name: test_param
+  - name: typed_param
+    given: Input data provided
+    when: typed_param function called
+    then: Result returned
+  - name: test_typed_param
+  - name: labeled_param
+    given: Input data provided
+    when: labeled_param function called
+    then: Result returned
+  - name: test_labeled_param
+  - name: simple_type
+    given: Input data provided
+    when: simple_type function called
+    then: Result returned
+  - name: test_simple_type
+  - name: generic_type
+    given: Input data provided
+    when: generic_type function called
+    then: Result returned
+  - name: test_generic_type
+  - name: option_type
+    given: Input data provided
+    when: option_type function called
+    then: Result returned
+  - name: test_option_type
+  - name: result_type
+    given: Input data provided
+    when: result_type function called
+    then: Result returned
+  - name: test_result_type
+  - name: list_type
+    given: Input data provided
+    when: list_type function called
+    then: Result returned
+  - name: test_list_type
+
+types:
+  validate:
+    description: Auto-generated
+
+  validate_function:
+    description: Auto-generated
+
+  validate_type:
+    description: Auto-generated
+
+  is_snake_case:
+    description: Auto-generated
+
+  is_pascal_case:
+    description: Auto-generated
+
+  is_lowercase_or_underscore:
+    description: Auto-generated
+
+  is_uppercase:
+    description: Auto-generated
+
+  is_digit:
+    description: Auto-generated
+
+  default_config:
+    description: Auto-generated
+
+  print:
+    description: Auto-generated
+
+  print_with_config:
+    description: Auto-generated
+
+  print_doc_comment:
+    description: Auto-generated
+
+  print_import:
+    description: Auto-generated
+
+  print_import_item:
+    description: Auto-generated
+
+  print_type:
+    description: Auto-generated
+
+  print_variant:
+    description: Auto-generated
+
+  print_type_field:
+    description: Auto-generated
+
+  print_type_expr:
+    description: Auto-generated
+
+  print_const:
+    description: Auto-generated
+
+  print_function:
+    description: Auto-generated
+
+  print_param:
+    description: Auto-generated
+
+  print_expr:
+    description: Auto-generated
+
+  print_binary_op:
+    description: Auto-generated
+
+  print_unary_op:
+    description: Auto-generated
+
+  print_call_arg:
+    description: Auto-generated
+
+  print_case_clause:
+    description: Auto-generated
+
+  print_pattern:
+    description: Auto-generated
+
+  escape_string:
+    description: Auto-generated
+
+  float_to_string:
+    description: Auto-generated
+
+  empty_module:
+    description: Auto-generated
+
+  add_import:
+    description: Auto-generated
+
+  add_type:
+    description: Auto-generated
+
+  add_function:
+    description: Auto-generated
+
+  add_const:
+    description: Auto-generated
+
+  pub_fn:
+    description: Auto-generated
+
+  priv_fn:
+    description: Auto-generated
+
+  param:
+    description: Auto-generated
+
+  typed_param:
+    description: Auto-generated
+
+  labeled_param:
+    description: Auto-generated
+
+  simple_type:
+    description: Auto-generated
+
+  generic_type:
+    description: Auto-generated
+
+  option_type:
+    description: Auto-generated
+
+  result_type:
+    description: Auto-generated
+
+  list_type:
+    description: Auto-generated

@@ -1,0 +1,586 @@
+// Reels Evaluator (ElizaOS Architecture)
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants// Converted from infra/agent/evaluators/reels_evaluator.gleam → dsl/infra/agent/evaluators/reels_evaluator.vibee
+//
+// Post-processes reels creation results:
+// - Extracts insights for memory
+// - Determines follow-up actions
+// - Tracks type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} preferences for future recommendations
+
+import "../eliza.vibee" as eliza
+
+// =============================================================================
+// Reels Evaluator
+// =============================================================================
+
+@spec create_reels_evaluator() → Evaluator {
+  /// Create the Reels Evaluator
+  given: Nothing
+  when: Setting up evaluators
+  then: Returns reels evaluator
+}
+
+@impl {
+  Evaluator(
+    "reels_evaluator",
+    "Analyzes reels creation results, extracts insights, suggests follow-ups",
+    result · fn { result · evaluate_reels_result }
+  )
+}
+
+trace("agent.reels_evaluator.evaluate")
+@spec evaluate_reels_result(context: ActionContext, result: ActionResult) → EvaluatorResult {
+  /// Evaluate reels creation result
+  given: Context and action result
+  when: Post-processing reels action
+  then: Returns insights and suggestions
+}
+
+@impl {
+  print("[REELS_EVALUATOR] Evaluating result for type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}: {context.chat_id}")
+
+  match result.success {
+    true → result · evaluate_success
+    false → result · evaluate_failure
+  }
+}
+
+// =============================================================================
+// Success Evaluation
+// =============================================================================
+
+@spec evaluate_success(context: ActionContext, result: ActionResult) → EvaluatorResult {
+  /// Evaluate successful reels creation
+  given: Context and successful result
+  when: Reels created successfully
+  then: Returns facts and follow-ups
+}
+
+@impl {
+  // Extract data from result
+  let idea = get_string_from_data(result.data, "idea")
+  let niche = get_string_from_data(result.data, "niche")
+  let video_url = get_string_from_data(result.data, "video_url")
+
+  // Build facts to store
+  let facts = idea, niche, video_url · build_success_facts
+
+  // Suggest follow-up actions
+  let follow_ups = suggest_follow_ups(niche)
+
+  print("[REELS_EVALUATOR] Success! Facts: {string.inspect(list.length(facts))}")
+
+  // Store successful creations
+    facts,
+    follow_ups
+   · EvaluatorResult
+}
+
+// =============================================================================
+// Failure Evaluation
+// =============================================================================
+
+@spec evaluate_failure(context: ActionContext, result: ActionResult) → EvaluatorResult {
+  /// Evaluate failed reels creation
+  given: Context and failed result
+  when: Reels creation failed
+  then: Returns failure facts and recovery suggestions
+}
+
+@impl {
+  let error = result.text
+
+  // Extract failure reason
+  let failure_type = categorize_failure(error)
+
+  // Build facts about failure
+  let facts = [
+    "Reels creation failed for type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {context.chat_id}",
+    "Failure type: {failure_type}",
+    "Error: {error}"
+  ]
+
+  // Suggest recovery actions
+  let recovery_actions = suggest_recovery_actions(failure_type)
+
+  print("[REELS_EVALUATOR] Failure: {failure_type}")
+
+  // Store failures to avoid repeating
+    facts,
+    recovery_actions
+   · EvaluatorResult
+}
+
+// =============================================================================
+// Fact Extraction
+// =============================================================================
+
+@spec build_success_facts(
+  context: ActionContext,
+  idea: str,
+  niche: str,
+  video_url: str
+) → [str] {
+  /// Build facts from successful reels creation
+  given: Context and result data
+  when: Extracting insights
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} facts
+}
+
+@impl {
+  let base_facts = [
+    "type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {context.chat_id} created a reels video",
+    "Topic: {idea}",
+    "Niche: {niche}"
+  ]
+
+  // Add type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} name if available
+  let with_name = match context.type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}_name {
+    ☐name) → ["{name} likes {niche} content" | base_facts]
+    ∅-> base_facts
+  }
+
+  // Add video URL fact
+  match video_url {
+    "" → with_name
+    url → ["Video URL: {url}" | with_name]
+  }
+}
+
+@spec categorize_failure(error: str) → str {
+  /// Categorize failure type for analysis
+  given: Error message
+  when: Analyzing failure
+  then: Returns failure category
+}
+
+@impl {
+  let lower = string.lowercase(error)
+
+  let categories = [
+    #(["timeout"], "timeout"),
+    #(["tts", "elevenlabs"], "tts_error"),
+    #(["lipsync", "fal"], "lipsync_error"),
+    #(["render", "remotion"], "render_error"),
+    #(["config", "api key"], "config_error"),
+    #(["photo", "image"], "photo_error")
+  ]
+
+  categories · find_category
+}
+
+@spec find_category(text: str, categories: [#([str], str])) → str {
+  /// Find matching category from keywords
+  given: Error text and categories
+  when: Searching for match
+  then: Returns category or "unknown_error"
+}
+
+@impl {
+  match categories {
+    [] → "unknown_error"
+    [#(keywords, category) | rest] → {
+      match list.{ string.contains(text, it · any } {
+        true → category
+        false → rest · find_category
+      }
+    }
+  }
+}
+
+// =============================================================================
+// Follow-up Suggestions
+// =============================================================================
+
+@spec suggest_follow_ups(niche: str) → [str] {
+  /// Suggest follow-up actions based on niche
+  given: Content niche
+  when: Suggesting next steps
+  then: Returns action suggestions
+}
+
+@impl {
+  match niche {
+    "business" → [
+      "SHARE_TO_LINKEDIN",
+      "CREATE_CAROUSEL",
+      "SUGGEST_RELATED_TOPIC"
+    ]
+    "productivity" → [
+      "CREATE_CHECKLIST",
+      "SUGGEST_SERIES",
+      "SCHEDULE_REMINDER"
+    ]
+    "health" → [
+      "SHARE_TO_INSTAGRAM",
+      "CREATE_WORKOUT",
+      "SUGGEST_MEAL_PLAN"
+    ]
+    "finance" → [
+      "CREATE_CALCULATOR",
+      "SHARE_TO_TWITTER",
+      "SUGGEST_INVESTMENT_TIP"
+    ]
+    "technology" → [
+      "CREATE_TUTORIAL",
+      "SHARE_TO_YOUTUBE",
+      "SUGGEST_CODE_SNIPPET"
+    ]
+    _ → [
+      "SHARE_VIDEO",
+      "CREATE_ANOTHER",
+      "GET_ANALYTICS"
+    ]
+  }
+}
+
+@spec suggest_recovery_actions(failure_type: str) → [str] {
+  /// Suggest recovery actions for failures
+  given: Failure type
+  when: Recovering from error
+  then: Returns recovery suggestions
+}
+
+@impl {
+  match failure_type {
+    "timeout" → [
+      "RETRY_WITH_SHORTER_SCRIPT",
+      "TRY_SIMPLER_TEMPLATE",
+      "CHECK_SERVICE_STATUS"
+    ]
+    "tts_error" → [
+      "TRY_DIFFERENT_VOICE",
+      "SHORTEN_SCRIPT",
+      "CHECK_ELEVENLABS_QUOTA"
+    ]
+    "lipsync_error" → [
+      "USE_DIFFERENT_PHOTO",
+      "TRY_LOWER_RESOLUTION",
+      "CHECK_FAL_STATUS"
+    ]
+    "render_error" → [
+      "RETRY_RENDER",
+      "USE_SIMPLER_TEMPLATE",
+      "CHECK_REMOTION_LOGS"
+    ]
+    "config_error" → [
+      "CHECK_API_KEYS",
+      "VERIFY_CONFIGURATION",
+      "CONTACT_SUPPORT"
+    ]
+    "photo_error" → [
+      "UPLOAD_NEW_PHOTO",
+      "USE_DEFAULT_AVATAR",
+      "CHECK_PHOTO_FORMAT"
+    ]
+    _ → [
+      "RETRY_ACTION",
+      "SIMPLIFY_REQUEST",
+      "CONTACT_SUPPORT"
+    ]
+  }
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec get_string_from_data(data: {str, }, key: str) → str {
+  /// Extract string from data dictionary
+  given: Data dict and key
+  when: Getting value
+  then: Returns value or empty string
+}
+
+@impl {
+  match dict.key · get {
+    ✅value) → value
+    ❌_) → ""
+  }
+}
+
+// =============================================================================
+// Analytics Evaluator
+// =============================================================================
+
+@spec create_analytics_evaluator() → Evaluator {
+  /// Create analytics evaluator for tracking metrics
+  given: Nothing
+  when: Setting up evaluators
+  then: Returns analytics evaluator
+}
+
+@impl {
+  Evaluator(
+    "reels_analytics",
+    "Tracks reels creation metrics and patterns",
+    result · fn { result · evaluate_analytics }
+  )
+}
+
+@spec evaluate_analytics(context: ActionContext, result: ActionResult) → EvaluatorResult {
+  /// Evaluate for analytics tracking
+  given: Context and result
+  when: Tracking metrics
+  then: Returns analytics facts
+}
+
+@impl {
+  let facts = match result.success {
+    true → [
+      "Increment reels_created_total for type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {context.chat_id}",
+      "Update success rate statistics"
+    ]
+    false → [
+      "Increment reels_failed_total for type type type type type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {context.chat_id}",
+      "Log failure for debugging"
+    ]
+  }
+
+  // Analytics don't need memory storage
+    facts,
+    []
+   · EvaluatorResult
+}
+
+# v8.0
+
+# v10.0 - ML-Powered Migration

@@ -1,0 +1,77 @@
+name: ternary_embeddings
+version: "1.0.0"
+language: zig
+
+types:
+  TernaryEmbedding:
+    fields:
+      data: List<Int>
+      scales: List<Float>
+      vocab_size: Int
+      hidden_size: Int
+  EmbeddingStats:
+    fields:
+      f32_bytes: Int
+      ternary_bytes: Int
+      compression_ratio: Float
+
+behaviors:
+  - name: init_from_f32
+    given: f32 embedding table
+    when: Converting to ternary
+    then: Quantize each row with per-token scale
+    implementation: |
+                    pub fn init_from_f32(embeddings: anytype) TernaryEmbedding {
+                        _ = embeddings;
+                        return TernaryEmbedding{};
+                    }
+            
+            
+      
+      
+
+  - name: lookup
+    given: Token ID
+    when: Getting embedding vector
+    then: Dequantize on-the-fly and return f32 vector
+    implementation: |
+                    pub fn lookup(emb: TernaryEmbedding, token_id: usize, output: []f32) void {
+                        _ = emb;
+                        _ = token_id;
+                        _ = output;
+                    }
+            
+            
+      
+      
+
+  - name: lookup_batch
+    given: Array of token IDs
+    when: Getting multiple embeddings
+    then: Batch dequantization for efficiency
+    implementation: |
+                    pub fn lookup_batch(emb: TernaryEmbedding, token_ids: []const usize, output: []f32) void {
+                        _ = emb;
+                        _ = token_ids;
+                        _ = output;
+                    }
+            
+            
+      
+      
+
+  - name: compute_stats
+    given: Embedding dimensions
+    when: Analyzing memory usage
+    then: Return compression ratio
+    implementation: |
+                    pub fn compute_stats(vocab_size: usize, hidden_size: usize) EmbeddingStats {
+                        _ = vocab_size;
+                        _ = hidden_size;
+                        return EmbeddingStats{};
+                    }
+            
+            
+      
+      
+

@@ -1,0 +1,874 @@
+name: vibee_agi
+version: 1.0.0
+description: AGI (Artificial General Intelligence) on BEAM/OTP - Massive parallel actor-based AI
+
+metadata:
+  author: VIBEE Team
+  category: artificial_intelligence
+  tags: [agi, actors, beam, neural-networks, swarm-intelligence, evolutionary, real-time-learning]
+  research_papers:
+    - "Hewitt (1973) - Actor Model"
+    - "Hinton et al. (2006) - Deep Learning"
+    - "Silver et al. (2016) - AlphaGo"
+    - "Vaswani et al. (2017) - Attention Is All You Need"
+    - "Reynolds (1987) - Flocks, Herds, and Schools"
+    - "Kennedy & Eberhart (1995) - Particle Swarm Optimization"
+    - "Armstrong (2003) - Making Reliable Distributed Systems"
+
+types:
+  # Core Actor Types
+  NeuronId:
+    type: atom
+    description: Unique identifier for neuron actor
+    
+  Neuron:
+    id: NeuronId
+    inputs: list<NeuronId>
+    outputs: list<NeuronId>
+    weights: list<float>
+    bias: float
+    activation: ActivationFn
+    state: NeuronState
+    location: NodeLocation
+    
+  NeuronState:
+    current_value: float
+    gradient: float
+    learning_rate: float
+    activation_history: list<float>
+    
+  NeuronMessage:
+    variants:
+      - Forward(inputs: list<float>)
+      - Backward(error: float)
+      - GetState(reply_to: pid)
+      - UpdateWeights(deltas: list<float>)
+      - UpdateLearningRate(rate: float)
+      - Freeze
+      - Unfreeze
+      
+  # Network Types
+  Layer:
+    neurons: list<NeuronId>
+    layer_type: LayerType
+    
+  LayerType:
+    variants:
+      - Input
+      - Hidden
+      - Output
+      - Convolutional
+      - Recurrent
+      - Attention
+      
+  Network:
+    id: atom
+    layers: list<Layer>
+    architecture: NetworkArchitecture
+    supervisor: pid
+    
+  NetworkArchitecture:
+    layer_sizes: list<int>
+    activation_functions: list<ActivationFn>
+    learning_rate: float
+    optimizer: Optimizer
+    
+  # Activation Functions
+  ActivationFn:
+    variants:
+      - Sigmoid
+      - ReLU
+      - Tanh
+      - Softmax
+      - LeakyReLU(alpha: float)
+      - ELU(alpha: float)
+      - Swish
+      
+  # Optimizers
+  Optimizer:
+    variants:
+      - SGD(learning_rate: float)
+      - Adam(learning_rate: float, beta1: float, beta2: float)
+      - RMSprop(learning_rate: float, decay: float)
+      - Momentum(learning_rate: float, momentum: float)
+      
+  # Distributed Types
+  NodeLocation:
+    variants:
+      - Local
+      - Remote(node: atom)
+      
+  DistributedNetwork:
+    network: Network
+    nodes: list<atom>
+    distribution_strategy: DistributionStrategy
+    
+  DistributionStrategy:
+    variants:
+      - RoundRobin
+      - LoadBalanced
+      - LayerWise
+      - Random
+      
+  # Learning Types
+  TrainingSample:
+    input: list<float>
+    target: list<float>
+    weight: float
+    
+  LearningMode:
+    variants:
+      - Supervised(samples: list<TrainingSample>)
+      - Unsupervised(data: list<list<float>>)
+      - Reinforcement(environment: Environment)
+      - Online(stream: Stream<TrainingSample>)
+      
+  # Swarm Intelligence Types
+  Agent:
+    id: atom
+    position: Vector
+    velocity: Vector
+    state: AgentState
+    neighbors: list<atom>
+    
+  AgentState:
+    energy: float
+    memory: list<Experience>
+    goal: Goal
+    
+  Swarm:
+    agents: list<Agent>
+    behavior: SwarmBehavior
+    
+  SwarmBehavior:
+    variants:
+      - Flocking(separation: float, alignment: float, cohesion: float)
+      - ParticleSwarm(inertia: float, cognitive: float, social: float)
+      - AntColony(pheromone_decay: float, alpha: float, beta: float)
+      - BeeColony(scout_ratio: float, employed_ratio: float)
+      
+  # Evolutionary Types
+  Genome:
+    genes: list<float>
+    fitness: float
+    age: int
+    
+  Population:
+    individuals: list<Genome>
+    generation: int
+    best_fitness: float
+    
+  EvolutionStrategy:
+    variants:
+      - GeneticAlgorithm(mutation_rate: float, crossover_rate: float)
+      - EvolutionStrategy(sigma: float)
+      - NEAT(complexity_threshold: float)
+      - CMA_ES(sigma: float, population_size: int)
+      
+  # Pixel Diffusion Types
+  Pixel:
+    x: int
+    y: int
+    color: Color
+    neighbors: list<atom>
+    weights: list<float>
+    
+  Color:
+    r: int
+    g: int
+    b: int
+    a: int
+    
+  Emotion:
+    variants:
+      - Joy
+      - Sadness
+      - Anger
+      - Fear
+      - Surprise
+      - Disgust
+      - Love
+      - Calm
+      
+  Wave:
+    emotion: Emotion
+    origin: Vector
+    time: int
+    intensity: float
+    frequency: float
+    
+  Vector:
+    x: float
+    y: float
+    z: float
+    
+  # Metrics Types
+  Metrics:
+    accuracy: float
+    loss: float
+    training_time: float
+    inference_time: float
+    memory_usage: int
+    process_count: int
+
+constants:
+  # Default Hyperparameters
+  DEFAULT_LEARNING_RATE: 0.01
+  DEFAULT_BATCH_SIZE: 32
+  DEFAULT_EPOCHS: 100
+  DEFAULT_MOMENTUM: 0.9
+  DEFAULT_WEIGHT_DECAY: 0.0001
+  
+  # Network Limits
+  MAX_NEURONS_PER_NODE: 100000
+  MAX_LAYERS: 1000
+  MAX_CONNECTIONS_PER_NEURON: 10000
+  
+  # Swarm Parameters
+  DEFAULT_SWARM_SIZE: 1000
+  DEFAULT_NEIGHBOR_RADIUS: 50.0
+  DEFAULT_MAX_VELOCITY: 10.0
+  
+  # Evolution Parameters
+  DEFAULT_POPULATION_SIZE: 100
+  DEFAULT_MUTATION_RATE: 0.01
+  DEFAULT_CROSSOVER_RATE: 0.7
+  DEFAULT_ELITE_SIZE: 10
+  
+  # Pixel Diffusion
+  CANVAS_WIDTH: 1920
+  CANVAS_HEIGHT: 1080
+  PIXEL_NEIGHBOR_COUNT: 8
+  WAVE_PROPAGATION_SPEED: 10.0
+
+behaviors:
+  # Neuron Behaviors
+  spawn_neuron:
+    input:
+      num_inputs: int
+      learning_rate: float
+      activation: ActivationFn
+    output:
+      neuron_id: NeuronId
+    description: Spawn a new neuron actor
+    steps:
+      - Initialize random weights
+      - Create neuron state
+      - Start actor process
+      - Register with unique atom ID
+      - Return neuron ID
+      
+  neuron_forward:
+    input:
+      neuron_id: NeuronId
+      inputs: list<float>
+    output:
+      output: float
+    description: Forward pass through neuron
+    steps:
+      - Receive input values
+      - Calculate weighted sum
+      - Apply activation function
+      - Store output in state
+      - Send to output neurons
+      - Return output value
+      
+  neuron_backward:
+    input:
+      neuron_id: NeuronId
+      error: float
+    output:
+      gradient: float
+    description: Backward pass for learning
+    steps:
+      - Receive error signal
+      - Calculate gradient
+      - Update weights
+      - Propagate error to inputs
+      - Return gradient
+      
+  # Network Behaviors
+  create_network:
+    input:
+      layer_sizes: list<int>
+      learning_rate: float
+    output:
+      network: Network
+    description: Create neural network
+    steps:
+      - Create layers
+      - Spawn neurons for each layer
+      - Connect neurons between layers
+      - Start supervisor
+      - Return network
+      
+  train_network:
+    input:
+      network: Network
+      samples: list<TrainingSample>
+      epochs: int
+    output:
+      metrics: Metrics
+    description: Train network on dataset
+    steps:
+      - For each epoch
+      - Shuffle samples
+      - For each sample
+      - Forward pass
+      - Calculate loss
+      - Backward pass
+      - Update weights
+      - Calculate metrics
+      - Return final metrics
+      
+  predict:
+    input:
+      network: Network
+      input: list<float>
+    output:
+      prediction: list<float>
+    description: Make prediction
+    steps:
+      - Forward pass through network
+      - Collect output layer values
+      - Return predictions
+      
+  # Distributed Behaviors
+  create_distributed_network:
+    input:
+      layer_sizes: list<int>
+      nodes: list<atom>
+      strategy: DistributionStrategy
+    output:
+      network: DistributedNetwork
+    description: Create distributed network across cluster
+    steps:
+      - Connect to all nodes
+      - Distribute neurons by strategy
+      - Spawn neurons on remote nodes
+      - Setup message routing
+      - Start distributed supervisor
+      - Return distributed network
+      
+  distributed_train:
+    input:
+      network: DistributedNetwork
+      samples: list<TrainingSample>
+    output:
+      metrics: Metrics
+    description: Distributed training
+    steps:
+      - Partition data across nodes
+      - Parallel forward passes
+      - Aggregate gradients
+      - Synchronized weight updates
+      - Return metrics
+      
+  # Real-Time Learning
+  spawn_online_learner:
+    input:
+      network: Network
+    output:
+      learner_id: pid
+    description: Spawn online learning actor
+    steps:
+      - Create learner state
+      - Start actor process
+      - Setup message handlers
+      - Return learner PID
+      
+  online_learn:
+    input:
+      learner_id: pid
+      sample: TrainingSample
+    output:
+      accuracy: float
+    description: Learn from single sample in real-time
+    steps:
+      - Receive sample
+      - Forward pass
+      - Calculate error
+      - Backward pass
+      - Update statistics
+      - Return current accuracy
+      
+  # Swarm Intelligence
+  create_swarm:
+    input:
+      size: int
+      behavior: SwarmBehavior
+    output:
+      swarm: Swarm
+    description: Create swarm of agents
+    steps:
+      - Spawn agent actors
+      - Initialize positions
+      - Setup neighbor connections
+      - Start swarm supervisor
+      - Return swarm
+      
+  swarm_step:
+    input:
+      swarm: Swarm
+    output:
+      new_positions: list<Vector>
+    description: Execute one swarm simulation step
+    steps:
+      - Each agent calculates forces
+      - Update velocities
+      - Update positions
+      - Send to neighbors
+      - Return new positions
+      
+  # Evolutionary Algorithms
+  create_population:
+    input:
+      size: int
+      genome_length: int
+    output:
+      population: Population
+    description: Create initial population
+    steps:
+      - Generate random genomes
+      - Spawn genome actors
+      - Initialize fitness values
+      - Return population
+      
+  evolve_generation:
+    input:
+      population: Population
+      strategy: EvolutionStrategy
+    output:
+      new_population: Population
+    description: Evolve one generation
+    steps:
+      - Evaluate fitness (parallel)
+      - Select parents
+      - Crossover
+      - Mutation
+      - Create new generation
+      - Return new population
+      
+  # Pixel Diffusion
+  create_pixel_grid:
+    input:
+      width: int
+      height: int
+    output:
+      grid: list<Pixel>
+    description: Create pixel grid for diffusion
+    steps:
+      - Spawn pixel actor for each position
+      - Connect to 8 neighbors
+      - Initialize colors
+      - Start pixel supervisor
+      - Return grid
+      
+  diffuse_wave:
+    input:
+      grid: list<Pixel>
+      emotion: Emotion
+      cursor: Vector
+      time: int
+    output:
+      colors: list<Color>
+    description: Propagate emotional wave through pixels
+    steps:
+      - Calculate wave parameters
+      - Send wave to all pixels
+      - Each pixel calculates influence
+      - Blend with neighbor colors
+      - Propagate to neighbors
+      - Collect final colors
+      - Return color array
+
+functions:
+  # Activation Functions
+  - name: sigmoid
+    params:
+      x: float
+    returns: float
+    description: Sigmoid activation
+    formula: "1 / (1 + exp(-x))"
+    
+  - name: relu
+    params:
+      x: float
+    returns: float
+    description: ReLU activation
+    formula: "max(0, x)"
+    
+  - name: tanh
+    params:
+      x: float
+    returns: float
+    description: Tanh activation
+    formula: "(exp(x) - exp(-x)) / (exp(x) + exp(-x))"
+    
+  # Loss Functions
+  - name: mse_loss
+    params:
+      predicted: list<float>
+      target: list<float>
+    returns: float
+    description: Mean squared error
+    
+  - name: cross_entropy_loss
+    params:
+      predicted: list<float>
+      target: list<float>
+    returns: float
+    description: Cross entropy loss
+    
+  # Optimization
+  - name: sgd_update
+    params:
+      weight: float
+      gradient: float
+      learning_rate: float
+    returns: float
+    description: SGD weight update
+    
+  - name: adam_update
+    params:
+      weight: float
+      gradient: float
+      m: float
+      v: float
+      t: int
+      learning_rate: float
+    returns: tuple<float, float, float>
+    description: Adam optimizer update
+    
+  # Swarm Functions
+  - name: calculate_separation
+    params:
+      agent: Agent
+      neighbors: list<Agent>
+    returns: Vector
+    description: Calculate separation force
+    
+  - name: calculate_alignment
+    params:
+      agent: Agent
+      neighbors: list<Agent>
+    returns: Vector
+    description: Calculate alignment force
+    
+  - name: calculate_cohesion
+    params:
+      agent: Agent
+      neighbors: list<Agent>
+    returns: Vector
+    description: Calculate cohesion force
+    
+  # Evolution Functions
+  - name: crossover
+    params:
+      parent1: Genome
+      parent2: Genome
+    returns: Genome
+    description: Genetic crossover
+    
+  - name: mutate
+    params:
+      genome: Genome
+      rate: float
+    returns: Genome
+    description: Genetic mutation
+    
+  # Wave Functions
+  - name: emotion_wave
+    params:
+      emotion: Emotion
+      distance: float
+      time: int
+    returns: float
+    description: Calculate emotional wave intensity
+    
+  - name: blend_colors
+    params:
+      base: Color
+      neighbors: list<Color>
+      weights: list<float>
+      intensity: float
+    returns: Color
+    description: Blend colors with wave influence
+
+tests:
+  - name: spawn_single_neuron
+    behavior: spawn_neuron
+    input:
+      num_inputs: 3
+      learning_rate: 0.01
+      activation: ReLU
+    expected:
+      neuron_id: atom
+      
+  - name: neuron_forward_pass
+    behavior: neuron_forward
+    input:
+      neuron_id: test_neuron
+      inputs: [1.0, 2.0, 3.0]
+    expected:
+      output: float
+      output_range: [0.0, 10.0]
+      
+  - name: create_simple_network
+    behavior: create_network
+    input:
+      layer_sizes: [2, 4, 1]
+      learning_rate: 0.01
+    expected:
+      network.layers.length: 3
+      total_neurons: 7
+      
+  - name: train_xor_problem
+    behavior: train_network
+    input:
+      network: xor_network
+      samples:
+        - input: [0.0, 0.0], target: [0.0]
+        - input: [0.0, 1.0], target: [1.0]
+        - input: [1.0, 0.0], target: [1.0]
+        - input: [1.0, 1.0], target: [0.0]
+      epochs: 1000
+    expected:
+      metrics.accuracy: "> 0.95"
+      metrics.loss: "< 0.1"
+      
+  - name: distributed_network_creation
+    behavior: create_distributed_network
+    input:
+      layer_sizes: [100, 200, 100, 10]
+      nodes: [node1, node2, node3]
+      strategy: LayerWise
+    expected:
+      network.nodes.length: 3
+      neurons_per_node: "~137"
+      
+  - name: online_learning_stream
+    behavior: online_learn
+    input:
+      learner_id: test_learner
+      sample:
+        input: [1.0, 2.0]
+        target: [3.0]
+    expected:
+      accuracy: float
+      response_time: "< 10ms"
+      
+  - name: swarm_flocking
+    behavior: swarm_step
+    input:
+      swarm:
+        size: 100
+        behavior: Flocking(1.0, 1.0, 1.0)
+    expected:
+      new_positions.length: 100
+      emergent_pattern: "flocking"
+      
+  - name: evolve_simple_function
+    behavior: evolve_generation
+    input:
+      population:
+        size: 50
+        genome_length: 10
+      strategy: GeneticAlgorithm(0.01, 0.7)
+    expected:
+      new_population.best_fitness: "> old_population.best_fitness"
+      
+  - name: pixel_diffusion_joy
+    behavior: diffuse_wave
+    input:
+      grid: 1920x1080_grid
+      emotion: Joy
+      cursor: Vector(960, 540, 0)
+      time: 0
+    expected:
+      colors.length: 2073600
+      pattern: "radial_waves"
+      dominant_colors: ["yellow", "orange"]
+
+examples:
+  - name: "Simple Neural Network"
+    description: "Create and train a simple feedforward network"
+    language: vibee
+    file: examples/xor_example.vibee
+    code: |
+      # V3.2 Phase 2: No imports needed!
+      # Create network: 2 inputs → 4 hidden → 1 output
+      let network = create_network([2, 4, 1], 0.01)
+      
+      # Training data (XOR problem)
+      let samples = [
+        TrainingSample([0.0, 0.0], [0.0], 1.0),
+        TrainingSample([0.0, 1.0], [1.0], 1.0),
+        TrainingSample([1.0, 0.0], [1.0], 1.0),
+        TrainingSample([1.0, 1.0], [0.0], 1.0)
+      ]
+      
+      # Train
+      let metrics = train_network(network, samples, 1000)
+      print("Accuracy: {metrics.accuracy}")
+      
+      # Predict
+      let result = predict(network, [1.0, 0.0])
+      print("Prediction: {result}")
+      
+  - name: "Real-Time Recommendation System"
+    description: "Online learning for user recommendations"
+    language: vibee
+    file: examples/online_learning_example.vibee
+    code: |
+      # V3.2 Phase 2: No imports, string interpolation, print shorthand
+      # Create network for user preferences
+      let network = create_network([5, 10, 1], 0.01)
+      let learner = spawn_online_learner(network)
+      
+      # User views post (learn immediately!)
+      let sample = TrainingSample(
+        [1.0, 0.5, 1.0, 0.0, 0.8],  # post features
+        [0.9],                        # user liked it
+        1.0
+      )
+      let accuracy = online_learn(learner, sample)
+      
+      # Get recommendations
+      let posts = get_new_posts()
+      let recommendations = list.map(posts, fn(post) {
+        let score = predict(network, post.features)
+        #(post, score)
+      })
+      |> list.sort(fn(a, b) { b.1 > a.1 })
+      |> list.take(10)
+      
+  - name: "Distributed Training on Cluster"
+    description: "Train large network across multiple machines"
+    code: |
+      # Connect to cluster
+      let nodes = [
+        atom("node1@192.168.1.10"),
+        atom("node2@192.168.1.11"),
+        atom("node3@192.168.1.12")
+      ]
+      
+      # Create distributed network
+      let network = create_distributed_network(
+        [1000, 2000, 1000, 100],
+        nodes,
+        LayerWise
+      )
+      
+      # Load large dataset
+      let samples = load_dataset("imagenet_subset.csv")
+      
+      # Distributed training
+      let metrics = distributed_train(network, samples)
+      print("Training complete!")
+      print("Accuracy: {metrics.accuracy}")
+      print("Time: {metrics.training_time}s")
+      
+  - name: "Swarm Intelligence - Flocking"
+    description: "Simulate bird flocking behavior"
+    code: |
+      # Create swarm
+      let swarm = create_swarm(
+        1000,
+        Flocking(
+          separation: 1.5,
+          alignment: 1.0,
+          cohesion: 1.0
+        )
+      )
+      
+      # Simulate
+      list.range(0, 1000)
+      |> list.each(fn(step) {
+        let positions = swarm_step(swarm)
+        render_frame(positions, step)
+      })
+      
+  - name: "Evolutionary Algorithm - Function Optimization"
+    description: "Evolve solution to optimization problem"
+    code: |
+      # Fitness function: minimize f(x) = x^2
+      let fitness_fn = fn(genome: Genome) {
+        let x = genome.genes[0]
+        -1.0 * x * x  # Negative because we maximize fitness
+      }
+      
+      # Create population
+      let population = create_population(100, 1)
+      
+      # Evolve
+      let final_pop = list.range(0, 100)
+      |> list.fold(population, fn(pop, generation) {
+        # Evaluate fitness
+        let evaluated = list.map(pop.individuals, fn(genome) {
+          Genome(..genome, fitness: fitness_fn(genome))
+        })
+        
+        # Evolve
+        evolve_generation(
+          Population(..pop, individuals: evaluated),
+          GeneticAlgorithm(0.01, 0.7)
+        )
+      })
+      
+      print("Best solution: {final_pop.individuals[0].genes[0]}")
+      print("Best fitness: {final_pop.individuals[0].fitness}")
+      
+  - name: "Pixel Diffusion - Emotional Art"
+    description: "Generate art from emotions using pixel actors"
+    code: |
+      # Create canvas
+      let grid = create_pixel_grid(1920, 1080)
+      
+      # Animate emotional waves
+      list.range(0, 300)  # 300 frames
+      |> list.each(fn(frame) {
+        # Get cursor position (could be from mouse)
+        let cursor = get_cursor_position()
+        
+        # Get current emotion (could be from user input)
+        let emotion = get_current_emotion()
+        
+        # Diffuse wave
+        let colors = diffuse_wave(grid, emotion, cursor, frame)
+        
+        # Render to canvas
+        render_canvas(colors, 1920, 1080)
+        
+        # Save frame
+        save_frame(colors, frame)
+      })
+      
+      # Create video
+      create_video_from_frames("emotional_art.mp4", 30)
+
+performance:
+  neuron_spawn_time: "< 1ms"
+  forward_pass_time: "< 0.1ms per neuron"
+  backward_pass_time: "< 0.2ms per neuron"
+  network_creation_time: "< 100ms for 1000 neurons"
+  distributed_speedup: "~0.8x per node (80% efficiency)"
+  online_learning_latency: "< 10ms"
+  swarm_step_time: "< 5ms for 1000 agents"
+  evolution_generation_time: "< 100ms for 100 individuals"
+  pixel_diffusion_fps: "> 30 FPS for 1920x1080"
+  
+scalability:
+  max_neurons_single_node: 1000000
+  max_neurons_cluster: 100000000
+  max_swarm_agents: 10000000
+  max_population_size: 1000000
+  max_pixels: 8294400  # 4K resolution
+  
+fault_tolerance:
+  neuron_restart_time: "< 10ms"
+  network_recovery_time: "< 1s"
+  distributed_node_failure: "automatic rebalancing"
+  supervisor_strategy: "one_for_one"
+  max_restarts: 10
+  restart_window: 60  # seconds

@@ -1,0 +1,65 @@
+name: string_spectrum
+version: "1.1.0"
+language: zig
+module: string.spectrum
+
+description: |
+  String Spectrum — vibrational modes with φ-harmonic frequencies.
+
+  Bosonic:  ω = base × √n       (integer excitations)
+  Fermionic: ω = base × √(n+½)  (half-integer Ramond shift)
+
+  Base frequency 440.0 Hz (concert A) as φ-harmonic anchor.
+  φ-harmonic step: ω × φ^(1/12) — golden chromatic interval.
+
+  Mass²: n (bosonic) or n - ½ (fermionic).
+  Massless: n=0 bosonic only (photon, graviton, gluons).
+
+  Uses SacredConstants for PHI.
+
+types:
+  VibrationalMode:
+    fields:
+      frequency: Float      # ω in Hz; computed from mode number
+      mode_number: UInt32    # Excitation level n
+      fermionic: Bool        # true = Ramond sector (half-integer)
+
+behaviors:
+  - name: init
+    given: Mode number n (u32), name string, fermionic flag (bool)
+    when: Called
+    then: |
+      Computes frequency = 440 × √(n) for bosonic,
+      frequency = 440 × √(n + 0.5) for fermionic.
+      n=0 bosonic → frequency = 0 (massless ground state).
+
+  - name: phiHarmonic
+    given: A VibrationalMode instance
+    when: Called
+    then: Returns frequency × φ^(1/12) — one golden chromatic step up
+
+  - name: massSquared
+    given: A VibrationalMode instance
+    when: Called
+    then: Returns n (bosonic) or n - 0.5 (fermionic) in string tension units
+
+  - name: isMassless
+    given: A VibrationalMode instance
+    when: Called
+    then: Returns true only if n=0 and bosonic
+
+tests:
+  - "ground state bosonic is massless"
+  - "first excited bosonic mode"
+  - "fermionic half-integer shift"
+  - "higher mode frequency scales as sqrt(n)"
+  - "phi-harmonic raises by golden chromatic step"
+
+export_types:
+  - VibrationalMode
+
+export_functions:
+  - init
+  - phiHarmonic
+  - massSquared
+  - isMassless

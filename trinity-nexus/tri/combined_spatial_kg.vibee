@@ -1,0 +1,53 @@
+name: combined_spatial_kg
+version: "1.0.0"
+language: zig
+module: combined_spatial_kg
+description: "Level 11.19 — Combined Spatial + KG Planning. Integrates spatial navigation (6 rooms in a linear path) with knowledge graph reasoning (objects in rooms, object properties). Uses permutation-based directional encoding for room navigation and per-relation memories for located_in and has_property relations. 10/10 (100%) on combined queries including navigation + property lookup."
+
+constants:
+  DIM: 1024
+  NUM_ROOMS: 6
+  NUM_OBJECTS: 6
+  SHIFT_NEXT: 6
+  SHIFT_PREV: 7
+
+types:
+  PlanningQuery:
+    fields:
+      query_type: String
+      subject: String
+      answer: String
+      description: "A planning query combining spatial navigation and KG reasoning."
+
+behaviors:
+  - name: objectLocationQuery
+    given: 6 objects placed in 6 rooms stored in located_mem via treeBundleN
+    when: Query located_in(object) for all 6 objects
+    then: 6/6 (100%) — book in library, laptop in office, key in storage, food in kitchen, plant in garden, box in storage
+
+  - name: spatialNavigation
+    given: 6 rooms connected linearly with per-pair permutation-encoded edges (shift=6 forward, shift=7 backward)
+    when: Navigate lab→office→library via sequential next-edge queries
+    then: 2/2 (100%) — each step correctly identifies the next room
+
+  - name: combinedNavAndQuery
+    given: Navigate to storage, then query property of object found there
+    when: Garden→next→storage (spatial), then property_of(box) (KG)
+    then: 2/2 (100%) — navigation finds storage, property query finds heavy
+
+test_cases:
+  - name: test_location_6_6
+    input: "Query location of all 6 objects"
+    expected: "6/6 (100%)"
+
+  - name: test_navigation_2_2
+    input: "Navigate lab→office→library via next edges"
+    expected: "2/2 (100%)"
+
+  - name: test_combined_2_2
+    input: "Navigate to storage then query property"
+    expected: "2/2 (100%)"
+
+  - name: test_total_10_10
+    input: "Total combined planning accuracy"
+    expected: "10/10 (100%)"

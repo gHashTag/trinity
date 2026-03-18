@@ -1,0 +1,125 @@
+name: agent_core
+version: "1.0.0"
+language: zig
+module: agent_core
+description: Core agent system for VIBEE - actor model, message passing, and lifecycle management
+
+types:
+  Agent:
+    description: Agent instance
+    fields:
+      id: String
+      name: String
+      type: String
+      state: AgentState
+      capabilities: List<String>
+      metadata: Map<String, String>
+      created_at: String
+
+  AgentState:
+    description: Agent state
+    fields:
+      status: String
+      current_task: String
+      task_queue: List<String>
+      error: String
+
+  Message:
+    description: Agent message
+    fields:
+      id: String
+      from: String
+      to: String
+      type: String
+      payload: Map<String, String>
+      timestamp: String
+      correlation_id: String
+
+  Task:
+    description: Agent task
+    fields:
+      id: String
+      type: String
+      priority: Int
+      params: Map<String, String>
+      status: String
+      result: String
+      error: String
+      created_at: String
+      completed_at: String
+
+  AgentConfig:
+    description: Agent configuration
+    fields:
+      max_concurrent_tasks: Int
+      task_timeout_ms: Int
+      retry_attempts: Int
+      retry_delay_ms: Int
+
+  AgentMetrics:
+    description: Agent metrics
+    fields:
+      agent_id: String
+      tasks_completed: Int
+      tasks_failed: Int
+      messages_sent: Int
+      messages_received: Int
+      uptime_ms: Int
+      last_activity: String
+
+behaviors:
+  - name: agent_lifecycle
+  - name: create_agent
+  - name: name
+  - name: agent_type
+  - name: capabilities
+  - name: config
+  - name: start_agent
+  - name: agent_id
+  - name: stop_agent
+  - name: agent_id
+  - name: pause_agent
+  - name: agent_id
+  - name: resume_agent
+  - name: agent_id
+  - name: message_passing
+  - name: send_message
+  - name: from_agent_id
+  - name: to_agent_id
+  - name: message_type
+  - name: payload
+  - name: receive_message
+  - name: agent_id
+  - name: broadcast_message
+  - name: from_agent_id
+  - name: to_agent_ids
+  - name: message_type
+  - name: payload
+  - name: task_management
+  - name: assign_task
+  - name: agent_id
+  - name: task
+  - name: get_task_status
+  - name: task_id
+  - name: cancel_task
+  - name: task_id
+  - name: agent_monitoring
+  - name: get_agent_state
+  - name: agent_id
+  - name: get_agent_metrics
+  - name: agent_id
+  - name: list_agents
+  - name: create_agent
+  - name: start_agent
+  - name: stop_agent
+  - name: pause_agent
+  - name: resume_agent
+  - name: send_message
+  - name: receive_message
+  - name: broadcast_message
+  - name: assign_task
+  - name: get_task_status
+  - name: cancel_task
+  - name: get_agent_state
+  - name: get_agent_metrics
+  - name: list_agents

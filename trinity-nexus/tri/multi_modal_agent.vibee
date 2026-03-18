@@ -1,0 +1,415 @@
+# ============================================================================
+# Multi-Modal Unified Agent - Cycle 48
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: multi_modal_agent
+version: "1.0.0"
+language: zig
+module: multi_modal_agent
+
+description: |
+  Full Local Multi-Modal Unified Agent — Text + Vision + Voice + Code + Tools.
+  Cycle 48: Unified routing across 5 modalities with tool orchestration.
+
+  Architecture:
+    Input (any modality) → Modality Detector → Router
+    Router → Text Agent | Vision Agent | Voice Agent | Code Agent | Tool Agent
+    Agent output → Response Formatter → Output (any modality)
+
+  Key capabilities:
+    - Detect input modality automatically
+    - Route to specialized agent
+    - Cross-modal: "look at image and write code" → vision + code
+    - Tool use: "search web and summarize" → tool + text
+    - Voice I/O: "read this code aloud" → code + voice
+    - Multi-step: chain agents for complex workflows
+
+constants:
+  MAX_MODALITIES: 5
+  MAX_TOOLS: 16
+  MAX_CHAIN_DEPTH: 8
+  ROUTING_TIMEOUT_MS: 5000
+  AGENT_TIMEOUT_MS: 10000
+  CONFIDENCE_THRESHOLD: 0.6
+  PHI: 1.6180339887498948482
+  PHI_INV: 0.6180339887498948482
+
+types:
+  Modality:
+    description: "Supported input/output modalities"
+    variants:
+      - text
+      - vision
+      - voice
+      - code
+      - tool
+
+  ModalityScore:
+    description: "Detection confidence per modality"
+    fields:
+      modality: String
+      confidence: Float
+      keywords_matched: Int
+
+  AgentRole:
+    description: "Specialized agent roles"
+    variants:
+      - text_agent
+      - vision_agent
+      - voice_agent
+      - code_agent
+      - tool_agent
+      - router_agent
+
+  ToolDefinition:
+    description: "External tool that agents can invoke"
+    fields:
+      name: String
+      description: String
+      input_schema: String
+      output_type: String
+      timeout_ms: Int
+
+  ToolCall:
+    description: "A request to invoke a tool"
+    fields:
+      tool_name: String
+      arguments: String
+      request_id: Int
+
+  ToolResult:
+    description: "Result from tool invocation"
+    fields:
+      tool_name: String
+      output: String
+      success: Bool
+      elapsed_ms: Int
+
+  AgentRequest:
+    description: "Request routed to a specialized agent"
+    fields:
+      input_text: String
+      input_modality: String
+      target_modality: String
+      context: String
+      chain_depth: Int
+      request_id: Int
+
+  AgentResponse:
+    description: "Response from a specialized agent"
+    fields:
+      output_text: String
+      output_modality: String
+      confidence: Float
+      agent_role: String
+      elapsed_ms: Int
+      tool_calls: Int
+
+  ChainStep:
+    description: "One step in a multi-agent chain"
+    fields:
+      agent_role: String
+      input_summary: String
+      output_summary: String
+      confidence: Float
+      elapsed_ms: Int
+
+  MultiModalRequest:
+    description: "Top-level multi-modal request"
+    fields:
+      raw_input: String
+      detected_modalities: Int
+      primary_modality: String
+      secondary_modality: String
+      requires_chain: Bool
+
+  MultiModalResponse:
+    description: "Top-level multi-modal response"
+    fields:
+      output: String
+      output_modality: String
+      chain_length: Int
+      total_elapsed_ms: Int
+      confidence: Float
+      agents_used: Int
+
+  RouterState:
+    description: "Router state tracking active requests"
+    fields:
+      total_requests: Int
+      text_requests: Int
+      vision_requests: Int
+      voice_requests: Int
+      code_requests: Int
+      tool_requests: Int
+      chain_requests: Int
+      avg_latency_ms: Float
+
+  AgentCapability:
+    description: "What a specialized agent can do"
+    fields:
+      role: String
+      supported_inputs: String
+      supported_outputs: String
+      max_input_length: Int
+      supports_streaming: Bool
+
+behaviors:
+  # Modality Detection
+  - name: detectModality
+    given: Raw input string
+    when: Determining input type
+    then: Return primary modality with confidence score
+
+  - name: detectSecondaryModality
+    given: Raw input string and primary modality
+    when: Checking for cross-modal request
+    then: Return secondary modality if present
+
+  - name: scoreModalities
+    given: Raw input string
+    when: Scoring all modalities
+    then: Return sorted list of modality scores
+
+  # Routing
+  - name: routeRequest
+    given: MultiModalRequest
+    when: Routing to specialized agent
+    then: Select best agent based on modality scores
+
+  - name: routeChain
+    given: MultiModalRequest requiring multiple agents
+    when: Building agent chain
+    then: Return ordered list of agents to invoke
+
+  - name: selectAgent
+    given: Modality type
+    when: Mapping modality to agent
+    then: Return appropriate AgentRole
+
+  # Text Agent
+  - name: handleTextRequest
+    given: AgentRequest with text modality
+    when: Processing natural language
+    then: Generate text response with context
+
+  - name: summarizeText
+    given: Long text input
+    when: Text exceeds context window
+    then: Return condensed summary
+
+  # Vision Agent
+  - name: handleVisionRequest
+    given: AgentRequest with vision modality
+    when: Processing image-related request
+    then: Generate description or analysis
+
+  - name: describeImage
+    given: Image data reference
+    when: User asks to describe image
+    then: Return text description of image content
+
+  # Voice Agent
+  - name: handleVoiceRequest
+    given: AgentRequest with voice modality
+    when: Processing voice-related request
+    then: Generate voice output or transcription
+
+  - name: transcribeVoice
+    given: Audio data reference
+    when: Converting speech to text
+    then: Return transcribed text
+
+  - name: synthesizeVoice
+    given: Text to speak
+    when: Converting text to speech
+    then: Return audio output reference
+
+  # Code Agent
+  - name: handleCodeRequest
+    given: AgentRequest with code modality
+    when: Processing code-related request
+    then: Generate, explain, or fix code
+
+  - name: generateCode
+    given: Natural language description
+    when: User asks to write code
+    then: Return generated source code
+
+  - name: explainCode
+    given: Source code input
+    when: User asks to explain code
+    then: Return natural language explanation
+
+  - name: fixCode
+    given: Source code with error description
+    when: User asks to fix code
+    then: Return corrected source code
+
+  # Tool Agent
+  - name: handleToolRequest
+    given: AgentRequest with tool modality
+    when: Processing tool invocation
+    then: Execute tool and return result
+
+  - name: selectTool
+    given: Request description
+    when: Choosing which tool to use
+    then: Return best matching ToolDefinition
+
+  - name: executeTool
+    given: ToolCall
+    when: Running external tool
+    then: Return ToolResult with output
+
+  - name: registerTool
+    given: ToolDefinition
+    when: Adding new tool to registry
+    then: Tool available for future requests
+
+  # Chain Execution
+  - name: executeChain
+    given: List of agent roles and initial input
+    when: Running multi-step workflow
+    then: Execute agents in sequence, passing output to next
+
+  - name: validateChainDepth
+    given: Current chain depth
+    when: Checking recursion limit
+    then: Return true if within MAX_CHAIN_DEPTH
+
+  # Cross-Modal Operations
+  - name: crossModalTransfer
+    given: Input in one modality, target modality
+    when: Converting between modalities
+    then: Route through appropriate agent chain
+
+  - name: handleImageToCode
+    given: Image description request
+    when: User says "look at image and write code"
+    then: Vision agent describes, code agent generates
+
+  - name: handleCodeToVoice
+    given: Code explanation request
+    when: User says "read this code aloud"
+    then: Code agent explains, voice agent synthesizes
+
+  - name: handleVoiceToText
+    given: Voice transcription request
+    when: User provides audio input
+    then: Voice agent transcribes to text
+
+  # Statistics
+  - name: getRouterStats
+    given: Router instance
+    when: Querying performance
+    then: Return RouterState with metrics
+
+  - name: getAgentCapabilities
+    given: AgentRole
+    when: Querying agent capabilities
+    then: Return AgentCapability
+
+  - name: resetStats
+    given: Router instance
+    when: Clearing metrics
+    then: Reset all counters to zero
+
+tests:
+  - name: test_detect_text_modality
+    given: "Hello, how are you?"
+    then: Detects text modality with high confidence
+
+  - name: test_detect_code_modality
+    given: "Write a fibonacci function in Python"
+    then: Detects code modality
+
+  - name: test_detect_vision_modality
+    given: "Describe this image"
+    then: Detects vision modality
+
+  - name: test_detect_voice_modality
+    given: "Read this aloud"
+    then: Detects voice modality
+
+  - name: test_detect_tool_modality
+    given: "Search the web for latest news"
+    then: Detects tool modality
+
+  - name: test_detect_cross_modal
+    given: "Look at this image and write code"
+    then: Detects vision + code cross-modal
+
+  - name: test_route_text
+    given: Text modality request
+    then: Routes to text_agent
+
+  - name: test_route_code
+    given: Code modality request
+    then: Routes to code_agent
+
+  - name: test_route_chain
+    given: Cross-modal request
+    then: Returns ordered agent chain
+
+  - name: test_text_agent
+    given: Text request
+    then: Returns text response with confidence
+
+  - name: test_vision_agent
+    given: Vision request
+    then: Returns image description
+
+  - name: test_voice_agent
+    given: Voice request
+    then: Returns transcription or synthesis
+
+  - name: test_code_agent_generate
+    given: "Write fibonacci"
+    then: Returns generated code
+
+  - name: test_code_agent_explain
+    given: Source code
+    then: Returns explanation
+
+  - name: test_tool_agent
+    given: Tool request
+    then: Executes tool and returns result
+
+  - name: test_tool_registration
+    given: New tool definition
+    then: Tool registered and available
+
+  - name: test_chain_execution
+    given: Multi-step request
+    then: Executes agents in sequence
+
+  - name: test_chain_depth_limit
+    given: Chain exceeding MAX_CHAIN_DEPTH
+    then: Returns error
+
+  - name: test_image_to_code
+    given: "Look at chart and write code"
+    then: Vision + Code chain produces code output
+
+  - name: test_code_to_voice
+    given: "Explain this code aloud"
+    then: Code + Voice chain produces audio reference
+
+  - name: test_router_stats
+    given: Multiple requests processed
+    then: Stats reflect correct counts
+
+  - name: test_agent_capabilities
+    given: Any agent role
+    then: Returns valid capability description
+
+  - name: test_confidence_threshold
+    given: Low confidence detection
+    then: Falls back to text agent
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

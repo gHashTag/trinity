@@ -1,0 +1,181 @@
+# ============================================================================
+# Debug Logs Toggle - Conditional Visibility State Machine
+# Level 11.40: Debug toggle for LIVE LOG, CORPUS LOG, ALL EVENTS sections
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: debug_logs_toggle
+version: "1.0.0"
+language: zig
+module: debug_logs_toggle
+
+description: |
+  Debug toggle state machine for conditional visibility of diagnostic UI sections.
+  Controls LIVE LOG, CORPUS LOG, and ALL EVENTS panels through a single boolean gate.
+  When debug mode is OFF, all three sections are hidden from the user interface.
+  When debug mode is ON, sections render with full telemetry and event streams.
+  State transitions are atomic to prevent partial visibility glitches.
+
+constants:
+  DIM: 4096
+  SECTION_COUNT: 3
+  LIVE_LOG_INDEX: 0
+  CORPUS_LOG_INDEX: 1
+  ALL_EVENTS_INDEX: 2
+  DEFAULT_DEBUG_STATE: 0
+  MAX_LOG_BUFFER_SIZE: 8192
+  LOG_FLUSH_INTERVAL_MS: 500
+  TRANSITION_TIMEOUT_MS: 100
+
+types:
+  DebugState:
+    description: "Binary state of the debug toggle"
+    enum:
+      - debug_off
+      - debug_on
+
+  LogSection:
+    description: "Identifiers for the three debug log sections"
+    enum:
+      - live_log
+      - corpus_log
+      - all_events
+
+  SectionVisibility:
+    description: "Visibility state of a single debug section"
+    fields:
+      section: LogSection
+      visible: Bool
+      render_enabled: Bool
+      last_toggled_at: Int
+
+  ToggleState:
+    description: "Complete state of the debug toggle system"
+    fields:
+      debug_enabled: Bool
+      sections: List<SectionVisibility>
+      transition_count: Int
+      last_transition_at: Int
+      is_transitioning: Bool
+
+  ToggleEvent:
+    description: "Event emitted on state transition"
+    fields:
+      from_state: DebugState
+      to_state: DebugState
+      timestamp_ms: Int
+      sections_affected: Int
+      success: Bool
+
+  LogEntry:
+    description: "Single log entry in a debug section"
+    fields:
+      section: LogSection
+      timestamp_ms: Int
+      level: String
+      message: String
+      source: String
+
+  LogBuffer:
+    description: "Buffered log entries for a section"
+    fields:
+      section: LogSection
+      entries: List<LogEntry>
+      capacity: Int
+      count: Int
+      overflow_count: Int
+
+behaviors:
+  # State machine transitions
+  - name: init
+    given: Default debug state (OFF)
+    when: Application starts or toggle system is created
+    then: Return ToggleState with all 3 sections hidden
+
+  - name: toggle_debug
+    given: Current ToggleState
+    when: User activates or deactivates debug mode
+    then: Atomically flip all 3 sections visibility, emit ToggleEvent
+
+  - name: set_debug_on
+    given: ToggleState with debug_enabled = false
+    when: Debug mode explicitly enabled
+    then: Set debug_enabled = true, show LIVE LOG, CORPUS LOG, ALL EVENTS
+
+  - name: set_debug_off
+    given: ToggleState with debug_enabled = true
+    when: Debug mode explicitly disabled
+    then: Set debug_enabled = false, hide all 3 sections atomically
+
+  # Section visibility queries
+  - name: is_section_visible
+    given: LogSection identifier and current ToggleState
+    when: UI renderer queries section visibility
+    then: Return true only if debug_enabled is true
+
+  - name: get_visible_sections
+    given: Current ToggleState
+    when: Layout engine needs visible section list
+    then: Return list of 3 sections if debug ON, empty list if debug OFF
+
+  # Atomic transition guard
+  - name: begin_transition
+    given: ToggleState with is_transitioning = false
+    when: Toggle action initiated
+    then: Set is_transitioning = true, prevent concurrent toggles
+
+  - name: complete_transition
+    given: ToggleState with is_transitioning = true
+    when: All sections have been updated
+    then: Set is_transitioning = false, increment transition_count
+
+  - name: abort_transition
+    given: ToggleState with is_transitioning = true
+    when: Transition timeout exceeded (TRANSITION_TIMEOUT_MS)
+    then: Rollback to previous state, emit error event
+
+  # Log buffer management
+  - name: push_log_entry
+    given: LogEntry and target LogBuffer
+    when: New log event arrives for a section
+    then: Append entry if debug ON, discard silently if debug OFF
+
+  - name: flush_buffer
+    given: LogBuffer with pending entries
+    when: Flush interval elapsed or buffer near capacity
+    then: Render buffered entries to UI, reset buffer count
+
+  - name: clear_all_buffers
+    given: All LogBuffers
+    when: Debug mode toggled OFF
+    then: Clear all 3 section buffers, reset overflow counts
+
+test_cases:
+  - name: default_state_is_off
+    given: "Fresh initialization"
+    expected: "debug_enabled = false, all 3 sections hidden"
+
+  - name: toggle_on_shows_all_sections
+    given: "debug_enabled = false"
+    expected: "All 3 sections visible after toggle"
+
+  - name: toggle_off_hides_all_sections
+    given: "debug_enabled = true"
+    expected: "All 3 sections hidden after toggle"
+
+  - name: atomic_transition_no_partial
+    given: "Toggle from OFF to ON"
+    expected: "Never observe 1 or 2 sections visible mid-transition"
+
+  - name: concurrent_toggle_blocked
+    given: "Toggle while is_transitioning = true"
+    expected: "Second toggle rejected, no state corruption"
+
+  - name: logs_discarded_when_off
+    given: "debug_enabled = false, log entry arrives"
+    expected: "Entry silently dropped, no buffer growth"
+
+  - name: transition_timeout_rollback
+    given: "Transition exceeds TRANSITION_TIMEOUT_MS"
+    expected: "State rolled back to previous, error event emitted"

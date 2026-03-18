@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>NeoDetect Fingerprint Test</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #fff;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #f39c12;
+    }
+    .test-section {
+      background: rgba(255,255,255,0.05);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .test-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #f39c12;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .test-title .status {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #666;
+    }
+    .test-title .status.pass { background: #2ecc71; }
+    .test-title .status.fail { background: #e74c3c; }
+    .test-title .status.warn { background: #f39c12; }
+    .test-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 13px;
+    }
+    .test-row:last-child { border-bottom: none; }
+    .test-label { color: rgba(255,255,255,0.7); }
+    .test-value { 
+      color: #fff; 
+      font-family: monospace;
+      max-width: 300px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .test-value.spoofed { color: #2ecc71; }
+    .test-value.original { color: #e74c3c; }
+    canvas { 
+      border: 1px solid rgba(255,255,255,0.1); 
+      border-radius: 4px;
+      margin: 8px 0;
+    }
+    .btn {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #f39c12, #e67e22);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 8px 4px 8px 0;
+    }
+    .btn:hover { opacity: 0.9; }
+    .hash { 
+      font-family: monospace; 
+      font-size: 11px; 
+      color: #2ecc71;
+      word-break: break-all;
+    }
+    .summary {
+      background: rgba(46, 204, 113, 0.1);
+      border: 1px solid rgba(46, 204, 113, 0.3);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+    .summary.warning {
+      background: rgba(243, 156, 18, 0.1);
+      border-color: rgba(243, 156, 18, 0.3);
+    }
+    .summary h3 { margin-bottom: 8px; }
+  </style>
+</head>
+<body>
+  <h1>🛡️ NeoDetect Fingerprint Test</h1>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="nav-status"></span>
+      Navigator Properties
+    </div>
+    <div class="test-row">
+      <span class="test-label">Platform</span>
+      <span class="test-value" id="nav-platform">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">User Agent</span>
+      <span class="test-value" id="nav-useragent">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Hardware Concurrency</span>
+      <span class="test-value" id="nav-cores">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Device Memory</span>
+      <span class="test-value" id="nav-memory">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Language</span>
+      <span class="test-value" id="nav-language">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Languages</span>
+      <span class="test-value" id="nav-languages">-</span>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="screen-status"></span>
+      Screen Properties
+    </div>
+    <div class="test-row">
+      <span class="test-label">Screen Size</span>
+      <span class="test-value" id="screen-size">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Available Size</span>
+      <span class="test-value" id="screen-avail">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Color Depth</span>
+      <span class="test-value" id="screen-depth">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Pixel Ratio</span>
+      <span class="test-value" id="screen-ratio">-</span>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="canvas-status"></span>
+      Canvas Fingerprint
+    </div>
+    <canvas id="canvas-test" width="280" height="60"></canvas>
+    <div class="test-row">
+      <span class="test-label">Canvas Hash</span>
+      <span class="test-value hash" id="canvas-hash">-</span>
+    </div>
+    <button class="btn" onclick="testCanvas()">Re-test Canvas</button>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="webgl-status"></span>
+      WebGL Fingerprint
+    </div>
+    <canvas id="webgl-test" width="100" height="100"></canvas>
+    <div class="test-row">
+      <span class="test-label">Vendor</span>
+      <span class="test-value" id="webgl-vendor">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Renderer</span>
+      <span class="test-value" id="webgl-renderer">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">WebGL Hash</span>
+      <span class="test-value hash" id="webgl-hash">-</span>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="audio-status"></span>
+      Audio Fingerprint
+    </div>
+    <div class="test-row">
+      <span class="test-label">Audio Hash</span>
+      <span class="test-value hash" id="audio-hash">-</span>
+    </div>
+    <button class="btn" onclick="testAudio()">Test Audio</button>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="timezone-status"></span>
+      Timezone
+    </div>
+    <div class="test-row">
+      <span class="test-label">Timezone Offset</span>
+      <span class="test-value" id="tz-offset">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Timezone Name</span>
+      <span class="test-value" id="tz-name">-</span>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="webrtc-status"></span>
+      WebRTC IP Leak
+    </div>
+    <div class="test-row">
+      <span class="test-label">Local IP</span>
+      <span class="test-value" id="webrtc-local">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Public IP</span>
+      <span class="test-value" id="webrtc-public">-</span>
+    </div>
+    <button class="btn" onclick="testWebRTC()">Test WebRTC</button>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="battery-status"></span>
+      Battery API
+    </div>
+    <div class="test-row">
+      <span class="test-label">Charging</span>
+      <span class="test-value" id="battery-charging">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Level</span>
+      <span class="test-value" id="battery-level">-</span>
+    </div>
+    <button class="btn" onclick="testBattery()">Test Battery</button>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="bluetooth-status"></span>
+      Bluetooth API
+    </div>
+    <div class="test-row">
+      <span class="test-label">Available</span>
+      <span class="test-value" id="bluetooth-available">-</span>
+    </div>
+    <button class="btn" onclick="testBluetooth()">Test Bluetooth</button>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="permissions-status"></span>
+      Permissions API
+    </div>
+    <div class="test-row">
+      <span class="test-label">Geolocation</span>
+      <span class="test-value" id="perm-geolocation">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Notifications</span>
+      <span class="test-value" id="perm-notifications">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Camera</span>
+      <span class="test-value" id="perm-camera">-</span>
+    </div>
+    <button class="btn" onclick="testPermissions()">Test Permissions</button>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="clienthints-status"></span>
+      Client Hints
+    </div>
+    <div class="test-row">
+      <span class="test-label">Platform</span>
+      <span class="test-value" id="hints-platform">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Mobile</span>
+      <span class="test-value" id="hints-mobile">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Brands</span>
+      <span class="test-value" id="hints-brands">-</span>
+    </div>
+  </div>
+  
+  <div class="test-section">
+    <div class="test-title">
+      <span class="status" id="storage-status"></span>
+      Storage API
+    </div>
+    <div class="test-row">
+      <span class="test-label">Quota</span>
+      <span class="test-value" id="storage-quota">-</span>
+    </div>
+    <div class="test-row">
+      <span class="test-label">Usage</span>
+      <span class="test-value" id="storage-usage">-</span>
+    </div>
+  </div>
+  
+  <div class="summary" id="summary">
+    <h3>Test Summary</h3>
+    <p id="summary-text">Running tests...</p>
+  </div>
+  
+  <script>
+    // Store original values for comparison
+    const originalValues = {};
+    let testResults = { pass: 0, fail: 0, warn: 0 };
+    
+    // Hash function
+    async function sha256(str) {
+      const buffer = new TextEncoder().encode(str);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    
+    // Test Navigator
+    function testNavigator() {
+      document.getElementById('nav-platform').textContent = navigator.platform;
+      document.getElementById('nav-useragent').textContent = navigator.userAgent;
+      document.getElementById('nav-cores').textContent = navigator.hardwareConcurrency;
+      document.getElementById('nav-memory').textContent = navigator.deviceMemory + ' GB';
+      document.getElementById('nav-language').textContent = navigator.language;
+      document.getElementById('nav-languages').textContent = navigator.languages.join(', ');
+      
+      // Check if values look spoofed
+      const platform = navigator.platform;
+      const ua = navigator.userAgent;
+      
+      // Simple heuristic: if platform doesn't match UA, likely spoofed
+      const isWindows = platform === 'Win32';
+      const uaHasWindows = ua.includes('Windows');
+      const isMac = platform === 'MacIntel';
+      const uaHasMac = ua.includes('Macintosh');
+      
+      if ((isWindows && uaHasWindows) || (isMac && uaHasMac) || platform.includes('Linux')) {
+        document.getElementById('nav-status').className = 'status pass';
+        testResults.pass++;
+      } else {
+        document.getElementById('nav-status').className = 'status warn';
+        testResults.warn++;
+      }
+    }
+    
+    // Test Screen
+    function testScreen() {
+      document.getElementById('screen-size').textContent = `${screen.width}x${screen.height}`;
+      document.getElementById('screen-avail').textContent = `${screen.availWidth}x${screen.availHeight}`;
+      document.getElementById('screen-depth').textContent = screen.colorDepth;
+      document.getElementById('screen-ratio').textContent = window.devicePixelRatio;
+      
+      // Common resolutions
+      const commonResolutions = [
+        [1920, 1080], [2560, 1440], [3840, 2160], [1366, 768],
+        [2560, 1600], [2880, 1800], [1440, 900], [1536, 864]
+      ];
+      
+      const isCommon = commonResolutions.some(([w, h]) => 
+        screen.width === w && screen.height === h
+      );
+      
+      document.getElementById('screen-status').className = isCommon ? 'status pass' : 'status warn';
+      if (isCommon) testResults.pass++; else testResults.warn++;
+    }
+    
+    // Test Canvas
+    async function testCanvas() {
+      const canvas = document.getElementById('canvas-test');
+      const ctx = canvas.getContext('2d');
+      
+      // Draw test pattern
+      ctx.fillStyle = '#1a1a2e';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.fillStyle = '#f39c12';
+      ctx.font = '14px Arial';
+      ctx.fillText('NeoDetect Canvas Test 🛡️', 10, 25);
+      
+      ctx.fillStyle = '#2ecc71';
+      ctx.fillRect(10, 35, 100, 15);
+      
+      ctx.fillStyle = '#e74c3c';
+      ctx.beginPath();
+      ctx.arc(180, 35, 15, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Get data URL and hash
+      const dataUrl = canvas.toDataURL();
+      const hash = await sha256(dataUrl);
+      
+      document.getElementById('canvas-hash').textContent = hash.substring(0, 32) + '...';
+      
+      // Store for comparison
+      if (!originalValues.canvasHash) {
+        originalValues.canvasHash = hash;
+      }
+      
+      // If hash changed from original, protection is working
+      if (originalValues.canvasHash !== hash) {
+        document.getElementById('canvas-status').className = 'status pass';
+        document.getElementById('canvas-hash').className = 'test-value hash spoofed';
+      } else {
+        document.getElementById('canvas-status').className = 'status pass';
+      }
+      testResults.pass++;
+      
+      return hash;
+    }
+    
+    // Test WebGL
+    async function testWebGL() {
+      const canvas = document.getElementById('webgl-test');
+      const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+      
+      if (!gl) {
+        document.getElementById('webgl-vendor').textContent = 'Not supported';
+        document.getElementById('webgl-renderer').textContent = 'Not supported';
+        document.getElementById('webgl-status').className = 'status fail';
+        testResults.fail++;
+        return;
+      }
+      
+      // Draw something
+      gl.clearColor(0.1, 0.1, 0.2, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      
+      // Get debug info
+      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+      let vendor = 'Unknown';
+      let renderer = 'Unknown';
+      
+      if (debugInfo) {
+        vendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+        renderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      } else {
+        vendor = gl.getParameter(gl.VENDOR);
+        renderer = gl.getParameter(gl.RENDERER);
+      }
+      
+      document.getElementById('webgl-vendor').textContent = vendor;
+      document.getElementById('webgl-renderer').textContent = renderer;
+      
+      // Hash the WebGL parameters
+      const params = [vendor, renderer, gl.getParameter(gl.VERSION)].join('|');
+      const hash = await sha256(params);
+      document.getElementById('webgl-hash').textContent = hash.substring(0, 32) + '...';
+      
+      // Check if it looks like a real GPU
+      const knownVendors = ['NVIDIA', 'AMD', 'Intel', 'Apple', 'Google'];
+      const hasKnownVendor = knownVendors.some(v => vendor.includes(v));
+      
+      document.getElementById('webgl-status').className = hasKnownVendor ? 'status pass' : 'status warn';
+      if (hasKnownVendor) testResults.pass++; else testResults.warn++;
+    }
+    
+    // Test Audio
+    async function testAudio() {
+      try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioCtx.createAnalyser();
+        const oscillator = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        
+        oscillator.type = 'triangle';
+        oscillator.frequency.value = 10000;
+        gain.gain.value = 0;
+        
+        oscillator.connect(gain);
+        gain.connect(analyser);
+        analyser.connect(audioCtx.destination);
+        
+        oscillator.start(0);
+        
+        const dataArray = new Float32Array(analyser.frequencyBinCount);
+        analyser.getFloatFrequencyData(dataArray);
+        
+        oscillator.stop();
+        audioCtx.close();
+        
+        // Hash the audio data
+        const audioStr = Array.from(dataArray.slice(0, 100)).join(',');
+        const hash = await sha256(audioStr);
+        
+        document.getElementById('audio-hash').textContent = hash.substring(0, 32) + '...';
+        document.getElementById('audio-status').className = 'status pass';
+        testResults.pass++;
+      } catch (e) {
+        document.getElementById('audio-hash').textContent = 'Error: ' + e.message;
+        document.getElementById('audio-status').className = 'status fail';
+        testResults.fail++;
+      }
+    }
+    
+    // Test Timezone
+    function testTimezone() {
+      const offset = new Date().getTimezoneOffset();
+      const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      
+      document.getElementById('tz-offset').textContent = `${offset} minutes (UTC${offset <= 0 ? '+' : ''}${-offset/60})`;
+      document.getElementById('tz-name').textContent = tzName;
+      
+      document.getElementById('timezone-status').className = 'status pass';
+      testResults.pass++;
+    }
+    
+    // Test WebRTC
+    async function testWebRTC() {
+      const localEl = document.getElementById('webrtc-local');
+      const publicEl = document.getElementById('webrtc-public');
+      const statusEl = document.getElementById('webrtc-status');
+      
+      localEl.textContent = 'Testing...';
+      publicEl.textContent = 'Testing...';
+      
+      try {
+        const pc = new RTCPeerConnection({
+          iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+        });
+        
+        const ips = { local: [], public: [] };
+        
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            const candidate = event.candidate.candidate;
+            const ipMatch = candidate.match(/([0-9]{1,3}\.){3}[0-9]{1,3}/);
+            if (ipMatch) {
+              const ip = ipMatch[0];
+              if (/^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[01])\.)/.test(ip)) {
+                ips.local.push(ip);
+              } else {
+                ips.public.push(ip);
+              }
+            }
+          }
+        };
+        
+        pc.createDataChannel('test');
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        
+        // Wait for ICE gathering
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        pc.close();
+        
+        localEl.textContent = ips.local.length > 0 ? ips.local.join(', ') : 'Protected (none found)';
+        publicEl.textContent = ips.public.length > 0 ? ips.public.join(', ') : 'Protected (none found)';
+        
+        // If no local IPs leaked, protection is working
+        if (ips.local.length === 0) {
+          statusEl.className = 'status pass';
+          localEl.className = 'test-value spoofed';
+          testResults.pass++;
+        } else {
+          statusEl.className = 'status warn';
+          localEl.className = 'test-value original';
+          testResults.warn++;
+        }
+      } catch (e) {
+        localEl.textContent = 'Error: ' + e.message;
+        publicEl.textContent = '-';
+        statusEl.className = 'status fail';
+        testResults.fail++;
+      }
+    }
+    
+    // Test Battery
+    async function testBattery() {
+      const chargingEl = document.getElementById('battery-charging');
+      const levelEl = document.getElementById('battery-level');
+      const statusEl = document.getElementById('battery-status');
+      
+      try {
+        if (!navigator.getBattery) {
+          chargingEl.textContent = 'API not available';
+          levelEl.textContent = '-';
+          statusEl.className = 'status pass';
+          testResults.pass++;
+          return;
+        }
+        
+        const battery = await navigator.getBattery();
+        
+        chargingEl.textContent = battery.charging ? 'Yes' : 'No';
+        levelEl.textContent = (battery.level * 100).toFixed(0) + '%';
+        
+        // If battery shows 100% and charging, likely spoofed
+        if (battery.level === 1.0 && battery.charging === true) {
+          statusEl.className = 'status pass';
+          chargingEl.className = 'test-value spoofed';
+          levelEl.className = 'test-value spoofed';
+          testResults.pass++;
+        } else {
+          statusEl.className = 'status warn';
+          testResults.warn++;
+        }
+      } catch (e) {
+        chargingEl.textContent = 'Error: ' + e.message;
+        statusEl.className = 'status fail';
+        testResults.fail++;
+      }
+    }
+    
+    // Test Bluetooth
+    async function testBluetooth() {
+      const availEl = document.getElementById('bluetooth-available');
+      const statusEl = document.getElementById('bluetooth-status');
+      
+      try {
+        if (!navigator.bluetooth) {
+          availEl.textContent = 'API not available';
+          statusEl.className = 'status pass';
+          testResults.pass++;
+          return;
+        }
+        
+        const available = await navigator.bluetooth.getAvailability();
+        availEl.textContent = available ? 'Yes' : 'No (Protected)';
+        
+        if (!available) {
+          statusEl.className = 'status pass';
+          availEl.className = 'test-value spoofed';
+          testResults.pass++;
+        } else {
+          statusEl.className = 'status warn';
+          testResults.warn++;
+        }
+      } catch (e) {
+        availEl.textContent = 'Blocked: ' + e.message;
+        statusEl.className = 'status pass';
+        testResults.pass++;
+      }
+    }
+    
+    // Test Permissions
+    async function testPermissions() {
+      const geoEl = document.getElementById('perm-geolocation');
+      const notifEl = document.getElementById('perm-notifications');
+      const camEl = document.getElementById('perm-camera');
+      const statusEl = document.getElementById('permissions-status');
+      
+      try {
+        if (!navigator.permissions) {
+          geoEl.textContent = 'API not available';
+          statusEl.className = 'status pass';
+          testResults.pass++;
+          return;
+        }
+        
+        const [geo, notif, cam] = await Promise.all([
+          navigator.permissions.query({ name: 'geolocation' }),
+          navigator.permissions.query({ name: 'notifications' }),
+          navigator.permissions.query({ name: 'camera' })
+        ]);
+        
+        geoEl.textContent = geo.state;
+        notifEl.textContent = notif.state;
+        camEl.textContent = cam.state;
+        
+        statusEl.className = 'status pass';
+        testResults.pass++;
+      } catch (e) {
+        geoEl.textContent = 'Error: ' + e.message;
+        statusEl.className = 'status fail';
+        testResults.fail++;
+      }
+    }
+    
+    // Test Client Hints
+    async function testClientHints() {
+      const platformEl = document.getElementById('hints-platform');
+      const mobileEl = document.getElementById('hints-mobile');
+      const brandsEl = document.getElementById('hints-brands');
+      const statusEl = document.getElementById('clienthints-status');
+      
+      try {
+        if (!navigator.userAgentData) {
+          platformEl.textContent = 'API not available';
+          statusEl.className = 'status pass';
+          testResults.pass++;
+          return;
+        }
+        
+        platformEl.textContent = navigator.userAgentData.platform;
+        mobileEl.textContent = navigator.userAgentData.mobile ? 'Yes' : 'No';
+        brandsEl.textContent = navigator.userAgentData.brands.map(b => b.brand).join(', ');
+        
+        statusEl.className = 'status pass';
+        testResults.pass++;
+      } catch (e) {
+        platformEl.textContent = 'Error: ' + e.message;
+        statusEl.className = 'status fail';
+        testResults.fail++;
+      }
+    }
+    
+    // Test Storage
+    async function testStorage() {
+      const quotaEl = document.getElementById('storage-quota');
+      const usageEl = document.getElementById('storage-usage');
+      const statusEl = document.getElementById('storage-status');
+      
+      try {
+        if (!navigator.storage || !navigator.storage.estimate) {
+          quotaEl.textContent = 'API not available';
+          statusEl.className = 'status pass';
+          testResults.pass++;
+          return;
+        }
+        
+        const estimate = await navigator.storage.estimate();
+        
+        const formatBytes = (bytes) => {
+          if (bytes >= 1073741824) return (bytes / 1073741824).toFixed(2) + ' GB';
+          if (bytes >= 1048576) return (bytes / 1048576).toFixed(2) + ' MB';
+          return bytes + ' bytes';
+        };
+        
+        quotaEl.textContent = formatBytes(estimate.quota);
+        usageEl.textContent = formatBytes(estimate.usage);
+        
+        // Check if values look spoofed (exactly 1GB quota, 50MB usage)
+        if (estimate.quota === 1073741824 && estimate.usage === 52428800) {
+          statusEl.className = 'status pass';
+          quotaEl.className = 'test-value spoofed';
+          usageEl.className = 'test-value spoofed';
+        } else {
+          statusEl.className = 'status pass';
+        }
+        testResults.pass++;
+      } catch (e) {
+        quotaEl.textContent = 'Error: ' + e.message;
+        statusEl.className = 'status fail';
+        testResults.fail++;
+      }
+    }
+    
+    // Update summary
+    function updateSummary() {
+      const summary = document.getElementById('summary');
+      const text = document.getElementById('summary-text');
+      
+      const total = testResults.pass + testResults.fail + testResults.warn;
+      
+      if (testResults.fail > 0) {
+        summary.className = 'summary warning';
+        text.innerHTML = `<strong>${testResults.fail}</strong> tests failed, <strong>${testResults.warn}</strong> warnings, <strong>${testResults.pass}</strong> passed out of ${total} tests.<br>Some fingerprint protections may not be working.`;
+      } else if (testResults.warn > 0) {
+        summary.className = 'summary warning';
+        text.innerHTML = `<strong>${testResults.pass}</strong> tests passed with <strong>${testResults.warn}</strong> warnings.<br>Extension appears to be working but some values may need verification.`;
+      } else {
+        summary.className = 'summary';
+        text.innerHTML = `<strong>All ${testResults.pass} tests passed!</strong><br>NeoDetect fingerprint protection is active.`;
+      }
+    }
+    
+    // Run all tests
+    async function runAllTests() {
+      testResults = { pass: 0, fail: 0, warn: 0 };
+      
+      testNavigator();
+      testScreen();
+      await testCanvas();
+      await testWebGL();
+      await testAudio();
+      testTimezone();
+      await testWebRTC();
+      await testBattery();
+      await testBluetooth();
+      await testPermissions();
+      await testClientHints();
+      await testStorage();
+      
+      updateSummary();
+    }
+    
+    // Run on load
+    runAllTests();
+    
+    // Log for debugging
+    console.log('🛡️ NeoDetect Fingerprint Test Page');
+    console.log('Navigator:', {
+      platform: navigator.platform,
+      userAgent: navigator.userAgent,
+      hardwareConcurrency: navigator.hardwareConcurrency,
+      deviceMemory: navigator.deviceMemory
+    });
+    console.log('Screen:', {
+      width: screen.width,
+      height: screen.height,
+      colorDepth: screen.colorDepth,
+      pixelRatio: window.devicePixelRatio
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "timestamp": "mu5_gen_18",
+  "spec": "specs/tri/bootstrap/tests_gen_full.tri",
+  "link": 7,
+  "link_name": "code_generate",
+  "error_category": "SYNTAX_ERROR",
+  "error_message": "  Input:  specs/tri/bootstrap/tests_gen_full.tri\n  Output: generated/tests_gen_full.zig\n  AGENT MU: Verification FAILED\n    Error: unused function parameter\n    Attempts: 2\n",
+  "error_line": 0,
+  "generated_file": "",
+  "fix_attempted": false,
+  "fix_result": ""
+}

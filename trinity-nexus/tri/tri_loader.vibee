@@ -1,0 +1,144 @@
+# tri_loader.vibee - Trinity Model Loader
+# Single source of truth for .tri format loading
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+
+name: tri_loader
+version: "1.0.0"
+language: zig
+module: tri_loader
+author: Ona AI Agent
+description: |
+  Loader for .tri (Trinity) model format.
+  Supports packed ternary weights (4 trits per byte = 16x compression).
+  Compatible with BitNet pipeline for inference.
+
+types:
+  TriHeader:
+    description: File header for .tri format
+    fields:
+      magic: Int          # "TRI1" = 0x31495254
+      version: Int        # Format version (1)
+      num_layers: Int     # Number of transformer layers
+      hidden_size: Int    # Hidden dimension
+      intermediate_size: Int  # MLP intermediate size
+      num_heads: Int      # Number of attention heads
+      num_kv_heads: Int   # Number of KV heads (for GQA)
+      head_dim: Int       # Dimension per head
+      vocab_size: Int     # Vocabulary size
+      max_seq_len: Int    # Maximum sequence length
+      rope_theta: Float   # RoPE theta parameter
+      rms_norm_eps: Float # RMSNorm epsilon
+
+  LayerWeights:
+    description: Weights for single transformer layer
+    fields:
+      input_norm: List<Float>      # RMSNorm weight [hidden_size]
+      q_proj: List<Int>            # Packed ternary [num_heads * head_dim * hidden_size / 4]
+      k_proj: List<Int>            # Packed ternary [num_kv_heads * head_dim * hidden_size / 4]
+      v_proj: List<Int>            # Packed ternary [num_kv_heads * head_dim * hidden_size / 4]
+      o_proj: List<Int>            # Packed ternary [hidden_size * num_heads * head_dim / 4]
+      post_attn_norm: List<Float>  # RMSNorm weight [hidden_size]
+      gate_proj: List<Int>         # Packed ternary [intermediate_size * hidden_size / 4]
+      up_proj: List<Int>           # Packed ternary [intermediate_size * hidden_size / 4]
+      down_proj: List<Int>         # Packed ternary [hidden_size * intermediate_size / 4]
+
+  ModelWeights:
+    description: Complete model weights
+    fields:
+      header: Object
+      embed: List<Float>           # Embedding table [vocab_size * hidden_size]
+      layers: List<Object>         # Array of LayerWeights
+      final_norm: List<Float>      # Final RMSNorm weight [hidden_size]
+      lm_head: List<Int>           # Packed ternary [vocab_size * hidden_size / 4]
+
+  LoadResult:
+    description: Result of loading model
+    fields:
+      success: Bool
+      model: Object
+      error_message: String
+      load_time_ms: Float
+      memory_bytes: Int
+
+behaviors:
+  - name: read_header
+    given: File path to .tri file
+    when: Opening model file
+    then: Parse and validate header, return TriHeader
+
+  - name: validate_magic
+    given: First 4 bytes of file
+    when: Checking file format
+    then: Return true if magic == "TRI1" (0x31495254)
+
+  - name: load_layer_weights
+    given: File handle and layer index
+    when: Loading specific layer
+    then: Read and return LayerWeights for that layer
+
+  - name: load_full_model
+    given: File path
+    when: Loading complete model
+    then: Load header, embeddings, all layers, final norm, lm_head
+
+  - name: calculate_memory_usage
+    given: TriHeader
+    when: Estimating memory requirements
+    then: Return total bytes needed for model
+
+  - name: verify_checksum
+    given: Loaded weights and expected checksum
+    when: Validating model integrity
+    then: Return true if checksum matches
+
+constants:
+  MAGIC: 0x31495254  # "TRI1" in little-endian
+  VERSION: 1
+  BITS_PER_TRIT: 2
+  TRITS_PER_BYTE: 4
+  COMPRESSION_RATIO: 16  # vs FP32
+
+  # Encoding: 00=0, 01=+1, 10=-1, 11=reserved
+  TRIT_ZERO: 0
+  TRIT_POS: 1
+  TRIT_NEG: 2
+
+cli:
+  name: tri-loader
+  commands:
+    - name: info
+      description: Show model info from .tri file
+      args:
+        - name: model
+          type: String
+          required: true
+          description: Path to .tri file
+
+    - name: validate
+      description: Validate .tri file format
+      args:
+        - name: model
+          type: String
+          required: true
+
+    - name: convert
+      description: Convert GGUF to .tri format
+      args:
+        - name: input
+          type: String
+          required: true
+          description: Input GGUF file
+        - name: output
+          type: String
+          required: true
+          description: Output .tri file
+
+# Memory layout for .tri file:
+# [Header: 64 bytes]
+# [Embeddings: vocab_size * hidden_size * 4 bytes (f32)]
+# [Layer 0 weights...]
+# [Layer 1 weights...]
+# ...
+# [Layer N-1 weights...]
+# [Final norm: hidden_size * 4 bytes (f32)]
+# [LM head: vocab_size * hidden_size / 4 bytes (packed)]

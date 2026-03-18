@@ -1,0 +1,22 @@
+[spec]
+name = "hslm_model"
+version = "1.0.0"
+description = "HSLM ternary language model architecture"
+
+[interface]
+inputs = ["config: Config", "tokens: []u32"]
+outputs = ["logits: []f32", "loss: f32"]
+
+[invariants]
+vocab_size = "729 (3^6)"
+embed_dim = "243 (3^5)"
+hidden_dim = "729 (3^6)"
+context_len = "81 (3^4)"
+trit_values = "{-1, 0, +1}"
+
+[architecture]
+blocks = "4 TrinityBlocks"
+attention = "sacred cosine similarity, no softmax"
+activation = "ternary threshold"
+optimizer = "LAMB with cosine schedule"
+matmul = "sparse ternary, branchless"

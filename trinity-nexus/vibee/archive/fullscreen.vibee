@@ -1,0 +1,325 @@
+name: fullscreen
+version: "1.0.0"
+language: zig
+module: fullscreen
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+    test_cases:
+      - name: test_main
+        input: {}
+        expected: {}
+
+  - name: handle_request
+    given: Input data provided
+    when: handle_request function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_request
+        input: {}
+        expected: {}
+
+  - name: serve_html
+    given: Input data provided
+    when: serve_html function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_html
+        input: {}
+        expected: {}
+
+  - name: serve_json
+    given: Input data provided
+    when: serve_json function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_json
+        input: {}
+        expected: {}
+
+  - name: serve_text
+    given: Input data provided
+    when: serve_text function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_text
+        input: {}
+        expected: {}
+
+  - name: fullscreen_ui
+    given: Input data provided
+    when: fullscreen_ui function called
+    then: Result returned
+    test_cases:
+      - name: test_fullscreen_ui
+        input: {}
+        expected: {}
+
+  - name: handle_api_state
+    given: Input data provided
+    when: handle_api_state function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_api_state
+        input: {}
+        expected: {}
+
+  - name: handle_api_events
+    given: Input data provided
+    when: handle_api_events function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_api_events
+        input: {}
+        expected: {}
+
+  - name: handle_api_click
+    given: Input data provided
+    when: handle_api_click function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_api_click
+        input: {}
+        expected: {}
+
+  - name: handle_api_scroll
+    given: Input data provided
+    when: handle_api_scroll function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_api_scroll
+        input: {}
+        expected: {}
+
+  - name: handle_api_hover
+    given: Input data provided
+    when: handle_api_hover function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_api_hover
+        input: {}
+        expected: {}
+
+  - name: handle_api_key
+    given: Input data provided
+    when: handle_api_key function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_api_key
+        input: {}
+        expected: {}
+
+  - name: handle_api_viewport
+    given: Input data provided
+    when: handle_api_viewport function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_api_viewport
+        input: {}
+        expected: {}
+
+  - name: erlang_system_time
+    given: Input data provided
+    when: erlang_system_time function called
+    then: Result returned
+    test_cases:
+      - name: test_erlang_system_time
+        input: {}
+        expected: {}
+
+  - name: get_timestamp
+    given: Input data provided
+    when: get_timestamp function called
+    then: Result returned
+    test_cases:
+      - name: test_get_timestamp
+        input: {}
+        expected: {}
+
+  - name: handle_pixel_grid_create
+    given: Input data provided
+    when: handle_pixel_grid_create function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_pixel_grid_create
+        input: {}
+        expected: {}
+
+  - name: handle_pixel_grid_render
+    given: Input data provided
+    when: handle_pixel_grid_render function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_pixel_grid_render
+        input: {}
+        expected: {}
+
+  - name: handle_pixel_grid_status
+    given: Input data provided
+    when: handle_pixel_grid_status function called
+    then: Result returned
+    test_cases:
+      - name: test_handle_pixel_grid_status
+        input: {}
+        expected: {}
+
+  - name: ui_components
+    given: Input data provided
+    when: ui_components function called
+    then: Result returned
+    test_cases:
+      - name: test_ui_components
+        input: {}
+        expected: {}
+
+  - name: serve_plugin_dashboard
+    given: Input data provided
+    when: serve_plugin_dashboard function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_plugin_dashboard
+        input: {}
+        expected: {}
+
+  - name: serve_plugin_page
+    given: Input data provided
+    when: serve_plugin_page function called
+    then: Result returned
+    test_cases:
+      - name: test_serve_plugin_page
+        input: {}
+        expected: {}
+
+types:
+functions:
+  - name: main
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_request
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_html
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_json
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_text
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: fullscreen_ui
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_api_state
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_api_events
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_api_click
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_api_scroll
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_api_hover
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_api_key
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_api_viewport
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: erlang_system_time
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_timestamp
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_pixel_grid_create
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_pixel_grid_render
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: handle_pixel_grid_status
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: ui_components
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_plugin_dashboard
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: serve_plugin_page
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # envoy
+  # gleam/bytes_tree
+  # gleam/erlang/process
+  # gleam/http.{Post}
+  # gleam/http/request.{type Request}
+  # gleam/http/response
+  # gleam/int
+  # gleam/io
+  # gleam/option.{None, Some}
+  # gleam/string
+  # mist
+  # vibee_agent_api
+  # vibee_video_editor_ui_kit
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

@@ -1,0 +1,115 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TOKENIZER INTEGRATION - BPE from GGUF Metadata
+# Decode token IDs to text, encode text to tokens
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: tokenizer_integration
+version: "1.0.0"
+language: zig
+module: tokenizer_integration
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+config:
+  MAX_VOCAB_SIZE: 128000
+  MAX_TOKEN_LENGTH: 256
+  BOS_TOKEN_ID: 1
+  EOS_TOKEN_ID: 2
+  PAD_TOKEN_ID: 0
+  UNK_TOKEN_ID: 0
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  TokenizerConfig:
+    fields:
+      vocab_size: Int
+      bos_token_id: Int
+      eos_token_id: Int
+      pad_token_id: Int
+      unk_token_id: Int
+      add_bos: Bool
+      add_eos: Bool
+      
+  Tokenizer:
+    fields:
+      vocab: List<String>       # Token ID -> string
+      vocab_map: Object         # String -> token ID (HashMap)
+      merges: List<Object>      # BPE merge rules
+      config: Object
+      
+  TokenizeResult:
+    fields:
+      tokens: List<Int>
+      num_tokens: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: load_from_gguf
+    given: GGUF metadata
+    when: Initializing tokenizer
+    then: |
+      1. Extract "tokenizer.ggml.tokens" -> vocab array
+      2. Extract "tokenizer.ggml.scores" -> token scores
+      3. Extract "tokenizer.ggml.merges" -> BPE merges
+      4. Extract special token IDs (bos, eos, pad, unk)
+      5. Build vocab_map (string -> id)
+      6. Return Tokenizer
+      
+  - name: encode
+    given: Text string
+    when: Converting text to tokens
+    then: |
+      1. If add_bos: prepend BOS token
+      2. Split text into characters
+      3. Apply BPE merges iteratively
+      4. Map tokens to IDs via vocab_map
+      5. If add_eos: append EOS token
+      6. Return token IDs
+      
+  - name: decode
+    given: Token IDs array
+    when: Converting tokens to text
+    then: |
+      1. For each token ID:
+         - Look up in vocab array
+         - Handle special tokens (skip BOS/EOS or convert)
+      2. Concatenate token strings
+      3. Handle byte-level tokens (Llama style)
+      4. Return decoded text
+      
+  - name: decode_single
+    given: Single token ID
+    when: Streaming decode
+    then: |
+      Return vocab[token_id] or "<unk>"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+integration:
+  gguf_reader:
+    file: src/vibeec/gguf_reader.zig
+    metadata_keys:
+      - "tokenizer.ggml.tokens"
+      - "tokenizer.ggml.scores"
+      - "tokenizer.ggml.merges"
+      - "tokenizer.ggml.bos_token_id"
+      - "tokenizer.ggml.eos_token_id"
+      
+  tri_inference:
+    file: src/vibeec/tri_inference.zig
+    usage: decode generated token IDs to text
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════

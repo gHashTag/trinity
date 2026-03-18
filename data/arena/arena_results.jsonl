@@ -1,0 +1,16 @@
+{"id":1,"fighter_a":"trinity-hslm","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":4293,"latency_b_ms":0,"timestamp":1773653132}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"api-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773659856}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"api-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773659876}
+{"id":2,"fighter_a":"trinity-hslm","fighter_b":"echo","task_id":"api-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":3531,"latency_b_ms":0,"timestamp":1773659876}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"api-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773659898}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"api-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773659926}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773659934}
+{"id":1,"fighter_a":"echo","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"complete","verdict":"none","latency_a_ms":0,"latency_b_ms":0,"timestamp":1773666185}
+{"id":1,"fighter_a":"trinity-hslm","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"judged","verdict":"tie","latency_a_ms":3637,"latency_b_ms":0,"timestamp":1773667638}
+{"id":1,"fighter_a":"claude-sonnet","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"judged","verdict":"tie","latency_a_ms":790,"latency_b_ms":0,"timestamp":1773667707}
+{"id":1,"fighter_a":"claude-sonnet","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"judged","verdict":"tie","latency_a_ms":7043,"latency_b_ms":0,"timestamp":1773667778}
+{"id":1,"fighter_a":"claude-sonnet","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"judged","verdict":"a_wins","latency_a_ms":18605,"latency_b_ms":0,"timestamp":1773667966}
+{"id":1,"fighter_a":"claude-sonnet","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"judged","verdict":"a_wins","latency_a_ms":18210,"latency_b_ms":0,"timestamp":1773668003}
+{"id":1,"fighter_a":"claude-sonnet","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"judged","verdict":"a_wins","latency_a_ms":15881,"latency_b_ms":0,"timestamp":1773669339}
+{"id":1,"fighter_a":"claude-sonnet","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"judged","verdict":"a_wins","latency_a_ms":3881,"latency_b_ms":0,"timestamp":1773670016}
+{"id":1,"fighter_a":"claude-sonnet","fighter_b":"echo","task_id":"cli-custom","category":"wild","status":"judged","verdict":"a_wins","latency_a_ms":1721,"latency_b_ms":0,"timestamp":1773670221}

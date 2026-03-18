@@ -1,0 +1,225 @@
+name: spec_generator
+version: "1.0.0"
+language: zig
+module: spec_generator
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: generate_tests
+    given: Input data provided
+    when: generate_tests function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_tests
+        input: {}
+        expected: {}
+
+  - name: generate_test_header
+    given: Input data provided
+    when: generate_test_header function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_test_header
+        input: {}
+        expected: {}
+
+  - name: generate_function_tests
+    given: Input data provided
+    when: generate_function_tests function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_function_tests
+        input: {}
+        expected: {}
+
+  - name: generate_test_case
+    given: Input data provided
+    when: generate_test_case function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_test_case
+        input: {}
+        expected: {}
+
+  - name: " <> test_name <> "
+    given: Input data provided
+    when: " <> test_name <> " function called
+    then: Result returned
+    test_cases:
+      - name: test_" <> test_name <> "
+        input: {}
+        expected: {}
+
+  - name: generate_signatures
+    given: Input data provided
+    when: generate_signatures function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_signatures
+        input: {}
+        expected: {}
+
+  - name: generate_function_signature
+    given: Input data provided
+    when: generate_function_signature function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_function_signature
+        input: {}
+        expected: {}
+
+  - name: " <> func.signature <> " {
+    given: Input data provided
+    when: " <> func.signature <> " { function called
+    then: Result returned
+    test_cases:
+      - name: test_" <> func.signature <> " {
+        input: {}
+        expected: {}
+
+  - name: get_example_params
+    given: Input data provided
+    when: get_example_params function called
+    then: Result returned
+    test_cases:
+      - name: test_get_example_params
+        input: {}
+        expected: {}
+
+  - name: generate_readme
+    given: Input data provided
+    when: generate_readme function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_readme
+        input: {}
+        expected: {}
+
+  - name: generate_api_docs
+    given: Input data provided
+    when: generate_api_docs function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_api_docs
+        input: {}
+        expected: {}
+
+  - name: generate_examples
+    given: Input data provided
+    when: generate_examples function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_examples
+        input: {}
+        expected: {}
+
+  - name: generate_manifest
+    given: Input data provided
+    when: generate_manifest function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_manifest
+        input: {}
+        expected: {}
+
+  - name: main
+    given: Input data provided
+    when: main function called
+    then: Result returned
+    test_cases:
+      - name: test_main
+        input: {}
+        expected: {}
+
+types:
+  FunctionSpec:
+    # TODO: Define fields
+
+  Example:
+    # TODO: Define fields
+
+functions:
+  - name: generate_tests
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_test_header
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_function_tests
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_test_case
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: " <> test_name <> "
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_signatures
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_function_signature
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: " <> func.signature <> " {
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: get_example_params
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_readme
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_api_docs
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_examples
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_manifest
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: main
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/io
+  # gleam/list
+  # gleam/string
+  # honeycomb/" <> plugin_name
+  # honeycomb/" <> plugin_name <> "
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

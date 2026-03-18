@@ -1,0 +1,26 @@
+name: mcp_github
+version: "1.0.0"
+language: zig
+module: mcp_github
+description: GitHub operations MCP tools
+
+types:
+  GitHubConfig:
+    fields:
+      token: String
+      base_url: String
+
+  Repository:
+    fields:
+      id: String
+      name: String
+      owner: String
+      url: String
+
+behaviors:
+  - name: repository_operations
+  - name: get_repository
+  - name: config
+  - name: owner
+  - name: repo
+  - name: get_repository

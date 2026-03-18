@@ -1,0 +1,42 @@
+[cell]
+id = "trinity.vm"
+name = "vm"
+version = "0.1.0"
+kind = "library"
+path = "src/vm"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Stack-based ternary bytecode virtual machine executor"
+capabilities = ["init", "deinit", "executeSacred", "benchmarkSacredOpcode", "init"]
+files = 2
+tests = 9
+owner = "agent:ralph"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = ["init", "deinit", "executeSacred"]
+exports = ["executeSacred", "benchmarkSacredOpcode", "track", "isHot", "lookup"]
+tri_subcommands = []
+events = []
+binaries = ["example-vm"]
+
+[dependencies]
+trinity.sacred = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:38fd356712849f388d178feacf957ef4180ab8005ece8ceeea4cd4a8598b6b3f"

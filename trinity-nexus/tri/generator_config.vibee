@@ -1,0 +1,39 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: default_config
+    given: Input data provided
+    when: default_config function called
+    then: Result returned
+  - name: test_default_config
+  - name: vibee_framework_config
+    given: Input data provided
+    when: vibee_framework_config function called
+    then: Result returned
+  - name: test_vibee_framework_config
+  - name: generate_imports
+    given: Input data provided
+    when: generate_imports function called
+    then: Result returned
+  - name: test_generate_imports
+  - name: is_framework_mode
+    given: Input data provided
+    when: is_framework_mode function called
+    then: Result returned
+  - name: test_is_framework_mode
+
+types:
+  default_config:
+    description: Auto-generated
+
+  vibee_framework_config:
+    description: Auto-generated
+
+  generate_imports:
+    description: Auto-generated
+
+  is_framework_mode:
+    description: Auto-generated

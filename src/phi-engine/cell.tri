@@ -1,0 +1,43 @@
+[cell]
+id = "trinity.phi-engine"
+name = "Phi Engine"
+version = "1.0.0"
+kind = "codegen"
+path = "src/phi-engine"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Golden ratio computation engine with phi-based transforms"
+capabilities = ["phi_compute", "codegen", "transform"]
+files = 409
+tests = 2604
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "sacred"
+type = "tool"
+
+[contributes]
+commands = ["compute", "transform"]
+tri_subcommands = []
+events = []
+
+[dependencies]
+trinity.cli = "^1.0.0"
+trinity.core-platform = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+
+ffi = "none"
+concurrency = "none"
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:7e4e6851bde8080c5abd831f46eb1937edd87fe0b2b1f7a813c1871f63445976"

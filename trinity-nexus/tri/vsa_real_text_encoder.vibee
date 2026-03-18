@@ -1,0 +1,159 @@
+# ============================================================================
+# VSA Real Text Encoder - Cycle 51
+# Real @import("vsa") integration for n-gram text encoding
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_real_text_encoder
+version: "1.0.0"
+language: zig
+module: vsa_real_text_encoder
+
+imports:
+  - name: vsa
+    path: "../src/vsa.zig"
+
+description: |
+  Text encoder using real VSA operations via @import("vsa").
+  N-gram encoding: chars → charToVector → bind with position → bundle all.
+
+constants:
+  DEFAULT_DIMENSION: 1024
+  NGRAM_SIZE: 3
+  ALPHABET_SIZE: 128
+  PHI: 1.6180339887498948482
+
+types:
+  TextEncoderConfig:
+    fields:
+      dimension: Int
+      ngram_size: Int
+
+  TextEncoderResult:
+    fields:
+      ngram_count: Int
+      unique_chars: Int
+      dimension: Int
+
+behaviors:
+  # Core VSA operations used by text encoder
+  - name: realCharToVector
+    given: ASCII character code
+    when: Mapping character to base hypervector
+    then: Use vsa.charToVector for deterministic mapping
+
+  - name: realEncodeText
+    given: Text string
+    when: Encoding full text to hypervector
+    then: Use vsa.encodeText with n-gram binding
+
+  - name: realBind
+    given: Two hypervectors (char + position)
+    when: Binding character with position
+    then: Use vsa.bind for association
+
+  - name: realBundle2
+    given: Two n-gram hypervectors
+    when: Combining n-grams
+    then: Use vsa.bundle2 for majority vote
+
+  - name: realPermute
+    given: Hypervector and position index
+    when: Encoding position information
+    then: Use vsa.permute for cyclic shift
+
+  - name: realCosineSimilarity
+    given: Two text hypervectors
+    when: Comparing text similarity
+    then: Use vsa.cosineSimilarity for [-1,1] score
+
+  - name: realHammingDistance
+    given: Two text hypervectors
+    when: Measuring text distance
+    then: Use vsa.hammingDistance for trit difference count
+
+  - name: realRandomVector
+    given: Seed value
+    when: Generating base vector for alphabet
+    then: Use vsa.randomVector for deterministic random
+
+  - name: realTextSimilarity
+    given: Two text strings
+    when: Comparing texts via VSA encoding
+    then: Encode both, compute cosine similarity
+
+  - name: realTextsAreSimilar
+    given: Two text strings and threshold
+    when: Checking if texts are similar
+    then: Return true if similarity > threshold
+
+  - name: realTextRoundtrip
+    given: Text string
+    when: Encoding and verifying self-similarity
+    then: Same text encoded twice has similarity 1.0
+
+  - name: realSearchCorpus
+    given: Query text and corpus of texts
+    when: Finding most similar text
+    then: Encode all, return highest cosine match
+
+  # N-gram specific behaviors
+  - name: realEncodeNGram
+    given: N-gram character sequence
+    when: Encoding single n-gram
+    then: Bind char vectors with position permutation
+
+  - name: realBundleNGrams
+    given: Multiple n-gram vectors
+    when: Combining into document vector
+    then: Bundle all n-gram vectors via majority vote
+
+  - name: realTextDeterminism
+    given: Same text encoded twice
+    when: Verifying reproducibility
+    then: Both encodings produce identical vectors
+
+tests:
+  - name: test_char_encoding
+    given: Character 'A'
+    then: Returns deterministic hypervector via vsa.charToVector
+
+  - name: test_text_encoding
+    given: "Hello world"
+    then: Returns valid hypervector via vsa.encodeText
+
+  - name: test_bind_chars
+    given: Two character vectors
+    then: vsa.bind produces valid result
+
+  - name: test_bundle_ngrams
+    given: Two n-gram vectors
+    then: vsa.bundle2 produces valid result
+
+  - name: test_permute_position
+    given: Vector and position 3
+    then: vsa.permute shifts correctly
+
+  - name: test_self_similarity
+    given: Same text encoded twice
+    then: Cosine similarity = 1.0
+
+  - name: test_similar_texts
+    given: "hello world" and "hello earth"
+    then: Cosine similarity > 0.0
+
+  - name: test_different_texts
+    given: "hello" and "xyz"
+    then: Lower similarity than similar texts
+
+  - name: test_hamming_self
+    given: Same vector compared to itself
+    then: Hamming distance = 0
+
+  - name: test_corpus_search
+    given: Query and 3-text corpus
+    then: Returns best match index
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

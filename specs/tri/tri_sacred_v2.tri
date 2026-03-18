@@ -1,0 +1,53 @@
+name: tri_sacred_v2
+version: "1.0.0"
+language: zig
+module: tri.sacred_v2
+output: src/tri/tri_sacred_v2.zig
+
+description: |
+  Sacred formula sub-commands for the `tri sacred` CLI group.
+
+  Provides five command handlers used by the sacred command router.
+  Four commands are intentional stubs that redirect users to
+  `tri formula` (the implemented replacement). One command —
+  runSacredDoctor — is fully functional and delegates to the
+  sacred module's cross-domain consistency checker.
+
+dependencies:
+  - sacred
+
+behaviors:
+  - name: runSacredTable
+    given: allocator and args slice
+    when: User runs `tri sacred table`
+    then: Prints "not yet implemented" error and redirects to `tri formula`
+    errors: none
+    note: Placeholder — functionality lives in `tri formula`
+
+  - name: runSacredVerify
+    given: allocator and args slice
+    when: User runs `tri sacred verify`
+    then: Prints "not yet implemented" error and redirects to `tri formula`
+    errors: none
+    note: Placeholder — functionality lives in `tri formula`
+
+  - name: runSacredExplain
+    given: allocator and args slice
+    when: User runs `tri sacred explain`
+    then: Prints "not yet implemented" error and redirects to `tri formula`
+    errors: none
+    note: Placeholder — functionality lives in `tri formula`
+
+  - name: runSacredDoctor
+    given: allocator and args slice
+    when: User runs `tri sacred doctor`
+    then: Delegates to sacred.runDoctorCommand(allocator, args) and returns its result
+    errors: any error from sacred.runDoctorCommand
+    note: Fully implemented — performs cross-domain consistency checks
+
+  - name: runSacredDiff
+    given: allocator and args slice
+    when: User runs `tri sacred diff`
+    then: Prints "not yet implemented" error and redirects to `tri formula`
+    errors: none
+    note: Placeholder — functionality lives in `tri formula`

@@ -1,0 +1,427 @@
+# ============================================================================
+# Distributed Multi-Node Agents - Cycle 37
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: distributed_multi_node
+version: "1.0.0"
+language: zig
+module: distributed_multi_node
+
+description: |
+  Distributed Multi-Node Agents — Extend the dynamic agent pool (Cycle 36) across
+  multiple Trinity nodes. Agents can run on remote VPS nodes with network-aware
+  load balancing. State synchronization via persistent memory (Cycle 35 TRMM).
+
+  Architecture:
+    Node Discovery:
+      Peer-to-peer node registration via UDP broadcast
+      Central coordinator fallback for WAN deployments
+      Node health tracking with heartbeat protocol
+      Automatic node deregistration on timeout
+
+    Remote Agent Management:
+      Spawn agents on remote nodes via RPC
+      Transfer agent state between nodes (TRMM format)
+      Remote task assignment with network-aware routing
+      Agent migration for load rebalancing
+
+    Network-Aware Load Balancing:
+      Prefer local agents (zero network latency)
+      Measure inter-node latency for routing decisions
+      Bandwidth-aware task assignment (large payloads → local)
+      Fallback to remote when local pool exhausted
+
+    State Synchronization:
+      TRMM snapshots replicated across nodes
+      Delta sync for incremental updates
+      Conflict resolution via vector clocks
+      Eventual consistency with configurable sync interval
+
+    Failure Handling:
+      Node failure detection via heartbeat timeout
+      Automatic task reassignment from failed nodes
+      Agent respawn on surviving nodes
+      Split-brain prevention with quorum
+
+  Safety:
+    - Max nodes: 32
+    - Max agents per node: 16 (from Cycle 36)
+    - Heartbeat interval: 5s
+    - Node timeout: 30s
+    - Max message size: 1MB
+    - All traffic local network (no internet by default)
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_NODES: 32
+  MAX_AGENTS_PER_NODE: 16
+  HEARTBEAT_INTERVAL_MS: 5000
+  NODE_TIMEOUT_MS: 30000
+  DISCOVERY_PORT: 9999
+  RPC_PORT: 10000
+  MAX_MESSAGE_SIZE: 1048576
+  SYNC_INTERVAL_MS: 10000
+  QUORUM_RATIO: 0.5
+  MAX_RETRY_ATTEMPTS: 3
+  RETRY_BACKOFF_MS: 1000
+
+types:
+  NodeRole:
+    enum:
+      - coordinator
+      - worker
+      - hybrid
+
+  NodeState:
+    enum:
+      - discovering
+      - joining
+      - active
+      - syncing
+      - degraded
+      - leaving
+      - failed
+
+  SyncStrategy:
+    enum:
+      - full_snapshot
+      - delta_only
+      - on_demand
+      - continuous
+
+  RoutingStrategy:
+    enum:
+      - local_first
+      - latency_aware
+      - bandwidth_aware
+      - round_robin_global
+
+  NodeInfo:
+    fields:
+      node_id: Int
+      address: String
+      rpc_port: Int
+      role: NodeRole
+      state: NodeState
+      agent_count: Int
+      max_agents: Int
+      cpu_usage: Float
+      memory_usage: Float
+      joined_ms: Int
+      last_heartbeat_ms: Int
+
+  ClusterConfig:
+    fields:
+      max_nodes: Int
+      discovery_port: Int
+      rpc_port: Int
+      heartbeat_interval_ms: Int
+      node_timeout_ms: Int
+      sync_strategy: SyncStrategy
+      routing_strategy: RoutingStrategy
+      quorum_ratio: Float
+      auto_rebalance: Bool
+
+  RemoteSpawnRequest:
+    fields:
+      target_node_id: Int
+      agent_type: String
+      priority: Int
+      state_snapshot: Option<String>
+      modality_hint: Option<String>
+
+  RemoteSpawnResult:
+    fields:
+      success: Bool
+      node_id: Int
+      agent_id: Int
+      spawn_time_ms: Int
+      network_latency_ms: Int
+
+  TaskRouting:
+    fields:
+      task_id: Int
+      source_node_id: Int
+      target_node_id: Int
+      agent_id: Int
+      strategy: RoutingStrategy
+      estimated_latency_ms: Int
+      reason: String
+
+  NodeLatency:
+    fields:
+      source_node_id: Int
+      target_node_id: Int
+      latency_ms: Int
+      bandwidth_mbps: Float
+      last_measured_ms: Int
+
+  SyncState:
+    fields:
+      node_id: Int
+      last_sync_ms: Int
+      pending_deltas: Int
+      sync_strategy: SyncStrategy
+      vector_clock: Int
+      conflicts_resolved: Int
+
+  ClusterMetrics:
+    fields:
+      total_nodes: Int
+      active_nodes: Int
+      total_agents: Int
+      total_tasks_routed: Int
+      avg_inter_node_latency_ms: Int
+      cross_node_tasks: Int
+      local_tasks: Int
+      sync_operations: Int
+      failed_nodes_total: Int
+
+  NodeFailure:
+    fields:
+      node_id: Int
+      failure_type: String
+      detected_ms: Int
+      tasks_reassigned: Int
+      agents_lost: Int
+      recovery_action: String
+
+  MigrationRequest:
+    fields:
+      agent_id: Int
+      source_node_id: Int
+      target_node_id: Int
+      reason: String
+      state_size_bytes: Int
+
+  MigrationResult:
+    fields:
+      success: Bool
+      agent_id: Int
+      source_node_id: Int
+      target_node_id: Int
+      transfer_time_ms: Int
+      state_bytes_transferred: Int
+
+  ClusterState:
+    fields:
+      config: ClusterConfig
+      nodes: List<NodeInfo>
+      latency_matrix: List<NodeLatency>
+      sync_states: List<SyncState>
+      metrics: ClusterMetrics
+
+behaviors:
+  - name: discover_nodes
+    given: Discovery port and network interface
+    when: Node starts or periodic rediscovery
+    then: Returns list of discovered NodeInfo on local network
+
+  - name: join_cluster
+    given: NodeInfo of joining node and cluster config
+    when: New node wants to join the cluster
+    then: Node registered, state synced, role assigned
+
+  - name: leave_cluster
+    given: Node ID of departing node
+    when: Graceful node shutdown
+    then: Tasks migrated, agents moved, node deregistered
+
+  - name: spawn_remote_agent
+    given: RemoteSpawnRequest with target node
+    when: Local pool full or remote node better suited
+    then: Agent spawned on remote node, result returned
+
+  - name: route_task
+    given: Task and routing strategy
+    when: New task needs agent assignment across cluster
+    then: Best node and agent selected via routing strategy
+
+  - name: migrate_agent
+    given: MigrationRequest with source and target nodes
+    when: Load rebalancing or node degradation
+    then: Agent state transferred, task continuity maintained
+
+  - name: sync_state
+    given: Cluster state and sync strategy
+    when: Sync interval fires or on-demand request
+    then: TRMM deltas exchanged, conflicts resolved
+
+  - name: handle_node_failure
+    given: Failed node ID detected via heartbeat timeout
+    when: Node unresponsive for node_timeout_ms
+    then: Tasks reassigned, agents respawned on surviving nodes
+
+  - name: measure_latency
+    given: Pair of node IDs
+    when: Periodic latency measurement or routing decision
+    then: Returns NodeLatency with RTT and bandwidth estimate
+
+  - name: check_quorum
+    given: Current active node count and quorum ratio
+    when: Node failure or network partition detected
+    then: Returns whether cluster has quorum for operations
+
+  - name: rebalance_cluster
+    given: ClusterState with load imbalance
+    when: Auto-rebalance triggered by utilization skew
+    then: Agents migrated to equalize load across nodes
+
+  - name: get_cluster_metrics
+    given: ClusterState
+    when: Retrieving cluster-wide statistics
+    then: Returns ClusterMetrics with all node aggregates
+
+tests:
+  # Discovery (3)
+  - name: discover_local_nodes
+    category: discovery
+    input: "Broadcast on port 9999"
+    expected: "Discovered nodes returned with NodeInfo"
+    description: Discover nodes on local network
+
+  - name: join_existing_cluster
+    category: discovery
+    input: "New node joins 3-node cluster"
+    expected: "Node registered, state synced"
+    description: Join an existing cluster
+
+  - name: graceful_leave
+    category: discovery
+    input: "Node leaves 4-node cluster"
+    expected: "Tasks migrated, node deregistered"
+    description: Graceful cluster departure
+
+  # Remote Agents (4)
+  - name: spawn_on_remote
+    category: remote
+    input: "Spawn CodeAgent on node-2"
+    expected: "Agent spawned, result with latency"
+    description: Spawn agent on remote node
+
+  - name: local_first_routing
+    category: remote
+    input: "Task with local agent available"
+    expected: "Routed to local agent (0ms latency)"
+    description: Local-first routing prefers local
+
+  - name: fallback_to_remote
+    category: remote
+    input: "Local pool full, remote has capacity"
+    expected: "Routed to remote node"
+    description: Fallback to remote when local full
+
+  - name: migrate_agent_state
+    category: remote
+    input: "Migrate agent from node-1 to node-3"
+    expected: "State transferred, task continuity"
+    description: Agent migration preserves state
+
+  # Synchronization (4)
+  - name: full_sync
+    category: sync
+    input: "New node needs full state"
+    expected: "TRMM snapshot transferred"
+    description: Full state sync for new nodes
+
+  - name: delta_sync
+    category: sync
+    input: "10 new episodes since last sync"
+    expected: "Delta with 10 episodes synced"
+    description: Delta sync for incremental updates
+
+  - name: conflict_resolution
+    category: sync
+    input: "Same episode updated on 2 nodes"
+    expected: "Vector clock resolves, latest wins"
+    description: Conflict resolution via vector clocks
+
+  - name: sync_interval
+    category: sync
+    input: "Sync interval=10s, 15s elapsed"
+    expected: "Auto-sync triggered"
+    description: Periodic sync fires on schedule
+
+  # Failure Handling (4)
+  - name: detect_node_failure
+    category: failure
+    input: "Node-2 no heartbeat for 30s"
+    expected: "Node marked failed, tasks reassigned"
+    description: Detect and handle node failure
+
+  - name: quorum_check
+    category: failure
+    input: "3 of 5 nodes active"
+    expected: "Quorum met (0.6 > 0.5)"
+    description: Quorum check passes with majority
+
+  - name: no_quorum
+    category: failure
+    input: "2 of 5 nodes active"
+    expected: "No quorum, read-only mode"
+    description: No quorum triggers safety mode
+
+  - name: split_brain_prevention
+    category: failure
+    input: "Network partition: 2+3 nodes"
+    expected: "Larger partition has quorum"
+    description: Split-brain resolved by quorum
+
+  # Load Balancing (3)
+  - name: latency_aware_routing
+    category: load_balance
+    input: "Node-1: 5ms, Node-2: 50ms, Node-3: 10ms"
+    expected: "Task → Node-1 (lowest latency)"
+    description: Latency-aware routes to fastest
+
+  - name: bandwidth_aware_routing
+    category: load_balance
+    input: "Large payload (500KB), Node-1: 100Mbps"
+    expected: "Routed to high-bandwidth node"
+    description: Bandwidth-aware for large payloads
+
+  - name: global_rebalance
+    category: load_balance
+    input: "Node-1: 90% util, Node-2: 20% util"
+    expected: "Agents migrated from Node-1 to Node-2"
+    description: Rebalance equalizes utilization
+
+  # Performance (3)
+  - name: discovery_speed
+    category: performance
+    input: "Discover 10 nodes"
+    expected: "<500ms total discovery time"
+    description: Node discovery latency
+
+  - name: remote_spawn_overhead
+    category: performance
+    input: "Spawn agent on remote node"
+    expected: "<200ms including network"
+    description: Remote spawn overhead
+
+  - name: sync_throughput
+    category: performance
+    input: "Sync 1000 episodes across nodes"
+    expected: ">100 episodes/sec sync rate"
+    description: State sync throughput
+
+  # Integration (3)
+  - name: multi_node_pool
+    category: integration
+    input: "3-node cluster, 12 agents total"
+    expected: "Unified pool view across nodes"
+    description: Multi-node pool management
+
+  - name: cross_node_task_chain
+    category: integration
+    input: "Task chain: Node-1→Node-2→Node-3"
+    expected: "Chain completes across nodes"
+    description: Task chains across nodes
+
+  - name: memory_replication
+    category: integration
+    input: "Episode learned on Node-1"
+    expected: "Replicated to Node-2 and Node-3"
+    description: Memory replicated across cluster

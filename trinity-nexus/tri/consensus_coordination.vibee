@@ -1,0 +1,440 @@
+# ============================================================================
+# Consensus & Coordination Protocol - Cycle 43
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: consensus_coordination
+version: "1.0.0"
+language: zig
+module: consensus_coordination
+
+description: |
+  Consensus & Coordination Protocol — Raft-inspired leader election,
+  distributed locks, barrier synchronization, and conflict resolution
+  for multi-agent coordination across the distributed cluster.
+
+  Architecture:
+    Leader Election (Raft-inspired):
+      Three states: follower, candidate, leader
+      Randomized election timeout (150-300ms)
+      Majority vote required for leadership
+      Heartbeat from leader to maintain authority
+      Term-based leadership with monotonic terms
+      Pre-vote phase to prevent disruption
+
+    Log Replication:
+      Append-only replicated log across agents
+      Leader appends, followers replicate
+      Committed when majority acknowledges
+      Log compaction via snapshots
+      Consistency check on append (prev log term/index)
+
+    Distributed Locks:
+      Fenced locks with monotonic token
+      Try-lock with timeout
+      Lock ownership tracked by leader
+      Automatic release on agent failure (lease expiry)
+      Re-entrant locks with depth tracking
+      Lock queue with FIFO ordering
+
+    Barrier Synchronization:
+      Named barriers for pipeline stage coordination
+      Configurable participant count
+      Timeout-based barrier release
+      Partial barrier (proceed when threshold met)
+      Cascading barriers for multi-stage pipelines
+
+    Conflict Resolution:
+      Last-writer-wins with vector clocks
+      Merge function for concurrent updates
+      Conflict detection via version vectors
+      Application-level conflict callbacks
+      Tombstone-based deletion with GC
+
+  Safety:
+    - Max cluster size: 7 (odd number for majority)
+    - Election timeout: 150-300ms (randomized)
+    - Heartbeat interval: 50ms
+    - Max log entries: 10000
+    - Lock lease timeout: 10s
+    - Max concurrent locks: 256
+    - Barrier timeout: 30s
+    - Max barriers: 64
+    - Snapshot interval: 1000 entries
+    - Max pending proposals: 128
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_CLUSTER_SIZE: 7
+  ELECTION_TIMEOUT_MIN_MS: 150
+  ELECTION_TIMEOUT_MAX_MS: 300
+  HEARTBEAT_INTERVAL_MS: 50
+  MAX_LOG_ENTRIES: 10000
+  LOCK_LEASE_TIMEOUT_MS: 10000
+  MAX_CONCURRENT_LOCKS: 256
+  BARRIER_TIMEOUT_MS: 30000
+  MAX_BARRIERS: 64
+  SNAPSHOT_INTERVAL: 1000
+  MAX_PENDING_PROPOSALS: 128
+  PRE_VOTE_TIMEOUT_MS: 100
+  MAX_RETRIES_PER_APPEND: 5
+  LOCK_QUEUE_MAX: 64
+  VECTOR_CLOCK_MAX_ENTRIES: 32
+
+types:
+  NodeRole:
+    enum:
+      - follower
+      - candidate
+      - leader
+
+  LogEntryType:
+    enum:
+      - command
+      - configuration
+      - snapshot
+      - noop
+
+  LockState:
+    enum:
+      - unlocked
+      - locked
+      - queued
+      - expired
+      - released
+
+  BarrierState:
+    enum:
+      - waiting
+      - satisfied
+      - timed_out
+      - cancelled
+
+  ConflictStrategy:
+    enum:
+      - last_writer_wins
+      - merge_function
+      - application_callback
+      - reject
+
+  ProposalStatus:
+    enum:
+      - pending
+      - committed
+      - rejected
+      - timed_out
+
+  RaftState:
+    fields:
+      node_id: Int
+      current_term: Int
+      voted_for: Int
+      role: NodeRole
+      leader_id: Int
+      commit_index: Int
+      last_applied: Int
+      log_length: Int
+      cluster_size: Int
+      votes_received: Int
+
+  LogEntry:
+    fields:
+      index: Int
+      term: Int
+      entry_type: LogEntryType
+      command: String
+      timestamp_ms: Int
+
+  VoteRequest:
+    fields:
+      term: Int
+      candidate_id: Int
+      last_log_index: Int
+      last_log_term: Int
+      is_pre_vote: Bool
+
+  VoteResponse:
+    fields:
+      term: Int
+      vote_granted: Bool
+      voter_id: Int
+
+  AppendRequest:
+    fields:
+      term: Int
+      leader_id: Int
+      prev_log_index: Int
+      prev_log_term: Int
+      entries_count: Int
+      leader_commit: Int
+
+  AppendResponse:
+    fields:
+      term: Int
+      success: Bool
+      match_index: Int
+      follower_id: Int
+
+  DistributedLock:
+    fields:
+      lock_id: Int
+      resource_name: String
+      owner_agent: Int
+      fence_token: Int
+      acquired_ms: Int
+      lease_expires_ms: Int
+      reentrant_depth: Int
+      queue_depth: Int
+
+  Barrier:
+    fields:
+      barrier_id: Int
+      name: String
+      required_count: Int
+      arrived_count: Int
+      state: BarrierState
+      created_ms: Int
+      timeout_ms: Int
+      threshold: Float
+
+  VersionVector:
+    fields:
+      entries_count: Int
+      max_entries: Int
+
+  Proposal:
+    fields:
+      proposal_id: Int
+      proposer_agent: Int
+      command: String
+      status: ProposalStatus
+      proposed_ms: Int
+      committed_ms: Int
+      term: Int
+
+  ConsensusMetrics:
+    fields:
+      total_elections: Int
+      total_terms: Int
+      total_proposals: Int
+      total_committed: Int
+      total_rejected: Int
+      total_locks_acquired: Int
+      total_locks_released: Int
+      total_barriers_completed: Int
+      total_conflicts_resolved: Int
+      avg_commit_latency_ms: Int
+      current_term: Int
+      current_leader: Int
+
+  ConsensusConfig:
+    fields:
+      cluster_size: Int
+      election_timeout_min_ms: Int
+      election_timeout_max_ms: Int
+      heartbeat_interval_ms: Int
+      lock_lease_timeout_ms: Int
+      barrier_timeout_ms: Int
+      enable_pre_vote: Bool
+      enable_log_compaction: Bool
+
+behaviors:
+  - name: start_election
+    given: Election timeout elapsed without heartbeat
+    when: Follower transitions to candidate
+    then: Term incremented, votes requested from cluster
+
+  - name: request_vote
+    given: Candidate sends vote request to peer
+    when: Peer receives vote request
+    then: Vote granted if candidate is up-to-date
+
+  - name: become_leader
+    given: Candidate receives majority votes
+    when: Vote count exceeds cluster_size/2
+    then: Node becomes leader, sends heartbeat
+
+  - name: send_heartbeat
+    given: Leader is active
+    when: Heartbeat interval elapsed
+    then: Empty append sent to all followers
+
+  - name: propose_command
+    given: Client submits command to leader
+    when: Leader receives proposal
+    then: Entry appended to log, replication started
+
+  - name: replicate_log
+    given: Leader has uncommitted entries
+    when: Append request sent to followers
+    then: Followers append entries, acknowledge
+
+  - name: commit_entry
+    given: Majority of cluster acknowledges entry
+    when: Match index exceeds commit index
+    then: Entry committed, applied to state machine
+
+  - name: acquire_lock
+    given: Agent requests distributed lock on resource
+    when: Lock request reaches leader
+    then: Lock granted with fence token or queued
+
+  - name: release_lock
+    given: Lock owner releases or lease expires
+    when: Release request or timeout
+    then: Lock freed, next in queue granted
+
+  - name: barrier_arrive
+    given: Agent arrives at named barrier
+    when: Pipeline stage complete
+    then: Arrival counted, barrier released when threshold met
+
+  - name: resolve_conflict
+    given: Concurrent updates to same resource
+    when: Version vectors diverge
+    then: Conflict resolved per strategy
+
+  - name: take_snapshot
+    given: Log length exceeds snapshot interval
+    when: Compaction triggered
+    then: State snapshot saved, old log entries discarded
+
+tests:
+  # Election (4)
+  - name: leader_election_basic
+    category: election
+    input: "3-node cluster, leader fails"
+    expected: "New leader elected within 300ms"
+    description: Basic leader election
+
+  - name: election_split_vote
+    category: election
+    input: "3 candidates simultaneous"
+    expected: "One leader after retry with randomized timeout"
+    description: Split vote resolution
+
+  - name: pre_vote_prevents_disruption
+    category: election
+    input: "Partitioned node rejoins"
+    expected: "No unnecessary term increment"
+    description: Pre-vote prevents term disruption
+
+  - name: term_monotonic
+    category: election
+    input: "5 elections in sequence"
+    expected: "Terms strictly increasing"
+    description: Term monotonicity
+
+  # Replication (4)
+  - name: log_replication_basic
+    category: replication
+    input: "Leader appends 10 entries"
+    expected: "All followers have 10 entries"
+    description: Basic log replication
+
+  - name: commit_on_majority
+    category: replication
+    input: "3-node cluster, 2 acknowledge"
+    expected: "Entry committed at index N"
+    description: Majority commit
+
+  - name: consistency_check
+    category: replication
+    input: "Follower with stale log"
+    expected: "Log repaired via prev term/index check"
+    description: Log consistency repair
+
+  - name: snapshot_compaction
+    category: replication
+    input: "1001 log entries"
+    expected: "Snapshot taken, old entries discarded"
+    description: Log compaction via snapshot
+
+  # Locks (4)
+  - name: lock_acquire_release
+    category: locks
+    input: "Agent acquires then releases lock"
+    expected: "Lock granted then freed"
+    description: Basic lock lifecycle
+
+  - name: lock_contention
+    category: locks
+    input: "3 agents request same lock"
+    expected: "FIFO ordering, one at a time"
+    description: Lock contention with queue
+
+  - name: lock_lease_expiry
+    category: locks
+    input: "Agent holds lock, crashes"
+    expected: "Lock auto-released after 10s"
+    description: Lease-based auto-release
+
+  - name: fenced_lock_token
+    category: locks
+    input: "Lock acquired twice sequentially"
+    expected: "Second token > first token"
+    description: Monotonic fence tokens
+
+  # Barriers (3)
+  - name: barrier_all_arrive
+    category: barriers
+    input: "4 agents arrive at barrier"
+    expected: "All 4 released simultaneously"
+    description: Full barrier synchronization
+
+  - name: barrier_timeout
+    category: barriers
+    input: "Barrier with 30s timeout, 1 agent missing"
+    expected: "Barrier times out, agents released"
+    description: Barrier timeout handling
+
+  - name: partial_barrier
+    category: barriers
+    input: "Threshold 0.75, 3 of 4 arrive"
+    expected: "Barrier released at 75%"
+    description: Partial barrier threshold
+
+  # Performance (3)
+  - name: election_latency
+    category: performance
+    input: "Leader failure detected"
+    expected: "New leader within 300ms"
+    description: Election convergence time
+
+  - name: commit_throughput
+    category: performance
+    input: "1000 proposals sequential"
+    expected: ">500 commits/sec"
+    description: Proposal commit throughput
+
+  - name: lock_overhead
+    category: performance
+    input: "Lock acquire + release"
+    expected: "<5ms round-trip"
+    description: Lock operation latency
+
+  # Integration (4)
+  - name: consensus_with_cluster
+    category: integration
+    input: "Raft across Cycle 37 cluster nodes"
+    expected: "Leader elected across nodes"
+    description: Integration with distributed cluster
+
+  - name: consensus_with_comms
+    category: integration
+    input: "Vote/append via Cycle 41 messages"
+    expected: "Raft messages routed through protocol"
+    description: Integration with agent communication
+
+  - name: consensus_with_tracing
+    category: integration
+    input: "Election traced via Cycle 42 spans"
+    expected: "Election spans with timing"
+    description: Integration with observability
+
+  - name: locks_with_scheduler
+    category: integration
+    input: "Work-stealing respects distributed locks"
+    expected: "Locked resources not stolen"
+    description: Integration with work-stealing

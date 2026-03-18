@@ -1,0 +1,376 @@
+# Ternary Quantization Pipeline Specification
+# φ² + 1/φ² = 3 | TRINITY
+# Full pipeline: float → ternary {-1, 0, +1} for FPGA/ASIC deployment
+
+name: ternary_quant_pipeline
+version: "1.0.0"
+language: zig
+module: ternary_quant_pipeline
+
+# ============================================================================
+# CORE CONSTANTS
+# ============================================================================
+
+constants:
+  # Quantization thresholds (BitNet b1.58 inspired)
+  ALPHA: 0.7                    # Scaling factor for absmax
+  BETA: 0.3                     # Zero-zone threshold (values in [-β, β] → 0)
+  
+  # Loss-aware parameters
+  GRADIENT_SCALE: 1.0           # STE (Straight-Through Estimator) scale
+  WARMUP_EPOCHS: 10             # Epochs before quantization kicks in
+  
+  # Memory layout
+  BITS_PER_TRIT: 2              # {-1, 0, +1} encoded as 2 bits
+  PACK_SIZE: 16                 # Pack 16 trits into 32-bit word
+
+# ============================================================================
+# TYPE DEFINITIONS
+# ============================================================================
+
+types:
+  # Ternary value: {-1, 0, +1}
+  Trit:
+    values: [-1, 0, 1]
+    encoding: "2-bit: 00=-1, 01=0, 10=+1, 11=reserved"
+
+  # Packed ternary vector (16 trits per u32)
+  PackedTernary:
+    fields:
+      data: List<Int>           # u32 words
+      length: Int               # Number of trits
+      scale: Float              # Dequantization scale factor
+    constraints:
+      - data.length == ceil(length / 16)
+
+  # Quantization statistics
+  QuantStats:
+    fields:
+      original_norm: Float      # L2 norm before quantization
+      quantized_norm: Float     # L2 norm after quantization
+      sparsity: Float           # Percentage of zeros
+      error: Float              # Quantization error (MSE)
+      scale: Float              # Scale factor used
+
+  # Quantization config
+  QuantConfig:
+    fields:
+      method: String            # "absmax", "percentile", "loss_aware"
+      alpha: Float              # Scale factor
+      beta: Float               # Zero threshold
+      symmetric: Bool           # Symmetric quantization
+      per_channel: Bool         # Per-channel vs per-tensor
+
+  # Quantized HDC Agent
+  QuantizedHDCAgent:
+    fields:
+      q1_weights: List<PackedTernary>   # Q1 estimator weights
+      q2_weights: List<PackedTernary>   # Q2 estimator weights
+      state_seeds: List<PackedTernary>  # State encoder seeds
+      action_seeds: List<PackedTernary> # Action encoder seeds
+      scales: List<Float>               # Per-vector scales
+      config: QuantConfig
+
+# ============================================================================
+# QUANTIZATION METHODS
+# ============================================================================
+
+behaviors:
+  # ============================================================================
+  # BASIC QUANTIZATION
+  # ============================================================================
+
+  # Absmax quantization (BitNet style)
+  - name: quantize_absmax
+    given: Float vector V of length D
+    when: Need to convert to ternary
+    then: Return ternary vector T and scale s
+    implementation: |
+      # Step 1: Compute scale
+      absmax = max(|V[i]|) for all i
+      s = absmax / alpha
+      
+      # Step 2: Scale and round
+      for i in 0..D:
+        scaled = V[i] / s
+        if scaled > beta:
+          T[i] = +1
+        elif scaled < -beta:
+          T[i] = -1
+        else:
+          T[i] = 0
+      
+      return T, s
+
+  # Percentile-based quantization (more robust to outliers)
+  - name: quantize_percentile
+    given: Float vector V, percentile p (default 99.9)
+    when: Need robust quantization
+    then: Return ternary vector using percentile scaling
+    implementation: |
+      # Use percentile instead of absmax
+      sorted_abs = sort(|V[i]|)
+      scale_val = sorted_abs[int(D * p / 100)]
+      s = scale_val / alpha
+      
+      # Same rounding as absmax
+      for i in 0..D:
+        scaled = V[i] / s
+        T[i] = sign(scaled) if |scaled| > beta else 0
+      
+      return T, s
+
+  # Loss-aware quantization (QAT - Quantization Aware Training)
+  - name: quantize_loss_aware
+    given: Float vector V, gradient G
+    when: Training with quantization
+    then: Return ternary with gradient-informed thresholds
+    implementation: |
+      # Adjust thresholds based on gradient magnitude
+      grad_scale = mean(|G[i]|)
+      adaptive_beta = beta * (1 + grad_scale)
+      
+      # Quantize with adaptive threshold
+      T, s = quantize_absmax(V, alpha, adaptive_beta)
+      
+      # STE: pass gradient through
+      G_out = G * GRADIENT_SCALE
+      
+      return T, s, G_out
+
+  # ============================================================================
+  # DEQUANTIZATION
+  # ============================================================================
+
+  - name: dequantize
+    given: Ternary vector T, scale s
+    when: Need float representation
+    then: Return approximate float vector
+    implementation: |
+      for i in 0..D:
+        V[i] = T[i] * s
+      return V
+
+  # ============================================================================
+  # PACKING/UNPACKING
+  # ============================================================================
+
+  - name: pack_ternary
+    given: Ternary vector T of length D
+    when: Need memory-efficient storage
+    then: Return packed u32 array (16 trits per word)
+    implementation: |
+      n_words = ceil(D / 16)
+      packed = [0] * n_words
+      
+      for i in 0..D:
+        word_idx = i / 16
+        bit_pos = (i % 16) * 2
+        
+        # Encode: -1 → 00, 0 → 01, +1 → 10
+        encoded = T[i] + 1  # {-1,0,+1} → {0,1,2}
+        packed[word_idx] |= (encoded << bit_pos)
+      
+      return packed
+
+  - name: unpack_ternary
+    given: Packed u32 array, length D
+    when: Need to operate on trits
+    then: Return ternary vector
+    implementation: |
+      T = [0] * D
+      
+      for i in 0..D:
+        word_idx = i / 16
+        bit_pos = (i % 16) * 2
+        
+        encoded = (packed[word_idx] >> bit_pos) & 0x3
+        T[i] = encoded - 1  # {0,1,2} → {-1,0,+1}
+      
+      return T
+
+  # ============================================================================
+  # HDC-SPECIFIC OPERATIONS
+  # ============================================================================
+
+  # Quantize entire HDC agent
+  - name: quantize_hdc_agent
+    given: HDCDoubleQAgent with float weights
+    when: Deploying to hardware
+    then: Return QuantizedHDCAgent
+    implementation: |
+      quantized = QuantizedHDCAgent()
+      
+      # Quantize Q1 weights
+      for a in 0..N_ACTIONS:
+        T, s = quantize_absmax(agent.q1.weights[a])
+        quantized.q1_weights[a] = pack_ternary(T)
+        quantized.scales.append(s)
+      
+      # Quantize Q2 weights
+      for a in 0..N_ACTIONS:
+        T, s = quantize_absmax(agent.q2.weights[a])
+        quantized.q2_weights[a] = pack_ternary(T)
+        quantized.scales.append(s)
+      
+      # Quantize state seeds (already bipolar, just pack)
+      for s in 0..N_STATES:
+        quantized.state_seeds[s] = pack_ternary(agent.state_encoder.seeds[s])
+      
+      return quantized
+
+  # Compute Q-value with quantized weights
+  - name: compute_q_quantized
+    given: Packed state vector, packed Q-weights, scales
+    when: Inference on hardware
+    then: Return Q-value using ternary ops only
+    implementation: |
+      # Unpack (or use packed dot product)
+      state_trits = unpack_ternary(state_packed)
+      weight_trits = unpack_ternary(weights_packed)
+      
+      # Ternary dot product: only add/sub, no multiply!
+      dot = 0
+      for i in 0..D:
+        if weight_trits[i] == +1:
+          dot += state_trits[i]
+        elif weight_trits[i] == -1:
+          dot -= state_trits[i]
+        # weight == 0: skip (free sparsity!)
+      
+      # Scale result
+      return dot * scale / D
+
+  # ============================================================================
+  # TERNARY ARITHMETIC (FPGA-READY)
+  # ============================================================================
+
+  # Ternary bind (element-wise multiply)
+  - name: ternary_bind
+    given: Two ternary vectors A, B
+    when: Need association
+    then: Return A ⊙ B using only comparisons
+    implementation: |
+      # Truth table: -1*-1=1, -1*0=0, -1*1=-1, 0*x=0, 1*-1=-1, 1*0=0, 1*1=1
+      # Simplifies to: result = A * B (but A,B ∈ {-1,0,+1})
+      # Hardware: XOR + AND gates
+      for i in 0..D:
+        if A[i] == 0 or B[i] == 0:
+          C[i] = 0
+        elif A[i] == B[i]:
+          C[i] = +1
+        else:
+          C[i] = -1
+      return C
+
+  # Ternary bundle (majority vote)
+  - name: ternary_bundle
+    given: List of ternary vectors [V1, V2, ..., Vn]
+    when: Need superposition
+    then: Return majority-voted ternary vector
+    implementation: |
+      for i in 0..D:
+        sum = 0
+        for j in 0..n:
+          sum += Vj[i]
+        
+        # Majority vote with threshold
+        if sum > n/3:
+          C[i] = +1
+        elif sum < -n/3:
+          C[i] = -1
+        else:
+          C[i] = 0
+      return C
+
+  # Ternary similarity (Hamming-like)
+  - name: ternary_similarity
+    given: Two ternary vectors A, B
+    when: Need association strength
+    then: Return similarity in [-1, 1]
+    implementation: |
+      match = 0
+      total = 0
+      
+      for i in 0..D:
+        if A[i] != 0 and B[i] != 0:
+          total += 1
+          if A[i] == B[i]:
+            match += 1
+          else:
+            match -= 1
+      
+      return match / (total + epsilon)
+
+# ============================================================================
+# QUALITY METRICS
+# ============================================================================
+
+behaviors:
+  - name: compute_quant_stats
+    given: Original float V, quantized T, scale s
+    when: Evaluating quantization quality
+    then: Return QuantStats
+    implementation: |
+      V_reconstructed = dequantize(T, s)
+      
+      stats.original_norm = sqrt(sum(V[i]^2))
+      stats.quantized_norm = sqrt(sum(V_reconstructed[i]^2))
+      stats.error = mean((V[i] - V_reconstructed[i])^2)
+      stats.sparsity = count(T[i] == 0) / D
+      stats.scale = s
+      
+      return stats
+
+  - name: validate_accuracy
+    given: Original agent, quantized agent, test_episodes
+    when: Verifying quantization quality
+    then: Return accuracy comparison
+    implementation: |
+      original_wins = test_agent(original, test_episodes)
+      quantized_wins = test_agent(quantized, test_episodes)
+      
+      accuracy_drop = (original_wins - quantized_wins) / original_wins
+      
+      assert accuracy_drop < 0.03  # <3% drop required
+      
+      return {
+        "original": original_wins,
+        "quantized": quantized_wins,
+        "drop": accuracy_drop
+      }
+
+# ============================================================================
+# FPGA/ASIC CONSIDERATIONS
+# ============================================================================
+
+# Hardware advantages of ternary:
+# 1. No multipliers needed: only add/sub/compare
+# 2. 2-bit storage: 16x compression vs float32
+# 3. Sparsity: skip zero weights (free speedup)
+# 4. Majority gates: natural for bundle operation
+# 5. Low power: minimal switching activity
+
+# Estimated speedup vs CPU:
+# - Bind: 20x (XOR gates vs FPU multiply)
+# - Bundle: 15x (adder tree + threshold)
+# - Similarity: 10x (popcount + compare)
+# - Overall inference: 15-20x
+
+# ============================================================================
+# TVC OPCODE INTEGRATION
+# ============================================================================
+
+# Existing TVC opcodes to leverage:
+# - hdc_quantize: float → ternary
+# - hdc_dequantize: ternary → float
+# - hdc_bind: ternary element-wise multiply
+# - hdc_bundle: ternary majority vote
+# - hdc_similarity: ternary cosine approximation
+
+# New opcodes needed:
+# - hdc_pack: ternary → packed u32
+# - hdc_unpack: packed u32 → ternary
+# - hdc_dot_ternary: packed dot product (no unpack)
+
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS FORGED IN TERNARY | φ² + 1/φ² = 3

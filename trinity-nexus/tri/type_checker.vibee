@@ -1,0 +1,128 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+  TypeChecker:
+    description: Type checker state
+    fields:
+      env: TypeEnv
+      errors: List(TypeError)
+      warnings: List(TypeWarning)
+
+  TypeEnv:
+    description: Type environment for variables and functions
+    fields:
+      bindings: Dict(String, Type)
+      parent: Option(TypeEnv)
+
+  TypeError:
+    description: Type error information
+    fields:
+      message: String
+      expected: Type
+      actual: Type
+      location: Location
+
+  TypeWarning:
+    description: Type warning information
+    fields:
+      message: String
+      location: Location
+
+  Location:
+    description: Source code location
+    fields:
+      line: Int
+      column: Int
+
+  TypeCheckResult:
+    description: Result of type checking
+
+  check_module:
+    description: Type check entire module
+      ast: ModuleAst
+
+  check_stmt:
+    description: Type check statement
+      stmt: Stmt
+      env: TypeEnv
+
+  check_expr:
+    description: Type check expression and infer type
+      expr: Expr
+      env: TypeEnv
+
+  infer_type:
+    description: Infer type of expression
+      expr: Expr
+      env: TypeEnv
+
+  unify:
+    description: Unify two types (find common type)
+      t1: Type
+      t2: Type
+
+  check_function_call:
+    description: Check function call and return result type
+      name: String
+      args: List(Expr)
+      env: TypeEnv
+
+  check_pattern:
+    description: Check pattern and bind variables
+      pattern: Pattern
+      expected_type: Type
+      env: TypeEnv
+
+  lookup_type:
+    description: Look up variable type in environment
+      name: String
+      env: TypeEnv
+
+  add_binding:
+    description: Add variable binding to environment
+      name: String
+      type: Type
+      env: TypeEnv
+
+  literal_types:
+    description: IntLit(n) : Int, StringLit(s) : String, BoolLit(b) : Bool
+
+  variable_lookup:
+    description: Var(x) : T if x : T in env
+
+  binary_operations:
+    description: BinOp(+, e1, e2) : Int if e1 : Int and e2 : Int
+
+  function_application:
+    description: Call(f, [e1, ..., en]) : T if f : (T1, ..., Tn) -> T and ei : Ti
+
+  list_construction:
+    description: ListLit([e1, ..., en]) : List(T) if all ei : T
+
+  case_expression:
+    description: CaseExpr(e, clauses) : T if e : T1 and all clauses return T
+
+behaviors:
+  - name: type_inference
+    given: Expression without type annotation
+    when: Type checker processes expression
+    then: Infers correct type
+  - name: type_checking
+    given: Expression with type annotation
+    when: Type checker validates
+    then: Accepts if correct, rejects if wrong
+  - name: function_type_checking
+    given: Function definition with parameter and return types
+    when: Type checker validates function body
+    then: Ensures body type matches return type
+  - name: pattern_matching_types
+    given: Case expression with patterns
+    when: Type checker validates patterns
+    then: Ensures all patterns match scrutinee type and all branches return same type
+  - name: error_reporting
+    given: Type mismatch
+    when: Type checker detects error
+    then: Reports expected vs actual types with location

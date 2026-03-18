@@ -1,0 +1,135 @@
+name: cycle98_eternal_evolution
+version: "98.0.0"
+language: zig
+module: eternal_evolution
+
+types:
+  EvolutionState:
+    fields:
+      generation: UInt64
+      is_running: Bool
+      current_fitness: Float
+      best_fitness: Float
+      last_mutation_time: DateTime
+      mutation_interval_seconds: UInt32
+      rollback_enabled: Bool
+      max_mutations_per_cycle: UInt32
+
+  Mutation:
+    fields:
+      id: String
+      type: MutationType
+      target_component: String
+      description: String
+      code_diff: String
+      confidence: Float
+      timestamp: DateTime
+
+  MutationType:
+    enum:
+      - optimize_hot_path
+      - refactor_pattern
+      - add_test_case
+      - fix_regression
+      - improve_sacred_alignment
+      - enhance_memory_efficiency
+      - parallelize_computation
+      - add_safety_check
+
+  FitnessMetrics:
+    fields:
+      sacred_alignment: Float         # 0.0 - 1.0 (alignment with φ-based principles)
+      test_pass_rate: Float           # 0.0 - 1.0 (percentage of tests passing)
+      performance_score: Float        # 0.0 - 1.0 (normalized performance)
+      code_coverage: Float            # 0.0 - 1.0
+      memory_efficiency: Float        # 0.0 - 1.0
+      generation_stability: Float     # 0.0 - 1.0 (low variance = high stability)
+      overall_fitness: Float          # weighted combination
+
+  Generation:
+    fields:
+      number: UInt64
+      mutation: Mutation
+      fitness_before: FitnessMetrics
+      fitness_after: FitnessMetrics
+      improvement_delta: Float
+      timestamp: DateTime
+      was_rolled_back: Bool
+      rollback_reason: Option<String>
+
+behaviors:
+  - name: start_evolution_loop
+    given: EvolutionState with configured mutation_interval
+    when: Evolution loop is initiated
+    then:
+      - Sets is_running to true
+      - Records initial generation number
+      - Begins continuous evolution cycle
+      - Returns EvolutionHandle for monitoring
+
+  - name: evaluate_fitness
+    given: Current codebase state and optional target component
+    when: Fitness evaluation is requested
+    then:
+      - Runs full test suite to measure test_pass_rate
+      - Analyzes code for sacred_alignment (φ-based patterns, trit usage, ternary optimization)
+      - Measures performance_score via benchmark suite
+      - Calculates code_coverage from test reports
+      - Assesses memory_efficiency from profiling data
+      - Computes generation_stability from historical variance
+      - Combines metrics into overall_fitness score
+      - Returns FitnessMetrics
+
+  - name: create_mutation
+    given: Current codebase and FitnessMetrics with identified weaknesses
+    when: Mutation opportunity is detected
+    then:
+      - Analyzes code for improvement opportunities based on lowest fitness dimensions
+      - Selects mutation type targeting weakest area
+      - Generates code diff using VIBEE codegen patterns
+      - Estimates confidence based on pattern similarity and historical success
+      - Assigns target_component (module/file path)
+      - Creates description explaining rationale
+      - Returns Mutation with non-zero confidence
+
+  - name: apply_mutation
+    given: Valid Mutation and current Generation number
+    when: Mutation is approved for application
+    then:
+      - Backs up current state (for potential rollback)
+      - Applies code_diff to target file using Edit tool
+      - Regenerates affected code from .vibee specs if needed
+      - Runs test suite to validate change
+      - Records fitness_before in new Generation entry
+      - Returns updated Generation with was_rolled_back = false
+
+  - name: rollback_generation
+    given: Generation that failed fitness criteria or caused regression
+    when: Rollback is triggered (automatically or manually)
+    then:
+      - Reverts code changes using backed-up state
+      - Marks Generation.was_rolled_back = true
+      - Stores rollback_reason (test failure, performance regression, sacred misalignment)
+      - Restores previous working state
+      - Adjusts mutation confidence down for learning
+      - Returns success status
+
+  - name: evolve_eternally
+    given: EvolutionState with is_running = true
+    when: Mutation interval elapses
+    then:
+      - Checks if max_mutations_per_cycle limit reached
+      - Evaluates current fitness (evaluate_fitness)
+      - Compares current_fitness vs best_fitness
+      - If current_fitness < best_fitness by threshold:
+        - Creates targeted mutation (create_mutation)
+        - Applies mutation (apply_mutation)
+        - Measures fitness_after
+        - If fitness_after > current_fitness:
+          - Accepts mutation, updates best_fitness
+        - Else:
+          - Triggers rollback (rollback_generation)
+      - Increments generation counter
+      - Sleeps until next mutation_interval
+      - Loops forever until stopped externally
+      - Never requires human intervention

@@ -1,0 +1,251 @@
+name: wave_functions
+version: "1.0.0"
+language: zig
+module: wave_functions
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: sine_wave
+    given: Input data provided
+    when: sine_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_sine_wave
+        input: {}
+        expected: {}
+
+  - name: cosine_wave
+    given: Input data provided
+    when: cosine_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_cosine_wave
+        input: {}
+        expected: {}
+
+  - name: circular_wave
+    given: Input data provided
+    when: circular_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_circular_wave
+        input: {}
+        expected: {}
+
+  - name: spiral_wave
+    given: Input data provided
+    when: spiral_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_spiral_wave
+        input: {}
+        expected: {}
+
+  - name: interference
+    given: Input data provided
+    when: interference function called
+    then: Result returned
+    test_cases:
+      - name: test_interference
+        input: {}
+        expected: {}
+
+  - name: sri_yantra_wave
+    given: Input data provided
+    when: sri_yantra_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_sri_yantra_wave
+        input: {}
+        expected: {}
+
+  - name: triangle_wave
+    given: Input data provided
+    when: triangle_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_triangle_wave
+        input: {}
+        expected: {}
+
+  - name: flower_of_life_wave
+    given: Input data provided
+    when: flower_of_life_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_flower_of_life_wave
+        input: {}
+        expected: {}
+
+  - name: metatrons_cube_wave
+    given: Input data provided
+    when: metatrons_cube_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_metatrons_cube_wave
+        input: {}
+        expected: {}
+
+  - name: line_wave
+    given: Input data provided
+    when: line_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_line_wave
+        input: {}
+        expected: {}
+
+  - name: vesica_piscis_wave
+    given: Input data provided
+    when: vesica_piscis_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_vesica_piscis_wave
+        input: {}
+        expected: {}
+
+  - name: torus_wave
+    given: Input data provided
+    when: torus_wave function called
+    then: Result returned
+    test_cases:
+      - name: test_torus_wave
+        input: {}
+        expected: {}
+
+  - name: wave_to_color
+    given: Input data provided
+    when: wave_to_color function called
+    then: Result returned
+    test_cases:
+      - name: test_wave_to_color
+        input: {}
+        expected: {}
+
+  - name: wave_to_golden_color
+    given: Input data provided
+    when: wave_to_golden_color function called
+    then: Result returned
+    test_cases:
+      - name: test_wave_to_golden_color
+        input: {}
+        expected: {}
+
+  - name: hsl_to_rgb
+    given: Input data provided
+    when: hsl_to_rgb function called
+    then: Result returned
+    test_cases:
+      - name: test_hsl_to_rgb
+        input: {}
+        expected: {}
+
+  - name: generate_photon
+    given: Input data provided
+    when: generate_photon function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_photon
+        input: {}
+        expected: {}
+
+types:
+  PhotonAtom:
+    # TODO: Define fields
+
+  Color:
+    # TODO: Define fields
+
+functions:
+  - name: sine_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: cosine_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: circular_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: spiral_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: interference
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: sri_yantra_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: triangle_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: flower_of_life_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: metatrons_cube_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: line_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: vesica_piscis_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: torus_wave
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: wave_to_color
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: wave_to_golden_color
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: hsl_to_rgb
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_photon
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/float
+  # gleam/int
+  # gleam/list
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

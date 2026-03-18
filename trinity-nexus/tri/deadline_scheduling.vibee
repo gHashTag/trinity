@@ -1,0 +1,405 @@
+# ============================================================================
+# Deadline Scheduling - Real-Time Constraints (Cycle 46)
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: deadline_scheduling
+version: "1.0.0"
+language: zig
+module: deadline_scheduling
+
+description: |
+  Real-time deadline scheduling system using Earliest Deadline First (EDF)
+  algorithm with phi-weighted priority levels and deadline miss handling.
+
+  Algorithm: EDF (Earliest Deadline First)
+    - Jobs sorted by absolute deadline (earliest first)
+    - Preemptive: running job yields if new job has earlier deadline
+    - Ties broken by priority level (critical > high > normal > low)
+    - Deadline miss detection with configurable policy
+
+  Priority Levels (phi-weighted):
+    Critical: weight = phi^3 = 4.236  (hard real-time, must not miss)
+    High:     weight = phi^2 = 2.618  (soft real-time, tolerate 1 miss)
+    Normal:   weight = phi^1 = 1.618  (best-effort with deadline)
+    Low:      weight = phi^0 = 1.000  (background, no deadline)
+
+  Deadline Miss Policies:
+    Abort:    Cancel job, report failure
+    Extend:   Double remaining time, demote priority
+    Retry:    Re-enqueue with new deadline
+    Ignore:   Continue execution, log warning
+
+  Admission Control:
+    Before accepting a job, check if all existing deadlines can still be met.
+    Uses utilization bound test: sum(exec_time_i / period_i) <= 1.0
+    Reject job if admission would cause existing deadlines to miss.
+
+  Integration with Priority Queue (Cycle 45):
+    Jobs from priority queue get deadline assignment based on priority:
+    Critical: deadline = now + 100ms
+    High:     deadline = now + 500ms
+    Normal:   deadline = now + 2000ms
+    Low:      deadline = now + 10000ms (or no deadline)
+
+constants:
+  CRITICAL_DEADLINE_MS: 100
+  HIGH_DEADLINE_MS: 500
+  NORMAL_DEADLINE_MS: 2000
+  LOW_DEADLINE_MS: 10000
+  MAX_JOBS: 256
+  MAX_MISSED_BEFORE_ALERT: 3
+  UTILIZATION_BOUND: 1.0
+  PREEMPTION_OVERHEAD_US: 50
+  TICK_INTERVAL_US: 100
+  PHI: 1.6180339887498948482
+  PHI_SQ: 2.6180339887498948482
+  PHI_CUBE: 4.2360679774997896964
+  PHI_INV: 0.6180339887498948482
+  NEEDLE_THRESHOLD: 0.618
+
+types:
+  Priority:
+    description: "Job priority level"
+    enum:
+      - critical
+      - high
+      - normal
+      - low
+
+  DeadlineMissPolicy:
+    description: "What to do when a deadline is missed"
+    enum:
+      - abort
+      - extend
+      - retry
+      - ignore
+
+  JobState:
+    description: "Current state of a scheduled job"
+    enum:
+      - pending
+      - ready
+      - running
+      - completed
+      - missed
+      - aborted
+
+  Job:
+    description: "A schedulable job with deadline"
+    fields:
+      id: Int
+      name: String
+      priority: Priority
+      deadline_ms: Int
+      submitted_at: Timestamp
+      started_at: Option<Timestamp>
+      completed_at: Option<Timestamp>
+      estimated_exec_ms: Int
+      actual_exec_ms: Int
+      state: JobState
+      miss_policy: DeadlineMissPolicy
+      miss_count: Int
+      phi_weight: Float
+
+  SchedulerConfig:
+    description: "Configuration for the deadline scheduler"
+    fields:
+      max_jobs: Int
+      utilization_bound: Float
+      preemption_enabled: Bool
+      default_miss_policy: DeadlineMissPolicy
+      tick_interval_us: Int
+      critical_deadline_ms: Int
+      high_deadline_ms: Int
+      normal_deadline_ms: Int
+      low_deadline_ms: Int
+
+  AdmissionResult:
+    description: "Result of admission control check"
+    fields:
+      admitted: Bool
+      reason: String
+      current_utilization: Float
+      projected_utilization: Float
+
+  ScheduleDecision:
+    description: "Which job to run next"
+    fields:
+      job_id: Int
+      preempt_current: Bool
+      time_until_deadline_ms: Int
+      slack_ms: Int
+
+  DeadlineMissEvent:
+    description: "Record of a deadline miss"
+    fields:
+      job_id: Int
+      job_name: String
+      priority: Priority
+      deadline_ms: Int
+      actual_ms: Int
+      overshoot_ms: Int
+      policy_applied: DeadlineMissPolicy
+
+  SchedulerMetrics:
+    description: "Overall scheduler performance metrics"
+    fields:
+      total_jobs_submitted: Int
+      total_jobs_completed: Int
+      total_jobs_missed: Int
+      total_jobs_aborted: Int
+      total_jobs_rejected: Int
+      avg_latency_ms: Float
+      avg_slack_ms: Float
+      deadline_hit_rate: Float
+      critical_hit_rate: Float
+      utilization: Float
+      preemptions: Int
+      needle_score: Float
+
+behaviors:
+  # Initialization
+  - name: init
+    given: Allocator, optional SchedulerConfig
+    when: Creating deadline scheduler
+    then: Initialize EDF queue, metrics, admission control
+
+  - name: deinit
+    given: Scheduler instance
+    when: Shutting down
+    then: Abort pending jobs, free resources
+
+  # Job Submission
+  - name: submitJob
+    given: Job name, priority, estimated exec time
+    when: New job arrives
+    then: Assign deadline from priority, run admission control, enqueue if admitted
+
+  - name: assignDeadline
+    given: Priority level
+    when: Computing deadline for new job
+    then: Return absolute deadline based on priority-to-deadline mapping
+
+  - name: checkAdmission
+    given: New job, current queue
+    when: Deciding whether to accept job
+    then: Return AdmissionResult based on utilization bound test
+
+  - name: computeUtilization
+    given: Current job set
+    when: Calculating system load
+    then: Return sum of (exec_time / deadline) for all pending jobs
+
+  # EDF Scheduling
+  - name: scheduleNext
+    given: Current time, job queue
+    when: Selecting next job to run
+    then: Return job with earliest deadline (EDF), break ties by priority
+
+  - name: checkPreemption
+    given: Running job, new job
+    when: New job has earlier deadline
+    then: Return true if preemption should occur
+
+  - name: executeJob
+    given: Selected job
+    when: Running the job
+    then: Update state to running, track execution time
+
+  - name: completeJob
+    given: Running job finishes
+    when: Job execution done
+    then: Record completion time, compute slack, update metrics
+
+  # Deadline Management
+  - name: detectMiss
+    given: Running or pending job
+    when: Current time exceeds deadline
+    then: Return DeadlineMissEvent with overshoot details
+
+  - name: handleMiss
+    given: DeadlineMissEvent
+    when: Deadline was missed
+    then: Apply miss policy (abort/extend/retry/ignore)
+
+  - name: extendDeadline
+    given: Missed job
+    when: Extend policy selected
+    then: Double remaining time, demote priority one level
+
+  - name: retryJob
+    given: Missed job
+    when: Retry policy selected
+    then: Re-enqueue with fresh deadline, increment miss count
+
+  # Monitoring
+  - name: getMetrics
+    given: Scheduler instance
+    when: Querying performance
+    then: Return SchedulerMetrics with hit rates and utilization
+
+  - name: computeNeedleScore
+    given: SchedulerMetrics
+    when: Quality check
+    then: Return needle score based on deadline hit rate
+
+  - name: getJobState
+    given: Job ID
+    when: Querying specific job
+    then: Return current JobState
+
+  - name: estimateSlack
+    given: Job in queue
+    when: Predicting spare time
+    then: Return estimated ms between completion and deadline
+
+  # Queue Management
+  - name: getQueueSize
+    given: Scheduler instance
+    when: Querying queue depth
+    then: Return number of pending jobs
+
+  - name: getReadyJobs
+    given: Scheduler instance
+    when: Listing runnable jobs
+    then: Return jobs sorted by deadline (EDF order)
+
+  - name: clearCompleted
+    given: Scheduler instance
+    when: Cleaning up finished jobs
+    then: Remove completed and aborted jobs from queue
+
+  - name: rejectJob
+    given: Job that failed admission
+    when: System overloaded
+    then: Return rejection with reason, increment rejected count
+
+tests:
+  # Submission
+  - name: test_submit_critical
+    given: "Critical job with 100ms deadline"
+    then: "Admitted, deadline = now + 100ms"
+
+  - name: test_submit_low
+    given: "Low priority job"
+    then: "Admitted, deadline = now + 10000ms"
+
+  - name: test_admission_reject
+    given: "System at 95% utilization, new critical job"
+    then: "Rejected, utilization would exceed 1.0"
+
+  - name: test_admission_accept
+    given: "System at 50% utilization, new normal job"
+    then: "Admitted, utilization within bound"
+
+  # EDF Scheduling
+  - name: test_edf_order
+    given: "3 jobs: deadline 500ms, 100ms, 300ms"
+    then: "Scheduled in order: 100ms, 300ms, 500ms"
+
+  - name: test_edf_tiebreak
+    given: "2 jobs same deadline, critical vs normal"
+    then: "Critical runs first"
+
+  - name: test_preemption
+    given: "Normal job running, critical job arrives"
+    then: "Normal preempted, critical runs"
+
+  - name: test_no_preemption_disabled
+    given: "Preemption disabled, critical arrives"
+    then: "Current job continues"
+
+  # Deadline Miss
+  - name: test_miss_detect
+    given: "Job deadline 100ms, execution takes 150ms"
+    then: "Miss detected, overshoot = 50ms"
+
+  - name: test_miss_abort
+    given: "Miss with abort policy"
+    then: "Job aborted, state = aborted"
+
+  - name: test_miss_extend
+    given: "Miss with extend policy"
+    then: "Deadline doubled, priority demoted"
+
+  - name: test_miss_retry
+    given: "Miss with retry policy"
+    then: "Job re-enqueued with fresh deadline"
+
+  - name: test_miss_ignore
+    given: "Miss with ignore policy"
+    then: "Job continues, warning logged"
+
+  # Metrics
+  - name: test_hit_rate
+    given: "10 jobs, 9 meet deadline"
+    then: "Hit rate = 90%"
+
+  - name: test_critical_hit_rate
+    given: "5 critical jobs, all meet deadline"
+    then: "Critical hit rate = 100%"
+
+  - name: test_utilization
+    given: "Jobs using 70% of capacity"
+    then: "Utilization = 0.70"
+
+  - name: test_needle_score
+    given: "Good scheduler performance"
+    then: "Needle > 0.618"
+
+  # Edge Cases
+  - name: test_empty_queue
+    given: "No jobs in queue"
+    then: "scheduleNext returns null"
+
+  - name: test_max_jobs
+    given: "Queue at MAX_JOBS capacity"
+    then: "New job rejected"
+
+  - name: test_zero_exec_time
+    given: "Job with 0ms estimated exec"
+    then: "Handled gracefully"
+
+  - name: test_past_deadline
+    given: "Job submitted with deadline already passed"
+    then: "Immediately detected as miss"
+
+  # Phi Weights
+  - name: test_phi_weight_critical
+    given: "Critical job"
+    then: "Weight = phi^3 = 4.236"
+
+  - name: test_phi_weight_low
+    given: "Low job"
+    then: "Weight = phi^0 = 1.0"
+
+metrics:
+  - name: deadline_hit_rate
+    description: "Fraction of jobs meeting deadline"
+    target: "> 95%"
+
+  - name: critical_hit_rate
+    description: "Critical jobs meeting deadline"
+    target: "100%"
+
+  - name: avg_slack_ms
+    description: "Average time between completion and deadline"
+    target: "> 0 (positive slack)"
+
+  - name: utilization
+    description: "System utilization"
+    target: "< 1.0"
+
+  - name: preemption_rate
+    description: "Fraction of jobs preempted"
+    target: "< 10%"
+
+  - name: needle_score
+    description: "Golden Chain quality metric"
+    target: "> 0.618"
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

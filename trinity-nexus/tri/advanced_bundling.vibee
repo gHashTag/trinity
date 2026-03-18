@@ -1,0 +1,34 @@
+name: advanced_bundling
+version: "1.0.0"
+language: zig
+module: advanced_bundling
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 80
+  NUM_RELATIONS: 4
+  PAIRS_PER_RELATION: 10
+
+types:
+  UnsplitMemory:
+    fields:
+      relation_id: Int
+      num_pairs: Int
+      accuracy: Float
+    description: "A single unsplit memory holding all pairs for one relation."
+
+behaviors:
+  - name: fourRelationsUnsplit
+    given: 80 entities, 4 relations x 10 pairs each, all stored in single (unsplit) memories.
+    when: Query all 40 key→value pairs across 4 relations
+    then: 40/40 (100%) — DIM=4096 eliminates split-memory workaround entirely
+
+  - name: multiHopUnsplitChains
+    given: 2-hop chains through two unsplit memories (10 entities chained).
+    when: Execute 10 two-hop chains, checking both intermediate and final results
+    then: 20/20 (100%) — chains work perfectly through unsplit memories
+
+  - name: reverseQueriesCommutative
+    given: Same 4 relations with 40 pairs total.
+    when: Query in reverse direction (value→key) using commutative bipolar bind
+    then: 40/40 (100%) — bidirectional queries work without additional storage

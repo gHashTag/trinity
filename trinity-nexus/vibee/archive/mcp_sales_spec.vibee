@@ -1,0 +1,409 @@
+# MCP Sales Tools Specification
+# Spec-driven development: This spec is the SINGLE SOURCE OF TRUTH
+# All code, tests, and documentation are GENERATED from this spec
+
+metadata:
+  name: mcp_sales
+  version: 1.0.0
+  description: Sales and CRM MCP tools for lead management and deal tracking
+  author: VIBEE Team
+  license: MIT
+  generated_from: spec
+  manual_code_forbidden: true
+
+# Type definitions
+types:
+  - name: CRMConfig
+    description: CRM service configuration
+    fields:
+      - name: provider
+        type: String
+        description: CRM provider (salesforce, hubspot, pipedrive)
+        required: true
+      - name: api_key
+        type: String
+        description: API key
+        required: true
+      - name: domain
+        type: String
+        description: CRM domain/instance
+        required: false
+
+  - name: Lead
+    description: Sales lead
+    fields:
+      - name: id
+        type: String
+        description: Lead ID
+        required: false
+      - name: name
+        type: String
+        description: Lead name
+        required: true
+      - name: email
+        type: String
+        description: Lead email
+        required: true
+      - name: phone
+        type: String
+        description: Lead phone
+        required: false
+      - name: company
+        type: String
+        description: Company name
+        required: false
+      - name: status
+        type: String
+        description: Lead status (new, contacted, qualified, lost)
+        default: "new"
+      - name: source
+        type: String
+        description: Lead source
+        required: false
+      - name: created_at
+        type: String
+        description: Creation timestamp
+        required: false
+
+  - name: Deal
+    description: Sales deal/opportunity
+    fields:
+      - name: id
+        type: String
+        description: Deal ID
+        required: false
+      - name: title
+        type: String
+        description: Deal title
+        required: true
+      - name: value
+        type: Float
+        description: Deal value
+        required: true
+      - name: currency
+        type: String
+        description: Currency code
+        default: "USD"
+      - name: stage
+        type: String
+        description: Deal stage (prospecting, proposal, negotiation, closed_won, closed_lost)
+        required: true
+      - name: probability
+        type: Float
+        description: Win probability (0-1)
+        default: 0.5
+      - name: expected_close_date
+        type: String
+        description: Expected close date
+        required: false
+      - name: contact_id
+        type: String
+        description: Associated contact ID
+        required: false
+
+  - name: Contact
+    description: CRM contact
+    fields:
+      - name: id
+        type: String
+        description: Contact ID
+        required: false
+      - name: first_name
+        type: String
+        description: First name
+        required: true
+      - name: last_name
+        type: String
+        description: Last name
+        required: true
+      - name: email
+        type: String
+        description: Email address
+        required: true
+      - name: phone
+        type: String
+        description: Phone number
+        required: false
+      - name: company
+        type: String
+        description: Company name
+        required: false
+      - name: title
+        type: String
+        description: Job title
+        required: false
+
+  - name: Activity
+    description: Sales activity
+    fields:
+      - name: id
+        type: String
+        description: Activity ID
+        required: false
+      - name: type
+        type: String
+        description: Activity type (call, email, meeting, note)
+        required: true
+      - name: subject
+        type: String
+        description: Activity subject
+        required: true
+      - name: description
+        type: String
+        description: Activity description
+        required: false
+      - name: contact_id
+        type: String
+        description: Associated contact ID
+        required: false
+      - name: deal_id
+        type: String
+        description: Associated deal ID
+        required: false
+      - name: completed_at
+        type: String
+        description: Completion timestamp
+        required: false
+
+  - name: Pipeline
+    description: Sales pipeline
+    fields:
+      - name: id
+        type: String
+        description: Pipeline ID
+        required: true
+      - name: name
+        type: String
+        description: Pipeline name
+        required: true
+      - name: stages
+        type: List<String>
+        description: Pipeline stages
+        required: true
+      - name: total_value
+        type: Float
+        description: Total pipeline value
+        default: 0.0
+      - name: deal_count
+        type: Int
+        description: Number of deals
+        default: 0
+
+# Behavior specifications with test cases
+behaviors:
+  - name: lead_management
+    description: Lead management operations
+    functions:
+      - name: create_lead
+        description: Create a new lead
+        params:
+          - name: config
+            type: CRMConfig
+          - name: lead
+            type: Lead
+        returns: Result<Lead, String>
+        test_cases:
+          - input:
+              config: {provider: "hubspot", api_key: "test_key"}
+              lead:
+                name: "John Doe"
+                email: "john@example.com"
+                phone: "+1234567890"
+                company: "Acme Corp"
+                status: "new"
+                source: "website"
+            expected:
+              Ok:
+                id: "lead-123"
+                name: "John Doe"
+                email: "john@example.com"
+                status: "new"
+
+      - name: update_lead
+        description: Update lead information
+        params:
+          - name: config
+            type: CRMConfig
+          - name: lead_id
+            type: String
+          - name: lead
+            type: Lead
+        returns: Result<Lead, String>
+        test_cases:
+          - input:
+              config: {provider: "salesforce", api_key: "test_key"}
+              lead_id: "lead-123"
+              lead: {name: "John Doe", email: "john@example.com", status: "qualified"}
+            expected:
+              Ok: {id: "lead-123", status: "qualified"}
+
+      - name: convert_lead
+        description: Convert lead to contact and deal
+        params:
+          - name: config
+            type: CRMConfig
+          - name: lead_id
+            type: String
+        returns: Result<Contact, String>
+        test_cases:
+          - input:
+              config: {provider: "pipedrive", api_key: "test_key"}
+              lead_id: "lead-123"
+            expected:
+              Ok: {id: "contact-456", first_name: "John", last_name: "Doe"}
+
+  - name: deal_management
+    description: Deal management operations
+    functions:
+      - name: create_deal
+        description: Create a new deal
+        params:
+          - name: config
+            type: CRMConfig
+          - name: deal
+            type: Deal
+        returns: Result<Deal, String>
+        test_cases:
+          - input:
+              config: {provider: "hubspot", api_key: "test_key"}
+              deal:
+                title: "Enterprise License"
+                value: 50000.0
+                currency: "USD"
+                stage: "proposal"
+                probability: 0.7
+            expected:
+              Ok: {id: "deal-789", title: "Enterprise License", value: 50000.0}
+
+      - name: update_deal_stage
+        description: Update deal stage
+        params:
+          - name: config
+            type: CRMConfig
+          - name: deal_id
+            type: String
+          - name: stage
+            type: String
+        returns: Result<Deal, String>
+        test_cases:
+          - input:
+              config: {provider: "salesforce", api_key: "test_key"}
+              deal_id: "deal-789"
+              stage: "closed_won"
+            expected:
+              Ok: {id: "deal-789", stage: "closed_won"}
+
+      - name: get_pipeline
+        description: Get sales pipeline
+        params:
+          - name: config
+            type: CRMConfig
+        returns: Result<Pipeline, String>
+        test_cases:
+          - input:
+              config: {provider: "pipedrive", api_key: "test_key"}
+            expected:
+              Ok:
+                id: "pipeline-1"
+                name: "Sales Pipeline"
+                stages: ["prospecting", "proposal", "negotiation", "closed_won"]
+                total_value: 500000.0
+                deal_count: 25
+
+  - name: activity_tracking
+    description: Activity tracking operations
+    functions:
+      - name: log_activity
+        description: Log a sales activity
+        params:
+          - name: config
+            type: CRMConfig
+          - name: activity
+            type: Activity
+        returns: Result<Activity, String>
+        test_cases:
+          - input:
+              config: {provider: "hubspot", api_key: "test_key"}
+              activity:
+                type: "call"
+                subject: "Discovery call"
+                description: "Discussed requirements"
+                contact_id: "contact-456"
+                deal_id: "deal-789"
+            expected:
+              Ok: {id: "activity-111", type: "call", subject: "Discovery call"}
+
+# Function declarations
+functions:
+  - name: create_lead
+    params: [config: CRMConfig, lead: Lead]
+    returns: Result<Lead, String>
+    behavior: lead_management
+
+  - name: update_lead
+    params: [config: CRMConfig, lead_id: String, lead: Lead]
+    returns: Result<Lead, String>
+    behavior: lead_management
+
+  - name: convert_lead
+    params: [config: CRMConfig, lead_id: String]
+    returns: Result<Contact, String>
+    behavior: lead_management
+
+  - name: create_deal
+    params: [config: CRMConfig, deal: Deal]
+    returns: Result<Deal, String>
+    behavior: deal_management
+
+  - name: update_deal_stage
+    params: [config: CRMConfig, deal_id: String, stage: String]
+    returns: Result<Deal, String>
+    behavior: deal_management
+
+  - name: get_pipeline
+    params: [config: CRMConfig]
+    returns: Result<Pipeline, String>
+    behavior: deal_management
+
+  - name: log_activity
+    params: [config: CRMConfig, activity: Activity]
+    returns: Result<Activity, String>
+    behavior: activity_tracking
+
+# Documentation
+documentation:
+  overview: |
+    # MCP Sales Tools
+    
+    Sales and CRM tools for lead management and deal tracking.
+    
+    ## Features
+    - Lead management (create, update, convert)
+    - Deal management (create, update, pipeline)
+    - Activity tracking
+    - Contact management
+    
+  examples:
+    - title: Create Lead
+      code: |
+        let config = CRMConfig(
+          provider: "hubspot",
+          api_key: "your_key",
+          domain: None
+        )
+        let lead = Lead(
+          name: "John Doe",
+          email: "john@example.com",
+          company: "Acme Corp",
+          status: "new"
+        )
+        let result = create_lead(config, lead)
+
+# Generation metadata
+generation:
+  target_language: gleam
+  output_path: src/mcp_sales.gleam
+  test_path: test/mcp_sales_test.gleam
+  generate_docs: true
+  generate_tests: true
+  generate_helpers: true

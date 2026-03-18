@@ -1,0 +1,51 @@
+name: resonator_clean
+version: "1.0.0"
+language: zig
+module: resonator_clean
+
+description: >
+  Noise robustness and superposition capacity testing for ternary VSA.
+  Tests: bind/unbind recovery (sim=0.82), superposition unbinding (3/3),
+  noise injection (50% flip recovery), and capacity (10 items at 100%).
+  Demonstrates ternary VSA noise resistance superior to binary.
+
+types:
+  CapacityResult:
+    fields:
+      num_items: Int
+      recovered: Int
+      accuracy: Float
+
+constants:
+  DIM: 1024
+  CODEBOOK_SIZE: 20
+  BIND_UNBIND_SIM: 0.8165
+  MAX_NOISE_RECOVERY: "50% trit flips"
+  CAPACITY_AT_100PCT: 10
+
+behaviors:
+  - name: bindUnbindRecovery
+    given: Two random hypervectors A and B
+    when: Compute bind(A,B) then unbind(A)
+    then: Recovered B has sim=0.82 (partial due to zero trits)
+
+  - name: superpositionUnbinding
+    given: Bundle of 3 role-bound items
+    when: Unbind each role and find closest in codebook
+    then: 3/3 items correctly recovered (sim ~0.5, gap ~0.45)
+
+  - name: noiseInjectionRecovery
+    given: Symbol vector with N% random trit flips
+    when: Find closest match in 20-symbol codebook
+    then: Correct recall up to 50% noise (sim=0.63)
+
+  - name: superpositionCapacity
+    given: Bundle of K role-bound items at dim=1024
+    when: Unbind each role and find closest
+    then: 100% recovery for K=2..10 (codebook=20)
+
+test_cases:
+  - input: "50% noise on dim=1024"
+    expected: "correct codebook recall (sim=0.63)"
+  - input: "10 items superposed"
+    expected: "10/10 recovered (100%)"

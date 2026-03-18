@@ -1,0 +1,37 @@
+name: self_hosting_example
+version: "1.0.0"
+language: zig
+module: self_hosting_example
+
+types:
+  SelfHostingConfig:
+    fields:
+      max_patches: usize
+      confidence_threshold: f64
+      require_human_approval: bool
+      branch_prefix: []const u8
+      auto_rebuild: bool
+      auto_commit: bool
+      auto_push: bool
+      test_timeout: u32
+      verbose: bool
+
+  SelfHostingResult:
+    fields:
+      success: bool
+      patches_applied: usize
+      patches_successful: usize
+      branch_name: ?[]const u8
+      commit_hash: ?[]const u8
+      error_message: ?[]const u8
+
+behaviors:
+  - name: main
+    given: Page allocator and default SelfHostingConfig (max_patches=3, confidence=0.999, auto_commit=true)
+    when: Entry point is invoked
+    then: Prints banner, runs self-hosting loop via self_hosting_loop.runSelfHostingLoop, prints session results including patches applied, branch, commit, and any error message
+
+  - name: runSelfHostingLoop
+    given: Allocator and SelfHostingConfig
+    when: Invoked from main
+    then: Executes the Sacred Intelligence self-improvement loop; returns SelfHostingResult with patch counts, optional branch and commit hash, and optional error message; caller must free branch_name, commit_hash, error_message if non-null

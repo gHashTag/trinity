@@ -1,0 +1,52 @@
+name: confidence_gated_chains
+version: "1.0.0"
+language: zig
+module: confidence_gated_chains
+description: "Level 11.22 — Confidence-Gated Chain Propagation. Tests chain queries with confidence scoring at each hop. Valid chains (author→book→genre) achieve 5/5 with all hops above 0.08 threshold. Invalid queries (wrong-domain keys) correctly gated 3/5. Mixed batch routing 9/10. Total 17/20 (85%). Demonstrates production-grade confidence-aware reasoning."
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 25
+  CONF_THRESHOLD: 0.08
+
+types:
+  GatedResult:
+    fields:
+      chain: String
+      confidence: Float
+      gated: Bool
+      correct: Bool
+      description: "Result of a confidence-gated chain query."
+
+behaviors:
+  - name: validChainConfidence
+    given: 5 authors, 5 books, 5 genres. wrote and genre_of memories bundled.
+    when: Chain author→book→genre, measuring confidence at each hop
+    then: 5/5 (100%) — all chains produce correct result with confidence > 0.08 at every hop
+
+  - name: invalidQueryGating
+    given: Genre vectors used as keys to wrote memory (nonsensical query).
+    when: Query wrote(genre) and check if confidence is below threshold
+    then: 3/5 gated — 2 false positives near the 0.08 boundary (similarity 0.089-0.091)
+
+  - name: mixedBatchRouting
+    given: Batch of 10 queries: 5 valid (author→book) + 5 invalid (publisher→book).
+    when: Route each query based on confidence threshold
+    then: 9/10 correct — 5/5 valid routed correctly, 4/5 invalid gated
+
+test_cases:
+  - name: test_valid_chains_5_5
+    input: "5 valid author→book→genre chains"
+    expected: "5/5 (100%) with confidence > 0.08"
+
+  - name: test_gating_3_5
+    input: "5 invalid queries gated by confidence"
+    expected: "3/5 correctly gated"
+
+  - name: test_mixed_routing_9_10
+    input: "10 mixed valid+invalid queries routed"
+    expected: "9/10 correctly routed"
+
+  - name: test_total_17_20
+    input: "Total confidence-gated accuracy"
+    expected: "17/20 (85%)"

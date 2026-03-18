@@ -1,0 +1,198 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE Specification — MU Error Protocol v2
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# Issue #73: Structured failure logging for Agent MU
+# Issue #79: v2 — severity, resolution tracking, aggregate reports
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: mu_error_protocol
+version: "2.0.0"
+language: zig
+module: mu_error_protocol
+
+description: |
+  MU Error Protocol v2 — structured JSON logging of every pipeline failure.
+  Each error → .trinity/mu/errors/{timestamp}.json.
+  v2 adds: Severity (P0-P3), ResolutionStatus, root_cause, aggregate reports.
+  Queryable by category/severity, with stats and matrix reports.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPE SYSTEM
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  ErrorCategory:
+    variants:
+      - type_mapping
+      - undefined_identifier
+      - syntax_error
+      - format_error
+      - import_error
+      - memory_error
+      - test_failure
+      - gen_failure
+      - unknown
+
+  Severity:
+    variants:
+      - p0
+      - p1
+      - p2
+      - p3
+
+  ResolutionStatus:
+    variants:
+      - open
+      - fixed
+      - wontfix
+      - spec_quality
+
+  MuError:
+    fields:
+      timestamp: String
+      spec: String
+      link: Int
+      link_name: String
+      error_category: ErrorCategory
+      error_message: String
+      error_line: Int
+      generated_file: String
+      fix_attempted: Bool
+      fix_result: String
+      severity: Severity
+      root_cause: String
+      resolution_status: ResolutionStatus
+      fix_commit: String
+      generator_component: String
+
+  ErrorStats:
+    fields:
+      total_errors: Int
+      category_counts: List(Int)
+      severity_counts: List(Int)
+      resolution_counts: List(Int)
+      has_last_error: Bool
+      error_rate: Float
+
+  QueryFilter:
+    fields:
+      category_filter: String
+      spec_filter: String
+      limit: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  log_error:
+    description: "Log a pipeline error to .trinity/mu/errors/"
+    inputs:
+      - error: MuError
+    output: String
+    steps:
+      - Ensure .trinity/mu/errors/ directory exists
+      - Generate filename from timestamp
+      - Serialize MuError to JSON
+      - Write to .trinity/mu/errors/{timestamp}.json
+      - Return file path
+
+  query_errors:
+    description: "Query errors with optional category filter"
+    inputs:
+      - filter: QueryFilter
+    output: List(MuError)
+    steps:
+      - Scan .trinity/mu/errors/*.json
+      - Parse each JSON file
+      - Apply category filter if set
+      - Apply spec filter if set
+      - Return up to limit results
+
+  get_stats:
+    description: "Get error statistics by category"
+    inputs: []
+    output: ErrorStats
+    steps:
+      - Scan all error files
+      - Count by category
+      - Find last error
+      - Calculate error rate
+      - Return ErrorStats
+
+  categorize_error:
+    description: "Classify error message into ErrorCategory"
+    inputs:
+      - message: String
+    output: ErrorCategory
+    steps:
+      - Check for type mapping keywords
+      - Check for undefined identifier
+      - Check for syntax patterns
+      - Check for format issues
+      - Default to unknown
+
+  run_mu_errors_command:
+    description: "CLI: tri mu errors [--category X] [--limit N]"
+    inputs:
+      - args: List(String)
+    output: Void
+    steps:
+      - Parse --category and --limit flags
+      - Call query_errors with filter
+      - Print results table
+
+  run_mu_stats_command:
+    description: "CLI: tri mu stats — category + severity + resolution breakdowns"
+    inputs: []
+    output: Void
+    steps:
+      - Call get_stats
+      - Print category breakdown table
+      - Print severity breakdown (P0-P3)
+      - Print resolution breakdown (open/fixed/wontfix/spec_quality)
+      - Print V-formula with resolution rate
+
+  run_mu_report_command:
+    description: "CLI: tri mu report — aggregate category × severity matrix"
+    inputs: []
+    output: Void
+    steps:
+      - Call get_stats
+      - Print category × severity cross-tabulation matrix
+      - Print resolution summary
+      - Print P0/P1 action items
+      - Print V-formula with fix rate
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTRAINTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constraints:
+  - One JSON file per error (atomic writes)
+  - Directory auto-created on first log
+  - Maximum 10,000 error files (rotate oldest)
+  - JSON must be valid and parseable
+  - Category classification is best-effort
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: "categorize TYPE_MAPPING"
+    input: {message: "use of undeclared identifier 'Int64'"}
+    expected: {category: "type_mapping"}
+
+  - name: "categorize SYNTAX_ERROR"
+    input: {message: "expected ';' after statement"}
+    expected: {category: "syntax_error"}
+
+  - name: "categorize FORMAT_ERROR"
+    input: {message: "formatting check failed"}
+    expected: {category: "format_error"}
+
+  - name: "categorize UNKNOWN"
+    input: {message: "something weird happened"}
+    expected: {category: "unknown"}

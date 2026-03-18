@@ -1,0 +1,31 @@
+{
+  "name": "trinity-vsa",
+  "version": "0.1.0",
+  "description": "Vector Symbolic Architecture with balanced ternary arithmetic",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "test": "node --test dist/*.test.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "vsa",
+    "hyperdimensional",
+    "ternary",
+    "vector",
+    "symbolic",
+    "architecture",
+    "bitnet"
+  ],
+  "author": "Trinity Project",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gHashTag/trinity.git"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

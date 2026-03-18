@@ -1,0 +1,88 @@
+name: voice_engine
+version: "1.0.0"
+language: zig
+module: voice_engine
+
+description: >
+  Agent Voice Engine — generates per-agent voice lines in Russian from FacultySnapshot
+  and FacultyDelta. Reads live heartbeat JSONs for mu and scholar agents. Dispatches
+  to per-agent voice functions. Writes into caller-owned []u8 buffer.
+
+types:
+  MuHeartbeat:
+    fields:
+      status: "[]const u8"
+      patterns: u32
+      last_seen: i64
+      healing: bool
+
+  ScholarHeartbeat:
+    fields:
+      status: "[]const u8"
+      papers: u32
+      last_query: i64
+      frozen: bool
+
+  SwarmCounts:
+    fields:
+      active: u32
+      queued: u32
+      done: u32
+      failed: u32
+
+constants:
+  MU_HEARTBEAT_PATH: ".trinity/mu/heartbeat.json"
+  SCHOLAR_HEARTBEAT_PATH: ".trinity/scholar/heartbeat.json"
+
+behaviors:
+  generateVoice:
+    given: "Agent enum, FacultySnapshot, FacultyDelta, caller-owned []u8 buffer"
+    when: "called"
+    then: >
+      dispatches to per-agent voice function based on Agent enum value;
+      writes Russian-language voice line into buf and returns written slice
+
+  generateRalphVoice:
+    given: "FacultySnapshot, FacultyDelta, buf"
+    when: "agent is ralph"
+    then: "writes ralph's status line referencing compile rate and active issue count"
+
+  generateMuVoice:
+    given: "FacultySnapshot, FacultyDelta, buf"
+    when: "agent is mu"
+    then: >
+      reads MuHeartbeat from .trinity/mu/heartbeat.json;
+      writes mu's voice line referencing pattern count and healing status;
+      falls back to snapshot data if heartbeat unreadable
+
+  generateScholarVoice:
+    given: "FacultySnapshot, FacultyDelta, buf"
+    when: "agent is scholar"
+    then: >
+      reads ScholarHeartbeat from .trinity/scholar/heartbeat.json;
+      writes scholar's voice line referencing paper count and frozen status
+
+  generateOracleVoice:
+    given: "FacultySnapshot, FacultyDelta, buf"
+    when: "agent is oracle"
+    then: "writes oracle's voice line referencing metric watchdog and alert count"
+
+  generateSwarmVoice:
+    given: "FacultySnapshot, FacultyDelta, buf"
+    when: "agent is swarm"
+    then: "writes swarm's voice line referencing active/queued/done container counts"
+
+  generateLinterVoice:
+    given: "FacultySnapshot, FacultyDelta, buf"
+    when: "agent is linter"
+    then: "writes linter's voice line referencing dirty file count and format violations"
+
+  readMuHeartbeat:
+    given: "allocator"
+    when: "called"
+    then: "reads and parses .trinity/mu/heartbeat.json; returns null on missing or malformed file"
+
+  readScholarHeartbeat:
+    given: "allocator"
+    when: "called"
+    then: "reads and parses .trinity/scholar/heartbeat.json; returns null on missing or malformed file"

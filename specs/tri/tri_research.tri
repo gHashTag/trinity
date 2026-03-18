@@ -1,0 +1,30 @@
+name: tri_research
+version: "1.0.0"
+language: zig
+module: tri.tri_research
+
+description: |
+  Research commands for auditing codebase properties.
+  Verifies idempotency, finds duplicate code patterns,
+  and checks sacred constants consistency.
+
+behaviors:
+  - name: checkIdempotency
+    given: Code generation pipeline
+    when: User runs tri research idempotency
+    then: Verifies code generation produces identical output on re-run
+
+  - name: findDuplication
+    given: Source codebase paths
+    when: User runs tri research duplication
+    then: Identifies and reports duplicate code patterns
+
+  - name: verifySacredConstants
+    given: Source files containing sacred constants
+    when: User runs tri research sacred-constants
+    then: Verifies all sacred constants are consistent across codebase
+
+export_functions:
+  - checkIdempotency
+  - findDuplication
+  - verifySacredConstants

@@ -1,0 +1,112 @@
+name: cycle99_true_immortality
+version: "99.0.0"
+language: zig
+module: true_immortality
+
+types:
+  ImmortalityState:
+    fields:
+      node_id: String
+      pid: Int
+      start_time: Float
+      last_heartbeat: Float
+      status: String
+      recovery_count: Int
+      migration_history: List<MigrationRecord>
+
+  CrashReport:
+    fields:
+      timestamp: Float
+      node_id: String
+      exit_code: Int
+      signal: Option<Int>
+      stack_trace: String
+      memory_dump: String
+      last_state_hash: String
+      recovery_attempted: Bool
+      recovery_successful: Bool
+
+  PersistentState:
+    fields:
+      state_id: String
+      version: Int
+      data: String
+      checksum: String
+      timestamp: Float
+      compressed: Bool
+      encrypted: Bool
+
+  MigrationPlan:
+    fields:
+      source_node: String
+      target_node: String
+      state_snapshot: String
+      migration_priority: Int
+      estimated_duration: Float
+      rollback_plan: String
+
+  HealthCheck:
+    fields:
+      check_type: String
+      status: String
+      latency_ms: Float
+      memory_usage_mb: Float
+      cpu_usage_percent: Float
+      disk_available_gb: Float
+      network_connected: Bool
+      timestamp: Float
+      error_message: Option<String>
+
+  MigrationRecord:
+    fields:
+      from_node: String
+      to_node: String
+      timestamp: Float
+      success: Bool
+      duration_ms: Float
+
+behaviors:
+  - name: detect_crash
+    given: Process is running with watchdog enabled
+    when: Process terminates unexpectedly or stops responding
+    then: Detect crash type (exit code, signal, timeout), capture crash context, generate crash report
+
+  - name: auto_recover
+    given: Crash detected and crash report available
+    when: Recovery system is triggered
+    then: Attempt immediate restart, restore last persistent state, increment recovery counter, notify monitoring system
+
+  - name: save_state
+    given: System is running and has state to persist
+    when: State save interval elapses or critical state change occurs
+    then: Serialize current state to disk, compute checksum, verify write success, update persistence metadata
+
+  - name: restore_state
+    given: Persistent state file exists and is valid
+    when: System is restarting after crash
+    then: Load state from disk, verify checksum, deserialize state, apply to running system, validate consistency
+
+  - name: migrate_to_node
+    given: Current host is failing or maintenance required
+    when: Migration plan is available and target node is ready
+    then: Transfer state snapshot to target node, validate transfer, shutdown local instance, activate on target node
+
+  - name: run_health_checks
+    given: Health monitoring is enabled
+    when: Health check interval elapses
+    then: Perform system diagnostics (memory, CPU, disk, network), record metrics, detect anomalies, trigger alerts if thresholds exceeded
+
+  - name: broadcast_emergency
+    given: Critical failure detected or node migration in progress
+    when: Emergency broadcast is triggered
+    then: Send failure notification to all nodes, include crash context and migration plan, await acknowledgments
+
+  - name: log_crash_report
+    given: Crash report is generated
+    when: Crash detection completes
+    then: Append to crash log with timestamp, categorize crash type, update statistics, notify administrators if critical
+
+  - name: enable_watchdog
+    given: Process is starting
+    when: Watchdog initialization is called
+    then: Register process with monitoring system, start heartbeat thread, configure crash detection parameters, enable auto-recovery

@@ -1,0 +1,55 @@
+name: real_kg_sync_poll
+version: "1.0.0"
+language: zig
+
+types:
+  DHTPoller:
+    fields:
+      dht_ptr: Ptr
+      allocator: Ptr
+      is_connected: Bool
+      last_poll_ms: Int
+      consecutive_failures: Int
+  RealDHTStats:
+    fields:
+      triples_stored: Int
+      triples_distributed: Int
+      triples_received: Int
+      triples_rejected: Int
+      triples_duplicate: Int
+      sync_rounds: Int
+      peer_count: Int
+      acceptance_rate: Float
+      last_update_ms: Int
+
+behaviors:
+  - name: init_dht_poller
+    given: Allocator and KgTripleDHT instance
+    when: Poller initializes
+    then: Returns DHTPoller with dht_ptr set, connected state, zero counters
+
+  - name: poll_real_stats
+    given: DHTPoller with valid dht_ptr
+    when: Stats polling requested
+    then: Calls dht.getStats(), returns RealDHTStats with actual metrics
+
+  - name: poll_with_fallback
+    given: DHTPoller (dht may be null)
+    when: Stats polling requested
+    then: If dht valid, returns real stats; else returns zero stats with is_connected=false
+
+  - name: compute_acceptance_rate
+    given: Triples received and rejected counts
+    when: Rate calculation requested
+    then: Returns (received - rejected) / max(1, received + rejected) as Float
+
+  - name: check_health_threshold
+    given: RealDHTStats
+    when: Health check requested
+    then: Returns true if acceptance_rate >= 0.95, else false (alert condition)
+
+  - name: format_prometheus_metrics
+    given: RealDHTStats
+    when: Prometheus export requested
+    then: Returns formatted string with HELP and TYPE declarations
+

@@ -1,0 +1,11 @@
+// Quantum gravity predictions CLI (phi-gamma framework)
+// phi^2 + 1/phi^2 = 3 = TRINITY
+
+spec tri_quantum_gravity {
+    // See src/tri/tri_quantum_gravity.zig for implementation
+    // Spec created for doctor compliance tracking
+
+    behavior dispatch(allocator: Allocator, args: []str) -> void {
+        // Main command dispatcher
+    }
+}

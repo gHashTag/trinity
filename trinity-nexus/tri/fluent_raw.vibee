@@ -1,0 +1,24 @@
+name: fluent_raw
+version: "1.0.0"
+language: zig
+module: fluent_raw
+
+types:
+  GenerationSample:
+    fields:
+      temperature: Float
+      top_k: Int
+      text: String
+      unique_chars: Int
+      english_words: Int
+
+behaviors:
+  - name: generateAtMultipleTemperatures
+    given: Raw frequency sampling with T=0.8/K=10, T=0.5/K=5, T=0.3/K=3
+    when: Generate 120 tokens from Shakespeare prompt
+    then: Temperature trade-off between diversity and coherence
+
+  - name: identifyEnglishFragments
+    given: Raw frequency generation output
+    when: Look for recognizable English words and word boundaries
+    then: Word-level coherence assessment (first real English words from trigram model)

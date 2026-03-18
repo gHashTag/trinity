@@ -1,0 +1,40 @@
+{
+  "name": "tree-sitter-vibee",
+  "version": "1.0.0",
+  "description": "Tree-sitter grammar for VIBEE specification language",
+  "main": "bindings/node",
+  "keywords": [
+    "parser",
+    "tree-sitter",
+    "vibee",
+    "specification",
+    "codegen"
+  ],
+  "files": [
+    "grammar.js",
+    "src/grammar.json",
+    "src/node-types.json",
+    "src/binding.gyp"
+  ],
+  "tree-sitter": [
+    {
+      "scope": "source.vibee",
+      "highlights": [
+        "queries/vibee/highlights.scm"
+      ]
+    }
+  ],
+  "author": "Trinity Project <gHashTag>",
+  "license": "MIT",
+  "dependencies": {
+    "tree-sitter-cli": "^0.20.0"
+  },
+  "devDependencies": {
+    "tree-sitter": "^0.20.0"
+  },
+  "scripts": {
+    "generate": "tree-sitter generate",
+    "test": "tree-sitter test",
+    "parse": "tree-sitter parse"
+  }
+}

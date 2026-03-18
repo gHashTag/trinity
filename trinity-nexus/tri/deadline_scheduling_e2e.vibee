@@ -1,0 +1,394 @@
+# ============================================================================
+# Deadline Scheduling E2E Test Suite - Cycle 46 Validation
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: deadline_scheduling_e2e
+version: "1.0.0"
+language: zig
+module: deadline_scheduling_e2e
+
+description: |
+  End-to-end test suite for the deadline scheduling system.
+  Tests EDF ordering, admission control, deadline miss handling,
+  preemption, phi-weighted priorities, and metrics.
+
+  Test Categories:
+    1. EDF Ordering (8 tests)
+    2. Admission Control (6 tests)
+    3. Deadline Miss Handling (8 tests)
+    4. Preemption (6 tests)
+    5. Phi Weights (4 tests)
+    6. Metrics & Needle (4 tests)
+    7. Edge Cases (6 tests)
+    8. Integration with Priority Queue (4 tests)
+    9. Performance (4 tests)
+
+  Total: 50 test cases
+
+constants:
+  TOTAL_TESTS: 50
+  PASS_THRESHOLD: 0.90
+  NEEDLE_THRESHOLD: 0.618
+  PHI: 1.6180339887498948482
+
+types:
+  TestCategory:
+    description: "Category of E2E test"
+    enum:
+      - edf_ordering
+      - admission
+      - deadline_miss
+      - preemption
+      - phi_weights
+      - metrics
+      - edge_case
+      - integration
+      - performance
+
+  TestVerdict:
+    description: "Test outcome"
+    enum:
+      - passed
+      - failed
+      - skipped
+
+  SchedulerTestCase:
+    description: "Single test case"
+    fields:
+      id: Int
+      category: TestCategory
+      description: String
+      expected_behavior: String
+
+  SchedulerTestResult:
+    description: "Result of single test"
+    fields:
+      test_id: Int
+      verdict: TestVerdict
+      actual_behavior: String
+      latency_ms: Int
+      needle_score: Float
+
+  SuiteResult:
+    description: "Full suite result"
+    fields:
+      total: Int
+      passed: Int
+      failed: Int
+      pass_rate: Float
+      avg_latency_ms: Float
+      needle_score: Float
+      improvement_rate: Float
+
+behaviors:
+  - name: initSuite
+    given: Allocator
+    when: Creating test suite
+    then: Load all 50 test cases
+
+  - name: runSuite
+    given: Initialized suite
+    when: Executing all tests
+    then: Run each test, collect results
+
+  - name: getSuiteResult
+    given: Completed suite
+    when: Querying results
+    then: Return SuiteResult with metrics
+
+  - name: runEDFTests
+    given: 8 EDF ordering test cases
+    when: Testing earliest deadline first
+    then: Jobs scheduled in deadline order
+
+  - name: runAdmissionTests
+    given: 6 admission control test cases
+    when: Testing utilization bound
+    then: Jobs admitted or rejected correctly
+
+  - name: runDeadlineMissTests
+    given: 8 deadline miss test cases
+    when: Testing miss detection and handling
+    then: Policies applied correctly
+
+  - name: runPreemptionTests
+    given: 6 preemption test cases
+    when: Testing job preemption
+    then: Earlier deadline preempts later
+
+  - name: runPhiWeightTests
+    given: 4 phi weight test cases
+    when: Testing phi-based priority weights
+    then: Weights match phi powers
+
+  - name: runMetricsTests
+    given: 4 metrics test cases
+    when: Testing scheduler metrics
+    then: Hit rates and utilization correct
+
+  - name: runEdgeCaseTests
+    given: 6 edge case test cases
+    when: Testing boundary conditions
+    then: Graceful handling
+
+  - name: runIntegrationTests
+    given: 4 integration test cases
+    when: Testing with priority queue
+    then: Deadlines assigned from priority levels
+
+  - name: runPerformanceTests
+    given: 4 performance test cases
+    when: Testing scheduling latency
+    then: Within latency bounds
+
+  - name: validateResult
+    given: SchedulerTestResult
+    when: Checking test outcome
+    then: Verify behavior matches expected
+
+  - name: computeImprovementRate
+    given: SuiteResult
+    when: Computing cycle improvement
+    then: Return improvement rate (target > 0.618)
+
+  - name: generateReport
+    given: SuiteResult
+    when: Creating test report
+    then: Return formatted report string
+
+test_cases:
+  # === EDF ORDERING (8) ===
+  - name: edf01_single_job
+    given: "One job, deadline 100ms"
+    expected: "Scheduled immediately"
+
+  - name: edf02_two_jobs_ordered
+    given: "Job A deadline 100ms, Job B deadline 200ms"
+    expected: "A runs first"
+
+  - name: edf03_two_jobs_reversed
+    given: "Job A deadline 200ms, Job B deadline 100ms"
+    expected: "B runs first (earlier deadline)"
+
+  - name: edf04_three_jobs
+    given: "Deadlines: 500ms, 100ms, 300ms"
+    expected: "Order: 100, 300, 500"
+
+  - name: edf05_same_deadline_priority
+    given: "Two jobs same deadline, critical vs normal"
+    expected: "Critical first (tiebreak)"
+
+  - name: edf06_ten_jobs
+    given: "10 jobs with random deadlines"
+    expected: "Sorted by deadline ascending"
+
+  - name: edf07_dynamic_arrival
+    given: "Jobs arrive while others execute"
+    expected: "Queue re-sorted on each arrival"
+
+  - name: edf08_all_same_deadline
+    given: "5 jobs all deadline 500ms"
+    expected: "Sorted by priority (critical first)"
+
+  # === ADMISSION CONTROL (6) ===
+  - name: ac01_accept_low_util
+    given: "System at 30% utilization"
+    expected: "Job admitted"
+
+  - name: ac02_accept_boundary
+    given: "System at 90%, small job"
+    expected: "Job admitted (stays under 1.0)"
+
+  - name: ac03_reject_overload
+    given: "System at 95%, large job"
+    expected: "Job rejected (would exceed 1.0)"
+
+  - name: ac04_critical_always
+    given: "System at 99%, critical job"
+    expected: "Critical admitted (override)"
+
+  - name: ac05_utilization_calc
+    given: "3 jobs with known exec/deadline"
+    expected: "Utilization = sum(exec/deadline)"
+
+  - name: ac06_empty_system
+    given: "No jobs, new submission"
+    expected: "Always admitted"
+
+  # === DEADLINE MISS (8) ===
+  - name: dm01_detect_miss
+    given: "Job deadline 100ms, took 150ms"
+    expected: "Miss detected, overshoot 50ms"
+
+  - name: dm02_abort_policy
+    given: "Miss with abort policy"
+    expected: "Job state = aborted"
+
+  - name: dm03_extend_policy
+    given: "Miss with extend policy"
+    expected: "Deadline doubled, priority demoted"
+
+  - name: dm04_retry_policy
+    given: "Miss with retry policy"
+    expected: "Re-enqueued with fresh deadline"
+
+  - name: dm05_ignore_policy
+    given: "Miss with ignore policy"
+    expected: "Job continues, warning logged"
+
+  - name: dm06_multiple_misses
+    given: "Job misses 3 times with retry"
+    expected: "Alert triggered after MAX_MISSED"
+
+  - name: dm07_critical_miss
+    given: "Critical job misses deadline"
+    expected: "Immediate alert, abort"
+
+  - name: dm08_no_miss
+    given: "Job completes before deadline"
+    expected: "No miss event, positive slack"
+
+  # === PREEMPTION (6) ===
+  - name: pr01_preempt_normal
+    given: "Normal running, critical arrives"
+    expected: "Normal preempted"
+
+  - name: pr02_no_preempt_same
+    given: "Normal running, normal arrives"
+    expected: "No preemption (same priority)"
+
+  - name: pr03_preempt_chain
+    given: "Low running, normal arrives, critical arrives"
+    expected: "Two preemptions"
+
+  - name: pr04_preempt_disabled
+    given: "Preemption disabled, critical arrives"
+    expected: "No preemption"
+
+  - name: pr05_preempt_overhead
+    given: "Preemption with 50us overhead"
+    expected: "Overhead accounted in scheduling"
+
+  - name: pr06_preempt_resume
+    given: "Preempted job resumes after critical completes"
+    expected: "Job resumes from where it stopped"
+
+  # === PHI WEIGHTS (4) ===
+  - name: pw01_critical_weight
+    given: "Critical priority"
+    expected: "Weight = phi^3 = 4.236"
+
+  - name: pw02_high_weight
+    given: "High priority"
+    expected: "Weight = phi^2 = 2.618"
+
+  - name: pw03_normal_weight
+    given: "Normal priority"
+    expected: "Weight = phi^1 = 1.618"
+
+  - name: pw04_low_weight
+    given: "Low priority"
+    expected: "Weight = phi^0 = 1.0"
+
+  # === METRICS (4) ===
+  - name: mt01_hit_rate
+    given: "10 jobs, 9 meet deadline"
+    expected: "Hit rate = 90%"
+
+  - name: mt02_critical_100
+    given: "5 critical jobs, all meet"
+    expected: "Critical hit rate = 100%"
+
+  - name: mt03_utilization
+    given: "70% capacity used"
+    expected: "Utilization = 0.70"
+
+  - name: mt04_needle
+    given: "Good performance"
+    expected: "Needle > 0.618"
+
+  # === EDGE CASES (6) ===
+  - name: ec01_empty_queue
+    given: "No jobs"
+    expected: "scheduleNext returns null"
+
+  - name: ec02_max_capacity
+    given: "256 jobs in queue"
+    expected: "New job rejected"
+
+  - name: ec03_zero_exec
+    given: "Job with 0ms exec time"
+    expected: "Completes instantly"
+
+  - name: ec04_past_deadline
+    given: "Deadline already passed"
+    expected: "Immediate miss"
+
+  - name: ec05_very_long_deadline
+    given: "Deadline 1 hour"
+    expected: "Handled normally"
+
+  - name: ec06_concurrent_submit
+    given: "100 jobs submitted simultaneously"
+    expected: "All processed, EDF maintained"
+
+  # === INTEGRATION (4) ===
+  - name: ig01_from_priority_queue
+    given: "Critical job from priority queue"
+    expected: "Deadline = now + 100ms"
+
+  - name: ig02_mixed_priorities
+    given: "Jobs from all 4 priority levels"
+    expected: "Deadlines match priority mapping"
+
+  - name: ig03_queue_to_scheduler
+    given: "Priority queue feeds scheduler"
+    expected: "EDF ordering within each batch"
+
+  - name: ig04_end_to_end
+    given: "Submit, schedule, execute, complete"
+    expected: "Full lifecycle tracked"
+
+  # === PERFORMANCE (4) ===
+  - name: pf01_schedule_latency
+    given: "100 jobs in queue"
+    expected: "scheduleNext < 1ms"
+
+  - name: pf02_admission_latency
+    given: "Admission check"
+    expected: "< 0.1ms"
+
+  - name: pf03_throughput
+    given: "1000 jobs/sec"
+    expected: "All scheduled without backlog"
+
+  - name: pf04_memory_stable
+    given: "10000 jobs processed"
+    expected: "No memory growth"
+
+metrics:
+  - name: total_pass_rate
+    description: "Overall test pass rate"
+    target: "> 90% (45/50)"
+
+  - name: edf_correctness
+    description: "EDF ordering accuracy"
+    target: "100%"
+
+  - name: admission_accuracy
+    description: "Admission control accuracy"
+    target: "> 95%"
+
+  - name: improvement_rate
+    description: "Cycle 46 improvement"
+    target: "> 0.618"
+
+  - name: needle_score
+    description: "Golden Chain quality metric"
+    target: "> 0.618"
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

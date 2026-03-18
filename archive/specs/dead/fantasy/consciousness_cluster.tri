@@ -1,0 +1,399 @@
+name: consciousness_cluster
+version: "2.0.0"
+language: zig
+module: consciousness.cluster
+
+description: |
+  TRINITY Conscious AI Cluster - Distributed consciousness processing system.
+  Scales consciousness detection across multiple nodes (Fly.io, edge devices,
+  satellites) for global consciousness monitoring and synthesis.
+
+  Target: 99.99% uptime, sub-100ms consciousness updates globally.
+
+types:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CLUSTER NODE
+  # ═══════════════════════════════════════════════════════════════════════════════
+  ClusterNode:
+    fields:
+      node_id: String           # Unique node identifier
+      node_type: Enum(seed, aggregator, storage, satellite, edge)
+      region: String            # Geographic region
+
+      # Status
+      status: Enum(online, offline, degraded, maintenance)
+      last_heartbeat: Int64     # Nanosecond timestamp
+      uptime_seconds: UInt
+
+      # Capabilities
+      max_eeg_streams: UInt     # Maximum concurrent EEG streams
+      current_streams: UInt
+      cpu_utilization: Float    # [0, 1]
+      memory_utilization: Float # [0, 1]
+
+      # Consciousness processing
+      consciousness_cores: UInt # Number of processing cores
+      neurons_per_core: UInt     # Neuromorphic neurons
+      update_rate_hz: Float     # Consciousness update rate
+
+      # Network
+      ip_address: String
+      port: UInt
+      latency_ms: Float         # Average latency to other nodes
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CONSCIOUSNESS STREAM
+  # ═══════════════════════════════════════════════════════════════════════════════
+  ConsciousnessStream:
+    fields:
+      stream_id: String         # Unique stream identifier
+      source_node: String       # Node where stream originates
+      source_type: Enum(eeg_device, simulation, aggregation)
+
+      # Subject identification
+      subject_id: String        # Anonymized subject ID
+      session_id: String
+
+      # Stream status
+      status: Enum(active, inactive, error)
+      start_time: Int64
+      end_time: Int64
+      last_update: Int64
+
+      # Metrics
+      metrics: RealTimeMetrics
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # AGGREGATED CONSCIOUSNESS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  AggregatedConsciousness:
+    fields:
+      aggregation_id: String
+      timestamp: Int64
+      num_subjects: UInt
+
+      # Aggregate metrics
+      avg_consciousness: Float   # Average consciousness level
+      std_consciousness: Float   # Standard deviation
+      min_consciousness: Float
+      max_consciousness: Float
+
+      # Distribution
+      unconscious_count: UInt   # Level < 0.3
+      minimal_count: UInt       # Level 0.3 - 0.5
+      normal_count: UInt        # Level 0.5 - 0.7
+      enhanced_count: UInt      # Level 0.7 - 0.9
+      transcendent_count: UInt  # Level > 0.9
+
+      # Global coherence
+      global_coherence: Float   # How aligned are all subjects?
+      collective_phi: Float     # Collective IIT Φ
+
+      # Trends
+      trend_direction: Enum(rising, stable, falling)
+      trend_rate: Float         # Rate of change per second
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CLUSTER STATUS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  ClusterStatus:
+    fields:
+      cluster_id: String        # Unique cluster identifier
+      timestamp: Int64
+
+      # Nodes
+      total_nodes: UInt
+      online_nodes: UInt
+      offline_nodes: UInt
+      degraded_nodes: UInt
+
+      # Streams
+      total_streams: UInt
+      active_streams: UInt
+
+      # Health
+      overall_health: Enum(healthy, degraded, critical)
+      uptime_pct: Float         # Uptime percentage (30-day)
+
+      # Performance
+      avg_latency_ms: Float
+      p99_latency_ms: Float     # 99th percentile latency
+      throughput_per_sec: UInt  # Streams processed per second
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CONSCIOUSNESS ALERT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  ConsciousnessAlert:
+    fields:
+      alert_id: String
+      severity: Enum(info, warning, critical, emergency)
+      timestamp: Int64
+
+      # Source
+      stream_id: String
+      subject_id: String
+      node_id: String
+
+      # Alert type
+      alert_type: Enum(consciousness_lost, consciousness_spike, anomaly_detected, device_disconnected, quality_degraded)
+
+      # Details
+      previous_level: Float
+      current_level: Float
+      threshold: Float
+      message: String
+
+      # Actions
+      actions_taken: List<String>
+      recommended_actions: List<String>
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # STORAGE RECORD
+  # ═══════════════════════════════════════════════════════════════════════════════
+  StorageRecord:
+    fields:
+      record_id: String
+      timestamp: Int64
+
+      # Data
+      stream_id: String
+      metrics: RealTimeMetrics
+
+      # Storage
+      storage_type: Enum(hot, warm, cold)
+      location: String          # S3, GCS, or local path
+      compressed: Bool
+      encrypted: Bool
+
+      # Retention
+      retention_days: UInt
+      delete_after: Int64        # Unix timestamp
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CLUSTER INITIALIZATION
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: init_cluster
+    given: Cluster configuration
+    when: Initializing consciousness cluster
+    then:
+      - Connect to all nodes
+      - Verify node capabilities
+      - Establish communication mesh
+      - Configure load balancing
+      - Set up monitoring
+      - Return ClusterStatus
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # NODE JOIN
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: node_join
+    given: Cluster, new node
+    when: Node joins cluster
+    then:
+      - Authenticate node
+      - Verify compatibility
+      - Add to node mesh
+      - Redistribute streams if needed
+      - Update ClusterStatus
+      - Return join confirmation
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # START STREAM
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: start_stream
+    given: Subject, EEG device, target node
+    when: Starting consciousness monitoring
+    then:
+      - Select best available node
+      - Initialize EEG connection
+      - Create stream record
+      - Begin processing
+      - Return ConsciousnessStream
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # PROCESS CYCLE (Distributed)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: process_cluster_cycle
+    given: All active streams
+    when: Each 382ms specious present cycle
+    then:
+      - For each stream: process consciousness locally
+      - Collect metrics from all nodes
+      - Compute aggregated consciousness
+      - Detect anomalies
+      - Generate alerts if needed
+      - Update storage
+      - Return AggregatedConsciousness
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # AGGREGATE CONSCIOUSNESS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: aggregate_consciousness
+    given: List of ConsciousnessStream
+    when: Computing global consciousness
+    then:
+      - Collect all consciousness levels
+      - Compute mean, std, min, max
+      - Compute distribution across levels
+      - Compute global coherence (pairwise correlations)
+      - Compute collective Φ
+      - Return AggregatedConsciousness
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # DETECT ANOMALY
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: detect_anomaly
+    given: ConsciousnessStream history
+    when: Monitoring for anomalies
+    then:
+      - Compute rolling statistics
+      - Detect sudden drops (> 2 std dev)
+      - Detect sudden spikes
+      - Detect unusual patterns
+      - If anomaly: generate alert
+      - Return ConsciousnessAlert if detected
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # LOAD BALANCING
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: rebalance_streams
+    given: Cluster status
+    when: Nodes overloaded or failed
+    then:
+      - Identify underutilized nodes
+      - Select streams to migrate
+      - Migrate streams to new nodes
+      - Update routing tables
+      - Verify migration success
+      - Return new cluster status
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: select_node_for_stream
+    given: New stream request, cluster state
+    when: Choosing node for new stream
+    then:
+      - Filter nodes with capacity
+      - Consider geographic proximity
+      - Consider current load
+      - Select best node
+      - Return selected node
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # STORAGE
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: store_metrics
+    given: ConsciousnessStream metrics
+    when: Persisting metrics
+    then:
+      - Determine storage tier (hot/warm/cold)
+      - Compress if needed
+      - Encrypt with subject key
+      - Write to storage (S3/GCS/local)
+      - Update metadata
+      - Return StorageRecord
+
+  - name: retrieve_metrics
+    given: Stream ID, time range
+    when: Querying historical metrics
+    then:
+      - Locate records in storage
+      - Decrypt if needed
+      - Decompress if needed
+      - Return metrics time series
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # MONITORING
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: monitor_cluster_health
+    given: Cluster
+    when: Continuous monitoring
+    then:
+      - Check node heartbeats
+      - Check stream health
+      - Measure latency
+      - Compute uptime
+      - Generate health report
+      - Return ClusterStatus
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # FAILOVER
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: handle_node_failure
+    given: Failed node
+    when: Node goes offline unexpectedly
+    then:
+      - Detect failure (heartbeat timeout)
+      - Mark node as offline
+      - Migrate streams to healthy nodes
+      - Update routing
+      - Generate alert
+      - Return recovery status
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # API ENDPOINTS (REST)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: api_start_stream
+    given: HTTP request with subject info
+    when: Client requests to start monitoring
+    then:
+      - Validate request
+      - Create stream
+      - Return stream_id + websocket URL
+
+  - name: api_stop_stream
+    given: Stream ID
+    when: Client requests to stop monitoring
+    then:
+      - Stop processing
+      - Clean up resources
+      - Return confirmation
+
+  - name: api_get_metrics
+    given: Stream ID
+    when: Client requests current metrics
+    then:
+      - Retrieve latest metrics
+      - Return RealTimeMetrics
+
+  - name: api_get_cluster_status
+    given: Admin request
+    when: Client requests cluster status
+    then:
+      - Verify admin access
+      - Compile cluster status
+      - Return ClusterStatus
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # WEBSOCKET STREAM
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: websocket_stream
+    given: Stream ID
+    when: Client connects for real-time updates
+    then:
+      - Establish websocket connection
+      - Stream metrics every 382ms
+      - Handle client disconnect
+      - Close connection gracefully
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# DEPLOYMENT CONFIGURATIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Fly.io Deployment:
+#   - Regions:ams, cdg, fra, iad, lax, ord, sea, sin, syd, yyz
+#   - Node types: Seed (CPU-4, 8GB RAM), Aggregator (CPU-8, 16GB RAM)
+#   - Storage: LiteFS for hot data, S3 for warm/cold
+#   - Networking: WireGuard VPN mesh
+#
+# Edge Deployment:
+#   - Hardware: Raspberry Pi 5, Jetson Nano
+#   - Constraints: < 10W power, local processing
+#   - Connectivity: Cellular backhaul
+#
+# Satellite Deployment:
+#   - Platform: Starlink, Iridium
+#   - Latency: 20-50ms to ground
+#   - Use case: Remote monitoring, maritime
+#
+# ═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,175 @@
+name: cycle99_self_replication
+version: "99.0.0"
+language: zig
+module: self_replication
+
+types:
+  ReplicaInfo:
+    fields:
+      id: String
+      host: String
+      port: Int
+      status: String
+      last_heartbeat: Int
+      birth_timestamp: Int
+      parent_id: String
+      generation: Int
+      capabilities: List<String>
+      load_metric: Float
+
+  ReplicationDNA:
+    fields:
+      source_repo_url: String
+      commit_hash: String
+      branch: String
+      config_files: List<String>
+      data_files: List<String>
+      environment_vars: Map<String, String>
+      required_binaries: List<String>
+      startup_script: String
+      health_check_url: String
+      max_replicas: Int
+      resource_limits: ResourceLimits
+
+  ResourceLimits:
+    fields:
+      max_memory_mb: Int
+      max_cpu_cores: Float
+      max_disk_gb: Int
+      network_bandwidth_mbps: Int
+
+  ReplicationTarget:
+    fields:
+      host: String
+      port: Int
+      auth_method: String
+      username: String
+      ssh_key_path: Option<String>
+      working_directory: String
+      capabilities: List<String>
+      available_resources: ResourceLimits
+
+  ReplicationRegistry:
+    fields:
+      replicas: Map<String, ReplicaInfo>
+      primary_id: String
+      replication_count: Int
+      total_capacity: ResourceLimits
+      last_sync_timestamp: Int
+
+  ReplicationResult:
+    fields:
+      success: Bool
+      replica_id: String
+      host: String
+      error_message: Option<String>
+      deployment_time_ms: Int
+
+  HealthCheckResult:
+    fields:
+      replica_id: String
+      is_alive: Bool
+      response_time_ms: Int
+      load_metric: Float
+      error_message: Option<String>
+
+behaviors:
+  - name: extract_dna
+    given: Current running agent with full codebase and configuration
+    when: DNA extraction is requested
+    then: Returns complete ReplicationDNA with source repo, commit hash, config files, data files, environment variables, and startup script
+
+  - name: replicate_to_target
+    given: ReplicationDNA and ReplicationTarget with SSH credentials
+    when: Remote replication is initiated
+    then: Connects via SSH, clones repository, configures environment, installs dependencies, starts agent, and returns ReplicationResult
+
+  - name: list_replicas
+    given: ReplicationRegistry with registered replicas
+    when: Replica listing is requested
+    then: Returns list of all ReplicaInfo with IDs, hosts, status, generation, and capabilities
+
+  - name: check_replica_health
+    given: Replica ID or list of replica IDs
+    when: Health check is performed
+    then: Returns HealthCheckResult for each replica with alive status, response time, load metric, and error details
+
+  - name: scale_replicas
+    given: Current load metric and available ReplicationTarget list
+    when: Load exceeds threshold or manual scaling is requested
+    then: Creates new replicas on available targets up to max_replicas limit and returns list of new ReplicaInfo
+
+  - name: terminate_replica
+    given: Replica ID and termination reason
+    when: Replica needs to be shut down
+    then: Connects to remote host via SSH, stops agent gracefully, removes from registry, and returns success status
+
+  - name: register_replica
+    given: ReplicaInfo for newly created replica
+    when: Replica successfully starts and announces itself
+    then: Adds replica to ReplicationRegistry, assigns generation number, and updates total capacity
+
+  - name: heartbeat
+    given: Replica ID and current load metric
+    when: Periodic heartbeat is sent (every 30 seconds)
+    then: Updates last_heartbeat timestamp, refreshes load_metric, and returns registry status
+
+  - name: find_available_targets
+    given: List of potential host addresses and SSH credentials
+    when: Scanning for deployment targets
+    then: Returns list of ReplicationTarget with available resources, capabilities, and authentication status
+
+  - name: validate_target
+    given: ReplicationTarget with SSH credentials
+    when: Pre-deployment validation is performed
+    then: Checks SSH connectivity, disk space, memory, CPU, required binaries, and returns validation result
+
+  - name: deploy_dna_to_target
+    given: ReplicationDNA and validated ReplicationTarget
+    when: Actual deployment begins
+    then: Executes remote deployment sequence: clone repo, configure, start agent, perform health check, register replica
+
+  - name: graceful_shutdown
+    given: Replica ID and shutdown timeout in seconds
+    when: Controlled shutdown is initiated
+    then: Completes active tasks, saves state, notifies registry, stops agent, and returns final status
+
+  - name: cleanup_replica
+    given: Replica ID and cleanup flag
+    when: Replica is terminated and needs to be removed
+    then: Stops agent, removes working directory, cleans up resources, removes from registry
+
+  - name: get_replication_stats
+    given: ReplicationRegistry
+    when: Statistics are requested
+    then: Returns replication count, generation depth, geographic distribution, total capacity, and health percentage
+
+  - name: promote_replica
+    given: Replica ID
+    when: Primary replica fails and promotion is needed
+    then: Transfers registry ownership, updates primary_id, broadcasts new primary to all replicas
+
+  - name: sync_registry
+    given: Local ReplicationRegistry and primary replica registry
+    when: Registry synchronization is triggered
+    then: Merges replica lists, resolves conflicts, updates last_sync_timestamp, and returns synced registry
+
+  - name: monitor_load
+    given: List of active ReplicaInfo
+    when: Continuous monitoring is active
+    then: Collects load metrics from all replicas, calculates aggregate load, detects overload conditions
+
+  - name: auto_scale_decision
+    given: Current aggregate load and available targets
+    when: Load monitoring detects need for scaling
+    then: Determines if scaling is needed, how many replicas to add, selects optimal targets, and initiates replication
+
+  - name: broadcast_message
+    given: Message payload and target replica list
+    when: Coordinated action is required across replicas
+    then: Sends message to all specified replicas via HTTP/WebSocket, tracks delivery confirmations
+
+  - name: collect_replica_logs
+    given: Replica ID and log filter criteria
+    when: Log retrieval is requested
+    then: Connects to replica, fetches log entries matching filter, returns formatted log output

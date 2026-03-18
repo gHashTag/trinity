@@ -1,0 +1,516 @@
+# ============================================================================
+# Long Context System - Sliding Window + Summarization (Cycle 22)
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: long_context_system
+version: "1.0.0"
+language: zig
+module: long_context_system
+
+description: |
+  Long context management system with sliding window, summarization,
+  key fact extraction, and topic tracking. Enables unlimited conversation
+  history with fixed memory budget.
+
+  Architecture:
+    ┌─────────────────────────────────────────────────┐
+    │              CONTEXT MANAGER                     │
+    ├─────────────────────────────────────────────────┤
+    │  Layer 1: Sliding Window (recent N messages)     │
+    │     - Fixed-size ring buffer                     │
+    │     - Oldest evicted when full                   │
+    │     - Configurable window size (default 20)      │
+    │                                                  │
+    │  Layer 2: Summarizer                             │
+    │     - Evicted messages compressed to summary     │
+    │     - Extractive: keep important sentences       │
+    │     - Max summary length configurable            │
+    │     - Rolling summary (append + trim)            │
+    │                                                  │
+    │  Layer 3: Key Facts Store                        │
+    │     - User info (name, preferences)              │
+    │     - Decisions made                             │
+    │     - Code snippets referenced                   │
+    │     - Scored by importance (0.0 - 1.0)           │
+    │     - Decays over time unless reinforced         │
+    │                                                  │
+    │  Layer 4: Topic Tracker                          │
+    │     - Active conversation topics                 │
+    │     - Topic transitions detected                 │
+    │     - Topic history for recall                   │
+    │                                                  │
+    │  Layer 5: Compression (TCV5)                     │
+    │     - 11x compression ratio for storage          │
+    │     - Ternary encoding of context vectors        │
+    │     - Lossless for key facts, lossy for filler   │
+    └─────────────────────────────────────────────────┘
+
+  Context Assembly (for each new query):
+    1. Current sliding window (full messages)
+    2. Rolling summary (compressed history)
+    3. Relevant key facts (scored, top-K)
+    4. Active topics (for coherence)
+    → Assembled context fits within token budget
+
+  Memory Budget:
+    Window:  ~4000 tokens (20 messages x 200 avg)
+    Summary: ~500 tokens
+    Facts:   ~200 tokens (10 facts x 20 avg)
+    Topics:  ~50 tokens
+    Total:   ~4750 tokens (fits in 8K context)
+
+constants:
+  DEFAULT_WINDOW_SIZE: 20
+  MAX_WINDOW_SIZE: 100
+  MIN_WINDOW_SIZE: 5
+  DEFAULT_SUMMARY_MAX_CHARS: 2000
+  DEFAULT_MAX_KEY_FACTS: 10
+  DEFAULT_MAX_TOPICS: 5
+  DEFAULT_TOKEN_BUDGET: 8192
+  CHARS_PER_TOKEN: 4
+  IMPORTANCE_DECAY_RATE: 0.05
+  IMPORTANCE_THRESHOLD: 0.3
+  SUMMARY_COMPRESSION_RATIO: 5
+  TCV5_COMPRESSION_RATIO: 11
+  NEEDLE_THRESHOLD: 0.618
+  PHI: 1.6180339887498948482
+
+types:
+  MessageRole:
+    description: "Role of message sender"
+    enum:
+      - user
+      - assistant
+      - system
+
+  Message:
+    description: "Single conversation message"
+    fields:
+      id: Int
+      role: MessageRole
+      content: String
+      timestamp: Timestamp
+      importance: Float
+      token_count: Int
+
+  ImportanceCategory:
+    description: "Category for importance scoring"
+    enum:
+      - user_info
+      - decision
+      - code_reference
+      - question
+      - topic_change
+      - filler
+      - greeting
+
+  KeyFact:
+    description: "Extracted key fact from conversation"
+    fields:
+      id: Int
+      category: ImportanceCategory
+      content: String
+      importance: Float
+      source_message_id: Int
+      created_at: Timestamp
+      last_reinforced: Timestamp
+      reinforcement_count: Int
+
+  Topic:
+    description: "Tracked conversation topic"
+    fields:
+      name: String
+      first_seen: Timestamp
+      last_seen: Timestamp
+      message_count: Int
+      is_active: Bool
+
+  ContextSummary:
+    description: "Rolling summary of evicted messages"
+    fields:
+      text: String
+      char_count: Int
+      messages_summarized: Int
+      oldest_message_id: Int
+      newest_message_id: Int
+
+  SlidingWindowState:
+    description: "State of the sliding window"
+    fields:
+      messages: List<Message>
+      capacity: Int
+      count: Int
+      head_index: Int
+      total_evicted: Int
+
+  ContextConfig:
+    description: "Configuration for context manager"
+    fields:
+      window_size: Int
+      summary_max_chars: Int
+      max_key_facts: Int
+      max_topics: Int
+      token_budget: Int
+      importance_decay_rate: Float
+      importance_threshold: Float
+
+  AssembledContext:
+    description: "Context assembled for a new query"
+    fields:
+      window_messages: List<Message>
+      summary: ContextSummary
+      key_facts: List<KeyFact>
+      active_topics: List<Topic>
+      total_tokens: Int
+      within_budget: Bool
+
+  ContextMetrics:
+    description: "Metrics for context management"
+    fields:
+      total_messages_processed: Int
+      total_messages_evicted: Int
+      total_messages_summarized: Int
+      total_key_facts_extracted: Int
+      total_topics_tracked: Int
+      avg_importance_score: Float
+      summary_compression_ratio: Float
+      memory_used_bytes: Int
+      token_budget_utilization: Float
+      recall_accuracy: Float
+      needle_score: Float
+
+  RecallQuery:
+    description: "Query to recall past context"
+    fields:
+      query: String
+      max_results: Int
+      min_importance: Float
+
+  RecallResult:
+    description: "Result of context recall"
+    fields:
+      messages: List<Message>
+      facts: List<KeyFact>
+      summary_excerpt: String
+      relevance_score: Float
+
+  CompressionResult:
+    description: "Result of context compression"
+    fields:
+      original_size_bytes: Int
+      compressed_size_bytes: Int
+      compression_ratio: Float
+      method: String
+      lossless: Bool
+
+behaviors:
+  # Initialization
+  - name: init
+    given: Allocator, optional ContextConfig
+    when: Creating context manager
+    then: Initialize window, summary, facts store, topic tracker
+
+  - name: deinit
+    given: Context manager instance
+    when: Shutting down
+    then: Free all resources
+
+  # Message Management
+  - name: addMessage
+    given: Message role, content
+    when: New message in conversation
+    then: Score importance, add to window, evict if full, extract facts
+
+  - name: evictOldest
+    given: Window is full
+    when: New message needs space
+    then: Remove oldest, add to summary, preserve key facts
+
+  - name: scoreImportance
+    given: Message content
+    when: Evaluating message importance
+    then: Return importance score (0.0 - 1.0) based on content analysis
+
+  - name: estimateTokens
+    given: Text string
+    when: Counting tokens
+    then: Return estimated token count (chars / 4)
+
+  # Summarization
+  - name: summarizeEvicted
+    given: Evicted message
+    when: Message leaves sliding window
+    then: Update rolling summary with key information
+
+  - name: updateSummary
+    given: Current summary, new content
+    when: Appending to summary
+    then: Append, trim to max length, preserve most important parts
+
+  - name: trimSummary
+    given: Summary exceeding max chars
+    when: Summary too long
+    then: Remove least important sentences, keep within budget
+
+  # Key Facts
+  - name: extractFacts
+    given: Message content
+    when: Analyzing message for key facts
+    then: Return list of KeyFact with category and importance
+
+  - name: addFact
+    given: KeyFact
+    when: New fact extracted
+    then: Add to store, merge if duplicate, evict lowest if full
+
+  - name: reinforceFact
+    given: Existing fact ID
+    when: Fact mentioned again
+    then: Increase importance, update last_reinforced
+
+  - name: decayFacts
+    given: All facts
+    when: Time passes without reinforcement
+    then: Reduce importance by decay rate, remove below threshold
+
+  # Topic Tracking
+  - name: detectTopic
+    given: Message content
+    when: Analyzing for topic changes
+    then: Return detected topic name or null
+
+  - name: updateTopics
+    given: Detected topic
+    when: Topic activity
+    then: Create new or update existing topic
+
+  - name: getActiveTopics
+    given: Topic store
+    when: Querying current topics
+    then: Return topics active in recent messages
+
+  # Context Assembly
+  - name: assembleContext
+    given: Token budget
+    when: Preparing context for new query
+    then: Combine window + summary + facts + topics within budget
+
+  - name: fitToBudget
+    given: AssembledContext exceeding budget
+    when: Context too large
+    then: Trim summary first, then oldest window messages
+
+  # Recall
+  - name: recall
+    given: RecallQuery
+    when: User asks about past conversation
+    then: Search window, summary, facts for relevant content
+
+  - name: recallByTopic
+    given: Topic name
+    when: Recalling topic-specific context
+    then: Return messages and facts related to topic
+
+  # Compression
+  - name: compressContext
+    given: AssembledContext
+    when: Storing or transferring context
+    then: Apply TCV5 compression, return CompressionResult
+
+  - name: decompressContext
+    given: Compressed data
+    when: Restoring context
+    then: Decompress and return AssembledContext
+
+  # Metrics
+  - name: getMetrics
+    given: Context manager instance
+    when: Querying performance
+    then: Return ContextMetrics
+
+  - name: computeNeedleScore
+    given: ContextMetrics
+    when: Quality check
+    then: Return needle score based on recall accuracy and budget utilization
+
+  # Persistence
+  - name: saveState
+    given: Context manager state
+    when: Persisting to disk
+    then: Serialize window, summary, facts, topics
+
+  - name: loadState
+    given: Serialized state
+    when: Restoring from disk
+    then: Deserialize and restore full context manager
+
+tests:
+  # Sliding Window
+  - name: test_window_add
+    given: Empty window, add 5 messages
+    then: Window contains 5 messages in order
+
+  - name: test_window_eviction
+    given: Window size 3, add 5 messages
+    then: Window contains last 3, 2 evicted
+
+  - name: test_window_ring_buffer
+    given: Window size 20, add 25 messages
+    then: Contains messages 6-25, 5 evicted
+
+  # Importance Scoring
+  - name: test_importance_question
+    given: "What is the best approach?"
+    then: Importance > 0.7 (contains question)
+
+  - name: test_importance_code
+    given: "fn main() void { ... }"
+    then: Importance > 0.7 (contains code)
+
+  - name: test_importance_name
+    given: "My name is Alex"
+    then: Importance > 0.8 (user info)
+
+  - name: test_importance_filler
+    given: "ok"
+    then: Importance < 0.4 (filler)
+
+  # Summarization
+  - name: test_summary_creation
+    given: 5 evicted messages
+    then: Summary contains key points from all 5
+
+  - name: test_summary_trim
+    given: Summary exceeding max chars
+    then: Trimmed to max, important parts preserved
+
+  - name: test_summary_rolling
+    given: 20 evicted messages over time
+    then: Summary stays within budget, recent info prioritized
+
+  # Key Facts
+  - name: test_fact_extraction_name
+    given: "My name is Alex and I work at Google"
+    then: Extracts user_info fact with name
+
+  - name: test_fact_extraction_decision
+    given: "I want to use Zig for this project"
+    then: Extracts decision fact
+
+  - name: test_fact_reinforcement
+    given: Same fact mentioned twice
+    then: Importance increases, count incremented
+
+  - name: test_fact_decay
+    given: Fact not mentioned for 20 turns
+    then: Importance decreased by decay rate
+
+  - name: test_fact_eviction
+    given: Max facts reached, new fact arrives
+    then: Lowest importance fact removed
+
+  # Topic Tracking
+  - name: test_topic_detection
+    given: "Let's talk about memory allocation"
+    then: Detects topic "memory allocation"
+
+  - name: test_topic_transition
+    given: "Now about error handling"
+    then: Detects new topic, marks previous inactive
+
+  - name: test_active_topics
+    given: 3 topics discussed, 1 recent
+    then: Returns 1 active topic
+
+  # Context Assembly
+  - name: test_assembly_within_budget
+    given: 10 messages, 5 facts, 2 topics
+    then: Assembled context within 8192 token budget
+
+  - name: test_assembly_over_budget
+    given: 100 messages, 20 facts
+    then: Trimmed to fit budget, important content preserved
+
+  - name: test_assembly_empty
+    given: No messages yet
+    then: Returns empty but valid context
+
+  # Recall
+  - name: test_recall_by_content
+    given: "What did I say about allocators?"
+    then: Returns relevant messages about allocators
+
+  - name: test_recall_by_topic
+    given: Topic "error handling"
+    then: Returns messages tagged with that topic
+
+  - name: test_recall_from_summary
+    given: Query about evicted content
+    then: Returns relevant summary excerpt
+
+  # Compression
+  - name: test_compression_ratio
+    given: 10000 byte context
+    then: Compressed to < 1000 bytes (>10x ratio)
+
+  - name: test_compression_roundtrip
+    given: Context compressed then decompressed
+    then: Key facts preserved exactly
+
+  # Metrics
+  - name: test_metrics_accuracy
+    given: After 50 messages processed
+    then: Metrics reflect correct counts
+
+  - name: test_needle_score
+    given: Well-functioning context manager
+    then: Needle score > 0.618
+
+  # Edge Cases
+  - name: test_empty_message
+    given: Empty string message
+    then: Handled gracefully, low importance
+
+  - name: test_very_long_message
+    given: 50000 character message
+    then: Truncated, key content preserved
+
+  - name: test_rapid_messages
+    given: 100 messages in 1 second
+    then: All processed, window correct
+
+  # Persistence
+  - name: test_save_load_roundtrip
+    given: Context with 20 messages, 5 facts, 3 topics
+    then: Save and load produces identical state
+
+metrics:
+  - name: recall_accuracy
+    description: "Accuracy of context recall queries"
+    target: "> 85%"
+
+  - name: summary_quality
+    description: "Key information retention in summaries"
+    target: "> 90%"
+
+  - name: token_budget_utilization
+    description: "How well token budget is used"
+    target: "80-95%"
+
+  - name: compression_ratio
+    description: "Context compression ratio"
+    target: "> 10x"
+
+  - name: eviction_latency
+    description: "Time to evict and summarize"
+    target: "< 10ms"
+
+  - name: needle_score
+    description: "Golden Chain quality metric"
+    target: "> 0.618"
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

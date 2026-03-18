@@ -1,0 +1,47 @@
+name: tri_exit_codes
+version: "1.0.0"
+language: zig
+module: tri.exit_codes
+
+description: |
+  Standard exit codes for TRI CLI.
+
+  0 — success
+  1 — command_error (invalid args, command not found)
+  2 — validation_error (pre-flight checks failed)
+  3 — runtime_error (execution failed)
+  4 — timeout (command exceeded time limit)
+  5 — job_failed (async job failed)
+  6 — artifact_failed (output generation failed)
+  7 — internal_error (bug, unexpected state)
+
+types:
+  ExitCode:
+    kind: enum(u8)
+    variants:
+      - success: 0
+      - command_error: 1
+      - validation_error: 2
+      - runtime_error: 3
+      - timeout: 4
+      - job_failed: 5
+      - artifact_failed: 6
+      - internal_error: 7
+
+behaviors:
+  - name: exitWithCode
+    given: An ExitCode value
+    when: Called
+    then: Calls std.process.exit with the numeric code
+
+  - name: exitInternalError
+    given: Nothing
+    when: Called
+    then: Calls std.process.exit(7)
+
+export_types:
+  - ExitCode
+
+export_functions:
+  - exitWithCode
+  - exitInternalError

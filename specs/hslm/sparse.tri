@@ -1,0 +1,17 @@
+[spec]
+name = "hslm_sparse"
+version = "1.0.0"
+description = "Sparse ternary matrix multiplication with branchless ops"
+
+[interface]
+inputs = ["packed_weights: []u2", "activations: []i32"]
+outputs = ["result: []i32"]
+
+[invariants]
+branchless = "no conditional branches in inner loop"
+zero_multiply = "ternary {-1,0,+1} means add/sub/skip, never multiply"
+encoding = "2-bit packed: 00=0, 01=+1, 10=-1"
+
+[architecture]
+variants = ["naive", "simd", "branchless", "blocked"]
+speedup = "9.2x over naive (branchless variant)"

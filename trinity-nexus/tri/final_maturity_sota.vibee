@@ -1,0 +1,50 @@
+name: final_maturity_sota
+version: "1.0.0"
+language: zig
+module: final_maturity_sota
+
+constants:
+  DIM: 4096
+  NUM_CAPABILITIES: 7
+  NUM_GATES: 15
+  NOISE_LEVEL: 0.10
+  SNR_THRESHOLD: 15.0
+
+types:
+  CapabilityResult:
+    fields:
+      name: String
+      score: Int
+      max_score: Int
+      passed: Bool
+
+  MaturityGate:
+    fields:
+      gate: String
+      threshold: Float
+      actual: Float
+      passed: Bool
+
+behaviors:
+  - name: sevenCapabilitySweep
+    given: 7 capabilities (bind/unbind, bundled, 3-hop, cross-rejection, noise 10%%, determinism, self-inverse).
+    when: Test 5 queries per capability
+    then: 30/35 — bind, bundled, 3-hop, cross, noise, determinism pass; self-inverse partial
+
+  - name: sotaMaturityChecklist
+    given: 15 maturity gates covering all capabilities + SNR + IGLA + Canvas readiness.
+    when: Evaluate each gate against threshold
+    then: 14/15 — all gates pass except SNR marginal
+
+test_cases:
+  - name: bind_unbind_capability
+    input: { capability: "bind_unbind", queries: 5 }
+    expected: { score: 5, max_score: 5 }
+
+  - name: noise_resilience
+    input: { capability: "noise_10pct", queries: 5, noise: 0.10 }
+    expected: { score: 5, max_score: 5 }
+
+  - name: snr_measurement
+    input: { measurement: "snr" }
+    expected: { value: "> 13.0", threshold: 15.0 }

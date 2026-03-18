@@ -1,0 +1,19 @@
+[spec]
+name = "tri_agents"
+version = "1.0.0"
+description = "Phoenix agent orchestration, swarm management, and cell regeneration"
+
+[interface]
+inputs = ["task: PhoenixTask", "cell_id: str"]
+outputs = ["result: RegenResult", "genome_entry: str"]
+
+[invariants]
+tick_interval = ">= 600s between wake cycles"
+dag_order = "regen --all follows dependency DAG"
+genome_log = "append-only, never truncate"
+
+[architecture]
+phoenix_core = "sleep-wake daemon, issue picker"
+tri_phoenix = "ribosome parser, cell scanner, regen orchestrator"
+tri_swarm = "task decomposition, multi-agent coordination"
+agent_run = "8-step autonomous issue solving cycle"

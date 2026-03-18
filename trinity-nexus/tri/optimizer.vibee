@@ -1,0 +1,279 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: create_optimizer
+    given: Input data provided
+    when: create_optimizer function called
+    then: Result returned
+  - name: test_create_optimizer
+  - name: quantum_evolve
+    given: Input data provided
+    when: quantum_evolve function called
+    then: Result returned
+  - name: test_quantum_evolve
+  - name: quantum_anneal
+    given: Input data provided
+    when: quantum_anneal function called
+    then: Result returned
+  - name: test_quantum_anneal
+  - name: ibm_quantum_solve
+    given: Input data provided
+    when: ibm_quantum_solve function called
+    then: Result returned
+  - name: test_ibm_quantum_solve
+  - name: dwave_solve
+    given: Input data provided
+    when: dwave_solve function called
+    then: Result returned
+  - name: test_dwave_solve
+  - name: google_quantum_solve
+    given: Input data provided
+    when: google_quantum_solve function called
+    then: Result returned
+  - name: test_google_quantum_solve
+  - name: simulate_quantum_solve
+    given: Input data provided
+    when: simulate_quantum_solve function called
+    then: Result returned
+  - name: test_simulate_quantum_solve
+  - name: build_qaoa_circuit
+    given: Input data provided
+    when: build_qaoa_circuit function called
+    then: Result returned
+  - name: test_build_qaoa_circuit
+  - name: problem_to_qubo
+    given: Input data provided
+    when: problem_to_qubo function called
+    then: Result returned
+  - name: test_problem_to_qubo
+  - name: hadamard_layer
+    given: Input data provided
+    when: hadamard_layer function called
+    then: Result returned
+  - name: test_hadamard_layer
+  - name: qaoa_layers
+    given: Input data provided
+    when: qaoa_layers function called
+    then: Result returned
+  - name: test_qaoa_layers
+  - name: apply_problem_hamiltonian
+    given: Input data provided
+    when: apply_problem_hamiltonian function called
+    then: Result returned
+  - name: test_apply_problem_hamiltonian
+  - name: apply_mixer_hamiltonian
+    given: Input data provided
+    when: apply_mixer_hamiltonian function called
+    then: Result returned
+  - name: test_apply_mixer_hamiltonian
+  - name: measurement_layer
+    given: Input data provided
+    when: measurement_layer function called
+    then: Result returned
+  - name: test_measurement_layer
+  - name: int_to_string
+    given: Input data provided
+    when: int_to_string function called
+    then: Result returned
+  - name: test_int_to_string
+  - name: validate_ibm_credentials
+    given: Input data provided
+    when: validate_ibm_credentials function called
+    then: Result returned
+  - name: test_validate_ibm_credentials
+  - name: validate_dwave_credentials
+    given: Input data provided
+    when: validate_dwave_credentials function called
+    then: Result returned
+  - name: test_validate_dwave_credentials
+  - name: validate_google_credentials
+    given: Input data provided
+    when: validate_google_credentials function called
+    then: Result returned
+  - name: test_validate_google_credentials
+  - name: submit_ibm_job
+    given: Input data provided
+    when: submit_ibm_job function called
+    then: Result returned
+  - name: test_submit_ibm_job
+  - name: wait_for_ibm_results
+    given: Input data provided
+    when: wait_for_ibm_results function called
+    then: Result returned
+  - name: test_wait_for_ibm_results
+  - name: submit_dwave_job
+    given: Input data provided
+    when: submit_dwave_job function called
+    then: Result returned
+  - name: test_submit_dwave_job
+  - name: wait_for_dwave_results
+    given: Input data provided
+    when: wait_for_dwave_results function called
+    then: Result returned
+  - name: test_wait_for_dwave_results
+  - name: submit_google_job
+    given: Input data provided
+    when: submit_google_job function called
+    then: Result returned
+  - name: test_submit_google_job
+  - name: wait_for_google_results
+    given: Input data provided
+    when: wait_for_google_results function called
+    then: Result returned
+  - name: test_wait_for_google_results
+  - name: simulate_circuit
+    given: Input data provided
+    when: simulate_circuit function called
+    then: Result returned
+  - name: test_simulate_circuit
+  - name: parse_quantum_results
+    given: Input data provided
+    when: parse_quantum_results function called
+    then: Result returned
+  - name: test_parse_quantum_results
+  - name: ui_evolution_to_quantum
+    given: Input data provided
+    when: ui_evolution_to_quantum function called
+    then: Result returned
+  - name: test_ui_evolution_to_quantum
+  - name: quantum_search
+    given: Input data provided
+    when: quantum_search function called
+    then: Result returned
+  - name: test_quantum_search
+  - name: calculate_qubits_needed
+    given: Input data provided
+    when: calculate_qubits_needed function called
+    then: Result returned
+  - name: test_calculate_qubits_needed
+  - name: calculate_grover_iterations
+    given: Input data provided
+    when: calculate_grover_iterations function called
+    then: Result returned
+  - name: test_calculate_grover_iterations
+  - name: run_grover_search
+    given: Input data provided
+    when: run_grover_search function called
+    then: Result returned
+  - name: test_run_grover_search
+  - name: quantum_neural_network
+    given: Input data provided
+    when: quantum_neural_network function called
+    then: Result returned
+  - name: test_quantum_neural_network
+  - name: build_vqc
+    given: Input data provided
+    when: build_vqc function called
+    then: Result returned
+  - name: test_build_vqc
+  - name: execute_vqc
+    given: Input data provided
+    when: execute_vqc function called
+    then: Result returned
+  - name: test_execute_vqc
+
+types:
+  create_optimizer:
+    description: Auto-generated
+
+  quantum_evolve:
+    description: Auto-generated
+
+  quantum_anneal:
+    description: Auto-generated
+
+  ibm_quantum_solve:
+    description: Auto-generated
+
+  dwave_solve:
+    description: Auto-generated
+
+  google_quantum_solve:
+    description: Auto-generated
+
+  simulate_quantum_solve:
+    description: Auto-generated
+
+  build_qaoa_circuit:
+    description: Auto-generated
+
+  problem_to_qubo:
+    description: Auto-generated
+
+  hadamard_layer:
+    description: Auto-generated
+
+  qaoa_layers:
+    description: Auto-generated
+
+  apply_problem_hamiltonian:
+    description: Auto-generated
+
+  apply_mixer_hamiltonian:
+    description: Auto-generated
+
+  measurement_layer:
+    description: Auto-generated
+
+  int_to_string:
+    description: Auto-generated
+
+  validate_ibm_credentials:
+    description: Auto-generated
+
+  validate_dwave_credentials:
+    description: Auto-generated
+
+  validate_google_credentials:
+    description: Auto-generated
+
+  submit_ibm_job:
+    description: Auto-generated
+
+  wait_for_ibm_results:
+    description: Auto-generated
+
+  submit_dwave_job:
+    description: Auto-generated
+
+  wait_for_dwave_results:
+    description: Auto-generated
+
+  submit_google_job:
+    description: Auto-generated
+
+  wait_for_google_results:
+    description: Auto-generated
+
+  simulate_circuit:
+    description: Auto-generated
+
+  parse_quantum_results:
+    description: Auto-generated
+
+  ui_evolution_to_quantum:
+    description: Auto-generated
+
+  quantum_search:
+    description: Auto-generated
+
+  calculate_qubits_needed:
+    description: Auto-generated
+
+  calculate_grover_iterations:
+    description: Auto-generated
+
+  run_grover_search:
+    description: Auto-generated
+
+  quantum_neural_network:
+    description: Auto-generated
+
+  build_vqc:
+    description: Auto-generated
+
+  execute_vqc:
+    description: Auto-generated

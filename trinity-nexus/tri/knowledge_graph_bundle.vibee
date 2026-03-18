@@ -1,0 +1,45 @@
+name: knowledge_graph_bundle
+version: "1.0.0"
+language: zig
+module: knowledge_graph_bundle
+description: "Knowledge graph superposition — bundle triples, query individual facts"
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 8
+  NUM_RELATIONS: 3
+  NUM_TRIPLES: 6
+  INDIVIDUAL_ACCURACY: 1.0
+  SUPERPOSED_ACCURACY: 1.0
+  AVG_OBJECT_SIM: 0.87
+
+types:
+  SocialGraph:
+    fields:
+      entities: List<String>
+      relations: List<String>
+      triples: List<String>
+
+  GraphQueryResult:
+    fields:
+      query_subject: String
+      query_relation: String
+      result_object: String
+      similarity: Float
+      correct: Bool
+
+behaviors:
+  - name: individualTripleQuery
+    given: 6 individually encoded social graph triples
+    when: Unbind role_o from each triple, find closest entity
+    then: 6/6 (100%) correct object recovery
+
+  - name: superposedGraphQuery
+    given: All 6 triples bundled into one graph vector
+    when: Match question pattern against encoded triples, unbind object
+    then: 6/6 (100%) correct with avg sim 0.87
+
+  - name: graphTripleDiscrimination
+    given: Superposed graph vector and individual encoded triples
+    when: Compute similarity between graph and each triple
+    then: All triples have positive similarity (0.13-0.72)

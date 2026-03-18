@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.agent.tri-farmer"
+name = "Tri Farmer Agent"
+version = "1.0.0"
+kind = "agent"
+path = "tools/agents/tri-farmer"
+status = "stable"
+description = "Farm management agent — evolves configs, recycles services, monitors convergence, kills underperformers"
+capabilities = ["farm", "railway", "evolution", "monitoring"]
+owner = "agent:ralph"
+
+[tags]
+scope = "agent"
+type = "agent"
+
+[agent]
+definition = ".claude/agents/tri-farmer.md"
+model = "sonnet"
+max_turns = 20
+tools = "Bash,Read,Write,Edit,Grep,Glob"
+isolation = ""
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+organ = "evolution"
+[security]
+signed = "true"

@@ -1,0 +1,45 @@
+name: analogies
+version: "1.0.0"
+language: zig
+module: analogies
+
+description: >
+  VSA Analogy Engine for Level 11.0 Symbolic Reasoning.
+  Implements A:B :: C:? analogy solving via bind/unbind operations.
+  Random pair analogies fail (1.7%) because each pair has unique relation.
+  Structured analogies (shared roles) succeed: king:man :: queen:woman works.
+
+types:
+  AnalogyResult:
+    fields:
+      predicted_idx: Int
+      similarity: Float
+      is_correct: Bool
+
+constants:
+  DIM: 1024
+  NUM_SYMBOLS: 32
+  SELF_INVERSE_SIM: 0.8183
+  STRUCTURED_ANALOGY_WORKS: true
+
+behaviors:
+  - name: solveAnalogy
+    given: Codebook of 32 random atomic hypervectors at dim=1024
+    when: Compute bind(bind(A,B), C) and find closest to D in codebook
+    then: Random-pair accuracy 1.7% (expected), structured accuracy 100%
+
+  - name: verifyOrthogonality
+    given: 32 random ternary hypervectors at dim=1024
+    when: Compute pairwise cosine similarity
+    then: Avg |sim| = 0.0245, max |sim| = 0.1051 (near-orthogonal)
+
+  - name: structuredAnalogy
+    given: king/queen/man/woman encoded with shared role_gender + role_status
+    when: Compute bind(bind(king, man), woman)
+    then: Queen is closest match (sim=0.6924)
+
+test_cases:
+  - input: "240 random pair analogies"
+    expected: "~1.7% accuracy (each pair has different relation)"
+  - input: "king:man :: queen:woman (role-structured)"
+    expected: "queen closest (sim ~0.69)"

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.trinity.scholar-agent</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/playra/trinity-w1/zig-out/bin/scholar-agent</string>
+    </array>
+
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+        <key>Crashed</key>
+        <true/>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/playra/.trinity/logs/scholar-agent.stdout.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/playra/.trinity/logs/scholar-agent.stderr.log</string>
+
+    <key>WorkingDirectory</key>
+    <string>/Users/playra/trinity-w1</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/playra/.local/bin</string>
+        <key>SCHOLAR_SLEEP_INTERVAL</key>
+        <string>600</string>
+        <key>AGENT_NAME</key>
+        <string>scholar</string>
+        <key>PERPLEXITY_API_KEY</key>
+        <string>__PERPLEXITY_API_KEY__</string>
+        <key>TELEGRAM_BOT_TOKEN</key>
+        <string>__TELEGRAM_BOT_TOKEN__</string>
+        <key>TELEGRAM_CHAT_ID</key>
+        <string>__TELEGRAM_CHAT_ID__</string>
+        <key>GH_TOKEN</key>
+        <string>__GH_TOKEN__</string>
+    </dict>
+
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>

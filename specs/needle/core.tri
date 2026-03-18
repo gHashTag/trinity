@@ -1,0 +1,301 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# NEEDLE — Structural Editor Core
+# Tier 0 (Text Fallback) + Tier 1 (Structural AST) + Tier 2 (VSA Semantic)
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: needle-core
+version: "1.0.0"
+language: zig
+module: trinity.needle
+description: Structural editor core with Tree-sitter + layered fallback + VSA semantic search
+
+types:
+  EditOperation:
+    fields:
+      file_path: String
+      pattern_query: String           # Tree-sitter S-expression or plain text
+      replacement: String             # New code template
+      safety_level: Enum[low, medium, high]
+      preview: Bool
+      edit_mode: Enum[structural, semantic, text_fallback, auto]
+
+  MatchResult:
+    fields:
+      node_id: u64
+      start_line: u32
+      end_line: u32
+      start_column: u32
+      end_column: u32
+      matched_text: String
+      confidence: Float               # 0.0-1.0
+      match_kind: Enum[exact_ast, semantic_symbol, fuzzy_text]
+
+  NeedleConfig:
+    fields:
+      enable_tier0_text: Bool         # Aider-style layered matching (default: true)
+      enable_tier1_structural: Bool   # ast-grep-like queries (default: true)
+      enable_tier2_semantic: Bool     # VSA symbol similarity (default: false)
+      confidence_threshold: Float     # Default: 0.5
+      max_matches: Int                # Default: 100
+
+  EditReport:
+    fields:
+      operations_applied: Int
+      files_modified: Int
+      tests_passed: Bool
+      violations: List[Violation]
+      duration_ms: u64
+
+  Violation:
+    fields:
+      kind: Enum[variable_shadowing, scope_aware_defer, comptime_misuse,
+                 missing_return_path, type_annotation_missing,
+                 parse_error, test_failure, compilation_error]
+      line: u32
+      message: String
+      severity: Enum[low, medium, high, critical]
+
+  EditDiff:
+    fields:
+      old_text: String
+      new_text: String
+      start_line: u32
+      end_line: u32
+      hunk: String                    # Unified diff hunk
+
+behaviors:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Tier 1: Structural AST Match (primary when tree-sitter available)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: find_matches_ast
+    given: "Source code + Tree-sitter AST loaded + S-expression query"
+    when: "Pattern is tree-sitter query like (function_declaration name: (identifier))"
+    then: |
+      Returns list of MatchResult with confidence=1.0, kind=exact_ast.
+      Uses tree-sitter query API or manual AST traversal.
+    implementation: |
+      const parser = try zig_parser.createZigParser();
+      const tree = try parser.parseString(source);
+      const root = tree.root();
+      results = ast_query_execute(root, pattern_query);
+      return results;
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Tier 0: Layered Fuzzy Text (fallback when AST unavailable)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: find_matches_fuzzy
+    given: "Source text + query pattern"
+    when: "Tree-sitter unavailable or AST match failed"
+    then: |
+      Three-layer matching (Aider-style):
+      1. Exact match: if query == source line → confidence = 1.0
+      2. Word-level: if all query words in line (order-agnostic) → confidence = 0.8
+      3. Fuzzy: SequenceMatcher-style ratio → confidence = ratio * 0.6
+      Return matches above threshold (default 0.5)
+    implementation: |
+      if source_line == query:
+          return MatchResult{ .confidence = 1.0, .kind = .fuzzy_text };
+      if all_words_in_line(query, source_line):
+          return MatchResult{ .confidence = 0.8, .kind = .fuzzy_text };
+      ratio = sequence_matcher_ratio(query, source_line);
+      if ratio > 0.5:
+          return MatchResult{ .confidence = ratio * 0.6, .kind = .fuzzy_text };
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Tier 2: Semantic VSA Search (future: Priority 2)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: find_matches_semantic
+    given: "Query string + indexed codebase symbols"
+    when: "Tier 1 AST match fails or semantic expansion requested"
+    then: |
+      1. Encode query as hypervector: query_vec = vsa.encodeText(query)
+      2. For each symbol in index:
+         similarity = vsa.cosineSimilarity(query_vec, symbol.hypervector)
+      3. Return symbols with similarity > threshold
+      4. Sort by similarity descending
+    implementation: |
+      // Placeholder for Tier 2 - will be implemented in Priority 2
+      return error.SemanticSearchNotImplemented;
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CORE: Unified Find Matches (Tier 1 → Tier 0 fallback chain)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: find_matches
+    given: "Source code + query pattern"
+    when: "Called by user or apply_edit_pipeline"
+    then: |
+      Returns list of MatchResult ordered by confidence:
+      1. If enable_tier1_structural and tree-sitter available: try AST match
+      2. If results empty and enable_tier2_semantic: try VSA semantic
+      3. If results empty and enable_tier0_text: try fuzzy text
+      Return sorted by confidence desc, limited to max_matches
+    implementation: |
+      var results = MatchResultList{};
+      if config.enable_tier1_structural and ts_bridge.available:
+          results = try find_matches_ast(source, pattern_query);
+      if results.items.len == 0 and config.enable_tier2_semantic:
+          results = try find_matches_semantic(source, pattern_query);
+      if results.items.len == 0 and config.enable_tier0_text:
+          results = try find_matches_fuzzy(source, pattern_query);
+      return results.filtered(config.confidence_threshold)
+                   .sorted(confidence_desc)
+                   .limited(config.max_matches);
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CORE: Structural Replace
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: structural_replace
+    given: "MatchResult + EditOperation"
+    when: "User confirms preview or preview=false"
+    then: |
+      1. Read source file
+      2. Compute diff based on match kind
+         - exact_ast: Use tree-sitter edit API (preserve formatting)
+         - fuzzy_text: Use unified diff with context
+      3. Apply edit to source
+      4. Run needle_check (parse + compile + test + analyze)
+      5. If all checks pass: write file, return success
+      6. If checks fail: return violation report with rollback option
+    implementation: |
+      const source = try std.fs.cwd().readFileAlloc(allocator, op.file_path, 10_000_000);
+      const diff = try compute_diff(source, match, op.replacement);
+      var modified = try apply_diff(source, diff);
+      var report = try needle_check(modified, op.file_path);
+      if report.tests_passed and report.violations.len == 0:
+          try std.fs.cwd().writeFile(op.file_path, modified);
+          return EditReport{ .operations_applied = 1, .tests_passed = true };
+      else:
+          return report;  // Contains violations for rollback
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # SAFETY: Needle Check (Quality Gate)
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: needle_check
+    given: "Modified source code + file path"
+    when: "After every edit operation"
+    then: |
+      Run safety checks in order:
+      1. Parse check: tree-sitter must parse without errors
+      2. Compile check: zig build --summary all (if applicable)
+      3. Test check: zig build test (if applicable)
+      4. AST analyzer: 5 checks (shadowing, defer, comptime, return, types)
+      Return EditReport with violations list
+    implementation: |
+      var report = EditReport{};
+      // Parse check
+      var parser = try zig_parser.createZigParser();
+      const tree = try parser.parseString(source);
+      if tree.root().hasError():
+          report.violations.append(Violation{
+              .kind = .parse_error,
+              .severity = .critical,
+              .message = "Source has parse errors",
+          });
+      // AST analyzer check
+      if ts_bridge.available:
+          var ts_analyzer = TreeSitterAnalyzer{ .allocator, .source = source };
+          var analyzer_report = try ts_analyzer.analyze();
+          report.violations.appendSlice(analyzer_report.violations);
+      return report;
+
+algorithms:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Edit Pipeline
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: apply_edit_pipeline
+    input: EditOperation
+    output: EditReport
+    steps:
+      - name: read_source
+        action: "Load file content"
+      - name: find_matches
+        action: "Run find_matches with Tier 1→2→0 fallback"
+      - name: validate_matches
+        action: "Filter by confidence threshold, limit max_matches"
+      - name: compute_diff
+        action: "Generate diff based on match kind"
+      - name: preview
+        action: "If preview=true, show diff and wait for confirmation"
+      - name: apply_edit
+        action: "Apply diff to source code"
+      - name: needle_check
+        action: "Run safety gates (parse + analyze)"
+      - name: commit_or_rollback
+        action: "Write file if checks pass, else return violations"
+    formula: |
+      accuracy = (tier1_hits * 1.0 + tier2_hits * 0.9 + tier0_hits * 0.7) / total_hits
+      safety_score = 1.0 - (critical_violations * 1.0 + high_violations * 0.5) / total_edits
+
+test_cases:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # Unit Tests
+  # ─────────────────────────────────────────────────────────────────────────────
+
+  - name: exact_ast_match
+    given: "Zig source with fn add(a: i32, b: i32) i32"
+    when: "query = '(function_declaration name: (identifier))'"
+    then: "Returns match with confidence=1.0, kind=exact_ast"
+
+  - name: fuzzy_text_match
+    given: "Source line: 'pub fn calculate(x: f64) f64'"
+    when: "query = 'calculate x' (no AST)"
+    then: "Returns match with confidence=0.8 (word-level), kind=fuzzy_text"
+
+  - name: confidence_filtering
+    given: "Multiple matches with different confidence scores"
+    when: "threshold = 0.7"
+    then: "Only returns matches with confidence >= 0.7"
+
+  - name: safety_gate_parse_error
+    given: "Edit that creates invalid Zig syntax"
+    when: "Apply edit + needle_check"
+    then: "EditReport.violations contains parse_error with severity=critical"
+
+  - name: safety_gate_shadowing
+    given: "Edit that creates variable shadowing"
+    when: "Apply edit + needle_check with tree-sitter available"
+    then: "EditReport.violations contains variable_shadowing with severity=medium"
+
+benchmarks:
+  suite: real_trinity_codebase
+  targets:
+    - path: src/vibeec/*.zig
+      description: VIBEE compiler (real code)
+    - path: src/vsa.zig
+      description: VSA library (complex math)
+
+  metrics:
+    - edit_accuracy: "correct edits / total edits"
+    - safety_score: "parse + analyzer pass rate"
+    - time_ms: "total edit time (parse+match+apply+check)"
+    - vs_aider: "relative to Aider baseline"
+
+integration:
+  ralph_loop: true
+  auto_fix: true
+
+  tri_commands:
+    - name: needle
+      usage: "tri needle --file <path> --query <pattern> --replace <code> [--preview]"
+      description: "Apply structural edit with safety gates"
+
+    - name: needle-search
+      usage: "tri needle-search --file <path> --query <pattern>"
+      description: "Search codebase (AST + fuzzy fallback)"
+
+    - name: needle-check
+      usage: "tri needle-check --file <path>"
+      description: "Run Needle quality gates only"
+
+  git:
+    auto_commit: false  # Manual commit for safety
+    commit_message_template: "NEEDLE: {operation} on {file} ({mode})"

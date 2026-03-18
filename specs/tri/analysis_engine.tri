@@ -1,0 +1,39 @@
+name: analysis_engine
+version: "1.0.0"
+language: zig
+module: analysis_engine
+
+description: >
+  Analysis Engine — converts FacultySnapshot + FacultyDelta into a 2-3 sentence
+  causal narrative in Russian. Delta-aware: compares current snapshot to previous
+  run for dynamic text. No allocations — writes into caller-owned buffer.
+
+behaviors:
+  generateAnalysis:
+    given: "FacultySnapshot, FacultyDelta, and caller-owned []u8 buffer"
+    when: "called"
+    then: >
+      writes 2-3 sentence causal narrative into buf and returns written slice.
+      Priority order:
+      1. Build broken -> 'Сборка сломана'
+      2. Compile rate < 80% -> generator error message
+      3. Faculty count + active_delta
+      4. First down agent -> consequence sentence
+      5. Entropy warning if dirty_files > 15
+      6. Summary with delta-aware compile/dirty narrative
+      7. Causal chain crediting Agent TRI or Scholar
+
+  appendCausalChain:
+    given: "writer, FacultySnapshot, FacultyDelta"
+    when: "called after main narrative"
+    then: >
+      appends one extra sentence based on agent+metric correlations:
+      mu_up + compile improving -> 'Agent TRI лечит — паттерны работают'
+      mu_up + scholar missing + frozen -> 'Scholar не нанят'
+      mu_up + compile regressed -> 'Регрессия при Agent TRI UP'
+      faculty grew -> '+N агент'
+
+  agentIsUp:
+    given: "FacultySnapshot and Agent enum value"
+    when: "called"
+    then: "returns true if agent with matching enum has status == .up"

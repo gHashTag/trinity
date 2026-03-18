@@ -1,0 +1,592 @@
+# Agent Core Specification
+# Spec-driven development: This spec is the SINGLE SOURCE OF TRUTH
+# All code, tests, and documentation are GENERATED from this spec
+
+metadata:
+  name: agent_core
+  version: 1.0.0
+  description: Core agent system for VIBEE - actor model, message passing, and lifecycle management
+  author: VIBEE Team
+  license: MIT
+  generated_from: spec
+  manual_code_forbidden: true
+
+# Type definitions
+types:
+  - name: Agent
+    description: Agent instance
+    fields:
+      - name: id
+        type: String
+        description: Agent ID
+        required: true
+      - name: name
+        type: String
+        description: Agent name
+        required: true
+      - name: type
+        type: String
+        description: Agent type (worker, supervisor, coordinator)
+        required: true
+      - name: state
+        type: AgentState
+        description: Agent state
+        required: true
+      - name: capabilities
+        type: List<String>
+        description: Agent capabilities
+        default: []
+      - name: metadata
+        type: Map<String, String>
+        description: Agent metadata
+        default: {}
+      - name: created_at
+        type: String
+        description: Creation timestamp
+        required: true
+
+  - name: AgentState
+    description: Agent state
+    fields:
+      - name: status
+        type: String
+        description: Agent status (idle, busy, paused, stopped)
+        required: true
+      - name: current_task
+        type: String
+        description: Current task ID
+        required: false
+      - name: task_queue
+        type: List<String>
+        description: Task queue
+        default: []
+      - name: error
+        type: String
+        description: Last error
+        required: false
+
+  - name: Message
+    description: Agent message
+    fields:
+      - name: id
+        type: String
+        description: Message ID
+        required: true
+      - name: from
+        type: String
+        description: Sender agent ID
+        required: true
+      - name: to
+        type: String
+        description: Recipient agent ID
+        required: true
+      - name: type
+        type: String
+        description: Message type (request, response, notification, error)
+        required: true
+      - name: payload
+        type: Map<String, String>
+        description: Message payload
+        default: {}
+      - name: timestamp
+        type: String
+        description: Message timestamp
+        required: true
+      - name: correlation_id
+        type: String
+        description: Correlation ID for request-response
+        required: false
+
+  - name: Task
+    description: Agent task
+    fields:
+      - name: id
+        type: String
+        description: Task ID
+        required: true
+      - name: type
+        type: String
+        description: Task type
+        required: true
+      - name: priority
+        type: Int
+        description: Task priority (0-10)
+        default: 5
+      - name: params
+        type: Map<String, String>
+        description: Task parameters
+        default: {}
+      - name: status
+        type: String
+        description: Task status (pending, running, completed, failed)
+        default: "pending"
+      - name: result
+        type: String
+        description: Task result
+        required: false
+      - name: error
+        type: String
+        description: Task error
+        required: false
+      - name: created_at
+        type: String
+        description: Creation timestamp
+        required: true
+      - name: completed_at
+        type: String
+        description: Completion timestamp
+        required: false
+
+  - name: AgentConfig
+    description: Agent configuration
+    fields:
+      - name: max_concurrent_tasks
+        type: Int
+        description: Maximum concurrent tasks
+        default: 10
+      - name: task_timeout_ms
+        type: Int
+        description: Task timeout in milliseconds
+        default: 60000
+      - name: retry_attempts
+        type: Int
+        description: Number of retry attempts
+        default: 3
+      - name: retry_delay_ms
+        type: Int
+        description: Retry delay in milliseconds
+        default: 1000
+
+  - name: AgentMetrics
+    description: Agent metrics
+    fields:
+      - name: agent_id
+        type: String
+        description: Agent ID
+        required: true
+      - name: tasks_completed
+        type: Int
+        description: Number of completed tasks
+        default: 0
+      - name: tasks_failed
+        type: Int
+        description: Number of failed tasks
+        default: 0
+      - name: messages_sent
+        type: Int
+        description: Number of messages sent
+        default: 0
+      - name: messages_received
+        type: Int
+        description: Number of messages received
+        default: 0
+      - name: uptime_ms
+        type: Int
+        description: Agent uptime in milliseconds
+        default: 0
+      - name: last_activity
+        type: String
+        description: Last activity timestamp
+        required: true
+
+# Behavior specifications with test cases
+behaviors:
+  - name: agent_lifecycle
+    description: Agent lifecycle management
+    functions:
+      - name: create_agent
+        description: Create a new agent
+        params:
+          - name: name
+            type: String
+          - name: agent_type
+            type: String
+          - name: capabilities
+            type: List<String>
+          - name: config
+            type: AgentConfig
+        returns: Result<Agent, String>
+        test_cases:
+          - input:
+              name: "worker-1"
+              agent_type: "worker"
+              capabilities: ["task_execution", "message_handling"]
+              config: {max_concurrent_tasks: 10, task_timeout_ms: 60000}
+            expected:
+              Ok:
+                id: "agent-123"
+                name: "worker-1"
+                type: "worker"
+                state: {status: "idle", task_queue: []}
+                capabilities: ["task_execution", "message_handling"]
+
+      - name: start_agent
+        description: Start an agent
+        params:
+          - name: agent_id
+            type: String
+        returns: Result<Agent, String>
+        test_cases:
+          - input:
+              agent_id: "agent-123"
+            expected:
+              Ok:
+                id: "agent-123"
+                state: {status: "idle"}
+
+      - name: stop_agent
+        description: Stop an agent
+        params:
+          - name: agent_id
+            type: String
+        returns: Result<Agent, String>
+        test_cases:
+          - input:
+              agent_id: "agent-123"
+            expected:
+              Ok:
+                id: "agent-123"
+                state: {status: "stopped"}
+
+      - name: pause_agent
+        description: Pause an agent
+        params:
+          - name: agent_id
+            type: String
+        returns: Result<Agent, String>
+        test_cases:
+          - input:
+              agent_id: "agent-123"
+            expected:
+              Ok:
+                id: "agent-123"
+                state: {status: "paused"}
+
+      - name: resume_agent
+        description: Resume a paused agent
+        params:
+          - name: agent_id
+            type: String
+        returns: Result<Agent, String>
+        test_cases:
+          - input:
+              agent_id: "agent-123"
+            expected:
+              Ok:
+                id: "agent-123"
+                state: {status: "idle"}
+
+  - name: message_passing
+    description: Agent message passing
+    functions:
+      - name: send_message
+        description: Send message to agent
+        params:
+          - name: from_agent_id
+            type: String
+          - name: to_agent_id
+            type: String
+          - name: message_type
+            type: String
+          - name: payload
+            type: Map<String, String>
+        returns: Result<Message, String>
+        test_cases:
+          - input:
+              from_agent_id: "agent-1"
+              to_agent_id: "agent-2"
+              message_type: "request"
+              payload: {action: "process_data", data: "test"}
+            expected:
+              Ok:
+                id: "msg-123"
+                from: "agent-1"
+                to: "agent-2"
+                type: "request"
+                payload: {action: "process_data", data: "test"}
+
+      - name: receive_message
+        description: Receive message from queue
+        params:
+          - name: agent_id
+            type: String
+        returns: Result<Message, String>
+        test_cases:
+          - input:
+              agent_id: "agent-2"
+            expected:
+              Ok:
+                id: "msg-123"
+                from: "agent-1"
+                to: "agent-2"
+                type: "request"
+
+      - name: broadcast_message
+        description: Broadcast message to multiple agents
+        params:
+          - name: from_agent_id
+            type: String
+          - name: to_agent_ids
+            type: List<String>
+          - name: message_type
+            type: String
+          - name: payload
+            type: Map<String, String>
+        returns: Result<List<Message>, String>
+        test_cases:
+          - input:
+              from_agent_id: "agent-1"
+              to_agent_ids: ["agent-2", "agent-3", "agent-4"]
+              message_type: "notification"
+              payload: {event: "system_update"}
+            expected:
+              Ok:
+                - {id: "msg-1", from: "agent-1", to: "agent-2", type: "notification"}
+                - {id: "msg-2", from: "agent-1", to: "agent-3", type: "notification"}
+                - {id: "msg-3", from: "agent-1", to: "agent-4", type: "notification"}
+
+  - name: task_management
+    description: Agent task management
+    functions:
+      - name: assign_task
+        description: Assign task to agent
+        params:
+          - name: agent_id
+            type: String
+          - name: task
+            type: Task
+        returns: Result<Task, String>
+        test_cases:
+          - input:
+              agent_id: "agent-123"
+              task:
+                id: "task-456"
+                type: "data_processing"
+                priority: 8
+                params: {input: "data.csv"}
+                status: "pending"
+            expected:
+              Ok:
+                id: "task-456"
+                status: "running"
+
+      - name: get_task_status
+        description: Get task status
+        params:
+          - name: task_id
+            type: String
+        returns: Result<Task, String>
+        test_cases:
+          - input:
+              task_id: "task-456"
+            expected:
+              Ok:
+                id: "task-456"
+                status: "running"
+
+      - name: cancel_task
+        description: Cancel running task
+        params:
+          - name: task_id
+            type: String
+        returns: Result<Task, String>
+        test_cases:
+          - input:
+              task_id: "task-456"
+            expected:
+              Ok:
+                id: "task-456"
+                status: "failed"
+                error: "Task cancelled"
+
+  - name: agent_monitoring
+    description: Agent monitoring and metrics
+    functions:
+      - name: get_agent_state
+        description: Get agent state
+        params:
+          - name: agent_id
+            type: String
+        returns: Result<AgentState, String>
+        test_cases:
+          - input:
+              agent_id: "agent-123"
+            expected:
+              Ok:
+                status: "busy"
+                current_task: "task-456"
+                task_queue: ["task-457", "task-458"]
+
+      - name: get_agent_metrics
+        description: Get agent metrics
+        params:
+          - name: agent_id
+            type: String
+        returns: Result<AgentMetrics, String>
+        test_cases:
+          - input:
+              agent_id: "agent-123"
+            expected:
+              Ok:
+                agent_id: "agent-123"
+                tasks_completed: 100
+                tasks_failed: 5
+                messages_sent: 250
+                messages_received: 300
+                uptime_ms: 3600000
+
+      - name: list_agents
+        description: List all agents
+        params: []
+        returns: Result<List<Agent>, String>
+        test_cases:
+          - input: {}
+            expected:
+              Ok:
+                - {id: "agent-1", name: "worker-1", type: "worker", state: {status: "idle"}}
+                - {id: "agent-2", name: "worker-2", type: "worker", state: {status: "busy"}}
+
+# Function declarations
+functions:
+  # Agent lifecycle
+  - name: create_agent
+    params: [name: String, agent_type: String, capabilities: List<String>, config: AgentConfig]
+    returns: Result<Agent, String>
+    behavior: agent_lifecycle
+
+  - name: start_agent
+    params: [agent_id: String]
+    returns: Result<Agent, String>
+    behavior: agent_lifecycle
+
+  - name: stop_agent
+    params: [agent_id: String]
+    returns: Result<Agent, String>
+    behavior: agent_lifecycle
+
+  - name: pause_agent
+    params: [agent_id: String]
+    returns: Result<Agent, String>
+    behavior: agent_lifecycle
+
+  - name: resume_agent
+    params: [agent_id: String]
+    returns: Result<Agent, String>
+    behavior: agent_lifecycle
+
+  # Message passing
+  - name: send_message
+    params: [from_agent_id: String, to_agent_id: String, message_type: String, payload: Map<String, String>]
+    returns: Result<Message, String>
+    behavior: message_passing
+
+  - name: receive_message
+    params: [agent_id: String]
+    returns: Result<Message, String>
+    behavior: message_passing
+
+  - name: broadcast_message
+    params: [from_agent_id: String, to_agent_ids: List<String>, message_type: String, payload: Map<String, String>]
+    returns: Result<List<Message>, String>
+    behavior: message_passing
+
+  # Task management
+  - name: assign_task
+    params: [agent_id: String, task: Task]
+    returns: Result<Task, String>
+    behavior: task_management
+
+  - name: get_task_status
+    params: [task_id: String]
+    returns: Result<Task, String>
+    behavior: task_management
+
+  - name: cancel_task
+    params: [task_id: String]
+    returns: Result<Task, String>
+    behavior: task_management
+
+  # Agent monitoring
+  - name: get_agent_state
+    params: [agent_id: String]
+    returns: Result<AgentState, String>
+    behavior: agent_monitoring
+
+  - name: get_agent_metrics
+    params: [agent_id: String]
+    returns: Result<AgentMetrics, String>
+    behavior: agent_monitoring
+
+  - name: list_agents
+    params: []
+    returns: Result<List<Agent>, String>
+    behavior: agent_monitoring
+
+# Documentation
+documentation:
+  overview: |
+    # Agent Core System
+    
+    Core agent system for VIBEE with actor model, message passing, and lifecycle management.
+    
+    ## Features
+    - Agent lifecycle (create, start, stop, pause, resume)
+    - Message passing (send, receive, broadcast)
+    - Task management (assign, status, cancel)
+    - Agent monitoring (state, metrics, list)
+    
+  examples:
+    - title: Create and Start Agent
+      code: |
+        let config = AgentConfig(
+          max_concurrent_tasks: 10,
+          task_timeout_ms: 60000,
+          retry_attempts: 3,
+          retry_delay_ms: 1000
+        )
+        let result = create_agent(
+          "worker-1",
+          "worker",
+          ["task_execution", "message_handling"],
+          config
+        )
+        case result {
+          Ok(agent) -> {
+            start_agent(agent.id)
+          }
+          Error(err) -> io.println("Error: " <> err)
+        }
+    
+    - title: Send Message
+      code: |
+        let payload = map.from_list([
+          #("action", "process_data"),
+          #("data", "test.csv")
+        ])
+        let result = send_message(
+          "agent-1",
+          "agent-2",
+          "request",
+          payload
+        )
+    
+    - title: Assign Task
+      code: |
+        let task = Task(
+          id: "task-123",
+          type: "data_processing",
+          priority: 8,
+          params: map.from_list([#("input", "data.csv")]),
+          status: "pending",
+          created_at: "2024-01-15T10:00:00Z"
+        )
+        let result = assign_task("agent-1", task)
+
+# Generation metadata
+generation:
+  target_language: gleam
+  output_path: src/agent_core.gleam
+  test_path: test/agent_core_test.gleam
+  generate_docs: true
+  generate_tests: true
+  generate_helpers: true

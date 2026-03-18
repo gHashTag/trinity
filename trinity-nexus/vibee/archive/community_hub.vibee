@@ -1,0 +1,391 @@
+name: community_hub
+version: 1.0.0
+description: Community platform for VIBEE developers - discussions, contributions, and collaboration
+
+metadata:
+  author: VIBEE Team
+  category: community
+  tags: [forum, discussions, collaboration, reputation]
+  created: 2024-01-10
+
+types:
+  User:
+    id: string
+    username: string
+    email: string
+    reputation: number
+    badges: list<Badge>
+    contributions: number
+    joined_at: timestamp
+
+  Badge:
+    id: string
+    name: string
+    description: string
+    icon: string
+    earned_at: timestamp
+
+  Discussion:
+    id: string
+    title: string
+    content: string
+    author: User
+    category: string
+    tags: list<string>
+    upvotes: number
+    replies: number
+    views: number
+    is_solved: boolean
+    created_at: timestamp
+    updated_at: timestamp
+
+  Reply:
+    id: string
+    discussion_id: string
+    content: string
+    author: User
+    upvotes: number
+    is_solution: boolean
+    created_at: timestamp
+
+  Contribution:
+    id: string
+    type: string  # template, generator, documentation, bug_fix
+    title: string
+    description: string
+    author: User
+    status: string  # pending, approved, rejected
+    review_comments: list<ReviewComment>
+    created_at: timestamp
+    reviewed_at: optional<timestamp>
+
+  ReviewComment:
+    id: string
+    reviewer: User
+    comment: string
+    created_at: timestamp
+
+  Leaderboard:
+    period: string  # week, month, all_time
+    users: list<LeaderboardEntry>
+
+  LeaderboardEntry:
+    rank: number
+    user: User
+    score: number
+    contributions: number
+    helpful_replies: number
+
+behaviors:
+  create_discussion:
+    input:
+      title: string
+      content: string
+      category: string
+      tags: list<string>
+    output: Discussion
+    description: Create a new discussion thread
+    steps:
+      - Validate title and content
+      - Check category exists
+      - Validate tags
+      - Create discussion record
+      - Award reputation points to author
+      - Notify followers
+      - Return created discussion
+
+  reply_to_discussion:
+    input:
+      discussion_id: string
+      content: string
+    output: Reply
+    description: Reply to a discussion
+    steps:
+      - Validate discussion exists
+      - Validate content
+      - Create reply record
+      - Update discussion reply count
+      - Award reputation points
+      - Notify discussion author
+      - Return created reply
+
+  mark_as_solution:
+    input:
+      reply_id: string
+    output:
+      success: boolean
+    description: Mark a reply as the solution
+    steps:
+      - Validate reply exists
+      - Check user is discussion author
+      - Mark reply as solution
+      - Mark discussion as solved
+      - Award bonus reputation to reply author
+      - Update user badges
+      - Return success
+
+  upvote_content:
+    input:
+      content_id: string
+      content_type: string  # discussion, reply
+    output:
+      new_upvote_count: number
+    description: Upvote a discussion or reply
+    steps:
+      - Validate content exists
+      - Check user hasn't already upvoted
+      - Increment upvote count
+      - Award reputation to content author
+      - Return new upvote count
+
+  submit_contribution:
+    input:
+      type: string
+      title: string
+      description: string
+      content: string
+    output: Contribution
+    description: Submit a contribution for review
+    steps:
+      - Validate contribution type
+      - Validate content
+      - Create contribution record
+      - Set status to pending
+      - Notify reviewers
+      - Return created contribution
+
+  review_contribution:
+    input:
+      contribution_id: string
+      status: string  # approved, rejected
+      comment: string
+    output:
+      success: boolean
+    description: Review a contribution
+    steps:
+      - Validate contribution exists
+      - Check user is reviewer
+      - Update contribution status
+      - Add review comment
+      - Award reputation if approved
+      - Notify contributor
+      - Return success
+
+  get_leaderboard:
+    input:
+      period: string
+      limit: optional<number>
+    output: Leaderboard
+    description: Get community leaderboard
+    steps:
+      - Calculate scores for period
+      - Factor in contributions
+      - Factor in helpful replies
+      - Factor in upvotes received
+      - Sort by score
+      - Return top users
+
+  award_badge:
+    input:
+      user_id: string
+      badge_id: string
+    output:
+      success: boolean
+    description: Award a badge to a user
+    steps:
+      - Validate user exists
+      - Validate badge exists
+      - Check badge criteria met
+      - Award badge to user
+      - Notify user
+      - Return success
+
+  get_user_profile:
+    input:
+      user_id: string
+    output: User
+    description: Get user profile with stats
+    steps:
+      - Load user data
+      - Calculate reputation
+      - Load badges
+      - Count contributions
+      - Return user profile
+
+  search_discussions:
+    input:
+      query: string
+      category: optional<string>
+      tags: optional<list<string>>
+      is_solved: optional<boolean>
+    output:
+      discussions: list<Discussion>
+    description: Search discussions
+    steps:
+      - Parse search query
+      - Apply category filter
+      - Apply tag filters
+      - Apply solved filter
+      - Sort by relevance
+      - Return matching discussions
+
+functions:
+  - name: calculate_reputation
+    params:
+      user_id: string
+    returns: number
+    description: Calculate user reputation score
+
+  - name: check_badge_criteria
+    params:
+      user_id: string
+      badge_id: string
+    returns: boolean
+    description: Check if user meets badge criteria
+
+  - name: notify_users
+    params:
+      user_ids: list<string>
+      notification_type: string
+      content: string
+    returns: void
+    description: Send notifications to users
+
+  - name: moderate_content
+    params:
+      content_id: string
+      action: string
+    returns: boolean
+    description: Moderate community content
+
+tests:
+  - name: create_help_discussion
+    behavior: create_discussion
+    input:
+      title: "How to implement OAuth2?"
+      content: "I need help implementing OAuth2 authentication..."
+      category: "help"
+      tags: ["oauth", "authentication"]
+    expected:
+      title: "How to implement OAuth2?"
+      category: "help"
+      tags: contains("oauth", "authentication")
+      upvotes: 0
+      replies: 0
+
+  - name: reply_with_solution
+    behavior: reply_to_discussion
+    input:
+      discussion_id: "disc_123"
+      content: "You can use the user_auth template from marketplace..."
+    expected:
+      discussion_id: "disc_123"
+      content: contains("user_auth template")
+
+  - name: mark_helpful_reply
+    behavior: mark_as_solution
+    input:
+      reply_id: "reply_456"
+    expected:
+      success: true
+
+  - name: upvote_discussion
+    behavior: upvote_content
+    input:
+      content_id: "disc_123"
+      content_type: "discussion"
+    expected:
+      new_upvote_count: > 0
+
+  - name: submit_template_contribution
+    behavior: submit_contribution
+    input:
+      type: "template"
+      title: "Payment Gateway Integration"
+      description: "Template for integrating payment gateways"
+      content: "spec.yml content..."
+    expected:
+      type: "template"
+      status: "pending"
+
+  - name: approve_contribution
+    behavior: review_contribution
+    input:
+      contribution_id: "contrib_789"
+      status: "approved"
+      comment: "Great contribution! Approved."
+    expected:
+      success: true
+
+  - name: get_monthly_leaderboard
+    behavior: get_leaderboard
+    input:
+      period: "month"
+      limit: 10
+    expected:
+      period: "month"
+      users: length == 10
+      users[0].rank: 1
+
+  - name: award_first_contribution_badge
+    behavior: award_badge
+    input:
+      user_id: "user_123"
+      badge_id: "first_contribution"
+    expected:
+      success: true
+
+  - name: get_user_stats
+    behavior: get_user_profile
+    input:
+      user_id: "user_123"
+    expected:
+      reputation: > 0
+      badges: length > 0
+      contributions: > 0
+
+  - name: search_solved_discussions
+    behavior: search_discussions
+    input:
+      query: "authentication"
+      category: "help"
+      is_solved: true
+    expected:
+      discussions: all_match(is_solved == true)
+      discussions: all_match(category == "help")
+
+constants:
+  REPUTATION_POINTS:
+    CREATE_DISCUSSION: 5
+    REPLY: 10
+    SOLUTION_MARKED: 50
+    UPVOTE_RECEIVED: 2
+    CONTRIBUTION_APPROVED: 100
+
+  BADGES:
+    - id: "first_contribution"
+      name: "First Contribution"
+      description: "Made your first contribution"
+      criteria: "contributions >= 1"
+    
+    - id: "helpful_member"
+      name: "Helpful Member"
+      description: "Had 10 replies marked as solutions"
+      criteria: "solutions_count >= 10"
+    
+    - id: "top_contributor"
+      name: "Top Contributor"
+      description: "Made 50+ contributions"
+      criteria: "contributions >= 50"
+    
+    - id: "community_leader"
+      name: "Community Leader"
+      description: "Reached 1000+ reputation"
+      criteria: "reputation >= 1000"
+
+  CATEGORIES:
+    - help
+    - showcase
+    - feature_request
+    - bug_report
+    - general

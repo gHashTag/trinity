@@ -1,0 +1,442 @@
+name: ai_performance_optimizer
+version: 1.0.0
+description: AI-powered optimization [CYR:pro]frominand[CYR:lno]withand - onand and with and [CYR:acts] andI
+
+metadata:
+  author: VIBEE Team
+  category: ai_optimization
+  tags: [ai, performance, optimization, profiling]
+  created: 2024-01-10
+
+types:
+  PerformanceProfile:
+    function_name: string
+    execution_time_ms: number
+    memory_usage_mb: number
+    cpu_usage_percent: number
+    call_count: number
+    hotspots: list<Hotspot>
+    
+  Hotspot:
+    location: Location
+    type: string  # cpu, memory, io, network
+    severity: string  # critical, high, medium, low
+    impact_percent: number
+    
+  OptimizationHint:
+    hint_id: string
+    title: string
+    description: string
+    code_before: string
+    code_after: string
+    expected_improvement: ImprovementMetrics
+    difficulty: string
+    priority: number
+    
+  ImprovementMetrics:
+    speed_improvement_percent: number
+    memory_reduction_percent: number
+    complexity_reduction: number
+    
+  OptimizationResult:
+    applied_hints: list<OptimizationHint>
+    actual_improvement: ImprovementMetrics
+    benchmark_results: BenchmarkResults
+    
+  BenchmarkResults:
+    before: PerformanceMetrics
+    after: PerformanceMetrics
+    improvement: PerformanceMetrics
+    
+  PerformanceMetrics:
+    execution_time_ms: number
+    memory_usage_mb: number
+    throughput_ops_per_sec: number
+
+constants:
+  OPTIMIZATION_PATTERNS:
+    list_operations:
+      pattern: "list |> list.filter(...) |> list.map(...)"
+      optimization: "[... for ... in list if ...]"
+      improvement: "30-50% faster, less memory"
+      
+    nested_loops:
+      pattern: "for x in list1 { for y in list2 { ... } }"
+      optimization: "Use hash map or set for O(1) lookup"
+      improvement: "O(n²) → O(n)"
+      
+    string_concatenation:
+      pattern: "str1 <> str2 <> str3 <> ..."
+      optimization: "Use string builder or list.join"
+      improvement: "O(n²) → O(n)"
+      
+    repeated_computation:
+      pattern: "expensive_function() called multiple times"
+      optimization: "Cache result or memoize"
+      improvement: "Depends on call frequency"
+      
+    unnecessary_allocations:
+      pattern: "Creating temporary objects in loop"
+      optimization: "Reuse objects or use iterators"
+      improvement: "Reduce GC pressure"
+
+  AI_PROMPTS:
+    analyze_performance: |
+      y - with  andfromand [CYR:pro]frominand[CYR:lno]withand VIBEE code.
+      
+      [CYR:Code] for analysis:
+      ```vibee
+      {code}
+      ```
+      
+      andl [CYR:pro]frominand[CYR:lno]withand:
+      - [CYR:I] in[CYR:y]notandI: {execution_time}ms
+      - [CYR:I]: {memory_usage}MB
+      - CPU: {cpu_usage}%
+      - andwithin in[CYR:y]inin: {call_count}
+      
+      : and and with and and andfromand.
+      
+      in:
+      1. [CYR:Ago]andwith with (O-notation)
+      2. withl]inand [CYR:I]and
+      3. [CYR:y] and
+      4. in[CYR:I]andwithI inyandwithandI
+      5. [CYR:effect]andin[CYR:y] withy] [CYR:data]
+      6. I/O and
+      
+       response:
+      and with:
+      1. with: <location>
+         : <andwithand>
+         [CYR:I] with: <O-notation>
+         Impact: <[CYR:pro]  [CYR:go] in[CYR:me]and>
+      
+      andfromand:
+      1. inand: < oninand>
+         :
+         ```vibee
+         <and code>
+         ```
+         with:
+         ```vibee
+         <andfromandin[CYR:ny] code>
+         ```
+         and: <and>
+         with: <easy/medium/hard>
+         and: <1-10>
+      
+    suggest_algorithm: |
+      y - with  [CYR:algorithm]and and with [CYR:data].
+      
+      and code:
+      ```vibee
+      {code}
+      ```
+      
+      [CYR:I] with: {current_complexity}
+      : {problem_description}
+      
+      : and  [CYR:effect]andin[CYR:ny] [CYR:algorithm]and.
+      
+      withand:
+      - -tables for O(1) lookup
+      - andin for andon[CYR:go] andwith
+      - andonandwith [CYR:pro]andinand
+      - [CYR:y] [CYR:algorithm]and[CYR:tmy]
+      - Divide and conquer
+      
+       response:
+      [CYR:mey] [CYR:algorithm]and: <oninand>
+      with: <O-notation>
+      [CYR:Code]:
+      ```vibee
+      <andfromandin[CYR:ny] code>
+      ```
+      [CYR:I]withnotand: < this >
+      Trade-offs: <promisewithy>
+      
+    memory_optimization: |
+      y - with  andfromand [CYR:I]and.
+      
+      [CYR:Code]:
+      ```vibee
+      {code}
+      ```
+      
+      withl]inand [CYR:I]and: {memory_usage}MB
+      : {memory_issue}
+      
+      : andfromand andwithl]inand [CYR:I]and.
+      
+      in:
+      - and [CYR:I]and
+      - [CYR:y] andinandI
+      - [CYR:l]and in[CYR:nye] objecty
+      - [CYR:effect]andin[CYR:y] withy] [CYR:data]
+      - [CYR:can]with streaming
+      
+       response:
+      [CYR:y]:
+      - <list [CYR:pro]>
+      
+      andI:
+      ```vibee
+      <andfromandin[CYR:ny] code>
+      ```
+      
+      andI [CYR:I]and: <[CYR:pro]>
+
+behaviors:
+  analyze_performance:
+    input:
+      code: string
+      profile: PerformanceProfile
+    output:
+      hotspots: list<Hotspot>
+      hints: list<OptimizationHint>
+    description: Aonfrom [CYR:pro]frominand[CYR:lno]withand with AI
+    steps:
+      - orin[CYR:ate] code
+      - [CYR:law]inand on analysis AI
+      - and list and with
+      - notandin[CYR:ate] hints
+      - andfromandin[CYR:ate] hints
+      -  resulty
+      
+  suggest_optimizations:
+    input:
+      hotspot: Hotspot
+      code: string
+    output:
+      hints: list<OptimizationHint>
+    description: andI  andfromand
+    steps:
+      - analyze  with
+      - and type [CYR:proy]
+      - notandin[CYR:ate] inand[CYR:y] andfromand
+      - and andI
+      - andin[CYR:ate]  and
+      -  hints
+      
+  apply_optimization:
+    input:
+      hint: OptimizationHint
+      code: string
+    output:
+      optimized_code: string
+      result: OptimizationResult
+    description: andnotand andfromand
+    steps:
+      - and[CYR:me]and fromnotandI
+      - withand testy
+      - and performance
+      - inand with baseline
+      - andin[CYR:ate] improvement
+      -  result
+      
+  benchmark_code:
+    input:
+      code: string
+      iterations: number
+    output:
+      metrics: PerformanceMetrics
+    description:  code
+    steps:
+      - compile code
+      -  JIT
+      - withand iterations 
+      - and and
+      - withand resulty
+      -  metrics
+      
+  compare_algorithms:
+    input:
+      algorithm_a: string
+      algorithm_b: string
+      test_data: list<any>
+    output:
+      comparison: AlgorithmComparison
+    description: innotand [CYR:algorithm]andin
+    steps:
+      -  algorithm_a
+      -  algorithm_b
+      - inand and
+      - and winner
+      -  comparison
+
+functions:
+  - name: profile_code
+    params:
+      code: string
+      input_data: any
+    returns: PerformanceProfile
+    description: orinand code
+    
+  - name: detect_hotspots
+    params:
+      profile: PerformanceProfile
+      threshold_percent: number
+    returns: list<Hotspot>
+    description: and and with
+    
+  - name: estimate_improvement
+    params:
+      current_code: string
+      optimized_code: string
+    returns: ImprovementMetrics
+    description:  andI
+    
+  - name: validate_optimization
+    params:
+      original: string
+      optimized: string
+      test_cases: list<TestCase>
+    returns: boolean
+    description: andI andfromand
+
+tests:
+  - name: detect_list_operation_hotspot
+    behavior: analyze_performance
+    input:
+      code: |
+        list
+          |> list.filter(fn(x) { x > 0 })
+          |> list.map(fn(x) { x * 2 })
+      profile:
+        execution_time_ms: 100
+        memory_usage_mb: 50
+    expected:
+      hotspots: length > 0
+      hints: length > 0
+      hints[0].title: contains("list comprehension")
+      
+  - name: suggest_algorithm_optimization
+    behavior: suggest_optimizations
+    input:
+      hotspot:
+        type: "cpu"
+        severity: "high"
+      code: |
+        for x in list1 {
+          for y in list2 {
+            if x == y { found = true }
+          }
+        }
+    expected:
+      hints: length > 0
+      hints[0].expected_improvement.speed_improvement_percent: > 50
+      
+  - name: apply_list_comprehension
+    behavior: apply_optimization
+    input:
+      hint:
+        code_before: "list |> list.filter(...) |> list.map(...)"
+        code_after: "[... for ... in list if ...]"
+      code: "list |> list.filter(fn(x) { x > 0 }) |> list.map(fn(x) { x * 2 })"
+    expected:
+      optimized_code: contains("[x * 2 for x in list if x > 0]")
+      result.actual_improvement.speed_improvement_percent: > 30
+
+examples:
+  - name: "andfromandI withandwithin"
+    description: "AI onand not[CYR:effect]andin[CYR:y] and with withandwithand"
+    input:
+      code: |
+        pub process_items(items) = {
+          items
+            |> list.filter(fn(i) { i.active })
+            |> list.map(fn(i) { i.price })
+            |> list.filter(fn(p) { p > 100 })
+        }
+      profile:
+        execution_time_ms: 150
+        memory_usage_mb: 80
+    output:
+      hint:
+        title: "and filter and"
+        code_after: |
+          pub process_items(items) = {
+            [i.price for i in items if i.active && i.price > 100]
+          }
+        improvement: "50% faster, 40% less memory"
+        
+  - name: "andfromandI [CYR:algorithm]and"
+    description: "AI [CYR:acts]  [CYR:effect]andin[CYR:ny] [CYR:algorithm]and"
+    input:
+      code: |
+        pub find_duplicates(list) = {
+          for x in list {
+            for y in list {
+              if x == y && x != y { return true }
+            }
+          }
+          false
+        }
+      complexity: "O(n²)"
+    output:
+      hint:
+        title: "withl]in[CYR:ate] Set for O(n)"
+        code_after: |
+          pub find_duplicates(list) = {
+            let seen = set.new()
+            for x in list {
+              if set.contains(seen, x) { return true }
+              set.insert(seen, x)
+            }
+            false
+          }
+        improvement: "O(n²) → O(n), 100x faster on [CYR:l]and [CYR:data]"
+        
+  - name: "andfromandI [CYR:I]and"
+    description: "AI onand and and and and"
+    input:
+      code: |
+        pub process_large_file(path) = {
+          let content = file.read_all(path)  // [CYR:acts] inwith file
+          content
+            |> string.split("\n")
+            |> list.map(process_line)
+        }
+      memory_usage_mb: 500
+    output:
+      hint:
+        title: "withl]in[CYR:ate] streaming"
+        code_after: |
+          pub process_large_file(path) = {
+            file.stream_lines(path)
+              |> stream.map(process_line)
+              |> stream.collect()
+          }
+        improvement: "500MB → 10MB, streaming handling"
+
+optimization_categories:
+  algorithmic:
+    - "and withand (O-notation)"
+    - "[CYR:Vy] with [CYR:data]"
+    - "andinand resultin"
+    - "fromandI"
+    
+  memory:
+    - "[CYR:me]and and"
+    - "andwithl]inand objectin"
+    - "Streaming inwith and"
+    - "andiny inyandwithandI"
+    
+  io:
+    - "and and"
+    - "Asynchronous I/O"
+    - "fromandI"
+    - "[CYR:l]onI handling"
+    
+  code_structure:
+    - "and and"
+    - "and in[CYR:go] code"
+    - "andfromandI loopin"
+    - "Tail call optimization"
+
+metrics:
+  detection_accuracy: "> 90%"
+  improvement_prediction: "±10%"
+  false_positives: "< 5%"
+  average_speedup: "> 2x"

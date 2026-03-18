@@ -1,0 +1,325 @@
+name: code_review
+version: "1.0.0"
+language: zig
+module: code_review
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: review_code
+    given: Input data provided
+    when: review_code function called
+    then: Result returned
+    test_cases:
+      - name: test_review_code
+        input: {}
+        expected: {}
+
+  - name: analyze_issues
+    given: Input data provided
+    when: analyze_issues function called
+    then: Result returned
+    test_cases:
+      - name: test_analyze_issues
+        input: {}
+        expected: {}
+
+  - name: check_security
+    given: Input data provided
+    when: check_security function called
+    then: Result returned
+    test_cases:
+      - name: test_check_security
+        input: {}
+        expected: {}
+
+  - name: check_performance
+    given: Input data provided
+    when: check_performance function called
+    then: Result returned
+    test_cases:
+      - name: test_check_performance
+        input: {}
+        expected: {}
+
+  - name: check_bug_risks
+    given: Input data provided
+    when: check_bug_risks function called
+    then: Result returned
+    test_cases:
+      - name: test_check_bug_risks
+        input: {}
+        expected: {}
+
+  - name: check_code_style
+    given: Input data provided
+    when: check_code_style function called
+    then: Result returned
+    test_cases:
+      - name: test_check_code_style
+        input: {}
+        expected: {}
+
+  - name: check_complexity
+    given: Input data provided
+    when: check_complexity function called
+    then: Result returned
+    test_cases:
+      - name: test_check_complexity
+        input: {}
+        expected: {}
+
+  - name: count_nesting
+    given: Input data provided
+    when: count_nesting function called
+    then: Result returned
+    test_cases:
+      - name: test_count_nesting
+        input: {}
+        expected: {}
+
+  - name: generate_suggestions
+    given: Input data provided
+    when: generate_suggestions function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_suggestions
+        input: {}
+        expected: {}
+
+  - name: calculate_metrics
+    given: Input data provided
+    when: calculate_metrics function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_metrics
+        input: {}
+        expected: {}
+
+  - name: calculate_cyclomatic_complexity
+    given: Input data provided
+    when: calculate_cyclomatic_complexity function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_cyclomatic_complexity
+        input: {}
+        expected: {}
+
+  - name: calculate_cognitive_complexity
+    given: Input data provided
+    when: calculate_cognitive_complexity function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_cognitive_complexity
+        input: {}
+        expected: {}
+
+  - name: calculate_maintainability_index
+    given: Input data provided
+    when: calculate_maintainability_index function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_maintainability_index
+        input: {}
+        expected: {}
+
+  - name: calculate_score
+    given: Input data provided
+    when: calculate_score function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_score
+        input: {}
+        expected: {}
+
+  - name: format_review
+    given: Input data provided
+    when: format_review function called
+    then: Result returned
+    test_cases:
+      - name: test_format_review
+        input: {}
+        expected: {}
+
+  - name: format_issues
+    given: Input data provided
+    when: format_issues function called
+    then: Result returned
+    test_cases:
+      - name: test_format_issues
+        input: {}
+        expected: {}
+
+  - name: format_suggestions
+    given: Input data provided
+    when: format_suggestions function called
+    then: Result returned
+    test_cases:
+      - name: test_format_suggestions
+        input: {}
+        expected: {}
+
+  - name: format_metrics
+    given: Input data provided
+    when: format_metrics function called
+    then: Result returned
+    test_cases:
+      - name: test_format_metrics
+        input: {}
+        expected: {}
+
+  - name: review_files
+    given: Input data provided
+    when: review_files function called
+    then: Result returned
+    test_cases:
+      - name: test_review_files
+        input: {}
+        expected: {}
+
+  - name: summary_report
+    given: Input data provided
+    when: summary_report function called
+    then: Result returned
+    test_cases:
+      - name: test_summary_report
+        input: {}
+        expected: {}
+
+types:
+  ReviewResult:
+    # TODO: Define fields
+
+  Issue:
+    # TODO: Define fields
+
+  Severity:
+    # TODO: Define fields
+
+  Category:
+    # TODO: Define fields
+
+  Suggestion:
+    # TODO: Define fields
+
+  SuggestionType:
+    # TODO: Define fields
+
+  CodeMetrics:
+    # TODO: Define fields
+
+functions:
+  - name: review_code
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: analyze_issues
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: check_security
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: check_performance
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: check_bug_risks
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: check_code_style
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: check_complexity
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: count_nesting
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_suggestions
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_metrics
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_cyclomatic_complexity
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_cognitive_complexity
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_maintainability_index
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_score
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_review
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_issues
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_suggestions
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_metrics
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: review_files
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: summary_report
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/string
+  # gleam/list
+  # gleam/int
+  # gleam/float
+  # gleam/dict.{type Dict}
+  # gleam/option.{type Option, None, Some}
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

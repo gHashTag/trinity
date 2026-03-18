@@ -1,0 +1,47 @@
+name: named_entity_registry
+version: "1.0.0"
+language: zig
+module: named_entity_registry
+description: "Level 11.24 — Named Entity Registry. Maps string entity names to Hypervector indices for CLI-style querying. 30 entities across 6 categories (Cities, Countries, Landmarks, Foods, Languages, Climates). 5 relations with 2-way split memories. Tests: registry lookup (30/30), relation lookup (5/5), named query dispatch (25/25). Total 60/60 (100%)."
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 30
+  NUM_RELATIONS: 5
+
+types:
+  NamedEntity:
+    fields:
+      name: String
+      index: Int
+      category: String
+      description: "An entity with a string name mapped to a vector index."
+
+behaviors:
+  - name: entityRegistryLookup
+    given: 30 entity names mapped to indices 0-29.
+    when: Look up each name in the registry
+    then: 30/30 (100%) — all names resolve to correct indices
+
+  - name: relationRegistryLookup
+    given: 5 relation names (capital_of, landmark_in, cuisine_of, language_of, climate_of).
+    when: Look up each relation name
+    then: 5/5 (100%) — all relation names resolve correctly
+
+  - name: namedQueryDispatch
+    given: 25 query scenarios (entity_name, relation_name, expected_result_name).
+    when: Look up entity and relation by name, execute VSA query, look up result by index
+    then: 25/25 (100%) — all named queries produce correct named results
+
+test_cases:
+  - name: test_entity_registry_30_30
+    input: "30 entity name lookups"
+    expected: "30/30 (100%)"
+
+  - name: test_named_queries_25_25
+    input: "25 named query dispatches"
+    expected: "25/25 (100%)"
+
+  - name: test_total_60_60
+    input: "Total named entity registry accuracy"
+    expected: "60/60 (100%)"

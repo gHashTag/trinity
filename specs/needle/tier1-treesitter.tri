@@ -1,0 +1,35 @@
+name: "tier1-treesitter"
+version: "1.0.0"
+module: "trinity.needle.tier1_treesitter"
+
+types:
+  - StructuralMatcher:
+      fields:
+        - parser: TreeSitterParser
+        - query: String  # S-expression query
+        - language: Enum[zig, vibee]
+
+behaviors:
+  - ast_structural_replace:
+      given: "Tree-sitter AST загружен и query прошёл"
+      when: "нужна точная замена узла"
+      then: "выполнить tree.edit() + regenerate code + Needle safety gates"
+      implementation: "использовать существующий tree-sitter-vibee + zig grammar"
+
+algorithms:
+  - find_and_replace_node:
+      steps:
+        - parse file with tree_sitter_zig()
+        - execute query (highlights.scm style)
+        - replace node at byte range
+        - regenerate source with tree-sitter
+      safety: "always run needle_quality_gates после apply"
+
+mcp_tools:
+  - needle_structural_replace: "needle_structural_replace"  # теперь AST-aware
+  - needle_ast_query: "needle_ast_query"  # новый инструмент для отладки
+
+integration:
+  - tree_sitter_vibee: true
+  - existing_edit_zig: "обновить matcher + edit"
+  - claude_mcp_only: true

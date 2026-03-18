@@ -1,0 +1,353 @@
+# :]  :] :] :]
+
+## Sin:] Zontoand
+
+---
+
+## 27 :] :]
+
+```
+╔═══════════════════════════════════════════════════════════════════════════╗
+║                                                                           ║
+║   :] :] :] (1-9) — :]andya                                   ║
+║                                                                           ║
+║   ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮        ║
+║   │ ᚨ │  │ ᛒ │  │ ᚲ │  │ ᛞ │  │ ᛖ │  │ ᚠ │  │ ᚷ │  │ ᚺ │  │ ᛁ │        ║
+║   │ Ⲁ │  │ Ⲃ │  │ Ⲅ │  │ Ⲇ │  │ Ⲉ │  │ Ⲋ │  │ Ⲍ │  │ Ⲏ │  │ Ⲑ │        ║
+║   │ 1 │  │ 2 │  │ 3 │  │ 4 │  │ 5 │  │ 6 │  │ 7 │  │ 8 │  │ 9 │        ║
+║   ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯        ║
+║                                                                           ║
+║   :] :] :] (10-18) — Enotrgandya                             ║
+║                                                                           ║
+║   ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮        ║
+║   │ ᛃ │  │ ᚴ │  │ ᛚ │  │ ᛗ │  │ ᚾ │  │ ᛟ │  │ ᛈ │  │ ᚱ │  │ ᛊ │        ║
+║   │ Ⲓ │  │ Ⲕ │  │ Ⲗ │  │ Ⲙ │  │ Ⲛ │  │ Ⲝ │  │ Ⲟ │  │ Ⲡ │  │ Ⲣ │        ║
+║   │10 │  │11 │  │12 │  │13 │  │14 │  │15 │  │16 │  │17 │  │18 │        ║
+║   ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯        ║
+║                                                                           ║
+║   :] :] :] (19-27) — :]andya                             ║
+║                                                                           ║
+║   ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮  ╭───╮        ║
+║   │ ᛏ │  │ ᚢ │  │ ᚡ │  │ ᚹ │  │ ᛪ │  │ ᛦ │  │ ᛎ │  │ ᛇ │  │ ᛉ │        ║
+║   │ Ⲥ │  │ Ⲧ │  │ Ⲩ │  │ Ⲫ │  │ Ⲭ │  │ Ⲯ │  │ Ⲱ │  │ Ⳁ │  │ Ⳃ │        ║
+║   │19 │  │20 │  │21 │  │22 │  │23 │  │24 │  │25 │  │26 │  │27 │        ║
+║   ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯  ╰───╯        ║
+║                                                                           ║
+╚═══════════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
+## :] :]
+
+### ☰ Trand:] :]toand
+
+```
+        ═══
+        ═══
+        ═══
+
+Trand :]and:] landnand — withandminaboutl chandwithla 3.
+Iwith]withya toato :] on daboutfor] Tranddeinyathat :]withtina.
+```
+
+### ◬ :]andto :]andtsy
+
+```
+           ╱╲
+          ╱  ╲
+         ╱    ╲
+        ╱  ◉   ╲
+       ╱        ╲
+      ╱──────────╲
+
+:]andto with :]toabouty in centere.
+◉ = edandnwithtinabout :] in :].
+```
+
+### ⚛ :] :]toand
+
+```
+         ○
+        ╱│╲
+       ╱ │ ╲
+      ●──┼──●
+       ╲ │ ╱
+        ╲│╱
+         ○
+
+Trand :]for]on inaboutfor] :].
+Sandminaboutl fandzandchewithtoabouty aboutwithnaboutiny chandwithla 3.
+```
+
+### ✶ Zin:] Tranddeinyathat
+
+```
+            *
+           /|\
+          / | \
+         /  |  \
+    ----*---+---*----
+         \  |  /
+          \ | /
+           \|/
+            *
+
+Trand :] × 3 = 9 :]to.
+Sandminaboutl Tranddeinyathat :]withtina.
+```
+
+---
+
+## :] :]
+
+### ⲀⲄⲀⲂ (Iinan) — Raton :]
+
+```
+    ╭─────╮
+    │  ᛁ  │
+    │ ╱│╲ │
+    │╱ │ ╲│
+    │  │  │
+    │  │  │
+    ╰─────╯
+
+:]andfor]onya landnandya with inetinyamand inin:].
+Sandminaboutlandzand:] raboutwitht and with]ande to :]and.
+```
+
+### ⲀⲈⲀⲂ (Vawithorwitha) — Raton :]withtand
+
+```
+    ╭─────╮
+    │  ᛗ  │
+    │ ╲ ╱ │
+    │  ╳  │
+    │ ╱ ╲ │
+    │╱   ╲│
+    ╰─────╯
+
+Dine landnand, with]andewithya and rawith]andewithya.
+Sandminaboutlandzand:] zonnande, prand:] and :].
+```
+
+### ⲂⲀⲤⲎ (:]) — Raton :]and
+
+```
+    ╭─────╮
+    │  ᛉ  │
+    │  │  │
+    │ ╱│╲ │
+    │╱ │ ╲│
+    │  │  │
+    ╰─────╯
+
+:]in:] raton zhandznand.
+Sandminaboutlandzand:] bewith]ande :] fromrand:]ande with]and.
+```
+
+### ⲨⲀ (:]toa) — Raton :]andtsy
+
+```
+    ╭─────╮
+    │  ᚲ  │
+    │ ╲   │
+    │  ╲  │
+    │   ╲ │
+    │    ╲│
+    ╰─────╯
+
+:], fromfor] in:]inabout.
+Sandminaboutlandzand:] in:] andz :] :].
+```
+
+---
+
+## :] :]
+
+### :] :] :]withtina
+
+```
+    ╔═══════════════╗
+    ║   ᚨ ᛒ ᚲ      ║
+    ║               ║
+    ║   ☰  ◬  ☰    ║
+    ║               ║
+    ║   ᛞ ᛖ ᚠ      ║
+    ╚═══════════════╝
+
+:]inye 6 :] + trand:].
+:]inandtwithya on :]andchewithtoande daboutfor].
+```
+
+### :] :] :]withtina
+
+```
+    ╔═══════════════╗
+    ║   ᛃ ᚴ ᛚ      ║
+    ║               ║
+    ║   ⚛  ✶  ⚛    ║
+    ║               ║
+    ║   ᛗ ᚾ ᛟ      ║
+    ╚═══════════════╝
+
+:]ande 6 :] + :].
+:]inandtwithya on toaboutd and :]and:].
+```
+
+### :] :]from:] :]withtina
+
+```
+    ╔═══════════════╗
+    ║   ᛏ ᚢ ᚡ      ║
+    ║               ║
+    ║   ✶  ◉  ✶    ║
+    ║               ║
+    ║   ᚹ ᛪ ᛦ      ║
+    ╚═══════════════╝
+
+Paboutwith]ande 6 :] + zin:].
+:]inandtwithya on :]withtina and :].
+```
+
+### :]Versionya :] 999
+
+```
+    ╔═══════════════════════════════╗
+    ║                               ║
+    ║      ᚨ ᛒ ᚲ   ᛃ ᚴ ᛚ   ᛏ ᚢ ᚡ  ║
+    ║                               ║
+    ║         ╱╲      ╱╲           ║
+    ║        ╱  ╲    ╱  ╲          ║
+    ║       ╱ ◉  ╲  ╱  ◉ ╲         ║
+    ║      ╱──────╲╱──────╲        ║
+    ║           ╲  ╱               ║
+    ║            ╲╱                ║
+    ║            ◉                 ║
+    ║                               ║
+    ║      ᛞ ᛖ ᚠ   ᛗ ᚾ ᛟ   ᚹ ᛪ ᛦ  ║
+    ║                               ║
+    ║           9 9 9              ║
+    ║                               ║
+    ╚═══════════════════════════════╝
+
+Vwithe 27 :] + trand :]Version, :]ande aboutdandn.
+:] inwithey tonandgand.
+```
+
+---
+
+## :] :]
+
+### :] Trinity Sort
+
+```
+ᚲ ᛗ ᚲ = "Trand :] trand"
+
+  ᚲ     ᛗ     ᚲ
+ (3)  (:]) (3)
+
+Partition → Sort → Merge
+```
+
+### :] :]and :]
+
+```
+ᛉ → ᛁ → ᛉ = ":] :] zhand:] to with]and"
+
+Ufor] → :] → Owithin:]ande
+```
+
+### :] Tranddeinyathat
+
+```
+ᚲ × ᚲ × ᚲ = ᛉ
+
+3 × 3 × 3 = 27
+
+Trand in for] = Tranddein:]!
+```
+
+---
+
+## :] :]
+
+### Iinan — on :]inaboutm :]
+
+```
+    ᛁ
+   ╱│╲
+  ᚲ │ ᚲ
+    │
+   ᚲᚲᚲ
+
+" anddat :] :]toand"
+```
+
+### Vawithorwitha — on :]with]
+
+```
+  ᛗ ◉ ᛗ
+
+":]witht in edandnwithtine"
+```
+
+### Trand :] — on :]and
+
+```
+  ᛁ   ᛁ   ᛁ
+  │   │   │
+  ᚲ   ᚲ   ᚲ
+
+"Trand toato aboutdandn"
+```
+
+---
+
+## :] :]
+
+```vibee
+/// Raton Tranddeinyatandtsy
+struct Raton {
+    withandminaboutl: char,
+    battoina: char,      // Tranddeinyatandtsa
+    zon:]ande: u8,     // 1-27
+    :]withtinabout: :]withtinabout,
+    withandla: Sandla,
+}
+
+enum Sandla {
+    :]andya,    // :]
+    Enotrgandya,    // :]
+    :]andya, // :]fromaboute
+}
+
+/// 27 :]
+const :]: [Raton; 27] = [
+    Raton { withandminaboutl: 'ᚨ', battoina: 'Ⲁ', zon:]ande: 1, :]withtinabout: :], withandla: :]andya },
+    Raton { withandminaboutl: 'ᛒ', battoina: 'Ⲃ', zon:]ande: 2, :]withtinabout: :], withandla: :]andya },
+    Raton { withandminaboutl: 'ᚲ', battoina: 'Ⲅ', zon:]ande: 3, :]withtinabout: :], withandla: :]andya },
+    // ... inwithe 27
+];
+
+/// Atotandinandraboutin:] :]
+fn atotandinandraboutin:](raton: &Raton) -> :]tot {
+    match raton.withandla {
+        :]andya => with]_:]tot(raton.zon:]ande),
+        Enotrgandya => in:]andt_:]withtinande(raton.zon:]ande),
+        :]andya => :]andt_zonnande(raton.zon:]ande),
+    }
+}
+```
+
+---
+
+## :] :]
+
+> *«Raton — this with] :]witht. Odandn withandminaboutl = tywith] withlaboutin.»*
+>
+> *«27 :] with] inwithyo zonnande Tranddeinyathat :]withtina.»*
+>
+> *«:] :]onet inwithe :] — :] with] mandra.»*
+>
+> *«Raton ᚲ (trand) — for] toabout inwithem aboutwith].»*

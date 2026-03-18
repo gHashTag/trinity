@@ -1,0 +1,87 @@
+# Trinity Codegen Adapter
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3
+
+name: codegen_adapter
+version: "1.0.0"
+language: zig
+module: codegen_adapter
+
+description: |
+  Adapter to wrap multi_lang_codegen generators as unified Plugin.
+  Supports all 42 programming languages via single Plugin interface.
+  Bridges multi_lang_codegen.zig to plugin_interface.zig.
+
+imports:
+  - plugin_interface
+  - multi_lang_codegen
+
+types:
+  CodegenPluginContext:
+    description: "Context holding codegen state"
+    fields:
+      language: Language         # Target language
+      allocator: Allocator
+      output_buffer: List<u8>    # Generated code buffer
+      last_spec_path: Option<String>
+
+  CodegenPlugin:
+    description: "Single language codegen as Plugin"
+    fields:
+      plugin: Plugin
+      context: CodegenPluginContext
+      language: Language
+
+  CodegenRequest:
+    description: "Request to generate code"
+    fields:
+      spec_path: String          # Path to .vibee spec
+      output_path: Option<String> # Optional output path
+
+  CodegenResult:
+    description: "Result of code generation"
+    fields:
+      generated_code: String
+      language: String
+      lines_count: Int
+      duration_ns: Int
+
+behaviors:
+  - name: wrap_codegen
+    given: Language from multi_lang_codegen
+    when: Creating codegen plugin for specific language
+    then: Return Plugin with codegen vtable
+
+  - name: invoke_generate
+    given: Plugin invoke with "generate" operation
+    when: Code generation requested
+    then: Call underlying codegen, return generated code
+
+  - name: get_supported_languages
+    given: CodegenAdapter
+    when: Querying available languages
+    then: Return list of all 42 supported languages
+
+  - name: create_all_codegen_plugins
+    given: PluginRegistry
+    when: Initializing system with all codegens
+    then: Create and register plugin for each language
+
+  - name: detect_language_from_spec
+    given: Spec with language field
+    when: Auto-detecting target language
+    then: Return appropriate Language enum value
+
+constants:
+  CODEGEN_CAPABILITY: "generate"
+  CODEGEN_NAMESPACE: "trinity.codegen"
+  MAX_OUTPUT_SIZE: 10485760  # 10MB max generated file
+
+theorems:
+  - id: THM-CGA-001
+    statement: "Each language has exactly one codegen plugin"
+    proof: "Plugin ID = namespace.language ensures uniqueness"
+
+  - id: THM-CGA-002
+    statement: "Codegen plugins are stateless between invocations"
+    proof: "Output buffer cleared on each generate call"

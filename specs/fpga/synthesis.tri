@@ -1,0 +1,20 @@
+[spec]
+name = "fpga_synthesis"
+version = "1.0.0"
+description = "FPGA inference pipeline for ternary language models"
+
+[interface]
+inputs = ["weights: packed ternary", "input_tokens: [ctx]u32"]
+outputs = ["logits: [vocab]fixed", "bitstream: .bit"]
+
+[invariants]
+zero_dsp = "zero DSP blocks used"
+lut_budget = "< 63K LUT (Artix-7 XC7A100T)"
+throughput = "5000 tok/s @ 100MHz"
+target = "Artix-7 (openXC7 toolchain)"
+
+[architecture]
+mac = "ternary multiply-accumulate, branchless add/sub"
+norm = "shift-based RMSNorm approximation"
+memory = "wide BRAM for weight storage"
+pipeline = "Yosys → nextpnr → bitstream"

@@ -1,0 +1,92 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# VIBEE Specification — Spec ↔ Code Sync Checker
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+# Issue #71: Detect drift between .tri specs and .zig code
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: sync_checker
+version: "1.0.0"
+language: zig
+module: sync_checker
+
+description: |
+  Spec ↔ Code Sync Checker — compares .tri spec definitions against .zig code.
+  Reports types missing in code, functions missing in code, code not in spec.
+  Exit 0 if synced, exit 1 with drift report.
+
+types:
+  SyncResult:
+    fields:
+      spec_path: String
+      code_path: String
+      spec_types: List(String)
+      code_types: List(String)
+      spec_behaviors: List(String)
+      code_functions: List(String)
+      missing_in_code: List(String)
+      missing_in_spec: List(String)
+      matched: List(String)
+      is_synced: Bool
+
+behaviors:
+  parse_spec:
+    description: "Parse .tri spec → extract type names + behavior names"
+    inputs:
+      - spec_path: String
+    output: SyncResult
+    steps:
+      - Read .tri YAML file
+      - Extract type names from types: section
+      - Extract behavior names from behaviors: section
+      - Return lists
+
+  parse_code:
+    description: "Parse .zig source → extract pub types + pub fns"
+    inputs:
+      - code_path: String
+    output: SyncResult
+    steps:
+      - Read .zig file line by line
+      - Extract pub const X = struct/enum/union
+      - Extract pub fn X names
+      - Return lists
+
+  compare:
+    description: "Compare spec vs code, find drift"
+    inputs:
+      - spec: SyncResult
+      - code: SyncResult
+    output: SyncResult
+    steps:
+      - Find items in spec but not in code (missing_in_code)
+      - Find items in code but not in spec (missing_in_spec)
+      - Find matched items
+      - Set is_synced = (missing_in_code.len == 0)
+
+  run_sync_check:
+    description: "CLI: tri sync-check <spec.tri>"
+    inputs:
+      - spec_path: String
+    output: Void
+    steps:
+      - Parse spec
+      - Find corresponding .zig file
+      - Parse code
+      - Compare
+      - Print drift report
+      - Exit 0 or 1
+
+constraints:
+  - Spec types map to pub const/struct/enum in code
+  - Spec behaviors map to pub fn in code (snake_case)
+  - Missing in code = drift (spec promises something code doesn't deliver)
+  - Extra in code = acceptable (code can have helpers)
+  - Exit code reflects sync status
+
+tests:
+  - name: "synced spec and code"
+    expected: {is_synced: true, missing_in_code: []}
+
+  - name: "missing type in code"
+    expected: {is_synced: false, missing_in_code: ["MissingType"]}

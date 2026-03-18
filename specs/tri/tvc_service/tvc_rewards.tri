@@ -1,0 +1,94 @@
+name: tvc_rewards
+version: "1.0.0"
+language: zig
+module: tvc.service.rewards
+
+description: |
+  $TRI reward calculation for TVC Semantic Service participants.
+  Different rewards for providers, contributors, and consumers.
+
+types:
+  NodeId:
+    fields:
+      bytes: List<Int> # 32 bytes
+
+  RewardEvent:
+    fields:
+      node_id: NodeId
+      role: String
+      amount_wei: Int
+      reason: RewardReason
+      timestamp: Int
+      claimed: Bool
+
+  RewardReason:
+    enum: [query_served, symbol_indexed, high_value_discovery, mesh_propagation]
+
+  RewardBalance:
+    fields:
+      node_id: NodeId
+      earned_wei: Int
+      claimed_wei: Int
+      pending_wei: Int
+      claim_count: Int
+
+  RewardConfig:
+    fields:
+      per_query_wei: Int = 1000000000000000         # 0.001 TRI
+      per_100_symbols_wei: Int = 10000000000000000  # 0.01 TRI
+      per_discovery_wei: Int = 100000000000000000   # 0.1 TRI
+      min_similarity_for_discovery: Float = 0.9
+
+  RewardStats:
+    fields:
+      total_earned_wei: Int
+      total_claimed_wei: Int
+      total_pending_wei: Int
+      total_events: Int
+      total_queries: Int
+      total_symbols: Int
+      total_discoveries: Int
+
+behaviors:
+  - name: reward_provider
+    given: Provider serves a search query
+    when: Query processed successfully
+    then: Adds 0.001 TRI to provider earnings
+
+  - name: reward_contributor
+    given: Contributor indexes code symbols
+    when: Every 100 symbols indexed
+    then: Adds 0.01 TRI to contributor earnings
+
+  - name: reward_consumer_discovery
+    given: Consumer makes high-value discovery
+    when: Search result with similarity > 0.9
+    then: Adds 0.1 TRI to consumer earnings
+
+  - name: reward_mesh_propagation
+    given: Node propagates index update
+    when: Update forwarded to peer
+    then: Adds 0.0001 TRI to earnings
+
+  - name: claim_rewards
+    given: Pending rewards available
+    when: POST /api/v1/rewards/claim
+    then: Transfers pending to claimed and resets pending
+
+  - name: calculate_pending
+    given: Reward events for node
+    when: Balance requested
+    then: Sums all unclaimed event amounts
+
+  - name: track_reward_event
+    given: Reward-worthy action
+    when: Action completes
+    then: Records RewardEvent with timestamp
+
+constants:
+  WEI_PER_TRI: 1000000000000000000
+  PER_QUERY_WEI: 1000000000000000        # 0.001 TRI
+  PER_100_SYMBOLS_WEI: 10000000000000000 # 0.01 TRI
+  PER_DISCOVERY_WEI: 100000000000000000  # 0.1 TRI
+  PER_MESH_PROPAGATION_WEI: 100000000000000  # 0.0001 TRI
+  MIN_SIMILARITY_FOR_DISCOVERY: 0.9

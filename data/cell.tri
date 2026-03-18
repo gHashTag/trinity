@@ -1,0 +1,43 @@
+[cell]
+id = "trinity.data"
+name = "Data Assets"
+version = "1.0.0"
+kind = "backend"
+path = "data"
+min_core_version = "1.0.0"
+status = "stable"
+description = "Training data, prediction registry, cell registry, and K8s templates"
+capabilities = ["data", "registry", "template"]
+files = 0
+tests = 0
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "infra"
+type = "backend"
+
+[contributes]
+commands = ["data validate"]
+exports = []
+tri_subcommands = ["math predict classify"]
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = "true"
+signature = "sha256:4b08970e1d9ec1bd8a19deabd5528fd6b2df7684e676785c7af2f6e3e77dfb5e"

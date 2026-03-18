@@ -1,0 +1,140 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRINITY SWARM — Local 5-Node Test Cluster
+# ═══════════════════════════════════════════════════════════════════════════════
+# Usage:
+#   docker compose -f deploy/docker-compose.swarm.yml up -d
+#   docker compose -f deploy/docker-compose.swarm.yml logs -f
+#   docker compose -f deploy/docker-compose.swarm.yml down
+#
+# This creates 5 interconnected storage nodes with:
+#   - DHT routing (Kademlia XOR)
+#   - Proof-of-Storage challenges
+#   - Auto-discovery via bootstrap peers
+#   - Prometheus metrics on each node
+# ═══════════════════════════════════════════════════════════════════════════════
+
+version: '3.8'
+
+x-node-common: &node-common
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile.swarm
+  restart: unless-stopped
+  networks:
+    - trinity-swarm
+
+services:
+  # ═══ Seed Node (bootstrap) ═══
+  node-seed:
+    <<: *node-common
+    hostname: node-seed
+    environment:
+      - TRINITY_PORT=9334
+      - TRINITY_DISCOVERY_PORT=9333
+      - TRINITY_METRICS_PORT=9090
+      - TRINITY_HEALTH_PORT=8081
+      - TRINITY_MAX_STORAGE_GB=10
+      - TRINITY_REGION=seed
+      - TRINITY_BOOTSTRAP_PEERS=
+    ports:
+      - "9334:9334"
+      - "9333:9333/udp"
+      - "9090:9090"
+      - "8081:8081"
+    volumes:
+      - seed-data:/data
+
+  # ═══ Node 1 (IAD region) ═══
+  node-1:
+    <<: *node-common
+    hostname: node-1
+    depends_on:
+      - node-seed
+    environment:
+      - TRINITY_PORT=9334
+      - TRINITY_DISCOVERY_PORT=9333
+      - TRINITY_METRICS_PORT=9090
+      - TRINITY_HEALTH_PORT=8081
+      - TRINITY_MAX_STORAGE_GB=10
+      - TRINITY_REGION=iad
+      - TRINITY_BOOTSTRAP_PEERS=node-seed:9333
+    ports:
+      - "9335:9334"
+      - "9091:9090"
+      - "8082:8081"
+    volumes:
+      - node1-data:/data
+
+  # ═══ Node 2 (LAX region) ═══
+  node-2:
+    <<: *node-common
+    hostname: node-2
+    depends_on:
+      - node-seed
+    environment:
+      - TRINITY_PORT=9334
+      - TRINITY_DISCOVERY_PORT=9333
+      - TRINITY_METRICS_PORT=9090
+      - TRINITY_HEALTH_PORT=8081
+      - TRINITY_MAX_STORAGE_GB=10
+      - TRINITY_REGION=lax
+      - TRINITY_BOOTSTRAP_PEERS=node-seed:9333
+    ports:
+      - "9336:9334"
+      - "9092:9090"
+      - "8083:8081"
+    volumes:
+      - node2-data:/data
+
+  # ═══ Node 3 (AMS region) ═══
+  node-3:
+    <<: *node-common
+    hostname: node-3
+    depends_on:
+      - node-seed
+    environment:
+      - TRINITY_PORT=9334
+      - TRINITY_DISCOVERY_PORT=9333
+      - TRINITY_METRICS_PORT=9090
+      - TRINITY_HEALTH_PORT=8081
+      - TRINITY_MAX_STORAGE_GB=10
+      - TRINITY_REGION=ams
+      - TRINITY_BOOTSTRAP_PEERS=node-seed:9333
+    ports:
+      - "9337:9334"
+      - "9093:9090"
+      - "8084:8081"
+    volumes:
+      - node3-data:/data
+
+  # ═══ Node 4 (SIN region) ═══
+  node-4:
+    <<: *node-common
+    hostname: node-4
+    depends_on:
+      - node-seed
+    environment:
+      - TRINITY_PORT=9334
+      - TRINITY_DISCOVERY_PORT=9333
+      - TRINITY_METRICS_PORT=9090
+      - TRINITY_HEALTH_PORT=8081
+      - TRINITY_MAX_STORAGE_GB=10
+      - TRINITY_REGION=sin
+      - TRINITY_BOOTSTRAP_PEERS=node-seed:9333
+    ports:
+      - "9338:9334"
+      - "9094:9090"
+      - "8085:8081"
+    volumes:
+      - node4-data:/data
+
+volumes:
+  seed-data:
+  node1-data:
+  node2-data:
+  node3-data:
+  node4-data:
+
+networks:
+  trinity-swarm:
+    driver: bridge

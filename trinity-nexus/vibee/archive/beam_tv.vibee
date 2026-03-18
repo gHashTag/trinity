@@ -1,0 +1,320 @@
+# beam_tv.vibee
+# BEAM TV - Video streaming platform on BEAM VM
+
+plugin:
+  name: beam_tv
+  version: 1.0.0
+  category: media
+  description: Video streaming platform with live broadcasts, VOD, and social features
+  author: VIBEE Team
+  license: MIT
+
+types:
+  # Video types
+  - name: Video
+    kind: record
+    fields:
+      - name: id
+        type: String
+      - name: title
+        type: String
+      - name: description
+        type: String
+      - name: url
+        type: String
+      - name: thumbnail
+        type: String
+      - name: duration
+        type: Int
+      - name: views
+        type: Int
+      - name: likes
+        type: Int
+      - name: created_at
+        type: String
+      - name: author_id
+        type: String
+  
+  # Channel types
+  - name: Channel
+    kind: record
+    fields:
+      - name: id
+        type: String
+      - name: name
+        type: String
+      - name: description
+        type: String
+      - name: avatar
+        type: String
+      - name: subscribers
+        type: Int
+      - name: videos_count
+        type: Int
+      - name: created_at
+        type: String
+  
+  # Stream types
+  - name: LiveStream
+    kind: record
+    fields:
+      - name: id
+        type: String
+      - name: title
+        type: String
+      - name: channel_id
+        type: String
+      - name: stream_url
+        type: String
+      - name: viewers
+        type: Int
+      - name: started_at
+        type: String
+      - name: status
+        type: StreamStatus
+  
+  - name: StreamStatus
+    kind: enum
+    variants:
+      - Live
+      - Scheduled
+      - Ended
+  
+  # Comment types
+  - name: Comment
+    kind: record
+    fields:
+      - name: id
+        type: String
+      - name: video_id
+        type: String
+      - name: user_id
+        type: String
+      - name: text
+        type: String
+      - name: likes
+        type: Int
+      - name: created_at
+        type: String
+  
+  # Playlist types
+  - name: Playlist
+    kind: record
+    fields:
+      - name: id
+        type: String
+      - name: name
+        type: String
+      - name: description
+        type: String
+      - name: video_ids
+        type: List(String)
+      - name: created_at
+        type: String
+  
+  # Error types
+  - name: BeamTVError
+    kind: enum
+    variants:
+      - name: NotFound
+        fields:
+          - name: resource
+            type: String
+      - name: Unauthorized
+      - name: InvalidInput
+        fields:
+          - name: message
+            type: String
+      - name: StreamError
+        fields:
+          - name: message
+            type: String
+
+functions:
+  # Video functions
+  - name: get_video
+    params:
+      - name: id
+        type: String
+    returns: Result(Video, BeamTVError)
+  
+  - name: list_videos
+    params:
+      - name: limit
+        type: Int
+      - name: offset
+        type: Int
+    returns: Result(List(Video), BeamTVError)
+  
+  - name: upload_video
+    params:
+      - name: title
+        type: String
+      - name: description
+        type: String
+      - name: file_path
+        type: String
+    returns: Result(Video, BeamTVError)
+  
+  - name: delete_video
+    params:
+      - name: id
+        type: String
+    returns: Result(Nil, BeamTVError)
+  
+  - name: update_video
+    params:
+      - name: id
+        type: String
+      - name: title
+        type: String
+      - name: description
+        type: String
+    returns: Result(Video, BeamTVError)
+  
+  # Channel functions
+  - name: get_channel
+    params:
+      - name: id
+        type: String
+    returns: Result(Channel, BeamTVError)
+  
+  - name: create_channel
+    params:
+      - name: name
+        type: String
+      - name: description
+        type: String
+    returns: Result(Channel, BeamTVError)
+  
+  - name: subscribe_to_channel
+    params:
+      - name: channel_id
+        type: String
+      - name: user_id
+        type: String
+    returns: Result(Nil, BeamTVError)
+  
+  # Live stream functions
+  - name: start_stream
+    params:
+      - name: title
+        type: String
+      - name: channel_id
+        type: String
+    returns: Result(LiveStream, BeamTVError)
+  
+  - name: stop_stream
+    params:
+      - name: stream_id
+        type: String
+    returns: Result(Nil, BeamTVError)
+  
+  - name: get_live_streams
+    params:
+      - name: limit
+        type: Int
+    returns: Result(List(LiveStream), BeamTVError)
+  
+  # Comment functions
+  - name: add_comment
+    params:
+      - name: video_id
+        type: String
+      - name: user_id
+        type: String
+      - name: text
+        type: String
+    returns: Result(Comment, BeamTVError)
+  
+  - name: get_comments
+    params:
+      - name: video_id
+        type: String
+      - name: limit
+        type: Int
+    returns: Result(List(Comment), BeamTVError)
+  
+  # Playlist functions
+  - name: create_playlist
+    params:
+      - name: name
+        type: String
+      - name: description
+        type: String
+    returns: Result(Playlist, BeamTVError)
+  
+  - name: add_to_playlist
+    params:
+      - name: playlist_id
+        type: String
+      - name: video_id
+        type: String
+    returns: Result(Nil, BeamTVError)
+
+behaviors:
+  - name: video_upload
+    given: user has valid credentials and video file
+    when: upload_video is called
+    then: video is uploaded and available for streaming
+  
+  - name: live_streaming
+    given: channel exists and user is authenticated
+    when: start_stream is called
+    then: live stream starts and viewers can watch
+  
+  - name: channel_subscription
+    given: channel exists and user is authenticated
+    when: subscribe_to_channel is called
+    then: user is subscribed and receives notifications
+  
+  - name: video_comments
+    given: video exists and user is authenticated
+    when: add_comment is called
+    then: comment is added and visible to other users
+  
+  - name: playlist_management
+    given: user is authenticated
+    when: create_playlist is called
+    then: playlist is created and videos can be added
+
+tests:
+  - name: test_get_video
+    when:
+      call: get_video
+      with: {id: "video123"}
+    then:
+      - result is Ok
+      - video.id == "video123"
+  
+  - name: test_upload_video
+    when:
+      call: upload_video
+      with:
+        title: "Test Video"
+        description: "Test Description"
+        file_path: "/tmp/test.mp4"
+    then:
+      - result is Ok
+      - video.title == "Test Video"
+  
+  - name: test_start_stream
+    when:
+      call: start_stream
+      with:
+        title: "Live Stream"
+        channel_id: "channel123"
+    then:
+      - result is Ok
+      - stream.status == Live
+  
+  - name: test_add_comment
+    when:
+      call: add_comment
+      with:
+        video_id: "video123"
+        user_id: "user456"
+        text: "Great video!"
+    then:
+      - result is Ok
+      - comment.text == "Great video!"

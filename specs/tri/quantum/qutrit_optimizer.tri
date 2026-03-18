@@ -1,0 +1,139 @@
+name: qutrit_optimizer
+version: "1.0.0"
+language: zig
+module: quantum.optimize
+
+types:
+  CircuitCost:
+    description: Multi-objective circuit cost
+    fields:
+      gate_count: usize
+      depth: usize
+      fidelity: f64
+      two_qutrit_count: usize
+
+  OptimizationResult:
+    description: Result of circuit synthesis
+    fields:
+      circuit: QuantumCircuit
+      cost: CircuitCost
+      synthesis_time: f64
+      method: String
+
+  GateSet:
+    description: Available gate set for synthesis
+    fields:
+      single_qutrit: Array(Gate)
+      two_qutrit: Array(Gate)
+      native_gates: Array(String)
+
+  TargetUnitary:
+    description: Target unitary to synthesize
+    fields:
+      matrix: Array(Array(Complex))
+    behaviors:
+      - name: verify
+        given: circuit
+        when: Compare U_target vs U_circuit
+        then: Returns fidelity
+
+behaviors:
+  - name: optimize_circuit
+    description: Find optimal gate decomposition
+    given:
+      - target_unitary: TargetUnitary
+      - gate_set: GateSet
+      - max_depth: usize
+      - tolerance: f64
+    when: Search for optimal circuit
+    then:
+      - Returns OptimizationResult
+      - Minimizes: gate_count, depth, maximizes fidelity
+      - Uses A* or genetic search
+
+  - name: synthesize_cglmp
+    description: Synthesize optimal CGLMP test circuit
+    given:
+      - violation_target: f64  # Target I3 value
+      - num_measurements: usize
+    when: Construct Bell test circuit
+    then:
+      - Returns OptimizationResult
+      - Golden angle rotations
+      - Maximizes I3 violation
+      - Target: I3 > 2.4
+
+  - name: simplify_circuit
+    description: Circuit simplification and peephole optimization
+    given: circuit: QuantumCircuit
+    when: Apply identities and cancellations
+    then:
+      - Returns simplified QuantumCircuit
+      - Removes adjacent inverse gates
+      - Merges consecutive rotations
+      - Cancels self-inverse gates
+
+  - name: convert_to_native_gates
+    description: Decompose to hardware-native gates
+    given:
+      - circuit: QuantumCircuit
+      - native_gates: GateSet
+    when: Gate decomposition
+    then:
+      - Returns converted QuantumCircuit
+      - All gates in native set
+      - May increase depth
+
+  - name: verify_unitary
+    description: Verify synthesized circuit matches target
+    given:
+      - target: TargetUnitary
+      - circuit: QuantumCircuit
+    when: Compute U_target† U_circuit
+    then:
+      - Returns fidelity in [0, 1]
+      - 1 = exact match
+      - Global phase ignored
+
+  - name: optimal_control
+    description: GRAPE or CRAB optimal control
+    given:
+      - target_unitary: TargetUnitary
+      - time_steps: usize
+      - max_amplitude: f64
+    when: Optimize control pulses
+    then:
+      - Returns control pulse sequence
+      - Gradient-based optimization
+      - Respects amplitude constraints
+
+  - name: variational_compilation
+    description: Compile circuit via variational search
+    given:
+      - target_unitary: TargetUnitary
+      - ansatz: QuantumCircuit
+      - learning_rate: f64
+      - iterations: usize
+    when: Gradient descent on parameters
+    then:
+      - Returns compiled QuantumCircuit
+      - Optimizes gate parameters
+      - Minimizes infidelity
+
+  - name: gate_parallelization
+    description: Find parallel gate schedule
+    given: circuit: QuantumCircuit
+    when: Topological sort with dependencies
+    then:
+      - Returns parallelized QuantumCircuit
+      - Minimizes depth
+      - Respects qutrit connectivity
+
+  - name: qutrit_kak_decomposition
+    description: Canonical decomposition for two qutrits
+    given: unitary: Tensor(9, 9)
+    when: Apply KAK decomposition
+    then:
+      - Returns gate sequence
+      - (A1 ⊗ A2) · C · (A3 ⊗ A4)
+      - C = entangling gate, A = single-qutrit

@@ -1,0 +1,53 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: connect_to_database
+    given: PostgreSQL server is running
+    when: Connection is established
+    then: Connection pool created
+  - name: connect_success
+  - name: connect_failure_retry
+  - name: persist_video
+    given: Video data
+    when: Video is saved to PostgreSQL
+    then: Video persisted with ACID guarantees
+  - name: insert_video_success
+  - name: update_video_atomic
+  - name: transaction_rollback
+  - name: query_videos
+    given: Videos in database
+    when: Query is executed
+    then: Results returned efficiently
+  - name: query_with_index
+  - name: query_pagination
+  - name: database_replication
+    given: Primary and replica databases
+    when: Write to primary
+    then: Replicated to replicas
+  - name: write_to_primary
+  - name: read_from_replica
+  - name: start_pool
+  - name: get_connection
+  - name: return_connection
+  - name: insert_video
+  - name: get_video_by_id
+  - name: update_video
+  - name: delete_video
+  - name: list_videos
+  - name: transaction
+  - name: build_query
+  - name: execute_query
+
+types:
+    description: String
+    description: Option(String)
+  connection_pool:
+
+  insert_video:
+
+  transaction:
+
+  query_with_pagination:

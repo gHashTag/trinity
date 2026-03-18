@@ -1,0 +1,40 @@
+[cell]
+id = "trinity.tools-mcp"
+name = "mcp"
+version = "0.1.0"
+kind = "library"
+path = "tools/mcp"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "MCP server infrastructure — deploy, TLS, edge config, healing"
+capabilities = ["deploy", "tls_manage", "edge_config", "healing", "fly_deploy"]
+files = 56
+tests = 72
+owner = "agent:ralph"
+
+[tags]
+scope = "mcp"
+type = "library"
+
+[contributes]
+commands = ["deploy", "heal", "tls"]
+tri_subcommands = []
+events = []
+
+[dependencies]
+trinity.needle = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+ffi = "none"
+concurrency = "yes"
+
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:39ee5dfb8df20da05b1023baff3477c56707d61eac86355abfe6415ece132571"

@@ -1,0 +1,64 @@
+# MCP Database Tools Specification
+metadata:
+  name: mcp_database
+  version: 1.0.0
+  description: Database operations MCP tools
+  author: VIBEE Team
+  license: MIT
+  generated_from: spec
+  manual_code_forbidden: true
+
+types:
+  - name: DatabaseConfig
+    fields:
+      - name: driver
+        type: String
+        required: true
+      - name: host
+        type: String
+        required: true
+      - name: database
+        type: String
+        required: true
+
+  - name: QueryResult
+    fields:
+      - name: rows
+        type: List<String>
+        default: []
+      - name: row_count
+        type: Int
+        default: 0
+
+behaviors:
+  - name: query_operations
+    functions:
+      - name: execute_query
+        params:
+          - name: config
+            type: DatabaseConfig
+          - name: sql
+            type: String
+        returns: Result<QueryResult, String>
+        test_cases:
+          - input:
+              config: {driver: "postgres", host: "localhost", database: "test"}
+              sql: "SELECT * FROM users"
+            expected:
+              Ok: {rows: [], row_count: 0}
+
+functions:
+  - name: execute_query
+    params: [config: DatabaseConfig, sql: String]
+    returns: Result<QueryResult, String>
+    behavior: query_operations
+
+documentation:
+  overview: "Database operations MCP tools"
+
+generation:
+  target_language: gleam
+  output_path: src/mcp_database.gleam
+  test_path: test/mcp_database_test.gleam
+  generate_docs: true
+  generate_tests: true

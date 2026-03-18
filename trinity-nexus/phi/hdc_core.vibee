@@ -1,0 +1,255 @@
+name: hdc_core
+version: "1.0.0"
+language: zig
+module: hdc_core
+
+description: |
+  HDC Core - iny and and[CYR:y] inyandwithand
+  with -and for withandwithI AI .
+  
+  onI [CYR:base]:
+  - Kanerva (2009): Hyperdimensional Computing
+  - BitNet b1.58 (2024): and[CYR:y] inwith {-1, 0, +1}
+  - Setun (1958): withandinonI andonI system
+  
+  and:
+  - Binding: a ⊗ b = element and
+  - Bundling: and [CYR:go]withinand
+  - Similarity: withandwith within
+  - Online Update: P ← P + η(v - P),  infromandI
+
+imports:
+  - hybrid  # HybridBigInt, Vec32i8, SIMD_WIDTH
+
+constants:
+  DEFAULT_DIM: 10240
+  LEARNING_RATE: 0.01
+  SIMILARITY_THRESHOLD: 0.7
+  QUANTIZE_POS: 0.5
+  QUANTIZE_NEG: -0.5
+  MAX_PROTOTYPES: 1000
+
+types:
+  Trit:
+    description: "withandin[CYR:ny] and[CYR:ny] [CYR:I]"
+    values:
+      - Neg: -1
+      - Zero: 0
+      - Pos: 1
+
+  HyperVector:
+    description: "and[CYR:ny] andin for HDC"
+    fields:
+      data: List<Int>
+      dim: Int
+
+  FloatAccumulator:
+    description: "Float [CYR:I] for  withnotandI"
+    fields:
+      data: List<Float>
+      dim: Int
+
+  Prototype:
+    description: "type class with [CYR:I]"
+    fields:
+      label: String
+      accumulator: FloatAccumulator
+      vector: HyperVector
+      count: Int
+
+  OnlineHDC:
+    description: " HDC system"
+    fields:
+      prototypes: Map<String, Prototype>
+      dim: Int
+      learning_rate: Float
+      samples_seen: Int
+
+  SimilarityResult:
+    description: "[CYR:l] inyandwithandI within"
+    fields:
+      similarity: Float
+      label: String
+
+behaviors:
+  # === [CYR:A] HDC [CYR:A] ===
+  
+  - name: bind
+    given: in andin a and b andonin withand
+    when: and withandand  element and
+    then: in[CYR:acts] HyperVector where c[i] = a[i] * b[i]
+
+  - name: unbind
+    given: in[CYR:Iny] in and key
+    when: in[CYR:chen]and within[CYR:Igo] values
+    then: in[CYR:acts] bind(bound, key) .. and[CYR:ny] bind withand
+
+  - name: bundle
+    given: andwith andinin
+    when: and withandand  and [CYR:go]withinand
+    then: in[CYR:acts] HyperVector with and[CYR:y] and on  andand
+
+  - name: bundle_simd
+    given: andwith andinin
+    when: SIMD-andfromandin bundling (32 and [CYR:lno])
+    then: in[CYR:acts] HyperVector with andwithl]inand Vec32i8
+
+  - name: permute
+    given: HyperVector and inandon withinand k
+    when: andwithI] within for codeandinandI within[CYR:lno]with
+    then: in[CYR:acts] HyperVector withinand[CYR:y] on k and
+
+  - name: similarity
+    given: in andin a and b
+    when: [CYR:Vy]andwithand withandwithgo] within
+    then: in[CYR:acts] float in andnot [-1, 1]
+
+  - name: similarity_simd
+    given: in andin a and b
+    when: SIMD-andfromandin calculation within
+    then: in[CYR:acts] float andwithlI] simdDotProduct
+
+  - name: hamming_distance
+    given: in andin a and b
+    when: with andwithI and
+    then: in[CYR:acts]  number
+
+  # === [CYR:A]  ===
+
+  - name: random_vector
+    given: with and seed
+    when: notandI withgo] and[CYR:go] andin
+    then: in[CYR:acts] HyperVector with in[CYR:y] withand andin
+
+  - name: zero_vector
+    given: with
+    when: and in[CYR:go] in
+    then: in[CYR:acts] HyperVector not[CYR:ny] [CYR:I]and
+
+  - name: ones_vector
+    given: with
+    when: and in from and
+    then: in[CYR:acts] HyperVector not[CYR:ny] +1
+
+  # === [CYR:A]  ===
+
+  - name: create_online_hdc
+    given: with and learning_rate
+    when: andfromandI  HDC withandwithy]
+    then: in[CYR:acts] with OnlineHDC
+
+  - name: online_update
+    given:  in,  and OnlineHDC
+    when: and on in [CYR:chen] example
+    then: in[CYR:I] [CYR:pro]type: P ← P + η(v - P)
+
+  - name: online_update_unlabeled
+    given:  in and OnlineHDC
+    when: and on not[CYR:chen] example
+    then: in[CYR:I] and [CYR:pro]type if similarity > threshold
+
+  - name: predict
+    given:  in and OnlineHDC
+    when: andwith onand [CYR:go] [CYR:pro]type
+    then: in[CYR:acts] SimilarityResult with  and inwith
+
+  - name: predict_top_k
+    given:  in, OnlineHDC and k
+    when: andwith k onand and [CYR:pro]typein
+    then: in[CYR:acts] list SimilarityResult withandin[CYR:ny]  within
+
+  # === [CYR:AA] ===
+
+  - name: quantize_to_ternary
+    given: FloatAccumulator
+    when: inand float in and withinand
+    then: in[CYR:acts] HyperVector with valuesand {-1, 0, +1}
+
+  - name: dequantize_to_float
+    given: HyperVector
+    when: inand and[CYR:go] in float for onandI
+    then: in[CYR:acts] FloatAccumulator
+
+  # === [CYR:A] ===
+
+  - name: encode_bytes
+    given: withandin in and configuration
+    when: inand in in andin
+    then: in[CYR:acts] HyperVector withinand
+
+  - name: encode_sequence
+    given: andwith tokenin
+    when: [CYR:Code]andinand within[CYR:lno]withand with and[CYR:y] binding
+    then: in[CYR:acts] HyperVector: sum(permute(token[i], i))
+
+  # ===  ===
+
+  - name: count_nonzero
+    given: HyperVector
+    when: with notiny elementin
+    then: in[CYR:acts]  number
+
+  - name: sparsity
+    given: HyperVector
+    when: [CYR:Vy]andwithand withand
+    then: in[CYR:acts]   (0.0  1.0)
+
+  - name: normalize
+    given: HyperVector
+    when: fromandI in
+    then: in[CYR:acts] in with and 
+
+tests:
+  - name: test_bind_self_inverse
+    input:
+      a: random(10000, 1)
+      b: random(10000, 2)
+    expected:
+      unbind_recovers: similarity(unbind(bind(a,b), b), a) > 0.99
+
+  - name: test_bundle_majority
+    input:
+      vectors: [all_ones, all_ones, all_neg_ones]
+    expected:
+      result: all_ones
+
+  - name: test_similarity_identical
+    input:
+      a: random(10000, 1)
+      b: same_as_a
+    expected:
+      similarity: 1.0
+
+  - name: test_similarity_orthogonal
+    input:
+      a: random(10000, 1)
+      b: random(10000, 2)
+    expected:
+      similarity_near_zero: abs(similarity) < 0.1
+
+  - name: test_permute_orthogonal
+    input:
+      v: random(10000, 1)
+      k: 10
+    expected:
+      similarity_low: similarity(v, permute(v, k)) < 0.3
+
+  - name: test_online_update_improves
+    input:
+      samples: 100 labeled
+      initial_accuracy: 0.5
+    expected:
+      final_accuracy: > 0.8
+
+  - name: test_quantization_roundtrip
+    input:
+      float_vector: [0.7, -0.3, 0.1]
+    expected:
+      ternary: [1, 0, 0]
+
+  - name: test_simd_consistency
+    input:
+      a: random(10000, 1)
+      b: random(10000, 2)
+    expected:
+      simd_equals_scalar: similarity(a,b) == similarity_simd(a,b)

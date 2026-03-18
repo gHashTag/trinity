@@ -1,0 +1,81 @@
+name: unknown
+version: ">=3.0.0"
+language: zig
+module: unknown
+
+types:
+
+types:
+
+types:
+
+types:
+
+types:
+  TelegramTool:
+    description: Available Telegram MCP tools
+
+  DialogFilter:
+    description: Filter criteria for dialogs
+    fields:
+      unread_only: Bool
+      type_filter: Option(DialogType)
+      date_from: Option(DateTime)
+      date_to: Option(DateTime)
+
+  MessageFilter:
+    description: Filter criteria for messages
+    fields:
+      from_user: Option(Int)
+      has_media: Option(Bool)
+      date_from: Option(DateTime)
+      date_to: Option(DateTime)
+
+  list_dialogs:
+    description: List Telegram dialogs with optional filtering
+
+  get_dialog_messages:
+    description: Get messages from a specific dialog
+
+  search_messages:
+    description: Search messages across dialogs
+
+  send_message:
+    description: Send a text message to a chat
+
+  execute_tool:
+    description: Execute a Telegram MCP tool
+
+behaviors:
+  - name: list_dialogs_behavior
+    given: |
+    when: |
+    then: |
+  - name: successful_list
+  - name: with_filter
+  - name: send_message_behavior
+    given: |
+    when: |
+    then: |
+  - name: successful_send
+  - name: empty_text
+  - name: list_dialogs_test
+  - name: valid_limit
+  - name: successful_list
+    given: 
+    when: 
+    then: 
+  - name: send_message_test
+  - name: valid_chat_id
+  - name: valid_text
+  - name: successful_send
+    when: 
+    then: 
+  - name: empty_text
+    when: 
+    then: 
+  - name: async_support
+  - name: caching
+  - name: rate_limiting
+  - name: List dialogs
+  - name: Send message

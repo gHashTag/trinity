@@ -1,0 +1,36 @@
+name: nexus_007_tools
+version: "1.0.0"
+language: zig
+module: trinity-tools
+
+description: >
+  NEXUS-007: Tools module migration to trinity-nexus/tools/src/.
+  CLI, REPL, DevTools (LSP, debugger, profiler), benchmarks,
+  build helpers, utilities, Maxwell agent, Phi-engine.
+
+types:
+  ToolsModule:
+    fields:
+      name: String
+      source_dirs: List<String>
+      file_count: Int
+      categories: List<String>
+
+  MigrationManifest:
+    fields:
+      source: String
+      destination: String
+      files_copied: Int
+      self_contained: Int
+      deferred: Int
+
+behaviors:
+  - name: migrate_tools_files
+    given: Source files across src/vibeec/, src/maxwell/, src/phi-engine/, benchmarks/
+    when: NEXUS-007 migration executed
+    then: Tools files copied to trinity-nexus/tools/src/
+
+  - name: verify_imports
+    given: Copied files in trinity-nexus/tools/src/
+    when: Static import analysis run
+    then: Self-contained vs external dependency report generated

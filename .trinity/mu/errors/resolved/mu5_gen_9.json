@@ -1,0 +1,12 @@
+{
+  "timestamp": "mu5_gen_9",
+  "spec": "specs/tri/cycle99_cli_integration.tri",
+  "link": 7,
+  "link_name": "code_generate",
+  "error_category": "UNDEFINED_IDENTIFIER",
+  "error_message": "  Input:  specs/tri/cycle99_cli_integration.tri\n  Output: generated/cycle99_cli_integration.zig\n  AGENT MU: Verification FAILED\n    Error: use of undeclared identifier 'Config'\n    Attempts: 2\n",
+  "error_line": 0,
+  "generated_file": "",
+  "fix_attempted": false,
+  "fix_result": ""
+}

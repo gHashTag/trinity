@@ -1,0 +1,227 @@
+name: trinity_node_ui
+version: "2.0.0"
+language: zig
+module: trinity_node_ui
+description: "Trinity Node decentralized inference dashboard — native desktop UI with sidebar navigation, stat cards, network/earnings/activity panels. SF Pro font, borderless fullscreen."
+
+imports:
+  - raylib
+
+types:
+  Screen:
+    fields:
+      value: String  # dashboard, settings, wallet, logs
+  NavItem:
+    fields:
+      icon: String
+      label: String
+      screen: Screen
+  LogLevel:
+    fields:
+      value: String  # info, warning, error_level, success
+  LogEntry:
+    fields:
+      timestamp: Int
+      level: LogLevel
+      message: String
+  Theme:
+    fields:
+      bg_window: Color      # Pure black #000000
+      bg_sidebar: Color     # #050505
+      bg_panel: Color       # #080808
+      bg_card: Color        # #0A0A0A
+      accent: Color         # #00FF88 green
+      accent_dark: Color    # #00CC66
+      golden: Color         # #FFD700
+      text_primary: Color   # Pure white
+      text_secondary: Color # #AAAAAA
+      text_muted: Color     # #888888
+      border: Color         # ~8% white on black
+  FontSizes:
+    fields:
+      title_large: Int    # 36
+      title_medium: Int   # 28
+      title_small: Int    # 24
+      header: Int         # 20
+      body: Int           # 14
+      stat_value: Int     # 32
+      hint: Int           # 12
+
+behaviors:
+  # === Window Lifecycle ===
+  - name: init_window
+    given: monitor_width, monitor_height, title="TRINITY NODE"
+    when: Application starts
+    then: SetConfigFlags(BORDERLESS_WINDOWED|VSYNC|MSAA_4X) + InitWindow at native resolution + SetTargetFPS(60)
+
+  - name: close_window
+    given: Nothing
+    when: Application exits
+    then: CloseWindow
+
+  - name: should_close
+    given: Nothing
+    when: Main loop check
+    then: Return WindowShouldClose
+
+  - name: get_screen_size
+    given: Nothing
+    when: Tracking resize
+    then: GetScreenWidth + GetScreenHeight
+
+  - name: get_monitor_size
+    given: Nothing
+    when: Getting native resolution before window
+    then: GetCurrentMonitor + GetMonitorWidth/Height
+
+  # === Font Management ===
+  - name: load_font
+    given: paths=["SFPro.ttf", "SFCompact.ttf", "Outfit-Regular.ttf", "Roboto-Regular.ttf"], size=128
+    when: Loading Retina-quality font
+    then: Try each path, LoadFontEx(128px) + SetTextureFilter(TRILINEAR)
+
+  - name: unload_font
+    given: font
+    when: Cleanup
+    then: UnloadFont if loaded
+
+  - name: set_texture_filter
+    given: texture, filter=TRILINEAR
+    when: Font loaded
+    then: High-quality mipmap filtering
+
+  # === Frame ===
+  - name: setup_frame
+    given: bg_color=BG_WINDOW
+    when: Frame begins
+    then: BeginDrawing + ClearBackground
+
+  - name: end_frame
+    given: Nothing
+    when: Frame ends
+    then: EndDrawing
+
+  - name: get_frame_time
+    given: Nothing
+    when: Animation timing
+    then: Return GetFrameTime
+
+  # === Drawing ===
+  - name: draw_text
+    given: text, x, y, size, color
+    when: Rendering with custom font
+    then: If font loaded -> DrawTextEx (spacing=size*0.05), else DrawText fallback
+
+  - name: draw_rect
+    given: x, y, w, h, color
+    when: Drawing panel backgrounds
+    then: DrawRectangle
+
+  - name: draw_rect_rounded
+    given: x, y, w, h, roundness, segments, color
+    when: Drawing stat cards and panels
+    then: DrawRectangleRounded
+
+  - name: draw_line
+    given: x1, y1, x2, y2, color
+    when: Drawing borders and separators
+    then: DrawLine
+
+  - name: draw_circle
+    given: x, y, radius, color
+    when: Drawing status indicator dots
+    then: DrawCircle
+
+  # === Title Bar ===
+  - name: render_panel
+    given: x=0, y=0, w=screen_width, h=TITLE_BAR_HEIGHT
+    when: Rendering title bar
+    then: Background + "TRINITY NODE" title + version + status dot + "Ready" text + border
+
+  # === Sidebar ===
+  - name: render_button
+    given: x=0, y=item_y, w=SIDEBAR_WIDTH, h=40, label, icon, selected
+    when: Rendering nav item
+    then: Background (selected/hover/normal) + active indicator bar + icon + label + click handler
+
+  - name: handle_mouse
+    given: nav_items, screen_state
+    when: Processing sidebar clicks
+    then: Detect nav item under cursor, update selected_nav + current_screen
+
+  # === Dashboard Screen ===
+  - name: render_badge
+    given: x, y, w, h=CARD_HEIGHT, label, value, accent_color
+    when: Rendering stat card
+    then: DrawRectangleRounded bg + accent bar + label (STAT_LABEL size) + value (TITLE_SMALL size)
+
+  - name: render_progress
+    given: x, y, w, h, title, stats
+    when: Rendering network/earnings panel
+    then: Rounded panel + title + formatted stat rows
+
+  - name: render_divider
+    given: x1, y1, x2, y2
+    when: Drawing panel borders
+    then: DrawLine with BORDER color
+
+  # === Settings Screen ===
+  - name: render_panel
+    given: x, y, w, h, fields=[port, model_path, cpu, memory]
+    when: Rendering settings form
+    then: Rounded panel + labels + input fields with values
+
+  # === Wallet Screen ===
+  - name: render_panel
+    given: x, y, w, h, address, balance, pending, total_earned
+    when: Rendering wallet info
+    then: Address panel (golden hex) + balance panel (big number) + stats
+
+  # === Logs Screen ===
+  - name: render_scroll_indicator
+    given: x, y, w, h, log_entries
+    when: Rendering log list
+    then: Rounded panel + scrollable log entries with timestamp + level prefix + message
+
+  # === Footer ===
+  - name: render_panel
+    given: x=0, y=screen_height-40, w=screen_width, h=40
+    when: Rendering footer
+    then: Background + border + "phi^2 + 1/phi^2 = 3" + "KOSCHEI IS IMMORTAL" + F11 hint
+
+  # === Fullscreen Toggle ===
+  - name: handle_keyboard
+    given: Nothing
+    when: F11 pressed
+    then: ToggleBorderlessWindowed
+
+test_cases:
+  - name: theme_matches_website
+    given: Theme colors
+    when: Accent color checked
+    then: accent.r=0x00, accent.g=0xFF, accent.b=0x88 (#00FF88)
+
+  - name: bg_is_pure_black
+    given: Theme bg_window
+    when: Checked
+    then: r=0, g=0, b=0 (pure black)
+
+  - name: nav_click_switches_screen
+    given: Mouse click on "Wallet" nav item
+    when: handle_mouse processed
+    then: current_screen = .wallet, selected_nav = 2
+
+  - name: stat_card_renders
+    given: balance="0.1234", accent=GOLDEN
+    when: render_badge called
+    then: Card drawn with accent bar + formatted value
+
+  - name: logs_ring_buffer
+    given: 101 log entries added
+    when: addLog called 101 times
+    then: log_count = 100, oldest entry dropped
+
+  - name: font_retina_quality
+    given: Font loaded at 128px base
+    when: draw_text called at size=14
+    then: DrawTextEx scales down from 128px base for crisp rendering

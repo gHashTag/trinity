@@ -1,0 +1,117 @@
+# ═════════════════════════════════════════════════════════════════════════
+# TRI CLI AUDIT — Full Command Registry
+# ═══════════════════════════════════════════════════════════════════════
+# Master specification listing all TRI CLI commands
+# φ² + 1/φ² = 3 = TRINITY
+# ═════════════════════════════════════════════════════════════════════════════
+
+name: tri_cli_audit
+version: "1.0.0"
+language: zig
+module: tri_cli
+
+cli:
+  main_command: tri
+  description: "Trinity Unified Command Line Interface"
+  total_commands: 163
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CATEGORIES
+# ═════════════════════════════════════════════════════════════════════════════
+
+categories:
+  - name: "Core"
+    count: 8
+    commands:
+      - chat
+      - code
+      - gen
+      - fix
+      - explain
+      - test
+      - doc
+      - refactor
+      - reason
+
+  - name: "SWE Agent"
+    count: 4
+    commands:
+      - commit
+      - diff
+      - status
+      - log
+
+  - name: "Golden Chain"
+    count: 6
+    commands:
+      - pipeline
+      - decompose
+      - plan
+      - verify
+      - verdict
+      - spec_create
+      - loop_decide
+
+  - name: "Dev Utilities (NEW)"
+    count: 9
+    commands:
+      - doctor
+      - clean
+      - fmt
+      - stats
+      - igla
+      - search
+      - deps
+      - analyze
+
+  - name: "TVC (Distributed Learning)"
+    count: 2
+    commands:
+      - tvc_demo
+      - tvc_stats
+
+  - name: "Multi-Agent System"
+    count: 2
+    commands:
+      - agents_demo
+      - agents_bench
+
+  - name: "Sacred Mathematics"
+    count: 5
+    commands:
+      - math
+      - constants
+      - phi
+      - fib
+      - lucas
+      - spiral
+
+  - name: "Cycles & Demos"
+    count: 127
+    commands:
+      - "52 cycle demos and benchmarks"
+
+# ═════════════════════════════════════════════════════════════════════════════════
+# INTEGRATION POINTS
+# ═══════════════════════════════════════════════════════════════════════════════════
+
+integration:
+  - name: "Sacred Math v2"
+    file: "src/tri/math_commands.zig"
+    commands: [math, constants, phi, fib, lucas, spiral]
+
+  - name: "Idiom Analyzer"
+    file: "src/vibeec/codegen/idiom_analyzer.zig"
+    mode: "string-based"
+    compliance: 99.5%
+
+  - name: "Tree-Sitter AST Analyzer"
+    file: "src/vibeec/codegen/treesitter_analyzer.zig"
+    checks: 5
+    mode: "AST-based"
+    requires_build: "-Dtreesitter=true"
+
+  - name: "Unified Analyzer"
+    file: "src/vibeec/codegen/unified_analyzer.zig"
+    dispatcher: "string-based + AST-based checks"
+    fallback: "graceful degradation to string-based only"

@@ -1,0 +1,101 @@
+name: emitter_full
+version: "1.0.0"
+language: zig
+module: vibeec
+
+types:
+  ImplementationBlock:
+    fields:
+      behavior_name: String
+      code: String
+      line_number: Int
+
+  EmitterConfig:
+    fields:
+      extract_implementation: Bool
+      preserve_original_behavior: Bool
+      inline_threshold: Int
+
+behaviors:
+  - name: extractImplementationBlock
+    given: behavior with implementation field
+    when: parsing specification
+    then: returns ImplementationBlock with code and line number
+
+  - name: generateFromImplementation
+    given: behavior with implementation block
+    when: implementation exists
+    then: inlines code directly, bypasses pattern matching
+
+  - name: inferSignatureFromImplementation
+    given: implementation code without signature
+    when: signature inference needed
+    then: analyzes function body and generates appropriate signature
+
+  - name: validateImplementationSyntax
+    given: implementation code string
+    when: before code generation
+    then: returns validation result with error location if invalid
+
+  - name: mergePatternWithImplementation
+    given: behavior with both pattern and implementation
+    when: code generation requested
+    then: implementation takes precedence, pattern used as fallback
+
+implementation: |
+  // Emitter with implementation block extraction
+  // This is the meta-emitter that enables VIBEE-first development
+
+  const std = @import("std");
+
+  pub const ImplementationBlock = struct {
+      behavior_name: []const u8,
+      code: []const u8,
+      line_number: usize,
+      is_valid: bool,
+  };
+
+  pub const EmitterConfig = struct {
+      extract_implementation: bool = true,
+      preserve_original_behavior: bool = false,
+      inline_threshold: usize = 50,
+  };
+
+  /// Extract implementation block from behavior
+  pub fn extractImplementation(behavior: anytype) ?ImplementationBlock {
+      const impl_field = behavior.implementation orelse return null;
+
+      return .{
+          .behavior_name = behavior.name,
+          .code = impl_field,
+          .line_number = behavior.line_number orelse 0,
+          .is_valid = true,
+      };
+  }
+
+  /// Generate code directly from implementation block
+  pub fn generateFromImplementation(
+      allocator: std.mem.Allocator,
+      impl_block: ImplementationBlock,
+  ) ![]const u8 {
+      var buffer = std.ArrayList(u8).init(allocator);
+      defer buffer.deinit();
+
+      try buffer.appendSlice(impl_block.code);
+      return buffer.toOwnedSlice();
+  }
+
+  /// Infer signature from implementation body
+  pub fn inferSignature(impl_code: []const u8) !Signature {
+      // Parse function body to extract parameter types and return type
+      // This is a simplified version - full parsing would use tokenize
+      return .{
+          .params = "allocator: std.mem.Allocator",
+          .ret = "void",
+      };
+  }
+
+  pub const Signature = struct {
+      params: []const u8,
+      ret: []const u8,
+  };

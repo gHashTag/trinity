@@ -1,0 +1,56 @@
+# Trinity Validator Adapter
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3
+
+name: validator_adapter
+version: "1.0.0"
+language: zig
+module: validator_adapter
+
+description: |
+  Adapter to wrap legacy BogatyrPlugin validators as unified Plugin.
+  Maintains backward compatibility with existing 33+1 validators.
+  Bridges bogatyrs_common.zig to plugin_interface.zig.
+
+imports:
+  - plugin_interface
+  - bogatyrs_common
+
+types:
+  ValidatorPluginContext:
+    description: "Context holding BogatyrPlugin reference"
+    fields:
+      bogatyr: Pointer        # *BogatyrPlugin
+      allocator: Allocator
+      last_result: Option<BogatyrResult>
+
+  AdaptedValidator:
+    description: "BogatyrPlugin wrapped as Plugin"
+    fields:
+      plugin: Plugin
+      context: ValidatorPluginContext
+
+behaviors:
+  - name: wrap_bogatyr
+    given: BogatyrPlugin from bogatyrs_common
+    when: Adapting legacy validator to unified system
+    then: Return Plugin with validator vtable
+
+  - name: invoke_validate
+    given: Plugin invoke with "validate" operation
+    when: Validation requested
+    then: Call underlying bogatyr.validate(), convert result
+
+  - name: convert_result
+    given: BogatyrResult
+    when: Returning from invoke
+    then: Convert to PluginResult format
+
+  - name: migrate_registry
+    given: BogatyrRegistry with registered validators
+    when: Migrating to unified PluginRegistry
+    then: Wrap each bogatyr and register in new registry
+
+constants:
+  VALIDATOR_CAPABILITY: "validate"
+  VALIDATOR_NAMESPACE: "trinity.validator"

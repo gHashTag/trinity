@@ -1,0 +1,48 @@
+name: middleware
+version: "1.0.0"
+language: zig
+module: middleware
+description: Reusable HTTP middleware - eliminates repetitive header setting
+
+types:
+  Middleware:
+    description: Middleware function
+    fields:
+      function: Function
+
+  SecurityConfig:
+    description: Security headers configuration
+    fields:
+      frame_options: String
+      content_type_options: String
+      xss_protection: String
+      hsts_max_age: Int
+
+  CORSConfig:
+    description: CORS configuration
+    fields:
+      allowed_origins: List<String>
+      allowed_methods: List<String>
+      allowed_headers: List<String>
+      max_age: Int
+
+behaviors:
+  - name: security_middleware
+  - name: security_headers
+  - name: config
+  - name: hsts
+  - name: max_age
+  - name: cors_middleware
+  - name: cors
+  - name: config
+  - name: logging_middleware
+  - name: logging
+  - name: request_id
+  - name: compression_middleware
+  - name: compression
+  - name: security_headers
+  - name: hsts
+  - name: cors
+  - name: logging
+  - name: request_id
+  - name: compression

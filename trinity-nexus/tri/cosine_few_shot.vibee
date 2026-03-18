@@ -1,0 +1,35 @@
+name: cosine_few_shot
+version: "1.0.0"
+language: zig
+module: cosine_few_shot
+description: "Bipolar vs ternary few-shot comparison — both achieve 100%"
+
+constants:
+  DIM: 1024
+  NUM_CLASSES: 5
+  SHOTS: 5
+  BIPOLAR_ACCURACY: 1.0
+  TERNARY_ACCURACY: 1.0
+
+types:
+  ComparisonResult:
+    fields:
+      bipolar_accuracy: Float
+      ternary_accuracy: Float
+      winner: String
+
+behaviors:
+  - name: bipolarFewShot
+    given: 5 classes with bipolar concept/instance vectors
+    when: Build 5-shot prototypes, classify 20 test items
+    then: 100% accuracy (20/20)
+
+  - name: ternaryFewShot
+    given: 5 classes with ternary concept/instance vectors
+    when: Build 5-shot prototypes, classify 20 test items
+    then: 100% accuracy (20/20)
+
+  - name: compareFewShot
+    given: Both bipolar and ternary classifiers on same task
+    when: Compare 5-shot accuracy
+    then: Tie at 100% — both encodings preserve class signal equally well

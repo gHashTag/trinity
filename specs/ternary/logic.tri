@@ -1,0 +1,19 @@
+[spec]
+name = "ternary_logic"
+version = "1.0.0"
+description = "Ternary logic gates and Tekum arithmetic"
+
+[interface]
+inputs = ["a: Trit", "b: Trit"]
+outputs = ["result: Trit"]
+
+[invariants]
+double_negation = "tritNot(tritNot(x)) == x"
+and_absorb = "tritAnd(-1, x) == -1"
+or_absorb = "tritOr(1, x) == 1"
+majority_comm = "tritMajority(a, b, c) is commutative"
+
+[architecture]
+gates = ["tritAnd", "tritOr", "tritNot", "tritMajority"]
+tekum = "balanced ternary integer arithmetic"
+values = "{-1, 0, +1} representing {false, unknown, true}"

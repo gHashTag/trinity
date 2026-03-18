@@ -1,0 +1,248 @@
+name: trinity_canvas_v2_5
+version: "2.5.0"
+language: zig
+module: trinity_canvas_v2_5
+
+# Trinity Canvas v2.5 — Real Logic Integration
+# Build on v2.4 (Mirror of Three Worlds dashboard)
+# V = n x 3^k x pi^m x phi^p x e^q
+# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+
+types:
+  CanvasLayer:
+    values:
+      - petals
+      - chat
+      - editor
+      - finder
+      - vision
+      - voice
+      - tools
+      - settings
+      - viz
+
+  FileEntry:
+    fields:
+      path: String
+      category: String
+      icon: String
+      color: String
+
+  CompileRequest:
+    fields:
+      code: String
+      language: String
+
+  CompileResult:
+    fields:
+      success: Bool
+      language: String
+      output: String
+      types: Option<Int>
+      behaviors: Option<Int>
+      fields: Option<Int>
+      lines: Option<Int>
+      errors: List<String>
+
+  ChatRequest:
+    fields:
+      message: String
+      image_path: Option<String>
+      audio_path: Option<String>
+
+  ChatResponse:
+    fields:
+      response: String
+      source: String
+      confidence: Float
+      latency_us: Int
+      tool_name: Option<String>
+      reflection: Option<String>
+      learned: Bool
+
+  MirrorStatus:
+    fields:
+      status: String
+      uptime_s: Option<Int>
+      razum: Option<MirrorRazum>
+      materiya: Option<MirrorMateriya>
+      dukh: Option<MirrorDukh>
+      logs: Option<List<MirrorLogEntry>>
+
+  MirrorRazum:
+    fields:
+      symbolic_hits: Int
+      symbolic_hit_rate: Float
+      memory_entries: Int
+      llm_loaded: Bool
+      last_routing: String
+
+  MirrorMateriya:
+    fields:
+      tvc_enabled: Bool
+      tvc_corpus_size: Int
+      tvc_hit_rate: Float
+      cache_hit_rate: Float
+
+  MirrorDukh:
+    fields:
+      total_queries: Int
+      energy_saved_wh: Float
+      groq_calls: Int
+      claude_calls: Int
+      tool_hits: Int
+      groq_success_rate: Float
+      claude_success_rate: Float
+
+  MirrorLogEntry:
+    fields:
+      ts: Int
+      src: String
+      q: String
+      conf: Float
+      lat: Int
+      learned: Option<Bool>
+
+behaviors:
+  # Editor — Real compilation (NEW in v2.5)
+  - name: compile_vibee
+    given: User writes VIBEE spec in editor
+    when: COMPILE button clicked
+    then: POST /api/compile with code+language, display structured parse result
+
+  - name: analyze_zig
+    given: User writes Zig code in editor
+    when: ANALYZE button clicked
+    then: POST /api/compile with code+zig, display AI analysis from IglaHybridChat
+
+  - name: run_js
+    given: User writes JavaScript in editor
+    when: RUN button clicked
+    then: Execute in-browser sandbox via new Function(), display console output
+
+  # Finder — Real file listing (NEW in v2.5)
+  - name: fetch_file_list
+    given: User switches to Finder layer
+    when: Layer becomes 'finder' and no backend files cached
+    then: GET /api/files returns real project file list
+
+  - name: search_files
+    given: User types in finder search
+    when: Query changes
+    then: Filter file list (backend or fallback) by path match
+
+  - name: preview_file
+    given: User clicks a file in finder results
+    when: File selected
+    then: POST /chat with 'read file {path}', show content in overlay
+
+  # Chat — Real IglaHybridChat (unchanged from v2.4)
+  - name: send_message
+    given: User types in chat input
+    when: Enter pressed
+    then: POST /chat with message, display response with source/confidence/latency
+
+  - name: clear_context
+    given: User clicks CLEAR
+    when: Clear button pressed
+    then: POST /chat/clear, reset message history
+
+  # Vision — Real drag-drop (unchanged from v2.3)
+  - name: analyze_image
+    given: User drops/pastes image or enters URL
+    when: ANALYZE button clicked
+    then: POST /chat with image_path, display vision analysis
+
+  # Voice — Real Web Audio (unchanged from v2.3)
+  - name: start_voice
+    given: User clicks microphone button
+    when: Web Audio API + SpeechRecognition activated
+    then: Real-time waveform display + transcript
+
+  - name: send_voice_to_chat
+    given: Voice transcript available
+    when: SEND TO CHAT clicked
+    then: Stop recording, switch to chat layer, populate input
+
+  # Mirror — Real dashboard (unchanged from v2.4)
+  - name: poll_mirror
+    given: User on Mirror/Tools layer
+    when: Every 2 seconds
+    then: GET /health, update RAZUM/MATERIYA/DUKH columns
+
+  - name: mirror_chat
+    given: User types in RAZUM chat input
+    when: Submit pressed
+    then: POST /chat from mirror, display inline response
+
+  - name: mirror_tool
+    given: User clicks Build/Test/Health button
+    when: Tool button pressed
+    then: POST /chat with tool command, display output
+
+  # Navigation
+  - name: switch_layer
+    given: User presses 1-9 or clicks petal
+    when: Layer key pressed or petal clicked
+    then: Wave transition to new layer
+
+  - name: command_palette
+    given: User presses Cmd+K or /
+    when: Not in text input
+    then: Open fuzzy search across all layers and viz modes
+
+  # Backend endpoints
+  - name: api_files
+    given: GET /api/files requested
+    when: Finder needs file listing
+    then: Return JSON array of project files with path/category/icon/color
+
+  - name: api_compile
+    given: POST /api/compile requested
+    when: Editor needs compilation
+    then: Parse VIBEE spec or analyze Zig code, return structured result
+
+# Critical Assessment
+# STRENGTHS:
+# - Editor VIBEE: real backend parsing replaces regex simulation
+# - Editor Zig: AI analysis via IglaHybridChat replaces offline message
+# - Finder: real file listing from backend with static fallback
+# - All 9 canvas layers work with real backend logic
+# - Chat, Vision, Voice, Mirror all already real since v2.3/v2.4
+# - Graceful degradation: all features work offline with fallback
+#
+# WEAKNESSES:
+# - File listing is curated (not dynamic fs scan) — future enhancement
+# - VIBEE compilation is parse-only (no code generation in HTTP endpoint)
+# - Zig analysis depends on LLM availability
+# - No Monaco Editor integration (using textarea)
+#
+# WHAT ACTUALLY WORKS:
+# - Chat: POST /chat → IglaHybridChat 4-level cache → real responses
+# - Editor JS: new Function() sandbox → real execution
+# - Editor VIBEE: POST /api/compile → server-side spec parsing
+# - Editor Zig: POST /api/compile → AI code analysis
+# - Finder: GET /api/files → real project listing (with fallback)
+# - Finder preview: POST /chat 'read file' → real file content
+# - Vision: drag-drop + paste + FileReader → real image analysis
+# - Voice: Web Audio API + SpeechRecognition → real transcript
+# - Mirror: GET /health every 2s → real RAZUM/MATERIYA/DUKH stats
+# - Command bar: Cmd+K fuzzy search → all 27 items
+#
+# NEXT STEPS (v2.6 CANDIDATES):
+# 1. Monaco Editor integration — real syntax highlighting + LSP
+# 2. Dynamic file scanning — std.fs.walkPath for real directory traversal
+# 3. WebSocket live updates — replace polling with real-time push
+# 4. VIBEE code generation — full spec → Zig code in editor
+# 5. File editing — save changes back through backend
+
+# TECH TREE OPTIONS:
+# A) Monaco Editor — real code editing with syntax highlighting
+#    → Import monaco-editor, replace textarea
+#    → Zig, VIBEE, JavaScript language support
+# B) WebSocket Live Updates — real-time Mirror dashboard
+#    → Replace 2s polling with WebSocket connection
+#    → Push log events, status changes instantly
+# C) Full VIBEE Code Generation — compile in editor
+#    → POST /api/compile returns generated Zig code
+#    → Display generated code in split view

@@ -1,0 +1,167 @@
+// Help Action - Responds to "that y " and similar help requests
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants// Part of Actions-based Architecture for type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}-Bot (Digital Twin)
+// Converted from infra/agent/actions/help_action.gleam → dsl/infra/agent/actions/help_action.vibee
+
+import ../eliza.vibee as eliza
+import ../intent.vibee as intent
+
+// =============================================================================
+// Help Action
+// =============================================================================
+
+@spec create_action() → Action {
+  /// Create the help action
+  given: Nothing
+  when: Setting up action registry
+  then: Returns help action definition
+}
+
+@impl {
+  Action(
+    "HELP",
+    "Responds to help requests with type {name} {
+  items: List[Item],
+  count: Int} capabilities",
+    // Similes for NLP matching
+    [
+      "that ", "that y ", "", "help",
+      "in[CYR:can]withand", "and", "that [CYR:can]"
+    ],
+    // Example messages
+    [
+      " y ?",
+      "",
+      "and  [CYR:youI] in[CYR:can]withand?",
+      "What can you do?"
+    ],
+    { validate_help(it) },
+    { handle_help(it) }
+  )
+}
+
+// =============================================================================
+// Validate Function
+// =============================================================================
+
+trace("agent.help_action.validate")
+@spec validate_help(context: ActionContext) → bool {
+  /// Validate if this action should handle the message
+  given: Action context with message
+  when: Checking for help intent
+  then: Returns true if help intent detected
+}
+
+@impl {
+  print("[HELP_ACTION] validate_help called with message: {context.message}")
+
+  let detected = intent.detect(context.message)
+  print("[HELP_ACTION] Intent detected: {intent.$(detected)}")
+
+  let result = match detected {
+    HelpIntent → true
+    _ → false
+  }
+
+  print("[HELP_ACTION] Returning: {match result { true → "TRUE" false → "FALSE" }}
+  result
+}
+
+// =============================================================================
+// Handler Function
+// =============================================================================
+
+trace("agent.help_action.handle")
+@spec handle_help(context: ActionContext) → ActionResult {
+  /// Handle help request
+  given: Action context
+  when: type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} asks for help
+  then: Returns comprehensive help message
+}
+
+@impl {
+  print("[HELP_ACTION] Handling help request")
+
+  let response = """
+ in withon[CYR:lny] AI-and VIBEE!  that I :
+
+**and and andwithy**
+- in[CYR:ate] andwithy - withand "with andwith [CYR:pro] []"
+- notandin[CYR:ate] video - withand "with inand [CYR:pro] []"
+
+**andI**
+- notandin[CYR:ate] neurophoto - withand "withnotand  [andwithand]"
+- in[CYR:ate] in[CYR:y]
+
+**with**
+- inandin[CYR:ate] with - withand "in [with]"
+- andin[CYR:ate] [CYR:go]with
+
+**andy**
+- with andy - withand "whileand andy"
+
+**Digital Twin**
+- withand type type type type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}-Bot - withand "onwithand "
+
+with onand that [CYR:you] !
+"""
+
+  eliza.success_result(response)
+}
+
+# v8.0
+
+# v10.0 - ML-Powered Migration

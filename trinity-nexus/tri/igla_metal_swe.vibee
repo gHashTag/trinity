@@ -1,0 +1,299 @@
+name: igla_metal_swe
+version: "3.0.0"
+language: zig
+module: igla_metal_swe
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IGLA METAL SWE AGENT - GPU Accelerated VSA + Coding Agent
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# PAS DAEMONS Analysis:
+#   P (Problem): CPU SIMD limited to 592 ops/s, need 1000+ for real-time coding
+#   A (Agitation): Competitors use cloud GPU ($$$), we need local green solution
+#   S (Solution): Metal GPU compute shaders + Top-K + SWE coding agent
+#
+# Targets:
+#   - Speed: 1000+ ops/s (Metal GPU)
+#   - Accuracy: 80%+ analogies
+#   - Coding: Generate valid Zig from prompts
+#
+# Architecture: M1/M2/M3 Pro/Max (Apple Silicon Metal 3)
+#
+# phi^2 + 1/phi^2 = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895
+  PHI_SQ: 2.618033988749895
+  TRINITY: 3.0
+  EMBEDDING_DIM: 300
+  METAL_THREADGROUP_SIZE: 256      # Optimal for Apple Silicon
+  METAL_MAX_THREADS: 16384         # M1 Pro GPU threads
+  TOP_K: 10
+  VOCAB_SIZE: 50000
+  BATCH_SIZE: 1024                 # GPU batch size
+  SWE_CONTEXT_DIM: 4096            # Coding context window
+
+types:
+  Trit:
+    base: i8
+    range: [-1, 0, 1]
+    description: "Ternary value for VSA operations"
+
+  TritVector:
+    fields:
+      data: List<Trit>
+      dim: Int
+      norm: Float
+    invariants:
+      - dim == 300
+      - all(t in data: t in [-1, 0, 1])
+
+  MetalBuffer:
+    fields:
+      device_ptr: UInt64           # MTLBuffer pointer
+      size: Int
+      is_gpu: Bool
+    description: "Metal GPU buffer for compute shaders"
+
+  SimilarityResult:
+    fields:
+      word_idx: Int
+      similarity: Float
+      confidence: Float
+
+  TopKResult:
+    fields:
+      results: List<SimilarityResult>
+      query_time_ns: Int
+      gpu_utilized: Bool
+
+  SWEPrompt:
+    fields:
+      instruction: String
+      context: String
+      language: String             # "zig", "python", etc.
+      expected_type: String        # "function", "struct", "test"
+
+  SWEResponse:
+    fields:
+      code: String
+      reasoning: String
+      confidence: Float
+      verified: Bool
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METAL COMPUTE KERNELS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metal_kernels:
+  # Parallel dot product across vocabulary
+  - name: kernel_dot_product_batch
+    description: "Compute dot products for batch of vectors on GPU"
+    inputs:
+      - query: TritVector[300]
+      - vocab: TritVector[VOCAB_SIZE][300]
+    output: Float[VOCAB_SIZE]
+    threadgroup_size: 256
+    threads_per_grid: VOCAB_SIZE
+    operations:
+      - "Load query to shared memory"
+      - "Each thread computes one dot product"
+      - "Reduce with SIMD shuffle"
+
+  # SIMD bind operation
+  - name: kernel_bind
+    description: "Element-wise multiply two ternary vectors"
+    inputs:
+      - a: TritVector[300]
+      - b: TritVector[300]
+    output: TritVector[300]
+    threadgroup_size: 64
+    operations:
+      - "Parallel element-wise multiply"
+      - "Clamp to [-1, 0, 1]"
+
+  # Bundle with majority vote
+  - name: kernel_bundle
+    description: "Majority vote across N vectors"
+    inputs:
+      - vectors: TritVector[N][300]
+      - count: Int
+    output: TritVector[300]
+    threadgroup_size: 64
+    operations:
+      - "Sum all vectors element-wise"
+      - "Apply sign function for majority"
+
+  # Top-K selection on GPU
+  - name: kernel_top_k_select
+    description: "Select top-K similarities from batch"
+    inputs:
+      - similarities: Float[VOCAB_SIZE]
+      - k: Int
+    output: SimilarityResult[K]
+    algorithm: "Parallel bitonic sort + selection"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CORE VSA OPERATIONS (Metal Accelerated)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # GPU-accelerated bind
+  - name: bind_metal
+    given: Two TritVectors a and b on GPU
+    when: Performing binding operation
+    then: Execute kernel_bind, return result in GPU memory
+    performance:
+      target_ns: 10
+      gpu: true
+
+  # GPU-accelerated bundle
+  - name: bundle_metal
+    given: List of TritVectors on GPU
+    when: Creating superposition
+    then: Execute kernel_bundle with majority vote
+    performance:
+      target_ns: 50
+      gpu: true
+
+  # GPU-accelerated similarity search
+  - name: similarity_search_metal
+    given: Query vector and vocabulary on GPU
+    when: Finding most similar words
+    then: |
+      1. Execute kernel_dot_product_batch for all vocab
+      2. Execute kernel_top_k_select for top-K
+      3. Return results
+    performance:
+      target_ops_per_sec: 1000
+      gpu: true
+
+  # Analogy with GPU acceleration
+  - name: analogy_metal
+    given: Words a, b, c for "b - a + c = ?"
+    when: Computing word analogy on GPU
+    then: |
+      1. Load vectors to GPU
+      2. Compute query = vec(b) - vec(a) + vec(c)
+      3. Run similarity_search_metal
+      4. Return top-K results
+    accuracy_target: 80%
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SWE CODING AGENT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # Parse coding prompt
+  - name: parse_swe_prompt
+    given: Natural language instruction
+    when: User requests code generation
+    then: |
+      1. Extract intent (function, struct, algorithm)
+      2. Identify target language (Zig default)
+      3. Extract constraints and requirements
+      4. Build SWEPrompt structure
+
+  # Generate code using VSA reasoning
+  - name: generate_code_vsa
+    given: SWEPrompt with instruction
+    when: Generating code locally
+    then: |
+      1. Encode prompt to VSA representation
+      2. Retrieve similar code patterns from memory
+      3. Compose response using bind/bundle
+      4. Decode to code string
+      5. Verify syntax
+
+  # Verify generated code
+  - name: verify_code
+    given: Generated code string
+    when: Checking correctness
+    then: |
+      1. Parse with Zig/target language parser
+      2. Check for syntax errors
+      3. Run through type checker if available
+      4. Return verification result
+
+  # Hybrid generation (VSA + LLM verifier)
+  - name: generate_code_hybrid
+    given: SWEPrompt and optional LLM endpoint
+    when: High-accuracy code generation needed
+    then: |
+      1. Generate candidates with generate_code_vsa
+      2. If LLM available, verify with external model
+      3. Return best candidate with confidence
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CODE MEMORY (for SWE agent)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+  # Store code pattern
+  - name: store_code_pattern
+    given: Code snippet and description
+    when: Learning new pattern
+    then: |
+      1. Encode code to TritVector
+      2. Encode description to TritVector
+      3. Bind code_vec with description_vec
+      4. Add to memory store
+
+  # Retrieve similar code
+  - name: retrieve_code_pattern
+    given: Description or partial code
+    when: Looking up similar patterns
+    then: |
+      1. Encode query to TritVector
+      2. Search memory with similarity_search_metal
+      3. Return top-K matches with confidence
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BENCHMARKS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+benchmarks:
+  - name: metal_speed_test
+    metric: ops_per_second
+    iterations: 1000
+    target: 1000
+
+  - name: accuracy_test
+    tests: 25
+    categories: [gender, capital, comparative, tense, plural, opposite]
+    target: 80%
+
+  - name: swe_coding_test
+    tests: 10
+    prompts:
+      - "Write Zig bind function"
+      - "Prove phi^2 + 1/phi^2 = 3"
+      - "Create TritVector struct"
+      - "Implement cosine similarity"
+      - "Write test for bundle operation"
+    target: 70%
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# METRICS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metrics:
+  speed:
+    formula: analogies_per_second
+    target: 1000
+    unit: ops/s
+
+  accuracy:
+    formula: correct_analogies / total_analogies
+    target: 0.80
+
+  gpu_utilization:
+    formula: gpu_active_time / total_time
+    target: 0.90
+
+  coding_accuracy:
+    formula: valid_code_outputs / total_prompts
+    target: 0.70
+
+  memory_efficiency:
+    formula: vocab_size * dim * 1_byte / (1024 * 1024)
+    expected: 15  # MB for 50K x 300d ternary

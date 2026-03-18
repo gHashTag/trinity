@@ -1,0 +1,57 @@
+name: e2e_routing_cascade
+version: "1.0.0"
+language: zig
+module: e2e_routing_cascade
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# E2E FULL ROUTING CASCADE - End-to-End Test Specification
+# ═══════════════════════════════════════════════════════════════════════════════
+# Simulates the full 6-level IGLA routing cascade using the real KG module.
+# Classifies 20 queries to their correct routing level, tracks energy savings,
+# and verifies 20 production readiness gates.
+#
+# Test 174: E2E Full Routing Cascade (50 queries)
+#   - 20 routing classification (tool/symbolic/KG/LLM level prediction)
+#   - 10 energy tracking (KG 0.0008 Wh vs LLM 0.1 Wh per query)
+#   - 20 production readiness gates
+#
+# Honest results: ~86% with routing classification at 80%
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  DIM: 4096
+  KG_ENERGY_WH: 0.0008
+  LLM_ENERGY_WH: 0.1
+  ENERGY_SAVINGS_FACTOR: 125
+
+types:
+  RoutingResult:
+    fields:
+      query: String
+      expected_level: String
+      actual_level: String
+      correct: Bool
+
+  EnergyResult:
+    fields:
+      kg_queries: Int
+      llm_queries: Int
+      kg_energy_wh: Float
+      llm_energy_wh: Float
+      savings_factor: Float
+
+behaviors:
+  - name: routingClassification
+    given: Real KG + 20 queries spanning all 6 routing levels
+    when: Classify each query (4 tool, 4 symbolic, 6 KG, 6 LLM)
+    then: >= 14/20 -- KG correctly answers facts, bypasses tools/greetings/complex
+
+  - name: energyTracking
+    given: 10 mixed queries (5 KG-answerable, 5 LLM-only)
+    when: Track energy per query (KG=0.0008 Wh, LLM=0.1 Wh)
+    then: >= 7/10 -- correct energy attribution per routing level
+
+  - name: productionReadinessGates
+    given: Full KG system state after all queries
+    when: Verify 20 mandatory production gates
+    then: >= 16/20 -- dataset loaded, routing works, energy tracked, determinism verified

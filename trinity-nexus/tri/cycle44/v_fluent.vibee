@@ -1,0 +1,39 @@
+# V Fluent Code Generator (MGEN-006)
+# Idiomatic V with modules, option types, and error handling
+
+name: v_fluent
+version: "1.0.0"
+language: v
+module: v_fluent
+
+types:
+  User:
+    fields:
+      id: String
+      name: String
+      email: Option<String>
+      tags: List<String>
+      active: Bool
+      score: Float
+
+  Result:
+    fields:
+      success: Bool
+      message: String
+      error_code: Option<Int>
+
+behaviors:
+  - name: create_user
+    given: valid user data
+    when: creating a new user
+    then: returns User or error
+
+  - name: process_batch
+    given: batch of items
+    when: processing concurrently
+    then: returns count or error
+
+  - name: validate
+    given: any input
+    when: validating constraints
+    then: returns error if invalid

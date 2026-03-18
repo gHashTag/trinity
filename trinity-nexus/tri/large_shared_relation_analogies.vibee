@@ -1,0 +1,41 @@
+name: large_shared_relation_analogies
+version: "1.0.0"
+language: zig
+module: large_shared_relation_analogies
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 200
+  NUM_RELATIONS: 10
+  PAIRS_PER_RELATION: 10
+
+types:
+  AnalogyBenchmarkResult:
+    fields:
+      relation_id: Int
+      forward_correct: Int
+      reverse_correct: Int
+      cross_rejected: Int
+      accuracy: Float
+    description: "Per-relation benchmark result for shared-relation analogies."
+
+behaviors:
+  - name: forwardAnalogies100
+    given: 200 entities, 10 relations x 10 pairs each in unsplit DIM=4096 memories.
+    when: Query all 100 key->value pairs (forward direction) across 10 relations
+    then: 100/100 (100%) — all shared-relation forward analogies resolve correctly
+
+  - name: reverseAnalogies100
+    given: Same 10 relation memories.
+    when: Query all 100 value->key pairs (reverse via commutative bind)
+    then: 100/100 (100%) — all reverse analogies resolve correctly
+
+  - name: crossRelationSeparation
+    given: 100 queries where entity is queried against WRONG relation memory.
+    when: Verify that cross-relation queries do NOT return the correct-relation answer
+    then: 99/100 (99%) — strong signal separation between unrelated memories
+
+  - name: perRelationAccuracy
+    given: Per-relation accuracy tracking across all 10 relations.
+    when: Verify each relation independently achieves 100% accuracy
+    then: 10/10 (100%) — all relations independently perfect

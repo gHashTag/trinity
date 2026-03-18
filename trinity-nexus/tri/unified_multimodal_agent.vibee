@@ -1,0 +1,551 @@
+# ============================================================================
+# Unified Multi-Modal Agent - Cycle 30
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: unified_multimodal_agent
+version: "1.0.0"
+language: zig
+module: unified_multimodal_agent
+
+description: |
+  Unified Multi-Modal Agent — Full local AI agent combining all modalities:
+  Text + Vision + Voice + Code + Tools in a single orchestrated pipeline.
+  Cycle 30 feature: Cross-modal reasoning, unified context, agent loop,
+  simultaneous multi-modal input/output, and autonomous tool orchestration.
+
+  Architecture:
+    Unified Agent Loop:
+      Input Router (text/image/audio/code) → Modality Detection
+      → Encoder (per-modality VSA encoding)
+      → Unified Context Fusion (cross-attention binding)
+      → Reasoning Engine (plan → act → observe → reflect)
+      → Output Router (text/speech/code/tool-call/vision-desc)
+
+    Modality Encoders:
+      Text:   Tokenize → VSA hypervector per token → sequence binding
+      Vision: Patches → feature extraction → scene hypervector
+      Voice:  Audio → MFCC → phoneme → utterance hypervector
+      Code:   AST parse → node encoding → program hypervector
+      Tool:   Schema → parameter binding → action hypervector
+
+    Agent Reasoning (ReAct pattern):
+      1. PERCEIVE: Encode all inputs into unified VSA space
+      2. THINK: Bind context + query → similarity search over knowledge
+      3. PLAN: Decompose goal into sub-tasks (VSA unbind)
+      4. ACT: Execute sub-task (generate text/code, call tool, synthesize speech)
+      5. OBSERVE: Encode result back into context
+      6. REFLECT: Compare result vs goal (cosine similarity > threshold)
+      7. LOOP or FINISH
+
+    Cross-Modal Fusion:
+      unified_context = bundle(text_hv, vision_hv, voice_hv, code_hv, tool_hv)
+      query_result = unbind(unified_context, query_hv)
+      similarity = cosineSimilarity(query_result, expected_hv)
+
+    Example Interactions:
+      "Look at image, listen to voice, write code"
+        → Vision encoder + Voice STT + Code generator → unified response
+      "Read file, explain it, speak the explanation"
+        → Tool(read) + Text(explain) + Voice(TTS) → audio output
+      "Translate voice from English to Russian and show on screen"
+        → Voice(STT_en) + Text(translate) + Voice(TTS_ru) + Text(display)
+
+  Supported Modalities:
+    - Text (chat, explanation, translation)
+    - Vision (image understanding, scene description, OCR)
+    - Voice (speech-to-text, text-to-speech, prosody)
+    - Code (generation, analysis, refactoring, execution)
+    - Tools (file I/O, shell commands, API calls, search)
+
+  Safety:
+    - Max concurrent modalities: 5
+    - Max agent loop iterations: 10
+    - Max context hypervectors: 100
+    - Timeout per action: 30 seconds
+    - All processing local (no external API calls)
+
+# ============================================================================
+# Constants
+# ============================================================================
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_MODALITIES: 5
+  MAX_AGENT_ITERATIONS: 10
+  MAX_CONTEXT_VECTORS: 100
+  ACTION_TIMEOUT_MS: 30000
+  FUSION_THRESHOLD: 0.30
+  GOAL_SIMILARITY_MIN: 0.50
+  REFLECT_IMPROVEMENT_MIN: 0.05
+  TEXT_MAX_TOKENS: 4096
+  VISION_MAX_PIXELS: 4194304
+  VOICE_MAX_DURATION_S: 60
+  CODE_MAX_LINES: 10000
+  TOOL_MAX_RESULTS: 50
+  BEAM_WIDTH: 5
+  PHONEME_COUNT_EN: 44
+  PHONEME_COUNT_RU: 42
+  MFCC_COEFFICIENTS: 13
+  PATCH_SIZE: 16
+  COLOR_BINS: 16
+
+# ============================================================================
+# Types
+# ============================================================================
+
+types:
+  Modality:
+    enum:
+      - text
+      - vision
+      - voice
+      - code
+      - tool
+
+  ModalityInput:
+    fields:
+      modality: Modality
+      raw_data: List<Int>
+      data_size: Int
+      timestamp_ms: Int
+      metadata: String
+
+  TextInput:
+    fields:
+      content: String
+      language: String
+      intent: String
+
+  VisionInput:
+    fields:
+      pixels: List<Int>
+      width: Int
+      height: Int
+      channels: Int
+      format: String
+
+  VoiceInput:
+    fields:
+      samples: List<Float>
+      sample_rate: Int
+      channels: Int
+      duration_ms: Int
+
+  CodeInput:
+    fields:
+      source: String
+      language: String
+      filename: String
+      action: String
+
+  ToolInput:
+    fields:
+      tool_name: String
+      parameters: List<String>
+      timeout_ms: Int
+
+  Hypervector:
+    fields:
+      dimension: Int
+      data: List<Int>
+
+  UnifiedContext:
+    fields:
+      text_hv: Option<Hypervector>
+      vision_hv: Option<Hypervector>
+      voice_hv: Option<Hypervector>
+      code_hv: Option<Hypervector>
+      tool_hv: Option<Hypervector>
+      fused_hv: Hypervector
+      active_modalities: List<Modality>
+      num_active: Int
+
+  AgentState:
+    enum:
+      - idle
+      - perceiving
+      - thinking
+      - planning
+      - acting
+      - observing
+      - reflecting
+      - finished
+      - error
+
+  AgentGoal:
+    fields:
+      description: String
+      target_modalities: List<Modality>
+      success_threshold: Float
+      max_iterations: Int
+
+  SubTask:
+    fields:
+      id: Int
+      description: String
+      modality: Modality
+      status: String
+      result_hv: Option<Hypervector>
+      confidence: Float
+
+  AgentPlan:
+    fields:
+      goal: AgentGoal
+      subtasks: List<SubTask>
+      current_step: Int
+      total_steps: Int
+
+  ActionResult:
+    fields:
+      modality: Modality
+      output_text: Option<String>
+      output_audio: Option<List<Float>>
+      output_code: Option<String>
+      output_tool: Option<String>
+      confidence: Float
+      duration_ms: Int
+
+  AgentIteration:
+    fields:
+      iteration: Int
+      state: AgentState
+      context: UnifiedContext
+      plan: Option<AgentPlan>
+      action: Option<ActionResult>
+      similarity_to_goal: Float
+      improvement: Float
+
+  CrossModalPipeline:
+    fields:
+      name: String
+      input_modalities: List<Modality>
+      output_modalities: List<Modality>
+      steps: List<String>
+
+  UnifiedAgentConfig:
+    fields:
+      max_iterations: Int
+      fusion_threshold: Float
+      goal_similarity_min: Float
+      enabled_modalities: List<Modality>
+      auto_reflect: Bool
+      verbose: Bool
+
+  UnifiedAgent:
+    fields:
+      config: UnifiedAgentConfig
+      state: AgentState
+      context: UnifiedContext
+      history: List<AgentIteration>
+      iteration_count: Int
+
+  AgentStats:
+    fields:
+      total_iterations: Int
+      modalities_used: List<Modality>
+      avg_similarity: Float
+      avg_confidence: Float
+      total_duration_ms: Int
+      subtasks_completed: Int
+      subtasks_total: Int
+      cross_modal_pipelines: Int
+      final_state: AgentState
+
+# ============================================================================
+# Behaviors
+# ============================================================================
+
+behaviors:
+  # --- Modality Encoding ---
+  - name: encode_text
+    given: Text input string with language tag
+    when: Agent encodes text into VSA hypervector space
+    then: Returns text hypervector (tokenize → bind sequence → normalize)
+
+  - name: encode_vision
+    given: Image pixels with width, height, channels
+    when: Agent encodes image into VSA hypervector space
+    then: Returns vision hypervector (patches → features → scene binding)
+
+  - name: encode_voice
+    given: Audio samples with sample rate
+    when: Agent encodes audio into VSA hypervector space
+    then: Returns voice hypervector (MFCC → phoneme → utterance binding)
+
+  - name: encode_code
+    given: Source code string with language
+    when: Agent encodes code into VSA hypervector space
+    then: Returns code hypervector (AST → node encoding → program binding)
+
+  - name: encode_tool
+    given: Tool name and parameters
+    when: Agent encodes tool call into VSA hypervector space
+    then: Returns tool hypervector (schema → param binding → action vector)
+
+  # --- Context Fusion ---
+  - name: fuse_context
+    given: Multiple modality hypervectors (text, vision, voice, code, tool)
+    when: Agent fuses all active modality vectors into unified context
+    then: Returns UnifiedContext with fused_hv = bundle(all active hvs)
+
+  - name: update_context
+    given: Existing UnifiedContext and new ActionResult
+    when: Agent integrates new result into running context
+    then: Returns updated UnifiedContext with re-fused hypervector
+
+  # --- Agent Reasoning (ReAct) ---
+  - name: perceive
+    given: Raw multi-modal inputs (text + image + audio + code + tool)
+    when: Agent enters PERCEIVING state
+    then: Encodes all inputs and creates initial UnifiedContext
+
+  - name: think
+    given: UnifiedContext and AgentGoal
+    when: Agent enters THINKING state
+    then: Binds context with goal, searches for relevant knowledge via VSA similarity
+
+  - name: plan
+    given: Thinking result and AgentGoal
+    when: Agent enters PLANNING state
+    then: Decomposes goal into ordered SubTasks with modality assignments
+
+  - name: act
+    given: Current SubTask from AgentPlan
+    when: Agent enters ACTING state
+    then: Executes subtask (generate text, run vision, synthesize speech, write code, call tool)
+
+  - name: observe
+    given: ActionResult from act step
+    when: Agent enters OBSERVING state
+    then: Encodes result back into context, updates UnifiedContext
+
+  - name: reflect
+    given: Updated context and original AgentGoal
+    when: Agent enters REFLECTING state
+    then: Computes similarity(context, goal), decides LOOP or FINISH
+
+  - name: run_agent_loop
+    given: Multi-modal inputs and AgentGoal
+    when: Agent starts full ReAct loop
+    then: Iterates perceive→think→plan→act→observe→reflect until goal met or max iterations
+
+  # --- Cross-Modal Pipelines ---
+  - name: pipeline_text_to_speech
+    given: Text content
+    when: Agent routes text through TTS
+    then: Returns synthesized audio
+
+  - name: pipeline_speech_to_text
+    given: Audio samples
+    when: Agent routes audio through STT
+    then: Returns transcribed text
+
+  - name: pipeline_vision_to_text
+    given: Image pixels
+    when: Agent routes image through vision encoder and describes scene
+    then: Returns text description of image
+
+  - name: pipeline_text_to_code
+    given: Text description of desired code
+    when: Agent generates code from description
+    then: Returns generated source code
+
+  - name: pipeline_voice_to_vision
+    given: Voice command about an image
+    when: Agent chains STT → vision query → TTS response
+    then: Returns spoken description of image
+
+  - name: pipeline_full_multimodal
+    given: Simultaneous text + image + audio inputs
+    when: Agent processes all modalities and produces unified response
+    then: Returns multi-modal output (text + speech + code if applicable)
+
+  # --- Agent Management ---
+  - name: create_agent
+    given: UnifiedAgentConfig
+    when: Initializing a new unified agent
+    then: Returns UnifiedAgent in idle state with empty context
+
+  - name: reset_agent
+    given: Existing UnifiedAgent
+    when: Resetting agent for new task
+    then: Clears context, history, resets to idle state
+
+  - name: get_agent_stats
+    given: UnifiedAgent after execution
+    when: Retrieving agent performance metrics
+    then: Returns AgentStats with all metrics
+
+# ============================================================================
+# Tests
+# ============================================================================
+
+tests:
+  # --- Encoding Tests ---
+  - name: encode_text_basic
+    category: encoding
+    input: "TextInput{content: 'hello world', language: 'en'}"
+    expected: "Hypervector{dimension: 10000, non-zero}"
+    description: Encode simple text to hypervector
+
+  - name: encode_text_russian
+    category: encoding
+    input: "TextInput{content: 'privet mir', language: 'ru'}"
+    expected: "Hypervector{dimension: 10000, non-zero}"
+    description: Encode Russian text to hypervector
+
+  - name: encode_vision_basic
+    category: encoding
+    input: "VisionInput{256x256 RGB image}"
+    expected: "Hypervector{dimension: 10000, non-zero}"
+    description: Encode image to hypervector
+
+  - name: encode_voice_basic
+    category: encoding
+    input: "VoiceInput{1s audio, 16kHz}"
+    expected: "Hypervector{dimension: 10000, non-zero}"
+    description: Encode audio to hypervector
+
+  - name: encode_code_basic
+    category: encoding
+    input: "CodeInput{source: 'fn main() {}', language: 'zig'}"
+    expected: "Hypervector{dimension: 10000, non-zero}"
+    description: Encode code to hypervector
+
+  - name: encode_tool_basic
+    category: encoding
+    input: "ToolInput{tool: 'read_file', params: ['config.zig']}"
+    expected: "Hypervector{dimension: 10000, non-zero}"
+    description: Encode tool call to hypervector
+
+  # --- Fusion Tests ---
+  - name: fuse_two_modalities
+    category: fusion
+    input: "text_hv + vision_hv"
+    expected: "UnifiedContext{num_active: 2, fused_hv: bundle(text, vision)}"
+    description: Fuse text and vision into unified context
+
+  - name: fuse_all_modalities
+    category: fusion
+    input: "text_hv + vision_hv + voice_hv + code_hv + tool_hv"
+    expected: "UnifiedContext{num_active: 5, fused_hv: bundle(all)}"
+    description: Fuse all 5 modalities into unified context
+
+  - name: fuse_preserves_info
+    category: fusion
+    input: "text_hv + vision_hv, then unbind text"
+    expected: "similarity(unbind(fused, text_role), text_hv) > 0.30"
+    description: Fusion preserves individual modality information
+
+  # --- Agent Loop Tests ---
+  - name: agent_perceive
+    category: agent
+    input: "text: 'describe image', image: 256x256"
+    expected: "AgentState: perceiving → context created"
+    description: Agent perceives multi-modal input
+
+  - name: agent_think
+    category: agent
+    input: "context with text+vision, goal: 'describe image'"
+    expected: "AgentState: thinking → relevant knowledge found"
+    description: Agent thinks about goal in context
+
+  - name: agent_plan
+    category: agent
+    input: "goal: 'describe image and speak it'"
+    expected: "AgentPlan{subtasks: [vision_describe, tts_speak], steps: 2}"
+    description: Agent plans multi-step task
+
+  - name: agent_act_text
+    category: agent
+    input: "SubTask: generate text description"
+    expected: "ActionResult{modality: text, confidence > 0.50}"
+    description: Agent acts on text generation subtask
+
+  - name: agent_act_voice
+    category: agent
+    input: "SubTask: synthesize speech"
+    expected: "ActionResult{modality: voice, output_audio: non-empty}"
+    description: Agent acts on TTS subtask
+
+  - name: agent_reflect_pass
+    category: agent
+    input: "similarity(context, goal) = 0.75"
+    expected: "AgentState: finished (> 0.50 threshold)"
+    description: Agent reflects and decides to finish
+
+  - name: agent_reflect_loop
+    category: agent
+    input: "similarity(context, goal) = 0.30"
+    expected: "AgentState: perceiving (< 0.50, loop back)"
+    description: Agent reflects and decides to loop
+
+  - name: agent_full_loop
+    category: agent
+    input: "text: 'what is in this image?', image: cat.png"
+    expected: "Completed in <= 3 iterations, final similarity > 0.50"
+    description: Full agent loop with text+vision
+
+  # --- Cross-Modal Pipeline Tests ---
+  - name: pipeline_text_voice
+    category: cross-modal
+    input: "text: 'hello world'"
+    expected: "audio output (synthesized speech)"
+    description: Text → TTS pipeline
+
+  - name: pipeline_voice_text
+    category: cross-modal
+    input: "audio: 'hello world' spoken"
+    expected: "text: 'hello world'"
+    description: Voice → STT pipeline
+
+  - name: pipeline_vision_text_voice
+    category: cross-modal
+    input: "image: sunset.png"
+    expected: "spoken description of sunset image"
+    description: Vision → Text → TTS pipeline
+
+  - name: pipeline_voice_code
+    category: cross-modal
+    input: "audio: 'write a sort function in zig'"
+    expected: "generated sort function source code"
+    description: Voice → STT → Code generation pipeline
+
+  - name: pipeline_voice_vision_voice
+    category: cross-modal
+    input: "audio: 'describe this image', image: chart.png"
+    expected: "spoken description of chart"
+    description: Voice + Vision → Text → TTS pipeline
+
+  - name: pipeline_full_5modal
+    category: cross-modal
+    input: "text + image + audio + code + tool request"
+    expected: "unified response across all modalities"
+    description: Full 5-modality pipeline
+
+  - name: pipeline_translate_voice
+    category: cross-modal
+    input: "audio_en: 'hello', target: 'ru'"
+    expected: "audio_ru: 'privet'"
+    description: Voice translation EN → RU pipeline
+
+  # --- Performance Tests ---
+  - name: encoding_throughput
+    category: performance
+    input: "1000 text encodings"
+    expected: "> 10000 encodings/sec"
+    description: Text encoding throughput
+
+  - name: fusion_throughput
+    category: performance
+    input: "1000 5-modal fusions"
+    expected: "> 5000 fusions/sec"
+    description: Context fusion throughput
+
+  - name: agent_loop_latency
+    category: performance
+    input: "Simple text goal, 1 iteration"
+    expected: "< 100ms total"
+    description: Single agent loop iteration latency

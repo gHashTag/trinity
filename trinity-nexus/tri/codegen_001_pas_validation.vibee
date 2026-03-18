@@ -1,0 +1,72 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# CODEGEN-001: PAS Self-Validation Code Generation
+# φ² + 1/φ² = 3 | PAS v8.21 Self-Referential Validation
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: codegen_001_pas_validation
+version: "8.21.0"
+language: zig
+module: pas_self_validation
+
+types:
+  PasValidationResult:
+    fields:
+      component: String
+      passed: Bool
+      baseline_attempts: Int
+      pas_attempts: Int
+      improvement_pct: Float
+      energy_saved_wh: Float
+
+  SacredMathValidation:
+    fields:
+      constant_name: String
+      expected: Float
+      actual: Float
+      within_tolerance: Bool
+
+behaviors:
+  - name: validate_websocket_backend
+    given: chat_server.zig with /ws/pas endpoint
+    when: Check WebSocket implementation
+    then: Endpoint exists; handles upgrade; broadcasts messages
+
+  - name: validate_websocket_client
+    given: pasWebSocket.ts client
+    when: Check reconnection logic
+    then: Auto-reconnects; handles messages correctly
+
+  - name: validate_dashboard_integration
+    given: TrinityCanvas.tsx
+    when: Check PAS widget rendering
+    then: Shows status; recommendations; progress; alerts
+
+  - name: validate_orchestrator
+    given: pas_orchestrator.zig
+    when: Run unit tests
+    then: All tests pass; sacred math valid
+
+  - name: validate_sacred_math_constants
+    given: φ, μ, χ, σ, ε, L(10)
+    when: Verify values
+    then: φ² + 1/φ² = 3; L(10) = 123; all within tolerance
+
+  - name: measure_pas_improvement
+    given: Validation task execution
+    when: Compare PAS vs baseline
+    then: PAS reduces attempts by 24%+; saves energy
+
+  - name: generate_validation_report
+    given: All validation results
+    when: PAS orchestrator requests summary
+    then: JSON report with before/after metrics
+
+  - name: validate_berry_phase_synchronization
+    given: PAS daemon Berry phase
+    when: Check phase alignment
+    then: All nodes synchronized within Δφ < 0.1
+
+  - name: validate_energy_harvesting
+    given: Completed tasks
+    when: Calculate energy saved
+    then: Energy properly credited; Trinity identity holds

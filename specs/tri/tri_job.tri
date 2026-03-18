@@ -1,0 +1,54 @@
+// TRI JOB — Async Long-Running Commands CLI (P0.3)
+// Job lifecycle management: start, status, logs, artifacts, cancel, list
+// φ² + 1/φ² = 3 = TRINITY
+
+spec tri_job {
+    import job_system.JobManager;
+    import job_system.JobState;
+    import job_artifact.ArtifactCollector;
+    import unified_output.UnifiedOutput;
+    import tri_exit_codes.ExitCode;
+
+    behavior jobStateToExitCode(state: JobState) -> ExitCode {
+        // pending/running -> timeout
+        // completed -> success
+        // failed -> job_failed
+        // cancelled -> job_failed
+    }
+
+    behavior runJobStart(allocator: Allocator, args: []str) -> void {
+        // Start async job with command + args
+        // Output JSON: job_id, command, job_state
+    }
+
+    behavior runJobStatus(allocator: Allocator, args: []str) -> void {
+        // Query job state by job_id
+        // Output JSON: job_id, job_state, start_time, end_time, exit_code
+    }
+
+    behavior runJobLogs(allocator: Allocator, args: []str) -> void {
+        // Get stdout/stderr logs for job_id
+        // Truncate at 100KB, escape JSON
+    }
+
+    behavior runJobArtifacts(allocator: Allocator, args: []str) -> void {
+        // Collect and list artifacts for job_id
+        // Output JSON: job_id, artifacts array, count
+    }
+
+    behavior runJobCancel(allocator: Allocator, args: []str) -> void {
+        // Cancel running job by job_id
+        // Output JSON: job_id, cancelled boolean
+    }
+
+    behavior runJobList(allocator: Allocator, args: []str) -> void {
+        // List all known job IDs
+        // Output JSON: jobs array, count
+    }
+
+    test "jobStateToExitCode mapping" {
+        assert(jobStateToExitCode(.completed) == .success);
+        assert(jobStateToExitCode(.failed) == .job_failed);
+        assert(jobStateToExitCode(.pending) == .timeout);
+    }
+}

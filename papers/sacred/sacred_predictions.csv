@@ -1,0 +1,21 @@
+name,formula,value,unit,reference_state,experimental_bound,falsification_criterion
+Neutrino mass hint,1×3^-1×π^-1×φ^-4×e^-1,0.0056950000,eV,untestable,KATRIN: <0.45 eV (90%CL),Decades away - KATRIN limit 0.45 eV vs prediction 0.006 eV
+Λ/ρ_P hint,1×3^-4×π^-2×φ^-4×e^-3,0.0000090860,Planck,open,see literature,see future experiments
+G hint,1×3^-3×π^-3×φ^-4×e^-3,0.0000086770,Planck,open,see literature,see future experiments
+Proton lifetime hint,3×3^4×π^3×φ^4×e^4,2819600.0000000000,years,open,Super-K: >1.6e34 yr (90%CL),see future experiments
+Σm_ν hint,3×3^6×π^-4×φ^-4×e^-4,0.0599957900,eV,untestable,DESI DR2: <0.064 eV (95%CL) / oscillations: >0.059 eV,DESI DR3/DR4 by 2027: if outside [0.055-0.065] eV
+Inflation N_e hint,8×3^2×π^-1×φ^2,60.0009200000,e-folds,within_1sigma,Planck 2018: 50-60 e-folds,see future experiments
+Tensor-to-scalar r,4×3^-2×π^-2×φ^-5×e^2,0.0300032600,—,open,BICEP/Keck: r<0.036 (95%CL),LiteBIRD by 2032: if r measured and outside [0.025-0.035]
+Neutron τ_n hint,2×3^4×π^4×φ^-6,879.4045000000,s,tension_5sigma,UCNtau: 877.82 +/-0.3 s,UCNtau/tauSPECT: if confirmed <878 s
+S_topo hint,4×3^-1×π^-4×φ^4×e^2,0.6932323000,nat,untestable,see literature,see future experiments
+N_eff hint,1×3^3×π^-1×φ^2×e^-2,3.0450910000,—,within_1sigma,DESI DR2+CMB: 3.23 +/-0.35,CMB-S4 by 2030: if outside [3.01-3.08]
+M-theory dim,4×3^-4×φ^5×e^3,11.0001000000,dim,untestable,Theoretical,see future experiments
+Bosonic string dim,2×3^-1×π×φ^-1×e^3,25.9988700000,dim,untestable,Theoretical,see future experiments
+dm2_32 hint,1×3^-3×π^-2×φ^-5×e^2,0.0025002720,eV2,within_1sigma,see literature,see future experiments
+S_8 hint,8×3^-5×π^-2×e^3,0.0669988600,—,within_1sigma,see literature,see future experiments
+QCD phase T_c,7×π×φ^2×e,156.5012000000,MeV,within_1sigma,Lattice QCD: 156.5 +/-1.5 MeV,see future experiments
+Dirac CP phase,7×3^-2×π^4×φ^-4×e^3,222.0180000000,°,open,T2K+NOvA: 195-300 deg,DUNE/HK by 2030: if outside [210-235] deg
+Dark photon X17,4×3^6×π^-1×e^-4,17.0004000000,MeV,conflict,MEG II: excluded 94%CL / PADME: 2.5sigma,MEG II final result by 2026: if definitively excluded
+Sterile neutrino,2×3^6×π^-4×φ^-3×e^-1,1.2998700000,eV,open,MicroBooNE: no evidence at 1.3 eV,see future experiments
+WIMP mass,8×3^2×π^-2×φ^4,50.0015000000,GeV,open,No direct detection,LZ/XENONnT: if 50 GeV excluded at 90%CL
+Reionization z_re,2×3^-2×π^4×φ^2×e^-2,7.6696000000,—,within_1sigma,Planck 2018: 7.67 +/-0.73,see future experiments

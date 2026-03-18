@@ -1,0 +1,248 @@
+# Benchmark Runner - Real E2E Performance Testing
+# Trinity vs Competitors (llama.cpp, vLLM, TGI)
+# Author: Dmitrii Vasilev
+# Version: 1.0.0
+
+name: benchmark_runner
+version: "1.0.0"
+language: zig
+module: benchmark_runner
+
+description: |
+  CLI tool for running real E2E benchmarks on Trinity inference engine.
+  Measures: memory usage, load time, throughput, TTFT, latency percentiles.
+  Outputs JSON/Markdown for comparison with competitors.
+
+types:
+  BenchmarkConfig:
+    fields:
+      model_path: String
+      model_name: String
+      batch_sizes: List<Int>
+      prompt_lengths: List<Int>
+      output_lengths: List<Int>
+      warmup_iterations: Int
+      test_iterations: Int
+      output_format: String
+
+  MemoryMetrics:
+    fields:
+      rss_bytes: Int
+      heap_bytes: Int
+      model_weights_bytes: Int
+      kv_cache_bytes: Int
+      peak_memory_bytes: Int
+
+  LatencyMetrics:
+    fields:
+      min_ms: Float
+      max_ms: Float
+      mean_ms: Float
+      p50_ms: Float
+      p90_ms: Float
+      p99_ms: Float
+      std_dev_ms: Float
+
+  ThroughputMetrics:
+    fields:
+      tokens_per_second: Float
+      requests_per_second: Float
+      batch_efficiency: Float
+
+  BenchmarkResult:
+    fields:
+      test_name: String
+      model_name: String
+      batch_size: Int
+      prompt_length: Int
+      output_length: Int
+      memory: Object
+      load_time_ms: Float
+      ttft_ms: Float
+      tpot_ms: Float
+      throughput: Object
+      latency: Object
+      timestamp: Timestamp
+
+  ComparisonReport:
+    fields:
+      trinity_results: List<Object>
+      competitor_results: List<Object>
+      summary: Object
+
+behaviors:
+  # Memory measurement
+  - name: measure_memory_before_load
+    given: Clean process state
+    when: Before model loading
+    then: Record baseline RSS and heap
+
+  - name: measure_memory_after_load
+    given: Model loaded into memory
+    when: After model initialization
+    then: Record model weights size and total memory
+
+  - name: measure_memory_during_inference
+    given: Active inference with KV cache
+    when: During batch processing
+    then: Record KV cache size and peak memory
+
+  # Load time measurement
+  - name: measure_load_time
+    given: Model path and config
+    when: Loading model from disk
+    then: Record wall-clock time from start to ready
+
+  - name: measure_load_time_cached
+    given: Model already in page cache
+    when: Second load attempt
+    then: Record cached load time (should be faster)
+
+  # Throughput measurement
+  - name: measure_prefill_throughput
+    given: Batch of prompts
+    when: Processing prefill phase
+    then: Record tokens/second for prompt processing
+
+  - name: measure_decode_throughput
+    given: Active generation
+    when: Generating output tokens
+    then: Record tokens/second for generation
+
+  - name: measure_batch_throughput
+    given: Multiple concurrent requests
+    when: Processing batch
+    then: Record total throughput and batch efficiency
+
+  # Latency measurement
+  - name: measure_ttft
+    given: New request arrives
+    when: First token generated
+    then: Record Time To First Token
+
+  - name: measure_tpot
+    given: Generation in progress
+    when: Each token generated
+    then: Record Time Per Output Token
+
+  - name: measure_e2e_latency
+    given: Complete request
+    when: Request finished
+    then: Record end-to-end latency
+
+  # Statistical analysis
+  - name: calculate_percentiles
+    given: Array of latency samples
+    when: Test iteration complete
+    then: Calculate p50, p90, p99 percentiles
+
+  - name: calculate_statistics
+    given: All measurements collected
+    when: Benchmark complete
+    then: Calculate mean, std_dev, min, max
+
+  # Output generation
+  - name: generate_json_report
+    given: All benchmark results
+    when: Output format is JSON
+    then: Write structured JSON file
+
+  - name: generate_markdown_report
+    given: All benchmark results
+    when: Output format is Markdown
+    then: Write formatted Markdown table
+
+  - name: generate_comparison_table
+    given: Trinity and competitor results
+    when: Comparison requested
+    then: Generate side-by-side comparison
+
+constants:
+  # Standard test configurations
+  STANDARD_BATCH_SIZES: [1, 4, 8, 16, 32]
+  STANDARD_PROMPT_LENGTHS: [128, 512, 1024, 2048]
+  STANDARD_OUTPUT_LENGTHS: [64, 128, 256, 512]
+  
+  # Warmup and iterations
+  DEFAULT_WARMUP: 3
+  DEFAULT_ITERATIONS: 10
+  
+  # Memory thresholds (bytes)
+  EXPECTED_7B_MEMORY: 1_700_000_000  # ~1.65 GB for ternary 7B
+  EXPECTED_13B_MEMORY: 3_200_000_000  # ~3.1 GB for ternary 13B
+  
+  # Performance targets
+  TARGET_LOAD_TIME_MS: 100  # 0.1 second
+  TARGET_TTFT_MS: 25  # 25ms for cached
+  TARGET_THROUGHPUT_BATCH: 300  # tok/s for batch
+
+cli:
+  name: trinity-bench
+  commands:
+    - name: run
+      description: Run full benchmark suite
+      args:
+        - name: model
+          type: String
+          required: true
+          description: Path to model file (GGUF)
+        - name: output
+          type: String
+          default: "benchmark_results.json"
+          description: Output file path
+        - name: format
+          type: String
+          default: "json"
+          description: Output format (json, markdown, both)
+        - name: iterations
+          type: Int
+          default: 10
+          description: Number of test iterations
+
+    - name: memory
+      description: Run memory-only benchmark
+      args:
+        - name: model
+          type: String
+          required: true
+
+    - name: throughput
+      description: Run throughput benchmark
+      args:
+        - name: model
+          type: String
+          required: true
+        - name: batch-size
+          type: Int
+          default: 8
+
+    - name: latency
+      description: Run latency benchmark
+      args:
+        - name: model
+          type: String
+          required: true
+        - name: prompt-length
+          type: Int
+          default: 512
+
+    - name: compare
+      description: Compare with competitor results
+      args:
+        - name: trinity-results
+          type: String
+          required: true
+        - name: competitor-results
+          type: String
+          required: true
+        - name: output
+          type: String
+          default: "comparison.md"
+
+# Test prompts for benchmarking
+test_prompts:
+  short: "Hello, how are you?"
+  medium: "Explain the concept of machine learning in simple terms."
+  long: "Write a detailed essay about the history of artificial intelligence, covering its origins, major milestones, current state, and future prospects."
+  code: "Write a Python function that implements binary search on a sorted array."
+  reasoning: "A farmer has 17 sheep. All but 9 run away. How many sheep does the farmer have left? Explain your reasoning step by step."

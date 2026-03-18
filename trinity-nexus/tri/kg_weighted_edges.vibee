@@ -1,0 +1,62 @@
+name: kg_weighted_edges
+version: "1.0.0"
+language: zig
+module: kg_weighted_edges
+description: "Level 11.14 — Capacity-based weighted edges via VSA: fewer bundled pairs produce higher similarity, encoding edge strength without explicit numeric weights"
+
+constants:
+  DIM: 1024
+  STRONG_CAP: 5
+  MEDIUM_CAP: 10
+  WEAK_CAP: 25
+
+types:
+  WeightedEdgeResult:
+    fields:
+      relation: String
+      capacity: Int
+      accuracy: Float
+      avg_sim: Float
+      vsa_weight: Float
+      description: "Result of weighted edge evaluation. Capacity controls bundle size — fewer pairs yield higher avg_sim, representing stronger semantic association. vsa_weight = 1/capacity provides scalar weight for traversal scoring."
+
+behaviors:
+  - name: capacityBasedWeight
+    given: Three relation memories with different capacities — strong (5 pairs), medium (10 pairs), weak (25 pairs) — all using DIM=1024 ternary hypervectors
+    when: Build each relation memory by bundling bind(entity, object) pairs at the given capacity, then query all stored triples and measure average cosine similarity of correct retrievals
+    then: Fewer bundled pairs produce higher average similarity — strong (cap=5) has highest avg_sim, weak (cap=25) has lowest. This similarity difference naturally encodes edge weight without explicit numeric storage.
+
+  - name: weightCorrelation
+    given: Capacity levels tested at 3, 5, 10, 15, and 25 pairs per relation memory
+    when: For each capacity level, build relation memory, query all triples, compute average similarity of correct matches
+    then: "Similarity monotonically decreasing with capacity: cap=3 ~0.48, cap=5 ~0.34, cap=10 ~0.27, cap=15 ~0.21, cap=25 ~0.15 — confirms that VSA similarity is a natural proxy for edge weight"
+
+  - name: weightedScoring
+    given: Scalar weight defined as vsa_weight = 1/capacity for each relation type
+    when: During graph traversal, compute edge score as sim × vsa_weight for candidate edges
+    then: "Strong edges (cap=5, weight=0.20) score higher than weak edges (cap=25, weight=0.04) when similarity is comparable — weighted scoring biases traversal toward strong associations"
+
+test_cases:
+  - name: test_strong_capacity_accuracy
+    input: "Build relation memory with 5 pairs, query all 5"
+    expected: "Accuracy = 100%, avg_sim >= 0.30 — low capacity enables perfect recall with high similarity"
+
+  - name: test_medium_capacity_accuracy
+    input: "Build relation memory with 10 pairs, query all 10"
+    expected: "Accuracy = 100%, avg_sim >= 0.22 — moderate capacity still achieves perfect recall"
+
+  - name: test_weak_capacity_accuracy
+    input: "Build relation memory with 25 pairs, query all 25"
+    expected: "Accuracy >= 95%, avg_sim >= 0.10 — high capacity approaches sqrt(1024) limit, slight accuracy degradation possible"
+
+  - name: test_monotonic_similarity
+    input: "Compare avg_sim across capacities 3, 5, 10, 15, 25"
+    expected: "avg_sim strictly decreasing: sim(3) > sim(5) > sim(10) > sim(15) > sim(25) — monotonic relationship confirmed"
+
+  - name: test_weight_scoring_preference
+    input: "Compare edge scores (sim x 1/capacity) for strong vs weak edges"
+    expected: "Strong edge score > weak edge score — traversal naturally prefers strong associations"
+
+  - name: test_vsa_weight_values
+    input: "Compute vsa_weight = 1/capacity for each level"
+    expected: "strong: 0.20, medium: 0.10, weak: 0.04 — weights inversely proportional to capacity"

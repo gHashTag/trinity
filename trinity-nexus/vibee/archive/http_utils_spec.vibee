@@ -1,0 +1,225 @@
+# HTTP Utilities Specification
+# HTTP client and server utilities
+
+name: http_utils
+version: 1.0.0
+description: |
+  HTTP utilities for making requests and handling responses.
+  Demonstrates spec-driven development with HTTP operations.
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+types:
+  - name: HttpRequest
+    description: HTTP request
+    fields:
+      - name: method
+        type: String
+        description: HTTP method (GET, POST, PUT, DELETE)
+      - name: url
+        type: String
+        description: Request URL
+      - name: headers
+        type: Dict(String, String)
+        description: Request headers
+      - name: body
+        type: String
+        description: Request body
+  
+  - name: HttpResponse
+    description: HTTP response
+    fields:
+      - name: status
+        type: Int
+        description: HTTP status code
+      - name: headers
+        type: Dict(String, String)
+        description: Response headers
+      - name: body
+        type: String
+        description: Response body
+      - name: duration_ms
+        type: Int
+        description: Request duration in milliseconds
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  - name: http_get
+    description: Make HTTP GET request
+    given: A URL
+    when: http_get is called
+    then: GET request is made and response is returned
+    test_cases:
+      - name: successful_get
+        input:
+          url: "https://api.example.com/users"
+        expected:
+          status: "200"
+          body: "{\"users\": []}"
+      
+      - name: not_found
+        input:
+          url: "https://api.example.com/notfound"
+        expected:
+          status: "404"
+          error: "Not Found"
+  
+  - name: http_post
+    description: Make HTTP POST request
+    given: A URL and body
+    when: http_post is called
+    then: POST request is made and response is returned
+    test_cases:
+      - name: create_user
+        input:
+          url: "https://api.example.com/users"
+          body: "{\"name\": \"John\"}"
+        expected:
+          status: "201"
+          body: "{\"id\": \"123\", \"name\": \"John\"}"
+  
+  - name: http_put
+    description: Make HTTP PUT request
+    given: A URL and body
+    when: http_put is called
+    then: PUT request is made and response is returned
+    test_cases:
+      - name: update_user
+        input:
+          url: "https://api.example.com/users/123"
+          body: "{\"name\": \"Jane\"}"
+        expected:
+          status: "200"
+          body: "{\"id\": \"123\", \"name\": \"Jane\"}"
+  
+  - name: http_delete
+    description: Make HTTP DELETE request
+    given: A URL
+    when: http_delete is called
+    then: DELETE request is made and response is returned
+    test_cases:
+      - name: delete_user
+        input:
+          url: "https://api.example.com/users/123"
+        expected:
+          status: "204"
+          body: ""
+  
+  - name: parse_json_response
+    description: Parse JSON from HTTP response
+    given: An HTTP response with JSON body
+    when: parse_json_response is called
+    then: JSON is parsed into data structure
+    test_cases:
+      - name: parse_user_json
+        input:
+          body: "{\"id\": \"123\", \"name\": \"John\"}"
+        expected:
+          id: "123"
+          name: "John"
+  
+  - name: build_query_string
+    description: Build URL query string from parameters
+    given: A dictionary of parameters
+    when: build_query_string is called
+    then: Query string is built
+    test_cases:
+      - name: simple_query
+        input:
+          params: "{\"page\": \"1\", \"limit\": \"10\"}"
+        expected:
+          query: "page=1&limit=10"
+      
+      - name: with_special_chars
+        input:
+          params: "{\"q\": \"hello world\"}"
+        expected:
+          query: "q=hello%20world"
+
+# ============================================================================
+# FUNCTIONS
+# ============================================================================
+
+functions:
+  - name: http_get
+    signature: "http_get(url: String) -> Result(HttpResponse, String)"
+    description: Make HTTP GET request
+    examples:
+      - "http_get(\"https://api.example.com/users\")"
+  
+  - name: http_get_with_headers
+    signature: "http_get_with_headers(url: String, headers: Dict(String, String)) -> Result(HttpResponse, String)"
+    description: Make GET request with custom headers
+    examples:
+      - "http_get_with_headers(url, headers)"
+  
+  - name: http_post
+    signature: "http_post(url: String, body: String) -> Result(HttpResponse, String)"
+    description: Make HTTP POST request
+    examples:
+      - "http_post(url, json_body)"
+  
+  - name: http_post_json
+    signature: "http_post_json(url: String, data: a) -> Result(HttpResponse, String)"
+    description: POST with automatic JSON encoding
+    examples:
+      - "http_post_json(url, user_data)"
+  
+  - name: http_put
+    signature: "http_put(url: String, body: String) -> Result(HttpResponse, String)"
+    description: Make HTTP PUT request
+    examples:
+      - "http_put(url, json_body)"
+  
+  - name: http_delete
+    signature: "http_delete(url: String) -> Result(HttpResponse, String)"
+    description: Make HTTP DELETE request
+    examples:
+      - "http_delete(url)"
+  
+  - name: parse_json_response
+    signature: "parse_json_response(response: HttpResponse) -> Result(a, String)"
+    description: Parse JSON from response body
+    examples:
+      - "parse_json_response(response)"
+  
+  - name: build_query_string
+    signature: "build_query_string(params: Dict(String, String)) -> String"
+    description: Build URL query string
+    examples:
+      - "build_query_string(params)"
+  
+  - name: add_query_params
+    signature: "add_query_params(url: String, params: Dict(String, String)) -> String"
+    description: Add query parameters to URL
+    examples:
+      - "add_query_params(\"https://api.com\", params)"
+
+dependencies:
+  - gleam_stdlib
+  - gleam_http
+  - gleam_httpc
+  - gleam_json
+
+metadata:
+  author: VIBEE Team
+  license: MIT
+  category: networking
+  tags:
+    - http
+    - api
+    - rest
+    - client
+  
+  features:
+    - HTTP methods (GET, POST, PUT, DELETE)
+    - Custom headers
+    - JSON encoding/decoding
+    - Query string building
+    - Error handling
+    - Timeout support

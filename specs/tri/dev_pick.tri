@@ -1,0 +1,135 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# dev_pick v1.0.0 — Smart issue selection with experience-weighted ranking
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# tri dev pick [--smart|--fifo|--priority|--random]
+# Given scan results from tri dev scan, intelligently pick the next issue.
+# --smart mode: uses experience recall to avoid past failures, boost past wins.
+#
+# Part of Trinity Tech Tree: Layer 1 [L1]
+# Dependencies: dev_scan.zig (F1), tri_experience.zig (F3)
+# Consumers: dev_loop.zig (I1)
+#
+# MNL anti-pattern: if task failed 3+ times in experience, deprioritize it.
+# This prevents the swarm from banging head against the same wall.
+#
+# phi^2 + 1/phi^2 = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: dev_pick
+version: "1.0.0"
+language: zig
+module: dev_pick
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  PickStrategy:
+    enum: [fifo, priority, smart, random]
+
+  PickReason:
+    fields:
+      factor: String          # "experience_boost", "priority_high", "mnl_penalty", "doctor_fix"
+      weight: Float32         # contribution to final score
+      detail: String          # human-readable explanation
+
+  PickResult:
+    fields:
+      chosen: String          # serialized ScanItem from dev_scan.zig
+      strategy: PickStrategy
+      final_score: Float32
+      reasons: String
+      alternatives: String  # top 3 runners-up
+      skipped_mnl: UInt32     # how many items were deprioritized by MNL pattern
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  load_scan_results:
+    description: >
+      Read .trinity/scan_results.json produced by tri dev scan.
+      If file missing or stale (>1h), trigger fresh scan first.
+      Parse into String.
+    input: allocator
+    output: String
+
+  pick_fifo:
+    description: >
+      Sort items by creation date (oldest first for issues, earliest modified
+      for files). Return first item. No intelligence, just queue order.
+    input: items String
+    output: PickResult
+
+  pick_priority:
+    description: >
+      Sort items by priority (critical > high > medium > low > backlog).
+      Within same priority, sort by fail_count ascending (less failures first).
+      Return first item.
+    input: items String
+    output: PickResult
+
+  pick_smart:
+    description: >
+      Experience-weighted ranking algorithm:
+      (1) For each item, compute base_score from priority (critical=100, high=80, medium=60, low=40, backlog=20)
+      (2) Experience boost: recall past episodes with similar keywords.
+        If similar task PASSED → boost +20. If similar FAILED → penalty -10 per failure.
+      (3) MNL pattern: if fail_count >= 3 → multiply score by 0.3 (heavy penalty)
+      (4) Doctor bonus: if item fixes doctor violation → +15
+      (5) Freshness bonus: items not attempted in >7 days → +10
+      (6) Sort by final_score descending. Return top pick with reasons.
+    input: items String, allocator
+    output: PickResult
+
+  pick_random:
+    description: >
+      Filter to items with priority <= medium. Pick random item.
+      Useful for exploration to avoid local optima.
+    input: items String
+    output: PickResult
+
+  render_pick:
+    description: >
+      Display chosen item with reasoning table. Show top 3 alternatives.
+      Show skipped_mnl count (items avoided due to repeated failures).
+      Format: "PICKED: #42 Fix VSA bind (score: 87.5)"
+      Then table of reasons with weights.
+    input: PickResult
+    output: void
+
+  run_pick_command:
+    description: >
+      CLI entrypoint for tri dev pick [--smart|--fifo|--priority|--random].
+      Default strategy: smart. Loads scan results (triggers scan if stale),
+      applies strategy, renders result. Returns exit 0.
+    input: args String, allocator
+    output: void
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REUSES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+reuses:
+  - dev_scan.zig (ScanItem, ScanResult, Priority)
+  - tri_experience.zig (keywordScore, Episode, recallEpisodes)
+  - tri_doctor.zig (HealthScore)
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  test_smart_boost_success:
+    description: Item similar to past PASS episode ranks higher than same-priority item
+  test_smart_mnl_penalty:
+    description: Item with fail_count=3 ranks below item with fail_count=0 even if higher priority
+  test_fifo_order:
+    description: FIFO returns oldest item regardless of priority
+  test_empty_scan:
+    description: Empty scan results returns error, not crash
+  test_doctor_bonus:
+    description: Doctor violation fix gets +15 boost in smart mode
