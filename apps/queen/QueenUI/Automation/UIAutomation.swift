@@ -11,10 +11,13 @@ public final class UIAutomation: ObservableObject {
     @Published public var isPuppetMode: Bool = false
     @Published public var lastAction: String = ""
     @Published public var actionLog: [String] = []
+    @Published public var gazePosition: CGPoint = .zero
+    @Published public var currentDecision: String = ""
 
     private let maxLogEntries = 5
     private var lastClickTime: Date?
     private var clickDebounce: TimeInterval = 0.1
+    private var lastGazePosition: CGPoint = .zero
 
     private init() {
         // Don't auto-detect in init - causes crash with environment variables
@@ -32,10 +35,73 @@ public final class UIAutomation: ObservableObject {
         NSLog("[UIAutomation] \(action)")
     }
 
+    // MARK: - Visual Feedback Helpers
+
+    private func notifyGaze(at point: CGPoint) {
+        gazePosition = point
+        lastGazePosition = point
+        NotificationCenter.default.post(
+            name: NSNotification.Name("AutomationGazeUpdate"),
+            object: nil,
+            userInfo: ["x": point.x, "y": point.y]
+        )
+    }
+
+    private func notifyThinkingStart() {
+        NotificationCenter.default.post(name: NSNotification.Name("AutomationThinkingStart"), object: nil)
+    }
+
+    private func notifyThinkingEnd() {
+        NotificationCenter.default.post(name: NSNotification.Name("AutomationThinkingEnd"), object: nil)
+    }
+
+    private func notifyActionStart(_ action: String) {
+        NotificationCenter.default.post(
+            name: NSNotification.Name("AutomationActionStart"),
+            object: nil,
+            userInfo: ["action": action]
+        )
+    }
+
+    private func notifyActionProgress(_ progress: Double) {
+        NotificationCenter.default.post(
+            name: NSNotification.Name("AutomationActionProgress"),
+            object: nil,
+            userInfo: ["progress": progress]
+        )
+    }
+
+    private func notifyActionEnd() {
+        NotificationCenter.default.post(name: NSNotification.Name("AutomationActionEnd"), object: nil)
+    }
+
+    private func notifyErrorCorrection(wrong: String, correct: String, at: CGPoint) {
+        NotificationCenter.default.post(
+            name: NSNotification.Name("AutomationErrorCorrection"),
+            object: nil,
+            userInfo: ["wrong": wrong, "correct": correct, "x": at.x, "y": at.y]
+        )
+    }
+
+    private func notifyDecisionPoint(at: CGPoint, label: String) {
+        NotificationCenter.default.post(
+            name: NSNotification.Name("AutomationDecisionPoint"),
+            object: nil,
+            userInfo: ["x": at.x, "y": at.y, "label": label]
+        )
+    }
+
     // MARK: - Click
 
     /// Click at specified coordinates or on named element
     public func click(element: String?, x: CGFloat?, y: CGFloat?) async -> [String: Any] {
+        notifyActionStart("CLICK")
+        notifyThinkingStart()
+
+        // Simulate gaze scan before clicking (human behavior)
+        try? await Task.sleep(nanoseconds: 150_000_000) // 150ms gaze
+        notifyThinkingEnd()
+
         // Determine click position
         var targetX: CGFloat?
         var targetY: CGFloat?
@@ -55,14 +121,20 @@ public final class UIAutomation: ObservableObject {
                 ? "Element '\(element!)' not found"
                 : "No coordinates provided"
             logAction("❌ Click failed: \(error)")
+            notifyActionEnd()
             return ["success": false, "error": error]
         }
+
+        // Show gaze at target before click
+        notifyGaze(at: CGPoint(x: clickX, y: clickY))
 
         // Debounce rapid clicks
         if let last = lastClickTime,
            Date().timeIntervalSince(last) < clickDebounce {
             try? await Task.sleep(nanoseconds: UInt64(clickDebounce * 1_000_000_000))
         }
+
+        notifyActionProgress(0.5)
 
         // Perform click via CGEvent
         let mainScreen = NSScreen.main ?? NSScreen.screens.first
@@ -72,6 +144,7 @@ public final class UIAutomation: ObservableObject {
         guard let eventDown = CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: CGPoint(x: clickX, y: flippedY), mouseButton: .left),
               let eventUp = CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: CGPoint(x: clickX, y: flippedY), mouseButton: .left) else {
             logAction("❌ Click failed: CGEvent creation failed")
+            notifyActionEnd()
             return ["success": false, "error": "CGEvent creation failed"]
         }
 
@@ -81,9 +154,12 @@ public final class UIAutomation: ObservableObject {
         try? await Task.sleep(nanoseconds: 10_000_000) // 0.01s
         eventUp.post(tap: .cghidEventTap)
 
+        notifyActionProgress(1.0)
+
         lastClickTime = Date()
         let msg = element != nil ? "Clicked '\(element!)'" : "Clicked at (\(clickX), \(clickY))"
         logAction("🖱️ \(msg)")
+        notifyActionEnd()
         return [
             "success": true,
             "x": clickX,
@@ -101,19 +177,35 @@ public final class UIAutomation: ObservableObject {
             return ["success": false, "error": "No text provided"]
         }
 
+        notifyActionStart("TYPE")
+
+        // Simulate "finding" the field (gaze behavior)
+        notifyThinkingStart()
+        try? await Task.sleep(nanoseconds: 200_000_000) // 200ms decision time
+        notifyThinkingEnd()
+
         // If element specified, click it first
+        let clickPos: CGPoint
         if let element = element {
             let clickResult = await click(element: element, x: nil, y: nil)
             if !(clickResult["success"] as? Bool ?? false) {
+                notifyActionEnd()
                 return clickResult
             }
             try? await Task.sleep(nanoseconds: 50_000_000) // 0.05s
+            clickPos = CGPoint(x: clickResult["x"] as? CGFloat ?? 0, y: clickResult["y"] as? CGFloat ?? 0)
+        } else {
+            clickPos = lastGazePosition
         }
+
+        notifyActionProgress(0.3)
 
         // Copy to clipboard
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
+
+        notifyActionProgress(0.6)
 
         // Simulate Cmd+V
         guard let cmdDown = CGEvent(keyboardEventSource: nil, virtualKey: 0x37, keyDown: true),
@@ -121,6 +213,7 @@ public final class UIAutomation: ObservableObject {
               let vUp = CGEvent(keyboardEventSource: nil, virtualKey: 0x09, keyDown: false),
               let cmdUp = CGEvent(keyboardEventSource: nil, virtualKey: 0x37, keyDown: false) else {
             logAction("❌ Type failed: CGEvent creation failed")
+            notifyActionEnd()
             return ["success": false, "error": "CGEvent creation failed"]
         }
 
@@ -134,8 +227,11 @@ public final class UIAutomation: ObservableObject {
         vUp.post(tap: .cghidEventTap)
         cmdUp.post(tap: .cghidEventTap)
 
+        notifyActionProgress(1.0)
+
         let msg = element != nil ? "Typed '\(text)' into '\(element!)'" : "Typed '\(text)'"
         logAction("⌨️ \(msg)")
+        notifyActionEnd()
         return [
             "success": true,
             "text": text,
@@ -151,6 +247,16 @@ public final class UIAutomation: ObservableObject {
             logAction("❌ Navigate failed: no screen specified")
             return ["success": false, "error": "No screen specified"]
         }
+
+        notifyActionStart("NAVIGATE")
+        notifyThinkingStart()
+
+        // Simulate decision time for navigation choice
+        try? await Task.sleep(nanoseconds: 300_000_000) // 300ms decision
+        notifyThinkingEnd()
+
+        // Show decision point marker at navigation area
+        notifyDecisionPoint(at: CGPoint(x: 100, y: 300), label: "NAV: \(screenName.uppercased())")
 
         // Map screen names to notifications
         let notification: Notification.Name?
@@ -177,18 +283,25 @@ public final class UIAutomation: ObservableObject {
             notification = nil
         }
 
+        notifyActionProgress(0.5)
+
         if let notification = notification {
             NotificationCenter.default.post(name: notification, object: nil)
             logAction("🧭 Navigated to \(screenName)")
+            notifyActionProgress(1.0)
+            notifyActionEnd()
             return ["success": true, "screen": screenName]
         } else if screenName.lowercased() == "chat" || screenName.lowercased() == "home" {
             // Go back to main menu
             NotificationCenter.default.post(name: .navigateToMain, object: nil)
             logAction("🧭 Navigated to main menu")
+            notifyActionProgress(1.0)
+            notifyActionEnd()
             return ["success": true, "screen": "main"]
         }
 
         logAction("❌ Navigate failed: unknown screen '\(screenName)'")
+        notifyActionEnd()
         return ["success": false, "error": "Unknown screen '\(screenName)'"]
     }
 

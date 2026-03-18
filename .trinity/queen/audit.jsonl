@@ -73,3 +73,27 @@ Changes not staged for commit:
 {"ts":1773855138,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
 {"ts":1773855258,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
 {"ts":1773855260,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773855437,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773855438,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773855441,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773855441,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773855693,"kind":"auto","action":"experience save","verdict":"OK","success":true,"detail":"[31mError: --task is required[0m
+"}
+{"ts":1773855696,"kind":"auto-action","action":"notify","verdict":"OK","success":true,"detail":"Celebrating farm progress"}
+{"ts":1773855744,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773855745,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773855815,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773855816,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773855873,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773855877,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773855884,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856032,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856037,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856043,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856049,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773856050,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773856057,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856061,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856066,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856071,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
+{"ts":1773856072,"kind":"auto-denied","action":"doctor quick","verdict":"level exceeds max_auto_level","success":false,"detail":"level exceeds max_auto_level"}
