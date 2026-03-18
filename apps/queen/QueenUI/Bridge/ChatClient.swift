@@ -418,7 +418,7 @@ class ChatClient: ObservableObject {
 
     private var queueURL: URL {
         let appSupport = FileManager.default
-            .urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         return appSupport.appendingPathComponent("QueenUI/offline_queue.json")
     }
 
