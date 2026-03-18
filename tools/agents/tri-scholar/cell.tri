@@ -28,5 +28,9 @@ process = "none"
 ffi = "none"
 concurrency = "none"
 
+
+[biology]
+system = "brain"
+organ = "hippocampus"
 [security]
 signed = "true"

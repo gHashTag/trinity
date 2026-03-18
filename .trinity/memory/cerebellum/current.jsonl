@@ -4,3 +4,4 @@
 {"id":"mem_1773803101_cerebellum_acc4c36d","agent":"cerebellum","kind":"observation","ts":1773803101,"tags":[],"ttl":2592000,"data":{},"summary":"cell health: 116/116 total (A:105 B:11 C:0 F:0) | cycles: 0 | weakest: trinity.orchestration (72)"}
 {"id":"mem_1773803160_cerebellum_acc4c3a8","agent":"cerebellum","kind":"observation","ts":1773803160,"tags":[],"ttl":2592000,"data":{},"summary":"cell health: 116/116 total (A:105 B:11 C:0 F:0) | cycles: 0 | weakest: trinity.orchestration (72)"}
 {"id":"mem_1773803355_cerebellum_acc4c26b","agent":"cerebellum","kind":"observation","ts":1773803355,"tags":[],"ttl":2592000,"data":{},"summary":"cell health: 116/116 total (A:105 B:11 C:0 F:0) | cycles: 0 | weakest: trinity.orchestration (72)"}
+{"id":"mem_1773803759_cerebellum_acc4cddf","agent":"cerebellum","kind":"error","ts":1773803759,"tags":[],"ttl":1209600,"data":{},"summary":"orphan cells: 27 cell(s) have no dependents"}

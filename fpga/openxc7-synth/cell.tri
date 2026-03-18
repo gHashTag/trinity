@@ -46,6 +46,9 @@ inputs = ["weights: packed ternary", "input_tokens: [ctx]u32"]
 outputs = ["logits: [vocab]fixed", "bitstream: .bit"]
 invariants = ["zero DSP blocks", "LUT < 63K (Artix-7)", "5000 tok/s @ 100MHz"]
 
+
+[biology]
+system = "body"
 [security]
 signed = true
 signature = "sha256:58b08f989423d39d596e77cccfb5c4191b5525379f857423bd19846796569158"
