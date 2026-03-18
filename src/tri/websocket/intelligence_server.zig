@@ -494,7 +494,7 @@ pub const WSServer = struct {
         const key_line = std.mem.indexOf(u8, request_str, "Sec-WebSocket-Key:") orelse return error.MissingWebSocketKey;
         const key_start = key_line + "Sec-WebSocket-Key:".len;
         const key_end = std.mem.indexOfScalar(u8, request_str[key_start..], '\r') orelse return error.InvalidWebSocketKey;
-        const key = std.mem.trim(u8, request_str[key_start..][0..key_end], " \r\n");
+        const key = std.mem.trim(u8, request_str[key_start..][0..key_end], &[_]u8{' ', '\r', '\n'});
 
         // Create accept key
         const magic = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";

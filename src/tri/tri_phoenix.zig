@@ -391,7 +391,7 @@ fn cmdBiopsy(allocator: Allocator, cell_id: []const u8) !void {
             std.debug.print("\n  {s}Contract:{s}\n", .{ GOLDEN, RESET });
             var lines = std.mem.splitScalar(u8, cell.manifest.dna_contract_raw, '\n');
             while (lines.next()) |line| {
-                const trimmed = std.mem.trim(u8, line, " \t\r");
+                const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
                 if (trimmed.len > 0) {
                     std.debug.print("    {s}\n", .{trimmed});
                 }

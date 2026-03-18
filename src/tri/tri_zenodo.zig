@@ -543,7 +543,7 @@ fn loadToken(allocator: std.mem.Allocator) ![]const u8 {
     // Find ZENODO_TOKEN=xxx line
     var lines = std.mem.splitScalar(u8, content, '\n');
     while (lines.next()) |line| {
-        const trimmed = std.mem.trim(u8, line, " \t\r");
+        const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
         if (std.mem.startsWith(u8, trimmed, "ZENODO_TOKEN=")) {
             const val = trimmed["ZENODO_TOKEN=".len..];
             return allocator.dupe(u8, val);
@@ -867,7 +867,7 @@ fn runSacredPublish(allocator: std.mem.Allocator, draft_only: bool) !void {
     };
     defer allocator.free(git_result.stdout);
     defer allocator.free(git_result.stderr);
-    const commit_hash = std.mem.trim(u8, git_result.stdout, " \t\r\n");
+    const commit_hash = std.mem.trim(u8, git_result.stdout, &[_]u8{' ', '\t', '\r', '\n'});
 
     // Step 2: Create new version from concept DOI
     print("2/6 Creating new version draft from concept {s}...\n", .{RECORD_ID});

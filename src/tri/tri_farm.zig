@@ -50,6 +50,8 @@ pub fn runFarmCommand(allocator: Allocator, args: []const []const u8) !void {
     } else if (std.mem.eql(u8, subcmd, "from-issues")) {
         const farm_from_issues = @import("farm_from_issues.zig");
         return farm_from_issues.runFromIssues(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "watch-daemon")) {
+        return runWatchDaemonCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -779,12 +781,7 @@ fn runWatchDaemonCommand(allocator: Allocator, args: []const []const u8) !void {
 
 fn daemonStart(allocator: Allocator) !void {
     // Check if already running
-    const pid_file = std.fs.cwd().openFile(DAEMON_PID_FILE, .{}) catch |err| {
-        if (err == error.FileNotFound) {
-            // No daemon running, good to start
-        } else {
-            print("{s}⚠️  Cannot check PID file: {}{s}\n", .{ YELLOW, err, RESET });
-        }
+    {
         const existing_pid = getExistingPid() catch null;
         if (existing_pid) |pid| {
             if (isProcessAlive(pid)) {
@@ -792,9 +789,9 @@ fn daemonStart(allocator: Allocator) !void {
                 print("   Run 'tri farm watch-daemon stop' first\n", .{});
                 return;
             }
+            // Stale lock, will be overwritten
         }
-    };
-    if (pid_file) |f| f.close();
+    }
 
     print("{s}🚀 Starting watch daemon...{s}\n", .{ GREEN, RESET });
 
@@ -804,10 +801,7 @@ fn daemonStart(allocator: Allocator) !void {
     print("{s}   For background: nohup tri farm watch-daemon start >/dev/null 2>&1 &{s}\n", .{ DIM, RESET });
     print("\n", .{});
 
-    const self_pid = std.os.linux.getpid() catch std.os.darwin.getpid() catch {
-        print("{s}❌ Cannot get process ID — unsupported platform{s}\n", .{ RED, RESET });
-        return error.ProcessIdFailed;
-    };
+    const self_pid = std.c.getpid();
 
     // Write PID file
     {
@@ -839,11 +833,11 @@ fn daemonStart(allocator: Allocator) !void {
             print("   {s}⚠️  Sweep error: {}{s}\n", .{ YELLOW, err, RESET });
         };
 
-        const elapsed_ms = @as(u64, @intCast((std.time.nanoTimestamp() - sweep_start) / 1_000_000));
+        const elapsed_ms = @as(u64, @intCast(@divTrunc(@as(i128, std.time.nanoTimestamp() - sweep_start), 1_000_000)));
         print("   {s}Sweep done in {d}ms{s}\n", .{ DIM, elapsed_ms, RESET });
 
         print("   Sleeping {d}s...\n\n", .{DAEMON_INTERVAL_SEC});
-        std.Thread.sleep(DAEMON_INTERVAL_SEC * std.time.ns_per_s);
+        std.Thread.sleep(@as(u64, DAEMON_INTERVAL_SEC) * std.time.ns_per_s);
     }
 }
 
@@ -858,8 +852,9 @@ fn daemonStop() !void {
     defer pid_file.close();
 
     var pid_buf: [32]u8 = undefined;
-    const pid_str = try pid_file.readAll(&pid_buf);
-    const pid = try std.fmt.parseInt(u32, std.mem.trim(u8, pid_str), 10);
+    const pid_bytes = try pid_file.readAll(&pid_buf);
+    const pid_str = pid_buf[0..pid_bytes];
+    const pid = try std.fmt.parseInt(u32, std.mem.trim(u8, pid_str, &std.ascii.whitespace), 10);
 
     if (!isProcessAlive(pid)) {
         print("{s}⚠️  Daemon PID {d} not alive (stale lock){s}\n", .{ YELLOW, pid, RESET });
@@ -870,7 +865,7 @@ fn daemonStop() !void {
     print("{s}🛑 Stopping watch daemon (PID {d})...{s}\n", .{ YELLOW, pid, RESET });
 
     // Send SIGTERM
-    std.os.kill(pid, std.os.SIG.TERM) catch |err| {
+    std.posix.kill(@intCast(pid), std.posix.SIG.TERM) catch |err| {
         print("{s}⚠️  Failed to send SIGTERM: {}{s}\n", .{ YELLOW, err, RESET });
     };
 
@@ -880,7 +875,7 @@ fn daemonStop() !void {
     // Force kill if still alive
     if (isProcessAlive(pid)) {
         print("   Force killing...", .{});
-        std.os.kill(pid, std.os.SIG.KILL) catch {};
+        std.posix.kill(@intCast(pid), std.posix.SIG.KILL) catch {};
     }
 
     std.fs.cwd().deleteFile(DAEMON_PID_FILE) catch {};
@@ -907,13 +902,14 @@ fn getExistingPid() !u32 {
     defer pid_file.close();
 
     var pid_buf: [32]u8 = undefined;
-    const pid_str = try pid_file.readAll(&pid_buf);
-    return try std.fmt.parseInt(u32, std.mem.trim(u8, pid_str), 10);
+    const pid_bytes = try pid_file.readAll(&pid_buf);
+    const pid_str = pid_buf[0..pid_bytes];
+    return try std.fmt.parseInt(u32, std.mem.trimRight(u8, pid_str, "\n"), 10);
 }
 
 fn isProcessAlive(pid: u32) bool {
     // Send signal 0 to check if process exists
-    std.os.kill(pid, 0) catch |err| {
+    std.posix.kill(@intCast(pid), 0) catch |err| {
         if (err == error.ProcessNotFound) return false;
         // Other errors might mean process exists
         return true;

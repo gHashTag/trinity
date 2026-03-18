@@ -578,7 +578,7 @@ pub fn runDecomposeCommand(allocator: std.mem.Allocator, args: []const []const u
     defer allocator.free(view_result.stderr);
 
     // Trim title
-    const title = std.mem.trim(u8, view_result.stdout, " \t\n\r");
+    const title = std.mem.trim(u8, view_result.stdout, &[_]u8{' ', '\t', '\n', '\r'});
     if (title.len == 0) {
         std.debug.print("{s}Issue #{d} not found or empty title{s}\n", .{ RED, issue_num, RESET });
         return;
@@ -623,7 +623,7 @@ pub fn runDecomposeCommand(allocator: std.mem.Allocator, args: []const []const u
         };
 
         if (ok) {
-            const url = std.mem.trim(u8, create_result.stdout, " \t\n\r");
+            const url = std.mem.trim(u8, create_result.stdout, &[_]u8{' ', '\t', '\n', '\r'});
             std.debug.print("  {s}\xe2\x9c\x85 {d}/{d} {s} [{s}] \xe2\x86\x92 {s}{s}\n", .{
                 GREEN, idx + 1, phases.len, phase.name, phase.role_label, url, RESET,
             });
@@ -702,7 +702,7 @@ pub fn runPlanCommand(allocator: std.mem.Allocator, args: []const []const u8) vo
         };
         defer allocator.free(view_result.stderr);
 
-        const trimmed = std.mem.trim(u8, view_result.stdout, " \t\n\r");
+        const trimmed = std.mem.trim(u8, view_result.stdout, &[_]u8{' ', '\t', '\n', '\r'});
         if (trimmed.len == 0) {
             allocator.free(view_result.stdout);
             std.debug.print("{s}Issue #{d} not found{s}\n", .{ RED, num, RESET });

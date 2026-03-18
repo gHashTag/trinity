@@ -326,6 +326,12 @@ struct LottieStyleAnimation: View {
     }
 }
 
+// MARK: - Slide Edge (public for extension)
+
+enum SlideEdge {
+    case top, bottom, leading, trailing
+}
+
 // MARK: - View Modifier Extensions
 
 extension View {
@@ -333,7 +339,7 @@ extension View {
         modifier(FadeInModifier(duration: duration, delay: delay))
     }
 
-    func slideIn(edge: SlideInModifier.Edge = .trailing, duration: Double = 0.4) -> some View {
+    func slideIn(edge: SlideEdge = .trailing, duration: Double = 0.4) -> some View {
         modifier(SlideInModifier(edge: edge, duration: duration))
     }
 
@@ -363,13 +369,11 @@ private struct FadeInModifier: ViewModifier {
 // MARK: - Slide In Modifier
 
 private struct SlideInModifier: ViewModifier {
-    enum Edge { case top, bottom, leading, trailing }
-
-    let edge: Edge
+    let edge: SlideEdge
     let duration: Double
     @State private var offset: CGFloat
 
-    init(edge: Edge = .trailing, duration: Double = 0.4) {
+    init(edge: SlideEdge = .trailing, duration: Double = 0.4) {
         self.edge = edge
         self.duration = duration
         switch edge {

@@ -194,9 +194,9 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
     // Parse: "/queen <sub>" or "/q <sub>" or just "/queen" / "/q"
     var sub: []const u8 = "";
     if (std.mem.startsWith(u8, text, "/queen")) {
-        if (text.len > 7) sub = std.mem.trim(u8, text[7..], " ");
+        if (text.len > 7) sub = std.mem.trim(u8, text[7..], &[_]u8{' '});
     } else if (std.mem.startsWith(u8, text, "/q")) {
-        if (text.len > 3) sub = std.mem.trim(u8, text[3..], " ");
+        if (text.len > 3) sub = std.mem.trim(u8, text[3..], &[_]u8{' '});
     }
 
     var buf: [2048]u8 = undefined;
@@ -263,7 +263,7 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
         dispatchDeny(ctx, sub, &buf);
     } else if (std.mem.startsWith(u8, sub, "act ")) {
         // v4: /queen act <kind> — execute any of 29 actions manually
-        const kind_str = std.mem.trim(u8, sub[4..], " ");
+        const kind_str = std.mem.trim(u8, sub[4..], &[_]u8{' '});
         dispatchAct(ctx, kind_str, &buf);
     } else if (std.mem.eql(u8, sub, "unlock")) {
         // v4: /queen unlock — show capability map
@@ -295,7 +295,7 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
 
 fn dispatchApprove(ctx: DispatchContext, sub: []const u8, buf: *[2048]u8) void {
     // Parse ID from "approve <id>"
-    const id_str = if (sub.len > 8) std.mem.trim(u8, sub[8..], " ") else "";
+    const id_str = if (sub.len > 8) std.mem.trim(u8, sub[8..], &[_]u8{' '}) else "";
     const id = std.fmt.parseInt(u16, id_str, 10) catch {
         const msg = std.fmt.bufPrint(buf, qt.E_HAND ++ " Usage: /queen approve <id>", .{}) catch return;
         tgSend(ctx.tg, msg);
@@ -322,7 +322,7 @@ fn dispatchApprove(ctx: DispatchContext, sub: []const u8, buf: *[2048]u8) void {
 }
 
 fn dispatchDeny(ctx: DispatchContext, sub: []const u8, buf: *[2048]u8) void {
-    const id_str = if (sub.len > 5) std.mem.trim(u8, sub[5..], " ") else "";
+    const id_str = if (sub.len > 5) std.mem.trim(u8, sub[5..], &[_]u8{' '}) else "";
     const id = std.fmt.parseInt(u16, id_str, 10) catch {
         const msg = std.fmt.bufPrint(buf, qt.E_HAND ++ " Usage: /queen deny <id>", .{}) catch return;
         tgSend(ctx.tg, msg);
