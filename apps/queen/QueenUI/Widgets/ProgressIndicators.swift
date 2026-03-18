@@ -438,7 +438,7 @@ struct ProgressWithLabel: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(color.opacity(0.15))
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
             }
         }
         .padding(.horizontal, 14)

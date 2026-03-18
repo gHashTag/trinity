@@ -256,7 +256,7 @@ struct BridgeScreen: View {
                     .padding(.horizontal, 4)
                     .padding(.vertical, 1)
                     .background(TrinityTheme.purple.opacity(0.1))
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
             }
         }
         .padding(.horizontal, 12)

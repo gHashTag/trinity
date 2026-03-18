@@ -28,7 +28,7 @@ struct ContextInspector: View {
                             .padding(.horizontal, 5)
                             .padding(.vertical, 1)
                             .background(TrinityTheme.accent)
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                     }
                 }
                 .padding(.horizontal, 12)

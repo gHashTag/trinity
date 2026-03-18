@@ -335,7 +335,7 @@ struct ChatScreen: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(.white.opacity(0.08))
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
                         .padding(.top, 8)
@@ -361,7 +361,7 @@ struct ChatScreen: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
                     .background(TrinityTheme.bgCard)
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
                     .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
                     .padding(.bottom, 80)
                 }
@@ -744,7 +744,7 @@ struct ChatScreen: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
                 .background(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Continue generation")
@@ -775,7 +775,7 @@ struct ChatScreen: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
                 .shadow(color: .black.opacity(0.4), radius: TrinityTheme.shadowMediumRadius, y: 4)
             }
             .buttonStyle(.plain)
@@ -1293,7 +1293,7 @@ struct ChatScreen: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(TrinityTheme.statusError)
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
                 if let fallback = modelManager.failoverModel() {
@@ -1312,7 +1312,7 @@ struct ChatScreen: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
                             .background(TrinityTheme.statusWarn)
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
                 }
@@ -1364,7 +1364,7 @@ struct ChatScreen: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 6)
                         .background(errKind.color)
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Regenerate response")
@@ -1388,7 +1388,7 @@ struct ChatScreen: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 6)
                         .background(Color.white.opacity(0.1))
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Edit and retry message")
@@ -1412,7 +1412,7 @@ struct ChatScreen: View {
                             .padding(.horizontal, 14)
                             .padding(.vertical, 6)
                             .background(TrinityTheme.accent)
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
                         .accessibilityLabel("Try fallback model")
@@ -1451,7 +1451,7 @@ struct ChatScreen: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 6)
                         .background(TrinityTheme.statusError)
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
@@ -1493,7 +1493,7 @@ struct ChatScreen: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
                 .background(Color.orange.opacity(0.12))
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
                 .padding(.horizontal, 60)
             } else if showQueueDrained {
                 HStack(spacing: 6) {
@@ -1506,7 +1506,7 @@ struct ChatScreen: View {
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
                 .background(TrinityTheme.statusOK.opacity(0.12))
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
                 .padding(.horizontal, 60)
             }
         }
@@ -1621,7 +1621,7 @@ struct ChatScreen: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(Color.white.opacity(0.06))
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
                     }
@@ -1685,7 +1685,7 @@ struct ChatScreen: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
                             .background(TrinityTheme.statusOK)
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
                 }
@@ -1825,7 +1825,7 @@ struct ChatScreen: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color.white.opacity(0.08))
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
                 }
                 Spacer()
             }
@@ -2387,9 +2387,9 @@ struct ChatScreen: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(chatMode == mode ? modeColor(mode) : Color.white.opacity(0.06))
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
                     .overlay(
-                        Capsule()
+                        SwiftUI.Capsule()
                             .stroke(chatMode == mode ? modeColor(mode) : Color.clear, lineWidth: 1.5)
                     )
                 }
@@ -2429,7 +2429,7 @@ struct ChatScreen: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(effortLevel.color.opacity(0.12))
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
@@ -2466,7 +2466,7 @@ struct ChatScreen: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(Color.white.opacity(0.06))
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
             }
             .menuStyle(.borderlessButton)
             .fixedSize()
@@ -3220,7 +3220,7 @@ struct ConnectionStatusBar: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
                     .background(TrinityTheme.statusError)
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
                     .buttonStyle(.plain)
                     .accessibilityLabel("Retry connection")
                 }
@@ -3330,9 +3330,9 @@ struct ContextMeter: View {
         HStack(spacing: 6) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule()
+                    SwiftUI.Capsule()
                         .fill(Color.white.opacity(0.06))
-                    Capsule()
+                    SwiftUI.Capsule()
                         .fill(meterColor)
                         .frame(width: geo.size.width * ratio)
                         .animation(.easeInOut(duration: 0.4), value: ratio)
@@ -3379,9 +3379,9 @@ struct ContextBar: View {
                     // Progress bar
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
-                            Capsule()
+                            SwiftUI.Capsule()
                                 .fill(Color.white.opacity(0.06))
-                            Capsule()
+                            SwiftUI.Capsule()
                                 .fill(color)
                                 .frame(width: geo.size.width * ratio)
                                 .animation(.easeInOut(duration: 0.4), value: ratio)
@@ -3572,7 +3572,7 @@ struct ModelPicker: View {
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)
                         .background(remaining < 5 ? TrinityTheme.statusError : TrinityTheme.statusWarn)
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                         .help("\(remaining) requests remaining")
                 }
             }
@@ -3822,7 +3822,7 @@ struct MessageRow: View {
                         ? TrinityTheme.accent
                         : Color.gray.opacity(0.3)
                     )
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
                     .buttonStyle(.plain)
                     .disabled(editText.trimmingCharacters(in: .whitespacesAndNewlines) == message.text.trimmingCharacters(in: .whitespacesAndNewlines))
             }
@@ -4135,7 +4135,7 @@ struct MessageRow: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
                 .background(errKind.color.opacity(0.12))
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
             }
             .buttonStyle(.plain)
             .transition(.opacity)
@@ -4196,7 +4196,7 @@ struct MessageRow: View {
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(tokenBadgeColor.opacity(0.1))
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                         .help(message.outputTokens != nil ? "Actual tokens" : "Estimated tokens")
                 }
             }
@@ -4604,7 +4604,7 @@ struct MessageRow: View {
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)
                     .background(TrinityTheme.textMuted.opacity(0.15))
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
             }
         }
         .font(.system(size: 10))
@@ -4961,7 +4961,7 @@ struct MessageActionBar: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
         .background(Color.white.opacity(0.06))
-        .clipShape(Capsule())
+        .clipShape(SwiftUI.Capsule())
     }
 
     private func modelDisplayName(_ id: String) -> String {
@@ -5483,7 +5483,7 @@ struct MentionPopup: View {
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(Color.white.opacity(0.06))
-                                    .clipShape(Capsule())
+                                    .clipShape(SwiftUI.Capsule())
                             }
                         }
                         .padding(.horizontal, 10)
@@ -5656,7 +5656,7 @@ struct BranchNavigator: View {
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
             .background(Color.white.opacity(0.06))
-            .clipShape(Capsule())
+            .clipShape(SwiftUI.Capsule())
         }
     }
 }
@@ -5762,7 +5762,7 @@ struct StaleBadge: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(TrinityTheme.statusWarn)
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
@@ -5814,7 +5814,7 @@ struct BuildErrorBanner: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
                     .background(TrinityTheme.statusError)
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
@@ -6116,7 +6116,7 @@ struct NetworkDashboard: View {
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(TrinityTheme.accent)
-                                .clipShape(Capsule())
+                                .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
                     }
@@ -6214,7 +6214,7 @@ struct NetworkDashboard: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(Color.white.opacity(0.08))
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
                 }
@@ -6274,7 +6274,7 @@ struct RateLimitWarning: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(TrinityTheme.statusWarn)
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
                 }
@@ -6307,7 +6307,7 @@ struct BranchPill: View {
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
                 .background(TrinityTheme.purple.opacity(0.1))
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
                 .padding(.horizontal, 16)
                 .padding(.vertical, 2)
             }
@@ -6344,9 +6344,9 @@ struct FollowUpSuggestions: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .background(Color.white.opacity(0.06))
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                         .overlay(
-                            Capsule()
+                            SwiftUI.Capsule()
                                 .stroke(Color.white.opacity(0.08), lineWidth: 1)
                         )
                     }
@@ -6408,7 +6408,7 @@ struct RejectionFeedbackView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(TrinityTheme.statusError)
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
@@ -6445,7 +6445,7 @@ struct PinnedMessagesStrip: View {
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
                             .background(TrinityTheme.accent.opacity(0.12))
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
                 }
@@ -6671,7 +6671,7 @@ struct OfflineQueueBanner: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
                         .background(TrinityTheme.statusError.opacity(0.12))
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
@@ -6737,9 +6737,9 @@ struct ElicitationCard: View {
                             .padding(.horizontal, 12)
                             .padding(.vertical, 6)
                             .background(TrinityTheme.purple.opacity(0.15))
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                             .overlay(
-                                Capsule()
+                                SwiftUI.Capsule()
                                     .stroke(TrinityTheme.purple.opacity(0.3), lineWidth: 1)
                             )
                     }
@@ -6936,7 +6936,7 @@ struct OnboardingWalkthrough: View {
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
                         .background(TrinityTheme.accent)
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
@@ -7017,9 +7017,9 @@ struct TaskTrackerView: View {
             let progress = tasks.isEmpty ? 0.0 : Double(tasks.filter(\.isDone).count) / Double(tasks.count)
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
-                    Capsule()
+                    SwiftUI.Capsule()
                         .fill(Color.white.opacity(0.06))
-                    Capsule()
+                    SwiftUI.Capsule()
                         .fill(progress >= 1.0 ? TrinityTheme.statusOK : TrinityTheme.accent)
                         .frame(width: geo.size.width * progress)
                 }
@@ -7073,7 +7073,7 @@ struct MentionChip: View {
         .padding(.horizontal, 6)
         .padding(.vertical, 2)
         .background(color.opacity(0.12))
-        .clipShape(Capsule())
+        .clipShape(SwiftUI.Capsule())
     }
 }
 
@@ -7115,7 +7115,7 @@ struct AgentStatusIndicator: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 3)
         .background(color.opacity(0.1))
-        .clipShape(Capsule())
+        .clipShape(SwiftUI.Capsule())
     }
 }
 
@@ -7251,7 +7251,7 @@ struct SaveAsTemplatePopover: View {
                 .padding(.horizontal, 14)
                 .padding(.vertical, 6)
                 .background(TrinityTheme.purple)
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
                 .buttonStyle(.plain)
                 .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
             }
@@ -7478,7 +7478,7 @@ private struct ThreadStatsCard: View {
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
                                 .background(TrinityTheme.accent.opacity(0.1))
-                                .clipShape(Capsule())
+                                .clipShape(SwiftUI.Capsule())
                         }
                     }
                     .padding(.horizontal, 12)

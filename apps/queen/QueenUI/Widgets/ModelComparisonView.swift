@@ -42,7 +42,7 @@ struct ModelComparisonView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
                         .background(TrinityTheme.accent)
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                         .buttonStyle(.plain)
                         .disabled(leftModel == nil || rightModel == nil)
                 } else {
@@ -52,7 +52,7 @@ struct ModelComparisonView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 4)
                         .background(TrinityTheme.statusError)
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                         .buttonStyle(.plain)
                 }
 

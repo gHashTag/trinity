@@ -167,7 +167,7 @@ struct SacredMathScreen: View {
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(TrinityTheme.statusWarn.opacity(0.15))
-                    .clipShape(Capsule())
+                    .clipShape(SwiftUI.Capsule())
             }
         }
         .padding()

@@ -115,7 +115,7 @@ struct TechTreeScreen: View {
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(priorityColor(epic.priority).opacity(0.15))
-                                    .clipShape(Capsule())
+                                    .clipShape(SwiftUI.Capsule())
                             }
 
                             // Children

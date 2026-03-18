@@ -89,7 +89,7 @@ struct IssuesScreen: View {
                                             .padding(.horizontal, 4)
                                             .padding(.vertical, 1)
                                             .background(TrinityTheme.bgSidebar)
-                                            .clipShape(Capsule())
+                                            .clipShape(SwiftUI.Capsule())
                                     }
                                 }
                             }

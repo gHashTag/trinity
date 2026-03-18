@@ -117,7 +117,7 @@ struct ShortcutsOverlay: View {
                             .padding(.horizontal, 32)
                             .padding(.vertical, 10)
                             .background(TrinityTheme.golden)
-                            .clipShape(Capsule())
+                            .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
                     .padding(.top, 20)

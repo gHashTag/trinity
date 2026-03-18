@@ -119,7 +119,7 @@ struct KeysScreen: View {
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(color.opacity(0.15))
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                     Text("\(action.max_per_hour ?? 0)/h")
                         .font(.caption2.monospacedDigit())
                         .foregroundStyle(TrinityTheme.textMuted)

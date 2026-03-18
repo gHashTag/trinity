@@ -213,7 +213,7 @@ struct AnimatedButton: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(
-                Capsule()
+                SwiftUI.Capsule()
                     .fill(isPressed ? TrinityTheme.accent.opacity(0.8) : TrinityTheme.accent)
             )
         }
