@@ -213,3 +213,115 @@ test "pons — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
 }
+
+test "pons — FarmSweepResults problemCount" {
+    const results = FarmSweepResults{
+        .stale_count = 3,
+        .crashed_workers = &[_][]const u8{ "w1", "w2", "w3" },
+    };
+
+    try std.testing.expectEqual(@as(u32, 6), results.problemCount());
+}
+
+test "pons — FarmSweepResults empty" {
+    const results = FarmSweepResults{};
+
+    try std.testing.expectEqual(@as(u32, 0), results.problemCount());
+    try std.testing.expectEqual(@as(usize, 0), results.crashed_workers.len);
+    try std.testing.expectEqual(@as(usize, 0), results.stale_count);
+}
+
+test "pons — Error setMessage" {
+    var err = Error{ .code = "TEST" };
+    try std.testing.expectEqual(@as(usize, 0), err.message_len);
+
+    err.setMessage("Hello");
+    try std.testing.expectEqual(@as(usize, 5), err.message_len);
+    try std.testing.expectEqualStrings("Hello", err.messageStr());
+}
+
+test "pons — Error setMessage truncates" {
+    var err = Error{ .code = "TEST" };
+    // Create a message longer than 256 bytes
+    var long_text: [300]u8 = undefined;
+    @memset(&long_text, 'A');
+    long_text[299] = 0;
+
+    err.setMessage(&long_text);
+    try std.testing.expectEqual(@as(usize, 256), err.message_len); // Truncated to max
+}
+
+test "pons — bridgeToCerebellum with crashed workers" {
+    const results = FarmSweepResults{
+        .stale_count = 0,
+        .crashed_workers = &[_][]const u8{ "worker1", "worker2" },
+    };
+
+    _ = try bridgeToCerebellum(std.testing.allocator, results);
+
+    // Should not panic - writes to hippocampus
+}
+
+test "pons — bridgeToCerebellum with no problems" {
+    const results = FarmSweepResults{
+        .stale_count = 0,
+        .crashed_workers = &[_][]const u8{},
+    };
+
+    _ = try bridgeToCerebellum(std.testing.allocator, results);
+
+    // Should not panic
+}
+
+test "pons — remDreaming with no errors" {
+    const empty_errors = [_]Error{};
+
+    _ = try remDreaming(std.testing.allocator, &empty_errors);
+
+    // Should not panic - writes "no errors" observation
+}
+
+test "pons — remDreaming with BUILD_FAIL" {
+    var errors = [_]Error{.{ .code = "BUILD_FAIL" }};
+    errors[0].setMessage("Compilation failed");
+
+    _ = try remDreaming(std.testing.allocator, &errors);
+
+    // Should not panic - generates fix plan
+}
+
+test "pons — remDreaming with TEST_FAIL" {
+    var errors = [_]Error{.{ .code = "TEST_FAIL" }};
+    errors[0].setMessage("Test assertion failed");
+
+    _ = try remDreaming(std.testing.allocator, &errors);
+
+    // Should not panic
+}
+
+test "pons — remDreaming with DEADLOCK" {
+    var errors = [_]Error{.{ .code = "DEADLOCK" }};
+    errors[0].setMessage("Lock timeout");
+
+    _ = try remDreaming(std.testing.allocator, &errors);
+
+    // Should not panic
+}
+
+test "pons — CellHealth timestamp" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
+
+test "pons — CellHealth Status enum" {
+    try std.testing.expectEqual(CellHealth.Status.healthy, .healthy);
+    try std.testing.expectEqual(CellHealth.Status.weak, .weak);
+    try std.testing.expectEqual(CellHealth.Status.broken, .broken);
+}
+
+test "pons — CellHealth defaults" {
+    const h = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
