@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.tri.misc-arena"
+name = "Arena & Battle Commands"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "stable"
+description = "Arena, battle, inference, TVC, chat server, needle, SWE arena commands"
+capabilities = ["battle", "arena", "infer", "tvc", "chat"]
+tests = 38
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "commands"
+
+[source]
+file_patterns = ["tri_battle.zig", "tri_infer.zig", "tri_serve.zig", "code_arena.zig", "swe_arena.zig", "chat_server.zig", "needle.zig", "tvc_gate.zig", "tvc_indexer.zig", "tri_demos.zig"]
+
+[contributes]
+commands = ["battle", "infer", "serve", "arena"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+
+ffi = "none"
+concurrency = "none"
+[security]
+signed = "true"
+signature = "sha256:4b8141951b5b5f8c3f0a1939daf834abe18011b547e746dabc26a8453c8669b0"
