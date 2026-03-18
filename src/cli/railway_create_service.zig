@@ -43,10 +43,10 @@ pub fn main() !void {
         \\    }}
         \\  }}
         \\}}
-    , .{project_id, env_id, service_name}) catch return error.OutOfMemory;
+    , .{ project_id, env_id, service_name }) catch return error.OutOfMemory;
     defer allocator.free(query);
 
-    std.debug.print("🔧 Creating service '{s}' in project {s}...\n", .{service_name, project_id});
+    std.debug.print("🔧 Creating service '{s}' in project {s}...\n", .{ service_name, project_id });
     std.debug.print("   Builder: DOCKERFILE\n", .{});
     std.debug.print("   Dockerfile: Dockerfile.hslm-train\n", .{});
     std.debug.print("   startCommand: null (uses Dockerfile ENTRYPOINT)\n", .{});
@@ -56,11 +56,9 @@ pub fn main() !void {
     defer allocator.free(auth_header);
 
     const result = execCurl(allocator, &.{
-        "curl", "-s", "-X", "POST",
-        "-H", auth_header,
-        "-H", "Content-Type: application/json",
-        "-d", query,
-        "https://backboard.railway.app/graphql/v2",
+        "curl", "-s",        "-X",                                       "POST",
+        "-H",   auth_header, "-H",                                       "Content-Type: application/json",
+        "-d",   query,       "https://backboard.railway.app/graphql/v2",
     }) catch |err| {
         std.debug.print("❌ Failed to execute curl: {}\n", .{err});
         return err;

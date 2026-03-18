@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // T-JEPA — EMA (Exponential Moving Average) Weight Synchronization
 // Target encoder = EMA of online encoder shadow floats
 // After EMA update, target requantizes ternary weights from updated shadows

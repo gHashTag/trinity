@@ -497,7 +497,7 @@ struct PageLoadingIndicator: View {
 
 struct DetailedLoadingStates_Previews: PreviewProvider {
     static var previews: some View {
-        Group {
+        VStack(spacing: 20) {
             DetailedLoadingState(style: .dots)
                 .frame(width: 300, height: 200)
                 .padding()
@@ -535,10 +535,10 @@ struct DetailedLoadingStates_Previews: PreviewProvider {
                 .background(TrinityTheme.bgWindow)
 
             HStack(spacing: 20) {
-                CircularProgressIndicator(progress: 0.25)
-                CircularProgressIndicator(progress: 0.5)
-                CircularProgressIndicator(progress: 0.75)
-                CircularProgressIndicator(progress: 1.0)
+                CircularProgressIndicator(value: 0.25)
+                CircularProgressIndicator(value: 0.5)
+                CircularProgressIndicator(value: 0.75)
+                CircularProgressIndicator(value: 1.0)
             }
             .padding()
             .background(TrinityTheme.bgWindow)

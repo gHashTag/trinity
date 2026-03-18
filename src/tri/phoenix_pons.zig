@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════
 // PONS — Bridge Queen↔Cerebellum, REM Coordination
 // ═════════════════════════════════════════════════════════════════════════════════
@@ -21,9 +22,6 @@ pub fn bridgeToCerebellum(
     allocator: Allocator,
     farm_results: FarmSweepResults,
 ) !void {
-    _ = allocator;
-    _ = farm_results;
-
     // TODO: Update cerebellum cell health via hippocampus
     // For Phase 1: just log observation
 
@@ -43,9 +41,6 @@ pub fn bridgeToCerebellum(
 
 /// REM dreaming — generate fix_plan.md from fresh errors
 pub fn remDreaming(allocator: Allocator, fresh_errors: []const Error) !void {
-    _ = allocator;
-    _ = fresh_errors;
-
     // TODO: Generate fix_plan.md entries
     // For Phase 1: just log observation
 
@@ -133,10 +128,12 @@ test "pons — bridgeToCerebellum logs" {
 }
 
 test "pons — remDreaming logs" {
-    const errors = [_]Error{
-        .{ .code = "E001", .message = .{"Test error"} },
-        .{ .code = "E002", .message = .{"Another error"} },
+    var errors = [_]Error{
+        .{ .code = "E001" },
+        .{ .code = "E002" },
     };
+    errors[0].setMessage("Test error");
+    errors[1].setMessage("Another error");
 
     _ = try remDreaming(std.testing.allocator, &errors);
 

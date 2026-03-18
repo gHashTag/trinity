@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN ACTIONS — Execute tri subcommands via subprocess
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -64,6 +65,7 @@ fn kindToArgv(kind: ActionKind) []const []const u8 {
         .research_sacred => &.{ "./zig-out/bin/tri", "research", "sacred" },
         .ouroboros_status => &.{ "./zig-out/bin/tri", "ouroboros", "status" },
         .experience_recall => &.{ "./zig-out/bin/tri", "experience", "mistakes" },
+        .introspection => &.{ "./zig-out/bin/tri", "pcc", "introspect" },
         .farm_evolve_status => &.{ "./zig-out/bin/tri", "farm", "evolve", "status" },
         .swarm_status => &.{ "./zig-out/bin/tri", "swarm", "status" },
         // L1 — Soft Write
@@ -125,12 +127,9 @@ pub fn desiredAction(state: *const qt.QueenState, senses: qt.SenseResult) ?Actio
     if (senses.stale_arena_hours > 24) {
         return .arena_battle;
     }
-    // Rule 8: Experience episodes grew → save
-    if (senses.experience_count > 0) {
-        // Save periodically (this is a heuristic — fires once per cycle if episodes exist)
-        return .experience_save;
-    }
-    // Rule 9: Farm idle > 3 services → recycle (L2)
+    // NOTE: experience_save removed from auto-actions — requires --task parameter
+    // Should only be called manually or after specific error-fixing events
+    // Rule 8: Farm idle > 3 services → recycle (L2)
     if (senses.farm_idle_count > 3) {
         return .farm_recycle;
     }

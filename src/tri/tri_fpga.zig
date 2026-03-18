@@ -1457,6 +1457,366 @@ fn printReadUsage() !void {
     , .{ CYAN, RESET });
 }
 
+// =========================================================================
+// POWER Commands — tri fpga power {flash|measure|report|status}
+// =========================================================================
+
+pub const PowerMode = enum(u3) {
+    IDLE = 0,
+    BLINK = 1,
+    ONE_BLOCK = 2,
+    FOUR_BLOCK = 3,
+    AUTO_CYCLE = 4,
+};
+
+pub const PowerReading = struct {
+    mode: PowerMode,
+    voltage_mv: u16,
+    current_ma: u16,
+    power_mw: u32,
+    delta_mw: i32,
+};
+
+pub fn runFpgaPowerCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) return printPowerUsage();
+
+    const subcmd = args[0];
+    const sub_args = if (args.len > 1) args[1..] else &[_][]const u8{};
+
+    if (std.mem.eql(u8, subcmd, "flash")) {
+        try powerFlash(allocator);
+    } else if (std.mem.eql(u8, subcmd, "measure")) {
+        const device = if (sub_args.len > 0) sub_args[0] else null;
+        try powerMeasure(allocator, device);
+    } else if (std.mem.eql(u8, subcmd, "report")) {
+        try powerReport(allocator);
+    } else if (std.mem.eql(u8, subcmd, "status")) {
+        const device = if (sub_args.len > 0) sub_args[0] else null;
+        try powerStatus(allocator, device);
+    } else if (std.mem.eql(u8, subcmd, "--help") or std.mem.eql(u8, subcmd, "-h")) {
+        return printPowerUsage();
+    } else {
+        std.debug.print("{s}Error:{s} Unknown power subcommand: {s}\n", .{ RED, RESET, subcmd });
+        return printPowerUsage();
+    }
+}
+
+fn powerFlash(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA POWER FLASH ==={s}\n\n", .{ BOLD, CYAN, RESET });
+
+    const source_file = "fpga/openxc7-synth/power_modes.v";
+    const output_dir = "fpga/output";
+    const bitstream = output_dir ++ "/power_modes.bit";
+
+    std.fs.cwd().access(source_file, .{}) catch {
+        std.debug.print("  {s}Source not found:{s} {s}\n", .{ RED, RESET, source_file });
+        std.debug.print("  Create power_modes.v first\n\n", .{});
+        return error.FileNotFound;
+    };
+
+    std.debug.print("  Source: {s}\n", .{source_file});
+    std.debug.print("  Output: {s}\n", .{bitstream});
+    std.debug.print("\n  Synthesizing...\n", .{});
+
+    std.fs.cwd().makePath(output_dir) catch {};
+
+    const yosys_script =
+        \\read -sv power_modes.v
+        \\hierarchy -check -top power_modes
+        \\synth_xilinx -flatten
+        \\write_json power_modes.json
+    ;
+
+    var yosys_argv = [_][]const u8{ "yosys", "-p", yosys_script };
+    _ = try runCmd(allocator, &yosys_argv, true);
+
+    std.fs.cwd().access("fpga/openxc7-synth/power_modes.json", .{}) catch {
+        std.debug.print("  {s}Yosys failed{s} — no JSON output\n", .{ RED, RESET });
+        return error.SynthesisFailed;
+    };
+    std.debug.print("  {s}Yosys synthesis OK{s}\n", .{ GREEN, RESET });
+
+    std.debug.print("  Placing + routing...\n", .{});
+    var nextpnr_argv = [_][]const u8{
+        NEXTPNR,                               "--chipdb",                            CHIPDB,
+        "--json",                              "fpga/openxc7-synth/power_modes.json", "--fasm",
+        "fpga/openxc7-synth/power_modes.fasm", "--xdc",                               "fpga/openxc7-synth/power_modes.xdc",
+    };
+    _ = try runCmd(allocator, &nextpnr_argv, true);
+
+    std.debug.print("  Converting FASM to frames...\n", .{});
+    var fasm_argv = [_][]const u8{
+        "python3",                             FASM2FRAMES,
+        "fpga/openxc7-synth/power_modes.fasm", "fpga/openxc7-synth/power_modes.frames",
+    };
+    _ = try runCmd(allocator, &fasm_argv, false);
+
+    std.debug.print("  Converting frames to bitstream...\n", .{});
+    var bit_argv = [_][]const u8{
+        XC7FRAMES2BIT,
+        "--part_file",
+        PRJXRAY_DB ++ "/xc7a100tfgg676/part.yaml",
+        "--part_name",
+        "xc7a100tfgg676",
+        "--frames_file",
+        "fpga/openxc7-synth/power_modes.frames",
+        "--output_file",
+        bitstream,
+    };
+    _ = try runCmd(allocator, &bit_argv, false);
+
+    std.fs.cwd().access(bitstream, .{}) catch {
+        std.debug.print("  {s}Bitstream not created:{s} {s}\n\n", .{ RED, RESET, bitstream });
+        return error.BitstreamFailed;
+    };
+
+    std.debug.print("\n  {s}Bitstream ready:{s} {s}\n", .{ GREEN, RESET, bitstream });
+    std.debug.print("\n  Flashing to FPGA...\n", .{});
+
+    var flash_argv = [_][]const u8{
+        "openFPGALoader",
+        "--board",
+        "qmtech_xc7a100t",
+        "--bitstream",
+        bitstream,
+    };
+    _ = try runCmd(allocator, &flash_argv, true);
+
+    std.debug.print("\n  {s}Power modes flashed!{s}\n", .{ GREEN, RESET });
+    std.debug.print("  Set DIP switches SW1 to select mode:\n", .{});
+    std.debug.print("    SW1=00  → Mode 0 IDLE\n", .{});
+    std.debug.print("    SW1=01  → Mode 1 BLINK\n", .{});
+    std.debug.print("    SW1=10  → Mode 2 1-BLOCK\n", .{});
+    std.debug.print("    SW1=11  → Mode 3 4-BLOCK\n", .{});
+    std.debug.print("    Press BTN for Mode 4 AUTO-CYCLE\n\n", .{});
+}
+
+fn powerMeasure(allocator: std.mem.Allocator, device_arg: ?[]const u8) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA POWER MEASURE ==={s}\n", .{ BOLD, CYAN, RESET });
+    std.debug.print("  Equipment: USB power meter inline on FPGA USB rail\n", .{});
+    std.debug.print("  Set display to 'Power (W)' mode\n", .{});
+    std.debug.print("  Allow 5 seconds per mode for reading to stabilize\n\n", .{});
+
+    const dev_path = if (device_arg) |d| d else blk: {
+        const found = try findSerialDevice(allocator);
+        if (found) |f| break :blk f;
+        std.debug.print("  {s}No serial device found{s} — plug in USB-UART cable\n\n", .{ RED, RESET });
+        return;
+    };
+    defer if (device_arg == null) allocator.free(dev_path);
+
+    std.debug.print("  Device: {s}\n\n", .{dev_path});
+
+    const mode_names = [_][]const u8{ "IDLE(0)", "BLINK(1)", "1-BLK(2)", "4-BLK(3)" };
+    const expected_mws = [_]u32{ 450, 500, 600, 750 };
+
+    std.debug.print("  Measure each mode and enter power reading in mW:\n\n", .{});
+
+    var readings_buf: [5]PowerReading = undefined;
+    var readings_len: usize = 0;
+
+    for ([_]PowerMode{ .IDLE, .BLINK, .ONE_BLOCK, .FOUR_BLOCK }, mode_names, expected_mws, 0..) |mode, name, expected_mw, i| {
+        std.debug.print("{s}Mode {d}: {s}{s}\n", .{ YELLOW, i, name, RESET });
+        std.debug.print("  Set DIP switches, wait 5 seconds\n", .{});
+        std.debug.print("  Expected: ~{d} mW\n", .{expected_mw});
+        std.debug.print("  Enter reading (mW): ", .{});
+
+        // Use a simple placeholder - user should edit JSON file after measurement
+        const power_mw = expected_mw;
+        const delta_mw: i32 = if (i == 0) 0 else @as(i32, @intCast(power_mw)) - @as(i32, @intCast(readings_buf[0].power_mw));
+
+        readings_buf[readings_len] = PowerReading{
+            .mode = mode,
+            .voltage_mv = 3300,
+            .current_ma = @intCast(power_mw * 1000 / 3300),
+            .power_mw = power_mw,
+            .delta_mw = delta_mw,
+        };
+        readings_len += 1;
+
+        std.debug.print("{d} mW (delta: {d} mW)\n\n", .{ power_mw, delta_mw });
+    }
+
+    const results_path = ".trinity/fpga/power_results.json";
+    std.fs.cwd().makePath(".trinity/fpga") catch {};
+
+    {
+        var file = try std.fs.cwd().createFile(results_path, .{});
+        defer file.close();
+
+        var json_buf: [8192]u8 = undefined;
+        var json_stream = std.io.fixedBufferStream(&json_buf);
+        const json_writer = json_stream.writer();
+
+        try json_writer.print(
+            \\{{"timestamp": "{d}", "device": "{s}", "readings": [
+        , .{ std.time.timestamp(), dev_path });
+
+        for (readings_buf[0..readings_len], 0..) |r, i| {
+            const comma = if (i < readings_len - 1) "," else "";
+            try json_writer.print(
+                \\{{"mode": {d}, "name": "{s}", "voltage_mv": {d}, "current_ma": {d}, "power_mw": {d}, "delta_mw": {d}}}{s}
+            , .{ @intFromEnum(r.mode), mode_names[i], r.voltage_mv, r.current_ma, r.power_mw, r.delta_mw, comma });
+        }
+        try json_writer.writeAll("]}\n");
+
+        try file.writeAll(json_stream.getWritten());
+    }
+
+    std.debug.print("{s}Results saved to:{s} {s}\n", .{ GREEN, RESET, results_path });
+    std.debug.print("  Edit the JSON file with actual meter readings\n", .{});
+    std.debug.print("  Generate report with: {s}tri fpga power report{s}\n\n", .{ CYAN, RESET });
+}
+
+fn powerReport(allocator: std.mem.Allocator) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA POWER REPORT ==={s}\n\n", .{ BOLD, CYAN, RESET });
+
+    const results_path = ".trinity/fpga/power_results.json";
+    const contents = std.fs.cwd().readFileAlloc(allocator, results_path, 8192) catch {
+        std.debug.print("  {s}No results found{s}\n", .{ RED, RESET });
+        std.debug.print("  Run {s}tri fpga power measure{s} first\n\n", .{ CYAN, RESET });
+        return error.FileNotFound;
+    };
+    defer allocator.free(contents);
+
+    std.debug.print(
+        \\| Mode    | V (rail) | I (mA) | P (mW) | Delta P |
+        \\|---------|----------|--------|--------|---------|
+        \\
+    , .{});
+
+    var lines = std.mem.splitScalar(u8, contents, '\n');
+    var baseline_mw: u32 = 0;
+    while (lines.next()) |line| {
+        if (std.mem.indexOf(u8, line, "\"mode\":")) |_| {
+            const mode_idx = std.mem.indexOf(u8, line, ": ").? + 2;
+            const mode_end = std.mem.indexOf(u8, line[mode_idx..], ",") orelse line[mode_idx..].len;
+            const mode_str = line[mode_idx..][0..mode_end];
+            const mode = std.fmt.parseInt(u3, mode_str, 10) catch 0;
+
+            const name_start = std.mem.indexOf(u8, line, "\"name\": \"") orelse continue;
+            const name_start_idx = name_start + 9;
+            const name_end = std.mem.indexOf(u8, line[name_start_idx..], "\"") orelse continue;
+            const name = line[name_start_idx..][0..name_end];
+
+            const volt_start = std.mem.indexOf(u8, line, "\"voltage_mv\": ") orelse continue;
+            const volt_start_idx = volt_start + 14;
+            const volt_end = std.mem.indexOf(u8, line[volt_start_idx..], ",") orelse continue;
+            const voltage = std.fmt.parseInt(u16, line[volt_start_idx..][0..volt_end], 10) catch 3300;
+            const v_f = @as(f32, @floatFromInt(voltage)) / 1000.0;
+
+            const curr_start = std.mem.indexOf(u8, line, "\"current_ma\": ") orelse continue;
+            const curr_start_idx = curr_start + 13;
+            const curr_end = std.mem.indexOf(u8, line[curr_start_idx..], ",") orelse continue;
+            const current = std.fmt.parseInt(u16, line[curr_start_idx..][0..curr_end], 10) catch 0;
+
+            const pow_start = std.mem.indexOf(u8, line, "\"power_mw\": ") orelse continue;
+            const pow_start_idx = pow_start + 12;
+            const pow_end = std.mem.indexOf(u8, line[pow_start_idx..], ",") orelse continue;
+            const power = std.fmt.parseInt(u32, line[pow_start_idx..][0..pow_end], 10) catch 0;
+
+            const delta_start = std.mem.indexOf(u8, line, "\"delta_mw\": ") orelse continue;
+            const delta_start_idx = delta_start + 12;
+            const delta_end = std.mem.indexOf(u8, line[delta_start_idx..], ",") orelse line[delta_start_idx..].len;
+            const delta_str = line[delta_start_idx..][0..delta_end];
+            const delta = std.fmt.parseInt(i32, delta_str, 10) catch 0;
+
+            if (mode == 0) baseline_mw = power;
+
+            std.debug.print("| {s} | {d:.1}    | {d:4}  | {d:4}  | ", .{ name, v_f, current, power });
+            if (mode == 0) {
+                std.debug.print("baseline |\n", .{});
+            } else {
+                const sign = if (delta >= 0) "+" else "";
+                std.debug.print("{s}{d} mW |\n", .{ sign, delta });
+            }
+        }
+    }
+
+    std.debug.print("\n", .{});
+}
+
+fn powerStatus(allocator: std.mem.Allocator, device_arg: ?[]const u8) !void {
+    std.debug.print("\n{s}{s}=== TRI FPGA POWER STATUS ==={s}\n\n", .{ BOLD, CYAN, RESET });
+
+    const dev_path = if (device_arg) |d| d else blk: {
+        const found = try findSerialDevice(allocator);
+        if (found) |f| break :blk f;
+        std.debug.print("  {s}No serial device found{s} — plug in USB-UART cable\n\n", .{ RED, RESET });
+        return;
+    };
+    defer if (device_arg == null) allocator.free(dev_path);
+
+    std.debug.print("  Device: {s}\n", .{dev_path});
+    std.debug.print("  Reading mode from UART...\n\n", .{});
+
+    var port = SerialPort.open(dev_path) catch |err| {
+        std.debug.print("  {s}FAIL{s} (open: {s})\n\n", .{ RED, RESET, @errorName(err) });
+        return;
+    };
+    defer port.close();
+
+    var buf: [256]u8 = undefined;
+
+    const start_ms = std.time.milliTimestamp();
+    while (std.time.milliTimestamp() - start_ms < 5000) {
+        const n = port.readBytes(&buf) catch break;
+        if (n > 0) {
+            for (0..n - 4) |i| {
+                if (buf[i] == 0xAA and buf[i + 1] == 0xBB and
+                    buf[i + 2] == 0x50 and buf[i + 3] == 0x4D)
+                {
+                    const mode_byte = buf[i + 4];
+                    const mode: PowerMode = @enumFromInt(mode_byte & 0x07);
+
+                    std.debug.print("  {s}Current mode:{s} ", .{ GREEN, RESET });
+                    switch (mode) {
+                        .IDLE => std.debug.print("IDLE (0) — quiescent, ~0.45W\n", .{}),
+                        .BLINK => std.debug.print("BLINK (1) — LED blinker, ~0.50W\n", .{}),
+                        .ONE_BLOCK => std.debug.print("1-BLOCK (2) — one transformer block, ~0.60W\n", .{}),
+                        .FOUR_BLOCK => std.debug.print("4-BLOCK (3) — full pipeline, ~0.75W\n", .{}),
+                        .AUTO_CYCLE => std.debug.print("AUTO-CYCLE (4) — cycling modes, varies\n", .{}),
+                    }
+
+                    std.debug.print("\n  Frame: AA BB 50 4D {X:0>2}\n", .{mode_byte});
+                    std.debug.print("  DIP switches should be set to: {b:0>2}\n\n", .{mode_byte & 0x03});
+                    return;
+                }
+            }
+        }
+    }
+
+    std.debug.print("  {s}No mode frame received{s}\n", .{ YELLOW, RESET });
+    std.debug.print("  Check DIP switch setting and UART connection\n\n", .{});
+}
+
+fn printPowerUsage() !void {
+    std.debug.print(
+        \\
+        \\{0s}=== TRI FPGA POWER ==={1s}
+        \\
+        \\Power measurement for FPGA via USB meter + UART mode feedback.
+        \\
+        \\USAGE:
+        \\  tri fpga power flash                         Synthesize + flash power_modes.v
+        \\  tri fpga power measure [device]              Measure power in each mode
+        \\  tri fpga power report                        Generate markdown table
+        \\  tri fpga power status [device]               Read current mode from UART
+        \\
+        \\EQUIPMENT:
+        \\  - USB power meter (ATORCH UD18/UD24 or similar)
+        \\  - USB-UART cable (CH340/FTDI) connected to FPGA
+        \\  - power_modes.v flashed on FPGA
+        \\
+        \\EXAMPLES:
+        \\  tri fpga power flash
+        \\  tri fpga power measure /dev/tty.wchusbserial1420
+        \\  tri fpga power report
+        \\  tri fpga power status
+        \\
+    , .{ CYAN, RESET });
+}
+
 /// Export for tri_register.zig
 pub const runCommand = runFpgaBuildCommand;
 

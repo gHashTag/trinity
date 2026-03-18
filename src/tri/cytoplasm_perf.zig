@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Performance monitoring for cell commands
 const std = @import("std");
 const colors = @import("tri_colors.zig");

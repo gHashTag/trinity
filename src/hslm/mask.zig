@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // T-JEPA — Block Masking for Sequences
 // Contiguous span masking: harder prediction → better representations
 // Spans aligned to ternary powers (3^1=3, 3^2=9)

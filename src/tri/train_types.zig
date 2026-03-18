@@ -167,10 +167,11 @@ test "TrainLogEntry initialization" {
         .ts = "2024-01-01T00:00:00",
     };
 
-    const buf = [_]u8{0} ** 1024;
-    _ = entry.toJson(buf) catch unreachable;
-    const expected_json = "{\"step\":100}";
-    try std.testing.expectEqual(entry.toJson(buf), expected_json);
+    var buf = [_]u8{0} ** 1024;
+    const json = entry.toJson(&buf);
+    // Check that JSON contains key fields (toJson outputs full JSON)
+    try std.testing.expect(std.mem.startsWith(u8, json, "{\"step\":100,"));
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"ppl\":2.00") != null);
 }
 
 test "JSON formatting" {
@@ -181,6 +182,7 @@ test "JSON formatting" {
         .ppl = 2.0,
         .tok_per_sec = 100.0,
     };
-    const json = entry.toJson(null);
+    var buf: [512]u8 = undefined;
+    const json = entry.toJson(&buf);
     try std.testing.expect(json.len > 0);
 }

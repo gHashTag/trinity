@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity Farm Deploy — tri farm deploy
 // Migrated from scripts/railway_deploy_experiment.sh
 //

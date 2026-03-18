@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM Reference — Attention Implementations
 // Migrated from archive/implementations/zig/src/attention.zig
 // Standard attention (O(N^2)) and Flash Attention (O(N) memory)

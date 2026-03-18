@@ -1301,7 +1301,7 @@ class ChatClient: ObservableObject {
         let userMsg = ChatMessage(role: .user, text: prompt)
         store.appendMessage(userMsg, to: threadID)
 
-        let assistantMsg = ChatMessage(role: .assistant, text: "Generating image...", modelID: "grok-2-image")
+        let assistantMsg = ChatMessage(role: .assistant, text: "Generating image...", modelID: "grok-imagine-image")
         store.appendMessage(assistantMsg, to: threadID)
 
         streamingState = .connecting

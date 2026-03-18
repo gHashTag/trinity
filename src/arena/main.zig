@@ -185,6 +185,9 @@ fn cliBattle(allocator: Allocator, args: []const []const u8) !void {
         }
     }
     print("\n", .{});
+
+    // Cleanup battle allocations
+    @constCast(&result).deinit();
 }
 
 fn cliLeaderboard(allocator: Allocator) !void {
@@ -242,6 +245,9 @@ fn runCategoryBench(arena: *battle_mod.Arena, category: types.TaskCategory) !voi
 
         const status_icon: []const u8 = if (result.status == .complete or result.status == .judged) "\xe2\x9c\x93" else "\xe2\x9c\x97";
         print(" {s} ({d}ms vs {d}ms)\n", .{ status_icon, result.latency_a_ms, result.latency_b_ms });
+
+        // Cleanup battle allocations
+        result.deinit();
     }
 }
 
@@ -464,6 +470,9 @@ fn handleCreateBattle(stream: std.net.Stream, request: []const u8, arena_state: 
     const resp = std.fmt.bufPrint(&resp_buf,
         \\{{"battle_id":{d},"status":"{s}","latency_a_ms":{d},"latency_b_ms":{d}}}
     , .{ result.id, result.status.toString(), result.latency_a_ms, result.latency_b_ms }) catch "{\"error\":\"format\"}";
+
+    // Cleanup battle allocations before sending response
+    result.deinit();
 
     try sendResponse(stream, "200 OK", "application/json", resp);
 }

@@ -1,426 +1,871 @@
-// ═══════════════════════════════════════════════════════════════════════════
-// DORSOLATERAL PREFRONTAL CORTEX (DLPFC) — Decision Engine
-// ═════════════════════════════════════════════════════════════════════════
-// Neuro: Working memory, planning, abstract reasoning, cognitive control
-// Trinity: Decision engine + priority queue + main Queen cycle
-//   READ → THINK → ACT → SPEAK cycle
-//   Phase 1: READ ONLY — decisions logged, NOT executed
+// @origin(manual) @regen(manual-impl)
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUEEN DLPFC (Dorsolateral Prefrontal Cortex) — Autonomous Decision Engine
+// ═══════════════════════════════════════════════════════════════════════════════
+// S³AI Brain Module — Central decision engine tying all modules together
+// Neuro: Executive function, working memory, cognitive flexibility, planning
+// Trinity: READ → THINK → ACT → SPEAK autonomous cycle
 //
 // φ² + 1/φ² = 3 = TRINITY
-// ═════════════════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const array_list = std.array_list;
+
+const faculty_types = @import("faculty_types.zig");
 const qt = @import("queen_types.zig");
 const thalamus = @import("thalamus.zig");
-const hippocampus = @import("hippocampus.zig");
+const voice_engine = @import("voice_engine.zig");
+const queen_actions = @import("queen_actions.zig");
+const queen_ofc = @import("queen_ofc.zig");
+const basal_ganglia = @import("basal_ganglia.zig");
+const cerebellum = @import("cerebellum.zig");
+const queen_policy = @import("queen_policy.zig");
 
-// ═══════════════════════════════════════════════════════════════════════════════════
-// PHASE 1 — READ ONLY (no actions executed)
-// ═════════════════════════════════════════════════════════════════════════════════════
+// Phoenix brainstem modules
+const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
+const medulla = @import("phoenix_medulla.zig");
+const pons = @import("phoenix_pons.zig");
 
-pub const PHASE: u8 = 1; // READ_ONLY
-
-// ═════════════════════════════════════════════════════════════════════════════════════════
-// DECISION — What to do, priority, reasoning
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
+// DECISION — What Queen wants to do
+// ═══════════════════════════════════════════════════════════════════════════════
 
 pub const Decision = struct {
-    id: u32 = 0,
-    kind: DecisionKind,
-    priority: Priority,
-    action: []const u8 = "",
-    action_len: usize = 0,
-    reason: [512]u8 = undefined,
-    reason_len: usize = 0,
+    action: qt.ActionKind,
+    urgency: basal_ganglia.Urgency,
+    reason: []const u8,
+    confidence: f32 = 0.0,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DECISION CONTEXT — All sensor data for decision making
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const DecisionContext = struct {
+    allocator: Allocator,
+    farm: thalamus.FarmStatus,
+    issues: thalamus.GitHubIssues,
+    mu_heartbeat: voice_engine.MuHeartbeat,
+    config: qt.QueenConfig,
+    state: *qt.QueenState,
+    counters: *queen_policy.ActionCounters,
+    incidents: *queen_policy.IncidentMemory,
+
+    // Derived metrics
+    ouroboros_score: f32 = 0.0,
+    dirty_files: u16 = 0,
+    build_ok: bool = true,
+
+    // Faculty board integration (Phase 3.5)
+    faculty_metrics: ?FacultyMetrics = null,
+    trend_analysis: ?TrendAnalysis = null,
+
+    // Phoenix brainstem integration
+    locus_state: locus_coeruleus.LocusState = .{},
+    last_sleep_ts: i64 = 0,
+
+    /// Check if we should take any auto-action
+    pub fn shouldAutoAct(self: *const DecisionContext) bool {
+        return self.config.allow_auto_actions and self.config.daemon;
+    }
+
+    /// Get current arousal level
+    pub fn getArousal(self: *const DecisionContext) locus_coeruleus.ArousalLevel {
+        return locus_coeruleus.getArousal(&self.locus_state);
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACULTY METRICS — Real-time faculty board health summary
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const FacultyMetrics = struct {
+    active_count: u8 = 0, // Number of active agents (0-6)
+    build_health: f32 = 0.0, // 0-100: build pass rate
+    compile_rate: u8 = 0, // 0-100: percentage
+    v_number: f32 = 0.0, // V-number (0-2+)
+    dirty_files: u16 = 0, // Number of uncommitted files
+    open_issues: u16 = 0, // GitHub issues
+    mu_patterns: u16 = 0, // Mu memory patterns
+    cycle: FacultyCycle = .working,
+    v_zone: faculty_types.VZone = .drift,
     timestamp: i64 = 0,
-    executed: bool = false, // Was this decision executed?
-    result: [1024]u8 = undefined,
-    result_len: usize = 0,
 
-    pub fn reasonStr(self: *const Decision) []const u8 {
-        return self.reason[0..self.reason_len];
+    pub const FacultyCycle = enum { working, evaluating, sleeping };
+
+    /// Calculate overall health score (0-100)
+    pub fn healthScore(self: *const FacultyMetrics) f32 {
+        var score: f32 = 0.0;
+        score += @as(f32, @floatFromInt(self.active_count)) * 15.0; // 0-90 points
+        score += self.build_health * 0.1; // 0-10 points
+        return @min(score, 100.0);
     }
 
-    pub fn setReason(self: *Decision, text: []const u8) void {
-        const len = @min(text.len, self.reason.len);
-        @memcpy(self.reason[0..len], text[0..len]);
-        self.reason_len = len;
-    }
-
-    pub fn setResult(self: *Decision, text: []const u8) void {
-        const len = @min(text.len, self.result.len);
-        @memcpy(self.result[0..len], text[0..len]);
-        self.result_len = len;
-    }
-
-    pub fn setExecuted(self: *Decision) void {
-        self.executed = true;
-        self.timestamp = std.time.timestamp();
-    }
-};
-
-pub const DecisionKind = enum {
-    scan_system, // Run doctor scan
-    check_health, // Verify cell health
-    recycle_worker, // Recycle stale/crashed farm worker
-    inject_config, // Inject new training config
-    farm_evolve_step, // Run evolution step
-    git_commit, // Commit git state
-    git_push, // Push to remote
-    heal_doctor, // Run doctor heal
-
-    pub fn label(self: DecisionKind) []const u8 {
-        return switch (self) {
-            .scan_system => "scan system",
-            .check_health => "check cell health",
-            .recycle_worker => "recycle worker",
-            .inject_config => "inject config",
-            .farm_evolve_step => "evolve step",
-            .git_commit => "git commit",
-            .git_push => "git push",
-            .heal_doctor => "heal doctor",
+    /// Get V-zone description
+    pub fn vZoneStr(self: *const FacultyMetrics) []const u8 {
+        return switch (self.v_zone) {
+            .gold => "GOLD",
+            .stable => "STABLE",
+            .drift => "DRIFT",
         };
     }
 };
 
-pub const Priority = enum(u8) {
-    critical = 0, // crashed worker, dead token
-    high = 1, // stalled >1h, PPL regression
-    medium = 2, // recycle, status checks
-    low = 3, // informational
+// ═══════════════════════════════════════════════════════════════════════════════
+// TREND ANALYSIS — Predictive problem detection
+// ═══════════════════════════════════════════════════════════════════════════════
 
-    pub fn label(self: Priority) []const u8 {
-        return switch (self) {
-            .critical => "CRITICAL",
-            .high => "HIGH",
-            .medium => "MEDIUM",
-            .low => "LOW",
+pub const TrendAnalysis = struct {
+    compile_trend: Trend = .stable,
+    v_trend: Trend = .stable,
+    dirty_trend: Trend = .stable,
+    faculty_trend: Trend = .stable,
+    confidence: f32 = 0.0, // 0-1: how confident we are in these trends
+    sample_size: u32 = 0, // Number of data points analyzed
+
+    pub const Trend = enum { falling, stable, rising };
+
+    /// Get summary string
+    pub fn summary(self: *const TrendAnalysis) []const u8 {
+        if (self.confidence < 0.5) return "insufficient data";
+        return switch (self.compile_trend) {
+            .falling => "⚠ compile rate declining",
+            .rising => "✓ compile rate improving",
+            .stable => "✓ stable",
         };
     }
 
-    pub fn emoji(self: Priority) []const u8 {
-        return switch (self) {
-            .critical => qt.E_SIREN,
-            .high => qt.E_WRENCH,
-            .medium => qt.E_WRENCH,
-            .low => qt.E_CHECK,
-        };
+    /// Check if any metric is trending negatively
+    pub fn hasProblemTrends(self: *const TrendAnalysis) bool {
+        return self.compile_trend == .falling or
+            self.v_trend == .falling or
+            self.dirty_trend == .rising or
+            self.faculty_trend == .falling;
+    }
+
+    /// Calculate urgency score based on trends (0-10)
+    pub fn urgencyScore(self: *const TrendAnalysis) u8 {
+        var score: u8 = 0;
+        if (self.compile_trend == .falling) score += 3;
+        if (self.v_trend == .falling) score += 2;
+        if (self.dirty_trend == .rising) score += 2;
+        if (self.faculty_trend == .falling) score += 3;
+        return @min(score, 10);
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════════════════════
-// PRIORITY QUEUE — Decisions waiting execution
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════════════════════
+// CYCLE STATE — Track decision loop progress
+// ═══════════════════════════════════════════════════════════════════════════════
 
-pub const PriorityQueue = struct {
-    decisions: []Decision = &.{},
-    count: usize = 0,
+pub const CycleState = struct {
+    iteration: u64 = 0,
+    last_decision: ?Decision = null,
+    decision_count: u64 = 0,
+    running: bool = true,
+    start_time: i64 = 0,
 
-    pub fn init(allocator: Allocator) !PriorityQueue {
-        const queue = try allocator.alloc(Decision, 16);
-        return .{ .decisions = queue };
+    pub fn init() CycleState {
+        return .{
+            .start_time = std.time.timestamp(),
+        };
     }
 
-    pub fn push(self: *PriorityQueue, decision: Decision) !void {
-        if (self.count >= self.decisions.len) {
-            return error.QueueFull;
+    pub fn uptimeSeconds(self: *const CycleState) i64 {
+        return std.time.timestamp() - self.start_time;
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MAIN AUTONOMOUS LOOP — READ → THINK → ACT → SPEAK
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Alert sink for Locus Coeruleus — receives alarm notifications
+fn locusAlertSink(alert: locus_coeruleus.Alert, arousal: locus_coeruleus.ArousalLevel) void {
+    _ = alert;
+    _ = arousal;
+    // This is called by LC when alarm is triggered
+    // The arousal level is passed to OFC for tone adjustment
+    // In daemon mode, this will trigger immediate Telegram notification
+}
+
+pub fn runUnifiedLoop(allocator: Allocator, config: qt.QueenConfig) !void {
+    var state = qt.QueenState{
+        .started_at = std.time.timestamp(),
+    };
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+    var cycle_state = CycleState.init();
+
+    // Initialize Locus Coeruleus with alert sink
+    var locus_state = locus_coeruleus.init(locusAlertSink);
+
+    const print = std.debug.print;
+
+    print("\n{s}" ++ qt.E_CROWN ++ " Queen DLPFC — Autonomous Decision Engine{s}\n", .{
+        @import("tri_colors.zig").GOLDEN, @import("tri_colors.zig").RESET,
+    });
+    print("  interval: {d}s | daemon: {s} | auto_level: L{d}\n\n", .{
+        config.interval_sec,
+        if (config.daemon) "YES" else "NO",
+        config.max_auto_level,
+    });
+
+    while (cycle_state.running) {
+        cycle_state.iteration += 1;
+
+        // Build context
+        var ctx = DecisionContext{
+            .allocator = allocator,
+            .config = config,
+            .state = &state,
+            .counters = &counters,
+            .incidents = &incidents,
+            .locus_state = locus_state,
+            .last_sleep_ts = state.last_sleep_ts,
+        };
+
+        // PHASE 1: READ — Gather all sensor data
+        // Medulla heartbeat at start of each cycle
+        if (config.daemon) {
+            _ = medulla.heartbeatPing(allocator);
         }
 
-        // Insert sorted by priority (critical first)
-        var insert_at = self.count;
-        for (0..self.count) |i| {
-            if (@intFromEnum(decision.priority) < @intFromEnum(self.decisions[i].priority)) {
-                insert_at = i;
+        try readSenses(allocator, &ctx);
+
+        // PHASE 2: THINK — Decide what to do
+        const decision = try decide(&ctx);
+
+        // PHASE 3: ACT — Execute action (or skip if none)
+        var result = qt.ActionResult{ .success = true };
+        if (decision) |d| {
+            cycle_state.last_decision = d;
+            cycle_state.decision_count += 1;
+            result = try act(&ctx, d);
+        }
+
+        // PHASE 4: SPEAK — Report via OFC
+        try speak(&ctx, decision, result);
+
+        // Save locus state and last_sleep_ts
+        locus_state = ctx.locus_state;
+        state.last_sleep_ts = ctx.last_sleep_ts;
+
+        // Sleep cycle every 24 hours
+        if (config.daemon) {
+            const now = std.time.timestamp();
+            const hours_since_sleep = if (ctx.last_sleep_ts > 0)
+                @divTrunc(now - ctx.last_sleep_ts, 3600)
+            else
+                25; // Trigger on first run
+            if (hours_since_sleep >= 24) {
+                _ = medulla.sleepCycle(allocator);
+                ctx.last_sleep_ts = now;
+                state.last_sleep_ts = now;
+            }
+        }
+
+        // Sleep until next cycle
+        if (!config.daemon) {
+            cycle_state.running = false;
+        } else {
+            print("\n{s}Cycle #{d} complete. Sleeping {d}s...{s}\n\n", .{
+                @import("tri_colors.zig").GRAY,
+                cycle_state.iteration,
+                config.interval_sec,
+                @import("tri_colors.zig").RESET,
+            });
+            std.time.sleep(config.interval_sec * 1_000_000_000);
+        }
+    }
+
+    print("\n{s}" ++ qt.E_CROWN ++ " Queen DLPFC — Shutdown after {d} cycles, {d} decisions{s}\n\n", .{
+        @import("tri_colors.zig").GOLDEN,
+        cycle_state.iteration,
+        cycle_state.decision_count,
+        @import("tri_colors.zig").RESET,
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// READ PHASE — Gather sensor data from all Thalamus relays
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn readSenses(allocator: Allocator, ctx: *DecisionContext) !void {
+    // Relay 12: Farm Status
+    ctx.farm = try thalamus.getFarmStatus(allocator);
+
+    // Relay 13: GitHub Issues
+    ctx.issues = try thalamus.getGitHubIssues(allocator);
+
+    // Relay 1: Mu Heartbeat
+    ctx.mu_heartbeat = thalamus.getMuHeartbeat(allocator);
+
+    // Derived metrics
+    ctx.build_ok = ctx.mu_heartbeat.build_ok;
+    // TODO: Get ouroboros_score and dirty_files from actual sensors
+    ctx.ouroboros_score = 75.0; // Default healthy
+    ctx.dirty_files = 0;
+
+    // Phase 3.5: Collect faculty metrics from faculty board
+    ctx.faculty_metrics = collectFacultyMetrics(allocator);
+
+    // Phase 3.5: Analyze trends from faculty metrics
+    ctx.trend_analysis = analyzeTrends(allocator, ctx.faculty_metrics);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COLLECT FACULTY METRICS — Gather real-time faculty board data
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn collectFacultyMetrics(allocator: Allocator) ?FacultyMetrics {
+    const faculty_board = @import("cortex.zig");
+    const snapshot = faculty_board.collectSnapshot(allocator) catch return null;
+
+    const metrics = FacultyMetrics{
+        .active_count = snapshot.activeFaculty(),
+        .build_health = if (snapshot.compile_total > 0)
+            @as(f32, @floatFromInt(snapshot.compile_pass)) * 100.0 / @as(f32, @floatFromInt(snapshot.compile_total))
+        else
+            100.0,
+        .compile_rate = snapshot.compile_rate,
+        .v_number = @as(f32, @floatCast(snapshot.v_number)),
+        .v_zone = snapshot.v_zone,
+        .dirty_files = snapshot.dirty_files,
+        .open_issues = snapshot.open_issues,
+        .mu_patterns = snapshot.mu_patterns,
+        .cycle = switch (snapshot.cycle) {
+            .working, .quiet => .working,
+            .emergency => .working,
+        },
+        .timestamp = std.time.timestamp(),
+    };
+
+    return metrics;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANALYZE TRENDS — Predictive problem detection from historical data
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn analyzeTrends(allocator: Allocator, current: ?FacultyMetrics) ?TrendAnalysis {
+    if (current == null) return null;
+
+    // Read recent faculty history from hippocampus
+    const hippocampus = @import("hippocampus.zig");
+    var results = hippocampus.read(allocator, .{
+        .agent = "faculty_board",
+        .kind = .observation,
+        .limit = 10,
+    }) catch return null;
+    defer results.deinit(allocator);
+
+    if (results.items.len < 3) return null; // Need at least 3 data points
+
+    // Simple trend analysis based on most recent vs oldest
+    var first_active: u8 = 0;
+    var last_active: u8 = 0;
+    var data_points: u8 = 0;
+
+    for (results.items) |r| {
+        const summary = r.summary();
+        // Parse format: "active: 5/6 | compile_rate: 85 | v: 1.17 | dirty: 12"
+        if (std.mem.indexOf(u8, summary, "active:")) |idx| {
+            const active_end = std.mem.indexOf(u8, summary[idx..], "/") orelse summary.len;
+            const active_str = summary[idx + 7 .. idx + active_end];
+            const active = std.fmt.parseInt(u8, active_str, 10) catch continue;
+            if (data_points == 0) first_active = active;
+            last_active = active;
+            data_points += 1;
+        }
+    }
+
+    // Faculty trend based on active faculty count
+    const faculty_trend = if (data_points >= 2)
+        if (last_active > first_active)
+            TrendAnalysis.Trend.rising
+        else if (last_active < first_active)
+            TrendAnalysis.Trend.falling
+        else
+            TrendAnalysis.Trend.stable
+    else
+        TrendAnalysis.Trend.stable;
+
+    const analysis = TrendAnalysis{
+        .compile_trend = TrendAnalysis.Trend.stable, // TODO: parse compile_rate trend
+        .v_trend = TrendAnalysis.Trend.stable, // TODO: parse V trend
+        .dirty_trend = TrendAnalysis.Trend.stable, // TODO: parse dirty trend
+        .faculty_trend = faculty_trend,
+        .confidence = @as(f32, @floatFromInt(results.items.len)) / 10.0,
+        .sample_size = @intCast(results.items.len),
+    };
+
+    return analysis;
+}
+
+/// Determine trend from two values
+fn determineTrend(current: f32, previous: f32) TrendAnalysis.Trend {
+    const threshold = 0.05; // 5% change threshold
+    const delta = current - previous;
+    const pct_change = if (previous != 0) delta / previous else 0;
+
+    if (pct_change > threshold) return TrendAnalysis.Trend.rising;
+    if (pct_change < -threshold) return TrendAnalysis.Trend.falling;
+    return TrendAnalysis.Trend.stable;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOCUS COERULEUS INTEGRATION — Alarm triggers for critical events
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Trigger LC alarms based on system state
+fn triggerLocusAlarms(ctx: *DecisionContext) !void {
+    // Critical: Build broken
+    if (!ctx.build_ok) {
+        try locus_coeruleus.triggerAlarm(
+            &ctx.locus_state,
+            .build_broken,
+            "Build system failed - training stopped",
+            null, // Use default severity-based arousal
+        );
+    }
+
+    // Critical: Mass worker crash (>10 crashed)
+    if (ctx.farm.crashed > 10) {
+        var msg_buf: [256]u8 = undefined;
+        const msg = try std.fmt.bufPrint(
+            &msg_buf,
+            "{d} workers crashed - mass failure detected",
+            .{ctx.farm.crashed},
+        );
+        try locus_coeruleus.triggerAlarm(
+            &ctx.locus_state,
+            .worker_crashed,
+            msg,
+            .emergency,
+        );
+    }
+
+    // Alarm: Token expired (check via environment)
+    const has_token = std.posix.getenv("RAILWAY_TOKEN_1") orelse
+        std.posix.getenv("RAILWAY_TOKEN_2") orelse
+        std.posix.getenv("ZAI_KEY_1") orelse null;
+    if (has_token == null) {
+        try locus_coeruleus.triggerAlarm(
+            &ctx.locus_state,
+            .token_expired,
+            "API token expired or missing - cannot communicate with Railway",
+            .alarm,
+        );
+    }
+
+    // Decay arousal over time (natural relaxation)
+    locus_coeruleus.decayArousal(&ctx.locus_state, 300);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THINK PHASE — Decision engine using Basal Ganglia
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn decide(ctx: *DecisionContext) !?Decision {
+    if (!ctx.shouldAutoAct()) {
+        return null;
+    }
+
+    // Trigger LC alarms for critical events
+    try triggerLocusAlarms(ctx);
+
+    // Collect candidates from observations
+    const CandidateList = array_list.AlignedManaged(basal_ganglia.ActionCandidate, null);
+    var candidates = CandidateList.init(ctx.allocator);
+    defer candidates.deinit();
+
+    // Rule 1: Build broken → doctor_quick (high urgency)
+    if (!ctx.build_ok) {
+        try candidates.append(.{
+            .kind = .doctor_quick,
+            .urgency = .critical,
+            .value = 0.9,
+            .cost = 0.1,
+        });
+    }
+
+    // Rule 2: Farm has crashed workers → farm_recycle (high urgency)
+    if (ctx.farm.crashed > 3) {
+        try candidates.append(.{
+            .kind = .farm_recycle,
+            .urgency = .high,
+            .value = 0.8,
+            .cost = 0.3,
+        });
+    }
+
+    // Rule 3: Active farm with good PPL → celebrate (only if training is happening!)
+    const has_active_training = ctx.farm.active > 0;
+    const has_good_ppl = ctx.farm.best_ppl > 0.0 and ctx.farm.best_ppl < 10.0;
+    if (has_active_training and has_good_ppl) {
+        try candidates.append(.{
+            .kind = .notify,
+            .urgency = .normal,
+            .value = 0.5,
+            .cost = 0.0,
+        });
+    }
+
+    // Rule 4: Open agent:spawn issues → cloud_spawn
+    if (ctx.issues.agent_spawn > 0) {
+        try candidates.append(.{
+            .kind = .cloud_spawn,
+            .urgency = .high,
+            .value = 0.7,
+            .cost = 0.4,
+        });
+    }
+
+    // Rule 5: Idle workers > 5 → farm_recycle
+    const idle_count = ctx.farm.total_services - ctx.farm.active - ctx.farm.crashed;
+    if (idle_count > 5) {
+        try candidates.append(.{
+            .kind = .farm_recycle,
+            .urgency = .normal,
+            .value = 0.6,
+            .cost = 0.3,
+        });
+    }
+
+    // Select via Basal Ganglia action selection
+    const selected = basal_ganglia.selectAction(candidates.items);
+
+    if (selected) |action| {
+        // Find the candidate to get urgency
+        var urgency = basal_ganglia.Urgency.normal;
+        var confidence: f32 = 0.5;
+        for (candidates.items) |c| {
+            if (c.kind == action) {
+                urgency = c.urgency;
+                confidence = c.value;
                 break;
             }
         }
 
-        // Shift to make room
-        const move_from = if (insert_at < self.count)
-            insert_at
-        else
-            self.count;
+        const reason = getContextualReason(action, ctx);
 
-        for (insert_at..self.count) |i| {
-            const target = if (i >= move_from and i > insert_at)
-                i - 1
-            else
-                i;
+        return Decision{
+            .action = action,
+            .urgency = urgency,
+            .reason = reason,
+            .confidence = confidence,
+        };
+    }
 
-            self.decisions[target] = self.decisions[i];
+    return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACT PHASE — Execute selected action
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn act(ctx: *DecisionContext, decision: Decision) !qt.ActionResult {
+    // Check policy before executing
+    const verdict = queen_policy.checkPolicy(
+        decision.action,
+        ctx.config,
+        ctx.counters,
+        ctx.incidents,
+    );
+
+    if (!verdict.isAllowed()) {
+        // Log denial
+        queen_policy.writeAuditEntry(
+            "auto-denied",
+            decision.action,
+            verdict,
+            false,
+            verdict.reason(),
+        );
+
+        return qt.ActionResult{
+            .success = false,
+            .output_len = 0,
+            .duration_ms = 0,
+        };
+    }
+
+    // Execute action
+    const result = queen_actions.execute(ctx.allocator, decision.action);
+
+    // Pons bridge: after farm recycle, send results to cerebellum
+    if (decision.action == .farm_recycle) {
+        // Build simple crashed worker list (for Phase 1, just use count)
+        const bridge_results = pons.FarmSweepResults{
+            .stale_count = @intCast(ctx.farm.stale_count),
+            .crashed_workers = &[_][]const u8{},
+        };
+        _ = try pons.bridgeToCerebellum(ctx.allocator, bridge_results);
+    }
+
+    // Record action
+    queen_actions.recordAutoAction(ctx.state, decision.action, ctx.counters);
+
+    // Log incident
+    ctx.incidents.record(
+        if (result.success) queen_policy.IncidentKind.auto_action else queen_policy.IncidentKind.auto_action_fail,
+        decision.action,
+        result.success,
+        decision.reason,
+    );
+
+    // Audit trail
+    queen_policy.writeAuditEntry(
+        "auto-action",
+        decision.action,
+        verdict,
+        result.success,
+        decision.reason,
+    );
+
+    return result;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONTEXT-AWARE MESSAGING — Human-like voice
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Get contextual reason that explains WHAT and WHY
+fn getContextualReason(action: qt.ActionKind, ctx: *const DecisionContext) []const u8 {
+    return switch (action) {
+        .doctor_quick => buildBrokenReason(ctx),
+        .farm_recycle => farmRecycleReason(ctx),
+        .notify => celebrationReason(ctx),
+        .cloud_spawn => cloudSpawnReason(ctx),
+        else => "Routine action",
+    };
+}
+
+/// Explain why build healing is needed
+fn buildBrokenReason(ctx: *const DecisionContext) []const u8 {
+    if (ctx.faculty_metrics) |m| {
+        if (m.compile_rate < 50) {
+            return "Compile rate very low, needs immediate attention";
         }
-
-        self.decisions[insert_at] = decision;
-        self.count += 1;
+        if (m.dirty_files > 100) {
+            return "Too many dirty files, build unstable";
+        }
     }
-
-    pub fn pop(self: *PriorityQueue) ?Decision {
-        if (self.count == 0) return null;
-
-        self.count -= 1;
-        return self.decisions[0];
-    }
-
-    pub fn peek(self: *const PriorityQueue) ?Decision {
-        if (self.count == 0) return null;
-        return self.decisions[self.count - 1];
-    }
-
-    pub fn isEmpty(self: *const PriorityQueue) bool {
-        return self.count == 0;
-    }
-
-    pub fn len(self: *const PriorityQueue) usize {
-        return self.count;
-    }
-};
-
-// ═════════════════════════════════════════════════════════════════════════════════════════════════
-// UNIFIED LOOP — READ → THINK → ACT → SPEAK
-// ═════════════════════════════════════════════════════════════════════════════════════════════
-
-pub const LoopState = struct {
-    cycle: u32 = 0,
-    queue: PriorityQueue = .{},
-    last_think: i64 = 0,
-
-    pub fn init(allocator: Allocator) !LoopState {
-        const q = try PriorityQueue.init(allocator);
-        return .{ .queue = q };
-    }
-};
-
-/// READ phase — gather Thalamus data
-pub fn readPhase(allocator: Allocator, state: *LoopState) !void {
-    state.cycle += 1;
-
-    // Collect all Thalamus relays
-    const farm_status = try thalamus.getFarmStatus(allocator);
-    const github_issues = try thalamus.getGitHubIssues(allocator);
-
-    _ = try thalamus.getCellHealth(allocator); // Not used yet
-    const metabolism = try thalamus.getMetabolismSnapshot(allocator);
-    const sleep_info = try thalamus.getLastSleepInfo(allocator);
-
-    // Build observation string
-    var buf: [2048]u8 = undefined;
-    var offset: usize = 0;
-
-    offset += try std.fmt.bufPrint(
-        buf[offset..],
-        "\\n{s} READ PHASE — Cycle {d}{s}\\n",
-        .{ qt.E_EYE, state.cycle },
-    );
-    offset += try std.fmt.bufPrint(
-        buf[offset..],
-        "{s} Farm: {d}/{d} active PPL={d:.1}\\n",
-        .{ farm_status.active, farm_status.total_services, farm_status.best_ppl },
-    );
-    offset += try std.fmt.bufPrint(
-        buf[offset..],
-        "{s} GitHub: {d} open issues\\n",
-        .{github_issues.open},
-    );
-    offset += try std.fmt.bufPrint(
-        buf[offset..],
-        "{s} Metabolism: PPL={d:.1} tok/s={d}\\n",
-        .{ if (metabolism) |m| m.ppl else 0.0, if (metabolism) |m| m.tok_per_sec else 0 },
-    );
-    offset += try std.fmt.bufPrint(
-        buf[offset..],
-        "{s} Sleep: {d}h ago\\n",
-        .{if (sleep_info) |s| s.hours_since else 999},
-    );
-
-    // Log to hippocampus
-    const data = try std.fmt.allocPrint(
-        allocator,
-        "{{\"cycle\":{d},\"farm_active\":{d},\"farm_total\":{d},\"github_open\":{d},\"metabolism_ppl\":{d:.1},\"sleep_hours_ago\":{d:.1}}}",
-        .{ state.cycle, farm_status.active, farm_status.total_services, github_issues.open, if (metabolism) |m| m.ppl else 0.0, if (sleep_info) |s| s.hours_since else 999.0 },
-    );
-    defer allocator.free(data);
-
-    _ = try hippocampus.write(allocator, .{
-        .agent = "queen_dlpfc",
-        .kind = .observation,
-        .summary = "unified read phase",
-        .data = data,
-    });
+    return "Build broken, running quick heal";
 }
 
-/// THINK phase — analyze and prioritize
-pub fn thinkPhase(allocator: Allocator, state: *LoopState) !void {
-    state.last_think = std.time.timestamp();
+/// Explain farm recycling decision
+fn farmRecycleReason(ctx: *const DecisionContext) []const u8 {
+    const crashed = ctx.farm.crashed;
+    const total = ctx.farm.total_services;
+    const active = ctx.farm.active;
+    const idle = total - active - crashed;
 
-    // Decision queue for this cycle
-    var decisions = std.ArrayList(Decision).initCapacity(0, allocator);
-    defer decisions.deinit(allocator);
-
-    // Check for critical issues
-    const farm_status = try thalamus.getFarmStatus(allocator);
-
-    if (farm_status.crashed > 0) {
-        try decisions.append(Decision{
-            .id = 1,
-            .kind = .recycle_worker,
-            .priority = .critical,
-            .action = "recycle crashed worker",
-            .reason = "Worker crash detected, immediate recycle needed",
-        });
+    if (crashed > 5) {
+        return "Many workers crashed, recycling farm";
     }
-
-    if (farm_status.stale_count > 5) {
-        try decisions.append(Decision{
-            .id = 2,
-            .kind = .recycle_worker,
-            .priority = .high,
-            .action = "mass recycle stale workers",
-            .reason = "Multiple stale workers detected",
-        });
+    if (idle > 10) {
+        return "Many idle workers, recycling for efficiency";
     }
-
-    // Push all decisions to priority queue
-    for (decisions.items) |dec| {
-        try state.queue.push(dec);
-    }
-
-    // Log think summary
-    const summary = try std.fmt.allocPrint(
-        allocator,
-        "{{\\\"decisions\\\":{d},\\\"cycle\\\":{d}}}",
-        .{ decisions.items.len, state.cycle },
-    );
-    defer allocator.free(summary);
-
-    _ = try hippocampus.write(allocator, .{
-        .agent = "queen_dlpfc",
-        .kind = .observation,
-        .summary = "think phase completed",
-        .data = summary,
-    });
+    return "Farm needs optimization";
 }
 
-/// SPEAK phase — format decisions for output (Phase 1: log only)
-pub fn speakPhase(allocator: Allocator, state: *LoopState) ![]const u8 {
-    _ = allocator; // Not used in Phase 1
-    if (state.queue.isEmpty()) {
-        return "No decisions in queue";
+/// Explain celebration (only when there's something to celebrate!)
+fn celebrationReason(ctx: *const DecisionContext) []const u8 {
+    if (ctx.farm.active == 0) {
+        return "Farm is idle - nothing to celebrate";
     }
 
-    var buf: [2048]u8 = undefined;
+    const ppl = ctx.farm.best_ppl;
+    if (ppl < 3.0) {
+        return "Excellent PPL achieved!";
+    }
+    if (ppl < 5.0) {
+        return "Good progress on PPL";
+    }
+    return "Training running smoothly";
+}
+
+/// Explain cloud spawn decision
+fn cloudSpawnReason(ctx: *const DecisionContext) []const u8 {
+    const issues = ctx.issues.agent_spawn;
+    const finished = if (ctx.farm.total_services > 0) ctx.farm.total_services else 0;
+
+    if (issues > 3) {
+        return "Multiple agent spawn issues detected";
+    }
+    if (finished > 0) {
+        return "Spawning replacements for finished containers";
+    }
+    return "Agent spawn needed";
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SPEAK PHASE — Report decision and result via OFC
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn speak(ctx: *DecisionContext, decision: ?Decision, result: qt.ActionResult) !void {
+    _ = decision; // Available for future enhancements
+    _ = result; // Available for future enhancements
+
+    // Generate arousal-aware report
+    const arousal = ctx.getArousal();
+
+    // Use OFC's arousal-aware formatting
+    const report = queen_ofc.formatStatusReportWithArousal(
+        ctx.allocator,
+        ctx.build_ok,
+        ctx.ouroboros_score,
+        @intCast(ctx.farm.active),
+        ctx.farm.best_ppl,
+        arousal,
+    ) catch return;
+    defer ctx.allocator.free(report);
+
+    // Send via OFC with appropriate routing based on arousal
+    const route = if (arousal == .emergency or arousal == .alarm)
+        queen_ofc.ChatRoute.alert
+    else
+        queen_ofc.ChatRoute.group;
+
+    ctx.state.cycle +|= 1;
+    try queen_ofc.send(ctx.allocator, route, report);
+}
+
+/// Format human-like report that explains WHAT happened and WHY
+fn formatHumanReport(
+    buf: []u8,
+    ctx: *const DecisionContext,
+    decision: ?Decision,
+    result: qt.ActionResult,
+) ![]const u8 {
     var offset: usize = 0;
 
-    // Header
-    offset += try std.fmt.bufPrint(
-        buf[offset..],
-        "{s} Unified Queen Loop — {s}\\n",
-        .{qt.E_CROWN},
-    );
-    offset += try std.fmt.bufPrint(
-        buf[offset..],
-        "{s} Phase {d} (READ ONLY) | Cycle {d}\\n",
-        .{ PHASE, state.cycle },
-    );
-
-    // List all decisions
-    var idx: usize = 0;
-    while (idx < state.queue.count) {
-        const dec = state.queue.peek() orelse break;
-        if (dec == null) break;
-
-        const icon = dec.priority.emoji();
-        offset += try std.fmt.bufPrint(
-            buf[offset..],
-            "  {s} {s}{s} — {s}\\n",
-            .{ icon, dec.priority.label(), dec.kind.label() },
-        );
-        offset += try std.fmt.bufPrint(
-            buf[offset..],
-            "    Reason: {s}\\n",
-            .{dec.reasonStr()},
-        );
-
-        _ = state.queue.pop();
-        idx += 1;
+    // Context-aware header
+    const header = getContextualHeader(ctx);
+    if (offset + header.len <= buf.len) {
+        @memcpy(buf[offset..][0..header.len], header);
+        offset += header.len;
     }
 
-    // Footer
-    offset += try std.fmt.bufPrint(
-        buf[offset..],
-        "\\n{s} {d} decisions total\\n",
-        .{ qt.E_CHECK, state.queue.count },
-    );
+    // Farm status (human-readable)
+    const farm_status = formatFarmStatus(ctx);
+    if (offset + farm_status.len <= buf.len) {
+        @memcpy(buf[offset..][0..farm_status.len], farm_status);
+        offset += farm_status.len;
+    }
+
+    // Build status
+    const build_status = if (ctx.build_ok)
+        "\n✅ Build is healthy"
+    else
+        "\n❌ Build broken - will attempt healing";
+    if (offset + build_status.len <= buf.len) {
+        @memcpy(buf[offset..][0..build_status.len], build_status);
+        offset += build_status.len;
+    }
+
+    // Action explanation
+    if (decision) |d| {
+        const action_text = formatActionExplanation(d, result);
+        if (offset + action_text.len <= buf.len) {
+            @memcpy(buf[offset..][0..action_text.len], action_text);
+            offset += action_text.len;
+        }
+    } else {
+        const no_action = "\n\n🧠 Standing by. No action needed.";
+        if (offset + no_action.len <= buf.len) {
+            @memcpy(buf[offset..][0..no_action.len], no_action);
+            offset += no_action.len;
+        }
+    }
 
     return buf[0..offset];
 }
 
-/// Main unified loop entry point
-pub fn runUnifiedLoop(allocator: Allocator, interval_sec: u32) !void {
-    var state = try LoopState.init(allocator);
+/// Get header based on actual system state (not generic mood)
+fn getContextualHeader(ctx: *const DecisionContext) []const u8 {
+    const farm_active = ctx.farm.active;
+    const farm_total = ctx.farm.total_services;
 
-    while (true) {
-        std.Thread.sleep(interval_sec * std.time.ns_per_s);
-
-        try readPhase(allocator, &state);
-        try thinkPhase(allocator, &state);
-
-        // Phase 1: SPEAK = log only, no execution
-        const report = try speakPhase(allocator, &state);
-
-        // TODO: Send to Telegram in Phase 2
-        std.debug.print("{s}\n", .{report});
+    if (farm_active == 0 and farm_total > 0) {
+        // Farm is idle
+        return "🧠 Farm Status Update\n\nTraining farm is idle. ";
+    } else if (farm_active > 0) {
+        // Farm is running
+        return "🧠 Farm Status Update\n\nTraining is active. ";
+    } else {
+        // No farm at all
+        return "🧠 System Status\n\n";
     }
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════════
-// TESTS
-// ═════════════════════════════════════════════════════════════════════════════════════
+/// Format farm status in human-readable way
+fn formatFarmStatus(ctx: *const DecisionContext) []const u8 {
+    if (ctx.farm.active == 0 and ctx.farm.total_services == 0) {
+        return "No training services configured.";
+    }
 
-test "dlpfc — DecisionKind labels" {
-    try std.testing.expectEqualStrings("scan system", DecisionKind.scan_system.label());
-    try std.testing.expectEqualStrings("git commit", DecisionKind.git_commit.label());
-}
-
-test "dlpfc — Priority labels" {
-    try std.testing.expectEqualStrings("CRITICAL", Priority.critical.label());
-    try std.testing.expectEqualStrings("LOW", Priority.low.label());
-}
-
-test "dlpfc — PriorityQueue push pop" {
-    var pq = try PriorityQueue.init(std.testing.allocator);
-    defer {
-        for (pq.decisions[0..pq.count]) |*d| {
-            std.testing.allocator.free(d.reasonStr());
+    if (ctx.farm.active == 0) {
+        if (ctx.farm.best_ppl < 999.0) {
+            // Has results but not currently training
+            return "Farm is sleeping. ";
         }
-        std.testing.allocator.free(pq.decisions);
+        return "Farm is offline. ";
     }
 
-    var d = Decision{
-        .id = 1,
-        .kind = .scan_system,
-        .priority = .medium,
-        .action = "test action",
+    // Active training
+    return "Training in progress. ";
+}
+
+/// Explain what action was taken and why
+fn formatActionExplanation(d: Decision, result: qt.ActionResult) []const u8 {
+    _ = result; // Available for future enhancement (e.g., show result emoji)
+    return switch (d.action) {
+        .doctor_quick => "\n\n🔧 Running quick heal to fix build issues...",
+        .farm_recycle => "\n\n♻️ Recycling farm to recover idle/crashed workers.",
+        .notify => "\n\n📊 Status update - all systems nominal.",
+        .cloud_spawn => "\n\n🚀 Spawning new agent containers.",
+        .doctor_heal => "\n\n🏥 Running deep heal to recover codebase.",
+        .git_commit_state => "\n\n💾 Committing state to preserve work.",
+        .git_push => "\n\n☁️ Pushing changes to remote.",
+        .issue_comment => "\n\n📝 Updating GitHub issue tracker.",
+        .arena_battle => "\n\n⚔️ Running arena battles for evaluation.",
+        .ouroboros_cycle => "\n\n🔄 Running Ouroboros health cycle.",
+        else => "\n\nExecuting routine action.",
     };
-    d.setReason("test");
-    try pq.push(d);
-
-    try std.testing.expectEqual(@as(usize, 1), pq.count);
-
-    if (pq.pop()) |popped| {
-        try std.testing.expect(popped.id == 1);
-        try std.testing.expect(popped.kind == .scan_system);
-        std.testing.allocator.free(popped.reasonStr());
-    }
 }
 
-test "dlpfc — PHASE = 1 (READ ONLY)" {
-    try std.testing.expectEqual(@as(u8, 1), PHASE);
+/// Format decision report for Telegram
+fn formatDecisionReport(decision: Decision, result: qt.ActionResult) []const u8 {
+    _ = decision;
+    _ = result;
+    return ""; // TODO: Implement if needed
 }
 
-test "dlpfc — health returns healthy" {
-    const h = health();
-    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENTRY POINT — Start Queen DLPFC as autonomous daemon
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn start(config: qt.QueenConfig) !void {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    try runUnifiedLoop(gpa.allocator(), config);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CELL HEALTH
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn health() CellHealth {
+    return CellHealth{
+        .status = .healthy,
+        .cycle = 0,
+        .last_check = std.time.timestamp(),
+    };
 }
 
 pub const CellHealth = struct {
@@ -435,6 +880,339 @@ pub const CellHealth = struct {
     };
 };
 
-pub fn health() CellHealth {
-    return CellHealth{};
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "dlpfc — decide returns valid action on broken build" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{ .build_ok = false },
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = false,
+    };
+
+    const decision = try decide(&ctx);
+    try std.testing.expect(decision != null);
+    try std.testing.expectEqual(qt.ActionKind.doctor_quick, decision.?.action);
+}
+
+test "dlpfc — decide returns null when no action needed" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{ .total_services = 10, .active = 10, .best_ppl = 10.0 },
+        .issues = .{},
+        .mu_heartbeat = .{ .build_ok = true },
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = true,
+    };
+
+    const decision = try decide(&ctx);
+    try std.testing.expect(decision == null);
+}
+
+test "dlpfc — decide detects crashed workers" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{ .total_services = 10, .active = 5, .crashed = 5, .timestamp = std.time.timestamp() },
+        .issues = .{},
+        .mu_heartbeat = .{ .build_ok = true },
+        .config = .{ .allow_auto_actions = true, .daemon = true, .max_auto_level = 2 },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = true,
+    };
+
+    const decision = try decide(&ctx);
+    try std.testing.expect(decision != null);
+    try std.testing.expectEqual(qt.ActionKind.farm_recycle, decision.?.action);
+}
+
+test "dlpfc — CycleState init" {
+    const state = CycleState.init();
+    try std.testing.expectEqual(@as(u64, 0), state.iteration);
+    try std.testing.expect(state.last_decision == null);
+    try std.testing.expect(state.running);
+}
+
+test "dlpfc — CycleState uptime" {
+    var state = CycleState.init();
+    const uptime1 = state.uptimeSeconds();
+    try std.testing.expect(uptime1 >= 0);
+    // Uptime should increase (might be 0 or 1 second)
+    const uptime2 = state.uptimeSeconds();
+    try std.testing.expect(uptime2 >= uptime1);
+}
+
+test "dlpfc — readSenses populates context" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+    };
+
+    try readSenses(std.testing.allocator, &ctx);
+
+    // Should have non-zero timestamp
+    try std.testing.expect(ctx.farm.timestamp > 0);
+}
+
+test "dlpfc — act respects policy level" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .max_auto_level = 0 }, // Read-only only
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = false,
+    };
+
+    const decision = Decision{
+        .action = .doctor_quick, // L1 action
+        .urgency = .critical,
+        .reason = "test",
+        .confidence = 0.9,
+    };
+
+    const result = try act(&ctx, decision);
+    try std.testing.expect(!result.success); // Should be denied by policy
+}
+
+test "dlpfc — health returns healthy" {
+    const h = health();
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+test "dlpfc — DecisionContext shouldAutoAct" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    const ctx1 = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = false, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+    };
+    try std.testing.expect(!ctx1.shouldAutoAct());
+
+    const ctx2 = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = true, .daemon = false },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+    };
+    try std.testing.expect(!ctx2.shouldAutoAct());
+
+    const ctx3 = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+    };
+    try std.testing.expect(ctx3.shouldAutoAct());
+}
+
+test "dlpfc — Decision struct fields" {
+    const decision = Decision{
+        .action = .farm_recycle,
+        .urgency = .high,
+        .reason = "Test reason",
+        .confidence = 0.85,
+    };
+    try std.testing.expectEqual(qt.ActionKind.farm_recycle, decision.action);
+    try std.testing.expectEqual(basal_ganglia.Urgency.high, decision.urgency);
+    try std.testing.expectEqualStrings("Test reason", decision.reason);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.85), decision.confidence, 0.01);
+}
+
+test "dlpfc — decide with agent spawn issues" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{ .agent_spawn = 2 },
+        .mu_heartbeat = .{ .build_ok = true },
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = true,
+    };
+
+    const decision = try decide(&ctx);
+    try std.testing.expect(decision != null);
+    try std.testing.expectEqual(qt.ActionKind.cloud_spawn, decision.?.action);
+}
+
+test "dlpfc — decide with best PPL celebration" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{ .total_services = 10, .active = 10, .best_ppl = 4.5 },
+        .issues = .{},
+        .mu_heartbeat = .{ .build_ok = true },
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = true,
+    };
+
+    const decision = try decide(&ctx);
+    try std.testing.expect(decision != null);
+    try std.testing.expectEqual(qt.ActionKind.notify, decision.?.action);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 3.5 TESTS — Faculty Metrics & Trend Analysis
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Phase 3.5 — FacultyMetrics health score calculation" {
+    var metrics = FacultyMetrics{
+        .active_count = 5,
+        .build_health = 80.0,
+    };
+
+    const score = metrics.healthScore();
+    // score = 5 * 15 + 80 * 0.1 = 75 + 8 = 83
+    try std.testing.expect(score >= 75.0 and score <= 100.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 83.0), score, 0.1);
+}
+
+test "Phase 3.5 — FacultyMetrics vZoneStr returns valid" {
+    const metrics = FacultyMetrics{ .v_zone = .gold };
+
+    const zone_str = metrics.vZoneStr();
+    try std.testing.expect(zone_str.len > 0);
+}
+
+test "Phase 3.5 — TrendAnalysis summary with low confidence" {
+    var analysis = TrendAnalysis{
+        .confidence = 0.3,
+        .compile_trend = .falling,
+    };
+
+    const summary = analysis.summary();
+    try std.testing.expectEqualStrings("insufficient data", summary);
+}
+
+test "Phase 3.5 — TrendAnalysis summary with high confidence" {
+    var analysis = TrendAnalysis{
+        .confidence = 0.8,
+        .compile_trend = .rising,
+    };
+
+    const summary = analysis.summary();
+    try std.testing.expect(std.mem.indexOf(u8, summary, "improving") != null);
+}
+
+test "Phase 3.5 — TrendAnalysis hasProblemTrends detection" {
+    // All stable → no problems
+    var stable = TrendAnalysis{ .confidence = 1.0 };
+    try std.testing.expect(!stable.hasProblemTrends());
+
+    // Compile falling → has problems
+    var failing = TrendAnalysis{
+        .confidence = 1.0,
+        .compile_trend = .falling,
+    };
+    try std.testing.expect(failing.hasProblemTrends());
+
+    // Dirty rising → has problems
+    var dirty = TrendAnalysis{
+        .confidence = 1.0,
+        .dirty_trend = .rising,
+    };
+    try std.testing.expect(dirty.hasProblemTrends());
+}
+
+test "Phase 3.5 — TrendAnalysis urgency score calculation" {
+    // All stable → 0 urgency
+    var stable = TrendAnalysis{ .confidence = 1.0 };
+    try std.testing.expectEqual(@as(u8, 0), stable.urgencyScore());
+
+    // Single falling → 3 urgency
+    var single = TrendAnalysis{
+        .confidence = 1.0,
+        .compile_trend = .falling,
+    };
+    try std.testing.expectEqual(@as(u8, 3), single.urgencyScore());
+
+    // Multiple problems → higher urgency
+    var multiple = TrendAnalysis{
+        .confidence = 1.0,
+        .compile_trend = .falling,
+        .v_trend = .falling,
+        .dirty_trend = .rising,
+        .faculty_trend = .falling,
+    };
+    try std.testing.expectEqual(@as(u8, 10), multiple.urgencyScore());
+}
+
+test "Phase 3.5 — determineTrend helper function" {
+    // Rising trend
+    try std.testing.expectEqual(TrendAnalysis.Trend.rising, determineTrend(10.0, 8.0));
+
+    // Falling trend
+    try std.testing.expectEqual(TrendAnalysis.Trend.falling, determineTrend(5.0, 10.0));
+
+    // Stable (within threshold)
+    try std.testing.expectEqual(TrendAnalysis.Trend.stable, determineTrend(10.0, 9.9));
+    try std.testing.expectEqual(TrendAnalysis.Trend.stable, determineTrend(10.0, 10.1));
 }

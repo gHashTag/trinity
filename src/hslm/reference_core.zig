@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM Reference — Core Types
 // Migrated from archive/implementations/zig/src/core.zig
 // Sacred constants, DType, Shape, Tensor, config types

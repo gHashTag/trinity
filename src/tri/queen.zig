@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN v4 — Maximum Autonomy: Full Capability Unlock
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -24,10 +25,18 @@ const queen_senses = @import("queen_senses.zig");
 const queen_actions = @import("queen_actions.zig");
 const queen_telegram = @import("queen_telegram.zig");
 const queen_policy = @import("queen_policy.zig");
+const queen_issues = @import("queen_issues.zig");
 
 // Phase 2: Brain motor hierarchy
 const queen_premotor = @import("queen_premotor.zig");
 const queen_motor = @import("queen_motor.zig");
+
+// Phase 3: DLPFC — Autonomous decision engine (READ→THINK→ACT→SPEAK)
+const queen_dlpfc = @import("queen_dlpfc.zig");
+
+// Phoenix brainstem modules
+const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
+const thalamus = @import("thalamus.zig");
 
 const Allocator = std.mem.Allocator;
 const FacultySnapshot = faculty_types.FacultySnapshot;
@@ -58,7 +67,11 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
         return;
     }
 
-    if (std.mem.eql(u8, args[0], "start")) {
+    if (std.mem.eql(u8, args[0], "supervisor")) {
+        try runSupervisorMode(allocator);
+    } else if (std.mem.eql(u8, args[0], "stop")) {
+        try stopSupervisor();
+    } else if (std.mem.eql(u8, args[0], "start")) {
         var config = QueenConfig{};
         var i: usize = 1;
         while (i < args.len) : (i += 1) {
@@ -101,6 +114,8 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
         showPolicy();
     } else if (std.mem.eql(u8, args[0], "history")) {
         showHistory();
+    } else if (std.mem.eql(u8, args[0], "tamagotchi-report")) {
+        try cmdTamagotchiReport(allocator);
     } else {
         printUsage();
     }
@@ -109,13 +124,16 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
 fn printUsage() void {
     print("{s}" ++ qt.E_CROWN ++ " Queen v4 — Maximum Autonomy{s}\n\n" ++
         "{s}Usage:{s}\n" ++
+        "  tri queen supervisor           Autonomous monitoring + self-healing\n" ++
         "  tri queen start [--daemon] [--interval <sec>] [--god-mode]\n" ++
+        "  tri queen stop                                      Stop supervisor daemon\n" ++
         "  tri queen status\n" ++
         "  tri queen once\n" ++
         "  tri queen senses\n" ++
         "  tri queen act <kind>\n" ++
         "  tri queen policy\n" ++
-        "  tri queen history\n\n" ++
+        "  tri queen history\n" ++
+        "  tri queen tamagotchi-report                           Growth metrics\n\n" ++
         "{s}Options:{s}\n" ++
         "  --daemon              Background (no TTY)\n" ++
         "  --interval N          Cycle sec (default: 600)\n" ++
@@ -156,6 +174,270 @@ fn showHistory() void {
     var buf: [2048]u8 = undefined;
     const msg = queen_policy.fmtHistoryTelegram(&buf, &memory);
     print("\n{s}\n", .{msg});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TAMAGOTCHI REPORT — Growth metrics for Queen daemon
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdTamagotchiReport(allocator: Allocator) !void {
+    // thalamus and locus_coeruleus now imported globally
+
+    // 1. Read Queen state
+    const state = loadState();
+    const now = std.time.timestamp();
+    const uptime = if (state.started_at > 0) now - state.started_at else 0;
+
+    // 2. Get farm status
+    const farm = thalamus.getFarmStatus(allocator) catch thalamus.FarmStatus{};
+
+    // 3. Get system snapshot
+    const snap = try faculty_board.collectSnapshot(allocator);
+    _ = queen_senses.collectAllSenses(allocator, snap); // Senses collected but not used directly
+
+    // 4. Calculate metrics
+    const hunger_pct = if (farm.total_services > 0)
+        @as(f32, @floatFromInt(farm.active)) / @as(f32, @floatFromInt(farm.total_services)) * 100.0
+    else
+        0.0;
+
+    const delta_ppl = if (state.prev_best_ppl < 900.0)
+        farm.best_ppl - state.prev_best_ppl
+    else
+        0.0;
+
+    var happy_buf: [32]u8 = undefined;
+    const happiness_str = if (delta_ppl > 0.01)
+        std.fmt.bufPrint(&happy_buf, "+{d:.2} PPL", .{delta_ppl}) catch "+0.00 PPL"
+    else if (delta_ppl < -0.01)
+        std.fmt.bufPrint(&happy_buf, "{d:.2} PPL", .{delta_ppl}) catch "0.00 PPL"
+    else
+        "0.00 PPL";
+
+    // Discipline = fixes from Mu heartbeat
+    const mu_hb = thalamus.getMuHeartbeat(allocator);
+    const discipline = mu_hb.fixes;
+
+    // Rest = idle time (no auto-actions)
+    const rest_pct = if (uptime > 0 and state.last_auto_action_ts > 0)
+        @as(f32, @floatFromInt(uptime - (now - state.last_auto_action_ts))) / @as(f32, @floatFromInt(uptime)) * 100.0
+    else if (uptime > 3600)
+        @as(f32, 30.0) // Assume some rest if uptime > 1h
+    else
+        @as(f32, 0.0);
+
+    // Health = build ok + faculty count
+    const health_ok = snap.build_ok and snap.activeFaculty() >= 3;
+
+    // Arousal from Locus Coeruleus (time-decayed state, not raw issue count)
+    const arousal = thalamus.getLocusArousal();
+
+    // Stage based on uptime
+    const stage = stageFromUptime(uptime);
+
+    // Format uptime string
+    var uptime_buf: [32]u8 = undefined;
+    const uptime_str = formatUptime(&uptime_buf, uptime);
+
+    // 5. Print beautiful colored output
+    print("\n{s}" ++ qt.E_CROWN ++ " TRINITY QUEEN — Tamagotchi Growth Report{s}\n", .{ GOLDEN, RESET });
+    print("{s}═════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
+
+    // Stage line
+    const stage_color = if (stage == .adult or stage == .teen) GREEN else if (stage == .child) CYAN else RESET;
+    print("  {s} Stage: {s}{s} ({s} uptime){s}\n\n", .{
+        qt.E_BRAIN,
+        stage_color,
+        stage.label(),
+        uptime_str,
+        RESET,
+    });
+
+    // Hunger (farm activity)
+    const hunger_color = if (hunger_pct >= 50.0) GREEN else if (hunger_pct >= 20.0) GOLDEN else RED;
+    print("  {s} Hunger: {s}{d:.0}%{s} | ", .{
+        "\xf0\x9f\x8d\xbd", // 🍽
+        hunger_color,
+        hunger_pct,
+        RESET,
+    });
+
+    // Happiness (PPL delta)
+    const happy_color = if (delta_ppl > 0) GREEN else if (delta_ppl == 0) GOLDEN else RED;
+    print("{s} Happiness: {s}{s}{s}\n", .{
+        "\xf0\x9f\x98\x80", // 😀
+        happy_color,
+        happiness_str,
+        RESET,
+    });
+
+    // Discipline (fixes)
+    const disc_color = if (discipline == 0) GREEN else if (discipline <= 2) GOLDEN else RED;
+    const disc_suffix = if (discipline != 1) "es" else "";
+    print("  {s} Discipline: {s}{d} fix{s}{s} | ", .{
+        "\xf0\x9f\xaa\x93", // 🪓
+        disc_color,
+        discipline,
+        disc_suffix,
+        RESET,
+    });
+
+    // Rest (idle time)
+    const rest_color = if (rest_pct >= 30.0) GREEN else if (rest_pct >= 10.0) GOLDEN else RED;
+    print("{s} Rest: {s}{d:.0}%{s}\n", .{
+        "\xf0\x9f\x98\xb4", // 😴
+        rest_color,
+        rest_pct,
+        RESET,
+    });
+
+    // Health
+    const health_str = if (health_ok) "OK" else "ISSUE";
+    const health_color = if (health_ok) GREEN else RED;
+    print("  {s} Health: {s}{s}{s} | ", .{
+        "\xe2\x9d\xa4\xef\xb8\x8f", // ❤️
+        health_color,
+        health_str,
+        RESET,
+    });
+
+    // Arousal
+    print("{s} Arousal: {s}{s}{s}\n", .{
+        qt.E_BOLT,
+        if (arousal == .normal or arousal == .idle) GREEN else if (arousal == .alert or arousal == .alarm) GOLDEN else RED,
+        arousal.label(),
+        RESET,
+    });
+
+    print("\n{s}═════════════════════════════════════════════{s}\n", .{ GRAY, RESET });
+
+    // Footer details
+    print("\n  Farm: {d}/{d} active | Best PPL: {d:.1} ({s})\n", .{
+        farm.active,
+        farm.total_services,
+        farm.best_ppl,
+        farm.bestPplServiceStr(),
+    });
+    print("  Build: {s} | Faculty: {d}/6 | Issues: {d}\n", .{
+        if (snap.build_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c", // ✅ / ❌
+        snap.activeFaculty(),
+        snap.open_issues,
+    });
+
+    // 6. Send to Telegram if enabled
+    const tg = qt.initTelegram();
+    if (tg.enabled) {
+        var tg_buf: [2048]u8 = undefined;
+        const tg_msg = formatTamagotchiTelegram(&tg_buf, stage, uptime_str, hunger_pct, delta_ppl, discipline, rest_pct, health_ok, arousal.label(), farm, snap);
+        queen_telegram.tgSend(tg, tg_msg);
+        print("\n{s}" ++ qt.E_CHECK ++ " Sent to Telegram ({s}){s}\n", .{
+            GREEN,
+            tg.chat_id,
+            RESET,
+        });
+    }
+
+    // Update previous best PPL for next delta calculation
+    if (farm.best_ppl < 900.0) {
+        var new_state = state;
+        new_state.prev_best_ppl = farm.best_ppl;
+        saveState(new_state);
+    }
+}
+
+fn formatTamagotchiTelegram(
+    buf: []u8,
+    stage: GrowthStage,
+    uptime: []const u8,
+    hunger_pct: f32,
+    delta_ppl: f32,
+    discipline: u32,
+    rest_pct: f32,
+    health_ok: bool,
+    arousal_label: []const u8,
+    farm: thalamus.FarmStatus,
+    snap: FacultySnapshot,
+) []const u8 {
+    _ = stage;
+
+    const hunger_emoji = if (hunger_pct >= 50.0) "\xf0\x9f\x8d\xbd" else if (hunger_pct >= 20.0) "\xf0\x9f\x8d\xbd" else "\xe2\x9a\xa0\xef\xb8\x8f"; // 🍽 / ⚠️
+    const happy_emoji = if (delta_ppl > 0) "\xf0\x9f\x98\x80" else if (delta_ppl == 0) "\xf0\x9f\x98\x90" else "\xf0\x9f\x98\x94"; // 😀 / 😐 / 😔
+    const disc_emoji = if (discipline == 0) "\xe2\x9c\x85" else if (discipline <= 2) "\xf0\x9f\xaa\x93" else "\xf0\x9f\x9a\xa8"; // ✅ / 🪓 / 🚨
+    const rest_emoji = if (rest_pct >= 30.0) "\xf0\x9f\x98\xb4" else "\xe2\x8f\xb3"; // 😴 / ⏳
+    const health_emoji = if (health_ok) "\xe2\x9d\xa4\xef\xb8\x8f" else "\xf0\x9f\x8f\xa5"; // ❤️ / 🏥
+
+    const happy_prefix = if (delta_ppl > 0.01) "+" else "";
+    const disc_suffix = if (discipline != 1) "es" else "";
+
+    const result = std.fmt.bufPrint(buf,
+        \\🧠 Queen Tamagotchi Report
+        \\
+        \\{s} Hunger: {d:.0}% ({d}/{d} workers)
+        \\{s} Happiness: {s}{d:.2} PPL ({d:.1} best)
+        \\{s} Discipline: {d} fix{s}
+        \\{s} Rest: {d:.0}%
+        \\{s} Health: {s} (build {s}, {d}/6 faculty)
+        \\⚡ Arousal: {s}
+        \\
+        \\Uptime: {s}
+    , .{
+        hunger_emoji,
+        hunger_pct,
+        farm.active,
+        farm.total_services,
+        happy_emoji,
+        happy_prefix,
+        delta_ppl,
+        farm.best_ppl,
+        disc_emoji,
+        discipline,
+        disc_suffix,
+        rest_emoji,
+        rest_pct,
+        health_emoji,
+        if (health_ok) "OK" else "ISSUE",
+        if (snap.build_ok) "OK" else "FAIL",
+        snap.activeFaculty(),
+        arousal_label,
+        uptime,
+    }) catch return "";
+
+    return result;
+}
+
+const GrowthStage = enum {
+    egg, // 0-10 min
+    baby, // 10-60 min
+    child, // 1-4h
+    teen, // 4-12h
+    adult, // 12h+
+
+    fn label(self: GrowthStage) []const u8 {
+        return switch (self) {
+            .egg => "Egg",
+            .baby => "Baby",
+            .child => "Child",
+            .teen => "Teen",
+            .adult => "Adult",
+        };
+    }
+};
+
+fn stageFromUptime(seconds: i64) GrowthStage {
+    if (seconds < 600) return .egg; // 0-10 min
+    if (seconds < 3600) return .baby; // 10-60 min
+    if (seconds < 14400) return .child; // 1-4h
+    if (seconds < 43200) return .teen; // 4-12h
+    return .adult; // 12h+
+}
+
+fn formatUptime(buf: []u8, seconds: i64) []const u8 {
+    const hours = @divTrunc(seconds, 3600);
+    const minutes = @divTrunc(@mod(seconds, 3600), 60);
+    if (hours > 0) {
+        return std.fmt.bufPrint(buf, "{d}h {d}m", .{ hours, minutes }) catch "0m";
+    }
+    return std.fmt.bufPrint(buf, "{d}m", .{minutes}) catch "0m";
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -289,7 +571,7 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
         }
 
         // 5b. v3: Policy-gated auto-actions
-        emitStep(&state, 6, 12, "Policy-gated auto-actions");
+        emitStep(&state, 6, 10, "Policy-gated auto-actions");
         if (config.allow_auto_actions and !config.dry_run) {
             if (queen_actions.maybeAutoAction(&state, senses, config, &counters, &incidents)) |decision| {
                 if (decision.verdict.isAllowed()) {
@@ -335,10 +617,7 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
         if (config.allow_auto_actions and !config.dry_run) {
             const goal = determineGoal(snapshot, evo, &incidents);
             if (goal) |g| {
-                // Create motor plan from goal
                 var plan = queen_premotor.MotorPlan.init(g);
-
-                // Execute via M1 motor cortex
                 var motor_executor = queen_motor.MotorExecutor.init(allocator);
                 const exec_result = motor_executor.executePlan(&plan) catch |err| {
                     if (!config.daemon) {
@@ -348,14 +627,12 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
                     continue;
                 };
 
-                // Report results
                 if (exec_result.success) {
                     if (!config.daemon) {
                         print("  " ++ qt.E_BOLT ++ " Phase 2: {s} plan executed ({d}/{d} steps, {d}ms)\n", .{
                             g.label(), exec_result.steps_executed, plan.sequence.step_count, exec_result.total_duration_ms,
                         });
                     }
-                    // Record successful plan execution
                     if (g == .heal_system) incidents.heal_cycles_24h +|= 1;
                 } else {
                     if (!config.daemon) {
@@ -368,7 +645,7 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
 
                 queen_policy.writeAuditEntry(
                     "phase2",
-                    .doctor_quick, // Plans may contain multiple actions
+                    .doctor_quick,
                     if (exec_result.success) .allowed else .denied_escalated,
                     exec_result.success,
                     if (exec_result.success) @as([]const u8, "plan executed") else exec_result.error_msg,
@@ -376,10 +653,67 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
             }
         }
 
-        // 5d. Expire old pending approvals
+        // 5d. v5: Phase 3 Brain — DLPFC autonomous decision engine (READ→THINK→ACT→SPEAK)
+        emitStep(&state, 8, 13, "Phase 3 Brain (DLPFC)");
+        if (config.allow_auto_actions and !config.dry_run) {
+            // Build DLPFC context
+            var dlpfc_ctx = queen_dlpfc.DecisionContext{
+                .allocator = allocator,
+                .farm = .{}, // Will be populated by readSenses
+                .issues = .{}, // Will be populated by readSenses
+                .mu_heartbeat = .{}, // Will be populated by readSenses
+                .config = config,
+                .state = &state,
+                .counters = &counters,
+                .incidents = &incidents,
+                .build_ok = snapshot.build_ok,
+                .dirty_files = snapshot.dirty_files,
+            };
+
+            // READ phase
+            queen_dlpfc.readSenses(allocator, &dlpfc_ctx) catch |err| {
+                if (!config.daemon) {
+                    print("  {s} DLPFC READ failed: {s}\n", .{ qt.E_WRENCH, @errorName(err) });
+                }
+            };
+
+            // THINK phase
+            const decision = queen_dlpfc.decide(&dlpfc_ctx) catch |err| blk: {
+                if (!config.daemon) {
+                    print("  {s} DLPFC THINK failed: {s}\n", .{ qt.E_WRENCH, @errorName(err) });
+                }
+                break :blk null;
+            };
+
+            if (decision) |d| {
+                // ACT phase
+                const act_result = queen_dlpfc.act(&dlpfc_ctx, d) catch |err| {
+                    incidents.record(.auto_action_fail, d.action, false, @errorName(err));
+                    continue;
+                };
+
+                // SPEAK phase
+                queen_dlpfc.speak(&dlpfc_ctx, d, act_result) catch |err| {
+                    if (!config.daemon) {
+                        print("  {s} DLPFC SPEAK failed: {s}\n", .{ qt.E_WRENCH, @errorName(err) });
+                    }
+                };
+
+                // Track success/failure
+                if (act_result.success) {
+                    if (!config.daemon) {
+                        print("  " ++ qt.E_BOLT ++ " Phase 3: {s} executed ({d}ms)\n", .{
+                            d.action.label(), act_result.duration_ms,
+                        });
+                    }
+                }
+            }
+        }
+
+        // 5e. Expire old pending approvals
         pending.expireOld();
 
-        // 5e. Process Telegram commands (v3: with policy context)
+        // 5f. Process Telegram commands (v3: with policy context)
         while (cmd_queue.pop()) |cmd| {
             queen_telegram.dispatchCommand(.{
                 .allocator = allocator,
@@ -393,10 +727,10 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
             state.tg_last_update_id = last_update_id.load(.acquire);
         }
 
-        // 5f. Read UI user input (mid-flight steering)
+        // 5g. Read UI user input (mid-flight steering)
         readUserInput(&state);
 
-        // 5g. Read UI action queue (SwiftUI button actions)
+        // 5h. Read UI action queue (SwiftUI button actions)
         readActionsQueue(allocator, &state);
 
         // 6. Hourly heartbeat (pinned)
@@ -446,6 +780,506 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
 
         sleepInterval(config.interval_sec);
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SUPERVISOR MODE — Autonomous monitoring + self-healing
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const SupervisorConfig = struct {
+    daemon: bool = false,
+    interval_sec: u64 = 60, // 1 min default for supervisor (faster than main loop)
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PID FILE MANAGEMENT
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn writePidFile() !void {
+    const pid = std.posix.getpid();
+    const dir = std.fs.cwd().makeOpenPath(".trinity/queen", .{}) catch |err| {
+        print("  {s}" ++ qt.E_CROSS ++ " Failed to create .trinity/queen: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return err;
+    };
+    defer dir.close();
+
+    var file = try dir.createFile("supervisor.pid", .{ .truncate = true });
+    defer file.close();
+    var buf: [32]u8 = undefined;
+    const pid_str = std.fmt.bufPrint(&buf, "{d}", .{pid}) catch return error.InvalidPid;
+    try file.writeAll(pid_str);
+}
+
+fn removePidFile() void {
+    std.fs.cwd().deleteFile(qt.SUPERVISOR_PID_PATH) catch {};
+}
+
+fn isSupervisorRunning() bool {
+    const file = std.fs.cwd().openFile(qt.SUPERVISOR_PID_PATH, .{}) catch return false;
+    defer file.close();
+
+    var buf: [32]u8 = undefined;
+    const n = file.read(&buf) catch return false;
+    if (n == 0) return false;
+
+    const pid_str = buf[0..n];
+    const pid = std.fmt.parseInt(i32, pid_str, 10) catch return false;
+
+    // Check if process is running by sending signal 0
+    // Returns void on success (process exists), error on failure
+    std.posix.kill(pid, 0) catch return false;
+    return true;
+}
+
+fn stopSupervisor() !void {
+    if (!isSupervisorRunning()) {
+        print("{s}" ++ qt.E_CROSS ++ " Supervisor is not running{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const file = std.fs.cwd().openFile(qt.SUPERVISOR_PID_PATH, .{}) catch |err| {
+        print("  {s}" ++ qt.E_CROSS ++ " Failed to read PID file: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return err;
+    };
+    defer file.close();
+
+    var buf: [32]u8 = undefined;
+    const n = file.read(&buf) catch return error.ReadError;
+    const pid_str = buf[0..n];
+    const pid = std.fmt.parseInt(i32, pid_str, 10) catch return error.InvalidPid;
+
+    print("{s}" ++ qt.E_STOP ++ " Stopping supervisor (PID {d})...{s}\n", .{ GOLDEN, pid, RESET });
+
+    // Send SIGTERM (15) for graceful shutdown
+    if (std.posix.kill(pid, 15)) |_| {
+        // Success
+    } else |err| {
+        print("  {s}" ++ qt.E_CROSS ++ " Failed to stop supervisor: {s}{s}\n", .{ RED, @errorName(err), RESET });
+        return error.StopFailed;
+    }
+
+    // Wait a bit for process to exit
+    std.Thread.sleep(2 * std.time.ns_per_s);
+
+    if (isSupervisorRunning()) {
+        print("  {s}" ++ qt.E_SIREN ++ " Supervisor still running, try SIGKILL{s}\n", .{ RED, RESET });
+        _ = std.posix.kill(pid, 9) catch {}; // SIGKILL
+    } else {
+        print("  {s}" ++ qt.E_CHECK ++ " Supervisor stopped{s}\n", .{ GREEN, RESET });
+    }
+
+    removePidFile();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOGGING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const SupervisorLog = struct {
+    file: std.fs.File,
+    mutex: std.Thread.Mutex,
+
+    fn init() !SupervisorLog {
+        const dir = try std.fs.cwd().makeOpenPath(".trinity/queen", .{});
+        defer dir.close();
+
+        const file = try dir.createFile("supervisor.log", .{ .truncate = false });
+        try file.seekFromEnd(0);
+
+        return SupervisorLog{
+            .file = file,
+            .mutex = std.Thread.Mutex{},
+        };
+    }
+
+    fn log(self: *SupervisorLog, comptime fmt: []const u8, args: anytype) !void {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        const timestamp = std.time.timestamp();
+        var buf: [4096]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buf, "[{d}] {s}\n", .{ timestamp, std.fmt.fmtFmt(fmt, args) }) catch return;
+        try self.file.writeAll(msg);
+        try self.file.sync();
+    }
+
+    fn close(self: *SupervisorLog) void {
+        self.file.close();
+    }
+};
+
+pub fn runSupervisorMode(allocator: Allocator) !void {
+    const cortex = @import("queen_cortex.zig");
+    const cerebellum = @import("cerebellum.zig");
+    const queen_ofc = @import("queen_ofc.zig");
+    const queen_vmpfc = @import("queen_vmpfc.zig");
+
+    print("\n{s}" ++ qt.E_CROWN ++ " Queen Supervisor Mode — Autonomous Monitoring{s}\n", .{ GOLDEN, RESET });
+    print("  Integrating all brain cells for self-healing...\n\n", .{});
+
+    const tg = qt.initTelegram();
+
+    // Initial notification
+    if (tg.enabled) {
+        var buf: [256]u8 = undefined;
+        const msg = std.fmt.bufPrint(&buf, qt.E_CROWN ++ " Supervisor \xd0\xb7\xd0\xb0\xd0\xbf\xd1\x83\xd1\x89\xd0\xb5\xd0\xbd\n\n" ++ // запущен
+            qt.E_BRAIN ++ " 5 PFC cells\n" ++
+            qt.E_DNA ++ " Cerebellum coordinator\n" ++
+            qt.E_CYCLE ++ " PMC + M1 motor hierarchy\n" ++
+            qt.E_EYE ++ " Continuous health monitoring", .{}) catch "";
+        queen_telegram.tgSend(tg, msg);
+    }
+
+    var cycle: u32 = 0;
+    var last_heal_cycle: u32 = 0;
+
+    while (true) {
+        cycle += 1;
+        const cycle_start = std.time.timestamp();
+
+        print("{s}=== Supervisor Cycle #{d} ==={s}\n", .{ GOLDEN, cycle, RESET });
+
+        // 1. Collect health from all PFC cells
+        emitSupervisorStep(1, 8, "Collecting PFC cell health");
+        const pfc_health = cortex.health(allocator) catch blk: {
+            print("  {s}" ++ qt.E_CROSS ++ " Cortex health collection failed{s}\n", .{ RED, RESET });
+            break :blk cortex.CellHealth{
+                .dlpfc = .{ .status = .broken, .cycle = 0, .last_check = cycle_start },
+                .vmpfc = .{ .status = .broken, .cycle = 0, .last_check = cycle_start },
+                .ofc = .{ .status = .broken, .cycle = 0, .last_check = cycle_start },
+                .vlpfc = .{ .status = .broken, .cycle = 0, .last_check = cycle_start },
+                .dmpfc = .{ .status = .broken, .cycle = 0, .last_check = cycle_start },
+            };
+        };
+
+        const all_healthy = cortex.isHealthy(&pfc_health);
+        const grade = if (all_healthy) "A" else "C";
+
+        // 2. Collect Cerebellum status
+        emitSupervisorStep(2, 8, "Checking Cerebellum coordination");
+        const cerebellum_health = cerebellum.health();
+
+        // 3. Get system snapshot
+        emitSupervisorStep(3, 8, "System snapshot");
+        const snapshot = faculty_board.collectSnapshot(allocator) catch |err| {
+            print("  {s}" ++ qt.E_CROSS ++ " Snapshot failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            sleepInterval(300);
+            continue;
+        };
+
+        const senses = queen_senses.collectAllSenses(allocator, snapshot);
+
+        // 4. Analyze system health
+        emitSupervisorStep(4, 8, "Analyzing system health");
+        const health_analysis = analyzeSystemHealth(snapshot, senses, pfc_health, cerebellum_health);
+
+        // 5. Print health dashboard
+        printSupervisorDashboard(cycle, pfc_health, cerebellum_health, health_analysis, senses);
+
+        // 6. Self-healing actions
+        emitSupervisorStep(5, 8, "Executing self-healing");
+        if (health_analysis.critical_count > 0 or health_analysis.warning_count > 2) {
+            if (cycle - last_heal_cycle >= 3) { // Rate limit healing
+                const healing_result = executeSelfHealing(allocator, health_analysis, senses, snapshot);
+                last_heal_cycle = cycle;
+
+                // Report healing via OFC
+                if (tg.enabled) {
+                    var report_buf: [512]u8 = undefined;
+                    const mood = queen_ofc.inferMood(snapshot.build_ok, senses.ouroboros_score, false);
+                    const report = std.fmt.bufPrint(&report_buf, "{s} Supervisor Healing #{d}\n\n" ++
+                        "{s} Actions: {d}\n" ++
+                        "{s} Success: {d} | Fail: {d}\n" ++
+                        "PFC Grade: {s}", .{
+                        mood.emoji(),
+                        cycle,
+                        qt.E_WRENCH,
+                        healing_result.actions_taken,
+                        if (healing_result.all_success) qt.E_CHECK else qt.E_CROSS,
+                        healing_result.success_count,
+                        healing_result.failure_count,
+                        grade,
+                    }) catch "";
+                    queen_telegram.tgSend(tg, report);
+                }
+            }
+        }
+
+        // 7. Value assessment via VMPFC
+        emitSupervisorStep(6, 8, "VMPFC value assessment");
+        if (cycle % 10 == 0) { // Every 10 cycles, do farm value assessment
+            const farm_value = queen_vmpfc.assessFarmAction(allocator, .recycle, senses.farm_best_ppl) catch continue;
+            defer allocator.free(farm_value.reasonStr());
+
+            if (farm_value.recommendation == .execute and farm_value.roi > 3.0) {
+                print("  " ++ qt.E_DNA ++ " VMPFC recommends farm recycle (ROI: {d:.1})\n", .{farm_value.roi});
+            }
+        }
+
+        // 8. Resource coordination via Cerebellum
+        emitSupervisorStep(7, 8, "Cerebellum resource check");
+        const resource_pool = cerebellum.getResourcePool(allocator) catch .{};
+        const utilization = resource_pool.utilization();
+        const health_score = resource_pool.healthScore();
+
+        print("  " ++ qt.E_DNA ++ " Resources: {d:.0}% util | Score: {d:.1}\n", .{ utilization * 100, health_score });
+
+        // 9. Plan next action via PMC if needed
+        emitSupervisorStep(8, 8, "PMC goal planning");
+        if (health_analysis.critical_count > 0) {
+            const goal = determineGoal(snapshot, EvolutionInfo{}, &queen_policy.IncidentMemory.init());
+            if (goal) |g| {
+                print("  " ++ qt.E_BRAIN ++ " PMC Goal: {s} (priority {d})\n", .{ g.label(), g.priority() });
+
+                // Create motor plan via PMC
+                const plan = queen_premotor.MotorPlan.init(g);
+
+                // In god-mode, would execute via M1 here
+                _ = plan;
+                _ = queen_motor;
+            }
+        }
+
+        // 10. Report status summary
+        print("  {s}" ++ qt.E_CHECK ++ " Cycle {d}: {s} | Critical: {d} | Warnings: {d}{s}\n\n", .{
+            if (health_analysis.critical_count == 0) GREEN else RED,
+            cycle,
+            if (all_healthy) "HEALTHY" else "RECOVERING",
+            health_analysis.critical_count,
+            health_analysis.warning_count,
+            RESET,
+        });
+
+        // 11. Save supervisor state
+        saveSupervisorState(cycle, pfc_health, health_analysis);
+
+        // Sleep before next cycle (5 min default for supervisor)
+        sleepInterval(300);
+    }
+}
+
+const HealthAnalysis = struct {
+    overall_status: Status = .healthy,
+    critical_count: u8 = 0,
+    warning_count: u8 = 0,
+    issues: [16]Issue = undefined,
+    issue_count: u8 = 0,
+
+    const Status = enum {
+        healthy,
+        warning,
+        critical,
+    };
+
+    const Issue = struct {
+        source: []const u8,
+        description: [128]u8 = undefined,
+        desc_len: usize = 0,
+        severity: Status = .warning,
+    };
+};
+
+fn analyzeSystemHealth(
+    snap: FacultySnapshot,
+    senses: qt.SenseResult,
+    pfc_health: anytype,
+    cerebellum_health: anytype,
+) HealthAnalysis {
+    _ = cerebellum_health; // Currently unused, reserved for future use
+    var analysis = HealthAnalysis{};
+
+    // Build status
+    if (!snap.build_ok) {
+        addIssue(&analysis, "Build", "Build broken - zig build fails", .critical);
+    }
+
+    // PFC cells
+    if (pfc_health.dlpfc.status != .healthy) {
+        addIssue(&analysis, "DLPFC", "Decision engine unhealthy", .warning);
+    }
+    if (pfc_health.vmpfc.status != .healthy) {
+        addIssue(&analysis, "VMPFC", "Value assessment impaired", .warning);
+    }
+    if (pfc_health.ofc.status != .healthy) {
+        addIssue(&analysis, "OFC", "Communication degraded", .warning);
+    }
+
+    // Ouroboros score
+    if (senses.ouroboros_score < 40) {
+        addIssue(&analysis, "Ouroboros", "System health critical", .critical);
+    } else if (senses.ouroboros_score < 70) {
+        addIssue(&analysis, "Ouroboros", "System health degraded", .warning);
+    }
+
+    // Farm issues
+    if (senses.farm_idle_count > 5) {
+        addIssue(&analysis, "Farm", "Many idle workers", .warning);
+    }
+    if (senses.farm_best_ppl > 20.0) {
+        addIssue(&analysis, "Farm", "Poor best PPL", .warning);
+    }
+
+    // Dirty files
+    if (senses.dirty_files > 100) {
+        addIssue(&analysis, "Git", "Excessive dirty files", .warning);
+    }
+
+    // Keys
+    if (senses.keys_present < 3) {
+        addIssue(&analysis, "Auth", "Many keys expired", .critical);
+    }
+
+    // Determine overall status
+    if (analysis.critical_count > 0) {
+        analysis.overall_status = .critical;
+    } else if (analysis.warning_count > 0) {
+        analysis.overall_status = .warning;
+    }
+
+    return analysis;
+}
+
+fn addIssue(analysis: *HealthAnalysis, source: []const u8, desc: []const u8, severity: HealthAnalysis.Status) void {
+    if (analysis.issue_count >= 16) return;
+
+    var issue = HealthAnalysis.Issue{
+        .source = source,
+        .severity = severity,
+    };
+    const len = @min(desc.len, issue.description.len);
+    @memcpy(issue.description[0..len], desc[0..len]);
+    issue.desc_len = len;
+
+    analysis.issues[analysis.issue_count] = issue;
+    analysis.issue_count += 1;
+
+    if (severity == .critical) {
+        analysis.critical_count += 1;
+    } else {
+        analysis.warning_count += 1;
+    }
+}
+
+const HealingResult = struct {
+    actions_taken: u8 = 0,
+    success_count: u8 = 0,
+    failure_count: u8 = 0,
+    all_success: bool = true,
+};
+
+fn executeSelfHealing(
+    allocator: Allocator,
+    analysis: HealthAnalysis,
+    senses: qt.SenseResult,
+    snapshot: FacultySnapshot,
+) HealingResult {
+    _ = senses; // Reserved for future healing logic
+    _ = snapshot; // Reserved for future healing logic
+    var result = HealingResult{};
+
+    for (analysis.issues[0..analysis.issue_count]) |issue| {
+        // Only auto-heal warnings and some critical issues
+        if (issue.severity == .critical and std.mem.eql(u8, issue.source, "Auth")) continue;
+
+        // Map issues to actions
+        const action = switch (issue.severity) {
+            .healthy => continue,
+            .warning => qt.ActionKind.doctor_quick,
+            .critical => qt.ActionKind.doctor_heal,
+        };
+
+        print("  {s}" ++ qt.E_WRENCH ++ " Healing: {s} - {s}{s}\n", .{
+            GOLDEN, issue.source, issue.description[0..issue.desc_len], RESET,
+        });
+
+        const exec_result = queen_actions.execute(allocator, action);
+        result.actions_taken += 1;
+
+        if (exec_result.success) {
+            result.success_count += 1;
+            print("    " ++ qt.E_CHECK ++ " Success ({d}ms)\n", .{exec_result.duration_ms});
+        } else {
+            result.failure_count += 1;
+            result.all_success = false;
+            print("    " ++ qt.E_CROSS ++ " Failed: {s}\n", .{exec_result.outputStr()});
+        }
+
+        // Small delay between actions
+        std.Thread.sleep(1 * std.time.ns_per_s);
+    }
+
+    return result;
+}
+
+fn printSupervisorDashboard(
+    cycle: u32,
+    pfc_health: anytype,
+    cerebellum_health: anytype,
+    analysis: HealthAnalysis,
+    senses: qt.SenseResult,
+) void {
+    print("\n  {s}" ++ qt.E_CROWN ++ " Supervisor Dashboard #{d}{s}\n", .{ GOLDEN, cycle, RESET });
+
+    // PFC Status
+    const pfc_status = if (pfc_health.dlpfc.status == .healthy) qt.E_CHECK else qt.E_CROSS;
+    print("    {s} PFC: {s} DLPFC={s} VMPFC={s} OFC={s}\n", .{
+        qt.E_BRAIN,
+        pfc_status,
+        statusEmoji(pfc_health.dlpfc.status),
+        statusEmoji(pfc_health.vmpfc.status),
+        statusEmoji(pfc_health.ofc.status),
+    });
+
+    // Cerebellum
+    print("    {s} Cerebellum: {s}\n", .{ qt.E_DNA, statusEmoji(cerebellum_health.status) });
+
+    // System status
+    const sys_status = switch (analysis.overall_status) {
+        .healthy => qt.E_CHECK,
+        .warning => qt.E_WRENCH,
+        .critical => qt.E_SIREN,
+    };
+    print("    {s} System: {s} ({d} critical, {d} warnings)\n", .{
+        qt.E_EYE,
+        sys_status,
+        analysis.critical_count,
+        analysis.warning_count,
+    });
+
+    // Key metrics
+    print("    {s} Build: {s} | Ouroboros: {d:.0} | Dirty: {d}\n", .{
+        qt.E_CLIP,
+        if (senses.build_ok) "OK" else "FAIL",
+        senses.ouroboros_score,
+        senses.dirty_files,
+    });
+}
+
+fn statusEmoji(status: anytype) []const u8 {
+    return switch (status) {
+        .healthy => qt.E_CHECK,
+        .weak => qt.E_WRENCH,
+        .broken => qt.E_CROSS,
+    };
+}
+
+fn saveSupervisorState(cycle: u32, pfc_health: anytype, analysis: HealthAnalysis) void {
+    _ = pfc_health; // Currently unused, reserved for future use
+    const path = ".trinity/queen/supervisor_state.json";
+    const file = std.fs.cwd().createFile(path, .{}) catch return;
+    defer file.close();
+
+    var buf: [512]u8 = undefined;
+    const data = std.fmt.bufPrint(&buf,
+        \\{{"cycle":{d},"critical_count":{d},"warning_count":{d},"pfc_healthy":{s}}}
+    , .{
+        cycle,
+        analysis.critical_count,
+        analysis.warning_count,
+        if (analysis.overall_status == .healthy) "true" else "false",
+    }) catch return;
+
+    _ = file.write(data) catch {};
 }
 
 fn runOneCycle(allocator: Allocator, config: QueenConfig) !void {
@@ -550,48 +1384,64 @@ fn sendAlerts(tg: qt.TgConfig, alerts: *const [8]Alert, count: usize) void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn fmtHeartbeat(buf: []u8, snap: FacultySnapshot, evo: EvolutionInfo, arena: ArenaInfo, senses: qt.SenseResult) []const u8 {
-    const ts = std.time.timestamp();
-    const day_sec: u64 = @intCast(@mod(ts, 86400));
-    const hour = day_sec / 3600;
-    const minute = (day_sec % 3600) / 60;
+    _ = snap;
+    _ = arena;
 
-    const build_icon = if (snap.build_ok) qt.E_CHECK else qt.E_CROSS;
+    // Human-readable status briefing (scientific tone)
+    const farm_active = senses.farm_services - senses.farm_idle_count;
+    const training_status = if (farm_active == 0)
+        "Farm idle. Last training complete."
+    else if (evo.best_ppl < 3.0)
+        "Training running well! Excellent PPL."
+    else if (evo.best_ppl < 10.0)
+        "Training in progress."
+    else
+        "Training running.";
 
-    return std.fmt.bufPrint(buf, qt.E_CROWN ++ " Queen v2 | {d:0>2}:{d:0>2}\n" ++
-        "\n" ++
-        qt.E_BRAIN ++ " SEVO\n" ++
-        "   {s} \xe2\x80\x94 PPL {d:.1} (\xd1\x88\xd0\xb0\xd0\xb3 {d}K)\n" ++ // — PPL ... (шаг ...K)
-        "   {d} \xd0\xba\xd0\xbe\xd0\xbd\xd1\x84\xd0\xb8\xd0\xb3\xd0\xbe\xd0\xb2 | {d} \xd1\x81\xd0\xb5\xd1\x80\xd0\xb2\xd0\xb8\xd1\x81\xd0\xbe\xd0\xb2\n" ++ // конфигов | сервисов
-        "\n" ++
-        qt.E_SWORDS ++ " Arena: {d} \xd0\xb1\xd0\xbe\xd1\x91\xd0\xb2\n" ++ // боёв
-        "\n" ++
-        qt.E_CLIP ++ " Issues: {d} | Dirty: {d}\n" ++
-        "{s} Build {s} | V={d:.2} | {d}/6 \xd0\xb0\xd0\xb3\xd0\xb5\xd0\xbd\xd1\x82\xd0\xbe\xd0\xb2\n" ++ // агентов
-        "\n" ++
-        qt.E_EYE ++ " Senses: {d}%% tests | {d:.1}GB disk\n" ++
-        qt.E_KEY ++ " Keys: {d}/{d} | XP: {d}\n" ++
-        "{s} {s}", .{
-        hour,
-        minute,
+    const build_status = if (senses.build_ok)
+        "Build is healthy."
+    else
+        "Build broken - healing in progress.";
+
+    const system_status = if (!senses.build_ok)
+        "⚠️ System needs attention."
+    else if (senses.ouroboros_score >= 70)
+        "✅ All systems nominal."
+    else if (senses.ouroboros_score >= 40)
+        "⚠️ System recovering."
+    else
+        "🚨 Critical attention needed.";
+
+    return std.fmt.bufPrint(buf,
+        \\🧠 Queen Status Briefing
+        \\
+        \\{s}
+        \\
+        \\{s}
+        \\  • {s} — PPL {d:.1} ({d}K steps)
+        \\  • {d} configs tested | {d} workers
+        \\
+        \\{s}
+        \\  • Tests: {d}%% | Disk: {d:.1}GB
+        \\  • Issues: {d} | Dirty files: {d}
+        \\  • XP: {d} episodes
+        \\
+        \\{s}
+    , .{
+        training_status,
+        build_status,
         evo.bestNameStr(),
         evo.best_ppl,
         evo.best_step / 1000,
         evo.total_configs,
-        evo.service_count,
-        arena.total_battles,
-        snap.open_issues,
-        snap.dirty_files,
-        build_icon,
-        if (snap.build_ok) "OK" else "FAIL",
-        snap.v_number,
-        snap.activeFaculty(),
+        senses.farm_services,
+        system_status,
         senses.test_rate,
         senses.disk_free_gb,
-        senses.keys_present,
-        senses.keys_total,
+        senses.open_issues,
+        senses.dirty_files,
         senses.experience_count,
         senses.healthEmoji(),
-        if (!senses.build_ok) "BUILD BROKEN" else if (senses.ouroboros_score >= 70) "HEALTHY" else "RECOVERING",
     }) catch buf[0..0];
 }
 
@@ -656,45 +1506,24 @@ fn shouldSendDaily(state: QueenState, now: i64) bool {
 // PHASE 2 BRAIN — Goal Planner (PFC → PMC)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Determine which goal to pursue based on current system state
-/// Returns null if no action is needed (system is healthy)
 fn determineGoal(snap: FacultySnapshot, evo: EvolutionInfo, incidents: *const queen_policy.IncidentMemory) ?queen_premotor.Goal {
-    // Priority 1: Emergency conditions
-    if (!snap.build_ok) {
-        // Build is broken — need to heal
-        return .heal_system;
-    }
+    if (!snap.build_ok) return .heal_system;
 
-    // Priority 2: Check if we have repeated recent failures
     const fail_rate: f32 = if (incidents.total_auto_actions_24h > 0)
         @as(f32, @floatFromInt(incidents.total_auto_fails_24h)) / @as(f32, @floatFromInt(incidents.total_auto_actions_24h))
     else
         0;
     if (fail_rate > 0.5 and incidents.total_auto_fails_24h >= 3) {
-        // More than 50% failure rate with at least 3 failures — assess health first
         return .assess_health;
     }
 
-    // Priority 3: Farm health check
-    if (evo.service_count == 0) {
-        // No workers — check farm status
-        return .check_farm;
-    }
+    if (evo.service_count == 0) return .check_farm;
+    if (snap.dirty_files > 100) return .cleanup_cloud;
 
-    // Priority 4: Cleanup if dirty files are excessive
-    if (snap.dirty_files > 100) {
-        return .cleanup_cloud;
-    }
-
-    // Priority 5: Research updates (low frequency)
     const ts = std.time.timestamp();
     const hour: u64 = @intCast(@mod(@divTrunc(ts, 3600), 24));
-    if (hour == 9) {
-        // 9am UTC — check for research updates
-        return .research_update;
-    }
+    if (hour == 9) return .research_update;
 
-    // System is healthy, no immediate goal
     return null;
 }
 
@@ -878,6 +1707,25 @@ fn emitStep(state: *QueenState, step: u8, total: u8, text: []const u8) void {
     , .{
         std.time.timestamp(),
         state.event_seq,
+        step,
+        total,
+        text,
+    }) catch return;
+    _ = file.write(line) catch {};
+}
+
+// Helper for supervisor mode (stateless logging)
+fn emitSupervisorStep(step: u8, total: u8, text: []const u8) void {
+    const file = std.fs.cwd().openFile(".trinity/event_log.jsonl", .{ .mode = .read_write }) catch return;
+    defer file.close();
+    file.seekFromEnd(0) catch return;
+
+    var buf: [512]u8 = undefined;
+    const line = std.fmt.bufPrint(&buf,
+        \\{{"ts":{d},"agent":"supervisor","kind":"supervisor_cycle","step":{d},"total":{d},"text":"{s}"}}
+        \\
+    , .{
+        std.time.timestamp(),
         step,
         total,
         text,
@@ -1138,6 +1986,38 @@ fn sleepInterval(sec: u64) void {
     std.Thread.sleep(sec * std.time.ns_per_s);
 }
 
+// Sleep that can be interrupted by checking running flag
+fn sleepInterruptible(running: *const std.atomic.Value(bool), interval_sec: u64) void {
+    const chunk_ns = 1 * std.time.ns_per_s; // Check every second
+    const total_ns = interval_sec * std.time.ns_per_s;
+    var elapsed: u64 = 0;
+
+    while (elapsed < total_ns) {
+        if (!running.load(.acquire)) return;
+        const remain = total_ns - elapsed;
+        const sleep_time = if (remain > chunk_ns) chunk_ns else remain;
+        std.Thread.sleep(sleep_time);
+        elapsed += sleep_time;
+    }
+}
+
+// Check if our PID file is still valid (exists and process is running)
+fn isPidFileValid() bool {
+    const file = std.fs.cwd().openFile(qt.SUPERVISOR_PID_PATH, .{}) catch return false;
+    defer file.close();
+
+    var buf: [32]u8 = undefined;
+    const n = file.read(&buf) catch return false;
+    if (n == 0) return false;
+
+    const pid_str = buf[0..n];
+    const pid = std.fmt.parseInt(i32, pid_str, 10) catch return false;
+
+    // Check if process exists by sending signal 0
+    const result = std.posix.kill(pid, 0);
+    return result == 0;
+}
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1224,4 +2104,308 @@ test "Queen heartbeat format" {
     try std.testing.expect(std.mem.indexOf(u8, msg, qt.E_CROWN) != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "4.6") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "R33") != null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 2 TESTS — PMC → M1 Integration
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Phase 2 — determineGoal returns heal_system when build broken" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = false;
+    const evo = EvolutionInfo{};
+    const incidents = queen_policy.IncidentMemory.init();
+
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expectEqual(queen_premotor.Goal.heal_system, goal.?);
+}
+
+test "Phase 2 — determineGoal returns assess_health when high failure rate" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = true;
+    const evo = EvolutionInfo{};
+    var incidents = queen_policy.IncidentMemory.init();
+    // Simulate high failure rate: 3 fails out of 4 actions (75% > 50%)
+    incidents.total_auto_actions_24h = 4;
+    incidents.total_auto_fails_24h = 3;
+
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expectEqual(queen_premotor.Goal.assess_health, goal.?);
+}
+
+test "Phase 2 — determineGoal returns check_farm when no services" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = true;
+    var evo = EvolutionInfo{};
+    evo.service_count = 0;
+    const incidents = queen_policy.IncidentMemory.init();
+
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expectEqual(queen_premotor.Goal.check_farm, goal.?);
+}
+
+test "Phase 2 — determineGoal returns cleanup_cloud when dirty files high" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = true;
+    snap.dirty_files = 150;
+    var evo = EvolutionInfo{};
+    evo.service_count = 5; // Need services > 0 to prioritize cleanup over check_farm
+    const incidents = queen_policy.IncidentMemory.init();
+
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expectEqual(queen_premotor.Goal.cleanup_cloud, goal.?);
+}
+
+test "Phase 2 — determineGoal returns null when all is well" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = true;
+    snap.dirty_files = 50;
+    var evo = EvolutionInfo{};
+    evo.service_count = 10;
+    var incidents = queen_policy.IncidentMemory.init();
+    incidents.total_auto_actions_24h = 10;
+    incidents.total_auto_fails_24h = 2; // 20% failure rate < 50%
+
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expect(goal == null);
+}
+
+test "Phase 2 — MotorPlan.init creates correct plan" {
+    const plan = queen_premotor.MotorPlan.init(.heal_system);
+
+    try std.testing.expectEqual(queen_premotor.Goal.heal_system, plan.source_goal);
+    try std.testing.expectEqual(@as(u8, 80), plan.priority); // heal_system priority
+    try std.testing.expect(plan.created_at > 0);
+    try std.testing.expectEqual(@as(u8, 4), plan.sequence.step_count); // fullHeal has 4 steps
+}
+
+test "Phase 2 — MotorPlan.init for assess_health" {
+    const plan = queen_premotor.MotorPlan.init(.assess_health);
+
+    try std.testing.expectEqual(queen_premotor.Goal.assess_health, plan.source_goal);
+    try std.testing.expectEqual(@as(u8, 60), plan.priority);
+    try std.testing.expectEqual(@as(u8, 4), plan.sequence.step_count);
+    try std.testing.expectEqual(qt.ActionKind.doctor_scan, plan.sequence.steps[0].action);
+}
+
+test "Phase 2 — MotorPlan.init for check_farm" {
+    const plan = queen_premotor.MotorPlan.init(.check_farm);
+
+    try std.testing.expectEqual(queen_premotor.Goal.check_farm, plan.source_goal);
+    try std.testing.expectEqual(@as(u8, 40), plan.priority);
+    try std.testing.expectEqual(@as(u8, 2), plan.sequence.step_count);
+}
+
+test "Phase 2 — MotorExecutor.init and executePlan (no execute)" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    const plan = queen_premotor.MotorPlan.init(.assess_health);
+    const executor = queen_motor.MotorExecutor.init(allocator);
+
+    // Just test that executor was initialized and plan is valid
+    _ = executor;
+    try std.testing.expect(plan.sequence.step_count > 0);
+}
+
+test "Phase 2 — PMC → M1 full integration (dry run)" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    // Simulate the full flow: PFC (determineGoal) → PMC (MotorPlan.init) → M1 (MotorExecutor)
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = false;
+    const evo = EvolutionInfo{};
+    const incidents = queen_policy.IncidentMemory.init();
+
+    // PFC: Determine goal
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expectEqual(queen_premotor.Goal.heal_system, goal.?);
+
+    // PMC: Create motor plan
+    const plan = queen_premotor.MotorPlan.init(goal.?);
+    try std.testing.expectEqual(@as(u8, 4), plan.sequence.step_count);
+
+    // M1: Initialize executor (don't actually execute)
+    const executor = queen_motor.MotorExecutor.init(allocator);
+    _ = executor;
+
+    // Verify plan has expected actions
+    try std.testing.expectEqual(qt.ActionKind.doctor_scan, plan.sequence.steps[0].action);
+    try std.testing.expectEqual(qt.ActionKind.ouroboros_cycle, plan.sequence.steps[2].action);
+}
+
+test "Phase 2 — Goal priority ordering" {
+    try std.testing.expectEqual(@as(u8, 100), queen_premotor.Goal.emergency_shutdown.priority());
+    try std.testing.expectEqual(@as(u8, 80), queen_premotor.Goal.heal_system.priority());
+    try std.testing.expectEqual(@as(u8, 60), queen_premotor.Goal.assess_health.priority());
+    try std.testing.expectEqual(@as(u8, 40), queen_premotor.Goal.check_farm.priority());
+    try std.testing.expectEqual(@as(u8, 30), queen_premotor.Goal.cleanup_cloud.priority());
+    try std.testing.expectEqual(@as(u8, 10), queen_premotor.Goal.research_update.priority());
+}
+
+test "Phase 2 — PlanQueue FIFO behavior" {
+    var queue = queen_premotor.PlanQueue{};
+
+    // Push 3 plans
+    try std.testing.expect(queue.push(queen_premotor.MotorPlan.init(.research_update)));
+    try std.testing.expect(queue.push(queen_premotor.MotorPlan.init(.cleanup_cloud)));
+    try std.testing.expect(queue.push(queen_premotor.MotorPlan.init(.check_farm)));
+    try std.testing.expectEqual(@as(u8, 3), queue.len());
+
+    // Pop in FIFO order
+    const p1 = queue.pop().?;
+    try std.testing.expectEqual(queen_premotor.Goal.research_update, p1.source_goal);
+
+    const p2 = queue.pop().?;
+    try std.testing.expectEqual(queen_premotor.Goal.cleanup_cloud, p2.source_goal);
+
+    const p3 = queue.pop().?;
+    try std.testing.expectEqual(queen_premotor.Goal.check_farm, p3.source_goal);
+
+    try std.testing.expectEqual(@as(u8, 0), queue.len());
+    try std.testing.expect(queue.pop() == null);
+}
+
+test "Phase 2 — PlanQueue wraparound" {
+    var queue = queen_premotor.PlanQueue{};
+
+    // Fill and empty to test wraparound
+    var i: u8 = 0;
+    while (i < 8) : (i += 1) {
+        try std.testing.expect(queue.push(queen_premotor.MotorPlan.init(.check_farm)));
+    }
+    try std.testing.expect(!queue.push(queen_premotor.MotorPlan.init(.check_farm))); // Full
+
+    while (queue.pop()) |_| {}
+    try std.testing.expectEqual(@as(u8, 0), queue.len());
+
+    // After empty, should work again
+    try std.testing.expect(queue.push(queen_premotor.MotorPlan.init(.heal_system)));
+}
+
+test "Phase 2 — Sequencer context updates" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var sequencer = queen_premotor.Sequencer.init(allocator);
+
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .test_rate = 90,
+        .farm_idle_count = 3,
+        .arena_battles = 5,
+    };
+
+    sequencer.updateContext(senses);
+
+    try std.testing.expect(sequencer.context.build_ok);
+    try std.testing.expect(sequencer.context.tests_pass);
+    try std.testing.expectEqual(@as(u8, 3), sequencer.context.farm_idle_count);
+    try std.testing.expect(sequencer.context.arena_exists);
+}
+
+test "Phase 2 — ActionSequence conditions" {
+    var seq = queen_premotor.ActionSequence{};
+
+    try seq.addStepWithCondition(.doctor_quick, .build_ok);
+    try std.testing.expectEqual(@as(u8, 1), seq.step_count);
+    try std.testing.expectEqual(queen_premotor.SequenceStep.Condition.build_ok, seq.steps[0].condition.?);
+}
+
+test "Phase 2 — ActionSequence delayed step" {
+    var seq = queen_premotor.ActionSequence{};
+
+    try seq.addDelayedStep(.notify, 5000);
+    try std.testing.expectEqual(@as(u8, 1), seq.step_count);
+    try std.testing.expectEqual(@as(u64, 5000), seq.steps[0].delay_ms);
+}
+
+test "Phase 2 — MotorCommand from two-word action" {
+    const cmd = queen_motor.MotorCommand.fromAction(.farm_status);
+
+    try std.testing.expectEqualStrings("farm", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("status", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Phase 2 — MotorCommand from single-word action" {
+    const cmd = queen_motor.MotorCommand.fromAction(.notify);
+
+    try std.testing.expectEqualStrings("notify", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 0), cmd.arg_count);
+}
+
+test "Phase 2 — MotorCommand format" {
+    const cmd = queen_motor.MotorCommand.fromAction(.farm_status);
+    var buf: [128]u8 = undefined;
+    const formatted = cmd.format(&buf);
+
+    try std.testing.expect(formatted.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, formatted, "tri farm status") != null);
+}
+
+test "Phase 2 — CommandBuilder fluent API" {
+    var builder = queen_motor.CommandBuilder{};
+    try builder.subcommand("cloud");
+    try builder.arg("status");
+    const cmd = builder.build();
+
+    try std.testing.expectEqualStrings("cloud", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("status", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Phase 2 — MotorBatch sequential execution" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var batch = queen_motor.MotorBatch{};
+    batch.parallel = false;
+
+    try batch.addCommand(queen_motor.MotorCommand.fromAction(.farm_status));
+    try batch.addCommand(queen_motor.MotorCommand.fromAction(.arena_status));
+
+    try std.testing.expectEqual(@as(u8, 2), batch.count);
+
+    // Execute batch (should not fail even if commands don't exist)
+    const result = batch.execute(allocator) catch return error.ExecuteFailed;
+    _ = result;
+}
+
+test "Phase 2 — failure rate edge cases" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = true;
+    const evo = EvolutionInfo{};
+
+    // Exactly 50% failure rate (should NOT trigger assess_health, needs > 50%)
+    {
+        var incidents = queen_policy.IncidentMemory.init();
+        incidents.total_auto_actions_24h = 10;
+        incidents.total_auto_fails_24h = 5; // 50% exactly
+        const goal = determineGoal(snap, evo, &incidents);
+        try std.testing.expect(goal != .assess_health);
+    }
+
+    // Just over 50% (should trigger)
+    {
+        var incidents = queen_policy.IncidentMemory.init();
+        incidents.total_auto_actions_24h = 10;
+        incidents.total_auto_fails_24h = 6; // 60%
+        const goal = determineGoal(snap, evo, &incidents);
+        try std.testing.expectEqual(queen_premotor.Goal.assess_health, goal.?);
+    }
+
+    // Less than 3 failures (should NOT trigger regardless of rate)
+    {
+        var incidents = queen_policy.IncidentMemory.init();
+        incidents.total_auto_actions_24h = 3;
+        incidents.total_auto_fails_24h = 2; // 66% but only 2 fails
+        const goal = determineGoal(snap, evo, &incidents);
+        try std.testing.expect(goal != .assess_health);
+    }
 }

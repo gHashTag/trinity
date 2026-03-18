@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN POLICY — Safety levels, guardrails, audit trail, incident memory
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -46,7 +47,7 @@ pub const SafetyLevel = enum(u8) {
 pub fn actionLevel(kind: qt.ActionKind) SafetyLevel {
     return switch (kind) {
         // L0 — Read-Only
-        .farm_status, .arena_status, .doctor_scan, .train_status, .train_diagnose, .experiment_chart, .patent_status, .research_sacred, .ouroboros_status, .experience_recall, .farm_evolve_status, .swarm_status => .read_only,
+        .farm_status, .arena_status, .doctor_scan, .train_status, .train_diagnose, .experiment_chart, .patent_status, .research_sacred, .ouroboros_status, .experience_recall, .introspection, .farm_evolve_status, .swarm_status => .read_only,
         // L1 — Soft Write
         .doctor_quick, .doctor_heal, .ouroboros_cycle, .git_commit_state, .git_push, .issue_comment, .notify, .arena_battle, .experience_save, .fmt => .soft_write,
         // L2 — Dangerous
@@ -67,7 +68,7 @@ pub fn actionRateLimit(kind: qt.ActionKind) ActionRateLimit {
     return switch (kind) {
         // L0 — generous limits
         .farm_status, .arena_status, .train_status, .ouroboros_status, .farm_evolve_status, .swarm_status => .{ .max_per_hour = 12, .cooldown_sec = 300 },
-        .doctor_scan, .train_diagnose, .experiment_chart, .patent_status, .research_sacred, .experience_recall => .{ .max_per_hour = 6, .cooldown_sec = 600 },
+        .doctor_scan, .train_diagnose, .experiment_chart, .patent_status, .research_sacred, .experience_recall, .introspection => .{ .max_per_hour = 6, .cooldown_sec = 600 },
         // L1 — moderate limits
         .doctor_quick, .fmt => .{ .max_per_hour = 3, .cooldown_sec = 600 },
         .doctor_heal => .{ .max_per_hour = 1, .cooldown_sec = 3600 },

@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // CEREBELLUM — Coordination + Resource Management
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -22,7 +23,7 @@ pub const ResourcePool = struct {
     crashed_workers: u32 = 0,
     total_ppl: f32 = 0.0,
 
-    pub fn utilization(self: *const ResourcePool) f32 {
+    pub inline fn utilization(self: *const ResourcePool) f32 {
         if (self.total_workers == 0) return 0.0;
         return @as(f32, @floatFromInt(self.active_workers)) /
             @as(f32, @floatFromInt(self.total_workers));
@@ -35,7 +36,7 @@ pub const ResourcePool = struct {
         return @max(0.0, util_score - crash_penalty);
     }
 
-    pub fn avgPpl(self: *const ResourcePool) f32 {
+    pub inline fn avgPpl(self: *const ResourcePool) f32 {
         if (self.active_workers == 0) return 0.0;
         return self.total_ppl / @as(f32, @floatFromInt(self.active_workers));
     }
@@ -74,8 +75,6 @@ pub fn planCoordination(
     allocator: Allocator,
     actions: []const qt.ActionKind,
 ) !CoordinationPlan {
-    _ = allocator;
-
     var plan = CoordinationPlan{};
 
     // Estimate duration based on action types
@@ -108,6 +107,7 @@ fn estimateDuration(action: qt.ActionKind) u32 {
         .experience_recall,
         .farm_evolve_status,
         .swarm_status,
+        .introspection,
         => 5,
 
         // Soft writes: medium
@@ -162,6 +162,99 @@ pub fn recordCoordination(
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// MOTOR COORDINATION — Movement sequencing and timing
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const CoordinationState = enum {
+    idle,
+    planning,
+    executing,
+    waiting,
+    completed,
+    failed,
+};
+
+pub const MovementPattern = struct {
+    actions: []const qt.ActionKind = &.{},
+    timing_multiplier: f32 = 1.0,
+    success_count: u32 = 0,
+    failure_count: u32 = 0,
+
+    pub inline fn successRate(self: *const MovementPattern) f32 {
+        const total = self.success_count + self.failure_count;
+        if (total == 0) return 0.5; // Neutral prior
+        return @as(f32, @floatFromInt(self.success_count)) / @as(f32, @floatFromInt(total));
+    }
+};
+
+/// Sequence coordinator for parallel actions
+pub const SequenceCoordinator = struct {
+    state: CoordinationState = .idle,
+    current_index: usize = 0,
+    pattern: MovementPattern = .{},
+    timing_adjust: f32 = 1.0,
+
+    /// Get next action in sequence
+    pub inline fn sequenceNext(self: *SequenceCoordinator) ?qt.ActionKind {
+        if (self.state != .executing) return null;
+        if (self.current_index >= self.pattern.actions.len) {
+            self.state = .completed;
+            return null;
+        }
+
+        const action = self.pattern.actions[self.current_index];
+        self.current_index += 1;
+        return action;
+    }
+
+    /// Adjust timing based on performance feedback
+    pub fn adjustTiming(self: *SequenceCoordinator, actual_duration_sec: u32, expected_duration_sec: u32) void {
+        if (expected_duration_sec == 0) return;
+
+        const ratio = @as(f32, @floatFromInt(actual_duration_sec)) /
+            @as(f32, @floatFromInt(expected_duration_sec));
+
+        // Adaptive timing: converge toward 1.0 with learning rate 0.1
+        const target = 1.0 / ratio;
+        self.timing_adjust = 0.9 * self.timing_adjust + 0.1 * target;
+
+        // Clamp to reasonable bounds [0.5, 2.0]
+        self.timing_adjust = @max(0.5, @min(2.0, self.timing_adjust));
+    }
+
+    /// Learn from pattern execution result
+    pub fn learnPattern(self: *SequenceCoordinator, success: bool) void {
+        if (success) {
+            self.pattern.success_count += 1;
+        } else {
+            self.pattern.failure_count += 1;
+        }
+
+        // Adjust timing multiplier based on success rate
+        const rate = self.pattern.successRate();
+        if (rate < 0.3) {
+            // Poor performance: slow down
+            self.pattern.timing_multiplier = @min(2.0, self.pattern.timing_multiplier * 1.2);
+        } else if (rate > 0.8) {
+            // Excellent performance: speed up
+            self.pattern.timing_multiplier = @max(0.5, self.pattern.timing_multiplier * 0.9);
+        }
+    }
+
+    /// Reset coordinator for new sequence
+    pub fn reset(self: *SequenceCoordinator, actions: []const qt.ActionKind) void {
+        self.state = .idle;
+        self.current_index = 0;
+        self.pattern = MovementPattern{
+            .actions = actions,
+            .timing_multiplier = self.pattern.timing_multiplier, // Preserve learning
+            .success_count = 0,
+            .failure_count = 0,
+        };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // CELL HEALTH
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -188,6 +281,132 @@ pub const CellHealth = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
+
+test "cerebellum — CoordinationState enum" {
+    try std.testing.expectEqual(@as(CoordinationState, .idle), CoordinationState.idle);
+    try std.testing.expectEqual(@as(CoordinationState, .planning), CoordinationState.planning);
+    try std.testing.expectEqual(@as(CoordinationState, .executing), CoordinationState.executing);
+    try std.testing.expectEqual(@as(CoordinationState, .waiting), CoordinationState.waiting);
+    try std.testing.expectEqual(@as(CoordinationState, .completed), CoordinationState.completed);
+    try std.testing.expectEqual(@as(CoordinationState, .failed), CoordinationState.failed);
+}
+
+test "cerebellum — MovementPattern successRate" {
+    const pattern = MovementPattern{
+        .success_count = 7,
+        .failure_count = 3,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 0.7), pattern.successRate(), 0.01);
+}
+
+test "cerebellum — MovementPattern successRate neutral prior" {
+    const pattern = MovementPattern{};
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), pattern.successRate(), 0.01);
+}
+
+test "cerebellum — SequenceCoordinator sequenceNext" {
+    const actions = [_]qt.ActionKind{ .farm_status, .arena_status, .doctor_scan };
+    var coord = SequenceCoordinator{
+        .state = .executing,
+        .pattern = .{ .actions = &actions },
+    };
+
+    try std.testing.expectEqual(qt.ActionKind.farm_status, coord.sequenceNext().?);
+    try std.testing.expectEqual(qt.ActionKind.arena_status, coord.sequenceNext().?);
+    try std.testing.expectEqual(qt.ActionKind.doctor_scan, coord.sequenceNext().?);
+    try std.testing.expect(coord.sequenceNext() == null);
+    try std.testing.expectEqual(CoordinationState.completed, coord.state);
+}
+
+test "cerebellum — SequenceCoordinator sequenceNext returns null when not executing" {
+    var coord = SequenceCoordinator{ .state = .idle };
+    try std.testing.expect(coord.sequenceNext() == null);
+
+    coord.state = .planning;
+    try std.testing.expect(coord.sequenceNext() == null);
+}
+
+test "cerebellum — SequenceCoordinator adjustTiming" {
+    var coord = SequenceCoordinator{ .timing_adjust = 1.0 };
+
+    // Actual faster than expected -> speed up (> 1.0)
+    coord.adjustTiming(50, 100);
+    try std.testing.expect(coord.timing_adjust > 1.0);
+
+    // Actual slower than expected -> slow down (< 1.0)
+    coord.timing_adjust = 1.0;
+    coord.adjustTiming(150, 100);
+    try std.testing.expect(coord.timing_adjust < 1.0);
+}
+
+test "cerebellum — SequenceCoordinator adjustTiming clamps" {
+    var coord = SequenceCoordinator{ .timing_adjust = 1.0 };
+
+    // Extreme case: much faster -> clamp to max 2.0
+    coord.adjustTiming(10, 100);
+    try std.testing.expect(coord.timing_adjust <= 2.0);
+
+    // Extreme case: much slower -> clamp to min 0.5
+    coord.timing_adjust = 1.0;
+    coord.adjustTiming(1000, 100);
+    try std.testing.expect(coord.timing_adjust >= 0.5);
+}
+
+test "cerebellum — SequenceCoordinator learnPattern success" {
+    var coord = SequenceCoordinator{
+        .pattern = .{ .timing_multiplier = 1.0 },
+    };
+
+    // High success rate -> speed up
+    var i: usize = 0;
+    while (i < 10) : (i += 1) {
+        coord.learnPattern(true);
+    }
+
+    try std.testing.expectEqual(@as(u32, 10), coord.pattern.success_count);
+    try std.testing.expect(coord.pattern.timing_multiplier < 1.0);
+    try std.testing.expect(coord.pattern.timing_multiplier >= 0.5);
+}
+
+test "cerebellum — SequenceCoordinator learnPattern failure" {
+    var coord = SequenceCoordinator{
+        .pattern = .{ .timing_multiplier = 1.0 },
+    };
+
+    // Low success rate -> slow down
+    var i: usize = 0;
+    while (i < 10) : (i += 1) {
+        coord.learnPattern(false);
+    }
+
+    try std.testing.expectEqual(@as(u32, 10), coord.pattern.failure_count);
+    try std.testing.expect(coord.pattern.timing_multiplier > 1.0);
+    try std.testing.expect(coord.pattern.timing_multiplier <= 2.0);
+}
+
+test "cerebellum — SequenceCoordinator reset" {
+    const actions = [_]qt.ActionKind{.farm_status};
+    var coord = SequenceCoordinator{
+        .state = .completed,
+        .current_index = 5,
+        .pattern = .{
+            .actions = &.{.arena_status},
+            .timing_multiplier = 1.5,
+            .success_count = 3,
+            .failure_count = 1,
+        },
+    };
+
+    coord.reset(&actions);
+
+    try std.testing.expectEqual(CoordinationState.idle, coord.state);
+    try std.testing.expectEqual(@as(usize, 0), coord.current_index);
+    try std.testing.expectEqual(qt.ActionKind.farm_status, coord.pattern.actions[0]);
+    try std.testing.expectEqual(@as(u32, 0), coord.pattern.success_count);
+    try std.testing.expectEqual(@as(u32, 0), coord.pattern.failure_count);
+    // timing_multiplier is preserved
+    try std.testing.expectApproxEqAbs(@as(f32, 1.5), coord.pattern.timing_multiplier, 0.01);
+}
 
 test "cerebellum — ResourcePool utilization" {
     const pool = ResourcePool{

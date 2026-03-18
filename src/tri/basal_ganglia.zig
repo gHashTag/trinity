@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // BASAL GANGLIA — Action Selection + Suppression
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -22,7 +23,7 @@ pub const ActionCandidate = struct {
     cost: f32 = 0.0, // 0-1 estimated cost
     suppressed: bool = false,
 
-    pub fn score(self: ActionCandidate) f32 {
+    pub inline fn score(self: ActionCandidate) f32 {
         if (self.suppressed) return -1.0;
         return self.value - (self.cost * 0.5);
     }
@@ -34,7 +35,7 @@ pub const Urgency = enum(u8) {
     normal = 2,
     low = 3,
 
-    pub fn weight(self: Urgency) f32 {
+    pub inline fn weight(self: Urgency) f32 {
         return switch (self) {
             .critical => 4.0,
             .high => 2.0,
@@ -72,9 +73,8 @@ pub fn suppressConflicting(
     candidates: []ActionCandidate,
     selected: qt.ActionKind,
 ) !void {
-    // TODO: Implement conflict detection
-    _ = candidates;
-    _ = selected;
+    const queen_acc = @import("queen_acc.zig");
+    try queen_acc.suppressConflicting(candidates, selected);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -88,7 +88,8 @@ pub const Habit = struct {
     last_executed: i64 = 0,
 
     pub fn isReady(self: Habit, now: i64) bool {
-        const age_hours = (now - self.last_executed) / 3600;
+        const age_seconds = now - self.last_executed;
+        const age_hours = @divTrunc(age_seconds, 3600);
         return switch (self.trigger) {
             .always => true,
             .hourly => age_hours >= 1,
@@ -210,4 +211,75 @@ test "basal_ganglia — Habit isReady" {
 test "basal_ganglia — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+test "basal_ganglia — selectAction returns null for empty" {
+    const candidates = [_]ActionCandidate{};
+    const selected = selectAction(&candidates);
+    try std.testing.expectEqual(@as(?qt.ActionKind, null), selected);
+}
+
+test "basal_ganglia — selectAction all suppressed" {
+    const candidates = [_]ActionCandidate{
+        .{ .kind = .farm_status, .urgency = .critical, .suppressed = true },
+        .{ .kind = .doctor_quick, .urgency = .high, .suppressed = true },
+    };
+
+    const selected = selectAction(&candidates);
+    try std.testing.expectEqual(@as(?qt.ActionKind, null), selected);
+}
+
+test "basal_ganglia — selectAction ties go to first" {
+    const candidates = [_]ActionCandidate{
+        .{ .kind = .farm_status, .urgency = .normal, .value = 0.5 },
+        .{ .kind = .doctor_quick, .urgency = .normal, .value = 0.5 },
+    };
+
+    const selected = selectAction(&candidates);
+    // First candidate should be selected (same score)
+    try std.testing.expectEqual(qt.ActionKind.farm_status, selected.?);
+}
+
+test "basal_ganglia — ActionCandidate score with high cost" {
+    const c = ActionCandidate{
+        .kind = .farm_status,
+        .urgency = .normal,
+        .value = 0.5,
+        .cost = 0.9,
+    };
+    // score = 0.5 - (0.9 * 0.5) = 0.5 - 0.45 = 0.05
+    try std.testing.expectApproxEqAbs(@as(f32, 0.05), c.score(), 0.01);
+}
+
+test "basal_ganglia — Habit isReady hourly" {
+    const now: i64 = 100000;
+
+    const hourly_ready = Habit{
+        .action = .farm_status,
+        .trigger = .hourly,
+        .last_executed = now - 3601, // 1 hour 1 second ago
+    };
+    try std.testing.expect(hourly_ready.isReady(now));
+
+    const hourly_not_ready = Habit{
+        .action = .farm_status,
+        .trigger = .hourly,
+        .last_executed = now - 3599, // 59 minutes 59 seconds ago
+    };
+    try std.testing.expect(!hourly_not_ready.isReady(now));
+}
+
+test "basal_ganglia — Urgency enum values" {
+    // Verify enum ordering for priority (critical < high < normal < low)
+    try std.testing.expectEqual(@as(u8, 0), @intFromEnum(Urgency.critical));
+    try std.testing.expectEqual(@as(u8, 1), @intFromEnum(Urgency.high));
+    try std.testing.expectEqual(@as(u8, 2), @intFromEnum(Urgency.normal));
+    try std.testing.expectEqual(@as(u8, 3), @intFromEnum(Urgency.low));
+}
+
+test "basal_ganglia — Trigger enum coverage" {
+    const triggers = [_]Trigger{ .always, .hourly, .daily };
+    for (triggers) |t| {
+        _ = t; // Verify all enum values exist
+    }
 }

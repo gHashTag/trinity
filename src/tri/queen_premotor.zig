@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN PREMOTOR CORTEX (PMC) — Action Sequencing & Planning
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -31,6 +32,17 @@ pub const SequenceStep = struct {
         farm_idle_exists,
         arena_exists,
         custom_check,
+        // v2: health-based conditions
+        health_critical, // ouroboros_score < 50
+        health_good, // ouroboros_score >= 70
+        dirty_exists, // dirty_files > 0
+        // v2: farm conditions
+        farm_has_leaders, // farm_idle_count >= 3
+        farm_best_ppl_good, // best_ppl < 10.0
+        // v2: arena conditions
+        arena_stale, // stale_arena_hours > 24
+        // v2: git conditions
+        has_uncommitted, // uncommitted changes exist
     };
 
     pub const CustomCheckFn = *const fn (*const SequenceStep.ConditionContext) bool;
@@ -47,6 +59,12 @@ pub const SequenceStep = struct {
         tests_pass: bool = false,
         farm_idle_count: u8 = 0,
         arena_exists: bool = false,
+        // v2: extended context
+        ouroboros_score: f32 = 0.0,
+        dirty_files: u16 = 0,
+        farm_best_ppl: f32 = 999.0,
+        stale_arena_hours: u16 = 0,
+        has_uncommitted: bool = false,
     };
 };
 
@@ -112,10 +130,10 @@ pub const PredefinedSequences = struct {
         var seq = ActionSequence{};
         @memcpy(seq.name[0.."full_heal".len], "full_heal");
         seq.name_len = "full_heal".len;
-        seq.steps[0] = .{ .action = .doctor_scan };
-        seq.steps[1] = .{ .action = .doctor_quick, .condition = .build_ok };
-        seq.steps[2] = .{ .action = .ouroboros_cycle };
-        seq.steps[3] = .{ .action = .doctor_heal };
+        seq.steps[0] = .{ .action = .doctor_scan, .delay_ms = 0 };
+        seq.steps[1] = .{ .action = .doctor_quick, .condition = .build_ok, .delay_ms = 500 };
+        seq.steps[2] = .{ .action = .ouroboros_cycle, .delay_ms = 1000 };
+        seq.steps[3] = .{ .action = .doctor_heal, .delay_ms = 500 };
         seq.step_count = 4;
         return seq;
     }
@@ -125,8 +143,8 @@ pub const PredefinedSequences = struct {
         var seq = ActionSequence{};
         @memcpy(seq.name[0.."farm_health".len], "farm_health");
         seq.name_len = "farm_health".len;
-        seq.steps[0] = .{ .action = .farm_status };
-        seq.steps[1] = .{ .action = .farm_evolve_status };
+        seq.steps[0] = .{ .action = .farm_status, .delay_ms = 0 };
+        seq.steps[1] = .{ .action = .farm_evolve_status, .delay_ms = 1000 };
         seq.step_count = 2;
         return seq;
     }
@@ -136,8 +154,8 @@ pub const PredefinedSequences = struct {
         var seq = ActionSequence{};
         @memcpy(seq.name[0.."cloud_cleanup".len], "cloud_cleanup");
         seq.name_len = "cloud_cleanup".len;
-        seq.steps[0] = .{ .action = .cloud_spawn, .condition = .custom_check, .custom_check_fn = null }; // Will check if any containers exist
-        seq.steps[1] = .{ .action = .cloud_cleanup };
+        seq.steps[0] = .{ .action = .cloud_spawn, .condition = .custom_check, .custom_check_fn = null, .delay_ms = 0 };
+        seq.steps[1] = .{ .action = .cloud_cleanup, .delay_ms = 2000 };
         seq.step_count = 2;
         return seq;
     }
@@ -147,8 +165,70 @@ pub const PredefinedSequences = struct {
         var seq = ActionSequence{};
         @memcpy(seq.name[0.."research_cycle".len], "research_cycle");
         seq.name_len = "research_cycle".len;
-        seq.steps[0] = .{ .action = .research_sacred };
-        seq.steps[1] = .{ .action = .patent_status };
+        seq.steps[0] = .{ .action = .research_sacred, .delay_ms = 0 };
+        seq.steps[1] = .{ .action = .patent_status, .delay_ms = 500 };
+        seq.step_count = 2;
+        return seq;
+    }
+
+    // v2: New predefined sequences with delays and conditions
+
+    /// check_and_heal: Quick health check → heal if critical
+    /// Delays: 0ms for scan, 1s delay before heal
+    pub fn checkAndHeal() ActionSequence {
+        var seq = ActionSequence{};
+        @memcpy(seq.name[0.."check_and_heal".len], "check_and_heal");
+        seq.name_len = "check_and_heal".len;
+        seq.steps[0] = .{ .action = .doctor_scan, .delay_ms = 0 };
+        seq.steps[1] = .{ .action = .doctor_heal, .condition = .health_critical, .delay_ms = 1000 };
+        seq.step_count = 2;
+        return seq;
+    }
+
+    /// farm_cycle: Check farm → evolve if idle leaders exist → inject top configs
+    /// Delays: 500ms between steps for status refresh
+    pub fn farmCycle() ActionSequence {
+        var seq = ActionSequence{};
+        @memcpy(seq.name[0.."farm_cycle".len], "farm_cycle");
+        seq.name_len = "farm_cycle".len;
+        seq.steps[0] = .{ .action = .farm_status, .delay_ms = 0 };
+        seq.steps[1] = .{ .action = .farm_evolve_step, .condition = .farm_has_leaders, .delay_ms = 500 };
+        seq.step_count = 2;
+        return seq;
+    }
+
+    /// full_backup: Git stash → commit → push
+    /// Delays: 200ms between steps for filesystem sync
+    pub fn fullBackup() ActionSequence {
+        var seq = ActionSequence{};
+        @memcpy(seq.name[0.."full_backup".len], "full_backup");
+        seq.name_len = "full_backup".len;
+        seq.steps[0] = .{ .action = .git_commit_state, .condition = .has_uncommitted, .delay_ms = 0 };
+        seq.steps[1] = .{ .action = .git_push, .condition = .has_uncommitted, .delay_ms = 200 };
+        seq.step_count = 2;
+        return seq;
+    }
+
+    /// arena_battle: Run arena battle → record result to experience
+    /// Delays: 1s before battle for setup, 500ms after for save
+    pub fn arenaBattle() ActionSequence {
+        var seq = ActionSequence{};
+        @memcpy(seq.name[0.."arena_battle".len], "arena_battle");
+        seq.name_len = "arena_battle".len;
+        seq.steps[0] = .{ .action = .arena_battle, .delay_ms = 1000 };
+        seq.steps[1] = .{ .action = .experience_save, .delay_ms = 500 };
+        seq.step_count = 2;
+        return seq;
+    }
+
+    /// research_scan: Search arXiv for new papers → save to Scholar if found
+    /// Delays: 2s for search, 500ms for save
+    pub fn researchScan() ActionSequence {
+        var seq = ActionSequence{};
+        @memcpy(seq.name[0.."research_scan".len], "research_scan");
+        seq.name_len = "research_scan".len;
+        seq.steps[0] = .{ .action = .research_sacred, .delay_ms = 2000 };
+        seq.steps[1] = .{ .action = .experience_save, .delay_ms = 500 };
         seq.step_count = 2;
         return seq;
     }
@@ -212,6 +292,13 @@ pub const Sequencer = struct {
             .farm_idle_exists => self.context.farm_idle_count > 0,
             .arena_exists => self.context.arena_exists,
             .custom_check => if (fn_ptr) |f| f(&self.context) else false,
+            .health_critical => self.context.ouroboros_score < 50.0,
+            .health_good => self.context.ouroboros_score >= 70.0,
+            .dirty_exists => self.context.dirty_files > 0,
+            .farm_has_leaders => self.context.farm_idle_count >= 3,
+            .farm_best_ppl_good => self.context.farm_best_ppl < 10.0,
+            .arena_stale => self.context.stale_arena_hours > 24,
+            .has_uncommitted => self.context.has_uncommitted,
         };
     }
 
@@ -221,6 +308,12 @@ pub const Sequencer = struct {
         self.context.tests_pass = senses.test_rate >= 80;
         self.context.farm_idle_count = senses.farm_idle_count;
         self.context.arena_exists = senses.arena_battles > 0;
+        // v2: extended context
+        self.context.ouroboros_score = senses.ouroboros_score;
+        self.context.dirty_files = senses.dirty_files;
+        self.context.farm_best_ppl = senses.farm_best_ppl;
+        self.context.stale_arena_hours = senses.stale_arena_hours;
+        self.context.has_uncommitted = senses.dirty_files > 0;
     }
 };
 
