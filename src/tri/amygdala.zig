@@ -1,0 +1,578 @@
+// @origin(manual) @regen(manual-impl)
+// ═══════════════════════════════════════════════════════════════════════════════
+// AMYGDALA — Emotional Processing & Fear Conditioning
+// ═══════════════════════════════════════════════════════════════════════════════
+// S³AI Brain Module — Emotional valence, fear learning, reward association
+// Neuro: Emotional processing, threat detection, fear conditioning, reward learning
+// Trinity: Tag hippocampus memories with emotion, avoidance learning, mood modulation
+//
+// φ² + 1/φ² = 3 = TRINITY
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const std = @import("std");
+const Allocator = std.mem.Allocator;
+const hippocampus = @import("hippocampus.zig");
+const ofc = @import("queen_ofc.zig");
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EMOTION — Basic emotion types
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const Emotion = enum {
+    fear,
+    reward,
+    neutral,
+    anger,
+    joy,
+
+    pub fn toString(self: Emotion) []const u8 {
+        return switch (self) {
+            .fear => "fear",
+            .reward => "reward",
+            .neutral => "neutral",
+            .anger => "anger",
+            .joy => "joy",
+        };
+    }
+
+    pub fn fromString(s: []const u8) ?Emotion {
+        if (std.mem.eql(u8, s, "fear")) return .fear;
+        if (std.mem.eql(u8, s, "reward")) return .reward;
+        if (std.mem.eql(u8, s, "neutral")) return .neutral;
+        if (std.mem.eql(u8, s, "anger")) return .anger;
+        if (std.mem.eql(u8, s, "joy")) return .joy;
+        return null;
+    }
+};
+
+/// Valence: -100 (extreme fear/anger) to +100 (extreme reward/joy)
+pub const Valence = struct {
+    emotion: Emotion,
+    intensity: i8, // -100 to +100
+
+    pub fn init(emotion: Emotion, intensity: i8) Valence {
+        return .{ .emotion = emotion, .intensity = intensity };
+    }
+
+    pub fn fear(intensity: i8) Valence {
+        const abs = if (intensity < 0) -intensity else intensity;
+        return .{ .emotion = .fear, .intensity = -abs };
+    }
+
+    pub fn reward(intensity: i8) Valence {
+        const abs = if (intensity < 0) -intensity else intensity;
+        return .{ .emotion = .reward, .intensity = abs };
+    }
+
+    pub fn anger(intensity: i8) Valence {
+        const abs = if (intensity < 0) -intensity else intensity;
+        return .{ .emotion = .anger, .intensity = -abs };
+    }
+
+    pub fn joy(intensity: i8) Valence {
+        const abs = if (intensity < 0) -intensity else intensity;
+        return .{ .emotion = .joy, .intensity = abs };
+    }
+
+    pub fn isNegative(self: *const Valence) bool {
+        return self.intensity < 0;
+    }
+
+    pub fn isPositive(self: *const Valence) bool {
+        return self.intensity > 0;
+    }
+
+    pub fn absolute(self: *const Valence) i8 {
+        if (self.intensity < 0) return -self.intensity;
+        return self.intensity;
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FEAR CONDITIONING — One-shot learning from aversive events
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Fear memory - associates context with negative outcome
+pub const FearMemory = struct {
+    context: []const u8, // e.g., "flat-lr-schedule"
+    intensity: i8, // 1-100
+    encounter_count: u32,
+    last_encounter: i64,
+    extinction_progress: f32 = 0.0, // 0 = strong, 1 = extinguished
+
+    pub fn shouldAvoid(self: *const FearMemory) bool {
+        // Avoid if intensity > 30 and not mostly extinguished
+        return self.intensity > 30 and self.extinction_progress < 0.8;
+    }
+
+    pub fn avoidanceConfidence(self: *const FearMemory) f32 {
+        const base = @as(f32, @floatFromInt(self.intensity)) / 100.0;
+        return base * (1.0 - self.extinction_progress);
+    }
+};
+
+/// Condition fear from negative episode (one-shot learning)
+pub fn conditionFear(
+    allocator: Allocator,
+    context: []const u8,
+    summary: []const u8,
+    data_json: []const u8,
+    intensity: i8,
+) !void {
+    const clamped = @min(@abs(intensity), 100);
+
+    // Build episode record with fear tags
+    var record = hippocampus.MemoryRecord{};
+    const ts: u64 = @intCast(std.time.timestamp());
+    try hippocampus.generateId(&record.id_buf, &record.id_len, ts, "amygdala");
+    try hippocampus.copyToFixed(32, &record.agent_buf, &record.agent_len, "amygdala");
+    record.kind = .episode;
+    record.ts = ts;
+    record.ttl = hippocampus.MemoryKind.episode.defaultTtl();
+
+    try hippocampus.copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+
+    // Build summary with context
+    var summary_buf: [512]u8 = undefined;
+    const full_summary = try std.fmt.bufPrint(
+        &summary_buf,
+        "[FEAR] {s}: {s}",
+        .{ context, summary },
+    );
+    try hippocampus.copyToFixed(256, &record.summary_buf, &record.summary_len, full_summary);
+
+    // Add emotion tags
+    var tag_buf: [32]u8 = undefined;
+    const emo_tag = try std.fmt.bufPrint(&tag_buf, "emo:fear", .{});
+    const val_tag = try std.fmt.bufPrint(&tag_buf, "emo-v:{d}", .{clamped});
+    const ctx_tag = try std.fmt.bufPrint(&tag_buf, "ctx:{s}", .{context});
+
+    try hippocampus.copyToFixed(32, &record.tags[0], &record.tag_lens[0], emo_tag);
+    try hippocampus.copyToFixed(32, &record.tags[1], &record.tag_lens[1], val_tag);
+    try hippocampus.copyToFixed(32, &record.tags[2], &record.tag_lens[2], ctx_tag);
+    record.tag_count = 3;
+
+    try hippocampus.write(allocator, &record);
+}
+
+/// Condition reward from positive episode
+pub fn conditionReward(
+    allocator: Allocator,
+    context: []const u8,
+    summary: []const u8,
+    data_json: []const u8,
+    intensity: i8,
+) !void {
+    const clamped = @min(@abs(intensity), 100);
+
+    var record = hippocampus.MemoryRecord{};
+    const ts: u64 = @intCast(std.time.timestamp());
+    try hippocampus.generateId(&record.id_buf, &record.id_len, ts, "amygdala");
+    try hippocampus.copyToFixed(32, &record.agent_buf, &record.agent_len, "amygdala");
+    record.kind = .episode;
+    record.ts = ts;
+    record.ttl = hippocampus.MemoryKind.episode.defaultTtl();
+
+    try hippocampus.copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+
+    var summary_buf: [512]u8 = undefined;
+    const full_summary = try std.fmt.bufPrint(
+        &summary_buf,
+        "[REWARD] {s}: {s}",
+        .{ context, summary },
+    );
+    try hippocampus.copyToFixed(256, &record.summary_buf, &record.summary_len, full_summary);
+
+    // Add emotion tags
+    var tag_buf: [32]u8 = undefined;
+    const emo_tag = try std.fmt.bufPrint(&tag_buf, "emo:reward", .{});
+    const val_tag = try std.fmt.bufPrint(&tag_buf, "emo-v:{d}", .{clamped});
+    const ctx_tag = try std.fmt.bufPrint(&tag_buf, "ctx:{s}", .{context});
+
+    try hippocampus.copyToFixed(32, &record.tags[0], &record.tag_lens[0], emo_tag);
+    try hippocampus.copyToFixed(32, &record.tags[1], &record.tag_lens[1], val_tag);
+    try hippocampus.copyToFixed(32, &record.tags[2], &record.tag_lens[2], ctx_tag);
+    record.tag_count = 3;
+
+    try hippocampus.write(allocator, &record);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AVOIDANCE — Check if context triggers avoidance behavior
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const AvoidanceResult = struct {
+    avoid: bool,
+    confidence: f32, // 0-1
+    reason: []const u8,
+};
+
+/// Check if a context should be avoided based on fear memory
+pub fn shouldAvoid(
+    allocator: Allocator,
+    context: []const u8,
+) !AvoidanceResult {
+    var results = try hippocampus.read(allocator, .{
+        .tag_filter = "emo:fear",
+        .limit = 100,
+    });
+    defer results.deinit(allocator);
+
+    var max_intensity: i8 = 0;
+    var match_count: u32 = 0;
+
+    for (results.items) |rec| {
+        const summary = rec.summary();
+        const data = rec.data();
+
+        // Check if context appears in memory
+        const in_summary = std.mem.indexOf(u8, summary, context) != null;
+        const in_data = std.mem.indexOf(u8, data, context) != null;
+
+        if (in_summary or in_data) {
+            // Parse emo-v tag
+            var ti: u8 = 0;
+            while (ti < rec.tag_count) : (ti += 1) {
+                const tag = rec.getTag(ti);
+                if (std.mem.startsWith(u8, tag, "emo-v:")) {
+                    const val_str = tag["emo-v:".len..];
+                    const val = std.fmt.parseInt(i8, val_str, 10) catch 0;
+                    if (val > max_intensity) max_intensity = val;
+                }
+            }
+            match_count += 1;
+        }
+    }
+
+    if (max_intensity > 30 and match_count > 0) {
+        var reason_buf: [128]u8 = undefined;
+        const reason = try std.fmt.bufPrint(
+            &reason_buf,
+            "Fear association: {s} (intensity {d}, {d} episodes)",
+            .{ context, max_intensity, match_count },
+        );
+        return .{
+            .avoid = true,
+            .confidence = @as(f32, @floatFromInt(max_intensity)) / 100.0,
+            .reason = reason,
+        };
+    }
+
+    return .{
+        .avoid = false,
+        .confidence = 0.0,
+        .reason = "No fear association",
+    };
+}
+
+/// Extinct fear through safe exposure
+pub fn extinguish(
+    allocator: Allocator,
+    context: []const u8,
+) !void {
+    _ = allocator;
+    _ = context;
+    // TODO: Implement extinction tracking
+    // For now, fear extinction happens through lack of reinforcement
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MOOD MODULATION — Enhance OFC mood with emotional memory
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Modulate OFC mood based on emotional context
+pub fn modulateMood(
+    allocator: Allocator,
+    base_mood: ofc.Mood,
+    context: []const u8,
+) !ofc.Mood {
+    // Check for recent fear associations
+    var results = try hippocampus.read(allocator, .{
+        .tag_filter = "emo:fear",
+        .limit = 50,
+    });
+    defer results.deinit(allocator);
+
+    var recent_fear_count: u32 = 0;
+    const now = std.time.timestamp();
+    const one_hour_ago = now - 3600;
+
+    for (results.items) |rec| {
+        if (rec.ts >= one_hour_ago) {
+            const summary = rec.summary();
+            if (std.mem.indexOf(u8, summary, context) != null) {
+                recent_fear_count += 1;
+            }
+        }
+    }
+
+    // Check for recent reward associations
+    var reward_results = try hippocampus.read(allocator, .{
+        .tag_filter = "emo:reward",
+        .limit = 50,
+    });
+    defer reward_results.deinit(allocator);
+
+    var recent_reward_count: u32 = 0;
+    for (reward_results.items) |rec| {
+        if (rec.ts >= one_hour_ago) {
+            const summary = rec.summary();
+            if (std.mem.indexOf(u8, summary, context) != null) {
+                recent_reward_count += 1;
+            }
+        }
+    }
+
+    // Modulate mood based on emotional history
+    return switch (base_mood) {
+        .calm => if (recent_fear_count >= 3) .alert else if (recent_reward_count >= 5) .euphoria else .calm,
+        .alert => if (recent_fear_count >= 5) .alarm else if (recent_reward_count >= 3) .calm else .alert,
+        .alarm => if (recent_reward_count >= 5) .alert else .alarm,
+        .euphoria => if (recent_fear_count >= 3) .calm else .euphoria,
+    };
+}
+
+/// Get emotional summary for a context
+pub fn getEmotionalSummary(
+    allocator: Allocator,
+    context: []const u8,
+) !struct {
+    fear_intensity: i8,
+    reward_intensity: i8,
+    fear_count: u32,
+    reward_count: u32,
+} {
+    var fear_results = try hippocampus.read(allocator, .{
+        .tag_filter = "emo:fear",
+        .limit = 100,
+    });
+    defer fear_results.deinit(allocator);
+
+    var fear_intensity: i8 = 0;
+    var fear_count: u32 = 0;
+
+    for (fear_results.items) |rec| {
+        const summary = rec.summary();
+        const data = rec.data();
+        if (std.mem.indexOf(u8, summary, context) != null or
+            std.mem.indexOf(u8, data, context) != null)
+        {
+            fear_count += 1;
+            // Parse emo-v tag
+            var ti: u8 = 0;
+            while (ti < rec.tag_count) : (ti += 1) {
+                const tag = rec.getTag(ti);
+                if (std.mem.startsWith(u8, tag, "emo-v:")) {
+                    const val_str = tag["emo-v:".len..];
+                    const val = std.fmt.parseInt(i8, val_str, 10) catch 0;
+                    if (val > fear_intensity) fear_intensity = val;
+                }
+            }
+        }
+    }
+
+    var reward_results = try hippocampus.read(allocator, .{
+        .tag_filter = "emo:reward",
+        .limit = 100,
+    });
+    defer reward_results.deinit(allocator);
+
+    var reward_intensity: i8 = 0;
+    var reward_count: u32 = 0;
+
+    for (reward_results.items) |rec| {
+        const summary = rec.summary();
+        const data = rec.data();
+        if (std.mem.indexOf(u8, summary, context) != null or
+            std.mem.indexOf(u8, data, context) != null)
+        {
+            reward_count += 1;
+            // Parse emo-v tag
+            var ti: u8 = 0;
+            while (ti < rec.tag_count) : (ti += 1) {
+                const tag = rec.getTag(ti);
+                if (std.mem.startsWith(u8, tag, "emo-v:")) {
+                    const val_str = tag["emo-v:".len..];
+                    const val = std.fmt.parseInt(i8, val_str, 10) catch 0;
+                    if (val > reward_intensity) reward_intensity = val;
+                }
+            }
+        }
+    }
+
+    return .{
+        .fear_intensity = fear_intensity,
+        .reward_intensity = reward_intensity,
+        .fear_count = fear_count,
+        .reward_count = reward_count,
+    };
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THREAT DETECTION — Identify patterns that should trigger fear
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const ThreatKind = enum {
+    build_failure,
+    ppl_divergence,
+    token_expiry,
+    worker_death,
+    stagnation,
+    memory_corruption,
+    flat_lr_schedule, // DEADLY
+};
+
+/// Detect threat from system state
+pub fn detectThreat(
+    build_ok: bool,
+    ppl: f32,
+    ppl_delta: f32,
+) ?ThreatKind {
+    // Flat LR schedule is deadly
+    if (ppl_delta > 50.0) return .flat_lr_schedule; // PPL jumped > 50
+
+    // Build failure
+    if (!build_ok) return .build_failure;
+
+    // PPL divergence (getting worse)
+    if (ppl > 20.0 and ppl_delta > 10.0) return .ppl_divergence;
+
+    return null;
+}
+
+/// Auto-condition fear from detected threat
+pub fn autoConditionFromThreat(
+    allocator: Allocator,
+    threat: ThreatKind,
+    context_data: []const u8,
+) !void {
+    const intensity: i8 = switch (threat) {
+        .flat_lr_schedule => 100, // MAXIMUM FEAR
+        .build_failure => 70,
+        .ppl_divergence => 60,
+        .token_expiry => 80,
+        .worker_death => 50,
+        .stagnation => 30,
+        .memory_corruption => 90,
+    };
+
+    const context = switch (threat) {
+        .flat_lr_schedule => "flat-lr-schedule",
+        .build_failure => "build-failure",
+        .ppl_divergence => "ppl-divergence",
+        .token_expiry => "token-expiry",
+        .worker_death => "worker-death",
+        .stagnation => "stagnation",
+        .memory_corruption => "memory-corruption",
+    };
+
+    try conditionFear(
+        allocator,
+        context,
+        switch (threat) {
+            .build_failure => "build-failure",
+            .ppl_divergence => "ppl-divergence",
+            .token_expiry => "token-expiry",
+            .worker_death => "worker-death",
+            .stagnation => "stagnation",
+            .memory_corruption => "memory-corruption",
+            .flat_lr_schedule => "flat-lr-schedule",
+        },
+        context_data,
+        intensity,
+    );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CELL HEALTH
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn health() CellHealth {
+    return CellHealth{
+        .status = .healthy,
+        .cycle = 0,
+        .last_check = std.time.timestamp(),
+    };
+}
+
+pub const CellHealth = struct {
+    status: Status = .healthy,
+    cycle: u32 = 0,
+    last_check: i64 = 0,
+
+    pub const Status = enum {
+        healthy,
+        weak,
+        broken,
+    };
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "amygdala — Emotion toString/fromString roundtrip" {
+    const e = Emotion.fear;
+    try std.testing.expectEqualStrings("fear", e.toString());
+    try std.testing.expectEqual(Emotion.fear, Emotion.fromString("fear").?);
+}
+
+test "amygdala — Valence fear is negative" {
+    const v = Valence.fear(50);
+    try std.testing.expect(v.isNegative());
+    try std.testing.expect(!v.isPositive());
+    try std.testing.expectEqual(@as(i8, 50), v.absolute());
+}
+
+test "amygdala — Valence reward is positive" {
+    const v = Valence.reward(75);
+    try std.testing.expect(v.isPositive());
+    try std.testing.expect(!v.isNegative());
+}
+
+test "amygdala — FearMemory shouldAvoid logic" {
+    const fm = FearMemory{
+        .context = "test",
+        .intensity = 80,
+        .encounter_count = 5,
+        .last_encounter = std.time.timestamp(),
+        .extinction_progress = 0.0,
+    };
+    try std.testing.expect(fm.shouldAvoid());
+    try std.testing.expect(fm.avoidanceConfidence() > 0.5);
+
+    const extinguished = FearMemory{
+        .context = "test",
+        .intensity = 80,
+        .encounter_count = 5,
+        .last_encounter = std.time.timestamp(),
+        .extinction_progress = 0.9,
+    };
+    try std.testing.expect(!extinguished.shouldAvoid());
+}
+
+test "amygdala — detectThreat finds flat LR" {
+    const threat = detectThreat(true, 50.0, 60.0);
+    try std.testing.expectEqual(ThreatKind.flat_lr_schedule, threat.?);
+}
+
+test "amygdala — detectThreat finds build failure" {
+    const threat = detectThreat(false, 10.0, 0.0);
+    try std.testing.expectEqual(ThreatKind.build_failure, threat.?);
+}
+
+test "amygdala — detectThreat returns null when OK" {
+    const threat = detectThreat(true, 5.0, 1.0);
+    try std.testing.expectEqual(@as(?ThreatKind, null), threat);
+}
+
+test "amygdala — health returns healthy" {
+    const h = health();
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+test "amygdala — shouldAvoid returns result" {
+    const result = try shouldAvoid(std.testing.allocator, "nonexistent-context");
+    try std.testing.expect(!result.avoid);
+    try std.testing.expectEqual(@as(f32, 0.0), result.confidence);
+}
