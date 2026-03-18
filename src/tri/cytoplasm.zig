@@ -9222,7 +9222,7 @@ fn runBatchSign(allocator: Allocator) !void {
             , .{sig_str}) catch continue;
             defer allocator.free(sec_section);
             result.appendSlice(sec_section) catch continue;
-            std.fs.cwd().writeFile(cell_tri_path, result.toOwnedSlice() catch continue) catch continue;
+            std.fs.cwd().writeFile(.{ .sub_path = cell_tri_path, .data = result.toOwnedSlice() catch continue }) catch continue;
         }
 
         signed_count += 1;
