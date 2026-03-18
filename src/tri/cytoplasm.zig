@@ -2621,7 +2621,7 @@ fn writeMermaidGraph(
     var output = std.array_list.Managed(u8).init(allocator);
     defer output.deinit();
 
-    try output.appendSlice("graph TD\n");
+    try output.appendSlice( "graph TD\n");
 
     // Write nodes with styles
     var node_it = cell_health.iterator();
@@ -2651,7 +2651,7 @@ fn writeMermaidGraph(
         }
     }
 
-    try output.appendSlice("\n");
+    try output.appendSlice( "\n");
 
     // Write edges
     var edge_it = deps_of.iterator();
@@ -2669,12 +2669,12 @@ fn writeMermaidGraph(
     }
 
     // Write legend
-    try output.appendSlice("\nclassDef blue fill:#4A90E2,stroke:#3498DB,stroke-width:2px,color:#fff\n");
-    try output.appendSlice("classDef purple fill:#9B59B6,stroke:#8E44AD,stroke-width:2px,color:#fff\n");
-    try output.appendSlice("classDef red fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff\n");
-    try output.appendSlice("classDef green fill:#2ECC71,stroke:#27AE60,stroke-width:2px,color:#fff\n");
-    try output.appendSlice("classDef orange fill:#F39C12,stroke:#E67E22,stroke-width:2px,color:#fff\n");
-    try output.appendSlice("classDef gray fill:#95A5A6,stroke:#7F8C8D,stroke-width:2px,color:#fff\n");
+    try output.appendSlice( "\nclassDef blue fill:#4A90E2,stroke:#3498DB,stroke-width:2px,color:#fff\n");
+    try output.appendSlice( "classDef purple fill:#9B59B6,stroke:#8E44AD,stroke-width:2px,color:#fff\n");
+    try output.appendSlice( "classDef red fill:#E74C3C,stroke:#C0392B,stroke-width:2px,color:#fff\n");
+    try output.appendSlice( "classDef green fill:#2ECC71,stroke:#27AE60,stroke-width:2px,color:#fff\n");
+    try output.appendSlice( "classDef orange fill:#F39C12,stroke:#E67E22,stroke-width:2px,color:#fff\n");
+    try output.appendSlice( "classDef gray fill:#95A5A6,stroke:#7F8C8D,stroke-width:2px,color:#fff\n");
 
     var file = try std.fs.cwd().createFile(path, .{});
     defer file.close();
@@ -2697,7 +2697,7 @@ fn writeJsonGraph(
     var node_it = cell_health.iterator();
     while (node_it.next()) |entry| {
         const info = entry.value_ptr.*;
-        if (!first) try output.appendSlice(",\n");
+        if (!first) try output.appendSlice( ",\n");
         first = false;
 
         try output.writer().print("    {{\"id\": \"{s}\", \"name\": \"{s}\", \"score\": {d}, \"bio_system\": \"{s}\", \"status\": \"{s}\"}}", .{
@@ -2717,7 +2717,7 @@ fn writeJsonGraph(
     while (edge_it.next()) |entry| {
         const from_id = entry.key_ptr.*;
         for (entry.value_ptr.items) |to_id| {
-            if (!first) try output.appendSlice(",\n");
+            if (!first) try output.appendSlice( ",\n");
             first = false;
 
             try output.writer().print("    {{\"from\": \"{s}\", \"to\": \"{s}\"}}", .{
@@ -2727,7 +2727,7 @@ fn writeJsonGraph(
         }
     }
 
-    try output.appendSlice("\n  ]\n}\n");
+    try output.appendSlice( "\n  ]\n}\n");
 
     var file = try std.fs.cwd().createFile(path, .{});
     defer file.close();
@@ -2787,7 +2787,7 @@ fn writeHtmlGraph(
     var node_it = cell_health.iterator();
     while (node_it.next()) |entry| {
         const info = entry.value_ptr.*;
-        if (!first) try output.appendSlice(",\n        ");
+        if (!first) try output.appendSlice( ",\n        ");
         first = false;
 
         try output.writer().print("{{id:\"{s}\",name:\"{s}\",score:{d},bio:\"{s}\",status:\"{s}\"}}", .{
@@ -2811,7 +2811,7 @@ fn writeHtmlGraph(
     while (edge_it.next()) |entry| {
         const from_id = entry.key_ptr.*;
         for (entry.value_ptr.items) |to_id| {
-            if (!first) try output.appendSlice(",\n        ");
+            if (!first) try output.appendSlice( ",\n        ");
             first = false;
 
             try output.writer().print("{{source:\"{s}\",target:\"{s}\"}}", .{
@@ -5613,6 +5613,8 @@ fn runFixBio(allocator: Allocator, args: []const []const u8) !void {
 
     for (all_cells) |c| {
         const m = c.manifest;
+        // Skip virtual/sub cells without cell.tri (they can't have [biology])
+        if (m.kind == .virtual or m.kind == .virtual_sub) continue;
         if (m.bio_system.len == 0) {
             const path_copy = try allocator.dupe(u8, c.manifest.path);
             try missing.append(allocator, path_copy);
