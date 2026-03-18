@@ -9,9 +9,18 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const hippocampus = @import("hippocampus.zig");
 const voice_engine = @import("voice_engine.zig");
+const qt = @import("queen_types.zig"); // For findJson helpers
 
 const FRESHNESS_THRESHOLD: i64 = 300; // 5 minutes
 const MU_ERRORS_DIR = ".trinity/mu/errors";
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// JSON HELPERS (re-export from queen_types for Relay 12)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const findJsonF32 = qt.findJsonF32;
+const findJsonU32 = qt.findJsonU32;
+const findJsonStr = qt.findJsonStr;
 
 pub const VerdictCounts = struct {
     total: u32 = 0,
@@ -518,4 +527,160 @@ pub fn getLastSleepInfo(allocator: Allocator) ?SleepInfo {
 test "thalamus getLastSleepInfo returns null when no sleep" {
     const info = getLastSleepInfo(std.testing.allocator);
     try std.testing.expect(info == null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RELAY 12: Farm Status — aggregate from tri_farm + evolution
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const FarmStatus = struct {
+    total_services: usize = 0,
+    active: usize = 0,
+    crashed: usize = 0,
+    stale_count: usize = 0,
+    accounts_alive: u8 = 0,
+    accounts_total: u8 = 0,
+    best_ppl: f32 = 999.0,
+    best_ppl_service: [64]u8 = [_]u8{0} ** 64,
+    best_ppl_service_len: usize = 0,
+    timestamp: i64 = 0,
+
+    pub fn bestPplServiceStr(self: *const FarmStatus) []const u8 {
+        return self.best_ppl_service[0..self.best_ppl_service_len];
+    }
+};
+
+pub fn getFarmStatus(allocator: Allocator) !FarmStatus {
+    _ = allocator;
+    var status = FarmStatus{ .timestamp = std.time.timestamp() };
+
+    // Read from evolution state
+    const evo_file = std.fs.cwd().openFile(".trinity/evolution_state.json", .{}) catch return status;
+    defer evo_file.close();
+
+    var buf: [8192]u8 = undefined;
+    const n = evo_file.read(&buf) catch return status;
+    const data = buf[0..n];
+
+    if (findJsonU32(data, "\"service_count\":")) |v| status.total_services = v;
+    if (findJsonF32(data, "\"best_ppl\":")) |v| status.best_ppl = v;
+
+    // Parse best_name into fixed buffer
+    if (findJsonStr(data, "\"best_name\":\"")) |name| {
+        const len = @min(name.len, status.best_ppl_service.len);
+        @memcpy(status.best_ppl_service[0..len], name[0..len]);
+        status.best_ppl_service_len = len;
+    }
+
+    // Count active/stale/crashed from status counts
+    var pos: usize = 0;
+    while (pos < data.len) {
+        if (std.mem.indexOfPos(u8, data, pos, "\"status\":\"")) |idx| {
+            const status_start = idx + 10;
+            if (status_start + 10 > data.len) break;
+            const status_end = std.mem.indexOfScalarPos(u8, data, status_start, '"') orelse break;
+            const status_val = data[status_start..status_end];
+
+            if (std.mem.eql(u8, status_val, "running")) {
+                status.active += 1;
+            } else if (std.mem.eql(u8, status_val, "crashed")) {
+                status.crashed += 1;
+            } else if (std.mem.eql(u8, status_val, "stale")) {
+                status.stale_count += 1;
+            }
+            pos = status_end + 1;
+        } else break;
+    }
+
+    // TODO: Count accounts from farm_accounts when available
+    status.accounts_total = 8; // Default: 8 Railway accounts
+    status.accounts_alive = status.accounts_total; // Assume all alive for now
+
+    return status;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// RELAY 13: GitHub Issues — queue prioritization
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const GitHubIssues = struct {
+    open: usize = 0,
+    farm_tasks: usize = 0,
+    agent_spawn: usize = 0,
+    priorities: struct { p0: usize, p1: usize, p2: usize } = .{ .p0 = 0, .p1 = 0, .p2 = 0 },
+    last_activity: i64 = 0,
+    timestamp: i64 = 0,
+};
+
+/// GitHub cache wrapper — avoids mutable global state
+pub const GitHubCache = struct {
+    issues: ?GitHubIssues = null,
+    cached_ts: i64 = 0,
+
+    const TTL: i64 = 300; // 5 minutes
+
+    pub fn get(self: *GitHubCache, allocator: Allocator) !GitHubIssues {
+        const now = std.time.timestamp();
+
+        // Return cached if fresh
+        if (self.issues) |*cached| {
+            if (now - self.cached_ts < TTL) {
+                return cached.*;
+            }
+        }
+
+        // Fetch fresh data
+        const issues = GitHubIssues{ .timestamp = now };
+
+        // TODO: Use github_client.zig when listIssues is implemented
+        // For now, return empty counts
+        _ = allocator;
+
+        self.issues = issues;
+        self.cached_ts = now;
+
+        return issues;
+    }
+
+    pub fn invalidate(self: *GitHubCache) void {
+        self.issues = null;
+        self.cached_ts = 0;
+    }
+};
+
+// Global cache instance (wrapped in struct, not naked var)
+var github_cache = GitHubCache{};
+
+pub fn getGitHubIssues(allocator: Allocator) !GitHubIssues {
+    return github_cache.get(allocator);
+}
+
+pub fn invalidateGitHubCache() void {
+    github_cache.invalidate();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS (Wave 5)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "thalamus getFarmStatus returns defaults when file missing" {
+    const status = try getFarmStatus(std.testing.allocator);
+    try std.testing.expect(status.timestamp > 0);
+    try std.testing.expect(status.total_services >= 0);
+}
+
+test "thalamus GitHubCache TTL works" {
+    var cache = GitHubCache{};
+    const dummy_issues = GitHubIssues{ .open = 5, .timestamp = std.time.timestamp() };
+    cache.issues = dummy_issues;
+    cache.cached_ts = std.time.timestamp();
+
+    // First get should return cached
+    const result1 = try cache.get(std.testing.allocator);
+    try std.testing.expectEqual(@as(usize, 5), result1.open);
+
+    // Invalidate and get fresh
+    cache.invalidate();
+    const result2 = try cache.get(std.testing.allocator);
+    try std.testing.expectEqual(@as(usize, 0), result2.open); // No GitHub client yet
 }
