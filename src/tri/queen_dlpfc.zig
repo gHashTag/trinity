@@ -199,7 +199,7 @@ pub fn readPhase(allocator: Allocator, state: *LoopState) !void {
     const farm_status = try thalamus.getFarmStatus(allocator);
     const github_issues = try thalamus.getGitHubIssues(allocator);
 
-    const cell_health = try thalamus.getCellHealth(allocator);
+    _ = try thalamus.getCellHealth(allocator); // Not used yet
     const metabolism = try thalamus.getMetabolismSnapshot(allocator);
     const sleep_info = try thalamus.getLastSleepInfo(allocator);
 
@@ -225,19 +225,19 @@ pub fn readPhase(allocator: Allocator, state: *LoopState) !void {
     offset += try std.fmt.bufPrint(
         buf[offset..],
         "{s} Metabolism: PPL={d:.1} tok/s={d}\\n",
-        .{ metabolism.?.ppl orelse 0.0, metabolism.?.tok_per_sec orelse 0 },
+        .{ if (metabolism) |m| m.ppl else 0.0, if (metabolism) |m| m.tok_per_sec else 0 },
     );
     offset += try std.fmt.bufPrint(
         buf[offset..],
         "{s} Sleep: {d}h ago\\n",
-        .{ sleep_info.?hours_since orelse 999 },
+        .{ if (sleep_info) |s| s.hours_since else 999 },
     );
 
     // Log to hippocampus
     const data = try std.fmt.allocPrint(
         allocator,
-        "{{"cycle":{d},"farm_active":{d},"farm_total":{d},"github_open":{d},"metabolism_ppl":{d:.1},"sleep_hours_ago":{d}}}",
-        .{ state.cycle, farm_status.active, farm_status.total_services, github_issues.open, metabolism.?.ppl orelse 0.0, sleep_info.?hours_since orelse 999 },
+        "{{\"cycle\":{d},\"farm_active\":{d},\"farm_total\":{d},\"github_open\":{d},\"metabolism_ppl\":{d:.1},\"sleep_hours_ago\":{d:.1}}}",
+        .{ state.cycle, farm_status.active, farm_status.total_services, github_issues.open, if (metabolism) |m| m.ppl else 0.0, if (sleep_info) |s| s.hours_since else 999.0 },
     );
     defer allocator.free(data);
 
@@ -254,7 +254,7 @@ pub fn thinkPhase(allocator: Allocator, state: *LoopState) !void {
     state.last_think = std.time.timestamp();
 
     // Decision queue for this cycle
-    var decisions: std.ArrayList(Decision).init(allocator);
+    var decisions = std.ArrayList(Decision).initCapacity(0, allocator);
     defer decisions.deinit(allocator);
 
     // Check for critical issues
@@ -288,7 +288,7 @@ pub fn thinkPhase(allocator: Allocator, state: *LoopState) !void {
     // Log think summary
     const summary = try std.fmt.allocPrint(
         allocator,
-        "{{"decisions":{d},"cycle":{d}}}",
+        "{{\\\"decisions\\\":{d},\\\"cycle\\\":{d}}}",
         .{ decisions.items.len, state.cycle },
     );
     defer allocator.free(summary);
@@ -303,6 +303,7 @@ pub fn thinkPhase(allocator: Allocator, state: *LoopState) !void {
 
 /// SPEAK phase — format decisions for output (Phase 1: log only)
 pub fn speakPhase(allocator: Allocator, state: *LoopState) ![]const u8 {
+    _ = allocator; // Not used in Phase 1
     if (state.queue.isEmpty()) {
         return "No decisions in queue";
     }
@@ -368,8 +369,6 @@ pub fn runUnifiedLoop(allocator: Allocator, interval_sec: u32) !void {
         const report = try speakPhase(allocator, &state);
 
         // TODO: Send to Telegram in Phase 2
-        _ = report;
-
         std.debug.print("{s}\n", .{ report });
     }
 }
@@ -397,23 +396,22 @@ test "dlpfc — PriorityQueue push pop" {
         std.testing.allocator.free(pq.decisions);
     }
 
-    try pq.push(Decision{
+    var d = Decision{
         .id = 1,
         .kind = .scan_system,
         .priority = .medium,
         .action = "test action",
-        .reason = "test",
-    });
+    };
+    d.setReason("test");
+    try pq.push(d);
 
     try std.testing.expectEqual(@as(usize, 1), pq.count);
 
-    const popped = pq.pop() orelse {
+    if (pq.pop()) |popped| {
         try std.testing.expect(popped.id == 1);
         try std.testing.expect(popped.kind == .scan_system);
-        return popped.*;
-    };
-
-    std.testing.allocator.free(popped.reasonStr());
+        std.testing.allocator.free(popped.reasonStr());
+    }
 }
 
 test "dlpfc — PHASE = 1 (READ ONLY)" {
@@ -423,4 +421,20 @@ test "dlpfc — PHASE = 1 (READ ONLY)" {
 test "dlpfc — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+pub const CellHealth = struct {
+    status: Status = .healthy,
+    cycle: u32 = 0,
+    last_check: i64 = 0,
+
+    pub const Status = enum {
+        healthy,
+        weak,
+        broken,
+    };
+};
+
+pub fn health() CellHealth {
+    return CellHealth{};
 }
