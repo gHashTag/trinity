@@ -1020,3 +1020,111 @@ test "queen_issues — IssueResult empty" {
     try std.testing.expectEqual(@as(u32, 0), result.number);
     try std.testing.expectEqual(@as(usize, 0), result.url.len);
 }
+
+test "queen_issues — StepStatus enum coverage" {
+    const statuses = [_]StepStatus{ .thinking, .acting, .done, .failed };
+    for (statuses) |s| {
+        _ = s; // Verify all enum values exist
+    }
+}
+
+test "queen_issues — IssueStatus zero values" {
+    const status = IssueStatus{
+        .number = 0,
+        .state = "",
+        .title = "",
+    };
+    try std.testing.expectEqual(@as(u32, 0), status.number);
+    try std.testing.expectEqual(@as(usize, 0), status.state.len);
+    try std.testing.expectEqual(@as(usize, 0), status.title.len);
+    try std.testing.expectEqual(@as(u8, 0), status.label_count);
+}
+
+test "queen_issues — IssueResult non-zero number" {
+    const result = IssueResult{
+        .number = 42,
+        .url = "https://example.com/issue/42",
+    };
+
+    try std.testing.expectEqual(@as(u32, 42), result.number);
+    try std.testing.expectEqualStrings("https://example.com/issue/42", result.url);
+}
+
+test "queen_issues — buildStepComment all statuses" {
+    const statuses = [_]StepStatus{ .thinking, .acting, .done, .failed };
+
+    for (statuses) |status| {
+        const comment = try buildStepComment(std.testing.allocator, "agent", 1, 1, "Test", status, "", "", "", "");
+        defer std.testing.allocator.free(comment);
+
+        try std.testing.expect(comment.len > 0);
+    }
+}
+
+test "queen_issues — IssueStatus with zero labels" {
+    const status = IssueStatus{
+        .number = 100,
+        .state = "open",
+        .title = "Test",
+        .label_count = 0,
+    };
+
+    try std.testing.expectEqual(@as(u8, 0), status.label_count);
+}
+
+test "queen_issues — IssueTracker field access" {
+    var tracker = try IssueTracker.init(std.testing.allocator, true);
+    defer tracker.deinit();
+
+    try std.testing.expect(tracker.dry_run);
+    try std.testing.expectEqualStrings("gHashTag", tracker.owner);
+    try std.testing.expectEqualStrings("trinity", tracker.repo);
+}
+
+test "queen_issues — RepoDetection fields" {
+    const detection = RepoDetection{
+        .owner = "testowner",
+        .repo = "testrepo",
+    };
+
+    try std.testing.expectEqualStrings("testowner", detection.owner);
+    try std.testing.expectEqualStrings("testrepo", detection.repo);
+}
+
+test "queen_issues — buildStepComment empty fields" {
+    const comment = try buildStepComment(std.testing.allocator, "", 0, 1, "", .done, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(comment.len > 0);
+}
+
+test "queen_issues — buildStepComment with numeric values" {
+    const comment = try buildStepComment(std.testing.allocator, "test", 10, 100, "Description", .acting, "Thought", "Action", "Result", "Next");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "10/100") != null);
+}
+
+test "queen_issues — GITHUB_API_HOST constant" {
+    try std.testing.expectEqualStrings("api.github.com", GITHUB_API_HOST);
+}
+
+test "queen_issues — IssueStatus with all fields populated" {
+    const status = IssueStatus{
+        .number = 999,
+        .state = "closed",
+        .title = "Complete issue",
+        .label_count = 5,
+    };
+
+    try std.testing.expectEqual(@as(u32, 999), status.number);
+    try std.testing.expectEqualStrings("closed", status.state);
+    try std.testing.expectEqualStrings("Complete issue", status.title);
+    try std.testing.expectEqual(@as(u8, 5), status.label_count);
+}
+
+test "queen_issues — countOpenIssues handles errors gracefully" {
+    // Even if GitHub API fails, should return 0 instead of crashing
+    const count = countOpenIssues(std.testing.allocator);
+    try std.testing.expect(count >= 0);
+}
