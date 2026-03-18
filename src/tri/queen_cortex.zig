@@ -337,3 +337,140 @@ test "CellHealth field independence" {
     try std.testing.expectEqual(@as(u32, 2), h1.vmpfc.cycle);
     try std.testing.expectEqual(@as(u32, 3), h1.ofc.cycle);
 }
+
+test "statusStr grade B boundary at exactly 4 healthy" {
+    // Exactly 4 healthy = grade B (boundary case)
+    const h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 0 },
+        .vmpfc = .{ .status = .healthy, .cycle = 0 },
+        .ofc = .{ .status = .healthy, .cycle = 0 },
+        .vlpfc = .{ .status = .healthy, .cycle = 0 },
+        .dmpfc = .{ .status = .broken, .cycle = 0 },
+        .acc = .{ .status = .broken, .cycle = 0 },
+    };
+
+    const result = try statusStr(&h, std.testing.allocator);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "4/6") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "(B)") != null);
+}
+
+test "statusStr grade C below 4 healthy" {
+    // 3 healthy = grade C
+    const h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 0 },
+        .vmpfc = .{ .status = .healthy, .cycle = 0 },
+        .ofc = .{ .status = .healthy, .cycle = 0 },
+        .vlpfc = .{ .status = .broken, .cycle = 0 },
+        .dmpfc = .{ .status = .broken, .cycle = 0 },
+        .acc = .{ .status = .broken, .cycle = 0 },
+    };
+
+    const result = try statusStr(&h, std.testing.allocator);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "3/6") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "(C)") != null);
+}
+
+test "statusStr all broken" {
+    const h: CellHealth = .{
+        .dlpfc = .{ .status = .broken, .cycle = 0 },
+        .vmpfc = .{ .status = .broken, .cycle = 0 },
+        .ofc = .{ .status = .broken, .cycle = 0 },
+        .vlpfc = .{ .status = .broken, .cycle = 0 },
+        .dmpfc = .{ .status = .broken, .cycle = 0 },
+        .acc = .{ .status = .broken, .cycle = 0 },
+    };
+
+    const result = try statusStr(&h, std.testing.allocator);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "0/6") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "(C)") != null);
+}
+
+test "combinedCycle with large values" {
+    const h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 10000 },
+        .vmpfc = .{ .status = .healthy, .cycle = 20000 },
+        .ofc = .{ .status = .healthy, .cycle = 30000 },
+        .vlpfc = .{ .status = .healthy, .cycle = 40000 },
+        .dmpfc = .{ .status = .healthy, .cycle = 50000 },
+        .acc = .{ .status = .healthy, .cycle = 60000 },
+    };
+
+    try std.testing.expectEqual(@as(u32, 210000), combinedCycle(&h));
+}
+
+test "isHealthy with single weak cell" {
+    // One weak cell, all others healthy = still healthy
+    const h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 0 },
+        .vmpfc = .{ .status = .healthy, .cycle = 0 },
+        .ofc = .{ .status = .healthy, .cycle = 0 },
+        .vlpfc = .{ .status = .healthy, .cycle = 0 },
+        .dmpfc = .{ .status = .healthy, .cycle = 0 },
+        .acc = .{ .status = .weak, .cycle = 0 },
+    };
+
+    try std.testing.expect(!isHealthy(&h)); // weak is not healthy
+}
+
+test "CellHealth default values" {
+    const h: CellHealth = .{
+        .dlpfc = .{},
+        .vmpfc = .{},
+        .ofc = .{},
+        .vlpfc = .{},
+        .dmpfc = .{},
+        .acc = .{},
+    };
+
+    try std.testing.expectEqual(dlpfc.CellHealth.Status.healthy, h.dlpfc.status);
+    try std.testing.expectEqual(vmpfc.CellHealth.Status.healthy, h.vmpfc.status);
+    try std.testing.expectEqual(ofc.CellHealth.Status.healthy, h.ofc.status);
+    try std.testing.expectEqual(vlpfc.CellHealth.Status.healthy, h.vlpfc.status);
+    try std.testing.expectEqual(dmpfc.CellHealth.Status.healthy, h.dmpfc.status);
+    try std.testing.expectEqual(acc.CellHealth.Status.healthy, h.acc.status);
+
+    try std.testing.expectEqual(@as(u32, 0), h.dlpfc.cycle);
+    try std.testing.expectEqual(@as(u32, 0), h.vmpfc.cycle);
+    try std.testing.expectEqual(@as(u32, 0), h.ofc.cycle);
+    try std.testing.expectEqual(@as(u32, 0), h.vlpfc.cycle);
+    try std.testing.expectEqual(@as(u32, 0), h.dmpfc.cycle);
+    try std.testing.expectEqual(@as(u32, 0), h.acc.cycle);
+}
+
+test "CellHealth all status enum values" {
+    // Test all possible status values can be set
+    const h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 0 },
+        .vmpfc = .{ .status = .weak, .cycle = 0 },
+        .ofc = .{ .status = .broken, .cycle = 0 },
+        .vlpfc = .{ .status = .healthy, .cycle = 0 },
+        .dmpfc = .{ .status = .weak, .cycle = 0 },
+        .acc = .{ .status = .broken, .cycle = 0 },
+    };
+
+    try std.testing.expectEqual(dlpfc.CellHealth.Status.healthy, h.dlpfc.status);
+    try std.testing.expectEqual(vmpfc.CellHealth.Status.weak, h.vmpfc.status);
+    try std.testing.expectEqual(ofc.CellHealth.Status.broken, h.ofc.status);
+}
+
+test "statusStr format includes Cortex prefix" {
+    const h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 0 },
+        .vmpfc = .{ .status = .healthy, .cycle = 0 },
+        .ofc = .{ .status = .healthy, .cycle = 0 },
+        .vlpfc = .{ .status = .healthy, .cycle = 0 },
+        .dmpfc = .{ .status = .healthy, .cycle = 0 },
+        .acc = .{ .status = .healthy, .cycle = 0 },
+    };
+
+    const result = try statusStr(&h, std.testing.allocator);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "Cortex:") != null);
+}
