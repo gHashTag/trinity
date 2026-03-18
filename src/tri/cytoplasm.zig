@@ -195,6 +195,7 @@ pub fn runCellCommand(allocator: Allocator, args: []const []const u8) !void {
     if (std.mem.eql(u8, sub, "templates")) return runTemplates(allocator, rest);
     if (std.mem.eql(u8, sub, "batch")) return runBatch(allocator, rest);
     if (std.mem.eql(u8, sub, "registry")) return registry_mod.runRegistry(allocator, rest);
+    if (std.mem.eql(u8, sub, "trends")) return runTrends(allocator, rest);
 
     printHelp();
 }
@@ -275,6 +276,8 @@ fn printHelp() void {
     std.debug.print("  {s}registry repair{s}    Fix inconsistencies\n", .{ GREEN, RESET });
     std.debug.print("  {s}registry backup{s}    Create timestamped backup\n", .{ GREEN, RESET });
     std.debug.print("  {s}registry list{s}      List available backups\n", .{ GREEN, RESET });
+    std.debug.print("  {s}trends [--days N]{s}  Health trend analysis (default: 7 days)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}trends --format json|markdown{s}\n", .{ GREEN, RESET });
 }
 
 // SortField enum for --sort flag
@@ -3742,6 +3745,406 @@ fn runHealth(allocator: Allocator, args: []const []const u8) !void {
     if (cycle_count > 0) {
         std.debug.print("  {s}Action:{s} run {s}tri cell deps --cycles{s} to see cycle details\n", .{ YELLOW, RESET, CYAN, RESET });
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRENDS — Health trajectory analysis using hippocampus history
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Cell trend data for analysis
+const CellTrend = struct {
+    cell_id: []const u8,
+    cell_name: []const u8,
+    current_health: u8,
+    oldest_health: u8,
+    days_spanned: u32,
+    slope: f32, // health change per day
+    trend: enum { declining, stable, improving },
+    anomalies: u8, // number of >20 point drops
+    scan_count: u32,
+};
+
+/// Parse args for trends command
+fn parseTrendArgs(args: []const []const u8) struct { days: u32, format: []const u8 } {
+    var days: u32 = 7;
+    var format: []const u8 = "text";
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--days") and i + 1 < args.len) {
+            days = std.fmt.parseInt(u32, args[i + 1], 10) catch days;
+            i += 1;
+        } else if (std.mem.eql(u8, args[i], "--format") and i + 1 < args.len) {
+            format = args[i + 1];
+            i += 1;
+        }
+    }
+
+    return .{ .days = days, .format = format };
+}
+
+/// Main trends command handler
+fn runTrends(allocator: Allocator, args: []const []const u8) !void {
+    const opts = parseTrendArgs(args);
+
+    // Get all cell health records from hippocampus
+    var health_records = try hippocampus.getAllCellHealth(allocator, opts.days);
+    defer health_records.deinit(allocator);
+
+    if (health_records.items.len == 0) {
+        std.debug.print("{s}No health records found in hippocampus.{s}\n", .{ YELLOW, RESET });
+        std.debug.print("  Run {s}tri cell health{s} to record baseline.\n", .{ CYAN, RESET });
+        return;
+    }
+
+    // Parse all records first and extract cell_id immediately to capture the value
+    var parsed_records = try std.ArrayList(struct {
+        cell_id_buf: [256]u8,
+        cell_id_len: usize,
+        cell_name: []const u8,
+        health_score: u8,
+        ts: u64,
+    }).initCapacity(allocator, 0);
+    defer parsed_records.deinit(allocator);
+
+    for (health_records.items) |rec| {
+        const parsed = hippocampus.ParsedCellHealth.fromRecord(&rec) catch continue;
+        var buf: [256]u8 = undefined;
+        @memcpy(&buf, parsed.cell_id[0..@min(parsed.cell_id.len, 256)]);
+        try parsed_records.append(allocator, .{
+            .cell_id_buf = buf,
+            .cell_id_len = parsed.cell_id.len,
+            .cell_name = parsed.cell_name,
+            .health_score = parsed.health_score,
+            .ts = parsed.ts,
+        });
+    }
+
+    if (parsed_records.items.len == 0) {
+        std.debug.print("{s}No valid cell health records found.{s}\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    // Group records by cell_id and compute trends in one pass
+    var trends_list = try std.ArrayList(CellTrend).initCapacity(allocator, 32);
+    defer trends_list.deinit(allocator);
+
+    var processed = try std.ArrayList(bool).initCapacity(allocator, 0);
+    defer processed.deinit(allocator);
+    for (0..parsed_records.items.len) |_| {
+        try processed.append(allocator, false);
+    }
+
+    for (parsed_records.items, 0..) |rec, idx| {
+        if (processed.items[idx]) continue; // Skip if already grouped
+        processed.items[idx] = true;
+
+        // Find all records for this cell
+        var cell_records = try std.ArrayList(@TypeOf(parsed_records.items[0])).initCapacity(allocator, 16);
+        defer cell_records.deinit(allocator);
+        try cell_records.append(allocator, rec);
+
+        const rec_id = rec.cell_id_buf[0..rec.cell_id_len];
+
+        // Find matching records
+        for (parsed_records.items, 0..) |other_rec, other_idx| {
+            if (!processed.items[other_idx]) {
+                const other_id = other_rec.cell_id_buf[0..other_rec.cell_id_len];
+                if (std.mem.eql(u8, rec_id, other_id)) {
+                    try cell_records.append(allocator, other_rec);
+                    processed.items[other_idx] = true;
+                }
+            }
+        }
+
+        // Need at least 2 records to compute trend
+        if (cell_records.items.len < 2) continue;
+
+        // Sort by timestamp desc
+        std.mem.sort(@TypeOf(parsed_records.items[0]), cell_records.items, {}, struct {
+            fn lessThan(_: void, a: @TypeOf(parsed_records.items[0]), b: @TypeOf(parsed_records.items[0])) bool {
+                return a.ts > b.ts;
+            }
+        }.lessThan);
+
+        // Find oldest and newest
+        const newest = cell_records.items[0];
+        const oldest = cell_records.items[cell_records.items.len - 1];
+
+        // Calculate days spanned
+        const days_spanned = @max(1, (newest.ts - oldest.ts) / (24 * 3600));
+
+        // Calculate slope
+        const health_delta = @as(i32, newest.health_score) - @as(i32, oldest.health_score);
+        const slope: f32 = @as(f32, @floatFromInt(health_delta)) / @as(f32, @floatFromInt(days_spanned));
+
+        // Detect anomalies (>20 point drops)
+        var anomalies: u8 = 0;
+        for (cell_records.items, 0..) |item, i| {
+            if (i < cell_records.items.len - 1) {
+                const next_item = cell_records.items[i + 1];
+                const drop = @as(i32, item.health_score) - @as(i32, next_item.health_score);
+                if (drop > 20) anomalies += 1;
+            }
+        }
+
+        try trends_list.append(allocator, .{
+            .cell_id = try allocator.dupe(u8, rec_id),
+            .cell_name = try allocator.dupe(u8, newest.cell_name),
+            .current_health = newest.health_score,
+            .oldest_health = oldest.health_score,
+            .days_spanned = @intCast(days_spanned),
+            .slope = slope,
+            .trend = if (slope > 1.0) .improving else if (slope < -1.0) .declining else .stable,
+            .anomalies = anomalies,
+            .scan_count = @intCast(cell_records.items.len),
+        });
+    }
+
+    if (trends_list.items.len == 0) {
+        std.debug.print("{s}No cells with sufficient history ({s}+ scans).{s}\n", .{ YELLOW, RESET, "2" });
+        return;
+    }
+
+    if (std.mem.eql(u8, opts.format, "json")) {
+        try outputTrendsJson(trends_list.items, opts.days);
+    } else if (std.mem.eql(u8, opts.format, "markdown")) {
+        try outputTrendsMarkdown(trends_list.items, opts.days);
+    } else {
+        try outputTrendsText(trends_list.items, opts.days);
+    }
+}
+
+/// Output trends in text format with colored terminal output
+fn outputTrendsText(trends: []CellTrend, days: u32) !void {
+    std.debug.print("\n{s}📊 Cell Health Trends ({d} days){s}\n\n", .{ GOLDEN, days, RESET });
+
+    // Sort by slope (most declining first, then most improving)
+    var mutable_trends = try std.ArrayList(CellTrend).initCapacity(std.heap.page_allocator, trends.len);
+    defer mutable_trends.deinit(std.heap.page_allocator);
+    for (trends) |t| try mutable_trends.append(std.heap.page_allocator, t);
+
+    std.mem.sort(CellTrend, mutable_trends.items, {}, struct {
+        fn lessThan(_: void, a: CellTrend, b: CellTrend) bool {
+            return a.slope < b.slope;
+        }
+    }.lessThan);
+
+    // Show top 5 declining
+    var declining_count: usize = 0;
+    std.debug.print("{s}🔴 Most Declining{s}\n", .{ RED, RESET });
+    for (mutable_trends.items) |t| {
+        if (t.trend == .declining and declining_count < 5) {
+            const arrow = if (t.slope < -2.0) "⬇️⬇️" else "⬇️";
+            std.debug.print("  {s}{s}{s} {s}: {d}→{d} in {d} days ({d:.1}/day)\n", .{
+                RED, arrow, RESET, t.cell_name, t.oldest_health, t.current_health, t.days_spanned, t.slope,
+            });
+            if (t.anomalies > 0) {
+                const plural_str = if (t.anomalies > 1) "s" else "";
+                std.debug.print("      {s}⚠️  {d} anomaly{s}s detected{s}\n", .{ YELLOW, t.anomalies, plural_str, RESET });
+            }
+            declining_count += 1;
+        }
+    }
+    if (declining_count == 0) {
+        std.debug.print("  {s}No declining cells {s}\n", .{ GREEN, RESET });
+    }
+
+    // Separator
+    std.debug.print("\n", .{});
+
+    // Show top 5 improving
+    var improving_count: usize = 0;
+    std.debug.print("{s}🟢 Most Improving{s}\n", .{ GREEN, RESET });
+    for (trends) |t| {
+        if (t.trend == .improving and improving_count < 5) {
+            const arrow = if (t.slope > 2.0) "⬆️⬆️" else "⬆️";
+            std.debug.print("  {s}{s}{s} {s}: {d}→{d} in {d} days ({d:.1}/day)\n", .{
+                GREEN, arrow, RESET, t.cell_name, t.oldest_health, t.current_health, t.days_spanned, t.slope,
+            });
+            improving_count += 1;
+        }
+    }
+    if (improving_count == 0) {
+        std.debug.print("  {s}No improving cells {s}\n", .{ GRAY, RESET });
+    }
+
+    // Separator
+    std.debug.print("\n", .{});
+
+    // Show cells with anomalies
+    var has_anomalies = false;
+    std.debug.print("{s}⚠️  Anomalies Detected{s} (>{d} point drops)\n", .{ YELLOW, RESET, 20 });
+    for (mutable_trends.items) |t| {
+        if (t.anomalies > 0) {
+            const plural_str = if (t.anomalies > 1) "s" else "";
+            std.debug.print("  {s}{s}{s}: {d} anomaly{s}s in {d} scans\n", .{
+                YELLOW, t.cell_name, RESET, t.anomalies, plural_str, t.scan_count,
+            });
+            has_anomalies = true;
+        }
+    }
+    if (!has_anomalies) {
+        std.debug.print("  {s}No anomalies detected {s}\n", .{ GREEN, RESET });
+    }
+
+    // Summary
+    std.debug.print("\n{s}📈 Summary{s}\n", .{ GOLDEN, RESET });
+    var declining: usize = 0;
+    var stable: usize = 0;
+    var improving: usize = 0;
+    var sick_count: usize = 0;
+
+    for (trends) |t| {
+        switch (t.trend) {
+            .declining => declining += 1,
+            .stable => stable += 1,
+            .improving => improving += 1,
+        }
+        if (t.current_health < 50) sick_count += 1;
+    }
+
+    std.debug.print("  Declining: {s}{d}{s} | Stable: {s}{d}{s} | Improving: {s}{d}{s}\n", .{
+        RED, declining, RESET, WHITE, stable, RESET, GREEN, improving, RESET,
+    });
+    std.debug.print("  Cells at risk ({d}<): {s}{d}{s}\n", .{ 50, if (sick_count > 0) RED else GREEN, sick_count, RESET });
+
+    // Action items
+    if (sick_count > 0 or declining > 0) {
+        std.debug.print("\n{s}🎯 Action Items{s}\n", .{ GOLDEN, RESET });
+        if (sick_count > 0) {
+            std.debug.print("  • Run {s}tri cell fix --all{s} to repair sick cells\n", .{ CYAN, RESET });
+        }
+        if (declining > 0) {
+            std.debug.print("  • Run {s}tri cell doctor{s} to heal declining cells\n", .{ CYAN, RESET });
+        }
+        std.debug.print("  • Run {s}tri cell watch{s} to monitor real-time health\n", .{ CYAN, RESET });
+    }
+
+    std.debug.print("\n", .{});
+}
+
+/// Output trends in JSON format
+fn outputTrendsJson(trends: []CellTrend, days: u32) !void {
+    std.debug.print("{{\n", .{});
+    std.debug.print("  \"version\": \"1.0\",\n", .{});
+    std.debug.print("  \"days_analyzed\": {d},\n", .{days});
+    std.debug.print("  \"timestamp\": {d},\n", .{std.time.timestamp()});
+    std.debug.print("  \"cells\": [\n", .{});
+
+    for (trends, 0..) |t, i| {
+        const comma = if (i < trends.len - 1) "," else "";
+        const trend_str = switch (t.trend) {
+            .declining => "\"declining\"",
+            .stable => "\"stable\"",
+            .improving => "\"improving\"",
+        };
+        std.debug.print("    {{\n", .{});
+        std.debug.print("      \"cell_id\": \"{s}\",\n", .{t.cell_id});
+        std.debug.print("      \"cell_name\": \"{s}\",\n", .{t.cell_name});
+        std.debug.print("      \"current_health\": {d},\n", .{t.current_health});
+        std.debug.print("      \"oldest_health\": {d},\n", .{t.oldest_health});
+        std.debug.print("      \"days_spanned\": {d},\n", .{t.days_spanned});
+        std.debug.print("      \"slope\": {d:.2},\n", .{t.slope});
+        std.debug.print("      \"trend\": {s},\n", .{trend_str});
+        std.debug.print("      \"anomalies\": {d},\n", .{t.anomalies});
+        std.debug.print("      \"scan_count\": {d}\n", .{t.scan_count});
+        std.debug.print("    }}{s}\n", .{comma});
+    }
+
+    std.debug.print("  ]\n", .{});
+    std.debug.print("}}\n", .{});
+}
+
+/// Output trends in Markdown format
+fn outputTrendsMarkdown(trends: []CellTrend, days: u32) !void {
+    std.debug.print("# Cell Health Trends ({d} days)\n\n", .{days});
+    std.debug.print("*Generated: {}*\n\n", .{std.time.timestamp()});
+
+    // Sort by slope
+    var sorted = try std.ArrayList(CellTrend).initCapacity(std.heap.page_allocator, trends.len);
+    defer sorted.deinit(std.heap.page_allocator);
+    for (trends) |t| try sorted.append(std.heap.page_allocator, t);
+
+    std.mem.sort(CellTrend, sorted.items, {}, struct {
+        fn lessThan(_: void, a: CellTrend, b: CellTrend) bool {
+            return a.slope < b.slope;
+        }
+    }.lessThan);
+
+    // Declining section
+    std.debug.print("## 🔴 Most Declining\n\n", .{});
+    std.debug.print("| Cell | Change | Days | Rate | Anomalies |\n", .{});
+    std.debug.print("|------|--------|------|------|----------|\n", .{});
+    var declining_count: usize = 0;
+    for (sorted.items) |t| {
+        if (t.trend == .declining and declining_count < 5) {
+            const anomaly_str = if (t.anomalies > 0) try std.fmt.allocPrint(std.heap.page_allocator, "⚠️ {d}", .{t.anomalies}) else "-";
+            std.debug.print("| {s} | {s}{d}→{d}{s} | {d} | {d:.1}/day | {s} |\n", .{
+                t.cell_name, RED, t.oldest_health, t.current_health, RESET, t.days_spanned, t.slope, anomaly_str,
+            });
+            declining_count += 1;
+        }
+    }
+    if (declining_count == 0) {
+        std.debug.print("| *None* | | | | |\n", .{});
+    }
+    std.debug.print("\n", .{});
+
+    // Improving section
+    std.debug.print("## 🟢 Most Improving\n\n", .{});
+    std.debug.print("| Cell | Change | Days | Rate |\n", .{});
+    std.debug.print("|------|--------|------|------|\n", .{});
+    var improving_count: usize = 0;
+    for (sorted.items) |t| {
+        if (t.trend == .improving and improving_count < 5) {
+            std.debug.print("| {s} | {s}{d}→{d}{s} | {d} | {d:.1}/day |\n", .{
+                t.cell_name, GREEN, t.oldest_health, t.current_health, RESET, t.days_spanned, t.slope,
+            });
+            improving_count += 1;
+        }
+    }
+    if (improving_count == 0) {
+        std.debug.print("| *None* | | | |\n", .{});
+    }
+    std.debug.print("\n", .{});
+
+    // Anomalies section
+    std.debug.print("## ⚠️ Anomalies (>{d} point drops)\n\n", .{20});
+    std.debug.print("| Cell | Anomalies | Scans |\n", .{});
+    std.debug.print("|------|-----------|-------|\n", .{});
+    var has_anomalies = false;
+    for (trends) |t| {
+        if (t.anomalies > 0) {
+            std.debug.print("| {s} | {d} | {d} |\n", .{ t.cell_name, t.anomalies, t.scan_count });
+            has_anomalies = true;
+        }
+    }
+    if (!has_anomalies) {
+        std.debug.print("| *None* | | |\n", .{});
+    }
+    std.debug.print("\n", .{});
+
+    // Summary
+    std.debug.print("## Summary\n\n", .{});
+    var declining: usize = 0;
+    var stable: usize = 0;
+    var improving: usize = 0;
+    var sick_count: usize = 0;
+
+    for (trends) |t| {
+        switch (t.trend) {
+            .declining => declining += 1,
+            .stable => stable += 1,
+            .improving => improving += 1,
+        }
+        if (t.current_health < 50) sick_count += 1;
+    }
+
+    std.debug.print("- **Declining:** {d}\n", .{declining});
+    std.debug.print("- **Stable:** {d}\n", .{stable});
+    std.debug.print("- **Improving:** {d}\n", .{improving});
+    std.debug.print("- **At risk (<50):** {d}\n\n", .{sick_count});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
