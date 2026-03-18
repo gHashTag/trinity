@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "igla-swe-agent": {
-      "command": "python3",
-      "args": ["/path/to/vibee-lang/mcp/igla_server.py"],
-      "env": {}
-    }
-  }
-}

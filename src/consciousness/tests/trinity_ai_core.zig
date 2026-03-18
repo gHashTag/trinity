@@ -1,1 +1,0 @@
-../core/trinity_ai_core.zig

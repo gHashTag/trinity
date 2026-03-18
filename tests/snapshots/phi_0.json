@@ -1,1 +1,0 @@
-{"schema_version":"tri-cli-json-v1","status":"success","command":"phi","namespace":"core","exit_code":0,"summary":"phi^0 = 1.0000000000000000","started_at":1772952202,"finished_at":1772952202,"duration_ms":0,"metrics":{"power_n":0,"duration_ms":0},"data":{"n":0,"result":1.0000000000000000,"expression":"phi^0","note":"φ⁰ = 1"}}

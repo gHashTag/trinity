@@ -1,1 +1,0 @@
-{"service_id":"9757f5b0-812c-4b66-b568-17bcc5be0ea9","service_name":"trinity-arena","project_id":"aa0efa7f-95e6-4466-8de6-43945a031365","env_id":"6748f1ad-9c2f-4b71-9a90-67f40ce34dc9","deployed_at":"2026-03-16T11:30:00Z","branch":"main","dockerfile":"deploy/Dockerfile.arena","status":"PENDING_MERGE"}

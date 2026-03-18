@@ -1,1 +1,0 @@
-{"issue":0,"task":"farm W7 config verification","iterations":1,"verdict":"pass","timestamp":1773544402,"fitness":{"test_pass_rate":1.0,"spec_compliance":1.0,"time_hours":0.2,"pr_merged":false},"mistakes":[],"learnings":["W7 farm uses golden config LAMB/1e-3/cosine"]}

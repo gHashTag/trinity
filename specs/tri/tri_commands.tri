@@ -1,7 +1,0 @@
-// TRI tri_commands — Auto-generated spec for doctor compliance
-
-spec tri_commands {
-    behavior run(allocator: Allocator, args: []str) -> void {
-        // Main dispatch for tri_commands module
-    }
-}

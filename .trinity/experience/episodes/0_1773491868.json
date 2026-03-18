@@ -1,1 +1,0 @@
-{"issue":0,"task":"e2e-cli-benchmark","iterations":7,"verdict":"PASS","timestamp":1773491868,"fitness":{"test_pass_rate":0.0000,"spec_compliance":0.0000,"time_hours":0.0000,"pr_merged":false},"mistakes":[],"learnings":["tri clean deletes itself - rebuild needed after"]}
