@@ -1,12 +1,12 @@
 {"accounts":[
-  {"account_id":1,"alias":"primary","daily_creates":0,"active_services":0,"daily_reset_epoch":1773705600},
-  {"account_id":2,"alias":"farm-2","daily_creates":14,"active_services":15,"daily_reset_epoch":1773705600},
-  {"account_id":3,"alias":"farm-3","daily_creates":14,"active_services":17,"daily_reset_epoch":1773705600},
-  {"account_id":4,"alias":"farm-4","daily_creates":0,"active_services":25,"daily_reset_epoch":1773705600},
-  {"account_id":5,"alias":"farm-5","daily_creates":0,"active_services":27,"daily_reset_epoch":1773705600},
-  {"account_id":6,"alias":"farm-6","daily_creates":0,"active_services":25,"daily_reset_epoch":1773705600},
-  {"account_id":7,"alias":"farm-7","daily_creates":0,"active_services":25,"daily_reset_epoch":1773705600},
-  {"account_id":8,"alias":"farm-8","daily_creates":0,"active_services":24,"daily_reset_epoch":1773705600}
+  {"account_id":1,"alias":"primary","daily_creates":0,"active_services":0,"daily_reset_epoch":1773792000},
+  {"account_id":2,"alias":"farm-2","daily_creates":14,"active_services":15,"daily_reset_epoch":1773792000},
+  {"account_id":3,"alias":"farm-3","daily_creates":14,"active_services":17,"daily_reset_epoch":1773792000},
+  {"account_id":4,"alias":"farm-4","daily_creates":0,"active_services":25,"daily_reset_epoch":1773792000},
+  {"account_id":5,"alias":"farm-5","daily_creates":0,"active_services":27,"daily_reset_epoch":1773792000},
+  {"account_id":6,"alias":"farm-6","daily_creates":0,"active_services":25,"daily_reset_epoch":1773792000},
+  {"account_id":7,"alias":"farm-7","daily_creates":0,"active_services":25,"daily_reset_epoch":1773792000},
+  {"account_id":8,"alias":"farm-8","daily_creates":0,"active_services":24,"daily_reset_epoch":1773792000}
 ],"agent_map":[
   {"issue":2026198461,"account_id":2,"service_id":"e01e6005-f85d-40e3-8afa-2ccf001bbc7f"},
   {"issue":2009420842,"account_id":2,"service_id":"2d322f05-69da-49b4-adab-e1b6914bafeb"},
