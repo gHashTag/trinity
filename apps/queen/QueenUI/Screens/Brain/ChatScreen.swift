@@ -1132,8 +1132,16 @@ struct ChatScreen: View {
 
                 NetworkDashboard(client: client, modelManager: modelManager, store: store)
                     .frame(maxHeight: 220)
+
+                Rectangle()
+                    .fill(Color.white.opacity(0.06))
+                    .frame(height: 1)
+
+                // Tri Tools Quick Panel
+                TriToolsQuickPanel()
+                    .frame(maxHeight: 300)
             }
-            .frame(width: 240)
+            .frame(width: 280)
             .transition(reduceMotion ? .opacity : .move(edge: .leading))
 
             Rectangle()
