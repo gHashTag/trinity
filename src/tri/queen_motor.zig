@@ -459,3 +459,185 @@ test "Motor — MotorExecutor init" {
     try std.testing.expect(exec.context.build_ok == false);
     try std.testing.expect(exec.context.farm_idle_count == 0);
 }
+
+test "Motor — MotorCommand toArgv" {
+    const allocator = std.testing.allocator;
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0.."farm".len], "farm");
+    cmd.subcommand_len = "farm".len;
+    @memcpy(cmd.args[0][0.."status".len], "status");
+    cmd.arg_lens[0] = "status".len;
+    cmd.arg_count = 1;
+
+    const argv = try cmd.toArgv(allocator);
+    defer allocator.free(argv);
+
+    try std.testing.expectEqual(@as(usize, 3), argv.len);
+    try std.testing.expectEqualStrings("tri", argv[0]);
+    try std.testing.expectEqualStrings("farm", argv[1]);
+    try std.testing.expectEqualStrings("status", argv[2]);
+}
+
+test "Motor — MotorCommand format" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0.."farm".len], "farm");
+    cmd.subcommand_len = "farm".len;
+    @memcpy(cmd.args[0][0.."status".len], "status");
+    cmd.arg_lens[0] = "status".len;
+    cmd.arg_count = 1;
+
+    var buf: [128]u8 = undefined;
+    const formatted = cmd.format(&buf);
+    try std.testing.expectEqualStrings("tri farm status", formatted);
+}
+
+test "Motor — MotorCommand fromAction single word" {
+    const cmd = MotorCommand.fromAction(.introspection);
+    try std.testing.expectEqualStrings("introspection", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 0), cmd.arg_count);
+}
+
+test "Motor — MotorCommand fromAction multi word" {
+    const cmd = MotorCommand.fromAction(.farm_status);
+    try std.testing.expectEqualStrings("farm", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("status", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Motor — MotorExecutor checkCondition build_ok" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.build_ok = true;
+    try std.testing.expect(exec.checkCondition(.build_ok));
+
+    exec.context.build_ok = false;
+    try std.testing.expect(!exec.checkCondition(.build_ok));
+}
+
+test "Motor — MotorExecutor checkCondition tests_pass" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.tests_pass = true;
+    try std.testing.expect(exec.checkCondition(.tests_pass));
+
+    exec.context.tests_pass = false;
+    try std.testing.expect(!exec.checkCondition(.tests_pass));
+}
+
+test "Motor — MotorExecutor checkCondition farm_idle_exists" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.farm_idle_count = 0;
+    try std.testing.expect(!exec.checkCondition(.farm_idle_exists));
+
+    exec.context.farm_idle_count = 5;
+    try std.testing.expect(exec.checkCondition(.farm_idle_exists));
+}
+
+test "Motor — MotorExecutor checkCondition health_critical" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.ouroboros_score = 30.0;
+    try std.testing.expect(exec.checkCondition(.health_critical));
+
+    exec.context.ouroboros_score = 70.0;
+    try std.testing.expect(!exec.checkCondition(.health_critical));
+}
+
+test "Motor — MotorExecutor checkCondition health_good" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.ouroboros_score = 80.0;
+    try std.testing.expect(exec.checkCondition(.health_good));
+
+    exec.context.ouroboros_score = 50.0;
+    try std.testing.expect(!exec.checkCondition(.health_good));
+}
+
+test "Motor — MotorExecutor checkCondition dirty_exists" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.dirty_files = 0;
+    try std.testing.expect(!exec.checkCondition(.dirty_exists));
+
+    exec.context.dirty_files = 5;
+    try std.testing.expect(exec.checkCondition(.dirty_exists));
+}
+
+test "Motor — MotorExecutor checkCondition farm_has_leaders" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.farm_idle_count = 2;
+    try std.testing.expect(!exec.checkCondition(.farm_has_leaders));
+
+    exec.context.farm_idle_count = 5;
+    try std.testing.expect(exec.checkCondition(.farm_has_leaders));
+}
+
+test "Motor — MotorExecutor checkCondition farm_best_ppl_good" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.farm_best_ppl = 15.0;
+    try std.testing.expect(!exec.checkCondition(.farm_best_ppl_good));
+
+    exec.context.farm_best_ppl = 8.0;
+    try std.testing.expect(exec.checkCondition(.farm_best_ppl_good));
+}
+
+test "Motor — MotorExecutor checkCondition arena_stale" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.stale_arena_hours = 10;
+    try std.testing.expect(!exec.checkCondition(.arena_stale));
+
+    exec.context.stale_arena_hours = 30;
+    try std.testing.expect(exec.checkCondition(.arena_stale));
+}
+
+test "Motor — MotorExecutor checkCondition has_uncommitted" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.has_uncommitted = false;
+    try std.testing.expect(!exec.checkCondition(.has_uncommitted));
+
+    exec.context.has_uncommitted = true;
+    try std.testing.expect(exec.checkCondition(.has_uncommitted));
+}
+
+test "Motor — ExecutionResult fields" {
+    const result = ExecutionResult{
+        .success = true,
+        .duration_ms = 1234,
+        .error_msg = "",
+        .has_output = true,
+    };
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(@as(u64, 1234), result.duration_ms);
+    try std.testing.expect(result.has_output);
+}
+
+test "Motor — PlanExecutionResult success" {
+    const result = PlanExecutionResult{
+        .success = true,
+        .steps_executed = 5,
+        .total_duration_ms = 1000,
+        .failed_at = null,
+        .error_msg = "",
+    };
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(@as(u8, 5), result.steps_executed);
+    try std.testing.expect(result.failed_at == null);
+}
+
+test "Motor — PlanExecutionResult failure" {
+    const result = PlanExecutionResult{
+        .success = false,
+        .steps_executed = 2,
+        .total_duration_ms = 500,
+        .failed_at = 2,
+        .error_msg = "Command failed",
+    };
+    try std.testing.expect(!result.success);
+    try std.testing.expectEqual(@as(u8, 2), result.steps_executed);
+    try std.testing.expectEqual(@as(u8, 2), result.failed_at.?);
+}
