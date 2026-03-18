@@ -52,10 +52,6 @@ pub const DecisionContext = struct {
     dirty_files: u16 = 0,
     build_ok: bool = true,
 
-    // Faculty board integration
-    faculty_metrics: ?FacultyMetrics = null,
-    trend_analysis: ?TrendAnalysis = null,
-
     /// Check if we should take any auto-action
     pub fn shouldAutoAct(self: *const DecisionContext) bool {
         return self.config.allow_auto_actions and self.config.daemon;
@@ -665,8 +661,6 @@ test "dlpfc — decide with agent spawn issues" {
         .counters = &counters,
         .incidents = &incidents,
         .build_ok = true,
-        .faculty_metrics = null,
-        .trend_analysis = null,
     };
 
     const decision = try decide(&ctx);
@@ -689,8 +683,6 @@ test "dlpfc — decide with best PPL celebration" {
         .counters = &counters,
         .incidents = &incidents,
         .build_ok = true,
-        .faculty_metrics = null,
-        .trend_analysis = null,
     };
 
     const decision = try decide(&ctx);

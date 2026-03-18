@@ -26,22 +26,15 @@ pub const CellHealth = struct {
 
 /// Collect health from all PFC cells
 pub fn health(allocator: std.mem.Allocator) !CellHealth {
+    _ = allocator; // Not used but kept for API compatibility
     return .{
-        .dlpfc = try dlpfc.health(allocator),
-        .vmpfc = try vmpfc.health(allocator),
-        .ofc = try ofc.health(allocator),
-        .vlpfc = try vlpfc.health(allocator),
-        .dmpfc = try dmpfc.health(allocator),
+        .dlpfc = dlpfc.health(),
+        .vmpfc = vmpfc.health(),
+        .ofc = ofc.health(),
+        .vlpfc = vlpfc.health(),
+        .dmpfc = dmpfc.health(),
     };
 }
-
-const CellHealth = struct {
-    dlpfc: dlpfc.CellHealth,
-    vmpfc: vmpfc.CellHealth,
-    ofc: ofc.CellHealth,
-    vlpfc: vlpfc.CellHealth,
-    dmpfc: dmpfc.CellHealth,
-};
 
 // All healthy if each cell reports healthy
 pub fn isHealthy(self: *const CellHealth) bool {
