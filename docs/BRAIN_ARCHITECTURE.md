@@ -14,7 +14,7 @@ Trinity's brain consists of 10 neuroanatomically-inspired modules implementing e
 | **VMPFC** | 222 | 61 | Value assessment — "Is this action worth it?" |
 | **OFC** | 706 | 50 | Mood modulation — emotional context integration |
 | **VLPFC** | 305 | 61 | Attention filter — which data matters NOW |
-| **DMPFC** | 271 | 19 | Self-monitoring — "Am I broken?" diagnostics |
+| **DMPFC** | 271 | 23 | Self-monitoring — "Am I broken?" diagnostics |
 | **ACC** | 524 | 26 | Conflict detection — action suppression |
 
 ### Supporting Modules
@@ -22,8 +22,8 @@ Trinity's brain consists of 10 neuroanatomically-inspired modules implementing e
 | Module | LOC | Tests | Function |
 |--------|-----|-------|----------|
 | **PCC** | 585 | 71 | Self-awareness — introspection & consciousness monitoring |
-| **Amygdala** | 578 | 21 | Fear/reward learning — emotional memory |
-| **Basal Ganglia** | 214 | 16 | Action selection — urgency-based arbitration |
+| **Amygdala** | 578 | 31 | Fear/reward learning — emotional memory |
+| **Basal Ganglia** | 214 | 23 | Action selection — urgency-based arbitration |
 | **Cortex** | 196 | 205 | Facade — unified health & cycle metrics |
 
 ## Decision Flow
@@ -54,9 +54,9 @@ PCC (Self-Awareness) → DMPFC (Health Check)
 
 ## Test Coverage
 
-- **Total tests**: 682 passing
+- **Total tests**: 696+ passing (682 brain + supporting modules)
 - **Integration tests**: 24 cross-module tests
-- **Coverage**: All 10 modules have passing tests
+- **Coverage**: All 10 modules have passing tests with edge case coverage
 
 ## Usage
 
