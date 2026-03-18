@@ -922,18 +922,7 @@ test "queen_issues — countOpenIssues returns number" {
 }
 
 test "queen_issues — buildStepComment format" {
-    const comment = try buildStepComment(
-        std.testing.allocator,
-        "ralph",
-        1,
-        5,
-        "Analyze build failure",
-        .thinking,
-        "Build failed with std.time.sleep",
-        "Checking Zig 0.15.2 migration guide",
-        "Found std.Thread.sleep replacement",
-        "Update all call sites"
-    );
+    const comment = try buildStepComment(std.testing.allocator, "ralph", 1, 5, "Analyze build failure", .thinking, "Build failed with std.time.sleep", "Checking Zig 0.15.2 migration guide", "Found std.Thread.sleep replacement", "Update all call sites");
     defer std.testing.allocator.free(comment);
 
     try std.testing.expect(std.mem.indexOf(u8, comment, "ralph") != null);

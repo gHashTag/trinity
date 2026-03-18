@@ -48,6 +48,11 @@ class NotificationService {
     // MARK: - Setup
 
     func requestPermission() {
+        // Guard: only request from real app bundle
+        guard Bundle.main.bundleIdentifier != nil else {
+            NSLog("[NotificationService] Skipping notification request: no app bundle (CLI build)")
+            return
+        }
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
         registerCategories()
     }

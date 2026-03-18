@@ -211,7 +211,7 @@ pub const SequenceCoordinator = struct {
         if (expected_duration_sec == 0) return;
 
         const ratio = @as(f32, @floatFromInt(actual_duration_sec)) /
-                     @as(f32, @floatFromInt(expected_duration_sec));
+            @as(f32, @floatFromInt(expected_duration_sec));
 
         // Adaptive timing: converge toward 1.0 with learning rate 0.1
         const target = 1.0 / ratio;

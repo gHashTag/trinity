@@ -33,11 +33,9 @@ pub fn main() !void {
     defer allocator.free(auth_header);
 
     const result = execCurl(allocator, &.{
-        "curl", "-s", "-X", "POST",
-        "-H", auth_header,
-        "-H", "Content-Type: application/json",
-        "-d", query,
-        "https://backboard.railway.app/graphql/v2",
+        "curl", "-s",        "-X",                                       "POST",
+        "-H",   auth_header, "-H",                                       "Content-Type: application/json",
+        "-d",   query,       "https://backboard.railway.app/graphql/v2",
     }) catch |err| {
         std.debug.print("❌ curl failed: {}\n", .{err});
         return err;

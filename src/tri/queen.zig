@@ -34,6 +34,10 @@ const queen_motor = @import("queen_motor.zig");
 // Phase 3: DLPFC — Autonomous decision engine (READ→THINK→ACT→SPEAK)
 const queen_dlpfc = @import("queen_dlpfc.zig");
 
+// Phoenix brainstem modules
+const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
+const thalamus = @import("thalamus.zig");
+
 const Allocator = std.mem.Allocator;
 const FacultySnapshot = faculty_types.FacultySnapshot;
 const print = std.debug.print;
@@ -110,6 +114,8 @@ pub fn runQueenCommand(allocator: Allocator, args: []const []const u8) !void {
         showPolicy();
     } else if (std.mem.eql(u8, args[0], "history")) {
         showHistory();
+    } else if (std.mem.eql(u8, args[0], "tamagotchi-report")) {
+        try cmdTamagotchiReport(allocator);
     } else {
         printUsage();
     }
@@ -126,7 +132,8 @@ fn printUsage() void {
         "  tri queen senses\n" ++
         "  tri queen act <kind>\n" ++
         "  tri queen policy\n" ++
-        "  tri queen history\n\n" ++
+        "  tri queen history\n" ++
+        "  tri queen tamagotchi-report                           Growth metrics\n\n" ++
         "{s}Options:{s}\n" ++
         "  --daemon              Background (no TTY)\n" ++
         "  --interval N          Cycle sec (default: 600)\n" ++
@@ -167,6 +174,275 @@ fn showHistory() void {
     var buf: [2048]u8 = undefined;
     const msg = queen_policy.fmtHistoryTelegram(&buf, &memory);
     print("\n{s}\n", .{msg});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TAMAGOTCHI REPORT — Growth metrics for Queen daemon
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn cmdTamagotchiReport(allocator: Allocator) !void {
+    // thalamus and locus_coeruleus now imported globally
+
+    // 1. Read Queen state
+    const state = loadState();
+    const now = std.time.timestamp();
+    const uptime = if (state.started_at > 0) now - state.started_at else 0;
+
+    // 2. Get farm status
+    const farm = thalamus.getFarmStatus(allocator) catch thalamus.FarmStatus{};
+
+    // 3. Get system snapshot
+    const snap = try faculty_board.collectSnapshot(allocator);
+    _ = queen_senses.collectAllSenses(allocator, snap); // Senses collected but not used directly
+
+    // 4. Calculate metrics
+    const hunger_pct = if (farm.total_services > 0)
+        @as(f32, @floatFromInt(farm.active)) / @as(f32, @floatFromInt(farm.total_services)) * 100.0
+    else
+        0.0;
+
+    const delta_ppl = if (state.prev_best_ppl < 900.0)
+        farm.best_ppl - state.prev_best_ppl
+    else
+        0.0;
+
+    var happy_buf: [32]u8 = undefined;
+    const happiness_str = if (delta_ppl > 0.01)
+        std.fmt.bufPrint(&happy_buf, "+{d:.2} PPL", .{delta_ppl}) catch "+0.00 PPL"
+    else if (delta_ppl < -0.01)
+        std.fmt.bufPrint(&happy_buf, "{d:.2} PPL", .{delta_ppl}) catch "0.00 PPL"
+    else
+        "0.00 PPL";
+
+    // Discipline = fixes from Mu heartbeat
+    const mu_hb = thalamus.getMuHeartbeat(allocator);
+    const discipline = mu_hb.fixes;
+
+    // Rest = idle time (no auto-actions)
+    const rest_pct = if (uptime > 0 and state.last_auto_action_ts > 0)
+        @as(f32, @floatFromInt(uptime - (now - state.last_auto_action_ts))) / @as(f32, @floatFromInt(uptime)) * 100.0
+    else if (uptime > 3600)
+        @as(f32, 30.0) // Assume some rest if uptime > 1h
+    else
+        @as(f32, 0.0);
+
+    // Health = build ok + faculty count
+    const health_ok = snap.build_ok and snap.activeFaculty() >= 3;
+
+    // Arousal assessment based on system state
+    // TODO: Integrate with Locus Coeruleus arousal tracking
+    const arousal = if (!snap.build_ok)
+        locus_coeruleus.ArousalLevel.alarm
+    else if (snap.dirty_files > 50 or snap.open_issues > 20)
+        locus_coeruleus.ArousalLevel.alarm
+    else if (snap.v_zone == .drift)
+        locus_coeruleus.ArousalLevel.alert
+    else
+        locus_coeruleus.ArousalLevel.normal;
+
+    // Stage based on uptime
+    const stage = stageFromUptime(uptime);
+
+    // Format uptime string
+    var uptime_buf: [32]u8 = undefined;
+    const uptime_str = formatUptime(&uptime_buf, uptime);
+
+    // 5. Print beautiful colored output
+    print("\n{s}" ++ qt.E_CROWN ++ " TRINITY QUEEN — Tamagotchi Growth Report{s}\n", .{ GOLDEN, RESET });
+    print("{s}═════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
+
+    // Stage line
+    const stage_color = if (stage == .adult or stage == .teen) GREEN else if (stage == .child) CYAN else RESET;
+    print("  {s} Stage: {s}{s} ({s} uptime)\n\n", .{
+        qt.E_BRAIN,
+        stage_color,
+        stage.label(),
+        uptime_str,
+        RESET,
+    });
+
+    // Hunger (farm activity)
+    const hunger_color = if (hunger_pct >= 50.0) GREEN else if (hunger_pct >= 20.0) GOLDEN else RED;
+    print("  {s} Hunger: {s}{d:.0}%{s} | ", .{
+        "\xf0\x9f\x8d\xbd", // 🍽
+        hunger_color,
+        hunger_pct,
+        RESET,
+    });
+
+    // Happiness (PPL delta)
+    const happy_color = if (delta_ppl > 0) GREEN else if (delta_ppl == 0) GOLDEN else RED;
+    print("{s} Happiness: {s}{s}{s}\n", .{
+        "\xf0\x9f\x98\x80", // 😀
+        happy_color,
+        happiness_str,
+        RESET,
+    });
+
+    // Discipline (fixes)
+    const disc_color = if (discipline == 0) GREEN else if (discipline <= 2) GOLDEN else RED;
+    const disc_suffix = if (discipline != 1) "es" else "";
+    print("  {s} Discipline: {s}{d} fix{s}{s} | ", .{
+        "\xf0\x9f\xaa\x93", // 🪓
+        disc_color,
+        discipline,
+        disc_suffix,
+        RESET,
+    });
+
+    // Rest (idle time)
+    const rest_color = if (rest_pct >= 30.0) GREEN else if (rest_pct >= 10.0) GOLDEN else RED;
+    print("{s} Rest: {s}{d:.0}%{s}\n", .{
+        "\xf0\x9f\x98\xb4", // 😴
+        rest_color,
+        rest_pct,
+        RESET,
+    });
+
+    // Health
+    const health_str = if (health_ok) "OK" else "ISSUE";
+    const health_color = if (health_ok) GREEN else RED;
+    print("  {s} Health: {s}{s}{s} | ", .{
+        "\xe2\x9d\xa4\xef\xb8\x8f", // ❤️
+        health_color,
+        health_str,
+        RESET,
+    });
+
+    // Arousal
+    print("{s} Arousal: {s}{s}{s}\n", .{
+        qt.E_BOLT,
+        if (arousal == .normal or arousal == .idle) GREEN else if (arousal == .alert or arousal == .alarm) GOLDEN else RED,
+        arousal.label(),
+        RESET,
+    });
+
+    print("\n{s}═════════════════════════════════════════════{s}\n", .{ GRAY, RESET });
+
+    // Footer details
+    print("\n  Farm: {d}/{d} active | Best PPL: {d:.1} ({s})\n", .{
+        farm.active,
+        farm.total_services,
+        farm.best_ppl,
+        farm.bestPplServiceStr(),
+    });
+    print("  Build: {s} | Faculty: {d}/6 | Issues: {d}\n", .{
+        if (snap.build_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c", // ✅ / ❌
+        snap.activeFaculty(),
+        snap.open_issues,
+    });
+
+    // 6. Send to Telegram if enabled
+    const tg = qt.initTelegram();
+    if (tg.enabled) {
+        var tg_buf: [2048]u8 = undefined;
+        const tg_msg = formatTamagotchiTelegram(&tg_buf, stage, uptime_str, hunger_pct, delta_ppl, discipline, rest_pct, health_ok, arousal.label(), farm, snap);
+        queen_telegram.tgSend(tg, tg_msg);
+        print("\n{s}" ++ qt.E_CHECK ++ " Sent to Telegram ({s}){s}\n", .{
+            GREEN,
+            tg.chat_id,
+            RESET,
+        });
+    }
+
+    // Update previous best PPL for next delta calculation
+    if (farm.best_ppl < 900.0) {
+        var new_state = state;
+        new_state.prev_best_ppl = farm.best_ppl;
+        saveState(new_state);
+    }
+}
+
+fn formatTamagotchiTelegram(
+    buf: []u8,
+    stage: GrowthStage,
+    uptime: []const u8,
+    hunger_pct: f32,
+    delta_ppl: f32,
+    discipline: u32,
+    rest_pct: f32,
+    health_ok: bool,
+    arousal_label: []const u8,
+    farm: thalamus.FarmStatus,
+    snap: FacultySnapshot,
+) []const u8 {
+    _ = stage;
+
+    const hunger_emoji = if (hunger_pct >= 50.0) "\xf0\x9f\x8d\xbd" else if (hunger_pct >= 20.0) "\xf0\x9f\x8d\xbd" else "\xe2\x9a\xa0\xef\xb8\x8f"; // 🍽 / ⚠️
+    const happy_emoji = if (delta_ppl > 0) "\xf0\x9f\x98\x80" else if (delta_ppl == 0) "\xf0\x9f\x98\x90" else "\xf0\x9f\x98\x94"; // 😀 / 😐 / 😔
+    const disc_emoji = if (discipline == 0) "\xe2\x9c\x85" else if (discipline <= 2) "\xf0\x9f\xaa\x93" else "\xf0\x9f\x9a\xa8"; // ✅ / 🪓 / 🚨
+    const rest_emoji = if (rest_pct >= 30.0) "\xf0\x9f\x98\xb4" else "\xe2\x8f\xb3"; // 😴 / ⏳
+    const health_emoji = if (health_ok) "\xe2\x9d\xa4\xef\xb8\x8f" else "\xf0\x9f\x8f\xa5"; // ❤️ / 🏥
+
+    const result = std.fmt.bufPrint(buf,
+        \\🧠 Queen Tamagotchi Report
+        \\
+        \\{s} Hunger: {d:.0}% ({d}/{d} workers)
+        \\{s} Happiness: {s} ({d:.1} PPL best)
+        \\{s} Discipline: {d} fix{d}
+        \\{s} Rest: {d:.0}%
+        \\{s} Health: {s} (build {s}, {d}/6 faculty)
+        \\⚡ Arousal: {s}
+        \\
+        \\Uptime: {s}
+    , .{
+        hunger_emoji,
+        hunger_pct,
+        farm.active,
+        farm.total_services,
+        happy_emoji,
+        if (delta_ppl > 0.01) "+" else "",
+        delta_ppl,
+        farm.best_ppl,
+        disc_emoji,
+        discipline,
+        if (discipline != 1) "es" else "",
+        rest_emoji,
+        rest_pct,
+        health_emoji,
+        if (health_ok) "OK" else "ISSUE",
+        if (snap.build_ok) "OK" else "FAIL",
+        snap.activeFaculty(),
+        arousal_label,
+        uptime,
+    }) catch return "";
+
+    return result;
+}
+
+const GrowthStage = enum {
+    egg, // 0-10 min
+    baby, // 10-60 min
+    child, // 1-4h
+    teen, // 4-12h
+    adult, // 12h+
+
+    fn label(self: GrowthStage) []const u8 {
+        return switch (self) {
+            .egg => "Egg",
+            .baby => "Baby",
+            .child => "Child",
+            .teen => "Teen",
+            .adult => "Adult",
+        };
+    }
+};
+
+fn stageFromUptime(seconds: i64) GrowthStage {
+    if (seconds < 600) return .egg; // 0-10 min
+    if (seconds < 3600) return .baby; // 10-60 min
+    if (seconds < 14400) return .child; // 1-4h
+    if (seconds < 43200) return .teen; // 4-12h
+    return .adult; // 12h+
+}
+
+fn formatUptime(buf: []u8, seconds: i64) []const u8 {
+    const hours = @divTrunc(seconds, 3600);
+    const minutes = @divTrunc(@mod(seconds, 3600), 60);
+    if (hours > 0) {
+        return std.fmt.bufPrint(buf, "{d}h {d}m", .{ hours, minutes }) catch "0m";
+    }
+    return std.fmt.bufPrint(buf, "{d}m", .{minutes}) catch "0m";
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

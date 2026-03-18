@@ -50,11 +50,9 @@ pub fn main() !void {
     defer allocator.free(auth_header);
 
     const result = execCurl(allocator, &.{
-        "curl", "-s", "-X", "POST",
-        "-H", auth_header,
-        "-H", "Content-Type: application/json",
-        "-d", query,
-        "https://backboard.railway.app/graphql/v2",
+        "curl", "-s",        "-X",                                       "POST",
+        "-H",   auth_header, "-H",                                       "Content-Type: application/json",
+        "-d",   query,       "https://backboard.railway.app/graphql/v2",
     }) catch |err| {
         std.debug.print("❌ Failed to execute curl: {}\n", .{err});
         return err;
@@ -70,7 +68,7 @@ pub fn main() !void {
     std.debug.print("✅ Service configuration updated!\n", .{});
     std.debug.print("📊 Monitor: https://railway.app/project/{s}\n", .{project_id});
     std.debug.print("\n⚠️  IMPORTANT: Now run redeploy to apply changes:\n", .{});
-    std.debug.print("   railway-redeploy {s} {s} TOKEN\n", .{service_id, project_id});
+    std.debug.print("   railway-redeploy {s} {s} TOKEN\n", .{ service_id, project_id });
 }
 
 fn execCurl(allocator: Allocator, args: []const []const u8) ![]u8 {
