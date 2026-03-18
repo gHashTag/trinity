@@ -279,7 +279,7 @@ pub const ContextManager = struct {
     fn extractSymbolFromLine(self: *Self, line: []const u8, path: []const u8, line_num: u32) !void {
         if (self.symbols.items.len >= MAX_SYMBOLS) return;
 
-        const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t'});
+        const trimmed = std.mem.trim(u8, line, &[_]u8{ ' ', '\t' });
 
         // Pattern: pub fn name(
         if (std.mem.startsWith(u8, trimmed, "pub fn ") or std.mem.startsWith(u8, trimmed, "fn ")) {

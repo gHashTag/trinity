@@ -1288,7 +1288,8 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
                     gn_below_median,
                     gn_total,
                     g0_median,
-                    DIM, RESET,
+                    DIM,
+                    RESET,
                 });
             } else {
                 print("   Mutation Yield:     {s}{d:.1}%{s}  ({d}/{d} G1+ beat G0 median={d:.1})\n\n", .{
