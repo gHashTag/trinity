@@ -13,6 +13,9 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const qt = @import("queen_types.zig");
 
+// Import Locus Coeruleus for ArousalLevel
+const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // CHAT ROUTING — Where messages go
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -133,49 +136,91 @@ pub fn formatStatusReport(
     farm_services: u8,
     best_ppl: f32,
 ) ![]const u8 {
-    const mood = inferMood(build_ok, ouroboros_score, false);
+    _ = ouroboros_score; // Not used in simplified version
+    return formatStatusReportWithArousal(
+        allocator,
+        build_ok,
+        0.0, // ouroboros_score placeholder
+        farm_services,
+        best_ppl,
+        locus_coeruleus.ArousalLevel.normal,
+    );
+}
+
+/// Format status report with arousal-aware tone
+pub fn formatStatusReportWithArousal(
+    allocator: Allocator,
+    build_ok: bool,
+    ouroboros_score: f32,
+    farm_services: u8,
+    best_ppl: f32,
+    arousal: locus_coeruleus.ArousalLevel,
+) ![]const u8 {
+    _ = ouroboros_score; // Use mood inference for now
 
     // Build report inline (no allocator needed for static buffer)
-    var buf: [1024]u8 = undefined;
+    var buf: [2048]u8 = undefined;
     var offset: usize = 0;
 
-    // Header with mood explanation
-    const mood_expl = moodLabelWithExplanation(mood, farm_services, farm_services);
-    const header = std.fmt.bufPrint(
-        buf[offset..],
-        "{s} {s}\n\n",
-        .{ mood.emoji(), mood_expl },
-    ) catch return error.BufferTooSmall;
-    offset += header.len;
+    // Header with arousal-based tone
+    const header = getArousalHeader(arousal);
+    const header_len = @min(header.len, buf.len);
+    @memcpy(buf[0..header_len], header);
+    offset = header_len;
 
     // Build status
     const build_line = std.fmt.bufPrint(
         buf[offset..],
-        "{s} Build: {s}\n",
+        "\n{s} Build: {s}",
         .{ if (build_ok) qt.E_CHECK else qt.E_CROSS, if (build_ok) "OK" else "FAIL" },
     ) catch return error.BufferTooSmall;
     offset += build_line.len;
 
-    // Ouroboros
-    const ouro_line = std.fmt.bufPrint(
-        buf[offset..],
-        "{s} Ouroboros: {d:.1}\n",
-        .{ qt.E_CYCLE, ouroboros_score },
-    ) catch return error.BufferTooSmall;
-    offset += ouro_line.len;
-
     // Farm (human-readable)
     const farm_line = std.fmt.bufPrint(
         buf[offset..],
-        "{s} {s}",
+        "\n{s} {s}",
         .{ qt.E_DNA, formatFarmStatusHuman(farm_services, best_ppl) },
     ) catch return error.BufferTooSmall;
     offset += farm_line.len;
+
+    // Add action guidance based on arousal
+    const guidance = getArousalGuidance(arousal);
+    if (guidance.len > 0) {
+        const guidance_line = std.fmt.bufPrint(
+            buf[offset..],
+            "\n\n{s}",
+            .{guidance},
+        ) catch return error.BufferTooSmall;
+        offset += guidance_line.len;
+    }
 
     // Allocate and copy
     const result = try allocator.alloc(u8, offset);
     @memcpy(result, buf[0..offset]);
     return result;
+}
+
+/// Get header based on arousal level
+fn getArousalHeader(arousal: locus_coeruleus.ArousalLevel) []const u8 {
+    return switch (arousal) {
+        .emergency => "\xf0\x9f\x94\xa5" ++ " CRITICAL - IMMEDIATE ACTION REQUIRED\n\n", // 🔥
+        .alarm => "\xf0\x9f\x9a\xa8" ++ " ALERT - Needs attention\n\n", // 🚨
+        .alert => "\xe2\x9a\xa0\xef\xb8\x8f" ++ " Warning - Check needed\n\n", // ⚠️
+        .normal => "\xf0\x9f\xa7\xa0" ++ " Queen Status Briefing\n\n", // 🧠
+        .idle => "\xe2\x8f\xb1" ++ " Queen Status Update\n\n", // ⏱
+        .sleep => "\xf0\x9f\x8c\x99" ++ " Queen Dormant\n\n", // 🌙
+    };
+}
+
+/// Get action guidance based on arousal
+fn getArousalGuidance(arousal: locus_coeruleus.ArousalLevel) []const u8 {
+    return switch (arousal) {
+        .emergency => "\xe2\x9d\x8c" ++ " Critical failure detected. Manual intervention required.", // ❌
+        .alarm => "\xf0\x9f\x94\xa7" ++ " Multiple issues detected. Auto-recovery in progress.", // 🔧
+        .alert => "\xf0\x9f\x94\x8d" ++ " Some issues detected. Monitoring.", // 🔍
+        else => "", // No guidance needed
+    };
 }
 
 /// Format farm status in human-readable way
