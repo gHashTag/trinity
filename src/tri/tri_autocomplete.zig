@@ -169,7 +169,7 @@ fn getCommands() []const CommandInfo {
             .name = "cell",
             .description = "Honeycomb module management",
             .subcommands = &[_][]const u8{
-                "list", "info", "init", "check", "deps", "graph",
+                "list",   "info",   "init",    "check",  "deps",             "graph",
                 "health", "enable", "disable", "verify", "check-boundaries",
             },
             .flags = &[_][]const u8{ "--json", "--help" },
@@ -178,7 +178,7 @@ fn getCommands() []const CommandInfo {
             .name = "farm",
             .description = "Railway training farm management",
             .subcommands = &[_][]const u8{
-                "status", "idle", "recycle", "fill", "evolve",
+                "status",      "idle",         "recycle", "fill", "evolve",
                 "from-issues", "watch-daemon", "arena",
             },
             .flags = &[_][]const u8{ "--json", "--help" },
@@ -187,13 +187,13 @@ fn getCommands() []const CommandInfo {
             .name = "cloud",
             .description = "Railway cloud operations",
             .subcommands = &[_][]const u8{
-                "status", "logs", "vars", "deploy", "exec", "pull",
-                "ssh-status", "spawn", "spawn-all", "kill", "agents",
-                "cleanup", "sync", "history", "pipeline", "verify",
-                "merge", "api-check", "redeploy", "diagnose", "issue-create",
-                "metrics", "record-metrics", "monitor", "restart",
+                "status",     "logs",     "vars",         "deploy",  "exec",           "pull",
+                "ssh-status", "spawn",    "spawn-all",    "kill",    "agents",         "cleanup",
+                "sync",       "history",  "pipeline",     "verify",  "merge",          "api-check",
+                "redeploy",   "diagnose", "issue-create", "metrics", "record-metrics", "monitor",
+                "restart",
             },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "git",
@@ -201,7 +201,7 @@ fn getCommands() []const CommandInfo {
             .subcommands = &[_][]const u8{
                 "status", "commit", "diff", "log", "push", "pull",
             },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "issue",
@@ -217,7 +217,7 @@ fn getCommands() []const CommandInfo {
             .name = "agent",
             .description = "Agent operations",
             .subcommands = &[_][]const u8{ "run", "list", "spawn" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "board",
@@ -229,7 +229,7 @@ fn getCommands() []const CommandInfo {
             .name = "pr",
             .description = "Pull request management",
             .subcommands = &[_][]const u8{ "create", "list", "merge", "review" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "phoenix",
@@ -241,10 +241,10 @@ fn getCommands() []const CommandInfo {
             .name = "chimera",
             .description = "Fused multi-step commands",
             .subcommands = &[_][]const u8{
-                "farm-cycle", "train-cycle", "deploy-full",
+                "farm-cycle",  "train-cycle",   "deploy-full",
                 "doctor-full", "research-deep",
             },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "queen",
@@ -256,7 +256,7 @@ fn getCommands() []const CommandInfo {
             .name = "ouroboros",
             .description = "Self-evolving recursive improvement",
             .subcommands = &[_][]const u8{ "run", "status", "reset" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "patent",
@@ -264,43 +264,43 @@ fn getCommands() []const CommandInfo {
             .subcommands = &[_][]const u8{
                 "status", "analysis", "claims", "strategy", "snapshot", "draft", "zenodo",
             },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "depin",
             .description = "DePIN node protocol",
             .subcommands = &[_][]const u8{ "status", "nodes", "fitness" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "memory",
             .description = "Memory operations",
             .subcommands = &[_][]const u8{ "list", "read", "write", "search", "gc", "stats" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "experience",
             .description = "Experience episode storage",
             .subcommands = &[_][]const u8{ "save", "recall", "mistakes" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "ui",
             .description = "Queen UI launcher",
             .subcommands = &[_][]const u8{ "build", "kill", "launch" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "plugin",
             .description = "Plugin management",
             .subcommands = &[_][]const u8{ "list", "install", "uninstall", "info" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "events",
             .description = "Event bus operations",
             .subcommands = &[_][]const u8{ "list", "emit", "status", "subscribe" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "init",
@@ -314,7 +314,8 @@ fn getCommands() []const CommandInfo {
             .subcommands = &[_][]const u8{ "spec", "report", "e2e", "--repl", "--coverage" },
             .flags = &[_][]const u8{
                 "--repl", "-r", "--generate", "-g", "--coverage",
-                "--full", "-f", "--category", "-c", "--verbose", "-v",
+                "--full", "-f", "--category", "-c", "--verbose",
+                "-v",
             },
         },
         .{
@@ -326,8 +327,8 @@ fn getCommands() []const CommandInfo {
         .{
             .name = "spec",
             .description = "Specification operations",
-            .subcommands = &[_][]const u8{ "create" },
-            .flags = &[_][]const u8{ "--help" },
+            .subcommands = &[_][]const u8{"create"},
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "bench",
@@ -339,37 +340,37 @@ fn getCommands() []const CommandInfo {
             .name = "pipeline",
             .description = "Golden Chain pipeline",
             .subcommands = &[_][]const u8{},
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "chain",
             .description = "Golden Chain individual links",
             .subcommands = &[_][]const u8{},
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "deploy",
             .description = "Deployment operations",
-            .subcommands = &[_][]const u8{ "status" },
-            .flags = &[_][]const u8{ "--help" },
+            .subcommands = &[_][]const u8{"status"},
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "job",
             .description = "Job runtime",
             .subcommands = &[_][]const u8{ "start", "status", "logs", "artifacts", "cancel", "list" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "doctor",
             .description = "Doctor system health check",
             .subcommands = &[_][]const u8{ "init", "scan", "mark", "report", "plan", "heal" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "self",
             .description = "Self operations",
             .subcommands = &[_][]const u8{ "test", "health", "benchmark" },
-            .flags = &[_][]const u8{ "--help" },
+            .flags = &[_][]const u8{"--help"},
         },
         .{
             .name = "version",
@@ -394,20 +395,17 @@ fn getAllTopLevelCommands(allocator: Allocator) ![][]const u8 {
     }
     // Add flat commands
     const flat_commands = &[_][]const u8{
-        "chat", "code", "gen", "fix", "explain", "doc", "refactor",
-        "reason", "convert", "serve", "evolve", "commit", "diff",
-        "status", "log", "decompose", "plan", "verify", "verdict",
-        "distributed", "multi-cluster", "intelligence", "regen",
-        "clean", "fmt", "stats", "igla", "identity", "swarm", "mu",
-        "govern", "dashboard", "omega", "math-agent", "analyze",
-        "search", "deps", "context-info", "time", "install", "build",
-        "deck-generate", "fpga-demo", "fpga", "train", "sacred-const",
-        "sacred-full-cycle", "quantum", "release-cosmic", "omega-cmd",
-        "all-cmd", "holo-cmd", "release-absolute", "omega-evolve",
-        "launch", "info", "help", "needle", "needle-search",
-        "needle-check", "commands", "mcp", "lint", "enrich",
-        "sync-check", "github", "zenodo", "loop", "faculty", "research",
-        "experiment", "trace", "eval", "metrics", "context-load", "infer",
+        "chat",         "code",       "gen",           "fix",              "explain",           "doc",         "refactor",
+        "reason",       "convert",    "serve",         "evolve",           "commit",            "diff",        "status",
+        "log",          "decompose",  "plan",          "verify",           "verdict",           "distributed", "multi-cluster",
+        "intelligence", "regen",      "clean",         "fmt",              "stats",             "igla",        "identity",
+        "swarm",        "mu",         "govern",        "dashboard",        "omega",             "math-agent",  "analyze",
+        "search",       "deps",       "context-info",  "time",             "install",           "build",       "deck-generate",
+        "fpga-demo",    "fpga",       "train",         "sacred-const",     "sacred-full-cycle", "quantum",     "release-cosmic",
+        "omega-cmd",    "all-cmd",    "holo-cmd",      "release-absolute", "omega-evolve",      "launch",      "info",
+        "help",         "needle",     "needle-search", "needle-check",     "commands",          "mcp",         "lint",
+        "enrich",       "sync-check", "github",        "zenodo",           "loop",              "faculty",     "research",
+        "experiment",   "trace",      "eval",          "metrics",          "context-load",      "infer",
     };
     for (flat_commands) |cmd| {
         try list.append(try allocator.dupe(u8, cmd));
@@ -557,7 +555,7 @@ fn generateBashCompletion(allocator: Allocator, writer: anytype) !void {
 fn getCommandsList(allocator: Allocator) ![]const u8 {
     const commands = getCommands();
     var list = try std.ArrayList(u8).initCapacity(allocator, 4096);
-    const writer = list.writer(allocator);
+    const writer = list.writer();
 
     for (commands, 0..) |cmd, i| {
         if (i > 0) try writer.writeAll(" ");
@@ -566,20 +564,17 @@ fn getCommandsList(allocator: Allocator) ![]const u8 {
 
     // Add flat commands
     const flat_commands = &[_][]const u8{
-        "chat", "code", "gen", "fix", "explain", "doc", "refactor",
-        "reason", "convert", "serve", "evolve", "commit", "diff",
-        "log", "decompose", "plan", "verify", "verdict", "status",
-        "distributed", "intelligence", "regen", "clean", "fmt",
-        "stats", "igla", "identity", "swarm", "mu", "govern",
-        "dashboard", "omega", "analyze", "search", "deps",
-        "context-info", "time", "install", "build", "fpga",
-        "train", "sacred-const", "quantum", "launch", "info",
-        "help", "version", "needle", "commands", "mcp", "lint",
-        "enrich", "sync-check", "github", "zenodo", "loop",
-        "faculty", "research", "experiment", "trace", "eval",
-        "metrics", "context-load", "infer", "self", "events",
-        "init", "plugin", "ui", "bench", "spec", "notify",
-        "job", "doctor", "autocomplete",
+        "chat",         "code",     "gen",        "fix",        "explain",      "doc",         "refactor",
+        "reason",       "convert",  "serve",      "evolve",     "commit",       "diff",        "log",
+        "decompose",    "plan",     "verify",     "verdict",    "status",       "distributed", "intelligence",
+        "regen",        "clean",    "fmt",        "stats",      "igla",         "identity",    "swarm",
+        "mu",           "govern",   "dashboard",  "omega",      "analyze",      "search",      "deps",
+        "context-info", "time",     "install",    "build",      "fpga",         "train",       "sacred-const",
+        "quantum",      "launch",   "info",       "help",       "version",      "needle",      "commands",
+        "mcp",          "lint",     "enrich",     "sync-check", "github",       "zenodo",      "loop",
+        "faculty",      "research", "experiment", "trace",      "eval",         "metrics",     "context-load",
+        "infer",        "self",     "events",     "init",       "plugin",       "ui",          "bench",
+        "spec",         "notify",   "job",        "doctor",     "autocomplete",
     };
     for (flat_commands) |cmd| {
         try writer.writeAll(" ");
@@ -726,7 +721,7 @@ fn installCompletion(shell: Shell) !void {
 
     // Generate completion script
     var script_buffer = std.ArrayList(u8).initCapacity(std.heap.page_allocator, 1024);
-    const writer = script_buffer.writer(std.heap.page_allocator);
+    const writer = script_buffer.writer();
 
     try writer.writeAll("\n");
     try writer.writeAll(marker);
