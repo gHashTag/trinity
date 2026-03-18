@@ -89,7 +89,8 @@ pub const Habit = struct {
     last_executed: i64 = 0,
 
     pub fn isReady(self: Habit, now: i64) bool {
-        const age_hours = (now - self.last_executed) / 3600;
+        const age_seconds = now - self.last_executed;
+        const age_hours = @divTrunc(age_seconds, 3600);
         return switch (self.trigger) {
             .always => true,
             .hourly => age_hours >= 1,

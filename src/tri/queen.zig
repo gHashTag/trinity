@@ -1243,7 +1243,8 @@ test "Phase 2 — determineGoal returns cleanup_cloud when dirty files high" {
     var snap = std.mem.zeroes(FacultySnapshot);
     snap.build_ok = true;
     snap.dirty_files = 150;
-    const evo = EvolutionInfo{};
+    var evo = EvolutionInfo{};
+    evo.service_count = 5; // Need services > 0 to prioritize cleanup over check_farm
     const incidents = queen_policy.IncidentMemory.init();
 
     const goal = determineGoal(snap, evo, &incidents);
@@ -1296,7 +1297,7 @@ test "Phase 2 — MotorExecutor.init and executePlan (no execute)" {
     const allocator = gpa.allocator();
 
     const plan = queen_premotor.MotorPlan.init(.assess_health);
-    var executor = queen_motor.MotorExecutor.init(allocator);
+    const executor = queen_motor.MotorExecutor.init(allocator);
 
     // Just test that executor was initialized and plan is valid
     _ = executor;
@@ -1323,7 +1324,7 @@ test "Phase 2 — PMC → M1 full integration (dry run)" {
     try std.testing.expectEqual(@as(u8, 4), plan.sequence.step_count);
 
     // M1: Initialize executor (don't actually execute)
-    var executor = queen_motor.MotorExecutor.init(allocator);
+    const executor = queen_motor.MotorExecutor.init(allocator);
     _ = executor;
 
     // Verify plan has expected actions
@@ -1503,4 +1504,3 @@ test "Phase 2 — failure rate edge cases" {
         try std.testing.expect(goal != .assess_health);
     }
 }
-

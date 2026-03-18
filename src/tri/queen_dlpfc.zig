@@ -11,6 +11,7 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const array_list = std.array_list;
 
 const qt = @import("queen_types.zig");
 const thalamus = @import("thalamus.zig");
@@ -184,7 +185,8 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
     }
 
     // Collect candidates from observations
-    var candidates = std.ArrayList(basal_ganglia.ActionCandidate).init(ctx.allocator, .{});
+    const CandidateList = array_list.AlignedManaged(basal_ganglia.ActionCandidate, null);
+    var candidates = CandidateList.init(ctx.allocator);
     defer candidates.deinit();
 
     // Rule 1: Build broken → doctor_quick (high urgency)
