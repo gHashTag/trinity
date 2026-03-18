@@ -1238,7 +1238,8 @@ fn runCmd(allocator: Allocator, argv: []const []const u8) ![]u8 {
 test "countBinaries returns number" {
     const count = countBinaries();
     // May be 0 if not built, that's fine
-    try std.testing.expect(count <= 50);
+    // Upper bound reflects current project binary count (62 as of 2026-03)
+    try std.testing.expect(count <= 100);
 }
 
 test "parseRegenReport handles missing file" {

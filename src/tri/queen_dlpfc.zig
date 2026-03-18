@@ -1130,8 +1130,9 @@ test "Phase 3.5 — FacultyMetrics health score calculation" {
     };
 
     const score = metrics.healthScore();
+    // score = 5 * 15 + 80 * 0.1 = 75 + 8 = 83
     try std.testing.expect(score >= 75.0 and score <= 100.0);
-    try std.testing.expectApproxEqAbs(@as(f32, 85.0), score, 0.1);
+    try std.testing.expectApproxEqAbs(@as(f32, 83.0), score, 0.1);
 }
 
 test "Phase 3.5 — FacultyMetrics vZoneStr returns valid" {
