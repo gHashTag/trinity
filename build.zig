@@ -1806,6 +1806,23 @@ pub fn build(b: *std.Build) void {
     const railway_cleanup_step = b.step("railway-cleanup", "Run Railway cleanup: delete base services");
     railway_cleanup_step.dependOn(&run_railway_cleanup.step);
 
+    // Railway delete trinity — delete "trinity" base service
+    const railway_delete_trinity = b.addExecutable(.{
+        .name = "railway-delete-trinity",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cli/railway_delete_trinity.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+    b.installArtifact(railway_delete_trinity);
+
+    const run_railway_delete_trinity = b.addRunArtifact(railway_delete_trinity);
+    if (b.args) |args| run_railway_delete_trinity.addArgs(args);
+    const railway_delete_trinity_step = b.step("railway-delete-trinity", "Run Railway delete trinity service");
+    railway_delete_trinity_step.dependOn(&run_railway_delete_trinity.step);
+
     // ═══════════════════════════════════════════════════════════════════════════
     // SWE Agent Entrypoint — Pure Zig entrypoint for dev agent Railway containers
     // ═══════════════════════════════════════════════════════════════════════════

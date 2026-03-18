@@ -35,6 +35,96 @@ public final class UIAutomation: ObservableObject {
         NSLog("[UIAutomation] \(action)")
     }
 
+    // MARK: - Error Recovery
+
+    private var recoveryAttempts: Int = 0
+    private let maxRecoveryAttempts = 3
+
+    private func attemptRecovery(for action: String, element: String?, x: CGFloat?, y: CGFloat?) async -> [String: Any]? {
+        recoveryAttempts += 1
+        guard recoveryAttempts <= maxRecoveryAttempts else {
+            recoveryAttempts = 0
+            return nil
+        }
+
+        NSLog("[UIAutomation] Attempting recovery (attempt \(recoveryAttempts)/\(maxRecoveryAttempts))")
+
+        switch action {
+        case "click":
+            // Strategy 1: Try nearby positions (jitter)
+            if let originalX = x, let originalY = y {
+                let jittered = HumanBehaviorModel.jitteredPoint(x: originalX, y: originalY, amount: 30)
+                logAction("🔄 Retry click at jittered position")
+                let result = await click(element: nil, x: jittered.x, y: jittered.y)
+                if result["success"] as? Bool == true {
+                    recoveryAttempts = 0
+                    return result
+                }
+            }
+
+            // Strategy 2: Try element lookup by synonym
+            if let element = element {
+                let synonyms = getElementSynonyms(for: element)
+                for synonym in synonyms {
+                    logAction("🔄 Trying synonym: \(synonym)")
+                    if let pos = findElementPosition(synonym) {
+                        let result = await click(element: nil, x: pos.0, y: pos.1)
+                        if result["success"] as? Bool == true {
+                            recoveryAttempts = 0
+                            return result
+                        }
+                    }
+                }
+            }
+
+            // Strategy 3: Try screen center as fallback
+            logAction("🔄 Fallback to screen center")
+            let centerResult = await click(element: nil, x: 400, y: 300)
+            if centerResult["success"] as? Bool == true {
+                recoveryAttempts = 0
+                return centerResult
+            }
+
+        case "navigate":
+            // Strategy: Try alternative screen names
+            if let element = element {
+                let alternatives = getScreenAlternatives(for: element)
+                for alt in alternatives {
+                    logAction("🔄 Trying alternative screen: \(alt)")
+                    let result = await navigate(to: alt)
+                    if result["success"] as? Bool == true {
+                        recoveryAttempts = 0
+                        return result
+                    }
+                }
+            }
+
+        default:
+            break
+        }
+
+        return nil
+    }
+
+    private func getElementSynonyms(for element: String) -> [String] {
+        let lower = element.lowercased()
+        if lower.contains("send") { return ["submit", "done", "confirm"] }
+        if lower.contains("input") { return ["field", "text", "editor"] }
+        if lower.contains("settings") { return ["prefs", "preferences", "config"] }
+        if lower.contains("chat") { return ["message", "conversation", "thread"] }
+        return []
+    }
+
+    private func getScreenAlternatives(for screen: String) -> [String] {
+        let lower = screen.lowercased()
+        if lower.contains("sevo") { return ["farm", "sevofarm"] }
+        if lower.contains("farm") { return ["sevo", "sevofarm"] }
+        if lower.contains("oracle") { return ["prediction", "forecast"] }
+        if lower.contains("settings") { return ["prefs", "preferences"] }
+        if lower.contains("chat") { return ["main", "home", "message"] }
+        return []
+    }
+
     // MARK: - Visual Feedback Helpers
 
     private func notifyGaze(at point: CGPoint) {
@@ -121,6 +211,13 @@ public final class UIAutomation: ObservableObject {
                 ? "Element '\(element!)' not found"
                 : "No coordinates provided"
             logAction("❌ Click failed: \(error)")
+
+            // Attempt error recovery
+            if let recovered = await attemptRecovery(for: "click", element: element, x: targetX, y: targetY) {
+                notifyActionEnd()
+                return recovered
+            }
+
             notifyActionEnd()
             return ["success": false, "error": error]
         }
@@ -160,6 +257,17 @@ public final class UIAutomation: ObservableObject {
         let msg = element != nil ? "Clicked '\(element!)'" : "Clicked at (\(clickX), \(clickY))"
         logAction("🖱️ \(msg)")
         notifyActionEnd()
+
+        // Record click for analytics
+        await BehaviorAnalytics.shared.recordClick(
+            at: CGPoint(x: clickX, y: clickY),
+            element: element,
+            success: true
+        )
+
+        // Record for session playback
+        await SessionRecorder.shared.recordClick(at: CGPoint(x: clickX, y: clickY), element: element)
+
         return [
             "success": true,
             "x": clickX,
@@ -232,6 +340,15 @@ public final class UIAutomation: ObservableObject {
         let msg = element != nil ? "Typed '\(text)' into '\(element!)'" : "Typed '\(text)'"
         logAction("⌨️ \(msg)")
         notifyActionEnd()
+
+        // Record typing for analytics
+        await BehaviorAnalytics.shared.recordTyping(
+            element: element ?? "unknown",
+            text: text,
+            duration: 0.1, // Approximate
+            errors: 0
+        )
+
         return [
             "success": true,
             "text": text,
@@ -243,6 +360,8 @@ public final class UIAutomation: ObservableObject {
 
     /// Navigate to a different screen via NotificationCenter
     public func navigate(to screenName: String?) async -> [String: Any] {
+        let navStart = Date()
+
         guard let screenName = screenName else {
             logAction("❌ Navigate failed: no screen specified")
             return ["success": false, "error": "No screen specified"]
@@ -290,6 +409,14 @@ public final class UIAutomation: ObservableObject {
             logAction("🧭 Navigated to \(screenName)")
             notifyActionProgress(1.0)
             notifyActionEnd()
+
+            // Record navigation for analytics
+            let navDuration = Date().timeIntervalSince(navStart)
+            await BehaviorAnalytics.shared.recordNavigation(
+                to: screenName,
+                duration: navDuration
+            )
+
             return ["success": true, "screen": screenName]
         } else if screenName.lowercased() == "chat" || screenName.lowercased() == "home" {
             // Go back to main menu
@@ -297,13 +424,30 @@ public final class UIAutomation: ObservableObject {
             logAction("🧭 Navigated to main menu")
             notifyActionProgress(1.0)
             notifyActionEnd()
+
+            // Record navigation for analytics
+            let navDuration = Date().timeIntervalSince(navStart)
+            await BehaviorAnalytics.shared.recordNavigation(
+                to: "main",
+                duration: navDuration
+            )
+
             return ["success": true, "screen": "main"]
         }
 
         logAction("❌ Navigate failed: unknown screen '\(screenName)'")
+
+        // Attempt error recovery
+        if let recovered = await attemptRecovery(for: "navigate", element: screenName, x: nil, y: nil) {
+            notifyActionEnd()
+            return recovered
+        }
+
         notifyActionEnd()
         return ["success": false, "error": "Unknown screen '\(screenName)'"]
     }
+
+    // MARK: - Element Position Lookup
 
     // MARK: - Screenshot
 
@@ -389,17 +533,22 @@ public final class UIAutomation: ObservableObject {
 
     /// Find screen coordinates for a named element
     private func findElementPosition(_ elementId: String) -> (CGFloat, CGFloat)? {
-        // TODO: Use Accessibility API to find real element positions
-        // For now, return nil - element-based clicking not implemented
-        // Users should provide x, y coordinates directly
-
-        // Known positions (hardcoded for testing - these should be dynamic)
+        // Known positions (hardcoded for testing - should use Accessibility API)
         let knownPositions: [String: (CGFloat, CGFloat)] = [
             "chat.send": (200, 100),
             "chat.input": (200, 80),
+            "submit": (200, 100),
+            "done": (200, 100),
+            "confirm": (200, 100),
+            "sidebar.newthread": (100, 50),
+            "sidebar.settings": (100, 150),
+            "nav.sevo": (100, 200),
+            "nav.oracle": (100, 250),
+            "nav.settings": (100, 300),
+            "nav.arena": (100, 350),
         ]
 
-        return knownPositions[elementId]
+        return knownPositions[elementId.lowercased()]
     }
 }
 

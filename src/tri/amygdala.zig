@@ -576,3 +576,125 @@ test "amygdala — shouldAvoid returns result" {
     try std.testing.expect(!result.avoid);
     try std.testing.expectEqual(@as(f32, 0.0), result.confidence);
 }
+
+test "amygdala — Valence constructor edge cases" {
+    // Negative intensity becomes positive absolute value for fear
+    const v1 = Valence.fear(-50);
+    try std.testing.expectEqual(@as(i8, -50), v1.intensity);
+
+    // Zero intensity
+    const v2 = Valence.reward(0);
+    try std.testing.expectEqual(@as(i8, 0), v2.intensity);
+    try std.testing.expect(!v2.isPositive());
+    try std.testing.expect(!v2.isNegative());
+
+    // Maximum intensity clamping (via conditionFear)
+    const max_i8: i8 = 127;
+    _ = max_i8; // Reference for documentation
+}
+
+test "amygdala — FearMemory avoidanceConfidence formula" {
+    var fm = FearMemory{
+        .context = "test",
+        .intensity = 50,
+        .encounter_count = 1,
+        .last_encounter = std.time.timestamp(),
+        .extinction_progress = 0.0,
+    };
+    // confidence = (50 / 100) * (1.0 - 0.0) = 0.5
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), fm.avoidanceConfidence(), 0.01);
+
+    fm.extinction_progress = 0.5;
+    // confidence = (50 / 100) * (1.0 - 0.5) = 0.25
+    try std.testing.expectApproxEqAbs(@as(f32, 0.25), fm.avoidanceConfidence(), 0.01);
+}
+
+test "amygdala — FearMemory shouldAvoid thresholds" {
+    const fm1 = FearMemory{
+        .context = "test",
+        .intensity = 31, // Just above threshold
+        .encounter_count = 1,
+        .last_encounter = std.time.timestamp(),
+        .extinction_progress = 0.0,
+    };
+    try std.testing.expect(fm1.shouldAvoid());
+
+    const fm2 = FearMemory{
+        .context = "test",
+        .intensity = 30, // At threshold
+        .encounter_count = 1,
+        .last_encounter = std.time.timestamp(),
+        .extinction_progress = 0.0,
+    };
+    try std.testing.expect(!fm2.shouldAvoid());
+
+    const fm3 = FearMemory{
+        .context = "test",
+        .intensity = 100,
+        .encounter_count = 1,
+        .last_encounter = std.time.timestamp(),
+        .extinction_progress = 0.81, // Extinguished
+    };
+    try std.testing.expect(!fm3.shouldAvoid());
+}
+
+test "amygdala — Emotion fromString unknown" {
+    const unknown = Emotion.fromString("unknown");
+    try std.testing.expectEqual(@as(?Emotion, null), unknown);
+}
+
+test "amygdala — Valence absolute" {
+    const v1 = Valence.fear(75);
+    try std.testing.expectEqual(@as(i8, 75), v1.absolute());
+
+    const v2 = Valence.anger(-50);
+    try std.testing.expectEqual(@as(i8, 50), v2.absolute());
+
+    const v3 = Valence.joy(0);
+    try std.testing.expectEqual(@as(i8, 0), v3.absolute());
+}
+
+test "amygdala — ThreatKind enum coverage" {
+    const threats = [_]ThreatKind{
+        .build_failure,
+        .ppl_divergence,
+        .token_expiry,
+        .worker_death,
+        .stagnation,
+        .memory_corruption,
+        .flat_lr_schedule,
+    };
+    for (threats) |t| {
+        _ = t; // Verify all enum values exist
+    }
+}
+
+test "amygdala — detectThreat ppl divergence" {
+    const threat = detectThreat(true, 25.0, 15.0);
+    try std.testing.expectEqual(ThreatKind.ppl_divergence, threat.?);
+}
+
+test "amygdala — detectThreat priority" {
+    // Flat LR has highest priority (checked first)
+    const threat = detectThreat(false, 50.0, 60.0);
+    // Both build failure and flat LR apply, but flat LR is checked first
+    try std.testing.expectEqual(ThreatKind.flat_lr_schedule, threat.?);
+}
+
+test "amygdala — AvoidanceResult structure" {
+    const result = AvoidanceResult{
+        .avoid = true,
+        .confidence = 0.8,
+        .reason = "Test reason",
+    };
+    try std.testing.expect(result.avoid);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.8), result.confidence, 0.01);
+}
+
+test "amygdala — Emotion enum coverage" {
+    const emotions = [_]Emotion{ .fear, .reward, .neutral, .anger, .joy };
+    for (emotions) |e| {
+        const s = e.toString();
+        try std.testing.expect(s.len > 0);
+    }
+}

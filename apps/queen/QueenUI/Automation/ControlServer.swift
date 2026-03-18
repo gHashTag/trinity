@@ -283,6 +283,138 @@ public final class ControlServer: ObservableObject {
                 "history": history.map { $0.toJSON() }
             ])
 
+        // NEW: Behavioral analytics report
+        case "/analytics":
+            let report = await BehaviorAnalytics.shared.generateReport()
+            return httpResponse(json: [
+                "success": true,
+                "report": report.toJSON()
+            ])
+
+        case "/analytics-reset":
+            await BehaviorAnalytics.shared.resetSession()
+            return httpResponse(json: [
+                "success": true,
+                "message": "Session reset"
+            ])
+
+        // NEW: Screenshot analysis endpoint
+        case "/analyze-screen":
+            let analysis = await ScreenAnalyzer.shared.analyzeCurrentScreen()
+            return httpResponse(json: [
+                "success": true,
+                "analysis": analysis.toJSON()
+            ])
+
+        // NEW: Session recording endpoints
+        case "/record/start":
+            if let body = body,
+               let params = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+               let name = params["name"] as? String {
+                await SessionRecorder.shared.startSession(named: name)
+                return httpResponse(json: [
+                    "success": true,
+                    "message": "Recording started",
+                    "session": name
+                ])
+            }
+            return httpResponse(status: 400, json: ["error": "Missing session name"])
+
+        case "/record/stop":
+            let actions = await SessionRecorder.shared.stopSession()
+            return httpResponse(json: [
+                "success": true,
+                "message": "Recording stopped",
+                "actions": actions.count,
+                "export": actions.map { $0.toJSON() }
+            ])
+
+        case "/record/save":
+            if let body = body,
+               let params = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+               let path = params["path"] as? String {
+                let saved = await SessionRecorder.shared.saveSession(to: URL(fileURLWithPath: path))
+                return httpResponse(json: [
+                    "success": saved,
+                    "message": saved ? "Session saved" : "Failed to save"
+                ])
+            }
+            return httpResponse(status: 400, json: ["error": "Missing path"])
+
+        case "/record/play":
+            if let body = body,
+               let params = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+               let speed = params["speed"] as? Double {
+                let result = await SessionRecorder.shared.playSession(speed: speed)
+                return httpResponse(json: [
+                    "success": result.success,
+                    "result": result.toJSON()
+                ])
+            }
+            // Default speed 1.0
+            let result = await SessionRecorder.shared.playSession(speed: 1.0)
+            return httpResponse(json: [
+                "success": result.success,
+                "result": result.toJSON()
+            ])
+
+        case "/record/export":
+            let json = await SessionRecorder.shared.exportToJSON()
+            if let json = json {
+                return httpResponse(json: [
+                    "success": true,
+                    "session": json
+                ])
+            }
+            return httpResponse(status: 400, json: ["error": "No session to export"])
+
+        case "/record/status":
+            return httpResponse(json: [
+                "success": true,
+                "isRecording": await SessionRecorder.shared.isRecordingNow,
+                "isPlaying": await SessionRecorder.shared.isPlayingNow,
+                "actionCount": await SessionRecorder.shared.actionCount,
+                "sessionName": await SessionRecorder.shared.sessionName ?? ""
+            ])
+
+        // NEW: Adaptive action suggestion
+        case "/suggest-action":
+            let analysis = await ScreenAnalyzer.shared.analyzeCurrentScreen()
+            return httpResponse(json: [
+                "success": true,
+                "analysis": analysis.toJSON()
+            ])
+
+        // NEW: Adaptive action suggestion
+        case "/suggest-action":
+            if let body = body,
+               let params = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+               let goal = params["goal"] as? String {
+                if let suggestion = await ScreenAnalyzer.shared.suggestNextAction(goal: goal) {
+                    return httpResponse(json: [
+                        "success": true,
+                        "suggestion": [
+                            "action": String(describing: suggestion.action),
+                            "x": suggestion.target?.x ?? 0,
+                            "y": suggestion.target?.y ?? 0,
+                            "reason": suggestion.reason,
+                            "confidence": suggestion.confidence
+                        ]
+                    ])
+                }
+            }
+            return httpResponse(status: 400, json: ["error": "Could not generate suggestion"])
+
+        // NEW: Natural language user flow endpoint
+        case "/user-flow":
+            if let body = body,
+               let params = try? JSONSerialization.jsonObject(with: body) as? [String: Any],
+               let goal = params["goal"] as? String {
+                let result = await executeUserFlow(goal, context: params["context"] as? [String: Any])
+                return httpResponse(json: result)
+            }
+            return httpResponse(status: 400, json: ["error": "Invalid user flow request"])
+
         default:
             return httpResponse(status: 404, json: ["error": "Not found"])
         }
@@ -367,6 +499,152 @@ public final class ControlServer: ObservableObject {
             "result": result.toJSON()
         ]
     }
+
+    // MARK: - Natural Language User Flow Execution
+
+    private func executeUserFlow(_ goalText: String, context: [String: Any]?) async -> [String: Any] {
+        NSLog("[ControlServer] Processing user flow: \"\(goalText)\"")
+
+        // Parse natural language into structured actions
+        let actions = parseUserGoal(goalText)
+        var results: [[String: Any]] = []
+        var overallSuccess = true
+
+        for (index, action) in actions.enumerated() {
+            NSLog("[ControlServer] Step \(index + 1)/\(actions.count): \(action.type)")
+
+            let stepResult: [String: Any]
+            switch action.type {
+            case "navigate":
+                let result = await UIAutomation.shared.navigate(to: action.param)
+                stepResult = ["step": index + 1, "action": "navigate", "target": action.param, "result": result]
+
+            case "click":
+                let result = await UIAutomation.shared.click(element: action.element, x: action.x, y: action.y)
+                stepResult = ["step": index + 1, "action": "click", "result": result]
+
+            case "type":
+                let result = await UIAutomation.shared.type(element: action.element, text: action.param)
+                stepResult = ["step": index + 1, "action": "type", "text": action.param, "result": result]
+
+            case "wait":
+                let delay = Double(action.param) ?? 1.0
+                try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                stepResult = ["step": index + 1, "action": "wait", "duration": delay]
+
+            case "screenshot":
+                let result = await UIAutomation.shared.takeScreenshot()
+                stepResult = ["step": index + 1, "action": "screenshot", "result": result]
+
+            default:
+                stepResult = ["step": index + 1, "action": "unknown", "result": ["success": false, "error": "Unknown action"]]
+            }
+
+            results.append(stepResult)
+
+            // Check if step failed
+            if let stepActionResult = stepResult["result"] as? [String: Any],
+               let success = stepActionResult["success"] as? Bool, !success {
+                overallSuccess = false
+                NSLog("[ControlServer] Step \(index + 1) failed, stopping flow")
+                break
+            }
+
+            // Small delay between steps for realism
+            try? await Task.sleep(nanoseconds: 200_000_000) // 200ms
+        }
+
+        return [
+            "success": overallSuccess,
+            "goal": goalText,
+            "stepsCompleted": results.count,
+            "totalSteps": actions.count,
+            "steps": results
+        ]
+    }
+
+    // MARK: - Natural Language Parser
+
+    private func parseUserGoal(_ text: String) -> [ParsedAction] {
+        let lowercased = text.lowercased()
+        var actions: [ParsedAction] = []
+
+        // Extract intent patterns
+        if lowercased.contains("go to") || lowercased.contains("navigate to") || lowercased.contains("open") {
+            if let range = lowercased.range(of: "go to ") ?? lowercased.range(of: "navigate to ") ?? lowercased.range(of: "open ") {
+                let target = String(text[range.upperBound...]).trimmingCharacters(in: .whitespaces)
+                    .components(separatedBy: " ")[0]
+                actions.append(ParsedAction(type: "navigate", param: target))
+            }
+        }
+
+        if lowercased.contains("click") || lowercased.contains("tap") {
+            // Extract coordinates or element
+            if lowercased.contains("at ") {
+                let coordPart = lowercased.components(separatedBy: "at ").last ?? ""
+                let parts = coordPart.components(separatedBy: ",")
+                if parts.count == 2,
+                   let x = Double(parts[0].trimmingCharacters(in: .whitespaces)),
+                   let y = Double(parts[1].trimmingCharacters(in: .whitespaces)) {
+                    actions.append(ParsedAction(type: "click", x: CGFloat(x), y: CGFloat(y)))
+                }
+            } else if lowercased.contains("button") || lowercased.contains("send") {
+                actions.append(ParsedAction(type: "click", element: "chat.send"))
+            }
+        }
+
+        if lowercased.contains("type") || lowercased.contains("enter") || lowercased.contains("input") {
+            if let range = lowercased.range(of: "\"") {
+                let quoteEnd = text[text.index(after: range.upperBound)...].range(of: "\"")
+                if let end = quoteEnd {
+                    let textToType = String(text[text.index(after: range.upperBound)..<end.lowerBound])
+                    actions.append(ParsedAction(type: "type", param: textToType))
+                }
+            }
+        }
+
+        if lowercased.contains("wait") || lowercased.contains("pause") {
+            let duration = extractNumber(from: lowercased) ?? 1.0
+            actions.append(ParsedAction(type: "wait", param: String(format: "%.1f", duration)))
+        }
+
+        if lowercased.contains("screenshot") || lowercased.contains("capture") {
+            actions.append(ParsedAction(type: "screenshot", param: ""))
+        }
+
+        // Default: if no actions parsed, treat as navigation
+        if actions.isEmpty {
+            // Try to find screen name
+            let screens = ["sevo", "oracle", "settings", "chat", "arena", "faculty"]
+            for screen in screens {
+                if lowercased.contains(screen) {
+                    actions.append(ParsedAction(type: "navigate", param: screen))
+                    break
+                }
+            }
+        }
+
+        return actions
+    }
+
+    private func extractNumber(from text: String) -> Double? {
+        let numbers = text.components(separatedBy: CharacterSet.decimalDigits.inverted)
+            .filter { !$0.isEmpty }
+        if let first = numbers.first, let value = Double(first) {
+            return value
+        }
+        return nil
+    }
+}
+
+// MARK: - Parsed Action Model
+
+private struct ParsedAction {
+    let type: String
+    var param: String = ""
+    var element: String? = nil
+    var x: CGFloat? = nil
+    var y: CGFloat? = nil
 }
 
 // MARK: - Helper Extensions
