@@ -14,6 +14,7 @@ pub const vmpfc = @import("queen_vmpfc.zig");
 pub const ofc = @import("queen_ofc.zig");
 pub const vlpfc = @import("queen_vlpfc.zig");
 pub const dmpfc = @import("queen_dmpfc.zig");
+pub const acc = @import("queen_acc.zig");
 
 /// Combined health status for all PFC cells
 pub const CellHealth = struct {
@@ -22,6 +23,7 @@ pub const CellHealth = struct {
     ofc: ofc.CellHealth,
     vlpfc: vlpfc.CellHealth,
     dmpfc: dmpfc.CellHealth,
+    acc: acc.CellHealth,
 };
 
 /// Collect health from all PFC cells
@@ -33,6 +35,7 @@ pub fn health(allocator: std.mem.Allocator) !CellHealth {
         .ofc = ofc.health(),
         .vlpfc = vlpfc.health(),
         .dmpfc = dmpfc.health(),
+        .acc = acc.health(),
     };
 }
 
@@ -42,12 +45,13 @@ pub fn isHealthy(self: *const CellHealth) bool {
         self.vmpfc.status == .healthy and
         self.ofc.status == .healthy and
         self.vlpfc.status == .healthy and
-        self.dmpfc.status == .healthy;
+        self.dmpfc.status == .healthy and
+        self.acc.status == .healthy;
 }
 
 /// Get overall status string
 pub fn statusStr(self: *const CellHealth, allocator: std.mem.Allocator) ![]const u8 {
-    const total: u8 = 5;
+    const total: u8 = 6;
     var healthy_count: u8 = 0;
 
     if (self.dlpfc.status == .healthy) healthy_count += 1;
@@ -55,8 +59,9 @@ pub fn statusStr(self: *const CellHealth, allocator: std.mem.Allocator) ![]const
     if (self.ofc.status == .healthy) healthy_count += 1;
     if (self.vlpfc.status == .healthy) healthy_count += 1;
     if (self.dmpfc.status == .healthy) healthy_count += 1;
+    if (self.acc.status == .healthy) healthy_count += 1;
 
-    const grade = if (healthy_count == 5) "A" else if (healthy_count >= 3) "B" else "C";
+    const grade = if (healthy_count == 6) "A" else if (healthy_count >= 4) "B" else "C";
     return std.fmt.allocPrint(
         allocator,
         "Cortex: {d}/{d} healthy ({s})",
@@ -70,14 +75,15 @@ pub fn combinedCycle(self: *const CellHealth) u32 {
         self.vmpfc.cycle +
         self.ofc.cycle +
         self.vlpfc.cycle +
-        self.dmpfc.cycle;
+        self.dmpfc.cycle +
+        self.acc.cycle;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "health() collects status from all 5 PFC cells" {
+test "health() collects status from all 6 PFC cells" {
     const h = try health(std.testing.allocator);
     // Verify all cells have valid status enum values (healthy, weak, broken)
     try std.testing.expect(h.dlpfc.status == .healthy or h.dlpfc.status == .weak or h.dlpfc.status == .broken);
@@ -85,6 +91,7 @@ test "health() collects status from all 5 PFC cells" {
     try std.testing.expect(h.ofc.status == .healthy or h.ofc.status == .weak or h.ofc.status == .broken);
     try std.testing.expect(h.vlpfc.status == .healthy or h.vlpfc.status == .weak or h.vlpfc.status == .broken);
     try std.testing.expect(h.dmpfc.status == .healthy or h.dmpfc.status == .weak or h.dmpfc.status == .broken);
+    try std.testing.expect(h.acc.status == .healthy or h.acc.status == .weak or h.acc.status == .broken);
 }
 
 test "isHealthy returns true only when all cells are healthy" {
@@ -95,6 +102,7 @@ test "isHealthy returns true only when all cells are healthy" {
         .ofc = .{ .status = .healthy, .cycle = 3 },
         .vlpfc = .{ .status = .healthy, .cycle = 7 },
         .dmpfc = .{ .status = .healthy, .cycle = 2 },
+        .acc = .{ .status = .healthy, .cycle = 1 },
     };
     try std.testing.expect(isHealthy(&all_healthy));
 
@@ -116,12 +124,13 @@ test "statusStr returns correct grade and count" {
         .ofc = .{ .status = .weak, .cycle = 1 },
         .vlpfc = .{ .status = .healthy, .cycle = 1 },
         .dmpfc = .{ .status = .healthy, .cycle = 1 },
+        .acc = .{ .status = .healthy, .cycle = 1 },
     };
 
     const s = try statusStr(&h, std.testing.allocator);
     defer std.testing.allocator.free(s);
-    // 4/5 healthy = grade B
-    try std.testing.expectEqualStrings("Cortex: 4/5 healthy (B)", s);
+    // 5/6 healthy = grade B
+    try std.testing.expectEqualStrings("Cortex: 5/6 healthy (B)", s);
 }
 
 test "combinedCycle sums all cell cycles" {
@@ -131,12 +140,13 @@ test "combinedCycle sums all cell cycles" {
         .ofc = .{ .status = .healthy, .cycle = 3 },
         .vlpfc = .{ .status = .healthy, .cycle = 7 },
         .dmpfc = .{ .status = .healthy, .cycle = 2 },
+        .acc = .{ .status = .healthy, .cycle = 1 },
     };
-    try std.testing.expectEqual(@as(u32, 27), combinedCycle(&h));
+    try std.testing.expectEqual(@as(u32, 28), combinedCycle(&h));
 }
 
-test "CellHealth struct has all 5 PFC cell fields" {
-    // Verify compile-time that CellHealth contains exactly 5 cell fields
+test "CellHealth struct has all 6 PFC cell fields" {
+    // Verify compile-time that CellHealth contains exactly 6 cell fields
     const h = try health(std.testing.allocator);
     // Access each field to verify existence and type
     _ = h.dlpfc.status;
@@ -144,6 +154,7 @@ test "CellHealth struct has all 5 PFC cell fields" {
     _ = h.ofc.status;
     _ = h.vlpfc.status;
     _ = h.dmpfc.status;
+    _ = h.acc.status;
 
     // All cells have cycle counter
     try std.testing.expect(h.dlpfc.cycle >= 0);
@@ -151,6 +162,7 @@ test "CellHealth struct has all 5 PFC cell fields" {
     try std.testing.expect(h.ofc.cycle >= 0);
     try std.testing.expect(h.vlpfc.cycle >= 0);
     try std.testing.expect(h.dmpfc.cycle >= 0);
+    try std.testing.expect(h.acc.cycle >= 0);
 }
 
 test "integration with faculty_types FacultySnapshot pattern" {
