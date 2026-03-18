@@ -119,13 +119,8 @@ pub fn selfCheck(allocator: Allocator) !SelfCheck {
 }
 
 fn checkLoopRunning(allocator: Allocator) !bool {
-    // Try to write to hippocampus
-    const result = hippocampus.write(allocator, .{
-        .agent = "queen",
-        .kind = .heartbeat,
-        .summary = "dmpfc self-check",
-        .data = "{\"loop_ok\":true}",
-    }) catch return false;
+    // Try to write to hippocampus using writeHeartbeat helper
+    const result = hippocampus.writeHeartbeat(allocator, "queen", "{\"loop_ok\":true}") catch return false;
     _ = result;
     return true;
 }

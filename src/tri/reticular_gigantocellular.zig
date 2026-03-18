@@ -93,10 +93,9 @@ pub fn executeMassAction(
 ) !ActionResult {
     const start = std.time.milliTimestamp();
     var result = ActionResult{
-        .kind = action.kind,
-        .count = action.count,
+        .success = false,
+        .affected_count = action.count,
     };
-    result.setReason(action.reasonStr());
 
     // Check policy approval
     const policy = queen_policy.checkPolicy(

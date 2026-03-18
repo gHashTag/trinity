@@ -38,12 +38,7 @@ pub fn bridgeToCerebellum(
     );
     defer allocator.free(data);
 
-    _ = try hippocampus.write(allocator, .{
-        .agent = "phoenix_pons",
-        .kind = .observation,
-        .summary = "cerebellum bridge",
-        .data = data,
-    });
+    _ = try hippocampus.writeObservation(allocator, "phoenix_pons", "cerebellum bridge", data);
 }
 
 /// REM dreaming — generate fix_plan.md from fresh errors
@@ -66,12 +61,7 @@ pub fn remDreaming(allocator: Allocator, fresh_errors: []const Error) !void {
     );
     defer allocator.free(data);
 
-    _ = try hippocampus.write(allocator, .{
-        .agent = "phoenix_pons",
-        .kind = .observation,
-        .summary = "REM dreaming",
-        .data = data,
-    });
+    _ = try hippocampus.writeObservation(allocator, "phoenix_pons", "REM dreaming", data);
 }
 
 /// Farm sweep results from ARAS
