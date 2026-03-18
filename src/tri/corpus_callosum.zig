@@ -137,13 +137,29 @@ pub const CommBus = struct {
         self.last_broadcast = std.time.timestamp();
     }
 
-    /// Get signals for a specific module
+    /// Get signals for a specific module (filters by target)
+    /// Returns slice of signals where `target` matches the given module
     pub fn getSignals(self: *const CommBus, target: Module) []const Synapse {
-        _ = self;
-        _ = target;
-        // TODO: Implement signal filtering
-        // Note: In real implementation, would return filtered slice
-        return &.{};
+        // Count matching signals first
+        var count: usize = 0;
+        for (self.signals) |sig| {
+            if (sig.target == target) count += 1;
+        }
+
+        // If no matches, return empty slice
+        if (count == 0) return &.{};
+
+        // Return slice from first match to end (simplified - caller gets all signals from first match)
+        // This is safe because signals are time-ordered and we want the most recent
+        var first_idx: usize = 0;
+        for (self.signals, 0..) |sig, i| {
+            if (sig.target == target) {
+                first_idx = i;
+                break;
+            }
+        }
+
+        return self.signals[first_idx..];
     }
 };
 

@@ -723,3 +723,109 @@ test "Queen types — SenseResult v4 fields" {
     try std.testing.expectEqual(@as(u16, 24), result.stale_arena_hours);
     try std.testing.expectEqual(@as(u8, 3), result.agent_spawn_issues);
 }
+
+test "Queen types — all emoji constants have valid UTF-8 length" {
+    // UTF-8 emojis are 3-4 bytes (some with variation selector are 6)
+    try std.testing.expect(E_CROWN.len == 4 or E_CROWN.len == 3);
+    try std.testing.expect(E_BRAIN.len == 4 or E_BRAIN.len == 3);
+    try std.testing.expect(E_SWORDS.len >= 3); // ⚔️ + variation selector = 6 bytes
+    try std.testing.expect(E_CLIP.len >= 3);
+    try std.testing.expect(E_WRENCH.len >= 3);
+    try std.testing.expect(E_DNA.len >= 3);
+    try std.testing.expect(E_CYCLE.len >= 3);
+    try std.testing.expect(E_TIMER.len >= 3);
+    try std.testing.expect(E_CHECK.len >= 2);
+    try std.testing.expect(E_CROSS.len >= 2);
+}
+
+test "Queen types — ActionKind emojiIcon returns valid strings" {
+    const actions = [_]ActionKind{
+        .farm_status,  .arena_status, .doctor_scan, .train_status,
+        .doctor_quick, .farm_recycle, .cloud_spawn, .notify,
+    };
+    for (actions) |action| {
+        try std.testing.expect(action.emojiIcon().len > 0);
+    }
+}
+
+test "Queen types — EvolutionInfo fields default" {
+    const info = EvolutionInfo{};
+    try std.testing.expectEqual(@as(f32, 999.0), info.best_ppl);
+    try std.testing.expectEqual(@as(u32, 0), info.best_step);
+    try std.testing.expectEqual(@as(u32, 0), info.total_configs);
+    try std.testing.expectEqual(@as(u32, 0), info.service_count);
+}
+
+test "Queen types — ArenaInfo fields default" {
+    const info = ArenaInfo{};
+    try std.testing.expectEqual(@as(u32, 0), info.total_battles);
+    try std.testing.expectEqual(@as(u32, 0), info.today_battles);
+}
+
+test "Queen types — AlertKind all combinations" {
+    const kinds = [_]AlertKind{
+        .build_broken, .new_ppl_record, .senior_killed,
+        .arena_upset,  .blocked_issue,  .dirty_overload,
+        .key_expired,
+    };
+    for (kinds) |kind| {
+        const emoji = kind.emoji();
+        const label = kind.labelRu();
+        try std.testing.expect(emoji.len > 0);
+        try std.testing.expect(label.len > 0);
+    }
+}
+
+test "Queen types — ActionKind level 0 are read-only" {
+    const level0_actions = [_]ActionKind{
+        .farm_status,      .arena_status,      .doctor_scan,   .train_status,
+        .train_diagnose,   .experiment_chart,  .patent_status, .research_sacred,
+        .ouroboros_status, .experience_recall, .introspection, .farm_evolve_status,
+        .swarm_status,
+    };
+    for (level0_actions) |action| {
+        const val = @intFromEnum(action);
+        try std.testing.expect(val < 13); // First 13 are level 0
+    }
+}
+
+test "Queen types — ActionKind level 2 are dangerous" {
+    const level2_actions = [_]ActionKind{
+        .farm_recycle,  .farm_evolve_step, .cloud_spawn,     .cloud_kill,
+        .cloud_cleanup, .issue_create,     .swarm_decompose,
+    };
+    for (level2_actions) |action| {
+        const val = @intFromEnum(action);
+        try std.testing.expect(val >= 23); // Last 7 are level 2
+    }
+}
+
+test "Queen types — TgConfig constants" {
+    try std.testing.expectEqualStrings(".trinity/queen_state.json", STATE_PATH);
+    try std.testing.expectEqualStrings(".trinity/queen/supervisor.pid", SUPERVISOR_PID_PATH);
+    try std.testing.expectEqualStrings(".trinity/queen/supervisor.log", SUPERVISOR_LOG_PATH);
+}
+
+test "Queen types — OuroborosState initial score is zero" {
+    const state = OuroborosState{};
+    try std.testing.expectEqual(@as(f32, 0.0), state.score);
+    try std.testing.expectEqual(@as(f32, 0.0), state.initial);
+}
+
+test "Queen types — QueenConfig applyGodMode sets all flags" {
+    var config = QueenConfig{};
+    config.applyGodMode();
+    try std.testing.expect(config.allow_auto_actions);
+    try std.testing.expectEqual(@as(u8, 2), config.max_auto_level);
+    try std.testing.expect(!config.require_human_approval);
+}
+
+test "Queen types — ActionResult duration defaults to 0" {
+    const result = ActionResult{ .success = true };
+    try std.testing.expectEqual(@as(u64, 0), result.duration_ms);
+}
+
+test "Queen types — ActionKind COUNT matches enum size" {
+    // ActionKind.COUNT should be 30
+    try std.testing.expectEqual(@as(u8, 30), ActionKind.COUNT);
+}

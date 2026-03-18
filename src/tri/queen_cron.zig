@@ -970,3 +970,124 @@ test "queen_cron — CronSchedule init with daily spec" {
     try std.testing.expect(schedule.month.is_all);
     try std.testing.expect(schedule.day_of_week.is_all);
 }
+
+test "queen_cron — ScheduleField with multiple values" {
+    var field = ScheduleField{};
+    field.values[1] = true;
+    field.values[15] = true;
+    field.values[30] = true;
+
+    try std.testing.expect(field.matches(1));
+    try std.testing.expect(field.matches(15));
+    try std.testing.expect(field.matches(30));
+    try std.testing.expect(!field.matches(5));
+}
+
+test "queen_cron — ScheduleField wildcard matches all" {
+    var field = ScheduleField{ .is_all = true };
+    try std.testing.expect(field.matches(0));
+    try std.testing.expect(field.matches(30));
+    try std.testing.expect(field.matches(59));
+}
+
+test "queen_cron — CronStatus format with active" {
+    var status = CronStatus{
+        .is_active = true,
+        .next_run = 12456,
+    };
+
+    const result = try status.format(std.testing.allocator);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(result.len > 0);
+}
+
+test "queen_cron — CronStatus format with inactive" {
+    const status = CronStatus{
+        .is_active = false,
+        .next_run = 0,
+    };
+
+    const result = try status.format(std.testing.allocator);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(result.len > 0);
+}
+
+test "queen_cron — TamagotchiState all stages exist" {
+    const stages = [_]TamagotchiState.Stage{
+        .egg, .baby, .child, .teen, .adult,
+    };
+    for (stages) |s| {
+        _ = s; // Verify all exist
+    }
+}
+
+test "queen_cron — TamagotchiState all labels non-empty" {
+    try std.testing.expect(TamagotchiState.Stage.egg.label().len > 0);
+    try std.testing.expect(TamagotchiState.Stage.baby.label().len > 0);
+    try std.testing.expect(TamagotchiState.Stage.child.label().len > 0);
+    try std.testing.expect(TamagotchiState.Stage.teen.label().len > 0);
+    try std.testing.expect(TamagotchiState.Stage.adult.label().len > 0);
+}
+
+test "queen_cron — TamagotchiState all emojis non-empty" {
+    try std.testing.expect(TamagotchiState.Stage.egg.emoji().len > 0);
+    try std.testing.expect(TamagotchiState.Stage.baby.emoji().len > 0);
+    try std.testing.expect(TamagotchiState.Stage.child.emoji().len > 0);
+    try std.testing.expect(TamagotchiState.Stage.teen.emoji().len > 0);
+    try std.testing.expect(TamagotchiState.Stage.adult.emoji().len > 0);
+}
+
+test "queen_cron — TamagotchiState fromAge boundaries" {
+    try std.testing.expectEqual(TamagotchiState.Stage.egg, TamagotchiState.Stage.fromAge(0)); // 0 hours
+    try std.testing.expectEqual(TamagotchiState.Stage.egg, TamagotchiState.Stage.fromAge(1)); // 1 hour
+    try std.testing.expectEqual(TamagotchiState.Stage.baby, TamagotchiState.Stage.fromAge(2)); // 2 hours
+    try std.testing.expectEqual(TamagotchiState.Stage.child, TamagotchiState.Stage.fromAge(10)); // 10 hours (6-24h is child)
+    try std.testing.expectEqual(TamagotchiState.Stage.child, TamagotchiState.Stage.fromAge(23)); // 23 hours (still child)
+    try std.testing.expectEqual(TamagotchiState.Stage.teen, TamagotchiState.Stage.fromAge(24)); // 24 hours (24-72h is teen)
+    try std.testing.expectEqual(TamagotchiState.Stage.teen, TamagotchiState.Stage.fromAge(71)); // 71 hours (still teen)
+    try std.testing.expectEqual(TamagotchiState.Stage.adult, TamagotchiState.Stage.fromAge(72)); // 72+ hours
+}
+
+test "queen_cron — TamagotchiState initial values" {
+    const state = TamagotchiState{};
+    try std.testing.expectEqual(@as(u32, 0), state.age_hours);
+    try std.testing.expectEqual(@as(u8, 100), state.health);
+    try std.testing.expectEqual(@as(u8, 50), state.hunger);
+    try std.testing.expectEqual(@as(u8, 50), state.happiness);
+    try std.testing.expectEqual(@as(u8, 50), state.discipline);
+}
+
+test "queen_cron — CronSchedule matches with wildcard" {
+    const schedule = try CronSchedule.init("* * * * *");
+    const ts = 1234567890; // Any timestamp
+    try std.testing.expect(schedule.matches(ts));
+}
+
+test "queen_cron — CronSchedule nextRun returns future timestamp" {
+    const schedule = try CronSchedule.init("0 * * * *");
+    const now = 1000000;
+    const next = schedule.nextRun(now);
+    try std.testing.expect(next > now);
+}
+
+test "queen_cron — CronSchedule error on empty spec" {
+    const result = CronSchedule.init("");
+    try std.testing.expectError(error.InvalidCronSpec, result);
+}
+
+test "queen_cron — CronSchedule error on too few fields" {
+    const result = CronSchedule.init("0 * * *"); // Only 4 fields
+    try std.testing.expectError(error.InvalidCronSpec, result);
+}
+
+test "queen_cron — CronSchedule error on invalid minute" {
+    const result = CronSchedule.init("60 * * * *"); // 60 is invalid
+    try std.testing.expectError(error.OutOfRange, result);
+}
+
+test "queen_cron — CronSchedule error on invalid hour" {
+    const result = CronSchedule.init("0 24 * * *"); // 24 is invalid (0-23)
+    try std.testing.expectError(error.OutOfRange, result);
+}
