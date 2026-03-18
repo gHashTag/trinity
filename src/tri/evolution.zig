@@ -200,7 +200,7 @@ const ServiceEntry = struct {
         return self.svc_id[0..self.svc_id_len];
     }
 
-    fn svcName(self: *const ServiceEntry) []const u8 {
+    pub fn svcName(self: *const ServiceEntry) []const u8 {
         return self.svc_name[0..self.svc_name_len];
     }
 
@@ -281,7 +281,7 @@ const Event = struct {
     }
 };
 
-const MAX_SERVICES = 160;
+pub const MAX_SERVICES = 160;
 const MAX_EVENTS = 512;
 
 pub const EvolutionState = struct {
@@ -301,7 +301,7 @@ pub const EvolutionState = struct {
         return self.best_name[0..self.best_name_len];
     }
 
-    fn addEvent(self: *EvolutionState, etype: EventType, name: []const u8, detail: []const u8) void {
+    pub fn addEvent(self: *EvolutionState, etype: EventType, name: []const u8, detail: []const u8) void {
         if (self.event_count >= MAX_EVENTS) return;
         var ev = &self.events[self.event_count];
         ev.* = .{};
@@ -399,6 +399,9 @@ pub fn runEvolveCommand(allocator: Allocator, args: []const []const u8) !void {
         return runRestart(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "mirage")) {
         return runMirage(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "sevo")) {
+        const sevo_mod = @import("sevo.zig");
+        return sevo_mod.runSevoCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -2248,7 +2251,11 @@ fn getPplForRanking(svc: *const ServiceEntry) f32 {
     return svc.current_ppl;
 }
 
-fn sortByPpl(state: *EvolutionState, indices: []usize) void {
+pub fn collectMetricsSevo(allocator: Allocator, state: *EvolutionState, api_calls: *u32) void {
+    return collectMetrics(allocator, state, api_calls);
+}
+
+pub fn sortByPpl(state: *EvolutionState, indices: []usize) void {
     // Simple insertion sort (small N), ranks by val_ppl if available
     var ii: usize = 1;
     while (ii < indices.len) : (ii += 1) {
@@ -2453,7 +2460,7 @@ fn makeRecommendation(severity: Recommendation.Severity, comptime msg_fmt: []con
     return rec;
 }
 
-const MutatedConfig = struct {
+pub const MutatedConfig = struct {
     lr_str: [16]u8,
     lr_len: u8,
     batch_str: [8]u8,
@@ -2897,7 +2904,7 @@ fn computeStd(values: []const f64, n: f64) f64 {
 // Core: Service Recycling
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usize, config: MutatedConfig, parent_name: []const u8, api_calls: *u32) void {
+pub fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usize, config: MutatedConfig, parent_name: []const u8, api_calls: *u32) void {
     const victim = &state.services[victim_idx];
 
     var accounts_buf: [MAX_FARM_ACCOUNTS]Account = undefined;

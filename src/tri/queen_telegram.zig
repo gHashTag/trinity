@@ -932,8 +932,8 @@ test "Queen telegram — parseActionKind known actions" {
 
 test "Queen telegram — parseActionKind all L0 actions" {
     const l0_actions = [_][]const u8{
-        "farm_status", "arena_status", "doctor_scan", "train_status",
-        "train_diagnose", "experiment_chart", "patent_status", "research_sacred",
+        "farm_status",      "arena_status",      "doctor_scan",        "train_status",
+        "train_diagnose",   "experiment_chart",  "patent_status",      "research_sacred",
         "ouroboros_status", "experience_recall", "farm_evolve_status", "swarm_status",
     };
 
@@ -945,8 +945,8 @@ test "Queen telegram — parseActionKind all L0 actions" {
 
 test "Queen telegram — parseActionKind L1 actions" {
     const l1_actions = [_][]const u8{
-        "doctor_quick", "doctor_heal", "ouroboros_cycle", "git_commit",
-        "git_push", "issue_comment", "notify", "arena_battle",
+        "doctor_quick",    "doctor_heal",   "ouroboros_cycle", "git_commit",
+        "git_push",        "issue_comment", "notify",          "arena_battle",
         "experience_save", "fmt",
     };
 
@@ -958,8 +958,8 @@ test "Queen telegram — parseActionKind L1 actions" {
 
 test "Queen telegram — parseActionKind L2 dangerous actions" {
     const l2_actions = [_][]const u8{
-        "farm_recycle", "farm_evolve_step", "cloud_spawn", "cloud_kill",
-        "cloud_cleanup", "issue_create", "swarm_decompose",
+        "farm_recycle",  "farm_evolve_step", "cloud_spawn",     "cloud_kill",
+        "cloud_cleanup", "issue_create",     "swarm_decompose",
     };
 
     for (l2_actions) |action_str| {

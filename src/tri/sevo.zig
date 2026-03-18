@@ -197,6 +197,12 @@ fn runSevoInject(allocator: Allocator, args: []const []const u8) !void {
         print("  {s}⚠️  Failed to save state: {}{s}\n", .{ YELLOW, err, RESET });
     };
 
+    // Collect metrics to get latest service status
+    print("{s}📊 Collecting metrics...{s}\n", .{ CYAN, RESET });
+    var api_calls_collect: u32 = 0;
+    evolution_mod.collectMetricsSevo(allocator, &state, &api_calls_collect);
+    print("  API calls: {d}\n\n", .{api_calls_collect});
+
     // Find recyclable candidates
     var candidates: [evolution_mod.MAX_SERVICES]usize = undefined;
     var cand_count: usize = 0;
@@ -309,7 +315,7 @@ fn runSevoInject(allocator: Allocator, args: []const []const u8) !void {
 
     print("\n{s}✅ SEVO WAVE COMPLETE:{s}\n", .{ GREEN, RESET });
     print("   Configs injected: {d}/{d}\n", .{ injected_count, wave.configs.len });
-    print("   API calls: {d}\n", .{ api_calls });
+    print("   API calls: {d}\n", .{api_calls});
     print("   ETA to first PPL (~5K steps): ~30-40 min\n", .{});
     print("\n", .{});
 }
