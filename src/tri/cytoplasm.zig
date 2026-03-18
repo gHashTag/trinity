@@ -215,6 +215,7 @@ fn printHelp() void {
     std.debug.print("  {s}deps --auto-detect --write{s}  Auto-detect + update cell.tri\n", .{ GREEN, RESET });
     std.debug.print("  {s}graph{s}             Output Mermaid dependency diagram\n", .{ GREEN, RESET });
     std.debug.print("  {s}health{s}            Per-cell health score breakdown\n", .{ GREEN, RESET });
+    std.debug.print("  {s}health --json{s}     Export health snapshot as JSON\n", .{ GREEN, RESET });
     std.debug.print("  {s}lint{s}              Check @import isolation + permission violations\n", .{ GREEN, RESET });
     std.debug.print("  {s}enable <id>{s}       Enable a cell in registry\n", .{ GREEN, RESET });
     std.debug.print("  {s}disable <id>{s}      Disable a cell in registry\n", .{ GREEN, RESET });
@@ -3091,7 +3092,275 @@ fn runGraphLegacy(allocator: Allocator) !void {
 // HEALTH — per-cell health score breakdown
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn runHealth(allocator: Allocator, _: []const []const u8) !void {
+fn runHealthJSON(allocator: Allocator) !void {
+    const all_cells = cell_parser.discoverAll(allocator) catch {
+        std.debug.print("{{\"error\": \"Failed to discover cells\"}}\n", .{});
+        return;
+    };
+    defer allocator.free(all_cells);
+
+    // Initialize data structures
+    var path_to_cell = std.StringHashMap([]const u8).init(allocator);
+    defer path_to_cell.deinit();
+    for (all_cells) |c| path_to_cell.put(c.manifest.path, c.manifest.id) catch {};
+
+    var adj = std.StringHashMap(std.array_list.Managed([]const u8)).init(allocator);
+    defer {
+        var it = adj.iterator();
+        while (it.next()) |entry| entry.value_ptr.deinit();
+        adj.deinit();
+    }
+    for (all_cells) |c| {
+        var deps_list = std.array_list.Managed([]const u8).init(allocator);
+        var dep_it = cell_parser.DepIterator.init(c.manifest.dependencies_raw);
+        while (dep_it.next()) |de| deps_list.append(de.id) catch {};
+        adj.put(c.manifest.id, deps_list) catch {};
+    }
+
+    // Detect cycles
+    var cycle_count: usize = 0;
+    var cycle_cells_set = std.StringHashMap(void).init(allocator);
+    defer cycle_cells_set.deinit();
+
+    {
+        var color = std.StringHashMap(u8).init(allocator);
+        defer color.deinit();
+        for (all_cells) |c| color.put(c.manifest.id, 0) catch {};
+        for (all_cells) |c| {
+            if ((color.get(c.manifest.id) orelse 0) != 0) continue;
+            var stack = std.array_list.Managed(struct { id: []const u8, idx: usize }).init(allocator);
+            defer stack.deinit();
+            var path_list = std.array_list.Managed([]const u8).init(allocator);
+            defer path_list.deinit();
+            stack.append(.{ .id = c.manifest.id, .idx = 0 }) catch {};
+            color.put(c.manifest.id, 1) catch {};
+            path_list.append(c.manifest.id) catch {};
+            while (stack.items.len > 0) {
+                const top = &stack.items[stack.items.len - 1];
+                const neighbors = adj.get(top.id);
+                if (neighbors != null and top.idx < neighbors.?.items.len) {
+                    const next = neighbors.?.items[top.idx];
+                    top.idx += 1;
+                    const nc = color.get(next) orelse 0;
+                    if (nc == 1) {
+                        cycle_count += 1;
+                        var in_cycle = false;
+                        for (path_list.items) |p| {
+                            if (std.mem.eql(u8, p, next)) in_cycle = true;
+                            if (in_cycle) cycle_cells_set.put(p, {}) catch {};
+                        }
+                    } else if (nc == 0) {
+                        color.put(next, 1) catch {};
+                        stack.append(.{ .id = next, .idx = 0 }) catch {};
+                        path_list.append(next) catch {};
+                    }
+                } else {
+                    color.put(top.id, 2) catch {};
+                    _ = stack.pop();
+                    if (path_list.items.len > 0) _ = path_list.pop();
+                }
+            }
+        }
+    }
+
+    // Compute scores
+    var total_score: usize = 0;
+    var scored_count: usize = 0;
+    var grade_a: usize = 0;
+    var grade_b: usize = 0;
+    var grade_c: usize = 0;
+    var grade_f: usize = 0;
+    var cell_count: usize = 0;
+    var sub_count: usize = 0;
+
+    for (all_cells) |c| {
+        if (c.manifest.parent.len > 0) sub_count += 1 else cell_count += 1;
+    }
+
+    var monolith_total: usize = 0;
+    var monolith_covered: usize = 0;
+
+    // Count monolith files
+    {
+        var tri_dir = std.fs.cwd().openDir("src/tri", .{ .iterate = true }) catch null;
+        if (tri_dir) |*d| {
+            defer d.close();
+            var iter = d.iterate();
+            while (iter.next() catch null) |entry| {
+                if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".zig")) {
+                    monolith_total += 1;
+                    for (all_cells) |sc| {
+                        if (sc.manifest.parent.len > 0 and sc.manifest.file_patterns.len > 2) {
+                            if (matchesFilePatterns(entry.name, sc.manifest.file_patterns)) {
+                                monolith_covered += 1;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        var math_dir = std.fs.cwd().openDir("src/tri/math", .{ .iterate = true }) catch null;
+        if (math_dir) |*md| {
+            defer md.close();
+            var miter = md.iterate();
+            while (miter.next() catch null) |entry| {
+                if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".zig")) {
+                    monolith_total += 1;
+                    monolith_covered += 1;
+                }
+            }
+        }
+    }
+
+    // Output JSON
+    std.debug.print("{{\n", .{});
+    std.debug.print("  \"version\": \"10.0\",\n", .{});
+    std.debug.print("  \"timestamp\": {d},\n", .{std.time.timestamp()});
+    std.debug.print("  \"summary\": {{\n", .{});
+    std.debug.print("    \"cells\": {d},\n", .{cell_count});
+    std.debug.print("    \"sub_cells\": {d},\n", .{sub_count});
+    std.debug.print("    \"monolith_coverage\": {{\n", .{});
+    std.debug.print("      \"covered\": {d},\n", .{monolith_covered});
+    std.debug.print("      \"total\": {d},\n", .{monolith_total});
+    const cov_pct = if (monolith_total > 0) monolith_covered * 100 / monolith_total else 0;
+    std.debug.print("      \"percent\": {d}\n", .{cov_pct});
+    std.debug.print("    }},\n", .{});
+    std.debug.print("    \"cycles\": {d},\n", .{cycle_count});
+
+    // Recompute scores for summary
+    for (all_cells) |c| {
+        const m = c.manifest;
+        if (std.mem.eql(u8, m.kind, "binary")) continue;
+        const cell = parseCellTri(c.content);
+        if (cell.id.len == 0) continue;
+
+        const is_agent_h = std.mem.startsWith(u8, cell.id, "trinity.agent.");
+        const is_meta_h = cell.files == 0 and cell.tests == 0 and !is_agent_h;
+        const test_s: u8 = if (is_agent_h) 12 else if (is_meta_h) 10 else if (cell.tests == 0) 0 else @intCast(@min(15, cell.tests * 15 / 80));
+        const health: u8 = test_s + (if (cell.owner.len > 0) @as(u8, 5) else 0) + (if (cell.capabilities.len > 2) @as(u8, 5) else 0) + (if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) @as(u8, 5) else 0);
+
+        var sec: u8 = 0;
+        const is_virtual_h = cell.file_patterns.len > 2;
+        if (cell.parent.len > 0 and !is_virtual_h) {
+            if (cell.perm_level.len > 0) sec += 20;
+            if (cell.security_signed) sec += 5;
+            sec += 5;
+        } else {
+            if (cell.perm_level.len > 0) sec += 10;
+            const code_perms_h = if (is_virtual_h) inferPermissionsFiltered(allocator, cell.path, cell.file_patterns) else inferPermissions(allocator, m.path);
+            const perms_match_h = std.mem.eql(u8, cell.perm_level, code_perms_h.level) and std.mem.eql(u8, cell.perm_network, code_perms_h.net) and std.mem.eql(u8, cell.perm_process, code_perms_h.proc);
+            if (perms_match_h) sec += 10;
+            if (cell.security_signed) sec += 5;
+            const no_bind_h = !(scanCodeForPattern(allocator, m.path, "parseIp4(\"0.0.0.0\"") or scanCodeForPattern(allocator, m.path, ".host = \"0.0.0.0\""));
+            if (no_bind_h) sec += 5;
+        }
+
+        const dep_acc = computeDepsAccuracy(allocator, m.path, cell, all_cells, &path_to_cell);
+        var deps: u8 = if (dep_acc.total == 0) 25 else blk: {
+            const ratio: u8 = @intCast(@min(15, dep_acc.confirmed * 15 / dep_acc.total));
+            break :blk ratio + (if (dep_acc.missing == 0) @as(u8, 10) else 0);
+        };
+        if (cycle_cells_set.contains(cell.id)) deps -|= 10;
+
+        var contracts: u8 = 15;
+        if (cell.contributes_exports.len <= 2 and (std.mem.eql(u8, cell.kind, "library") or std.mem.eql(u8, cell.kind, "tool"))) contracts -|= 5;
+        if (std.mem.eql(u8, cell.perm_level, "L0")) {
+            var dep_it_h = cell_parser.DepIterator.init(cell.dependencies_raw);
+            while (dep_it_h.next()) |dep_h| {
+                for (all_cells) |dc| {
+                    if (std.mem.eql(u8, dc.manifest.id, dep_h.id) and std.mem.eql(u8, dc.manifest.perm_level, "L2")) {
+                        contracts -|= 3;
+                        break;
+                    }
+                }
+            }
+        }
+
+        const score: usize = @as(usize, health) + sec + deps + contracts;
+        if (score >= 80) grade_a += 1 else if (score >= 60) grade_b += 1 else if (score >= 40) grade_c += 1 else grade_f += 1;
+        total_score += score;
+        scored_count += 1;
+    }
+
+    const avg = if (scored_count > 0) total_score / scored_count else 0;
+    std.debug.print("    \"average_score\": {d},\n", .{avg});
+    std.debug.print("    \"grades\": {{\"a\": {d}, \"b\": {d}, \"c\": {d}, \"f\": {d}}}\n", .{ grade_a, grade_b, grade_c, grade_f });
+    std.debug.print("  }},\n", .{});
+    std.debug.print("  \"cells\": [\n", .{});
+
+    var first = true;
+    for (all_cells) |c| {
+        const m = c.manifest;
+        if (std.mem.eql(u8, m.kind, "binary")) continue;
+        const cell = parseCellTri(c.content);
+        if (cell.id.len == 0) continue;
+
+        const is_agent_h = std.mem.startsWith(u8, cell.id, "trinity.agent.");
+        const is_meta_h = cell.files == 0 and cell.tests == 0 and !is_agent_h;
+        const test_s: u8 = if (is_agent_h) 12 else if (is_meta_h) 10 else if (cell.tests == 0) 0 else @intCast(@min(15, cell.tests * 15 / 80));
+        const health: u8 = test_s + (if (cell.owner.len > 0) @as(u8, 5) else 0) + (if (cell.capabilities.len > 2) @as(u8, 5) else 0) + (if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) @as(u8, 5) else 0);
+
+        var sec: u8 = 0;
+        const is_virtual_h = cell.file_patterns.len > 2;
+        if (cell.parent.len > 0 and !is_virtual_h) {
+            if (cell.perm_level.len > 0) sec += 20;
+            if (cell.security_signed) sec += 5;
+            sec += 5;
+        } else {
+            if (cell.perm_level.len > 0) sec += 10;
+            const code_perms_h = if (is_virtual_h) inferPermissionsFiltered(allocator, cell.path, cell.file_patterns) else inferPermissions(allocator, m.path);
+            const perms_match_h = std.mem.eql(u8, cell.perm_level, code_perms_h.level) and std.mem.eql(u8, cell.perm_network, code_perms_h.net) and std.mem.eql(u8, cell.perm_process, code_perms_h.proc);
+            if (perms_match_h) sec += 10;
+            if (cell.security_signed) sec += 5;
+            const no_bind_h = !(scanCodeForPattern(allocator, m.path, "parseIp4(\"0.0.0.0\"") or scanCodeForPattern(allocator, m.path, ".host = \"0.0.0.0\""));
+            if (no_bind_h) sec += 5;
+        }
+
+        const dep_acc = computeDepsAccuracy(allocator, m.path, cell, all_cells, &path_to_cell);
+        var deps: u8 = if (dep_acc.total == 0) 25 else blk: {
+            const ratio: u8 = @intCast(@min(15, dep_acc.confirmed * 15 / dep_acc.total));
+            break :blk ratio + (if (dep_acc.missing == 0) @as(u8, 10) else 0);
+        };
+        if (cycle_cells_set.contains(cell.id)) deps -|= 10;
+
+        var contracts: u8 = 15;
+        if (cell.contributes_exports.len <= 2 and (std.mem.eql(u8, cell.kind, "library") or std.mem.eql(u8, cell.kind, "tool"))) contracts -|= 5;
+        if (std.mem.eql(u8, cell.perm_level, "L0")) {
+            var dep_it_h = cell_parser.DepIterator.init(cell.dependencies_raw);
+            while (dep_it_h.next()) |dep_h| {
+                for (all_cells) |dc| {
+                    if (std.mem.eql(u8, dc.manifest.id, dep_h.id) and std.mem.eql(u8, dc.manifest.perm_level, "L2")) {
+                        contracts -|= 3;
+                        break;
+                    }
+                }
+            }
+        }
+
+        const score: usize = @min(100, @as(usize, health) + sec + deps + contracts);
+        const grade = if (score >= 80) "A" else if (score >= 60) "B" else if (score >= 40) "C" else "F";
+        const bio_sys = if (m.bio_system.len > 0) m.bio_system else "unclassified";
+
+        if (!first) std.debug.print(",\n", .{});
+        first = false;
+
+        const display_name = if (cell.name.len > 0) cell.name else cell.id;
+
+        std.debug.print("    {{\"id\":\"{s}\",\"name\":\"{s}\",\"score\":{d},\"grade\":\"{s}\",\"bio_system\":\"{s}\",\"health\":{d},\"security\":{d},\"deps\":{d},\"contracts\":{d},\"files\":{d},\"tests\":{d}}}", .{ cell.id, display_name, score, grade, bio_sys, health, sec, deps, contracts, cell.files, cell.tests });
+    }
+
+    std.debug.print("\n  ]\n}}\n", .{});
+}
+
+fn runHealth(allocator: Allocator, args: []const []const u8) !void {
+    // Check for --json flag
+    for (args) |arg| {
+        if (std.mem.eql(u8, arg, "--json")) {
+            return runHealthJSON(allocator);
+        }
+    }
+
     std.debug.print("\n{s}🏥 HONEYCOMB HEALTH v10{s}\n\n", .{ GOLDEN, RESET });
 
     const all_cells = cell_parser.discoverAll(allocator) catch {
