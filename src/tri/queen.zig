@@ -30,6 +30,9 @@ const queen_policy = @import("queen_policy.zig");
 const queen_premotor = @import("queen_premotor.zig");
 const queen_motor = @import("queen_motor.zig");
 
+// Phase 3: DLPFC — Autonomous decision engine (READ→THINK→ACT→SPEAK)
+const queen_dlpfc = @import("queen_dlpfc.zig");
+
 const Allocator = std.mem.Allocator;
 const FacultySnapshot = faculty_types.FacultySnapshot;
 const print = std.debug.print;
@@ -372,7 +375,64 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
             }
         }
 
-        // 5d. Expire old pending approvals
+        // 5d. v5: Phase 3 Brain — DLPFC autonomous decision engine (READ→THINK→ACT→SPEAK)
+        emitStep(&state, 8, 13, "Phase 3 Brain (DLPFC)");
+        if (config.allow_auto_actions and !config.dry_run) {
+            // Build DLPFC context
+            var dlpfc_ctx = queen_dlpfc.DecisionContext{
+                .allocator = allocator,
+                .farm = .{}, // Will be populated by readSenses
+                .issues = .{}, // Will be populated by readSenses
+                .mu_heartbeat = .{}, // Will be populated by readSenses
+                .config = config,
+                .state = &state,
+                .counters = &counters,
+                .incidents = &incidents,
+                .build_ok = snapshot.build_ok,
+                .dirty_files = snapshot.dirty_files,
+            };
+
+            // READ phase
+            queen_dlpfc.readSenses(allocator, &dlpfc_ctx) catch |err| {
+                if (!config.daemon) {
+                    print("  {s} DLPFC READ failed: {s}\n", .{qt.E_WRENCH, @errorName(err)});
+                }
+            };
+
+            // THINK phase
+            const decision = queen_dlpfc.decide(&dlpfc_ctx) catch |err| blk: {
+                if (!config.daemon) {
+                    print("  {s} DLPFC THINK failed: {s}\n", .{qt.E_WRENCH, @errorName(err)});
+                }
+                break :blk null;
+            };
+
+            if (decision) |d| {
+                // ACT phase
+                const act_result = queen_dlpfc.act(&dlpfc_ctx, d) catch |err| {
+                    incidents.record(.auto_action_fail, d.action, false, @errorName(err));
+                    continue;
+                };
+
+                // SPEAK phase
+                queen_dlpfc.speak(&dlpfc_ctx, d, act_result) catch |err| {
+                    if (!config.daemon) {
+                        print("  {s} DLPFC SPEAK failed: {s}\n", .{qt.E_WRENCH, @errorName(err)});
+                    }
+                };
+
+                // Track success/failure
+                if (act_result.success) {
+                    if (!config.daemon) {
+                        print("  " ++ qt.E_BOLT ++ " Phase 3: {s} executed ({d}ms)\n", .{
+                            d.action.label(), act_result.duration_ms,
+                        });
+                    }
+                }
+            }
+        }
+
+        // 5e. Expire old pending approvals
         pending.expireOld();
 
         // 5f. Process Telegram commands (v3: with policy context)
