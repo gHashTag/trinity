@@ -3,7 +3,7 @@ import SwiftUI
 
 // MARK: - Line Chart
 
-struct LineChart: View {
+struct DataLineChart: View {
     let data: [CGFloat]
     let showPoints: Bool
     let showGrid: Bool
@@ -111,7 +111,7 @@ struct LineChart: View {
 
 // MARK: - Bar Chart
 
-struct BarChart: View {
+struct DataBarChart: View {
     let data: [CGFloat]
     let labels: [String]
     let colors: [Color]
@@ -164,7 +164,7 @@ struct BarChart: View {
 
 // MARK: - Pie Chart
 
-struct PieChart: View {
+struct DataPieChart: View {
     let data: [(label: String, value: Double, color: Color)]
     let showPercentages: Bool
     let showLegend: Bool
@@ -470,19 +470,19 @@ struct DataVisualizationView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             VStack(spacing: 20) {
-                LineChart(
+                DataLineChart(
                     data: [10, 25, 15, 30, 20, 40, 35],
                     showLabels: true
                 )
                 .frame(height: 220)
 
-                BarChart(
+                DataBarChart(
                     data: [30, 50, 25, 60, 40],
                     labels: ["Mon", "Tue", "Wed", "Thu", "Fri"],
                     colors: [.blue, .purple, .pink, .orange, .green]
                 )
 
-                PieChart(
+                DataPieChart(
                     data: [
                         ("Sales", 40, .blue),
                         ("Marketing", 25, .purple),

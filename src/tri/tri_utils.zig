@@ -877,7 +877,7 @@ pub fn printStats(state: *CLIState) void {
 }
 
 pub fn processInput(state: *CLIState, input: []const u8) void {
-    const trimmed = std.mem.trim(u8, input, " \t\n\r");
+    const trimmed = std.mem.trim(u8, input, &[_]u8{' ', '\t', '\n', '\r'});
     if (trimmed.len == 0) return;
 
     // Check for REPL commands

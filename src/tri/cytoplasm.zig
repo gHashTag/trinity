@@ -26,6 +26,7 @@ const YELLOW = colors.YELLOW;
 const RED = colors.RED;
 const WHITE = colors.WHITE;
 const GOLDEN = colors.GOLDEN;
+const ORANGE = colors.ORANGE;
 
 const CORE_VERSION = "1.0.0";
 
@@ -251,7 +252,7 @@ fn printHelp() void {
     std.debug.print("  {s}check --auto-register{s}  Detect and register new cells\n", .{ GREEN, RESET });
     std.debug.print("  {s}check --auto-register --yes{s}  Auto-register without prompt\n", .{ GREEN, RESET });
     std.debug.print("  {s}install-hooks{s}     Install Git hooks for auto-registration\n", .{ GREEN, RESET });
-    std.debug.print("  {s}coverage [--threshold N] [--verbose] [--fix]{s}  Test coverage report (fail if <70%%)\n", .{ GREEN, RESET });
+    std.debug.print("  {s}coverage [--threshold N]{s}  Test coverage report (fail if <70%%)\n", .{ GREEN, RESET });
     std.debug.print("  {s}version{s}            Show cell versions and content hashes\n", .{ GREEN, RESET });
     std.debug.print("  {s}outdated{s}           List cells with modified content (needs regen)\n", .{ GREEN, RESET });
     std.debug.print("  {s}regenerate --outdated{s}  Regenerate all outdated cells\n", .{ GREEN, RESET });
@@ -4763,15 +4764,6 @@ fn runAudit(allocator: Allocator, args: []const []const u8) !void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn runStatus(allocator: Allocator, args: []const []const u8) !void {
-    // Check for --json flag first
-    // TODO: reimplement runStatusJSON
-    _ = allocator; // TODO: remove when runStatusJSON is reimplemented
-    // for (args) |arg| {
-    //     if (std.mem.eql(u8, arg, "--json")) {
-    //         return runStatusJSON(allocator);
-    //     }
-    // }
-
     // Parse flags
     var benchmark = false;
     var use_cache = true;
@@ -5622,9 +5614,6 @@ fn runFixBio(allocator: Allocator, args: []const []const u8) !void {
 
     for (all_cells) |c| {
         const m = c.manifest;
-        // Skip virtual cells (kind="virtual" or "virtual-sub") without cell.tri
-        const is_virtual = std.mem.eql(u8, m.kind, "virtual") or std.mem.eql(u8, m.kind, "virtual-sub");
-        if (is_virtual) continue;
         if (m.bio_system.len == 0) {
             const path_copy = try allocator.dupe(u8, c.manifest.path);
             try missing.append(allocator, path_copy);
@@ -5796,23 +5785,14 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
 
     // Watch loop
     var iter: u32 = 0;
-    const start_time = std.time.timestamp();
     while (true) : (iter += 1) {
         // Clear screen and move cursor to top-left
         std.debug.print("{s}", .{CLEAR_SCREEN});
 
-        // Header with formatted timestamp
+        // Header
         const timestamp = std.time.timestamp();
-        const elapsed = timestamp - start_time;
-
-        // Format elapsed time as H:MM:SS (unsigned to avoid + sign)
-        const uptime_abs: u64 = if (elapsed < 0) @as(u64, @intCast(-elapsed)) else @as(u64, @intCast(elapsed));
-        const hours = uptime_abs / 3600;
-        const mins = (uptime_abs % 3600) / 60;
-        const secs = uptime_abs % 60;
-
         std.debug.print("{s}🏥 CELL HEALTH DASHBOARD{s} — refresh every {d}s\n", .{ GOLDEN, RESET, interval });
-        std.debug.print("{s}Scan: {d}  |  Iteration: {d}  |  Uptime: {d}:{d:0>2}:{d:0>2}{s}\n\n", .{ GRAY, timestamp, iter + 1, hours, mins, secs, RESET });
+        std.debug.print("{s}Last scan: {d}{s}\n\n", .{ GRAY, timestamp, RESET });
 
         // Get current health scores
         const all_cells = cell_parser.discoverAll(allocator) catch {
@@ -5913,22 +5893,14 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
         const avg = if (total > 0) sum / total else 0;
         const avg_color = if (avg >= 80) GREEN else if (avg >= 60) YELLOW else RED;
 
-        // Stats line with total cells
-        std.debug.print("{s}Cells: {d}{s}  {s}Average:{s} {s}{d}/100{s}  ", .{ GRAY, total, RESET, WHITE, RESET, avg_color, avg, RESET });
-        std.debug.print("{s}A:{d}{s} {s}B:{d}{s} {s}C:{d}{s} {s}F:{d}{s}\n", .{
+        // Stats line
+        std.debug.print("{s}Average:{s} {s}{d}/100{s}  ", .{ WHITE, RESET, avg_color, avg, RESET });
+        std.debug.print("{s}A:{d}{s} {s}B:{d}{s} {s}C:{d}{s} {s}F:{d}{s}\n\n", .{
             GREEN, grade_a, RESET, YELLOW, grade_b, RESET, YELLOW, grade_c, RESET, RED, grade_f, RESET,
         });
 
-        // Best cell (reverse sort for top)
-        if (snapshots.items.len > 0) {
-            const best = snapshots.items[snapshots.items.len - 1];
-            std.debug.print("\n{s}⭐ BEST CELL{s}  {s}{d}{s}  {s}{s}{s} {s}[{s}]{s}\n", .{
-                GREEN, RESET, GOLDEN, best.score, RESET, WHITE, best.name, RESET, GRAY, best.bio_system, RESET,
-            });
-        }
-
         // Top 5 worst cells
-        std.debug.print("\n{s}⚠️  TOP 5 WORST CELLS{s}\n\n", .{ RED, RESET });
+        std.debug.print("{s}⚠️  TOP 5 WORST CELLS{s}\n\n", .{ RED, RESET });
 
         const show_count = @min(5, snapshots.items.len);
         for (snapshots.items[0..show_count]) |s| {
@@ -5949,10 +5921,8 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
             }
         }
 
-        // Footer with helpful info
-        std.debug.print("\n{s}────────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
-        std.debug.print("{s}tri cell fix <id>{s} to repair  {s}tri cell watch --json{s} for API  ", .{ YELLOW, RESET, CYAN, RESET });
-        std.debug.print("{s}Next scan in {d}s...{s}", .{ GRAY, interval, RESET });
+        // Footer
+        std.debug.print("\n{s}Press Ctrl+C to exit | Next scan in {d}s...{s}", .{ GRAY, interval, RESET });
 
         // Sleep for interval (use non-blocking sleep)
         std.Thread.sleep(interval * 1_000_000_000); // interval in nanoseconds
@@ -7766,13 +7736,10 @@ fn verifyExportExists(allocator: Allocator, cell_path: []const u8, export_name: 
 fn runCoverage(allocator: Allocator, args: []const []const u8) !void {
     var threshold: f64 = 0.7; // 70% default
     var verbose = false;
-    var fix_mode = false;
 
     for (args) |arg| {
         if (std.mem.eql(u8, arg, "--verbose") or std.mem.eql(u8, arg, "-v")) {
             verbose = true;
-        } else if (std.mem.eql(u8, arg, "--fix")) {
-            fix_mode = true;
         } else if (std.mem.startsWith(u8, arg, "--threshold=")) {
             const val_str = arg["--threshold=".len..];
             threshold = std.fmt.parseFloat(f64, val_str) catch 0.7;
@@ -7800,9 +7767,7 @@ fn runCoverage(allocator: Allocator, args: []const []const u8) !void {
     var cells_with_tests: usize = 0;
     var total_test_blocks: usize = 0;
     var enabled_cells: usize = 0;
-    var cells_without_tests_count: usize = 0;
 
-    // First pass: count and display
     std.debug.print("  {s}ID                     TESTS  STATUS{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}────────────────────── ────── ───────{s}\n", .{ GRAY, RESET });
 
@@ -7818,17 +7783,17 @@ fn runCoverage(allocator: Allocator, args: []const []const u8) !void {
         total_test_blocks += tests;
 
         const status = if (tests > 0) "✓" else "✗";
-        // Color coding: green for has tests, red for no tests
         const status_color = if (tests > 0) GREEN else RED;
-        const id_color = if (tests > 0) WHITE else RED;
 
-        std.debug.print("  {s}{s}{s}", .{ id_color, id, RESET });
+        std.debug.print("  {s}{s}{s}", .{ WHITE, id, RESET });
         printPad(id.len, 23);
         std.debug.print(" {d:5}  {s}{s}{s}\n", .{ tests, status_color, status, RESET });
 
         if (tests > 0) cells_with_tests += 1;
 
-        if (tests == 0) cells_without_tests_count += 1;
+        if (verbose and tests == 0) {
+            std.debug.print("    {s}→ No tests found! Add tests with: tri cell init <name> --with-test{s}\n", .{ YELLOW, RESET });
+        }
     }
 
     const coverage_pct = if (enabled_cells > 0)
@@ -7840,79 +7805,22 @@ fn runCoverage(allocator: Allocator, args: []const []const u8) !void {
     const grade_color = if (coverage_pct >= 0.9) GREEN else if (coverage_pct >= 0.7) YELLOW else RED;
 
     std.debug.print("\n  {s}Summary:{s}\n", .{ GOLDEN, RESET });
-    std.debug.print("    {s}Cells with tests:{s} {d}/{d}\n", .{ GREEN, RESET, cells_with_tests, enabled_cells });
-    std.debug.print("    {s}Cells without tests:{s} {d}/{d}\n", .{ RED, RESET, cells_without_tests_count, enabled_cells });
+    std.debug.print("    Cells with tests: {d}/{d}\n", .{ cells_with_tests, enabled_cells });
     std.debug.print("    Coverage: {d:.1}%\n", .{coverage_pct * 100});
     std.debug.print("    Grade: {s}{s}{s}\n", .{ grade_color, grade, RESET });
     std.debug.print("    Total test blocks: {d}\n", .{total_test_blocks});
-
-    // Verbose mode: show list of cells without tests and suggestions
-    if (verbose and cells_without_tests_count > 0) {
-        std.debug.print("\n  {s}Cells without tests ({d}):{s}\n", .{ YELLOW, cells_without_tests_count, RESET });
-        for (items) |item| {
-            const obj = item.object;
-            const id = jsonStr(obj, "id");
-            const tests = jsonInt(obj, "tests");
-            const enabled = jsonBool(obj, "enabled");
-
-            if (!enabled or tests > 0) continue;
-
-            std.debug.print("    {s}• {s}{s}\n", .{ RED, id, RESET });
-            std.debug.print("      {s}Run: tri cell init {s} --with-test{s}\n", .{ GRAY, id, RESET });
-        }
-    }
-
-    // Fix mode: auto-create tests for cells without them
-    if (fix_mode) {
-        if (cells_without_tests_count == 0) {
-            std.debug.print("\n{s}✓ FIX{s}: All cells have tests!\n", .{ GREEN, RESET });
-        } else {
-            std.debug.print("\n{s}🔧 FIX MODE:{s} Creating tests for {d} cells...\n", .{ GOLDEN, RESET, cells_without_tests_count });
-            for (items) |item| {
-                const obj = item.object;
-                const id = jsonStr(obj, "id");
-                const tests = jsonInt(obj, "tests");
-                const enabled = jsonBool(obj, "enabled");
-
-                if (!enabled or tests > 0) continue;
-
-                std.debug.print("  Creating test for {s}... ", .{id});
-                // Run tri cell init with --with-test flag
-                var child = std.process.Child.init(&[_][]const u8{ "tri", "cell", "init", id, "--with-test", "--yes" }, allocator);
-                child.stderr_behavior = .Pipe;
-                child.stdout_behavior = .Pipe;
-
-                const result = child.spawnAndWait() catch |err| {
-                    std.debug.print("{s}FAILED ({s}){s}\n", .{ RED, @errorName(err), RESET });
-                    continue;
-                };
-
-                if (result.Exited == 0) {
-                    std.debug.print("{s}✓{s}\n", .{ GREEN, RESET });
-                } else {
-                    std.debug.print("{s}✗{s}\n", .{ RED, RESET });
-                }
-            }
-            std.debug.print("\n  {s}Note:{s} Tests created! Re-run coverage to verify.\n", .{ YELLOW, RESET });
-        }
-    }
 
     // Fail if below threshold
     if (coverage_pct < threshold) {
         std.debug.print("\n{s}✗ FAIL{s}: Coverage ({d:.1}%) below threshold ({d:.1}%)\n", .{
             RED, RESET, coverage_pct * 100, threshold * 100,
         });
-        if (cells_without_tests_count > 0) {
-            std.debug.print("\n  To improve coverage:\n", .{});
-            std.debug.print("    • {s}Run: tri cell coverage --fix{s} (auto-create tests)\n", .{ GREEN, RESET });
-            std.debug.print("    • Run: tri cell init <name> --with-test\n", .{});
-            std.debug.print("    • Add test blocks to existing cells\n", .{});
-        }
+        std.debug.print("\n  To improve coverage:\n", .{});
+        std.debug.print("    • Run: tri cell init <name> --with-test\n", .{});
+        std.debug.print("    • Add test blocks to existing cells\n", .{});
 
-        // Exit with error code (only if not in fix mode)
-        if (!fix_mode) {
-            std.process.exit(1);
-        }
+        // Exit with error code
+        std.process.exit(1);
     } else {
         std.debug.print("\n{s}✓ PASS{s}: Coverage ({d:.1}%) meets threshold ({d:.1}%)\n\n", .{
             GREEN, RESET, coverage_pct * 100, threshold * 100,

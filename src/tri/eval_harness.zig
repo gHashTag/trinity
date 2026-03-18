@@ -122,7 +122,7 @@ fn runEvalRun(allocator: std.mem.Allocator, args: []const []const u8) void {
         var count: u32 = 0;
         var iter = std.mem.splitScalar(u8, issue_list, ',');
         while (iter.next()) |num_str| {
-            const issue_num = std.fmt.parseInt(u32, std.mem.trim(u8, num_str, " "), 10) catch continue;
+            const issue_num = std.fmt.parseInt(u32, std.mem.trim(u8, num_str, &[_]u8{' '}), 10) catch continue;
             std.debug.print("  Evaluating issue #{d}...\n", .{issue_num});
             count += 1;
         }

@@ -31,7 +31,7 @@ pub fn readLastCommit(buf: []u8) []const u8 {
     }) catch return "";
     defer std.heap.page_allocator.free(result.stdout);
     defer std.heap.page_allocator.free(result.stderr);
-    const trimmed = std.mem.trim(u8, result.stdout, " \t\n\r");
+    const trimmed = std.mem.trim(u8, result.stdout, &[_]u8{' ', '\t', '\n', '\r'});
     if (trimmed.len == 0) return "";
     const copy_len = @min(trimmed.len, buf.len);
     @memcpy(buf[0..copy_len], trimmed[0..copy_len]);
@@ -47,14 +47,14 @@ pub fn readRecentCommits(out: *[3][80]u8) u8 {
     }) catch return 0;
     defer std.heap.page_allocator.free(result.stdout);
     defer std.heap.page_allocator.free(result.stderr);
-    const trimmed = std.mem.trim(u8, result.stdout, " \t\n\r");
+    const trimmed = std.mem.trim(u8, result.stdout, &[_]u8{' ', '\t', '\n', '\r'});
     if (trimmed.len == 0) return 0;
 
     var count: u8 = 0;
     var iter = std.mem.splitScalar(u8, trimmed, '\n');
     while (iter.next()) |line| {
         if (count >= 3) break;
-        const l = std.mem.trim(u8, line, " \t\r");
+        const l = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
         if (l.len == 0) continue;
         const copy_len = @min(l.len, 80);
         @memcpy(out[count][0..copy_len], l[0..copy_len]);

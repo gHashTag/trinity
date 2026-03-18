@@ -98,7 +98,7 @@ pub fn extractTypes(allocator: Allocator, source: []const u8) ![]ExtractedType {
 
     var lines = std.mem.splitScalar(u8, source, '\n');
     while (lines.next()) |line| {
-        const trimmed = std.mem.trim(u8, line, " \t\r");
+        const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
         // Match: "pub const FooBar = struct {" or "pub const FooBar = enum {"
         if (!std.mem.startsWith(u8, trimmed, "pub const ")) continue;
         const after_const = trimmed["pub const ".len..];
@@ -138,7 +138,7 @@ pub fn extractFunctions(allocator: Allocator, source: []const u8) ![]ExtractedFu
 
     var lines = std.mem.splitScalar(u8, source, '\n');
     while (lines.next()) |line| {
-        const trimmed = std.mem.trim(u8, line, " \t\r");
+        const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
         const is_pub = std.mem.startsWith(u8, trimmed, "pub fn ");
         if (!is_pub and !std.mem.startsWith(u8, trimmed, "fn ")) continue;
 
@@ -182,7 +182,7 @@ pub fn extractTests(allocator: Allocator, source: []const u8) ![]ExtractedTest {
 
     var lines = std.mem.splitScalar(u8, source, '\n');
     while (lines.next()) |line| {
-        const trimmed = std.mem.trim(u8, line, " \t\r");
+        const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
         if (!std.mem.startsWith(u8, trimmed, "test \"")) continue;
 
         const after_test = trimmed["test \"".len..];

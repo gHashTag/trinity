@@ -2066,7 +2066,7 @@ pub fn parseTrainingLine(line: []const u8) ?TrainingMetrics {
     for (line, 0..) |c, ci| {
         if (c == '|') {
             if (col_idx < 8) {
-                columns[col_idx] = std.mem.trim(u8, line[start..ci], " \t");
+                columns[col_idx] = std.mem.trim(u8, line[start..ci], &[_]u8{' ', '\t'});
                 col_idx += 1;
             }
             start = ci + 1;
@@ -2074,7 +2074,7 @@ pub fn parseTrainingLine(line: []const u8) ?TrainingMetrics {
     }
     // Last column
     if (col_idx < 8 and start < line.len) {
-        columns[col_idx] = std.mem.trim(u8, line[start..], " \t");
+        columns[col_idx] = std.mem.trim(u8, line[start..], &[_]u8{' ', '\t'});
         col_idx += 1;
     }
 
@@ -3671,7 +3671,7 @@ fn runDeploy(allocator: Allocator, args: []const []const u8) !void {
     if (select_str) |sel| {
         var iter = std.mem.splitScalar(u8, sel, ',');
         while (iter.next()) |tok| {
-            const idx = std.fmt.parseInt(usize, std.mem.trim(u8, tok, " "), 10) catch continue;
+            const idx = std.fmt.parseInt(usize, std.mem.trim(u8, tok, &[_]u8{' '}), 10) catch continue;
             if (idx >= 1 and idx <= total_configs) {
                 if (selected_count < MAX_SERVICES) {
                     selected_indices[selected_count] = idx - 1;

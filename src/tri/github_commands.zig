@@ -132,7 +132,7 @@ fn issueCreate(allocator: std.mem.Allocator, args: []const []const u8, dry_run: 
     if (labels_str) |ls| {
         var iter = std.mem.splitScalar(u8, ls, ',');
         while (iter.next()) |label| {
-            const trimmed = std.mem.trim(u8, label, " ");
+            const trimmed = std.mem.trim(u8, label, &[_]u8{' '});
             if (trimmed.len > 0) {
                 try labels_list.append(allocator, trimmed);
             }
@@ -469,7 +469,7 @@ fn printIssueTable(json_data: []const u8) void {
         const num_start = std.mem.indexOfPos(u8, json_data, pos, num_key) orelse break;
         const num_val_start = num_start + num_key.len;
         const num_end = std.mem.indexOfAnyPos(u8, json_data, num_val_start, ",}") orelse break;
-        const num_str = std.mem.trim(u8, json_data[num_val_start..num_end], " ");
+        const num_str = std.mem.trim(u8, json_data[num_val_start..num_end], &[_]u8{' '});
 
         // Find "title" after number
         const title_key = "\"title\":\"";

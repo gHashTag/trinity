@@ -10,6 +10,6 @@ struct StatusBadge: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(status.color.opacity(0.15))
-            .clipShape(Capsule())
+            .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
