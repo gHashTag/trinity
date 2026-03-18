@@ -186,3 +186,61 @@ test "Queen Ouroboros — JSON helpers" {
     try std.testing.expectEqual(@as(i64, 1700000000), findJsonI64(data, "\"started\":").?);
     try std.testing.expectEqualStrings("test", findJsonStr(data, "\"strategy\":\"").?);
 }
+
+test "Queen Ouroboros — findJsonF32 returns null for missing" {
+    const data = "{\"no_score\":75.5}";
+    try std.testing.expectEqual(@as(?f32, null), findJsonF32(data, "\"score\":"));
+}
+
+test "Queen Ouroboros — findJsonU32 returns null for missing" {
+    const data = "{\"no_cycle\":10}";
+    try std.testing.expectEqual(@as(?u32, null), findJsonU32(data, "\"cycle\":"));
+}
+
+test "Queen Ouroboros — findJsonStr returns null for missing" {
+    const data = "{\"no_strategy\":\"test\"}";
+    try std.testing.expectEqual(@as(?[]const u8, null), findJsonStr(data, "\"strategy\":\""));
+}
+
+test "Queen Ouroboros — OuroborosState default values" {
+    const state = OuroborosState{};
+    try std.testing.expectEqual(@as(f32, 0.0), state.score);
+    try std.testing.expectEqual(@as(f32, 0.0), state.initial);
+    try std.testing.expectEqual(@as(u32, 0), state.cycle);
+    try std.testing.expectEqual(@as(u32, 0), state.stagnation);
+    try std.testing.expectEqual(@as(i64, 0), state.started_ts);
+    try std.testing.expectEqual(@as(usize, 0), state.strategy_len);
+}
+
+test "Queen Ouroboros — fetch with missing file returns default" {
+    // If STATE_PATH doesn't exist, fetch() should return default state
+    const state = fetch();
+    try std.testing.expect(state.score >= 0.0 and state.score <= 100.0);
+}
+
+test "Queen Ouroboros — fmtTelegram includes delta" {
+    var buf: [512]u8 = undefined;
+    const state = OuroborosState{
+        .score = 85.0,
+        .initial = 75.0,
+        .cycle = 10,
+        .stagnation = 0,
+    };
+
+    const msg = fmtTelegram(&buf, state);
+    // Should show +10.0 delta
+    try std.testing.expect(std.mem.indexOf(u8, msg, "+10.0") != null);
+}
+
+test "Queen Ouroboros — fmtTelegram handles negative delta" {
+    var buf: [512]u8 = undefined;
+    const state = OuroborosState{
+        .score = 70.0,
+        .initial = 80.0,
+        .cycle = 10,
+    };
+
+    const msg = fmtTelegram(&buf, state);
+    // Should show -10.0 delta
+    try std.testing.expect(std.mem.indexOf(u8, msg, "-10.0") != null);
+}
