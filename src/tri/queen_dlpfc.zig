@@ -1216,3 +1216,189 @@ test "Phase 3.5 — determineTrend helper function" {
     try std.testing.expectEqual(TrendAnalysis.Trend.stable, determineTrend(10.0, 9.9));
     try std.testing.expectEqual(TrendAnalysis.Trend.stable, determineTrend(10.0, 10.1));
 }
+
+test "dlpfc — Decision struct with all fields" {
+    const decision = Decision{
+        .action = .doctor_quick,
+        .urgency = .high,
+        .reason = "test reason",
+        .confidence = 0.85,
+    };
+
+    try std.testing.expectEqual(qt.ActionKind.doctor_quick, decision.action);
+    try std.testing.expectEqual(basal_ganglia.Urgency.high, decision.urgency);
+    try std.testing.expectEqualStrings("test reason", decision.reason);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.85), decision.confidence, 0.01);
+}
+
+test "dlpfc — Decision struct default confidence" {
+    const decision = Decision{
+        .action = .farm_status, // L0 safe action
+        .urgency = .low,
+        .reason = "",
+    };
+
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), decision.confidence, 0.001);
+}
+
+test "dlpfc — DecisionContext getArousal" {
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+        .locus_state = .{},
+    };
+
+    // Default locus state should return some arousal level
+    const arousal = ctx.getArousal();
+    _ = arousal;
+    // Just verify it doesn't crash
+}
+
+test "dlpfc — CycleState running flag" {
+    var cycle = CycleState.init();
+    try std.testing.expect(cycle.running);
+
+    cycle.running = false;
+    try std.testing.expect(!cycle.running);
+}
+
+test "dlpfc — CycleState decision count increments" {
+    var cycle = CycleState.init();
+    try std.testing.expectEqual(@as(u64, 0), cycle.decision_count);
+
+    cycle.decision_count = 5;
+    try std.testing.expectEqual(@as(u64, 5), cycle.decision_count);
+}
+
+test "dlpfc — CycleState iteration tracking" {
+    var cycle = CycleState.init();
+    try std.testing.expectEqual(@as(u64, 0), cycle.iteration);
+
+    cycle.iteration = 100;
+    try std.testing.expectEqual(@as(u64, 100), cycle.iteration);
+}
+
+test "dlpfc — FacultyMetrics max health score" {
+    var metrics = FacultyMetrics{
+        .active_count = 6, // Max agents
+        .build_health = 100.0,
+    };
+
+    const score = metrics.healthScore();
+    // 6*15 + 100*0.1 = 90 + 10 = 100
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), score, 0.1);
+}
+
+test "dlpfc — FacultyMetrics zero health score" {
+    var metrics = FacultyMetrics{
+        .active_count = 0,
+        .build_health = 0.0,
+    };
+
+    const score = metrics.healthScore();
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), score, 0.1);
+}
+
+test "dlpfc — FacultyMetrics all V-zones" {
+    var metrics = FacultyMetrics{};
+
+    metrics.v_zone = .gold;
+    try std.testing.expectEqualStrings("GOLD", metrics.vZoneStr());
+
+    metrics.v_zone = .stable;
+    try std.testing.expectEqualStrings("STABLE", metrics.vZoneStr());
+
+    metrics.v_zone = .drift;
+    try std.testing.expectEqualStrings("DRIFT", metrics.vZoneStr());
+}
+
+test "dlpfc — FacultyCycle enum coverage" {
+    const cycles = [_]FacultyMetrics.FacultyCycle{ .working, .evaluating, .sleeping };
+    for (cycles) |c| {
+        _ = c; // Verify all enum values exist
+    }
+}
+
+test "dlpfc — TrendAnalysis Trend enum coverage" {
+    const trends = [_]TrendAnalysis.Trend{ .falling, .stable, .rising };
+    for (trends) |t| {
+        _ = t; // Verify all enum values exist
+    }
+}
+
+test "dlpfc — TrendAnalysis summary stable trend" {
+    var analysis = TrendAnalysis{
+        .confidence = 0.8,
+        .compile_trend = .stable,
+    };
+
+    try std.testing.expectEqualStrings("✓ stable", analysis.summary());
+}
+
+test "dlpfc — TrendAnalysis summary rising trend" {
+    var analysis = TrendAnalysis{
+        .confidence = 0.8,
+        .compile_trend = .rising,
+    };
+
+    try std.testing.expectEqualStrings("✓ compile rate improving", analysis.summary());
+}
+
+test "dlpfc — TrendAnalysis all falling trends urgency" {
+    var analysis = TrendAnalysis{
+        .confidence = 1.0,
+        .compile_trend = .falling,
+        .v_trend = .falling,
+        .faculty_trend = .falling,
+        .dirty_trend = .rising,
+    };
+
+    // 3 + 2 + 3 + 2 = 10, capped at 10
+    try std.testing.expectEqual(@as(u8, 10), analysis.urgencyScore());
+}
+
+test "dlpfc — TrendAnalysis sample size tracking" {
+    const analysis = TrendAnalysis{
+        .sample_size = 100,
+    };
+
+    try std.testing.expectEqual(@as(u32, 100), analysis.sample_size);
+}
+
+test "dlpfc — DecisionContext default values" {
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+    };
+
+    try std.testing.expectEqual(@as(f32, 0.0), ctx.ouroboros_score);
+    try std.testing.expectEqual(@as(u16, 0), ctx.dirty_files);
+    try std.testing.expect(ctx.build_ok);
+}
+
+test "dlpfc — CycleState last_decision optional" {
+    var cycle = CycleState.init();
+
+    try std.testing.expect(cycle.last_decision == null);
+
+    const decision = Decision{
+        .action = .farm_status,
+        .urgency = .low,
+        .reason = "test",
+    };
+    cycle.last_decision = decision;
+
+    try std.testing.expect(cycle.last_decision != null);
+}
