@@ -25,10 +25,9 @@ class ImageGenerator: ObservableObject {
         defer { isGenerating = false }
 
         let body: [String: Any] = [
-            "model": "grok-2-image",
+            "model": "grok-imagine-image",
             "prompt": prompt,
             "n": min(count, 4),
-            "response_format": "url",
         ]
 
         let bodyData = try JSONSerialization.data(withJSONObject: body)

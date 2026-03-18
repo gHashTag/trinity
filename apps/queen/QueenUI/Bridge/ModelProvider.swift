@@ -26,8 +26,12 @@ struct AIModel: Identifiable, Codable, Equatable, Hashable {
         AIModel(id: "sonar-pro", displayName: "Sonar Pro", provider: .perplexity),
         AIModel(id: "sonar-reasoning-pro", displayName: "Sonar Reasoning", provider: .perplexity),
         // xAI (Grok)
-        AIModel(id: "grok-3-latest", displayName: "Grok 3", provider: .xai),
-        AIModel(id: "grok-2-image", displayName: "Grok Image", provider: .xai),
+        AIModel(id: "grok-3", displayName: "Grok 3", provider: .xai),
+        AIModel(id: "grok-3-mini", displayName: "Grok 3 Mini", provider: .xai),
+        AIModel(id: "grok-4-0709", displayName: "Grok 4", provider: .xai),
+        AIModel(id: "grok-4-fast-reasoning", displayName: "Grok 4 Fast", provider: .xai),
+        AIModel(id: "grok-code-fast-1", displayName: "Grok Code", provider: .xai),
+        AIModel(id: "grok-imagine-image", displayName: "Grok Image", provider: .xai),
     ]
 
     /// Whether this model generates images instead of text
