@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN v4 — Maximum Autonomy: Full Capability Unlock
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1199,3 +1200,307 @@ test "Queen heartbeat format" {
     try std.testing.expect(std.mem.indexOf(u8, msg, "4.6") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "R33") != null);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 2 TESTS — PMC → M1 Integration
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Phase 2 — determineGoal returns heal_system when build broken" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = false;
+    const evo = EvolutionInfo{};
+    const incidents = queen_policy.IncidentMemory.init();
+
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expectEqual(queen_premotor.Goal.heal_system, goal.?);
+}
+
+test "Phase 2 — determineGoal returns assess_health when high failure rate" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = true;
+    const evo = EvolutionInfo{};
+    var incidents = queen_policy.IncidentMemory.init();
+    // Simulate high failure rate: 3 fails out of 4 actions (75% > 50%)
+    incidents.total_auto_actions_24h = 4;
+    incidents.total_auto_fails_24h = 3;
+
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expectEqual(queen_premotor.Goal.assess_health, goal.?);
+}
+
+test "Phase 2 — determineGoal returns check_farm when no services" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = true;
+    var evo = EvolutionInfo{};
+    evo.service_count = 0;
+    const incidents = queen_policy.IncidentMemory.init();
+
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expectEqual(queen_premotor.Goal.check_farm, goal.?);
+}
+
+test "Phase 2 — determineGoal returns cleanup_cloud when dirty files high" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = true;
+    snap.dirty_files = 150;
+    const evo = EvolutionInfo{};
+    const incidents = queen_policy.IncidentMemory.init();
+
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expectEqual(queen_premotor.Goal.cleanup_cloud, goal.?);
+}
+
+test "Phase 2 — determineGoal returns null when all is well" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = true;
+    snap.dirty_files = 50;
+    var evo = EvolutionInfo{};
+    evo.service_count = 10;
+    var incidents = queen_policy.IncidentMemory.init();
+    incidents.total_auto_actions_24h = 10;
+    incidents.total_auto_fails_24h = 2; // 20% failure rate < 50%
+
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expect(goal == null);
+}
+
+test "Phase 2 — MotorPlan.init creates correct plan" {
+    const plan = queen_premotor.MotorPlan.init(.heal_system);
+
+    try std.testing.expectEqual(queen_premotor.Goal.heal_system, plan.source_goal);
+    try std.testing.expectEqual(@as(u8, 80), plan.priority); // heal_system priority
+    try std.testing.expect(plan.created_at > 0);
+    try std.testing.expectEqual(@as(u8, 4), plan.sequence.step_count); // fullHeal has 4 steps
+}
+
+test "Phase 2 — MotorPlan.init for assess_health" {
+    const plan = queen_premotor.MotorPlan.init(.assess_health);
+
+    try std.testing.expectEqual(queen_premotor.Goal.assess_health, plan.source_goal);
+    try std.testing.expectEqual(@as(u8, 60), plan.priority);
+    try std.testing.expectEqual(@as(u8, 4), plan.sequence.step_count);
+    try std.testing.expectEqual(qt.ActionKind.doctor_scan, plan.sequence.steps[0].action);
+}
+
+test "Phase 2 — MotorPlan.init for check_farm" {
+    const plan = queen_premotor.MotorPlan.init(.check_farm);
+
+    try std.testing.expectEqual(queen_premotor.Goal.check_farm, plan.source_goal);
+    try std.testing.expectEqual(@as(u8, 40), plan.priority);
+    try std.testing.expectEqual(@as(u8, 2), plan.sequence.step_count);
+}
+
+test "Phase 2 — MotorExecutor.init and executePlan (no execute)" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    const plan = queen_premotor.MotorPlan.init(.assess_health);
+    var executor = queen_motor.MotorExecutor.init(allocator);
+
+    // Just test that executor was initialized and plan is valid
+    _ = executor;
+    try std.testing.expect(plan.sequence.step_count > 0);
+}
+
+test "Phase 2 — PMC → M1 full integration (dry run)" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    // Simulate the full flow: PFC (determineGoal) → PMC (MotorPlan.init) → M1 (MotorExecutor)
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = false;
+    const evo = EvolutionInfo{};
+    const incidents = queen_policy.IncidentMemory.init();
+
+    // PFC: Determine goal
+    const goal = determineGoal(snap, evo, &incidents);
+    try std.testing.expectEqual(queen_premotor.Goal.heal_system, goal.?);
+
+    // PMC: Create motor plan
+    const plan = queen_premotor.MotorPlan.init(goal.?);
+    try std.testing.expectEqual(@as(u8, 4), plan.sequence.step_count);
+
+    // M1: Initialize executor (don't actually execute)
+    var executor = queen_motor.MotorExecutor.init(allocator);
+    _ = executor;
+
+    // Verify plan has expected actions
+    try std.testing.expectEqual(qt.ActionKind.doctor_scan, plan.sequence.steps[0].action);
+    try std.testing.expectEqual(qt.ActionKind.ouroboros_cycle, plan.sequence.steps[2].action);
+}
+
+test "Phase 2 — Goal priority ordering" {
+    try std.testing.expectEqual(@as(u8, 100), queen_premotor.Goal.emergency_shutdown.priority());
+    try std.testing.expectEqual(@as(u8, 80), queen_premotor.Goal.heal_system.priority());
+    try std.testing.expectEqual(@as(u8, 60), queen_premotor.Goal.assess_health.priority());
+    try std.testing.expectEqual(@as(u8, 40), queen_premotor.Goal.check_farm.priority());
+    try std.testing.expectEqual(@as(u8, 30), queen_premotor.Goal.cleanup_cloud.priority());
+    try std.testing.expectEqual(@as(u8, 10), queen_premotor.Goal.research_update.priority());
+}
+
+test "Phase 2 — PlanQueue FIFO behavior" {
+    var queue = queen_premotor.PlanQueue{};
+
+    // Push 3 plans
+    try std.testing.expect(queue.push(queen_premotor.MotorPlan.init(.research_update)));
+    try std.testing.expect(queue.push(queen_premotor.MotorPlan.init(.cleanup_cloud)));
+    try std.testing.expect(queue.push(queen_premotor.MotorPlan.init(.check_farm)));
+    try std.testing.expectEqual(@as(u8, 3), queue.len());
+
+    // Pop in FIFO order
+    const p1 = queue.pop().?;
+    try std.testing.expectEqual(queen_premotor.Goal.research_update, p1.source_goal);
+
+    const p2 = queue.pop().?;
+    try std.testing.expectEqual(queen_premotor.Goal.cleanup_cloud, p2.source_goal);
+
+    const p3 = queue.pop().?;
+    try std.testing.expectEqual(queen_premotor.Goal.check_farm, p3.source_goal);
+
+    try std.testing.expectEqual(@as(u8, 0), queue.len());
+    try std.testing.expect(queue.pop() == null);
+}
+
+test "Phase 2 — PlanQueue wraparound" {
+    var queue = queen_premotor.PlanQueue{};
+
+    // Fill and empty to test wraparound
+    var i: u8 = 0;
+    while (i < 8) : (i += 1) {
+        try std.testing.expect(queue.push(queen_premotor.MotorPlan.init(.check_farm)));
+    }
+    try std.testing.expect(!queue.push(queen_premotor.MotorPlan.init(.check_farm))); // Full
+
+    while (queue.pop()) |_| {}
+    try std.testing.expectEqual(@as(u8, 0), queue.len());
+
+    // After empty, should work again
+    try std.testing.expect(queue.push(queen_premotor.MotorPlan.init(.heal_system)));
+}
+
+test "Phase 2 — Sequencer context updates" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var sequencer = queen_premotor.Sequencer.init(allocator);
+
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .test_rate = 90,
+        .farm_idle_count = 3,
+        .arena_battles = 5,
+    };
+
+    sequencer.updateContext(senses);
+
+    try std.testing.expect(sequencer.context.build_ok);
+    try std.testing.expect(sequencer.context.tests_pass);
+    try std.testing.expectEqual(@as(u8, 3), sequencer.context.farm_idle_count);
+    try std.testing.expect(sequencer.context.arena_exists);
+}
+
+test "Phase 2 — ActionSequence conditions" {
+    var seq = queen_premotor.ActionSequence{};
+
+    try seq.addStepWithCondition(.doctor_quick, .build_ok);
+    try std.testing.expectEqual(@as(u8, 1), seq.step_count);
+    try std.testing.expectEqual(queen_premotor.SequenceStep.Condition.build_ok, seq.steps[0].condition.?);
+}
+
+test "Phase 2 — ActionSequence delayed step" {
+    var seq = queen_premotor.ActionSequence{};
+
+    try seq.addDelayedStep(.notify, 5000);
+    try std.testing.expectEqual(@as(u8, 1), seq.step_count);
+    try std.testing.expectEqual(@as(u64, 5000), seq.steps[0].delay_ms);
+}
+
+test "Phase 2 — MotorCommand from two-word action" {
+    const cmd = queen_motor.MotorCommand.fromAction(.farm_status);
+
+    try std.testing.expectEqualStrings("farm", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("status", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Phase 2 — MotorCommand from single-word action" {
+    const cmd = queen_motor.MotorCommand.fromAction(.notify);
+
+    try std.testing.expectEqualStrings("notify", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 0), cmd.arg_count);
+}
+
+test "Phase 2 — MotorCommand format" {
+    const cmd = queen_motor.MotorCommand.fromAction(.farm_status);
+    var buf: [128]u8 = undefined;
+    const formatted = cmd.format(&buf);
+
+    try std.testing.expect(formatted.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, formatted, "tri farm status") != null);
+}
+
+test "Phase 2 — CommandBuilder fluent API" {
+    var builder = queen_motor.CommandBuilder{};
+    try builder.subcommand("cloud");
+    try builder.arg("status");
+    const cmd = builder.build();
+
+    try std.testing.expectEqualStrings("cloud", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("status", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Phase 2 — MotorBatch sequential execution" {
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    defer _ = gpa.deinit();
+    const allocator = gpa.allocator();
+
+    var batch = queen_motor.MotorBatch{};
+    batch.parallel = false;
+
+    try batch.addCommand(queen_motor.MotorCommand.fromAction(.farm_status));
+    try batch.addCommand(queen_motor.MotorCommand.fromAction(.arena_status));
+
+    try std.testing.expectEqual(@as(u8, 2), batch.count);
+
+    // Execute batch (should not fail even if commands don't exist)
+    const result = batch.execute(allocator) catch return error.ExecuteFailed;
+    _ = result;
+}
+
+test "Phase 2 — failure rate edge cases" {
+    var snap = std.mem.zeroes(FacultySnapshot);
+    snap.build_ok = true;
+    const evo = EvolutionInfo{};
+
+    // Exactly 50% failure rate (should NOT trigger assess_health, needs > 50%)
+    {
+        var incidents = queen_policy.IncidentMemory.init();
+        incidents.total_auto_actions_24h = 10;
+        incidents.total_auto_fails_24h = 5; // 50% exactly
+        const goal = determineGoal(snap, evo, &incidents);
+        try std.testing.expect(goal != .assess_health);
+    }
+
+    // Just over 50% (should trigger)
+    {
+        var incidents = queen_policy.IncidentMemory.init();
+        incidents.total_auto_actions_24h = 10;
+        incidents.total_auto_fails_24h = 6; // 60%
+        const goal = determineGoal(snap, evo, &incidents);
+        try std.testing.expectEqual(queen_premotor.Goal.assess_health, goal.?);
+    }
+
+    // Less than 3 failures (should NOT trigger regardless of rate)
+    {
+        var incidents = queen_policy.IncidentMemory.init();
+        incidents.total_auto_actions_24h = 3;
+        incidents.total_auto_fails_24h = 2; // 66% but only 2 fails
+        const goal = determineGoal(snap, evo, &incidents);
+        try std.testing.expect(goal != .assess_health);
+    }
+}
+

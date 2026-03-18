@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity Agent Daemon — tri agent loop/bootstrap
 // Migrated from scripts/agent-loop.sh, agent-bootstrap.sh, agent_loop.sh
 //

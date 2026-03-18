@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // NCA — Neural Cellular Automata data generator for pre-pre-training
 // Based on MIT paper arXiv 2603.10055: NCA pre-pre-training beats
 // 1.6B language tokens with just 164M synthetic tokens.

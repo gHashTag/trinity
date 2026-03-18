@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 const std = @import("std");
 const colors = @import("tri_colors.zig");
 

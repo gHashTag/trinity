@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // HSLM Reference — Quantization Implementations
 // Migrated from archive/implementations/zig/src/quantization.zig
 // INT8/INT4 quantization for efficient inference

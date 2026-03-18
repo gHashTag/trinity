@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN PRIMARY MOTOR CORTEX (M1) — Action Execution & Command Conversion
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -109,9 +110,124 @@ pub const MotorCommand = struct {
 
 pub const MotorExecutor = struct {
     allocator: Allocator,
+    /// Cached context for condition checks - updated via refreshContext()
+    context: queen_premotor.SequenceStep.ConditionContext = .{},
 
     pub fn init(allocator: Allocator) MotorExecutor {
         return .{ .allocator = allocator };
+    }
+
+    /// Refresh the condition context by running actual checks
+    /// This updates cached values so checkCondition() can use them
+    pub fn refreshContext(self: *MotorExecutor) !void {
+        self.context.build_ok = try self.checkBuildOk();
+        self.context.tests_pass = try self.checkTestsPass();
+        self.context.farm_idle_count = try self.checkFarmIdleCount();
+        self.context.arena_exists = try self.checkArenaExists();
+    }
+
+    /// Check if `zig build` succeeds
+    fn checkBuildOk(self: *MotorExecutor) !bool {
+        const result = try std.process.Child.run(.{
+            .allocator = self.allocator,
+            .argv = &[_][]const u8{ "zig", "build" },
+            .max_output_bytes = 64 * 1024,
+        });
+        defer {
+            self.allocator.free(result.stdout);
+            self.allocator.free(result.stderr);
+        }
+
+        return result.term == .Exited and result.term.Exited == 0;
+    }
+
+    /// Check if `zig build test` succeeds
+    fn checkTestsPass(self: *MotorExecutor) !bool {
+        const result = try std.process.Child.run(.{
+            .allocator = self.allocator,
+            .argv = &[_][]const u8{ "zig", "build", "test" },
+            .max_output_bytes = 64 * 1024,
+        });
+        defer {
+            self.allocator.free(result.stdout);
+            self.allocator.free(result.stderr);
+        }
+
+        return result.term == .Exited and result.term.Exited == 0;
+    }
+
+    /// Count idle farm services by running `tri farm list`
+    fn checkFarmIdleCount(self: *MotorExecutor) !u8 {
+        const result = std.process.Child.run(.{
+            .allocator = self.allocator,
+            .argv = &[_][]const u8{ "tri", "farm", "list" },
+            .max_output_bytes = 128 * 1024,
+        }) catch |err| {
+            // If tri farm list fails, assume no idle services
+            _ = err;
+            return 0;
+        };
+        defer {
+            self.allocator.free(result.stdout);
+            self.allocator.free(result.stderr);
+        }
+
+        // Parse output for "idle" status
+        // Output format: "N total (M idle, K training, ...)"
+        var idle_count: u8 = 0;
+        var lines = std.mem.splitScalar(u8, result.stdout, '\n');
+
+        while (lines.next()) |line| {
+            if (std.mem.indexOf(u8, line, "idle")) |_| {
+                // Try to extract number before "idle"
+                const idle_start = std.mem.lastIndexOf(u8, line, " ") orelse continue;
+                const after_space = line[idle_start + 1 ..];
+                if (after_space.len > 4 and std.mem.eql(u8, after_space[0..4], "idle")) {
+                    // Number is before "idle"
+                    const num_str = line[0..idle_start];
+                    // Find last space before the number
+                    if (std.mem.lastIndexOf(u8, line[0..idle_start], " ")) |prev_space| {
+                        const num = std.fmt.parseInt(u8, line[prev_space + 1 .. idle_start], 10) catch 0;
+                        idle_count = num;
+                    }
+                }
+                // Also check for "(X idle" pattern
+                if (std.mem.indexOf(u8, line, "(")) |_| {
+                    const paren_idx = std.mem.lastIndexOf(u8, line, "(").?;
+                    const after_paren = line[paren_idx + 1 ..];
+                    if (std.mem.indexOf(u8, after_paren, "idle")) |_| {
+                        const space_idx = std.mem.indexOfScalar(u8, after_paren, ' ') orelse after_paren.len;
+                        const num_str = after_paren[0..space_idx];
+                        idle_count = std.fmt.parseInt(u8, num_str, 10) catch idle_count;
+                    }
+                }
+            }
+        }
+
+        return idle_count;
+    }
+
+    /// Check if arena service is running via `tri arena status`
+    fn checkArenaExists(self: *MotorExecutor) !bool {
+        const result = std.process.Child.run(.{
+            .allocator = self.allocator,
+            .argv = &[_][]const u8{ "tri", "arena", "status" },
+            .max_output_bytes = 64 * 1024,
+        }) catch |err| {
+            // If tri arena status fails, arena doesn't exist
+            _ = err;
+            return false;
+        };
+        defer {
+            self.allocator.free(result.stdout);
+            self.allocator.free(result.stderr);
+        }
+
+        // Arena exists if command succeeded and output is non-empty
+        const success = result.term == .Exited and result.term.Exited == 0;
+        const has_output = result.stdout.len > 0;
+
+        return success and has_output;
     }
 
     /// Execute a single motor command
@@ -183,9 +299,7 @@ pub const MotorExecutor = struct {
 
             // Check condition if present
             if (step.condition) |cond| {
-                // Note: condition checking requires context that should be passed in
-                // For now, skip if condition check fails
-                if (!self.checkCondition(cond)) {
+                if (!self.checkCondition(cond, step.custom_check_fn)) {
                     continue;
                 }
             }
@@ -222,15 +336,25 @@ pub const MotorExecutor = struct {
         return result;
     }
 
-    fn checkCondition(self: *MotorExecutor, cond: queen_premotor.SequenceStep.Condition) bool {
-        _ = self;
-        // Simple condition checking - in full implementation, would query system state
+    /// Check a condition using cached context or custom check function
+    fn checkCondition(
+        self: *MotorExecutor,
+        cond: queen_premotor.SequenceStep.Condition,
+        custom_fn: ?queen_premotor.SequenceStep.CustomCheckFn,
+    ) bool {
         return switch (cond) {
-            .build_ok => true, // Would check actual build status
-            .tests_pass => true, // Would check actual test status
-            .farm_idle_exists => false, // Would check farm
-            .arena_exists => false, // Would check arena
-            .custom_check => false,
+            .build_ok => self.context.build_ok,
+            .tests_pass => self.context.tests_pass,
+            .farm_idle_exists => self.context.farm_idle_count > 0,
+            .arena_exists => self.context.arena_exists,
+            .custom_check => if (custom_fn) |f| f(&self.context) else false,
+            .health_critical => self.context.ouroboros_score < 50.0,
+            .health_good => self.context.ouroboros_score >= 70.0,
+            .dirty_exists => self.context.dirty_files > 0,
+            .farm_has_leaders => self.context.farm_idle_count >= 3,
+            .farm_best_ppl_good => self.context.farm_best_ppl < 10.0,
+            .arena_stale => self.context.stale_arena_hours > 24,
+            .has_uncommitted => self.context.has_uncommitted,
         };
     }
 };

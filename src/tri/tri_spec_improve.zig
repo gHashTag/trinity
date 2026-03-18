@@ -1,3 +1,4 @@
+// @origin(manual) @regen(pending)
 // Trinity Spec Improve — tri spec improve
 // Migrated from scripts/golden_seed_loop.sh, test_generated_code.sh, test_generated_code_parallel.sh
 //
