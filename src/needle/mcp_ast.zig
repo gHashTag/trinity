@@ -450,7 +450,7 @@ pub const McpServer = struct {
 /// Parse JSON-RPC request string
 pub fn parseRequest(allocator: std.mem.Allocator, json_str: []const u8) !McpRequest {
     const parsed = try std.json.parseFromSlice(std.json.Value, allocator, json_str);
-    errdefer parsed.deinit(allocator);
+    errdefer parsed.deinit();
 
     if (parsed != .object) return error.InvalidRequest;
 
