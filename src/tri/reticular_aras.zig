@@ -165,7 +165,7 @@ pub fn sweepLoop(allocator: Allocator, state: *ArasState) !void {
     // Log to hippocampus
     const data = try std.fmt.allocPrint(
         allocator,
-        "{{"sweep_num":{d},"crashed":{d},"stale":{d},"total":{d}}}",
+        "{{\\\"sweep_num\\\":{d},\\\"crashed\\\":{d},\\\"stale\\\":{d},\\\"total\\\":{d}}}",
         .{ state.sweep_count, result.crashed_workers.len, result.stale_count, result.total_services },
     );
     defer allocator.free(data);

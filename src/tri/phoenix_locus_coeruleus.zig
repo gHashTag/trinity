@@ -113,6 +113,15 @@ pub const LocusState = struct {
 /// Callback interface for sending alerts (avoids circular import)
 pub const AlertSink = *const fn(Alert, ArousalLevel) void;
 
+/// Helper: infer arousal level from alert kind
+fn inferArousal(kind: AlertKind) ArousalLevel {
+    const severity = kind.severity();
+    if (severity >= 5) return .emergency;
+    if (severity >= 4) return .alarm;
+    if (severity >= 3) return .alert;
+    return .normal;
+}
+
 /// Initialize Locus Coeruleus with alert sink
 pub fn init(sink: AlertSink) LocusState {
     return .{
