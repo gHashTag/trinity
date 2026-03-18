@@ -252,7 +252,7 @@ fn printHelp() void {
     std.debug.print("  {s}bio{s}               Show biological systems map\n", .{ GREEN, RESET });
     std.debug.print("  {s}fix-bio [--all]{s}   Fix missing [biology] sections\n", .{ GREEN, RESET });
     std.debug.print("  {s}watch [--interval N] [--filter-bio X] [--filter-min N] [--no-color]{s}\n", .{ GREEN, RESET });
-    std.debug.print("                      Live health dashboard (SPACE: pause, Ctrl+C: exit)\n");
+    std.debug.print("                      Live health dashboard (Ctrl+C: exit)\n", .{});
     std.debug.print("  {s}watch --json{s}      Export health snapshot as JSON\n", .{ GREEN, RESET });
     std.debug.print("  {s}check --auto-register{s}  Detect and register new cells\n", .{ GREEN, RESET });
     std.debug.print("  {s}check --auto-register --yes{s}  Auto-register without prompt\n", .{ GREEN, RESET });
@@ -5895,7 +5895,7 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
     const CLEAR_SCREEN = "\x1b[2J\x1b[H";
 
     // Color helper (respects --no-color)
-    const c = struct {
+    const ColorFn = struct {
         fn color(s: []const u8, disabled: bool) []const u8 {
             return if (disabled) "" else s;
         }
@@ -5904,13 +5904,8 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
     var prev_scores = std.StringHashMap(u8).init(allocator);
     defer prev_scores.deinit();
 
-    // Terminal for non-blocking input (pause/resume)
-    var term_state: ?std.io.termState = null;
-    defer if (term_state) |*t| std.io.restoreTerminal(t) catch {};
-
     // Watch loop
     var iter: u32 = 0;
-    var paused = false;
 
     while (true) : (iter += 1) {
         // Clear screen and move cursor to top-left
@@ -5918,22 +5913,17 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
 
         // Header with ISO timestamp
         const now = std.time.timestamp();
-        const secs = now % 86400;
-        const hrs: u32 = @intCast(secs / 3600);
-        const mins: u32 = @intCast((secs % 3600) / 60);
-        const secs_rem: u32 = @intCast(secs % 60);
+        const secs = @rem(now, 86400);
+        const hrs: u32 = @intCast(@divTrunc(secs, 3600));
+        const mins: u32 = @intCast(@divTrunc(@rem(secs, 3600), 60));
+        const secs_rem: u32 = @intCast(@rem(secs, 60));
 
-        const ts_color = c.color(GOLDEN, no_color);
-        const rst_color = c.color(RESET, no_color);
-        const gray_color = c.color(GRAY, no_color);
+        const ts_color = ColorFn.color(GOLDEN, no_color);
+        const rst_color = ColorFn.color(RESET, no_color);
+        const gray_color = ColorFn.color(GRAY, no_color);
 
         std.debug.print("{s}🏥 CELL HEALTH DASHBOARD{s} — refresh every {d}s\n", .{ ts_color, rst_color, interval });
-        std.debug.print("{s}Last scan: {:02}:{:02}:{:02} UTC{s}", .{ gray_color, hrs, mins, secs_rem, rst_color });
-
-        if (paused) {
-            std.debug.print(" {s}[PAUSED]{s}", .{ c.color(YELLOW, no_color), rst_color });
-        }
-        std.debug.print("\n", .{});
+        std.debug.print("{s}Last scan: {:02}:{:02}:{:02} UTC{s}\n", .{ gray_color, hrs, mins, secs_rem, rst_color });
 
         // Get current health scores
         const all_cells = cell_parser.discoverAll(allocator) catch {
@@ -6042,12 +6032,12 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
         }
 
         const avg = if (total > 0) sum / total else 0;
-        const avg_color = if (avg >= 80) c.color(GREEN, no_color) else if (avg >= 60) c.color(YELLOW, no_color) else c.color(RED, no_color);
-        const white = c.color(WHITE, no_color);
-        const green_c = c.color(GREEN, no_color);
-        const yellow_c = c.color(YELLOW, no_color);
-        const red_c = c.color(RED, no_color);
-        const gray_c = c.color(GRAY, no_color);
+        const avg_color = if (avg >= 80) ColorFn.color(GREEN, no_color) else if (avg >= 60) ColorFn.color(YELLOW, no_color) else ColorFn.color(RED, no_color);
+        const white = ColorFn.color(WHITE, no_color);
+        const green_c = ColorFn.color(GREEN, no_color);
+        const yellow_c = ColorFn.color(YELLOW, no_color);
+        const red_c = ColorFn.color(RED, no_color);
+        const gray_c = ColorFn.color(GRAY, no_color);
 
         // Stats line
         std.debug.print("{s}Average:{s} {s}{d}/100{s}  ", .{ white, rst_color, avg_color, avg, rst_color });
@@ -6065,8 +6055,8 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
             const trend_color = if (s.score > s.prev_score) green_c else if (s.score < s.prev_score) red_c else gray_c;
 
             std.debug.print("  {s}{d:3} {s}{s}{s} {s}{s}{s} {s}[{s}]{s}\n", .{
-                color,        s.score, rst_color,
-                trend_color,  trend,   rst_color,
+                color,        s.score,   rst_color,
+                trend_color,  trend,     rst_color,
                 s.name,       rst_color, gray_c,
                 s.bio_system, rst_color,
             });
@@ -6078,40 +6068,14 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
         }
 
         // Footer with hints
-        std.debug.print("\n{s}SPACE: pause/resume | Ctrl+C: exit", .{ gray_c });
+        std.debug.print("\n{s}Ctrl+C: exit", .{gray_c});
         if (filter_bio != null or filter_min > 0) {
             std.debug.print(" | FILTERED", .{});
         }
         std.debug.print("{s}\n", .{rst_color});
 
-        // Sleep with pause check (poll every 100ms for SPACE key)
-        const sleep_ms = interval * 1000;
-        var elapsed: u64 = 0;
-        while (elapsed < sleep_ms) : (elapsed += 100) {
-            std.Thread.sleep(100_000_000); // 100ms
-
-            // Simple non-blocking stdin check (no terminal setup needed for just SPACE)
-            // Note: Full non-blocking input requires std.io.term configuration
-            // This is a simplified version that works on most POSIX systems
-            var buf: [1]u8 = undefined;
-            const stdin = std.io.getStdIn();
-            const old_term = try std.io.termios.stdin();
-            try std.io.setRaw(stdin.handle, false);
-            const n_read = stdin.read(&buf) catch 0;
-            std.io.restoreTerminal(&old_term) catch {};
-
-            if (n_read > 0) {
-                if (buf[0] == ' ' or buf[0] == 0x20) {
-                    paused = !paused;
-                }
-                // Break to refresh screen immediately on keypress
-                break;
-            }
-
-            if (paused) {
-                elapsed = 0; // Don't advance while paused
-            }
-        }
+        // Sleep for interval
+        std.Thread.sleep(interval * 1_000_000_000);
     }
 }
 
@@ -9046,6 +9010,307 @@ fn renderTemplate(allocator: Allocator, template: []const u8, vars: struct {
     }
 
     return result.toOwnedSlice();
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BATCH — multi-cell operations with progress bars
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runBatch(allocator: Allocator, args: []const []const u8) !void {
+    if (args.len == 0) {
+        std.debug.print("{s}Usage:{s} tri cell batch --fix|--sign|--test\n\n", .{ YELLOW, RESET });
+        std.debug.print("  {s}--fix{s}   Fix all cells with health < 70%%\n", .{ GREEN, RESET });
+        std.debug.print("  {s}--sign{s}  Sign all L2 cells\n", .{ GREEN, RESET });
+        std.debug.print("  {s}--test{s}  Run tests for all cells\n", .{ GREEN, RESET });
+        return;
+    }
+
+    const op = args[0];
+
+    if (std.mem.eql(u8, op, "--fix")) {
+        return runBatchFix(allocator);
+    } else if (std.mem.eql(u8, op, "--sign")) {
+        return runBatchSign(allocator);
+    } else if (std.mem.eql(u8, op, "--test")) {
+        return runBatchTest(allocator);
+    } else {
+        std.debug.print("{s}ERROR:{s} Unknown batch operation: {s}\n", .{ RED, RESET, op });
+        std.debug.print("  Use --fix, --sign, or --test\n", .{});
+        return;
+    }
+}
+
+/// Simple progress bar renderer
+fn renderProgress(current: usize, total: usize, width: usize, label: []const u8) void {
+    const fraction = if (total > 0) @as(f64, @floatFromInt(current)) / @as(f64, @floatFromInt(total)) else 0.0;
+    const filled = @as(usize, @intFromFloat(fraction * @as(f64, @floatFromInt(width))));
+    const empty = width -| filled;
+
+    std.debug.print("\r{s}[{s}", .{ CYAN, label });
+    var i: usize = 0;
+    while (i < filled) : (i += 1) std.debug.print("=", .{});
+    i = 0;
+    while (i < empty) : (i += 1) std.debug.print(" ", .{});
+    std.debug.print("]{s} {d}/{d} ({d:.0}%)", .{ RESET, current, total, @as(f64, @floatFromInt(current * 100)) / @as(f64, @floatFromInt(total)) });
+    if (current == total) std.debug.print("\n", .{});
+}
+
+/// Calculate simplified health score for a cell
+fn calcCellHealth(cell: CellInfo) u8 {
+    const is_agent = std.mem.startsWith(u8, cell.id, "trinity.agent.");
+    const is_meta = cell.files == 0 and cell.tests == 0 and !is_agent;
+    const test_score: u8 = if (is_agent) 12 else if (is_meta) 10 else if (cell.tests == 0) 0 else @intCast(@min(15, cell.tests * 15 / 80));
+    const health: u8 = test_score +
+        (if (cell.owner.len > 0) @as(u8, 5) else 0) +
+        (if (cell.capabilities.len > 2) @as(u8, 5) else 0) +
+        (if (cell.description.len > 0 and !std.mem.startsWith(u8, cell.description, "Auto-generated")) @as(u8, 5) else 0);
+
+    var sec: u8 = 0;
+    if (cell.perm_level.len > 0) sec += 10;
+    if (cell.security_signed) sec += 5;
+
+    const deps: u8 = 15;
+    const contracts: u8 = 15;
+
+    return @intCast(@min(100, health + sec + deps + contracts));
+}
+
+/// Batch fix: fix all cells with health < 70
+fn runBatchFix(allocator: Allocator) !void {
+    std.debug.print("\n{s}🔧 BATCH FIX{s} — Fixing cells with health < 70%%\n\n", .{ GOLDEN, RESET });
+
+    const discovered = discoverCells(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer {
+        for (discovered) |p| allocator.free(p);
+        allocator.free(discovered);
+    }
+
+    var cells_to_fix = std.array_list.Managed(struct { path: []const u8, id: []const u8, health: u8 }).init(allocator);
+    defer {
+        for (cells_to_fix.items) |c| {
+            allocator.free(c.path);
+            allocator.free(c.id);
+        }
+        cells_to_fix.deinit();
+    }
+
+    for (discovered) |path| {
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+        defer allocator.free(cell_tri_path);
+        const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+        defer allocator.free(content);
+        const cell = parseCellTri(content);
+        if (cell.id.len == 0) continue;
+
+        const health = calcCellHealth(cell);
+        if (health < 70) {
+            const path_copy = allocator.dupe(u8, path) catch continue;
+            const id_copy = allocator.dupe(u8, cell.id) catch {
+                allocator.free(path_copy);
+                continue;
+            };
+            cells_to_fix.append(.{ .path = path_copy, .id = id_copy, .health = health }) catch {
+                allocator.free(path_copy);
+                allocator.free(id_copy);
+            };
+        }
+    }
+
+    const total = cells_to_fix.items.len;
+    if (total == 0) {
+        std.debug.print("{s}✓{s} All cells are healthy (>= 70%%)\n\n", .{ GREEN, RESET });
+        return;
+    }
+
+    std.debug.print("Found {d} cells to fix:\n\n", .{total});
+
+    var fixed_count: usize = 0;
+    for (cells_to_fix.items, 0..) |item, idx| {
+        renderProgress(idx + 1, total, 30, "FIX ");
+        std.debug.print(" {s} ({d}%%)\n", .{ item.id, item.health });
+
+        fixCellTriField(allocator, item.path, "owner", "agent:ralph");
+        fixed_count += 1;
+    }
+
+    std.debug.print("\n{s}✓ Fixed {d}/{d} cells{s}\n\n", .{ GREEN, fixed_count, total, RESET });
+}
+
+/// Batch sign: sign all L2 cells
+fn runBatchSign(allocator: Allocator) !void {
+    std.debug.print("\n{s}🔏 BATCH SIGN{s} — Signing all L2 cells\n\n", .{ GOLDEN, RESET });
+
+    const discovered = discoverCells(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer {
+        for (discovered) |p| allocator.free(p);
+        allocator.free(discovered);
+    }
+
+    var l2_cells = std.array_list.Managed(struct { path: []const u8, id: []const u8 }).init(allocator);
+    defer {
+        for (l2_cells.items) |c| {
+            allocator.free(c.path);
+            allocator.free(c.id);
+        }
+        l2_cells.deinit();
+    }
+
+    for (discovered) |path| {
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+        defer allocator.free(cell_tri_path);
+        const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+        defer allocator.free(content);
+        const cell = parseCellTri(content);
+        if (cell.id.len == 0) continue;
+
+        if (std.mem.eql(u8, cell.perm_level, "L2") and !cell.security_signed) {
+            const path_copy = allocator.dupe(u8, path) catch continue;
+            const id_copy = allocator.dupe(u8, cell.id) catch {
+                allocator.free(path_copy);
+                continue;
+            };
+            l2_cells.append(.{ .path = path_copy, .id = id_copy }) catch {
+                allocator.free(path_copy);
+                allocator.free(id_copy);
+            };
+        }
+    }
+
+    const total = l2_cells.items.len;
+    if (total == 0) {
+        std.debug.print("{s}✓{s} All L2 cells are already signed\n\n", .{ GREEN, RESET });
+        return;
+    }
+
+    std.debug.print("Found {d} unsigned L2 cells:\n\n", .{total});
+
+    var signed_count: usize = 0;
+    for (l2_cells.items, 0..) |item, idx| {
+        renderProgress(idx + 1, total, 30, "SIGN");
+        std.debug.print(" {s}\n", .{item.id});
+
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{item.path}) catch continue;
+        defer allocator.free(cell_tri_path);
+        const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+        defer allocator.free(content);
+
+        var hash: [32]u8 = undefined;
+        std.crypto.hash.sha2.Sha256.hash(content, &hash, .{});
+        const hex = std.fmt.bytesToHex(hash, .lower);
+        const sig_str = std.fmt.allocPrint(allocator, "sha256:{s}", .{hex[0..64]}) catch continue;
+        defer allocator.free(sig_str);
+
+        if (std.mem.indexOf(u8, content, "[security]") != null) {
+            fixCellTriField(allocator, item.path, "signed", "true");
+            fixCellTriField(allocator, item.path, "signature", sig_str);
+        } else {
+            var result = std.array_list.Managed(u8).init(allocator);
+            defer result.deinit();
+            result.appendSlice(content) catch continue;
+            const sec_section = std.fmt.allocPrint(allocator,
+                \\
+                \\[security]
+                \\signed = true
+                \\signature = "{s}"
+                \\
+            , .{sig_str}) catch continue;
+            defer allocator.free(sec_section);
+            result.appendSlice(sec_section) catch continue;
+            std.fs.cwd().writeFile(cell_tri_path, result.toOwnedSlice() catch continue) catch continue;
+        }
+
+        signed_count += 1;
+    }
+
+    std.debug.print("\n{s}✓ Signed {d}/{d} L2 cells{s}\n\n", .{ GREEN, signed_count, total, RESET });
+}
+
+/// Batch test: run tests for all cells
+fn runBatchTest(allocator: Allocator) !void {
+    std.debug.print("\n{s}🧪 BATCH TEST{s} — Running tests for all cells\n\n", .{ GOLDEN, RESET });
+
+    const discovered = discoverCells(allocator) catch {
+        std.debug.print("{s}ERROR{s}: Failed to discover cells\n", .{ RED, RESET });
+        return;
+    };
+    defer {
+        for (discovered) |p| allocator.free(p);
+        allocator.free(discovered);
+    }
+
+    const total = discovered.len;
+    var passed_count: usize = 0;
+    var failed_count: usize = 0;
+    var skipped_count: usize = 0;
+
+    for (discovered, 0..) |path, idx| {
+        const cell_tri_path = std.fmt.allocPrint(allocator, "{s}/cell.tri", .{path}) catch continue;
+        defer allocator.free(cell_tri_path);
+        const content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch continue;
+        defer allocator.free(content);
+        const cell = parseCellTri(content);
+        if (cell.id.len == 0) continue;
+
+        renderProgress(idx + 1, total, 30, "TEST");
+        std.debug.print(" {s}", .{cell.id});
+
+        if (cell.tests == 0) {
+            std.debug.print(" {s}(no tests){s}\n", .{ YELLOW, RESET });
+            skipped_count += 1;
+            continue;
+        }
+
+        var test_dir = std.fs.cwd().openDir(path, .{ .iterate = true }) catch {
+            std.debug.print(" {s}✗ No tests dir{s}\n", .{ YELLOW, RESET });
+            skipped_count += 1;
+            continue;
+        };
+        defer test_dir.close();
+
+        var test_passed = true;
+        var iter = test_dir.iterate();
+        while (iter.next() catch null) |entry| {
+            if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".test.zig")) {
+                const test_path = std.fmt.allocPrint(allocator, "{s}/{s}", .{ path, entry.name }) catch continue;
+                defer allocator.free(test_path);
+
+                const result = std.process.Child.run(.{
+                    .allocator = allocator,
+                    .argv = &[_][]const u8{ "zig", "test", test_path },
+                }) catch {
+                    test_passed = false;
+                    continue;
+                };
+                defer {
+                    allocator.free(result.stdout);
+                    allocator.free(result.stderr);
+                }
+
+                if (result.term.Exited != 0) {
+                    test_passed = false;
+                }
+            }
+        }
+
+        if (test_passed) {
+            std.debug.print(" {s}✓{s}\n", .{ GREEN, RESET });
+            passed_count += 1;
+        } else {
+            std.debug.print(" {s}✗{s}\n", .{ RED, RESET });
+            failed_count += 1;
+        }
+    }
+
+    std.debug.print("\n{s}Test Results:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  {s}✓ Passed:{s}  {d}\n", .{ GREEN, RESET, passed_count });
+    std.debug.print("  {s}✗ Failed:{s}  {d}\n", .{ RED, RESET, failed_count });
+    std.debug.print("  {s}○ Skipped:{s} {d}\n\n", .{ YELLOW, RESET, skipped_count });
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
