@@ -1,0 +1,37 @@
+[cell]
+id = "trinity.tri.formulas"
+name = "Formula Discovery"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "experimental"
+description = "Mathematical formula discovery and evaluation engines"
+capabilities = ["formulas", "discovery"]
+tests = 22
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "domain"
+
+[source]
+file_patterns = ["formula_*.zig", "math_formula.zig", "gematria.zig"]
+
+[contributes]
+commands = ["formula"]
+exports = ["glyphToValue", "glyphToIndex", "textToGematriaValue", "textToGlyphs", "numberToGlyphs"]
+
+[dependencies]
+
+[permissions]
+level = "L1"
+filesystem = "write"
+network = "none"
+process = "none"
+
+ffi = "none"
+concurrency = "none"
+[security]
+signed = true
+signature = "sha256:0433a0b51f3a6903a307b8dffae16a26905b6b41b69e9e75ea693497d0e1f3f4"

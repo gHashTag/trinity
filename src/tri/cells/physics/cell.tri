@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.tri.physics"
+name = "Sacred Physics"
+version = "1.0.0"
+kind = "virtual-sub"
+path = "src/tri"
+parent = "trinity.tri"
+status = "experimental"
+description = "Physics domains: gravity, quantum, dark matter, vacuum, monopoles, superconductivity, cosmological arrow"
+capabilities = ["gravity", "quantum", "dark_matter", "vacuum"]
+tests = 35
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "domain"
+
+[source]
+file_patterns = ["tri_gravity.zig", "tri_quantum*.zig", "tri_dark_matter.zig", "tri_vacuum.zig", "tri_monopoles.zig", "tri_superconductivity.zig", "tri_flatness.zig", "tri_baryogenesis.zig", "tri_life.zig", "tri_arrow_time.zig", "tri_measurement.zig", "tri_music.zig"]
+
+[contributes]
+exports = ["runLifeCommand", "vacuumEnergyDensity", "zeroPointEnergy", "higgsVev", "consciousnessCoupling"]
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+
+ffi = "none"
+concurrency = "none"
+[security]
+signed = true
+signature = "sha256:f1fe3c72debbda919d9b762227eefcf7f18aaf211839e11d9064c09da732cb70"
