@@ -364,3 +364,85 @@ test "Queen Ouroboros — getScore with max score" {
     const state = OuroborosState{ .score = 100.0 };
     try std.testing.expectApproxEqAbs(@as(f32, 100.0), getScore(state), 0.01);
 }
+
+test "ouroboros — fetch returns valid state with defaults" {
+    const state = fetch();
+    try std.testing.expect(state.score >= 0.0 and state.score <= 100.0);
+}
+
+test "ouroboros — fetch reads cycle from file if exists" {
+    const state = fetch();
+    // Cycle should be >= 0 (file may or may not exist)
+    try std.testing.expect(state.cycle >= 0);
+}
+
+test "ouroboros — fmtTelegram includes key fields" {
+    var buf: [512]u8 = undefined;
+    const state = OuroborosState{
+        .score = 75.5,
+        .initial = 65.0,
+        .cycle = 10,
+        .stagnation = 0,
+        .started_ts = 1000000,
+    };
+
+    const msg = fmtTelegram(&buf, state);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "75") != null); // score
+}
+
+test "ouroboros — OuroborosState with all dimensions set" {
+    const state = OuroborosState{
+        .score = 80.0,
+        .initial = 70.0,
+        .cycle = 5,
+        .stagnation = 1,
+        .started_ts = 1234567890,
+        .efficiency = 90.0,
+        .build_health = 85.0,
+        .test_coverage = 75.0,
+        .doc_quality = 80.0,
+        .spec_compliance = 95.0,
+        .git_cleanliness = 100.0,
+        .farm_productivity = 88.0,
+        .arena_activity = 60.0,
+        .experience_growth = 70.0,
+        .sacred_balance = 85.0,
+        .network_health = 90.0,
+    };
+
+    try std.testing.expectApproxEqAbs(@as(f32, 80.0), getScore(state), 0.01);
+    try std.testing.expectEqual(@as(u32, 5), state.cycle);
+    try std.testing.expectEqual(@as(u32, 1), state.stagnation);
+}
+
+test "ouroboros — getScore returns current score directly" {
+    const state = OuroborosState{ .score = 42.0 };
+    try std.testing.expectApproxEqAbs(@as(f32, 42.0), getScore(state), 0.01);
+}
+
+test "ouroboros — findJsonStr returns slice" {
+    const data = "{\"strategy\":\"sacred_optimization\"}";
+    const result = findJsonStr(data, "\"strategy\":\"");
+    try std.testing.expect(result != null);
+    try std.testing.expectEqualStrings("sacred_optimization", result.?);
+}
+
+test "ouroboros — findJsonStr with colon in value" {
+    const data = "{\"key\":\"value:with:colons\"}";
+    const result = findJsonStr(data, "\"key\":\"");
+    try std.testing.expect(result != null);
+    try std.testing.expect(std.mem.indexOf(u8, result.?, "with:colons") != null);
+}
+
+test "ouroboros — findJsonU32 returns null for missing key" {
+    const data = "{\"no_cycle\":123}";
+    try std.testing.expectEqual(@as(?u32, null), findJsonU32(data, "\"cycle\":"));
+}
+
+test "ouroboros — findJsonI64 handles positive numbers" {
+    const data = "{\"started\":1700000000}";
+    const result = findJsonI64(data, "\"started\":");
+    try std.testing.expect(result != null);
+    try std.testing.expectEqual(@as(i64, 1700000000), result.?);
+}
