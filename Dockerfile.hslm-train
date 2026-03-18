@@ -23,10 +23,8 @@ RUN echo "d7d358e80071d0d5da102492759f913b5ce25914748afa660192ba233b448e20  /usr
     && chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
 # /data is Railway persistent volume mount point
-# Download training data at build time (25MB)
+# Data downloaded at runtime by entrypoint if needed
 RUN mkdir -p /data/tinystories /data/checkpoints
-RUN wget -q -O /data/tinystories/train_100k.txt \
-    https://raw.githubusercontent.com/gHashTag/trinity/main/data/tinystories/train_100k.txt
 
 WORKDIR /data
 
