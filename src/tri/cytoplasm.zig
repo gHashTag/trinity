@@ -5787,14 +5787,22 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
 
     // Watch loop
     var iter: u32 = 0;
+    const start_time = std.time.timestamp();
     while (true) : (iter += 1) {
         // Clear screen and move cursor to top-left
         std.debug.print("{s}", .{CLEAR_SCREEN});
 
-        // Header
+        // Header with formatted timestamp
         const timestamp = std.time.timestamp();
+        const elapsed = timestamp - start_time;
+
+        // Format elapsed time as H:MM:SS
+        const hours = @divTrunc(elapsed, 3600);
+        const mins = @divTrunc(@rem(elapsed, 3600), 60);
+        const secs = @rem(elapsed, 60);
+
         std.debug.print("{s}🏥 CELL HEALTH DASHBOARD{s} — refresh every {d}s\n", .{ GOLDEN, RESET, interval });
-        std.debug.print("{s}Last scan: {d}{s}\n\n", .{ GRAY, timestamp, RESET });
+        std.debug.print("{s}Scan: {d}  |  Iteration: {d}  |  Uptime: {d}:{d:0>2}:{d:0>2}{s}\n\n", .{ GRAY, timestamp, iter + 1, hours, mins, secs, RESET });
 
         // Get current health scores
         const all_cells = cell_parser.discoverAll(allocator) catch {
@@ -5895,14 +5903,22 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
         const avg = if (total > 0) sum / total else 0;
         const avg_color = if (avg >= 80) GREEN else if (avg >= 60) YELLOW else RED;
 
-        // Stats line
-        std.debug.print("{s}Average:{s} {s}{d}/100{s}  ", .{ WHITE, RESET, avg_color, avg, RESET });
-        std.debug.print("{s}A:{d}{s} {s}B:{d}{s} {s}C:{d}{s} {s}F:{d}{s}\n\n", .{
+        // Stats line with total cells
+        std.debug.print("{s}Cells: {d}{s}  {s}Average:{s} {s}{d}/100{s}  ", .{ GRAY, total, RESET, WHITE, RESET, avg_color, avg, RESET });
+        std.debug.print("{s}A:{d}{s} {s}B:{d}{s} {s}C:{d}{s} {s}F:{d}{s}\n", .{
             GREEN, grade_a, RESET, YELLOW, grade_b, RESET, YELLOW, grade_c, RESET, RED, grade_f, RESET,
         });
 
+        // Best cell (reverse sort for top)
+        if (snapshots.items.len > 0) {
+            const best = snapshots.items[snapshots.items.len - 1];
+            std.debug.print("\n{s}⭐ BEST CELL{s}  {s}{d}{s}  {s}{s}{s} {s}[{s}]{s}\n", .{
+                GREEN, RESET, GOLDEN, best.score, RESET, WHITE, best.name, RESET, GRAY, best.bio_system, RESET,
+            });
+        }
+
         // Top 5 worst cells
-        std.debug.print("{s}⚠️  TOP 5 WORST CELLS{s}\n\n", .{ RED, RESET });
+        std.debug.print("\n{s}⚠️  TOP 5 WORST CELLS{s}\n\n", .{ RED, RESET });
 
         const show_count = @min(5, snapshots.items.len);
         for (snapshots.items[0..show_count]) |s| {
@@ -5923,8 +5939,10 @@ fn runWatch(allocator: Allocator, args: []const []const u8) !void {
             }
         }
 
-        // Footer
-        std.debug.print("\n{s}Press Ctrl+C to exit | Next scan in {d}s...{s}", .{ GRAY, interval, RESET });
+        // Footer with helpful info
+        std.debug.print("\n{s}────────────────────────────────────────────────────────────{s}\n", .{ GRAY, RESET });
+        std.debug.print("{s}tri cell fix <id>{s} to repair  {s}tri cell watch --json{s} for API  ", .{ YELLOW, RESET, CYAN, RESET });
+        std.debug.print("{s}Next scan in {d}s...{s}", .{ GRAY, interval, RESET });
 
         // Sleep for interval (use non-blocking sleep)
         std.Thread.sleep(interval * 1_000_000_000); // interval in nanoseconds
