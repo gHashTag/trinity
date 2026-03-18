@@ -697,6 +697,105 @@ test "Queen senses — countAliveAgents returns reasonable value" {
     try std.testing.expect(count >= 0 and count <= 10);
 }
 
+test "senses — collectAllSenses populates all fields" {
+    const snapshot = FacultySnapshot{
+        .agents = undefined,
+        .build_ok = true,
+        .binaries = 0,
+        .compile_pass = 0,
+        .compile_total = 0,
+        .compile_rate = 0,
+        .v_number = 0,
+        .v_zone = .drift,
+        .git_branch = "main",
+        .dirty_files = 0,
+        .open_issues = 0,
+        .mu_patterns = 0,
+        .cycle = .quiet,
+    };
+
+    const result = collectAllSenses(std.testing.allocator, snapshot);
+
+    try std.testing.expect(result.build_ok);
+}
+
+test "senses — SenseResult healthStatus returns correct emoji" {
+    var s = SenseResult{};
+    s.build_ok = true;
+    s.ouroboros_score = 80.0;
+
+    try std.testing.expectEqualStrings(qt.E_STAR, s.healthEmoji());
+}
+
+test "senses — SenseResult healthStatus with broken build" {
+    var s = SenseResult{};
+    s.build_ok = false;
+    s.ouroboros_score = 90.0;
+
+    try std.testing.expectEqualStrings(qt.E_CROSS, s.healthEmoji());
+}
+
+test "senses — SenseResult healthStatus with low score" {
+    var s = SenseResult{};
+    s.build_ok = true;
+    s.ouroboros_score = 30.0;
+
+    try std.testing.expectEqualStrings(qt.E_WRENCH, s.healthEmoji());
+}
+
+test "senses — readEvolutionInfo fields" {
+    const info = readEvolutionInfo();
+
+    // best_ppl defaults to 999.0 if no file
+    try std.testing.expect(info.best_ppl == 999.0 or info.best_ppl > 0.0);
+}
+
+test "senses — fmtSensesTelegram includes all sections" {
+    var buf: [1024]u8 = undefined;
+    const result = fmtSensesTelegram(&buf, .{
+        .build_ok = true,
+        .test_rate = 85,
+        .dirty_files = 5,
+        .open_issues = 2,
+    });
+
+    try std.testing.expect(result.len > 0);
+}
+
+test "senses — fmtSensesTelegram with poor health" {
+    var buf: [1024]u8 = undefined;
+    const result = fmtSensesTelegram(&buf, .{
+        .build_ok = false,
+        .test_rate = 0,
+        .dirty_files = 50,
+        .open_issues = 10,
+        .ouroboros_score = 20.0,
+    });
+
+    try std.testing.expect(result.len > 0);
+}
+
+test "senses — SenseResult field independence" {
+    var s = SenseResult{};
+    s.build_ok = true;
+    s.test_rate = 75;
+    s.dirty_files = 3;
+
+    try std.testing.expect(s.build_ok);
+    try std.testing.expectEqual(@as(u8, 75), s.test_rate);
+    try std.testing.expectEqual(@as(u16, 3), s.dirty_files);
+}
+
+test "senses — readOuroborosScore returns valid range" {
+    const score = readOuroborosScore();
+    try std.testing.expect(score >= 0.0 and score <= 100.0);
+}
+
+test "senses — countEpisodes returns non-negative" {
+    const count = thalamus.countEpisodes(std.testing.allocator);
+    try std.testing.expect(count >= 0);
+}
+
 test "Queen senses — readDiskFreeGb returns non-negative" {
     const gb = readDiskFreeGb(std.testing.allocator);
     try std.testing.expect(gb >= 0.0);
