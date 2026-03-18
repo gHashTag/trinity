@@ -84,30 +84,51 @@ pub fn runFarmStatus(allocator: Allocator, idle_only: bool) !void {
     var total_active: usize = 0;
     var total_idle: usize = 0;
     var total_crashed: usize = 0;
+    var accounts_responsive: u8 = 0;
 
     var acct_buf: [farm_accounts_mod.MAX_ACCOUNTS]Account = undefined;
     const acct_count = farm_accounts_mod.discoverAccounts(allocator, &acct_buf);
     defer farm_accounts_mod.deinitAccounts(allocator, &acct_buf, acct_count);
+    defer deinitHealthCache(allocator);
     if (acct_count == 0) {
         print("{s}⚠️  No Railway accounts found. Set RAILWAY_API_TOKEN in .env{s}\n", .{ YELLOW, RESET });
         return;
     }
 
     for (acct_buf[0..acct_count]) |acct| {
+        print("{s}=== {s} ==={s}\n", .{ BOLD, acct.name, RESET });
+
+        // Check health cache for dead accounts
+        if (shouldSkipAccount(allocator, acct.name)) {
+            const health = getHealthInfo(allocator, acct.name);
+            const elapsed_min = @divTrunc(health.elapsed, @as(i64, 60));
+            print("  {s}⚠️  SKIP (Not Authorized, last checked {d}m ago){s}\n\n", .{ YELLOW, elapsed_min, RESET });
+            continue;
+        }
+
         var api = RailwayApi.initWithSuffix(allocator, acct.suffix) catch |err| {
-            print("{s}=== {s} ==={s}\n", .{ BOLD, acct.name, RESET });
-            print("  {s}⚠️  No token ({s} error){s}\n\n", .{ YELLOW, @errorName(err), RESET });
+            const health_info = getHealthInfo(allocator, acct.name);
+            if (health_info.status == .dead) {
+                const elapsed_min = @divTrunc(health_info.elapsed, @as(i64, 60));
+                print("  {s}⚠️  SKIP (Not Authorized, last checked {d}m ago){s}\n\n", .{ YELLOW, elapsed_min, RESET });
+            } else {
+                print("  {s}⚠️  No token ({s}){s}\n\n", .{ YELLOW, @errorName(err), RESET });
+                updateAccountHealth(allocator, acct.name, err) catch {};
+            }
             continue;
         };
         defer api.deinit();
 
-        print("{s}=== {s} ==={s}\n", .{ BOLD, acct.name, RESET });
-
         const resp = api.getServiceInstances(acct.env_id) catch |err| {
-            print("  {s}⚠️  API error: {s}{s}\n\n", .{ RED, @errorName(err), RESET });
+            print("  {s}⚠️  API error: {s} (skipped){s}\n\n", .{ RED, @errorName(err), RESET });
+            updateAccountHealth(allocator, acct.name, err) catch {};
             continue;
         };
         defer allocator.free(resp);
+
+        // Mark account as alive on successful API call
+        markAccountAlive(allocator, acct.name) catch {};
+        accounts_responsive += 1;
 
         const parsed = std.json.parseFromSlice(std.json.Value, allocator, resp, .{}) catch {
             print("  {s}⚠️  Invalid JSON response{s}\n\n", .{ RED, RESET });
@@ -187,8 +208,8 @@ pub fn runFarmStatus(allocator: Allocator, idle_only: bool) !void {
     }
 
     print("{s}════════════════════════════════════════════════════════════{s}\n", .{ DIM, RESET });
-    print("{s}TOTAL: {d} services | 🟢 {d} active | 💤 {d} idle | 🔴 {d} crashed{s}\n\n", .{
-        BOLD, total_services, total_active, total_idle, total_crashed, RESET,
+    print("{s}TOTAL: {d} services | 🟢 {d} active | 💤 {d} idle | 🔴 {d} crashed | {d}/{d} accounts responsive{s}\n\n", .{
+        BOLD, total_services, total_active, total_idle, total_crashed, accounts_responsive, acct_count, RESET,
     });
 }
 
@@ -759,6 +780,226 @@ const DAEMON_LOG_FILE = ".trinity/farm/watch_daemon.jsonl";
 const DAEMON_INTERVAL_SEC: u32 = 300; // 5 minutes
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// ACCOUNT HEALTH CACHE — Graceful degradation for dead accounts
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const ACCOUNT_HEALTH_FILE = ".trinity/farm/account_health.json";
+const DEAD_ACCOUNT_RETRY_SEC = 1800; // 30 minutes before retrying dead accounts
+
+const AccountStatus = enum { alive, dead, unknown };
+
+const AccountHealth = struct {
+    status: AccountStatus,
+    last_check: i64,
+    last_error: []const u8,
+};
+
+var health_cache: std.StringHashMap(AccountHealth) = undefined;
+var health_cache_initialized = false;
+
+/// Load health cache from disk (called once on first use)
+fn initHealthCache(allocator: Allocator) !void {
+    if (health_cache_initialized) return;
+
+    health_cache = std.StringHashMap(AccountHealth).init(allocator);
+
+    const file = std.fs.cwd().openFile(ACCOUNT_HEALTH_FILE, .{}) catch |err| {
+        if (err == error.FileNotFound) {
+            // No cache yet — start fresh
+            health_cache_initialized = true;
+            return;
+        }
+        return err;
+    };
+    defer file.close();
+
+    const contents = file.readToEndAlloc(allocator, 64 * 1024) catch |err| {
+        if (err == error.IsDir) {
+            // Corrupted state — directory instead of file
+            health_cache_initialized = true;
+            return;
+        }
+        return err;
+    };
+    defer allocator.free(contents);
+
+    const parsed = std.json.parseFromSlice(std.json.Value, allocator, contents, .{}) catch {
+        // Invalid JSON — start fresh
+        health_cache_initialized = true;
+        return;
+    };
+    defer parsed.deinit();
+
+    if (parsed.value != .object) return;
+
+    var iter = parsed.value.object.iterator();
+    while (iter.next()) |entry| {
+        const acct_name = entry.key_ptr.*;
+        const val = entry.value_ptr.*;
+
+        if (val != .object) continue;
+
+        const status_str = getJsonString(val, "status");
+        const last_check = getJsonObject(val, "last_check") orelse continue;
+        if (last_check != .integer) continue;
+
+        const last_error_str = getJsonString(val, "last_error");
+
+        const status: AccountStatus = if (std.mem.eql(u8, status_str, "alive"))
+            .alive
+        else if (std.mem.eql(u8, status_str, "dead"))
+            .dead
+        else
+            .unknown;
+
+        // Clone strings for persistent storage
+        const name_copy = allocator.dupe(u8, acct_name) catch continue;
+        const err_copy = allocator.dupe(u8, last_error_str) catch {
+            allocator.free(name_copy);
+            continue;
+        };
+
+        try health_cache.put(name_copy, .{
+            .status = status,
+            .last_check = @intCast(last_check.integer),
+            .last_error = err_copy,
+        });
+    }
+
+    health_cache_initialized = true;
+}
+
+/// Save health cache to disk
+fn saveHealthCache(allocator: Allocator) !void {
+    var json_buf = try std.ArrayList(u8).initCapacity(allocator, 1024);
+    defer json_buf.deinit(allocator);
+
+    try json_buf.append(allocator, '{');
+
+    var iter = health_cache.iterator();
+    var first = true;
+    while (iter.next()) |entry| {
+        if (!first) try json_buf.append(allocator, ',');
+        first = false;
+
+        const acct = entry.key_ptr.*;
+        const health = entry.value_ptr.*;
+
+        const status_str = switch (health.status) {
+            .alive => "alive",
+            .dead => "dead",
+            .unknown => "unknown",
+        };
+
+        try json_buf.writer(allocator).print(
+            \\"{s}":{{"status":"{s}","last_check":{d},"last_error":"{s}"}}
+        , .{ acct, status_str, health.last_check, health.last_error });
+    }
+
+    try json_buf.append(allocator, '}');
+
+    const dir = std.fs.path.dirname(ACCOUNT_HEALTH_FILE) orelse ".";
+    std.fs.cwd().makePath(dir) catch {};
+
+    const file = try std.fs.cwd().createFile(ACCOUNT_HEALTH_FILE, .{});
+    defer file.close();
+    try file.writeAll(json_buf.items);
+}
+
+/// Update account health status after API call
+fn updateAccountHealth(allocator: Allocator, acct_name: []const u8, err: anyerror) !void {
+    try initHealthCache(allocator);
+
+    const now = std.time.timestamp();
+    const err_name = @errorName(err);
+
+    const status: AccountStatus = if (err == error.NotAuthorized or err == error.ConnectionFailed)
+        .dead
+    else
+        .unknown;
+
+    // Free old value if exists
+    if (health_cache.get(acct_name)) |old| {
+        allocator.free(old.last_error);
+    }
+
+    // Clone strings for storage
+    const name_copy = try allocator.dupe(u8, acct_name);
+    const err_copy = try allocator.dupe(u8, err_name);
+
+    try health_cache.put(name_copy, .{
+        .status = status,
+        .last_check = now,
+        .last_error = err_copy,
+    });
+
+    try saveHealthCache(allocator);
+}
+
+/// Mark account as alive after successful API call
+fn markAccountAlive(allocator: Allocator, acct_name: []const u8) !void {
+    try initHealthCache(allocator);
+
+    const now = std.time.timestamp();
+
+    // Free old value if exists
+    if (health_cache.get(acct_name)) |old| {
+        allocator.free(old.last_error);
+    }
+
+    const name_copy = try allocator.dupe(u8, acct_name);
+    const err_copy = try allocator.dupe(u8, "");
+
+    try health_cache.put(name_copy, .{
+        .status = .alive,
+        .last_check = now,
+        .last_error = err_copy,
+    });
+
+    try saveHealthCache(allocator);
+}
+
+/// Check if account should be skipped (dead + recent check)
+fn shouldSkipAccount(allocator: Allocator, acct_name: []const u8) bool {
+    initHealthCache(allocator) catch return false;
+
+    const health = health_cache.get(acct_name) orelse return false;
+    if (health.status != .dead) return false;
+
+    const now = std.time.timestamp();
+    const elapsed = now - health.last_check;
+
+    // Retry dead accounts after DEAD_ACCOUNT_RETRY_SEC (30 minutes)
+    return elapsed < DEAD_ACCOUNT_RETRY_SEC;
+}
+
+/// Get health info for display
+fn getHealthInfo(allocator: Allocator, acct_name: []const u8) struct { status: AccountStatus, elapsed: i64 } {
+    initHealthCache(allocator) catch return .{ .status = .unknown, .elapsed = 0 };
+
+    const health = health_cache.get(acct_name) orelse return .{ .status = .unknown, .elapsed = 0 };
+
+    const now = std.time.timestamp();
+    return .{
+        .status = health.status,
+        .elapsed = now - health.last_check,
+    };
+}
+
+/// Cleanup health cache on shutdown
+fn deinitHealthCache(allocator: Allocator) void {
+    if (!health_cache_initialized) return;
+
+    var iter = health_cache.iterator();
+    while (iter.next()) |entry| {
+        allocator.free(entry.key_ptr.*);
+        allocator.free(entry.value_ptr.*.last_error);
+    }
+    health_cache.deinit();
+    health_cache_initialized = false;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // JSONL LOGGING — For "brain" integration (Mu/Queen/Scholar can read this)
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -847,9 +1088,16 @@ fn daemonStart(allocator: Allocator) !void {
         print("{s}🔄 Sweep #{d}{s}\n", .{ DIM, sweep_count, RESET });
 
         // Run evolve watch with --once flag + Telegram notifications
+        // Wrap in catch to prevent crash on any error
         const watch_args = &[_][]const u8{ "--once", "--sacred", "--objective", "ntp", "--notify" };
         tri_farm_evolve.runEvolveCommand(allocator, watch_args) catch |err| {
-            print("   {s}⚠️  Sweep error: {}{s}\n", .{ YELLOW, err, RESET });
+            // Log error to JSONL
+            const err_msg = std.fmt.allocPrint(allocator, "{s}", .{@errorName(err)}) catch "unknown";
+            logDaemonEvent(allocator, "error", "sweep_failed", err_msg) catch {};
+
+            print("   {s}⚠️  Sweep failed: {s}{s}\n", .{ YELLOW, @errorName(err), RESET });
+
+            // Continue to next sweep — DON'T crash
         };
 
         const elapsed_ms = @as(u64, @intCast(@divTrunc(@as(i128, std.time.nanoTimestamp() - sweep_start), 1_000_000)));
@@ -937,6 +1185,60 @@ fn isProcessAlive(pid: u32) bool {
         return true;
     };
     return true;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TELEGRAM ALERTS — Send notifications to Telegram group
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn sendTelegramAlert(allocator: Allocator, comptime fmt: []const u8, args: anytype) !void {
+    const msg = std.fmt.allocPrint(allocator, fmt, args) catch return;
+    defer allocator.free(msg);
+
+    const token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch return;
+    defer allocator.free(token);
+
+    const chat_id = std.process.getEnvVarOwned(allocator, "TELEGRAM_CHAT_ID") catch {
+        allocator.free(token);
+        return;
+    };
+    defer allocator.free(chat_id);
+
+    // URL-encode the message
+    var encoded_msg = try std.ArrayList(u8).initCapacity(allocator, msg.len * 2);
+    defer encoded_msg.deinit();
+
+    for (msg) |c| {
+        switch (c) {
+            ' ' => try encoded_msg.appendSlice("%20"),
+            '#' => try encoded_msg.appendSlice("%23"),
+            '&' => try encoded_msg.appendSlice("%26"),
+            '=' => try encoded_msg.appendSlice("%3D"),
+            '\n' => try encoded_msg.appendSlice("%0A"),
+            else => try encoded_msg.append(c),
+        }
+    }
+
+    const url_str = try std.fmt.allocPrint(allocator, "https://api.telegram.org/bot{s}/sendMessage?chat_id={s}&text={s}", .{ token, chat_id, encoded_msg.items });
+    defer allocator.free(url_str);
+
+    // HTTP client with 3-second connection timeout for Telegram API
+    var client = std.http.Client{
+        .allocator = allocator,
+        .http_connect_timeout = 3000, // 3 seconds in milliseconds
+    };
+    defer client.deinit();
+
+    const uri = std.Uri.parse(url_str) catch return;
+    var req = client.request(.GET, uri, .{
+        .redirect_behavior = .unhandled,
+    }) catch return;
+    defer req.deinit();
+
+    // Receive response, ignore errors (best-effort notification)
+    var redirect_buf: [0]u8 = .{};
+    _ = req.receiveHead(&redirect_buf) catch {};
+    _ = req.finish() catch {};
 }
 
 fn printHelp() void {
