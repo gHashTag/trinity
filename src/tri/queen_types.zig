@@ -43,6 +43,8 @@ pub const E_CHART = "\xf0\x9f\x93\x88"; // 📈
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const STATE_PATH = ".trinity/queen_state.json";
+pub const SUPERVISOR_PID_PATH = ".trinity/queen/supervisor.pid";
+pub const SUPERVISOR_LOG_PATH = ".trinity/queen/supervisor.log";
 
 pub const QueenConfig = struct {
     interval_sec: u64 = 600, // 10 min

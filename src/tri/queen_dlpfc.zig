@@ -13,6 +13,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const array_list = std.array_list;
 
+const faculty_types = @import("faculty_types.zig");
 const qt = @import("queen_types.zig");
 const thalamus = @import("thalamus.zig");
 const voice_engine = @import("voice_engine.zig");
@@ -52,9 +53,92 @@ pub const DecisionContext = struct {
     dirty_files: u16 = 0,
     build_ok: bool = true,
 
+    // Faculty board integration (Phase 3.5)
+    faculty_metrics: ?FacultyMetrics = null,
+    trend_analysis: ?TrendAnalysis = null,
+
     /// Check if we should take any auto-action
     pub fn shouldAutoAct(self: *const DecisionContext) bool {
         return self.config.allow_auto_actions and self.config.daemon;
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FACULTY METRICS — Real-time faculty board health summary
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const FacultyMetrics = struct {
+    active_count: u8 = 0, // Number of active agents (0-6)
+    build_health: f32 = 0.0, // 0-100: build pass rate
+    compile_rate: u8 = 0, // 0-100: percentage
+    v_number: f32 = 0.0, // V-number (0-2+)
+    dirty_files: u16 = 0, // Number of uncommitted files
+    open_issues: u16 = 0, // GitHub issues
+    mu_patterns: u16 = 0, // Mu memory patterns
+    cycle: FacultyCycle = .working,
+    v_zone: faculty_types.VZone = .drift,
+    timestamp: i64 = 0,
+
+    pub const FacultyCycle = enum { working, evaluating, sleeping };
+
+    /// Calculate overall health score (0-100)
+    pub fn healthScore(self: *const FacultyMetrics) f32 {
+        var score: f32 = 0.0;
+        score += @as(f32, @floatFromInt(self.active_count)) * 15.0; // 0-90 points
+        score += self.build_health * 0.1; // 0-10 points
+        return @min(score, 100.0);
+    }
+
+    /// Get V-zone description
+    pub fn vZoneStr(self: *const FacultyMetrics) []const u8 {
+        return switch (self.v_zone) {
+            .gold => "GOLD",
+            .stable => "STABLE",
+            .drift => "DRIFT",
+        };
+    }
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TREND ANALYSIS — Predictive problem detection
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const TrendAnalysis = struct {
+    compile_trend: Trend = .stable,
+    v_trend: Trend = .stable,
+    dirty_trend: Trend = .stable,
+    faculty_trend: Trend = .stable,
+    confidence: f32 = 0.0, // 0-1: how confident we are in these trends
+    sample_size: u32 = 0, // Number of data points analyzed
+
+    pub const Trend = enum { falling, stable, rising };
+
+    /// Get summary string
+    pub fn summary(self: *const TrendAnalysis) []const u8 {
+        if (self.confidence < 0.5) return "insufficient data";
+        return switch (self.compile_trend) {
+            .falling => "⚠ compile rate declining",
+            .rising => "✓ compile rate improving",
+            .stable => "✓ stable",
+        };
+    }
+
+    /// Check if any metric is trending negatively
+    pub fn hasProblemTrends(self: *const TrendAnalysis) bool {
+        return self.compile_trend == .falling or
+            self.v_trend == .falling or
+            self.dirty_trend == .rising or
+            self.faculty_trend == .falling;
+    }
+
+    /// Calculate urgency score based on trends (0-10)
+    pub fn urgencyScore(self: *const TrendAnalysis) u8 {
+        var score: u8 = 0;
+        if (self.compile_trend == .falling) score += 3;
+        if (self.v_trend == .falling) score += 2;
+        if (self.dirty_trend == .rising) score += 2;
+        if (self.faculty_trend == .falling) score += 3;
+        return @min(score, 10);
     }
 };
 
@@ -173,6 +257,112 @@ pub fn readSenses(allocator: Allocator, ctx: *DecisionContext) !void {
     // TODO: Get ouroboros_score and dirty_files from actual sensors
     ctx.ouroboros_score = 75.0; // Default healthy
     ctx.dirty_files = 0;
+
+    // Phase 3.5: Collect faculty metrics from faculty board
+    ctx.faculty_metrics = collectFacultyMetrics(allocator);
+
+    // Phase 3.5: Analyze trends from faculty metrics
+    ctx.trend_analysis = analyzeTrends(allocator, ctx.faculty_metrics);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COLLECT FACULTY METRICS — Gather real-time faculty board data
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn collectFacultyMetrics(allocator: Allocator) ?FacultyMetrics {
+    const faculty_board = @import("cortex.zig");
+    const snapshot = faculty_board.collectSnapshot(allocator) catch return null;
+
+    const metrics = FacultyMetrics{
+        .active_count = snapshot.activeFaculty(),
+        .build_health = if (snapshot.compile_total > 0)
+            @as(f32, @floatFromInt(snapshot.compile_pass)) * 100.0 / @as(f32, @floatFromInt(snapshot.compile_total))
+        else
+            100.0,
+        .compile_rate = snapshot.compile_rate,
+        .v_number = @as(f32, @floatCast(snapshot.v_number)),
+        .v_zone = snapshot.v_zone,
+        .dirty_files = snapshot.dirty_files,
+        .open_issues = snapshot.open_issues,
+        .mu_patterns = snapshot.mu_patterns,
+        .cycle = switch (snapshot.cycle) {
+            .working, .quiet => .working,
+            .emergency => .working,
+        },
+        .timestamp = std.time.timestamp(),
+    };
+
+    return metrics;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ANALYZE TRENDS — Predictive problem detection from historical data
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn analyzeTrends(allocator: Allocator, current: ?FacultyMetrics) ?TrendAnalysis {
+    if (current == null) return null;
+
+    // Read recent faculty history from hippocampus
+    const hippocampus = @import("hippocampus.zig");
+    var results = hippocampus.read(allocator, .{
+        .agent = "faculty_board",
+        .kind = .observation,
+        .limit = 10,
+    }) catch return null;
+    defer results.deinit(allocator);
+
+    if (results.items.len < 3) return null; // Need at least 3 data points
+
+    // Simple trend analysis based on most recent vs oldest
+    var first_active: u8 = 0;
+    var last_active: u8 = 0;
+    var data_points: u8 = 0;
+
+    for (results.items) |r| {
+        const summary = r.summary();
+        // Parse format: "active: 5/6 | compile_rate: 85 | v: 1.17 | dirty: 12"
+        if (std.mem.indexOf(u8, summary, "active:")) |idx| {
+            const active_end = std.mem.indexOf(u8, summary[idx..], "/") orelse summary.len;
+            const active_str = summary[idx + 7 .. idx + active_end];
+            const active = std.fmt.parseInt(u8, active_str, 10) catch continue;
+            if (data_points == 0) first_active = active;
+            last_active = active;
+            data_points += 1;
+        }
+    }
+
+    // Faculty trend based on active faculty count
+    const faculty_trend = if (data_points >= 2)
+        if (last_active > first_active)
+            TrendAnalysis.Trend.rising
+        else if (last_active < first_active)
+            TrendAnalysis.Trend.falling
+        else
+            TrendAnalysis.Trend.stable
+    else
+        TrendAnalysis.Trend.stable;
+
+    const analysis = TrendAnalysis{
+        .compile_trend = TrendAnalysis.Trend.stable, // TODO: parse compile_rate trend
+        .v_trend = TrendAnalysis.Trend.stable, // TODO: parse V trend
+        .dirty_trend = TrendAnalysis.Trend.stable, // TODO: parse dirty trend
+        .faculty_trend = faculty_trend,
+        .confidence = @as(f32, @floatFromInt(results.items.len)) / 10.0,
+        .sample_size = @intCast(results.items.len),
+    };
+
+    return analysis;
+}
+
+/// Determine trend from two values
+fn determineTrend(current: f32, previous: f32) TrendAnalysis.Trend {
+    const threshold = 0.05; // 5% change threshold
+    const delta = current - previous;
+    const pct_change = if (previous != 0) delta / previous else 0;
+
+    if (pct_change > threshold) return TrendAnalysis.Trend.rising;
+    if (pct_change < -threshold) return TrendAnalysis.Trend.falling;
+    return TrendAnalysis.Trend.stable;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -688,4 +878,101 @@ test "dlpfc — decide with best PPL celebration" {
     const decision = try decide(&ctx);
     try std.testing.expect(decision != null);
     try std.testing.expectEqual(qt.ActionKind.notify, decision.?.action);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 3.5 TESTS — Faculty Metrics & Trend Analysis
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Phase 3.5 — FacultyMetrics health score calculation" {
+    var metrics = FacultyMetrics{
+        .active_count = 5,
+        .build_health = 80.0,
+    };
+
+    const score = metrics.healthScore();
+    try std.testing.expect(score >= 75.0 and score <= 100.0);
+    try std.testing.expectApproxEqAbs(@as(f32, 85.0), score, 0.1);
+}
+
+test "Phase 3.5 — FacultyMetrics vZoneStr returns valid" {
+    const metrics = FacultyMetrics{ .v_zone = .gold };
+
+    const zone_str = metrics.vZoneStr();
+    try std.testing.expect(zone_str.len > 0);
+}
+
+test "Phase 3.5 — TrendAnalysis summary with low confidence" {
+    var analysis = TrendAnalysis{
+        .confidence = 0.3,
+        .compile_trend = .falling,
+    };
+
+    const summary = analysis.summary();
+    try std.testing.expectEqualStrings("insufficient data", summary);
+}
+
+test "Phase 3.5 — TrendAnalysis summary with high confidence" {
+    var analysis = TrendAnalysis{
+        .confidence = 0.8,
+        .compile_trend = .rising,
+    };
+
+    const summary = analysis.summary();
+    try std.testing.expect(std.mem.indexOf(u8, summary, "improving") != null);
+}
+
+test "Phase 3.5 — TrendAnalysis hasProblemTrends detection" {
+    // All stable → no problems
+    var stable = TrendAnalysis{ .confidence = 1.0 };
+    try std.testing.expect(!stable.hasProblemTrends());
+
+    // Compile falling → has problems
+    var failing = TrendAnalysis{
+        .confidence = 1.0,
+        .compile_trend = .falling,
+    };
+    try std.testing.expect(failing.hasProblemTrends());
+
+    // Dirty rising → has problems
+    var dirty = TrendAnalysis{
+        .confidence = 1.0,
+        .dirty_trend = .rising,
+    };
+    try std.testing.expect(dirty.hasProblemTrends());
+}
+
+test "Phase 3.5 — TrendAnalysis urgency score calculation" {
+    // All stable → 0 urgency
+    var stable = TrendAnalysis{ .confidence = 1.0 };
+    try std.testing.expectEqual(@as(u8, 0), stable.urgencyScore());
+
+    // Single falling → 3 urgency
+    var single = TrendAnalysis{
+        .confidence = 1.0,
+        .compile_trend = .falling,
+    };
+    try std.testing.expectEqual(@as(u8, 3), single.urgencyScore());
+
+    // Multiple problems → higher urgency
+    var multiple = TrendAnalysis{
+        .confidence = 1.0,
+        .compile_trend = .falling,
+        .v_trend = .falling,
+        .dirty_trend = .rising,
+        .faculty_trend = .falling,
+    };
+    try std.testing.expectEqual(@as(u8, 10), multiple.urgencyScore());
+}
+
+test "Phase 3.5 — determineTrend helper function" {
+    // Rising trend
+    try std.testing.expectEqual(TrendAnalysis.Trend.rising, determineTrend(10.0, 8.0));
+
+    // Falling trend
+    try std.testing.expectEqual(TrendAnalysis.Trend.falling, determineTrend(5.0, 10.0));
+
+    // Stable (within threshold)
+    try std.testing.expectEqual(TrendAnalysis.Trend.stable, determineTrend(10.0, 9.9));
+    try std.testing.expectEqual(TrendAnalysis.Trend.stable, determineTrend(10.0, 10.1));
 }
