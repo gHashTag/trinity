@@ -91,7 +91,7 @@ struct PipelineScreen: View {
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(statusColor(state.status).opacity(0.15))
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                 }
             }
             .padding(.horizontal)

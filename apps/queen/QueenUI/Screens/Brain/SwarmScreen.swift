@@ -108,7 +108,7 @@ struct SwarmScreen: View {
                                 .padding(.horizontal, 4)
                                 .padding(.vertical, 1)
                                 .background(TrinityTheme.accent.opacity(0.1))
-                                .clipShape(Capsule())
+                                .clipShape(SwiftUI.Capsule())
                         }
                     }
                 }
@@ -161,7 +161,7 @@ struct SwarmScreen: View {
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(TrinityTheme.accent.opacity(0.1))
-                        .clipShape(Capsule())
+                        .clipShape(SwiftUI.Capsule())
                 }
             }
 

@@ -332,7 +332,7 @@ struct PersonaLibrary: View {
                                     .padding(.horizontal, 4)
                                     .padding(.vertical, 1)
                                     .background(TrinityTheme.golden.opacity(0.1))
-                                    .clipShape(Capsule())
+                                    .clipShape(SwiftUI.Capsule())
                             }
                         }
                     }
@@ -449,7 +449,7 @@ struct PersonaEditor: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(TrinityTheme.accent)
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
                 .buttonStyle(.plain)
                 .disabled(name.isEmpty || systemPrompt.isEmpty)
             }
@@ -520,7 +520,7 @@ struct TemplateEditor: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
                 .background(TrinityTheme.purple)
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
                 .buttonStyle(.plain)
                 .disabled(title.isEmpty || templateBody.isEmpty)
             }
@@ -586,7 +586,7 @@ struct PersonaPicker: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 5)
             .background(selectedPersona != nil ? TrinityTheme.accent.opacity(0.12) : Color.white.opacity(0.06))
-            .clipShape(Capsule())
+            .clipShape(SwiftUI.Capsule())
         }
         .menuStyle(.borderlessButton)
         .fixedSize()

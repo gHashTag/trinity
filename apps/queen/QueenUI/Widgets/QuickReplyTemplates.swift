@@ -253,7 +253,7 @@ struct QuickReplyTemplatesBar: View {
         .background(
             TrinityTheme.textMuted.opacity(0.1)
         )
-        .clipShape(Capsule())
+        .clipShape(SwiftUI.Capsule())
         .accessibilityLabel("Template count")
         .accessibilityValue("\(manager.templateCount) templates available")
         .accessibilityHint("Swipe left to see templates")
@@ -476,7 +476,7 @@ struct TemplateEditSheet: View {
                     (template.category == .builtin ? TrinityTheme.textMuted : TrinityTheme.accent)
                         .opacity(0.15)
                 )
-                .clipShape(Capsule())
+                .clipShape(SwiftUI.Capsule())
 
             // Actions
             HStack(spacing: 8) {

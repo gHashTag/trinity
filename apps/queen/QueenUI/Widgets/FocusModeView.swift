@@ -57,10 +57,10 @@ struct FocusModeView: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 8)
                         .background(
-                            Capsule()
+                            SwiftUI.Capsule()
                                 .fill(Color.black.opacity(0.6))
                                 .overlay(
-                                    Capsule()
+                                    SwiftUI.Capsule()
                                         .stroke(hoverExitButton ? TrinityTheme.accent : Color.white.opacity(0.2), lineWidth: 1)
                                 )
                         )
@@ -163,7 +163,7 @@ struct FocusModeView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(
-            Capsule()
+            SwiftUI.Capsule()
                 .fill(Color.black.opacity(0.5))
         )
     }

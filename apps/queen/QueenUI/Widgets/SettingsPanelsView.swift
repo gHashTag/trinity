@@ -877,7 +877,7 @@ struct ModifiedIndicator: View {
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
             .background(TrinityTheme.accent.opacity(0.12))
-            .clipShape(Capsule())
+            .clipShape(SwiftUI.Capsule())
         }
     }
 }
