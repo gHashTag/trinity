@@ -1789,6 +1789,23 @@ pub fn build(b: *std.Build) void {
     const railway_set_dockerfile_step = b.step("railway-set-dockerfile", "Run Railway Dockerfile builder setter");
     railway_set_dockerfile_step.dependOn(&run_railway_set_dockerfile.step);
 
+    // Railway service cleanup — delete base services to free slots
+    const railway_cleanup = b.addExecutable(.{
+        .name = "railway-cleanup",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cli/railway_cleanup.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
+    });
+    b.installArtifact(railway_cleanup);
+
+    const run_railway_cleanup = b.addRunArtifact(railway_cleanup);
+    if (b.args) |args| run_railway_cleanup.addArgs(args);
+    const railway_cleanup_step = b.step("railway-cleanup", "Run Railway cleanup: delete base services");
+    railway_cleanup_step.dependOn(&run_railway_cleanup.step);
+
     // ═══════════════════════════════════════════════════════════════════════════
     // SWE Agent Entrypoint — Pure Zig entrypoint for dev agent Railway containers
     // ═══════════════════════════════════════════════════════════════════════════

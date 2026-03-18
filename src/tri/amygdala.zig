@@ -124,13 +124,13 @@ pub fn conditionFear(
     // Build episode record with fear tags
     var record = hippocampus.MemoryRecord{};
     const ts: u64 = @intCast(std.time.timestamp());
-    try hippocampus.generateId(&record.id_buf, &record.id_len, ts, "amygdala");
-    try hippocampus.copyToFixed(32, &record.agent_buf, &record.agent_len, "amygdala");
+    hippocampus.generateId(&record.id_buf, &record.id_len, ts, "amygdala");
+    hippocampus.copyToFixed(32, &record.agent_buf, &record.agent_len, "amygdala");
     record.kind = .episode;
     record.ts = ts;
     record.ttl = hippocampus.MemoryKind.episode.defaultTtl();
 
-    try hippocampus.copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+    hippocampus.copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
 
     // Build summary with context
     var summary_buf: [512]u8 = undefined;
@@ -139,7 +139,7 @@ pub fn conditionFear(
         "[FEAR] {s}: {s}",
         .{ context, summary },
     );
-    try hippocampus.copyToFixed(256, &record.summary_buf, &record.summary_len, full_summary);
+    hippocampus.copyToFixed(256, &record.summary_buf, &record.summary_len, full_summary);
 
     // Add emotion tags
     var tag_buf: [32]u8 = undefined;
@@ -147,9 +147,9 @@ pub fn conditionFear(
     const val_tag = try std.fmt.bufPrint(&tag_buf, "emo-v:{d}", .{clamped});
     const ctx_tag = try std.fmt.bufPrint(&tag_buf, "ctx:{s}", .{context});
 
-    try hippocampus.copyToFixed(32, &record.tags[0], &record.tag_lens[0], emo_tag);
-    try hippocampus.copyToFixed(32, &record.tags[1], &record.tag_lens[1], val_tag);
-    try hippocampus.copyToFixed(32, &record.tags[2], &record.tag_lens[2], ctx_tag);
+    hippocampus.copyToFixed(32, &record.tags[0], &record.tag_lens[0], emo_tag);
+    hippocampus.copyToFixed(32, &record.tags[1], &record.tag_lens[1], val_tag);
+    hippocampus.copyToFixed(32, &record.tags[2], &record.tag_lens[2], ctx_tag);
     record.tag_count = 3;
 
     try hippocampus.write(allocator, &record);
@@ -167,13 +167,13 @@ pub fn conditionReward(
 
     var record = hippocampus.MemoryRecord{};
     const ts: u64 = @intCast(std.time.timestamp());
-    try hippocampus.generateId(&record.id_buf, &record.id_len, ts, "amygdala");
-    try hippocampus.copyToFixed(32, &record.agent_buf, &record.agent_len, "amygdala");
+    hippocampus.generateId(&record.id_buf, &record.id_len, ts, "amygdala");
+    hippocampus.copyToFixed(32, &record.agent_buf, &record.agent_len, "amygdala");
     record.kind = .episode;
     record.ts = ts;
     record.ttl = hippocampus.MemoryKind.episode.defaultTtl();
 
-    try hippocampus.copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
+    hippocampus.copyToFixed(2048, &record.data_buf, &record.data_len, data_json);
 
     var summary_buf: [512]u8 = undefined;
     const full_summary = try std.fmt.bufPrint(
@@ -181,7 +181,7 @@ pub fn conditionReward(
         "[REWARD] {s}: {s}",
         .{ context, summary },
     );
-    try hippocampus.copyToFixed(256, &record.summary_buf, &record.summary_len, full_summary);
+    hippocampus.copyToFixed(256, &record.summary_buf, &record.summary_len, full_summary);
 
     // Add emotion tags
     var tag_buf: [32]u8 = undefined;
@@ -189,9 +189,9 @@ pub fn conditionReward(
     const val_tag = try std.fmt.bufPrint(&tag_buf, "emo-v:{d}", .{clamped});
     const ctx_tag = try std.fmt.bufPrint(&tag_buf, "ctx:{s}", .{context});
 
-    try hippocampus.copyToFixed(32, &record.tags[0], &record.tag_lens[0], emo_tag);
-    try hippocampus.copyToFixed(32, &record.tags[1], &record.tag_lens[1], val_tag);
-    try hippocampus.copyToFixed(32, &record.tags[2], &record.tag_lens[2], ctx_tag);
+    hippocampus.copyToFixed(32, &record.tags[0], &record.tag_lens[0], emo_tag);
+    hippocampus.copyToFixed(32, &record.tags[1], &record.tag_lens[1], val_tag);
+    hippocampus.copyToFixed(32, &record.tags[2], &record.tag_lens[2], ctx_tag);
     record.tag_count = 3;
 
     try hippocampus.write(allocator, &record);

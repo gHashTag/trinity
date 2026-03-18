@@ -89,25 +89,26 @@ pub fn selfCheck(allocator: Allocator) !SelfCheck {
     check.health_score = @max(0.0, score);
 
     // Collect issues
-    var issues_list = std.ArrayList(Issue).init(allocator);
-    defer issues_list.deinit();
+    var issues_list = std.ArrayListAligned(Issue, null){};
+    defer issues_list.deinit(allocator);
+    try issues_list.ensureTotalCapacity(allocator, 4);
 
     if (!check.loop_running) {
-        try issues_list.append(.{
+        try issues_list.append(allocator, .{
             .kind = .loop_stuck,
         });
         issues_list.items[issues_list.items.len - 1].setDescription("Queen loop not writing heartbeat");
     }
 
     if (!check.telegram_reachable) {
-        try issues_list.append(.{
+        try issues_list.append(allocator, .{
             .kind = .telegram_unreachable,
         });
         issues_list.items[issues_list.items.len - 1].setDescription("Telegram bot token or chat_id missing");
     }
 
     if (!check.thalamus_responding) {
-        try issues_list.append(.{
+        try issues_list.append(allocator, .{
             .kind = .thalamus_timeout,
         });
         issues_list.items[issues_list.items.len - 1].setDescription("Thalamus relays not responding");
@@ -134,8 +135,8 @@ fn checkTelegramReachable() bool {
 
 fn checkThalamusResponding(allocator: Allocator) bool {
     // Try to get MU heartbeat (Relay 1)
-    const hb = thalamusGetMuHeartbeat(allocator);
-    _ = hb;
+    const result = thalamusGetMuHeartbeat(allocator);
+    _ = result catch {}; // Suppress unused result warning
     return true;
 }
 
