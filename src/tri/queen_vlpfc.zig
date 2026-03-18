@@ -94,10 +94,10 @@ pub fn filterRelays(
             }
 
             if (relay_idx < config.max_relay_count) {
-                const health = thalamus.getCellHealth(allocator);
+                const cell_health = thalamus.getCellHealth(allocator);
                 relays[relay_idx] = .{
                     .name = "cell_health",
-                    .value = try fmtCellHealth(allocator, health.total, health.healthy),
+                    .value = try fmtCellHealth(allocator, cell_health.total, cell_health.healthy),
                     .score = 0.6,
                 };
                 relay_idx += 1;

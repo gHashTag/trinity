@@ -130,7 +130,7 @@ pub const PriorityQueue = struct {
         // Insert sorted by priority (critical first)
         var insert_at = self.count;
         for (0..self.count) |i| {
-            if (decision.priority > self.decisions[i].priority) {
+            if (@intFromEnum(decision.priority) < @intFromEnum(self.decisions[i].priority)) {
                 insert_at = i;
                 break;
             }
@@ -159,12 +159,12 @@ pub const PriorityQueue = struct {
         if (self.count == 0) return null;
 
         self.count -= 1;
-        return &self.decisions[0];
+        return self.decisions[0];
     }
 
     pub fn peek(self: *const PriorityQueue) ?Decision {
         if (self.count == 0) return null;
-        return &self.decisions[self.count - 1];
+        return self.decisions[self.count - 1];
     }
 
     pub fn isEmpty(self: *const PriorityQueue) bool {

@@ -33,7 +33,7 @@ pub fn bridgeToCerebellum(
     // For now, write generic observation
     const data = try std.fmt.allocPrint(
         allocator,
-        "{{"farm_stale":{d},"farm_crashed":{d}}}",
+        "{{\"farm_stale\":{d},\"farm_crashed\":{d}}}",
         .{ farm_results.stale_count, farm_results.crashed_workers.len },
     );
     defer allocator.free(data);

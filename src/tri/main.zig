@@ -475,6 +475,13 @@ pub fn main() !void {
             printVersion(allocator);
             return;
         }
+        // Autocomplete: `tri autocomplete --print|--install|--uninstall`
+        if (std.mem.eql(u8, first_arg, "autocomplete")) {
+            const auto_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            const tri_autocomplete = @import("tri_autocomplete.zig");
+            try tri_autocomplete.runAutocompleteCommand(allocator, auto_args);
+            return;
+        }
     }
 
     // P2.9: Namespace-aware command dispatch

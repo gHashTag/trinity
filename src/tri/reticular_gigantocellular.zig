@@ -137,7 +137,7 @@ pub fn executeMassAction(
     // Log to hippocampus
     const data = try std.fmt.allocPrint(
         allocator,
-        "{{"kind":"{s}","count":{d},"success":{s},"duration_ms":{d}}}",
+        "{{\"kind\":\"{s}\",\"count\":{d},\"success\":{s},\"duration_ms\":{d}}}",
         .{ action.kind.label(), action.count, result.success, result.duration_ms },
     );
     defer allocator.free(data);
