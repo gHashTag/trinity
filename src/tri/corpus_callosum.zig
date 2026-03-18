@@ -139,15 +139,10 @@ pub const CommBus = struct {
 
     /// Get signals for a specific module
     pub fn getSignals(self: *const CommBus, target: Module) []const Synapse {
-        var count: usize = 0;
-        for (self.signals) |s| {
-            if (s.to == target) count += 1;
-        }
-
-        if (count == 0) return &.{};
-
-        // Note: In real implementation, would return slice
-        _ = count;
+        _ = self;
+        _ = target;
+        // TODO: Implement signal filtering
+        // Note: In real implementation, would return filtered slice
         return &.{};
     }
 };
