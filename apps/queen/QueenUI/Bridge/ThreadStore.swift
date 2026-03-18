@@ -19,7 +19,7 @@ final class ThreadStore: ObservableObject {
 
     init() {
         let appSupport = FileManager.default
-            .urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+            .urls(for: .applicationSupportDirectory, in: .userDomainMask).first ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         storeURL = appSupport.appendingPathComponent("QueenUI/threads", isDirectory: true)
         try? FileManager.default.createDirectory(at: storeURL, withIntermediateDirectories: true)
         load()
