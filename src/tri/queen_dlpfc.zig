@@ -1,4 +1,4 @@
-// @origin(manual) @regen(pending)
+// @origin(manual) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN DLPFC (Dorsolateral Prefrontal Cortex) — Autonomous Decision Engine
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -51,6 +51,10 @@ pub const DecisionContext = struct {
     ouroboros_score: f32 = 0.0,
     dirty_files: u16 = 0,
     build_ok: bool = true,
+
+    // Faculty board integration
+    faculty_metrics: ?FacultyMetrics = null,
+    trend_analysis: ?TrendAnalysis = null,
 
     /// Check if we should take any auto-action
     pub fn shouldAutoAct(self: *const DecisionContext) bool {
@@ -631,4 +635,65 @@ test "dlpfc — DecisionContext shouldAutoAct" {
         .incidents = &incidents,
     };
     try std.testing.expect(ctx3.shouldAutoAct());
+}
+
+test "dlpfc — Decision struct fields" {
+    const decision = Decision{
+        .action = .farm_recycle,
+        .urgency = .high,
+        .reason = "Test reason",
+        .confidence = 0.85,
+    };
+    try std.testing.expectEqual(qt.ActionKind.farm_recycle, decision.action);
+    try std.testing.expectEqual(basal_ganglia.Urgency.high, decision.urgency);
+    try std.testing.expectEqualStrings("Test reason", decision.reason);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.85), decision.confidence, 0.01);
+}
+
+test "dlpfc — decide with agent spawn issues" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{ .agent_spawn = 2 },
+        .mu_heartbeat = .{ .build_ok = true },
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = true,
+        .faculty_metrics = null,
+        .trend_analysis = null,
+    };
+
+    const decision = try decide(&ctx);
+    try std.testing.expect(decision != null);
+    try std.testing.expectEqual(qt.ActionKind.cloud_spawn, decision.?.action);
+}
+
+test "dlpfc — decide with best PPL celebration" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{ .total_services = 10, .active = 10, .best_ppl = 4.5 },
+        .issues = .{},
+        .mu_heartbeat = .{ .build_ok = true },
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = true,
+        .faculty_metrics = null,
+        .trend_analysis = null,
+    };
+
+    const decision = try decide(&ctx);
+    try std.testing.expect(decision != null);
+    try std.testing.expectEqual(qt.ActionKind.notify, decision.?.action);
 }
