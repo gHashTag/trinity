@@ -626,9 +626,10 @@ public struct PickerField: View {
 
 struct InputComponentsView_Previews: PreviewProvider {
     static var previews: some View {
-    VStack(spacing: 24) {
-        // ValidatedTextField
-        VStack(alignment: .leading, spacing: 16) {
+        Group {
+            VStack(spacing: 24) {
+                // ValidatedTextField
+                VStack(alignment: .leading, spacing: 16) {
             Text("ValidatedTextField")
                 .font(.system(size: TrinityTheme.headingSize(), weight: .semibold))
                 .foregroundColor(TrinityTheme.textPrimary)
@@ -732,4 +733,6 @@ struct InputComponentsView_Previews: PreviewProvider {
     .padding(24)
     .frame(width: 500, height: 900)
     .background(TrinityTheme.bgWindow)
+        }
+    }
 }
