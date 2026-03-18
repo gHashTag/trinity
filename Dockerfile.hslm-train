@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y \
 COPY prebuilt/train-bin /usr/local/bin/hslm-train
 COPY prebuilt/entrypoint-bin /usr/local/bin/hslm-entrypoint
 
-RUN echo "d7d358e80071d0d5da102492759f913b5ce25914748afa660192ba233b448e20  /usr/local/bin/hslm-train" | sha256sum -c - \
-    && echo "5521384a8089f3143cbf2204f304ee8887f0f16dc43d7667ff9f00907db85140  /usr/local/bin/hslm-entrypoint" | sha256sum -c - \
+RUN echo "dadd1b5b28380dbc22619105c21b9543da81fd95d3d39e7f1ab01f43abe3fb53  /usr/local/bin/hslm-train" | sha256sum -c - \
+    && echo "37c0c840f402b83879589859d88b6e578a5eac1490a4cde75688576b878793af  /usr/local/bin/hslm-entrypoint" | sha256sum -c - \
     && chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
 # /data is Railway persistent volume mount point
