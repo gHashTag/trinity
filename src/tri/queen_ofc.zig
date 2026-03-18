@@ -77,13 +77,28 @@ pub const Mood = enum {
     }
 };
 
-/// Infer mood from system state
+/// Infer mood from system state (context-aware)
 pub fn inferMood(build_ok: bool, ouroboros_score: f32, ppl_record: bool) Mood {
     if (!build_ok) return .alarm;
     if (ppl_record) return .euphoria;
     if (ouroboros_score < 40) return .alarm;
     if (ouroboros_score < 70) return .alert;
     return .calm;
+}
+
+/// Get mood label that explains actual state (human-readable)
+pub fn moodLabelWithExplanation(mood: Mood, farm_active: u8, farm_total: u8) []const u8 {
+    return switch (mood) {
+        .calm => if (farm_active > 0)
+            "Running smoothly"
+        else if (farm_total > 0)
+            "Farm idle"
+        else
+            "System normal",
+        .alert => "Needs attention",
+        .alarm => "Critical issue",
+        .euphoria => "Great progress!",
+    };
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -110,7 +125,7 @@ pub const Report = struct {
     }
 };
 
-/// Format status report for Telegram
+/// Format status report for Telegram (human-readable)
 pub fn formatStatusReport(
     allocator: Allocator,
     build_ok: bool,
@@ -124,11 +139,12 @@ pub fn formatStatusReport(
     var buf: [1024]u8 = undefined;
     var offset: usize = 0;
 
-    // Header
+    // Header with mood explanation
+    const mood_expl = moodLabelWithExplanation(mood, farm_services, farm_services);
     const header = std.fmt.bufPrint(
         buf[offset..],
-        "{s} Queen {s} — {s}\n\n",
-        .{ mood.emoji(), mood.label(), qt.E_CROWN },
+        "{s} {s}\n\n",
+        .{ mood.emoji(), mood_expl },
     ) catch return error.BufferTooSmall;
     offset += header.len;
 
@@ -148,11 +164,11 @@ pub fn formatStatusReport(
     ) catch return error.BufferTooSmall;
     offset += ouro_line.len;
 
-    // Farm
+    // Farm (human-readable)
     const farm_line = std.fmt.bufPrint(
         buf[offset..],
-        "{s} Farm: {d} srv, PPL {d:.1}\n",
-        .{ qt.E_DNA, farm_services, best_ppl },
+        "{s} {s}",
+        .{ qt.E_DNA, formatFarmStatusHuman(farm_services, best_ppl) },
     ) catch return error.BufferTooSmall;
     offset += farm_line.len;
 
@@ -160,6 +176,23 @@ pub fn formatStatusReport(
     const result = try allocator.alloc(u8, offset);
     @memcpy(result, buf[0..offset]);
     return result;
+}
+
+/// Format farm status in human-readable way
+fn formatFarmStatusHuman(services: u8, ppl: f32) []const u8 {
+    if (services == 0) {
+        if (ppl < 999.0) {
+            return "Farm idle. Last training complete.";
+        }
+        return "Farm offline. No workers running.";
+    }
+    if (ppl < 3.0) {
+        return "Training running well! Excellent PPL.";
+    }
+    if (ppl < 10.0) {
+        return "Training in progress.";
+    }
+    return "Training running.";
 }
 
 /// Format alert for Telegram (urgent notification)
@@ -466,7 +499,9 @@ test "ofc — formatStatusReport" {
     defer std.testing.allocator.free(report);
 
     try std.testing.expect(report.len > 0);
-    try std.testing.expect(std.mem.indexOf(u8, report, "CALM") != null);
+    // New format uses human-readable messages like "Training in progress" instead of "CALM"
+    try std.testing.expect(std.mem.indexOf(u8, report, "Training") != null or
+        std.mem.indexOf(u8, report, "smoothly") != null);
 }
 
 test "ofc — formatAlert" {
