@@ -838,23 +838,46 @@ fn runFind(allocator: Allocator, args: []const []const u8) !void {
 
 fn runInfo(allocator: Allocator, args: []const []const u8) !void {
     if (args.len == 0) {
-        std.debug.print("{s}Usage:{s} tri cell info <cell-id>\n", .{ YELLOW, RESET });
-        std.debug.print("  Example: tri cell info trinity.hslm\n", .{});
+        std.debug.print("{s}Usage:{s} tri cell info <cell-id> [options]\n", .{ YELLOW, RESET });
+        std.debug.print("\n  Options:\n", .{});
+        std.debug.print("    --suggest-fix    Auto-run suggested fix\n", .{});
+        std.debug.print("    --verbose        Show full error traces\n", .{});
+        std.debug.print("\n  Example: tri cell info trinity.hslm\n", .{});
+        std.debug.print("           tri cell info nonexistent-cell --suggest-fix\n", .{});
         return;
     }
 
     const cell_id = args[0];
 
+    // Parse flags
+    var suggest_fix = false;
+    var verbose = false;
+    for (args[1..]) |arg| {
+        if (std.mem.eql(u8, arg, "--suggest-fix")) suggest_fix = true;
+        if (std.mem.eql(u8, arg, "--verbose")) verbose = true;
+    }
+
     const registry = try loadRegistry(allocator);
     defer allocator.free(registry);
 
     const parsed = std.json.parseFromSlice(std.json.Value, allocator, registry, .{}) catch {
-        std.debug.print("{s}ERROR{s}: Failed to parse registry\n", .{ RED, RESET });
+        std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ RED, RESET });
+        std.debug.print("{s}ERROR {s}: Failed to parse cell registry\n", .{ RED, RESET });
+        std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ RED, RESET });
+        std.debug.print("{s}What to do:{s} The registry file may be corrupted or malformed\n", .{ YELLOW, RESET });
+        std.debug.print("  Quick fix: {s}tri cell check --regenerate {s}\n\n", .{ CYAN, RESET });
         return;
     };
     defer parsed.deinit();
 
-    const cells = (parsed.value.object.get("cells") orelse return).array.items;
+    const cells = (parsed.value.object.get("cells") orelse {
+        std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ RED, RESET });
+        std.debug.print("{s}ERROR {s}: Registry missing 'cells' key\n", .{ RED, RESET });
+        std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ RED, RESET });
+        std.debug.print("{s}What to do:{s} The registry structure is invalid\n", .{ YELLOW, RESET });
+        std.debug.print("  Quick fix: {s}tri cell check --regenerate {s}\n\n", .{ CYAN, RESET });
+        return;
+    }).array.items;
 
     for (cells) |item| {
         const obj = item.object;
@@ -867,7 +890,11 @@ fn runInfo(allocator: Allocator, args: []const []const u8) !void {
         defer allocator.free(cell_tri_path);
 
         const cell_content = std.fs.cwd().readFileAlloc(allocator, cell_tri_path, 65536) catch |err| {
-            std.debug.print("{s}ERROR{s}: Cannot read {s}: {}\n", .{ RED, RESET, cell_tri_path, err });
+            std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ RED, RESET });
+            std.debug.print("{s}ERROR {s}: Cannot read cell.tri: {}\n", .{ RED, RESET, err });
+            std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ RED, RESET });
+            std.debug.print("{s}What to do:{s} The cell manifest file may be missing or corrupted\n", .{ YELLOW, RESET });
+            std.debug.print("  Quick fix: {s}tri cell check --regenerate {s}\n\n", .{ CYAN, RESET });
             return;
         };
         defer allocator.free(cell_content);
@@ -1008,8 +1035,17 @@ fn runInfo(allocator: Allocator, args: []const []const u8) !void {
         return;
     }
 
-    std.debug.print("{s}ERROR{s}: Cell '{s}' not found in registry\n", .{ RED, RESET, cell_id });
-    std.debug.print("  Run {s}tri cell list{s} to see available cells\n", .{ GREEN, RESET });
+    // Cell not found - provide enhanced error with suggestions
+    std.debug.print("\n{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n", .{ RED, RESET });
+    std.debug.print("{s}ERROR {s}: Cell '{s}' not found in registry\n", .{ RED, RESET, cell_id });
+    std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ RED, RESET });
+    std.debug.print("{s}What to do:{s} Check for typos or the cell may not exist\n", .{ YELLOW, RESET });
+    std.debug.print("  Quick fix: {s}tri cell list {s}\n\n", .{ CYAN, RESET });
+
+    if (suggest_fix) {
+        std.debug.print("{s}Running: tri cell list {s}\n", .{ YELLOW, RESET });
+        runList(allocator, &[_][]const u8{}) catch {};
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
