@@ -249,7 +249,7 @@ public final class ControlServer: ObservableObject {
             return httpResponse(status: 400, json: ["error": "Invalid scenario request"])
 
         case "/rage-clicks":
-            let rageClicks = ScenarioEngine.shared.detectRageClicks()
+            let rageClicks = await ScenarioEngine.shared.detectRageClicks()
             return httpResponse(json: [
                 "success": true,
                 "rageClicks": rageClicks.map { [
@@ -265,7 +265,7 @@ public final class ControlServer: ObservableObject {
             let timeWindow = body.flatMap {
                 (try? JSONSerialization.jsonObject(with: $0) as? [String: Any])?["timeWindow"] as? Double
             } ?? 60.0
-            let heatmap = ScenarioEngine.shared.getBehavioralHeatmap(timeWindow: timeWindow)
+            let heatmap = await ScenarioEngine.shared.getBehavioralHeatmap(timeWindow: timeWindow)
             return httpResponse(json: [
                 "success": true,
                 "timeWindow": timeWindow,
@@ -277,7 +277,7 @@ public final class ControlServer: ObservableObject {
             ])
 
         case "/scenario-history":
-            let history = ScenarioEngine.shared.getScenarioHistory()
+            let history = await ScenarioEngine.shared.getScenarioHistory()
             return httpResponse(json: [
                 "success": true,
                 "history": history.map { $0.toJSON() }
@@ -343,9 +343,10 @@ public final class ControlServer: ObservableObject {
         var context = AutomationScenarioContext()
         if let contextDict = params["context"] as? [String: Any],
            let personaName = contextDict["persona"] as? String {
-            context.persona = personaName == "novice" ? .novice :
-                            personaName == "expert" ? .expert :
-                            personaName == "elderly" ? .elderly : nil
+            let persona: TestPersona? = personaName == "novice" ? .novice :
+                                       personaName == "expert" ? .expert :
+                                       personaName == "elderly" ? .elderly : nil
+            context = AutomationScenarioContext(persona: persona, startingScreen: context.startingScreen, userState: context.userState)
         }
 
         // Parse constraints

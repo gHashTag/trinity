@@ -253,7 +253,7 @@ fn cmdTamagotchiReport(allocator: Allocator) !void {
 
     // Stage line
     const stage_color = if (stage == .adult or stage == .teen) GREEN else if (stage == .child) CYAN else RESET;
-    print("  {s} Stage: {s}{s} ({s} uptime)\n\n", .{
+    print("  {s} Stage: {s}{s} ({s} uptime){s}\n\n", .{
         qt.E_BRAIN,
         stage_color,
         stage.label(),
@@ -374,12 +374,15 @@ fn formatTamagotchiTelegram(
     const rest_emoji = if (rest_pct >= 30.0) "\xf0\x9f\x98\xb4" else "\xe2\x8f\xb3"; // 😴 / ⏳
     const health_emoji = if (health_ok) "\xe2\x9d\xa4\xef\xb8\x8f" else "\xf0\x9f\x8f\xa5"; // ❤️ / 🏥
 
+    const happy_prefix = if (delta_ppl > 0.01) "+" else "";
+    const disc_suffix = if (discipline != 1) "es" else "";
+
     const result = std.fmt.bufPrint(buf,
         \\🧠 Queen Tamagotchi Report
         \\
         \\{s} Hunger: {d:.0}% ({d}/{d} workers)
-        \\{s} Happiness: {s} ({d:.1} PPL best)
-        \\{s} Discipline: {d} fix{d}
+        \\{s} Happiness: {s}{d:.2} PPL ({d:.1} best)
+        \\{s} Discipline: {d} fix{s}
         \\{s} Rest: {d:.0}%
         \\{s} Health: {s} (build {s}, {d}/6 faculty)
         \\⚡ Arousal: {s}
@@ -391,12 +394,12 @@ fn formatTamagotchiTelegram(
         farm.active,
         farm.total_services,
         happy_emoji,
-        if (delta_ppl > 0.01) "+" else "",
+        happy_prefix,
         delta_ppl,
         farm.best_ppl,
         disc_emoji,
         discipline,
-        if (discipline != 1) "es" else "",
+        disc_suffix,
         rest_emoji,
         rest_pct,
         health_emoji,
