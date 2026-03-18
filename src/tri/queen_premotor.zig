@@ -493,3 +493,224 @@ test "Premotor — Goal priority" {
     try std.testing.expectEqual(@as(u8, 80), Goal.heal_system.priority());
     try std.testing.expectEqual(@as(u8, 10), Goal.research_update.priority());
 }
+
+test "Premotor — SequenceStep condition evaluation" {
+    // No condition = always executable
+    const step_no_cond = SequenceStep{ .action = .doctor_scan };
+    try std.testing.expect(step_no_cond.condition == null);
+
+    // With build_ok condition
+    const step_with_cond = SequenceStep{
+        .action = .doctor_quick,
+        .condition = .build_ok,
+    };
+    try std.testing.expect(step_with_cond.condition != null);
+    try std.testing.expectEqual(SequenceStep.Condition.build_ok, step_with_cond.condition.?);
+}
+
+test "Premotor — ConditionContext default values" {
+    const ctx = SequenceStep.ConditionContext{};
+    try std.testing.expectEqual(false, ctx.build_ok);
+    try std.testing.expectEqual(false, ctx.tests_pass);
+    try std.testing.expectEqual(@as(u8, 0), ctx.farm_idle_count);
+    try std.testing.expectEqual(false, ctx.arena_exists);
+}
+
+test "Premotor — MotorPlan initialization" {
+    const plan = MotorPlan.init(.heal_system);
+    try std.testing.expectEqual(.heal_system, plan.source_goal);
+    try std.testing.expect(plan.sequence.step_count > 0);
+    try std.testing.expect(plan.priority <= 100);
+}
+
+test "Premotor — Goal enum coverage" {
+    inline for (std.meta.fields(Goal)) |field| {
+        const goal = @field(Goal, field.name);
+        try std.testing.expect(goal.priority() <= 100);
+        try std.testing.expect(goal.priority() >= 0);
+        try std.testing.expect(goal.label().len > 0);
+    }
+}
+
+test "Premotor — SequenceStep delays" {
+    const step = SequenceStep{
+        .action = .farm_recycle,
+        .delay_ms = 5000,
+    };
+    try std.testing.expectEqual(@as(u64, 5000), step.delay_ms);
+}
+
+test "Premotor — PredefinedSequences farmHealthCheck" {
+    const seq = PredefinedSequences.farmHealthCheck();
+    try std.testing.expectEqual(@as(u8, 2), seq.step_count);
+    try std.testing.expectEqual(.farm_status, seq.steps[0].action);
+    try std.testing.expectEqual(.farm_evolve_status, seq.steps[1].action);
+}
+
+test "Premotor — PlanQueue multiple operations" {
+    var queue = PlanQueue{};
+    const plan1 = MotorPlan.init(.heal_system);
+    const plan2 = MotorPlan.init(.check_farm);
+
+    _ = queue.push(plan1);
+    _ = queue.push(plan2);
+    try std.testing.expectEqual(@as(u8, 2), queue.len());
+
+    const first = queue.pop().?;
+    try std.testing.expectEqual(.heal_system, first.source_goal);
+
+    const second = queue.pop().?;
+    try std.testing.expectEqual(.check_farm, second.source_goal);
+
+    try std.testing.expect(queue.pop() == null);
+}
+
+test "Premotor — Condition enum coverage" {
+    inline for (std.meta.fields(SequenceStep.Condition)) |field| {
+        _ = @field(SequenceStep.Condition, field.name);
+    }
+}
+
+test "Premotor — FailureAction variants" {
+    const stop_action: SequenceStep.FailureAction = .stop;
+    const skip_action: SequenceStep.FailureAction = .skip;
+    const retry_action: SequenceStep.FailureAction = .retry;
+    const fallback_action: SequenceStep.FailureAction = .{ .fallback = .doctor_scan };
+
+    _ = stop_action;
+    _ = skip_action;
+    _ = retry_action;
+    _ = fallback_action;
+}
+
+test "Premotor — ActionSequence addStepWithCondition" {
+    var seq = ActionSequence{};
+    try seq.addStepWithCondition(.doctor_quick, .build_ok);
+    try std.testing.expectEqual(@as(u8, 1), seq.step_count);
+    try std.testing.expectEqual(.doctor_quick, seq.steps[0].action);
+    try std.testing.expectEqual(SequenceStep.Condition.build_ok, seq.steps[0].condition.?);
+}
+
+test "Premotor — ActionSequence addDelayedStep" {
+    var seq = ActionSequence{};
+    try seq.addDelayedStep(.farm_recycle, 5000);
+    try std.testing.expectEqual(@as(u8, 1), seq.step_count);
+    try std.testing.expectEqual(.farm_recycle, seq.steps[0].action);
+    try std.testing.expectEqual(@as(u64, 5000), seq.steps[0].delay_ms);
+}
+
+test "Premotor — PredefinedSequences cloudCleanup" {
+    const seq = PredefinedSequences.cloudCleanup();
+    try std.testing.expectEqual(@as(u8, 2), seq.step_count);
+    try std.testing.expectEqual(.cloud_spawn, seq.steps[0].action);
+    try std.testing.expectEqual(.cloud_cleanup, seq.steps[1].action);
+}
+
+test "Premotor — PlanQueue overflow" {
+    var queue = PlanQueue{};
+    var i: u8 = 0;
+    while (i < 8) : (i += 1) {
+        const plan = MotorPlan.init(.heal_system);
+        _ = queue.push(plan);
+    }
+    try std.testing.expectEqual(@as(u8, 8), queue.len());
+
+    // 9th push should fail
+    const overflow_plan = MotorPlan.init(.check_farm);
+    try std.testing.expect(!queue.push(overflow_plan));
+}
+
+test "Premotor — PlanQueue peek" {
+    var queue = PlanQueue{};
+    const plan = MotorPlan.init(.heal_system);
+
+    try std.testing.expect(queue.peek() == null);
+
+    _ = queue.push(plan);
+    const peeked = queue.peek().?;
+    try std.testing.expectEqual(.heal_system, peeked.source_goal);
+
+    // Peek doesn't remove
+    try std.testing.expectEqual(@as(u8, 1), queue.len());
+}
+
+test "Premotor — Sequencer checkCondition build_ok" {
+    var seq = Sequencer.init(std.testing.allocator);
+    seq.context.build_ok = true;
+    try std.testing.expect(seq.checkCondition(.build_ok, null));
+
+    seq.context.build_ok = false;
+    try std.testing.expect(!seq.checkCondition(.build_ok, null));
+}
+
+test "Premotor — Sequencer checkCondition health_critical" {
+    var seq = Sequencer.init(std.testing.allocator);
+    seq.context.ouroboros_score = 30.0;
+    try std.testing.expect(seq.checkCondition(.health_critical, null));
+
+    seq.context.ouroboros_score = 70.0;
+    try std.testing.expect(!seq.checkCondition(.health_critical, null));
+}
+
+test "Premotor — Sequencer checkCondition farm_has_leaders" {
+    var seq = Sequencer.init(std.testing.allocator);
+    seq.context.farm_idle_count = 5;
+    try std.testing.expect(seq.checkCondition(.farm_has_leaders, null));
+
+    seq.context.farm_idle_count = 2;
+    try std.testing.expect(!seq.checkCondition(.farm_has_leaders, null));
+}
+
+test "Premotor — Sequencer updateContext" {
+    var seq = Sequencer.init(std.testing.allocator);
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .test_rate = 90,
+        .farm_idle_count = 7,
+        .arena_battles = 5,
+        .ouroboros_score = 85.0,
+        .dirty_files = 3,
+        .farm_best_ppl = 8.5,
+        .stale_arena_hours = 12,
+    };
+
+    seq.updateContext(senses);
+    try std.testing.expect(seq.context.build_ok);
+    try std.testing.expect(seq.context.tests_pass);
+    try std.testing.expectEqual(@as(u8, 7), seq.context.farm_idle_count);
+    try std.testing.expect(seq.context.arena_exists);
+    try std.testing.expectApproxEqAbs(@as(f32, 85.0), seq.context.ouroboros_score, 0.01);
+    try std.testing.expectEqual(@as(u16, 3), seq.context.dirty_files);
+    try std.testing.expect(seq.context.has_uncommitted);
+}
+
+test "Premotor — PredefinedSequences checkAndHeal" {
+    const seq = PredefinedSequences.checkAndHeal();
+    try std.testing.expectEqual(@as(u8, 2), seq.step_count);
+    try std.testing.expectEqual(.doctor_scan, seq.steps[0].action);
+    try std.testing.expectEqual(.doctor_heal, seq.steps[1].action);
+    try std.testing.expectEqual(SequenceStep.Condition.health_critical, seq.steps[1].condition.?);
+    try std.testing.expectEqual(@as(u64, 1000), seq.steps[1].delay_ms);
+}
+
+test "Premotor — PredefinedSequences farmCycle" {
+    const seq = PredefinedSequences.farmCycle();
+    try std.testing.expectEqual(@as(u8, 2), seq.step_count);
+    try std.testing.expectEqual(.farm_status, seq.steps[0].action);
+    try std.testing.expectEqual(.farm_evolve_step, seq.steps[1].action);
+    try std.testing.expectEqual(SequenceStep.Condition.farm_has_leaders, seq.steps[1].condition.?);
+}
+
+test "Premotor — PredefinedSequences fullBackup" {
+    const seq = PredefinedSequences.fullBackup();
+    try std.testing.expectEqual(@as(u8, 2), seq.step_count);
+    try std.testing.expectEqual(.git_commit_state, seq.steps[0].action);
+    try std.testing.expectEqual(.git_push, seq.steps[1].action);
+}
+
+test "Premotor — ActionSequence nameStr" {
+    var seq = ActionSequence{};
+    @memcpy(seq.name[0.."test_name".len], "test_name");
+    seq.name_len = "test_name".len;
+    try std.testing.expectEqualStrings("test_name", seq.nameStr());
+}
