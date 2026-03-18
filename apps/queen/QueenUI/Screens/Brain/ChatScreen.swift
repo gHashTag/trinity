@@ -1123,6 +1123,20 @@ struct ChatScreen: View {
                     .fill(Color.white.opacity(0.06))
                     .frame(height: 1)
 
+                // Tri CLI Tools Panel
+                TriToolsChatPanel()
+
+                Rectangle()
+                    .fill(Color.white.opacity(0.06))
+                    .frame(height: 1)
+
+                // MCP Tools Panel
+                MCPToolsPanel()
+
+                Rectangle()
+                    .fill(Color.white.opacity(0.06))
+                    .frame(height: 1)
+
                 ContextInspector()
                     .frame(maxHeight: 200)
 
