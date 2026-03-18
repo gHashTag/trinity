@@ -18,6 +18,7 @@ struct QueenApp: App {
         WindowGroup {
             MainView()
                 .environmentObject(watcher)
+                .environmentObject(AccessibilityManager.shared)
                 .preferredColorScheme(resolvedScheme)
         }
         .windowStyle(.titleBar)
