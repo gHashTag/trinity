@@ -231,7 +231,7 @@ struct Shimmer<Content: View>: View {
                     .offset(x: phase - geometry.size.width)
                 }
                 .onAppear {
-                    let width = 300 // Approximate width
+                    let width: CGFloat = 300 // Approximate width
                     withAnimation(.linear(duration: duration).repeatForever(autoreverses: false)) {
                         phase = width * 2
                     }
