@@ -25,6 +25,10 @@ const queen_actions = @import("queen_actions.zig");
 const queen_telegram = @import("queen_telegram.zig");
 const queen_policy = @import("queen_policy.zig");
 
+// Phase 2: Brain motor hierarchy
+const queen_premotor = @import("queen_premotor.zig");
+const queen_motor = @import("queen_motor.zig");
+
 const Allocator = std.mem.Allocator;
 const FacultySnapshot = faculty_types.FacultySnapshot;
 const print = std.debug.print;
@@ -326,10 +330,51 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
             }
         }
 
-        // 5c. Expire old pending approvals
+        // 5c. v4: Phase 2 Brain — PMC → M1 pipeline (goal-directed planning)
+        emitStep(&state, 7, 12, "Phase 2 Brain (PMC → M1)");
+        if (config.allow_auto_actions and !config.dry_run) {
+            const goal = determineGoal(snapshot, evo, &incidents);
+            if (goal) |g| {
+                var plan = queen_premotor.MotorPlan.init(g);
+                var motor_executor = queen_motor.MotorExecutor.init(allocator);
+                const exec_result = motor_executor.executePlan(&plan) catch |err| {
+                    if (!config.daemon) {
+                        print("  " ++ qt.E_CROSS ++ " Plan execution failed: {s}\n", .{@errorName(err)});
+                    }
+                    incidents.record(.auto_action_fail, .doctor_quick, false, @errorName(err));
+                    continue;
+                };
+
+                if (exec_result.success) {
+                    if (!config.daemon) {
+                        print("  " ++ qt.E_BOLT ++ " Phase 2: {s} plan executed ({d}/{d} steps, {d}ms)\n", .{
+                            g.label(), exec_result.steps_executed, plan.sequence.step_count, exec_result.total_duration_ms,
+                        });
+                    }
+                    if (g == .heal_system) incidents.heal_cycles_24h +|= 1;
+                } else {
+                    if (!config.daemon) {
+                        print("  " ++ qt.E_CROSS ++ " Phase 2: {s} plan failed at step {d}: {s}\n", .{
+                            g.label(), exec_result.failed_at orelse 0, exec_result.error_msg,
+                        });
+                    }
+                    incidents.record(.auto_action_fail, .doctor_quick, false, exec_result.error_msg);
+                }
+
+                queen_policy.writeAuditEntry(
+                    "phase2",
+                    .doctor_quick,
+                    if (exec_result.success) .allowed else .denied_escalated,
+                    exec_result.success,
+                    if (exec_result.success) @as([]const u8, "plan executed") else exec_result.error_msg,
+                );
+            }
+        }
+
+        // 5d. Expire old pending approvals
         pending.expireOld();
 
-        // 5d. Process Telegram commands (v3: with policy context)
+        // 5f. Process Telegram commands (v3: with policy context)
         while (cmd_queue.pop()) |cmd| {
             queen_telegram.dispatchCommand(.{
                 .allocator = allocator,
@@ -343,14 +388,14 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
             state.tg_last_update_id = last_update_id.load(.acquire);
         }
 
-        // 5e. Read UI user input (mid-flight steering)
+        // 5g. Read UI user input (mid-flight steering)
         readUserInput(&state);
 
-        // 5f. Read UI action queue (SwiftUI button actions)
+        // 5h. Read UI action queue (SwiftUI button actions)
         readActionsQueue(allocator, &state);
 
         // 6. Hourly heartbeat (pinned)
-        emitStep(&state, 7, 10, "Heartbeat check");
+        emitStep(&state, 8, 12, "Heartbeat check");
         if (shouldSendHeartbeat(state, cycle_start)) {
             var msg_buf: [2048]u8 = undefined;
             const msg = fmtHeartbeat(&msg_buf, snapshot, evo, arena, senses);
@@ -370,7 +415,7 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
         }
 
         // 7. Daily summary (23:00)
-        emitStep(&state, 8, 10, "Daily summary check");
+        emitStep(&state, 9, 12, "Daily summary check");
         if (shouldSendDaily(state, cycle_start)) {
             var msg_buf: [2048]u8 = undefined;
             const msg = fmtDaily(&msg_buf, snapshot, evo, arena, senses, state);
@@ -380,7 +425,7 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
         }
 
         // 8. Update delta state
-        emitStep(&state, 9, 10, "Update delta state");
+        emitStep(&state, 10, 12, "Update delta state");
         state.prev_build_ok = snapshot.build_ok;
         state.prev_dirty = snapshot.dirty_files;
         if (evo.best_ppl < state.prev_best_ppl) state.prev_best_ppl = evo.best_ppl;
@@ -389,7 +434,7 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
         if (!config.daemon) printCycleSummary(snapshot, evo, arena, alert_count, senses, state);
 
         // 10. Persist
-        emitStep(&state, 10, 10, "Persist state");
+        emitStep(&state, 11, 12, "Persist state");
         saveState(state);
         logEvent(&state, snapshot, alert_count);
         writeAuditSummary(config, &counters);
@@ -600,6 +645,31 @@ fn shouldSendDaily(state: QueenState, now: i64) bool {
     const day_sec: u64 = @intCast(@mod(now, 86400));
     const hour = day_sec / 3600;
     return (hour == 23);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHASE 2 BRAIN — Goal Planner (PFC → PMC)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn determineGoal(snap: FacultySnapshot, evo: EvolutionInfo, incidents: *const queen_policy.IncidentMemory) ?queen_premotor.Goal {
+    if (!snap.build_ok) return .heal_system;
+
+    const fail_rate: f32 = if (incidents.total_auto_actions_24h > 0)
+        @as(f32, @floatFromInt(incidents.total_auto_fails_24h)) / @as(f32, @floatFromInt(incidents.total_auto_actions_24h))
+    else
+        0;
+    if (fail_rate > 0.5 and incidents.total_auto_fails_24h >= 3) {
+        return .assess_health;
+    }
+
+    if (evo.service_count == 0) return .check_farm;
+    if (snap.dirty_files > 100) return .cleanup_cloud;
+
+    const ts = std.time.timestamp();
+    const hour: u64 = @intCast(@mod(@divTrunc(ts, 3600), 24));
+    if (hour == 9) return .research_update;
+
+    return null;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
