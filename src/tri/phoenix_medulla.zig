@@ -95,12 +95,7 @@ pub fn heartbeatPing(allocator: Allocator) !void {
     );
     defer allocator.free(data);
 
-    _ = try hippocampus.write(allocator, .{
-        .agent = "phoenix",
-        .kind = .heartbeat,
-        .summary = "medulla heartbeat",
-        .data = data,
-    });
+    _ = try hippocampus.writeHeartbeat(allocator, "phoenix", data);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════════════
