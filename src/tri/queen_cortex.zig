@@ -474,3 +474,60 @@ test "statusStr format includes Cortex prefix" {
 
     try std.testing.expect(std.mem.indexOf(u8, result, "Cortex:") != null);
 }
+
+test "cortex — dlpfc module export" {
+    _ = dlpfc.health;
+    _ = dlpfc.CellHealth;
+}
+
+test "cortex — vmpfc module export" {
+    _ = vmpfc.health;
+    _ = vmpfc.phiWeightedScore;
+}
+
+test "cortex — ofc module export" {
+    _ = ofc.send;
+    _ = ofc.Mood;
+}
+
+test "cortex — vlpfc module export" {
+    _ = vlpfc.filterRelays;
+    _ = vlpfc.FocusArea;
+}
+
+test "cortex — dmpfc module export" {
+    _ = dmpfc.selfCheck;
+    _ = dmpfc.SelfCheck;
+}
+
+test "cortex — acc module export" {
+    _ = acc.detectConflicts;
+    _ = acc.Conflict;
+}
+
+test "cortex — CellHealth with mixed statuses" {
+    const h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 1 },
+        .vmpfc = .{ .status = .weak, .cycle = 2 },
+        .ofc = .{ .status = .healthy, .cycle = 0 },
+        .vlpfc = .{ .status = .broken, .cycle = 3 },
+        .dmpfc = .{ .status = .healthy, .cycle = 0 },
+        .acc = .{ .status = .healthy, .cycle = 1 },
+    };
+
+    try std.testing.expect(!isHealthy(&h));
+}
+
+test "cortex — combinedCycle with all zero" {
+    const h: CellHealth = .{
+        .dlpfc = .{ .status = .healthy, .cycle = 0 },
+        .vmpfc = .{ .status = .healthy, .cycle = 0 },
+        .ofc = .{ .status = .healthy, .cycle = 0 },
+        .vlpfc = .{ .status = .healthy, .cycle = 0 },
+        .dmpfc = .{ .status = .healthy, .cycle = 0 },
+        .acc = .{ .status = .healthy, .cycle = 0 },
+    };
+
+    const total = combinedCycle(&h);
+    try std.testing.expectEqual(@as(u32, 0), total);
+}

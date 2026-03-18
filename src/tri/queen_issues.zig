@@ -1128,3 +1128,99 @@ test "queen_issues — countOpenIssues handles errors gracefully" {
     const count = countOpenIssues(std.testing.allocator);
     try std.testing.expect(count >= 0);
 }
+
+test "queen_issues — StepStatus all values" {
+    const statuses = [_]StepStatus{ .thinking, .acting, .done, .failed };
+    for (statuses) |s| {
+        _ = s; // Verify all enum values exist
+    }
+}
+
+test "queen_issues — IssueResult populated" {
+    const result = IssueResult{
+        .number = 42,
+        .url = "https://example.com/issue/42",
+    };
+
+    try std.testing.expectEqual(@as(u32, 42), result.number);
+    try std.testing.expectEqualStrings("https://example.com/issue/42", result.url);
+}
+
+test "queen_issues — IssueResult empty case" {
+    const result = IssueResult{
+        .number = 0,
+        .url = "",
+    };
+
+    try std.testing.expectEqual(@as(u32, 0), result.number);
+    try std.testing.expectEqual(@as(usize, 0), result.url.len);
+}
+
+test "queen_issues — IssueStatus default initialization" {
+    const status = IssueStatus{
+        .number = 0,
+        .state = "",
+        .title = "",
+    };
+    try std.testing.expectEqual(@as(u32, 0), status.number);
+    try std.testing.expectEqual(@as(u8, 0), status.label_count);
+}
+
+test "queen_issues — buildStepComment thinking status" {
+    const comment = try buildStepComment(std.testing.allocator, "ralph", 1, 5, "Analyze codebase", .thinking, "Checking structure", "Read files", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "THINKING") != null);
+}
+
+test "queen_issues — buildStepComment acting status" {
+    const comment = try buildStepComment(std.testing.allocator, "ralph", 2, 5, "Implement fix", .acting, "", "Make changes", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "ACTING") != null);
+}
+
+test "queen_issues — buildStepComment done status" {
+    const comment = try buildStepComment(std.testing.allocator, "ralph", 5, 5, "Complete task", .done, "", "", "Success", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "DONE") != null);
+}
+
+test "queen_issues — buildStepComment failed status" {
+    const comment = try buildStepComment(std.testing.allocator, "ralph", 3, 5, "Retry operation", .failed, "", "", "Error occurred", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "FAILED") != null);
+}
+
+test "queen_issues — buildStepComment with all fields" {
+    const comment = try buildStepComment(
+        std.testing.allocator,
+        "agent",
+        7,
+        10,
+        "Complex step description",
+        .acting,
+        "Need to analyze the problem first",
+        "Execute the main operation",
+        "Operation succeeded",
+        "Proceed to next phase",
+    );
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "7/10") != null);
+    try std.testing.expect(std.mem.indexOf(u8, comment, "Thought") != null);
+    try std.testing.expect(std.mem.indexOf(u8, comment, "Action") != null);
+    try std.testing.expect(std.mem.indexOf(u8, comment, "Result") != null);
+    try std.testing.expect(std.mem.indexOf(u8, comment, "Next") != null);
+}
+
+test "queen_issues — RepoDetection default values" {
+    const detection = RepoDetection{
+        .owner = "",
+        .repo = "",
+    };
+    try std.testing.expectEqual(@as(usize, 0), detection.owner.len);
+    try std.testing.expectEqual(@as(usize, 0), detection.repo.len);
+}
