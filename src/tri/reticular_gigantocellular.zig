@@ -343,3 +343,230 @@ test "gigantocellular — MassAction requires approval for dangerous ops" {
     const redeploy = MassAction{ .kind = .full_farm_redeploy, .count = 0 };
     try std.testing.expectEqual(@as(u8, 3), redeploy.kind.dangerLevel());
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MASS ACTION STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "gigantocellular — MassAction defaults" {
+    const action = MassAction{
+        .kind = .bulk_inject,
+        .count = 5,
+    };
+
+    try std.testing.expectEqual(MassActionKind.bulk_inject, action.kind);
+    try std.testing.expectEqual(@as(usize, 5), action.count);
+    try std.testing.expect(action.requires_approval);
+    try std.testing.expectEqual(@as(usize, 0), action.reason_len);
+}
+
+test "gigantocellular — MassAction reasonStr empty" {
+    const action = MassAction{ .kind = .bulk_inject, .count = 0 };
+
+    try std.testing.expectEqualStrings("", action.reasonStr());
+}
+
+test "gigantocellular — MassAction setReason truncates" {
+    var action = MassAction{ .kind = .bulk_inject, .count = 0 };
+
+    // Create a reason longer than 256 bytes
+    var long_text: [300]u8 = undefined;
+    @memset(&long_text, 'A');
+    long_text[299] = 0;
+
+    action.setReason(&long_text);
+    try std.testing.expectEqual(@as(usize, 256), action.reason_len); // Truncated to max
+}
+
+test "gigantocellular — MassAction setReason updates approval" {
+    var action = MassAction{ .kind = .bulk_inject, .count = 0 };
+    action.setReason("Test");
+
+    // bulk_inject has danger level 2 > 1, so requires_approval should be true
+    try std.testing.expect(action.requires_approval);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACTION RESULT STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "gigantocellular — ActionResult defaults" {
+    const result = ActionResult{
+        .success = true,
+        .affected_count = 10,
+        .duration_ms = 100,
+    };
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(@as(usize, 10), result.affected_count);
+    try std.testing.expectEqual(@as(u64, 100), result.duration_ms);
+    try std.testing.expectEqual(@as(usize, 0), result.output_len);
+    try std.testing.expectEqual(@as(i64, 0), result.timestamp);
+}
+
+test "gigantocellular — ActionResult outputStr empty" {
+    const result = ActionResult{ .success = false, .affected_count = 0, .duration_ms = 0 };
+
+    try std.testing.expectEqualStrings("", result.outputStr());
+}
+
+test "gigantocellular — ActionResult setOutput updates timestamp" {
+    var result = ActionResult{ .success = false, .affected_count = 0, .duration_ms = 0 };
+
+    const before = std.time.timestamp();
+    result.setOutput("Test");
+    const after = std.time.timestamp();
+
+    try std.testing.expect(result.timestamp >= before);
+    try std.testing.expect(result.timestamp <= after);
+}
+
+test "gigantocellular — ActionResult setOutput truncates" {
+    var result = ActionResult{ .success = false, .affected_count = 0, .duration_ms = 0 };
+
+    // Create output longer than 512 bytes
+    var long_text: [600]u8 = undefined;
+    @memset(&long_text, 'B');
+    long_text[599] = 0;
+
+    result.setOutput(&long_text);
+    try std.testing.expectEqual(@as(usize, 512), result.output_len); // Truncated to max
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EXECUTE MASS ACTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "gigantocellular — executeMassAction bulk_inject" {
+    const action = try planMassAction(std.testing.allocator, .bulk_inject);
+    const config = qt.QueenConfig{ .max_auto_level = 3 }; // Allow L2
+
+    const result = try executeMassAction(std.testing.allocator, action, config);
+
+    try std.testing.expect(result.success);
+    try std.testing.expect(result.affected_count > 0);
+    try std.testing.expect(result.duration_ms >= 0);
+}
+
+test "gigantocellular — executeMassAction mass_recycle" {
+    const action = try planMassAction(std.testing.allocator, .mass_recycle);
+    const config = qt.QueenConfig{ .max_auto_level = 3 };
+
+    const result = try executeMassAction(std.testing.allocator, action, config);
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(@as(usize, 16), result.affected_count); // Mock value
+}
+
+test "gigantocellular — executeMassAction full_farm_redeploy" {
+    const action = try planMassAction(std.testing.allocator, .full_farm_redeploy);
+    const config = qt.QueenConfig{ .max_auto_level = 3 };
+
+    const result = try executeMassAction(std.testing.allocator, action, config);
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(@as(usize, 100), result.affected_count); // Mock value
+}
+
+test "gigantocellular — executeMassAction duration calculated" {
+    const action = try planMassAction(std.testing.allocator, .bulk_inject);
+    const config = qt.QueenConfig{ .max_auto_level = 3 };
+
+    const result = try executeMassAction(std.testing.allocator, action, config);
+
+    // Duration should be non-negative (abs of elapsed)
+    try std.testing.expect(result.duration_ms >= 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PARSE AFFECTED COUNT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "gigantocellular — parseAffectedCount zero" {
+    const output = "Recycled: 0 workers\nDone";
+    try std.testing.expectEqual(@as(usize, 0), parseAffectedCount(output).?);
+}
+
+test "gigantocellular — parseAffectedCount large number" {
+    const output = "Recycled: 99999 workers\nDone";
+    try std.testing.expectEqual(@as(usize, 99999), parseAffectedCount(output).?);
+}
+
+test "gigantocellular — parseAffectedCount multiple spaces" {
+    const output = "Recycled:     5     workers\nDone";
+    try std.testing.expectEqual(@as(usize, 5), parseAffectedCount(output).?);
+}
+
+test "gigantocellular — parseAffectedCount no match" {
+    const output = "Some output without Recycled pattern";
+    try std.testing.expectEqual(@as(?usize, null), parseAffectedCount(output));
+}
+
+test "gigantocellular — parseAffectedCount empty output" {
+    const output = "";
+    try std.testing.expectEqual(@as(?usize, null), parseAffectedCount(output));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PLAN MASS ACTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "gigantocellular — planMassAction mass_recycle" {
+    const action = try planMassAction(std.testing.allocator, .mass_recycle);
+
+    try std.testing.expectEqual(MassActionKind.mass_recycle, action.kind);
+    try std.testing.expectEqual(@as(usize, 16), action.count);
+    try std.testing.expectEqualStrings("Recycle all stale/crashed workers", action.reasonStr());
+}
+
+test "gigantocellular — planMassAction full_farm_redeploy" {
+    const action = try planMassAction(std.testing.allocator, .full_farm_redeploy);
+
+    try std.testing.expectEqual(MassActionKind.full_farm_redeploy, action.kind);
+    try std.testing.expectEqual(@as(usize, 100), action.count);
+    try std.testing.expectEqualStrings("Full farm redeploy after critical failure", action.reasonStr());
+}
+
+test "gigantocellular — planMassAction requires_approval" {
+    const bulk = try planMassAction(std.testing.allocator, .bulk_inject);
+    const recycle = try planMassAction(std.testing.allocator, .mass_recycle);
+    const redeploy = try planMassAction(std.testing.allocator, .full_farm_redeploy);
+
+    try std.testing.expect(bulk.requires_approval); // danger level 2 > 1
+    try std.testing.expect(recycle.requires_approval); // danger level 2 > 1
+    try std.testing.expect(redeploy.requires_approval); // danger level 3 > 1
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CELL HEALTH TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "gigantocellular — CellHealth timestamp" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
+
+test "gigantocellular — CellHealth defaults" {
+    const h = CellHealth{};
+
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
+
+test "gigantocellular — CellHealth Status enum" {
+    try std.testing.expectEqual(CellHealth.Status.healthy, .healthy);
+    try std.testing.expectEqual(CellHealth.Status.weak, .weak);
+    try std.testing.expectEqual(CellHealth.Status.broken, .broken);
+}
+
+test "gigantocellular — CellHealth custom values" {
+    var h = CellHealth{};
+    h.status = .weak;
+    h.cycle = 5;
+    h.last_check = 12345;
+
+    try std.testing.expectEqual(CellHealth.Status.weak, h.status);
+    try std.testing.expectEqual(@as(u32, 5), h.cycle);
+    try std.testing.expectEqual(@as(i64, 12345), h.last_check);
+}
