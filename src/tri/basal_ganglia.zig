@@ -73,9 +73,8 @@ pub fn suppressConflicting(
     candidates: []ActionCandidate,
     selected: qt.ActionKind,
 ) !void {
-    // TODO: Implement conflict detection
-    _ = candidates;
-    _ = selected;
+    const queen_acc = @import("queen_acc.zig");
+    try queen_acc.suppressConflicting(candidates, selected);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
