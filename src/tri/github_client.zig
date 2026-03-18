@@ -62,11 +62,12 @@ pub const GitHubClient = struct {
     pub fn initWithMode(allocator: std.mem.Allocator, dry_run: bool, preferred_mode: ?Mode) !Self {
         if (dry_run) {
             const owner_repo = detectOwnerRepo(allocator) catch {
+                // Use static strings (will be duped for consistent ownership)
                 return Self{
                     .allocator = allocator,
                     .token = null,
-                    .owner = "unknown",
-                    .repo = "unknown",
+                    .owner = try allocator.dupe(u8, "unknown"),
+                    .repo = try allocator.dupe(u8, "unknown"),
                     .mode = .dry_run,
                 };
             };
@@ -122,6 +123,8 @@ pub const GitHubClient = struct {
 
     pub fn deinit(self: *Self) void {
         if (self.token) |t| self.allocator.free(t);
+        // Note: owner/repo ownership is transferred to the caller (e.g., IssueTracker)
+        // The caller is responsible for freeing these strings
         self.token = null;
     }
 

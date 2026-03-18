@@ -37,17 +37,12 @@ pub const IssueTracker = struct {
             app_auth = try github_app_auth.GitHubAppAuth.init(allocator);
         }
 
-        // Fallback to regular client
+        // Fallback to regular client (this already detects owner/repo)
         client = try github_client.GitHubClient.init(allocator, dry_run);
 
-        // Detect owner/repo from git remote
-        var owner: []const u8 = "gHashTag";
-        var repo: []const u8 = "trinity";
-
-        if (detectRepo(allocator)) |detected| {
-            owner = detected.owner;
-            repo = detected.repo;
-        }
+        // Use owner/repo from the client (already allocated by GitHubClient.init())
+        const owner = client.?.owner;
+        const repo = client.?.repo;
 
         return .{
             .allocator = allocator,
@@ -61,7 +56,11 @@ pub const IssueTracker = struct {
 
     pub fn deinit(self: *Self) void {
         if (self.app_auth) |*auth| auth.deinit();
+        // Free owner/repo (ownership transferred from GitHubClient)
+        self.allocator.free(self.owner);
+        self.allocator.free(self.repo);
         // client is a value type, no deinit needed
+        // Note: client.deinit() is NOT called because we transferred ownership of owner/repo
     }
 
     /// Create a new GitHub issue
