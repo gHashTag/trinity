@@ -11,6 +11,7 @@ const Allocator = std.mem.Allocator;
 const hippocampus = @import("hippocampus.zig");
 const voice_engine = @import("voice_engine.zig");
 const qt = @import("queen_types.zig"); // For findJson helpers
+const farm_accounts = @import("farm_accounts.zig");
 
 const FRESHNESS_THRESHOLD: i64 = 300; // 5 minutes
 const MU_ERRORS_DIR = ".trinity/mu/errors";
@@ -565,7 +566,6 @@ pub const FarmStatus = struct {
 };
 
 pub fn getFarmStatus(allocator: Allocator) !FarmStatus {
-    _ = allocator;
     var status = FarmStatus{ .timestamp = std.time.timestamp() };
 
     // Read from evolution state
@@ -606,9 +606,14 @@ pub fn getFarmStatus(allocator: Allocator) !FarmStatus {
         } else break;
     }
 
-    // TODO: Count accounts from farm_accounts when available
-    status.accounts_total = 8; // Default: 8 Railway accounts
-    status.accounts_alive = status.accounts_total; // Assume all alive for now
+    // Count accounts from farm_accounts
+    var acct_buf: [farm_accounts.MAX_ACCOUNTS]farm_accounts.Account = undefined;
+    const acct_count = farm_accounts.discoverAccounts(allocator, &acct_buf);
+    defer farm_accounts.deinitAccounts(allocator, &acct_buf, acct_count);
+
+    status.accounts_total = acct_count;
+    // Assume all accounts are alive (no health check API yet)
+    status.accounts_alive = acct_count;
 
     return status;
 }
@@ -643,17 +648,69 @@ pub const GitHubCache = struct {
             }
         }
 
-        // Fetch fresh data
-        const issues = GitHubIssues{ .timestamp = now };
+        // Fetch fresh data using github_client
+        const github_client_mod = @import("github_client.zig");
+        var client = github_client_mod.GitHubClient.init(allocator, true) catch {
+            // On failure, return empty counts
+            const empty = GitHubIssues{ .timestamp = now };
+            self.issues = empty;
+            self.cached_ts = now;
+            return empty;
+        };
+        // Note: GitHubClient.init allocates owner/repo, need to free them manually
+        defer {
+            allocator.free(client.owner);
+            allocator.free(client.repo);
+        }
 
-        // TODO: Use github_client.zig when listIssues is implemented
-        // For now, return empty counts
-        _ = allocator;
+        // Get all open issues
+        const issues_json = client.listIssues("open") catch {
+            // On failure, return empty counts
+            const empty = GitHubIssues{ .timestamp = now };
+            self.issues = empty;
+            self.cached_ts = now;
+            return empty;
+        };
+        defer allocator.free(issues_json);
 
-        self.issues = issues;
+        // Parse issue counts from JSON
+        var result = GitHubIssues{ .timestamp = now, .last_activity = now };
+
+        // Count total open issues (approximate by counting "\"number\":")
+        var pos: usize = 0;
+        while (std.mem.indexOfPos(u8, issues_json, pos, "\"number\":")) |idx| {
+            result.open += 1;
+            pos = idx + 10;
+            if (pos >= issues_json.len) break;
+        }
+
+        // Count agent:spawn labeled issues
+        pos = 0;
+        while (std.mem.indexOfPos(u8, issues_json, pos, "\"agent:spawn\"")) |idx| {
+            result.agent_spawn += 1;
+            pos = idx + 13;
+            if (pos >= issues_json.len) break;
+        }
+
+        // Count farm tasks (issues with "farm" in title or labels)
+        pos = 0;
+        while (std.mem.indexOfPos(u8, issues_json, pos, "\"title\":")) |idx| {
+            const title_start = idx + 9;
+            const title_end = std.mem.indexOfScalarPos(u8, issues_json, title_start, '"') orelse issues_json.len;
+            const title = issues_json[title_start..title_end];
+            if (std.mem.indexOf(u8, title, "farm") != null or
+                std.mem.indexOf(u8, title, "FARM") != null)
+            {
+                result.farm_tasks += 1;
+            }
+            pos = title_end + 1;
+            if (pos >= issues_json.len) break;
+        }
+
+        self.issues = result;
         self.cached_ts = now;
 
-        return issues;
+        return result;
     }
 
     pub fn invalidate(self: *GitHubCache) void {

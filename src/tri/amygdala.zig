@@ -13,6 +13,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const hippocampus = @import("hippocampus.zig");
 const ofc = @import("queen_ofc.zig");
+const voice_engine = @import("voice_engine.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // EMOTION — Basic emotion types
@@ -270,10 +271,39 @@ pub fn extinguish(
     allocator: Allocator,
     context: []const u8,
 ) !void {
-    _ = allocator;
-    _ = context;
-    // TODO: Implement extinction tracking
-    // For now, fear extinction happens through lack of reinforcement
+    // Find fear memories for this context
+    var results = try hippocampus.read(allocator, .{
+        .tag_filter = "emo:fear",
+        .limit = 100,
+    });
+    defer results.deinit(allocator);
+
+    const extinction_increment: f32 = 0.1; // 10% progress per extinguish call
+
+    for (results.items) |*rec| {
+        const summary = rec.summary();
+        // Check if this memory matches our context
+        if (std.mem.indexOf(u8, summary, context) != null) {
+            // Parse current extinction_progress from data
+            const data = rec.data();
+            var current_progress: f32 = 0.0;
+            if (voice_engine.parseJsonF32(data, "\"extinction_progress\":")) |v| {
+                current_progress = v;
+            }
+
+            // Cap at 1.0 (fully extinguished)
+            const new_progress = @min(1.0, current_progress + extinction_increment);
+
+            // Update the memory with new extinction progress
+            var updated_data_buf: [512]u8 = undefined;
+            const updated_data = try std.fmt.bufPrint(&updated_data_buf,
+                \\"{{"extinction_progress":{d:.1},"context":"{s}"}}
+            , .{ new_progress, context });
+
+            // Write updated memory as a learning episode
+            try hippocampus.writeLearning(allocator, "amygdala", updated_data);
+        }
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
