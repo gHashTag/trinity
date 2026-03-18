@@ -5613,8 +5613,9 @@ fn runFixBio(allocator: Allocator, args: []const []const u8) !void {
 
     for (all_cells) |c| {
         const m = c.manifest;
-        // Skip virtual/sub cells without cell.tri (they can't have [biology])
-        if (m.kind == .virtual or m.kind == .virtual_sub) continue;
+        // Skip virtual cells (kind="virtual" or "virtual-sub") without cell.tri
+        const is_virtual = std.mem.eql(u8, m.kind, "virtual") or std.mem.eql(u8, m.kind, "virtual-sub");
+        if (is_virtual) continue;
         if (m.bio_system.len == 0) {
             const path_copy = try allocator.dupe(u8, c.manifest.path);
             try missing.append(allocator, path_copy);
