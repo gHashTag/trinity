@@ -938,3 +938,85 @@ test "queen_issues — IssueResult size" {
     try std.testing.expect(size > 0);
     try std.testing.expect(size < 50); // Reasonable upper bound
 }
+
+test "queen_issues — IssueTracker init with dry_run" {
+    var tracker = try IssueTracker.init(std.testing.allocator, true);
+    defer tracker.deinit();
+
+    try std.testing.expect(tracker.dry_run);
+    try std.testing.expectEqualStrings("gHashTag", tracker.owner);
+    try std.testing.expectEqualStrings("trinity", tracker.repo);
+}
+
+test "queen_issues — IssueTracker init without dry_run" {
+    var tracker = try IssueTracker.init(std.testing.allocator, false);
+    defer tracker.deinit();
+
+    try std.testing.expect(!tracker.dry_run);
+}
+
+test "queen_issues — buildStepComment all step types" {
+    const step_types = [_]StepStatus{
+        .thinking, .acting, .done, .failed,
+    };
+
+    for (step_types) |step_type| {
+        const comment = try buildStepComment(std.testing.allocator, "test_agent", 1, 3, "Test step", step_type, "Thought", "Action 1", "Action 2", "Action 3");
+        defer std.testing.allocator.free(comment);
+
+        try std.testing.expect(std.mem.indexOf(u8, comment, "test_agent") != null);
+        try std.testing.expect(std.mem.indexOf(u8, comment, "1/3") != null);
+    }
+}
+
+test "queen_issues — buildStepComment with special characters" {
+    const comment = try buildStepComment(std.testing.allocator, "agent-name", 5, 10, "Fix <bug> & \"issue\"", .acting, "Checking code", "Found: x > 0", "Fixed: x >= 0", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "agent-name") != null);
+    try std.testing.expect(std.mem.indexOf(u8, comment, "5/10") != null);
+}
+
+test "queen_issues — buildStepComment multiline fields" {
+    const long_thought = "This is a very long thought that spans multiple lines and contains detailed analysis of the problem at hand";
+    const long_action = "Performed complex refactoring across multiple files to resolve the issue";
+
+    const comment = try buildStepComment(std.testing.allocator, "ralph", 2, 5, "Complex task", .thinking, long_thought, long_action, "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(comment.len > 0);
+}
+
+test "queen_issues — IssueStatus struct fields" {
+    const status = IssueStatus{
+        .number = 12345,
+        .state = "open",
+        .title = "Test issue",
+        .label_count = 3,
+    };
+
+    try std.testing.expectEqual(@as(u32, 12345), status.number);
+    try std.testing.expectEqualStrings("open", status.state);
+    try std.testing.expectEqualStrings("Test issue", status.title);
+    try std.testing.expectEqual(@as(u8, 3), status.label_count);
+}
+
+test "queen_issues — IssueResult fields" {
+    const result = IssueResult{
+        .number = 67890,
+        .url = "https://github.com/gHashTag/trinity/issues/67890",
+    };
+
+    try std.testing.expectEqual(@as(u32, 67890), result.number);
+    try std.testing.expectEqualStrings("https://github.com/gHashTag/trinity/issues/67890", result.url);
+}
+
+test "queen_issues — IssueResult empty" {
+    const result = IssueResult{
+        .number = 0,
+        .url = "",
+    };
+
+    try std.testing.expectEqual(@as(u32, 0), result.number);
+    try std.testing.expectEqual(@as(usize, 0), result.url.len);
+}
