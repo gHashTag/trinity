@@ -353,7 +353,7 @@ fn runAgenticLoop(
         defer allocator.free(response_body);
 
         var parsed = proto.parseResponse(allocator, response_body);
-        defer parsed.deinit(allocator);
+        defer parsed.deinit();
 
         total_input_tokens += parsed.input_tokens;
         total_output_tokens += parsed.output_tokens;
