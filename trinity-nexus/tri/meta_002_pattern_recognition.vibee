@@ -1,0 +1,60 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# META-002: Validate pattern recognition
+# φ² + 1/φ² = 3 | PAS v8.21 Validation Task
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: meta_002_pattern_recognition_validation
+version: "8.21.0"
+language: zig
+module: meta_validation
+
+types:
+  Pattern:
+    fields:
+      id: String
+      type: String
+      confidence: Float
+      frequency: Int
+
+  RecognitionResult:
+    fields:
+      pattern_id: String
+      recognized: Bool
+      accuracy: Float
+      false_positive_rate: Float
+
+behaviors:
+  - name: test_code_pattern_detection
+    given: 1000 code snippets with known patterns
+    when: Pattern recognizer analyzes
+    then: Detect patterns with 95%+ accuracy
+
+  - name: test_hierarchical_pattern_learning
+    given: Multi-level pattern hierarchy
+    when: New pattern observed at level 1
+    then: Should propagate to levels 2-3 with proper weight
+
+  - name: test_pattern_interference
+    given: Similar patterns A and B (80% overlap)
+    when: Classify ambiguous input
+    then: Should handle with >85% confidence
+
+  - name: test_forgetting_curve
+    given: Learned pattern with frequency N
+    when: Pattern not observed for T time
+    then: Decay follows φ-based forgetting curve
+
+  - name: test_pattern_reconstruction
+    given: Partial pattern (30% missing)
+    when: Attempt reconstruction
+    then: Reconstruct with 90%+ accuracy using VSA completion
+
+  - name: measure_pas_pattern_efficiency
+    given: Pattern recognition task
+    when: PAS-guided vs random search
+    then: PAS finds patterns 3x faster
+
+  - name: validate_lucas_checksum
+    given: Pattern database with L(10)=123 checksum
+    when: Verify integrity
+    then: All patterns pass checksum validation

@@ -1,0 +1,33 @@
+name: coherent_kn
+version: "1.0.0"
+language: zig
+module: coherent_kn
+
+types:
+  KNGenSample:
+    fields:
+      temperature: Float
+      discount: Float
+      lambda: Float
+      text: String
+      unique_count: Int
+
+behaviors:
+  - name: generateWithKN
+    given: KN interpolated model (D=0.75, lambda=0.3) + penalty (alpha=1.5) + blocking
+    when: Generate 30 words at T=0.3 and T=0.8
+    then: T=0.3 diverse (19/32 unique), comparable to Laplace with penalty
+
+  - name: compareKNvsLaplaceGeneration
+    given: Same penalty settings, same seeds
+    when: Generate with KN vs Laplace at T=0.3
+    then: Similar diversity (19 vs 20 unique) — penalty dominates generation quality
+
+test_cases:
+  - name: kn_gen_t03
+    input: "KN D=0.75 lambda=0.3, penalty=1.5, block=true, T=0.3"
+    expected: "19/32 unique, diverse Shakespeare fragments"
+
+  - name: kn_gen_t08
+    input: "KN D=0.75 lambda=0.3, penalty=1.2, block=true, T=0.8"
+    expected: "18/32 unique, diverse vocabulary"

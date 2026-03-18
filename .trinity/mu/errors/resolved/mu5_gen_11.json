@@ -1,0 +1,12 @@
+{
+  "timestamp": "mu5_gen_11",
+  "spec": "specs/tri/trinity_fpga_core.tri",
+  "link": 7,
+  "link_name": "code_generate",
+  "error_category": "GEN_FAILURE",
+  "error_message": "  Input:  specs/tri/trinity_fpga_core.tri\n  Output: trinity/output/fpga/trinity_fpga_core.v\n",
+  "error_line": 0,
+  "generated_file": "",
+  "fix_attempted": false,
+  "fix_result": ""
+}

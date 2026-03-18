@@ -1,0 +1,69 @@
+name: job_artifact
+version: "1.1.0"
+language: zig
+module: job_artifact
+
+description: |
+  Trinity Job Artifact System — Collection, validation, and management
+  of files produced by async jobs.
+
+  Artifacts live in: .trinity/jobs/{job-id}/artifacts/
+  Each artifact has: filename, type, size, SHA256 checksum.
+
+types:
+  ArtifactType:
+    kind: enum
+    variants: [metrics, binary, test_results, log, report, source, config, other]
+
+  Artifact:
+    fields:
+      filename: String
+      artifact_type: ArtifactType
+      size: UInt64
+      checksum: String
+      description: String
+      required: Bool
+
+  ArtifactManifest:
+    fields:
+      job_id: String
+      artifacts: "[]Artifact"
+      total_size: UInt64
+      required_count: UInt32
+      present_count: UInt32
+
+  ValidationResult:
+    fields:
+      all_present: Bool
+      missing: "[]const []const u8"
+      sizes_valid: Bool
+      checksums_valid: Bool
+
+behaviors:
+  - name: validateArtifacts
+    given: Allocator, job_id, required_patterns
+    when: Called after job completion
+    then: |
+      Collects artifacts from job dir, checks required patterns are present,
+      validates sizes (required artifacts must be non-empty),
+      validates checksums (must be 64-char hex SHA256 format).
+      Returns ValidationResult with all_present, sizes_valid, checksums_valid.
+
+  - name: ValidationResult.isValid
+    given: ValidationResult
+    when: Called
+    then: Returns true only if all_present AND sizes_valid AND checksums_valid
+
+tests:
+  - "ArtifactType.fromExtension"
+  - "ArtifactType.toString"
+  - "Artifact.toJson round-trip"
+  - "ArtifactManifest.allRequiredPresent"
+  - "validateArtifacts sizes and checksums"
+
+export_types:
+  - ArtifactType
+  - Artifact
+  - ArtifactManifest
+  - ArtifactCollector
+  - ValidationResult

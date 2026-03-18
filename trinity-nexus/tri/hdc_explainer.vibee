@@ -1,0 +1,90 @@
+name: hdc_explainer
+version: "1.0.0"
+language: zig
+module: hdc_explainer
+
+description: |
+  HDC Explainable AI — Feature Attribution via VSA Algebra.
+  Explains classifier decisions by decomposing class prototypes
+  into word/feature contributions using bind/unbind operations.
+
+  Core Insight (VSA Algebraic Interpretability):
+    Class prototype P = bundle(sample_1, sample_2, ..., sample_n)
+    Each sample_i = bundle(perm(word_hv_0, 0), perm(word_hv_1, 50), ...)
+
+    Word attribution:
+      For word W with vector hv_W in class prototype P:
+      attribution(W, P) = cosine(P, perm(hv_W, pos))
+      High cosine → word W strongly present in class P
+
+    Contrastive explanation:
+      "Why class A instead of class B?"
+      diff(W) = cosine(P_A, hv_W) - cosine(P_B, hv_W)
+      Positive → W favors A, negative → W favors B
+
+    Feature attribution (multimodal):
+      For feature F with role R and value V:
+      feature_hv = bind(role_hv, value_hv)
+      attribution(F, P) = cosine(P, feature_hv)
+
+  Properties:
+    - Built-in interpretability (no post-hoc approximation)
+    - Exact: uses the same algebra as classification
+    - Contrastive: explains "why A over B" naturally
+    - Works for text, multimodal features, and arbitrary HVs
+    - No separate explanation model — uses the classifier itself
+
+types:
+  WordAttribution:
+    fields:
+      word: String
+      score: Float           # cosine(prototype, word_hv)
+      rank: usize
+
+  ContrastiveAttribution:
+    fields:
+      word: String
+      score_for: Float       # cosine(proto_A, word_hv)
+      score_against: Float   # cosine(proto_B, word_hv)
+      diff: Float            # score_for - score_against
+
+  Explanation:
+    fields:
+      predicted_label: String
+      confidence: Float
+      top_words: List<WordAttribution>
+      bottom_words: List<WordAttribution>
+
+  ContrastiveExplanation:
+    fields:
+      label_for: String
+      label_against: String
+      favoring_words: List<ContrastiveAttribution>
+      opposing_words: List<ContrastiveAttribution>
+
+  HDCExplainer:
+    fields:
+      allocator: Allocator
+      classifier: Ptr<HDCClassifier>          # borrows classifier
+      dimension: usize
+
+behaviors:
+  - name: explainPrediction
+    given: Text to classify
+    when: Classifies text, then attributes each word to the predicted class
+    then: Returns Explanation with top contributing words
+
+  - name: explainContrastive
+    given: Text, label_for, label_against
+    when: Computes per-word attribution difference between two classes
+    then: Returns ContrastiveExplanation showing why A over B
+
+  - name: attributeWords
+    given: Text and class label
+    when: Computes cosine(prototype, word_hv) for each unique word
+    then: Returns sorted list of WordAttributions
+
+  - name: attributeTopK
+    given: Text, class label, k
+    when: Returns top-k most contributing words
+    then: Returns k WordAttributions sorted by score descending

@@ -1,0 +1,30 @@
+name: tri_farm
+version: "1.0.0"
+language: zig
+module: tri.tri_farm
+
+description: |
+  Railway Training Farm Management across 3 accounts.
+  Native Zig replacement for Python/curl farm queries and deployments.
+  Uses RailwayApi.initWithSuffix() for multi-account support.
+
+behaviors:
+  - name: farmStatus
+    given: Railway API credentials for 3 accounts
+    when: User runs tri farm status
+    then: Displays table of all services across all accounts
+
+  - name: farmIdle
+    given: Service list from all accounts
+    when: User runs tri farm idle
+    then: Shows only finished/idle services available for recycling
+
+  - name: farmRecycle
+    given: Idle services and new training configuration
+    when: User runs tri farm recycle
+    then: Sets training vars and redeploys all idle services
+
+export_functions:
+  - farmStatus
+  - farmIdle
+  - farmRecycle

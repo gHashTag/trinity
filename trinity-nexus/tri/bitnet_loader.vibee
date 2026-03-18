@@ -1,0 +1,75 @@
+name: bitnet_loader
+version: "1.0.0"
+language: zig
+module: bitnet_loader
+author: Ona AI Agent
+description: BitNet ternary model loader for native {-1, 0, +1} weights
+
+types:
+  TernaryWeight:
+    fields:
+      value: Int
+      packed: Bool
+
+  TernaryTensor:
+    fields:
+      name: String
+      shape: List<Int>
+      data: List<TernaryWeight>
+      dtype: String
+
+  BitNetModel:
+    fields:
+      name: String
+      version: String
+      num_layers: Int
+      hidden_size: Int
+      vocab_size: Int
+      tensors: List<TernaryTensor>
+      memory_bytes: Int
+
+  LoadResult:
+    fields:
+      success: Bool
+      model: Option<BitNetModel>
+      error_message: String
+      load_time_ms: Int
+
+  PackedTrits:
+    fields:
+      data: List<Int>
+      num_trits: Int
+      bits_per_trit: Float
+
+behaviors:
+  - name: load_bitnet_gguf
+    given: Path to GGUF file with ternary weights
+    when: Loading BitNet model
+    then: Return LoadResult with model or error
+
+  - name: pack_trits
+    given: Array of trit values {-1, 0, +1}
+    when: Compressing for storage
+    then: Return PackedTrits with 1.585 bits/trit
+
+  - name: unpack_trits
+    given: PackedTrits structure
+    when: Preparing for computation
+    then: Return array of trit values
+
+  - name: ternary_matmul
+    given: TernaryTensor A and activation B
+    when: Forward pass
+    then: Return result using lookup table (no multiply)
+
+  - name: calculate_memory_savings
+    given: Original FP16 size
+    when: Reporting efficiency
+    then: Return compression ratio (should be ~16x)
+
+constants:
+  TRIT_BITS: 1.5849625007211563
+  COMPRESSION_RATIO: 16.0
+  TERNARY_VALUES: [-1, 0, 1]
+  PHI: 1.618033988749895
+  TRINITY: 3.0

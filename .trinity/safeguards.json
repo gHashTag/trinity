@@ -1,0 +1,7 @@
+{
+  "auto_commit_dryrun": true,
+  "ml_validation": false,
+  "deploy_confirm": true,
+  "selfhost_ratelimit": true,
+  "sacred_validation": true
+}

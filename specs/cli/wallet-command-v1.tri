@@ -1,0 +1,171 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# WALLET COMMAND v1.0 — CLI Wallet Management for $TRI
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: CLI interface for wallet management (MetaMask, Phantom, WalletConnect)
+# Usage: tri wallet <subcommand> [args]
+#
+# Subcommands:
+#   connect <provider>    - Connect wallet provider
+#   balance               - Show $TRI balance
+#   claim [amount]        - Claim rewards to wallet
+#   address               - Show wallet address
+#   history               - Show claim history
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+#
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: wallet_command
+version: "1.0.0"
+language: zig
+module: wallet_command
+
+types:
+  WalletProvider:
+    fields:
+      name: String        # metamask, phantom, walletconnect
+      chain_id: Int
+      rpc_url: String
+      connected: Bool
+
+  WalletBalance:
+    fields:
+      address: String
+      balance: Float      # $TRI balance
+      pending: Float      # Pending claim
+      claimed: Float      # Total claimed
+      last_updated: Int
+
+  ClaimTransaction:
+    fields:
+      tx_hash: String
+      from_address: String
+      amount: Float
+      timestamp: Int
+      status: String      # pending, confirmed, failed
+      block_number: Int
+
+  WalletConnection:
+    fields:
+      provider: WalletProvider
+      account_address: String
+      chain_id: Int
+      connected_at: Int
+
+behaviors:
+  - name: connectWallet
+    given: Provider name (metamask, phantom, walletconnect)
+    when: User runs `tri wallet connect <provider>`
+    then: Initiate Web3 connection, return account address
+
+  - name: showBalance
+    given: Connected wallet
+    when: User runs `tri wallet balance`
+    then: Display balance, pending, claimed totals
+
+  - name: claimRewards
+    given: Wallet with pending rewards
+    when: User runs `tri wallet claim [amount]`
+    then: Sign transaction, broadcast, return tx_hash
+
+  - name: showAddress
+    given: Connected wallet
+    when: User runs `tri wallet address`
+    then: Display wallet address and chain info
+
+  - name: showHistory
+    given: Wallet with claim history
+    when: User runs `tri wallet history`
+    then: Display list of past claim transactions
+
+test_cases:
+  - name: wallet_connect_metamask
+    given:
+      provider: "metamask"
+    expected:
+      connection_succeeds: true
+      account_returned: true
+      chain_id: 1
+
+  - name: wallet_balance_display
+    given:
+      balance: 100.0
+      pending: 50.0
+      claimed: 150.0
+    expected:
+      display_format: "Balance: 100.0 $TRI\nPending: 50.0 $TRI\nClaimed: 150.0 $TRI"
+
+  - name: wallet_claim_success
+    given:
+      amount: 50.0
+      wallet_connected: true
+    expected:
+      tx_hash_valid: true
+      status: "pending"
+      amount_transferred: 50.0
+
+implementation: |
+  const std = @import("std");
+  const Allocator = std.mem.Allocator;
+
+  pub fn connectWallet(allocator: Allocator, provider: []const u8) !WalletConnection {
+      _ = allocator;
+      _ = provider;
+
+      // TODO: Implement Web3 connection
+      // For now, return mock connection
+      return WalletConnection{
+          .provider = WalletProvider{
+              .name = "metamask",
+              .chain_id = 1,
+              .rpc_url = "https://eth.llamarpc.com",
+              .connected = true,
+          },
+          .account_address = "0x1234567890abcdef",
+          .chain_id = 1,
+          .connected_at = 0,
+      };
+  }
+
+  pub fn showBalance(allocator: Allocator, address: []const u8) !WalletBalance {
+      _ = allocator;
+      _ = address;
+
+      // TODO: Query balance from blockchain/node
+      return WalletBalance{
+          .address = "0x1234567890abcdef",
+          .balance = 100.0,
+          .pending = 50.0,
+          .claimed = 150.0,
+          .last_updated = 0,
+      };
+  }
+
+  pub fn claimRewards(allocator: Allocator, address: []const u8, amount: f64) !ClaimTransaction {
+      _ = allocator;
+      _ = address;
+      _ = amount;
+
+      // TODO: Sign and broadcast transaction
+      return ClaimTransaction{
+          .tx_hash = "0xabcdef...",
+          .from_address = address,
+          .amount = amount,
+          .timestamp = 0,
+          .status = "pending",
+          .block_number = 0,
+      };
+  }
+
+  pub fn showAddress(connection: WalletConnection) []const u8 {
+      return connection.account_address;
+  }
+
+  pub fn showHistory(allocator: Allocator, address: []const u8) ![]const ClaimTransaction {
+      _ = allocator;
+      _ = address;
+
+      // TODO: Query transaction history
+      return &[_]ClaimTransaction{};
+  }

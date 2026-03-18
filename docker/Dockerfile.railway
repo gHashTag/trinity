@@ -1,0 +1,31 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Railway Dockerfile — Trinity MCP Server (Python-only, minimal) v2
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+FROM python:3.11-slim
+
+# Install dependencies
+RUN pip install --no-cache-dir fastmcp
+
+# Copy ONLY the MCP server (not the entire project)
+COPY trinity-mcp.py /app/trinity-mcp.py
+
+# Working directory
+WORKDIR /app
+
+# Railway environment
+ENV PORT=8899
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV RAILWAY_ENVIRONMENT=production
+
+# Expose MCP port
+EXPOSE 8899
+
+# Run MCP server with HTTP wrapper
+CMD ["python", "-u", "-c", "import sys; sys.argv = ['trinity-mcp.py', '--http']; import trinity_mcp; trinity_mcp.mcp.run()"]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 | TRINITY MCP SERVER FOR RAILWAY (Python-only, minimal)
+# ═══════════════════════════════════════════════════════════════════════════════

@@ -1,0 +1,231 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: apply
+    given: Input data provided
+    when: apply function called
+    then: Result returned
+  - name: test_apply
+  - name: apply_all
+    given: Input data provided
+    when: apply_all function called
+    then: Result returned
+  - name: test_apply_all
+  - name: apply_chain
+    given: Input data provided
+    when: apply_chain function called
+    then: Result returned
+  - name: test_apply_chain
+  - name: remove_whitespace
+    given: Input data provided
+    when: remove_whitespace function called
+    then: Result returned
+  - name: test_remove_whitespace
+  - name: capitalize
+    given: Input data provided
+    when: capitalize function called
+    then: Result returned
+  - name: test_capitalize
+  - name: transform_number
+    given: Input data provided
+    when: transform_number function called
+    then: Result returned
+  - name: test_transform_number
+  - name: transform_number_int
+    given: Input data provided
+    when: transform_number_int function called
+    then: Result returned
+  - name: test_transform_number_int
+  - name: format_date
+    given: Input data provided
+    when: format_date function called
+    then: Result returned
+  - name: test_format_date
+  - name: format_number
+    given: Input data provided
+    when: format_number function called
+    then: Result returned
+  - name: test_format_number
+  - name: format_phone
+    given: Input data provided
+    when: format_phone function called
+    then: Result returned
+  - name: test_format_phone
+  - name: format_email
+    given: Input data provided
+    when: format_email function called
+    then: Result returned
+  - name: test_format_email
+  - name: remove_non_digits
+    given: Input data provided
+    when: remove_non_digits function called
+    then: Result returned
+  - name: test_remove_non_digits
+  - name: power
+    given: Input data provided
+    when: power function called
+    then: Result returned
+  - name: test_power
+  - name: lowercase
+    given: Input data provided
+    when: lowercase function called
+    then: Result returned
+  - name: test_lowercase
+  - name: uppercase
+    given: Input data provided
+    when: uppercase function called
+    then: Result returned
+  - name: test_uppercase
+  - name: trim
+    given: Input data provided
+    when: trim function called
+    then: Result returned
+  - name: test_trim
+  - name: replace
+    given: Input data provided
+    when: replace function called
+    then: Result returned
+  - name: test_replace
+  - name: capitalize_transform
+    given: Input data provided
+    when: capitalize_transform function called
+    then: Result returned
+  - name: test_capitalize_transform
+  - name: round
+    given: Input data provided
+    when: round function called
+    then: Result returned
+  - name: test_round
+  - name: format_phone_transform
+    given: Input data provided
+    when: format_phone_transform function called
+    then: Result returned
+  - name: test_format_phone_transform
+  - name: format_email_transform
+    given: Input data provided
+    when: format_email_transform function called
+    then: Result returned
+  - name: test_format_email_transform
+  - name: custom
+    given: Input data provided
+    when: custom function called
+    then: Result returned
+  - name: test_custom
+  - name: chain
+    given: Input data provided
+    when: chain function called
+    then: Result returned
+  - name: test_chain
+  - name: clean_string
+    given: Input data provided
+    when: clean_string function called
+    then: Result returned
+  - name: test_clean_string
+  - name: normalize_name
+    given: Input data provided
+    when: normalize_name function called
+    then: Result returned
+  - name: test_normalize_name
+  - name: clean_phone
+    given: Input data provided
+    when: clean_phone function called
+    then: Result returned
+  - name: test_clean_phone
+  - name: clean_email
+    given: Input data provided
+    when: clean_email function called
+    then: Result returned
+  - name: test_clean_email
+  - name: describe
+    given: Input data provided
+    when: describe function called
+    then: Result returned
+  - name: test_describe
+
+types:
+  apply:
+    description: Auto-generated
+
+  apply_all:
+    description: Auto-generated
+
+  apply_chain:
+    description: Auto-generated
+
+  remove_whitespace:
+    description: Auto-generated
+
+  capitalize:
+    description: Auto-generated
+
+  transform_number:
+    description: Auto-generated
+
+  transform_number_int:
+    description: Auto-generated
+
+  format_date:
+    description: Auto-generated
+
+  format_number:
+    description: Auto-generated
+
+  format_phone:
+    description: Auto-generated
+
+  format_email:
+    description: Auto-generated
+
+  remove_non_digits:
+    description: Auto-generated
+
+  power:
+    description: Auto-generated
+
+  lowercase:
+    description: Auto-generated
+
+  uppercase:
+    description: Auto-generated
+
+  trim:
+    description: Auto-generated
+
+  replace:
+    description: Auto-generated
+
+  capitalize_transform:
+    description: Auto-generated
+
+  round:
+    description: Auto-generated
+
+  format_phone_transform:
+    description: Auto-generated
+
+  format_email_transform:
+    description: Auto-generated
+
+  custom:
+    description: Auto-generated
+
+  chain:
+    description: Auto-generated
+
+  clean_string:
+    description: Auto-generated
+
+  normalize_name:
+    description: Auto-generated
+
+  clean_phone:
+    description: Auto-generated
+
+  clean_email:
+    description: Auto-generated
+
+  describe:
+    description: Auto-generated

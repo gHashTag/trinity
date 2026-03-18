@@ -1,0 +1,566 @@
+# ============================================================================
+# Code Execution System - Execute + Validate + 10 Languages
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: code_execution_system
+version: "1.0.0"
+language: zig
+module: code_execution_system
+
+description: |
+  Code execution system with validation and error handling.
+  Builds on Cycle 19 Persistent Memory System.
+  18 algorithms in 10 languages = 180 templates.
+  NEW: Code execution, output validation, error handling.
+  NEW: Test runner, sandbox execution, result caching.
+  Execute generated code and verify correctness.
+
+constants:
+  HIGH_CONFIDENCE: 0.95
+  MED_CONFIDENCE: 0.75
+  LOW_CONFIDENCE: 0.5
+  UNKNOWN_CONFIDENCE: 0.2
+  ALGORITHM_COUNT: 18
+  LANGUAGE_COUNT: 10
+  TEMPLATE_COMBINATIONS: 180
+  MAX_MEMORY_TURNS: 50
+  MEMORY_DECAY_RATE: 0.1
+  EXECUTION_TIMEOUT_MS: 5000
+  MAX_OUTPUT_SIZE: 10000
+
+types:
+  SystemMode:
+    description: "Operating mode"
+    enum:
+      - chat
+      - code
+      - hybrid
+      - execute
+      - validate
+      - unknown
+
+  InputLanguage:
+    description: "Detected input language"
+    enum:
+      - russian
+      - chinese
+      - english
+
+  OutputLanguage:
+    description: "Code output language (10 total)"
+    enum:
+      - zig
+      - python
+      - javascript
+      - typescript
+      - go
+      - rust
+      - cpp
+      - java
+      - csharp
+      - swift
+
+  ChatTopic:
+    description: "Conversation topics"
+    enum:
+      - greeting
+      - farewell
+      - help
+      - capabilities
+      - feelings
+      - weather
+      - time
+      - jokes
+      - facts
+      - memory
+      - execution
+      - unknown
+
+  Algorithm:
+    description: "Supported algorithms (18)"
+    enum:
+      - bubble_sort
+      - quick_sort
+      - merge_sort
+      - heap_sort
+      - linear_search
+      - binary_search
+      - fibonacci
+      - factorial
+      - is_prime
+      - stack
+      - queue
+      - linked_list
+      - binary_tree
+      - hash_map
+      - bfs
+      - dfs
+      - dijkstra
+      - topological_sort
+      - unknown
+
+  PersonalityTrait:
+    description: "Bot personality"
+    enum:
+      - friendly
+      - helpful
+      - honest
+      - curious
+      - humble
+
+  ExecutionStatus:
+    description: "Code execution status"
+    enum:
+      - pending
+      - running
+      - success
+      - error
+      - timeout
+      - cancelled
+
+  ErrorType:
+    description: "Type of execution error"
+    enum:
+      - compile_error
+      - runtime_error
+      - timeout_error
+      - memory_error
+      - validation_error
+      - unknown_error
+
+  ExecutionResult:
+    description: "Result of code execution"
+    fields:
+      status: ExecutionStatus
+      output: String
+      error_message: String
+      error_type: ErrorType
+      execution_time_ms: Int
+      memory_used_bytes: Int
+
+  ValidationResult:
+    description: "Result of output validation"
+    fields:
+      is_valid: Bool
+      expected: String
+      actual: String
+      diff: String
+      confidence: Float
+
+  TestCase:
+    description: "Single test case"
+    fields:
+      name: String
+      input: String
+      expected_output: String
+      algorithm: Algorithm
+      language: OutputLanguage
+
+  TestSuite:
+    description: "Collection of test cases"
+    fields:
+      name: String
+      cases: List<TestCase>
+      passed: Int
+      failed: Int
+      total: Int
+
+  MemoryEntry:
+    description: "Single memory entry"
+    fields:
+      query: String
+      response: String
+      topic: ChatTopic
+      algorithm: Algorithm
+      language: OutputLanguage
+      timestamp: Int
+      importance: Float
+      execution_result: ExecutionResult
+
+  UserPreferences:
+    description: "User preferences"
+    fields:
+      favorite_language: OutputLanguage
+      preferred_input: InputLanguage
+      common_topics: List<ChatTopic>
+      common_algorithms: List<Algorithm>
+      auto_execute: Bool
+
+  SessionMemory:
+    description: "Full session memory"
+    fields:
+      entries: List<MemoryEntry>
+      preferences: UserPreferences
+      turn_count: Int
+      session_start: Int
+      executions_count: Int
+      tests_passed: Int
+
+  ExecutionContext:
+    description: "Full system context with execution"
+    fields:
+      current_mode: SystemMode
+      current_topic: ChatTopic
+      current_algorithm: Algorithm
+      input_language: InputLanguage
+      output_language: OutputLanguage
+      memory: SessionMemory
+      user_mood: String
+      last_execution: ExecutionResult
+      sandbox_enabled: Bool
+
+  ExecutionRequest:
+    description: "Request with execution context"
+    fields:
+      text: String
+      code: String
+      context: ExecutionContext
+      use_memory: Bool
+      auto_execute: Bool
+      validate_output: Bool
+
+  ExecutionResponse:
+    description: "Response with execution result"
+    fields:
+      text: String
+      code: String
+      mode: SystemMode
+      topic: ChatTopic
+      algorithm: Algorithm
+      output_language: OutputLanguage
+      confidence: Float
+      is_honest: Bool
+      personality: PersonalityTrait
+      memory_updated: Bool
+      execution_result: ExecutionResult
+      validation_result: ValidationResult
+
+behaviors:
+  # Mode Detection
+  - name: detectMode
+    given: User input
+    when: Analyzing intent
+    then: Return SystemMode (includes execute/validate)
+
+  - name: detectInputLanguage
+    given: User input
+    when: Analyzing text patterns
+    then: Return InputLanguage
+
+  - name: detectOutputLanguage
+    given: User input
+    when: Analyzing code request
+    then: Return OutputLanguage (10 options)
+
+  - name: detectTopic
+    given: User input
+    when: Analyzing conversation
+    then: Return ChatTopic (includes execution)
+
+  - name: detectAlgorithm
+    given: User input
+    when: Analyzing code request
+    then: Return Algorithm
+
+  # Chat Responses (12 topics including execution)
+  - name: respondGreeting
+    given: Greeting detected
+    when: User says hello
+    then: Return warm greeting with memory recall
+
+  - name: respondFarewell
+    given: Farewell detected
+    when: User says goodbye
+    then: Return farewell with session summary
+
+  - name: respondHelp
+    given: Help request
+    when: User asks for help
+    then: Return guidance with execution features
+
+  - name: respondCapabilities
+    given: Capabilities query
+    when: User asks what bot can do
+    then: Return 180 templates + execution
+
+  - name: respondFeelings
+    given: Feelings question
+    when: User asks about emotions
+    then: Return HONEST AI response
+
+  - name: respondWeather
+    given: Weather question
+    when: User asks about weather
+    then: Return HONEST cannot check
+
+  - name: respondTime
+    given: Time question
+    when: User asks about time
+    then: Return HONEST cannot check
+
+  - name: respondJoke
+    given: Joke request
+    when: User wants humor
+    then: Return programming joke
+
+  - name: respondFact
+    given: Fact request
+    when: User wants fact
+    then: Return tech fact
+
+  - name: respondMemory
+    given: Memory query
+    when: User asks about history
+    then: Return session history
+
+  - name: respondExecution
+    given: Execution query
+    when: User asks about running code
+    then: Return execution capabilities
+
+  - name: respondUnknown
+    given: Unknown topic
+    when: Cannot understand
+    then: Return honest uncertainty
+
+  # Code Generation (18 algorithms)
+  - name: generateBubbleSort
+    given: Output language
+    when: User requests bubble sort
+    then: Return bubble sort in 10 languages
+
+  - name: generateQuickSort
+    given: Output language
+    when: User requests quick sort
+    then: Return quick sort in 10 languages
+
+  - name: generateMergeSort
+    given: Output language
+    when: User requests merge sort
+    then: Return merge sort in 10 languages
+
+  - name: generateHeapSort
+    given: Output language
+    when: User requests heap sort
+    then: Return heap sort in 10 languages
+
+  - name: generateLinearSearch
+    given: Output language
+    when: User requests linear search
+    then: Return linear search in 10 languages
+
+  - name: generateBinarySearch
+    given: Output language
+    when: User requests binary search
+    then: Return binary search in 10 languages
+
+  - name: generateFibonacci
+    given: Output language
+    when: User requests fibonacci
+    then: Return fibonacci in 10 languages
+
+  - name: generateFactorial
+    given: Output language
+    when: User requests factorial
+    then: Return factorial in 10 languages
+
+  - name: generateIsPrime
+    given: Output language
+    when: User requests prime check
+    then: Return prime check in 10 languages
+
+  - name: generateStack
+    given: Output language
+    when: User requests stack
+    then: Return stack in 10 languages
+
+  - name: generateQueue
+    given: Output language
+    when: User requests queue
+    then: Return queue in 10 languages
+
+  - name: generateLinkedList
+    given: Output language
+    when: User requests linked list
+    then: Return linked list in 10 languages
+
+  - name: generateBinaryTree
+    given: Output language
+    when: User requests binary tree
+    then: Return binary tree in 10 languages
+
+  - name: generateHashMap
+    given: Output language
+    when: User requests hash map
+    then: Return hash map in 10 languages
+
+  - name: generateBFS
+    given: Output language
+    when: User requests BFS
+    then: Return BFS in 10 languages
+
+  - name: generateDFS
+    given: Output language
+    when: User requests DFS
+    then: Return DFS in 10 languages
+
+  - name: generateDijkstra
+    given: Output language
+    when: User requests Dijkstra
+    then: Return Dijkstra in 10 languages
+
+  - name: generateTopologicalSort
+    given: Output language
+    when: User requests topological sort
+    then: Return topological sort in 10 languages
+
+  # Memory Management (from Cycle 19)
+  - name: initMemory
+    given: New session
+    when: First message
+    then: Return empty SessionMemory
+
+  - name: addMemoryEntry
+    given: Query and response
+    when: After processing
+    then: Add entry to memory
+
+  - name: recallMemory
+    given: Current query
+    when: Looking for context
+    then: Return relevant memories
+
+  - name: updatePreferences
+    given: User behavior
+    when: Detecting patterns
+    then: Update UserPreferences
+
+  - name: summarizeSession
+    given: Session memory
+    when: User asks for history
+    then: Return session summary
+
+  - name: clearMemory
+    given: Clear request
+    when: User wants fresh start
+    then: Clear all memory
+
+  # NEW: Code Execution (Cycle 20)
+  - name: executeCode
+    given: Code snippet and language
+    when: User wants to run code
+    then: Execute in sandbox and return result
+
+  - name: validateOutput
+    given: Execution result and expected
+    when: Checking correctness
+    then: Return validation result
+
+  - name: handleError
+    given: Execution error
+    when: Code fails to run
+    then: Return error details and suggestions
+
+  - name: runTestCase
+    given: Single test case
+    when: Running validation
+    then: Execute and compare output
+
+  - name: runTestSuite
+    given: Test suite
+    when: Running full validation
+    then: Execute all tests and return results
+
+  - name: createSandbox
+    given: Language and constraints
+    when: Preparing execution
+    then: Initialize sandboxed environment
+
+  - name: cacheResult
+    given: Execution result
+    when: Caching for reuse
+    then: Store result with code hash
+
+  - name: retrieveCache
+    given: Code hash
+    when: Checking cache
+    then: Return cached result if exists
+
+  # Unified Processing
+  - name: processExecution
+    given: ExecutionRequest
+    when: Processing user input
+    then: Return ExecutionResponse with result
+
+  - name: handleChat
+    given: Chat mode
+    when: Processing chat
+    then: Return chat response with context
+
+  - name: handleCode
+    given: Code mode
+    when: Processing code
+    then: Return code with preference
+
+  - name: handleHybrid
+    given: Hybrid mode
+    when: Both needed
+    then: Return greeting + code
+
+  - name: handleExecute
+    given: Execute mode
+    when: Running code
+    then: Return execution result
+
+  - name: handleValidate
+    given: Validate mode
+    when: Checking output
+    then: Return validation result
+
+  # Context Management
+  - name: initContext
+    given: New session
+    when: First message
+    then: Return initialized ExecutionContext
+
+  - name: updateContext
+    given: Current context
+    when: After processing
+    then: Return updated context with execution
+
+  - name: selectPersonality
+    given: Mode and topic
+    when: Choosing style
+    then: Return PersonalityTrait
+
+  - name: validateResponse
+    given: ExecutionResponse
+    when: Checking quality
+    then: Reject generic patterns
+
+test_cases:
+  - name: execute_python_fibonacci
+    given: "Run fibonacci(10) in Python"
+    expected: "55 (execution result)"
+
+  - name: execute_js_factorial
+    given: "Execute factorial(5) in JavaScript"
+    expected: "120 (execution result)"
+
+  - name: validate_output
+    given: "Validate fibonacci output"
+    expected: "Valid/Invalid with diff"
+
+  - name: handle_compile_error
+    given: "Invalid syntax code"
+    expected: "CompileError with message"
+
+  - name: handle_timeout
+    given: "Infinite loop code"
+    expected: "TimeoutError after 5000ms"
+
+  - name: run_test_suite
+    given: "Run all fibonacci tests"
+    expected: "N/M tests passed"

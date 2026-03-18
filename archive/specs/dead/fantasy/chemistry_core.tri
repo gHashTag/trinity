@@ -1,0 +1,167 @@
+# CHEMISTRY CORE — Periodic Table + Constants v6.0
+# 118 Elements + Chemical Constants
+
+name: chemistry_core
+version: "6.0.0"
+language: zig
+module: sacred.chemistry
+
+types:
+  Element:
+    description: "Chemical element from periodic table"
+    fields:
+      number: Int              # Atomic number Z (1-118)
+      symbol: String           # 1-2 letter symbol (H, He, Li, Uuo...)
+      name: String             # Full name (Hydrogen, Helium...)
+      mass: Float              # Atomic mass (amu) - most common isotope
+      mass_std: Float          # Standard atomic weight (if applicable)
+      electron_config: String  # e.g., "1s¹" or "[He]2s²2p⁶"
+      group: Int               # Group 1-18 (0 for f-block in old notation)
+      period: Int              # Period 1-7
+      block: String            # "s", "p", "d", or "f"
+      category: String         # "alkali-metal", "noble-gas", "transition-metal", etc.
+      electronegativity: Float # Pauling scale (if applicable)
+      ionization_energy: Float # First ionization energy (eV)
+      electron_affinity: Float # Electron affinity (eV, if known)
+      atomic_radius: Float     # Covalent radius (pm)
+      ionic_radius: Float      # Ionic radius (pm, depends on charge)
+      melting_point: Float     # Melting point (K)
+      boiling_point: Float     # Boiling point (K)
+      density: Float           # Density at STP (g/cm³)
+      valence: Int             # Typical valence electrons
+      oxidation_states: List[Int] # Common oxidation states
+      discovery_year: Int      # Year discovered (0 for ancient)
+      discoverer: String       # Person or "ancient"
+      etymology: String        # Origin of name
+
+  ChemicalConstants:
+    description: "Fundamental chemical constants"
+    fields:
+      avogadro: Float          # N_A = 6.022×10²³ mol⁻¹
+      gas_constant: Float      # R = 8.314 J/(mol·K)
+      faraday: Float           # F = 96485 C/mol
+      boltzmann: Float         # k_B = 1.381×10⁻²³ J/K
+      planck: Float            # h = 6.626×10⁻³⁴ J·s
+      stp_temp: Float          # 273.15 K (0°C)
+      stp_pressure: Float      # 101325 Pa (1 atm)
+      molar_volume_stp: Float  # 22.414 L/mol (ideal gas)
+      standard_pressure: Float # 1 bar = 100000 Pa
+      atomic_mass_unit: Float  # 1 u = 1.6605×10⁻²⁷ kg
+      electron_mass: Float     # m_e = 9.109×10⁻³¹ kg
+      proton_mass: Float       # m_p = 1.673×10⁻²⁷ kg
+      neutron_mass: Float      # m_n = 1.675×10⁻²⁷ kg
+      rydberg: Float           # R_∞ = 1.097×10⁷ m⁻¹
+      bohr_radius: Float       # a_0 = 5.292×10⁻¹¹ m
+      hartree: Float           # E_h = 4.360×10⁻¹⁸ J
+      speed_of_light: Float    # c = 2.998×10⁸ m/s
+      vacuum_permittivity: Float # ε_0 = 8.854×10⁻¹² F/m
+
+  Isotope:
+    description: "Isotope of an element"
+    fields:
+      element_symbol: String
+      mass_number: Int         # Nucleons (protons + neutrons)
+      mass: Float              # Exact atomic mass (amu)
+      abundance: Float         # Natural abundance (%)
+      half_life: Float         # Half-life (seconds, -1 if stable)
+      decay_mode: String       # "alpha", "beta-", "beta+", "ec", "sf", "stable"
+
+  ChemicalBond:
+    description: "Bond properties"
+    fields:
+      type: String             # "single", "double", "triple", "aromatic", "metallic", "ionic", "hydrogen"
+      length: Float            # Bond length (pm)
+      energy: Float            # Bond energy (kJ/mol)
+      atoms: List[String]      # Atom symbols involved
+
+behaviors:
+  # Periodic Table Access
+  - name: getElement
+    given: "Element symbol (case-insensitive) or atomic number"
+    when: "Query element data"
+    then: "Return complete Element struct"
+    notes: "H or hydrogen or 1 returns hydrogen data"
+
+  - name: getPeriodicTable
+    given: "No parameters or filter criteria"
+    when: "Retrieve periodic table"
+    then: "Return all 118 elements or filtered subset"
+    notes: "Filters: by group, period, block, category"
+
+  - name: searchElements
+    given: "Search criteria (name part, mass range, property range)"
+    when: "Find elements matching criteria"
+    then: "Return list of matching elements"
+
+  # Periodic Trends
+  - name: getPeriodicTrend
+    given: "Property and direction (across period, down group)"
+    when: "Analyze periodic trend"
+    then: "Return description and values"
+    notes: "Ionization energy, electronegativity, radius all vary predictably"
+
+  - name: periodicTableASCII
+    given: "No parameters"
+    when: "Display periodic table as ASCII art"
+    then: "Return formatted table with symbols and numbers"
+
+  # Isotopes
+  - name: getIsotopes
+    given: "Element symbol"
+    when: "Query isotopes of element"
+    then: "Return list of Isotope structs"
+    notes: "Most elements have 2-10 stable/primordial isotopes"
+
+  - name: getMostAbundantIsotope
+    given: "Element symbol"
+    when: "Find most abundant isotope"
+    then: "Return isotope with highest natural abundance"
+
+  # Molar Mass Calculations
+  - name: molarMass
+    given: "Chemical formula string (e.g., 'H2O', 'C6H12O6', 'NaCl')"
+    when: "Calculate molar mass"
+    then: "Return molar mass in g/mol"
+    notes: "Parse formula, sum atomic masses, handle parentheses and coefficients"
+
+  - name: parseFormula
+    given: "Chemical formula string"
+    when: "Parse into constituent atoms and counts"
+    then: "Return map of element symbol -> count"
+    notes: "Ca(NO3)2 → Ca:1, N:2, O:6"
+
+  # Chemical Constants
+  - name: getChemConst
+    given: "Constant name"
+    when: "Query chemical constant"
+    then: "Return value with units"
+
+  - name: idealGasLaw
+    given: "Three of P, V, n, T"
+    when: "Calculate fourth using PV=nRT"
+    then: "Return calculated value"
+    notes: "P in Pa, V in m³, n in mol, T in K"
+
+  # Quantum Chemistry
+  - name: bohrModel
+    given: "Atomic number Z, principal quantum number n"
+    when: "Calculate hydrogen-like energy levels"
+    then: "Return energy, radius for Bohr model"
+    notes: "E_n = -13.6×Z²/n² eV ; r_n = 0.053×n²/Z nm"
+
+  - name: hydrogenSpectral
+    given: "Transition n_i → n_f"
+    when: "Calculate photon wavelength/energy"
+    then: "Return wavelength (nm), energy (eV), series name"
+    notes: "Lyman (n_f=1), Balmer (n_f=2), Paschen (n_f=3), Brackett (n_f=4)"
+
+  # Stoichiometry
+  - name: limitingReagent
+    given: "Reactants and amounts"
+    when: "Determine limiting reagent"
+    then: "Return limiting reagent and theoretical yield"
+
+  - name: percentComposition
+    given: "Chemical formula"
+    when: "Calculate mass percent of each element"
+    then: "Return map of element -> percentage"

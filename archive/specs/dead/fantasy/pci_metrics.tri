@@ -1,0 +1,73 @@
+name: pci_metrics
+version: "1.0.0"
+language: zig
+module: consciousness.metrics.pci
+
+description: |
+  Perturbational Complexity Index (PCI) — clinical gold standard for
+  consciousness assessment. Based on TMS-EEG response analysis.
+  Sources: Casali et al. (2013), Foster et al. (2023), Casarotto et al. (2024)
+
+types:
+  PCIResponse:
+    fields:
+      pci_value: Float              # PCI score [0, 1]
+      complexity: Float             # Lempel-Ziv complexity
+      perturbation: Float           # Perturbational complexity
+      is_conscious: Bool            # PCI > 0.31 threshold
+      confidence: Float             # Statistical confidence
+
+  TMSResponse:
+    fields:
+      eeg_data: List<Float>         # EEG response to TMS pulse
+      sampling_rate: Float          # Hz (typically 500-1000)
+      duration_ms: Float            # Response duration
+      channels: Int                 # Number of EEG channels
+
+  PCIThreshold:
+    fields:
+      clinical_threshold: Float     # 0.31 (established clinical threshold)
+      phi_threshold: Float          # φ^-1 = 0.618 (sacred threshold)
+      is_clinical: Bool             # Using clinical standard
+      is_sacred: Bool               # Using sacred formula
+
+behaviors:
+  - name: compute_pci
+    given: TMS-EEG response data
+    when: Computing perturbational complexity index
+    then: Returns PCI value in [0, 1] with consciousness classification
+
+  - name: compute_lz_complexity
+    given: Binary EEG signal
+    when: Computing Lempel-Ziv complexity (LZ76 algorithm)
+    then: Returns normalized complexity score
+
+  - name: normalize_pci
+    given: Raw complexity score and signal length
+    when: Normalizing to [0, 1] range
+    then: Returns PCI value comparable across subjects
+
+  - name: classify_consciousness
+    given: PCI value
+    when: Classifying consciousness state
+    then: Returns conscious if PCI > 0.31 (clinical) or PCI > φ^-1 (sacred)
+
+  - name: pci_sacred_correlation
+    given: PCI value and sacred formula V value
+    when: Correlating clinical and sacred metrics
+    then: Returns correlation coefficient
+
+  - name: compute_global_pci
+    given: Multi-channel EEG data
+    when: Computing global PCI across all channels
+    then: Returns weighted PCI score
+
+  - name: pci_temporal_dynamics
+    given: Time series of PCI values
+    when: Analyzing consciousness evolution
+    then: Returns trend (rising/stable/falling) and anomaly detection
+
+  - name: validate_pci_threshold
+    given: Test PCI values
+    when: Validating 0.31 clinical threshold vs φ^-1 sacred threshold
+    then: Confirms sacred threshold more sensitive for early consciousness

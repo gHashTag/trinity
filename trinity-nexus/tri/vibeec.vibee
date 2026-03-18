@@ -1,0 +1,70 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: self_hosting_compilation
+    given: vibeec.vibee specification
+    when: vibeec compiles itself
+    then: New vibeec binary generated
+  - name: bootstrap_v1_to_v2
+  - name: self_host_v2_to_v3
+  - name: parse_vibee_specification
+    given: .vibee file with YAML and Given/When/Then
+    when: Parser reads the file
+    then: AST generated with all components
+  - name: parse_simple_spec
+  - name: parse_complex_spec
+  - name: generate_zig_code
+    given: Parsed AST
+    when: Code generator processes AST
+    then: Optimized Zig code generated
+  - name: generate_from_ast
+  - name: compile_to_binary
+    given: Generated Zig code
+    when: Zig compiler invoked
+    then: Binary created with optimal flags
+  - name: compile_with_optimization
+
+types:
+    description: str
+    description: str
+  compile_self:
+    description: Compile vibeec from its own spec
+
+  bootstrap:
+    description: Bootstrap from V1 to V2
+
+  verify_self_hosting:
+    description: Verify V2 and V3 are identical
+
+  parse_spec:
+    description: Parse .vibee specification
+
+  parse_yaml:
+    description: Parse YAML content
+
+  build_ast:
+    description: Build AST from spec
+
+  validate_spec:
+    description: Validate specification
+
+  generate_code:
+    description: Generate code from AST
+
+  generate_zig:
+    description: Generate Zig code
+
+  generate_tests:
+    description: Generate test code
+
+  optimize_code:
+    description: Optimize generated code
+
+  compile_zig:
+    description: Compile Zig code to binary
+
+  invoke_zig_compiler:
+    description: Invoke zig compiler

@@ -1,0 +1,52 @@
+#!/bin/bash
+# RALPH COMMAND CENTER - Compact Layout (for small terminals)
+# 3 panels: Loop Status | Workers (top) | Tasks (bottom)
+
+set -e
+
+RALPH_DIR="/Users/playra/trinity"
+SESSION_NAME="ralph"
+
+# Kill existing ralph sessions
+for s in $(tmux ls -F "#{session_name}" 2>/dev/null | grep "^ralph" || true); do
+    tmux kill-session -t "$s" 2>/dev/null || true
+done
+sleep 0.5
+
+cd "$RALPH_DIR"
+
+# Helper function to create a refresh loop
+refresh_cmd() {
+    local interval=$1
+    local panel=$2
+    echo "while true; do clear; .ralph/scripts/tmux_status.sh $panel; sleep $interval; done"
+}
+
+# Create new session with first pane (Loop Status) - LEFT SIDE
+tmux new-session -s "$SESSION_NAME" -n "RALPH" -d "$(refresh_cmd 2 panel0)"
+
+# Panel 2: Workers (split horizontally) - RIGHT TOP
+tmux split-window -h -p 50 -c "$RALPH_DIR" "$(refresh_cmd 5 panel1)"
+
+# Panel 3: Tasks (split pane 2 vertically) - RIGHT BOTTOM
+tmux select-pane -t 2
+tmux split-window -v -p 40 -c "$RALPH_DIR" "$(refresh_cmd 5 panel2)"
+
+# Status bar configuration
+tmux set-option -t ralph status-interval 2
+tmux set-option -t ralph status-left-length 40
+tmux set-option -t ralph status-right-length 80
+tmux set-option -t ralph status-left '#[fg=colour220]RALPH'
+tmux set-option -t ralph status-right "#(.ralph/scripts/tmux_status.sh statusline)"
+tmux set-option -t ralph status-style "bg=colour235,fg=colour255"
+
+tmux select-pane -t 1
+
+echo "Ralph Command Center (COMPACT) - 3 panels"
+echo "Panel 1: Loop Status | Panel 2: Workers | Panel 3: Tasks"
+echo ""
+echo "For full 6-panel dashboard, resize terminal to 50+ lines"
+echo "Press Ctrl-B then D to detach"
+echo ""
+
+exec tmux attach-session -t "$SESSION_NAME"

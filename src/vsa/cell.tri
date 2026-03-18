@@ -1,0 +1,53 @@
+[cell]
+id = "trinity.vsa"
+name = "vsa"
+version = "0.1.0"
+kind = "library"
+path = "src/vsa"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Vector Symbolic Architecture bind/bundle/similarity operations"
+capabilities = ["init", "initPhi", "randomVector", "seededVector", "bind"]
+files = 36
+tests = 163
+owner = "agent:ralph"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = ["init", "initPhi", "randomVector"]
+tri_subcommands = []
+events = []
+binaries = ["photon-demo", "photon-immersive", "photon-terminal", "trinity-canvas", "bench-core", "example-memory", "example-sequence"]
+exports = ["initPhi", "randomVector", "seededVector", "bind", "unbind"]
+
+[dependencies]
+trinity.quantum = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+ffi = "native"
+concurrency = "yes"
+
+[dna]
+cell_id = "trinity.vsa"
+source = "specs/vsa/core.tri"
+output = "gen/vsa_ops.zig"
+regenerable = true
+
+[contract]
+inputs = ["vectors: [][D]Trit"]
+outputs = ["result: [D]Trit", "similarity: f32"]
+invariants = ["D == 1024 or 10000", "trit in {-1, 0, +1}", "bind is invertible"]
+
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:0ab6fc62826ad173e21b53688f4f1423591c3faa6dc854a3cee53a11c6ac377b"

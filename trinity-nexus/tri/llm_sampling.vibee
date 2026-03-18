@@ -1,0 +1,177 @@
+# LLM SAMPLING - Token Selection Strategies
+# Temperature, Top-p, Top-k sampling for text generation
+# phi^2 + 1/phi^2 = 3 = TRINITY
+
+name: llm_sampling
+version: "1.0.0"
+language: zig
+module: llm_sampling
+
+# SAMPLING CONSTANTS
+constants:
+  DEFAULT_TEMPERATURE: 0.7
+  DEFAULT_TOP_P: 0.9
+  DEFAULT_TOP_K: 40
+  DEFAULT_REPEAT_PENALTY: 1.1
+  MIN_TEMPERATURE: 0.0
+  MAX_TEMPERATURE: 2.0
+
+# TYPES
+types:
+  SamplingParams:
+    description: Parameters for token sampling
+    fields:
+      temperature: Float      # Controls randomness (0 = greedy, 1 = neutral)
+      top_p: Float           # Nucleus sampling threshold (0.9 = top 90% probability mass)
+      top_k: Int             # Top-k filtering (40 = consider top 40 tokens)
+      repeat_penalty: Float  # Penalty for repeated tokens (1.1 = 10% penalty)
+      min_p: Float           # Minimum probability threshold
+      presence_penalty: Float
+      frequency_penalty: Float
+
+  TokenProbability:
+    description: Token with its probability
+    fields:
+      token_id: Int
+      probability: Float
+      logit: Float
+
+  SamplingContext:
+    description: Context for sampling with history
+    fields:
+      recent_tokens: List<Int>
+      token_counts: Map<Int, Int>
+      params: Object
+
+# BEHAVIORS
+behaviors:
+  # Temperature scaling
+  - name: apply_temperature
+    given: Logits array, temperature value
+    when: Need to adjust distribution sharpness
+    then: Divide logits by temperature (higher = more random)
+
+  # Softmax conversion
+  - name: logits_to_probs
+    given: Logits array
+    when: Need probability distribution
+    then: Subtract max, exp, normalize to sum=1
+
+  # Top-k filtering
+  - name: apply_top_k
+    given: Probabilities, k value
+    when: Need to limit token candidates
+    then: Keep only top k tokens, zero others
+
+  # Top-p (nucleus) sampling
+  - name: apply_top_p
+    given: Probabilities, p threshold
+    when: Need nucleus sampling
+    then: Sort by prob, keep until cumsum >= p, renormalize
+
+  # Min-p filtering
+  - name: apply_min_p
+    given: Probabilities, min_p threshold
+    when: Need to filter low probability tokens
+    then: Zero tokens with prob < min_p * max_prob
+
+  # Repeat penalty
+  - name: apply_repeat_penalty
+    given: Logits, recent tokens, penalty factor
+    when: Need to discourage repetition
+    then: Divide logits of recent tokens by penalty
+
+  # Frequency penalty
+  - name: apply_frequency_penalty
+    given: Logits, token counts, penalty factor
+    when: Need to penalize frequent tokens
+    then: Subtract penalty * count from logits
+
+  # Presence penalty
+  - name: apply_presence_penalty
+    given: Logits, seen tokens, penalty factor
+    when: Need to penalize seen tokens
+    then: Subtract penalty from logits of seen tokens
+
+  # Random sampling
+  - name: sample_from_probs
+    given: Probability distribution
+    when: Need to select token
+    then: Generate random [0,1), find cumsum threshold
+
+  # Greedy sampling
+  - name: sample_greedy
+    given: Logits or probabilities
+    when: Temperature = 0 or deterministic needed
+    then: Return argmax
+
+  # Full sampling pipeline
+  - name: sample_with_params
+    given: Logits, SamplingParams, context
+    when: Need to sample next token
+    then: Apply temperature -> top_k -> top_p -> penalties -> sample
+
+  # Mirostat sampling (optional advanced)
+  - name: sample_mirostat
+    given: Logits, target_entropy, learning_rate
+    when: Need adaptive sampling
+    then: Adjust temperature to maintain target entropy
+
+# SAMPLING STRATEGIES
+strategies:
+  greedy:
+    description: "Always pick highest probability token"
+    temperature: 0.0
+    deterministic: true
+
+  creative:
+    description: "High randomness for creative text"
+    temperature: 1.2
+    top_p: 0.95
+    top_k: 100
+
+  balanced:
+    description: "Good balance of quality and diversity"
+    temperature: 0.7
+    top_p: 0.9
+    top_k: 40
+
+  precise:
+    description: "Low randomness for factual responses"
+    temperature: 0.3
+    top_p: 0.8
+    top_k: 20
+
+  code:
+    description: "Optimized for code generation"
+    temperature: 0.2
+    top_p: 0.95
+    repeat_penalty: 1.05
+
+# CHAT TEMPLATES
+chat_templates:
+  chatml:
+    system_prefix: "<|system|>\n"
+    system_suffix: "</s>\n"
+    user_prefix: "<|user|>\n"
+    user_suffix: "</s>\n"
+    assistant_prefix: "<|assistant|>\n"
+    assistant_suffix: "</s>\n"
+
+  llama2:
+    system_prefix: "[INST] <<SYS>>\n"
+    system_suffix: "\n<</SYS>>\n\n"
+    user_prefix: ""
+    user_suffix: " [/INST] "
+    assistant_prefix: ""
+    assistant_suffix: " </s><s>[INST] "
+
+  alpaca:
+    system_prefix: "### Instruction:\n"
+    system_suffix: "\n\n"
+    user_prefix: "### Input:\n"
+    user_suffix: "\n\n"
+    assistant_prefix: "### Response:\n"
+    assistant_suffix: "\n\n"
+
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3

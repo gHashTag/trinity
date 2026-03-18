@@ -1,0 +1,807 @@
+// Agent Definition Macros - Declarative agent configuration
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants  // AI Suggestion: Replace magic numbers with named constants// Provides @agent, @tool_pipeline, and @intent macros for improved syntax
+
+// =============================================================================
+// @agent MACRO - Declarative Agent Definition
+// =============================================================================
+
+/// Define an agent with declarative configuration
+///
+/// Example:
+/// ```vibee
+/// agent SWEAgent(
+///   identity: {
+///     name: "SWE Agent"
+///     role: "Software Engineer"
+///     capabilities: ["code_analysis", "testing", "deployment"]
+///     version: "2.0"
+///   }
+///
+///   self_awareness: {
+///     track_performance: true
+///     learn_from_errors: true
+///     adapt_strategy: true
+///     introspection_interval: 100
+///   }
+///
+///   state: {
+///     persistence: PostgreSQL
+///     auto_save_threshold: 5
+///     history_limit: 50
+///     cache_strategy: "LRU"
+///   }
+///
+///   tools: [swe_read, swe_write, git_commit]
+/// }
+/// ```
+
+struct AgentIdentity {
+  AgentIdentity(
+    name: str,
+    role: str,
+    capabilities: [str],
+    version: str
+  )
+}
+
+struct SelfAwarenessConfig {
+  SelfAwarenessConfig(
+    track_performance: bool,
+    learn_from_errors: bool,
+    adapt_strategy: bool,
+    introspection_interval: int
+  )
+}
+fn new() · Self {
+    name: name,
+    role: role,
+    version: version
+  
+}
+
+  # Auto-generated getters
+fn name(self) · self.name
+
+
+  # Auto-generated getters
+fn track_performance(self) · self.track_performance
+
+
+  # Auto-generated getters
+fn persistence(self) · self.persistence
+
+fn auto_save_threshold(self) · self.auto_save_threshold
+
+fn history_limit(self) · self.history_limit
+
+fn cache_strategy(self) · self.cache_strategy
+
+
+  # Auto-generated getters
+fn message_format(self) · self.message_format
+
+fn retry_policy(self) · self.retry_policy
+
+fn learn_from_errors(self) · self.learn_from_errors
+
+
+  # Auto-generated getters
+fn max_attempts(self) · self.max_attempts
+
+fn initial_delay_ms(self) · self.initial_delay_ms
+
+fn max_attempts(self) · self.max_attempts
+
+
+  # Auto-generated getters
+fn enabled(self) · self.enabled
+
+fn adaptation_threshold(self) · self.adaptation_threshold
+
+fn feedback_loop(self) · self.feedback_loop
+
+
+  # Auto-generated getters
+fn identity(self) · self.identity
+
+fn self_awareness(self) · self.self_awareness
+
+fn state(self) · self.state
+
+fn communication(self) · self.communication
+
+fn learning(self) · self.learning
+
+fn delay_ms(self) · self.delay_ms
+
+fn adapt_strategy(self) · self.adapt_strategy
+
+fn introspection_interval(self) · self.introspection_interval
+
+fn role(self) · self.role
+
+fn version(self) · self.version
+
+
+struct StateConfig {
+  StateConfig(
+    persistence: PersistenceType,
+    auto_save_threshold: int,
+    history_limit: int,
+    cache_strategy: str
+  )
+}
+
+struct PersistenceType {
+  PostgreSQL
+  ETS
+  Memory
+  Custom(str)
+}
+
+struct CommunicationConfig {
+  CommunicationConfig(
+    protocols: [Protocol],
+    message_format: MessageFormat,
+    retry_policy: RetryPolicy
+  )
+}
+
+struct Protocol {
+  WebSocket
+  Polling
+  HTTP
+  Custom(str)
+}
+
+derive(Json)
+struct MessageFormat {
+  JSON
+  MessagePack
+  Protobuf
+}
+
+struct RetryPolicy {
+  ExponentialBackoff(max_attempts: int, initial_delay_ms: int)
+  LinearBackoff(max_attempts: int, delay_ms: int)
+  NoRetry
+}
+
+struct LearningConfig {
+  LearningConfig(
+    enabled: bool,
+    metrics: [str],
+    adaptation_threshold: float,
+    feedback_loop: bool
+  )
+}
+
+struct AgentDefinition {
+  AgentDefinition(
+    identity: AgentIdentity,
+    self_awareness: SelfAwarenessConfig,
+    state: StateConfig,
+    communication: CommunicationConfig,
+    tools: [str],
+    learning: LearningConfig
+  )
+}
+
+// =============================================================================
+// Agent Builder Functions
+// =============================================================================
+
+@spec create_agent(def: AgentDefinition) → str · Result {
+  /// Create an agent from declarative definition
+  given: Agent definition
+  when: Initializing agent
+  then: Returns configured agent or error
+}
+
+@impl {
+  // Validate configuration
+  use _ <- validate_agent_definition(def)
+
+  // Create agent state
+  let initial_state = AgentState(
+    id: generate_agent_id(def.identity.name),
+    name: def.identity.name,
+    role: def.identity.role,
+    capabilities: def.identity.capabilities,
+    version: def.identity.version,
+
+    // Self-awareness
+    performance_tracker: case def.self_awareness.track_performance {
+      true → ☐PerformanceTracker.new())
+      false → ∅},
+    error_learner: case def.self_awareness.learn_from_errors {
+      true → ☐ErrorLearner.new())
+      false → ∅},
+    strategy_adapter: case def.self_awareness.adapt_strategy {
+      true → ☐StrategyAdapter.new())
+      false → ∅},
+    introspection_interval: def.self_awareness.introspection_interval,
+
+    // State management
+    persistence: def.state.persistence,
+    auto_save_threshold: def.state.auto_save_threshold,
+    history_limit: def.state.history_limit,
+    cache_strategy: def.state.cache_strategy,
+    history: [],
+    messages_since_save: 0,
+    protocols: def.communication.protocols,
+    message_format: def.communication.message_format,
+    retry_policy: def.communication.retry_policy,
+
+    // Tools
+    available_tools: def.tools,
+    tool_registry: register_tools(def.tools),
+
+    // Learning
+    learning_enabled: def.learning.enabled,
+    learning_metrics: def.learning.metrics,
+    adaptation_threshold: def.learning.adaptation_threshold,
+    feedback_loop: def.learning.feedback_loop,
+    experiences: []
+  )
+
+  // Start agent actor
+  use started <- agent_actor.start(initial_state)
+
+  ✅Agent(
+    id: initial_state.ID,
+    subject: started.subject,
+    definition: def
+  ))
+}
+
+@spec validate_agent_definition(def: AgentDefinition) → str · Result {
+  /// Validate agent definition
+  given: Agent definition
+  when: Before creating agent
+  then: Returns Ok or validation error
+}
+
+@impl {
+  // Validate identity
+  case def.identity.name {
+    "" → ❌"Agent name cannot be empty")
+    _ → ✅Nil)
+  }
+
+  // Validate capabilities
+  case def.identity.capabilities {
+    [] → ❌"Agent must have at least one capability")
+    _ → ✅Nil)
+  }
+
+  # Auto-generated getters
+fn name(self) · self.name
+
+fn tool(self) · self.tool
+
+
+  # Auto-generated getters
+fn max_attempts(self) · self.max_attempts
+
+fn input(self) · self.input
+
+fn output_var(self) · self.output_var
+
+
+  # Auto-generated getters
+fn name(self) · self.name
+
+fn description(self) · self.description
+
+fn timeout_ms(self) · self.timeout_ms
+
+fn max_retries(self) · self.max_retries
+
+fn rollback_on_failure(self) · self.rollback_on_failure
+
+fn on_error(self) · self.on_error
+
+fn condition(self) · self.condition
+
+
+  // Validate introspection interval
+  case def.self_awareness.introspection_interval {
+    n if n < 1 → ❌"Introspection interval must be positive")
+    _ → ✅Nil)
+  }
+
+  // Validate history limit
+  case def.state.history_limit {
+    n if n < 1 → ❌"History limit must be positive")
+    _ → ✅Nil)
+  }
+
+  // Validate tools
+  case def.tools {
+    [] → ❌"Agent must have at least one tool")
+    _ → ✅Nil)
+  }
+
+  ✅Nil)
+}
+
+// =============================================================================
+// @tool_pipeline MACRO - Declarative Tool Composition
+// =============================================================================
+
+/// Define a tool pipeline with automatic error handling and dependencies
+///
+/// Example:
+/// ```vibee
+/// @tool_pipeline implement_feature {
+///   description: "Complete feature implementation workflow"
+///
+///   steps: [
+///     analyze_requirements → {
+///       tool: parse_task_description
+///       input: task_description
+///       output: structured_task
+///       on_error: retry(3)
+///     },
+///
+///     create_branch → {
+///       tool: git_create_branch
+///       input: branch_name = \"feature/$structured_task.ID\"
+///       depends_on: [analyze_requirements]
+///       on_error: skip_if_exists
+///     }
+///   ]
+///
+///   timeout: 300000
+///   max_retries: 2
+///   rollback_on_failure: true
+/// }
+/// ```
+
+struct PipelineStep {
+  PipelineStep(
+    name: str,
+    tool: str,
+    input: Json,
+    output_var: str,
+    depends_on: [str],
+    parallel_with: [str],
+    on_error: ErrorStrategy,
+    condition: str?
+  )
+}
+
+struct ErrorStrategy {
+  Retry(max_attempts: int)
+  SkipIfExists
+  FallbackToTemplate
+  AbortPipeline
+  Continue
+}
+
+struct ToolPipeline {
+  ToolPipeline(
+    name: str,
+    description: str,
+    steps: [PipelineStep],
+    timeout_ms: int,
+    max_retries: int,
+    rollback_on_failure: bool
+  )
+}
+
+@spec execute_pipeline(pipeline: ToolPipeline, context: Context) → str · Result {
+  /// Execute a tool pipeline
+  given: Pipeline definition and execution context
+  when: Running pipeline
+  then: Returns result or error
+}
+
+@impl {
+  let start_time = current_timestamp_ms()
+  let results = dict.new()
+
+  // Build dependency graph
+  let graph = build_dependency_graph(pipeline.steps)
+
+  // Execute steps in topological order
+  use execution_order <- topological_sort(graph)
+
+  for step in execution_order {
+    // Check if step should run
+    case results · should_execute_step {
+      false → continue
+      true → {
+        // Execute step with timeout
+        let step_result = context,
+          results,
+          pipeline.timeout_ms
+         · execute_step_with_timeout
+
+        match step_result {
+          ✅result) → {
+            results = dict.step.output_var, result · insert
+          }
+
+  # Auto-generated getters
+fn name(self) · self.name
+
+fn goal(self) · self.goal
+
+fn constraints(self) · self.constraints
+
+fn success_criteria(self) · self.success_criteria
+
+fn strategy(self) · self.strategy
+
+
+  # Auto-generated getters
+fn bug_reproduced(self) · self.bug_reproduced
+
+fn fix_implemented(self) · self.fix_implemented
+
+fn tests_passing(self) · self.tests_passing
+
+fn regression_test_added(self) · self.regression_test_added
+
+fn documentation_updated(self) · self.documentation_updated
+
+fn code_reviewed(self) · self.code_reviewed
+
+
+  # Auto-generated getters
+fn preserve_existing_tests(self) · self.preserve_existing_tests
+
+fn maintain_api_compatibility(self) · self.maintain_api_compatibility
+
+fn max_time_minutes(self) · self.max_time_minutes
+
+fn max_cost(self) · self.max_cost
+
+
+          ❌err) → {
+            // Handle error based on strategy
+            case err, pipeline · handle_step_error {
+              Continue → continue
+              Abort → {
+                case pipeline.rollback_on_failure {
+                  true → rollback_pipeline(results)
+                  false → ()
+                }
+                ❌"Pipeline aborted: {err}")
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  let end_time = current_timestamp_ms()
+
+  ✅PipelineResult(
+    pipeline_name: pipeline.name,
+    results,
+    execution_time_ms: end_time - start_time,
+    steps_executed: list.len(execution_order),
+    success: true
+  ))
+}
+
+// =============================================================================
+// @intent MACRO - High-Level Goal Specification
+// =============================================================================
+
+/// Define an intent with goals and constraints
+///
+/// Example:
+/// ```vibee
+/// intent fix_bug(
+///   goal: "Fix reported bug in authentication system"
+///
+///   constraints: {
+///     preserve_existing_tests: true
+///     maintain_api_compatibility: true
+///     max_time: 30_minutes
+///   }
+///
+///   success_when: {
+///     bug_reproduced: true
+///     fix_implemented: true
+///     tests_passing: true
+///     regression_test_added: true
+///   }
+///
+///   strategy: adaptive
+/// }
+/// ```
+
+struct IntentConstraints {
+  IntentConstraints(
+    preserve_existing_tests: bool,
+    maintain_api_compatibility: bool,
+    max_time_minutes: int,
+    max_cost: float?,
+    required_approvals: [str]
+  )
+}
+
+struct SuccessCriteria {
+  SuccessCriteria(
+    bug_reproduced: bool,
+    fix_implemented: bool,
+    tests_passing: bool,
+    regression_test_added: bool,
+    documentation_updated: bool,
+    code_reviewed: bool
+  )
+}
+
+struct IntentStrategy {
+  Adaptive      // Agent decides approach
+  Predefined    // Follow fixed plan
+  Collaborative // Work with other agents
+  Conservative  // Minimize risk
+  Aggressive    // Maximize speed
+}
+
+struct IntentDefinition {
+  IntentDefinition(
+    name: str,
+    goal: str,
+    constraints: IntentConstraints,
+    success_criteria: SuccessCriteria,
+    strategy: IntentStrategy
+  )
+}
+
+@spec execute_intent(intent: IntentDefinition, agent: Agent) → str · Result {
+  /// Execute an intent
+  given: Intent definition and agent
+  when: Agent processes intent
+  then: Returns result or error
+}
+
+@impl {
+  let start_time = current_timestamp_ms()
+
+  // Step 1: Analyze intent and create plan
+  use plan <- agent · create_intent_plan
+
+  // Step 2: Execute plan based on strategy
+  let execution_result = case intent.strategy {
+    Adaptive → agent, intent · execute_adaptive
+    Predefined → agent · execute_predefined
+    Collaborative → agent · execute_collaborative
+    Conservative → agent · execute_conservative
+    Aggressive → agent · execute_aggressive
+  }
+
+  // Step 3: Validate success criteria
+  use result <- execution_result
+  let success = intent.success_criteria · validate_success_criteria
+
+  let end_time = current_timestamp_ms()
+
+  ✅IntentResult(
+    intent_name: intent.name,
+    goal: intent.goal,
+    success,
+    execution_time_ms: end_time - start_time,
+    steps_taken: result.steps,
+    criteria_met: result.criteria_met
+  ))
+}
+
+  # Auto-generated getters
+fn id(self) · self.id
+
+
+  # Auto-generated getters
+fn id(self) · self.id
+
+fn subject(self) · self.subject
+
+fn definition(self) · self.definition
+
+fn name(self) · self.name
+
+fn role(self) · self.role
+
+fn version(self) · self.version
+
+fn performance_tracker(self) · self.performance_tracker
+
+fn error_learner(self) · self.error_learner
+
+fn strategy_adapter(self) · self.strategy_adapter
+
+fn introspection_interval(self) · self.introspection_interval
+
+fn persistence(self) · self.persistence
+
+fn auto_save_threshold(self) · self.auto_save_threshold
+
+fn history_limit(self) · self.history_limit
+
+fn cache_strategy(self) · self.cache_strategy
+
+fn messages_since_save(self) · self.messages_since_save
+
+fn message_format(self) · self.message_format
+
+fn retry_policy(self) · self.retry_policy
+
+fn tool_registry(self) · self.tool_registry
+
+fn learning_enabled(self) · self.learning_enabled
+
+fn adaptation_threshold(self) · self.adaptation_threshold
+
+fn feedback_loop(self) · self.feedback_loop
+
+
+@spec create_intent_plan(intent: IntentDefinition, agent: Agent) → str · Result {
+  /// Create execution plan from intent
+  given: Intent and agent
+  when: Planning execution
+  then: Returns plan or error
+}
+
+@impl {
+  // Use agent's knowledge and capabilities to create plan
+  let available_tools = agent.definition.tools
+  let capabilities = agent.definition.identity.capabilities
+
+  // Analyze goal and decompose into steps
+  use steps <- decompose_goal(intent.goal, available_tools)
+
+  // Apply constraints
+  let constrained_steps = intent.constraints · apply_constraints
+
+  // Optimize based on strategy
+  let optimized = intent.strategy · optimize_plan
+
+  ✅Plan(
+    intent.name,
+    steps: optimized,
+    estimated_time: estimate_time(optimized),
+    risk_level: intent.constraints · assess_risk
+  ))
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+@spec generate_agent_id(name: str) → str {
+  /// Generate unique agent ID
+  given: Agent name
+  when: Creating agent
+  then: Returns unique ID
+}
+
+@impl {
+  let timestamp = current_timestamp_ms()
+  let random = generate_random_string(8)
+  "{name.lowercase().replace(" ", "_")}_ {timestamp$()}_ {random}"
+}
+
+@spec register_tools(tool_names: [str]) → ToolRegistry {
+  /// Register tools for agent
+  given: type {name} {
+  items: List[Item],
+  count: Int} tool names
+  when: Initializing agent
+  then: Returns tool registry
+}
+
+@impl {
+  tool_names.fold(ToolRegistry.new(), tool_name · fn {
+    case lookup_tool(tool_name) {
+      ☐tool) → registry.tool · register
+      ∅-> registry
+    }
+  })
+}
+
+@spec current_timestamp_ms() → int {
+  /// Get current timestamp in milliseconds
+  given: Nothing
+  when: Timing operations
+  then: Returns timestamp
+}
+
+@impl {
+  // FFI call to Erlang
+  erlang_timestamp_ms()
+}
+
+ffi("erlang")
+erlang_timestamp_ms() → int
+
+@spec generate_random_string(length: int) → str {
+  /// Generate random alphanumeric string
+  given: Desired length
+  when: Creating IDs
+  then: Returns random string
+}
+
+@impl {
+  // FFI call to generate random string
+  erlang_random_string(length)
+}
+
+ffi("vibee_random_ffi")
+erlang_random_string(length: int) → str
+
+// =============================================================================
+// Type Definitions for Agent State
+// =============================================================================
+
+struct AgentState {
+  AgentState(
+    id: str,
+    name: str,
+    role: str,
+    capabilities: [str],
+    version: str,
+    performance_tracker: PerformanceTracker?,
+    error_learner: ErrorLearner?,
+    strategy_adapter: StrategyAdapter?,
+    introspection_interval: int,
+    persistence: PersistenceType,
+    auto_save_threshold: int,
+    history_limit: int,
+    cache_strategy: str,
+    history: [Message],
+    messages_since_save: int,
+    protocols: [Protocol],
+    message_format: MessageFormat,
+    retry_policy: RetryPolicy,
+    available_tools: [str],
+    tool_registry: ToolRegistry,
+    learning_enabled: bool,
+    learning_metrics: [str],
+    adaptation_threshold: float,
+    feedback_loop: bool,
+    experiences: [Experience]
+  )
+}
+
+struct Agent {
+  Agent(
+    id: str,
+    subject: Subject,
+    definition: AgentDefinition
+  )
+}
+
+// Placeholder types (to be implemented in other modules)
+struct PerformanceTracker
+struct ErrorLearner
+struct StrategyAdapter
+struct Message
+struct ToolRegistry
+struct Experience
+struct Subject
+struct Context
+struct PipelineResult
+struct IntentResult
+struct Plan
+// =============================================================================
+// Export Public API
+// =============================================================================
+
+/// Public API for agent macros
+pub create_agent(def: AgentDefinition) → str · Result
+pub execute_pipeline(pipeline: ToolPipeline, context: Context) → str · Result
+pub execute_intent(intent: IntentDefinition, agent: Agent) → str · Result
+
+# v8.0
+
+# v8.0
+# v9.0 - Macro-Automation
+
+# v10.0 - ML-Powered Migration

@@ -1,0 +1,230 @@
+# WebArena Agent Specification
+# FIREBIRD integration for autonomous web navigation
+# Target: #1 on WebArena leaderboard (>70% success)
+# φ² + 1/φ² = 3 = TRINITY
+
+name: webarena_agent
+version: "1.0.0"
+language: zig
+module: webarena_agent
+
+constants:
+  PHI: 1.6180339887
+  TRINITY: 3.0
+  
+  # WebArena benchmark
+  TOTAL_TASKS: 812
+  TASK_CATEGORIES:
+    - shopping: 251
+    - reddit: 166
+    - gitlab: 228
+    - map: 99
+    - wikipedia: 68
+  
+  # Agent parameters
+  TARGET_SUCCESS_RATE: 0.70  # Goal: >70% for #1
+  CURRENT_SOTA: 0.65  # Frontier models 2026
+  
+  # FIREBIRD integration
+  FINGERPRINT_DIM: 10000
+  SIMILARITY_TARGET: 0.90  # Higher for stealth tasks
+  EVOLUTION_GENERATIONS: 20
+  
+  # Planning parameters
+  MAX_STEPS_PER_TASK: 30
+  PLANNING_DEPTH: 5
+  TERNARY_BINDING_DIM: 1000
+
+types:
+  WebArenaTask:
+    description: "Single WebArena benchmark task"
+    fields:
+      task_id: Int
+      category: String
+      intent: String
+      start_url: String
+      expected_result: String
+      max_steps: Int
+  
+  BrowserState:
+    description: "Current browser state"
+    fields:
+      screenshot: List<Int>  # Pixel data
+      accessibility_tree: String
+      url: String
+      dom_elements: List<DOMElement>
+      viewport_size: Tuple<Int, Int>
+  
+  DOMElement:
+    description: "Accessible DOM element"
+    fields:
+      element_id: Int
+      tag: String
+      text: String
+      role: String
+      bounds: Tuple<Int, Int, Int, Int>
+      clickable: Bool
+      focusable: Bool
+  
+  AgentAction:
+    description: "Action agent can take"
+    fields:
+      action_type: String  # click, type, scroll, navigate, wait
+      target_id: Int
+      value: String
+      confidence: Float
+  
+  TernaryPlan:
+    description: "Ternary-encoded action plan"
+    fields:
+      plan_vector: List<Int>  # Ternary trits
+      action_sequence: List<AgentAction>
+      similarity_to_human: Float
+      estimated_success: Float
+  
+  AgentState:
+    description: "Internal agent state"
+    fields:
+      fingerprint: List<Int>  # Evolved fingerprint
+      history: List<AgentAction>
+      current_plan: TernaryPlan
+      step_count: Int
+      detected: Bool
+
+behaviors:
+  - name: perceive_state
+    given: Browser with rendered page
+    when: Agent needs to understand current state
+    then: Extract screenshot + accessibility tree, encode to ternary
+    
+  - name: plan_actions
+    given: Current state and task intent
+    when: Agent needs to decide next action
+    then: Generate ternary plan using VSA binding
+    
+  - name: execute_action
+    given: Planned action with target element
+    when: Action is selected for execution
+    then: Execute via browser automation, update state
+    
+  - name: evolve_fingerprint
+    given: Detection risk or periodic check
+    when: Fingerprint similarity drops or detection suspected
+    then: Run FIREBIRD evolution to 0.90 similarity
+    
+  - name: evaluate_success
+    given: Task completed or max steps reached
+    when: Need to determine task outcome
+    then: Compare result with expected, return success/fail
+    
+  - name: stealth_navigation
+    given: Task requires avoiding detection
+    when: Shopping/social tasks with anti-bot measures
+    then: Use evolved fingerprint + human-like timing
+
+functions:
+  - name: init_agent
+    params:
+      - fingerprint_dim: Int
+      - similarity_target: Float
+    returns: AgentState
+    description: "Initialize agent with evolved fingerprint"
+    
+  - name: perceive
+    params:
+      - browser_state: BrowserState
+    returns: List<Int>
+    description: "Encode browser state to ternary vector"
+    
+  - name: plan
+    params:
+      - state_vector: List<Int>
+      - intent_vector: List<Int>
+      - history: List<AgentAction>
+    returns: TernaryPlan
+    description: "Generate action plan using ternary binding"
+    
+  - name: select_action
+    params:
+      - plan: TernaryPlan
+      - state: BrowserState
+    returns: AgentAction
+    description: "Select best action from plan"
+    
+  - name: execute
+    params:
+      - action: AgentAction
+      - browser: BrowserState
+    returns: BrowserState
+    description: "Execute action and return new state"
+    
+  - name: check_detection
+    params:
+      - state: AgentState
+    returns: Bool
+    description: "Check if agent is being detected"
+    
+  - name: run_task
+    params:
+      - task: WebArenaTask
+      - agent: AgentState
+    returns: Tuple<Bool, Int>
+    description: "Run single task, return (success, steps)"
+
+# Integration with FIREBIRD
+firebird_integration:
+  fingerprint_evolution:
+    trigger: "detection_risk > 0.3 OR steps % 10 == 0"
+    target_similarity: 0.90
+    max_generations: 20
+    
+  stealth_features:
+    - canvas_noise: true
+    - webgl_spoof: true
+    - timing_humanization: true
+    - mouse_movement_natural: true
+
+# Planning algorithm
+planning_algorithm: |
+  1. Encode current state to ternary vector S
+  2. Encode task intent to ternary vector I
+  3. Bind: P = S ⊗ I (ternary XOR binding)
+  4. For each possible action A:
+     - Compute similarity: sim(P, encode(A))
+     - If sim > threshold: add to candidates
+  5. Select action with highest confidence
+  6. Execute and observe new state
+  7. Repeat until task complete or max_steps
+
+# Success metrics
+metrics:
+  target_success_rate: 0.70
+  target_avg_steps: 15
+  target_detection_rate: 0.05  # <5% detected
+  
+# Category-specific strategies
+category_strategies:
+  shopping:
+    fingerprint_priority: high
+    timing_delay_ms: 500-2000
+    detection_check_frequency: 5
+    
+  reddit:
+    fingerprint_priority: medium
+    timing_delay_ms: 200-1000
+    detection_check_frequency: 10
+    
+  gitlab:
+    fingerprint_priority: low
+    timing_delay_ms: 100-500
+    detection_check_frequency: 20
+    
+  map:
+    fingerprint_priority: low
+    timing_delay_ms: 100-300
+    detection_check_frequency: 20
+    
+  wikipedia:
+    fingerprint_priority: low
+    timing_delay_ms: 50-200
+    detection_check_frequency: 30

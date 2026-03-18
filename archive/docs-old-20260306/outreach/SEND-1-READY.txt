@@ -1,0 +1,108 @@
+# 📧 EMAIL READY TO SEND — Bo-Qiang Ma (马伯强)
+
+**Date:** 2026-03-05
+**To:** mabq@pku.edu.cn
+**Subject:** TRINITY: φ² + 1/φ² = 3 — Connection to Koide Formula Research
+
+---
+
+## COPY THIS EMAIL AND SEND:
+
+---
+
+Dear Professor Ma,
+
+I hope this email finds you well. I am writing to you as a fellow researcher
+interested in the fundamental relationships between particle masses and
+mathematical constants.
+
+I have been following your work on Koide formula extensions with great interest,
+particularly:
+- "Energy scale independence of Koide's relation for quark and lepton masses" (2007)
+- "Estimate of neutrino masses from Koide's relation" (2005)
+- "The symmetry approach to quark and lepton masses" (2024)
+
+MY WORK: TRINITY IDENTITY
+
+I have discovered a mathematical identity that may be related to your research:
+
+    φ² + 1/φ² = 3
+
+where φ = 1.618... is the golden ratio.
+
+PROOF:
+φ = (1 + √5)/2
+φ² = (3 + √5)/2
+1/φ² = (3 - √5)/2
+φ² + 1/φ² = 3 ✓
+
+This identity has led to a parametric formula for fundamental constants:
+
+    V = n × 3^k × π^m × φ^p × e^q
+
+Using this framework, I have generated 7 timestamped predictions for
+yet-unmeasured constants.
+
+CONNECTION TO KOIDE FORMULA
+
+Your Koide relation: Q = 2/3 ≈ 0.666...
+My TRINITY identity: φ² + 1/φ² = 3
+
+Both approaches seek simple, elegant numerical relationships in particle
+mass spectra. I believe there may be a deeper connection between these frameworks.
+
+TIMESTAMPED PREDICTIONS
+
+All predictions are timestamped (Unix: 1741171200 = 2026-03-05):
+
+1. Neutrino mass sum: Σm_ν = 0.0599 ± 0.006 eV
+2. Axion mass: m_a = 0.00012 ± 0.00002 eV
+3. Graviton mass: m_g = 3.8 × 10^-23 ± 20% eV
+4. Proton lifetime: τ_p = 2.8 × 10^34 ± 25% years
+5. Dark photon: X17 = 17.0 ± 0.85 MeV
+6. WIMP mass: m_χ = 98.4 ± 10% GeV
+7. Tensor ratio: r = 0.037 ± 10%
+
+The neutrino mass prediction particularly relates to your work on Koide formula
+extensions to neutrinos.
+
+REQUEST
+
+1. I would value your feedback on this approach
+2. Would you be willing to provide an arXiv endorsement for my work?
+   (Category: hep-ph)
+3. I am open to collaboration on extending these ideas
+
+Full paper available at: https://github.com/gHashTag/trinity/tree/main/docs/papers
+
+Thank you for your time and consideration. I look forward to your response.
+
+Best regards,
+
+Dmitrii Vasilev
+TRINITY Research Group
+https://github.com/gHashTag/trinity
+
+---
+
+## ✅ CHECKLIST BEFORE SENDING:
+
+- [x] Email text ready
+- [x] Name: Dmitrii Vasilev
+- [x] Organization: TRINITY Research Group
+- [x] Subject line: TRINITY: φ² + 1/φ² = 3 — Connection to Koide Formula Research
+- [x] Recipient: mabq@pku.edu.cn
+- [ ] PDF attached (optional — link to GitHub provided)
+- [ ] Sent!
+
+---
+
+## SEND NOW:
+
+1. Copy the email text above (between the lines)
+2. Open your email client
+3. Paste and send to: **mabq@pku.edu.cn**
+
+---
+
+**φ² + 1/φ² = 3 | TRINITY**

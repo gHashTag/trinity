@@ -1,0 +1,106 @@
+name: hdc_few_shot
+version: "1.0.0"
+language: zig
+module: hdc_few_shot
+
+description: |
+  HDC Few-Shot Meta-Learner — K-shot Classification with Prototype Rectification.
+  Learn new classes from very few examples (1-5 per class) with improved
+  separation via centroid subtraction.
+
+  Core Problem:
+    With K=1 (one-shot), the class prototype IS the single sample HV.
+    With K=5, it's the bundle of 5 sample HVs.
+    Problem: prototypes share a common "background" component from encoding,
+    making them more similar than they should be → low accuracy.
+
+  Prototype Rectification:
+    1. Compute centroid = mean of all class prototypes
+    2. Rectified prototype = original - centroid
+    3. This removes the shared background, amplifying class-specific signal
+
+    Mathematical justification:
+      proto_i = class_signal_i + background
+      centroid ≈ (1/C) * Σ(class_signal_j + background) ≈ background (if signals are orthogonal)
+      rectified_i = proto_i - centroid ≈ class_signal_i
+
+  K-Shot Evaluation Protocol:
+    Support set: K samples per class (for training)
+    Query set: remaining samples (for testing)
+    Accuracy measured on query set after training on support set only
+
+  Adaptive K Selection:
+    Confidence-based: if prediction confidence < threshold after K shots,
+    request more samples for low-confidence classes.
+
+  Properties:
+    - Works with K=1 (one-shot) up to K=N (full training)
+    - Rectification adds no training cost (single pass over prototypes)
+    - Domain-agnostic: works for text, multimodal, any HDC-encoded data
+    - Natural for cold-start scenarios
+
+types:
+  FewShotTask:
+    fields:
+      support: List<LabeledSample>    # K samples per class
+      query: List<LabeledSample>      # test samples
+
+  LabeledSample:
+    fields:
+      text: String
+      label: String
+
+  FewShotResult:
+    fields:
+      accuracy: Float
+      num_classes: usize
+      k_per_class: usize
+      rectified: Bool
+
+  RectificationStats:
+    fields:
+      avg_inter_class_sim_before: Float   # avg cosine between different class protos
+      avg_inter_class_sim_after: Float    # same, after rectification
+      improvement: Float                   # reduction in inter-class similarity
+
+  HDCFewShotLearner:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      encoder: HDCTextEncoder
+      prototypes: HashMap<String, ClassPrototype>
+      rectified_prototypes: HashMap<String, HybridBigInt>
+      is_rectified: Bool
+
+behaviors:
+  - name: trainKShot
+    given: Support set (K labeled samples per class)
+    when: Encodes and bundles K samples per class into prototypes
+    then: Class prototypes created from K examples
+
+  - name: rectify
+    given: Nothing (prototypes already trained)
+    when: Computes centroid, subtracts from each prototype
+    then: Rectified prototypes stored, inter-class similarity reduced
+
+  - name: predict
+    given: Text to classify
+    when: Compares against rectified (or original) prototypes
+    then: Returns predicted label and confidence
+
+  - name: evaluate
+    given: Query set (labeled test samples)
+    when: Predicts each query, computes accuracy
+    then: Returns FewShotResult
+
+  - name: measureRectification
+    given: Nothing
+    when: Computes inter-class similarity before and after rectification
+    then: Returns RectificationStats showing improvement
+
+  - name: reset
+    given: Nothing
+    when: Clears all prototypes
+    then: Learner ready for new task

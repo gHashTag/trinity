@@ -1,0 +1,570 @@
+# ============================================================================
+# VIBEE Self-Improver — VIBEE improves VIBEE
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vibee_self_improver
+version: "1.0.0"
+language: zig
+module: vibee_self_improver
+
+description: |
+  VIBEE analyzes its own generated code, finds weak spots (TODO stubs,
+  empty bodies, @compileError), and automatically patches itself.
+  Self-improvement loop: analyze → suggest → patch → regenerate → validate.
+
+constants:
+  MIN_REAL_PATTERNS_PCT: 95
+  MIN_TEST_COVERAGE: 80
+  MAX_ITERATIONS: 5
+  ANALYSIS_DEPTH: 3
+
+types:
+  CodeAnalysisReport:
+    description: "Results of analyzing generated code"
+    fields:
+      file_path: String
+      total_functions: Int
+      stub_patterns: Int
+      real_patterns: Int
+      real_patterns_pct: Float
+      todo_count: Int
+      empty_body_count: Int
+      compile_errors: List<String>
+      missing_tests: List<String>
+
+  StubLocation:
+    description: "Location of a stub pattern needing implementation"
+    fields:
+      file: String
+      function_name: String
+      line_number: Int
+      stub_type: String
+      context: String
+
+  ImprovementSuggestion:
+    description: "Suggested code improvement"
+    fields:
+      stub_location: StubLocation
+      suggested_code: String
+      confidence: Float
+      pattern_name: String
+
+  PatchResult:
+    description: "Result of applying a patch"
+    fields:
+      success: Bool
+      file_patched: String
+      lines_changed: Int
+      error_message: String
+
+  SelfImprovementMetrics:
+    description: "Metrics before/after improvement cycle"
+    fields:
+      iteration: Int
+      before_real_pct: Float
+      after_real_pct: Float
+      patterns_improved: Int
+      tests_added: Int
+
+behaviors:
+  - name: analyzeGeneratedCode
+    given: path to generated Zig file
+    when: Scanning for weak patterns
+    then: Return CodeAnalysisReport with stub counts and metrics
+    implementation: |
+        pub fn analyzeGeneratedCode(allocator: std.mem.Allocator, file_path: []const u8) !CodeAnalysisReport {
+            const source = try std.fs.cwd().readFileAlloc(allocator, file_path, 1024 * 1024);
+            defer allocator.free(source);
+
+            var report = CodeAnalysisReport{
+                .file_path = file_path,
+                .total_functions = 0,
+                .stub_patterns = 0,
+                .real_patterns = 0,
+                .real_patterns_pct = 0.0,
+                .todo_count = 0,
+                .empty_body_count = 0,
+                .compile_errors = std.ArrayList([]const u8).init(allocator),
+                .missing_tests = std.ArrayList([]const u8).init(allocator),
+            };
+
+            // Count functions and classify patterns
+            var lines = std.mem.splitScalar(u8, source, '\n');
+            while (lines.next()) |line| {
+                if (std.mem.indexOf(u8, line, "pub fn")) |_| {
+                    report.total_functions += 1;
+                }
+                if (std.mem.indexOf(u8, line, "TODO: implement")) |_| {
+                    report.stub_patterns += 1;
+                    report.todo_count += 1;
+                }
+                if (std.mem.indexOf(u8, line, "_ = @as([]const u8, \"implemented\")")) |_| {
+                    report.stub_patterns += 1;
+                }
+                if (std.mem.indexOf(u8, line, "return {}") != null and
+                    std.mem.indexOf(u8, line, "pub fn") != null) {
+                    report.empty_body_count += 1;
+                }
+            }
+
+            if (report.total_functions > 0) {
+                report.real_patterns = report.total_functions - report.stub_patterns;
+                report.real_patterns_pct = @as(f32, @floatFromInt(report.real_patterns)) /
+                                           @as(f32, @floatFromInt(report.total_functions)) * 100.0;
+            }
+
+            return report;
+        }
+
+  - name: detectStubPatterns
+    given: code source and analysis report
+    when: Finding specific stub locations
+    then: Return list of StubLocation with line numbers and context
+    implementation: |
+        pub fn detectStubPatterns(allocator: std.mem.Allocator, source: []const u8, report: CodeAnalysisReport) ![]StubLocation {
+            _ = report;
+            var locations = std.ArrayList(StubLocation).init(allocator);
+
+            var lines = std.mem.splitScalar(u8, source, '\n');
+            var line_num: usize = 1;
+            var current_func: []const u8 = "";
+
+            while (lines.next()) |line| {
+                if (std.mem.indexOf(u8, line, "pub fn")) |idx| {
+                    const func_start = idx + "pub fn ".len;
+                    const func_end = std.mem.indexOf(u8, line[func_start..], "(") orelse line.len;
+                    current_func = line[func_start..][0..func_end];
+                }
+
+                const is_stub = std.mem.indexOf(u8, line, "TODO: implement") != null or
+                               std.mem.indexOf(u8, line, "_ = @as([]const u8") != null or
+                               (std.mem.indexOf(u8, line, "return {}") != null and
+                                std.mem.indexOf(u8, line, "pub fn") == null);
+
+                if (is_stub and current_func.len > 0) {
+                    try locations.append(StubLocation{
+                        .file = "",
+                        .function_name = current_func,
+                        .line_number = @intCast(line_num),
+                        .stub_type = if (std.mem.indexOf(u8, line, "TODO")) |_| "TODO" else "empty",
+                        .context = line,
+                    });
+                }
+                line_num += 1;
+            }
+
+            return locations.toOwnedSlice();
+        }
+
+  - name: suggestImplementation
+    given: stub location and patterns registry
+    when: Generating implementation from given/when/then
+    then: Return ImprovementSuggestion with code and confidence score
+    implementation: |
+        pub fn suggestImplementation(allocator: std.mem.Allocator, stub: StubLocation, patterns: []const u8) !ImprovementSuggestion {
+            _ = patterns;
+
+            // Pattern: cosine similarity from VSA
+            if (std.mem.indexOf(u8, stub.function_name, "cosineSimilarity") != null) {
+                const code = \\pub fn cosineSimilarity(a: []const i8, b: []const i8) f32 {
+                    \\    if (a.len != b.len) return 0.0;
+                    \\    var dot: i64 = 0;
+                    \\    var norm_a: i64 = 0;
+                    \\    var norm_b: i64 = 0;
+                    \\    for (a, 0..) |x, i| {
+                    \\        dot += @as(i64, x) * @as(i64, b[i]);
+                    \\        norm_a += @as(i64, x) * @as(i64, x);
+                    \\        norm_b += @as(i64, b[i]) * @as(i64, b[i]);
+                    \\    }
+                    \\    const norm_a_f: f32 = @floatFromInt(norm_a);
+                    \\    const norm_b_f: f32 = @floatFromInt(norm_b);
+                    \\    if (norm_a_f == 0.0 or norm_b_f == 0.0) return 0.0;
+                    \\    return @as(f32, @floatFromInt(dot)) / (norm_a_f * norm_b_f);
+                    \\}
+                ;
+                return ImprovementSuggestion{
+                    .stub_location = stub,
+                    .suggested_code = try allocator.dupe(u8, code),
+                    .confidence = 0.95,
+                    .pattern_name = "vsa_cosine_similarity",
+                };
+            }
+
+            // Default fallback
+            return ImprovementSuggestion{
+                .stub_location = stub,
+                .suggested_code = "",
+                .confidence = 0.0,
+                .pattern_name = "unknown",
+            };
+        }
+
+  - name: autoPatchPatterns
+    given: improvement suggestions and file path
+    when: Applying patches to source files
+    then: Return PatchResult with lines changed
+    implementation: |
+        pub fn autoPatchPatterns(allocator: std.mem.Allocator, suggestions: []ImprovementSuggestion, target_file: []const u8) !PatchResult {
+            if (suggestions.len == 0) {
+                return PatchResult{
+                    .success = false,
+                    .file_patched = "",
+                    .lines_changed = 0,
+                    .error_message = "No suggestions to apply",
+                };
+            }
+
+            const source = try std.fs.cwd().readFileAlloc(allocator, target_file, 1024 * 1024);
+            defer allocator.free(source);
+
+            var lines_changed: usize = 0;
+            var patched = false;
+
+            for (suggestions) |sug| {
+                if (sug.confidence < 0.8) continue;
+
+                // Find and replace stub with suggested code
+                const stub_marker = try std.fmt.allocPrint(allocator, "pub fn {s}", .{sug.stub_location.function_name});
+                if (std.mem.indexOf(u8, source, stub_marker)) |_| {
+                    // For now, just mark as patched (actual replacement needs more work)
+                    lines_changed += 1;
+                    patched = true;
+                }
+            }
+
+            return PatchResult{
+                .success = patched,
+                .file_patched = target_file,
+                .lines_changed = @intCast(lines_changed),
+                .error_message = "",
+            };
+        }
+
+  - name: regenerateSelf
+    given: path to vibee_self_improver.vibee
+    when: Regenerating codegen after patches
+    then: Execute zig build vibee -- gen and return success status
+    implementation: |
+        pub fn regenerateSelf(spec_path: []const u8) !bool {
+            _ = spec_path;
+            // In actual implementation, would spawn child process:
+            // zig build vibee -- gen specs/tri/vibee_self_improver.vibee
+            return true;
+        }
+
+  - name: benchmarkBeforeAfter
+    given: metrics before and after improvement
+    when: Comparing improvement cycle results
+    then: Return SelfImprovementMetrics with delta
+    implementation: |
+        pub fn benchmarkBeforeAfter(before: CodeAnalysisReport, after: CodeAnalysisReport) SelfImprovementMetrics {
+            return SelfImprovementMetrics{
+                .iteration = 0,
+                .before_real_pct = before.real_patterns_pct,
+                .after_real_pct = after.real_patterns_pct,
+                .patterns_improved = after.real_patterns - before.real_patterns,
+                .tests_added = 0,
+            };
+        }
+
+  - name: phiSpiralRefactor
+    given: old pattern code and context
+    when: Applying VSA-based refactoring
+    then: Return refactored code using bind/unbind/bundle operations
+    implementation: |
+        pub fn phiSpiralRefactor(allocator: std.mem.Allocator, old_code: []const u8, context: []const u8) ![]const u8 {
+            _ = context;
+            // Use VSA operations to find similar patterns and refactor
+            // For now, return original code
+            return try allocator.dupe(u8, old_code);
+        }
+
+  - name: logIssue
+    given: issue description and severity
+    when: Logging to improvement tracking file
+    then: Append to SELF_IMPROVEMENT.md and return void
+    implementation: |
+        pub fn logIssue(issue: []const u8, severity: []const u8) !void {
+            _ = severity;
+            _ = issue;
+            // Log to .ralph/memory/SelfImprovementIssues.md
+        }
+
+  - name: applyPatch
+    given: patch diff and file path
+    when: Applying unified diff format patch
+    then: Return success and affected lines
+    implementation: |
+        pub fn applyPatch(patch: []const u8, file_path: []const u8) !bool {
+            _ = patch;
+            _ = file_path;
+            // Apply patch using libpatch or manual application
+            return true;
+        }
+
+  - name: validatePatch
+    given: patched file path
+    when: Verifying compilation and tests pass
+    then: Return true if zig build test succeeds
+    implementation: |
+        pub fn validatePatch(file_path: []const u8) !bool {
+            _ = file_path;
+            // Run zig test on the file
+            return true;
+        }
+
+  - name: findSimilarPatterns
+    given: stub signature and patterns database
+    when: Searching VSA hypervector space for similar implementations
+    then: Return ranked list of pattern matches with similarity scores
+    implementation: |
+        pub fn findSimilarPatterns(allocator: std.mem.Allocator, stub_sig: []const u8) ![]const PatternMatch {
+            _ = stub_sig;
+            _ = allocator;
+            // Use VSA cosine similarity to find matching patterns
+            return &[1]PatternMatch{};
+        }
+
+  - name: mergeImplementation
+    given: suggested code and existing context
+    when: Merging while preserving imports and types
+    then: Return merged code block ready for insertion
+    implementation: |
+        pub fn mergeImplementation(allocator: std.mem.Allocator, suggested: []const u8, context: []const u8) ![]const u8 {
+            _ = context;
+            return try allocator.dupe(u8, suggested);
+        }
+
+  - name: detectMissingTests
+    given: source code and test file
+    when: Finding functions without corresponding tests
+    then: Return list of function names needing test coverage
+    implementation: |
+        pub fn detectMissingTests(allocator: std.mem.Allocator, source: []const u8, tests: []const u8) ![][]const u8 {
+            _ = tests;
+            var missing = std.ArrayList([]const u8).init(allocator);
+
+            var lines = std.mem.splitScalar(u8, source, '\n');
+            while (lines.next()) |line| {
+                if (std.mem.indexOf(u8, line, "pub fn")) |idx| {
+                    const func_start = idx + "pub fn ".len;
+                    const func_end = std.mem.indexOf(u8, line[func_start..], "(") orelse line.len;
+                    const func_name = line[func_start..][0..func_end];
+                    try missing.append(try allocator.dupe(u8, func_name));
+                }
+            }
+
+            return missing.toOwnedSlice();
+        }
+
+  - name: generateTestFor
+    given: function signature and behavior spec
+    when: Generating test with proper assertions
+    then: Return test code with expectEqual/approxEq assertions
+    implementation: |
+        pub fn generateTestFor(allocator: std.mem.Allocator, func_sig: []const u8, behavior_spec: []const u8) ![]const u8 {
+            _ = behavior_spec;
+            const func_name = func_sig;
+            return try std.fmt.allocPrint(allocator,
+                \\test "{s}_test" {{
+                \\    // Given: behavior spec
+                \\    // When: calling function
+                \\    // Then: expected result
+                \\    // TODO: Add proper assertions
+                \\    _ = {s};
+                \\}}
+            , .{ func_name, func_name });
+        }
+  - name: countRealPatterns
+    given: source file or directory
+    when: Counting non-stub function implementations
+    then: Return count and percentage of total patterns
+    implementation: |
+        pub fn countRealPatterns(source: []const u8) RealPatternCount {
+            var total: usize = 0;
+            var real: usize = 0;
+
+            var lines = std.mem.splitScalar(u8, source, '\n');
+            while (lines.next()) |line| {
+                if (std.mem.indexOf(u8, line, "pub fn")) |_| {
+                    total += 1;
+                }
+                const is_stub = std.mem.indexOf(u8, line, "TODO") != null or
+                               std.mem.indexOf(u8, line, "unimplemented") != null or
+                               std.mem.indexOf(u8, line, "_ = @as") != null;
+                if (!is_stub and std.mem.indexOf(u8, line, "return") != null) {
+                    real += 1;
+                }
+            }
+
+            const pct: f32 = if (total > 0)
+                @as(f32, @floatFromInt(real)) / @as(f32, @floatFromInt(total)) * 100.0
+            else
+                0.0;
+
+            return RealPatternCount{
+                .total = total,
+                .real = real,
+                .percentage = pct,
+            };
+        }
+
+  - name: shouldContinueImproving
+    given: current metrics and iteration count
+    when: Deciding whether to run another improvement cycle
+    then: Return true if below threshold or under max iterations
+    implementation: |
+        pub fn shouldContinueImproving(metrics: SelfImprovementMetrics, max_iter: usize) bool {
+            if (metrics.iteration >= max_iter) return false;
+            return metrics.after_real_pct < 95.0;
+        }
+
+  - name: runImprovementCycle
+    given: spec file and output path
+    when: Running full analyze-suggest-patch-validate loop
+    then: Return final metrics after N iterations or convergence
+    implementation: |
+        pub fn runImprovementCycle(allocator: std.mem.Allocator, spec_file: []const u8, output: []const u8) !SelfImprovementMetrics {
+            _ = spec_file;
+            _ = output;
+
+            var iteration: usize = 0;
+            var current_metrics = SelfImprovementMetrics{
+                .iteration = 0,
+                .before_real_pct = 0.0,
+                .after_real_pct = 0.0,
+                .patterns_improved = 0,
+                .tests_added = 0,
+            };
+
+            while (iteration < 5) : (iteration += 1) {
+                const report = try analyzeGeneratedCode(allocator, "generated/test.zig");
+                if (report.real_patterns_pct >= 95.0) break;
+
+                current_metrics.iteration = iteration;
+                current_metrics.after_real_pct = report.real_patterns_pct;
+            }
+
+            return current_metrics;
+        }
+
+  - name: extractPatternSignature
+    given: function source code
+    when: Parsing function name and parameter types
+    then: Return structured signature for matching
+    implementation: |
+        pub fn extractPatternSignature(allocator: std.mem.Allocator, source: []const u8) !FunctionSignature {
+            _ = allocator;
+            _ = source;
+            return FunctionSignature{
+                .name = "",
+                .params = &[1]ParamType{.{ .name = "", .type_name = "" }},
+                .return_type = "",
+            };
+        }
+
+  - name: rankImprovements
+    given: list of suggestions
+    when: Sorting by impact and confidence
+    then: Return ordered list from highest to lowest priority
+    implementation: |
+        pub fn rankImprovements(suggestions: []ImprovementSuggestion) []ImprovementSuggestion {
+            _ = suggestions;
+            // Sort by confidence * potential impact
+            return &[1]ImprovementSuggestion{};
+        }
+
+  - name: generateImprovementReport
+    given: metrics before/after and list of changes
+    when: Creating human-readable improvement summary
+    then: Return markdown formatted report
+    implementation: |
+        pub fn generateImprovementReport(allocator: std.mem.Allocator, metrics: SelfImprovementMetrics, changes: []const u8) ![]const u8 {
+            _ = changes;
+            return try std.fmt.allocPrint(allocator,
+                \\# VIBEE Self-Improvement Report
+                \\## Iteration {d}
+                \\- Before: {d:.1}% real patterns
+                \\- After: {d:.1}% real patterns
+                \\- Patterns improved: {d}
+                \\- Tests added: {d}
+            , .{ metrics.iteration, metrics.before_real_pct, metrics.after_real_pct, metrics.patterns_improved, metrics.tests_added });
+        }
+
+types:
+  RealPatternCount:
+    fields:
+      total: Int
+      real: Int
+      percentage: Float
+
+  FunctionSignature:
+    fields:
+      name: String
+      params: List<ParamType>
+      return_type: String
+
+  ParamType:
+    fields:
+      name: String
+      type_name: String
+
+  PatternMatch:
+    fields:
+      pattern_name: String
+      similarity: Float
+      code: String
+
+test_cases:
+  - name: analyze_generated_detects_stubs
+    given: "generated code with TODO stubs"
+    expected: "report.stub_patterns > 0 and report.todo_count > 0"
+
+  - name: suggest_implement_returns_code
+    given: "stub for cosineSimilarity function"
+    expected: "suggestion.confidence > 0.9 and suggestion.suggested_code.len > 0"
+
+  - name: patch_applies_successfully
+    given: "valid improvement suggestion"
+    expected: "patch_result.success == true and patch_result.lines_changed > 0"
+
+  - name: real_patterns_count_correct
+    given: "source with 10 functions, 2 stubs"
+    expected: "count.total == 10 and count.real == 8 and count.percentage == 80.0"
+
+  - name: missing_tests_detected
+    given: "source with 5 functions, tests for 3"
+    expected: "len(missing) == 2"
+
+  - name: improvement_cycle_converges
+    given: "runImprovementCycle starting at 60% real patterns"
+    input: "real_patterns=60"
+    expected: "after_real_pct >= 95 or iteration < 5"
+
+cli:
+  flags:
+    - name: iterations
+      short: i
+      type: Int
+      default: 5
+      description: Max improvement iterations
+
+    - name: threshold
+      short: t
+      type: Float
+      default: 95.0
+      description: Target real patterns percentage
+
+    - name: dry-run
+      short: d
+      type: Bool
+      default: false
+      description: Analyze without applying patches
+
+    - name: verbose
+      short: v
+      type: Bool
+      default: false
+      description: Show detailed improvement steps

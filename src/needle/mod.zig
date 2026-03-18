@@ -1,0 +1,272 @@
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEEDLE — Structural Editor Core Module Exports
+// ═══════════════════════════════════════════════════════════════════════════════
+//
+// φ² + 1/φ² = 3 | TRINITY
+// Phase 3: Full Autonomy + Multi-Agent Swarm Domination
+//
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Core types and configuration
+pub const needle = @import("needle.zig");
+
+// Fuzzy text matcher (Tier 0 fallback)
+pub const fuzzy = @import("fuzzy.zig");
+
+// Unified matcher with tier-based fallback
+pub const matcher = @import("matcher.zig");
+
+// Structural edit operations
+pub const edit = @import("edit.zig");
+
+// Quality gates and safety checks
+pub const check = @import("check.zig");
+
+// Graph multi-file refactoring (Tier 2)
+pub const graph = @import("graph.zig");
+
+// Symbol extraction (Tier 2)
+pub const symbols = @import("symbols.zig");
+
+// Safe multi-file refactoring (Tier 2)
+pub const refactor = @import("refactor.zig");
+
+// Semantic VSA (Tier 3)
+pub const vsa = @import("vsa.zig");
+
+// Safe Cross-File (Tier 4)
+pub const safe_cross = @import("safe_cross.zig");
+
+// Omega Autonomy (Tier 5)
+pub const omega = @import("omega.zig");
+
+// Autonomous Refactor - alias to omega for MCP compatibility
+pub const autonomous_refactor = @import("omega.zig");
+
+// Zig parser (stub for MCP compatibility)
+pub const zig_parser = @import("zig_parser.zig");
+
+// Phase 2: Hybrid VSA + TritVSA
+pub const hybrid = @import("hybrid.zig");
+pub const trit_vsa = @import("trit_vsa.zig");
+
+// Phase 3: Swarm
+pub const swarm = @import("swarm.zig");
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Core Types
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const EditOperation = needle.EditOperation;
+pub const MatchResult = needle.MatchResult;
+pub const MatchResultList = needle.MatchResultList;
+pub const MatchKind = needle.MatchKind;
+pub const NeedleConfig = needle.NeedleConfig;
+pub const EditReport = needle.EditReport;
+pub const Violation = needle.Violation;
+pub const ViolationKind = needle.ViolationKind;
+pub const Severity = needle.Severity;
+pub const SafetyLevel = needle.SafetyLevel;
+pub const EditMode = needle.EditMode;
+pub const Query = needle.Query;
+pub const QueryKind = needle.QueryKind;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Matchers
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const FuzzyMatcher = fuzzy.FuzzyMatcher;
+pub const Matcher = matcher.Matcher;
+pub const Searcher = matcher.Searcher;
+
+// Convenience functions
+pub const search = matcher.search;
+pub const searchSource = matcher.searchSource;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Edit Operations
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const TextEditor = edit.TextEditor;
+pub const EditEngine = edit.EditEngine;
+pub const EditDiff = edit.EditDiff;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Quality Gates
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const NeedleChecker = check.NeedleChecker;
+pub const SafetyGateType = check.SafetyGateType;
+pub const SourceLocation = check.SourceLocation;
+pub const ParseResult = check.ParseResult;
+pub const ErrorDetail = check.ErrorDetail;
+pub const CompileResult = check.CompileResult;
+pub const TestResult = check.TestResult;
+
+// Safety gate functions
+pub const runParseCheck = check.runParseCheck;
+pub const runParseCheckDir = check.runParseCheckDir;
+pub const runCompileCheck = check.runCompileCheck;
+pub const runTestCheck = check.runTestCheck;
+
+// Convenience functions
+pub const checkSource = check.checkSource;
+pub const checkFile = check.checkFile;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Graph (Tier 2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const CallGraph = graph.CallGraph;
+pub const GraphNode = graph.GraphNode;
+pub const Symbol = graph.Symbol;
+pub const SymbolKind = graph.SymbolKind;
+pub const Edge = graph.Edge;
+pub const EdgeType = graph.EdgeType;
+pub const EditPlan = graph.EditPlan;
+pub const UsageLocation = graph.UsageLocation;
+pub const UsageList = graph.UsageList;
+pub const MultiFileEditResult = graph.MultiFileEditResult;
+
+// Graph algorithms
+pub const computeEditOrder = graph.computeEditOrder;
+pub const detectCycles = graph.detectCycles;
+pub const computeImpactZone = graph.computeImpactZone;
+pub const previewMultiFileEdit = graph.previewMultiFileEdit;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Symbol Extraction (Tier 2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const ExtractionResult = symbols.ExtractionResult;
+pub const ZigSymbolExtractor = symbols.ZigSymbolExtractor;
+
+// Symbol extraction functions
+pub const buildCallGraph = symbols.buildCallGraph;
+pub const buildCallGraphSingleFile = symbols.buildCallGraphSingleFile;
+pub const findUsages = symbols.findUsages;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Safe Refactoring (Tier 2)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const RefactorKind = refactor.RefactorKind;
+pub const RefactorConfig = refactor.RefactorConfig;
+pub const FileBackup = refactor.FileBackup;
+pub const RefactorContext = refactor.RefactorContext;
+
+// Refactor functions
+pub const planRename = refactor.planRename;
+pub const previewRename = refactor.previewRename;
+pub const applyRename = refactor.applyRename;
+pub const extractFunction = refactor.extractFunction;
+pub const generateDiffPreview = refactor.generateDiffPreview;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Semantic VSA (Tier 3)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const SemanticVector = vsa.SemanticVector;
+pub const VSARule = vsa.VSARule;
+pub const VSAMatch = vsa.VSAMatch;
+pub const VSASafetyLevel = vsa.SafetyLevel;
+pub const SemanticIndex = vsa.SemanticIndex;
+pub const IndexType = vsa.IndexType;
+
+// VSA functions
+pub const generateHashEmbedding = vsa.generateHashEmbedding;
+pub const generateVSAEmbedding = vsa.generateVSAEmbedding;
+pub const cosineSimilarity = vsa.cosineSimilarity;
+pub const l2Norm = vsa.l2Norm;
+pub const euclideanDistance = vsa.euclideanDistance;
+pub const bind = vsa.bind;
+pub const unbind = vsa.unbind;
+pub const bundle = vsa.bundle;
+pub const buildSemanticIndex = vsa.buildSemanticIndex;
+pub const semanticSearch = vsa.semanticSearch;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Safe Cross-File (Tier 4)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const SafeVSARule = safe_cross.SafeVSARule;
+pub const CrossFileEdit = safe_cross.CrossFileEdit;
+pub const CrossFileImpact = safe_cross.CrossFileImpact;
+pub const SafetyGate = safe_cross.SafetyGate;
+pub const CrossFileResult = safe_cross.CrossFileResult;
+pub const SafetyResult = safe_cross.SafetyResult;
+pub const UnifiedPreview = safe_cross.UnifiedPreview;
+pub const RuleValidation = safe_cross.RuleValidation;
+
+// Atomic Refactor
+pub const AtomicRefactor = safe_cross.AtomicRefactor;
+pub const TransactionState = safe_cross.TransactionState;
+pub const AtomicFileBackup = safe_cross.FileBackup;
+
+// Safe cross-file functions
+pub const validateWithVSARules = safe_cross.validateWithVSARules;
+pub const runSafetyGates = safe_cross.runSafetyGates;
+pub const computeCrossImpact = safe_cross.computeCrossImpact;
+pub const applySafeCrossRefactor = safe_cross.applySafeCrossRefactor;
+pub const rollbackAll = safe_cross.rollbackAll;
+pub const crossPreview = safe_cross.crossPreview;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Phase 2: Hybrid VSA + TritVSA
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// TritVSA: Ternary VSA with 1.58 bits/trit = 20× memory efficiency
+pub const TritVSA = trit_vsa.TritVSA;
+pub const PackedTrit = trit_vsa.PackedTrit;
+pub const Trit = trit_vsa.Trit;
+
+// TritVSA convenience functions
+pub const randomTritVSA = trit_vsa.randomTritVSA;
+pub const zeroTritVSA = trit_vsa.zeroTritVSA;
+pub const bundle2 = trit_vsa.bundle2;
+
+// HybridVSA: Neural + VSA projection
+pub const HybridVSA = hybrid.HybridVSA;
+pub const NeuralEncoder = hybrid.NeuralEncoder;
+pub const HybridSearchResult = hybrid.HybridSearchResult;
+
+// Hybrid convenience functions
+pub const embedSymbol = hybrid.embedSymbol;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Omega Autonomy (Tier 5)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const AgentState = omega.AgentState;
+pub const AutonomyLevel = omega.AutonomyLevel;
+pub const RiskLevel = omega.RiskLevel;
+pub const RefactorHistory = omega.RefactorHistory;
+pub const RefactorStep = omega.RefactorStep;
+pub const StepOperation = omega.StepOperation;
+pub const RefactorPlan = omega.RefactorPlan;
+pub const ImprovementSuggestion = omega.ImprovementSuggestion;
+pub const AutonomousResult = omega.AutonomousResult;
+pub const HealthReport = omega.HealthReport;
+pub const OmegaAgent = omega.OmegaAgent;
+
+// Omega functions
+pub const omegaInit = omega.omegaInit;
+pub const omegaHealthCheck = omega.omegaHealthCheck;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC API - Phase 3: Swarm
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub const RefactorMemory = swarm.RefactorMemory;
+pub const VSAPattern = swarm.VSAPattern;
+pub const AgentSwarm = swarm.AgentSwarm;
+pub const SwarmResult = swarm.SwarmResult;
+pub const SwarmConsensus = swarm.SwarmConsensus;
+
+// Phase 3 types
+pub const OperationType = swarm.OperationType;
+pub const PlanStep = swarm.PlanStep;
+
+// Swarm functions
+pub const computeConsensus = swarm.computeConsensus;
+pub const predictSuccess = swarm.predictSuccess;

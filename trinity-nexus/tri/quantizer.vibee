@@ -1,0 +1,199 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# QUANTIZER.VIBEE - INT4 
+# in[CYR:Inye] [CYR:lawy] centerand 7B  in 8GB [CYR:I]and
+# φ² + 1/φ² = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: quantizer
+version: "1.0.0"
+language: zig
+module: trinity_quantizer
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  [CYR:A] INT4
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  INT4_MIN: -8          # and[CYR:lno] value INT4
+  INT4_MAX: 7           # withand[CYR:lno] value INT4
+  INT4_RANGE: 15        # and onand (7 - (-8) = 15)
+  SCALE_DIVISOR: 7.0    # [CYR:Doing]and[CYR:l] for inyandwithandI scale
+  BLOCK_SIZE: 32        #  block for block-wise quantization
+  PHI: 1.618033988749895
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  [CYR:A]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  # INT4 in[CYR:ny] : 2 values in 1 
+  PackedInt4:
+    fields:
+      data: List<Int>       # in[CYR:nye] [CYR:y] (2 INT4 on )
+      scales: List<Float>   # Scale factors for each block
+      zeros: List<Int>      # Zero points for each block
+      shape: List<Int>      # andonlonI  
+      num_elements: Int     # andwithin elementin
+
+  # andI infromand
+  QuantConfig:
+    fields:
+      block_size: Int       #  block (default: 32)
+      symmetric: Bool       # andonI infromandI
+      use_zero_point: Bool  # withl]in[CYR:ate] zero point
+
+  # andwithand infromand
+  QuantStats:
+    fields:
+      original_size: Int    #  in   infromand
+      quantized_size: Int   #  with infromand
+      compression_ratio: Float
+      max_error: Float      # withand[CYR:l]onI error
+      mean_error: Float     # [CYR:II] error
+
+  # [CYR:go]in INT4 file
+  Int4Header:
+    fields:
+      magic: Int            # 0x494E5434 = "INT4"
+      version: Int
+      num_tensors: Int
+      vocab_size: Int
+      hidden_size: Int
+      intermediate_size: Int
+      num_layers: Int
+      num_heads: Int
+      num_kv_heads: Int
+      total_params: Int
+      quantized_size: Int   #  in  with infromand
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  [CYR:A] [CYR:AA]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # [CYR:A] 1: [CYR:Vy]andwithand scale factor
+  - name: compute_scale
+    given:  f32 onand  BLOCK_SIZE
+    when:  onand and withandinandI
+    then: scale = max(abs(block)) / 7.0
+    formula: |
+      absmax = 0.0
+      for value in block:
+        absmax = max(absmax, abs(value))
+      scale = absmax / 7.0
+      if scale == 0.0:
+        scale = 1.0  #  andI on [CYR:l]
+
+  # [CYR:A] 2: infromandI f32 → INT4
+  - name: quantize_value
+    given: f32 value and scale factor
+    when:  withate]  INT4
+    then: int4 = clamp(round(f32 / scale), -8, 7)
+    formula: |
+      scaled = value / scale
+      rounded = round(scaled)
+      clamped = clamp(rounded, -8, 7)
+      return @intCast(i4, clamped)
+
+  # [CYR:A] 3: infromandI INT4 → f32
+  - name: dequantize_value
+    given: INT4 value and scale factor
+    when:  inwithinand f32 for inyandwithand
+    then: f32 = int4_as_f32 * scale
+    formula: |
+      return @as(f32, @floatFromInt(int4)) * scale
+
+  # [CYR:A] 4: in in INT4 in and 
+  - name: pack_int4
+    given: in INT4 values (high, low)
+    when:  in[CYR:ate] for notandI
+    then: byte = (high << 4) | (low & 0x0F)
+    formula: |
+      high_bits = (@as(u8, @bitCast(high)) & 0x0F) << 4
+      low_bits = @as(u8, @bitCast(low)) & 0x0F
+      return high_bits | low_bits
+
+  # [CYR:A] 5: within  in in INT4
+  - name: unpack_int4
+    given: in[CYR:ny] 
+    when:  fromin in INT4 values
+    then: high = byte >> 4, low = byte & 0x0F (with sign extension)
+    formula: |
+      high_u4 = (byte >> 4) & 0x0F
+      low_u4 = byte & 0x0F
+      # Sign extension: if and 3 within, this and[CYR:lno] number
+      high = if (high_u4 & 0x08) != 0 then @as(i8, high_u4) - 16 else @as(i8, high_u4)
+      low = if (low_u4 & 0x08) != 0 then @as(i8, low_u4) - 16 else @as(i8, low_u4)
+
+  # [CYR:A] 6: Block-wise infromandI 
+  - name: quantize_tensor
+    given: f32  [CYR:pro]fromin[CYR:lno] [CYR:y]
+    when:  withinandin[CYR:ate] inwith  in INT4
+    then: and on blockand, inyandwithand scale for each, infromin[CYR:ate]
+    steps:
+      - Flatten  in 1D array
+      - and on blockand  BLOCK_SIZE
+      - [CYR:I] each block inyandwithand scale ([CYR:A] 1)
+      - infromin[CYR:ate]  value ([CYR:A] 2)
+      - in[CYR:ate] [CYR:y] INT4 in [CYR:y] ([CYR:A] 4)
+      - and scales [CYR:lno]
+
+  # [CYR:A] 7: Block-wise infromandI 
+  - name: dequantize_tensor
+    given: PackedInt4 
+    when:  inwithinand f32 for inference
+    then: within[CYR:ate], infromin[CYR:ate] with withresponsewithinand scales
+    steps:
+      - within[CYR:ate] [CYR:y] in INT4 [CYR:y] ([CYR:A] 5)
+      - [CYR:I] each block and[CYR:me]and withresponsewithinand scale
+      - infromin[CYR:ate]  value ([CYR:A] 3)
+      - Reshape in andon[CYR:l] 
+
+  # [CYR:A] 8: inandI .tri → .tri.int4
+  - name: convert_tri_to_int4
+    given:   .tri file with BF16/F32 inwithand
+    when:  withate] infromin inwithand
+    then: [CYR:ate] .tri.int4 file with INT4 inwithand and scales
+    steps:
+      - read [CYR:go]in .tri
+      - [CYR:I] each :
+        - and BF16/F32 inwith
+        - and[CYR:me]and quantize_tensor ([CYR:A] 6)
+        - write in[CYR:nye] INT4 + scales
+      - write iny [CYR:go]in with quantized_size
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# [CYR:A] [CYR:AA] .tri.int4
+# ═══════════════════════════════════════════════════════════════════════════════
+
+file_format:
+  extension: ".tri.int4"
+  structure:
+    - Int4Header (64 bytes)
+    - TensorIndex[] (name, offset, packed_size, num_scales)
+    - For each tensor:
+        - scales: f32[num_blocks]
+        - packed_data: u8[packed_size]
+
+# ═══════════════════════════════════════════════════════════════════════════════
+#  [CYR:A]
+# ═══════════════════════════════════════════════════════════════════════════════
+
+metrics:
+  # BF16 → INT4 compression
+  bf16_to_int4:
+    original_bits: 16
+    quantized_bits: 4
+    scale_overhead: 32 bits per 32 values = 1 bit per value
+    effective_bits: 5  # 4 + 1 overhead
+    compression_ratio: 3.2x  # 16 / 5
+
+  # [CYR:I] 7B and
+  qwen_7b:
+    original_size_gb: 14.0  # BF16
+    quantized_size_gb: 4.4  # INT4 + scales
+    fits_in_8gb: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | φ² + 1/φ² = 3
+# ═══════════════════════════════════════════════════════════════════════════════

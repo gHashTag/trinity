@@ -1,0 +1,63 @@
+name: hdc_text_encoder
+version: "2.0.0"
+language: zig
+module: hdc_text_encoder
+
+description: |
+  Shared HDC Text Encoder — single source of truth for text encoding.
+  Used by HDCClassifier, HDCClustering, and HDCAnomalyDetector.
+
+  Encoding Modes:
+    char_ngram:  Bundle char-level trigrams (original method)
+    word_pos:    Word-level with positional permutation
+    word_tfidf:  Word-level with TF-IDF weighting
+    hybrid:      Char n-gram + word-level combined
+
+  Word Encoding:
+    word_hv = bind(perm(char_1, 0), perm(char_2, 1), ..., perm(char_n, n-1))
+
+  Sentence Encoding:
+    sentence_hv = bundle(perm(word_1, 0), perm(word_2, 1), ..., perm(word_n, n-1))
+
+  TF-IDF Weighting:
+    TF(word, doc) = count(word in doc) / total_words_in_doc
+    IDF(word) = log(total_docs / docs_containing_word)
+
+types:
+  EncodingMode:
+    enum:
+      - char_ngram
+      - word_pos
+      - word_tfidf
+      - hybrid
+
+  HDCTextEncoder:
+    fields:
+      allocator: Allocator
+      item_memory: Ptr<ItemMemory>
+      ngram_encoder: Ptr<NGramEncoder>
+      dimension: usize
+      mode: EncodingMode
+      tfidf_doc_count: u32
+      tfidf_word_doc_freq: HashMap<String, u32>
+
+behaviors:
+  - name: encodeWord
+    given: Single word string
+    when: Encodes chars with positional binding
+    then: Returns word hypervector
+
+  - name: encodeText
+    given: Text string
+    when: Dispatches to mode-specific encoding
+    then: Returns text hypervector
+
+  - name: updateTFIDF
+    given: Training text
+    when: Updates document frequency counts
+    then: TFIDFStats updated
+
+  - name: deinit
+    given: Self
+    when: Frees TF-IDF word keys
+    then: Memory released

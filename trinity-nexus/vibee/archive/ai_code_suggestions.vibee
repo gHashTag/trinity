@@ -1,0 +1,401 @@
+name: ai_code_suggestions
+version: 1.0.0
+description: AI-powered code suggestions for VIBEE - [CYR:y] withand in [CYR:lno] in[CYR:me]and
+
+metadata:
+  author: VIBEE Team
+  category: ai_integration
+  tags: [ai, llm, code-completion, suggestions, openrouter]
+  created: 2024-01-10
+
+types:
+  CodeContext:
+    file_path: string
+    cursor_position: Position
+    current_line: string
+    previous_lines: list<string>
+    next_lines: list<string>
+    imports: list<string>
+    functions: list<string>
+    types: list<string>
+    
+  Position:
+    line: number
+    column: number
+    
+  Suggestion:
+    id: string
+    text: string
+    type: string  # completion, refactoring, fix, optimization
+    confidence: number
+    explanation: string
+    code_snippet: string
+    apply_automatically: boolean
+    
+  AIModel:
+    provider: string  # openrouter, anthropic, openai
+    model: string
+    temperature: number
+    max_tokens: number
+    
+  SuggestionRequest:
+    context: CodeContext
+    trigger: string  # typing, save, request
+    preferences: UserPreferences
+    
+  UserPreferences:
+    auto_apply_high_confidence: boolean
+    show_explanations: boolean
+    preferred_style: string
+    max_suggestions: number
+
+constants:
+  AI_MODELS:
+    - provider: "openrouter"
+      model: "anthropic/claude-3.5-sonnet"
+      temperature: 0.3
+      max_tokens: 2000
+      use_case: "code_completion"
+      
+    - provider: "openrouter"
+      model: "anthropic/claude-3-opus"
+      temperature: 0.2
+      max_tokens: 4000
+      use_case: "refactoring"
+      
+    - provider: "openrouter"
+      model: "google/gemini-pro-1.5"
+      temperature: 0.1
+      max_tokens: 1000
+      use_case: "quick_fixes"
+
+  SUGGESTION_TYPES:
+    completion:
+      description: "Ainnotand code"
+      confidence_threshold: 0.7
+      auto_apply: true
+      
+    refactoring:
+      description: "andI  [CYR:factor]and"
+      confidence_threshold: 0.8
+      auto_apply: false
+      
+    fix:
+      description: "withlaw]inand and"
+      confidence_threshold: 0.9
+      auto_apply: false
+      
+    optimization:
+      description: "andfromandI [CYR:pro]frominand[CYR:lno]withand"
+      confidence_threshold: 0.85
+      auto_apply: false
+      
+    security:
+      description: "withlaw]inand [CYR:I]inandwith"
+      confidence_threshold: 0.95
+      auto_apply: false
+
+  PROMPTS:
+    code_completion: |
+      y - with  [CYR:language] [CYR:pro]andinandI VIBEE.
+      
+      with:
+      - : {file_path}
+      - [CYR:I] string: {current_line}
+      - [CYR:y]and strings:
+      {previous_lines}
+      
+      : and innotand for  strings.
+      
+      inandI:
+      - withl] VIBEE V2 withandwithandwith (concise, modern)
+      -  best practices
+      - andyin with code
+      -  and and [CYR:y]
+      
+       response:
+      ```vibee
+      <in and>
+      ```
+      
+      [CYR:I]withnotand: < [CYR:I]withnotand>
+      
+    refactoring: |
+      y - with  [CYR:factor]and VIBEE code.
+      
+      [CYR:Code] for analysis:
+      ```vibee
+      {code_snippet}
+      ```
+      
+      : and andI code.
+      
+      in on:
+      - Anti-patterns (10 frominwithy] in)
+      - Code smells
+      - Performance issues
+      - Readability
+      - VIBEE V2 best practices
+      
+       response:
+      : <andwithand>
+      and:
+      ```vibee
+      <[CYR:ny] code>
+      ```
+      and: <and>
+      
+    quick_fix: |
+      y - with  andwithlaw]inand and in VIBEE.
+      
+      and:
+      {error_message}
+      
+      [CYR:Code]:
+      ```vibee
+      {code_snippet}
+      ```
+      
+      : and ywith fix.
+      
+       response:
+      andon: <[CYR:I]withnotand and>
+      withlaw]inand:
+      ```vibee
+      <andwithlaw]in[CYR:ny] code>
+      ```
+
+behaviors:
+  get_suggestions:
+    input:
+      request: SuggestionRequest
+    output:
+      suggestions: list<Suggestion>
+    description: and AI-withand for code
+    steps:
+      - analyze with code
+      - and type withand
+      - [CYR:Vyate] [CYR:I] AI [CYR:l]
+      - andin[CYR:ate] [CYR:pro]
+      - [CYR:law]inand query  AI
+      - withand response
+      - and confidence
+      -  suggestions
+      
+  apply_suggestion:
+    input:
+      suggestion: Suggestion
+      context: CodeContext
+    output:
+      new_code: string
+      success: boolean
+    description: and[CYR:me]and AI-with  code
+    steps:
+      - andin[CYR:ate] suggestion
+      - and[CYR:me]and fromnotandI
+      - inand withandwithandwith
+      - withand testy
+      -  result
+      
+  analyze_code:
+    input:
+      code: string
+      analysis_type: string
+    output:
+      issues: list<Issue>
+      suggestions: list<Suggestion>
+    description: Aonfrom code with  AI
+    steps:
+      - withand code in AST
+      - [CYR:law]inand on analysis AI
+      - and list [CYR:pro]
+      - notandin[CYR:ate] suggestions
+      -  resulty
+      
+  optimize_code:
+    input:
+      code: string
+      optimization_goal: string
+    output:
+      optimized_code: string
+      improvement_metrics: map<string, number>
+    description: andfromandI code with  AI
+    steps:
+      - analyze and code
+      - and and with
+      - notandin[CYR:ate] andfromand
+      - and andI
+      -  andfromandin[CYR:ny] code
+      
+  explain_code:
+    input:
+      code: string
+      detail_level: string
+    output:
+      explanation: string
+      complexity: number
+    description: [CYR:I]withnotand code with  AI
+    steps:
+      - analyze code
+      - notandin[CYR:ate] [CYR:I]withnotand
+      - and with
+      -  [CYR:I]withnotand
+
+functions:
+  - name: call_ai_model
+    params:
+      model: AIModel
+      prompt: string
+      context: map<string, any>
+    returns: string
+    description: [CYR:Vy]in AI and  OpenRouter
+    
+  - name: parse_ai_response
+    params:
+      response: string
+      expected_format: string
+    returns: Suggestion
+    description: withand response  AI
+    
+  - name: calculate_confidence
+    params:
+      suggestion: Suggestion
+      context: CodeContext
+    returns: number
+    description: with inwithand in suggestion
+    
+  - name: validate_suggestion
+    params:
+      suggestion: Suggestion
+      code: string
+    returns: boolean
+    description: andI suggestion  andnotand
+
+tests:
+  - name: suggest_function_completion
+    behavior: get_suggestions
+    input:
+      request:
+        context:
+          current_line: "pub add(a, b) = "
+          previous_lines: ["// Calculator module"]
+        trigger: "typing"
+    expected:
+      suggestions: length > 0
+      suggestions[0].type: "completion"
+      suggestions[0].text: contains("a + b")
+      suggestions[0].confidence: > 0.7
+      
+  - name: suggest_v2_syntax
+    behavior: get_suggestions
+    input:
+      request:
+        context:
+          current_line: "pub fn example() → Result(String, String) {"
+        trigger: "save"
+    expected:
+      suggestions: length > 0
+      suggestions[0].type: "refactoring"
+      suggestions[0].text: contains("pub example: Result<String, String> = !impl")
+      
+  - name: fix_syntax_error
+    behavior: get_suggestions
+    input:
+      request:
+        context:
+          current_line: "pub add(a b) = a + b"
+        trigger: "request"
+    expected:
+      suggestions: length > 0
+      suggestions[0].type: "fix"
+      suggestions[0].text: contains("pub add(a, b)")
+      
+  - name: optimize_performance
+    behavior: optimize_code
+    input:
+      code: |
+        list
+          |> list.filter(fn(x) { x > 0 })
+          |> list.map(fn(x) { x * 2 })
+      optimization_goal: "readability"
+    expected:
+      optimized_code: contains("[x * 2 for x in list if x > 0]")
+      improvement_metrics.readability: > 0
+      
+  - name: explain_complex_code
+    behavior: explain_code
+    input:
+      code: "result? |> continue_with"
+      detail_level: "beginner"
+    expected:
+      explanation: contains("error propagation")
+      complexity: < 5
+
+examples:
+  - name: "Ainnotand and"
+    description: "AI [CYR:acts] inand and"
+    input:
+      current_line: "pub calculate_total(items) = "
+      context: "// Shopping cart module"
+    output:
+      suggestion: "items |> list.map(fn(i) { i.price }) |> list.fold(0, fn(a, b) { a + b })"
+      confidence: 0.85
+      explanation: "andinand  inwith items in andnot"
+      
+  - name: "[CYR:factor]and in V2 withandwithandwith"
+    description: "AI [CYR:acts] and on V2"
+    input:
+      code: |
+        pub fn process(data: String) -> Result(String, String) {
+          case validate(data) {
+            Ok(valid) -> Ok(transform(valid))
+            Error(e) -> Error(e)
+          }
+        }
+    output:
+      suggestion: |
+        pub process(data): Result<String, String> = {
+          validate(data)? |> transform
+        }
+      improvement: "75% [CYR:me] code, andwith +40%"
+      
+  - name: "withlaw]inand and"
+    description: "AI onand and andwithlaw]in[CYR:I] and"
+    input:
+      code: "let result = divide(10, 0)"
+      error: "Division by zero"
+    output:
+      suggestion: |
+        let result = divide(10, 0) ?? Error("Cannot divide by zero")
+      explanation: "inon handling andI on [CYR:l]"
+
+integration:
+  openrouter:
+    api_url: "https://openrouter.ai/api/v1/chat/completions"
+    auth: "Bearer ${OPENROUTER_API_KEY}"
+    models:
+      - "anthropic/claude-3.5-sonnet"
+      - "anthropic/claude-3-opus"
+      - "google/gemini-pro-1.5"
+      - "openai/gpt-4-turbo"
+    rate_limits:
+      requests_per_minute: 60
+      tokens_per_minute: 100000
+
+metrics:
+  suggestion_accuracy: "> 85%"
+  response_time: "< 500ms"
+  user_acceptance_rate: "> 70%"
+  false_positive_rate: "< 10%"
+  
+performance:
+  cache_suggestions: true
+  cache_ttl_seconds: 300
+  batch_requests: true
+  max_batch_size: 10
+  
+privacy:
+  send_only_context: true
+  anonymize_data: true
+  no_sensitive_info: true
+  user_consent_required: true

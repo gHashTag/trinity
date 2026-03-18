@@ -1,0 +1,219 @@
+# ============================================================================
+# Trinity V2 Final Top — Week 2 Production Release
+# ============================================================================
+
+name: trinity_v2_final_top
+version: "2.2.0"
+language: varlog
+module: trinity_v2_final_top
+
+description: |
+  Production-ready unified top module for Trinity V2.
+  Integrates UART + VSA 10K + TQNN Layer 1 + BitNet stub + LED.
+  Target: QMTECH XC7A100T-1FGG676C @ 50MHz
+
+fpga_target: xilinx
+target_frequency: 50
+pipeline: production
+
+types:
+  TrinityV2Config:
+    description: Configuration registers
+    fields:
+      led_mode: UInt2
+      uart_baud_div: UInt16 = 217
+      vsa_dimension: UInt16 = 10000
+      tqnn_input_size: UInt8 = 16
+
+  TrinityV2State:
+    description: Runtime state
+    fields:
+      cmd_code: UInt8
+      cmd_length: UInt8
+      response_ready: Bool
+      error_code: UInt8
+
+signals:
+  # Clock and Reset
+  - name: clk
+    type: Input
+    width: 1
+    description: 50 MHz oscillator (U22)
+
+  - name: rst_n
+    type: Input
+    width: 1
+    description: Reset button (active low)
+
+  # UART
+  - name: uart_rx
+    type: Input
+    width: 1
+    description: UART receive (C17)
+
+  - name: uart_tx
+    type: Output
+    width: 1
+    description: UART transmit (D18)
+
+  # LED
+  - name: led
+    type: Output
+    width: 1
+    description: Status LED (T23)
+
+  # Quantum State Outputs (debug)
+  - name: quantum_pos
+    type: Output
+    width: 16
+    description: Positive qutrit count
+
+  - name: quantum_neg
+    type: Output
+    width: 16
+    description: Negative qutrit count
+
+  - name: quantum_zero
+    type: Output
+    width: 16
+    description: Zero qutrit count
+
+  - name: coherence
+    type: Output
+    width: 1
+    description: Quantum coherence flag
+
+  - name: similarity
+    type: Output
+    width: 16
+    description: VSA similarity score
+
+constants:
+  # Commands
+  CMD_PING: 8'h01
+  CMD_VSA_BIND: 8'h02
+  CMD_VSA_BUNDLE: 8'h03
+  CMD_TQNN_FORWARD: 8'h04
+  CMD_READ_STATE: 8'h05
+  CMD_LED_CONTROL: 8'h06
+
+  # LED modes
+  LED_OFF: 2'b00
+  LED_ON: 2'b01
+  LED_BLINK_FAST: 2'b10
+  LED_BLINK_SLOW: 2'b11
+
+behaviors:
+  - name: system_boot
+    given: Power-on or reset
+    when: rst_n asserted
+    then: Initialize all registers, LED solid ON during boot
+
+  - name: uart_command_receive
+    given: UART data on uart_rx
+    when: Start bit detected
+    then: Receive byte, validate CRC, dispatch command
+
+  - name: command_ping
+    given: CMD_PING (0x01)
+    when: Received
+    then: Respond with ACK + firmware version (0x02 0x00)
+
+  - name: command_vsa_bind
+    given: CMD_VSA_BIND (0x02) + 10K trits
+    when: Payload received
+    then: Compute similarity, return as u16
+
+  - name: command_tqnn_forward
+    given: CMD_TQNN_FORWARD (0x04) + 16 floats
+    when: Payload received
+    then: Encode to qutrits, apply gates, return quantum state
+
+  - name: command_led_control
+    given: CMD_LED_CONTROL (0x06) + mode byte
+    when: Received
+    then: Update led_mode register
+
+  - name: led_blink_fast
+    given: led_mode = 2'b10
+    when: Always
+    then: Toggle at blink_counter[20] (~3 Hz)
+
+  - name: led_blink_slow
+    given: led_mode = 2'b11
+    when: Always
+    then: Toggle at blink_counter[23] (~0.75 Hz)
+
+  - name: quantum_state_output
+    given: TQNN processing complete
+    when: tqnn_done = 1
+    then: Update quantum_pos, quantum_neg, quantum_zero, coherence
+
+fsms:
+  - name: trinity_main_fsm
+    states: [BOOT, IDLE, UART_RX, CMD_DECODE, VSA_EXEC, TQNN_EXEC, LED_EXEC, RESPOND, ERROR]
+    initial: BOOT
+    transitions:
+      - from: BOOT
+        to: IDLE
+        condition: rst_n == 1
+        outputs: {led: 0}
+
+      - from: IDLE
+        to: UART_RX
+        condition: uart_rx == 0
+        outputs: {uart_busy: 1}
+
+      - from: UART_RX
+        to: CMD_DECODE
+        condition: packet_complete == 1 && crc_valid == 1
+        outputs: {cmd_valid: 1}
+
+      - from: UART_RX
+        to: ERROR
+        condition: crc_valid == 0
+        outputs: {error_code: 1}
+
+      - from: CMD_DECODE
+        to: VSA_EXEC
+        condition: cmd_code == 8'h02
+        outputs: {vsa_bind_start: 1}
+
+      - from: CMD_DECODE
+        to: TQNN_EXEC
+        condition: cmd_code == 8'h04
+        outputs: {tqnn_forward_start: 1}
+
+      - from: CMD_DECODE
+        to: LED_EXEC
+        condition: cmd_code == 8'h06
+        outputs: {}
+
+      - from: VSA_EXEC
+        to: RESPOND
+        condition: vsa_done == 1
+        outputs: {response_data: vsa_similarity}
+
+      - from: TQNN_EXEC
+        to: RESPOND
+        condition: tqnn_done == 1
+        outputs: {response_data: {quantum_pos, quantum_neg, quantum_zero, coherence}}
+
+      - from: LED_EXEC
+        to: IDLE
+        condition: 1
+        outputs: {uart_busy: 0}
+
+      - from: RESPOND
+        to: IDLE
+        condition: tx_complete == 1
+        outputs: {uart_busy: 0}
+
+      - from: ERROR
+        to: IDLE
+        condition: 1
+        outputs: {send_nak: 1, uart_busy: 0}
+
+reset:
+  reset_type: async
+  level: low

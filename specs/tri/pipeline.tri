@@ -1,0 +1,19 @@
+[spec]
+name = "tri_pipeline"
+version = "5.1.0"
+description = "Golden Chain codegen pipeline: spec to Zig generation"
+
+[interface]
+inputs = ["spec: .tri file", "task: str"]
+outputs = ["generated: .zig file"]
+
+[invariants]
+chain_links = "26-link sequential chain"
+build_pass = "zig build must pass after generation"
+fmt_applied = "zig fmt applied to all generated files"
+
+[architecture]
+executor = "rna_polymerase.zig — pipeline execution engine"
+chain = "dna_polymerase.zig — golden chain orchestration"
+roles = "Planner, Coder, Reviewer, Tester, Integrator"
+checkpoint = "per-link checkpoint and rollback"

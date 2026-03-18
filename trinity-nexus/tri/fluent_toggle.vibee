@@ -1,0 +1,256 @@
+# ============================================================================
+# Fluent Toggle - Rescue and Recovery for Rapid State Transitions
+# Level 11.40: Corruption recovery, rapid toggling, production gates
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: fluent_toggle
+version: "1.0.0"
+language: zig
+module: fluent_toggle
+
+description: |
+  Toggle rescue and recovery system for handling rapid state transitions,
+  state corruption recovery, and production safety gates.
+  Handles edge cases: rapid toggling (>10 toggles/second), mid-transition
+  corruption, and ensures production environments never expose debug panels.
+  Implements debounce, state checkpointing, and automatic repair.
+
+constants:
+  DIM: 4096
+  MAX_TOGGLES_PER_SECOND: 10
+  DEBOUNCE_MS: 100
+  CHECKPOINT_INTERVAL_MS: 1000
+  CORRUPTION_SCAN_INTERVAL_MS: 5000
+  MAX_RECOVERY_ATTEMPTS: 3
+  RECOVERY_TIMEOUT_MS: 500
+  PRODUCTION_GATE_CHECK_MS: 2000
+  STATE_HISTORY_SIZE: 32
+  RAPID_TOGGLE_THRESHOLD: 5
+
+types:
+  ToggleHealth:
+    description: "Health status of the toggle system"
+    enum:
+      - healthy
+      - degraded
+      - corrupted
+      - recovering
+
+  EnvironmentType:
+    description: "Deployment environment classification"
+    enum:
+      - development
+      - staging
+      - production
+
+  ToggleCheckpoint:
+    description: "Snapshot of toggle state for recovery"
+    fields:
+      debug_enabled: Bool
+      sections_visible: List<Bool>
+      timestamp_ms: Int
+      checksum: Int
+      is_valid: Bool
+
+  RapidToggleDetection:
+    description: "Detection state for rapid toggle abuse"
+    fields:
+      toggle_timestamps: List<Int>
+      toggles_in_window: Int
+      window_start_ms: Int
+      is_throttled: Bool
+      debounce_until_ms: Int
+
+  CorruptionReport:
+    description: "Report from corruption detection scan"
+    fields:
+      is_corrupted: Bool
+      corruption_type: String
+      affected_sections: List<Int>
+      detected_at_ms: Int
+      severity: Int
+
+  RecoveryAction:
+    description: "Action taken during state recovery"
+    fields:
+      action_type: String
+      checkpoint_used: Option<ToggleCheckpoint>
+      sections_repaired: Int
+      recovery_time_ms: Int
+      success: Bool
+      attempt_number: Int
+
+  ProductionGate:
+    description: "Safety gate preventing debug exposure in production"
+    fields:
+      environment: EnvironmentType
+      debug_allowed: Bool
+      gate_active: Bool
+      last_check_ms: Int
+      override_token: Option<String>
+      violations_blocked: Int
+
+  FluentToggleState:
+    description: "Complete state of the fluent toggle system"
+    fields:
+      health: ToggleHealth
+      checkpoint_history: List<ToggleCheckpoint>
+      rapid_detection: RapidToggleDetection
+      production_gate: ProductionGate
+      total_recoveries: Int
+      total_violations_blocked: Int
+
+  StateTransitionLog:
+    description: "Audit log entry for state transitions"
+    fields:
+      from_debug: Bool
+      to_debug: Bool
+      timestamp_ms: Int
+      was_throttled: Bool
+      was_recovered: Bool
+      environment: EnvironmentType
+
+behaviors:
+  # Rapid toggle protection
+  - name: init
+    given: EnvironmentType and initial configuration
+    when: Fluent toggle system is created
+    then: Return FluentToggleState with healthy status and active production gate
+
+  - name: request_toggle
+    given: Toggle request and current FluentToggleState
+    when: User or system requests debug toggle change
+    then: Check debounce, check production gate, execute if allowed
+
+  - name: detect_rapid_toggling
+    given: New toggle timestamp and RapidToggleDetection state
+    when: Toggle requested within tracking window
+    then: Count toggles in window, throttle if exceeds MAX_TOGGLES_PER_SECOND
+
+  - name: apply_debounce
+    given: Toggle request within DEBOUNCE_MS of last toggle
+    when: Rapid toggling detected
+    then: Reject toggle, set debounce_until_ms, return throttled status
+
+  - name: reset_throttle
+    given: RapidToggleDetection with is_throttled = true
+    when: Debounce period has elapsed
+    then: Clear throttle, allow new toggles
+
+  # State checkpointing
+  - name: create_checkpoint
+    given: Current toggle state
+    when: CHECKPOINT_INTERVAL_MS elapsed or before transition
+    then: Save ToggleCheckpoint with state snapshot and checksum
+
+  - name: validate_checkpoint
+    given: ToggleCheckpoint with checksum
+    when: Checkpoint integrity check requested
+    then: Recompute checksum, return true if matches
+
+  - name: get_latest_valid_checkpoint
+    given: Checkpoint history list
+    when: Recovery needs a restore point
+    then: Return most recent checkpoint where is_valid = true
+
+  # Corruption detection and recovery
+  - name: scan_for_corruption
+    given: Current toggle state and section visibility
+    when: CORRUPTION_SCAN_INTERVAL_MS elapsed
+    then: Verify state consistency, return CorruptionReport
+
+  - name: detect_state_mismatch
+    given: debug_enabled flag and section visibility list
+    when: Scanning for corruption
+    then: Return corrupted if debug=false but sections visible, or vice versa
+
+  - name: initiate_recovery
+    given: CorruptionReport with is_corrupted = true
+    when: Corruption detected
+    then: Set health to recovering, attempt repair from checkpoint
+
+  - name: recover_from_checkpoint
+    given: Valid ToggleCheckpoint and corrupted state
+    when: Recovery initiated
+    then: Restore state from checkpoint, verify consistency, report success
+
+  - name: force_safe_state
+    given: Recovery failed after MAX_RECOVERY_ATTEMPTS
+    when: All checkpoints exhausted or invalid
+    then: Force debug_enabled = false, hide all debug sections, set health to degraded
+
+  - name: escalate_corruption
+    given: Unrecoverable corruption
+    when: force_safe_state also fails
+    then: Emit critical alert, lock toggle system, require manual intervention
+
+  # Production safety gates
+  - name: check_production_gate
+    given: ProductionGate and toggle request
+    when: Toggle to debug_on requested
+    then: Block if environment = production and no valid override_token
+
+  - name: validate_override_token
+    given: Override token string
+    when: Production debug access requested with token
+    then: Verify token authenticity, allow temporary debug if valid
+
+  - name: enforce_production_invariant
+    given: ProductionGate with environment = production
+    when: Periodic gate check (PRODUCTION_GATE_CHECK_MS)
+    then: If debug somehow enabled in production, force disable immediately
+
+  - name: log_gate_violation
+    given: Blocked toggle attempt in production
+    when: Production gate rejects debug enable
+    then: Increment violations_blocked, write audit log entry
+
+  # Audit and observability
+  - name: log_transition
+    given: StateTransitionLog entry
+    when: Any state transition occurs (success or blocked)
+    then: Append to audit log with full context
+
+  - name: get_health_status
+    given: Current FluentToggleState
+    when: Health check requested
+    then: Return ToggleHealth with recovery stats
+
+test_cases:
+  - name: rapid_toggle_throttled
+    given: "11 toggles in 1 second"
+    expected: "Toggles beyond 10th are rejected with throttle status"
+
+  - name: debounce_prevents_flicker
+    given: "Two toggles 50ms apart"
+    expected: "Second toggle rejected, DEBOUNCE_MS enforced"
+
+  - name: checkpoint_restores_state
+    given: "Corruption detected after valid checkpoint"
+    expected: "State restored to checkpoint, health = healthy"
+
+  - name: state_mismatch_detected
+    given: "debug_enabled = false but live_log visible"
+    expected: "CorruptionReport.is_corrupted = true"
+
+  - name: force_safe_state_on_failure
+    given: "3 recovery attempts all failed"
+    expected: "debug = false, all sections hidden, health = degraded"
+
+  - name: production_gate_blocks_debug
+    given: "environment = production, no override token"
+    expected: "Toggle to debug_on blocked, violation logged"
+
+  - name: valid_override_allows_debug
+    given: "environment = production, valid override token"
+    expected: "Debug enabled temporarily"
+
+  - name: production_invariant_enforced
+    given: "Debug somehow enabled in production"
+    expected: "Periodic check forces debug off within PRODUCTION_GATE_CHECK_MS"
+
+  - name: audit_log_complete
+    given: "Toggle attempt (success or blocked)"
+    expected: "StateTransitionLog entry with all fields populated"

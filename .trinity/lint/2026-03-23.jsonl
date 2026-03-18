@@ -1,0 +1,5 @@
+{"spec":"specs/tri/spec_lint.tri","result":"PASS","gate":"OPEN","epoch":1773134923}
+{"spec":"specs/tri/phenomenal_binding.tri","result":"FAIL","gate":"BLOCKED","epoch":1773134928}
+{"spec":"specs/tri/compiler/linter_gate.tri","result":"PASS","gate":"OPEN","epoch":1773134984}
+{"spec":"specs/tri/","result":"FAIL","gate":"BLOCKED","epoch":1773134990}
+{"spec":"specs/tri/","result":"FAIL","gate":"BLOCKED","epoch":1773135170}

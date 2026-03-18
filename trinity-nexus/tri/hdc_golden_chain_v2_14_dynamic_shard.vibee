@@ -1,0 +1,162 @@
+name: hdc_golden_chain_v2_14_dynamic_shard
+version: "2.14.0"
+language: zig
+module: golden_chain
+
+# Golden Chain v2.14 — Dynamic Shard Rebalancing v1.0
+# Agent: #23 Benjamin | Cycle: 70
+# 8 new QuarkType variants (136-143): Dynamic Shard Rebalancing pipeline
+# 4 new ChainMessageTypes, 4 new types, 5 behaviors, Phase U
+# Quarks: 168 → 176 (22+22+22+23+22+21+22+22)
+# Export: v18 (90-byte header)
+
+types:
+  DynamicShardState:
+    fields:
+      shards_active: U32
+      shards_split: U32
+      shards_merged: U32
+      last_rebalance_us: I64
+      shard_hash: Hash256
+
+  ShardLoadState:
+    fields:
+      load_factor: U32
+      hot_spots_detected: U32
+      cold_spots_detected: U32
+      last_load_check_us: I64
+      load_hash: Hash256
+
+  AdaptiveDHTState:
+    fields:
+      dht_depth: U16
+      dht_nodes: U32
+      dht_rebalances: U32
+      last_dht_adapt_us: I64
+      dht_hash: Hash256
+
+  GossipReshardState:
+    fields:
+      reshards_completed: U32
+      gossip_rounds: U64
+      active_shards: U16
+      last_reshard_us: I64
+      reshard_hash: Hash256
+
+constants:
+  SHARD_SPLIT_THRESHOLD: 10000
+  SHARD_MERGE_THRESHOLD: 100
+  DHT_MAX_DEPTH: 32
+  DHT_REBALANCE_INTERVAL_US: 300000000
+  GOSSIP_RESHARD_TIMEOUT_US: 120000000
+  MAX_ACTIVE_SHARDS: 4096
+
+quark_types:
+  # v2.14: Dynamic Shard Rebalancing v1.0 (u8: 144/256 used)
+  - index: 136
+    name: dynamic_shard
+    label: DYN_SHRD
+    node: GoalParse
+  - index: 137
+    name: shard_split
+    label: SHRD_SPL
+    node: Decompose
+  - index: 138
+    name: shard_merge
+    label: SHRD_MRG
+    node: Schedule
+  - index: 139
+    name: load_balance
+    label: LOAD_BAL
+    node: Execute
+  - index: 140
+    name: dht_adapt
+    label: DHT_ADPT
+    node: Monitor
+  - index: 141
+    name: shard_rebalance
+    label: SHRD_RBL
+    node: Adapt
+  - index: 142
+    name: gossip_reshard
+    label: GSP_RSHD
+    node: Synthesize
+  - index: 143
+    name: shard_anchor
+    label: SHRD_ACH
+    node: Deliver
+
+chain_message_types:
+  - DynamicShardEvent
+  - ShardLoadUpdate
+  - AdaptiveDHTEvent
+  - GossipReshardEvent
+
+behaviors:
+  - name: initDynamicShard
+    given: Dynamic shard rebalancing requested
+    when: Agent initializes shard split with load detection
+    then: Increment shards_active and shards_split, compute shard_hash via SHA256
+
+  - name: splitShard
+    given: Shard load exceeds split threshold
+    when: Agent detects hot spot and splits shard
+    then: Increment hot_spots_detected, update load_hash
+
+  - name: mergeShard
+    given: Shard load below merge threshold
+    when: Agent detects cold spot and merges shards
+    then: Increment cold_spots_detected and shards_merged, update load_hash
+
+  - name: adaptDHT
+    given: DHT rebalancing triggered
+    when: Agent adapts DHT depth and gossip resharding
+    then: Increment dht_rebalances and gossip_rounds, update dht_hash and reshard_hash
+
+  - name: dynamicShardVerify
+    given: Phase U verification triggered
+    when: verifyQuarkChain reaches Phase U
+    then: |
+      U1: Shards must have been split (shards_split > 0)
+      U2: DHT must have adapted (dht_rebalances > 0)
+      U3: Gossip resharding must have completed (reshards_completed > 0)
+
+verification:
+  phase: U
+  name: Dynamic Shard Rebalancing integrity
+  steps:
+    - U1: shards_split > 0
+    - U2: dht_rebalances > 0
+    - U3: reshards_completed > 0
+
+export:
+  version: 18
+  header_size: 90
+  new_fields:
+    - shards_active: U16
+    - dht_depth: U16
+
+tests:
+  - name: v2.14 QuarkType u8 has 144 variants
+  - name: v2.14 dynamic_shard label is DYN_SHRD
+  - name: v2.14 shard_split label is SHRD_SPL
+  - name: v2.14 shard_merge label is SHRD_MRG
+  - name: v2.14 load_balance label is LOAD_BAL
+  - name: v2.14 dht_adapt label is DHT_ADPT
+  - name: v2.14 shard_rebalance label is SHRD_RBL
+  - name: v2.14 gossip_reshard label is GSP_RSHD
+  - name: v2.14 shard_anchor label is SHRD_ACH
+  - name: v2.14 isDynamicShardQuark classifies correctly
+  - name: v2.14 isShardSplitMergeQuark classifies correctly
+  - name: v2.14 isLoadBalanceQuark classifies correctly
+  - name: v2.14 isDHTAdaptQuark classifies correctly
+  - name: v2.14 DynamicShardState defaults to zero
+  - name: v2.14 ShardLoadState defaults to zero
+  - name: v2.14 AdaptiveDHTState defaults to zero
+  - name: v2.14 GossipReshardState defaults to zero
+  - name: v2.14 Phase U passes after dynamic shard init
+  - name: v2.14 Phase U fails without dynamic shard
+  - name: v2.14 export v18 header 90 bytes
+  - name: v2.14 176 quarks per query target
+  - name: v2.14 176 quarks target distribution
+  - name: v2.14 u8 capacity with 144/256 used

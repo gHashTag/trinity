@@ -1,0 +1,89 @@
+# ============================================================================
+# Week 3 Overview — Real Hardware Integration
+# ============================================================================
+
+name: week3_overview
+version: "3.0.0"
+language: zig
+module: week3_plan
+
+description: |
+  Week 3 focuses on real hardware testing after cable arrives.
+  Day 1: Cable connect → Real UART tests
+  Day 2: 10K-dim VSA on real FPGA
+  Day 3: Full TQNN inference on hardware
+  Day 4: Integration with Trinity Core
+  Day 5: Benchmark vs CPU/GPU
+  Day 6-7: Documentation + "First Real Run" video
+
+types:
+  Week3Goal:
+    description: Week 3 goal
+    fields:
+      day: UInt8
+      title: String
+      deliverable: String
+
+  HardwareTest:
+    description: Hardware test result
+    fields:
+      test_name: String
+      passed: Bool
+      latency_ms: Float32
+      note: String
+
+constants:
+  CABLE_ARRIVAL_DAYS: 6
+  WEEK3_DURATION_DAYS: 7
+
+behaviors:
+  - name: connect_cable
+    given: FPGA board + JTAG cable
+    when: Cable arrives
+    then: Flash trinity_v2.bit, run first tests
+
+  - name: test_uart_real
+    given: Physical UART connection
+    when: Send CMD_PING
+    then: Receive ACK with firmware version
+
+  - name: test_vsa_real
+    given: Real FPGA
+    when: Send 10K trits via CMD_VSA_BIND
+    then: Receive similarity score
+
+  - name: test_tqnn_real
+    given: Real FPGA
+    when: Send 16 floats via CMD_TQNN_FORWARD
+    then: Receive quantum state
+
+  - name: benchmark_cpu_gpu_fpga
+    given: All three platforms
+    when: Running same inference
+    then: Compare throughput & latency
+
+test_cases:
+  - name: all_hardware_tests_pass
+    given: Real FPGA with cable
+    when: All tests run
+    then: >95% tests pass
+
+algorithms:
+  - name: week3_execution_plan
+    description: Execute Week 3 when cable arrives
+    steps:
+      - Day 1: Connect cable, flash bitstream, test UART
+      - Day 2: Test VSA 10K operations, measure latency
+      - Day 3: Test TQNN inference, verify quantum state
+      - Day 4: Integrate with src/tri/main.zig VIBEE workflow
+      - Day 5: Benchmark vs CPU (NEON) vs GPU (if available)
+      - Day 6: Write comprehensive documentation
+      - Day 7: Film "First Real Run" video
+
+  - name: fallback_while_waiting
+    description: Work while cable is in transit
+    steps:
+      - Create comprehensive test suite
+      - Improve UART host software
+      - Add more TQNN layers
+      - Optimize bitstream for lower latency

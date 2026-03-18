@@ -1,0 +1,46 @@
+name: trit_vector
+version: "1.0.0"
+language: zig
+module: trit_vector
+
+description: |
+  Dense vector of balanced ternary values.
+  Core data structure for VSA operations.
+
+types:
+  TritVector:
+    description: "Dense trit vector"
+    fields:
+      data: List<Int>
+      dim: Int
+
+behaviors:
+  - name: zeros
+    given: Dimension dim
+    when: Creating zero vector
+    then: Returns vector of dim zeros
+
+  - name: random
+    given: Dimension dim and seed
+    when: Creating random vector
+    then: Returns vector with random trits {-1, 0, +1}
+
+  - name: get
+    given: Vector v and index i
+    when: Accessing element
+    then: Returns trit at position i
+
+  - name: set
+    given: Vector v, index i, value t
+    when: Setting element
+    then: Sets position i to trit t
+
+  - name: nnz
+    given: Vector v
+    when: Counting non-zeros
+    then: Returns count of non-zero elements
+
+  - name: sparsity
+    given: Vector v
+    when: Computing sparsity
+    then: Returns fraction of zeros (0.0 to 1.0)

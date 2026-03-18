@@ -1,0 +1,359 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: create_experiment
+    given: Input data provided
+    when: create_experiment function called
+    then: Result returned
+  - name: test_create_experiment
+  - name: create_runner
+    given: Input data provided
+    when: create_runner function called
+    then: Result returned
+  - name: test_create_runner
+  - name: run_experiment
+    given: Input data provided
+    when: run_experiment function called
+    then: Result returned
+  - name: test_run_experiment
+  - name: run_all_experiments
+    given: Input data provided
+    when: run_all_experiments function called
+    then: Result returned
+  - name: test_run_all_experiments
+  - name: schedule_experiments
+    given: Input data provided
+    when: schedule_experiments function called
+    then: Result returned
+  - name: test_schedule_experiments
+  - name: inject_chaos
+    given: Input data provided
+    when: inject_chaos function called
+    then: Result returned
+  - name: test_inject_chaos
+  - name: rollback_chaos
+    given: Input data provided
+    when: rollback_chaos function called
+    then: Result returned
+  - name: test_rollback_chaos
+  - name: monitor_during_chaos
+    given: Input data provided
+    when: monitor_during_chaos function called
+    then: Result returned
+  - name: test_monitor_during_chaos
+  - name: monitor_loop
+    given: Input data provided
+    when: monitor_loop function called
+    then: Result returned
+  - name: test_monitor_loop
+  - name: run_safety_checks
+    given: Input data provided
+    when: run_safety_checks function called
+    then: Result returned
+  - name: test_run_safety_checks
+  - name: measure_metrics
+    given: Input data provided
+    when: measure_metrics function called
+    then: Result returned
+  - name: test_measure_metrics
+  - name: verify_steady_state
+    given: Input data provided
+    when: verify_steady_state function called
+    then: Result returned
+  - name: test_verify_steady_state
+  - name: analyze_observations
+    given: Input data provided
+    when: analyze_observations function called
+    then: Result returned
+  - name: test_analyze_observations
+  - name: select_targets
+    given: Input data provided
+    when: select_targets function called
+    then: Result returned
+  - name: test_select_targets
+  - name: inject_network_latency
+    given: Input data provided
+    when: inject_network_latency function called
+    then: Result returned
+  - name: test_inject_network_latency
+  - name: inject_network_partition
+    given: Input data provided
+    when: inject_network_partition function called
+    then: Result returned
+  - name: test_inject_network_partition
+  - name: inject_packet_loss
+    given: Input data provided
+    when: inject_packet_loss function called
+    then: Result returned
+  - name: test_inject_packet_loss
+  - name: inject_cpu_stress
+    given: Input data provided
+    when: inject_cpu_stress function called
+    then: Result returned
+  - name: test_inject_cpu_stress
+  - name: inject_memory_stress
+    given: Input data provided
+    when: inject_memory_stress function called
+    then: Result returned
+  - name: test_inject_memory_stress
+  - name: inject_disk_stress
+    given: Input data provided
+    when: inject_disk_stress function called
+    then: Result returned
+  - name: test_inject_disk_stress
+  - name: inject_process_kill
+    given: Input data provided
+    when: inject_process_kill function called
+    then: Result returned
+  - name: test_inject_process_kill
+  - name: inject_service_shutdown
+    given: Input data provided
+    when: inject_service_shutdown function called
+    then: Result returned
+  - name: test_inject_service_shutdown
+  - name: inject_database_failure
+    given: Input data provided
+    when: inject_database_failure function called
+    then: Result returned
+  - name: test_inject_database_failure
+  - name: inject_cache_failure
+    given: Input data provided
+    when: inject_cache_failure function called
+    then: Result returned
+  - name: test_inject_cache_failure
+  - name: inject_api_timeout
+    given: Input data provided
+    when: inject_api_timeout function called
+    then: Result returned
+  - name: test_inject_api_timeout
+  - name: inject_exception
+    given: Input data provided
+    when: inject_exception function called
+    then: Result returned
+  - name: test_inject_exception
+  - name: restore_network
+    given: Input data provided
+    when: restore_network function called
+    then: Result returned
+  - name: test_restore_network
+  - name: stop_cpu_stress
+    given: Input data provided
+    when: stop_cpu_stress function called
+    then: Result returned
+  - name: test_stop_cpu_stress
+  - name: stop_memory_stress
+    given: Input data provided
+    when: stop_memory_stress function called
+    then: Result returned
+  - name: test_stop_memory_stress
+  - name: stop_disk_stress
+    given: Input data provided
+    when: stop_disk_stress function called
+    then: Result returned
+  - name: test_stop_disk_stress
+  - name: restart_process
+    given: Input data provided
+    when: restart_process function called
+    then: Result returned
+  - name: test_restart_process
+  - name: restart_service
+    given: Input data provided
+    when: restart_service function called
+    then: Result returned
+  - name: test_restart_service
+  - name: restore_database
+    given: Input data provided
+    when: restore_database function called
+    then: Result returned
+  - name: test_restore_database
+  - name: restore_cache
+    given: Input data provided
+    when: restore_cache function called
+    then: Result returned
+  - name: test_restore_cache
+  - name: restore_api
+    given: Input data provided
+    when: restore_api function called
+    then: Result returned
+  - name: test_restore_api
+  - name: stop_exception_injection
+    given: Input data provided
+    when: stop_exception_injection function called
+    then: Result returned
+  - name: test_stop_exception_injection
+  - name: get_method_duration
+    given: Input data provided
+    when: get_method_duration function called
+    then: Result returned
+  - name: test_get_method_duration
+  - name: schedule_experiment
+    given: Input data provided
+    when: schedule_experiment function called
+    then: Result returned
+  - name: test_schedule_experiment
+  - name: wait_seconds
+    given: Input data provided
+    when: wait_seconds function called
+    then: Result returned
+  - name: test_wait_seconds
+  - name: current_timestamp
+    given: Input data provided
+    when: current_timestamp function called
+    then: Result returned
+  - name: test_current_timestamp
+  - name: database_failure_experiment
+    given: Input data provided
+    when: database_failure_experiment function called
+    then: Result returned
+  - name: test_database_failure_experiment
+  - name: network_partition_experiment
+    given: Input data provided
+    when: network_partition_experiment function called
+    then: Result returned
+  - name: test_network_partition_experiment
+  - name: high_latency_experiment
+    given: Input data provided
+    when: high_latency_experiment function called
+    then: Result returned
+  - name: test_high_latency_experiment
+  - name: cpu_stress_experiment
+    given: Input data provided
+    when: cpu_stress_experiment function called
+    then: Result returned
+  - name: test_cpu_stress_experiment
+
+types:
+  create_experiment:
+    description: Auto-generated
+
+  create_runner:
+    description: Auto-generated
+
+  run_experiment:
+    description: Auto-generated
+
+  run_all_experiments:
+    description: Auto-generated
+
+  schedule_experiments:
+    description: Auto-generated
+
+  inject_chaos:
+    description: Auto-generated
+
+  rollback_chaos:
+    description: Auto-generated
+
+  monitor_during_chaos:
+    description: Auto-generated
+
+  monitor_loop:
+    description: Auto-generated
+
+  run_safety_checks:
+    description: Auto-generated
+
+  measure_metrics:
+    description: Auto-generated
+
+  verify_steady_state:
+    description: Auto-generated
+
+  analyze_observations:
+    description: Auto-generated
+
+  select_targets:
+    description: Auto-generated
+
+  inject_network_latency:
+    description: Auto-generated
+
+  inject_network_partition:
+    description: Auto-generated
+
+  inject_packet_loss:
+    description: Auto-generated
+
+  inject_cpu_stress:
+    description: Auto-generated
+
+  inject_memory_stress:
+    description: Auto-generated
+
+  inject_disk_stress:
+    description: Auto-generated
+
+  inject_process_kill:
+    description: Auto-generated
+
+  inject_service_shutdown:
+    description: Auto-generated
+
+  inject_database_failure:
+    description: Auto-generated
+
+  inject_cache_failure:
+    description: Auto-generated
+
+  inject_api_timeout:
+    description: Auto-generated
+
+  inject_exception:
+    description: Auto-generated
+
+  restore_network:
+    description: Auto-generated
+
+  stop_cpu_stress:
+    description: Auto-generated
+
+  stop_memory_stress:
+    description: Auto-generated
+
+  stop_disk_stress:
+    description: Auto-generated
+
+  restart_process:
+    description: Auto-generated
+
+  restart_service:
+    description: Auto-generated
+
+  restore_database:
+    description: Auto-generated
+
+  restore_cache:
+    description: Auto-generated
+
+  restore_api:
+    description: Auto-generated
+
+  stop_exception_injection:
+    description: Auto-generated
+
+  get_method_duration:
+    description: Auto-generated
+
+  schedule_experiment:
+    description: Auto-generated
+
+  wait_seconds:
+    description: Auto-generated
+
+  current_timestamp:
+    description: Auto-generated
+
+  database_failure_experiment:
+    description: Auto-generated
+
+  network_partition_experiment:
+    description: Auto-generated
+
+  high_latency_experiment:
+    description: Auto-generated
+
+  cpu_stress_experiment:
+    description: Auto-generated

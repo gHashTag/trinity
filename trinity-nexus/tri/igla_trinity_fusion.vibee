@@ -1,0 +1,43 @@
+name: igla_trinity_fusion
+version: "1.0.0"
+language: zig
+module: igla_trinity_fusion
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 500
+  SIM_THRESHOLD: 0.10
+  NUM_MEMORIES: 5
+
+types:
+  IglaResult:
+    fields:
+      source: String
+      query: String
+      similarity: Float
+      routed_to: String
+
+behaviors:
+  - name: symbolicFirstPipeline
+    given: 15 in-KG queries and 15 out-of-KG queries against bundled memory.
+    when: Query each, classify by similarity threshold (0.10)
+    then: 30/30 — in-KG queries return symbolic match, out-of-KG routed to LLM fallback
+
+  - name: hybridRoutingAccuracy
+    given: 20 mixed queries (10 symbolic-answerable, 10 requiring LLM).
+    when: Route each query based on similarity threshold
+    then: 20/20 — correct routing for all queries
+
+  - name: multiMemoryDispatch
+    given: 5 separate bundled memories (5 pairs each).
+    when: Query each memory with its own keys
+    then: 25/25 — correct dispatch across all 5 memories
+
+test_cases:
+  - name: igla_symbolic_hit
+    input: { query: "entity_0", memory: "bundled_10_pairs" }
+    expected: { source: "symbolic", similarity: "> 0.10" }
+
+  - name: igla_llm_fallback
+    input: { query: "unknown_entity", memory: "bundled_10_pairs" }
+    expected: { source: "llm_fallback", similarity: "< 0.10" }

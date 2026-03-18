@@ -1,0 +1,141 @@
+name: quantum_ml
+version: "1.0.0"
+language: python
+module: quantum.ml
+
+types:
+  QMLModel:
+    description: Hybrid quantum-classical ML model
+    fields:
+      quantum_layer: QuantumCircuit
+      classical_layer: Linear
+      activation: String
+      num_classes: Int
+
+  QuantumFeatureMap:
+    description: Map classical data to quantum Hilbert space
+    fields:
+      type: String  # "angle", "amplitude", "ternary"
+      num_features: Int
+      entanglement: String
+
+  TrainingState:
+    description: Training metrics and state
+    fields:
+      epoch: Int
+      loss: Float64
+      accuracy: Float64
+      learning_rate: Float64
+      train_time: Float64
+
+  QuantumKernel:
+    description: Kernel matrix from quantum feature map
+    fields:
+      feature_map: QuantumFeatureMap
+      kernel_matrix: Tensor
+behaviors:
+  - name: train_qml
+    description: Train hybrid quantum-classical model
+    given:
+      - dataset: Tuple(X_train, y_train, X_test, y_test)
+      - qml_model: QMLModel
+      - epochs: Int
+      - batch_size: Int
+    when: Training loop with backprop
+    then:
+      - Returns trained QMLModel
+      - Returns training history
+      - Supports mini-batch training
+
+  - name: quantum_feature_map_angle
+    description: Encode data as rotation angles
+    given:
+      - x: Tensor(shape=[batch, num_features])
+      - feature_map: QuantumFeatureMap
+    when: Apply rotations R_y(x_i)
+    then:
+      - Returns encoded QutritState
+      - Each feature → one rotation gate
+      - Normalizes features to [-π, π]
+
+  - name: quantum_feature_map_ternary
+    description: Encode ternary data directly
+    given:
+      - x: Tensor(shape=[batch, num_trits])
+      - feature_map: QuantumFeatureMap
+    when: Map trits to basis states
+    then:
+      - Returns encoded QutritState
+      - Input {-1,0,1} → {|−1⟩, |0⟩, |+1⟩}
+      - Native to qutrit representation
+
+  - name: quantum_kernel
+    description: Compute quantum kernel matrix
+    given:
+      - data_point_1: Tensor
+      - data_point_2: Tensor
+      - feature_map: QuantumFeatureMap
+    when: Compute K(x, x') = |⟨φ(x)|φ(x')⟩|²
+    then:
+      - Returns kernel value
+      - Positive definite by construction
+      - Can be used with SVM
+
+  - name: quantum svm
+    description: Quantum support vector machine
+    given:
+      - X: Tensor
+      - y: Tensor
+      - quantum_kernel: QuantumKernel
+      - C: Float64  # Regularization
+    when: Solve dual SVM problem
+    then:
+      - Returns trained QSVM model
+      - Support vectors in quantum feature space
+      - Decision function: f(x) = Σ α_i y_i K(x, x_i) + b
+
+  - name: variational_quantum_classifier
+    description: VQC with trainable quantum circuit
+    given:
+      - num_features: Int
+      - num_classes: Int
+      - ansatz_depth: Int
+    when: Build and initialize VQC
+    then:
+      - Returns QMLModel
+      - Feature encoding → variational circuit → measurement
+      - End-to-end differentiable
+
+  - name: evaluate_model
+    description: Evaluate QML model performance
+    given:
+      - model: QMLModel
+      - X_test: Tensor
+      - y_test: Tensor
+    when: Compute metrics
+    then:
+      - Returns accuracy, precision, recall, F1
+      - Confusion matrix
+      - ROC AUC if binary
+
+  - name: data_reuploading
+    description: Re-upload classical data multiple times
+    given:
+      - x: Tensor
+      - num_layers: Int
+    when: Alternate encoding + variational layers
+    then:
+      - Returns QuantumCircuit
+      - Each layer: encode(x) → variational(params)
+      - Increases model capacity
+
+  - name: layerwise_training
+    description: Train VQC layer by layer
+    given:
+      - model: QMLModel
+      - dataset: Tensor
+    when: Greedy layer-wise pretraining
+    then:
+      - Returns pre-trained model
+      - Reduces barren plateau risk
+      - Faster convergence

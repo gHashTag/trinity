@@ -1,0 +1,115 @@
+name: shard_manager
+version: "1.0.0"
+language: zig
+module: shard_manager
+
+imports:
+  - name: vsa
+    path: "src/vsa.zig"
+
+description: |
+  Shard Manager v1.0 — Cohesive Storage API + JSON Manifest + File Splitting
+
+  === PURPOSE ===
+  Unified ShardManager that wraps init/put/get/delete/list/findSimilar into
+  a cohesive API with JSON manifest persistence. Supports large file splitting
+  into 64KB shards with automatic reassembly on get.
+
+  === MANIFEST FORMAT ===
+  manifest.json:
+  {
+    "version": "1.0.0",
+    "shard_count": 3,
+    "total_bytes": 196608,
+    "shards": {
+      "<hex_hash>": {
+        "size": 65536,
+        "fingerprint_seed": 12345,
+        "created_at": 1708000000,
+        "chunk_group": "<parent_hash>",
+        "chunk_index": 0,
+        "chunk_total": 3
+      }
+    }
+  }
+
+  === OPERATIONS ===
+  M1: managerPutGet          — put bytes via manager, get by hash, verify roundtrip
+  M2: managerManifestSave    — save manifest JSON to disk, verify file exists
+  M3: managerManifestLoad    — save then load manifest, verify shard count matches
+  M4: managerDelete          — put then delete via manager, verify removed from manifest
+  M5: managerListAll         — put 3 items, list returns 3 hashes
+  M6: managerLargeFileSplit  — put 192KB file, verify splits into 3 x 64KB shards
+  M7: managerReassemble      — split file then reassemble, verify matches original
+  M8: managerFingerprintSearch — put 3 items, findSimilar returns closest match
+
+  === DISK LAYOUT ===
+  storage_root/
+    manifest.json
+    shards/
+      <hex_hash>.shard
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+
+types:
+  ManifestEntry:
+    fields:
+      hash_hex: String
+      size: Int
+      fingerprint_seed: Int
+      created_at: Int
+      chunk_group: String
+      chunk_index: Int
+      chunk_total: Int
+
+  Manifest:
+    fields:
+      version: String
+      shard_count: Int
+      total_bytes: Int
+
+  ManagerConfig:
+    fields:
+      storage_root: String
+      shard_size: Int
+
+behaviors:
+  - name: managerPutGet
+    given: A ShardManager initialized with temp directory and 256 bytes of test data
+    when: Puts data via manager then gets by returned SHA-256 hash
+    then: Retrieved data matches original byte-for-byte proving put-get roundtrip
+
+  - name: managerManifestSave
+    given: A ShardManager with one shard stored
+    when: Serializes manifest to JSON and writes manifest.json to storage root
+    then: manifest.json file exists on disk and contains valid JSON with shard entry
+
+  - name: managerManifestLoad
+    given: A manifest.json file with known content on disk
+    when: Reads manifest.json and parses JSON to extract shard count
+    then: Parsed shard count matches expected value proving manifest roundtrip
+
+  - name: managerDelete
+    given: A ShardManager with one shard stored and manifest saved
+    when: Deletes shard by hash and updates manifest on disk
+    then: Shard file removed and manifest shard count decremented
+
+  - name: managerListAll
+    given: A ShardManager with 3 distinct shards stored
+    when: Lists all shards via directory iteration
+    then: Exactly 3 shard hashes returned
+
+  - name: managerLargeFileSplit
+    given: A 192KB byte buffer representing a large file
+    when: Splits into 64KB chunks and writes each as separate shard with chunk metadata
+    then: Exactly 3 shard files created on disk with sequential chunk indices
+
+  - name: managerReassemble
+    given: A large file previously split into 3 x 64KB shards on disk
+    when: Reads all chunks in order and concatenates into reassembled buffer
+    then: Reassembled data matches original 192KB file byte-for-byte
+
+  - name: managerFingerprintSearch
+    given: Three shards with distinct VSA fingerprints stored via manager
+    when: Computes query fingerprint and finds most similar via cosine search
+    then: Closest match has cosine similarity of 1.0 with the identical shard

@@ -1,0 +1,126 @@
+name: spec_create
+version: "1.0.0"
+language: zig
+module: tri.spec_create
+
+description: |
+  Real spec creation with template matching and experience
+  enrichment. Parses CLI input, finds best matching template
+  from existing specs, enriches with experience hints from
+  past episodes, generates .tri file with metadata and
+  behaviors, writes to specs/tri/. Core of spec-first
+  pipeline — every new module starts here.
+
+  phi^2 + 1/phi^2 = 3 = TRINITY
+
+behaviors:
+  - name: parseInput
+    given: CLI args array from tri spec create <name> [flags]
+    when: User runs tri spec create
+    then: >
+      Parses first arg as spec name (validated: lowercase + underscores only).
+      Parses optional --issue N and --description "text" flags.
+      Auto-detects category from name prefix: dev_ → development,
+      test_ → testing, fpga_ → fpga, perf_ → performance.
+      Returns SpecCreateInput or null if invalid.
+
+  - name: checkDuplicate
+    given: A spec name
+    when: Before creating a new spec
+    then: >
+      Checks if specs/tri/{name}.tri already exists.
+      Returns true if duplicate found (blocks creation).
+
+  - name: findTemplate
+    given: SpecCreateInput with name and category
+    when: After duplicate check passes
+    then: >
+      Uses spec_template_match.scanSpecs to find all existing specs.
+      Finds best template by category and keyword similarity.
+      Returns template path and match score.
+
+  - name: enrichFromExperience
+    given: Spec name and description keywords
+    when: Template found, before generating spec content
+    then: >
+      Reads EXPERIENCE_LOG.md for past episodes matching keywords.
+      Extracts learnings and mistake patterns as ExperienceHints.
+      Hints are injected into generated spec as comments.
+
+  - name: generateSpec
+    given: SpecCreateInput, template match, experience hints
+    when: All inputs collected
+    then: >
+      Builds .tri file content string with: name, version, language,
+      module, description, behaviors (from template structure),
+      types, dependencies, tests. Includes experience hints as
+      comments where relevant.
+
+  - name: writeSpec
+    given: Spec name and generated content
+    when: Spec content is ready
+    then: >
+      Writes to specs/tri/{name}.tri. Returns full path on success.
+
+  - name: runSpecCreateCommand
+    given: CLI args for tri spec create
+    when: User invokes the command
+    then: >
+      Full flow: parse → check dup → find template → enrich →
+      generate → write → render success message with path,
+      template used, hints applied, and next steps.
+
+types:
+  - name: SpecCreateInput
+    description: >
+      Input struct with fixed-size fields: name[64], description[256],
+      issue_number (u32), category[32]. Methods: nameStr(), descStr(),
+      categoryStr(), setName(), setDesc(), setCategory().
+
+  - name: SpecCreateResult
+    description: >
+      Result struct: spec_path[128], template_used[128],
+      template_score (u32), hints_applied (u8),
+      validated (bool), success (bool).
+
+  - name: ExperienceHint
+    description: >
+      A hint from past experience: text[128] with setText() and textStr().
+
+dependencies:
+  - spec_template_match.zig (scanSpecs, findBestTemplate)
+  - tri_experience.zig (keywordScore)
+  - tri_colors.zig (ANSI output)
+
+tests:
+  - name: parseInput_basic
+    description: >
+      "my_module" → valid input, category = general.
+  - name: parseInput_with_flags
+    description: >
+      "dev_scanner --issue 42 --description Scan stuff" parses all fields.
+  - name: parseInput_rejects_invalid
+    description: >
+      "My-Module" (uppercase + hyphen) → null.
+  - name: parseInput_category_detection
+    description: >
+      dev_ → development, test_ → testing, fpga_ → fpga, perf_ → performance.
+  - name: parseInput_empty
+    description: >
+      Empty args → null.
+  - name: checkDuplicate_existing
+    description: >
+      Known existing spec returns true.
+  - name: checkDuplicate_nonexistent
+    description: >
+      Random name returns false.
+  - name: input_setters
+    description: >
+      setName/setDesc/setCategory correctly populate fixed buffers.
+  - name: result_setters
+    description: >
+      setSpecPath/setTemplate correctly populate result buffers.
+  - name: full_create_flow
+    description: >
+      End-to-end: parse valid input → no dup → template found →
+      spec written → success=true.

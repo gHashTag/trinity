@@ -1,0 +1,21 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: run_bootstrap_pipeline
+    given: AST and generation number provided
+    when: Bootstrap pipeline executed
+    then: Best compiler version selected
+  - name: pipeline_runs_successfully
+  - name: select_winner
+    given: Benchmark results from all targets
+    when: Winner selection executed
+    then: Highest scoring target selected
+  - name: zig_wins_on_score
+
+types:
+  run_bootstrap_pipeline:
+
+  select_winner:

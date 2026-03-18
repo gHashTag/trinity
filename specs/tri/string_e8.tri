@@ -1,0 +1,68 @@
+name: string_e8
+version: "1.1.0"
+language: zig
+module: tri.string_e8
+output: src/tri/string_e8.zig
+
+description: |
+  E8 lattice mathematics for Trinity string theory, using SacredConstants.
+
+  Implements:
+    - E8 Cartan matrix (the REAL 8×8 matrix, not A_n tridiagonal)
+    - γ-deformation: scale root components by GAMMA = φ - 1 - 1/φ
+    - φ-coupling: cos(angle) between roots, weighted by φ
+    - 4D projection: take first 4 of 8 components, scaled by φ⁻¹
+    - Positive definiteness via diagonal dominance check
+
+  E8Root uses [3]i32 for compatibility with tri_string.zig display.
+
+constants:
+  PHI: 1.618033988749895
+  GAMMA: 0.23606797749978969641
+
+types:
+  E8Root:
+    fields:
+      x: i32
+      y: i32
+      z: i32
+      components: "[3]i32"
+
+  E8Lattice:
+    fields:
+      roots: "[1]E8Root"
+    methods:
+      - name: init
+        then: Returns default E8Lattice
+      - name: gramMatrix
+        then: Returns the REAL E8 Cartan matrix (8×8)
+      - name: isPositiveDefinite
+        then: Checks diagonal dominance (real check, not stub)
+
+  GammaDeformation:
+    fields:
+      components: "[3]i32"
+    methods:
+      - name: deformWithGammaPhi
+        then: Scales each component by floor(GAMMA × 1000) / 1000
+
+  PhiCoupling:
+    methods:
+      - name: couplingStrength
+        then: Returns φ × (1 - |cosθ|) where θ is angle between roots
+
+  E8Projection:
+    fields:
+      data: "[4]f64"
+    methods:
+      - name: to4D
+        then: Projects root components to 4D, scaled by φ⁻¹
+      - name: isPositiveDefinite
+        then: Checks diagonal dominance
+
+tests:
+  - "E8 Cartan matrix diagonal is 2"
+  - "E8 Cartan matrix is correct shape"
+  - "E8 Gram matrix is positive definite"
+  - "GammaDeformation scales by gamma"
+  - "PhiCoupling self-coupling"

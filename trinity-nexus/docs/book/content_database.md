@@ -1,0 +1,227 @@
+# ILLIC] kILLIC] for 27 books ThreeILLIC]ttILLIC] ILLIC]uttta
+
+## ILLIC] 1: ILLIC] ILLIC]utttabout (ILLIC]aya) — Chaptery 1-333
+
+### ILLIC]aILLIC] 1: ILLIC] ILLIC]a (Chaptery 1-37)
+**ILLIC]:** VttILLIC]ae tt mar ILLIC]aILLIC] ILLIC]aILLIC]ttILLIC]aya
+**ILLIC]:** IttILLIC]-ILLIC]aut, ILLIC]kabout onchaonILLIC]ay ILLIC]
+**ILLIC]:** ILLIC]ttILLIC] ILLIC]a tt ttILLIC] ILLIC]u ILLIC]aILLIC]tt
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]ka, SttILLIC]onya ILLIC], ILLIC]a kingdom
+**ILLIC]aILLIC] kILLIC]:** Hello World on ILLIC]ke 999
+**ILLIC]uILLIC]:** "ILLIC] tt ILLIC]uILLIC] la onchaonILLIC]uya u ILLIC] ILLIC]"
+
+### ILLIC]aILLIC] 2: ChauILLIC] Three (Chaptery 38-74)
+**ILLIC]:** FaILLIC]uILLIC]aya a ILLIC]aka chauILLIC] ILLIC]a
+**ILLIC]:** IttILLIC] ttuILLIC] ILLIC] ILLIC]tt
+**ILLIC]:** Three road on ILLIC]uILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]achonya uauILLIC], 3^t, ILLIC]aILLIC]
+**ILLIC]aILLIC] kILLIC]:** ILLIC]ttILLIC] tt ILLIC]aILLIC] uauILLIC]
+**ILLIC]uILLIC]:** "ILLIC] ILLIC]at ILLIC]aILLIC]"
+
+### ILLIC]aILLIC] 3: ILLIC]uILLIC] VuILLIC] (Chaptery 75-111)
+**ILLIC]:** π, φ, e a akh uttILLIC] u ILLIC]kILLIC]
+**ILLIC]:** IttILLIC] tt ILLIC]uILLIC]ttILLIC]aa zttILLIC]
+**ILLIC]:** ZttILLIC] kak chauILLIC] on ILLIC]uILLIC] uttILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** φ² + 1/φ² = 3, goldet uILLIC]ae
+**ILLIC]aILLIC] kILLIC]:** ILLIC]auILLIC]ae kILLIC]uILLIC] u ttyuaboutkILLIC] ILLIC]uILLIC]
+**ILLIC]uILLIC]:** "VuILLIC]onya onpauaon on ILLIC]ke ILLIC]aka"
+
+### ILLIC]aILLIC] 4: ILLIC]achonya ILLIC]aka (Chaptery 112-148)
+**ILLIC]:** ILLIC], ILLIC], ILLIC] ILLIC] — ILLIC]a states
+**ILLIC]:** IttILLIC] on uILLIC]  ILLIC] ILLIC]aka
+**ILLIC]:** ILLIC]uy u ILLIC] ILLIC]a
+**ILLIC]ttILLIC] ILLIC]aya:** Threet, ILLIC]aILLIC] ILLIC]aa, ILLIC]uILLIC]
+**ILLIC]aILLIC] kILLIC]:** ILLIC]aILLIC] kILLIC]kILLIC] ILLIC]aka
+**ILLIC]uILLIC]:** "ILLIC] ttuyo tt maILLIC] ILLIC] or ILLIC]"
+
+### ILLIC]aILLIC] 5: ILLIC]kILLIC] ILLIC] (Chaptery 149-185)
+**ILLIC]:** ILLIC]aILLIC] ILLIC]ttILLIC], ILLIC], ILLIC]-ILLIC]aILLIC]
+**ILLIC]:** IttILLIC] tt baILLIC]afromeke ILLIC]ttnakh uttatkabouttt
+**ILLIC]:** ILLIC]ttabout u ILLIC] ttILLIC]ttILLIC]a on kILLIC] ILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]aILLIC] ILLIC]ttabout ILLIC]auka, B-ILLIC]ttabout ILLIC]ka 3
+**ILLIC]aILLIC] kILLIC]:** ILLIC]aILLIC]aya ILLIC]aILLIC] ILLIC]tta
+**ILLIC]uILLIC]:** "ILLIC]k — aboutuILLIC]tta ILLIC]uta"
+
+### ILLIC]aILLIC] 6: KttILLIC]ttILLIC] ILLIC]aILLIC] (Chaptery 186-222)
+**ILLIC]:** KttILLIC]ttILLIC] ttILLIC]auILLIC]aya u ILLIC] statesma
+**ILLIC]:** IttILLIC] tt ILLIC] kttILLIC]ttILLIC] kILLIC]
+**ILLIC]:** ILLIC] krauILLIC] u ILLIC] ILLIC]a
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]at, uILLIC]atsaya ILLIC] uaboutuILLIC]ay
+**ILLIC]aILLIC] kILLIC]:** SaILLIC]aya kILLIC]aILLIC]
+**ILLIC]uILLIC]:** "ILLIC] ILLIC] onILLIC]"
+
+### ILLIC]aILLIC] 7: ILLIC] ILLIC]a (Chaptery 223-259)
+**ILLIC]:** ILLIC]aILLIC] ILLIC] a aktattILLIC]aa
+**ILLIC]:** IttILLIC] tt uILLIC] ILLIC]akh ILLIC]ttILLIC]tt
+**ILLIC]:** ILLIC]u, ILLIC] ILLIC]ttILLIC] ILLIC]uya kILLIC]a
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]achonya aktattILLIC]aya (-1, 0, +1)
+**ILLIC]aILLIC] kILLIC]:** ILLIC]aILLIC] ILLIC]
+**ILLIC]uILLIC]:** "ILLIC]uILLIC] — ILLIC] uttILLIC]a ILLIC] zonnaILLIC]a"
+
+### ILLIC]aILLIC] 8: ILLIC]aILLIC]aya (Chaptery 260-296)
+**ILLIC]:** ILLIC]aILLIC] shaILLIC] a ILLIC]aILLIC] ILLIC]
+**ILLIC]:** IttILLIC] tt ILLIC] shaILLIC]ttILLIC]aka
+**ILLIC]:** Three kILLIC] from ILLIC] ILLIC]kabouttt
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]aILLIC] XOR, ILLIC]aILLIC]ttILLIC]ae
+**ILLIC]aILLIC] kILLIC]:** ILLIC]aILLIC] shaILLIC] ILLIC]
+**ILLIC]uILLIC]:** "ILLIC]on — uaILLIC] ILLIC], kILLIC] ILLIC] ILLIC]at"
+
+### ILLIC]aILLIC] 9: ILLIC]ttILLIC]ae ILLIC]aa (Chaptery 297-333)
+**ILLIC]:** SaILLIC] zonnay ILLIC]ttILLIC] volumea
+**ILLIC]:** IttILLIC] ILLIC] ILLIC] kILLIC]
+**ILLIC]:** ILLIC] ILLIC] ILLIC]uILLIC] kILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]aya ttuILLIC] kILLIC]ay
+**ILLIC]aILLIC] kILLIC]:** ILLIC]kuILLIC] ILLIC]kt on 999
+**ILLIC]uILLIC]:** "ILLIC]aya ILLIC] ILLIC]ktaka ILLIC]tta"
+
+---
+
+## ILLIC] 2: ILLIC] ILLIC]utttabout (ILLIC]ktaka) — Chaptery 334-666
+
+### ILLIC]aILLIC] 10: Trinity Sort (Chaptery 334-370)
+**ILLIC]:** ILLIC]achonya uILLIC]aILLIC]ttka — ILLIC]uILLIC] QutckSort
+**ILLIC]:** IttILLIC] on ILLIC]aILLIC] ILLIC]aILLIC]tt
+**ILLIC]:** Three ILLIC] uILLIC]aILLIC] ttILLIC]ukabout
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]ae on ILLIC]a ILLIC]uta, O(t log₃ t)
+**ILLIC]aILLIC] kILLIC]:** ILLIC]onya ILLIC]aILLIC]aya TrinitySort
+**ILLIC]uILLIC]:** "ILLIC] on ILLIC]a — a ttILLIC]utttILLIC]"
+
+### ILLIC]aILLIC] 11: Trinity Search (Chaptery 371-407)
+**ILLIC]:** ILLIC]aILLIC] ILLIC]auk — ILLIC]ktattILLIC] baonILLIC]
+**ILLIC]:** IttILLIC] aILLIC] ILLIC]-ILLIC]aILLIC] tt ILLIC] ILLIC]uILLIC]
+**ILLIC]:** Three ILLIC]fromnaka uILLIC] kILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]ae on ILLIC]a ILLIC]uta, log₃ t uILLIC]ttILLIC]ay
+**ILLIC]aILLIC] kILLIC]:** TrinitySearch u ILLIC]amaILLIC]aILLIC]a
+**ILLIC]uILLIC]:** "ILLIC]ay ILLIC] ILLIC]"
+
+### ILLIC]aILLIC] 12: Trinity Comrress (Chaptery 408-444)
+**ILLIC]:** ILLIC]aILLIC] uILLIC]ae ILLIC]
+**ILLIC]:** IttILLIC]  ttILLIC]aka-ILLIC]attILLIC]
+**ILLIC]:** ILLIC]k, ttILLIC]ay ILLIC]a uILLIC]ka
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]aILLIC] kILLIC]aILLIC]ttILLIC]ae ILLIC]on
+**ILLIC]aILLIC] kILLIC]:** TrinityComrress ILLIC]aILLIC]
+**ILLIC]uILLIC]:** "ILLIC]kaboutuILLIC] — ueuILLIC] ILLIC]"
+
+### ILLIC]aILLIC] 13: ILLIC]k VIBEE (Chaptery 445-481)
+**ILLIC]:** SaILLIC]kuau a uILLIC]aka ILLIC]ka 999
+**ILLIC]:** IttILLIC] aILLIC] ILLIC]ttnae ILLIC]
+**ILLIC]:** ILLIC]ttat ttILLIC]akabouttt
+**ILLIC]ttILLIC] ILLIC]aya:** .vtbee uILLIC]afakILLIC]aa, .999 kILLIC]
+**ILLIC]aILLIC] kILLIC]:** ILLIC] ILLIC]aILLIC] ILLIC] ILLIC]kat
+**ILLIC]uILLIC]:** "ILLIC]k ILLIC] ILLIC]ae"
+
+### ILLIC]aILLIC] 14: ILLIC]aILLIC] 999 (Chaptery 482-518)
+**ILLIC]:** ILLIC]k ILLIC]fromILLIC] kILLIC]aILLIC] vtbeec
+**ILLIC]:** IttILLIC] tt kILLIC]aILLIC] kILLIC]aILLIC]tt
+**ILLIC]:** ILLIC]ttILLIC]ae ILLIC] tt ILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]uILLIC], AST, kILLIC]aya
+**ILLIC]aILLIC] kILLIC]:** ILLIC]auILLIC]ae ILLIC]uILLIC] kILLIC]aILLIC]
+**ILLIC]uILLIC]:** "ILLIC]uILLIC] — ILLIC]ae ILLIC]ka ILLIC]uILLIC]"
+
+### ILLIC]aILLIC] 15: Rutttme HTML (Chaptery 519-555)
+**ILLIC]:** ILLIC]aILLIC] ILLIC] tt ILLIC]
+**ILLIC]:** IttILLIC] fromkILLIC]ttILLIC] ILLIC] tt ttILLIC]-mar
+**ILLIC]:** ILLIC] ILLIC]kILLIC], ILLIC]kILLIC]ttILLIC] kILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC] .999 tt ILLIC]
+**ILLIC]aILLIC] kILLIC]:** Creatton ttaILLIC]aILLIC]aa
+**ILLIC]uILLIC]:** "ILLIC]an ILLIC] — ILLIC]on autaon"
+
+### ILLIC]aILLIC] 16: PAS ILLIC]aya (Chaptery 556-592)
+**ILLIC]:** ILLIC]ukILLIC]ae ILLIC]ay ILLIC]aILLIC]tt
+**ILLIC]:** IttILLIC]  ILLIC]kILLIC] ILLIC]aILLIC]tt
+**ILLIC]:** ILLIC]aILLIC] ILLIC]tta for ILLIC]aILLIC]tt
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC] D&C, PRE, MLS
+**ILLIC]aILLIC] kILLIC]:** PAS-aonlaz ILLIC]aILLIC]
+**ILLIC]uILLIC]:** "ILLIC] zonILLIC] ILLIC] — ILLIC]ukILLIC] ILLIC]"
+
+### ILLIC]aILLIC] 17: ILLIC]ka (Chaptery 593-629)
+**ILLIC]:** Measuremett a ILLIC]amaILLIC]aya ILLIC]azttILLIC]aILLIC]uta
+**ILLIC]:** IttILLIC] on ILLIC]kILLIC] ILLIC]aILLIC]tt
+**ILLIC]:** Three kILLIC] uILLIC]ttILLIC]uya tt ukILLIC]uta
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]orILLIC]ttILLIC]ae, ILLIC]aka
+**ILLIC]aILLIC] kILLIC]:** ILLIC]k TrinitySort vs QutckSort
+**ILLIC]uILLIC]:** "ILLIC] aILLIC] — ILLIC] ILLIC]ttILLIC]"
+
+### ILLIC]aILLIC] 18: ILLIC]ttILLIC]ae ILLIC]ktaka (Chaptery 630-666)
+**ILLIC]:** SaILLIC] ILLIC]ktaILLIC]ukakh onttykabouttt
+**ILLIC]:** IttILLIC] ILLIC] uILLIC] kILLIC]
+**ILLIC]:** ILLIC]uILLIC], uILLIC]ttshay uttILLIC] anuILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]aya ttuILLIC] ILLIC]ktak
+**ILLIC]aILLIC] kILLIC]:** ILLIC] ILLIC]aILLIC]ae on 999
+**ILLIC]uILLIC]:** "ILLIC]ktaka ILLIC] ILLIC]aa uILLIC]"
+
+---
+
+## ILLIC] 3: ILLIC]fromILLIC] ILLIC]utttabout (ILLIC]) — Chaptery 667-999
+
+### ILLIC]aILLIC] 19: 999 OS (Chaptery 667-703)
+**ILLIC]:** ILLIC]aILLIC]onya uauILLIC] on ILLIC]aILLIC] ILLIC]aILLIC]aILLIC]
+**ILLIC]:** IttILLIC] uILLIC]at uttILLIC] ILLIC]k
+**ILLIC]:** ILLIC]utttabout u ILLIC] ILLIC]ttILLIC]a ttILLIC]uta
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]aILLIC] ILLIC], ILLIC]a kILLIC] ILLIC]aILLIC]
+**ILLIC]aILLIC] kILLIC]:** MakILLIC] 999 OS
+**ILLIC]uILLIC]:** "SauILLIC] — fromILLIC]ae uILLIC]"
+
+### ILLIC]aILLIC] 20: ILLIC]-ILLIC] (Chaptery 704-740)
+**ILLIC]:** ILLIC]ttILLIC]aILLIC]aILLIC]ay kILLIC]
+**ILLIC]:** IttILLIC] ILLIC]ttat ILLIC]-ILLIC]aILLIC]
+**ILLIC]:** ILLIC]aILLIC], ttILLIC]uya az ILLIC] kILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]aILLIC]ukae ILLIC]aILLIC], ILLIC]aa
+**ILLIC]aILLIC] kILLIC]:** ILLIC]ayuya ILLIC]aILLIC]
+**ILLIC]uILLIC]:** "EttILLIC]aya — ILLIC] k uaboutttILLIC]utttat"
+
+### ILLIC]aILLIC] 21: 50 ILLIC]kabouttt (Chaptery 741-777)
+**ILLIC]:** ILLIC]aya kILLIC] on 50 ILLIC]kILLIC]
+**ILLIC]:** IttILLIC] tt ILLIC] ILLIC]ttILLIC]akabouttt
+**ILLIC]:** ILLIC]ttaILLIC]ukILLIC] ILLIC], ILLIC] ttue ILLIC]aILLIC] ILLIC] ILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]upaILLIC]aya, ILLIC]attILLIC]uILLIC] AST
+**ILLIC]aILLIC] kILLIC]:** ILLIC] for Python, Rust, Go
+**ILLIC]uILLIC]:** "ILLIC] ILLIC]kabouttt — ILLIC]on autaon"
+
+### ILLIC]aILLIC] 22: KttILLIC]ttILLIC] ILLIC] (Chaptery 778-814)
+**ILLIC]:** KttILLIC]ttILLIC] ILLIC]aILLIC] on kILLIC]aILLIC]
+**ILLIC]:** IttILLIC] tt kttILLIC]ttILLIC] dttILLIC]
+**ILLIC]:** Three ILLIC]uta ILLIC]ttILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** KttILLIC]ttILLIC] ILLIC]ttaboutuILLIC]utttabout ILLIC]aILLIC] uauILLIC]
+**ILLIC]aILLIC] kILLIC]:** ILLIC]aILLIC] ILLIC]ttILLIC] on kILLIC]aILLIC]
+**ILLIC]uILLIC]:** "ILLIC] ILLIC] ILLIC]u, ILLIC]uILLIC] ILLIC]ttILLIC] ILLIC]uILLIC]"
+
+### ILLIC]aILLIC] 23: ILLIC]umaILLIC]ukILLIC] ILLIC]aya (Chaptery 815-851)
+**ILLIC]:** VuILLIC]ukae ILLIC] tt kILLIC]
+**ILLIC]:** IttILLIC] uILLIC]a zttILLIC]
+**ILLIC]:** ILLIC]ktaka kak ILLIC]achonya uILLIC]kILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]kILLIC], uILLIC]ae
+**ILLIC]aILLIC] kILLIC]:** ILLIC] ILLIC]kILLIC]tt on 999
+**ILLIC]uILLIC]:** "ILLIC]k ttttILLIC], ILLIC]k a ttnaILLIC]"
+
+### ILLIC]aILLIC] 24: ILLIC]onnae (Chaptery 852-888)
+**ILLIC]:** ILLIC]aILLIC]ttILLIC]ae uILLIC]onnaya
+**ILLIC]:** IttILLIC] ttuILLIC] uttILLIC] fromILLIC]ae
+**ILLIC]:** Three ILLIC]kILLIC], fromILLIC]ae ILLIC] ILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]kILLIC]uattILLIC] uILLIC]uILLIC]onnae
+**ILLIC]aILLIC] kILLIC]:** ILLIC] uILLIC]aa
+**ILLIC]uILLIC]:** "ILLIC]ony uILLIC]"
+
+### ILLIC]aILLIC] 25: EttILLIC]aya (Chaptery 889-925)
+**ILLIC]:** ILLIC]-ettILLIC]aya uauILLIC]
+**ILLIC]:** IttILLIC] onILLIC] ILLIC]ae maILLIC]tt
+**ILLIC]:** ILLIC]ttabout zhaILLIC]a u ILLIC] kILLIC]a
+**ILLIC]ttILLIC] ILLIC]aya:** EttILLIC]aya ettILLIC]aa
+**ILLIC]aILLIC] kILLIC]:** ILLIC]-ILLIC]aILLIC]ukay ILLIC]aILLIC]
+**ILLIC]uILLIC]:** "ILLIC]ae — ILLIC]anutttILLIC]onya kILLIC]uILLIC]"
+
+### ILLIC]aILLIC] 26: ILLIC]uILLIC]aya (Chaptery 926-962)
+**ILLIC]:** ILLIC] ILLIC]a ttILLIC]aulaILLIC]
+**ILLIC]:** IttILLIC] on ILLIC]aILLIC] maILLIC]tt
+**ILLIC]:** DttILLIC] tt ILLIC]ttILLIC]
+**ILLIC]ttILLIC] ILLIC]aya:** ILLIC]ttukILLIC] ILLIC]froma, ILLIC]
+**ILLIC]aILLIC] kILLIC]:** ILLIC]kuy uILLIC]aa
+**ILLIC]uILLIC]:** "EuILLIC] ttILLIC]a, kfromILLIC] ILLIC] ttILLIC]aulaILLIC]"
+
+### ILLIC]aILLIC] 27: OMEGA (Chaptery 963-999)
+**ILLIC]:** ILLIC]froma — kILLIC] ILLIC]uya
+**ILLIC]:** IttILLIC] ILLIC] ILLIC]fromILLIC] kILLIC] a ttILLIC]ttILLIC]uya
+**ILLIC]:** ILLIC]u — ILLIC], katuILLIC] uttILLIC] khttaboutut
+**ILLIC]ttILLIC] ILLIC]aya:** 999 = 37 × 27 = 37 × 3³
+**ILLIC]aILLIC] kILLIC]:** FaonILLIC] ILLIC]kt — ttuyo ttILLIC]uILLIC]
+**ILLIC]uILLIC]:** "ILLIC] — ILLIC] onILLIC]"

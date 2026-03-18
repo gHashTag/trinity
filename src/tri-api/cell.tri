@@ -1,0 +1,41 @@
+[cell]
+id = "trinity.tri-api"
+name = "tri-api"
+version = "0.1.0"
+kind = "backend"
+path = "src/tri-api"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Claude Code replacement agentic loop and TUI"
+capabilities = ["init", "deinit", "check", "loadConfig", "parseResponse"]
+files = 12
+tests = 23
+owner = "agent:ralph"
+
+[tags]
+scope = "infra"
+type = "backend"
+
+[contributes]
+commands = ["check", "loadConfig"]
+exports = ["check", "loadConfig", "serve", "fromString", "executeDynamic"]
+tri_subcommands = []
+events = []
+binaries = ["tri-api"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:45658db759f91f3dc1d654aba2147790263d185c4e88a03f9b4dd3f6b46ab61d"

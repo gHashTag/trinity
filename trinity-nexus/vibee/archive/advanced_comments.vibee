@@ -1,0 +1,159 @@
+# Advanced Comment Examples in VIBEE
+# Showcasing TypeScript-style commenting patterns
+
+/* 
+ * ============================================
+ * DOCUMENTATION BLOCK
+ * ============================================
+ * 
+ * This file demonstrates advanced commenting
+ * patterns that are now possible with the
+ * TypeScript-style syntax.
+ * 
+ * Author: VIBEE Team
+ * Version: 2.0
+ * ============================================
+ */
+
+@agent AdvancedAgent {
+  
+  # ==========================================
+  # SECTION 1: JSDoc-Style Comments
+  # ==========================================
+  
+  /**
+   * Processes user input and returns a response
+   * 
+   * @param input - The user's message
+   * @param context - Conversation context
+   * @returns Response object with text and metadata
+   * 
+   * @example
+   * process_input("Hello", ctx)
+   * // => Response { text: "Hi there!", ... }
+   */
+  fn process_input(input: String, context: Context) -> Response {
+    # Implementation here
+    Response.text("Processed: " <> input)
+  }
+  
+  # ==========================================
+  # SECTION 2: Inline Documentation
+  # ==========================================
+  
+  @state idle {
+    /* Initial state - waiting for user input */
+    
+    on message -> {
+      # Transition to processing state
+      goto processing
+    }
+  }
+  
+  @state processing {
+    /* 
+     * Processing state - handling user message
+     * This state performs:
+     * 1. Input validation
+     * 2. Intent recognition
+     * 3. Response generation
+     */
+    
+    on complete -> goto idle    // Return to idle
+    on error -> goto error      // Handle errors
+  }
+  
+  # ==========================================
+  # SECTION 3: Code Annotations
+  # ==========================================
+  
+  fn complex_algorithm(data: List(Int)) -> Int {
+    /* 
+     * PERFORMANCE NOTE:
+     * This algorithm has O(n log n) complexity
+     * Consider caching for large datasets
+     */
+    
+    # Step 1: Sort the data
+    let sorted = list.sort(data)
+    
+    /* 
+     * Step 2: Find median
+     * For even-length lists, average the two middle values
+     */
+    let median = case list.length(sorted) % 2 {
+      0 -> {
+        # Even length - average middle two
+        let mid = list.length(sorted) / 2
+        let a = list.at(sorted, mid - 1)
+        let b = list.at(sorted, mid)
+        (a + b) / 2
+      }
+      _ -> {
+        # Odd length - take middle value
+        let mid = list.length(sorted) / 2
+        list.at(sorted, mid)
+      }
+    }
+    
+    median  // Return result
+  }
+  
+  # ==========================================
+  # SECTION 4: TODO and FIXME Comments
+  # ==========================================
+  
+  fn experimental_feature() -> Result(String, String) {
+    # TODO: Implement error handling
+    # FIXME: Memory leak in loop
+    # HACK: Temporary workaround for API bug
+    # NOTE: This will be refactored in v3.0
+    
+    /* 
+     * WARNING: Experimental feature
+     * Not recommended for production use
+     * May change in future versions
+     */
+    
+    Ok("Experimental result")
+  }
+  
+  # ==========================================
+  # SECTION 5: Commented-Out Code
+  # ==========================================
+  
+  fn refactored_function() -> String {
+    /* 
+     * Old implementation (kept for reference):
+     * 
+     * fn old_way() {
+     *   let x = 1
+     *   let y = 2
+     *   return x + y
+     * }
+     */
+    
+    # New, improved implementation
+    "Refactored!"
+  }
+}
+
+/* 
+ * ============================================
+ * BENEFITS OF TYPESCRIPT-STYLE COMMENTS
+ * ============================================
+ * 
+ * ✅ Single-line comments with //
+ * ✅ Multi-line comments with /* */
+ * ✅ JSDoc-style documentation
+ * ✅ Inline annotations
+ * ✅ Section headers
+ * ✅ Code documentation blocks
+ * ✅ TODO/FIXME/NOTE markers
+ * ✅ Commented-out code preservation
+ * 
+ * Much better than the old // only syntax!
+ * ============================================
+ */
+
+# End of advanced examples

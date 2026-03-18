@@ -1,0 +1,73 @@
+name: cosmic_effects
+version: "2.0.0"
+language: zig
+module: effects.effects
+description: "Cosmic visual effects - nova bursts, ripples, glows"
+
+# =============================================================================
+# COSMIC EFFECTS
+# Visual effects for Trinity Canvas
+# =============================================================================
+
+imports:
+  - ../theme
+  - ../types
+
+types:
+  EffectType:
+    description: "Type of visual effect"
+    enum:
+      - nova
+      - ripple
+      - glow
+      - spark
+
+  CosmicEffect:
+    description: "Single visual effect instance"
+    fields:
+      x: Float
+      y: Float
+      effect_type: EffectType
+      progress: Float
+      radius: Float
+      hue: Float
+      intensity: Float
+      active: Bool
+
+  EffectSystem:
+    description: "Manages all active effects"
+    fields:
+      effects: Array<CosmicEffect, 16>
+      count: USize
+
+constants:
+  MAX_EFFECTS: 16
+  NOVA_DURATION: 0.5
+  RIPPLE_DURATION: 1.0
+  GLOW_DURATION: 0.8
+
+behaviors:
+  - name: init
+    given: Nothing
+    when: System startup
+    then: Initialize empty effects array
+
+  - name: nova
+    given: x, y
+    when: Creating nova burst
+    then: Add nova effect at position
+
+  - name: ripple
+    given: x, y, radius
+    when: Creating ripple
+    then: Add ripple effect
+
+  - name: update
+    given: Delta time
+    when: Each frame
+    then: Update all effects, remove finished
+
+  - name: draw
+    given: Nothing
+    when: Rendering
+    then: Draw all active effects

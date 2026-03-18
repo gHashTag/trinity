@@ -1,0 +1,75 @@
+name: hdc_clustering
+version: "1.0.0"
+language: zig
+module: hdc_clustering
+
+description: |
+  Unsupervised K-Means Clustering in Hyperdimensional Space.
+  Centroids are bundled hypervectors, assignment by cosine similarity.
+
+  Algorithm:
+    1. Initialize k centroids (random selection from data or random HVs)
+    2. Assign each sample to nearest centroid via cosine similarity
+    3. Update centroids by re-bundling all assigned samples
+    4. Repeat until convergence (centroid drift < threshold) or max_iter
+
+  Properties:
+    - Bundling IS centroid computation (natural VSA fit)
+    - Cosine similarity as distance metric
+    - Convergence guaranteed (monotonic decrease in total distance)
+    - Works with any encoding: char_ngram, word_pos, hybrid
+
+  Initialization Strategies:
+    - random_data: pick k random samples as initial centroids
+    - plusplus: k-means++ style (probabilistic distant selection)
+
+types:
+  Cluster:
+    fields:
+      centroid: Ptr<HybridBigInt>
+      members: List<usize>       # indices into data array
+      size: usize
+
+  ClusterResult:
+    fields:
+      clusters: List<Cluster>
+      assignments: List<usize>   # cluster index per sample
+      iterations: usize
+      converged: Bool
+      total_inertia: Float       # sum of distances to centroids
+
+  ClusterConfig:
+    fields:
+      k: usize                   # number of clusters
+      max_iter: usize            # maximum iterations (default 100)
+      convergence_threshold: Float  # centroid drift threshold (default 0.001)
+      seed: u64                  # PRNG seed for initialization
+
+  HDCClustering:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      dimension: usize
+      encoding_mode: EncodingMode  # reuse from HDCClassifier
+
+behaviors:
+  - name: fit
+    given: List of text samples and ClusterConfig
+    when: Runs k-means to convergence
+    then: Returns ClusterResult with assignments and centroids
+
+  - name: fitVectors
+    given: Pre-encoded hypervectors and ClusterConfig
+    when: Runs k-means on raw HVs (no encoding step)
+    then: Returns ClusterResult
+
+  - name: predict
+    given: New text sample and fitted centroids
+    when: Finds nearest centroid
+    then: Returns cluster index and distance
+
+  - name: silhouetteScore
+    given: ClusterResult and data vectors
+    when: Computes mean silhouette coefficient
+    then: Returns score in [-1, 1] (higher = better separation)

@@ -1,0 +1,421 @@
+# ============================================================================
+# Event Sourcing & CQRS Engine - Cycle 47
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: event_sourcing_cqrs
+version: "1.0.0"
+language: zig
+module: event_sourcing_cqrs
+
+description: |
+  Event Sourcing & CQRS Engine — Immutable event log as source of truth,
+  command-query responsibility segregation, event replay for state
+  reconstruction, projections for materialized views, and snapshotting
+  with event compaction.
+
+  Architecture:
+    Event Store:
+      Append-only immutable event log
+      Per-aggregate event streams
+      Global ordering via monotonic sequence numbers
+      Event metadata (timestamp, causation_id, correlation_id)
+      Content-addressed event hashing for integrity
+      Configurable retention policies
+
+    Command Side (Write):
+      Command validation and authorization
+      Aggregate root loads from event stream
+      Business logic produces new events
+      Optimistic concurrency via expected version
+      Command deduplication via idempotency keys
+      Saga orchestration for multi-aggregate commands
+
+    Query Side (Read):
+      Projections build materialized views from events
+      Multiple projections per event stream
+      Async projection rebuild from event log
+      Eventually consistent read models
+      Catch-up subscriptions for live updates
+
+    Event Replay:
+      Full replay from beginning of time
+      Partial replay from snapshot
+      Selective replay by event type
+      Time-travel debugging (replay to specific point)
+      Replay speed control (1x, 10x, 100x)
+
+    Snapshotting:
+      Periodic snapshots of aggregate state
+      Configurable snapshot interval
+      Snapshot + events-since for fast load
+      Snapshot pruning (keep N most recent)
+      Snapshot verification via event replay
+
+    Event Compaction:
+      Merge redundant events
+      Tombstone expired events
+      Compact per-aggregate streams
+      Preserve causal ordering
+      Compaction metrics tracking
+
+  Safety:
+    - Max events per stream: 100000
+    - Max event size: 64KB
+    - Max streams: 10000
+    - Snapshot interval: 100 events
+    - Max snapshots per stream: 10
+    - Max projections: 64
+    - Event retention: 30 days default
+    - Command timeout: 5000ms
+    - Max replay speed: 100x
+    - Compaction threshold: 1000 events
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_EVENTS_PER_STREAM: 100000
+  MAX_EVENT_SIZE_BYTES: 65536
+  MAX_STREAMS: 10000
+  SNAPSHOT_INTERVAL: 100
+  MAX_SNAPSHOTS_PER_STREAM: 10
+  MAX_PROJECTIONS: 64
+  DEFAULT_RETENTION_DAYS: 30
+  COMMAND_TIMEOUT_MS: 5000
+  MAX_REPLAY_SPEED: 100
+  COMPACTION_THRESHOLD: 1000
+  MAX_AGGREGATE_TYPES: 256
+  EVENT_HASH_SIZE: 32
+  MAX_SAGA_STEPS: 16
+  IDEMPOTENCY_WINDOW_MS: 300000
+  CATCH_UP_BATCH_SIZE: 100
+
+types:
+  EventType:
+    enum:
+      - created
+      - updated
+      - deleted
+      - snapshot
+      - compacted
+      - saga_step
+
+  CommandStatus:
+    enum:
+      - pending
+      - validated
+      - executed
+      - rejected
+      - timed_out
+
+  ProjectionStatus:
+    enum:
+      - building
+      - live
+      - rebuilding
+      - stale
+      - error
+
+  ReplayMode:
+    enum:
+      - full
+      - from_snapshot
+      - selective
+      - time_travel
+
+  SagaState:
+    enum:
+      - started
+      - in_progress
+      - compensating
+      - completed
+      - failed
+
+  CompactionState:
+    enum:
+      - idle
+      - analyzing
+      - compacting
+      - verifying
+      - complete
+
+  Event:
+    fields:
+      event_id: Int
+      stream_id: Int
+      sequence_number: Int
+      event_type: EventType
+      aggregate_type: Int
+      payload_size: Int
+      timestamp_ms: Int
+      causation_id: Int
+      correlation_id: Int
+      hash: Int
+
+  EventStream:
+    fields:
+      stream_id: Int
+      aggregate_type: Int
+      current_version: Int
+      event_count: Int
+      first_event_id: Int
+      last_event_id: Int
+      snapshot_version: Int
+      created_ms: Int
+      updated_ms: Int
+
+  Command:
+    fields:
+      command_id: Int
+      aggregate_id: Int
+      aggregate_type: Int
+      status: CommandStatus
+      idempotency_key: Int
+      expected_version: Int
+      payload_size: Int
+      timeout_ms: Int
+      created_ms: Int
+
+  Projection:
+    fields:
+      projection_id: Int
+      name_hash: Int
+      status: ProjectionStatus
+      last_event_id: Int
+      events_processed: Int
+      lag_events: Int
+      rebuild_count: Int
+      error_count: Int
+      last_updated_ms: Int
+
+  Snapshot:
+    fields:
+      stream_id: Int
+      version: Int
+      state_size_bytes: Int
+      event_count_since: Int
+      timestamp_ms: Int
+      verified: Bool
+
+  SagaInstance:
+    fields:
+      saga_id: Int
+      state: SagaState
+      current_step: Int
+      total_steps: Int
+      compensated_steps: Int
+      started_ms: Int
+      completed_ms: Int
+
+  CompactionResult:
+    fields:
+      stream_id: Int
+      events_before: Int
+      events_after: Int
+      events_removed: Int
+      bytes_reclaimed: Int
+      duration_ms: Int
+      state: CompactionState
+
+  EventStoreMetrics:
+    fields:
+      total_events: Int
+      total_streams: Int
+      total_commands: Int
+      commands_rejected: Int
+      total_snapshots: Int
+      total_projections: Int
+      total_replays: Int
+      total_compactions: Int
+      avg_events_per_stream: Float
+      avg_command_latency_ms: Float
+      projection_lag_events: Int
+      storage_bytes: Int
+
+  EventStoreConfig:
+    fields:
+      max_events_per_stream: Int
+      max_event_size: Int
+      max_streams: Int
+      snapshot_interval: Int
+      retention_days: Int
+      command_timeout_ms: Int
+      enable_compaction: Bool
+      compaction_threshold: Int
+      enable_snapshots: Bool
+      catch_up_batch_size: Int
+
+behaviors:
+  - name: append_event
+    given: Valid event and target stream
+    when: Event appended to stream
+    then: Event persisted with sequence number and hash
+
+  - name: execute_command
+    given: Command with aggregate ID and payload
+    when: Command validated and business logic applied
+    then: New events produced and appended
+
+  - name: validate_command
+    given: Command with expected version
+    when: Optimistic concurrency check
+    then: Command accepted or rejected on version conflict
+
+  - name: build_projection
+    given: Event stream and projection definition
+    when: Events processed sequentially
+    then: Materialized view updated
+
+  - name: rebuild_projection
+    given: Stale or new projection
+    when: Full rebuild triggered
+    then: Projection rebuilt from event log start
+
+  - name: take_snapshot
+    given: Aggregate state at current version
+    when: Snapshot interval reached
+    then: State snapshot persisted for fast recovery
+
+  - name: replay_events
+    given: Event stream and replay mode
+    when: Replay requested (full, from snapshot, selective)
+    then: State reconstructed from events
+
+  - name: compact_stream
+    given: Stream exceeding compaction threshold
+    when: Compaction triggered
+    then: Redundant events merged, storage reclaimed
+
+  - name: run_saga
+    given: Multi-aggregate operation
+    when: Saga started with steps
+    then: Steps executed with compensation on failure
+
+  - name: deduplicate_command
+    given: Command with idempotency key
+    when: Duplicate command detected within window
+    then: Original result returned without re-execution
+
+  - name: catch_up_subscription
+    given: Projection or consumer behind
+    when: Catch-up requested
+    then: Events streamed in batches until caught up
+
+  - name: get_event_store_metrics
+    given: Event store state
+    when: Metrics requested
+    then: Returns EventStoreMetrics with store stats
+
+tests:
+  # Event Store (4)
+  - name: append_and_read
+    category: event_store
+    input: "Append 5 events to stream"
+    expected: "Events persisted with sequential IDs"
+    description: Basic event append and read
+
+  - name: event_ordering
+    category: event_store
+    input: "Concurrent appends to same stream"
+    expected: "Events ordered by sequence number"
+    description: Event ordering guarantees
+
+  - name: event_integrity
+    category: event_store
+    input: "Event with hash verification"
+    expected: "Hash matches content, tampering detected"
+    description: Content-addressed event hashing
+
+  - name: stream_isolation
+    category: event_store
+    input: "Events in separate streams"
+    expected: "Streams independent, no cross-contamination"
+    description: Stream isolation
+
+  # Commands (4)
+  - name: command_execute
+    category: commands
+    input: "Valid command on aggregate"
+    expected: "Events produced, state updated"
+    description: Command execution
+
+  - name: optimistic_concurrency
+    category: commands
+    input: "Two commands with same expected version"
+    expected: "First succeeds, second rejected"
+    description: Optimistic concurrency control
+
+  - name: command_dedup
+    category: commands
+    input: "Same idempotency key twice"
+    expected: "Second execution returns cached result"
+    description: Command deduplication
+
+  - name: command_timeout
+    category: commands
+    input: "Command exceeds 5000ms timeout"
+    expected: "Command status set to timed_out"
+    description: Command timeout enforcement
+
+  # Projections (3)
+  - name: projection_build
+    category: projections
+    input: "100 events, build projection"
+    expected: "Materialized view reflects all events"
+    description: Projection building
+
+  - name: projection_rebuild
+    category: projections
+    input: "Projection with new logic"
+    expected: "Full rebuild from event 0"
+    description: Projection rebuild
+
+  - name: catch_up_live
+    category: projections
+    input: "Projection 50 events behind"
+    expected: "Catches up in batches, then live"
+    description: Catch-up subscription
+
+  # Replay & Snapshots (4)
+  - name: full_replay
+    category: replay
+    input: "Stream with 1000 events"
+    expected: "State reconstructed from event 0"
+    description: Full event replay
+
+  - name: snapshot_replay
+    category: replay
+    input: "Snapshot at event 500, 200 events since"
+    expected: "Load snapshot + replay 200 events"
+    description: Snapshot-accelerated replay
+
+  - name: time_travel
+    category: replay
+    input: "Replay to event 750 of 1000"
+    expected: "State at event 750 reconstructed"
+    description: Time-travel debugging
+
+  - name: snapshot_verification
+    category: replay
+    input: "Snapshot vs full replay"
+    expected: "Both produce identical state"
+    description: Snapshot verification
+
+  # Integration (3)
+  - name: cqrs_with_comms
+    category: integration
+    input: "Commands via Cycle 41 messages"
+    expected: "Commands routed to aggregate owner"
+    description: Integration with agent communication
+
+  - name: cqrs_with_consensus
+    category: integration
+    input: "Event ordering via Cycle 43 Raft log"
+    expected: "Events ordered by consensus"
+    description: Integration with consensus protocol
+
+  - name: cqrs_with_fedlearn
+    category: integration
+    input: "Training events in event store"
+    expected: "Federated rounds as event stream"
+    description: Integration with federated learning

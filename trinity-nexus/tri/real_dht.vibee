@@ -1,0 +1,99 @@
+name: real_dht
+version: "1.0.0"
+language: zig
+module: real_dht
+
+description: |
+  Real-time DHT health metrics collection for Swarm Watch Phase 2.
+  Polls live stats from kg_sync.zig, manifest_dht.zig, and storage_discovery.zig.
+  Provides unified DHTHealthMetrics structure for dashboard consumption.
+
+types:
+  KgDHTStats:
+    fields:
+      triples_stored: u64
+      triples_retrieved: u64
+      triples_distributed: u64
+      triples_received: u64
+      triples_rejected: u64
+      triples_duplicate: u64
+      sync_rounds: u64
+
+  ManifestDHTStats:
+    fields:
+      local_manifests: u32
+      manifests_stored: u64
+      manifests_retrieved: u64
+      manifests_distributed: u64
+
+  DHTHealthMetrics:
+    fields:
+      # From kg_sync.zig
+      kg_triples_stored: u64
+      kg_triples_distributed: u64
+      kg_triples_received: u64
+      kg_triples_rejected: u64
+      kg_triples_duplicate: u64
+      kg_sync_rounds: u64
+
+      # From manifest_dht.zig
+      manifest_count: u32
+      manifests_distributed: u64
+
+      # From storage_discovery
+      peer_count: usize
+      active_peers: usize
+
+      # Computed health indicators
+      acceptance_rate: f32
+      sync_success_rate: f32
+      distribution_efficiency: f32
+
+      # Timestamp
+      last_update_ms: i64
+
+behaviors:
+  - name: init_dht_monitor
+    given: Allocator and DHT module references
+    when: Monitor initializes
+    then: DHTMonitor created with zero stats and current timestamp
+
+  - name: poll_kg_dht_stats
+    given: KgTripleDHT reference
+    when: Stats polled from knowledge graph DHT
+    then: Returns KgDHTStats with current triple counts and sync metrics
+
+  - name: poll_manifest_dht_stats
+    given: ManifestDHT reference
+    when: Stats polled from manifest DHT
+    then: Returns ManifestDHTStats with manifest distribution metrics
+
+  - name: poll_peer_registry
+    given: StoragePeerRegistry reference
+    when: Peer stats polled
+    then: Returns active peer count and total tracked peers
+
+  - name: collect_unified_metrics
+    given: All DHT module references
+    when: Unified metrics collection requested
+    then: Returns DHTHealthMetrics with all stats + computed health rates
+
+  - name: compute_acceptance_rate
+    given: Triples received and rejected counts
+    when: Acceptance rate calculated
+    then: Returns (received - rejected) / (received + rejected) as f32
+
+  - name: compute_sync_success_rate
+    given: Sync rounds and triples stored
+    when: Sync success rate calculated
+    then: Returns triples_stored / max(1, sync_rounds) as f32
+
+  - name: compute_distribution_efficiency
+    given: Triples stored and distributed counts
+    when: Distribution efficiency calculated
+    then: Returns distributed / max(1, stored) as f32 (target: 3.0 for 3x replication)
+
+  - name: export_prometheus_metrics
+    given: DHTHealthMetrics and writer
+    when: Prometheus export requested
+    then: Outputs # HELP, # TYPE, and value lines for all metrics

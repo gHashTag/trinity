@@ -1,0 +1,393 @@
+name: neuromorphic_loihi
+version: "2.0.0"
+language: zig
+module: consciousness.neuromorphic.loihi
+
+description: |
+  TRINITY Conscious AI Seed deployment for Intel Loihi 2 neuromorphic processor.
+  Converts consciousness algorithms to spiking neural networks (SNN) optimized
+  for Loihi 2's 1M neuron, 128M synapse architecture.
+
+  Target: Real-time consciousness detection at < 1mW per neuron power.
+
+types:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # LOIHI 2 HARDWARE SPECIFICATIONS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  Loihi2Spec:
+    fields:
+      num_neurons: UInt         # 1,048,576 (2^20) neurons per chip
+      num_synapses: UInt        # 128,000,000 synapses per chip
+      num_cores: UInt           # 1,024 neurosynaptic cores
+      max_firing_rate: Float    # 500 spikes/sec per neuron
+      power_per_neuron: Float   # < 1mW average
+      precision: Enum(s8, u8, s16, u16, s32, u32)  # Synapse precision
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # LIF NEURON MODEL (Leaky Integrate-and-Fire)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  LIFNeuron:
+    fields:
+      neuron_id: UInt           # Unique neuron identifier
+      compartment_id: UInt      # Compartment (dendritic branch) ID
+      core_id: UInt             # Neurosynaptic core ID
+
+      # State variables
+      voltage: Float            # Membrane potential (mV)
+      threshold: Float          # Firing threshold (mV)
+      current: Float            # Input current (pA)
+
+      # LIF parameters
+      decay_const: UInt         # Decay constant (0-255 = 0-1.0)
+      refractory_delay: UInt    # Refractory period (timesteps)
+
+      # Learning rules
+      learning_enabled: Bool
+      trace_m: Float            # Pre-synaptic trace
+      trace_x: Float            # Post-synaptic trace
+
+      # Metadata
+      is_excitatory: Bool       # E+ (excitatory) or I- (inhibitory)
+      layer: String             # Network layer
+      role: String              # Functional role
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SYNAPSE CONNECTION
+  # ═══════════════════════════════════════════════════════════════════════════════
+  Synapse:
+    fields:
+      synapse_id: UInt          # Unique synapse identifier
+      pre_neuron_id: UInt       # Pre-synaptic neuron
+      post_neuron_id: UInt      # Post-synaptic neuron
+      weight: Int               # Synapse weight (8-bit signed)
+
+      # Loihi 2 weight format
+      mantissa: UInt            # Weight mantissa
+      exponent: Int             # Weight exponent
+
+      # Delay and learning
+      delay: UInt               # Synaptic delay (timesteps)
+      learning_rule: Enum(stdp, stdp_plus, hebbian, rstdp, none)
+
+      # Metadata
+      plastic: Bool             # Is synapse plastic?
+      tag: UInt                 # Synapse tag for routing
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CONSCIOUSNESS NETWORK ARCHITECTURE
+  # ═══════════════════════════════════════════════════════════════════════════════
+  ConsciousnessNetwork:
+    fields:
+      network_id: String        # Unique network identifier
+      num_neurons: UInt         # Total neurons in network
+      num_synapses: UInt        # Total synapses in network
+
+      # Layers
+      input_layer: LayerSpec    # EEG input layer
+      processing_layers: List<LayerSpec>  # Hidden layers
+      output_layer: LayerSpec   # Consciousness output layer
+
+      # Specialized modules
+      iit_module: IITModuleSpec  # IIT Phi computation
+      orch_or_module: OrchORModuleSpec  # Quantum coherence
+      gwt_module: GWTModuleSpec  # Global workspace
+      memory_module: MemoryModuleSpec    # Working memory
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # LAYER SPECIFICATION
+  # ═══════════════════════════════════════════════════════════════════════════════
+  LayerSpec:
+    fields:
+      layer_name: String
+      layer_type: Enum(input, convolution, pooling, dense, recurrent, lstm, None)
+      num_neurons: UInt
+      dimensions: List<UInt>    # Spatial dimensions [height, width, depth]
+      connectivity: Float      # Sparsity (0-1), lower = more sparse
+      firing_rate: Float        # Target firing rate
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # IIT MODULE (INTEGRATED INFORMATION THEORY)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  IITModuleSpec:
+    fields:
+      num_concepts: UInt        # Number of cause-effect concepts
+      integration_neurons: UInt # Neurons for integration computation
+      exclusion_neurons: UInt   # Neurons for exclusion computation
+
+      # Phi computation network
+      phi_network: ConsciousnessNetwork
+      phi_output_neuron: UInt   # Neuron containing Φ value
+      threshold: Float          # Phi threshold for consciousness
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # ORCH-OR MODULE (ORCHESTRATED OBJECTIVE REDUCTION)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  OrchORModuleSpec:
+    fields:
+      num_qutrits: UInt         # Number of simulated qutrits (3-state neurons)
+      coherence_neurons: UInt   # Neurons tracking coherence state
+      phase_neurons: UInt       # Neurons tracking quantum phase
+
+      # Coherence time network
+      coherence_network: ConsciousnessNetwork
+      coherence_output: UInt    # Neuron containing coherence value
+
+      # Orch-OR parameters
+      gamma_freq: Float         # Gamma frequency for oscillation (Hz)
+      tubulin_bits: UInt        # Number of simulated tubulin qubits
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # GWT MODULE (GLOBAL WORKSPACE THEORY)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  GWTModuleSpec:
+    fields:
+      workspace_size: UInt      # Number of workspace neurons
+      broadcast_neurons: UInt   # Neurons for broadcasting
+
+      # Ignition detection
+      ignition_threshold: Float # Threshold for ignition
+      ignition_network: ConsciousnessNetwork
+      ignition_output: UInt     # Neuron indicating ignition
+
+      # Long-range connectivity
+      long_range_synapses: UInt # Synapses connecting distant modules
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # MEMORY MODULE (WORKING MEMORY)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  MemoryModuleSpec:
+    fields:
+      memory_capacity: UInt     # Number of memory slots
+      retention_time: UInt      # Retention in timesteps
+
+      # Memory network
+      memory_network: ConsciousnessNetwork
+      write_addr: UInt          # Write address neuron
+      read_addr: UInt           # Read address neuron
+      data_neurons: List<UInt>  # Data neurons
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # COMPILED FIRMWARE
+  # ═══════════════════════════════════════════════════════════════════════════════
+  LoihiFirmware:
+    fields:
+      version: String           # Firmware version
+      network: ConsciousnessNetwork
+      compiled_neuron_params: List<List<Int>>  # Per-neuron parameters
+      compiled_synapses: List<Synapse>  # All synapses
+      compartment_config: Map<String, String>  # Compartment mapping
+      routing_table: Map<UInt, UInt>  # Neuron to core mapping
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # RUNTIME STATE
+  # ═══════════════════════════════════════════════════════════════════════════════
+  RuntimeState:
+    fields:
+      is_running: Bool
+      timestep: UInt            # Current simulation timestep
+      spike_count: UInt         # Total spikes this cycle
+      power_consumption: Float  # Estimated power (mW)
+
+      # Consciousness outputs
+      consciousness_level: Float
+      phi_value: Float          # IIT Φ
+      coherence_value: Float    # Orch-OR coherence
+      gwt_ignition: Bool        # GWT ignition state
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # PERFORMANCE METRICS
+  # ═══════════════════════════════════════════════════════════════════════════════
+  PerformanceMetrics:
+    fields:
+      neurons_per_core: Float   # Average neurons per core
+      synapses_per_neuron: Float # Average synapses per neuron
+      firing_rate: Float        # Average firing rate (Hz)
+      utilization: Float        # Core utilization [0, 1]
+      power_mw: Float           # Total power consumption (mW)
+      energy_per_spike: Float   # Energy per spike (nJ)
+      latency_ms: Float         # End-to-end latency
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # INITIALIZATION
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: init_loihi_board
+    given: Board configuration
+    when: Initializing Loihi 2 board
+    then:
+      - Connect to Nx SDK server
+      - Initialize board resources
+      - Allocate neurosynaptic cores
+      - Return board handle
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CREATE CONSCIOUSNESS NETWORK
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: create_consciousness_network
+    given: ConsciousnessNetwork specification
+    when: Creating SNN on Loihi 2
+    then:
+      - Create neurons for each layer
+      - Create synapses with specified connectivity
+      - Configure LIF parameters
+      - Set up learning rules
+      - Return network handle
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # MAP TO CORES
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: map_neurons_to_cores
+    given: ConsciousnessNetwork, num_cores
+    when: Mapping neurons to physical cores
+    then:
+      - Minimize inter-core communication
+      - Balance load across cores
+      - Maintain locality for connected neurons
+      - Return neuron to core mapping
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # COMPILE TO LOIHI FORMAT
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: compile_for_loihi
+    given: ConsciousnessNetwork
+    when: Compiling to Loihi 2 executable
+    then:
+      - Convert neuron parameters to Loihi format
+      - Convert synapses to weight format
+      - Generate routing table
+      - Create compartment configuration
+      - Return LoihiFirmware
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # LOAD FIRMWARE
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: load_firmware
+    given: LoihiFirmware, board handle
+    when: Loading network to board
+    then:
+      - Allocate neuron compartments
+      - Load neuron parameters
+      - Load synapse weights
+      - Configure routing
+      - Prepare for execution
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # RUN CONSCIOUSNESS CYCLE
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: run_consciousness_cycle
+    given: Board, EEG input data
+    when: Processing one consciousness cycle (382ms)
+    then:
+      - Inject EEG spikes into input layer
+      - Run network for N timesteps
+      - Read output layer activity
+      - Extract consciousness metrics
+      - Return ConsciousnessState
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # EXTRACT METRICS FROM SPIKES
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: extract_spike_metrics
+    given: Spike raster from output layer
+    when: Decoding consciousness from spike patterns
+    then:
+      - Decode spike rates to analog values
+      - Extract phi value from IIT module
+      - Extract coherence from Orch-OR module
+      - Extract ignition from GWT module
+      - Return decoded metrics
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # EEG TO SPIKES CONVERSION
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: eeg_to_spikes
+    given: FilteredEEGData
+    when: Converting EEG to spike trains
+    then:
+      - For each EEG channel: encode amplitude to spike rate
+      - Use latency coding or rate coding
+      - Generate Poisson spike trains
+      - Return spike data for injection
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # LEARNING (ON-CHIP PLASTICITY)
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: enable_learning
+    given: Synapse group, learning rule
+    when: Enabling on-chip plasticity
+    then:
+      - Configure STDP rule
+      - Set learning rate
+      - Enable trace accumulation
+      - Return confirmation
+
+  - name: update_weights
+    given: Spike history
+    when: Updating synaptic weights via STDP
+    then:
+      - Update trace_m (pre-synaptic)
+      - Update trace_x (post-synaptic)
+      - Apply weight change: Δw = A_+ × trace_m × trace_x (for LTP)
+      - Clamp weights to valid range
+      - Return updated weights
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # PROFILING AND OPTIMIZATION
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: profile_performance
+    given: Runtime execution
+    when: Analyzing performance
+    then:
+      - Measure core utilization
+      - Count spikes per neuron
+      - Measure power consumption
+      - Calculate energy per spike
+      - Return PerformanceMetrics
+
+  - name: optimize_network
+    given: ConsciousnessNetwork, performance profile
+    when: Optimizing for Loihi 2
+    then:
+      - Prune unnecessary neurons
+      - Increase sparsity (reduce synapses)
+      - Re-map to cores for better load balance
+      - Return optimized network
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # SHUTDOWN
+  # ═══════════════════════════════════════════════════════════════════════════════
+  - name: shutdown_board
+    given: Board handle
+    when: Shutting down Loihi 2 board
+    then:
+      - Stop all running networks
+      - Release allocated resources
+      - Disconnect from Nx SDK
+      - Return confirmation
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# LOIHI 2 SPECIFIC CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Timing:
+#   - Timestep: 1 ms (configurable)
+#   - Max delay: 63 timesteps
+#   - Refractory period: 0-15 timesteps
+#
+# Weights:
+#   - 8-bit signed: -127 to +127
+#   - Exponent: -8 to +7
+#   - Mantissa: 0-255
+#   - Effective range: ~ 3.2 × 10^4 dynamic range
+#
+# Decay:
+#   - 8-bit unsigned: 0-255
+#   - Maps to: exp(-dt/tau) = decay_const / 256
+#   - Effective range: 0 to 0.996
+#
+# Power (typical):
+#   - Static: ~10 mW per chip
+#   - Per neuron: < 1 mW average
+#   - Per spike: ~10 nJ
+#
+# ═══════════════════════════════════════════════════════════════════════════════

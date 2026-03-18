@@ -1,0 +1,43 @@
+[cell]
+id = "trinity.agent-mu"
+name = "Agent MU"
+version = "1.0.0"
+kind = "agent"
+path = "src/agent_mu"
+min_core_version = "1.0.0"
+status = "stable"
+description = "Memory and learning pattern agent with experience system"
+capabilities = ["memory", "learning", "experience", "patterns"]
+files = 57
+tests = 357
+owner = "agent:mu"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "agent"
+type = "agent"
+
+[contributes]
+commands = ["learn", "recall", "forget"]
+exports = ["isApproved", "evaluatePattern", "getRecentModifications", "calculateIntelligenceGain", "generateReport"]
+tri_subcommands = ["mu status", "mu patterns"]
+events = ["on_pattern_learned", "on_experience_saved"]
+binaries = ["pas-demo"]
+
+[dependencies]
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+
+ffi = "none"
+concurrency = "none"
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:379b0741a0bb059e820aa93823c95b0a22ae60b81bb027ffda70d8dc3ed59328"

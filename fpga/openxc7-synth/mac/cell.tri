@@ -1,0 +1,42 @@
+[cell]
+id = "trinity.fpga.mac"
+name = "Ternary MAC Unit"
+version = "1.0.0"
+kind = "backend"
+path = "fpga/openxc7-synth"
+parent = "trinity.fpga"
+status = "stable"
+description = "Zero-DSP ternary multiply-accumulate: branchless add/sub via 2-bit encoding"
+files = 0
+tests = 0
+owner = "agent:ralph"
+
+[tags]
+scope = "fpga"
+type = "backend"
+
+[dna]
+cell_id = "trinity.fpga.mac"
+source = "specs/fpga/mac.tri"
+output = "gen/mac_params.v"
+regenerable = true
+
+[contract]
+inputs = ["weights: 2bit packed", "activations: signed"]
+outputs = ["accumulator: signed"]
+invariants = ["zero DSP", "K=16 parallel lanes", "wide BRAM storage"]
+
+[dependencies]
+trinity.fpga = "^1.0.0"
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+[security]
+signed = true
+signature = "sha256:0000000000000000000000000000000000000000000000000000000000000000"

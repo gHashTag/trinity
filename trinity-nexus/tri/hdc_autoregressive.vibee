@@ -1,0 +1,80 @@
+name: hdc_autoregressive
+version: "1.0.0"
+language: zig
+module: hdc_autoregressive
+
+description: |
+  HDC Autoregressive Generation — Level 10A.23: First Token Generation Loop.
+  Documents the first autoregressive generation using the multi-head forward pass.
+
+  === EMPIRICAL RESULTS (2026-02-15) ===
+  Input:     "To be or" (8 chars)
+  Generated: 20 tokens, all 'r'
+  Unique:    1 character
+
+  === WHY ALL 'r' ===
+  Without training, the model's forward pass produces an output vector that
+  is nearest to 'r' in the untrained codebook. After generation, the new
+  output HV (a clone of the forward pass result) replaces the oldest context
+  vector. But since the roles are static (untrained), the attention pattern
+  is deterministic — the same nearest neighbor ('r') is found every time.
+
+  This is actually CORRECT BEHAVIOR for an untrained model:
+  - Deterministic output proves the generation loop is functional
+  - Context shifting works (oldest dropped, newest appended)
+  - The forward pass runs 20 times without crash or numerical instability
+
+  === WHAT DIVERSITY REQUIRES ===
+  1. Trained roles that create input-dependent attention patterns
+  2. Temperature/sampling in the decode step (currently greedy/argmax)
+  3. Multiple training samples so different contexts produce different outputs
+
+  === GENERATION ALGORITHM ===
+  ```
+  context = initial_8_chars
+  for step in 0..max_tokens:
+      output = forwardPassMultiHead(context, roles)
+      predicted = codebook.decode(output)
+      buf[step] = predicted[0]
+      context = shift_left(context, output)
+  ```
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+
+types:
+  GenerationResult:
+    fields:
+      input_text: String
+      generated_text: String
+      num_tokens: usize
+      unique_chars: usize
+      degenerate: Bool
+
+behaviors:
+  - name: generateAutoregressive
+    given: 8 initial context HVs, roles, codebook, max_tokens
+    when: |
+      For step in 0..max_tokens:
+        output = forwardPassMultiHead(context, roles)
+        predicted = codebook.decode(output)
+        buf[step] = predicted char (or '?')
+        Shift context left, append output.clone()
+    then: Generated text buffer
+
+  - name: measureDiversity
+    given: Generated text buffer
+    when: Count unique characters in output
+    then: unique_chars count and degenerate flag
+
+test_cases:
+  - name: generation_loop_functional
+    description: 20 tokens generated without crash
+    expected: gen_count = 20
+
+  - name: generation_deterministic_untrained
+    description: Untrained model produces uniform output
+    expected: unique_chars = 1 (all 'r')
+
+  - name: generation_no_numerical_instability
+    description: 20 forward passes produce valid density each time
+    expected: no NaN, no inf, no crash

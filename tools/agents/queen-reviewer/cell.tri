@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.agent.queen-reviewer"
+name = "Queen Reviewer Agent"
+version = "1.0.0"
+kind = "agent"
+path = "tools/agents/queen-reviewer"
+status = "stable"
+description = "Code reviewer for Queen UI — accessibility, performance, Apple conventions, SwiftUI best practices"
+capabilities = ["review", "swiftui", "queen-ui", "accessibility"]
+owner = "agent:ralph"
+
+[tags]
+scope = "agent"
+type = "agent"
+
+[agent]
+definition = ".claude/agents/queen-reviewer.md"
+model = "opus"
+max_turns = 15
+tools = "Read,Grep,Glob,Bash"
+isolation = ""
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "brain"
+organ = "cortex"
+[security]
+signed = "true"

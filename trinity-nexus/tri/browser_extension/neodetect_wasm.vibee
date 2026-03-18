@@ -1,0 +1,656 @@
+# NeoDetect WASM Module Specification
+# WebAssembly module for antidetect browser extension
+# Extends existing Firebird WASM with NeoDetect features
+# φ² + 1/φ² = 3 = TRINITY
+
+name: neodetect_wasm
+version: "1.0.0"
+language: zig
+module: neodetect_wasm
+
+constants:
+  PHI: 1.6180339887
+  TRINITY: 3.0
+  
+  # Profile limits
+  MAX_PROFILES: 100
+  DEFAULT_DIMENSION: 10000
+  MAX_DIMENSION: 100000
+  
+  # OS types
+  OS_WINDOWS_10: 0
+  OS_WINDOWS_11: 1
+  OS_MACOS_SONOMA: 2
+  OS_MACOS_VENTURA: 3
+  OS_LINUX_UBUNTU: 4
+  
+  # Hardware types
+  HW_INTEL_I5: 0
+  HW_INTEL_I7: 1
+  HW_INTEL_I9: 2
+  HW_AMD_RYZEN_5: 3
+  HW_AMD_RYZEN_7: 4
+  HW_AMD_RYZEN_9: 5
+  HW_APPLE_M1: 6
+  HW_APPLE_M2: 7
+  HW_APPLE_M3: 8
+  
+  # GPU types
+  GPU_NVIDIA_RTX_3060: 0
+  GPU_NVIDIA_RTX_4070: 1
+  GPU_NVIDIA_RTX_4090: 2
+  GPU_AMD_RX_6700: 3
+  GPU_AMD_RX_7900: 4
+  GPU_INTEL_UHD_770: 5
+  GPU_APPLE_M1: 6
+  GPU_APPLE_M2: 7
+  GPU_APPLE_M3: 8
+  
+  # Screen resolutions (width, height pairs)
+  SCREEN_1920_1080: 0
+  SCREEN_2560_1440: 1
+  SCREEN_3840_2160: 2
+  SCREEN_1366_768: 3
+  SCREEN_2560_1600: 4
+  SCREEN_2880_1800: 5
+  
+  # Evolution parameters
+  EVOLUTION_GENERATIONS: 100
+  MUTATION_RATE: 0.1
+  CROSSOVER_RATE: 0.7
+  TARGET_SIMILARITY: 0.85
+  
+  # Behavior simulation
+  MOUSE_BEZIER_POINTS: 50
+  TYPING_MAX_DELAY: 200
+  SCROLL_SMOOTHNESS: 0.8
+
+types:
+  WasmProfile:
+    description: "Complete browser profile stored in WASM memory"
+    fields:
+      id: Int
+      seed: Int
+      os_type: Int
+      hw_type: Int
+      gpu_type: Int
+      screen_type: Int
+      trit_vector: List<Int>
+      dimension: Int
+      similarity: Float
+      canvas_hash: Int
+      webgl_hash: Int
+      audio_hash: Int
+      created_at: Int
+      last_used: Int
+  
+  OSEmulationData:
+    description: "OS emulation data for injection"
+    fields:
+      platform: String
+      user_agent: String
+      app_version: String
+      vendor: String
+      oscpu: String
+      screen_width: Int
+      screen_height: Int
+      color_depth: Int
+      pixel_ratio: Float
+      timezone_offset: Int
+      language_index: Int
+  
+  HardwareEmulationData:
+    description: "Hardware emulation data"
+    fields:
+      hardware_concurrency: Int
+      device_memory: Int
+      max_touch_points: Int
+      gpu_vendor: String
+      gpu_renderer: String
+  
+  BehaviorState:
+    description: "Behavior simulation state"
+    fields:
+      mouse_x: Float
+      mouse_y: Float
+      mouse_speed: Float
+      mouse_jitter: Float
+      typing_speed: Float
+      typing_variance: Float
+      scroll_position: Float
+      scroll_speed: Float
+      last_action_time: Int
+  
+  MousePath:
+    description: "Generated mouse movement path"
+    fields:
+      points_x: List<Float>
+      points_y: List<Float>
+      durations: List<Int>
+      point_count: Int
+  
+  EvolutionState:
+    description: "Evolution algorithm state"
+    fields:
+      generation: Int
+      best_fitness: Float
+      population_size: Int
+      mutation_rate: Float
+      crossover_rate: Float
+
+# WASM Exported Functions
+wasm_exports:
+  # Initialization
+  - name: wasm_neodetect_init
+    params:
+      - seed: u64
+    returns: i32
+    description: "Initialize NeoDetect WASM module"
+  
+  # Profile Management
+  - name: wasm_create_profile
+    params:
+      - seed: u64
+      - os_type: u32
+      - hw_type: u32
+      - gpu_type: u32
+    returns: i32
+    description: "Create new browser profile with specified OS/hardware"
+  
+  - name: wasm_load_profile
+    params:
+      - profile_id: u32
+    returns: i32
+    description: "Load profile by ID"
+  
+  - name: wasm_save_profile
+    params: []
+    returns: i32
+    description: "Save current profile"
+  
+  - name: wasm_delete_profile
+    params:
+      - profile_id: u32
+    returns: i32
+    description: "Delete profile by ID"
+  
+  - name: wasm_get_profile_count
+    params: []
+    returns: u32
+    description: "Get number of stored profiles"
+  
+  # OS Emulation
+  - name: wasm_get_platform
+    params: []
+    returns: u32
+    description: "Get platform string pointer"
+  
+  - name: wasm_get_user_agent
+    params: []
+    returns: u32
+    description: "Get user agent string pointer"
+  
+  - name: wasm_get_screen_width
+    params: []
+    returns: u32
+    description: "Get emulated screen width"
+  
+  - name: wasm_get_screen_height
+    params: []
+    returns: u32
+    description: "Get emulated screen height"
+  
+  - name: wasm_get_color_depth
+    params: []
+    returns: u32
+    description: "Get emulated color depth"
+  
+  - name: wasm_get_pixel_ratio
+    params: []
+    returns: f64
+    description: "Get emulated device pixel ratio"
+  
+  - name: wasm_get_timezone_offset
+    params: []
+    returns: i32
+    description: "Get emulated timezone offset"
+  
+  - name: wasm_get_language_index
+    params: []
+    returns: u32
+    description: "Get language index for emulation"
+  
+  # Hardware Emulation
+  - name: wasm_get_hardware_concurrency
+    params: []
+    returns: u32
+    description: "Get emulated CPU core count"
+  
+  - name: wasm_get_device_memory
+    params: []
+    returns: u32
+    description: "Get emulated device memory (GB)"
+  
+  - name: wasm_get_max_touch_points
+    params: []
+    returns: u32
+    description: "Get emulated max touch points"
+  
+  - name: wasm_get_gpu_vendor
+    params: []
+    returns: u32
+    description: "Get GPU vendor string pointer"
+  
+  - name: wasm_get_gpu_renderer
+    params: []
+    returns: u32
+    description: "Get GPU renderer string pointer"
+  
+  # Fingerprint Hashes
+  - name: wasm_get_canvas_hash
+    params: []
+    returns: u64
+    description: "Get canvas fingerprint hash"
+  
+  - name: wasm_get_webgl_hash
+    params: []
+    returns: u64
+    description: "Get WebGL fingerprint hash"
+  
+  - name: wasm_get_audio_hash
+    params: []
+    returns: u64
+    description: "Get audio fingerprint hash"
+  
+  - name: wasm_get_font_hash
+    params: []
+    returns: u64
+    description: "Get font fingerprint hash"
+  
+  # Noise Generation
+  - name: wasm_get_canvas_noise
+    params:
+      - pixel_index: u32
+    returns: i32
+    description: "Get canvas noise value for pixel"
+  
+  - name: wasm_get_webgl_noise
+    params:
+      - param_index: u32
+    returns: i32
+    description: "Get WebGL noise value for parameter"
+  
+  - name: wasm_get_audio_noise
+    params:
+      - sample_index: u32
+    returns: f32
+    description: "Get audio noise value for sample"
+  
+  # Behavior Simulation
+  - name: wasm_init_behavior
+    params:
+      - seed: u64
+    returns: i32
+    description: "Initialize behavior simulation"
+  
+  - name: wasm_generate_mouse_path
+    params:
+      - start_x: f32
+      - start_y: f32
+      - end_x: f32
+      - end_y: f32
+    returns: u32
+    description: "Generate mouse path, returns point count"
+  
+  - name: wasm_get_mouse_point_x
+    params:
+      - index: u32
+    returns: f32
+    description: "Get mouse path X coordinate"
+  
+  - name: wasm_get_mouse_point_y
+    params:
+      - index: u32
+    returns: f32
+    description: "Get mouse path Y coordinate"
+  
+  - name: wasm_get_mouse_duration
+    params:
+      - index: u32
+    returns: u32
+    description: "Get mouse path segment duration"
+  
+  - name: wasm_generate_typing_delay
+    params:
+      - prev_char: u32
+      - next_char: u32
+    returns: u32
+    description: "Generate typing delay between characters"
+  
+  - name: wasm_generate_scroll_delta
+    params:
+      - target_delta: i32
+    returns: i32
+    description: "Generate smooth scroll delta"
+  
+  - name: wasm_should_make_typo
+    params: []
+    returns: i32
+    description: "Check if typo should occur (returns 1 or 0)"
+  
+  # Evolution
+  - name: wasm_evolve_fingerprint
+    params:
+      - target_similarity: f64
+      - max_generations: u32
+    returns: f64
+    description: "Evolve fingerprint, returns final similarity"
+  
+  - name: wasm_get_evolution_generation
+    params: []
+    returns: u32
+    description: "Get current evolution generation"
+  
+  - name: wasm_get_evolution_fitness
+    params: []
+    returns: f64
+    description: "Get current best fitness"
+  
+  # AI Evolution
+  - name: wasm_init_ai_model
+    params:
+      - vocab_size: u32
+      - hidden_dim: u32
+      - num_layers: u32
+      - seed: u64
+    returns: i32
+    description: "Initialize AI model for evolution"
+  
+  - name: wasm_ai_evolve
+    params:
+      - target_similarity: f64
+    returns: f64
+    description: "AI-powered fingerprint evolution"
+  
+  - name: wasm_predict_detection
+    params: []
+    returns: f64
+    description: "Predict detection probability"
+  
+  # Memory Management
+  - name: wasm_get_string_buffer
+    params: []
+    returns: u32
+    description: "Get string buffer pointer"
+  
+  - name: wasm_get_float_buffer
+    params: []
+    returns: u32
+    description: "Get float buffer pointer"
+  
+  - name: wasm_cleanup
+    params: []
+    returns: void
+    description: "Cleanup all resources"
+
+behaviors:
+  # Initialization
+  - name: initialize_module
+    given: WASM module loaded
+    when: wasm_neodetect_init called
+    then: Initialize all subsystems and allocate memory
+  
+  # Profile Management
+  - name: create_profile_with_os
+    given: OS and hardware types specified
+    when: wasm_create_profile called
+    then: Generate complete fingerprint for specified configuration
+  
+  - name: deterministic_fingerprint
+    given: Same seed and configuration
+    when: Profile created multiple times
+    then: Generate identical fingerprint (deterministic)
+  
+  # OS Emulation
+  - name: windows_emulation_on_mac
+    given: OS type is Windows
+    when: Running on Mac host
+    then: Return Windows-specific values for all APIs
+  
+  - name: consistent_os_values
+    given: Profile loaded
+    when: Multiple API calls
+    then: Return consistent values across all calls
+  
+  # Behavior Simulation
+  - name: bezier_mouse_path
+    given: Start and end points
+    when: wasm_generate_mouse_path called
+    then: Generate curved path with human-like characteristics
+  
+  - name: variable_typing_speed
+    given: Character pair
+    when: wasm_generate_typing_delay called
+    then: Return delay based on key distance and profile
+  
+  # Evolution
+  - name: genetic_evolution
+    given: Target similarity
+    when: wasm_evolve_fingerprint called
+    then: Run genetic algorithm until target reached
+  
+  - name: ai_guided_evolution
+    given: AI model initialized
+    when: wasm_ai_evolve called
+    then: Use neural network to guide evolution
+
+functions:
+  # Internal helpers
+  - name: generate_trit_vector
+    params:
+      - seed: Int
+      - dimension: Int
+    returns: List<Int>
+    description: "Generate ternary vector from seed"
+  
+  - name: compute_hash
+    params:
+      - trit_vector: List<Int>
+      - offset: Int
+      - salt: Int
+    returns: Int
+    description: "Compute deterministic hash from trit vector"
+  
+  - name: bezier_point
+    params:
+      - p0: Float
+      - p1: Float
+      - p2: Float
+      - p3: Float
+      - t: Float
+    returns: Float
+    description: "Calculate cubic Bezier point"
+  
+  - name: cosine_similarity
+    params:
+      - a: List<Int>
+      - b: List<Int>
+    returns: Float
+    description: "Calculate cosine similarity between vectors"
+  
+  - name: mutate_trit
+    params:
+      - trit: Int
+      - seed: Int
+    returns: Int
+    description: "Mutate single trit value"
+
+# Memory layout
+memory_layout:
+  string_buffer:
+    offset: 0
+    size: 4096
+    description: "Buffer for string returns"
+  
+  float_buffer:
+    offset: 4096
+    size: 8192
+    description: "Buffer for float arrays"
+  
+  mouse_path_x:
+    offset: 12288
+    size: 400
+    description: "Mouse path X coordinates (100 floats)"
+  
+  mouse_path_y:
+    offset: 12688
+    size: 400
+    description: "Mouse path Y coordinates (100 floats)"
+  
+  mouse_durations:
+    offset: 13088
+    size: 400
+    description: "Mouse path durations (100 u32)"
+  
+  profile_storage:
+    offset: 16384
+    size: 1048576
+    description: "Profile storage area (1MB)"
+
+# String constants for OS emulation
+os_strings:
+  windows_10:
+    platform: "Win32"
+    user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    app_version: "5.0 (Windows NT 10.0; Win64; x64)"
+    vendor: ""
+    oscpu: "Windows NT 10.0; Win64; x64"
+  
+  windows_11:
+    platform: "Win32"
+    user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    app_version: "5.0 (Windows NT 10.0; Win64; x64)"
+    vendor: ""
+    oscpu: "Windows NT 10.0; Win64; x64"
+  
+  macos_sonoma:
+    platform: "MacIntel"
+    user_agent: "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    app_version: "5.0 (Macintosh; Intel Mac OS X 10_15_7)"
+    vendor: "Apple Computer, Inc."
+    oscpu: "Intel Mac OS X 10_15_7"
+  
+  linux_ubuntu:
+    platform: "Linux x86_64"
+    user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    app_version: "5.0 (X11; Linux x86_64)"
+    vendor: ""
+    oscpu: "Linux x86_64"
+
+# GPU strings
+gpu_strings:
+  nvidia_rtx_3060:
+    vendor: "NVIDIA Corporation"
+    renderer: "NVIDIA GeForce RTX 3060/PCIe/SSE2"
+  
+  nvidia_rtx_4070:
+    vendor: "NVIDIA Corporation"
+    renderer: "NVIDIA GeForce RTX 4070/PCIe/SSE2"
+  
+  nvidia_rtx_4090:
+    vendor: "NVIDIA Corporation"
+    renderer: "NVIDIA GeForce RTX 4090/PCIe/SSE2"
+  
+  amd_rx_6700:
+    vendor: "AMD"
+    renderer: "AMD Radeon RX 6700 XT"
+  
+  amd_rx_7900:
+    vendor: "AMD"
+    renderer: "AMD Radeon RX 7900 XTX"
+  
+  intel_uhd_770:
+    vendor: "Intel Inc."
+    renderer: "Intel(R) UHD Graphics 770"
+  
+  apple_m1:
+    vendor: "Apple Inc."
+    renderer: "Apple M1"
+  
+  apple_m2:
+    vendor: "Apple Inc."
+    renderer: "Apple M2"
+  
+  apple_m3:
+    vendor: "Apple Inc."
+    renderer: "Apple M3"
+
+# Screen configurations
+screen_configs:
+  - width: 1920
+    height: 1080
+    pixel_ratio: 1.0
+    color_depth: 24
+  
+  - width: 2560
+    height: 1440
+    pixel_ratio: 1.0
+    color_depth: 24
+  
+  - width: 3840
+    height: 2160
+    pixel_ratio: 1.5
+    color_depth: 24
+  
+  - width: 1366
+    height: 768
+    pixel_ratio: 1.0
+    color_depth: 24
+  
+  - width: 2560
+    height: 1600
+    pixel_ratio: 2.0
+    color_depth: 30
+  
+  - width: 2880
+    height: 1800
+    pixel_ratio: 2.0
+    color_depth: 30
+
+# Hardware configurations
+hardware_configs:
+  intel_i5:
+    concurrency: 6
+    memory: 8
+  
+  intel_i7:
+    concurrency: 8
+    memory: 16
+  
+  intel_i9:
+    concurrency: 16
+    memory: 32
+  
+  amd_ryzen_5:
+    concurrency: 6
+    memory: 8
+  
+  amd_ryzen_7:
+    concurrency: 8
+    memory: 16
+  
+  amd_ryzen_9:
+    concurrency: 16
+    memory: 32
+  
+  apple_m1:
+    concurrency: 8
+    memory: 8
+  
+  apple_m2:
+    concurrency: 8
+    memory: 16
+  
+  apple_m3:
+    concurrency: 8
+    memory: 24

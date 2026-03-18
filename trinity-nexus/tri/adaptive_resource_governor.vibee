@@ -1,0 +1,402 @@
+# ============================================================================
+# Adaptive Resource Governor - Cycle 45
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: adaptive_resource_governor
+version: "1.0.0"
+language: zig
+module: adaptive_resource_governor
+
+description: |
+  Adaptive Resource Governor — Dynamic resource allocation across agents
+  based on workload, with memory budgets, CPU time slicing, network
+  bandwidth allocation, auto-scaling, and demand-based optimization.
+
+  Architecture:
+    Memory Governor:
+      Per-agent memory budgets with soft/hard limits
+      Soft limit triggers GC and compaction
+      Hard limit triggers OOM kill or pause
+      Global memory pool with fair-share allocation
+      Memory pressure levels: normal, warning, critical, emergency
+
+    CPU Governor:
+      Priority-based CPU time slicing (4 levels)
+      Preemptive scheduling with quantum (10ms default)
+      CPU affinity for cache-friendly execution
+      Burst allowance for short high-priority tasks
+      Idle detection and sleep optimization
+
+    Bandwidth Governor:
+      Per-agent network bandwidth quotas
+      Token bucket rate limiting
+      Priority-based bandwidth allocation
+      Cross-node traffic shaping
+      Burst capacity with credit accumulation
+
+    Auto-Scaling:
+      Demand-based agent count adjustment
+      Scale-up trigger: utilization > 80% for 30s
+      Scale-down trigger: utilization < 20% for 60s
+      Min/max agent bounds
+      Cooldown period between scaling events (60s)
+      Predictive scaling via trend analysis
+
+    Resource Policies:
+      Fair-share: equal distribution
+      Weighted: proportional to priority
+      Guaranteed: minimum reservation
+      Best-effort: use remaining capacity
+      Capped: hard maximum per agent
+
+  Safety:
+    - Max agents governed: 512
+    - Global memory limit: 1GB
+    - Per-agent memory soft limit: 64MB
+    - Per-agent memory hard limit: 128MB
+    - CPU quantum: 10ms
+    - Max bandwidth per agent: 100Mbps
+    - Scale-up cooldown: 60s
+    - Scale-down cooldown: 60s
+    - Min agents: 1
+    - Max agents: 64
+    - Utilization sample interval: 1s
+    - Pressure check interval: 5s
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_GOVERNED_AGENTS: 512
+  GLOBAL_MEMORY_LIMIT_BYTES: 1073741824
+  PER_AGENT_SOFT_LIMIT_BYTES: 67108864
+  PER_AGENT_HARD_LIMIT_BYTES: 134217728
+  CPU_QUANTUM_MS: 10
+  MAX_BANDWIDTH_MBPS: 100
+  SCALE_UP_COOLDOWN_MS: 60000
+  SCALE_DOWN_COOLDOWN_MS: 60000
+  SCALE_UP_THRESHOLD: 0.8
+  SCALE_DOWN_THRESHOLD: 0.2
+  SCALE_UP_DURATION_MS: 30000
+  SCALE_DOWN_DURATION_MS: 60000
+  MIN_AGENTS: 1
+  MAX_AGENTS: 64
+  UTILIZATION_SAMPLE_INTERVAL_MS: 1000
+  PRESSURE_CHECK_INTERVAL_MS: 5000
+
+types:
+  MemoryPressure:
+    enum:
+      - normal
+      - warning
+      - critical
+      - emergency
+
+  CpuPriority:
+    enum:
+      - realtime
+      - high
+      - normal
+      - background
+
+  ResourcePolicy:
+    enum:
+      - fair_share
+      - weighted
+      - guaranteed
+      - best_effort
+      - capped
+
+  ScalingAction:
+    enum:
+      - scale_up
+      - scale_down
+      - hold
+      - cooldown
+
+  BandwidthState:
+    enum:
+      - normal
+      - throttled
+      - burst
+      - blocked
+
+  GovernorState:
+    enum:
+      - initializing
+      - active
+      - rebalancing
+      - scaling
+      - degraded
+
+  AgentBudget:
+    fields:
+      agent_id: Int
+      memory_allocated_bytes: Int
+      memory_used_bytes: Int
+      memory_soft_limit: Int
+      memory_hard_limit: Int
+      cpu_shares: Int
+      cpu_used_ms: Int
+      bandwidth_quota_mbps: Float
+      bandwidth_used_mbps: Float
+      policy: ResourcePolicy
+
+  MemoryPool:
+    fields:
+      total_bytes: Int
+      allocated_bytes: Int
+      available_bytes: Int
+      pressure: MemoryPressure
+      agents_count: Int
+      gc_runs: Int
+      oom_kills: Int
+
+  CpuSchedule:
+    fields:
+      agent_id: Int
+      priority: CpuPriority
+      quantum_ms: Int
+      burst_allowance_ms: Int
+      used_this_period_ms: Int
+      preemptions: Int
+      idle_ms: Int
+
+  BandwidthBucket:
+    fields:
+      agent_id: Int
+      rate_mbps: Float
+      burst_mbps: Float
+      tokens: Float
+      max_tokens: Float
+      state: BandwidthState
+
+  ScalingDecision:
+    fields:
+      action: ScalingAction
+      current_agents: Int
+      target_agents: Int
+      utilization: Float
+      trigger_reason: String
+      cooldown_remaining_ms: Int
+      timestamp_ms: Int
+
+  UtilizationSample:
+    fields:
+      timestamp_ms: Int
+      cpu_utilization: Float
+      memory_utilization: Float
+      bandwidth_utilization: Float
+      agent_count: Int
+      active_tasks: Int
+
+  ResourceAlert:
+    fields:
+      agent_id: Int
+      resource_type: String
+      current_value: Float
+      threshold: Float
+      pressure: MemoryPressure
+      timestamp_ms: Int
+
+  GovernorMetrics:
+    fields:
+      total_rebalances: Int
+      total_scale_ups: Int
+      total_scale_downs: Int
+      total_gc_runs: Int
+      total_oom_kills: Int
+      total_preemptions: Int
+      total_throttles: Int
+      avg_cpu_utilization: Float
+      avg_memory_utilization: Float
+      avg_bandwidth_utilization: Float
+      current_pressure: MemoryPressure
+
+  GovernorConfig:
+    fields:
+      global_memory_limit: Int
+      per_agent_soft_limit: Int
+      per_agent_hard_limit: Int
+      cpu_quantum_ms: Int
+      max_bandwidth_mbps: Float
+      scale_up_threshold: Float
+      scale_down_threshold: Float
+      min_agents: Int
+      max_agents: Int
+      default_policy: ResourcePolicy
+
+behaviors:
+  - name: allocate_budget
+    given: New agent registered with resource requirements
+    when: Agent starts or requirements change
+    then: Budget allocated per policy with soft/hard limits
+
+  - name: enforce_memory_limit
+    given: Agent memory usage approaching limit
+    when: Pressure check detects threshold breach
+    then: Soft limit triggers GC, hard limit triggers pause/kill
+
+  - name: schedule_cpu
+    given: Multiple agents competing for CPU
+    when: Scheduling quantum expires
+    then: Next agent scheduled by priority and fair-share
+
+  - name: throttle_bandwidth
+    given: Agent exceeding bandwidth quota
+    when: Token bucket empty
+    then: Agent throttled until tokens replenish
+
+  - name: rebalance_resources
+    given: Workload distribution changed
+    when: Utilization imbalance detected
+    then: Resources redistributed across agents
+
+  - name: scale_up_agents
+    given: Sustained high utilization above threshold
+    when: Utilization > 80% for 30s
+    then: New agents spawned up to max limit
+
+  - name: scale_down_agents
+    given: Sustained low utilization below threshold
+    when: Utilization < 20% for 60s
+    then: Idle agents drained and terminated
+
+  - name: detect_pressure
+    given: Global resource usage metrics
+    when: Pressure check interval reached
+    then: Pressure level updated, alerts fired if needed
+
+  - name: grant_burst
+    given: Agent needs temporary resource spike
+    when: Burst capacity available
+    then: Temporary quota increase granted with expiry
+
+  - name: evict_agent
+    given: Emergency memory pressure
+    when: All GC options exhausted
+    then: Lowest-priority agent paused or killed
+
+  - name: predict_scaling
+    given: Utilization trend over time window
+    when: Predictive analysis triggered
+    then: Proactive scaling before demand spike
+
+  - name: get_governor_metrics
+    given: Governor state
+    when: Metrics requested
+    then: Returns GovernorMetrics with utilization stats
+
+tests:
+  # Memory (4)
+  - name: soft_limit_gc
+    category: memory
+    input: "Agent at 90% of soft limit"
+    expected: "GC triggered, memory reclaimed"
+    description: Soft limit triggers garbage collection
+
+  - name: hard_limit_pause
+    category: memory
+    input: "Agent exceeds hard limit"
+    expected: "Agent paused, OOM alert fired"
+    description: Hard limit enforcement
+
+  - name: fair_share_allocation
+    category: memory
+    input: "4 agents, 1GB pool"
+    expected: "Each gets 256MB fair share"
+    description: Fair-share memory allocation
+
+  - name: memory_pressure_levels
+    category: memory
+    input: "Pool at 60%, 80%, 95%"
+    expected: "normal, warning, critical"
+    description: Pressure level transitions
+
+  # CPU (4)
+  - name: priority_scheduling
+    category: cpu
+    input: "Realtime + normal + background agents"
+    expected: "Realtime gets first quantum"
+    description: Priority-based CPU scheduling
+
+  - name: quantum_preemption
+    category: cpu
+    input: "Agent exceeds 10ms quantum"
+    expected: "Agent preempted, next scheduled"
+    description: Quantum-based preemption
+
+  - name: burst_allowance
+    category: cpu
+    input: "Agent requests burst for 50ms"
+    expected: "Burst granted if capacity available"
+    description: CPU burst allowance
+
+  - name: idle_detection
+    category: cpu
+    input: "Agent idle for 5s"
+    expected: "Agent moved to sleep, CPU freed"
+    description: Idle detection optimization
+
+  # Bandwidth (3)
+  - name: token_bucket_rate
+    category: bandwidth
+    input: "Agent with 10Mbps quota"
+    expected: "Throttled above 10Mbps"
+    description: Token bucket rate limiting
+
+  - name: bandwidth_burst
+    category: bandwidth
+    input: "Agent with accumulated credits"
+    expected: "Burst to 2x quota allowed"
+    description: Burst bandwidth with credits
+
+  - name: cross_node_shaping
+    category: bandwidth
+    input: "Cross-node traffic at capacity"
+    expected: "Low-priority traffic shaped"
+    description: Cross-node traffic shaping
+
+  # Auto-Scaling (4)
+  - name: scale_up_trigger
+    category: scaling
+    input: "80% utilization for 30s"
+    expected: "New agents spawned"
+    description: Scale-up on sustained load
+
+  - name: scale_down_trigger
+    category: scaling
+    input: "20% utilization for 60s"
+    expected: "Idle agents terminated"
+    description: Scale-down on low load
+
+  - name: scaling_cooldown
+    category: scaling
+    input: "Scale-up then immediate demand drop"
+    expected: "Cooldown prevents oscillation"
+    description: Cooldown prevents flapping
+
+  - name: predictive_scaling
+    category: scaling
+    input: "Rising utilization trend"
+    expected: "Proactive scale-up before threshold"
+    description: Predictive trend-based scaling
+
+  # Integration (3)
+  - name: governor_with_workstealing
+    category: integration
+    input: "Resource-aware work-stealing"
+    expected: "Stealing respects agent budgets"
+    description: Integration with work-stealing
+
+  - name: governor_with_consensus
+    category: integration
+    input: "Scaling decision via consensus"
+    expected: "Cluster agrees on scaling action"
+    description: Integration with consensus protocol
+
+  - name: governor_with_tracing
+    category: integration
+    input: "Resource events traced"
+    expected: "Allocation spans in observability"
+    description: Integration with observability

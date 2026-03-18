@@ -1,0 +1,76 @@
+name: tri_cloud
+version: "1.0.0"
+language: zig
+module: tri_cloud
+
+description: >
+  Native Railway integration CLI. Provides the full `tri cloud` command surface:
+  status, logs, env vars, deploy, SSH exec, agent spawn/kill, orchestration, farm,
+  training, monitoring, bridge, and more. Delegates to railway_api, railway_ssh,
+  cloud_orchestrator, and railway_farm modules.
+
+behaviors:
+  runCloudCommand:
+    given: "allocator and args slice"
+    when: "invoked"
+    then: "dispatches to matching subcommand handler; prints error and usage on unknown subcommand"
+
+  cloudStatus:
+    given: "allocator"
+    when: "subcommand is 'status'"
+    then: "fetches Railway services via GraphQL and prints ANSI dashboard"
+
+  cloudLogs:
+    given: "allocator and optional service name args"
+    when: "subcommand is 'logs'"
+    then: "fetches deployment logs for the first or named service"
+
+  cloudVars:
+    given: "allocator and args"
+    when: "subcommand is 'vars' optionally followed by 'set KEY=VALUE'"
+    then: "lists environment variables or upserts a single variable"
+
+  cloudDeploy:
+    given: "allocator and optional service name"
+    when: "subcommand is 'deploy'"
+    then: "triggers a Railway redeployment for the specified or default service"
+
+  cloudExec:
+    given: "allocator and command args"
+    when: "subcommand is 'exec'"
+    then: "runs the given command on the Railway server via SSH"
+
+  cloudSpawn:
+    given: "allocator and issue number arg"
+    when: "subcommand is 'spawn'"
+    then: "creates a Railway container agent for the given GitHub issue"
+
+  cloudKill:
+    given: "allocator and issue number arg"
+    when: "subcommand is 'kill'"
+    then: "destroys the Railway container associated with the given issue"
+
+  cloudAgents:
+    given: "allocator"
+    when: "subcommand is 'agents'"
+    then: "lists all active agent containers (max 10)"
+
+  cloudCleanup:
+    given: "allocator"
+    when: "subcommand is 'cleanup'"
+    then: "removes finished/crashed agent containers"
+
+  cloudApiCheck:
+    given: "allocator"
+    when: "subcommand is 'api-check'"
+    then: "validates API key and model routing via z.ai proxy"
+
+  cloudTrain:
+    given: "allocator and config args"
+    when: "subcommand is 'train'"
+    then: "deploys or manages an HSLM training service on Railway"
+
+  cloudFarm:
+    given: "allocator and farm subcommand args"
+    when: "subcommand is 'farm'"
+    then: "manages the multi-service HSLM training farm"

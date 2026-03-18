@@ -1,0 +1,256 @@
+name: hdc_convergence_monitor
+version: "1.0.0"
+language: zig
+module: hdc_convergence_monitor
+
+description: |
+  HDC Convergence Monitor — Level 10A.5: Training Curve Tracking + Diagnostics.
+  Monitors training convergence in real-time, detects anomalies, manages
+  learning rate schedules, and provides actionable diagnostics.
+
+  === CONVERGENCE THEORY (TERNARY HDC) ===
+  Key difference from gradient-based training:
+    - No loss landscape (no continuous gradient to follow)
+    - Convergence via majority-vote accumulation (bundle operations)
+    - Learning rate = sparsity fraction (not step size)
+    - Convergence speed depends on D (dimension) not dataset size
+
+  Kanerva (2009) convergence bounds:
+    D=256: ~16 examples for stable class vector
+    D=1024: ~32 examples
+    D=10000: ~100 examples
+  These are per-class bounds; full model convergence takes more examples
+  because role vectors must learn cross-token patterns.
+
+  === MONITORING PROTOCOL ===
+  Track per epoch:
+    1. train_loss: avg(1 - cosineSimilarity(output, target))
+    2. eval_loss: same metric on held-out eval set
+    3. eval_perplexity: exp(-avg(log(P(target))))
+    4. eval_accuracy_top1: fraction where argmax = target
+    5. eval_accuracy_top5: fraction where target in top-5
+    6. role_drift: avg cosineSimilarity(role_old, role_new) across all roles
+    7. codebook_density: avg density() across all codebook entries
+    8. gradient_proxy: avg norm of error_hv before sparsification
+
+  Track per batch (for live progress):
+    batch_loss, running_avg, samples/sec, ETA
+
+  === ANOMALY DETECTION ===
+  1. Loss spike: if train_loss[e] > 1.5 * train_loss[e-1] → alert
+  2. NaN equivalent: if any role vector has density = 0 → all zeros (dead role)
+  3. Overfitting: eval_loss increasing while train_loss decreasing for 2+ epochs
+  4. Underfitting: train_loss not decreasing for 3+ epochs
+  5. Catastrophic forgetting: eval_loss jumps > 2x after learning rate change
+  6. Role collapse: if cosineSimilarity(role_Q, role_K) > 0.9 → roles merging
+
+  === LEARNING RATE SCHEDULE ===
+  Strategy 1: Constant lr=0.1 (baseline)
+  Strategy 2: Linear decay: lr = lr_init * (1 - epoch/max_epochs)
+  Strategy 3: Cosine annealing: lr = lr_min + 0.5*(lr_max-lr_min)*(1+cos(pi*epoch/max))
+  Strategy 4: Warmup + decay: lr linearly increases for first 3 epochs, then decays
+
+  In ternary HDC, lr controls sparsity:
+    lr=0.1 → keep 10% of error trits → gentle updates
+    lr=0.3 → keep 30% of error trits → aggressive
+    lr=0.01 → keep 1% of error trits → very conservative
+
+  === EARLY STOPPING PROTOCOL ===
+  Patience: 3 epochs (configurable)
+  Criterion: eval_loss (not train_loss)
+  Restore: load best checkpoint when stopped
+  Min epochs: 5 (don't stop too early)
+  Max epochs: 50 (hard limit)
+
+  === CONVERGENCE CRITERIA ===
+  Converged when ALL of:
+    1. eval_loss change < 1% for 2 consecutive epochs
+    2. eval_perplexity < target (e.g., < 30)
+    3. role_drift < 0.05 (roles stabilized)
+    4. train_loss < 0.3 (model is learning)
+
+  === DIAGNOSTIC OUTPUT ===
+  Per-epoch markdown table:
+    | Epoch | Train Loss | Eval Loss | PPL | Acc@1 | Acc@5 | LR | Drift |
+  Anomaly alerts (if any)
+  Convergence status
+  ETA to target perplexity (linear extrapolation)
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  LRSchedule:
+    enum:
+      - constant
+      - linear_decay
+      - cosine_annealing
+      - warmup_decay
+
+  MonitorConfig:
+    fields:
+      patience: usize
+      min_epochs: usize
+      max_epochs: usize
+      target_perplexity: Float
+      convergence_threshold: Float
+      lr_schedule: LRSchedule
+      lr_init: Float
+      lr_min: Float
+      warmup_epochs: usize
+      anomaly_spike_factor: Float
+      role_collapse_threshold: Float
+
+  EpochMetrics:
+    fields:
+      epoch: usize
+      train_loss: Float
+      eval_loss: Float
+      eval_perplexity: Float
+      eval_accuracy_top1: Float
+      eval_accuracy_top5: Float
+      learning_rate: Float
+      role_drift: Float
+      codebook_density: Float
+      gradient_proxy_norm: Float
+      elapsed_ms: u64
+      samples_per_sec: Float
+
+  AnomalyType:
+    enum:
+      - loss_spike
+      - dead_role
+      - overfitting
+      - underfitting
+      - catastrophic_forgetting
+      - role_collapse
+
+  AnomalyEvent:
+    fields:
+      anomaly_type: AnomalyType
+      epoch: usize
+      severity: Float
+      description: String
+      suggested_action: String
+
+  ConvergenceStatus:
+    fields:
+      is_converged: Bool
+      is_early_stopped: Bool
+      is_overfitting: Bool
+      best_epoch: usize
+      best_eval_loss: Float
+      best_perplexity: Float
+      epochs_without_improvement: usize
+      eta_to_target_epochs: Float
+
+  TrainingDiagnostics:
+    fields:
+      epoch_history: List<EpochMetrics>
+      anomalies: List<AnomalyEvent>
+      convergence: ConvergenceStatus
+      total_training_time_ms: u64
+      total_samples_processed: u64
+
+  LRState:
+    fields:
+      current_lr: Float
+      schedule: LRSchedule
+      epoch: usize
+      max_epochs: usize
+      lr_init: Float
+      lr_min: Float
+      warmup_epochs: usize
+
+  HDCConvergenceMonitor:
+    fields:
+      config: MonitorConfig
+      diagnostics: TrainingDiagnostics
+      lr_state: LRState
+      best_roles_checkpoint: List<List<i8>>
+
+behaviors:
+  - name: initMonitor
+    given: MonitorConfig with patience, target PPL, schedule
+    when: Initializes empty epoch history, sets LR state
+    then: Monitor ready to track training convergence
+
+  - name: recordEpoch
+    given: EpochMetrics from completed epoch
+    when: Appends to history, checks for anomalies, updates convergence
+    then: Returns current ConvergenceStatus
+
+  - name: computeLearningRate
+    given: Current epoch, LRState, schedule type
+    when: Applies schedule formula (constant, decay, cosine, warmup)
+    then: Returns lr value for this epoch
+
+  - name: computeRoleDrift
+    given: Old role vectors and new role vectors
+    when: avg(cosineSimilarity(old[i], new[i])) for all i
+    then: Returns drift metric [0, 1] (lower = more change)
+
+  - name: computeCodebookDensity
+    given: Codebook with all entries
+    when: avg(hv.density()) for all entries (fraction of non-zero trits)
+    then: Returns average density [0, 1]
+
+  - name: computeGradientProxy
+    given: Error HV before sparsification
+    when: countNonZero(error_hv) / dimension (what fraction of error is non-zero)
+    then: Returns proxy for gradient magnitude [0, 1]
+
+  - name: detectAnomalies
+    given: Current EpochMetrics and history
+    when: Checks loss_spike, dead_role, overfitting, underfitting, collapse
+    then: Returns list of AnomalyEvent (may be empty)
+
+  - name: detectLossSpike
+    given: Current and previous train_loss
+    when: current > spike_factor * previous
+    then: Returns AnomalyEvent with severity and suggested lr reduction
+
+  - name: detectOverfitting
+    given: Train loss decreasing, eval loss increasing for 2+ epochs
+    when: Compares trends in last 3 epochs
+    then: Returns overfitting anomaly with early-stop suggestion
+
+  - name: detectRoleCollapse
+    given: All role vectors
+    when: Pairwise cosineSimilarity > collapse_threshold (0.9)
+    then: Returns which roles are collapsing (e.g., Q_h0 ≈ K_h0)
+
+  - name: checkEarlyStopping
+    given: Epoch history and patience
+    when: eval_loss increased for patience consecutive epochs after min_epochs
+    then: Returns true if training should stop
+
+  - name: checkConvergence
+    given: Epoch history and convergence criteria
+    when: eval_loss stable < 1%, PPL < target, drift < 0.05, loss < 0.3
+    then: Returns ConvergenceStatus with all criteria
+
+  - name: estimateETA
+    given: Loss curve history and target perplexity
+    when: Linear extrapolation from recent trend
+    then: Returns estimated epochs to reach target PPL
+
+  - name: saveCheckpoint
+    given: Current roles after best epoch
+    when: Deep copies all role vectors
+    then: Checkpoint saved for restore on early stop
+
+  - name: restoreBestCheckpoint
+    given: Saved checkpoint from best epoch
+    when: Copies saved roles back to active model
+    then: Model restored to best-performing state
+
+  - name: generateDiagnosticReport
+    given: TrainingDiagnostics
+    when: Formats epoch table, anomaly alerts, convergence status as markdown
+    then: Returns diagnostic report string
+
+  - name: printEpochProgress
+    given: EpochMetrics and ConvergenceStatus
+    when: Formats single-line progress (loss, ppl, acc, lr, drift)
+    then: Returns progress string for live monitoring

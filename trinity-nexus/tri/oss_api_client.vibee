@@ -1,0 +1,150 @@
+name: oss_api_client
+version: "1.0.0"
+language: zig
+module: oss_api_client
+
+description: |
+  Hybrid OSS API Client for external LLM integration.
+  Supports: Groq, OpenAI, OSS-compatible endpoints.
+  Combines with IGLA symbolic reasoning for hybrid inference.
+
+  Architecture:
+  - IGLA: Symbolic planning, φ-math, precision tasks
+  - OSS API: Fluent generation, natural language
+  - Hybrid: Plan with IGLA, generate with OSS
+
+constants:
+  PHI: 1.618033988749895
+  PHOENIX: 999
+  MAX_TOKENS: 4096
+  DEFAULT_TEMPERATURE: 0.7
+
+types:
+  ApiProvider:
+    enum:
+      - Groq
+      - OpenAI
+      - Custom
+
+  ApiConfig:
+    fields:
+      provider: ApiProvider
+      api_key: String
+      base_url: String
+      model: String
+      timeout_ms: Int
+
+  Message:
+    fields:
+      role: String
+      content: String
+
+  ChatRequest:
+    fields:
+      messages: List<Message>
+      max_tokens: Int
+      temperature: Float
+      stream: Bool
+
+  ChatResponse:
+    fields:
+      content: String
+      tokens_used: Int
+      model: String
+      finish_reason: String
+
+  HybridRequest:
+    fields:
+      task: String
+      use_igla_planning: Bool
+      use_oss_generation: Bool
+      phi_precision: Bool
+
+  HybridResponse:
+    fields:
+      igla_plan: Option<String>
+      oss_output: String
+      combined_result: String
+      coherent: Bool
+
+behaviors:
+  - name: init_client
+    given: ApiConfig with provider and credentials
+    when: Client initialization requested
+    then: Return configured OssApiClient ready for requests
+
+  - name: chat_completion
+    given: ChatRequest with messages and params
+    when: Completion requested
+    then: Return ChatResponse with generated content
+
+  - name: stream_completion
+    given: ChatRequest with stream=true
+    when: Streaming completion requested
+    then: Yield tokens as they are generated
+
+  - name: hybrid_inference
+    given: HybridRequest with task description
+    when: Hybrid IGLA+OSS inference requested
+    then: |
+      1. If use_igla_planning: Generate symbolic plan
+      2. If phi_precision: Apply φ-math constraints
+      3. If use_oss_generation: Generate fluent response
+      4. Return HybridResponse with combined result
+
+  - name: verify_coherence
+    given: Generated text output
+    when: Coherence check requested
+    then: Return true if output is coherent (not garbage)
+
+  - name: calculate_phi_identity
+    given: No input
+    when: Trinity identity verification
+    then: Return φ² + 1/φ² = 3.0 (exact)
+
+endpoints:
+  groq:
+    base_url: "https://api.groq.com/openai/v1"
+    models:
+      - llama-3.3-70b-versatile
+      - mixtral-8x7b-32768
+      - gemma2-9b-it
+
+  openai:
+    base_url: "https://api.openai.com/v1"
+    models:
+      - gpt-4o
+      - gpt-4o-mini
+      - o4-mini
+
+  custom:
+    base_url: "{user_defined}"
+    models:
+      - gpt-oss-120b
+      - any-compatible
+
+test_cases:
+  - name: test_phi_identity
+    input: {}
+    expected: 3.0
+    tolerance: 0.0001
+
+  - name: test_groq_coherence
+    input:
+      prompt: "prove φ² + 1/φ² = 3"
+    expected_contains:
+      - "φ"
+      - "3"
+      - "golden ratio"
+
+  - name: test_hybrid_planning
+    input:
+      task: "solve 2+2 step by step"
+      use_igla_planning: true
+      use_oss_generation: true
+    expected_steps:
+      - "Step 1"
+      - "Step 2"
+      - "Answer: 4"
+
+sacred_formula: "φ² + 1/φ² = 3 | KOSCHEI IS IMMORTAL"

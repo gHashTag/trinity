@@ -1,0 +1,361 @@
+name: ralph_actor_runtime
+version: "1.0.0"
+language: zig
+module: ralph_actor_runtime
+
+description: |
+  Actor model implementation for concurrent task processing in Ralph.
+  Provides mailbox-based message passing, supervision trees, and
+  graceful shutdown capabilities. Built on sacred math principles
+  where φ² + 1/φ² = 3 provides the foundation for ternary balance.
+
+types:
+  ActorId:
+    description: Unique identifier for each actor
+    fields:
+      uuid: [16]u8
+      name: String
+      generation: U64
+
+  ActorState:
+    description: Current state of an actor
+    fields:
+      id: ActorId
+      status: ActorStatus
+      mailbox: Mailbox
+      supervisor: Option<ActorId>
+      children: List<ActorId>
+      restart_count: U32
+      created_at: U64
+      last_activity: U64
+
+  ActorStatus:
+    description: Runtime status of actor
+    variants:
+      - initializing
+      - running
+      - suspending
+      - suspended
+      - terminating
+      - terminated
+
+  Message:
+    description: Message passed between actors
+    fields:
+      id: U64
+      sender: ActorId
+      receiver: ActorId
+      type: MessageType
+      payload: MessagePayload
+      timestamp: U64
+      priority: MessagePriority
+
+  MessageType:
+    description: Type classification for message routing
+    variants:
+      - task_start
+      - task_complete
+      - task_fail
+      - supervision_ping
+      - supervision_pong
+      - shutdown_request
+      - shutdown_ack
+      - custom
+
+  MessagePayload:
+    description: Message data payload
+    variants:
+      - empty: {}
+      - text: String
+      - binary: []u8
+      - task: TaskData
+      - error: ErrorData
+
+  MessagePriority:
+    description: Message delivery priority
+    variants:
+      - low
+      - normal
+      - high
+      - critical
+
+  Mailbox:
+    description: Actor message queue with bounded capacity
+    fields:
+      messages: []Message
+      capacity: U32
+      current_size: U32
+      dropped_messages: U64
+
+  Supervisor:
+    description: Supervision tree configuration
+    fields:
+      id: ActorId
+      strategy: SupervisionStrategy
+      max_restarts: U32
+      restart_window: U64
+      children: List<ActorId>
+
+  SupervisionStrategy:
+    description: Error recovery strategy
+    variants:
+      - one_for_one: Restart only failed child
+      - one_for_all: Restart all children on failure
+      - rest_for_one: Restart failed child and all started after it
+      - temporary: Let actor crash without restart
+
+  ActorConfig:
+    description: Actor creation configuration
+    fields:
+      name: String
+      mailbox_size: U32
+      supervisor: Option<ActorId>
+      strategy: SupervisionStrategy
+      restart_threshold: U32
+
+  TaskData:
+    description: Task execution payload
+    fields:
+      task_id: String
+      command: String
+      args: List<String>
+      working_dir: String
+      timeout_ms: U64
+
+  ErrorData:
+    description: Error information payload
+    fields:
+      code: U32
+      message: String
+      stack_trace: String
+      context: Map<String, String>
+
+behaviors:
+  - name: createActor
+    given: ActorConfig with name and optional supervisor
+    when: Actor system initializes new actor
+    then: Returns ActorId with unique UUID and initializes ActorState in initializing status
+
+    implementation: |
+      pub fn createActor(config: ActorConfig, allocator: Allocator) !ActorId {
+          const uuid = try generateUUID();
+          const actor_id = ActorId{
+              .uuid = uuid,
+              .name = try allocator.dupe(u8, config.name),
+              .generation = 0,
+          };
+
+          const mailbox = Mailbox{
+              .messages = Queue(Message).init(allocator),
+              .capacity = config.mailbox_size,
+              .current_size = 0,
+              .dropped_messages = 0,
+          };
+
+          const state = try allocator.create(ActorState);
+          state.* = ActorState{
+              .id = actor_id,
+              .status = .initializing,
+              .mailbox = mailbox,
+              .supervisor = config.supervisor,
+              .children = List(ActorId).init(allocator),
+              .restart_count = 0,
+              .created_at = timestamp(),
+              .last_activity = timestamp(),
+          };
+
+          try actor_registry.put(actor_id, state);
+          return actor_id;
+      }
+
+  - name: sendMessage
+    given: Message with sender, receiver, and payload
+    when: Sender delivers message to receiver's mailbox
+    then: Message queued in receiver mailbox or dropped if full, returns delivery status
+
+    implementation: |
+      pub fn sendMessage(actor_id: ActorId, msg: Message) !bool {
+          const state = try actor_registry.get(actor_id);
+          if (state.status == .terminated) {
+              return error.ActorTerminated;
+          }
+
+          if (state.mailbox.current_size >= state.mailbox.capacity) {
+              state.mailbox.dropped_messages += 1;
+              return false;
+          }
+
+          try state.mailbox.messages.append(msg);
+          state.mailbox.current_size += 1;
+          state.last_activity = timestamp();
+          return true;
+      }
+
+  - name: receiveMessage
+    given: Actor with non-empty mailbox
+    when: Actor processes next message from queue
+    then: Returns oldest message following FIFO ordering, removes from mailbox
+
+    implementation: |
+      pub fn receiveMessage(actor_id: ActorId) !?Message {
+          const state = try actor_registry.get(actor_id);
+          if (state.mailbox.current_size == 0) {
+              return null;
+          }
+
+          const msg = try state.mailbox.messages.pop();
+          state.mailbox.current_size -= 1;
+          state.last_activity = timestamp();
+          return msg;
+      }
+
+  - name: superviseActor
+    given: Child actor that has failed
+    when: Supervisor detects failure via monitoring
+    then: Applies supervision strategy (one_for_one/one_for_all/rest_for_one) and restarts if under threshold
+
+    implementation: |
+      pub fn superviseActor(supervisor: Supervisor, failed_child: ActorId, error_data: ErrorData) !void {
+          const child_state = try actor_registry.get(failed_child);
+
+          switch (supervisor.strategy) {
+              .one_for_one => {
+                  try restartActor(failed_child, supervisor);
+              },
+              .one_for_all => {
+                  for (supervisor.children.items) |child_id| {
+                      try restartActor(child_id, supervisor);
+                  }
+              },
+              .rest_for_one => {
+                  const failed_index = try findChildIndex(supervisor, failed_child);
+                  for (supervisor.children.items[failed_index..]) |child_id| {
+                      try restartActor(child_id, supervisor);
+                  }
+              },
+              .temporary => {
+                  try terminateActor(failed_child);
+              },
+          }
+      }
+
+  - name: restartActor
+    given: Actor that needs restart
+    when: Supervisor strategy requires restart and under threshold
+    then: Increments restart count, resets mailbox, transitions to initializing status
+
+    implementation: |
+      pub fn restartActor(actor_id: ActorId, supervisor: Supervisor) !void {
+          const state = try actor_registry.get(actor_id);
+
+          if (state.restart_count >= supervisor.max_restarts) {
+              try terminateActor(actor_id);
+              return error.RestartThresholdExceeded;
+          }
+
+          state.restart_count += 1;
+          state.mailbox.current_size = 0;
+
+          while (state.mailbox.messages.pop()) |_| {}
+          state.status = .initializing;
+          state.last_activity = timestamp();
+      }
+
+  - name: gracefulShutdown
+    given: Actor system receiving shutdown signal
+    when: Shutdown propagates through supervision tree
+    then: All actors finish processing, drain mailboxes, transition to terminated status
+
+    implementation: |
+      pub fn gracefulShutdown(actor_id: ActorId, timeout_ms: U64) !void {
+          const state = try actor_registry.get(actor_id);
+          state.status = .terminating;
+
+          const start_time = timestamp();
+
+          while (state.mailbox.current_size > 0) {
+              if (timestamp() - start_time > timeout_ms) {
+                  try terminateActor(actor_id);
+                  return error.ShutdownTimeout;
+              }
+
+              const msg = try receiveMessage(actor_id);
+              if (msg) |m| {
+                  try handleMessage(m);
+              }
+          }
+
+          for (state.children.items) |child_id| {
+              try gracefulShutdown(child_id, timeout_ms);
+          }
+
+          state.status = .terminated;
+      }
+
+  - name: terminateActor
+    given: Actor that needs immediate termination
+    when: Critical error or shutdown timeout occurs
+    then: Forces termination, clears mailbox, removes from registry
+
+    implementation: |
+      pub fn terminateActor(actor_id: ActorId) !void {
+          const state = try actor_registry.get(actor_id);
+          state.status = .terminated;
+
+          while (state.mailbox.messages.pop()) |_| {}
+          state.mailbox.current_size = 0;
+
+          if (state.supervisor) |sup_id| {
+              const sup_state = try actor_registry.get(sup_id);
+              _ = sup_state.children.orderedRemove(actor_id);
+          }
+
+          try actor_registry.remove(actor_id);
+      }
+
+  - name: monitorActors
+    given: Active supervision tree
+    when: Periodic health check runs
+    then: Pings all actors, tracks last_activity, restarts stale actors if needed
+
+    implementation: |
+      pub fn monitorActors(supervisor: ActorId, stale_threshold_ms: U64) !void {
+          const sup_state = try actor_registry.get(supervisor);
+          const now = timestamp();
+
+          for (sup_state.children.items) |child_id| {
+              const child_state = try actor_registry.get(child_id);
+              const idle_time = now - child_state.last_activity;
+
+              if (idle_time > stale_threshold_ms) {
+                  const error_data = ErrorData{
+                      .code = 1,
+                      .message = "Actor stale",
+                      .stack_trace = "",
+                      .context = Map(String, String).init(allocator),
+                  };
+                  try superviseActor(supervisor, child_id, error_data);
+              }
+          }
+      }
+
+  - name: getActorStatus
+    given: ActorId from actor registry
+    when: Status query requested
+    then: Returns current ActorStatus, mailbox depth, restart count, and uptime
+
+    implementation: |
+      pub fn getActorStatus(actor_id: ActorId) !ActorStatusReport {
+          const state = try actor_registry.get(actor_id);
+          const uptime = timestamp() - state.created_at;
+
+          return ActorStatusReport{
+              .id = actor_id,
+              .status = state.status,
+              .mailbox_depth = state.mailbox.current_size,
+              .dropped_messages = state.mailbox.dropped_messages,
+              .restart_count = state.restart_count,
+              .uptime_ms = uptime,
+              .last_activity = state.last_activity,
+          };
+      }

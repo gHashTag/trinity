@@ -1,0 +1,279 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: create_server
+    given: Input data provided
+    when: create_server function called
+    then: Result returned
+  - name: test_create_server
+  - name: create_client
+    given: Input data provided
+    when: create_client function called
+    then: Result returned
+  - name: test_create_client
+  - name: start_round
+    given: Input data provided
+    when: start_round function called
+    then: Result returned
+  - name: test_start_round
+  - name: aggregate_updates
+    given: Input data provided
+    when: aggregate_updates function called
+    then: Result returned
+  - name: test_aggregate_updates
+  - name: download_model
+    given: Input data provided
+    when: download_model function called
+    then: Result returned
+  - name: test_download_model
+  - name: train_local
+    given: Input data provided
+    when: train_local function called
+    then: Result returned
+  - name: test_train_local
+  - name: send_updates
+    given: Input data provided
+    when: send_updates function called
+    then: Result returned
+  - name: test_send_updates
+  - name: federated_averaging
+    given: Input data provided
+    when: federated_averaging function called
+    then: Result returned
+  - name: test_federated_averaging
+  - name: federated_prox
+    given: Input data provided
+    when: federated_prox function called
+    then: Result returned
+  - name: test_federated_prox
+  - name: federated_adam
+    given: Input data provided
+    when: federated_adam function called
+    then: Result returned
+  - name: test_federated_adam
+  - name: secure_aggregation
+    given: Input data provided
+    when: secure_aggregation function called
+    then: Result returned
+  - name: test_secure_aggregation
+  - name: apply_differential_privacy
+    given: Input data provided
+    when: apply_differential_privacy function called
+    then: Result returned
+  - name: test_apply_differential_privacy
+  - name: add_dp_noise
+    given: Input data provided
+    when: add_dp_noise function called
+    then: Result returned
+  - name: test_add_dp_noise
+  - name: encrypt_update
+    given: Input data provided
+    when: encrypt_update function called
+    then: Result returned
+  - name: test_encrypt_update
+  - name: decrypt_aggregated
+    given: Input data provided
+    when: decrypt_aggregated function called
+    then: Result returned
+  - name: test_decrypt_aggregated
+  - name: sum_encrypted_updates
+    given: Input data provided
+    when: sum_encrypted_updates function called
+    then: Result returned
+  - name: test_sum_encrypted_updates
+  - name: reconstruct_from_shares
+    given: Input data provided
+    when: reconstruct_from_shares function called
+    then: Result returned
+  - name: test_reconstruct_from_shares
+  - name: select_clients
+    given: Input data provided
+    when: select_clients function called
+    then: Result returned
+  - name: test_select_clients
+  - name: broadcast_model
+    given: Input data provided
+    when: broadcast_model function called
+    then: Result returned
+  - name: test_broadcast_model
+  - name: fetch_model_from_server
+    given: Input data provided
+    when: fetch_model_from_server function called
+    then: Result returned
+  - name: test_fetch_model_from_server
+  - name: train_on_local_data
+    given: Input data provided
+    when: train_on_local_data function called
+    then: Result returned
+  - name: test_train_on_local_data
+  - name: send_to_server
+    given: Input data provided
+    when: send_to_server function called
+    then: Result returned
+  - name: test_send_to_server
+  - name: laplace_noise
+    given: Input data provided
+    when: laplace_noise function called
+    then: Result returned
+  - name: test_laplace_noise
+  - name: gaussian_noise
+    given: Input data provided
+    when: gaussian_noise function called
+    then: Result returned
+  - name: test_gaussian_noise
+  - name: random_uniform
+    given: Input data provided
+    when: random_uniform function called
+    then: Result returned
+  - name: test_random_uniform
+  - name: int_to_float
+    given: Input data provided
+    when: int_to_float function called
+    then: Result returned
+  - name: test_int_to_float
+  - name: float_sqrt
+    given: Input data provided
+    when: float_sqrt function called
+    then: Result returned
+  - name: test_float_sqrt
+  - name: float_log
+    given: Input data provided
+    when: float_log function called
+    then: Result returned
+  - name: test_float_log
+  - name: float_cos
+    given: Input data provided
+    when: float_cos function called
+    then: Result returned
+  - name: test_float_cos
+  - name: list_map2
+    given: Input data provided
+    when: list_map2 function called
+    then: Result returned
+  - name: test_list_map2
+  - name: federated_train
+    given: Input data provided
+    when: federated_train function called
+    then: Result returned
+  - name: test_federated_train
+  - name: federated_train_loop
+    given: Input data provided
+    when: federated_train_loop function called
+    then: Result returned
+  - name: test_federated_train_loop
+  - name: simulate_client_updates
+    given: Input data provided
+    when: simulate_client_updates function called
+    then: Result returned
+  - name: test_simulate_client_updates
+  - name: int_to_string
+    given: Input data provided
+    when: int_to_string function called
+    then: Result returned
+  - name: test_int_to_string
+
+types:
+  create_server:
+    description: Auto-generated
+
+  create_client:
+    description: Auto-generated
+
+  start_round:
+    description: Auto-generated
+
+  aggregate_updates:
+    description: Auto-generated
+
+  download_model:
+    description: Auto-generated
+
+  train_local:
+    description: Auto-generated
+
+  send_updates:
+    description: Auto-generated
+
+  federated_averaging:
+    description: Auto-generated
+
+  federated_prox:
+    description: Auto-generated
+
+  federated_adam:
+    description: Auto-generated
+
+  secure_aggregation:
+    description: Auto-generated
+
+  apply_differential_privacy:
+    description: Auto-generated
+
+  add_dp_noise:
+    description: Auto-generated
+
+  encrypt_update:
+    description: Auto-generated
+
+  decrypt_aggregated:
+    description: Auto-generated
+
+  sum_encrypted_updates:
+    description: Auto-generated
+
+  reconstruct_from_shares:
+    description: Auto-generated
+
+  select_clients:
+    description: Auto-generated
+
+  broadcast_model:
+    description: Auto-generated
+
+  fetch_model_from_server:
+    description: Auto-generated
+
+  train_on_local_data:
+    description: Auto-generated
+
+  send_to_server:
+    description: Auto-generated
+
+  laplace_noise:
+    description: Auto-generated
+
+  gaussian_noise:
+    description: Auto-generated
+
+  random_uniform:
+    description: Auto-generated
+
+  int_to_float:
+    description: Auto-generated
+
+  float_sqrt:
+    description: Auto-generated
+
+  float_log:
+    description: Auto-generated
+
+  float_cos:
+    description: Auto-generated
+
+  list_map2:
+    description: Auto-generated
+
+  federated_train:
+    description: Auto-generated
+
+  federated_train_loop:
+    description: Auto-generated
+
+  simulate_client_updates:
+    description: Auto-generated
+
+  int_to_string:
+    description: Auto-generated

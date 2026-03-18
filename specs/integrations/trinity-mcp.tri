@@ -1,0 +1,872 @@
+# TRI-MCP — Full Trinity MCP Server
+# Model Context Protocol server exposing ALL Trinity CLI commands as native Claude Code tools
+# φ² + 1/φ² = 3 | TRINITY
+
+name: trinity-mcp
+version: "1.0.0"
+language: zig
+module: trinity.integrations.trinity_mcp
+description: Full Trinity MCP server — 35+ native tools for Claude Code development workflow
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  TriCommand:
+    fields:
+      name: String
+      description: String
+      category: Enum[codegen, verification, planning, git, sacred, omega, needle]
+      mcp_name: String
+      safety_level: Enum[low, medium, high, needle]
+      args_schema: Map
+
+  TriResponse:
+    fields:
+      success: Bool
+      output: String
+      error: String
+      duration_ms: Int
+      needle_check: NeedleCheckResult
+
+  NeedleCheckResult:
+    fields:
+      parse_ok: Bool
+      violations: Int
+      safety_score: Float
+      compile_ok: Bool
+
+  McpTool:
+    fields:
+      name: String
+      description: String
+      input_schema: Map
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MCP TOOLS — 35+ INSTRUMENTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+mcp_tools:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # UNIVERSAL EXECUTOR (main entry point)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_execute
+    description: "Universal executor — run ANY tri command with automatic needle check"
+    category: universal
+    safety_level: needle
+    args_schema:
+      command:
+        type: string
+        description: "Full tri command (e.g. 'gen specs/myfeature.vibee')"
+      args:
+        type: array
+        items: { type: string }
+        description: "Command arguments"
+      auto_needle:
+        type: boolean
+        description: "Run needle check after command (default: true)"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CODEGEN (VIBEE)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_code
+    description: "Generate code with typing effect"
+    category: codegen
+    safety_level: medium
+    args_schema:
+      prompt:
+        type: string
+        required: true
+
+  - name: tri_gen
+    description: "Compile VIBEE spec to Zig/Verilog"
+    category: codegen
+    safety_level: medium
+    args_schema:
+      spec:
+        type: string
+        description: "Path to .vibee specification file"
+        required: true
+
+  - name: tri_spec_create
+    description: "Create new .vibee specification template"
+    category: codegen
+    safety_level: low
+    args_schema:
+      name:
+        type: string
+        description: "Module name"
+        required: true
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PLANNING (GOLDEN CHAIN)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_decompose
+    description: "Break task into sub-tasks (Golden Chain Link 4)"
+    category: planning
+    safety_level: low
+    args_schema:
+      task:
+        type: string
+        description: "Task description to decompose"
+        required: true
+
+  - name: tri_plan
+    description: "Generate implementation plan (Golden Chain Link 5)"
+    category: planning
+    safety_level: low
+    args_schema:
+      task:
+        type: string
+        description: "Task to plan"
+        required: true
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # VERIFICATION (LINKS 7-13)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_verify
+    description: "Run tests + benchmarks (Links 7-11)"
+    category: verification
+    safety_level: high
+    args_schema: {}
+
+  - name: tri_bench
+    description: "Run performance benchmarks"
+    category: verification
+    safety_level: medium
+    args_schema:
+      suite:
+        type: string
+        enum: [all, memory, neural, swarm, io]
+        description: "Benchmark suite to run"
+
+  - name: tri_verdict
+    description: "Generate toxic verdict (Link 14)"
+    category: verification
+    safety_level: medium
+    args_schema: {}
+
+  - name: tri_test
+    description: "Generate tests for code"
+    category: verification
+    safety_level: medium
+    args_schema:
+      file:
+        type: string
+        description: "File to generate tests for"
+        required: true
+
+  - name: tri_test_run
+    description: "Run specific test suite"
+    category: verification
+    safety_level: high
+    args_schema:
+      pattern:
+        type: string
+        description: "Test file pattern"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # SWE AGENT TOOLS
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_fix
+    description: "Detect and fix bugs"
+    category: verification
+    safety_level: needle
+    args_schema:
+      file:
+        type: string
+        description: "File to fix"
+        required: true
+
+  - name: tri_explain
+    description: "Explain code or concept"
+    category: verification
+    safety_level: low
+    args_schema:
+      target:
+        type: string
+        description: "File path or concept to explain"
+        required: true
+
+  - name: tri_refactor
+    description: "Suggest refactoring"
+    category: verification
+    safety_level: medium
+    args_schema:
+      file:
+        type: string
+        description: "File to refactor"
+        required: true
+
+  - name: tri_doc
+    description: "Generate documentation"
+    category: verification
+    safety_level: low
+    args_schema:
+      file:
+        type: string
+        description: "File to document"
+        required: true
+
+  - name: tri_reason
+    description: "Chain-of-thought reasoning"
+    category: verification
+    safety_level: low
+    args_schema:
+      prompt:
+        type: string
+        description: "Reasoning prompt"
+        required: true
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # GIT OPERATIONS
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_status
+    description: "Git status --short"
+    category: git
+    safety_level: low
+    args_schema: {}
+
+  - name: tri_diff
+    description: "Git diff"
+    category: git
+    safety_level: low
+    args_schema: {}
+
+  - name: tri_log
+    description: "Git log --oneline -10"
+    category: git
+    safety_level: low
+    args_schema:
+      count:
+        type: integer
+        description: "Number of commits"
+
+  - name: tri_commit
+    description: "Git add -A && commit"
+    category: git
+    safety_level: medium
+    args_schema:
+      message:
+        type: string
+        description: "Commit message"
+        required: true
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # NEEDLE (Structural Editor) — Already implemented
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: needle_structural_replace
+    description: "AST-aware code edit with Tier 0->1 fallback"
+    category: needle
+    safety_level: needle
+    args_schema:
+      file_path:
+        type: string
+        required: true
+      pattern_query:
+        type: string
+        required: true
+      replacement:
+        type: string
+        required: true
+      safety_level:
+        type: string
+        enum: [low, medium, high]
+      edit_mode:
+        type: string
+        enum: [structural, semantic, text_fallback, auto]
+
+  - name: needle_search
+    description: "Search codebase for pattern matches"
+    category: needle
+    safety_level: low
+    args_schema:
+      query:
+        type: string
+        required: true
+      file_path:
+        type: string
+        required: true
+      confidence_threshold:
+        type: number
+
+  - name: needle_quality_gates
+    description: "Run quality gates: parse check, AST analysis"
+    category: needle
+    safety_level: low
+    args_schema:
+      file_path:
+        type: string
+        required: true
+      check_level:
+        type: string
+        enum: [basic, full]
+
+  - name: needle_preview
+    description: "Preview edit diff without applying"
+    category: needle
+    safety_level: low
+    args_schema:
+      file_path:
+        type: string
+        required: true
+      pattern_query:
+        type: string
+        required: true
+      replacement:
+        type: string
+        required: true
+
+  - name: needle_batch_edit
+    description: "Apply multiple edits in one operation"
+    category: needle
+    safety_level: needle
+    args_schema:
+      edits:
+        type: array
+        required: true
+        items:
+          type: object
+          properties:
+            file_path: { type: string }
+            pattern_query: { type: string }
+            replacement: { type: string }
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # NEEDLE TIER 2 — Graph Multi-File Refactoring
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: needle_graph_build
+    description: "Build complete call graph with VSA embeddings for project"
+    category: needle
+    safety_level: low
+    args_schema:
+      root_dir:
+        type: string
+        description: "Project root directory"
+        default: "."
+      enable_vsa:
+        type: boolean
+        description: "Enable VSA embedding generation"
+        default: true
+
+  - name: needle_graph_refactor
+    description: "Rename symbol across entire project with semantic awareness"
+    category: needle
+    safety_level: needle
+    args_schema:
+      symbol:
+        type: string
+        description: "Current symbol name"
+        required: true
+      new_name:
+        type: string
+        description: "New symbol name"
+        required: true
+      semantic_aware:
+        type: boolean
+        description: "Use VSA to find semantically similar symbols"
+        default: true
+      similarity_threshold:
+        type: number
+        description: "Minimum similarity for semantic matches"
+        default: 0.85
+      scope:
+        type: string
+        enum: [file, project]
+        description: "Refactor scope"
+      preview:
+        type: boolean
+        description: "Only preview changes"
+
+  - name: needle_graph_extract
+    description: "Extract function/method from code block"
+    category: needle
+    safety_level: needle
+    args_schema:
+      file:
+        type: string
+        required: true
+      start_line:
+        type: integer
+      end_line:
+        type: integer
+      function_name:
+        type: string
+        required: true
+
+  - name: needle_graph_visualize
+    description: "Generate graph visualization (DOT/JSON) with VSA clustering"
+    category: needle
+    safety_level: low
+    args_schema:
+      format:
+        type: string
+        enum: [dot, json, json_html]
+      focus:
+        type: string
+        description: "Symbol or file to focus on"
+      show_vsa:
+        type: boolean
+        description: "Show VSA similarity clusters"
+
+  - name: needle_graph_affected
+    description: "Find all files affected by symbol change (with semantic impact)"
+    category: needle
+    safety_level: low
+    args_schema:
+      symbol:
+        type: string
+        required: true
+      include_transitive:
+        type: boolean
+        default: true
+      semantic_impact:
+        type: boolean
+        description: "Include semantically related symbols"
+        default: true
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # NEEDLE TIER 3 — Semantic VSA
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: needle_graph_vsa_search
+    description: "Search for semantically similar symbols by code or intent"
+    category: needle
+    safety_level: low
+    args_schema:
+      query:
+        type: string
+        description: "Code snippet or intent description"
+        required: true
+      top_k:
+        type: integer
+        description: "Number of results to return"
+        default: 10
+      min_similarity:
+        type: number
+        description: "Minimum similarity threshold"
+        default: 0.75
+
+  - name: needle_semantic_replace
+    description: "Replace code by semantic meaning (not just pattern)"
+    category: needle
+    safety_level: needle
+    args_schema:
+      intent:
+        type: string
+        description: "Intent description of what to replace"
+        required: true
+      replacement_intent:
+        type: string
+        description: "Intent description of replacement"
+        required: true
+      file:
+        type: string
+        description: "File to apply replacement"
+      preview:
+        type: boolean
+        description: "Preview changes only"
+        default: true
+
+  - name: needle_vsa_index
+    description: "Build semantic VSA index for codebase"
+    category: needle
+    safety_level: low
+    args_schema:
+      root_dir:
+        type: string
+        description: "Project root directory"
+        default: "."
+      embedding_dim:
+        type: integer
+        description: "Embedding dimension (384 or 768)"
+        default: 384
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # NEEDLE TIER 4 — Safe Cross-File + VSA Rules
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: needle_safe_cross_refactor
+    description: "Safe cross-file semantic refactor with VSA rules and 100% rollback"
+    category: needle
+    safety_level: needle
+    args_schema:
+      intent:
+        type: string
+        description: "Intent description of refactor"
+        required: true
+      new_intent:
+        type: string
+        description: "New intent/description"
+        required: true
+      semantic_threshold:
+        type: number
+        description: "Minimum VSA similarity"
+        default: 0.85
+      preview:
+        type: boolean
+        description: "Preview only, don't apply"
+        default: true
+
+  - name: needle_vsa_rule_apply
+    description: "Apply VSA rules to validate proposed refactor"
+    category: needle
+    safety_level: low
+    args_schema:
+      transformation:
+        type: string
+        description: "Transformation to validate"
+        required: true
+      rules_file:
+        type: string
+        description: "Path to VSA rules config"
+
+  - name: needle_cross_preview
+    description: "Preview cross-file refactor impact with safety assessment"
+    category: needle
+    safety_level: low
+    args_schema:
+      symbol:
+        type: string
+        description: "Symbol to analyze"
+        required: true
+      new_name:
+        type: string
+        description: "New name for rename"
+      include_vsa:
+        type: boolean
+        description: "Include VSA confidence scores"
+        default: true
+
+  - name: needle_rollback_all
+    description: "Rollback all changes from failed refactor"
+    category: needle
+    safety_level: low
+    args_schema:
+      refactor_id:
+        type: string
+        description: "Refactor session ID to rollback"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # NEEDLE TIER 5 — Omega (Full Autonomy)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: needle_omega_init
+    description: "Initialize Omega autonomous agent for project"
+    category: needle
+    safety_level: low
+    args_schema:
+      root_dir:
+        type: string
+        description: "Project root directory"
+        default: "."
+      autonomy_level:
+        type: string
+        enum: [assisted, semi_auto, full_auto]
+        description: "Autonomy level"
+        default: "assisted"
+
+  - name: needle_omega_analyze
+    description: "Omega analyzes codebase and suggests improvements"
+    category: needle
+    safety_level: low
+    args_schema:
+      intent:
+        type: string
+        description: "Analysis intent or leave empty for auto-detect"
+      auto_detect:
+        type: boolean
+        description: "Auto-detect improvements"
+        default: true
+
+  - name: needle_omega_execute
+    description: "Execute refactor plan with full autonomy"
+    category: needle
+    safety_level: needle
+    args_schema:
+      plan_id:
+        type: string
+        description: "Plan ID from omega_analyze"
+      confirm:
+        type: boolean
+        description: "Require confirmation before applying"
+        default: true
+
+  - name: needle_omega_detect
+    description: "Auto-detect code improvements and optimizations"
+    category: needle
+    safety_level: low
+    args_schema:
+      min_confidence:
+        type: number
+        description: "Minimum confidence for suggestions"
+        default: 0.8
+      max_results:
+        type: integer
+        description: "Maximum suggestions to return"
+        default: 10
+
+  - name: needle_omega_status
+    description: "Get Omega agent status and health"
+    category: needle
+    safety_level: low
+    args_schema: {}
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # SACRED MATHEMATICS
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_constants
+    description: "Show sacred constants (φ, π, e, μ, χ, σ, ε...)"
+    category: sacred
+    safety_level: low
+    args_schema: {}
+
+  - name: tri_phi
+    description: "Compute φⁿ (golden ratio power)"
+    category: sacred
+    safety_level: low
+    args_schema:
+      n:
+        type: integer
+        description: "Power to compute"
+
+  - name: tri_fib
+    description: "Fibonacci with BigInt"
+    category: sacred
+    safety_level: low
+    args_schema:
+      n:
+        type: integer
+        description: "Fibonacci index"
+
+  - name: tri_lucas
+    description: "Lucas L(n) — L(2)=3=TRINITY"
+    category: sacred
+    safety_level: low
+    args_schema:
+      n:
+        type: integer
+        description: "Lucas index"
+
+  - name: tri_spiral
+    description: "φ-spiral coordinates"
+    category: sacred
+    safety_level: low
+    args_schema:
+      n:
+        type: integer
+        description: "Number of points"
+
+  - name: tri_math
+    description: "Sacred math dispatcher"
+    category: sacred
+    safety_level: low
+    args_schema:
+      operation:
+        type: string
+        description: "Math operation"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # LOOP DECISION (Link 17)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_loop_decision
+    description: "Loop decision: CONTINUE/EXIT (Link 17)"
+    category: verification
+    safety_level: medium
+    args_schema:
+      mode:
+        type: string
+        enum: [auto, continue, exit]
+        description: "Decision mode"
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # OMEGA (Autonomy)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_omega_awaken
+    description: "Awaken Omega autonomous agent"
+    category: omega
+    safety_level: high
+    args_schema:
+      mode:
+        type: string
+        enum: [observe, act, full]
+        description: "Omega mode"
+
+  - name: tri_os_boot
+    description: "Temporal Trinity OS boot (Order #021)"
+    category: omega
+    safety_level: high
+    args_schema: {}
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # TVC (Distributed Learning)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_tvc_demo
+    description: "Run TVC chat demo (distributed learning)"
+    category: verification
+    safety_level: medium
+    args_schema: {}
+
+  - name: tri_tvc_stats
+    description: "Show TVC corpus statistics"
+    category: verification
+    safety_level: low
+    args_schema: {}
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # PIPELINE (Golden Chain 0-17)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_pipeline
+    description: "Execute 17-link Golden Chain (incl TVC)"
+    category: planning
+    safety_level: needle
+    args_schema:
+      task:
+        type: string
+        description: "Task to execute"
+        required: true
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # CHAT (Multi-modal)
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: tri_chat
+    description: "Interactive chat (vision + voice + tools)"
+    category: codegen
+    safety_level: low
+    args_schema:
+      message:
+        type: string
+        description: "Chat message"
+      stream:
+        type: boolean
+        description: "Stream response"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ─────────────────────────────────────────────────────────────────────────────
+  # MCP SERVER
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: handle_initialize
+    given: "Initialize request from MCP client"
+    when: "Claude Code connects to server"
+    then: |
+      Returns server capabilities:
+      - protocolVersion: "2024-11-05"
+      - capabilities.tools: 35+ tools listed above
+      - serverInfo.name: "trinity-mcp"
+      - serverInfo.version: "1.0.0"
+
+  - name: handle_tools_list
+    given: "tools/list request"
+    when: "Claude Code queries available tools"
+    then: |
+      Return complete tool list with schemas for all 35+ instruments
+
+  - name: handle_tools_call
+    given: "tools/call request with tool name and arguments"
+    when: "Claude Code invokes a tool"
+    then: |
+      1. Parse tool name and arguments
+      2. Route to appropriate handler:
+         - needle_* tools → NeedleModule
+         - tri_gen, tri_spec_create → VibeeCompiler
+         - sacred tools → SacredMath
+         - git tools → GitOperations
+         - verification → TestRunner
+         - default → universal_execute (tri CLI subprocess)
+      3. Execute with automatic needle check (if safety_level=needle)
+      4. Return formatted MCP response with result
+
+  - name: universal_execute
+    given: "tri_execute call with command string"
+    when: "User requests any tri command"
+    then: |
+      1. Parse command: "tri gen specs/feature.vibee"
+      2. Execute via subprocess: ./zig-out/bin/tri [args...]
+      3. Capture stdout/stderr
+      4. If auto_needle=true: run needle_quality_gates on modified files
+      5. Return TriResponse with output + needle_check results
+
+  # ─────────────────────────────────────────────────────────────────────────────
+  # SELF-HEALING
+  # ─────────────────────────────────────────────────────────────────────────────
+  - name: auto_rollback
+    given: "Needle check fails after tool execution"
+    when: "safety_score < 0.5 or violations > 0"
+    then: |
+      1. Identify modified files
+      2. Run git checkout for each affected file
+      3. Report error to Claude with rollback confirmation
+
+  - name: auto_fix
+    given: "Needle check finds fixable violations"
+    when: "severity != critical"
+    then: |
+      1. Run needle_structural_replace with auto-fix pattern
+      2. Re-run needle check
+      3. If still failing, rollback and report
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+integration:
+  claude_code:
+    method: "MCP (Model Context Protocol)"
+    transport: "stdio"
+    config: "mcp.json in project root"
+    discovery: "automatic"
+
+  start_command: "tri mcp --start"
+  stop_command: "tri mcp --stop"
+  status_command: "tri mcp --status"
+
+  development_rule: |
+    ВСЯ РАЗРАБОТКА TRINITY ТОЛЬКО ЧЕРЕЗ MCP TOOLS
+    Raw CLI разрешён только для bootstrapping и emergencies
+
+  safety:
+    needle_check_every_call: true
+    auto_rollback_on_error: true
+    git_commit_requires: "parse_ok=true AND violations=0"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXIT CRITERIA
+# ═══════════════════════════════════════════════════════════════════════════════
+
+exit_criteria:
+  server_compiles: true
+  all_35_tools_registered: true
+  e2e_test_passes: |
+    Claude → tri_decompose → tri_gen → needle → verdict → git
+  needle_check_auto_runs: true
+  auto_rollback_works: true
+  claude_only_workflow_documented: true
+  committed: true
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TECHNOLOGY TREE POSITION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tech_tree:
+  needle:
+    tier_0: "Text fuzzy (Aider-style) — COMPLETE"
+    tier_1: "Structural AST (Tree-sitter) — COMPLETE"
+    tier_1_5: "MCP Bridge (Zig) — COMPLETE"
+    tier_1_6: "FULL TRI-MCP (35+ tools) — IN PROGRESS ← WE ARE HERE"
+    tier_2: "Graph multi-file — NEXT"
+    tier_3: "Semantic VSA — PENDING"
+    tier_5: "Omega (autonomy) — PENDING"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SACRED CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+sacred:
+  phi: 1.618033988749895
+  trinity_sum: 3.0  # φ² + 1/φ² = 3
+  phoenix: 999
+  lucas_2: 3  # L(2) = 3 = TRINITY
+
+# φ² + 1/φ² = 3 | TRINITY | NEEDLE-MCP FULL DOMINATION

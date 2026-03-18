@@ -1,0 +1,64 @@
+name: unknown
+version: "2.0.0"
+language: zig
+module: unknown
+
+types:
+  CodeGenConfig:
+    description: Configuration for code generation
+    fields:
+      generate_stubs_only: Bool
+      generate_helpers: Bool
+      add_comments: Bool
+      format_code: Bool
+
+  GeneratedCode:
+    description: Result of code generation
+    fields:
+      module_code: String
+      helper_code: String
+      test_code: String
+      doc_code: String
+      stats: CodeGenStats
+
+  CodeGenStats:
+    description: Statistics about code generation
+    fields:
+      types_generated: Int
+      functions_generated: Int
+      behaviors_implemented: Int
+      tests_generated: Int
+      lines_generated: Int
+      generation_time_ms: Int
+
+behaviors:
+  - name: generate_complete_code
+    given: A spec with behaviors and test cases
+    when: Generator processes the spec
+    then: Complete implementations are generated from behaviors
+  - name: generate_from_behavior
+    given: "Two numbers",
+    when: "add is called",
+    then: "Sum is returned",
+  - name: generate_with_error_handling
+  - name: generate_complex_types
+    given: Type definitions with nested structures
+    when: Type generator processes them
+    then: Complete type definitions with all fields
+  - name: generate_nested_type
+  - name: generate_helper_functions
+    given: Complex behaviors that need helpers
+    when: Generator analyzes dependencies
+    then: Helper functions are automatically generated
+  - name: generate_validation_helper
+  - name: format_generated_code
+    given: Raw generated code
+    when: Formatter processes it
+    then: Well-formatted, readable code
+  - name: format_function
+  - name: generate_code_v2
+  - name: behavior_to_implementation
+  - name: infer_implementation
+  - name: generate_helpers
+  - name: format_code
+  - name: calculate_stats

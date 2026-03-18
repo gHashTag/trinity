@@ -1,0 +1,30 @@
+name: tri_swarm
+version: "1.0.0"
+language: zig
+module: tri.tri_swarm
+
+description: |
+  Swarm Coordinator for task decomposition.
+  Breaks GitHub issues into sub-tasks and assigns to agents.
+  Every action becomes a GitHub comment, labels route work, sub-issues track progress.
+
+behaviors:
+  - name: decomposeIssue
+    given: A GitHub issue with task description
+    when: Swarm decomposition is triggered
+    then: Creates sub-issues with agent assignments and labels
+
+  - name: assignAgent
+    given: Sub-task and available agent pool
+    when: Assignment is requested
+    then: Routes sub-task to best-fit agent via labels
+
+  - name: trackProgress
+    given: Parent issue with sub-issues
+    when: Progress check is requested
+    then: Reports completion status of all sub-tasks
+
+export_functions:
+  - decomposeIssue
+  - assignAgent
+  - trackProgress

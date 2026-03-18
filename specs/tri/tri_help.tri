@@ -1,0 +1,67 @@
+name: tri_help
+version: "1.0.0"
+language: zig
+module: tri_help
+
+types:
+  HelpOptions:
+    fields:
+      category: ?CommandCategory  # default: null
+      search: ?[]const u8         # default: null
+      verbose: bool               # default: false
+
+  HelpSystem:
+    fields:
+      registry: *const CommandRegistry
+      allocator: std.mem.Allocator
+      terminal_width: usize  # default: 80
+
+behaviors:
+  - name: HelpSystem.printCommandList
+    given: HelpOptions
+    when: Called to dispatch to the appropriate help view
+    then: |
+      - If opts.search is non-null → searchCommands(query)
+      - Else if opts.category is non-null → printCategory(cat)
+      - Else → printCategorized()
+
+  - name: HelpSystem.printCommandHelp
+    given: Command name string
+    when: Called to show per-command help
+    then: Looks up command in registry; if found calls printDetailedHelp; if not found prints red "Unknown command" error
+
+  - name: HelpSystem.printCategorized
+    given: No arguments
+    when: Called to show top-level help overview
+    then: |
+      Prints gold banner with title.
+      For each of 10 categories (ai, science, math, git, dev, system, demo, benchmark, sacred, advanced)
+      prints icon, name, and count from registry.countByCategory().
+      Appends gray usage hint lines.
+
+  - name: HelpSystem.printCategory
+    given: CommandCategory variant
+    when: Called to list all commands in a category
+    then: |
+      Retrieves commands via registry.getByCategory(cat).
+      Prints gold header with uppercased category name.
+      For each command prints: green name, optional gray aliases in parentheses, white description.
+
+  - name: HelpSystem.searchCommands
+    given: Query string
+    when: Called to filter commands by keyword
+    then: |
+      Lowercases query (allocated).
+      Iterates all metadata_storage items; for each checks name, aliases, description (all lowercased).
+      Prints green name + white description for each match.
+      Prints gray "No commands found" if zero matches; cyan "Found N command(s)" if matches > 0.
+
+  - name: HelpSystem.printDetailedHelp
+    given: Pointer to CommandMetadata
+    when: Called to show full command documentation
+    then: |
+      Prints gold banner with command name.
+      Prints cyan short description.
+      If long_help non-empty, prints gray extended help.
+      If examples non-empty, prints gold "Examples:" header with each example prefixed by "tri ".
+      If has_subcommands and subcommands non-empty, prints gold "Subcommands:" with name, description, and example for each.

@@ -1,0 +1,58 @@
+[cell]
+id = "trinity.hslm"
+name = "HSLM Training Engine"
+version = "1.0.0"
+kind = "backend"
+path = "src/hslm"
+min_core_version = "1.0.0"
+status = "stable"
+description = "Ternary language model training with sacred mathematics"
+capabilities = ["train", "checkpoint", "farm", "eval"]
+files = 44
+tests = 210
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "hslm"
+type = "backend"
+
+[contributes]
+commands = ["train", "eval", "export", "checkpoint"]
+exports = ["quantize", "backward", "dequantize", "integerTernaryMatmul", "simdIntegerTernaryMatmul"]
+tri_subcommands = ["farm train", "farm eval", "farm evolve"]
+events = ["on_step_complete", "on_epoch_end", "on_checkpoint"]
+binaries = ["hslm-train", "hslm-bench", "bpe-train"]
+
+[dependencies]
+trinity.data = "^1.0.0"
+trinity.bench = "^1.0.0"
+trinity.consciousness = "^1.0.0"
+trinity.tri.train = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "none"
+process = "spawn"
+
+ffi = "none"
+concurrency = "yes"
+[dna]
+cell_id = "trinity.hslm"
+source = "specs/hslm/model.tri"
+output = "gen/config.zig"
+regenerable = true
+
+[contract]
+inputs = ["config: Config", "tokens: []u32"]
+outputs = ["logits: []f32", "loss: f32"]
+invariants = ["vocab_size == 729", "embed_dim == 243", "hidden_dim == 729", "context_len == 81"]
+
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:f894d8c156f9a23b8399fcbe962ff03ff43073826953fdcea65d503cfdeb514a"

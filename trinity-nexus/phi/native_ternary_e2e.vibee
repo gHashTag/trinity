@@ -1,0 +1,93 @@
+name: native_ternary_e2e
+version: "1.0.0"
+language: zig
+module: native_ternary_e2e
+
+description: |
+  Native ternary model E2E coherent generation test.
+  Uses BitNet b1.58 models trained from scratch for {-1, 0, +1} weights.
+  Compares coherent output vs TinyLlama garbage.
+
+types:
+  NativeModel:
+    fields:
+      name: String
+      params: String
+      source: String
+      weights: String
+
+  GenerationResult:
+    fields:
+      prompt: String
+      output: String
+      tokens_generated: Int
+      tokens_per_sec: Float
+      latency_ms: Float
+      coherent: Bool
+
+  ComparisonResult:
+    fields:
+      model_name: String
+      quality_score: Float
+      coherent_samples: Int
+      total_samples: Int
+
+models:
+  - name: BitNet-b1.58-2B-4T
+    params: "2.4B"
+    source: "microsoft/BitNet-b1.58-2B-4T"
+    description: "Official Microsoft BitNet 2B model, trained on 4T tokens"
+    
+  - name: bitnet_b1_58-3B
+    params: "3.3B"
+    source: "1bitLLM/bitnet_b1_58-3B"
+    description: "Community BitNet 3B reproduction"
+    
+  - name: bitnet_b1_58-large
+    params: "0.7B"
+    source: "1bitLLM/bitnet_b1_58-large"
+    description: "Community BitNet 700M reproduction"
+
+test_prompts:
+  - "Hello, how are you today?"
+  - "What is the capital of France?"
+  - "Explain quantum computing in simple terms."
+  - "Write a short poem about the ocean."
+  - "What are the benefits of exercise?"
+  - "How does photosynthesis work?"
+  - "Tell me a joke."
+  - "What is machine learning?"
+  - "Describe the solar system."
+  - "What is the meaning of life?"
+
+behaviors:
+  - name: load_native_model
+    given: Model path and configuration
+    when: Loading BitNet model
+    then: Model loaded with ternary weights {-1, 0, +1}
+
+  - name: generate_coherent_text
+    given: Loaded native ternary model
+    when: Running inference with prompt
+    then: Coherent text output (not garbage)
+
+  - name: measure_performance
+    given: Generation complete
+    when: Collecting metrics
+    then: tokens/s, latency, memory usage recorded
+
+  - name: compare_quality
+    given: Native model output and TinyLlama output
+    when: Evaluating coherence
+    then: Native >> TinyLlama (coherent vs garbage)
+
+success_criteria:
+  - coherent_output: true
+  - tokens_per_sec: ">= 1.0"
+  - quality_vs_tinyllama: "significantly better"
+
+comparison_baseline:
+  model: TinyLlama-1.1B-ternary-quantized
+  quality: garbage
+  tokens_per_sec: 1.48
+  issue: "Aggressive quantization destroys coherence"

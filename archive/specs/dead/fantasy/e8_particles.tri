@@ -1,0 +1,87 @@
+name: e8_particles
+version: "1.0.0"
+language: python
+module: quantum.e8.particles
+
+types:
+  Particle:
+    description: Standard Model particle
+    fields:
+      name: String
+      charge: Int  # Electric charge × 3
+      mass: Float64  # In GeV
+      spin: Float64  # In ħ units
+      generation: Int  # 1, 2, or 3
+      particle_type: String  # "quark", "lepton", "boson"
+      e8_index: Int  # Index in E8 root system
+
+  GaugeGroup:
+    description: Gauge group embedding in E8
+    fields:
+      name: String  # SU(3), SU(2), U(1)
+      dimension: Int
+      coupling: Float64
+      e8_root_subset: Array(Int)  # Indices of corresponding E8 roots
+
+  E8Embedding:
+    description: Mapping from SM particles to E8 roots
+    fields:
+      particles: Dict(String, Particle)
+      gauge_groups: Array(GaugeGroup)
+      embedding_matrix: Tensor(240, 61)  # Roots × particles
+
+behaviors:
+  - name: embed_quarks
+    description: Map quarks to E8 roots
+    given: 3 generations × 3 colors × 2 charges
+    when: Map to E8 roots
+    then:
+      - Returns 18 quark states
+      - Each quark maps to unique E8 root
+      - Charge conjugates map to opposite roots
+
+  - name: embed_leptons
+    description: Map leptons to E8 roots
+    given: 3 generations × 4 types (e, ν_e, μ, ν_μ, τ, ν_τ)
+    when: Map to E8 roots
+    then:
+      - Returns 6 lepton states
+      - Charged leptons: e, μ, τ
+      - Neutrinos: ν_e, ν_μ, ν_τ
+      - Each maps to unique E8 root
+
+  - name: embed_gauge_bosons
+    description: Map gauge bosons to E8 roots
+    given: gluons, W±, Z, photon, g
+    when: Map to E8 roots
+    then:
+      - Returns 12 gauge boson states
+      - 8 gluons (SU(3) adjoint)
+      - 3 weak bosons (W+, W-, Z)
+      - 1 photon (U(1))
+
+  - name: embed_higgs
+    description: Map Higgs sector to E8
+    given: Higgs doublet
+    when: Map to E8 roots
+    then:
+      - Returns 2 Higgs states (h⁰, H±)
+      - Related to E8 breaking pattern
+
+  - name: coupling_unification
+    description: Calculate gauge coupling unification
+    given: energy_scale: Float64
+    when: Run renormalization group
+    then:
+      - Returns g1, g2, g3 at given scale
+      - Unification at ~10¹⁶ GeV
+      - Based on E8 → SU(5) × SU(5) breaking
+
+  - name: proton_decay_prediction
+    description: Calculate proton lifetime from E8
+    given: None
+    when: Apply E8 breaking operators
+    then:
+      - Returns lifetime in years
+      - Channels: p → e⁺π⁰, p → ν̄K⁺
+      - Formula: τ_p ~ (M_X/M_GUT)⁴ × 10³⁴ yr

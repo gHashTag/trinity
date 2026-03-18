@@ -1,0 +1,21 @@
+FROM --platform=linux/amd64 regymm/openxc7:latest
+
+# Install Python for HTTP API
+RUN apt-get update && apt-get install -y \
+    python3 python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip3 install flask flask-cors
+
+WORKDIR /app
+
+# Copy synthesis script
+COPY synth_cloud.py /app/
+COPY chipdb/ /app/chipdb/
+
+# Create output directory
+RUN mkdir -p /app/output
+
+EXPOSE 8080
+
+CMD ["python3", "synth_cloud.py"]

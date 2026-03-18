@@ -1,0 +1,61 @@
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# TRI STATS — Project Statistics
+# ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════
+# Statistics command for project metrics
+# φ² + 1/φ² = 3 = TRINITY
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+name: tri_stats
+version: "1.0.0"
+language: zig
+module: commands
+
+cli:
+  main_command: stats
+  description: "Show project statistics"
+
+commands:
+  - name: stats
+    description: "Display project statistics"
+    function: "runStatsCommand"
+    flags:
+      - name: "detailed"
+        type: "bool"
+        default: false
+        description: "Show detailed breakdown by category"
+
+      - name: "json"
+        type: "bool"
+        default: false
+        description: "Output as JSON"
+
+    metrics:
+      - id: "loc"
+        name: "Lines of Code"
+        description: "Total .zig source lines"
+        unit: "lines"
+
+      - id: "tri-files"
+        name: "TRI Specs"
+        description: "Count of .tri specification files"
+        unit: "files"
+
+      - id: "output-files"
+        name: "Generated Output"
+        description: "Count of generated .zig files"
+        unit: "files"
+
+      - id: "tests"
+        name: "Tests"
+        description: "Count of test blocks"
+        unit: "tests"
+
+      - id: "modules"
+        name: "Zig Modules"
+        description: "Count of .zig module files"
+        unit: "modules"
+
+    examples:
+      - "tri stats"
+      - "tri stats --detailed"
+      - "tri stats --json"

@@ -1,0 +1,58 @@
+name: tri_error
+version: "1.0.0"
+language: zig
+module: tri_error
+
+types:
+  TriError:
+    kind: enum
+    variants:
+      - command_not_found   # exit code 1
+      - invalid_arguments   # exit code 2
+      - missing_argument    # exit code 2
+      - file_not_found      # exit code 3
+      - io_error            # exit code 4
+      - permission_denied   # exit code 5
+
+  ErrorContext:
+    fields:
+      command: []const u8          # default: ""
+      suggestion: ?[]const u8      # default: null
+      similar_commands: []const []const u8  # default: empty
+      details: []const u8          # default: ""
+
+behaviors:
+  - name: TriError.message
+    given: A TriError variant
+    when: Called on any variant
+    then: Returns a human-readable static string describing the error (e.g. "Command not found" for .command_not_found)
+
+  - name: TriError.toExitCode
+    given: A TriError variant
+    when: Called to get process exit code
+    then: Returns u8 exit code matching the error (1 for command_not_found, 2 for argument errors, 3 for file_not_found, 4 for io_error, 5 for permission_denied)
+
+  - name: printError
+    given: TriError and ErrorContext
+    when: Called to display an error to the user
+    then: Prints colored error header in RED, optional command name, gold suggestion arrow, gray details, and cyan "Did you mean?" list of similar commands; resets color after
+
+  - name: printSuccess
+    given: Message string
+    when: Called after a successful operation
+    then: Prints green checkmark and message to stderr
+
+  - name: printWarning
+    given: Message string
+    when: Called to show a warning
+    then: Prints yellow warning symbol and message to stderr
+
+  - name: printInfo
+    given: Message string
+    when: Called to show informational output
+    then: Prints cyan info symbol and message to stderr
+
+  - name: handleUnknownCommand
+    given: Registry (anytype with findSimilar method) and unknown command string
+    when: User types an unrecognized command
+    then: Finds up to 3 similar commands via registry.findSimilar, calls printError with command_not_found, similar_commands list, and usage hint

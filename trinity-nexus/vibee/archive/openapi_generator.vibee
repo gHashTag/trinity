@@ -1,0 +1,274 @@
+name: openapi_generator
+version: "1.0.0"
+language: zig
+module: openapi_generator
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: generate_openapi
+    given: Input data provided
+    when: generate_openapi function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_openapi
+        input: {}
+        expected: {}
+
+  - name: generate_info
+    given: Input data provided
+    when: generate_info function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_info
+        input: {}
+        expected: {}
+
+  - name: generate_servers
+    given: Input data provided
+    when: generate_servers function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_servers
+        input: {}
+        expected: {}
+
+  - name: generate_paths
+    given: Input data provided
+    when: generate_paths function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_paths
+        input: {}
+        expected: {}
+
+  - name: generate_path
+    given: Input data provided
+    when: generate_path function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_path
+        input: {}
+        expected: {}
+
+  - name: determine_http_method
+    given: Input data provided
+    when: determine_http_method function called
+    then: Result returned
+    test_cases:
+      - name: test_determine_http_method
+        input: {}
+        expected: {}
+
+  - name: generate_operation
+    given: Input data provided
+    when: generate_operation function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_operation
+        input: {}
+        expected: {}
+
+  - name: generate_parameters
+    given: Input data provided
+    when: generate_parameters function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_parameters
+        input: {}
+        expected: {}
+
+  - name: generate_request_body
+    given: Input data provided
+    when: generate_request_body function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_request_body
+        input: {}
+        expected: {}
+
+  - name: generate_properties
+    given: Input data provided
+    when: generate_properties function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_properties
+        input: {}
+        expected: {}
+
+  - name: generate_required_fields
+    given: Input data provided
+    when: generate_required_fields function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_required_fields
+        input: {}
+        expected: {}
+
+  - name: generate_responses
+    given: Input data provided
+    when: generate_responses function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_responses
+        input: {}
+        expected: {}
+
+  - name: generate_components
+    given: Input data provided
+    when: generate_components function called
+    then: Result returned
+    test_cases:
+      - name: test_generate_components
+        input: {}
+        expected: {}
+
+  - name: type_to_openapi
+    given: Input data provided
+    when: type_to_openapi function called
+    then: Result returned
+    test_cases:
+      - name: test_type_to_openapi
+        input: {}
+        expected: {}
+
+  - name: example
+    given: Input data provided
+    when: example function called
+    then: Result returned
+    test_cases:
+      - name: test_example
+        input: {}
+        expected: {}
+
+types:
+  OpenAPISpec:
+    # TODO: Define fields
+
+  Info:
+    # TODO: Define fields
+
+  Contact:
+    # TODO: Define fields
+
+  Server:
+    # TODO: Define fields
+
+  PathItem:
+    # TODO: Define fields
+
+  Operation:
+    # TODO: Define fields
+
+  Parameter:
+    # TODO: Define fields
+
+  RequestBody:
+    # TODO: Define fields
+
+  MediaType:
+    # TODO: Define fields
+
+  Response:
+    # TODO: Define fields
+
+  Schema:
+    # TODO: Define fields
+
+  Components:
+    # TODO: Define fields
+
+  FunctionSpec:
+    # TODO: Define fields
+
+  ParamSpec:
+    # TODO: Define fields
+
+functions:
+  - name: generate_openapi
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_info
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_servers
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_paths
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_path
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: determine_http_method
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_operation
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_parameters
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_request_body
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_properties
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_required_fields
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_responses
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: generate_components
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: type_to_openapi
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: example
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/string
+  # gleam/list
+  # gleam/dict.{type Dict}
+  # gleam/option.{type Option, None, Some}
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

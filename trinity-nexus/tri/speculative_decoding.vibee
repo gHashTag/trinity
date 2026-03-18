@@ -1,0 +1,88 @@
+# speculative_decoding.vibee
+# Speculative Decoding for faster autoregressive generation
+# Generate multiple tokens per target model forward pass
+
+name: speculative_decoding
+version: "1.0.0"
+language: zig
+module: speculative_decoding
+
+types:
+  SpeculativeConfig:
+    description: "Configuration for speculative decoding"
+    fields:
+      speculation_length: Int    # K: number of tokens to speculate
+      temperature: Float         # Sampling temperature
+      use_tree_attention: Bool   # Enable tree-based speculation
+
+  DraftResult:
+    description: "Result from draft model speculation"
+    fields:
+      tokens: List<Int>          # K speculated tokens
+      probs: List<Float>         # Draft probabilities for each token
+
+  VerificationResult:
+    description: "Result from target model verification"
+    fields:
+      accepted_count: Int        # Number of accepted tokens
+      accepted_tokens: List<Int> # Accepted token sequence
+      next_token: Int            # Token sampled after rejection
+      acceptance_rate: Float     # Running acceptance rate
+
+behaviors:
+  - name: draft_speculate
+    given: draft model, input token, position, K
+    when: generating K candidate tokens
+    then: returns DraftResult with tokens and probabilities
+
+  - name: target_verify
+    given: target model, input sequence, draft tokens
+    when: verifying draft tokens in parallel
+    then: returns logits for all K+1 positions
+
+  - name: speculative_sample
+    given: draft probs, target probs, draft token
+    when: deciding to accept or reject
+    then: accepts with prob min(1, p_target/p_draft), else samples correction
+
+  - name: speculative_generate
+    given: target model, draft model, prompt, max_tokens
+    when: generating with speculation
+    then: returns generated tokens with speedup
+
+# Algorithm:
+#
+# ┌─────────────────────────────────────────────────────────────┐
+# │              SPECULATIVE DECODING                           │
+# ├─────────────────────────────────────────────────────────────┤
+# │                                                             │
+# │  1. DRAFT: Generate K tokens with small model               │
+# │     draft_tokens = [t1, t2, t3, t4]  (fast, ~10ms)          │
+# │     draft_probs  = [p1, p2, p3, p4]                         │
+# │                                                             │
+# │  2. VERIFY: Run target model on all K tokens (parallel)     │
+# │     target_logits = target.forward([t0, t1, t2, t3, t4])    │
+# │     (single forward pass, ~100ms)                           │
+# │                                                             │
+# │  3. ACCEPT/REJECT: For each position i:                     │
+# │     r = uniform(0, 1)                                       │
+# │     if r < min(1, target_prob[i] / draft_prob[i]):          │
+# │       ACCEPT token i                                        │
+# │     else:                                                   │
+# │       REJECT: sample from (target - draft) distribution     │
+# │       STOP speculation                                      │
+# │                                                             │
+# │  4. BONUS: If all K accepted, sample K+1 from target        │
+# │                                                             │
+# └─────────────────────────────────────────────────────────────┘
+#
+# Speedup Analysis:
+#   Without speculation: 1 token per forward pass
+#   With speculation (K=4, α=0.8):
+#     Expected tokens = 1 + α + α² + α³ + α⁴ = 3.36
+#     Cost = 1 target + K draft ≈ 1.1 target (if draft is 10x faster)
+#     Speedup = 3.36 / 1.1 ≈ 3x
+#
+# Self-Speculation (no draft model):
+#   Use early exit from target model as draft
+#   Or use same model with reduced layers

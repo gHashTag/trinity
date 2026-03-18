@@ -1,0 +1,27 @@
+#!/bin/bash
+# Ralph Command Center Launcher
+# Launches tmux dashboard for Ralph monitoring
+
+set -e
+
+RALPH_DIR="/Users/playra/trinity"
+SESSION_NAME="ralph"
+
+# Check if tmux is installed
+if ! command -v tmux &> /dev/null; then
+    echo "Error: tmux is required but not installed"
+    echo "Install with: brew install tmux"
+    exit 1
+fi
+
+# Change to Ralph directory
+cd "$RALPH_DIR" || exit 1
+
+# Check if session already exists
+if tmux has-session -t "$SESSION_NAME" 2>/dev/null; then
+    echo "Attaching to existing Ralph dashboard session..."
+    exec tmux attach-session -t "$SESSION_NAME"
+else
+    echo "Creating new Ralph dashboard session..."
+    exec bash bin/ralph-dashboard-launch
+fi

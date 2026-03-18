@@ -1,0 +1,298 @@
+# ============================================================================
+# VSA Modality Encoders E2E Tests - Cycle 49
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: vsa_modality_encoders_e2e
+version: "1.0.0"
+language: zig
+module: vsa_modality_encoders_e2e
+
+description: |
+  End-to-end test suite for VSA modality encoders.
+  50 scenarios covering text n-gram, vision patch, voice MFCC,
+  code AST encoding, cross-modal similarity, and edge cases.
+
+constants:
+  TOTAL_SCENARIOS: 50
+  DEFAULT_DIMENSION: 1024
+  PHI: 1.6180339887498948482
+
+types:
+  EncoderTestCase:
+    description: "Test case for encoder verification"
+    fields:
+      name: String
+      modality: String
+      input_description: String
+      expected_dimension: Int
+      expected_pass: Bool
+
+  SimilarityTestCase:
+    description: "Test case for cross-modal similarity"
+    fields:
+      modality_a: String
+      modality_b: String
+      expected_range_min: Float
+      expected_range_max: Float
+
+behaviors:
+  # Text Encoder E2E (12 cases)
+  - name: e2eTextShortString
+    given: "Hi" (2 chars)
+    when: Encoding very short text
+    then: Returns valid hypervector despite few n-grams
+
+  - name: e2eTextLongString
+    given: 1000-character paragraph
+    when: Encoding long text
+    then: Returns valid hypervector with many n-grams bundled
+
+  - name: e2eTextEmptyString
+    given: Empty string ""
+    when: Encoding empty input
+    then: Returns zero vector or error gracefully
+
+  - name: e2eTextUnicodeASCII
+    given: "Hello World 123"
+    when: Encoding ASCII text
+    then: Returns valid encoding for all ASCII chars
+
+  - name: e2eTextRepeatedChars
+    given: "aaaaaaa"
+    when: Encoding repeated characters
+    then: Returns valid vector (degenerate but valid)
+
+  - name: e2eTextSimilarPair
+    given: "the cat sat" and "the cat ran"
+    when: Comparing similar texts
+    then: Similarity > 0.2 (shared n-grams)
+
+  - name: e2eTextDifferentPair
+    given: "hello world" and "xyz 789"
+    when: Comparing different texts
+    then: Similarity < 0.5
+
+  - name: e2eTextIdenticalPair
+    given: Same text encoded twice
+    when: Comparing identical encodings
+    then: Similarity = 1.0
+
+  - name: e2eTextNGramCount
+    given: "abcde" with ngram_size=3
+    when: Counting n-grams
+    then: Returns 3 n-grams (abc, bcd, cde)
+
+  - name: e2eTextDeterminism
+    given: Same text encoded twice with same config
+    when: Checking reproducibility
+    then: Produces identical hypervectors
+
+  - name: e2eTextLanguageVariation
+    given: "bonjour monde" vs "hello world"
+    when: Comparing different languages
+    then: Low similarity (different character patterns)
+
+  - name: e2eTextPunctuation
+    given: "hello!" vs "hello"
+    when: Comparing with/without punctuation
+    then: High similarity (mostly same n-grams)
+
+  # Vision Encoder E2E (10 cases)
+  - name: e2eVisionSmallImage
+    given: 8x8 grayscale image
+    when: Encoding minimal image
+    then: Returns valid hypervector with 1 patch
+
+  - name: e2eVisionLargeImage
+    given: 64x64 grayscale image
+    when: Encoding standard image
+    then: Returns valid hypervector with 64 patches
+
+  - name: e2eVisionUniformImage
+    given: All-white image (255 everywhere)
+    when: Encoding uniform image
+    then: Returns valid vector (low variance patches)
+
+  - name: e2eVisionGradientImage
+    given: Horizontal gradient (0 to 255)
+    when: Encoding gradient
+    then: Returns valid vector with varying patch stats
+
+  - name: e2eVisionCheckerboard
+    given: Alternating black/white 8x8 blocks
+    when: Encoding high-contrast pattern
+    then: Returns valid vector with high variance patches
+
+  - name: e2eVisionSimilarImages
+    given: Two images differing by 1 pixel
+    when: Comparing near-identical images
+    then: High similarity > 0.5
+
+  - name: e2eVisionDifferentImages
+    given: All-black vs all-white image
+    when: Comparing opposite images
+    then: Low similarity
+
+  - name: e2eVisionPatchCount
+    given: 32x32 image with patch_size=8
+    when: Counting patches
+    then: Returns 16 patches (4x4 grid)
+
+  - name: e2eVisionNonSquare
+    given: 16x32 rectangular image
+    when: Encoding non-square image
+    then: Returns valid hypervector
+
+  - name: e2eVisionSinglePixel
+    given: 1x1 image
+    when: Encoding minimal possible image
+    then: Returns valid vector or handles gracefully
+
+  # Voice Encoder E2E (10 cases)
+  - name: e2eVoiceSilence
+    given: All-zero audio samples
+    when: Encoding silence
+    then: Returns valid vector with zero energy
+
+  - name: e2eVoiceSineWave
+    given: 440Hz sine wave at 16kHz
+    when: Encoding pure tone
+    then: Returns valid vector with consistent energy
+
+  - name: e2eVoiceWhiteNoise
+    given: Random samples
+    when: Encoding noise
+    then: Returns valid vector with high ZCR
+
+  - name: e2eVoiceShortClip
+    given: 256 samples (16ms at 16kHz)
+    when: Encoding very short audio
+    then: Returns valid vector with 1-2 frames
+
+  - name: e2eVoiceLongClip
+    given: 48000 samples (3 seconds at 16kHz)
+    when: Encoding longer audio
+    then: Returns valid vector with many frames
+
+  - name: e2eVoiceSimilarAudio
+    given: Two sine waves at same frequency
+    when: Comparing similar audio
+    then: High similarity
+
+  - name: e2eVoiceDifferentAudio
+    given: Sine wave vs white noise
+    when: Comparing different audio
+    then: Low similarity
+
+  - name: e2eVoiceFrameCount
+    given: 1024 samples, frame=256, hop=128
+    when: Counting frames
+    then: Returns 7 frames ((1024-256)/128 + 1)
+
+  - name: e2eVoiceEnergyComputation
+    given: Known amplitude samples
+    when: Computing frame energy
+    then: Energy matches expected value
+
+  - name: e2eVoiceZCRComputation
+    given: Alternating +1/-1 samples
+    when: Computing zero crossing rate
+    then: ZCR close to 1.0
+
+  # Code Encoder E2E (10 cases)
+  - name: e2eCodeSimpleFunction
+    given: "fn add(a, b) { return a + b; }"
+    when: Encoding simple function
+    then: Returns valid hypervector
+
+  - name: e2eCodeEmptySource
+    given: Empty string
+    when: Encoding empty code
+    then: Returns zero vector or handles gracefully
+
+  - name: e2eCodeKeywordDetection
+    given: "if else while for fn return const var"
+    when: Classifying tokens
+    then: All classified as keywords
+
+  - name: e2eCodeOperatorDetection
+    given: "+ - * / = == != < >"
+    when: Classifying tokens
+    then: All classified as operators
+
+  - name: e2eCodeSimilarFunctions
+    given: Two functions with same structure different names
+    when: Comparing similar code
+    then: Moderate to high similarity
+
+  - name: e2eCodeDifferentLanguages
+    given: Same algorithm in different syntax
+    when: Comparing across languages
+    then: Some similarity from shared structure
+
+  - name: e2eCodeCommentOnly
+    given: "// this is a comment"
+    when: Encoding comment-only code
+    then: Returns valid vector
+
+  - name: e2eCodeNestedBlocks
+    given: Deeply nested if/else blocks
+    when: Encoding nested structure
+    then: Returns valid vector with depth info
+
+  - name: e2eCodeTokenCount
+    given: "fn main() { return 0; }"
+    when: Counting tokens
+    then: Returns expected token count
+
+  - name: e2eCodeDeterminism
+    given: Same code encoded twice
+    when: Checking reproducibility
+    then: Produces identical hypervectors
+
+  # Cross-Modal E2E (8 cases)
+  - name: e2eCrossTextVsVision
+    given: Text encoding and vision encoding
+    when: Comparing across modalities
+    then: Similarity in valid range [-1, 1]
+
+  - name: e2eCrossTextVsVoice
+    given: Text encoding and voice encoding
+    when: Comparing text and audio
+    then: Similarity in valid range
+
+  - name: e2eCrossTextVsCode
+    given: Text encoding and code encoding
+    when: Comparing text and code
+    then: Similarity in valid range
+
+  - name: e2eCrossVisionVsVoice
+    given: Vision encoding and voice encoding
+    when: Comparing image and audio
+    then: Similarity in valid range
+
+  - name: e2eCrossVisionVsCode
+    given: Vision encoding and code encoding
+    when: Comparing image and code
+    then: Similarity in valid range
+
+  - name: e2eCrossVoiceVsCode
+    given: Voice encoding and code encoding
+    when: Comparing audio and code
+    then: Similarity in valid range
+
+  - name: e2eCrossSameModalitySimilar
+    given: Two similar text encodings
+    when: Same-modality comparison
+    then: Higher similarity than cross-modal
+
+  - name: e2eCrossOrthogonality
+    given: Random encodings from different modalities
+    when: Checking near-orthogonality
+    then: Cross-modal similarity near 0 for unrelated inputs
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

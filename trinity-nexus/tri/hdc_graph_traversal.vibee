@@ -1,0 +1,66 @@
+name: hdc_graph_traversal
+version: "1.0.0"
+language: zig
+module: hdc_graph_traversal
+
+description: |
+  Multi-hop reasoning and path queries over HDC Knowledge Graphs.
+  Extends HDCKnowledgeGraph with graph traversal operations.
+
+  Path Query:
+    pathQuery(start, [r1, r2, ...]) chains single-hop queries:
+    start --r1--> e1 --r2--> e2 --r3--> result
+
+  Analogy Query:
+    "a is to b as c is to ?"
+    result_hv = value_hv(b) - value_hv(a) + value_hv(c)
+    Decoded against entity codebook.
+
+  Subgraph Match:
+    Find entity satisfying multiple relation constraints:
+    {relation1: value1, relation2: value2, ...}
+    Bundles individual query results and decodes.
+
+types:
+  PathResult:
+    fields:
+      path: List<String>       # [start, hop1, hop2, ..., end]
+      final_entity: String
+      final_similarity: Float
+      hops: usize
+
+  AnalogyResult:
+    fields:
+      value: String
+      similarity: Float
+
+  SubgraphConstraint:
+    fields:
+      relation: String
+      object: String
+
+  SubgraphResult:
+    fields:
+      entity: String
+      similarity: Float
+
+behaviors:
+  - name: pathQuery
+    given: Start entity and list of relations
+    when: Chains (current, relation, ?) queries hop by hop
+    then: Returns PathResult with full path and final entity
+
+  - name: pathQueryTopK
+    given: Start entity, relations, and k
+    when: At each hop, considers top-k candidates (beam search)
+    then: Returns top-k PathResults sorted by cumulative similarity
+
+  - name: analogyQuery
+    given: Three entities a, b, c (a:b :: c:?)
+    when: Computes b_hv - a_hv + c_hv, decodes against codebook
+    then: Returns AnalogyResult with best matching entity
+
+  - name: subgraphMatch
+    given: List of (relation, object) constraints
+    when: Queries each constraint, bundles results, decodes
+    then: Returns entity satisfying all constraints

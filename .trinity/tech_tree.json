@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "updated_at": "2026-03-11T03:00:00Z",
+  "epics": [
+    {
+      "issue": 38,
+      "title": "Ralph Agent Swarm v1.0",
+      "priority": "P0",
+      "children": [
+        {"issue": 45, "title": "Phase 1: Architecture", "priority": "P1", "prereqs": [], "status": "open"},
+        {"issue": 46, "title": "Phase 2: Core Pipeline", "priority": "P1", "prereqs": [45], "status": "open"},
+        {"issue": 47, "title": "Phase 3: Agent MU", "priority": "P2", "prereqs": [46], "status": "open"},
+        {"issue": 48, "title": "Phase 4: Quality", "priority": "P2", "prereqs": [47], "status": "open"},
+        {"issue": 49, "title": "Phase 5: Deploy", "priority": "P2", "prereqs": [48], "status": "open"}
+      ]
+    },
+    {
+      "issue": 27,
+      "title": "Full Trinity Pipeline",
+      "priority": "P1",
+      "children": [
+        {"issue": 69, "title": "Spec Enricher", "priority": "P1", "prereqs": [], "status": "closed"},
+        {"issue": 71, "title": "Spec <-> Code Sync", "priority": "P1", "prereqs": [], "status": "closed"},
+        {"issue": 77, "title": "Batch Pipeline", "priority": "P1", "prereqs": [], "status": "closed"}
+      ]
+    },
+    {
+      "issue": 113,
+      "title": "Scholar Agent",
+      "priority": "P1",
+      "children": [],
+      "status": "closed"
+    },
+    {
+      "issue": 57,
+      "title": "tri-bot Phase 3",
+      "priority": "P2",
+      "children": [],
+      "status": "open"
+    }
+  ]
+}

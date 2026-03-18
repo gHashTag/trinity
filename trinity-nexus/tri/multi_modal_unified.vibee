@@ -1,0 +1,527 @@
+# ============================================================================
+# Multi-Modal Unified Engine - Cycle 26
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: multi_modal_unified
+version: "1.0.0"
+language: zig
+module: multi_modal_unified
+
+description: |
+  Multi-Modal Unified Engine — Text + Vision + Voice + Code Execution.
+  Cycle 26 feature: Full local multi-modal integration unified in VSA space.
+
+  Architecture:
+    Input: Any modality (text/image/audio/code)
+    → Modal Encoder: Converts to hypervector
+    → Fusion Layer: Bundles modalities with role binding
+    → Unified VSA Space: All modalities coexist
+    → Modal Decoder: Converts back to target modality
+
+  Encoding Strategies:
+    Text: N-gram encoding with character-level binding
+    Vision: Patch-based encoding with position binding (similar to ViT)
+    Voice: MFCC/spectrogram encoding with temporal binding
+    Code: AST-based encoding with structural binding
+
+  Cross-Modal Operations:
+    - "Describe this image" → Vision → Text
+    - "Generate code from description" → Text → Code
+    - "Read this text aloud" → Text → Voice
+    - "What's in this audio?" → Voice → Text
+    - "Execute and explain" → Code → Text
+
+  Use Cases:
+    - Multi-modal chat: "Look at this image and write code"
+    - Code assistant: "Explain this function" + voice output
+    - Document understanding: Image + OCR + semantic analysis
+
+# ============================================================================
+# CONSTANTS
+# ============================================================================
+
+constants:
+  DEFAULT_DIMENSION: 10000
+  DEFAULT_PATCH_SIZE: 16       # Vision patch size (16x16 pixels)
+  DEFAULT_MFCC_COEFFS: 13      # Voice MFCC coefficients
+  DEFAULT_NGRAM_SIZE: 3        # Text n-gram size
+  MAX_IMAGE_SIZE: 1024         # Max image dimension
+  MAX_AUDIO_SAMPLES: 480000    # Max 10 seconds at 48kHz
+  MAX_CODE_TOKENS: 8192        # Max code tokens
+
+  # Golden ratio for encoding
+  PHI: 1.6180339887498948482
+
+# ============================================================================
+# TYPES
+# ============================================================================
+
+types:
+  # Core Modality Types
+  ModalityType:
+    description: "Type of input/output modality"
+    variants:
+      - text          # Natural language text
+      - vision        # Image/video
+      - voice         # Audio/speech
+      - code          # Source code
+      - structured    # Structured data (JSON, etc.)
+
+  ModalityInput:
+    description: "Input data from any modality"
+    variants:
+      - text: TextInput
+      - image: ImageInput
+      - audio: AudioInput
+      - code: CodeInput
+      - structured: StructuredInput
+
+  ModalityOutput:
+    description: "Output data to any modality"
+    variants:
+      - text: String
+      - image: ImageOutput
+      - audio: AudioOutput
+      - code: CodeOutput
+
+  # Text Modality
+  TextInput:
+    description: "Text input"
+    fields:
+      content: String
+      language: Option<String>   # ISO language code
+
+  # Vision Modality
+  ImageInput:
+    description: "Image input"
+    fields:
+      pixels: List<u8>           # Raw pixel data (RGB)
+      width: usize
+      height: usize
+      channels: usize            # 3 for RGB, 4 for RGBA
+
+  ImageOutput:
+    description: "Generated image output"
+    fields:
+      pixels: List<u8>
+      width: usize
+      height: usize
+      format: ImageFormat
+
+  ImageFormat:
+    variants:
+      - rgb
+      - rgba
+      - grayscale
+
+  ImagePatch:
+    description: "Image patch for encoding"
+    fields:
+      x: usize                   # Patch x position
+      y: usize                   # Patch y position
+      pixels: List<u8>           # Patch pixel data
+      index: usize               # Sequential index
+
+  # Voice Modality
+  AudioInput:
+    description: "Audio input"
+    fields:
+      samples: List<f32>         # Audio samples
+      sample_rate: u32           # e.g., 16000, 44100, 48000
+      channels: u8               # 1 for mono, 2 for stereo
+
+  AudioOutput:
+    description: "Generated audio output"
+    fields:
+      samples: List<f32>
+      sample_rate: u32
+
+  MFCCFrame:
+    description: "MFCC coefficients for audio frame"
+    fields:
+      coefficients: List<f32>    # MFCC values
+      frame_index: usize         # Temporal position
+
+  # Code Modality
+  CodeInput:
+    description: "Source code input"
+    fields:
+      source: String
+      language: String           # zig, python, rust, etc.
+      file_path: Option<String>
+
+  CodeOutput:
+    description: "Generated code output"
+    fields:
+      source: String
+      language: String
+      explanation: Option<String>
+
+  ASTNode:
+    description: "Simplified AST node for encoding"
+    fields:
+      node_type: String          # function, variable, call, etc.
+      name: Option<String>
+      children: List<ASTNode>
+      depth: usize
+
+  # Structured Modality
+  StructuredInput:
+    description: "Structured data input"
+    fields:
+      json_data: String
+      schema: Option<String>
+
+  # Fusion Types
+  FusedRepresentation:
+    description: "Multi-modal fused hypervector"
+    fields:
+      vector: Ptr<HybridBigInt>
+      modalities: List<ModalityType>  # Which modalities are fused
+      weights: List<f32>              # Modality weights
+      timestamp: u64
+
+  CrossModalQuery:
+    description: "Query for cross-modal operation"
+    fields:
+      source: ModalityInput
+      target_modality: ModalityType
+      context: Option<String>
+      max_output_length: usize
+
+  CrossModalResult:
+    description: "Result of cross-modal operation"
+    fields:
+      output: ModalityOutput
+      confidence: f32
+      processing_time_ms: u64
+      source_modalities: List<ModalityType>
+
+  # Encoder States
+  TextEncoderState:
+    fields:
+      allocator: Allocator
+      item_memory: Ptr<ItemMemory>
+      ngram_size: usize
+      dimension: usize
+
+  VisionEncoderState:
+    fields:
+      allocator: Allocator
+      item_memory: Ptr<ItemMemory>
+      patch_size: usize
+      dimension: usize
+      position_hvs: List<HybridBigInt>  # Pre-computed position vectors
+
+  VoiceEncoderState:
+    fields:
+      allocator: Allocator
+      item_memory: Ptr<ItemMemory>
+      mfcc_coeffs: usize
+      dimension: usize
+      temporal_hvs: List<HybridBigInt>  # Pre-computed temporal vectors
+
+  CodeEncoderState:
+    fields:
+      allocator: Allocator
+      item_memory: Ptr<ItemMemory>
+      dimension: usize
+      ast_type_hvs: HashMap<String, HybridBigInt>  # AST node type vectors
+
+  # Main Engine State
+  MultiModalEngine:
+    description: "Unified multi-modal engine"
+    fields:
+      allocator: Allocator
+      dimension: usize
+      text_encoder: TextEncoderState
+      vision_encoder: VisionEncoderState
+      voice_encoder: VoiceEncoderState
+      code_encoder: CodeEncoderState
+      modality_role_hvs: HashMap<ModalityType, HybridBigInt>  # Role vectors per modality
+      fusion_cache: HashMap<u64, FusedRepresentation>         # Cached fusions
+      stats: EngineStats
+
+  EngineStats:
+    description: "Engine performance statistics"
+    fields:
+      total_encodings: u64
+      total_fusions: u64
+      total_cross_modal: u64
+      avg_encoding_time_us: f64
+      avg_fusion_time_us: f64
+      cache_hit_rate: f64
+
+# ============================================================================
+# BEHAVIORS
+# ============================================================================
+
+behaviors:
+  # Initialization
+  - name: init
+    given: Allocator, optional dimension
+    when: Creating engine
+    then: Initialize all encoders with pre-computed vectors
+
+  - name: deinit
+    given: Engine instance
+    when: Destroying engine
+    then: Free all resources
+
+  # Text Encoding
+  - name: encodeText
+    given: TextInput
+    when: Encoding text to hypervector
+    then: Use n-gram encoding with character binding
+    impl: |
+      1. Tokenize into n-grams
+      2. For each n-gram: ngram_hv = bind(char_hvs[0], permute(char_hvs[1], 1), ...)
+      3. Bundle all n-gram vectors
+      4. Bind with text modality role vector
+
+  # Vision Encoding
+  - name: encodeImage
+    given: ImageInput
+    when: Encoding image to hypervector
+    then: Patch-based encoding with position binding
+    impl: |
+      1. Split image into patches (16x16 by default)
+      2. For each patch: flatten pixels, quantize to ternary
+      3. patch_hv = bind(pixel_hv, position_hv[patch_idx])
+      4. Bundle all patch vectors
+      5. Bind with vision modality role vector
+
+  - name: extractPatches
+    given: ImageInput, patch_size
+    when: Preparing image for encoding
+    then: Return list of ImagePatch
+
+  # Voice Encoding
+  - name: encodeAudio
+    given: AudioInput
+    when: Encoding audio to hypervector
+    then: MFCC-based encoding with temporal binding
+    impl: |
+      1. Compute MFCC frames (25ms windows, 10ms hop)
+      2. For each frame: encode MFCC coefficients
+      3. frame_hv = bind(mfcc_hv, temporal_hv[frame_idx])
+      4. Bundle all frame vectors
+      5. Bind with voice modality role vector
+
+  - name: computeMFCC
+    given: AudioInput
+    when: Extracting MFCC features
+    then: Return list of MFCCFrame
+
+  # Code Encoding
+  - name: encodeCode
+    given: CodeInput
+    when: Encoding source code to hypervector
+    then: AST-based encoding with structural binding
+    impl: |
+      1. Parse code to simplified AST
+      2. For each node: node_hv = bind(type_hv, name_hv, depth_hv)
+      3. Bundle child nodes, bind with parent
+      4. Recursive structure encoding
+      5. Bind with code modality role vector
+
+  - name: parseToAST
+    given: CodeInput
+    when: Parsing code to AST
+    then: Return ASTNode tree
+
+  # Multi-Modal Fusion
+  - name: fuse
+    given: List<ModalityInput>, optional weights
+    when: Fusing multiple modalities
+    then: Bundle modality vectors with role binding
+    impl: |
+      1. Encode each modality input
+      2. Apply weights if provided
+      3. Bundle: fused_hv = bundle(weight[0]*hv[0], weight[1]*hv[1], ...)
+      4. Cache result for reuse
+
+  - name: fuseWithContext
+    given: List<ModalityInput>, context string
+    when: Fusing with additional context
+    then: Include context encoding in fusion
+
+  # Cross-Modal Operations
+  - name: crossModal
+    given: CrossModalQuery
+    when: Converting between modalities
+    then: Encode source, decode to target modality
+    impl: |
+      1. Encode source modality
+      2. Query similar patterns in target modality space
+      3. Generate output in target modality format
+
+  - name: describeImage
+    given: ImageInput
+    when: User asks "describe this image"
+    then: Encode image, generate text description
+
+  - name: generateCode
+    given: TextInput (description)
+    when: User asks to generate code
+    then: Encode description, generate code output
+
+  - name: speakText
+    given: TextInput
+    when: Converting text to speech
+    then: Encode text, generate audio output
+
+  - name: transcribeAudio
+    given: AudioInput
+    when: Converting speech to text
+    then: Encode audio, generate text output
+
+  - name: explainCode
+    given: CodeInput
+    when: User asks to explain code
+    then: Encode code, generate text explanation
+
+  # Utility
+  - name: similarity
+    given: FusedRepresentation, FusedRepresentation
+    when: Comparing multi-modal representations
+    then: Return cosine similarity
+
+  - name: getStats
+    given: Engine instance
+    when: Querying performance
+    then: Return EngineStats
+
+  - name: clearCache
+    given: Engine instance
+    when: Memory pressure
+    then: Clear fusion cache
+
+# ============================================================================
+# INTEGRATION
+# ============================================================================
+
+integration:
+  - target: vsa.zig
+    description: "VSA operations (bind, bundle, similarity)"
+
+  - target: hybrid.zig
+    description: "HybridBigInt hypervector type"
+
+  - target: sdk.zig
+    description: "High-level API"
+
+  - target: hdc_text_encoder.zig
+    description: "Text encoding utilities"
+
+  - target: voice_engine.zig
+    description: "Voice I/O from Cycle 24"
+
+  - target: sandbox_engine.zig
+    description: "Code execution sandbox"
+
+# ============================================================================
+# EXAMPLES
+# ============================================================================
+
+examples:
+  - name: multi_modal_chat
+    description: "Look at image and write code"
+    code: |
+      var engine = try MultiModalEngine.init(allocator, .{});
+      defer engine.deinit();
+
+      // User: "Look at this image and write Python code to replicate it"
+      const image = try loadImage("chart.png");
+      const text = "Write Python code to replicate this chart";
+
+      // Fuse image + text
+      const fused = try engine.fuse(&.{
+          .{ .image = image },
+          .{ .text = .{ .content = text } },
+      }, null);
+
+      // Generate code
+      const result = try engine.crossModal(.{
+          .source = .{ .text = .{ .content = "replicate chart" } },
+          .target_modality = .code,
+          .context = "Python matplotlib",
+      });
+
+  - name: voice_code_assistant
+    description: "Explain code with voice output"
+    code: |
+      const code = try readFile("complex_function.zig");
+      const explanation = try engine.explainCode(.{
+          .source = code,
+          .language = "zig",
+      });
+
+      // Convert explanation to speech
+      const audio = try engine.speakText(.{
+          .content = explanation.text,
+      });
+
+# ============================================================================
+# TESTS
+# ============================================================================
+
+tests:
+  - name: test_text_encoding
+    given: "Hello, world!"
+    then: Returns valid hypervector with correct dimension
+
+  - name: test_image_encoding
+    given: 64x64 RGB image
+    then: Returns valid hypervector
+
+  - name: test_audio_encoding
+    given: 1 second 16kHz mono audio
+    then: Returns valid hypervector
+
+  - name: test_code_encoding
+    given: Simple function source
+    then: Returns valid hypervector
+
+  - name: test_fusion
+    given: Text + Image inputs
+    then: Returns fused hypervector containing both
+
+  - name: test_cross_modal_text_to_code
+    given: "Write a fibonacci function"
+    then: Generates valid code output
+
+  - name: test_similarity_same_modality
+    given: Two similar texts
+    then: High similarity (> 0.8)
+
+  - name: test_similarity_different_modality
+    given: Image and its description
+    then: Moderate similarity (> 0.5)
+
+# ============================================================================
+# METRICS
+# ============================================================================
+
+metrics:
+  - name: encoding_throughput
+    description: "Encodings per second"
+    target: "> 1000 ops/s"
+
+  - name: fusion_throughput
+    description: "Fusions per second"
+    target: "> 500 ops/s"
+
+  - name: cross_modal_latency
+    description: "Cross-modal conversion latency"
+    target: "< 100ms"
+
+  - name: memory_per_encoding
+    description: "Memory per encoding operation"
+    target: "< 1MB"
+
+# ============================================================================
+# Golden Chain: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================

@@ -1,0 +1,41 @@
+[cell]
+id = "trinity.papers"
+name = "Academic Papers"
+version = "1.0.0"
+kind = "library"
+path = "papers"
+min_core_version = "1.0.0"
+status = "stable"
+description = "Academic papers for FPGA, HSLM training, patent strategy, and SEVO"
+capabilities = ["paper", "citation", "latex"]
+files = 0
+tests = 0
+owner = "agent:scholar"
+
+[tags]
+scope = "infra"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = ["patent status"]
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = "true"
+signature = "sha256:94185da6072f31f5d6aed0bd67d7c3cdfe41c1f8244acf14e3b389ac69e80062"

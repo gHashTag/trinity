@@ -1,0 +1,41 @@
+[cell]
+id = "trinity.contracts"
+name = "Smart Contracts"
+version = "1.0.0"
+kind = "library"
+path = "contracts"
+min_core_version = "1.0.0"
+status = "stable"
+description = "ERC20 TrinityToken ($TRI) with sacred tokenomics and vesting"
+capabilities = ["solidity", "erc20", "vesting"]
+files = 0
+tests = 0
+owner = "agent:ralph"
+
+[tags]
+scope = "depin"
+type = "library"
+
+[contributes]
+commands = []
+exports = []
+tri_subcommands = ["depin status"]
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = "true"
+signature = "sha256:4637272d714370aa92f84253ba613e8c722de61ed54b183cc7a799ed7c6337ba"

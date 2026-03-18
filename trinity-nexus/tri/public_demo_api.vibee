@@ -1,0 +1,40 @@
+name: public_demo_api
+version: "1.0.0"
+language: zig
+module: public_demo_api
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 600
+  NUM_DOMAINS: 3
+  PAIRS_PER_DOMAIN: 10
+
+types:
+  QueryResult:
+    fields:
+      domain: String
+      query_key: Int
+      result_idx: Int
+      confidence: Float
+      correct: Bool
+
+behaviors:
+  - name: singleDomainQueries
+    given: "3 domains (people->locations, products->categories, documents->topics), 10 pairs each."
+    when: "Query all 30 pairs across 3 domains"
+    then: "30/30 (100%) — single-domain retrieval perfect"
+
+  - name: crossDomainTwoHop
+    given: "Bridge memories connecting Domain A->B and B->C."
+    when: "2-hop cross-domain queries: person->location->category, product->category->topic"
+    then: "20/20 (100%) — cross-domain chains resolve perfectly"
+
+  - name: responseFormattingConfidence
+    given: "20 queries with similarity-based confidence scores."
+    when: "Query and measure confidence (similarity) for each result"
+    then: "20/20 correct with high confidence (avg sim > 0.15)"
+
+  - name: batchQueryThroughput
+    given: "30 queries batched across all 3 domains."
+    when: "Execute all 30 queries in sequence, collect results"
+    then: "30/30 (100%) — batch processing maintains accuracy"

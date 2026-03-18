@@ -1,0 +1,84 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# tri_loop v2.0.0 — Extended Loop Decision with Needle Quality Check
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Extends loop_decide with needleCheck behavior for structural quality
+# via needle MCP server. Adds quality gate to decision cascade.
+#
+# phi^2 + 1/phi^2 = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: tri_loop
+version: "2.0.0"
+language: zig
+module: tri.loop_decide
+
+description: |
+  TRI Loop — Ralph-Pattern Autonomous Development Loop.
+
+  One iteration: wake -> scan -> decide -> act -> report -> sleep.
+  Continuous: `tri loop --interval 300` (5 min cycle).
+
+  v2.0: Extended with needleCheck for structural quality assessment.
+  Adds quality gate to decision cascade: if needle score < threshold,
+  decision becomes fix_first before continuing to next task.
+
+  Integrates with tri_experience for persistent learning.
+
+dependencies:
+  - tri_experience
+  - loop_decide
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  NeedleResult:
+    fields:
+      score: Float32              # 0-100 quality score from needle
+      issues_found: UInt32        # number of structural issues
+      passed: Bool                # score >= threshold
+
+  LoopDecisionExtended:
+    fields:
+      base: DecisionReport        # existing decision report
+      needle: NeedleResult        # needle quality gate result
+      combined_confidence: Float32 # adjusted confidence with needle
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: runLoop
+    given: Allocator, interval seconds, max iterations
+    when: Called
+    then: Executes autonomous development cycles until max reached
+
+  - name: runOnce
+    given: Allocator
+    when: Called
+    then: Executes a single wake/scan/decide/act/report cycle
+
+  - name: needleCheck
+    given: allocator
+    when: Loop decision needs structural quality assessment
+    then: |
+      Runs tri needle quality-gate as subprocess.
+      Parses output for score and issue count.
+      Returns NeedleResult with pass/fail.
+      If needle not available, returns default pass.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+reuses:
+  - loop_decide.zig (Decision, DecisionInput, DecisionReport, decide)
+  - needle MCP server (quality-gate tool)
+
+export_functions:
+  - runLoop
+  - runOnce
+  - needleCheck

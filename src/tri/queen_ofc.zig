@@ -264,9 +264,9 @@ fn sendRaw(allocator: Allocator, bot_token: []const u8, chat_id: []const u8, tex
     defer req.deinit();
 
     req.transfer_encoding = .{ .content_length = body.len };
-    var body_writer = try req.sendBodyUnflushed(&.{});
-    try body_writer.writer().writeAll(body);
-    try body_writer.end();
+    var body_writer_req = try req.sendBodyUnflushed(&.{});
+    try body_writer_req.writer.writeAll(body);
+    try body_writer_req.end();
     if (req.connection) |conn| try conn.flush();
 
     var redirect_buf: [0]u8 = .{};
@@ -328,8 +328,8 @@ fn buildBody(buf: []u8, chat_id: []const u8, text: []const u8) ![]const u8 {
         }
     }
 
-    @memcpy(buf[i..][0..3], "\"}");
-    i += 3;
+    @memcpy(buf[i..][0..2], "\"}");
+    i += 2;
 
     return buf[0..i];
 }

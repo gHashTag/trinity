@@ -1,0 +1,191 @@
+name: autonomous_mathematical_universe
+version: "4.0.0"
+language: zig
+module: autonomous_mathematical_universe
+
+types:
+  UniverseMetrics:
+    name: "UniverseMetrics"
+    fields:
+      - name: String
+        type: String
+      - description: The current universe being explored (e.g., "Holographic Domain", "String Theory Landscape")
+      - entropy: f64
+        type: f64
+        description: Holographic information density in bits
+      - complexity: i32
+        type: i32
+        description: Computational complexity of current universe state
+      - stability: f64
+        type: f64
+        description: Universe stability coefficient (0-1.0)
+  
+  DiscoveredConstants:
+    name: "DiscoveredConstants"
+    fields:
+      - symbol: String
+        type: String
+        description: Mathematical constant symbol
+      - value: f64
+        type: f64
+        description: Discovered constant value
+      - confidence: f64
+        type: f64
+        description: Confidence in the approximation (0-1.0)
+  
+  FormulaRelation:
+    name: "FormulaRelation"
+    fields:
+      - lhs_formula: String
+        type: String
+        description: Left-hand side formula expression
+      - rhs_formula: String
+        type: String
+        description: Right-hand side formula expression
+      - error_pct: f64
+        type: f64
+        description: Approximation error as percentage
+      - is_exact: bool
+        type: bool
+        description: Whether relation is mathematically exact
+      - sacred_type: String
+        type: String
+        description: Whether formula uses SACRED constants (φ, π, e, 3)
+  
+  EvolutionStep:
+    name: "EvolutionStep"
+    fields:
+      - iteration: i64
+        type: i64
+        description: Evolution iteration number
+      - population_size: i64
+        type: i64
+        description: Size of formula population
+      - mutation_rate: f64
+        type: f64
+        description: Mutation rate (default 0.0382)
+      - crossover_rate: f64
+        type: f64
+        description: Crossover rate (default 0.0618)
+      - selection_pressure: f64
+        type: f64
+        description: Selection pressure (default φ = 1.618)
+      - elitism_rate: f64
+        type: f64
+        description: Elitism rate (default 0.333)
+      - fitness_scores: String
+        type: String
+        description: JSON array of population fitness scores
+      - convergence_status: String
+        type: String
+        description: Convergence status (converging, stagnated, diverged)
+      - generation_time_ms: i64
+        type: i64
+        description: Time taken for this generation in milliseconds
+      - notes: String
+        type: String
+        description: Additional notes about the evolution step
+      - timestamp: i64
+        type: i64
+        description: Unix timestamp of when step occurred
+      - best_fitness: f64
+        type: f64
+        description: Best fitness achieved in this population
+      - improvement_over_previous: f64
+        type: f64
+        description: Improvement percentage over previous best
+  
+  UniverseState:
+    name: "UniverseState"
+    fields:
+      - current_universe: i32
+        type: i32
+        description: ID of currently active universe
+      - universes: String
+        type: String
+        description: JSON array of all discovered universes
+      - total_constants_discovered: i32
+        type: i32
+        description: Total count of constants discovered across all universes
+      - exploration_budget: i64
+        type: i64
+        description: Budget (in iterations) remaining for exploration
+      - exploration_progress: f64
+        type: f64
+        description: Exploration progress (0-1.0)
+      - time_spent_ms: i64
+        type: i64
+        description: Total time spent on exploration in milliseconds
+      - last_explored_constant: i32
+        type: i32
+        description: ID of last constant discovery
+      - total_formulas_tried: i64
+        type: i32
+        description: Total number of formulas generated in this universe
+      - successful_formulas: i64
+        type: i32
+        description: Number of formulas that successfully fit target
+      - evolution_history: String
+        type: String
+        description: Complete evolution history for this universe
+
+behaviors:
+  - name: discover_universes
+    given: Set of sacred constants
+    when: Engine explores mathematical universe
+    then: Return list of discovered universes with metrics
+    return: UniverseMetrics
+
+  - name: evolve_formulas
+    given: Current population of formula candidates
+    when: Genetic evolution step executes
+    then: Return next generation with mutations
+    return: EvolutionStep
+
+  - name: discover_constants
+    given: Current universe being explored
+    when: Formula search is triggered
+    then: Return constants with formula relations
+    return: DiscoveredConstants
+
+  - name: get_universe_state
+    given: Universe ID
+    when: State requested
+    then: Return complete universe state
+    return: UniverseState
+
+  - name: set_exploration_budget
+    given: Universe ID
+    when: Setting budget
+    then: Update exploration budget
+    return: UniverseState
+
+  - name: optimize_constants
+    given: List of formula relations
+    when: Optimization triggered
+    then: Return optimized constants (sacred, phi-optimized)
+    return: DiscoveredConstants
+
+  - name: switch_universe
+    given: Universe ID
+    when: Universe switching requested
+    then: Set current universe as active
+    return: UniverseState
+
+  - name: get_evolution_history
+    given: Universe ID
+    when: Evolution history requested
+    then: Return complete evolution history
+    return: String
+
+settings:
+  max_population_size: 64
+  max_universes: 8
+  max_formula_depth: 8
+  default_mutation_rate: 0.0382
+  default_crossover_rate: 0.0618
+  default_selection_pressure: 1.618
+  default_elitism_rate: 0.333
+  min_fitness_threshold: 0.001
+  convergence_generations: 10
+  exploration_budget_per_universe: 100

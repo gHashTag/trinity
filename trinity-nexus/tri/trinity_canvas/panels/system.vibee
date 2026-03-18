@@ -1,0 +1,157 @@
+name: system_panel
+version: "2.0.0"
+language: zig
+module: panels.system
+description: "System monitoring panel - CPU, Memory, Temperature, Disk, Network"
+
+# =============================================================================
+# SYSTEM MONITORING PANEL
+# Extended metrics in Hyper terminal style
+# =============================================================================
+
+imports:
+  - ../theme
+  - ../types
+
+types:
+  CpuInfo:
+    description: "CPU metrics"
+    fields:
+      usage_percent: Float       # 0-100
+      core_count: U8             # Number of cores
+      frequency_mhz: U32         # Current frequency
+      model_name: String[64]     # "Apple M1 Pro"
+
+  MemoryInfo:
+    description: "Memory metrics"
+    fields:
+      used_gb: Float             # Used RAM in GB
+      total_gb: Float            # Total RAM in GB
+      swap_used_gb: Float        # Swap used
+      swap_total_gb: Float       # Swap total
+      cached_gb: Float           # Cached memory
+
+  TemperatureInfo:
+    description: "Temperature sensors"
+    fields:
+      cpu_temp: Float            # CPU temperature Celsius
+      gpu_temp: Float            # GPU temperature Celsius
+      ssd_temp: Float            # SSD temperature Celsius
+
+  DiskInfo:
+    description: "Disk I/O and space"
+    fields:
+      read_mb_s: Float           # Read speed MB/s
+      write_mb_s: Float          # Write speed MB/s
+      used_gb: Float             # Used space GB
+      total_gb: Float            # Total space GB
+      device_name: String[32]    # "Macintosh HD"
+
+  NetworkInfo:
+    description: "Network I/O"
+    fields:
+      rx_kb_s: Float             # Download KB/s
+      tx_kb_s: Float             # Upload KB/s
+      interface_name: String[16] # "en0"
+      ip_address: String[16]     # "192.168.1.100"
+
+  ProcessInfo:
+    description: "Process stats"
+    fields:
+      process_count: U32         # Running processes
+      thread_count: U32          # Total threads
+      zombie_count: U32          # Zombie processes
+
+  SystemMetrics:
+    description: "Complete system metrics"
+    fields:
+      cpu: CpuInfo
+      memory: MemoryInfo
+      temperature: TemperatureInfo
+      disk: DiskInfo
+      network: NetworkInfo
+      process: ProcessInfo
+      uptime_seconds: U64
+      update_timer: Float
+
+constants:
+  UPDATE_INTERVAL: 2.0          # Seconds between metric updates
+  BAR_HEIGHT: 8.0               # Progress bar height
+  ROW_HEIGHT: 50.0              # Height per metric row
+  MARGIN: 20.0                  # Panel margin
+
+  # Thresholds
+  CPU_WARNING: 50.0
+  CPU_CRITICAL: 80.0
+  MEM_WARNING: 0.5
+  MEM_CRITICAL: 0.8
+  TEMP_WARNING: 60.0
+  TEMP_CRITICAL: 80.0
+  DISK_WARNING: 0.7
+  DISK_CRITICAL: 0.9
+
+behaviors:
+  - name: init
+    given: Nothing
+    when: Creating system panel
+    then: Initialize all metrics to default/simulated values
+
+  - name: update
+    given: Delta time
+    when: Each frame
+    then: Update timer, refresh metrics if interval elapsed
+
+  - name: fetch_metrics
+    given: Nothing
+    when: Update interval reached
+    then: Read system metrics (macOS sysctl or simulated)
+
+  - name: draw
+    given: Panel rect, time, font
+    when: Rendering panel content
+    then: Draw all metric sections with bars and labels
+
+  - name: draw_cpu_section
+    given: Rect, CpuInfo, time
+    when: Drawing CPU row
+    then: Draw label, usage bar, percentage, core info
+
+  - name: draw_memory_section
+    given: Rect, MemoryInfo, time
+    when: Drawing memory row
+    then: Draw label, RAM bar, swap bar, values
+
+  - name: draw_temperature_section
+    given: Rect, TemperatureInfo, time
+    when: Drawing temperature row
+    then: Draw CPU/GPU temp bars with color thresholds
+
+  - name: draw_disk_section
+    given: Rect, DiskInfo, time
+    when: Drawing disk row
+    then: Draw space bar, I/O rates
+
+  - name: draw_network_section
+    given: Rect, NetworkInfo, time
+    when: Drawing network row
+    then: Draw RX/TX rates with arrows
+
+  - name: draw_process_section
+    given: Rect, ProcessInfo, time
+    when: Drawing process row
+    then: Draw process/thread counts
+
+  - name: draw_uptime
+    given: Rect, uptime_seconds
+    when: Drawing uptime row
+    then: Format and draw "Xd Xh Xm Xs"
+
+  - name: format_bytes
+    given: Bytes as Float
+    when: Displaying size
+    then: Return formatted string (KB, MB, GB)
+
+  - name: format_uptime
+    given: Seconds as U64
+    when: Displaying uptime
+    then: Return formatted "Xd Xh Xm" string

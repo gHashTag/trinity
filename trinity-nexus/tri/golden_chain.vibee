@@ -1,0 +1,124 @@
+name: golden_chain
+version: "1.0.0"
+language: zig
+
+types:
+  HybridChat:
+    fields:
+      provider: String
+      model_id: String
+      api_key: String
+  ChainNode:
+  ChainMessageType:
+  GoalType:
+  ChainMessage:
+    fields:
+      msg_type: ChainMessageType
+      node: ChainNode
+      source: String
+      content: String
+      confidence: Float
+      latency_us: Int
+  ChainState:
+    fields:
+      current_node: ChainNode
+      node_progress: Float
+      node_active: Bool
+      node_complete: Bool
+      total_confidence: Float
+      total_latency_us: Int
+      is_running: Bool
+  GoldenChainAgent:
+    fields:
+      hybrid_chat: HybridChat
+      messages: String
+      state: ChainState
+      goal_type: GoalType
+      subtask_count: Int
+      min_quality: Float
+
+behaviors:
+  - name: process_input
+    given: User types a message and presses Enter
+    when: GoldenChainAgent receives the input string
+    then: |
+
+  - name: chain_msg_to_canvas
+    given: A ChainMessage from the pipeline
+    when: Canvas needs to render the message
+    then: |
+    implementation: |
+                    pub fn chain_msg_to_canvas(msg: ChainMessage) []const u8 {
+                        // Convert ChainMessage to canvas display format
+                        const msg_type = std.mem.trim(u8, msg.msg_type, " ");
+                        const node = std.mem.trim(u8, msg.node, " ");
+            
+                        // Map to canvas message type based on node and message type
+                        if (std.mem.eql(u8, node, "GoalParse")) {
+                            return "chain_goal_parse";
+                        } else if (std.mem.eql(u8, node, "Execute")) {
+                            return "chain_execute";
+                        } else if (std.mem.eql(u8, msg_type, "ToolResult")) {
+                            return "tool_result";
+                        } else if (std.mem.eql(u8, msg_type, "Reflection")) {
+                            return "reflection";
+                        } else if (std.mem.eql(u8, msg_type, "Error")) {
+                            return "agent_error";
+                        }
+                        return "chain_step";
+                    }
+            
+            
+      
+      
+
+  - name: render_chain_message
+    given: A chain-type ChatMsgType in the chat display
+    when: drawChatPanel renders messages
+    then: |
+    implementation: |
+                    pub fn render_chain_message(msg: ChainMessage) []const u8 {
+                        // Render chain message with Chakra-colored indicator
+                        // Format: ● [NODE_NAME] content
+                        var buffer: [512]u8 = undefined;
+                        const node_name = std.mem.trim(u8, msg.node, " ");
+                        const content = std.mem.trim(u8, msg.content, " ");
+            
+                        // Color code based on node type (Red for GoalParse, Green for Execute, etc.)
+                        const indicator = if (std.mem.eql(u8, node_name, "GoalParse")) "🔴"
+                                          else if (std.mem.eql(u8, node_name, "Execute")) "🟢"
+                                          else if (std.mem.eql(u8, node_name, "Monitor")) "🟡"
+                                          else if (std.mem.eql(u8, node_name, "Adapt")) "🟣"
+                                          else "⚪";
+            
+                        const formatted = std.fmt.bufPrint(&buffer, "{s} [{s}] {s}", .{ indicator, node_name, content });
+                        return formatted catch "chain_message";
+                    }
+            
+            
+      
+      
+
+  - name: adapt_on_low_quality
+    given: Monitor reports confidence below min_quality (0.7)
+    when: Adapt node runs
+    then: |
+    implementation: |
+                    pub fn adapt_on_low_quality(self: *GoldenChainAgent) f64 {
+                        // Adapt on low confidence by retrying with different parameters
+                        const old_confidence = self.state.total_confidence;
+            
+                        // Retry with adjusted parameters (e.g., higher temperature for LLM)
+                        // In a real implementation, this would call hybrid_chat.respond()
+                        const new_confidence = old_confidence + 0.1; // Simulated improvement
+            
+                        if (new_confidence > old_confidence) {
+                            self.state.total_confidence = new_confidence;
+                            return new_confidence;
+                        }
+                        return old_confidence;
+                    }
+            
+      
+      
+

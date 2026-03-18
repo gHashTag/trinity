@@ -1,0 +1,95 @@
+name: dev_farm_evolve
+version: "1.0.0"
+language: zig
+module: tri.dev_farm_evolve
+
+description: |
+  ASHA+PBT Evolution Engine for SWE agent swarm.
+  Evaluates agent fitness (test pass rate, spec compliance,
+  time efficiency, PR merged) and applies successive halving
+  to kill underperformers at each rung. Suggests mutations
+  for surviving agents. Core of Trinity's evolutionary
+  advantage over static agent frameworks.
+
+  phi^2 + 1/phi^2 = 3 = TRINITY
+
+behaviors:
+  - name: evaluateFitness
+    given: A DevAgentEntry with test results, timing, and PR status
+    when: Evolution step is triggered (rung threshold reached)
+    then: >
+      Computes weighted fitness score:
+      40% test_pass_rate + 30% spec_compliance +
+      20% (1/time_hours) + 10% pr_merged.
+      Returns FitnessMetrics with totalScore() method.
+
+  - name: findCurrentRung
+    given: Elapsed hours since evolution started
+    when: Checking which ASHA rung applies
+    then: >
+      Compares elapsed_hours against DEFAULT_RUNGS thresholds
+      (0.5h, 1.0h, 2.0h). Returns index of highest rung
+      whose threshold has been exceeded, or null if none.
+
+  - name: evaluateKills
+    given: Array of DevAgentEntry and an EvolutionRung config
+    when: Evolution step runs at a rung boundary
+    then: >
+      Sorts agents by fitness score descending.
+      Kills bottom fraction defined by kill_ratio.
+      Never kills ALL agents — at least 1 survives.
+      Returns kill_count and survivors count.
+
+  - name: runDevEvolveCommand
+    given: CLI args for tri dev evolve subcommand
+    when: User runs tri dev evolve init|step|status
+    then: >
+      Dispatches to init (reset evolution state),
+      step (evaluate fitness + kill underperformers),
+      or status (show leaderboard with fitness scores).
+
+types:
+  - name: FitnessMetrics
+    description: >
+      Agent fitness components: test_pass_rate (f32),
+      spec_compliance (f32), time_hours (f32),
+      pr_merged (bool), lines_changed (u32),
+      build_success (bool). Method totalScore() returns
+      weighted composite score.
+
+  - name: EvolutionRung
+    description: >
+      ASHA rung config: time_threshold_hours (f32),
+      kill_ratio (f32), min_fitness (f32).
+      DEFAULT_RUNGS has 3 rungs with increasing thresholds.
+
+dependencies:
+  - tri_dev.zig (DevAgentEntry, shared state)
+
+tests:
+  - name: totalScore_weighted
+    description: >
+      FitnessMetrics with test_pass_rate=0.9, spec_compliance=0.95,
+      time_hours=0.5, pr_merged=true should score ~0.94.
+  - name: totalScore_zero
+    description: >
+      All-zero metrics returns 0.0 score.
+  - name: findCurrentRung_thresholds
+    description: >
+      0.3h = null, 0.6h = rung 0, 1.5h = rung 1, 3.0h = rung 2.
+  - name: evaluateKills_ratio
+    description: >
+      4 agents with rung kill_ratio=0.5 kills 2, survives 2.
+  - name: evaluateKills_never_kills_all
+    description: >
+      1 agent always survives regardless of kill_ratio.
+  - name: rung_defaults
+    description: >
+      DEFAULT_RUNGS has 3 entries with increasing thresholds
+      and decreasing kill ratios.
+  - name: no_fitness_no_kills
+    description: >
+      Agents without fitness data get 0 kills (no data = no judgment).
+  - name: evolution_step_display
+    description: >
+      runStep prints leaderboard with scores and kill decisions.

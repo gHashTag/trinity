@@ -1,0 +1,16 @@
+# VIBEE Specification (auto-generated)
+name: v3_SIMD_batched_semantic_search_100x_speedup
+version: "1.0.0"
+language: zig
+module: v3_SIMD_batched_semantic_search_100x_speedup
+
+types:
+  GeneratedConfig:
+    fields:
+      task: String
+
+behaviors:
+  - name: execute
+    given: allocator
+    when: task description
+    then: implementation

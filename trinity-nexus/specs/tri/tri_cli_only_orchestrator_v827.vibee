@@ -1,0 +1,530 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRI CLI ONLY ORCHESTRATOR v8.27 — STRICT MODE
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Sacred Formula: φ² + 1/φ² = 3
+#
+# MISSION: Create STRICT orchestrator that uses ONLY TRI CLI for all coding ops.
+# VIBEE remains ONLY as spec language (.vibee files), but all coding is via `tri`.
+#
+# Workflow: tri decompose → tri plan → tri spec create → tri gen → tri test →
+#           tri bench → tri verdict → tri git → tri loop decide
+#
+# Author: TRI COMMANDER (Abbey)
+# Version: 8.27.0
+# Cycle: v8.27 "TRI CLI ONLY"
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: tri_cli_only_orchestrator
+version: "8.27.0"
+language: zig
+module: tri_orchestrator
+
+description: |
+  STRICT MODE Orchestrator that uses ONLY TRI CLI commands.
+  VIBEE is used ONLY for .vibee specification format.
+  All code generation, testing, and operations go through tri CLI.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SACRED CONSTANTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+constants:
+  PHI: 1.618033988749895      # Golden ratio
+  MU: 0.0382                   # Sacred learning rate
+  CHI: 0.23607                 # Chi constant
+  SIGMA: 1.618                 # Sigma
+  EPSILON: 0.333               # Epsilon
+  SACRED_THRESHOLD: 0.95      # Quality gate threshold
+  TOTAL_LINKS: 999             # PHI LOOP total links
+  MAX_SUB_AGENTS: 200          # Maximum sub-agents
+  CIRCUIT_BREAK_THRESHOLD: 10 # Max failures before circuit break
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  OrchestratorConfig:
+    description: Configuration for TRI CLI Orchestrator
+    fields:
+      auto_fix: Bool
+      max_retries: Int
+      learn_from_failures: Bool
+      phi_weighted_voting: Bool
+      verbose: Bool
+      max_links: Int
+      phi_threshold: Float
+      log_file: String
+      enable_rollback: Bool
+
+  OrchestratorState:
+    description: Current state of orchestration
+    fields:
+      current_phase: OrchestratorPhase
+      current_link: Int
+      passed_links: Int
+      failed_links: Int
+      skipped_links: Int
+      active_agents: Int
+      circuit_breaker_open: Bool
+      start_time: Int
+      last_commit: Option<String>
+
+  OrchestratorPhase:
+    description: Phase in the orchestration workflow
+    enum: [idle, decompose, plan, spec_create, gen, test, bench, verdict, git, loop_decide, complete, failed]
+
+  SubTask:
+    description: A decomposed sub-task
+    fields:
+      id: String
+      description: String
+      priority: Int
+      dependencies: List<String>
+      estimated_steps: Int
+      realm: Realm
+
+  ExecutionPlan:
+    description: Plan for executing tasks
+    fields:
+      subtasks: List<SubTask>
+      total_steps: Int
+      estimated_duration_ms: Int
+      requires_parallel: Bool
+      phi_confidence: Float
+
+  WorkflowResult:
+    description: Result of one workflow step
+    fields:
+      phase: OrchestratorPhase
+      success: Bool
+      output: String
+      error: Option<String>
+      duration_ms: Int
+      timestamp: Int
+
+  VerdictResult:
+    description: PAS Daemon quality verdict
+    fields:
+      pas_score: Float
+      trinity_identity: Bool
+      confidence: Float
+      sona_q_value: Float
+      passes_threshold: Bool
+      reasoning: Option<String>
+
+  LoopDecision:
+    description: Decision on whether to continue loop
+    enum: [continue, stop, retry, skip, circuit_break]
+
+  CircuitBreakerState:
+    description: Circuit breaker for safety
+    fields:
+      is_open: Bool
+      failure_count: Int
+      last_failure_time: Int
+      last_failure_reason: Option<String>
+      half_open_attempts: Int
+
+  ClusterNode:
+    description: A node in the 3-node cluster
+    fields:
+      node_id: String
+      node_type: NodeType
+      realm: Realm
+      status: NodeStatus
+      health: Float
+      last_heartbeat: Int
+      capabilities: List<String>
+
+  NodeType:
+    description: Type of cluster node
+    enum: [alpha, beta, gamma]
+
+  Realm:
+    description: Trinity realm
+    enum: [razum, materiya, dukh]
+
+  NodeStatus:
+    description: Status of a node
+    enum: [initializing, active, busy, degraded, offline, pending]
+
+  AgentVote:
+    description: Vote from an agent in φ-weighted consensus
+    fields:
+      agent_id: String
+      node_type: NodeType
+      decision: LoopDecision
+      confidence: Float
+      pas_score: Float
+      reasoning: Option<String>
+      timestamp: Int
+
+  ConsensusResult:
+    description: Result of φ-weighted consensus
+    fields:
+      final_decision: LoopDecision
+      consensus_score: Float
+      phi_weighted_score: Float
+      participant_count: Int
+      agreement_level: Float
+      trinity_verified: Bool
+      timestamp: Int
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CORE WORKFLOW
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: executeStrictWorkflow
+    given: A task description and valid configuration
+    when: Orchestrator is started
+    then: Execute complete workflow using ONLY TRI CLI commands
+    description: |
+      Main orchestration loop:
+      1. tri decompose <task>
+      2. tri plan <subtasks>
+      3. tri spec create <plan>
+      4. tri gen <spec.vibee>
+      5. tri test
+      6. tri bench
+      7. tri verdict
+      8. tri git commit (if verdict passes)
+      9. tri loop decide
+
+  - name: decomposeTask
+    given: A task description
+    when: Orchestrator is in decompose phase
+    then: Execute 'tri decompose <task>' and parse subtasks
+    description: |
+      Break down complex task into manageable subtasks.
+      Uses TRI CLI decompose command exclusively.
+
+  - name: createExecutionPlan
+    given: List of subtasks
+    when: Orchestrator is in plan phase
+    then: Execute 'tri plan <subtasks>' and create execution plan
+    description: |
+      Create detailed execution plan with dependencies,
+      parallelization opportunities, and step ordering.
+
+  - name: createVibeeSpec
+    given: Execution plan
+    when: Orchestrator is in spec_create phase
+    then: Execute 'tri spec create <plan>' to generate .vibee spec
+    description: |
+      Generate .vibee specification from execution plan.
+      VIBEE is ONLY used as spec format, not for codegen directly.
+
+  - name: generateCode
+    given: A .vibee spec file
+    when: Orchestrator is in gen phase
+    then: Execute 'tri gen <spec.vibee>' to generate Zig code
+    description: |
+      Generate Zig code from .vibee spec using TRI CLI.
+      This is the ONLY path for code generation.
+
+  - name: runTests
+    given: Generated code exists
+    when: Orchestrator is in test phase
+    then: Execute 'tri test' and collect results
+    description: |
+      Run all tests using TRI CLI test command.
+
+  - name: runBenchmarks
+    given: Tests pass
+    when: Orchestrator is in bench phase
+    then: Execute 'tri bench' and collect performance metrics
+    description: |
+      Run benchmarks using TRI CLI bench command.
+
+  - name: getVerdict
+    given: Test and benchmark results
+    when: Orchestrator is in verdict phase
+    then: Execute 'tri verdict' to get PAS Daemon quality score
+    description: |
+      Get quality verdict from PAS Daemon through TRI CLI.
+      Score must be >= SACRED_THRESHOLD (0.95) to proceed.
+
+  - name: commitChanges
+    given: Verdict passes threshold
+    when: Orchestrator is in git phase
+    then: Execute 'tri git commit' to commit changes
+    description: |
+      Commit changes to git using TRI CLI if quality passes.
+
+  - name: decideNextLoop
+    given: Current workflow result
+    when: Orchestrator is in loop_decide phase
+    then: Execute 'tri loop decide' to determine next action
+    description: |
+      Decide whether to continue, stop, retry, or skip based on:
+      - PAS score
+      - Progress towards goal
+      - Circuit breaker state
+      - Resource availability
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # LOGGING
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: logSacredToolCall
+    given: A TRI CLI command and its result
+    when: Any TRI CLI command is executed
+    then: Log to sacred_tool_calls.log with timestamp and φ marker
+    description: |
+      Every TRI CLI call must be logged:
+      [φ] 2026-02-23T14:32:15.123Z | tri decompose "Implement orchestrator"
+
+  - name: logFailure
+    given: A failure in any phase
+    when: A step fails
+    then: Log failure details to sacred_tool_calls.log
+    description: |
+      Log all failures for later analysis and rollback.
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # ROLLBACK & RECOVERY
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: rollbackOnFailure
+    given: A failure in any phase
+    when: A step fails and rollback is enabled
+    then: Rollback git to last commit and restore state
+    description: |
+      Automatic rollback strategy:
+      1. Log failure to sacred_tool_calls.log
+      2. Rollback git to last commit
+      3. Restore previous state
+      4. Trigger AGENT MU for analysis
+      5. Retry with φ-backoff (1.618s, 2.618s, 4.236s, ...)
+
+  - name: triggerCircuitBreaker
+    given: Circuit breaker state with threshold
+    when: Failure count exceeds threshold
+    then: Open circuit breaker and halt orchestration
+    description: |
+      Circuit breaker opens after CIRCUIT_BREAK_THRESHOLD failures.
+      Requires manual reset to continue.
+
+  # ═══════════════════════════════════════════════════════════════════════════════
+  # CLUSTER COORDINATION
+  # ═══════════════════════════════════════════════════════════════════════════════
+
+  - name: initializeCluster
+    given: 3-node cluster specification
+    when: Orchestrator starts
+    then: Initialize Alpha, Beta, Gamma nodes with assigned realms
+    description: |
+      Initialize the 3-node cluster:
+      - Alpha (RAZUM): Gold #ffd700 - Intelligence, Routing, Planning
+      - Beta (MATERIYA): Cyan #00ccff - Storage, Memory, Data
+      - Gamma (DUKH): Purple #aa66ff - Actions, Tools, Execution
+
+  - name: dispatchToNode
+    given: A task and its realm requirements
+    when: Task needs execution
+    then: Route to appropriate node based on realm
+    description: |
+      Route tasks to cluster nodes:
+      - RAZUM tasks → Alpha
+      - MATERIYA tasks → Beta
+      - DUKH tasks → Gamma
+
+  - name: achieveConsensus
+    given: Votes from multiple nodes/agents
+    when: Decision must be made
+    then: Calculate φ-weighted consensus (Alpha=φ, Beta=1, Gamma=1/φ)
+    description: |
+      φ-weighted voting where Alpha gets φ boost, Beta is neutral,
+      Gamma gets 1/φ weight. This ensures intelligence dominates
+      while maintaining balance.
+
+  - name: spawnSubAgents
+    given: A task requiring parallel processing
+    when: Single node insufficient
+    then: Spawn up to MAX_SUB_AGENTS (200) across cluster
+    description: |
+      Distributed sub-agent spawning for complex tasks.
+      Load balanced across all active nodes.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  - name: orchestratorInitialization
+    given: Default configuration
+    when: Orchestrator is initialized
+    then: State should be idle with phase=idle, circuit breaker closed
+
+  - name: sacredConstants
+    given: No parameters
+    when: Sacred constants are accessed
+    then: PHI = 1.618..., MU = 0.0382, SACRED_THRESHOLD = 0.95
+
+  - name: trinityIdentity
+    given: No parameters
+    when: Trinity identity check is performed
+    then: φ² + 1/φ² should equal 3 within tolerance
+
+  - name: decomposeTaskExecution
+    given: Task "Implement feature X"
+    when: tri decompose is executed
+    then: Should return list of subtasks with IDs and priorities
+
+  - name: executionPlanCreation
+    given: List of subtasks
+    when: tri plan is executed
+    then: Should return ExecutionPlan with total_steps and ordering
+
+  - name: vibeeSpecCreation
+    given: Execution plan
+    when: tri spec create is executed
+    then: Should generate valid .vibee file at specified path
+
+  - name: codeGeneration
+    given: Valid .vibee spec
+    when: tri gen is executed
+    then: Should generate Zig code in output directory
+
+  - name: verdictPassesThreshold
+    given: PAS score of 0.97
+    when: tri verdict is executed
+    then: passes_threshold should be true
+
+  - name: verdictFailsThreshold
+    given: PAS score of 0.85
+    when: tri verdict is executed
+    then: passes_threshold should be false
+
+  - name: loopDecisionContinue
+    given: High PAS score and progress made
+    when: tri loop decide is executed
+    then: Should return decision=continue
+
+  - name: loopDecisionStop
+    given: Goal achieved or max links reached
+    when: tri loop decide is executed
+    then: Should return decision=stop
+
+  - name: circuitBreakerOpens
+    given: Circuit breaker with threshold 10
+    when: 10 failures occur
+    then: Circuit breaker should open and halt execution
+
+  - name: rollbackOnFailure
+    given: Failed gen phase with rollback enabled
+    when: Failure occurs
+    then: Git should rollback to last commit
+
+  - name: phiWeightedConsensus
+    given: Votes Alpha=yes, Beta=no, Gamma=no
+    when: Consensus is calculated
+    then: Alpha wins (φ > 1 + 1/φ)
+
+  - name: clusterInitialization
+    given: 3-node specification
+    when: Cluster is initialized
+    then: All nodes created with correct realms
+
+  - name: taskRoutingByRealm
+    given: Storage-related task
+    when: Task is routed
+    then: Task goes to Beta (MATERIYA)
+
+  - name: sacredLogging
+    given: tri decompose command
+    when: Command is executed
+    then: sacred_tool_calls.log should contain entry with [φ] marker
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# IMPLEMENTATION NOTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+implementation: |
+  // TRI CLI ONLY ORCHESTRATOR v8.27
+  // STRICT MODE - All operations through tri CLI
+
+  const std = @import("std");
+  const PHI = 1.618033988749895;
+  const SACRED_THRESHOLD = 0.95;
+
+  pub const Realm = enum {
+      razum,      // Mind - Gold #ffd700
+      materiya,   // Matter - Cyan #00ccff
+      dukh,       // Spirit - Purple #aa66ff
+  };
+
+  pub const NodeType = enum {
+      alpha,  // Razum
+      beta,   // Materiya
+      gamma,  // Dukh
+  };
+
+  pub const OrchestratorPhase = enum {
+      idle,
+      decompose,
+      plan,
+      spec_create,
+      gen,
+      test,
+      bench,
+      verdict,
+      git,
+      loop_decide,
+      complete,
+      failed,
+  };
+
+  pub const LoopDecision = enum {
+      continue,
+      stop,
+      retry,
+      skip,
+      circuit_break,
+  };
+
+  // Core orchestrator state
+  pub const OrchestratorState = struct {
+      current_phase: OrchestratorPhase,
+      current_link: usize,
+      passed_links: usize,
+      failed_links: usize,
+      circuit_breaker_open: bool,
+      failure_count: usize,
+
+      pub fn init() OrchestratorState {
+          return .{
+              .current_phase = .idle,
+              .current_link = 0,
+              .passed_links = 0,
+              .failed_links = 0,
+              .circuit_breaker_open = false,
+              .failure_count = 0,
+          };
+      }
+  };
+
+  // Verify Trinity identity: φ² + 1/φ² = 3
+  pub fn verifyTrinityIdentity() bool {
+      const phi_sq = PHI * PHI;
+      const inv_phi_sq = 1.0 / (PHI * PHI);
+      const result = phi_sq + inv_phi_sq;
+      return @abs(result - 3.0) < 0.0001;
+  }
+
+  // φ-weighted consensus calculation
+  pub fn phiWeightedConsensus(
+      alpha_vote: f64,
+      beta_vote: f64,
+      gamma_vote: f64,
+  ) f64 {
+      // Alpha gets φ weight, Beta is neutral, Gamma gets 1/φ
+      return (alpha_vote * PHI) + beta_vote + (gamma_vote / PHI);
+  }

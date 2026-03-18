@@ -1,0 +1,161 @@
+# GGUF INFERENCE - LLM Forward Pass Engine
+# SIMD-optimized transformer inference
+# phi^2 + 1/phi^2 = 3 = TRINITY
+
+name: gguf_inference
+version: "1.0.0"
+language: zig
+module: gguf_inference
+
+# INFERENCE CONSTANTS
+constants:
+  RMS_NORM_EPS: 1e-5
+  SIMD_WIDTH: 8
+  DEFAULT_CONTEXT_LENGTH: 2048
+
+# MODEL CONFIGURATION
+types:
+  ModelConfig:
+    description: LLM architecture configuration
+    fields:
+      vocab_size: Int
+      hidden_size: Int
+      intermediate_size: Int
+      num_layers: Int
+      num_heads: Int
+      num_kv_heads: Int
+      head_dim: Int
+      context_length: Int
+      rope_theta: Float
+      rms_norm_eps: Float
+
+  # Layer weights
+  LayerWeights:
+    description: Weights for single transformer layer
+    fields:
+      attn_norm: List<Float>
+      ffn_norm: List<Float>
+      wq: List<Float>
+      wk: List<Float>
+      wv: List<Float>
+      wo: List<Float>
+      w_gate: List<Float>
+      w_up: List<Float>
+      w_down: List<Float>
+
+  # KV Cache for attention
+  KVCache:
+    description: Key-Value cache for autoregressive generation
+    fields:
+      k_cache: List<Float>
+      v_cache: List<Float>
+      seq_len: Int
+      max_seq_len: Int
+      num_kv_heads: Int
+      head_dim: Int
+
+  # RoPE (Rotary Position Embedding)
+  RoPE:
+    description: Rotary position embeddings
+    fields:
+      cos_cache: List<Float>
+      sin_cache: List<Float>
+      head_dim: Int
+      max_seq_len: Int
+      theta: Float
+
+# SIMD OPERATIONS
+simd:
+  vector_width: 8
+  operations:
+    - simdMatVec: "Matrix-vector multiplication with 4-way unrolling"
+    - simdDot: "Dot product with horizontal sum"
+    - simdRmsNorm: "RMS normalization with SIMD"
+    - simdAdd: "Element-wise addition"
+    - simdMul: "Element-wise multiplication"
+    - simdScale: "Scale by scalar"
+
+# BEHAVIORS
+behaviors:
+  # Dequantization
+  - name: dequantize_q8_0
+    given: Quantized Q8_0 tensor data
+    when: Need f32 values for computation
+    then: Unpack scale and int8 values, multiply
+
+  - name: dequantize_q4_0
+    given: Quantized Q4_0 tensor data
+    when: Need f32 values for computation
+    then: Unpack scale and 4-bit values, multiply
+
+  # Core operations
+  - name: rms_norm
+    given: Input tensor, weight tensor, epsilon
+    when: Need to normalize activations
+    then: Compute RMS, scale by weight
+
+  - name: mat_vec
+    given: Matrix [rows, cols], vector [cols]
+    when: Need matrix-vector product
+    then: Return vector [rows] using SIMD
+
+  - name: softmax
+    given: Input logits
+    when: Need probability distribution
+    then: Subtract max, exp, normalize
+
+  - name: silu
+    given: Input value x
+    when: Need SiLU activation
+    then: Return x / (1 + exp(-x))
+
+  # Attention
+  - name: apply_rope
+    given: Q or K tensor, position
+    when: Need positional encoding
+    then: Apply rotary embedding using cos/sin cache
+
+  - name: attention
+    given: Q, K, V tensors, KV cache, position
+    when: Computing self-attention
+    then: QK^T / sqrt(d), softmax, weighted V sum
+
+  # Transformer layer
+  - name: forward_layer
+    given: Input hidden state, layer weights, position
+    when: Processing through transformer layer
+    then: Attention + FFN with residuals
+
+  # Full forward pass
+  - name: forward
+    given: Token ID, position
+    when: Need next token logits
+    then: Embed -> Layers -> Norm -> Output projection
+
+  # Generation
+  - name: generate
+    given: Prompt tokens, max_tokens, sampling params
+    when: Need to generate text
+    then: Autoregressive forward + sampling loop
+
+# MEMORY OPTIMIZATION
+memory:
+  pre_allocated_buffers:
+    - buf_hidden: "hidden_size floats"
+    - buf_temp: "hidden_size floats"
+    - buf_normed: "hidden_size floats"
+    - buf_q: "num_heads * head_dim floats"
+    - buf_k: "num_kv_heads * head_dim floats"
+    - buf_v: "num_kv_heads * head_dim floats"
+    - buf_attn_out: "num_heads * head_dim floats"
+    - buf_ffn_gate: "intermediate_size floats"
+    - buf_ffn_up: "intermediate_size floats"
+    - buf_scores: "context_length floats"
+
+# THREADING
+threading:
+  thread_pool: true
+  parallel_threshold: 10000  # rows for parallel matVec
+  num_threads: auto  # detect CPU cores
+
+# KOSCHEI IS IMMORTAL | GOLDEN CHAIN IS CLOSED | phi^2 + 1/phi^2 = 3

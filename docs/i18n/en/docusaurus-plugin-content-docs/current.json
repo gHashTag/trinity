@@ -1,0 +1,70 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.docsSidebar.category.Overview": {
+    "message": "Overview",
+    "description": "The label for category 'Overview' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Getting Started": {
+    "message": "Getting Started",
+    "description": "The label for category 'Getting Started' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.TRI CLI Reference": {
+    "message": "TRI CLI Reference",
+    "description": "The label for category 'TRI CLI Reference' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Concepts": {
+    "message": "Concepts",
+    "description": "The label for category 'Concepts' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.BitNet Integration": {
+    "message": "BitNet Integration",
+    "description": "The label for category 'BitNet Integration' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.HDC Applications": {
+    "message": "HDC Applications",
+    "description": "The label for category 'HDC Applications' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.VIBEE Language": {
+    "message": "VIBEE Language",
+    "description": "The label for category 'VIBEE Language' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.DePIN Network": {
+    "message": "DePIN Network",
+    "description": "The label for category 'DePIN Network' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Benchmarks": {
+    "message": "Benchmarks",
+    "description": "The label for category 'Benchmarks' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Development": {
+    "message": "Development",
+    "description": "The label for category 'Development' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Deployment": {
+    "message": "Deployment",
+    "description": "The label for category 'Deployment' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.API Reference": {
+    "message": "API Reference",
+    "description": "The label for category 'API Reference' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Architecture": {
+    "message": "Architecture",
+    "description": "The label for category 'Architecture' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Mathematical Foundations": {
+    "message": "Mathematical Foundations",
+    "description": "The label for category 'Mathematical Foundations' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Research": {
+    "message": "Research",
+    "description": "The label for category 'Research' in sidebar 'docsSidebar'"
+  },
+  "sidebar.docsSidebar.category.Community": {
+    "message": "Community",
+    "description": "The label for category 'Community' in sidebar 'docsSidebar'"
+  }
+}

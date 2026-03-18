@@ -1,0 +1,33 @@
+name: hdc_repetition_penalty
+version: "1.0.0"
+language: zig
+module: hdc_repetition_penalty
+
+types:
+  PenaltyConfig:
+    fields:
+      alpha: Float
+      block_ngram: Bool
+      history_len: Int
+      unique_words: Int
+      has_repeated_trigram: Bool
+
+behaviors:
+  - name: applyRepetitionPenalty
+    given: Interpolated distribution P(w|w2,w1) with generation history
+    when: Divide P(w) by alpha^count(w) for each word w in history
+    then: Previously-generated words get exponentially reduced probability
+
+  - name: sweepAlpha
+    given: Alpha values 1.0, 1.1, 1.2, 1.5, 2.0, 3.0
+    when: Generate 30 words at T=0.3 with n-gram blocking enabled
+    then: Higher alpha = more diversity (alpha=3.0 gives 30/32 unique words)
+
+test_cases:
+  - name: penalty_diversity
+    input: "alpha=1.2, T=0.3, block=true, 30 words"
+    expected: "17/32 unique words, no repeated trigrams"
+
+  - name: high_penalty_diversity
+    input: "alpha=3.0, T=0.3, block=true, 30 words"
+    expected: "30/32 unique words, diverse Shakespeare vocabulary"

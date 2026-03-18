@@ -1,0 +1,102 @@
+name: hdc_language_model
+version: "1.1.0"
+language: zig
+module: hdc_language_model
+
+description: |
+  Char-level HDC Language Model using Hyperdimensional Computing.
+  Extends SequenceMemory with next-character prediction and text generation.
+
+  Architecture:
+    context_vector = bundle(ngram(c[-n]...c[-1]))
+    prediction = argmax_c similarity(context_vector, stored_contexts[c])
+
+  Sampling:
+    P(c) = softmax(similarity(context, char_model[c]) / temperature)
+    Top-k filtering: only consider k highest-similarity candidates
+    Repetition penalty: divide similarity by penalty for recent chars
+
+  Perplexity:
+    PPL = exp(-1/N * sum(log(P_softmax(actual_char))))
+
+  Novel approach: uses VSA superposition for probabilistic character prediction.
+
+types:
+  CharModel:
+    fields:
+      vec: HybridBigInt
+      count: u32
+
+  HDCLanguageModel:
+    fields:
+      allocator: Allocator
+      item_memory: ItemMemory
+      ngram_encoder: NGramEncoder
+      context_size: usize
+      dimension: usize
+      char_models: Array<Option<Ptr<CharModel>>, 256>
+      char_count: Array<u32, 256>
+      jit_engine: Option<JitVSAEngine>
+
+  PredictionResult:
+    fields:
+      predicted_char: u8
+      confidence: Float
+      top_k: Array<CharScore, 8>
+      top_k_len: usize
+
+  CharScore:
+    fields:
+      char: u8
+      similarity: Float
+
+  GenerationConfig:
+    fields:
+      temperature: Float       # Softmax temperature (1.0 = neutral, <1 = sharp, >1 = flat)
+      max_length: usize        # Maximum characters to generate
+      top_k: usize             # Only sample from top-k candidates (0 = all)
+      repetition_penalty: Float # Penalty for recently generated chars (1.0 = none)
+      seed: u64                # PRNG seed for reproducible sampling
+
+  ModelStats:
+    fields:
+      unique_chars: u32
+      total_contexts: u32
+      dimension: usize
+      context_size: usize
+
+behaviors:
+  - name: train
+    given: Text corpus as string
+    when: Model processes each (context, next_char) pair
+    then: Stores context vectors bundled per next character
+
+  - name: trainOnCorpus
+    given: Multiple text samples as string slice
+    when: Trains on all samples sequentially
+    then: Model ready for prediction with combined knowledge
+
+  - name: predict
+    given: Context string of context_size characters
+    when: Encodes context and queries all char models
+    then: Returns PredictionResult with best matching char and top-k
+
+  - name: generateWithConfig
+    given: Seed text and GenerationConfig
+    when: Iteratively predicts and samples next character
+    then: Returns generated text with temperature/top-k/repetition control
+
+  - name: generate
+    given: Seed text and max_length
+    when: Greedy generation (temperature=0, no sampling)
+    then: Returns generated text string (backward compatible)
+
+  - name: perplexity
+    given: Test text string
+    when: Computes softmax probability for each actual next char
+    then: Returns perplexity score (lower = better model)
+
+  - name: softmaxSimilarities
+    given: Array of (char, similarity) pairs and temperature
+    when: Applies softmax with temperature scaling
+    then: Returns probability distribution over characters

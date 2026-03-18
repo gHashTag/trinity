@@ -1,0 +1,1028 @@
+name: tri_cli_beautification
+version: "10.1.0"
+language: zig
+
+types:
+  Command:
+    enum:
+      - Help
+      - Chat
+      - Gen
+      - Serve
+      - ModelList
+      - ModelDownload
+      - ModelConvert
+      - ModelBenchmark
+      - ModelInfo
+      - KnowledgeBuild
+      - KnowledgeAsk
+      - KnowledgeList
+      - ProjectInit
+      - ProjectNew
+      - ProjectStatus
+      - ProjectInfo
+      - ProjectDeploy
+      - ProjectBuild
+      - Search
+      - TestCoverage
+      - TestBenchmark
+      - TestIntegration
+      - TestE2E
+      - Lint
+      - FormatCheck
+      - Security
+      - DataImport
+      - DataExport
+      - DataStats
+      - Stats
+      - Profile
+      - Monitor
+      - DocsGenerate
+      - DocsServe
+      - DocsPublish
+      - Clean
+      - Doctor
+      - Update
+  ParsedArgs:
+    fields:
+      command: Command
+      positional: List<String>
+      flags: Map<String, String>
+      verbose: Bool
+      dry_run: Bool
+  ColorScheme:
+  RazumColor:
+    fields:
+      gold: String
+      cyan: String
+  MateriyaColor:
+    fields:
+      cyan: String
+      blue: String
+  DuhColor:
+    fields:
+      purple: String
+      magenta: String
+  CLICommand:
+  InteractiveMode:
+    fields:
+      pas_threshold: Option<Float>
+  ChatMode:
+    fields:
+      model: Option<String>
+      prompt: Option<String>
+  CodeMode:
+    fields:
+      spec: String
+      output: Option<String>
+  FixMode:
+    fields:
+      file: String
+      dry_run: Bool
+  ProjectInitMode:
+    fields:
+      path: String
+      template: Option<String>
+      force: Bool
+  ProjectNewMode:
+    fields:
+      name: String
+      template: Option<String>
+  ProjectStatusMode:
+    fields:
+      format: OutputFormat
+  ProjectInfoMode:
+    fields:
+      verbose: Bool
+  ProjectDeployMode:
+    fields:
+      environment: String
+      dry_run: Bool
+  ProjectBuildMode:
+    fields:
+      target: String
+      release: Bool
+  SearchMode:
+    fields:
+      query: String
+      semantic: Bool
+      path: Option<String>
+  KnowledgeBuildMode:
+    fields:
+      specs_path: Option<String>
+      force: Bool
+  KnowledgeAskMode:
+    fields:
+      question: String
+      context: Option<String>
+  KnowledgeListMode:
+    fields:
+      format: OutputFormat
+  ModelListMode:
+    fields:
+      local_only: Bool
+      format: OutputFormat
+  ModelDownloadMode:
+    fields:
+      name: String
+      output: Option<String>
+  ModelConvertMode:
+    fields:
+      input: String
+      to_format: String
+      output: Option<String>
+  ModelBenchmarkMode:
+    fields:
+      model_path: String
+      iterations: Option<u64>
+  ModelInfoMode:
+    fields:
+      model_path: String
+      verbose: Bool
+  TestCoverageMode:
+    fields:
+      threshold: Option<Float>
+      output_format: Option<String>
+  TestBenchmarkMode:
+    fields:
+      iterations: Option<u64>
+      warmup: Bool
+  TestIntegrationMode:
+    fields:
+      suite: Option<String>
+      verbose: Bool
+  TestE2EMode:
+    fields:
+      environment: String
+      headless: Bool
+  LintMode:
+    fields:
+      fix: Bool
+      strict: Bool
+  FormatCheckMode:
+    fields:
+      fix: Bool
+      check_only: Bool
+  SecurityMode:
+    fields:
+      audit: Bool
+      severity: Option<String>
+  DataImportMode:
+    fields:
+      file: String
+      format: String
+      validate: Bool
+  DataExportMode:
+    fields:
+      format: String
+      output: String
+  DataStatsMode:
+    fields:
+      detailed: Bool
+  StatsMode:
+    fields:
+      category: Option<String>
+      format: OutputFormat
+  ProfileMode:
+    fields:
+      duration: Option<u64>
+      output: Option<String>
+  MonitorMode:
+    fields:
+      interval: Option<u64>
+      export_path: Option<String>
+  DocsGenerateMode:
+    fields:
+      source: Option<String>
+      output: Option<String>
+  DocsServeMode:
+    fields:
+      port: Option<u64>
+      open_browser: Bool
+  DocsPublishMode:
+    fields:
+      target: String
+      dry_run: Bool
+  CleanMode:
+    fields:
+      cache: Bool
+      output: Bool
+      all: Bool
+  DoctorMode:
+    fields:
+      fix: Bool
+      verbose: Bool
+  UpdateMode:
+    fields:
+      dependency: Option<String>
+      force: Bool
+  OutputFormat:
+  CLIFlags:
+    fields:
+      verbose: Bool
+      dry_run: Bool
+      force: Bool
+      pas_threshold: Option<Float>
+      output_format: Option<OutputFormat>
+  CLIState:
+    fields:
+      command: CLICommand
+      flags: CLIFlags
+      exit_code: u8
+      phi_loop_status: Option<PhiLoopStatus>
+      pas_score: Float
+  PhiLoopStatus:
+    fields:
+      running: Bool
+      clusters: u32
+      active_links: u32
+      sacred_score: Float
+  TrinityLogo:
+    fields:
+      show_phi_formula: Bool
+      show_trit_symbols: Bool
+      show_phi_loop_status: Bool
+      show_pas_score: Bool
+      color_scheme: ColorScheme
+
+behaviors:
+  - name: main
+    given: void
+    when: Program starts
+    then: Parse arguments, show logo, dispatch command
+    implementation: |
+      pub fn main() !void {
+          // Show logo first
+          try print_trinity_logo();
+
+          // Parse command line arguments
+          const args = try parseArgs(std.heap.page_allocator);
+
+          // Dispatch to appropriate command
+          try dispatchCommand(args);
+      }
+
+  - name: parseArgs
+    given: void
+    when: main calls argument parser
+    then: Parse argv into ParsedArgs struct
+    implementation: |
+      pub fn parseArgs(allocator: std.mem.Allocator) !ParsedArgs {
+          var args = std.process.args();
+          defer args.deinit();
+
+          // Skip executable name
+          _ = args.skip();
+
+          var parsed = ParsedArgs{
+              .command = .Help,
+              .positional = &[_][]const u8{},
+              .flags = std.StringHashMap([]const u8).init(allocator),
+              .verbose = false,
+              .dry_run = false,
+          };
+
+          var positional_list = std.ArrayList([]const u8).init(allocator);
+
+          while (args.next()) |arg_or_err| {
+              const arg = arg_or_err catch break;
+
+                              if (std.mem.startsWith(u8, arg, "--")) {
+                  // Flag: --name or --name=value
+                  const eq_idx = std.mem.indexOfScalar(u8, arg, '=');
+
+                                  if (eq_idx) |idx| {
+                      // --name=value format
+                      const name = arg[2..idx];
+                      const value = arg[idx + 1 ..];
+                      try parsed.flags.put(name, value);
+                  } else {
+                      // --name format (boolean flag)
+                      const name = arg[2..];
+                      try parsed.flags.put(name, "true");
+
+                                          // Handle special flags
+                      if (std.mem.eql(u8, name, "verbose") or
+                          std.mem.eql(u8, name, "v")) {
+                          parsed.verbose = true;
+                      }
+                      if (std.mem.eql(u8, name, "dry-run")) {
+                          parsed.dry_run = true;
+                      }
+                  }
+              } else if (std.mem.startsWith(u8, arg, "-")) {
+                  // Short flag: -n or -nv
+                                  const flag_contents = arg[1..];
+                  for (flag_contents) |c| {
+                      if (c == 'v') {
+                          parsed.verbose = true;
+                      } else if (c == 'h') {
+                          parsed.command = .Help;
+                      }
+                  }
+              } else {
+                  // Positional argument
+                  // First positional is the command
+                  if (parsed.command == .Help) {
+                      parsed.command = commandFromString(arg);
+                  } else {
+                      try positional_list.append(arg);
+                  }
+              }
+          }
+
+          parsed.positional = positional_list.toOwnedSlice();
+
+          // Handle special command mappings
+          if (parsed.flags.get("model")) |_| {
+              if (parsed.command == .Help) {
+                  parsed.command = .Chat;
+              }
+          }
+
+          return parsed;
+      }
+
+  - name: commandFromString
+    given: String
+    when: Parsing command from string
+    then: Convert string to Command enum
+    implementation: |
+      fn commandFromString(s: []const u8) Command {
+          if (std.mem.eql(u8, s, "chat")) return .Chat;
+          if (std.mem.eql(u8, s, "gen")) return .Gen;
+          if (std.mem.eql(u8, s, "serve")) return .Serve;
+          if (std.mem.eql(u8, s, "model")) return .ModelList;
+          if (std.mem.eql(u8, s, "models")) return .ModelList;
+          if (std.mem.eql(u8, s, "knowledge") or std.mem.eql(u8, s, "kb")) return .KnowledgeList;
+          if (std.mem.eql(u8, s, "project")) return .ProjectStatus;
+          if (std.mem.eql(u8, s, "test")) return .TestCoverage;
+          if (std.mem.eql(u8, s, "lint")) return .Lint;
+          if (std.mem.eql(u8, s, "fmt") or std.mem.eql(u8, s, "format")) return .FormatCheck;
+          if (std.mem.eql(u8, s, "clean")) return .Clean;
+          if (std.mem.eql(u8, s, "doctor")) return .Doctor;
+          if (std.mem.eql(u8, s, "help") or std.mem.eql(u8, s, "-h") or std.mem.eql(u8, s, "--help")) return .Help;
+          return .Help;
+      }
+
+  - name: dispatchCommand
+    given: ParsedArgs
+    when: main dispatches to command implementation
+    then: Route to appropriate execute_* function
+    implementation: |
+      pub fn dispatchCommand(args: ParsedArgs) !void {
+          switch (args.command) {
+              .Help => {
+                  try printHelp();
+                  std.process.exit(0);
+              },
+              .Chat => {
+                  const mode = ChatMode{
+                      .model = args.flags.get("model"),
+                      .prompt = args.flags.get("prompt"),
+                  };
+                  try execute_chat(mode);
+              },
+              .Gen => {
+                  if (args.positional.len == 0) {
+                      std.debug.print("\\x1b[31mError: spec path required\\x1b[0m\\n", .{});
+                      std.debug.print("Usage: tri gen <spec.vibee>\\n", .{});
+                      return error.SpecPathRequired;
+                  }
+                  const mode = CodeMode{
+                      .spec = args.positional[0],
+                      .output = args.flags.get("output"),
+                  };
+                  try execute_gen(mode);
+              },
+              .Serve => {
+                  const port_str = args.flags.get("port") orelse "8080";
+                  _ = port_str;
+                  try execute_serve();
+              },
+              .ModelList => {
+                  try execute_model_list(args);
+              },
+              .ModelDownload => {
+                  if (args.positional.len == 0) {
+                      std.debug.print("\\x1b[31mError: model name required\\x1b[0m\\n", .{});
+                      return error.ModelNameRequired;
+                  }
+                  // TODO: implement download
+                  std.debug.print("Downloading model: {s}\\n", .{args.positional[0]});
+              },
+              .KnowledgeBuild => {
+                  const specs_path = args.flags.get("specs");
+                  try execute_knowledge_build(.{ .specs_path = specs_path });
+              },
+              .KnowledgeAsk => {
+                  if (args.positional.len == 0) {
+                      std.debug.print("\\x1b[31mError: question required\\x1b[0m\\n", .{});
+                      return error.QuestionRequired;
+                  }
+                  try execute_knowledge_ask(.{ .question = args.positional[0] });
+              },
+              .KnowledgeList => {
+                  try execute_knowledge_list(args);
+              },
+              .Clean => {
+                  try execute_clean(args);
+              },
+              .Doctor => {
+                  try execute_doctor(args);
+              },
+              else => {
+                  std.debug.print("\\x1b[33mCommand not yet implemented: {}\\x1b[0m\\n", .{@intFromEnum(args.command)});
+                  std.debug.print("Run 'tri help' for available commands\\n", .{});
+              },
+          }
+      }
+
+  - name: printHelp
+    given: void
+    when: User runs tri help or invalid command
+    then: Display usage information
+    implementation: |
+      pub fn printHelp() !void {
+          std.debug.print(
+              \\
+              \\╔═══════════════════════════════════════════════════════════════╗
+              \\║     TRINITY CLI - VIBEE-first Development Environment          ║
+              \\╠═══════════════════════════════════════════════════════════════╣
+              \\║   phi² + 1/phi² = 3 | Local AI | Codegen | Ternary Computing  ║
+              \\╚═══════════════════════════════════════════════════════════════╝
+              \\
+              \\USAGE:
+              \\  tri <command> [options] [args]
+              \\
+              \\COMMANDS:
+              \\  chat          Interactive chat with GGUF models
+              \\    --model <path>    Path to .gguf model file
+              \\    --prompt <text>   Optional initial prompt
+              \\
+              \\  gen           Generate Zig code from .vibee spec
+              \\    <spec.vibee>      Specification file
+              \\    --output <dir>    Output directory
+              \\
+              \\  serve         Start HTTP API server
+              \\    --port <num>      Port (default: 8080)
+              \\
+              \\  model         Model management
+              \\    list              List available models
+              \\    download <name>   Download model
+              \\    info <path>       Show model info
+              \\
+              \\  knowledge     Knowledge base operations
+              \\    build             Index specifications
+              \\    ask "<query>"     Query knowledge
+              \\    list              Show categories
+              \\
+              \\  project       Project operations
+              \\    init              Initialize new project
+              \\    status            Show project status
+              \\
+              \\  test          Testing commands
+              \\    coverage          Generate coverage report
+              \\    benchmark         Run benchmarks
+              \\
+              \\  lint          Run linter
+              \\  fmt           Format code
+              \\  clean         Clean build artifacts
+              \\  doctor        System diagnostics
+              \\  help          Show this help
+              \\
+              \\GLOBAL OPTIONS:
+              \\  -v, --verbose   Verbose output
+              \\    --dry-run      Show what would be done
+              \\
+              \\EXAMPLES:
+              \\  tri chat --model models/phi-2.Q4_K_M.gguf
+              \\  tri gen trinity-nexus/tri/my_feature.vibee
+              \\  tri model list
+              \\  tri knowledge build
+              \\
+              \\For more info: https://github.com/gHashTag/trinity
+              \\
+          , .{});
+      }
+
+  - name: execute_chat
+    given: ChatMode
+    when: User runs tri chat --model <path>
+    then: Start interactive chat with GGUF model
+    implementation: |
+      pub fn execute_chat(mode: anytype) !void {
+          const gguf_chat = @import("gguf_chat");
+
+          const model_path = mode.model orelse {
+              std.debug.print("\\x1b[31mError: --model <path> required\\x1b[0m\\n", .{});
+              std.debug.print("Usage: tri chat --model <path.gguf>\\n", .{});
+              return error.ModelPathRequired;
+          };
+
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           TRINITY Chat - Interactive Mode                 ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+          std.debug.print("Model: {s}\\n\\n", .{model_path});
+
+          // Try to load and run GGUF chat
+          std.debug.print("\\x1b[33mLoading model...\\x1b[0m\\n", .{});
+          _ = try gguf_chat.runChat(model_path);
+      }
+
+  - name: execute_gen
+    given: CodeMode
+    when: User runs tri gen <spec.vibee>
+    then: Generate Zig code from .vibee specification
+    implementation: |
+      pub fn execute_gen(mode: anytype) !void {
+          const vibee_gen = @import("codegen");
+
+          const spec_path = mode.spec;
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           VIBEE Code Generation                            ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+          std.debug.print("Spec: {s}\\n\\n", .{spec_path});
+
+          std.debug.print("\\x1b[33m[1/3] Parsing .vibee specification...\\x1b[0m\\n", .{});
+          const spec = try vibee_gen.parse(spec_path);
+
+          std.debug.print("\\x1b[33m[2/3] Generating Zig code...\\x1b[0m\\n", .{});
+          const output_path = mode.output orelse "trinity-nexus/output/tri/zig";
+          try vibee_gen.generate(spec, output_path);
+
+          std.debug.print("\\x1b[32m[3/3] ✓ Code generation complete!\\x1b[0m\\n", .{});
+          std.debug.print("\\nOutput: {s}/\\n", .{output_path});
+      }
+
+  - name: execute_serve
+    given: void
+    when: User runs tri serve --port 8080
+    then: Start HTTP API server
+    implementation: |
+      pub fn execute_serve() !void {
+          const http_server = @import("http_server");
+
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           TRINITY HTTP Server                            ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+
+          try http_server.start(.{
+              .port = 8080,
+              .host = "0.0.0.0",
+          });
+      }
+
+  - name: print_trinity_logo
+    given: TrinityLogo and CLIState
+    when: CLI starts or --verbose flag
+    then: |
+      Display beautiful TRINITY ASCII logo with:
+      - TRINITY word in large block letters
+      - Trit symbols (-1, 0, +1) in triangle formation
+      - phi squared formula: phi^2 + 1/phi^2 = 3
+      - PHI LOOP status (if available)
+      - PAS sacred score (if available)
+      - Color scheme: RAZUM (gold), MATERIYA (cyan), DUKH (purple)
+    implementation: |
+      pub fn print_trinity_logo() !void {
+          std.debug.print(
+              \\
+              \\
+              \\                                  TTTTTTTTTTTTTTTTTTTTTTTRRRRRRRRRRRRRRRRRR               IIIIIIIIII
+              \\                                  T:::::::::::::::::::::TR::::::::::::::::R              I::::::::I
+              \\                                  T:::::::::::::::::::::TR::::::RRRRRR:::::R             I::::::::I
+              \\                                  T:::::TT:::::::TT::::TRR:::::R     R:::::R            II::::::II
+              \\                                  TTTTTT  T:::::T  T:::::T  R::::R     R:::::R             I::::I
+              \\                                          T:::::T  T:::::T  R::::R     R:::::R             I::::I
+              \\                                          T:::::T  T:::::T  R::::RRRRRR:::::R              I::::I
+              \\                                          T:::::T  T:::::T  R:::::::::::::RR              I::::I
+              \\                                          T:::::T  T:::::T  R::::RRRRRR:::::R              I::::I
+              \\                                          T:::::T  T:::::T  R::::R     R:::::R             I::::I
+              \\                                          T:::::T  T:::::T  R::::R     R:::::R             I::::I
+              \\                                          T:::::T  T:::::T  R::::R     R:::::R             I::::I
+              \\                                  TT:::::::TT:::::TT     R::::R     R:::::R          II::::::II
+              \\                                  T:::::::::T::::::::T     R::::R     R:::::R          I::::::::I
+              \\                                  T:::::::::T::::::::T     R::::R     R:::::R          I::::::::I
+              \\                                  TTTTTTTTT  TTTTTTTTT     RRRRRRR     RRRRRRR          IIIIIIIIII
+              \\
+              \\
+              \\                  NNNNNNNN        NNNNNNNNIIIIIIIIITTTTTTTTTTTTTTTTTTTTTTYYYYYYYYYYYYYYYYYYYYYY
+              \\                  N:::::::N       N::::::NI::::::::IT:::::::::::::::::::::TY:::::::::::::::::::::
+              \\                  N::::::::N      N::::::NI::::::::IT:::::::::::::::::::::TY:::::::::::::::::::::
+              \\                  N:::::::::N     N::::::NII::::::IIT:::::TT:::::::TT:::::TY::::::YYYYY::::::YY
+              \\                  N::::::::::N    N::::::N  I::::I  T:::::T  T:::::T  T:::::YYY:::::Y     YYYYY
+              \\                  N:::::::::::N   N::::::N  I::::I  T:::::T  T:::::T  T:::::Y:::::Y
+              \\                  N:::::::N::::N  N::::::N  I::::I  T:::::T  T:::::T  T:::::Y:::::Y
+              \\                  N::::::N:::::N N::::::N  I::::I  T:::::T  T:::::T  T:::::Y:::::Y
+              \\                  N::::::N:::::N N::::::N  I::::I  T:::::T  T:::::T  T:::::Y:::::Y
+              \\                  N::::::N:::::N N::::::N  I::::I  T:::::T  T:::::T  T:::::Y:::::Y
+              \\                  N::::::N:::::N N::::::N  I::::I  T:::::T  T:::::T  T:::::Y:::::Y
+              \\                  N::::::N:::::N N::::::N  I::::I  T:::::T  T:::::T  T:::::Y:::::Y
+              \\                  N::::::N:::::N N::::::N  I::::I  T:::::T  T:::::T  T:::::Y:::::Y
+              \\                  N::::::N::::::N::::::N  I::::I  T:::::T  T:::::T  T:::::Y:::::Y
+              \\                  N:::::::N::::::::N::::::NII::::::IITT:::::::TT:::::TT     Y:::::YYYYY:::::
+              \\                  N::::::N::::::::N::::::NI::::::::IN:::::::N:::::::N      Y:::::::::::::::
+              \\                  N::::::N::::::::N::::::NI::::::::IN:::::::N:::::::N       Y:::::::::::::::
+              \\                  NNNNNNNN       NNNNNNNNIIIIIIIIINNNNNNNNN        NNNNNNN        YYYYYYYYYYYYYY
+              \\
+              \\
+              \\                                             ^   ^   ^
+              \\                                             |   |   |
+              \\                                            -1   0  +1
+              \\                                             +---+---+
+              \\                                                phi^2
+              \\
+              \\
+              \\        +=======================================================================+
+              \\        +   TRINITY CLI v10.1 - VIBEE-first Development Environment            +
+              \\        +   phi^2 + 1/phi^2 = 3 | Local AI | Codegen | Ternary Computing        +
+              \\        +=======================================================================+
+              \\
+              \\
+          , .{});
+      }
+
+
+  - name: execute_project_init
+    given: ProjectInitMode
+    when: User runs tri project init
+    then: Initialize new Trinity project with template scaffolding
+
+  - name: execute_project_new
+    given: ProjectNewMode
+    when: User runs tri project new
+    then: Create new project from template
+
+  - name: execute_project_status
+    given: ProjectStatusMode
+    when: User runs tri project status
+    then: Display project status summary
+
+  - name: execute_project_info
+    given: ProjectInfoMode
+    when: User runs tri project info
+    then: Display detailed project information
+
+  - name: execute_project_deploy
+    given: ProjectDeployMode
+    when: User runs tri project deploy
+    then: Deploy project to specified environment
+
+  - name: execute_project_build
+    given: ProjectBuildMode
+    when: User runs tri project build
+    then: Build project with specified target
+
+  - name: execute_search
+    given: SearchMode
+    when: User runs tri search
+    then: Perform semantic or pattern-based search
+
+  - name: execute_knowledge_build
+    given: KnowledgeBuildMode
+    when: User runs tri knowledge build
+    then: Build knowledge base from specifications
+    implementation: |
+      pub fn execute_knowledge_build(options: anytype) !void {
+          const fs = std.fs;
+          const allocator = std.heap.page_allocator;
+
+          const specs_path = if (options.specs_path) |p| p else "trinity-nexus/tri";
+
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           Knowledge Base Builder                           ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+          std.debug.print("Scanning: {s}/\\n\\n", .{specs_path});
+
+          var dir = fs.cwd().openDir(specs_path, .{ .iterate = true }) catch |err| {
+              std.debug.print("\\x1b[31mError opening directory: {any}\\x1b[0m\\n", .{err});
+              return err;
+          };
+          defer dir.close();
+
+          var count: usize = 0;
+          var walker = try dir.walk(allocator);
+          defer walker.deinit();
+
+          while (try walker.next()) |entry| {
+              if (entry.kind == .file and std.mem.endsWith(u8, entry.path, ".vibee")) {
+                  std.debug.print("  \\x1b[32m✓\\x1b[0m {s}\\n", .{entry.path});
+                  count += 1;
+              }
+          }
+
+          std.debug.print("\\n\\x1b[36mIndexed {} specification(s)\\x1b[0m\\n", .{count});
+          std.debug.print("\\nKnowledge base ready for queries!\\n", .{});
+      }
+
+  - name: execute_knowledge_ask
+    given: KnowledgeAskMode
+    when: User runs tri knowledge ask
+    then: Query knowledge base with natural language
+    implementation: |
+      pub fn execute_knowledge_ask(options: anytype) !void {
+          const question = options.question;
+
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           Knowledge Query                                 ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+          std.debug.print("Question: {s}\\n\\n", .{question});
+
+          // TODO: Implement actual knowledge graph query
+          std.debug.print("\\x1b[33m[Knowledge Graph]\\x1b[0m\\n", .{});
+          std.debug.print("  Searching for relevant specifications...\\n\\n", .{});
+          std.debug.print("\\x1b[90m(Full knowledge graph integration coming soon)\\x1b[0m\\n", .{});
+      }
+
+  - name: execute_knowledge_list
+    given: KnowledgeListMode
+    when: User runs tri knowledge list
+    then: List all knowledge entries
+    implementation: |
+      pub fn execute_knowledge_list(_: anytype) !void {
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           Knowledge Base Contents                         ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n\\n", .{});
+
+          std.debug.print("\\x1b[33mCategories:\\x1b[0m\\n", .{});
+          std.debug.print("  • VSA (Vector Symbolic Architecture)\\n", .{});
+          std.debug.print("  • HDC (Hyperdimensional Computing)\\n", .{});
+          std.debug.print("  • VIBEE (Code Generation)\\n", .{});
+          std.debug.print("  • PHI LOOP (Consciousness Chain)\\n", .{});
+          std.debug.print("  • CLI Commands\\n", .{});
+          std.debug.print("\\n\\x1b[90mUse 'tri knowledge ask \"<question>\"' to query\\x1b[0m\\n", .{});
+      }
+
+  - name: execute_model_list
+    given: ModelListMode
+    when: User runs tri model list
+    then: List all available models
+    implementation: |
+      pub fn execute_model_list(_: anytype) !void {
+          const fs = std.fs;
+          const allocator = std.heap.page_allocator;
+
+          // Model directories to search
+          const model_paths = [_][]const u8{
+              "models",
+              "trinity/models",
+              "../models",
+              "~/.cache/trinity/models",
+          };
+
+          std.debug.print("\\x1b[33m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[33m║           TRINITY - Available GGUF Models                ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[33m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n\\n", .{});
+
+          var found_count: usize = 0;
+
+          for (model_paths) |search_path| {
+              if (fs.cwd().openDir(search_path, .{ .iterate = true })) |dir| {
+                  defer dir.close();
+
+                  var walker = dir.walk(allocator) catch |err| {
+                      std.debug.print("  [skip] {s}: {any}\\n", .{search_path, err});
+                      continue;
+                  };
+                  defer walker.deinit();
+
+                  while (walker.next() catch |err| {
+                      std.debug.print("  [error] {any}\\n", .{err});
+                      break;
+                  }) |entry| {
+                      if (entry.kind == .file and std.mem.endsWith(u8, entry.path, ".gguf")) {
+                          const file_size = dir.getFileSize(entry.path) catch continue;
+                          const size_mb = @as(f64, @floatFromInt(file_size)) / (1024.0 * 1024.0);
+
+                          std.debug.print("  \\x1b[32m✓\\x1b[0m {s}\\n", .{entry.path});
+                          std.debug.print("     Size: {d:.1} MB\\n", .{size_mb});
+                          found_count += 1;
+                      }
+                  }
+              } else |_| {
+                  continue;
+              }
+          }
+
+          if (found_count == 0) {
+              std.debug.print("\\x1b[31m  No GGUF models found.\\n", .{});
+              std.debug.print("  Download models with: tri model download <name>\\x1b[0m\\n", .{});
+          } else {
+              std.debug.print("\\n  \\x1b[36mTotal: {} model(s)\\x1b[0m\\n", .{found_count});
+          }
+      }
+
+  - name: execute_model_download
+    given: ModelDownloadMode
+    when: User runs tri model download
+    then: Download model from repository
+    implementation: |
+      pub fn execute_model_download(_: anytype) !void {
+          std.debug.print("Downloading model...\n", .{});
+      }
+
+  - name: execute_model_convert
+    given: ModelConvertMode
+    when: User runs tri model convert
+    then: Convert model format (e.g., GGUF to ternary)
+    implementation: |
+      pub fn execute_model_convert(_: anytype) !void {
+          std.debug.print("Converting model format...\n", .{});
+      }
+
+  - name: execute_model_benchmark
+    given: ModelBenchmarkMode
+    when: User runs tri model benchmark
+    then: Run model performance benchmarks
+    implementation: |
+      pub fn execute_model_benchmark(_: anytype) !void {
+          std.debug.print("Running model benchmarks...\n", .{});
+      }
+
+  - name: execute_model_info
+    given: ModelInfoMode
+    when: User runs tri model info
+    then: Display detailed model information
+    implementation: |
+      pub fn execute_model_info(_: anytype) !void {
+          std.debug.print("Displaying model information...\n", .{});
+      }
+
+  - name: execute_test_coverage
+    given: TestCoverageMode
+    when: User runs tri test coverage
+    then: Generate and display test coverage report
+
+  - name: execute_test_benchmark
+    given: TestBenchmarkMode
+    when: User runs tri test benchmark
+    then: Run performance benchmarks on tests
+
+  - name: execute_test_integration
+    given: TestIntegrationMode
+    when: User runs tri test integration
+    then: Run integration test suite
+
+  - name: execute_test_e2e
+    given: TestE2EMode
+    when: User runs tri test e2e
+    then: Run end-to-end test suite
+
+  - name: execute_lint
+    given: LintMode
+    when: User runs tri lint
+    then: Run linter and optionally fix issues
+
+  - name: execute_format_check
+    given: FormatCheckMode
+    when: User runs tri format check
+    then: Check or fix code formatting
+
+  - name: execute_security
+    given: SecurityMode
+    when: User runs tri security
+    then: Run security audit
+
+  - name: execute_data_import
+    given: DataImportMode
+    when: User runs tri data import
+    then: Import data from file
+    implementation: |
+      pub fn execute_data_import(_: anytype) !void {
+          std.debug.print("Importing data...\n", .{});
+      }
+
+  - name: execute_data_export
+    given: DataExportMode
+    when: User runs tri data export
+    then: Export data to specified format
+    implementation: |
+      pub fn execute_data_export(_: anytype) !void {
+          std.debug.print("Exporting data...\n", .{});
+      }
+
+  - name: execute_data_stats
+    given: DataStatsMode
+    when: User runs tri data stats
+    then: Display data statistics
+    implementation: |
+      pub fn execute_data_stats(_: anytype) !void {
+          std.debug.print("Displaying data statistics...\n", .{});
+      }
+
+  - name: execute_stats
+    given: StatsMode
+    when: User runs tri stats
+    then: Display system statistics
+
+  - name: execute_profile
+    given: ProfileMode
+    when: User runs tri profile
+    then: Run performance profiler
+    implementation: |
+      pub fn execute_profile(_: anytype) !void {
+          std.debug.print("Running performance profiler...\n", .{});
+      }
+
+  - name: execute_monitor
+    given: MonitorMode
+    when: User runs tri monitor
+    then: Start system monitoring
+
+  - name: execute_docs_generate
+    given: DocsGenerateMode
+    when: User runs tri docs generate
+    then: Generate documentation
+
+  - name: execute_docs_serve
+    given: DocsServeMode
+    when: User runs tri docs serve
+    then: Serve documentation locally
+
+  - name: execute_docs_publish
+    given: DocsPublishMode
+    when: User runs tri docs publish
+    then: Publish documentation
+
+  - name: execute_clean
+    given: CleanMode
+    when: User runs tri clean
+    then: Clean build artifacts and cache
+    implementation: |
+      pub fn execute_clean(_: anytype) !void {
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           Cleaning Build Artifacts                       ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+
+          const paths_to_clean = [_][]const u8{
+              "zig-cache",
+              "zig-out",
+              ".zig-cache",
+          };
+
+          for (paths_to_clean) |path| {
+              if (std.fs.cwd().deleteTree(path)) {
+                  std.debug.print("  \\x1b[32m✓\\x1b[0m Removed {s}/\\n", .{path});
+              } else |_| {
+                  std.debug.print("  \\x1b[90m- {s}/ (not found)\\x1b[0m\\n", .{path});
+              }
+          }
+
+          std.debug.print("\\n\\x1b[32m✓ Clean complete!\\x1b[0m\\n", .{});
+      }
+
+  - name: execute_doctor
+    given: DoctorMode
+    when: User runs tri doctor
+    then: Run system diagnostics
+    implementation: |
+      pub fn execute_doctor(_: anytype) !void {
+          std.debug.print("\\x1b[36m╔══════════════════════════════════════════════════════════╗\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m║           TRINITY System Diagnostics                    ║\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[36m╚══════════════════════════════════════════════════════════╝\\x1b[0m\\n", .{});
+
+          // Check Zig version
+          std.debug.print("\\n\\x1b[33m[Zig Compiler]\\x1b[0m\\n", .{});
+          const zig_version = @import("builtin").zig_version;
+          std.debug.print("  Version: {}\\n", .{zig_version});
+
+          if (zig_version.major >= 0 and zig_version.minor >= 15) {
+              std.debug.print("  \\x1b[32m✓ Compatible (>= 0.15)\\x1b[0m\\n", .{});
+          } else {
+              std.debug.print("  \\x1b[31m✗ Requires Zig >= 0.15\\x1b[0m\\n", .{});
+          }
+
+          // Check directories
+          std.debug.print("\\n\\x1b[33m[Project Structure]\\x1b[0m\\n", .{});
+          const dirs = [_][]const u8{
+              "trinity-nexus/tri",
+              "trinity-nexus/output",
+              "trinity-nexus/lang/src",
+          };
+
+          for (dirs) |dir| {
+              if (std.fs.cwd().openDir(dir, .{})) |_| {
+                  std.debug.print("  \\x1b[32m✓ {s}/\\x1b[0m\\n", .{dir});
+              } else |_| {
+                  std.debug.print("  \\x1b[31m✗ {s}/ (missing)\\x1b[0m\\n", .{dir});
+              }
+          }
+
+          // Check VIBEE compiler
+          std.debug.print("\\n\\x1b[33m[VIBEE Compiler]\\x1b[0m\\n", .{});
+          if (std.fs.cwd().openDir("src/vibeec", .{})) |_| {
+              std.debug.print("  \\x1b[32m✓ VIBEE compiler source present\\x1b[0m\\n", .{});
+          } else |_| {
+              std.debug.print("  \\x1b[31m✗ VIBEE compiler missing\\x1b[0m\\n", .{});
+          }
+
+          std.debug.print("\\n\\x1b[36m═══════════════════════════════════════════════════════\\x1b[0m\\n", .{});
+          std.debug.print("\\x1b[32mSystem check complete!\\x1b[0m\\n", .{});
+      }
+
+  - name: execute_update
+    given: UpdateMode
+    when: User runs tri update
+    then: Update dependencies
+

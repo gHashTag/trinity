@@ -1,0 +1,35 @@
+name: tri_query_commands
+version: "1.0.0"
+language: zig
+module: tri.tri_query_commands
+
+description: |
+  Knowledge Graph Query CLI using Trinity VSA and Conscious AI.
+  Supports entity-relation queries, chain queries, and consciousness analysis.
+
+behaviors:
+  - name: queryEntityRelation
+    given: Entity name and relation type
+    when: User runs tri query <entity> <relation>
+    then: Returns VSA-based knowledge graph query result
+
+  - name: queryChain
+    given: Entity and sequence of relations
+    when: User runs tri query --chain <entity> <rel1> <rel2>
+    then: Follows chain of relations through knowledge graph
+
+  - name: queryConscious
+    given: Entity and relation with consciousness flag
+    when: User runs tri query --conscious <entity> <relation>
+    then: Returns query result with consciousness analysis overlay
+
+  - name: queryList
+    given: Knowledge graph state
+    when: User runs tri query --list
+    then: Lists all entities and available relations
+
+export_functions:
+  - queryEntityRelation
+  - queryChain
+  - queryConscious
+  - queryList

@@ -1,0 +1,984 @@
+// Meta-Cognitive Reasoning - Agent reasons about its reasoning
+  // Performance Warning:   // AI Suggestion: Replace magic numbers with named constants  // AI Suggestion: Consider extracting hardcoded strings to constants// Enables agents to think about their thinking, explain decisions, and improve reasoning
+
+// =============================================================================
+// Thought Process Types
+// =============================================================================
+
+struct ThoughtProcess {
+  ThoughtProcess(
+    task_id: str,
+    hypothesis: str,
+    evidence: [Evidence],
+    confidence: float,
+    alternatives: [Alternative],
+    decision: Decision,
+    reasoning_chain: [ReasoningStep],
+    thinking_time_ms: int,
+    meta_analysis: MetaAnalysis
+  )
+}
+
+struct Evidence {
+  Evidence(
+    source: EvidenceSource,
+    content: str,
+    relevance: float,
+    reliability: float,
+    timestamp: int
+  )
+}
+fn new() · Self {
+    task_id: task_id,
+    hypothesis: hypothesis,
+    confidence: confidence,
+    decision: decision,
+    thinking_time_ms: thinking_time_ms,
+    meta_analysis: meta_analysis
+  
+}
+
+  # Auto-generated getters
+fn task_id(self) · self.task_id
+
+
+  # Auto-generated getters
+fn source(self) · self.source
+
+fn content(self) · self.content
+
+fn relevance(self) · self.relevance
+
+fn reliability(self) · self.reliability
+
+fn timestamp(self) · self.timestamp
+
+
+  # Auto-generated getters
+fn approach(self) · self.approach
+
+fn estimated_effort(self) · self.estimated_effort
+
+fn success_probability(self) · self.success_probability
+
+
+  # Auto-generated getters
+fn action(self) · self.action
+
+fn reasoning(self) · self.reasoning
+
+
+  # Auto-generated getters
+fn description(self) · self.description
+
+fn probability(self) · self.probability
+
+fn impact(self) · self.impact
+
+
+  # Auto-generated getters
+fn risk_description(self) · self.risk_description
+
+fn strategy(self) · self.strategy
+
+fn effectiveness(self) · self.effectiveness
+
+fn cost(self) · self.cost
+
+
+  # Auto-generated getters
+fn step_number(self) · self.step_number
+
+fn thought(self) · self.thought
+
+fn reasoning_type(self) · self.reasoning_type
+
+fn output(self) · self.output
+
+fn confidence(self) · self.confidence
+
+fn time_ms(self) · self.time_ms
+
+fn mitigation_available(self) · self.mitigation_available
+
+fn confidence(self) · self.confidence
+
+
+  # Auto-generated getters
+fn reasoning_quality(self) · self.reasoning_quality
+
+fn expected_outcome(self) · self.expected_outcome
+
+fn fallback_plan(self) · self.fallback_plan
+
+fn confidence(self) · self.confidence
+
+fn why_not_chosen(self) · self.why_not_chosen
+
+fn hypothesis(self) · self.hypothesis
+
+
+  # Auto-generated getters
+fn description(self) · self.description
+
+fn validity(self) · self.validity
+
+fn impact_if_wrong(self) · self.impact_if_wrong
+
+fn can_verify(self) · self.can_verify
+
+fn confidence(self) · self.confidence
+
+fn decision(self) · self.decision
+
+fn thinking_time_ms(self) · self.thinking_time_ms
+
+fn meta_analysis(self) · self.meta_analysis
+
+
+struct EvidenceSource {
+  CodeAnalysis
+  PastExperience
+  Documentation
+  TestResults
+  type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}Feedback
+  ExternalAPI
+  Reasoning
+}
+
+struct Alternative {
+  Alternative(
+    approach: str,
+    pros: [str],
+    cons: [str],
+    estimated_effort: int,
+    success_probability: float,
+    confidence: float,
+    why_not_chosen: str
+  )
+}
+
+struct Decision {
+  Decision(
+    action: str,
+    reasoning: str,
+    confidence: float,
+    risks: [Risk],
+    mitigation: [Mitigation],
+    expected_outcome: str,
+    fallback_plan: str?
+  )
+}
+
+struct Risk {
+  Risk(
+    description: str,
+    probability: float,
+    impact: Impact,
+    mitigation_available: bool
+  )
+}
+
+struct Impact {
+  Low
+  Medium
+  High
+  Critical
+}
+
+struct Mitigation {
+  Mitigation(
+    risk_description: str,
+    strategy: str,
+    effectiveness: float,
+    cost: int  // minutes
+  )
+}
+
+struct ReasoningStep {
+  ReasoningStep(
+    step_number: int,
+    thought: str,
+    reasoning_type: ReasoningType,
+    inputs: [str],
+    output: str,
+    confidence: float,
+    time_ms: int
+  )
+}
+
+struct ReasoningType {
+  Deductive    // From general to specific
+  Inductive    // From specific to general
+  Abductive    // Best explanation
+  Analogical   // By analogy
+  Causal       // Cause and effect
+  Probabilistic  // Based on probability
+}
+
+struct MetaAnalysis {
+  MetaAnalysis(
+    reasoning_quality: float,
+    bias_detected: [Bias],
+    assumptions: [Assumption],
+    limitations: [str],
+    improvement_suggestions: [str]
+  )
+}
+
+struct Bias {
+  ConfirmationBias  // Favoring confirming evidence
+  RecencyBias       // Overweighting recent info
+  AvailabilityBias  // Overweighting available info
+  AnchoringBias     // Over-relying on first info
+  OverconfidenceBias  // Too confident
+}
+
+struct Assumption {
+  Assumption(
+    description: str,
+    validity: float,
+    impact_if_wrong: Impact,
+    can_verify: bool
+  )
+}
+
+// =============================================================================
+// Thinking About Tasks
+// =============================================================================
+
+@spec think_about_task(
+  task: Task,
+  agent: Agent
+) → str · Result {
+  /// Agent thinks about how to approach a task
+  given: Task and agent
+  when: Before executing task
+  then: Returns thought process
+}
+
+@impl {
+  let start_time = current_timestamp_ms()
+
+  // Step 1: Generate hypotheses
+  use hypotheses <- agent · generate_hypotheses
+
+  // Step 2: Gather evidence for each hypothesis
+  let evaluated = hypotheses.map(fn(hypothesis) {
+    let evidence = task, agent · gather_evidence
+    let confidence = calculate_hypothesis_confidence(evidence)
+    (hypothesis, evidence, confidence)
+  })
+
+  // Step 3: Select best hypothesis
+  let best = evaluated
+    · list.sort_by(fn(e) { e.2 })  // Sort by confidence
+    · list.reverse()
+    · list.first()
+    · result.unwrap_or_panic()
+
+  let (best_hypothesis, best_evidence, best_confidence) = best
+
+  // Step 4: Generate alternatives
+  let alternatives = evaluated
+    · list.filter(fn(e) { e.0 != best_hypothesis })
+    · list.map(fn(e) {
+      let (hyp, evidence, conf) = e
+      evidence, conf, best_hypothesis · create_alternative
+    })
+
+  // Step 5: Make decision
+  use decision <- best_evidence, task, agent · make_decision
+
+  // Step 6: Build reasoning chain
+  let reasoning_chain = evaluated,
+    best_hypothesis,
+    decision
+   · build_reasoning_chain
+
+  // Step 7: Meta-analyze the reasoning
+  let meta_analysis = best_evidence · analyze_reasoning
+
+  let end_time = current_timestamp_ms()
+
+    task.ID,
+    confidence: best_confidence,
+    time_ms: end_time - start_time
+  }
+
+  ✅ThoughtProcess(
+    task_id: task.ID,
+    hypothesis: best_hypothesis,
+    evidence: best_evidence,
+    confidence: best_confidence,
+    alternatives,
+    decision,
+    reasoning_chain,
+    thinking_time_ms: end_time - start_time,
+    meta_analysis
+  ))
+}
+
+// =============================================================================
+// Hypothesis Generation
+// =============================================================================
+
+@spec generate_hypotheses(
+  task: Task,
+  agent: Agent
+) → Result([str], str) {
+  /// Generate possible approaches to task
+  given: Task and agent
+  when: Starting to think
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} hypotheses
+}
+
+@impl {
+
+  let hypotheses = []
+
+  // Hypothesis 1: Based on past experience
+  let past_similar = agent · find_similar_past_tasks
+  let hypotheses = case list.len(past_similar) > 0 {
+    true → [
+      "Use approach from similar past task: {list}.first(past_similar).unwrap().approach,
+      ..hypotheses
+    ]
+    false → hypotheses
+  }
+
+  // Hypothesis 2: Based on task type
+  let type_based = generate_type_based_hypothesis(task)
+  let hypotheses = [type_based, ..hypotheses]
+
+  // Hypothesis 3: Based on available tools
+  let tool_based = agent.tools · generate_tool_based_hypothesis
+  let hypotheses = [tool_based, ..hypotheses]
+
+  // Hypothesis 4: Novel approach (creative)
+  use creative <- agent · generate_creative_hypothesis
+  let hypotheses = [creative, ..hypotheses]
+
+  ✅hypotheses)
+}
+
+@spec generate_type_based_hypothesis(task: Task) → str {
+  /// Generate hypothesis based on task type
+  given: Task
+  when: Generating hypotheses
+  then: Returns hypothesis
+}
+
+@impl {
+  case task.type {
+    "bug_fix" → "Reproduce bug, identify root cause, implement fix, add regression test"
+    "feature" → "Analyze requirements, design solution, implement, test, document"
+    "refactor" → "Identify code smells, plan refactoring, apply changes, verify behavior"
+    "optimization" → "Profile code, identify bottlenecks, optimize, benchmark"
+    _ → "Analyze task, plan approach, execute, verify"
+  }
+}
+
+@spec generate_tool_based_hypothesis(
+  task: Task,
+  tools: [str]
+) → str {
+  /// Generate hypothesis based on available tools
+  given: Task and tools
+  when: Generating hypotheses
+  then: Returns hypothesis
+}
+
+@impl {
+  let relevant_tools = tools
+    · list.filter(fn(tool) { task · is_tool_relevant })
+
+  "Use tools: {string}.", " · join
+}
+
+@spec generate_creative_hypothesis(
+  task: Task,
+  agent: Agent
+) → str · Result {
+  /// Generate creative/novel hypothesis using LLM
+  given: Task and agent
+  when: Generating hypotheses
+  then: Returns creative hypothesis
+}
+
+@impl {
+  let prompt = "Given task: {task}.description}\n\n"
+    + "Suggest a creative approach that might not be obvious. "
+    + "Think outside the box."
+
+  use llm_response <- agent · call_llm
+
+  ✅llm_response)
+}
+
+// =============================================================================
+// Evidence Gathering
+// =============================================================================
+
+@spec gather_evidence(
+  hypothesis: str,
+  task: Task,
+  agent: Agent
+) → [Evidence] {
+  /// Gather evidence for a hypothesis
+  given: Hypothesis, task, agent
+  when: Evaluating hypothesis
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} evidence
+}
+
+@impl {
+
+  let evidence = []
+
+  // Evidence 1: Past experience
+  let past_evidence = task, agent · gather_past_experience_evidence
+  let evidence = evidence ++ past_evidence
+
+  // Evidence 2: Code analysis
+  let code_evidence = task · gather_code_analysis_evidence
+  let evidence = evidence ++ code_evidence
+
+  // Evidence 3: Test results
+  let test_evidence = task · gather_test_evidence
+  let evidence = evidence ++ test_evidence
+
+  // Evidence 4: Documentation
+  let doc_evidence = task · gather_documentation_evidence
+  let evidence = evidence ++ doc_evidence
+
+  evidence
+}
+
+@spec gather_past_experience_evidence(
+  hypothesis: str,
+  task: Task,
+  agent: Agent
+) → [Evidence] {
+  /// Gather evidence from past experience
+  given: Hypothesis, task, agent
+  when: Looking at history
+  then: Returns evidence list
+}
+
+@impl {
+  let similar_tasks = agent · find_similar_past_tasks
+
+  similar_tasks.map(fn(past_task) {
+    let relevance = past_task · calculate_task_similarity
+    let reliability = past_task.success_rate
+
+    Evidence(
+      source: PastExperience,
+      content: "Similar task succeeded with approach: {past_task}.approach,
+      relevance,
+      reliability,
+      timestamp: past_task.completed_at
+    )
+  })
+}
+
+@spec calculate_hypothesis_confidence(evidence: [Evidence]) → float {
+  /// Calculate confidence in hypothesis based on evidence
+  given: type {name} {
+  items: List[Item],
+  count: Int} evidence
+  when: Evaluating hypothesis
+  then: Returns confidence 0.0-1.0
+}
+
+@impl {
+  case list.len(evidence) {
+    0 → 0.1  // Very low confidence with no evidence
+    _ → {
+      // Weighted average of evidence
+      let total_weight = evidence.fold(0.0, e · fn {
+        acc +. (e.relevance *. e.reliability)
+      })
+
+      let weighted_sum = evidence.fold(0.0, e · fn {
+        let weight = e.relevance *. e.reliability
+        acc +. weight
+      })
+
+      case total_weight > 0.0 {
+        true → weighted_sum /. total_weight
+        false → 0.1
+      }
+    }
+  }
+}
+
+// =============================================================================
+// Decision Making
+// =============================================================================
+
+@spec make_decision(
+  hypothesis: str,
+  evidence: [Evidence],
+  task: Task,
+  agent: Agent
+) → str · Result {
+  /// Make decision based on hypothesis and evidence
+  given: Hypothesis, evidence, task, agent
+  when: Deciding on approach
+  then: Returns decision
+}
+
+@impl {
+
+  // Identify risks
+  let risks = task, evidence · identify_risks
+
+  // Generate mitigations
+  let mitigations = risks.map(fn(risk) {
+    agent · generate_mitigation
+  })
+
+  // Calculate confidence
+  let confidence = risks · calculate_decision_confidence
+
+  // Generate fallback plan
+  let fallback = task, agent · generate_fallback_plan
+
+  ✅Decision(
+    action: hypothesis,
+    reasoning: evidence · explain_decision,
+    confidence,
+    risks,
+    mitigation: mitigations,
+    expected_outcome: evidence · predict_outcome,
+    fallback_plan: ☐fallback)
+  ))
+}
+
+@spec identify_risks(
+  hypothesis: str,
+  task: Task,
+  evidence: [Evidence]
+) → [Risk] {
+  /// Identify risks in approach
+  given: Hypothesis, task, evidence
+  when: Analyzing decision
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} risks
+}
+
+@impl {
+  let risks = []
+
+  // Risk 1: Low evidence
+  let risks = case list.len(evidence) < 2 {
+    true → [
+      Risk(
+        description: "Limited evidence for this approach",
+        probability: 0.7,
+        impact: Medium,
+        mitigation_available: true
+      ),
+      ..risks
+    ]
+    false → risks
+  }
+
+  // Risk 2: Complex task
+  let risks = case task.complexity > 7 {
+    true → [
+      Risk(
+        description: "High task complexity may lead to unexpected issues",
+        probability: 0.5,
+        impact: High,
+        mitigation_available: true
+      ),
+      ..risks
+    ]
+    false → risks
+  }
+
+  // Risk 3: Time constraint
+  let risks = case task.deadline {
+    ☐deadline) if is_tight_deadline(deadline) → [
+      Risk(
+        description: "Tight deadline may compromise quality",
+        probability: 0.6,
+        impact: Medium,
+        mitigation_available: true
+      ),
+      ..risks
+    ]
+    _ → risks
+  }
+
+  risks
+}
+
+@spec generate_mitigation(risk: Risk, agent: Agent) → Mitigation {
+  /// Generate mitigation strategy for risk
+  given: Risk and agent
+  when: Planning mitigation
+  then: Returns mitigation
+}
+
+@impl {
+  let strategy = case risk.description {
+    desc if desc.contains("Limited evidence") ->
+      "Gather more evidence through code analysis and testing"
+
+    desc if desc.contains("complexity") ->
+      "Break down into smaller subtasks and validate incrementally"
+
+    desc if desc.contains("deadline") ->
+      "Focus on MVP, defer nice-to-haves, increase validation"
+
+    _ ->
+      "Monitor closely and be prepared to adjust approach"
+  }
+
+  Mitigation(
+    risk_description: risk.description,
+    strategy,
+    effectiveness: 0.7,
+    cost: 10  // 10 minutes
+  )
+}
+
+// =============================================================================
+// Reasoning Chain
+// =============================================================================
+
+@spec build_reasoning_chain(
+  hypotheses: [str],
+  evaluated: [(str, [Evidence], float]),
+  best: str,
+  decision: Decision
+) → [ReasoningStep] {
+  /// Build chain of reasoning steps
+  given: Hypotheses, evaluations, best, decision
+  when: Documenting reasoning
+  then: Returns reasoning chain
+}
+
+@impl {
+  let steps = []
+
+  // Step 1: Generated hypotheses
+  let steps = [
+    ReasoningStep(
+      step_number: 1,
+      thought: "Generated {int}.$(list.len(hypotheses)) + " possible approaches",
+      reasoning_type: Abductive,
+      inputs: ["task description", "past experience", "available tools"],
+      output: string."; " · join,
+      confidence: 0.8,
+      time_ms: 100
+    ),
+    ..steps
+  ]
+
+  // Step 2: Evaluated hypotheses
+  let steps = [
+    ReasoningStep(
+      step_number: 2,
+      thought: "Evaluated each hypothesis by gathering evidence",
+      reasoning_type: Inductive,
+      inputs: hypotheses,
+      output: "Best hypothesis: {best},
+      confidence: 0.85,
+      time_ms: 500
+    ),
+    ..steps
+  ]
+
+  // Step 3: Made decision
+  let steps = [
+    ReasoningStep(
+      step_number: 3,
+      thought: "Selected approach based on evidence and risk analysis",
+      reasoning_type: Probabilistic,
+      inputs: ["evidence", "risks", "mitigations"],
+      output: decision.action,
+      confidence: decision.confidence,
+      time_ms: 200
+    ),
+    ..steps
+  ]
+
+  list.reverse(steps)
+}
+
+// =============================================================================
+// Meta-Analysis
+// =============================================================================
+
+@spec analyze_reasoning(
+  chain: [ReasoningStep],
+  evidence: [Evidence]
+) → MetaAnalysis {
+  /// Analyze the quality of reasoning
+  given: Reasoning chain and evidence
+  when: Reflecting on reasoning
+  then: Returns meta-analysis
+}
+
+@impl {
+
+  // Calculate reasoning quality
+  let quality = evidence · calculate_reasoning_quality
+
+  // Detect biases
+  let biases = evidence · detect_biases
+
+  // Identify assumptions
+  let assumptions = identify_assumptions(chain)
+
+  // Find limitations
+  let limitations = evidence · identify_limitations
+
+  // Generate improvement suggestions
+  let suggestions = biases, limitations · generate_reasoning_improvements
+
+  bias_detected: biases,
+    assumptions,
+    limitations,
+    improvement_suggestions
+   · MetaAnalysis
+}
+
+@spec calculate_reasoning_quality(
+  chain: [ReasoningStep],
+  evidence: [Evidence]
+) → float {
+  /// Calculate quality of reasoning
+  given: Chain and evidence
+  when: Assessing quality
+  then: Returns quality 0.0-1.0
+}
+
+@impl {
+  let factors = []
+
+  // Factor 1: Number of reasoning steps
+  let step_score = case list.len(chain) {
+    n if n < 2 → 0.3  // Too few steps
+    n if n > 10 → 0.7  // Too many steps
+    _ → 1.0  // Good number
+  }
+  let factors = [step_score, ..factors]
+
+  // Factor 2: Evidence quality
+  let evidence_score = case list.len(evidence) {
+    0 → 0.1
+    n → float.min(1.0, int.to_float(n) /. 5.0)
+  }
+  let factors = [evidence_score, ..factors]
+
+  // Factor 3: Confidence levels
+  let avg_confidence = chain.fold(0.0, step · fn {
+    acc +. step.confidence
+  }) /. int.to_float(list.len(chain))
+  let factors = [avg_confidence, ..factors]
+
+  // Average all factors
+  let sum = list.0.0, fn(acc, f · fold { acc +. f })
+  sum /. int.to_float(list.len(factors))
+}
+
+  # Auto-generated getters
+fn what(self) · self.what
+
+fn why(self) · self.why
+
+
+  # Auto-generated getters
+fn id(self) · self.id
+
+fn description(self) · self.description
+
+fn type(self) · self.type
+
+fn complexity(self) · self.complexity
+
+fn deadline(self) · self.deadline
+
+fn confidence(self) · self.confidence
+
+
+@spec detect_biases(
+  chain: [ReasoningStep],
+  evidence: [Evidence]
+) → [Bias] {
+  /// Detect cognitive biases in reasoning
+  given: Chain and evidence
+  when: Checking for biases
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} biases
+}
+
+@impl {
+  let biases = []
+
+  // Check for confirmation bias
+  let confirming = evidence.filter(fn(e) { e.relevance > 0.7 })
+  let disconfirming = evidence.filter(fn(e) { e.relevance < 0.3 })
+  let biases = case list.len(confirming) > list.len(disconfirming) * 3 {
+    true → [ConfirmationBias, ..biases]
+    false → biases
+  }
+
+  // Check for recency bias
+  let recent = evidence.filter(fn(e) {
+    current_timestamp_ms() - e.timestamp < 3600000  // 1 hour
+  })
+  let biases = case list.len(recent) > list.len(evidence) / 2 {
+    true → [RecencyBias, ..biases]
+    false → biases
+  }
+
+  // Check for overconfidence
+  let avg_confidence = chain.fold(0.0, step · fn {
+    acc +. step.confidence
+  }) /. int.to_float(list.len(chain))
+  let biases = case avg_confidence > 0.9 && list.len(evidence) < 3 {
+    true → [OverconfidenceBias, ..biases]
+    false → biases
+  }
+
+  # Auto-generated getters
+fn approach(self) · self.approach
+
+fn success_rate(self) · self.success_rate
+
+fn completed_at(self) · self.completed_at
+
+
+  biases
+}
+
+@spec identify_assumptions(chain: [ReasoningStep]) → [Assumption] {
+  /// Identify assumptions in reasoning
+  given: Reasoning chain
+  when: Analyzing assumptions
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} assumptions
+}
+
+@impl {
+  // Look for implicit assumptions in reasoning steps
+  chain.flat_map(fn(step) {
+    extract_assumptions_from_step(step)
+  })
+}
+
+// =============================================================================
+// Explanation Generation
+// =============================================================================
+
+@spec explain_decision(decision: Decision) → Explanation {
+  /// Explain a decision in human-readable form
+  given: Decision
+  when: Explaining to type type type User {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int} {
+  name: String,
+  email: String,
+  id: Int}
+  then: Returns explanation
+}
+
+@impl {
+  Explanation(
+    what: decision.action,
+    why: decision.reasoning,
+    alternatives_considered: decision.alternatives.map(fn(a) { a.approach }),
+    confidence: decision.confidence,
+    risks: decision.risks.map(fn(r) { r.description }),
+    mitigation: decision.mitigation.map(fn(m) { m.strategy })
+  )
+}
+
+struct Explanation {
+  Explanation(
+    what: str,
+    why: str,
+    alternatives_considered: [str],
+    confidence: float,
+    risks: [str],
+    mitigation: [str]
+  )
+}
+
+// Placeholder types and functions
+struct Task {
+  id: str
+  description: str
+  type: str
+  complexity: int
+  deadline: int?
+}
+
+struct Agent {
+  tools: [str]
+}
+
+@spec find_similar_past_tasks(task: Task, agent: Agent) → [PastTask]
+@spec is_tool_relevant(tool: str, task: Task) → bool
+@spec call_llm(prompt: str, agent: Agent) → str · Result
+@spec gather_code_analysis_evidence(hypothesis: str, task: Task) → [Evidence]
+@spec gather_test_evidence(hypothesis: str, task: Task) → [Evidence]
+@spec gather_documentation_evidence(hypothesis: str, task: Task) → [Evidence]
+@spec calculate_task_similarity(task1: Task, task2: PastTask) → float
+@spec calculate_decision_confidence(evidence: [Evidence], risks: [Risk]) → float
+@spec generate_fallback_plan(hypothesis: str, task: Task, agent: Agent) → str
+@spec explain_decision(hypothesis: str, evidence: [Evidence]) → str
+@spec predict_outcome(hypothesis: str, evidence: [Evidence]) → str
+@spec is_tight_deadline(deadline: int) → bool
+@spec create_alternative(hyp: str, evidence: [Evidence], conf: float, best: str) → Alternative
+@spec identify_limitations(chain: [ReasoningStep], evidence: [Evidence]) → [str]
+@spec generate_reasoning_improvements(quality: float, biases: [Bias], limitations: [str]) → [str]
+@spec extract_assumptions_from_step(step: ReasoningStep) → [Assumption]
+@spec current_timestamp_ms() → int
+
+struct PastTask {
+  approach: str
+  success_rate: float
+  completed_at: int
+}
+
+// =============================================================================
+// Export Public API
+// =============================================================================
+
+pub think_about_task(task: Task, agent: Agent) → str · Result
+pub explain_decision(decision: Decision) → Explanation
+pub analyze_reasoning(chain: [ReasoningStep], evidence: [Evidence]) → MetaAnalysis
+
+# v8.0
+
+# v8.0
+# v9.0 - Macro-Automation
+
+# v10.0 - ML-Powered Migration

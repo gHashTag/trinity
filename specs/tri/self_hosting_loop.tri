@@ -1,0 +1,30 @@
+name: self_hosting_loop
+version: "1.0.0"
+language: zig
+module: tri.self_hosting_loop
+
+description: |
+  Self-hosting loop for Sacred Intelligence self-improvement.
+  Enables the agent to analyze, patch, and improve its own source code autonomously.
+  Safety: 99.9% confidence threshold, protected files list, automatic rollback on test failure.
+
+behaviors:
+  - name: analyzeSelf
+    given: Current source code and performance metrics
+    when: Self-analysis cycle is triggered
+    then: Identifies improvement opportunities with confidence scores
+
+  - name: applySelfPatch
+    given: Patch with confidence >= 0.999
+    when: Self-modification is approved
+    then: Applies patch and runs full test suite, rolls back on failure
+
+  - name: protectCriticalFiles
+    given: Patch target file path
+    when: Self-modification targets entry points, tests, or build system
+    then: Rejects the patch to protect critical infrastructure
+
+export_functions:
+  - analyzeSelf
+  - applySelfPatch
+  - protectCriticalFiles

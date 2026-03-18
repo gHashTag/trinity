@@ -1,0 +1,290 @@
+# Router Specification
+# Spec-driven development: This spec is the SINGLE SOURCE OF TRUTH
+# All code, tests, and documentation are GENERATED from this spec
+
+metadata:
+  name: router
+  version: 1.0.0
+  description: Declarative HTTP routing system - eliminates boilerplate case matching
+  author: VIBEE Team
+  license: MIT
+  generated_from: spec
+  manual_code_forbidden: true
+
+# Type definitions
+types:
+  - name: Route
+    description: HTTP route definition
+    fields:
+      - name: method
+        type: String
+        description: HTTP method (GET, POST, PUT, DELETE)
+        required: true
+      - name: path
+        type: List<String>
+        description: Path segments
+        required: true
+      - name: handler
+        type: Handler
+        description: Route handler function
+        required: true
+
+  - name: Router
+    description: HTTP router
+    fields:
+      - name: routes
+        type: List<Route>
+        description: Registered routes
+        default: []
+      - name: not_found
+        type: Handler
+        description: 404 handler
+        required: true
+      - name: middleware
+        type: List<Middleware>
+        description: Middleware chain
+        default: []
+
+  - name: Handler
+    description: Request handler function type
+    fields:
+      - name: function
+        type: Function
+        description: Handler function
+        required: true
+
+  - name: Middleware
+    description: Middleware function type
+    fields:
+      - name: function
+        type: Function
+        description: Middleware function
+        required: true
+
+# Behavior specifications with test cases
+behaviors:
+  - name: router_creation
+    description: Router creation and configuration
+    functions:
+      - name: new
+        description: Create a new router
+        params:
+          - name: not_found_handler
+            type: Handler
+        returns: Router
+        test_cases:
+          - input:
+              not_found_handler: {function: "default_404"}
+            expected:
+              routes: []
+              middleware: []
+
+  - name: route_registration
+    description: Route registration operations
+    functions:
+      - name: get
+        description: Register GET route
+        params:
+          - name: router
+            type: Router
+          - name: path
+            type: String
+          - name: handler
+            type: Handler
+        returns: Router
+        test_cases:
+          - input:
+              router: {routes: [], middleware: []}
+              path: "/users"
+              handler: {function: "users_handler"}
+            expected:
+              routes: [{method: "GET", path: ["users"]}]
+
+      - name: post
+        description: Register POST route
+        params:
+          - name: router
+            type: Router
+          - name: path
+            type: String
+          - name: handler
+            type: Handler
+        returns: Router
+        test_cases:
+          - input:
+              router: {routes: []}
+              path: "/users"
+              handler: {function: "create_user"}
+            expected:
+              routes: [{method: "POST", path: ["users"]}]
+
+      - name: put
+        description: Register PUT route
+        params:
+          - name: router
+            type: Router
+          - name: path
+            type: String
+          - name: handler
+            type: Handler
+        returns: Router
+        test_cases:
+          - input:
+              router: {routes: []}
+              path: "/users/:id"
+              handler: {function: "update_user"}
+            expected:
+              routes: [{method: "PUT", path: ["users", ":id"]}]
+
+      - name: delete
+        description: Register DELETE route
+        params:
+          - name: router
+            type: Router
+          - name: path
+            type: String
+          - name: handler
+            type: Handler
+        returns: Router
+        test_cases:
+          - input:
+              router: {routes: []}
+              path: "/users/:id"
+              handler: {function: "delete_user"}
+            expected:
+              routes: [{method: "DELETE", path: ["users", ":id"]}]
+
+  - name: middleware_operations
+    description: Middleware operations
+    functions:
+      - name: use
+        description: Add middleware to router
+        params:
+          - name: router
+            type: Router
+          - name: middleware
+            type: Middleware
+        returns: Router
+        test_cases:
+          - input:
+              router: {middleware: []}
+              middleware: {function: "security_headers"}
+            expected:
+              middleware: [{function: "security_headers"}]
+
+  - name: request_handling
+    description: Request handling operations
+    functions:
+      - name: handle
+        description: Handle incoming request
+        params:
+          - name: router
+            type: Router
+          - name: request
+            type: Request
+        returns: Response
+        test_cases:
+          - input:
+              router:
+                routes:
+                  - {method: "GET", path: ["users"], handler: {function: "users_handler"}}
+              request: {method: "GET", path: "/users"}
+            expected:
+              status: 200
+
+      - name: find_route
+        description: Find matching route
+        params:
+          - name: routes
+            type: List<Route>
+          - name: method
+            type: String
+          - name: path
+            type: List<String>
+        returns: Result<Route, String>
+        test_cases:
+          - input:
+              routes:
+                - {method: "GET", path: ["users"]}
+              method: "GET"
+              path: ["users"]
+            expected:
+              Ok: {method: "GET", path: ["users"]}
+
+# Function declarations
+functions:
+  # Router creation
+  - name: new
+    params: [not_found_handler: Handler]
+    returns: Router
+    behavior: router_creation
+
+  # Route registration
+  - name: get
+    params: [router: Router, path: String, handler: Handler]
+    returns: Router
+    behavior: route_registration
+
+  - name: post
+    params: [router: Router, path: String, handler: Handler]
+    returns: Router
+    behavior: route_registration
+
+  - name: put
+    params: [router: Router, path: String, handler: Handler]
+    returns: Router
+    behavior: route_registration
+
+  - name: delete
+    params: [router: Router, path: String, handler: Handler]
+    returns: Router
+    behavior: route_registration
+
+  # Middleware
+  - name: use
+    params: [router: Router, middleware: Middleware]
+    returns: Router
+    behavior: middleware_operations
+
+  # Request handling
+  - name: handle
+    params: [router: Router, request: Request]
+    returns: Response
+    behavior: request_handling
+
+  - name: find_route
+    params: [routes: List<Route>, method: String, path: List<String>]
+    returns: Result<Route, String>
+    behavior: request_handling
+
+# Documentation
+documentation:
+  overview: |
+    # Router System
+    
+    Declarative HTTP routing - eliminates boilerplate case matching.
+    
+    ## Features
+    - Declarative route registration
+    - Middleware support
+    - Type-safe handlers
+    - Automatic route matching
+    
+  examples:
+    - title: Create Router
+      code: |
+        let router = new(default_404_handler)
+        |> get("/", home_handler)
+        |> get("/users", users_handler)
+        |> post("/users", create_user_handler)
+        |> use(security_headers_middleware)
+        |> use(logging_middleware)
+
+# Generation metadata
+generation:
+  target_language: gleam
+  output_path: src/router.gleam
+  test_path: test/router_test.gleam
+  generate_docs: true
+  generate_tests: true
+  generate_helpers: true

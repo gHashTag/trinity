@@ -1,0 +1,53 @@
+name: sacred_constants
+version: "1.1.0"
+language: zig
+module: sacred.constants
+
+description: |
+  Sacred Constants — the three foundational φ-derived constants used throughout
+  the Trinity mathematical framework.
+
+  PHI         = (1 + sqrt(5)) / 2 ≈ 1.618033988749895
+  PHI_INVERSE = 1 / PHI           ≈ 0.618033988749895
+  GAMMA       = PHI - 1 - 1/PHI   ≈ 0.23606797749978969641
+  TRINITY     = φ² + 1/φ²         = 3.0 (exact)
+
+  Identities verified at comptime and runtime:
+    1. PHI × PHI_INVERSE = 1
+    2. PHI + PHI_INVERSE = sqrt(5)
+    3. φ² + 1/φ² = 3 (Trinity Identity)
+    4. GAMMA = PHI - 1 - PHI_INVERSE
+
+constants:
+  PHI: 1.618033988749895
+  GAMMA: 0.23606797749978969641
+  PHI_INVERSE: 0.618033988749895
+  SQRT5: 2.2360679774997896964091736687747632
+  TRINITY: 3.0
+
+types:
+  SacredConstants:
+    fields: {}
+    note: Namespace struct — all members are comptime constants or pure functions
+
+behaviors:
+  - name: verifyAll
+    given: The three sacred constants PHI, GAMMA, PHI_INVERSE
+    when: Called with no arguments
+    then: Returns error.SacredViolation if any identity fails; void on success
+    checks:
+      - PHI * PHI_INVERSE ≈ 1.0 (within 1e-10)
+      - PHI + PHI_INVERSE ≈ sqrt(5) (within 1e-10)
+      - PHI*PHI + 1/(PHI*PHI) ≈ 3.0 (within 1e-10)
+      - GAMMA ≈ PHI - 1 - PHI_INVERSE (within 1e-10)
+
+tests:
+  - "sacred constants verify all identities"
+  - "sacred constants PHI precision"
+  - "sacred constants Trinity identity"
+
+export_types:
+  - SacredConstants
+
+export_functions:
+  - verifyAll

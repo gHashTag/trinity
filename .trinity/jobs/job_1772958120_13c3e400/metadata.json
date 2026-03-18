@@ -1,0 +1,1 @@
+{"id": "job_1772958120_13c3e400", "command": "constants", "args": [], "state": "failed", "start_time": 1772958120, "end_time": 0, "pid": 69204, "working_dir": "/Users/playra/trinity-w1", "exit_code": null, "error_message": "stale: cleaned by audit"}

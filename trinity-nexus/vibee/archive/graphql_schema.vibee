@@ -1,0 +1,202 @@
+name: graphql_schema
+version: "1.0.0"
+language: zig
+module: graphql_schema
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: create_schema
+    given: Input data provided
+    when: create_schema function called
+    then: Result returned
+    test_cases:
+      - name: test_create_schema
+        input: {}
+        expected: {}
+
+  - name: example_queries
+    given: Input data provided
+    when: example_queries function called
+    then: Result returned
+    test_cases:
+      - name: test_example_queries
+        input: {}
+        expected: {}
+
+  - name: resolve_canvas
+    given: Input data provided
+    when: resolve_canvas function called
+    then: Result returned
+    test_cases:
+      - name: test_resolve_canvas
+        input: {}
+        expected: {}
+
+  - name: resolve_metrics
+    given: Input data provided
+    when: resolve_metrics function called
+    then: Result returned
+    test_cases:
+      - name: test_resolve_metrics
+        input: {}
+        expected: {}
+
+  - name: resolve_health
+    given: Input data provided
+    when: resolve_health function called
+    then: Result returned
+    test_cases:
+      - name: test_resolve_health
+        input: {}
+        expected: {}
+
+  - name: format_response
+    given: Input data provided
+    when: format_response function called
+    then: Result returned
+    test_cases:
+      - name: test_format_response
+        input: {}
+        expected: {}
+
+  - name: format_error
+    given: Input data provided
+    when: format_error function called
+    then: Result returned
+    test_cases:
+      - name: test_format_error
+        input: {}
+        expected: {}
+
+  - name: validate_query
+    given: Input data provided
+    when: validate_query function called
+    then: Result returned
+    test_cases:
+      - name: test_validate_query
+        input: {}
+        expected: {}
+
+types:
+  Schema:
+    # TODO: Define fields
+
+  QueryType:
+    # TODO: Define fields
+
+  MutationType:
+    # TODO: Define fields
+
+  SubscriptionType:
+    # TODO: Define fields
+
+  Field:
+    # TODO: Define fields
+
+  FieldType:
+    # TODO: Define fields
+
+  Argument:
+    # TODO: Define fields
+
+  Resolver:
+    # TODO: Define fields
+
+  Query:
+    # TODO: Define fields
+
+  Mutation:
+    # TODO: Define fields
+
+  Subscription:
+    # TODO: Define fields
+
+  Canvas:
+    # TODO: Define fields
+
+  Evolution:
+    # TODO: Define fields
+
+  Component:
+    # TODO: Define fields
+
+  Genes:
+    # TODO: Define fields
+
+  Color:
+    # TODO: Define fields
+
+  Spacing:
+    # TODO: Define fields
+
+  Shadow:
+    # TODO: Define fields
+
+  Fitness:
+    # TODO: Define fields
+
+  Metrics:
+    # TODO: Define fields
+
+  Health:
+    # TODO: Define fields
+
+  EvolutionProgress:
+    # TODO: Define fields
+
+functions:
+  - name: create_schema
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: example_queries
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: resolve_canvas
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: resolve_metrics
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: resolve_health
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_response
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: format_error
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: validate_query
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/string
+  # gleam/list
+  # gleam/int
+  # gleam/float
+  # gleam/dict.{type Dict}
+  # gleam/option.{type Option, None, Some}
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

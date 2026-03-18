@@ -1,0 +1,36 @@
+[cell]
+id = "trinity.agent.tri-orchestrator"
+name = "Tri Orchestrator Agent"
+version = "1.0.0"
+kind = "agent"
+path = "tools/agents/tri-orchestrator"
+status = "stable"
+description = "Coordination agent — audits CLI build, docs, skills. Delegates to tri-doctor, tri-scholar, tri-farmer"
+capabilities = ["orchestration", "delegation", "monitoring", "audit"]
+owner = "agent:ralph"
+
+[tags]
+scope = "agent"
+type = "agent"
+
+[agent]
+definition = ".claude/agents/tri-orchestrator.md"
+model = "haiku"
+max_turns = 15
+tools = "Bash,Read,Glob,Grep"
+isolation = ""
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "brain"
+organ = "hypothalamus"
+[security]
+signed = "true"

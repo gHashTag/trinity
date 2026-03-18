@@ -1,0 +1,13 @@
+app = "vivado-synth"
+primary_region = "iad"
+
+[build]
+
+[mounts]
+  source = "vivado_data"
+  destination = "/vivado"
+
+[[vm]]
+  size = "performance-4x"
+  memory = "8gb"
+  cpus = 4

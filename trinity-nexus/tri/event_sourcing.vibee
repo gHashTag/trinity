@@ -1,0 +1,207 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: create_event_store
+    given: Input data provided
+    when: create_event_store function called
+    then: Result returned
+  - name: test_create_event_store
+  - name: append_event
+    given: Input data provided
+    when: append_event function called
+    then: Result returned
+  - name: test_append_event
+  - name: get_events
+    given: Input data provided
+    when: get_events function called
+    then: Result returned
+  - name: test_get_events
+  - name: save_snapshot
+    given: Input data provided
+    when: save_snapshot function called
+    then: Result returned
+  - name: test_save_snapshot
+  - name: get_snapshot
+    given: Input data provided
+    when: get_snapshot function called
+    then: Result returned
+  - name: test_get_snapshot
+  - name: handle_command
+    given: Input data provided
+    when: handle_command function called
+    then: Result returned
+  - name: test_handle_command
+  - name: create_aggregate
+    given: Input data provided
+    when: create_aggregate function called
+    then: Result returned
+  - name: test_create_aggregate
+  - name: apply_event
+    given: Input data provided
+    when: apply_event function called
+    then: Result returned
+  - name: test_apply_event
+  - name: add_event
+    given: Input data provided
+    when: add_event function called
+    then: Result returned
+  - name: test_add_event
+  - name: commit_events
+    given: Input data provided
+    when: commit_events function called
+    then: Result returned
+  - name: test_commit_events
+  - name: create_read_model
+    given: Input data provided
+    when: create_read_model function called
+    then: Result returned
+  - name: test_create_read_model
+  - name: project_event
+    given: Input data provided
+    when: project_event function called
+    then: Result returned
+  - name: test_project_event
+  - name: query_read_model
+    given: Input data provided
+    when: query_read_model function called
+    then: Result returned
+  - name: test_query_read_model
+  - name: rebuild_aggregate
+    given: Input data provided
+    when: rebuild_aggregate function called
+    then: Result returned
+  - name: test_rebuild_aggregate
+  - name: rebuild_read_model
+    given: Input data provided
+    when: rebuild_read_model function called
+    then: Result returned
+  - name: test_rebuild_read_model
+  - name: get_current_timestamp
+    given: Input data provided
+    when: get_current_timestamp function called
+    then: Result returned
+  - name: test_get_current_timestamp
+  - name: generate_event_id
+    given: Input data provided
+    when: generate_event_id function called
+    then: Result returned
+  - name: test_generate_event_id
+  - name: validate_email
+    given: Input data provided
+    when: validate_email function called
+    then: Result returned
+  - name: test_validate_email
+  - name: domain_event_type
+    given: Input data provided
+    when: domain_event_type function called
+    then: Result returned
+  - name: test_domain_event_type
+  - name: domain_event_to_json
+    given: Input data provided
+    when: domain_event_to_json function called
+    then: Result returned
+  - name: test_domain_event_to_json
+  - name: event_to_domain_event
+    given: Input data provided
+    when: event_to_domain_event function called
+    then: Result returned
+  - name: test_event_to_domain_event
+  - name: user_view_to_json
+    given: Input data provided
+    when: user_view_to_json function called
+    then: Result returned
+  - name: test_user_view_to_json
+  - name: order_view_to_json
+    given: Input data provided
+    when: order_view_to_json function called
+    then: Result returned
+  - name: test_order_view_to_json
+  - name: users_to_json
+    given: Input data provided
+    when: users_to_json function called
+    then: Result returned
+  - name: test_users_to_json
+  - name: orders_to_json
+    given: Input data provided
+    when: orders_to_json function called
+    then: Result returned
+  - name: test_orders_to_json
+
+types:
+  create_event_store:
+    description: Auto-generated
+
+  append_event:
+    description: Auto-generated
+
+  get_events:
+    description: Auto-generated
+
+  save_snapshot:
+    description: Auto-generated
+
+  get_snapshot:
+    description: Auto-generated
+
+  handle_command:
+    description: Auto-generated
+
+  create_aggregate:
+    description: Auto-generated
+
+  apply_event:
+    description: Auto-generated
+
+  add_event:
+    description: Auto-generated
+
+  commit_events:
+    description: Auto-generated
+
+  create_read_model:
+    description: Auto-generated
+
+  project_event:
+    description: Auto-generated
+
+  query_read_model:
+    description: Auto-generated
+
+  rebuild_aggregate:
+    description: Auto-generated
+
+  rebuild_read_model:
+    description: Auto-generated
+
+  get_current_timestamp:
+    description: Auto-generated
+
+  generate_event_id:
+    description: Auto-generated
+
+  validate_email:
+    description: Auto-generated
+
+  domain_event_type:
+    description: Auto-generated
+
+  domain_event_to_json:
+    description: Auto-generated
+
+  event_to_domain_event:
+    description: Auto-generated
+
+  user_view_to_json:
+    description: Auto-generated
+
+  order_view_to_json:
+    description: Auto-generated
+
+  users_to_json:
+    description: Auto-generated
+
+  orders_to_json:
+    description: Auto-generated

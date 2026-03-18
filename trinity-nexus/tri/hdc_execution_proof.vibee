@@ -1,0 +1,246 @@
+name: hdc_execution_proof
+version: "1.0.0"
+language: zig
+module: hdc_execution_proof
+
+description: |
+  HDC Execution Proof — Level 10A.10: Real Forward Pass with Measured Latencies.
+  Closes the critical gap: executes actual vsa.zig operations on real text tokens
+  and records nanosecond-precision timings per stage.
+
+  === THE GAP THIS CLOSES ===
+  v2.18-v2.25 specified 24 Level 10A specs across 8 architectural layers.
+  NONE were validated with actual forward pass execution on real tokens.
+  This spec bridges specification → empirical measurement.
+
+  === EXECUTION PROOF PROTOCOL ===
+
+  Phase 1: CORPUS PREPARATION (Zero-Dependency)
+    Inline Shakespeare excerpt (1,024 chars):
+      "To be, or not to be, that is the question:
+       Whether 'tis nobler in the mind to suffer
+       The slings and arrows of outrageous fortune..."
+    Character-level tokenization: ~70 unique printable ASCII chars.
+    Codebook: D=256, each char → randomHV(256, char_seed).
+    Context window: 8 tokens. Sliding window → ~1016 (context, target) pairs.
+
+  Phase 2: SINGLE FORWARD PASS (Instrumented)
+    Given context = ["T", "o", " ", "b", "e", ",", " ", "o"]
+    Expected target = "r"
+
+    Step-by-step with nanosecond timing:
+
+    1. ENCODE (expected: ~4 us total for 8 tokens)
+       For each token t in context:
+         token_hv = codebook.encode(t)  // lookup: ~500 ns
+       Total: 8 * 500 ns = 4,000 ns
+
+    2. POSITION ENCODING (expected: ~17 us total)
+       For each position i in 0..8:
+         pos_hv = vsa.permute(token_hv[i], i)  // 2,100 ns per permute
+       Total: 8 * 2,100 ns = 16,800 ns
+
+    3. ATTENTION (expected: ~343 us for H=3 heads)
+       For each head h in 0..3:
+         For each token i:
+           Q[i] = vsa.bind(query_role[h], pos_hv[i])     // 2,073 ns
+           K[i] = vsa.bind(key_role[h], pos_hv[i])       // 2,073 ns
+           V[i] = vsa.bind(value_role[h], pos_hv[i])     // 2,073 ns
+         For each query position i:
+           For each key position j:
+             score[j] = vsa.cosineSimilarity(Q[i], K[j])  // 190 ns
+           Apply phi-rank softmax:
+             sorted_indices = argsort(scores)
+             weights[k] = phi^(-k/T) for rank k
+             normalize weights
+           attended = vsa.bundle2(V[top1], V[top2])        // 2,387 ns
+           // For 3+ candidates: sequential bundle2
+       Merge heads:
+         merged = vsa.bundle3(head0_out, head1_out, head2_out)  // 2,387 ns
+       Total attention: 3 * (8*3*2073 + 8*8*190 + 8*2387) + 2387
+                      ≈ 3 * (49,752 + 12,160 + 19,096) + 2,387
+                      = 3 * 81,008 + 2,387 = 245,411 ns ≈ 245 us
+
+    4. FEED-FORWARD (expected: ~12 us)
+       ff1_out = vsa.bind(merged, ff1_role)   // 2,073 ns
+       ff1_act = ternary_relu(ff1_out)        // ~256 ns (256 trits)
+       ff2_out = vsa.bind(ff1_act, ff2_role)  // 2,073 ns
+       residual = vsa.bundle2(merged, ff2_out) // 2,387 ns
+       Total: 6,789 ns ≈ 7 us
+
+    5. DECODE (expected: ~13 us for vocab=70)
+       For each char c in vocab:
+         sim[c] = vsa.cosineSimilarity(output_hv, codebook.encode(c))  // 190 ns
+       Total: 70 * 190 ns = 13,300 ns
+
+    TOTAL FORWARD: ~4 + 17 + 245 + 7 + 13 = 286 us (predicted)
+    Actual measured: recorded in ExecutionProof struct.
+
+  Phase 3: VALIDATION
+    Compare predicted vs actual latency per stage.
+    Tolerance: 3x (measured within 3x of predicted is PASS).
+    Log: Each stage name, predicted_ns, actual_ns, ratio, pass/fail.
+
+  Phase 4: BATCH FORWARD (100 samples)
+    Run 100 consecutive forward passes.
+    Record min/max/avg/p50/p99 per stage.
+    Compute throughput: samples/sec.
+
+  Phase 5: CORRECTNESS CHECK
+    After training (separate spec), forward should predict correctly
+    for seen context windows. Pre-training: random prediction expected
+    (1/70 baseline accuracy = 1.4%).
+
+  === WHAT THIS PROVES ===
+  1. The attention architecture (bind Q/K/V, cosine score, bundle V) EXECUTES.
+  2. Measured latencies can be compared to predicted budgets.
+  3. The forward pass produces a valid output HV that decodes to a character.
+  4. Throughput is measurable and reproducible.
+
+  Trinity Identity: phi^2 + 1/phi^2 = 3
+  Sacred Formula: V = n * 3^k * pi^m * phi^p * e^q
+
+types:
+  StageLatency:
+    fields:
+      stage_name: String
+      predicted_ns: usize
+      actual_ns: usize
+      ratio: Float
+      passed: Bool
+
+  ForwardProof:
+    fields:
+      input_text: String
+      input_tokens: List<String>
+      context_size: usize
+      num_heads: usize
+      dimension: usize
+      vocab_size: usize
+      stage_latencies: List<StageLatency>
+      total_predicted_ns: usize
+      total_actual_ns: usize
+      output_hv_density: Float
+      predicted_char: String
+      predicted_confidence: Float
+      all_stages_passed: Bool
+
+  BatchProof:
+    fields:
+      num_samples: usize
+      min_latency_ns: usize
+      max_latency_ns: usize
+      avg_latency_ns: usize
+      p50_latency_ns: usize
+      p99_latency_ns: usize
+      throughput_samples_per_sec: Float
+      total_time_ms: Float
+
+  CorrectnessCheck:
+    fields:
+      total_predictions: usize
+      correct_predictions: usize
+      accuracy: Float
+      baseline_accuracy: Float
+      above_baseline: Bool
+
+  ExecutionProof:
+    fields:
+      single_forward: ForwardProof
+      batch_forward: BatchProof
+      correctness: CorrectnessCheck
+      timestamp: String
+      zig_version: String
+      platform: String
+
+behaviors:
+  - name: initProofEngine
+    given: Dimension D=256, num_heads H=3, inline Shakespeare corpus
+    when: Build codebook, generate role vectors, tokenize corpus, create samples
+    then: Proof engine ready with real data loaded
+
+  - name: executeOneForward
+    given: 8-token context window from real corpus
+    when: |
+      Instrumented forward pass with nanosecond timing per stage:
+      encode → permute(position) → bind(Q,K,V) per head → cosineSimilarity(Q,K)
+      → phi-rank weights → bundle(V) → bundle3(heads) → bind(FFN) → decode
+    then: Returns ForwardProof with actual ns per stage and predicted vs actual comparison
+
+  - name: measureEncodeStage
+    given: 8 tokens and codebook
+    when: codebook.encode(token) for each, record total ns
+    then: StageLatency for encode (predicted 4,000 ns)
+
+  - name: measurePositionStage
+    given: 8 encoded token HVs
+    when: vsa.permute(token_hv, position) for each, record total ns
+    then: StageLatency for position encoding (predicted 16,800 ns)
+
+  - name: measureAttentionStage
+    given: 8 positioned HVs, 3 head role sets (Q,K,V roles)
+    when: |
+      Per head: bind Q/K/V for 8 tokens, compute 8x8 cosine similarities,
+      phi-rank softmax, bundle top-2 values. Merge 3 heads via bundle3.
+    then: StageLatency for attention (predicted ~245,000 ns)
+
+  - name: measureFFNStage
+    given: Merged attention output HV
+    when: bind(ff1) → ternary_relu → bind(ff2) → bundle2(residual)
+    then: StageLatency for FFN (predicted ~7,000 ns)
+
+  - name: measureDecodeStage
+    given: Output HV and vocab codebook (70 chars)
+    when: cosineSimilarity(output, codebook[c]) for all c, find argmax
+    then: StageLatency for decode (predicted 13,300 ns) + predicted character
+
+  - name: validateLatencies
+    given: List of StageLatency entries
+    when: Check each ratio (actual/predicted) is within 3x tolerance
+    then: Returns pass/fail per stage and overall validation result
+
+  - name: executeBatchForward
+    given: 100 (context, target) samples from corpus
+    when: Run executeOneForward 100 times, collect all latencies
+    then: Returns BatchProof with min/max/avg/p50/p99 statistics
+
+  - name: checkPreTrainingCorrectness
+    given: 100 forward passes with predicted vs actual targets
+    when: Count matches, compute accuracy
+    then: CorrectnessCheck (expected ~1/70 = 1.4% before training)
+
+  - name: assembleExecutionProof
+    given: ForwardProof, BatchProof, CorrectnessCheck
+    when: Bundle all results with platform metadata
+    then: Complete ExecutionProof document
+
+  - name: generateProofReport
+    given: ExecutionProof
+    when: Format as markdown with stage breakdown table, batch statistics, verdict
+    then: Human-readable proof that forward pass executes on real tokens
+
+  - name: compareToSpecBudget
+    given: ExecutionProof and spec-predicted latency budget (389 us/sample)
+    when: Compare total actual vs total predicted, compute ratio
+    then: Returns whether implementation meets spec performance budget
+
+test_cases:
+  - name: forward_proof_executes
+    description: Single forward pass completes and returns valid output
+    expected: ForwardProof with all stages having actual_ns > 0
+
+  - name: output_is_valid_char
+    description: Decoded output is a character from the vocabulary
+    expected: predicted_char is in vocab (printable ASCII)
+
+  - name: latencies_within_budget
+    description: Each stage within 3x of predicted latency
+    expected: all_stages_passed = true
+
+  - name: batch_throughput_positive
+    description: 100-sample batch completes with measurable throughput
+    expected: throughput_samples_per_sec > 0
+
+  - name: pre_training_accuracy_baseline
+    description: Untrained model accuracy near random baseline
+    expected: accuracy approximately 1/vocab_size (1.4%)

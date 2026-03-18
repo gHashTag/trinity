@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://ghashtag.github.io/trinity/docs/
+    about: Read the documentation before opening an issue
+  - name: Cloud Dev Workflow
+    url: https://github.com/gHashTag/trinity/blob/main/CLAUDE.md#default-development-workflow
+    about: Every issue spawns an agent container automatically

@@ -1,0 +1,10 @@
+fpga/prjxray
+fpga/nextpnr-xilinx
+data/tinystories/real_tinystories.txt
+data/checkpoints*
+data/ecdata
+data/zeta
+data/predictions
+data/curves
+docs
+papers

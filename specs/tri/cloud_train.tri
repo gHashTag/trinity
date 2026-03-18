@@ -1,0 +1,68 @@
+name: cloud_train
+version: "1.0.0"
+language: zig
+module: tri.cloud_train
+
+description: |
+  HSLM training experiment management and multi-account Railway farm control.
+  Spawns training services on Railway with full env var configuration (optimizer,
+  lr, batch, schedule, ternary flags). Manages farm capacity across up to 3
+  Railway accounts: dashboard, sync, rebalance, and Metal region switching.
+
+behaviors:
+  - name: cloudTrain
+    given: An experiment name and optional training hyperparameter flags
+    when: tri cloud train <name> [--optimizer X] [--lr X] [--batch N] ...
+    then: >
+      Parses flags into TrainConfig, selects or pins a Railway account,
+      creates a service linked to gHashTag/trinity repo, sets all HSLM_*
+      env vars, configures multi-region (us-west2 + asia-southeast1),
+      and records the service in farm state.
+
+  - name: cloudTrainBatch
+    given: No arguments
+    when: tri cloud train-batch
+    then: >
+      Spawns the canonical 13-experiment grid (R5-R17 + T1) distributed
+      across 3 accounts with a 2s rate-limit delay between spawns.
+      Prints a summary of spawned vs failed counts.
+
+  - name: cloudFarm
+    given: Optional subcommand (sync | capacity | rebalance)
+    when: tri cloud farm [subcommand]
+    then: >
+      No subcommand → prints dashboard of all accounts with active/max slots
+      and daily create usage; recommends the best account for next spawn.
+      sync → fetches live service counts from Railway APIs and saves state.
+      capacity → emits JSON with total_slots, total_active, per-account detail.
+      rebalance → migrates agents from overloaded (>80%) to underloaded (<30%)
+      account by deleting on source and recreating on target.
+
+  - name: cloudMetal
+    given: Configured Railway accounts
+    when: tri cloud metal
+    then: >
+      Iterates all accounts and all services; updates each service instance to
+      region us-west2 (Railway Metal). Reports already-Metal, switched OK,
+      and failed counts in a summary table.
+
+  - name: cloudDeleteService
+    given: A service ID and optional --account N flag
+    when: tri cloud delete-service <service-id> [--account N]
+    then: Calls Railway deleteService API and prints OK or FAILED.
+
+  - name: spawnTrainService
+    given: TrainConfig and a RailwayFarm pointer
+    when: called internally by cloudTrain / cloudTrainBatch
+    then: >
+      Selects account (pinned or auto via selectAccount), creates service with
+      repo source, sets env vars via setTrainEnvVars, sets multi-region via
+      setTrainRegion, increments farm counters, and calls farm.recordAgent.
+
+export_functions:
+  - cloudTrain
+  - cloudTrainBatch
+  - cloudFarm
+  - cloudMetal
+  - cloudDeleteService
+  - printTrainUsage

@@ -1,0 +1,151 @@
+name: codegen_go
+version: 1.0.0
+category: compiler
+description: Go code generator from VIBEEC AST
+
+# Types
+types:
+  - name: GoCodeGenerator
+    description: Generates Go code from AST
+    fields:
+      - name: package_name
+        type: String
+        description: Go package name
+        default: "main"
+      - name: indent_size
+        type: Int
+        description: Number of spaces for indentation
+        default: 4
+
+# Functions
+functions:
+  - name: generate
+    signature: "generate(ast: List(Stmt), package_name: String) -> String"
+    description: Generate Go code from AST
+    params:
+      - name: ast
+        type: List(Stmt)
+        description: VIBEEC AST to convert
+      - name: package_name
+        type: String
+        description: Go package name
+        default: "main"
+    returns:
+      type: String
+      description: Generated Go code
+    examples:
+      - params: {ast: [FnDef("Add", [("a", IntType), ("b", IntType)], IntType, BinOp(Add, Var("a"), Var("b")), true)], package_name: "main"}
+        returns: "package main\n\nfunc Add(a int, b int) int {\n    return a + b\n}"
+
+  - name: stmt_to_go
+    signature: "stmt_to_go(stmt: Stmt) -> String"
+    description: Convert single statement to Go code
+    params:
+      - name: stmt
+        type: Stmt
+        description: Statement to convert
+    returns:
+      type: String
+      description: Go code
+    examples:
+      - params: {stmt: FnDef("Hello", [], StringType, StringLit("Hello"), true)}
+        returns: "func Hello() string {\n    return \"Hello\"\n}"
+
+  - name: type_to_go
+    signature: "type_to_go(t: Type) -> String"
+    description: Convert VIBEEC type to Go type
+    params:
+      - name: t
+        type: Type
+        description: VIBEEC type
+    returns:
+      type: String
+      description: Go type string
+    examples:
+      - params: {t: IntType}
+        returns: "int"
+      - params: {t: ListType(StringType)}
+        returns: "[]string"
+      - params: {t: TupleType([IntType, StringType])}
+        returns: "struct { Field0 int; Field1 string }"
+
+  - name: expr_to_go
+    signature: "expr_to_go(expr: Expr, indent: Int) -> String"
+    description: Convert expression to Go code with indentation
+    params:
+      - name: expr
+        type: Expr
+        description: Expression to convert
+      - name: indent
+        type: Int
+        description: Indentation level
+    returns:
+      type: String
+      description: Go code
+    examples:
+      - params: {expr: BinOp(Add, IntLit(1), IntLit(2)), indent: 1}
+        returns: "    1 + 2"
+
+# Type Mappings
+type_mappings:
+  - vibeec: IntType
+    go: int
+  - vibeec: FloatType
+    go: float64
+  - vibeec: StringType
+    go: string
+  - vibeec: BoolType
+    go: bool
+  - vibeec: ListType(T)
+    go: "[]T"
+  - vibeec: TupleType([T1, T2])
+    go: "struct { Field0 T1; Field1 T2 }"
+  - vibeec: Result(T, E)
+    go: "(T, error)"
+  - vibeec: Option(T)
+    go: "*T"
+
+# Behaviors
+behaviors:
+  - name: function_generation
+    description: Generate Go function from AST
+    given: FnDef AST node
+    when: generate is called
+    then: Returns valid Go function code
+    examples:
+      - input: FnDef("Add", [("a", IntType), ("b", IntType)], IntType, BinOp(Add, Var("a"), Var("b")), true)
+        output: "func Add(a int, b int) int {\n    return a + b\n}"
+
+  - name: type_conversion
+    description: Convert VIBEEC types to Go types
+    given: VIBEEC type
+    when: type_to_go is called
+    then: Returns equivalent Go type
+    examples:
+      - input: ListType(IntType)
+        output: "[]int"
+
+  - name: package_declaration
+    description: Generate Go package declaration
+    given: Package name
+    when: generate is called
+    then: Returns code with package declaration
+    examples:
+      - input: "main"
+        output: "package main\n\n..."
+
+  - name: error_handling
+    description: Convert Result types to Go error handling
+    given: Result(T, E) type
+    when: type_to_go is called
+    then: Returns (T, error) tuple
+    examples:
+      - input: Result(IntType, StringType)
+        output: "(int, error)"
+
+# Completeness
+completeness:
+  test_coverage: 85%
+  all_behaviors_implemented: true
+  all_functions_implemented: true
+  supports_all_types: true

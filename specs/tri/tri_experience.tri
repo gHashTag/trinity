@@ -1,0 +1,37 @@
+name: tri_experience
+version: "1.0.0"
+language: zig
+module: tri.experience
+
+description: |
+  TRI Experience — Persistent Episode Storage and Mistake Pattern Tracking.
+
+  Commands:
+    tri experience save     — save episode (issue, task, verdict, mistakes, learnings)
+    tri experience recall   — recall relevant episodes by task keywords
+    tri experience mistakes — show mistake patterns sorted by frequency
+
+  Storage:
+    .trinity/experience/episodes/{issue}_{timestamp}.json
+    .trinity/experience/mistakes/{hash}_{name}.json
+
+behaviors:
+  - name: saveEpisode
+    given: Issue number, task description, verdict, mistakes, learnings
+    when: Called after task completion
+    then: Serializes episode to JSON in episodes/ directory
+
+  - name: recallEpisodes
+    given: Task keywords
+    when: Called before starting a similar task
+    then: Returns matching episodes ranked by relevance
+
+  - name: trackMistake
+    given: Mistake name and context
+    when: Called after an error
+    then: Increments frequency counter in mistakes/ directory
+
+export_functions:
+  - saveEpisode
+  - recallEpisodes
+  - trackMistake

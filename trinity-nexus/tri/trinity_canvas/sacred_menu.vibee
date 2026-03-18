@@ -1,0 +1,42 @@
+name: sacred_menu
+version: "1.0.0"
+language: zig
+module: sacred_menu
+description: |
+  Sacred Mathematics Menu System
+  Renders world panels with sacred math content
+  phi^2 + 1/phi^2 = 3 = TRINITY
+
+imports:
+  - sacred_worlds
+  - panel
+  - theme
+
+types:
+  WorldPanelState:
+    description: "State for sacred world panel rendering"
+    fields:
+      world_id: U8
+      anim_phase: Float
+      scroll_y: Float
+
+behaviors:
+  - name: draw_world_content
+    given: WorldPanelState, rect, time, font, alpha
+    when: Rendering sacred world panel content
+    then: Draw realm header, world title, sacred formula, constant value, visualization
+
+  - name: draw_realm_header
+    given: RealmId, realm_color, rect, alpha
+    when: Rendering top section
+    then: Draw colored bar with realm name and symbol
+
+  - name: draw_sacred_formula
+    given: Formula string, constant value, rect, time, alpha
+    when: Rendering formula section
+    then: Draw formula text with phi-pulsing animation
+
+  - name: draw_phi_spiral
+    given: Center, radius, time, color
+    when: Rendering phi-spiral visualization
+    then: Draw golden ratio spiral with animated phase

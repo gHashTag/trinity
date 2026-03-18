@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TRINITY FPGA Video Capture</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            color: #eee;
+            padding: 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 {
+            text-align: center;
+            color: #00d4ff;
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        .card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        #video {
+            width: 100%;
+            border-radius: 8px;
+            background: #000;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: transform 0.2s;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: #00d4ff; color: #000; }
+        .btn-danger { background: #ff4757; color: #fff; }
+        .btn-success { background: #2ed573; color: #000; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+        .status.recording { background: rgba(255, 71, 87, 0.2); color: #ff4757; }
+        .status.ready { background: rgba(46, 213, 115, 0.2); color: #2ed573; }
+        .timer {
+            text-align: center;
+            font-size: 2rem;
+            font-family: monospace;
+            margin: 15px 0;
+        }
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #222;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #888;
+            font-size: 12px;
+        }
+        .results {
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid #00d4ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+        .results h3 { color: #00d4ff; margin-bottom: 10px; }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .pattern-badge {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .pattern-FAST { background: #ff4757; }
+        .pattern-MEDIUM { background: #ffa502; }
+        .pattern-SLOW { background: #2ed573; }
+        .pattern-CHAOTIC { background: #a55eea; }
+        .pattern-SOLID { background: #747d8c; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 TRINITY FPGA</h1>
+        <p class="subtitle">Запись видео LED индикатора для анализа</p>
+
+        <div class="card">
+            <label>Выбери битстрим:</label>
+            <select id="bitstream">
+                <option value="temporal_heartbeat">temporal_heartbeat.bit (~3 Hz)</option>
+                <option value="d6_blink">d6_blink.bit (~3 Hz)</option>
+                <option value="ternary_dot">ternary_dot.bit (переменный)</option>
+                <option value="vsa_quantum_top">vsa_quantum_top.bit (хаотичный)</option>
+                <option value="trinity_v1" selected>trinity_v1.bit (несколько режимов)</option>
+            </select>
+
+            <label>Нажми SW1 для смены режима (если trinity_v1):</label>
+            <select id="mode">
+                <option value="">Без нажатия</option>
+                <option value="1">1 нажатие SW1</option>
+                <option value="2">2 нажатия SW1</option>
+                <option value="3">3 нажатия SW1</option>
+                <option value="4">4 нажатия SW1</option>
+            </select>
+
+            <div id="status" class="status ready">● Готов к записи</div>
+
+            <video id="video" autoplay playsinline muted></video>
+
+            <div class="timer" id="timer">00:00</div>
+
+            <button id="startBtn" class="btn btn-primary">▶ Начать запись</button>
+            <button id="stopBtn" class="btn btn-danger" disabled>⏹ Остановить</button>
+            <button id="analyzeBtn" class="btn btn-success" disabled>📊 Анализировать</button>
+        </div>
+
+        <div id="results" class="card" style="display:none;">
+            <h3>📈 Результаты анализа</h3>
+            <div id="resultsContent"></div>
+        </div>
+    </div>
+
+    <script>
+        const video = document.getElementById('video');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const status = document.getElementById('status');
+        const timer = document.getElementById('timer');
+        const results = document.getElementById('results');
+        const resultsContent = document.getElementById('resultsContent');
+
+        let stream = null;
+        let mediaRecorder = null;
+        let chunks = [];
+        let startTime = null;
+        let timerInterval = null;
+        let recordedBlob = null;
+
+        // Initialize camera
+        async function initCamera() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+                    audio: false
+                });
+                video.srcObject = stream;
+            } catch (err) {
+                status.textContent = '❌ Ошибка камеры: ' + err.message;
+                status.className = 'status';
+            }
+        }
+
+        // Update timer
+        function updateTimer() {
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const mins = String(Math.floor(elapsed / 60)).padStart(2, '0');
+            const secs = String(elapsed % 60).padStart(2, '0');
+            timer.textContent = `${mins}:${secs}`;
+        }
+
+        // Start recording
+        startBtn.addEventListener('click', () => {
+            chunks = [];
+            mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+
+            mediaRecorder.ondataavailable = (e) => {
+                if (e.data.size > 0) chunks.push(e.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                recordedBlob = new Blob(chunks, { type: 'video/webm' });
+                analyzeBtn.disabled = false;
+            };
+
+            mediaRecorder.start();
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+
+            startBtn.disabled = true;
+            stopBtn.disabled = false;
+            analyzeBtn.disabled = true;
+            status.textContent = '🔴 Запись...';
+            status.className = 'status recording';
+        });
+
+        // Stop recording
+        stopBtn.addEventListener('click', () => {
+            mediaRecorder.stop();
+            clearInterval(timerInterval);
+            timer.textContent = '00:00';
+
+            startBtn.disabled = false;
+            stopBtn.disabled = true;
+            status.textContent = '✅ Записано: ' + Math.round(recordedBlob.size / 1024) + ' KB';
+            status.className = 'status ready';
+        });
+
+        // Analyze recording
+        analyzeBtn.addEventListener('click', async () => {
+            analyzeBtn.textContent = '⏳ Анализ...';
+            analyzeBtn.disabled = true;
+
+            // Simple brightness analysis (client-side)
+            const videoElement = document.createElement('video');
+            videoElement.src = URL.createObjectURL(recordedBlob);
+            videoElement.muted = true;
+            await new Promise(r => videoElement.onloadedmetadata = r);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = 320;
+            canvas.height = 240;
+            const ctx = canvas.getContext('2d');
+
+            const brightness = [];
+            const fps = 30;
+
+            videoElement.currentTime = 0;
+            while (videoElement.currentTime < videoElement.duration) {
+                ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
+                const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const avg = frame.data.reduce((s, v, i) => s + (i % 4 === 0 ? v : 0), 0) / (canvas.width * canvas.height);
+                brightness.push(avg);
+                videoElement.currentTime += 1/fps;
+                await new Promise(r => setTimeout(r, 10));
+            }
+
+            // Analyze pattern
+            const max = Math.max(...brightness);
+            const min = Math.min(...brightness);
+            const threshold = (max + min) / 2;
+            const onStates = brightness.map(b => b > threshold);
+
+            let transitions = 0;
+            for (let i = 1; i < onStates.length; i++) {
+                if (onStates[i] !== onStates[i-1]) transitions++;
+            }
+
+            const blinks = Math.floor(transitions / 2);
+            const duration = videoElement.duration;
+            const frequency = blinks / duration;
+
+            let pattern, desc;
+            if (blinks === 0) {
+                pattern = 'SOLID';
+                desc = 'LED горит постоянно';
+            } else if (frequency < 1) {
+                pattern = 'SLOW';
+                desc = `Медленное мигание (~${frequency.toFixed(1)} Гц)`;
+            } else if (frequency < 5) {
+                pattern = 'MEDIUM';
+                desc = `Среднее мигание (~${frequency.toFixed(1)} Гц)`;
+            } else {
+                pattern = 'FAST';
+                desc = `Быстрое мигание (~${frequency.toFixed(1)} Гц)`;
+            }
+
+            // Show results
+            const bitstream = document.getElementById('bitstream').value;
+            const mode = document.getElementById('mode').value;
+
+            resultsContent.innerHTML = `
+                <div class="result-item"><span>Битстрим:</span><span>${bitstream}</span></div>
+                <div class="result-item"><span>Режим (SW1):</span><span>${mode || '0'}</span></div>
+                <div class="result-item"><span>Частота:</span><span>${frequency.toFixed(2)} Гц</span></div>
+                <div class="result-item"><span>Миганий:</span><span>${blinks}</span></div>
+                <div class="result-item"><span>Паттерн:</span><span class="pattern-badge pattern-${pattern}">${pattern}</span></div>
+                <div class="result-item"><span>Описание:</span><span>${desc}</span></div>
+                <div class="result-item"><span>Яркость сред:</span><span>${Math.round((max+min)/2)}</span></div>
+            `;
+
+            results.style.display = 'block';
+            analyzeBtn.textContent = '📊 Анализировать';
+            status.textContent = '✅ Ализ завершён';
+        });
+
+        // Initialize
+        initCamera();
+    </script>
+</body>
+</html>

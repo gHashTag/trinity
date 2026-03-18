@@ -1,0 +1,60 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+  ValidationResult:
+    description: Result of validation
+    fields:
+      valid: Bool
+      errors: List(String)
+      sanitized: String
+
+  EmailValidation:
+    description: Email validation result
+    fields:
+      valid: Bool
+      domain: String
+      local_part: String
+
+behaviors:
+  - name: validate_email
+    given: An email string
+    when: validate_email is called
+    then: Email validity is checked
+  - name: valid_email
+  - name: invalid_email_no_at
+  - name: invalid_email_no_domain
+  - name: validate_url
+    given: A URL string
+    when: validate_url is called
+    then: URL validity is checked
+  - name: valid_https_url
+  - name: valid_http_url
+  - name: invalid_url_no_protocol
+  - name: validate_phone
+    given: A phone number string
+    when: validate_phone is called
+    then: Phone validity is checked
+  - name: valid_us_phone
+  - name: valid_international
+  - name: sanitize_html
+    given: HTML string with potential XSS
+    when: sanitize_html is called
+    then: Dangerous tags are removed
+  - name: remove_script_tags
+  - name: remove_onclick
+  - name: validate_password
+    given: A password string
+    when: validate_password is called
+    then: Password strength is checked
+  - name: strong_password
+  - name: weak_password
+  - name: validate_email
+  - name: validate_url
+  - name: validate_phone
+  - name: sanitize_html
+  - name: validate_password
+  - name: is_alphanumeric
+  - name: is_numeric

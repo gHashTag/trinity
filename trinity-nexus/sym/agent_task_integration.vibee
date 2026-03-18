@@ -1,0 +1,47 @@
+name: agent_task_integration
+version: "1.0.0"
+language: zig
+module: agent_task_integration
+description: >
+  Agent-driven task integration for SOTA report generation. Defines how
+  the Ralph autonomous agent collects, validates, and structures technical
+  metrics from the Trinity codebase into a publishable report.
+
+types:
+  TaskSpec:
+    fields:
+      id: String
+      name: String
+      category: String
+      priority: Int
+      status: String
+
+  AgentAction:
+    fields:
+      action_type: String
+      target: String
+      parameters: List<String>
+      result: String
+
+  IntegrationResult:
+    fields:
+      tasks_completed: Int
+      tasks_total: Int
+      metrics_collected: Int
+      report_generated: Bool
+
+behaviors:
+  - name: collect_metrics
+    given: Codebase path and metric categories
+    when: Agent starts metrics collection
+    then: Return list of ProjectTech with measured values
+
+  - name: validate_metrics
+    given: Collected metrics list
+    when: Validation pass requested
+    then: Return list with verified flag set per metric
+
+  - name: structure_report
+    given: Validated metrics and comparison entries
+    when: Report structuring requested
+    then: Return formatted SotaReport ready for publication

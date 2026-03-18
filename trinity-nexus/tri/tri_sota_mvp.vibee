@@ -1,0 +1,44 @@
+name: tri_sota_mvp
+version: "1.0.0"
+language: zig
+module: sym_005_demo
+
+description: >
+  SYM-005 TRI SOTA MVP - Decentralized Knowledge Collector.
+  End-to-end demo: LLM response -> triple extraction -> KG storage -> DHT sync -> TRI rewards.
+  Validates integration of SYM-002 + SYM-003 + SYM-004.
+  Tech Tree: SYM-005 (Symbolic branch completion).
+
+types:
+  DemoPipelineStats:
+    fields:
+      responses_processed: Int
+      triples_extracted: Int
+      triples_stored: Int
+      triples_distributed: Int
+      rewards_earned_wei: Int
+      proofs_verified: Int
+
+behaviors:
+  - name: runFullPipeline
+    given: Sample LLM responses with known SVO content
+    when: Each response processed through extractTriples then DHT store then reward calc
+    then: All triples extracted stored distributed rewards tracked
+
+  - name: runProofOfKnowledge
+    given: Challenger and target with stored triples
+    when: Challenge issued responded verified
+    then: Valid proofs pass tampered proofs fail
+
+  - name: runRewardCycle
+    given: Nodes with 5+ accepted contributions
+    when: Rewards calculated and claimed
+    then: Correct wei amount 0.0002 TRI per triple
+
+test_cases:
+  - input: Paris is the capital of France
+    expected: 1+ triples extracted stored distributed
+  - input: Python is a programming language
+    expected: 1+ triples extracted rewards tracked
+  - input: 5 responses processed
+    expected: rewards claimable above minimum

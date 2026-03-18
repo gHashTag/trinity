@@ -1,0 +1,37 @@
+# Exclude everything not needed for HSLM training deploy
+# Only pre-built binaries in zig-out/bin/ and Dockerfile needed
+
+# Large dirs
+fpga/
+data/
+src/
+.git/
+.github/
+docs/
+docsite/
+papers/
+website/
+node_modules/
+.zig-cache/
+zig-cache/
+build/
+release/
+.claude/
+.ralph/
+.trinity/
+.trinity-nexus/
+trinity-nexus/
+telegram-bridge/
+deploy/
+scripts/
+specs/
+tools/
+archive/
+
+# Keep only zig-out/bin/ (pre-built binaries)
+zig-out/lib/
+zig-out/doc/
+
+# Large file patterns
+*.jsonl
+*.vcd

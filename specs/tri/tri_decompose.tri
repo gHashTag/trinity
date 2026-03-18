@@ -1,0 +1,96 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# tri_decompose v2.0.0 — DAG-based Task Decomposition with Parallel Phases
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# Extends task_decomposer.tri with DAG output, parallel phase groups,
+# and dependency edges for pipeline_parallel execution.
+#
+# phi^2 + 1/phi^2 = 3 = TRINITY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+name: tri_decompose
+version: "2.0.0"
+language: zig
+module: tri.task_decomposer
+
+description: |
+  DAG-based task decomposition extending task_decomposer.
+  Phase 1 (done): Sequential execution with GitHub coordination.
+  Phase 2 (this spec): DAG output, parallel phase groups, dependency edges.
+  Builds dependency graph from sub-issues, groups by phase for parallel execution.
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TYPES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+types:
+  DagNode:
+    fields:
+      task: SubTask
+      depends_on: List<u32>       # issue numbers this depends on
+      group_id: u8                # execution group (0 = first)
+
+  DagEdge:
+    fields:
+      from_issue: u32             # predecessor issue number
+      to_issue: u32               # dependent issue number
+
+  ExecutionGroup:
+    fields:
+      group_id: u8
+      phase: Phase
+      parallel: Bool              # true if tasks in group can run simultaneously
+      node_count: u8
+
+  ParallelPlan:
+    fields:
+      nodes: List<DagNode>        # max 16
+      edges: List<DagEdge>        # max 32
+      groups: List<ExecutionGroup> # max 8
+      group_count: u8
+      total_tasks: u8
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# BEHAVIORS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+behaviors:
+  - name: buildDag
+    given: Array of SubTasks sorted by phase
+    when: Preparing parallel execution plan
+    then: Returns ParallelPlan with nodes grouped by phase, edges between phases
+
+  - name: topologicalGroupSort
+    given: ParallelPlan with unsorted groups
+    when: Ordering groups for execution
+    then: Groups sorted by phase order; same-phase tasks marked parallel
+
+  - name: spawnParallelGroup
+    given: ExecutionGroup and allocator
+    when: Executing a group of parallel tasks
+    then: Spawns std.process.Child per task, waits for all, returns results
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# INTEGRATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+reuses:
+  - task_decomposer.zig (SubTask, Phase, Status, sortByPhase)
+  - pipeline_parallel.zig (PipelineDAG, executeDag)
+
+export_functions:
+  - buildDag
+  - topologicalGroupSort
+  - spawnParallelGroup
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TESTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tests:
+  test_build_dag_groups_by_phase:
+    description: 5 tasks across 3 phases produce 3 groups
+  test_topological_sort_order:
+    description: RESEARCH group before IMPLEMENT group before TEST group
+  test_parallel_flag:
+    description: Same-phase tasks get parallel=true, cross-phase get parallel=false

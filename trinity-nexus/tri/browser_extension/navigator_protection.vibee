@@ -1,0 +1,189 @@
+# Navigator Fingerprint Protection Specification
+# Single Source of Truth for Navigator spoofing
+# φ² + 1/φ² = 3 = TRINITY
+
+name: navigator_protection
+version: "1.0.0"
+language: zig
+module: navigator_protection
+
+constants:
+  PHI: 1.6180339887
+  TRINITY: 3.0
+  
+  # Common hardware configurations
+  HARDWARE_CONCURRENCY_VALUES: [2, 4, 8, 12, 16]
+  DEVICE_MEMORY_VALUES: [2, 4, 8, 16]
+  
+  # Common screen resolutions
+  SCREEN_RESOLUTIONS:
+    - width: 1920
+      height: 1080
+    - width: 1366
+      height: 768
+    - width: 1536
+      height: 864
+    - width: 1440
+      height: 900
+    - width: 2560
+      height: 1440
+  
+  # Common timezones
+  TIMEZONES:
+    - "UTC+00:00"
+    - "UTC-05:00"
+    - "UTC-08:00"
+    - "UTC+01:00"
+    - "UTC+08:00"
+
+types:
+  NavigatorFingerprint:
+    description: "Navigator fingerprint data"
+    fields:
+      user_agent: String
+      platform: String
+      language: String
+      languages: List<String>
+      hardware_concurrency: Int
+      device_memory: Int
+      max_touch_points: Int
+      vendor: String
+      plugins: List<String>
+  
+  ScreenFingerprint:
+    description: "Screen fingerprint data"
+    fields:
+      width: Int
+      height: Int
+      avail_width: Int
+      avail_height: Int
+      color_depth: Int
+      pixel_depth: Int
+      device_pixel_ratio: Float
+  
+  BatteryFingerprint:
+    description: "Battery fingerprint data"
+    fields:
+      charging: Bool
+      charging_time: Float
+      discharging_time: Float
+      level: Float
+  
+  ConnectionFingerprint:
+    description: "Network connection fingerprint"
+    fields:
+      effective_type: String
+      downlink: Float
+      rtt: Int
+      save_data: Bool
+  
+  SpoofConfig:
+    description: "Navigator spoofing configuration"
+    fields:
+      enabled: Bool
+      seed: Int
+      hardware_index: Int
+      screen_index: Int
+      timezone_index: Int
+      spoof_battery: Bool
+      spoof_connection: Bool
+
+behaviors:
+  - name: spoof_hardware_concurrency
+    given: navigator.hardwareConcurrency accessed
+    when: Fingerprinting script runs
+    then: Return value from common pool based on seed
+    
+  - name: spoof_device_memory
+    given: navigator.deviceMemory accessed
+    when: Fingerprinting script runs
+    then: Return value from common pool based on seed
+    
+  - name: spoof_screen_resolution
+    given: screen.width/height accessed
+    when: Fingerprinting script runs
+    then: Return common resolution based on seed
+    
+  - name: spoof_battery
+    given: navigator.getBattery() called
+    when: Battery fingerprinting attempted
+    then: Return fake battery status with noise
+    
+  - name: spoof_connection
+    given: navigator.connection accessed
+    when: Network fingerprinting attempted
+    then: Return common connection values
+    
+  - name: mask_plugins
+    given: navigator.plugins accessed
+    when: Plugin fingerprinting attempted
+    then: Return standard Chrome plugin list only
+    
+  - name: consistent_navigator
+    given: Same seed across sessions
+    when: Any navigator property accessed
+    then: Return consistent spoofed values
+
+functions:
+  - name: init_navigator_config
+    params:
+      - seed: Int
+    returns: SpoofConfig
+    description: "Initialize navigator spoofing configuration"
+    
+  - name: get_spoofed_hardware_concurrency
+    params:
+      - config: SpoofConfig
+    returns: Int
+    description: "Get spoofed hardware concurrency"
+    
+  - name: get_spoofed_device_memory
+    params:
+      - config: SpoofConfig
+    returns: Int
+    description: "Get spoofed device memory"
+    
+  - name: get_spoofed_screen
+    params:
+      - config: SpoofConfig
+    returns: ScreenFingerprint
+    description: "Get spoofed screen properties"
+    
+  - name: get_spoofed_battery
+    params:
+      - config: SpoofConfig
+    returns: BatteryFingerprint
+    description: "Get spoofed battery status"
+    
+  - name: get_spoofed_connection
+    params:
+      - config: SpoofConfig
+    returns: ConnectionFingerprint
+    description: "Get spoofed connection info"
+    
+  - name: get_standard_plugins
+    params: []
+    returns: List<String>
+    description: "Get standard Chrome plugin list"
+
+# Properties to spoof (from browserleaks data)
+spoofed_properties:
+  high_uniqueness:  # < 1% prevalence
+    - "navigator.hardwareConcurrency"
+    - "navigator.deviceMemory"
+    - "screen.width"
+    - "screen.height"
+    - "screen.availHeight"
+    - "navigator.getBattery"
+    - "navigator.connection"
+  
+  medium_uniqueness:  # 1-10% prevalence
+    - "navigator.platform"
+    - "navigator.language"
+    - "screen.colorDepth"
+    - "screen.pixelDepth"
+  
+  low_uniqueness:  # > 10% prevalence - keep original
+    - "navigator.cookieEnabled"
+    - "navigator.onLine"
+    - "navigator.doNotTrack"

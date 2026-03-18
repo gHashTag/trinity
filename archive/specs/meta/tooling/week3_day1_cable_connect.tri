@@ -1,0 +1,78 @@
+# ============================================================================
+# Week 3 Day 1 — Cable Connect + Real UART Test
+# ============================================================================
+
+name: week3_day1_cable_connect
+version: "3.0.0"
+language: zig
+module: week3_day1
+
+description: |
+  Day 1 of Week 3: Connect JTAG cable and test real UART communication.
+
+types:
+  UARTTestResult:
+    description: UART test result
+    fields:
+      ping_received: Bool
+      firmware_version: UInt8
+      latency_ms: Float32
+      error_count: UInt32
+
+constants:
+  CMD_PING: 1
+  ACK_PING: 2
+  FIRMWARE_VERSION: 0
+
+behaviors:
+  - name: detect_jtag_cable
+    given: Xilinx Platform Cable USB II
+    when: Connected via USB
+    then: lsusb shows VID:0x03fd PID:0x0008
+
+  - name: flash_bitstream
+    given: trinity_v2.bit file
+    when: openFPGALoader executed
+    then: Bitstream uploaded, LED starts breathing
+
+  - name: test_uart_ping_real
+    given: Physical UART connection
+    when: Send 0xA5 0xA5 0x01 0x00 0xCRC
+    then: Receive 0xA5 0xA5 0x02 0x00 0x02 0x00 0xCRC
+
+  - name: test_uart_vsa_bind_real
+    given: 10K trit payload
+    when: Send via CMD_VSA_BIND
+    then: Receive similarity score (0-65535)
+
+  - name: measure_uart_latency
+    given: UART ping loop
+    when: 100 iterations
+    then: Measure roundtrip time
+
+test_cases:
+  - name: cable_detection_pass
+    given: JTAG cable
+    when: lsusb run
+    then: Device detected
+
+  - name: uart_ping_pass
+    given: Real FPGA
+    when: Ping sent
+    then: ACK received
+
+algorithms:
+  - name: day1_first_run
+    description: First real run with cable
+    steps:
+      - Connect JTAG cable to USB
+      - Verify with lsusb
+      - Flash trinity_v2.bit with openFPGALoader
+      - Observe LED breathing
+      - Connect UART (Ftdi or built-in)
+      - Send CMD_PING
+      - Verify ACK
+      - Send CMD_VSA_BIND with test data
+      - Verify response
+      - Log all results
+      - Celebrate! 🎉

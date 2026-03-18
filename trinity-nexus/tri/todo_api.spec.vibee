@@ -1,0 +1,53 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+behaviors:
+  - name: create_todo
+    given: User is authenticated
+    when: User creates todo with title and description
+    then: Todo created and returned with ID
+  - name: valid_todo
+  - name: empty_title
+  - name: long_title
+  - name: get_todo
+    given: Todo exists in database
+    when: User requests todo by ID
+    then: Todo returned with all fields
+  - name: existing_todo
+  - name: nonexistent_todo
+  - name: unauthorized_access
+  - name: update_todo
+    given: Todo exists and user is owner
+    when: User updates todo fields
+    then: Todo updated and returned
+  - name: update_title
+  - name: mark_completed
+  - name: update_nonexistent
+  - name: delete_todo
+    given: Todo exists and user is owner
+    when: User deletes todo
+    then: Todo deleted from database
+  - name: delete_existing
+  - name: delete_nonexistent
+  - name: delete_unauthorized
+  - name: list_todos
+    given: User has todos in database
+    when: User requests todo list
+    then: All user todos returned
+  - name: list_all
+  - name: list_completed
+  - name: list_empty
+
+types:
+    description: str
+  create_todo:
+
+  get_todo:
+
+  update_todo:
+
+  delete_todo:
+
+  list_todos:

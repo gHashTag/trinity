@@ -1,0 +1,81 @@
+name: unknown
+version: "1.0.0"
+language: zig
+module: unknown
+
+types:
+  CommentAdded:
+    fields:
+
+  CommentLiked:
+    fields:
+
+  CommentDeleted:
+    fields:
+
+  PlaylistCreated:
+    fields:
+
+  VideoAddedToPlaylist:
+    fields:
+
+  VideoRemovedFromPlaylist:
+    fields:
+
+  VideoUploaded:
+    fields:
+
+  VideoWatched:
+    fields:
+
+  VideoLiked:
+    fields:
+
+  AddComment:
+    fields:
+
+  LikeComment:
+    fields:
+
+  DeleteComment:
+    fields:
+
+  CreatePlaylist:
+    fields:
+
+  AddVideoToPlaylist:
+    fields:
+
+behaviors:
+  - name: event_append
+    given: Command is validated
+    when: Event is created and appended to event store
+    then: Event is persisted and projections are updated
+  - name: append_comment_added_event
+  - name: event_replay
+    given: Events exist in event store
+    when: Aggregate is rebuilt from events
+    then: Current state is reconstructed
+  - name: rebuild_comment_state
+  - name: snapshot_creation
+    given: Aggregate has 100+ events
+    when: Snapshot interval is reached
+    then: Snapshot is created and stored
+  - name: create_snapshot_at_100
+  - name: projection_update
+    given: Event is appended
+    when: Projection handler processes event
+    then: Read model is updated
+  - name: update_comment_count
+  - name: append_event
+  - name: get_events
+  - name: rebuild_aggregate
+  - name: create_snapshot
+  - name: get_snapshot
+  - name: handle_command
+  - name: update_projection
+  - name: CommentStatistics
+  - name: PlaylistView
+  - name: String
+  - name: VideoAnalytics
+  - name: UserActivity

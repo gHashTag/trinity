@@ -1,0 +1,16 @@
+{
+  "network": "sepolia",
+  "chainId": "11155111",
+  "tokenAddress": "0xef368e29FA3aB2eaf02BccD05438ED3bafE9f469",
+  "deployer": "0xb7183E9D4176F3Fa6F56190d677626a9c87a9f87",
+  "timestamp": "2026-02-16T09:08:38.717Z",
+  "phoenixNumber": "10460353203",
+  "totalSupply": "10460353203000000000000000000",
+  "allocations": {
+    "founder": "0xb7183E9D4176F3Fa6F56190d677626a9c87a9f87",
+    "nodeRewards": "0xb7183E9D4176F3Fa6F56190d677626a9c87a9f87",
+    "community": "0xb7183E9D4176F3Fa6F56190d677626a9c87a9f87",
+    "treasury": "0xb7183E9D4176F3Fa6F56190d677626a9c87a9f87",
+    "liquidity": "0xb7183E9D4176F3Fa6F56190d677626a9c87a9f87"
+  }
+}

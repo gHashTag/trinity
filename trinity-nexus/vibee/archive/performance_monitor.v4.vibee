@@ -1,0 +1,664 @@
+// Performance Monitor - Agent self-awareness through performance tracking
+  // Performance Warning:   // AI Suggestion: Consider extracting hardcoded strings to constants  // AI Suggestion: Replace magic numbers with named constants// Tracks metrics, identifies patterns, and adapts behavior
+
+// =============================================================================
+// Performance Metrics
+// =============================================================================
+
+struct PerformanceMetrics(
+  PerformanceMetrics(
+    success_rate: float,
+    avg_execution_time_ms: int,
+    p50_execution_time_ms: int,
+    p90_execution_time_ms: int,
+    p99_execution_time_ms: int,
+    total_operations: int,
+    successful_operations: int,
+    failed_operations: int,
+    error_rate: float,
+    cache_hit_rate: float,
+    avg_retry_count: float,
+    last_updated: int
+  )
+}
+
+struct OperationRecord(
+  OperationRecord(
+    operation_id: str,
+    operation_type: str,
+    tool_name: str,
+    start_time: int,
+    end_time: int,
+    execution_time_ms: int,
+    success: bool,
+    error: str?,
+    retry_count: int,
+    cache_hit: bool,
+    input_size: int,
+    output_size: int
+  )
+}
+
+struct PerformanceTracker(
+  PerformanceTracker(
+    agent_id: str,
+    window_size: int,
+    operations: [OperationRecord],
+    metrics: PerformanceMetrics,
+    thresholds: PerformanceThresholds,
+    alerts: [PerformanceAlert]
+  )
+}
+
+struct PerformanceThresholds(
+  PerformanceThresholds(
+    min_success_rate: float,
+    max_avg_execution_time_ms: int,
+    max_error_rate: float,
+    min_cache_hit_rate: float
+  )
+}
+
+struct PerformanceAlert(
+  SuccessRateDrop(current: float, threshold: float)
+  ExecutionTimeSpike(current: int, normal: int, multiplier: float)
+  ErrorRateHigh(current: float, threshold: float)
+  CacheHitRateLow(current: float, threshold: float)
+}
+
+// =============================================================================
+// Tracker Creation and Management
+// =============================================================================
+
+@spec new_performance_tracker(agent_id: str) → PerformanceTracker {
+  /// Create new performance tracker
+  given: Agent ID
+  when: Initializing agent
+  then: Returns tracker
+}
+
+@impl {
+  window_size: 100,
+    operations: [],
+    metrics: initial_metrics( · PerformanceTracker,
+    thresholds: default_thresholds(),
+    alerts: []
+  )
+}
+
+@spec initial_metrics() → PerformanceMetrics {
+  /// Create initial metrics
+  given: Nothing
+  when: Starting tracker
+  then: Returns zero metrics
+}
+
+@impl {
+  PerformanceMetrics(
+    success_rate: 1.0,
+    avg_execution_time_ms: 0,
+    p50_execution_time_ms: 0,
+    p90_execution_time_ms: 0,
+    p99_execution_time_ms: 0,
+    total_operations: 0,
+    successful_operations: 0,
+    failed_operations: 0,
+    error_rate: 0.0,
+    cache_hit_rate: 0.0,
+    avg_retry_count: 0.0,
+    last_updated: current_timestamp_ms()
+  )
+}
+
+@spec default_thresholds() → PerformanceThresholds {
+  /// Create default thresholds
+  given: Nothing
+  when: Starting tracker
+  then: Returns default thresholds
+}
+
+@impl {
+  PerformanceThresholds(
+    min_success_rate: 0.8,
+    max_avg_execution_time_ms: 10000,
+    max_error_rate: 0.2,
+    min_cache_hit_rate: 0.3
+  )
+}
+
+// =============================================================================
+// Recording Operations
+// =============================================================================
+
+@spec record_operation(
+  tracker: PerformanceTracker,
+  record: OperationRecord
+) → PerformanceTracker {
+  /// Record an operation
+  given: Tracker and operation record
+  when: Operation completes
+  then: Returns updated tracker
+}
+
+@impl {
+    agent: tracker.agent_id,
+    operation: record.operation_type,
+    success: record.success,
+    time_ms: record.execution_time_ms
+  }
+
+  // Add to operations list (maintain window size)
+  let new_operations = [record, ..tracker.operations]
+    · list.take(tracker.window_size)
+
+  // Recalculate metrics
+  let new_metrics = calculate_metrics(new_operations)
+
+  // Check thresholds and generate alerts
+  let new_alerts = tracker.thresholds · check_thresholds
+
+  // Log alerts
+  match new_alerts {
+    [] → ()
+    alerts → {
+        agent: tracker.agent_id,
+        alert_count: list.length(alerts)
+      }
+    }
+  }
+
+  PerformanceTracker(
+    ..tracker,
+    operations: new_operations,
+    metrics: new_metrics,
+    alerts: new_alerts
+  )
+}
+
+@spec start_operation(
+  operation_type: str,
+  tool_name: str
+) → OperationContext {
+  /// Start tracking an operation
+  given: Operation type and tool name
+  when: Beginning operation
+  then: Returns context for completion
+}
+
+@impl {
+  OperationContext(
+    operation_id: generate_operation_id(),
+    operation_type,
+    tool_name,
+    start_time: current_timestamp_ms()
+  )
+}
+
+@spec complete_operation(
+  context: OperationContext,
+  success: bool,
+  error: str?,
+  retry_count: int,
+  cache_hit: bool,
+  input_size: int,
+  output_size: int
+) → OperationRecord {
+  /// Complete an operation
+  given: Context and result details
+  when: Operation finishes
+  then: Returns operation record
+}
+
+@impl {
+  let end_time = current_timestamp_ms()
+  let execution_time = end_time - context.start_time
+
+  OperationRecord(
+    operation_id: context.operation_id,
+    operation_type: context.operation_type,
+    tool_name: context.tool_name,
+    start_time: context.start_time,
+    end_time,
+    execution_time_ms: execution_time,
+    success,
+    error,
+    retry_count,
+    cache_hit,
+    input_size,
+    output_size
+  )
+}
+
+// =============================================================================
+// Metrics Calculation
+// =============================================================================
+
+@spec calculate_metrics(operations: [OperationRecord]) → PerformanceMetrics {
+  /// Calculate metrics from operations
+  given: type {name} {
+  items: List[Item],
+  count: Int} operations
+  when: Updating metrics
+  then: Returns calculated metrics
+}
+
+@impl {
+  let total = list.length(operations)
+
+  match total {
+    0 → initial_metrics()
+    _ → {
+      let successful = operations
+        · list.filter(fn(op) { op.success })
+        · list.length()
+
+      let failed = total - successful
+
+      let success_rate = int.to_float(successful) /. int.to_float(total)
+      let error_rate = int.to_float(failed) /. int.to_float(total)
+
+      // Execution times
+      let execution_times = operations
+        · list.map(fn(op) { op.execution_time_ms })
+        · list.sort(int.compare)
+
+      let avg_time = calculate_average(execution_times)
+      let p50 = 50 · calculate_percentile
+      let p90 = 90 · calculate_percentile
+      let p99 = 99 · calculate_percentile
+
+      // Cache hits
+      let cache_hits = operations
+        · list.filter(fn(op) { op.cache_hit })
+        · list.length()
+      let cache_hit_rate = int.to_float(cache_hits) /. int.to_float(total)
+
+      // Retries
+      let total_retries = operations
+        · list.map(fn(op) { op.retry_count })
+        · list.fn(acc, r · fold { acc + r })
+      let avg_retries = int.to_float(total_retries) /. int.to_float(total)
+
+      avg_execution_time_ms: avg_time,
+        p50_execution_time_ms: p50,
+        p90_execution_time_ms: p90,
+        p99_execution_time_ms: p99,
+        total_operations: total,
+        successful_operations: successful,
+        failed_operations: failed,
+        error_rate,
+        cache_hit_rate,
+        avg_retry_count: avg_retries,
+        last_updated: current_timestamp_ms( · PerformanceMetrics
+      )
+    }
+  }
+}
+
+@spec calculate_average(numbers: [int]) → int {
+  /// Calculate average of integers
+  given: type {name} {
+  items: List[Item],
+  count: Int} numbers
+  when: Computing average
+  then: Returns average
+}
+
+@impl {
+  case list.length(numbers) {
+    0 → 0
+    len → {
+      let sum = list.0, fn(acc, n · fold { acc + n })
+      sum / len
+    }
+  }
+}
+
+@spec calculate_percentile(sorted_numbers: [int], percentile: int) → int {
+  /// Calculate percentile from sorted list
+  given: Sorted list and percentile (0-100)
+  when: Computing percentile
+  then: Returns value at percentile
+}
+
+@impl {
+  let len = list.length(sorted_numbers)
+
+  match len {
+    0 → 0
+    _ → {
+      let index = (percentile * len) / 100
+      let clamped_index = int.len - 1 · min
+
+      sorted_numbers
+        · list.drop(clamped_index)
+        · list.first()
+        · result.unwrap(0)
+    }
+  }
+}
+
+// =============================================================================
+// Threshold Checking
+// =============================================================================
+
+@spec check_thresholds(
+  metrics: PerformanceMetrics,
+  thresholds: PerformanceThresholds
+) → [PerformanceAlert] {
+  /// Check if metrics violate thresholds
+  given: Metrics and thresholds
+  when: After updating metrics
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} alerts
+}
+
+@impl {
+  let alerts = []
+
+  // Check success rate
+  let alerts = case metrics.success_rate < thresholds.min_success_rate {
+    true → [
+      SuccessRateDrop(metrics.success_rate, thresholds.min_success_rate),
+      ..alerts
+    ]
+    false → alerts
+  }
+
+  // Check execution time
+  let alerts = case metrics.avg_execution_time_ms > thresholds.max_avg_execution_time_ms {
+    true → {
+      let multiplier = int.to_float(metrics.avg_execution_time_ms)
+        /. int.to_float(thresholds.max_avg_execution_time_ms)
+      [
+        ExecutionTimeSpike(
+          metrics.avg_execution_time_ms,
+          thresholds.max_avg_execution_time_ms,
+          multiplier
+        ),
+        ..alerts
+      ]
+    }
+    false → alerts
+  }
+
+  // Check error rate
+  let alerts = case metrics.error_rate > thresholds.max_error_rate {
+    true → [
+      ErrorRateHigh(metrics.error_rate, thresholds.max_error_rate),
+      ..alerts
+    ]
+    false → alerts
+  }
+
+  // Check cache hit rate
+  let alerts = case metrics.cache_hit_rate < thresholds.min_cache_hit_rate {
+    true → [
+      CacheHitRateLow(metrics.cache_hit_rate, thresholds.min_cache_hit_rate),
+      ..alerts
+    ]
+    false → alerts
+  }
+
+  alerts
+}
+
+// =============================================================================
+// Self-Evaluation
+// =============================================================================
+
+struct PerformanceReport(
+  PerformanceReport(
+    agent_id: str,
+    metrics: PerformanceMetrics,
+    health_status: HealthStatus,
+    improvement_suggestions: [str],
+    confidence_level: float,
+    generated_at: int
+  )
+}
+
+struct HealthStatus(
+  Excellent  // All metrics above thresholds
+  Good       // Most metrics good
+  Fair       // Some issues
+  Poor       // Multiple issues
+  Critical   // Severe issues
+}
+
+@spec self_evaluate(tracker: PerformanceTracker) → PerformanceReport {
+  /// Agent evaluates its own performance
+  given: Performance tracker
+  when: Introspection requested
+  then: Returns performance report
+}
+
+@impl {
+
+  let health = assess_health_status(tracker.metrics, tracker.thresholds)
+  let suggestions = generate_improvement_suggestions(tracker)
+  let confidence = calculate_confidence_level(tracker.metrics)
+
+  PerformanceReport(
+    agent_id: tracker.agent_id,
+    metrics: tracker.metrics,
+    health_status: health,
+    improvement_suggestions,
+    confidence_level: confidence,
+    generated_at: current_timestamp_ms()
+  )
+}
+
+@spec assess_health_status(
+  metrics: PerformanceMetrics,
+  thresholds: PerformanceThresholds
+) → HealthStatus {
+  /// Assess overall health status
+  given: Metrics and thresholds
+  when: Evaluating health
+  then: Returns health status
+}
+
+@impl {
+  let issues = thresholds · check_thresholds
+  let issue_count = list.length(issues)
+
+  match issue_count {
+    0 → Excellent
+    1 → Good
+    2 → Fair
+    3 → Poor
+    _ → Critical
+  }
+}
+
+@spec generate_improvement_suggestions(
+  tracker: PerformanceTracker
+) → [str] {
+  /// Generate suggestions for improvement
+  given: Performance tracker
+  when: Self-evaluating
+  then: Returns type {name} {
+  items: List[Item],
+  count: Int} suggestions
+}
+
+@impl {
+  let suggestions = []
+  let metrics = tracker.metrics
+  let thresholds = tracker.thresholds
+
+  // Success rate suggestions
+  let suggestions = case metrics.success_rate < thresholds.min_success_rate {
+    true → [
+      "Success rate is low ({float_to_string}(metrics.success_rate) + "). Consider: 1) Adding more validation, 2) Improving error handling, 3) Using more reliable tools",
+      ..suggestions
+    ]
+    false → suggestions
+  }
+
+  // Execution time suggestions
+  let suggestions = case metrics.avg_execution_time_ms > thresholds.max_avg_execution_time_ms {
+    true → [
+      "Execution time is high ({int}.to_string(metrics.avg_execution_time_ms) + "ms). Consider: 1) Caching more aggressively, 2) Parallelizing operations, 3) Optimizing tool usage",
+      ..suggestions
+    ]
+    false → suggestions
+  }
+
+  // Cache hit rate suggestions
+  let suggestions = case metrics.cache_hit_rate < thresholds.min_cache_hit_rate {
+    true → [
+      "Cache hit rate is low ({float_to_string}(metrics.cache_hit_rate) + "). Consider: 1) Increasing cache size, 2) Improving cache key strategy, 3) Pre-loading common data",
+      ..suggestions
+    ]
+    false → suggestions
+  }
+
+  // Error rate suggestions
+  let suggestions = case metrics.error_rate > thresholds.max_error_rate {
+    true → [
+      "Error rate is high ({float_to_string}(metrics.error_rate) + "). Consider: 1) Analyzing error patterns, 2) Adding retry logic, 3) Improving input validation",
+      ..suggestions
+    ]
+    false → suggestions
+  }
+
+  suggestions
+}
+
+@spec calculate_confidence_level(metrics: PerformanceMetrics) → float {
+  /// Calculate confidence level based on metrics
+  given: Performance metrics
+  when: Self-evaluating
+  then: Returns confidence 0.0-1.0
+}
+
+@impl {
+  // Confidence based on success rate and sample size
+  let base_confidence = metrics.success_rate
+
+  // Adjust for sample size (more operations = more confidence)
+  let sample_adjustment = case metrics.total_operations {
+    n if n < 10 → 0.5
+    n if n < 50 → 0.7
+    n if n < 100 → 0.9
+    _ → 1.0
+  }
+
+  base_confidence *. sample_adjustment
+}
+
+// =============================================================================
+// Adaptive Strategy Selection
+// =============================================================================
+
+derive(Json)
+struct AdaptiveStrategy(
+  Conservative  // High validation, slow
+  Balanced      // Normal operation
+  Aggressive    // Fast, less validation
+}
+
+@spec adapt_strategy(tracker: PerformanceTracker) → AdaptiveStrategy {
+  /// Adapt strategy based on performance
+  given: Performance tracker
+  when: Deciding strategy
+  then: Returns recommended strategy
+}
+
+@impl {
+  let metrics = tracker.metrics
+
+  case metrics.success_rate {
+    rate if rate < 0.7 → {
+        agent: tracker.agent_id,
+        strategy: "Conservative",
+        reason: "Low success rate"
+      }
+      Conservative
+    }
+
+    rate if rate > 0.9 → {
+        agent: tracker.agent_id,
+        strategy: "Aggressive",
+        reason: "High success rate"
+      }
+      Aggressive
+    }
+
+    _ → {
+        agent: tracker.agent_id,
+        strategy: "Balanced",
+        reason: "Normal performance"
+      }
+      Balanced
+    }
+  }
+}
+
+// =============================================================================
+// Helper Types and Functions
+// =============================================================================
+
+struct OperationContext(
+  OperationContext(
+    operation_id: str,
+    operation_type: str,
+    tool_name: str,
+    start_time: int
+  )
+}
+
+@spec generate_operation_id() → str {
+  /// Generate unique operation ID
+  given: Nothing
+  when: Starting operation
+  then: Returns unique ID
+}
+
+@impl {
+  "op_{int}.to_string(current_timestamp_ms()) + "_random_string(8)
+}
+
+@spec float_to_string(f: float) → str {
+  /// Convert float to string
+  given: float
+  when: Formatting
+  then: Returns string
+}
+
+@impl {
+  erlang_float_to_string(f)
+}
+
+ffi("erlang")
+erlang_float_to_string(f: float) → str
+
+@spec current_timestamp_ms() → int
+@spec random_string(length: int) → str
+
+// =============================================================================
+// Export Public API
+// =============================================================================
+
+pub new_performance_tracker(agent_id: str) → PerformanceTracker
+pub record_operation(tracker: PerformanceTracker, record: OperationRecord) → PerformanceTracker
+pub start_operation(operation_type: str, tool_name: str) → OperationContext
+pub complete_operation(
+  context: OperationContext,
+  success: bool,
+  error: str?,
+  retry_count: int,
+  cache_hit: bool,
+  input_size: int,
+  output_size: int
+) → OperationRecord
+pub self_evaluate(tracker: PerformanceTracker) → PerformanceReport
+pub adapt_strategy(tracker: PerformanceTracker) → AdaptiveStrategy
+
+# v8.0
+
+# v8.0
+# v10.0 - ML-Powered Migration

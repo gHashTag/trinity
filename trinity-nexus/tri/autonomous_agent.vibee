@@ -1,0 +1,543 @@
+# ============================================================================
+# Autonomous Agent - Cycle 31
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3 = TRINITY
+# ============================================================================
+
+name: autonomous_agent
+version: "1.0.0"
+language: zig
+module: autonomous_agent
+
+description: |
+  Autonomous Agent — Self-directed local AI agent with goal decomposition,
+  autonomous task execution, multi-modal perception, and tool orchestration.
+  Cycle 31 feature: Given a high-level goal, the agent autonomously decomposes
+  it into a task graph, executes each task using the appropriate modality/tool,
+  monitors progress, handles failures with retry/replan, and delivers results.
+
+  Architecture:
+    Goal Intake:
+      Natural language goal → Goal Parser → Structured Goal
+      "Build a website project" → {type: project, domain: web, steps: [...]}
+
+    Task Graph Engine:
+      Goal → Dependency Analysis → DAG of Tasks
+      Each task has: modality, tool, input, expected output, dependencies
+      Parallel execution of independent tasks
+      Sequential execution of dependent chains
+
+    Execution Engine:
+      Task → Modality Router → Execute → Result
+      On failure: Retry (max 3) → Replan → Alternative path
+      Progress tracking: completed/total tasks, elapsed time
+
+    Self-Direction Loop:
+      1. GOAL_PARSE: Parse natural language into structured goal
+      2. DECOMPOSE: Break goal into task graph (DAG)
+      3. SCHEDULE: Topological sort, identify parallel groups
+      4. EXECUTE: Run next ready task(s)
+      5. MONITOR: Check result quality (VSA similarity)
+      6. ADAPT: If quality < threshold → replan subtree
+      7. SYNTHESIZE: Combine all results into final output
+      8. DELIVER: Present result in appropriate modality
+
+    Tool Registry:
+      - file_read: Read file contents
+      - file_write: Write/create files
+      - shell_exec: Run shell commands
+      - code_gen: Generate code from description
+      - code_analyze: Analyze existing code
+      - vision_describe: Describe an image
+      - voice_transcribe: STT on audio input
+      - voice_synthesize: TTS from text
+      - search_local: Search local files/codebase
+      - http_fetch: Fetch URL content (local proxy)
+
+    Example Workflows:
+      "Make a website project":
+        1. GOAL_PARSE → {project, web, [scaffold, html, css, js, test]}
+        2. DECOMPOSE → scaffold → html+css (parallel) → js → test
+        3. EXECUTE → file_write(index.html) | file_write(style.css)
+        4. EXECUTE → code_gen(app.js)
+        5. EXECUTE → shell_exec(test) → MONITOR → pass
+        6. DELIVER → "Project created: 4 files, all tests pass"
+
+      "Explain this codebase by voice":
+        1. GOAL_PARSE → {explain, code, [read, analyze, synthesize, speak]}
+        2. DECOMPOSE → search_local → code_analyze → text_synthesize → TTS
+        3. EXECUTE → file_read(src/*.zig) → code_analyze
+        4. EXECUTE → voice_synthesize(explanation)
+        5. DELIVER → Audio explanation
+
+  Safety:
+    - Max task graph depth: 10 levels
+    - Max total tasks: 50
+    - Max retries per task: 3
+    - Max execution time: 300 seconds
+    - Sandboxed tool execution (no destructive ops by default)
+    - All processing local
+
+# ============================================================================
+# Constants
+# ============================================================================
+
+constants:
+  VSA_DIMENSION: 10000
+  MAX_GRAPH_DEPTH: 10
+  MAX_TOTAL_TASKS: 50
+  MAX_RETRIES: 3
+  MAX_EXECUTION_TIME_S: 300
+  QUALITY_THRESHOLD: 0.50
+  REPLAN_THRESHOLD: 0.30
+  PARALLEL_MAX: 5
+  TOOL_TIMEOUT_MS: 30000
+  GOAL_CONFIDENCE_MIN: 0.60
+  TASK_SIMILARITY_MIN: 0.40
+  SYNTHESIS_THRESHOLD: 0.55
+
+# ============================================================================
+# Types
+# ============================================================================
+
+types:
+  GoalType:
+    enum:
+      - create
+      - analyze
+      - explain
+      - fix
+      - refactor
+      - test
+      - deploy
+      - query
+      - translate
+      - custom
+
+  GoalDomain:
+    enum:
+      - code
+      - web
+      - data
+      - text
+      - vision
+      - voice
+      - system
+      - mixed
+
+  StructuredGoal:
+    fields:
+      raw_text: String
+      goal_type: GoalType
+      domain: GoalDomain
+      target: String
+      constraints: List<String>
+      expected_output: String
+      confidence: Float
+      priority: Int
+
+  ToolName:
+    enum:
+      - file_read
+      - file_write
+      - shell_exec
+      - code_gen
+      - code_analyze
+      - vision_describe
+      - voice_transcribe
+      - voice_synthesize
+      - search_local
+      - http_fetch
+
+  TaskStatus:
+    enum:
+      - pending
+      - ready
+      - running
+      - completed
+      - failed
+      - retrying
+      - skipped
+
+  TaskNode:
+    fields:
+      id: Int
+      name: String
+      description: String
+      tool: ToolName
+      modality: String
+      input: String
+      expected_output: String
+      dependencies: List<Int>
+      status: TaskStatus
+      result: Option<String>
+      quality: Float
+      retries: Int
+      duration_ms: Int
+
+  TaskGraph:
+    fields:
+      goal: StructuredGoal
+      nodes: List<TaskNode>
+      total_nodes: Int
+      completed_nodes: Int
+      failed_nodes: Int
+      depth: Int
+      parallel_groups: List<List<Int>>
+
+  ExecutionPlan:
+    fields:
+      graph: TaskGraph
+      execution_order: List<List<Int>>
+      estimated_time_ms: Int
+      required_tools: List<ToolName>
+
+  TaskResult:
+    fields:
+      task_id: Int
+      success: Bool
+      output: String
+      quality: Float
+      duration_ms: Int
+      retries_used: Int
+
+  AdaptAction:
+    enum:
+      - continue
+      - retry
+      - replan_subtree
+      - skip
+      - abort
+
+  MonitorEvent:
+    fields:
+      task_id: Int
+      event_type: String
+      quality: Float
+      action: AdaptAction
+      message: String
+
+  SynthesisResult:
+    fields:
+      final_output: String
+      output_modality: String
+      total_tasks: Int
+      completed_tasks: Int
+      failed_tasks: Int
+      total_duration_ms: Int
+      avg_quality: Float
+      success: Bool
+
+  AutonomousAgentConfig:
+    fields:
+      max_depth: Int
+      max_tasks: Int
+      max_retries: Int
+      max_time_s: Int
+      quality_threshold: Float
+      parallel_max: Int
+      auto_replan: Bool
+      verbose: Bool
+
+  AutonomousAgent:
+    fields:
+      config: AutonomousAgentConfig
+      current_goal: Option<StructuredGoal>
+      plan: Option<ExecutionPlan>
+      history: List<MonitorEvent>
+      total_goals_completed: Int
+      total_tasks_executed: Int
+
+  AgentReport:
+    fields:
+      goal: StructuredGoal
+      synthesis: SynthesisResult
+      events: List<MonitorEvent>
+      tools_used: List<ToolName>
+      modalities_used: List<String>
+      total_retries: Int
+      replans: Int
+      wall_time_ms: Int
+
+# ============================================================================
+# Behaviors
+# ============================================================================
+
+behaviors:
+  # --- Goal Parsing ---
+  - name: parse_goal
+    given: Natural language goal string
+    when: Agent receives a new high-level goal
+    then: Returns StructuredGoal with type, domain, target, constraints, confidence
+
+  - name: validate_goal
+    given: StructuredGoal
+    when: Agent checks if goal is achievable with available tools
+    then: Returns Bool (true if all required tools available, constraints satisfiable)
+
+  # --- Task Graph Construction ---
+  - name: decompose_goal
+    given: StructuredGoal
+    when: Agent breaks goal into task graph
+    then: Returns TaskGraph with nodes, dependencies, parallel groups
+
+  - name: build_execution_plan
+    given: TaskGraph
+    when: Agent creates execution order from dependency analysis
+    then: Returns ExecutionPlan with topological sort, time estimate
+
+  - name: identify_parallel_groups
+    given: TaskGraph
+    when: Agent finds independent task groups for parallel execution
+    then: Returns list of parallel task ID groups
+
+  # --- Task Execution ---
+  - name: execute_task
+    given: TaskNode with tool, input, expected output
+    when: Agent runs a single task
+    then: Returns TaskResult with output, quality, duration
+
+  - name: execute_tool
+    given: ToolName and input parameters
+    when: Agent invokes a specific tool
+    then: Returns tool output string
+
+  - name: execute_parallel_group
+    given: List of ready TaskNodes
+    when: Agent runs independent tasks concurrently
+    then: Returns list of TaskResults
+
+  # --- Monitoring & Adaptation ---
+  - name: monitor_result
+    given: TaskResult and expected output
+    when: Agent checks quality of task result
+    then: Returns MonitorEvent with quality score and recommended action
+
+  - name: adapt
+    given: MonitorEvent with action recommendation
+    when: Agent responds to quality issue
+    then: Executes action (retry, replan, skip, abort) and returns updated TaskGraph
+
+  - name: replan_subtree
+    given: Failed TaskNode and remaining graph
+    when: Agent replans a portion of the task graph after failure
+    then: Returns new TaskGraph with alternative path for failed subtree
+
+  # --- Synthesis & Delivery ---
+  - name: synthesize_results
+    given: Completed TaskGraph with all results
+    when: Agent combines task outputs into final result
+    then: Returns SynthesisResult with combined output, quality, stats
+
+  - name: deliver
+    given: SynthesisResult and target modality
+    when: Agent presents final result to user
+    then: Outputs result in appropriate format (text, audio, file, etc.)
+
+  # --- Agent Lifecycle ---
+  - name: create_autonomous_agent
+    given: AutonomousAgentConfig
+    when: Initializing new autonomous agent
+    then: Returns AutonomousAgent in idle state
+
+  - name: run_autonomous
+    given: AutonomousAgent and natural language goal
+    when: Agent starts full autonomous execution
+    then: Runs goal_parse → decompose → schedule → execute loop → synthesize → deliver
+
+  - name: get_report
+    given: AutonomousAgent after execution
+    when: Retrieving execution report
+    then: Returns AgentReport with full execution details
+
+# ============================================================================
+# Tests
+# ============================================================================
+
+tests:
+  # --- Goal Parsing Tests ---
+  - name: parse_create_goal
+    category: goal_parse
+    input: "'Build a hello world web page'"
+    expected: "StructuredGoal{type: create, domain: web, conf > 0.60}"
+    description: Parse create-type goal
+
+  - name: parse_analyze_goal
+    category: goal_parse
+    input: "'Analyze the codebase for performance issues'"
+    expected: "StructuredGoal{type: analyze, domain: code, conf > 0.60}"
+    description: Parse analyze-type goal
+
+  - name: parse_explain_goal
+    category: goal_parse
+    input: "'Explain how VSA binding works'"
+    expected: "StructuredGoal{type: explain, domain: code, conf > 0.60}"
+    description: Parse explain-type goal
+
+  - name: parse_complex_goal
+    category: goal_parse
+    input: "'Build website, test it, deploy to production'"
+    expected: "StructuredGoal{type: create, domain: mixed, constraints: [test, deploy]}"
+    description: Parse complex multi-step goal
+
+  # --- Task Graph Tests ---
+  - name: decompose_simple
+    category: task_graph
+    input: "Goal: create hello.html"
+    expected: "TaskGraph{nodes: 1, depth: 1}"
+    description: Decompose simple single-task goal
+
+  - name: decompose_sequential
+    category: task_graph
+    input: "Goal: read file → analyze → explain"
+    expected: "TaskGraph{nodes: 3, depth: 3, deps: [0→1→2]}"
+    description: Decompose sequential dependency chain
+
+  - name: decompose_parallel
+    category: task_graph
+    input: "Goal: create html + css + js (independent)"
+    expected: "TaskGraph{nodes: 3, parallel_groups: [[0,1,2]]}"
+    description: Decompose parallel independent tasks
+
+  - name: decompose_diamond
+    category: task_graph
+    input: "Goal: scaffold → (html | css) → bundle"
+    expected: "TaskGraph{nodes: 4, depth: 3, parallel: [1,2]}"
+    description: Decompose diamond dependency pattern
+
+  - name: build_plan
+    category: task_graph
+    input: "TaskGraph with 5 nodes, 2 parallel groups"
+    expected: "ExecutionPlan{order: [[0],[1,2],[3],[4]], tools: 3}"
+    description: Build execution plan from task graph
+
+  # --- Execution Tests ---
+  - name: execute_file_read
+    category: execution
+    input: "ToolName: file_read, input: 'config.zig'"
+    expected: "TaskResult{success: true, quality > 0.50}"
+    description: Execute file read tool
+
+  - name: execute_code_gen
+    category: execution
+    input: "ToolName: code_gen, input: 'sort function in zig'"
+    expected: "TaskResult{success: true, output contains 'fn'}"
+    description: Execute code generation tool
+
+  - name: execute_shell
+    category: execution
+    input: "ToolName: shell_exec, input: 'zig version'"
+    expected: "TaskResult{success: true, output contains version}"
+    description: Execute shell command tool
+
+  - name: execute_search
+    category: execution
+    input: "ToolName: search_local, input: 'VSA bind'"
+    expected: "TaskResult{success: true, quality > 0.50}"
+    description: Execute local search tool
+
+  - name: execute_parallel
+    category: execution
+    input: "[file_write(a.html), file_write(b.css)]"
+    expected: "2 TaskResults, both success"
+    description: Execute parallel task group
+
+  # --- Monitor & Adapt Tests ---
+  - name: monitor_good_quality
+    category: monitor
+    input: "TaskResult{quality: 0.80}"
+    expected: "MonitorEvent{action: continue}"
+    description: Monitor passes good quality result
+
+  - name: monitor_low_quality
+    category: monitor
+    input: "TaskResult{quality: 0.25}"
+    expected: "MonitorEvent{action: retry}"
+    description: Monitor triggers retry on low quality
+
+  - name: monitor_failed_task
+    category: monitor
+    input: "TaskResult{success: false, retries: 3}"
+    expected: "MonitorEvent{action: replan_subtree}"
+    description: Monitor triggers replan after max retries
+
+  - name: adapt_retry
+    category: monitor
+    input: "MonitorEvent{action: retry, task_id: 2}"
+    expected: "Task 2 re-executed, retries += 1"
+    description: Adapt retries failed task
+
+  - name: adapt_replan
+    category: monitor
+    input: "MonitorEvent{action: replan_subtree, task_id: 3}"
+    expected: "New subtree generated for task 3"
+    description: Adapt replans failed subtree
+
+  # --- Synthesis Tests ---
+  - name: synthesize_all_success
+    category: synthesis
+    input: "5/5 tasks completed, avg quality 0.85"
+    expected: "SynthesisResult{success: true, avg_quality: 0.85}"
+    description: Synthesize results from all successful tasks
+
+  - name: synthesize_partial
+    category: synthesis
+    input: "4/5 tasks completed, 1 skipped"
+    expected: "SynthesisResult{success: true, completed: 4, failed: 0, skipped: 1}"
+    description: Synthesize with partial completion
+
+  - name: synthesize_with_failure
+    category: synthesis
+    input: "3/5 tasks completed, 2 failed"
+    expected: "SynthesisResult{success: false, failed: 2}"
+    description: Synthesize flags failure when tasks fail
+
+  # --- Full Autonomous Loop Tests ---
+  - name: autonomous_simple
+    category: autonomous
+    input: "Goal: 'create hello.txt with Hello World'"
+    expected: "AgentReport{tasks: 1, completed: 1, success: true}"
+    description: Full autonomous loop for simple goal
+
+  - name: autonomous_multimodal
+    category: autonomous
+    input: "Goal: 'read code, explain by voice'"
+    expected: "AgentReport{tasks: 3, tools: [file_read, code_analyze, voice_synthesize]}"
+    description: Full autonomous loop with multi-modal output
+
+  - name: autonomous_complex
+    category: autonomous
+    input: "Goal: 'build website project with tests'"
+    expected: "AgentReport{tasks: 5+, replans: 0, success: true}"
+    description: Full autonomous loop for complex goal
+
+  - name: autonomous_with_retry
+    category: autonomous
+    input: "Goal with one failing subtask"
+    expected: "AgentReport{retries: >0, success: true after retry}"
+    description: Autonomous loop handles failure with retry
+
+  - name: autonomous_with_replan
+    category: autonomous
+    input: "Goal with unreachable subtask"
+    expected: "AgentReport{replans: >0, alternative path taken}"
+    description: Autonomous loop replans on persistent failure
+
+  # --- Performance Tests ---
+  - name: goal_parse_throughput
+    category: performance
+    input: "1000 goal strings"
+    expected: "> 5000 parses/sec"
+    description: Goal parsing throughput
+
+  - name: graph_build_throughput
+    category: performance
+    input: "1000 goal decompositions"
+    expected: "> 2000 graphs/sec"
+    description: Task graph construction throughput
+
+  - name: execution_latency
+    category: performance
+    input: "Single task execution"
+    expected: "< 50ms overhead"
+    description: Per-task execution overhead

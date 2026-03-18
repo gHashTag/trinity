@@ -1,0 +1,109 @@
+name: specs_validator
+version: "10.2.0"
+language: zig
+module: trinity.specs_validator
+
+description: |
+  VIBEE Specification Validator — validates .vibee files for:
+  - YAML syntax correctness
+  - Required fields presence
+  - Field value constraints
+  - Generator compatibility
+
+types:
+  ValidationError:
+    variant: struct
+    fields:
+      file: String
+      line: Int
+      column: Int
+      message: String
+      severity: ErrorSeverity
+
+  ErrorSeverity:
+    variant: enum
+    cases:
+      - error
+      - warning
+      - info
+
+  ValidationResult:
+    variant: struct
+    fields:
+      valid: Bool
+      errors: List<ValidationError>
+      pas_score: Float
+
+  SpecMetadata:
+    variant: struct
+    fields:
+      name: String
+      version: String
+      language: String
+      module: String
+      has_types: Bool
+      has_behaviors: Bool
+      types_count: Int
+      behaviors_count: Int
+
+behaviors:
+  - name: parseSpec
+    given: Path to .vibee file
+    when: File needs validation
+    then: Returns SpecMetadata or error
+
+  - name: validateRequiredFields
+    given: SpecMetadata
+    when: Checking required fields
+    then: Returns true if name, version, language present
+
+  - name: validateYamlSyntax
+    given: Raw spec content
+    when: Parsing file
+    then: Returns true if YAML is valid
+
+  - name: validateLanguageSupport
+    given: Language string
+    when: Checking language compatibility
+    then: Returns true if language is supported
+
+  - name: validateBehaviors
+    given: Behaviors list
+    when: Checking behavior structure
+    then: Returns errors if malformed
+
+  - name: validateTypes
+    given: Types list
+    when: Checking type structure
+    then: Returns errors if malformed
+
+  - name: computePAScore
+    given: SpecMetadata
+    when: Calculating PAS score
+    then: Returns score 0.0 to 1.0
+
+  - name: validateAllSpecs
+    given: Directory path
+    when: Batch validation needed
+    then: Returns List<ValidationResult>
+
+  - name: fixCommonErrors
+    given: ValidationError list
+    when: Auto-fix possible
+    then: Returns fixed spec content
+
+test_cases:
+  - name: validSpecPasses
+    given: Valid .vibee file
+    when: validateAllSpecs called
+    then: PAS Score >= 0.9
+
+  - name: missingNameDetected
+    given: Spec without name field
+    when: validateRequiredFields called
+    then: Returns error
+
+  - name: invalidYamlDetected
+    given: Malformed YAML
+    when: validateYamlSyntax called
+    then: Returns error with line/column

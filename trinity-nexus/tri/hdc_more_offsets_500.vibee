@@ -1,0 +1,23 @@
+name: hdc_more_offsets_500
+version: "1.0.0"
+language: zig
+module: hdc_more_offsets_500
+
+types:
+  OffsetsResult:
+    fields:
+      offsets_count: Int
+      eval_loss: Float
+      train_loss: Float
+      pct_below_random: Float
+
+behaviors:
+  - name: trainWith500Offsets
+    given: Large corpus (5014 chars), dim=1024, 500 evenly-spaced offsets
+    when: Compute multi-roles from 500 positions and run trigram hybrid pipeline
+    then: Train and eval loss with 500-offset roles vs 50-offset baseline
+
+  - name: compareRoleQuality
+    given: Roles from 500 offsets vs roles from 50 offsets
+    when: Measure cosine similarity between role sets and eval loss difference
+    then: Assessment of whether more offsets improve role quality

@@ -1,0 +1,49 @@
+[cell]
+id = "trinity.vibeec"
+name = "VIBEE Compiler"
+version = "1.0.0"
+kind = "codegen"
+path = "src/vibeec"
+min_core_version = "1.0.0"
+status = "stable"
+description = "Code generation from .tri specs to Zig and Verilog"
+capabilities = ["codegen", "spec_parse", "zig_gen", "verilog_gen"]
+files = 444
+tests = 3764
+owner = "agent:ralph"
+spec_version = 2
+api_version = "1.0.0"
+
+[tags]
+scope = "vsa"
+type = "agent"
+
+[contributes]
+commands = ["gen", "parse", "validate"]
+tri_subcommands = ["vibee gen", "vibee parse"]
+events = ["on_codegen_complete"]
+binaries = ["vibee", "vibee-self-improve", "claude-ui", "fluent", "trinity-hybrid", "trinity-cli"]
+
+[dependencies]
+trinity.data = "^1.0.0"
+trinity.vsa = "^1.0.0"
+trinity.registry = "^1.0.0"
+trinity.cli = "^1.0.0"
+trinity.core-platform = "^1.0.0"
+trinity.phi_loop = "^1.0.0"
+trinity.agent-mu = "^1.0.0"
+
+[permissions]
+level = "L2"
+filesystem = "write"
+network = "external"
+process = "spawn"
+
+ffi = "native"
+concurrency = "yes"
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:ce5ca696e8d111f792cedb46fca56eaa43ac95cbdf083b77abdfac6e97eb583b"

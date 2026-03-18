@@ -1,0 +1,40 @@
+[cell]
+id = "trinity.math"
+name = "math"
+version = "0.1.0"
+kind = "library"
+path = "src/math"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Riemann zeta function and number theory computations"
+capabilities = ["init", "add", "mul", "abs", "zeta"]
+files = 1
+tests = 8
+owner = "agent:ralph"
+
+[tags]
+scope = "sacred"
+type = "library"
+
+[contributes]
+commands = ["init", "add", "mul"]
+exports = ["add", "mul", "abs", "zeta", "isZetaZero"]
+tri_subcommands = []
+events = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = true
+signature = "sha256:e5fed5b59c074d18a4a13ab8e5fefe6bf6c14bff27afac8e3c52a56ad06662e5"

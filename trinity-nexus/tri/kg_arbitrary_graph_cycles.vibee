@@ -1,0 +1,35 @@
+name: kg_arbitrary_graph_cycles
+version: "1.0.0"
+language: zig
+module: kg_arbitrary_graph_cycles
+description: "Level 11.12 — Arbitrary graph with cycles: BFS cycle detection, neighbor discovery, shortest path"
+
+constants:
+  DIM: 1024
+  NODES: 10
+  EDGES: 12
+
+types:
+  CycleDetectionResult:
+    fields:
+      node: Int
+      neighbor: Int
+      is_cycle: Bool
+      sim: Float
+      description: "BFS traversal result including cycle detection when visiting already-seen nodes."
+
+behaviors:
+  - name: bfsCycleDetection
+    given: 10-node graph with 12 edges including 2 back-edges creating cycles
+    when: BFS with visited set from node 0
+    then: discovers all 10 nodes and detects 3 cycles (including cross-edge)
+
+  - name: neighborDiscovery
+    given: per-source adjacency memories built from edges
+    when: unbind source from memory and search all nodes
+    then: 100% neighbor discovery (12/12)
+
+  - name: shortestPathComparison
+    given: two paths 0->3 (3 hops direct, 4 hops alternative)
+    when: verify both paths through memories
+    then: both correct with sim=1.0000, shortest correctly identified

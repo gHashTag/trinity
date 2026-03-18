@@ -1,0 +1,52 @@
+name: kg_associative_memory
+version: "1.0.0"
+language: zig
+module: kg_associative_memory
+description: "Level 11.8 — Large-scale KG with associative memory: 100+ triples, single-hop and multi-hop queries via bipolar bind/unbind"
+
+constants:
+  DIM: 1024
+  NUM_ENTITIES: 20
+  NUM_RELATIONS: 5
+  MAX_HOPS: 4
+
+types:
+  KGTriple:
+    fields:
+      subject: Int
+      relation: Int
+      object: Int
+      description: "A single triple in the knowledge graph, identified by indices into entity/relation codebooks."
+
+  QueryResult:
+    fields:
+      query_subject: Int
+      query_relation: Int
+      predicted_object: Int
+      correct: Bool
+      similarity: Float
+      description: "Result of a single-hop KG query. Predicted object is found by unbinding the associative memory with the subject, then searching the object codebook."
+
+  MultiHopResult:
+    fields:
+      hops: Int
+      correct: Int
+      total: Int
+      avg_similarity: Float
+      description: "Aggregated result for multi-hop chain queries at a given depth. Bipolar chains achieve sim=1.0 at all depths."
+
+behaviors:
+  - name: buildAssociativeMemory
+    given: NUM_ENTITIES=20 entities, NUM_RELATIONS=5 relation types, forming 100 triples
+    when: For each relation type, build an associative memory by tree-bundling bind(entity_i, object_i) pairs for all entities
+    then: Each relation memory contains information about all 20 entity-object mappings, retrievable via unbind
+
+  - name: singleHopQuery
+    given: Built associative memories for all 5 relations
+    when: For each triple (S, R, O), compute unbind(memory_R, S) and search object codebook for best match
+    then: 100% accuracy on all 100 triples using bipolar encoding — unbind recovers the correct object as the closest match
+
+  - name: multiHopChainQuery
+    given: Chains of 2-4 bipolar entities linked by composite relations
+    when: Build composite relation via sequential bind, apply to start entity, search for target
+    then: 100% accuracy at all hop depths (1-4), similarity=1.0000 due to bipolar exact self-inverse

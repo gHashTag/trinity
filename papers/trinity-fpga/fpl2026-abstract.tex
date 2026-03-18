@@ -1,0 +1,60 @@
+% FPL 2026 Abstract Submission — 250 words max
+% "Zero-DSP Ternary Transformer Inference on a $30 FPGA with Open-Source Toolchain"
+% Deadline: March 20, 2026
+
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{booktabs}
+
+\begin{document}
+
+\title{Zero-DSP Ternary Transformer Inference\\on a \$30 FPGA with Open-Source Toolchain}
+
+\author{
+\IEEEauthorblockN{Dmitrii Vasilev}
+\IEEEauthorblockA{Trinity Project\\
+\texttt{https://github.com/gHashTag/trinity}}
+}
+
+\maketitle
+
+\begin{abstract}
+We present Trinity, a ternary transformer inference engine on a \$30 Xilinx
+Artix-7 FPGA (XC7A100T) using zero DSP48 blocks and a fully open-source
+synthesis toolchain (Yosys, nextpnr-xilinx, Project X-Ray).  Weights are
+constrained to $\{-1, 0, +1\}$, reducing multiply-accumulate to pure
+add/subtract logic.
+
+The core contribution is the Ternary MatMul Unit (TMU): a $K\!=\!32$ parallel
+dot-product engine that reads 32 ternary weights per cycle from banked BRAMs
+and reduces them through a 5-stage combinational adder tree.  This achieves
+$26\times$ speedup over sequential accumulation while maintaining zero DSP
+utilization.
+
+A 3-block autoregressive pipeline---embedding lookup, three TrinityBlocks
+(up-projection $243\!\to\!729$, ReLU, down-projection $729\!\to\!243$,
+residual connection, shift-based RMSNorm), language-model head, and
+argmax---generates tokens at 43,241 cycles/token, yielding
+${\sim}1{,}879$~tok/s at 81.25~MHz.  The design consumes ${\sim}20$K~LUTs
+(32\%), ${\sim}117.5$~BRAM36-equivalent tiles (87\%), and \textbf{0~DSP48E1}
+blocks, storing 1,125,090 ternary weights on-chip.
+
+Through four incremental optimizations---TMU parallelism ($K\!=\!1 \to 16
+\to 32$) and clock frequency (50$\to$81.25~MHz)---throughput improves
+$4.0\times$ from 469 to 1,879~tok/s at constant silicon cost.
+
+Compared to prior FPGA ternary accelerators---TerEffic (U280, \$17K, 2,733
+DSPs), TeLLMe~v2 (KV260, \$249, 1,200 DSPs), FlightLLM (U280, 2,733
+DSPs)---Trinity achieves the lowest cost per tok/s (\$0.016) while requiring
+no proprietary tools.  To our knowledge, this is the first zero-DSP ternary
+transformer on a sub-\$50 FPGA with open-source synthesis.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Ternary neural network, FPGA, zero-DSP, open-source EDA, edge inference, transformer
+\end{IEEEkeywords}
+
+\end{document}

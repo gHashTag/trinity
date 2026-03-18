@@ -1,0 +1,630 @@
+name: ralph_tests
+version: "10.0.0"
+language: zig
+module: ralph_tests
+
+constants:
+  TEST_TIMEOUT_MS: 10000
+  MAX_MEMORY_LEAK_MB: 10
+  BENCHMARK_ITERATIONS: 1000
+  PHI: 1.618033988749895
+  SACRED_CONSTANT: 1.58
+
+types:
+  TestSuite:
+    fields:
+      name: String
+      tests: List<TestCase>
+      setup: Option<TestFunction>
+      teardown: Option<TestFunction>
+      mock_services: List<MockService>
+      results: TestResults
+
+  TestCase:
+    fields:
+      name: String
+      test_fn: TestFunction
+      timeout_ms: Int
+      should_fail: Bool
+      dependencies: List<String>
+
+  TestFunction:
+    signature: () -> Result<Void, Error>
+
+  TestResults:
+    fields:
+      total: Int
+      passed: Int
+      failed: Int
+      skipped: Int
+      duration_ms: Int
+      failures: List<TestFailure>
+
+  TestFailure:
+    fields:
+      test_name: String
+      error: Error
+      stack_trace: String
+
+  MockService:
+    fields:
+      name: String
+      interface: ServiceInterface
+      behavior: MockBehavior
+      call_count: Int
+      last_call: Option<MockCall>
+
+  ServiceInterface:
+    enum:
+      - TELEGRAM
+      - AI_PROVIDER
+      - FILE_SYSTEM
+      - HTTP_CLIENT
+      - TMUX_SOCKET
+
+  MockBehavior:
+    fields:
+      response_mode: ResponseMode
+      latency_ms: Int
+      failure_rate: Float
+      custom_responses: Dict<String, MockResponse>
+
+  ResponseMode:
+    enum:
+      - SUCCESS
+      - FAILURE
+      - RANDOM
+      - SEQUENTIAL
+
+  MockResponse:
+    fields:
+      data: String
+      status_code: Int
+      error: Option<Error>
+
+  MockCall:
+    fields:
+      timestamp: Float
+      method: String
+      args: List<String>
+      response: MockResponse
+
+  Benchmark:
+    fields:
+      name: String
+      benchmark_fn: BenchmarkFunction
+      iterations: Int
+      warmup_runs: Int
+      results: BenchmarkResults
+
+  BenchmarkFunction:
+    signature: (Int) -> Void
+
+  BenchmarkResults:
+    fields:
+      iterations: Int
+      total_time_ns: Int
+      avg_time_ns: Int
+      min_time_ns: Int
+      max_time_ns: Int
+      percentile_95_ns: Int
+      percentile_99_ns: Int
+
+  MemoryProfile:
+    fields:
+      initial_mb: Float
+      peak_mb: Float
+      final_mb: Float
+      leaked_mb: Float
+      allocations: Int
+      deallocations: Int
+
+  IntegrationTest:
+    fields:
+      name: String
+      scenario: TestScenario
+      actors: List<String>
+      messages: List<TestMessage>
+      expectations: List<Assertion>
+
+  TestScenario:
+    enum:
+      - NORMAL_FLOW
+      - ACTOR_FAILURE
+      - MESSAGE_LOSS
+      - HIGH_LOAD
+      - NETWORK_FAILURE
+
+  TestMessage:
+    fields:
+      target: String
+      payload: String
+      delay_ms: Int
+
+  Assertion:
+    fields:
+      type: AssertionType
+      expected: String
+      actual: Option<String>
+      passed: Bool
+      error_message: Option<String>
+
+  AssertionType:
+    enum:
+      - EQUALS
+      - CONTAINS
+      - GREATER_THAN
+      - LESS_THAN
+      - MATCHES_REGEX
+
+behaviors:
+  - name: run_test_suite
+    given: TestSuite with test cases
+    when: Running all tests
+    then: TestResults with pass/fail counts
+    implementation: |
+      ```zig
+      const std = @import("std");
+
+      pub fn runTestSuite(suite: *TestSuite) !TestResults {
+          var results = TestResults{
+              .total = suite.tests.items.len,
+              .passed = 0,
+              .failed = 0,
+              .skipped = 0,
+              .duration_ms = 0,
+              .failures = std.ArrayList(TestFailure).init(std.heap.page_allocator),
+          };
+
+          const start_time = std.time.nanoTimestamp();
+
+          if (suite.setup) |setup_fn| {
+              try setup_fn();
+          }
+
+          for (suite.tests.items) |test| {
+              const test_result = runTestCase(test, suite.mock_services);
+
+              if (test_result) {
+                  results.passed += 1;
+              } else |err| {
+                  results.failed += 1;
+                  try results.failures.append(TestFailure{
+                      .test_name = test.name,
+                      .error = err,
+                      .stack_trace = captureStackTrace(),
+                  });
+              }
+          }
+
+          if (suite.teardown) |teardown_fn| {
+              try teardown_fn();
+          }
+
+          const end_time = std.time.nanoTimestamp();
+          results.duration_ms = @as(i64, @intCast(
+              (end_time - start_time) / std.time.ns_per_ms
+          ));
+
+          return results;
+      }
+      ```
+
+  - name: run_test_case
+    given: TestCase with mock services
+    when: Executing single test
+    then: Void on success or error
+    implementation: |
+      ```zig
+      fn runTestCase(test: TestCase, mocks: []MockService) !void {
+          for (mocks) |*mock| {
+              mock.reset();
+          }
+
+          const timeout = test.timeout_ms orelse TEST_TIMEOUT_MS;
+
+          const result = std.asyncTest(test.test_fn, .{});
+
+          const elapsed = test.timer.read();
+
+          if (elapsed > timeout) {
+              return error.TestTimeout;
+          }
+
+          if (test.should_fail) {
+              if (result) |_| {
+                  return error.ExpectedFailureButPassed;
+              } else |_| {
+                  return;
+              }
+          } else {
+              return result;
+          }
+      }
+      ```
+
+  - name: setup_mock_telegram
+    given: Mock behavior config
+    when: Creating Telegram mock
+    then: MockService with HTTP responses
+    implementation: |
+      ```zig
+      fn setupMockTelegram(behavior: MockBehavior) !MockService {
+          var mock = MockService{
+              .name = "telegram",
+              .interface = .TELEGRAM,
+              .behavior = behavior,
+              .call_count = 0,
+              .last_call = null,
+          };
+
+          mock.behavior.custom_responses = std.StringHashMap(MockResponse).init(
+              std.heap.page_allocator
+          );
+
+          try mock.behavior.custom_responses.put("sendMessage", MockResponse{
+              .data = "\\{\"ok\":true,\\\"result\\\":{\\\"message_id\\\":123}}",
+              .status_code = 200,
+              .error = null,
+          });
+
+          try mock.behavior.custom_responses.put("getUpdates", MockResponse{
+              .data = "\\{\"ok\":true,\\\"result\\\":[]}",
+              .status_code = 200,
+              .error = null,
+          });
+
+          return mock;
+      }
+      ```
+
+  - name: setup_mock_ai_provider
+    given: Provider type and behavior
+    when: Creating AI provider mock
+    then: MockService with completions
+    implementation: |
+      ```zig
+      fn setupMockAIProvider(provider: []const u8, behavior: MockBehavior) !MockService {
+          var mock = MockService{
+              .name = provider,
+              .interface = .AI_PROVIDER,
+              .behavior = behavior,
+              .call_count = 0,
+              .last_call = null,
+          };
+
+          try mock.behavior.custom_responses.put("complete", MockResponse{
+              .data = \\{
+                  \\\"id\\\":\\\"chatcmpl-123\\",
+                  \\\"choices\\":[{\\\"message\\\":{\\\"role\\\":\\\"assistant\\\",\\\"content\\\":\\\"Test response\\\"}}],
+                  \\\"usage\\\":{\\\"total_tokens\\\":50}
+              },
+              .status_code = 200,
+              .error = null,
+          });
+
+          return mock;
+      }
+      ```
+
+  - name: mock_invoke
+    given: MockService and method call
+    when: Intercepting service call
+    then: Mocked response or error
+    implementation: |
+      ```zig
+      fn mockInvoke(self: *MockService, method: []const u8, args: []const []const u8) !MockResponse {
+          self.call_count += 1;
+
+          const call = MockCall{
+              .timestamp = std.time.timestamp(),
+              .method = try std.dupe(std.heap.page_allocator, method),
+              .args = try std.heap.page_allocator.dupe([]const u8, args),
+              .response = undefined,
+          };
+
+          self.last_call = call;
+
+          if (self.behavior.response_mode == .FAILURE) {
+              return error.MockFailure;
+          }
+
+          if (self.behavior.response_mode == .RANDOM) {
+              const rand = std.crypto.random.float(f64);
+              if (rand < self.behavior.failure_rate) {
+                  return error.RandomFailure;
+              }
+          }
+
+          const response = self.behavior.custom_responses.get(method) orelse {
+              return error.UnknownMethod;
+          };
+
+          std.time.sleep(self.behavior.latency_ms * std.time.ns_per_ms);
+
+          return response;
+      }
+      ```
+
+  - name: run_benchmark
+    given: Benchmark with function
+    when: Executing performance test
+    then: BenchmarkResults with statistics
+    implementation: |
+      ```zig
+      pub fn runBenchmark(bench: *Benchmark) !BenchmarkResults {
+          var results = BenchmarkResults{
+              .iterations = bench.iterations,
+              .total_time_ns = 0,
+              .avg_time_ns = 0,
+              .min_time_ns = std.math.maxInt(i64),
+              .max_time_ns = 0,
+              .percentile_95_ns = 0,
+              .percentile_99_ns = 0,
+          };
+
+          const times = try std.heap.page_allocator.alloc(i64, bench.iterations);
+          defer std.heap.page_allocator.free(times);
+
+          for (0..bench.warmup_runs) |_| {
+              bench.benchmark_fn(1);
+          }
+
+          for (0..bench.iterations) |i| {
+              const start = std.time.nanoTimestamp();
+              bench.benchmark_fn(1);
+              const end = std.time.nanoTimestamp();
+
+              times[i] = end - start;
+          }
+
+          for (times) |t| {
+              results.total_time_ns += t;
+              if (t < results.min_time_ns) results.min_time_ns = t;
+              if (t > results.max_time_ns) results.max_time_ns = t;
+          }
+
+          std.sort.insertion(i64, times, {}, comptime std.sort.asc(i64));
+
+          results.avg_time_ns = results.total_time_ns / bench.iterations;
+          results.percentile_95_ns = times[@as(usize, @intFromFloat(
+              bench.iterations * 0.95
+          ))];
+          results.percentile_99_ns = times[@as(usize, @intFromFloat(
+              bench.iterations * 0.99
+          ))];
+
+          return results;
+      }
+      ```
+
+  - name: detect_memory_leaks
+    given: Test function
+    when: Running with memory profiling
+    then: MemoryProfile with leak detection
+    implementation: |
+      ```zig
+      pub fn detectMemoryLeaks(test_fn: TestFunction) !MemoryProfile {
+          const gpa = std.heap.GeneralPurposeAllocator(.{
+              .enable_memory_limit = true,
+              .verbose_log = true,
+          }){};
+
+          const initial_mem = gpa.total_requested_bytes;
+
+          try test_fn();
+
+          const peak_mem = gpa.total_requested_bytes;
+
+          gpa.deinit();
+
+          const leaked = peak_mem - initial_mem;
+          const leaked_mb = @as(f64, @floatFromInt(leaked)) / (1024 * 1024);
+
+          if (leaked_mb > MAX_MEMORY_LEAK_MB) {
+              std.log.err("Memory leak detected: {d:.2}MB", .{leaked_mb});
+              return error.MemoryLeakDetected;
+          }
+
+          return MemoryProfile{
+              .initial_mb = @as(f64, @floatFromInt(initial_mem)) / (1024 * 1024),
+              .peak_mb = @as(f64, @floatFromInt(peak_mem)) / (1024 * 1024),
+              .final_mb = 0,
+              .leaked_mb = leaked_mb,
+              .allocations = gpa.internal_allocation_count,
+              .deallocations = gpa.internal_deallocation_count,
+          };
+      }
+      ```
+
+  - name: run_integration_test
+    given: IntegrationTest scenario
+    when: Simulating actor interactions
+    then: Assertions validated
+    implementation: |
+      ```zig
+      pub fn runIntegrationTest(test: IntegrationTest) !void {
+          var actor_system = try ActorSystem.init(test.actors);
+
+          defer actor_system.deinit();
+
+          for (test.messages) |msg| {
+              std.time.sleep(msg.delay_ms * std.time.ns_per_ms);
+
+              try actor_system.send(msg.target, msg.payload);
+          }
+
+          std.time.sleep(100 * std.time.ns_per_ms);
+
+          for (test.expectations) |assertion| {
+              const actual = switch (assertion.type) {
+                  .EQUALS => try actor_system.getState(assertion.expected),
+                  else => null,
+              };
+
+              assertion.actual = actual;
+
+              if (!validateAssertion(assertion)) {
+                  std.log.err("Assertion failed: {s}", .{
+                      assertion.error_message orelse "No message"
+                  });
+                  return error.AssertionFailed;
+              }
+          }
+      }
+      ```
+
+  - name: validate_assertion
+    given: Assertion with expected and actual
+    when: Checking condition
+    then: Boolean pass/fail
+    implementation: |
+      ```zig
+      fn validateAssertion(assertion: Assertion) bool {
+          if (assertion.actual == null) {
+              assertion.error_message = "Actual value is null";
+              return false;
+          }
+
+          return switch (assertion.type) {
+              .EQUALS => std.mem.eql(
+                  u8,
+                  assertion.expected,
+                  assertion.actual.?
+              ),
+              .CONTAINS => std.mem.indexOf(
+                  u8,
+                  assertion.actual.?,
+                  assertion.expected
+              ) != null,
+              .GREATER_THAN => {
+                  const expected_val = std.fmt.parseInt(i64, assertion.expected, 10) catch 0;
+                  const actual_val = std.fmt.parseInt(i64, assertion.actual.?, 10) catch 0;
+                  actual_val > expected_val
+              },
+              .LESS_THAN => {
+                  const expected_val = std.fmt.parseInt(i64, assertion.expected, 10) catch 0;
+                  const actual_val = std.fmt.parseInt(i64, assertion.actual.?, 10) catch 0;
+                  actual_val < expected_val
+              },
+              .MATCHES_REGEX => {
+                  const regex = std.regex.compile(assertion.expected) catch return false;
+                  defer regex.deinit();
+                  regex.matches(assertion.actual.?)
+              },
+          };
+      }
+      ```
+
+  - name: generate_test_report
+    given: TestResults and BenchmarkResults
+    when: Creating test report
+    then: Formatted report printed
+    implementation: |
+      ```zig
+      pub fn generateTestReport(
+          test_results: TestResults,
+          bench_results: []BenchmarkResults,
+          memory_profile: MemoryProfile
+      ) !void {
+          const stdout = std.io.getStdOut().writer();
+
+          try stdout.print("\\n=== Test Results ===\\n", .{});
+          try stdout.print("Total: {d}, Passed: {d}, Failed: {d}, Skipped: {d}\\n", .{
+              test_results.total,
+              test_results.passed,
+              test_results.failed,
+              test_results.skipped,
+          });
+          try stdout.print("Duration: {d}ms\\n", .{test_results.duration_ms});
+
+          if (test_results.failed > 0) {
+              try stdout.print("\\nFailures:\\n", .{});
+              for (test_results.failures) |failure| {
+                  try stdout.print("  - {s}: {s}\\n", .{
+                      failure.test_name, @errorName(failure.error)
+                  });
+              }
+          }
+
+          try stdout.print("\\n=== Benchmarks ===\\n", .{});
+          for (bench_results) |bench| {
+              try stdout.print("{s}: avg={d}ns, min={d}ns, max={d}ns, p95={d}ns\\n", .{
+                  bench.name,
+                  bench.avg_time_ns,
+                  bench.min_time_ns,
+                  bench.max_time_ns,
+                  bench.percentile_95_ns,
+              });
+          }
+
+          try stdout.print("\\n=== Memory Profile ===\\n", .{});
+          try stdout.print("Initial: {d:.2}MB, Peak: {d:.2}MB, Leaked: {d:.2}MB\\n", .{
+              memory_profile.initial_mb,
+              memory_profile.peak_mb,
+              memory_profile.leaked_mb,
+          });
+
+          const exit_code = if (test_results.failed == 0) 0 else 1;
+          std.os.exit(exit_code);
+      }
+      ```
+
+  - name: actor_lifecycle_test
+    given: Actor system
+    when: Testing spawn and stop
+    then: Actors created and destroyed cleanly
+    implementation: |
+      ```zig
+      test "actor lifecycle" {
+          var system = try ActorSystem.init(.{});
+
+          const actor_id = try system.spawnActor("test_actor");
+
+          const actor = system.getActor(actor_id);
+          try std.testing.expect(actor != null);
+          try std.testing.expectEqual(ActorState.RUNNING, actor.?.state);
+
+          try system.stopActor(actor_id);
+
+          const stopped = system.getActor(actor_id);
+          try std.testing.expectEqual(ActorState.STOPPED, stopped.?.state);
+      }
+      ```
+
+  - name: message_passing_test
+    given: Two actors
+    when: Sending message
+    then: Message received and processed
+    implementation: |
+      ```zig
+      test "message passing" {
+          var system = try ActorSystem.init(.{});
+
+          const sender = try system.spawnActor("sender");
+          const receiver = try system.spawnActor("receiver");
+
+          const message = "hello";
+
+          try system.send(receiver, message);
+
+          std.time.sleep(10 * std.time.ns_per_ms);
+
+          const received = receiver.getLastMessage();
+          try std.testing.expectEqualStrings(message, received);
+      }
+      ```
+
+metadata:
+  phase: 6
+  domain: testing
+  dependencies:
+    - std
+    - crypto
+    - regex
+  sacred_math:
+    phi_ratio: PHI
+    bits_per_trit: SACRED_CONSTANT
+  performance:
+    target_latency_ms: 100
+    max_throughput: 100

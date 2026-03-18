@@ -1,0 +1,145 @@
+# Trinity Unified Plugin Registry
+# Sacred Formula: V = n x 3^k x pi^m x phi^p x e^q
+# Golden Identity: phi^2 + 1/phi^2 = 3
+
+name: plugin_registry
+version: "1.0.0"
+language: zig
+module: plugin_registry
+
+description: |
+  Unified registry for all Trinity plugins.
+  Extends BogatyrRegistry pattern to support all plugin kinds.
+  Namespace-based organization with priority ordering.
+  O(1) lookup via StringHashMap.
+
+imports:
+  - plugin_interface
+
+types:
+  RegistryEntry:
+    description: "Single entry in plugin registry"
+    fields:
+      plugin: Plugin
+      source: PluginSource
+      priority: Int
+      enabled: Bool
+      load_time_ns: Int
+
+  PluginSource:
+    description: "Origin of loaded plugin"
+    variants:
+      - builtin     # Compile-time @import
+      - local_zig   # Local .zig file
+      - local_wasm  # Local .wasm file
+      - remote      # Downloaded from registry
+
+  PluginQuery:
+    description: "Query for finding plugins"
+    fields:
+      kind: Option<PluginKind>
+      capability: Option<String>
+      name_pattern: Option<String>
+      enabled_only: Bool
+
+  PluginRegistry:
+    description: "Central registry for all plugins"
+    fields:
+      allocator: Allocator
+      plugins: Map<String, RegistryEntry>
+      by_kind: Map<PluginKind, List<String>>
+      by_capability: Map<String, List<String>>
+
+  RegistryStats:
+    description: "Statistics about registered plugins"
+    fields:
+      total_count: Int
+      by_kind: Map<PluginKind, Int>
+      enabled_count: Int
+      builtin_count: Int
+      wasm_count: Int
+
+behaviors:
+  - name: registry_init
+    given: Allocator
+    when: Creating new registry
+    then: Initialize empty maps, register builtin plugins
+
+  - name: registry_deinit
+    given: Registry instance
+    when: Destroying registry
+    then: Call deinit on all plugins, free memory
+
+  - name: register
+    given: Plugin instance and source
+    when: Adding new plugin to registry
+    then: Add to maps, update indices, return success or conflict error
+
+  - name: unregister
+    given: Plugin ID
+    when: Removing plugin from registry
+    then: Call plugin deinit, remove from all maps
+
+  - name: get
+    given: Plugin ID
+    when: Retrieving specific plugin
+    then: Return RegistryEntry or null
+
+  - name: query
+    given: PluginQuery
+    when: Searching for plugins
+    then: Return matching plugins sorted by priority
+
+  - name: list_by_kind
+    given: PluginKind
+    when: Listing all plugins of specific type
+    then: Return list sorted by priority (lower = higher priority)
+
+  - name: list_by_capability
+    given: Capability name
+    when: Finding plugins with specific capability
+    then: Return list of plugins providing that capability
+
+  - name: enable
+    given: Plugin ID
+    when: Enabling disabled plugin
+    then: Set enabled=true, return success
+
+  - name: disable
+    given: Plugin ID
+    when: Disabling plugin without removing
+    then: Set enabled=false, return success
+
+  - name: get_stats
+    given: Registry instance
+    when: Querying registry statistics
+    then: Return RegistryStats
+
+  - name: register_builtin_plugins
+    given: Registry instance
+    when: Initializing with core plugins
+    then: Register all compile-time plugins via @import
+
+constants:
+  # Priority ranges
+  PRIORITY_CORE: 0          # Core Trinity plugins
+  PRIORITY_OFFICIAL: 50     # Official extensions
+  PRIORITY_COMMUNITY: 100   # Community plugins
+  PRIORITY_USER: 200        # User-installed plugins
+
+  # Limits
+  MAX_PLUGINS: 1024
+  MAX_CAPABILITIES_PER_PLUGIN: 64
+
+theorems:
+  - id: THM-REG-001
+    statement: "Plugin ID is unique across entire registry"
+    proof: "StringHashMap enforces uniqueness by key"
+
+  - id: THM-REG-002
+    statement: "Lower priority number = higher execution priority"
+    proof: "Sorted ascending, core (0) runs before community (100)"
+
+  - id: THM-REG-003
+    statement: "Capability conflicts resolved by priority"
+    proof: "First matching plugin by priority wins"

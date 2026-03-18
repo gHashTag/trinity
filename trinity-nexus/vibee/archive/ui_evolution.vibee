@@ -1,0 +1,471 @@
+name: ui_evolution
+version: "1.0.0"
+language: zig
+module: ui_evolution
+description: Auto-generated from Gleam code
+
+behaviors:
+  - name: evaluate_visual_harmony
+    given: Input data provided
+    when: evaluate_visual_harmony function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_visual_harmony
+        input: {}
+        expected: {}
+
+  - name: evaluate_usability
+    given: Input data provided
+    when: evaluate_usability function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_usability
+        input: {}
+        expected: {}
+
+  - name: evaluate_accessibility
+    given: Input data provided
+    when: evaluate_accessibility function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_accessibility
+        input: {}
+        expected: {}
+
+  - name: evaluate_performance
+    given: Input data provided
+    when: evaluate_performance function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_performance
+        input: {}
+        expected: {}
+
+  - name: calculate_fitness
+    given: Input data provided
+    when: calculate_fitness function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_fitness
+        input: {}
+        expected: {}
+
+  - name: calculate_color_contrast
+    given: Input data provided
+    when: calculate_color_contrast function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_color_contrast
+        input: {}
+        expected: {}
+
+  - name: calculate_luminance
+    given: Input data provided
+    when: calculate_luminance function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_luminance
+        input: {}
+        expected: {}
+
+  - name: calculate_wcag_contrast
+    given: Input data provided
+    when: calculate_wcag_contrast function called
+    then: Result returned
+    test_cases:
+      - name: test_calculate_wcag_contrast
+        input: {}
+        expected: {}
+
+  - name: evaluate_spacing_balance
+    given: Input data provided
+    when: evaluate_spacing_balance function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_spacing_balance
+        input: {}
+        expected: {}
+
+  - name: evaluate_shadow_subtlety
+    given: Input data provided
+    when: evaluate_shadow_subtlety function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_shadow_subtlety
+        input: {}
+        expected: {}
+
+  - name: evaluate_click_target_size
+    given: Input data provided
+    when: evaluate_click_target_size function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_click_target_size
+        input: {}
+        expected: {}
+
+  - name: evaluate_interaction_feedback
+    given: Input data provided
+    when: evaluate_interaction_feedback function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_interaction_feedback
+        input: {}
+        expected: {}
+
+  - name: evaluate_layout_clarity
+    given: Input data provided
+    when: evaluate_layout_clarity function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_layout_clarity
+        input: {}
+        expected: {}
+
+  - name: evaluate_font_readability
+    given: Input data provided
+    when: evaluate_font_readability function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_font_readability
+        input: {}
+        expected: {}
+
+  - name: evaluate_focus_visibility
+    given: Input data provided
+    when: evaluate_focus_visibility function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_focus_visibility
+        input: {}
+        expected: {}
+
+  - name: evaluate_animation_cost
+    given: Input data provided
+    when: evaluate_animation_cost function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_animation_cost
+        input: {}
+        expected: {}
+
+  - name: evaluate_shadow_cost
+    given: Input data provided
+    when: evaluate_shadow_cost function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_shadow_cost
+        input: {}
+        expected: {}
+
+  - name: evaluate_layout_cost
+    given: Input data provided
+    when: evaluate_layout_cost function called
+    then: Result returned
+    test_cases:
+      - name: test_evaluate_layout_cost
+        input: {}
+        expected: {}
+
+  - name: mutate_genes
+    given: Input data provided
+    when: mutate_genes function called
+    then: Result returned
+    test_cases:
+      - name: test_mutate_genes
+        input: {}
+        expected: {}
+
+  - name: crossover_genes
+    given: Input data provided
+    when: crossover_genes function called
+    then: Result returned
+    test_cases:
+      - name: test_crossover_genes
+        input: {}
+        expected: {}
+
+  - name: random_genes
+    given: Input data provided
+    when: random_genes function called
+    then: Result returned
+    test_cases:
+      - name: test_random_genes
+        input: {}
+        expected: {}
+
+  - name: genes_to_css
+    given: Input data provided
+    when: genes_to_css function called
+    then: Result returned
+    test_cases:
+      - name: test_genes_to_css
+        input: {}
+        expected: {}
+
+  - name: color_to_css
+    given: Input data provided
+    when: color_to_css function called
+    then: Result returned
+    test_cases:
+      - name: test_color_to_css
+        input: {}
+        expected: {}
+
+  - name: border_to_css
+    given: Input data provided
+    when: border_to_css function called
+    then: Result returned
+    test_cases:
+      - name: test_border_to_css
+        input: {}
+        expected: {}
+
+  - name: shadow_to_css
+    given: Input data provided
+    when: shadow_to_css function called
+    then: Result returned
+    test_cases:
+      - name: test_shadow_to_css
+        input: {}
+        expected: {}
+
+  - name: spacing_to_css
+    given: Input data provided
+    when: spacing_to_css function called
+    then: Result returned
+    test_cases:
+      - name: test_spacing_to_css
+        input: {}
+        expected: {}
+
+  - name: size_to_css
+    given: Input data provided
+    when: size_to_css function called
+    then: Result returned
+    test_cases:
+      - name: test_size_to_css
+        input: {}
+        expected: {}
+
+types:
+  ColorGene:
+    # TODO: Define fields
+
+  SizeGene:
+    # TODO: Define fields
+
+  PositionGene:
+    # TODO: Define fields
+
+  TypographyGene:
+    # TODO: Define fields
+
+  SpacingGene:
+    # TODO: Define fields
+
+  BorderGene:
+    # TODO: Define fields
+
+  BorderStyle:
+    # TODO: Define fields
+
+  ShadowGene:
+    # TODO: Define fields
+
+  AnimationGene:
+    # TODO: Define fields
+
+  TimingFunction:
+    # TODO: Define fields
+
+  AnimationIteration:
+    # TODO: Define fields
+
+  LayoutGene:
+    # TODO: Define fields
+
+  FlexDirection:
+    # TODO: Define fields
+
+  JustifyContent:
+    # TODO: Define fields
+
+  AlignItems:
+    # TODO: Define fields
+
+  FlexWrap:
+    # TODO: Define fields
+
+  GridAutoFlow:
+    # TODO: Define fields
+
+  InteractionGene:
+    # TODO: Define fields
+
+  ClickFeedback:
+    # TODO: Define fields
+
+  CursorType:
+    # TODO: Define fields
+
+  ResponsiveGene:
+    # TODO: Define fields
+
+  ComponentGenes:
+    # TODO: Define fields
+
+  FitnessScore:
+    # TODO: Define fields
+
+functions:
+  - name: evaluate_visual_harmony
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_usability
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_accessibility
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_performance
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_fitness
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_color_contrast
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_luminance
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: calculate_wcag_contrast
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_spacing_balance
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_shadow_subtlety
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_click_target_size
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_interaction_feedback
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_layout_clarity
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_font_readability
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_focus_visibility
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_animation_cost
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_shadow_cost
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: evaluate_layout_cost
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: mutate_genes
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: crossover_genes
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: random_genes
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: genes_to_css
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: color_to_css
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: border_to_css
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: shadow_to_css
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: spacing_to_css
+    params: {}
+    returns: json
+    description: Auto-generated
+
+  - name: size_to_css
+    params: {}
+    returns: json
+    description: Auto-generated
+
+imports:
+  - std.json
+  - std.mem
+  # gleam/list
+  # gleam/int
+  # gleam/float
+  # gleam/string
+  # gleam/result
+  # gleam/option.{type Option, None, Some}
+
+optimization:
+  target: zig
+  level: ReleaseFast
+  features:
+    - inline_small_functions

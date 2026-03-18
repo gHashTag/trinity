@@ -1,0 +1,41 @@
+name: large_scale_kg_1000
+version: "1.0.0"
+language: zig
+module: large_scale_kg_1000
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 1000
+  NUM_RELATIONS: 100
+  PAIRS_PER_RELATION: 10
+  TOTAL_TRIPLES: 1000
+
+types:
+  DomainResult:
+    fields:
+      domain_id: Int
+      relation_id: Int
+      forward_correct: Int
+      reverse_correct: Int
+      cross_rejected: Int
+
+behaviors:
+  - name: forwardQueriesMultiDomain
+    given: "1000 bipolar entities, 100 relations x 10 pairs = 1000 triples across 10 domains."
+    when: "Query 5 sampled relations (50 forward queries) against value pool of 500"
+    then: "50/50 (100%) — all forward queries resolve correctly at 1000-entity scale"
+
+  - name: reverseQueriesMultiDomain
+    given: "Same 100 relation memories."
+    when: "Query 5 sampled relations (50 reverse queries) against key pool of 500"
+    then: "50/50 (100%) — all reverse queries resolve correctly"
+
+  - name: crossRelationRejectionAtScale
+    given: "50 queries where keys from one relation are tested against a different relation memory."
+    when: "Verify wrong-relation queries do not return correct answer"
+    then: "50/50 (100%) — perfect signal separation at 1000-entity scale"
+
+  - name: perDomainAccuracy
+    given: "10 domains, each with 10 relations. Query first relation in each domain."
+    when: "Verify each domain independently achieves high accuracy"
+    then: "10/10 — all 10 domains pass at 100% accuracy"

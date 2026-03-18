@@ -1,0 +1,50 @@
+name: igla_kg_pipeline
+version: "1.0.0"
+language: zig
+module: igla_kg_pipeline
+
+description: >
+  SYM-004 IGLA + KG Full Pipeline Integration.
+  Wires triples_parser.extractTriples() into igla_hybrid_chat.respond()
+  so every LLM response auto-populates ChatKnowledgeGraph via addFact().
+  Closes the loop: Question -> LLM -> Triples -> KG -> Reuse.
+  Tech Tree: SYM-004 (Symbolic branch, unlocks SYM-005).
+
+constants:
+  MIN_EXTRACTION_CONFIDENCE: 0.6
+  MIN_LLM_CONFIDENCE: 0.5
+
+types:
+  PipelineStats:
+    fields:
+      responses_processed: Int
+      triples_extracted: Int
+      triples_stored: Int
+      triples_skipped_low_conf: Int
+      triples_skipped_duplicate: Int
+
+behaviors:
+  - name: extractAndStoreTriples
+    given: LLM response text and ChatKnowledgeGraph instance
+    when: Response confidence passes threshold, triples extracted, confidence filtered
+    then: High-confidence triples added to KG via addFact, stats updated
+
+  - name: shouldExtract
+    given: ReflectionStatus and LLM confidence score
+    when: Reflection passed quality filters and confidence above threshold
+    then: Returns true if extraction should proceed
+
+  - name: isNewFact
+    given: ChatKnowledgeGraph, subject, relation, object
+    when: Checking if triple already exists in KG
+    then: Returns false if queryTriple(subject, relation) returns matching object
+
+test_cases:
+  - input: "Paris is the capital of France"
+    expected: "KG contains (paris, is_capital_of, france) after extraction"
+  - input: "Python is a programming language. Rust is a systems language."
+    expected: "KG contains 2 new triples after extraction"
+  - input: "Hello world"
+    expected: "No triples extracted, KG unchanged"
+  - input: Low confidence response (conf < 0.5)
+    expected: "Extraction skipped, shouldExtract returns false"

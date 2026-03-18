@@ -1,0 +1,41 @@
+[cell]
+id = "trinity.cosmos"
+name = "Cosmology"
+version = "1.0.0"
+kind = "library"
+path = "src/cosmos"
+min_core_version = "1.0.0"
+status = "experimental"
+description = "Pre-Big Bang cosmology and dark energy from phi-gamma"
+capabilities = ["vsa", "cosmology", "sacred-geometry"]
+files = 5
+tests = 118
+owner = "agent:ralph"
+
+[tags]
+scope = "vsa"
+type = "library"
+
+[contributes]
+commands = []
+exports = ["totalDensityParameter", "matterDensityParameter", "darkEnergyDensityParameter", "curvatureDensityParameter", "radiationDensityParameter"]
+tri_subcommands = []
+events = []
+binaries = []
+
+[dependencies]
+
+[permissions]
+level = "L0"
+filesystem = "read"
+network = "none"
+process = "none"
+ffi = "none"
+concurrency = "none"
+
+
+[biology]
+system = "body"
+[security]
+signed = "true"
+signature = "sha256:f0f3ad9ab717e3e7105afd63ab8f10fa2e660f8a6d5a9614ac7abed12aa21a3b"

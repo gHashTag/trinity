@@ -1,0 +1,155 @@
+# NeoDetect Extension CI
+# Tests WASM module and extension functionality
+
+name: Extension Tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'extension/**'
+      - 'src/firebird/neodetect_wasm.zig'
+      - '.github/workflows/extension-tests.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'extension/**'
+      - 'src/firebird/neodetect_wasm.zig'
+
+jobs:
+  build-wasm:
+    name: Build WASM Module
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.13.0
+      
+      - name: Build WASM
+        run: |
+          zig build-exe src/firebird/neodetect_wasm.zig \
+            -target wasm32-freestanding \
+            -O ReleaseFast \
+            -fno-entry \
+            -rdynamic \
+            -femit-bin=extension/chrome/wasm/neodetect.wasm
+          
+          echo "WASM built successfully"
+          ls -la extension/chrome/wasm/neodetect.wasm
+      
+      - name: Verify WASM magic bytes
+        run: |
+          MAGIC=$(head -c 4 extension/chrome/wasm/neodetect.wasm | xxd -p)
+          if [ "$MAGIC" = "0061736d" ]; then
+            echo "✅ Valid WASM magic bytes"
+          else
+            echo "❌ Invalid WASM magic bytes: $MAGIC"
+            exit 1
+          fi
+      
+      - name: Upload WASM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: neodetect-wasm
+          path: extension/chrome/wasm/neodetect.wasm
+
+  test-wasm:
+    name: Test WASM Module
+    runs-on: ubuntu-latest
+    needs: build-wasm
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download WASM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: neodetect-wasm
+          path: extension/chrome/wasm/
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install test dependencies
+        run: |
+          cd extension/test
+          npm install --ignore-scripts
+      
+      - name: Run WASM tests
+        run: |
+          cd extension/test
+          node wasm-test.js
+
+  validate-manifest:
+    name: Validate Extension Manifest
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Validate manifest.json
+        run: |
+          cd extension/chrome
+          
+          # Check JSON syntax
+          python3 -c "import json; json.load(open('manifest.json'))"
+          echo "✅ manifest.json is valid JSON"
+          
+          # Check required fields
+          python3 << 'EOF'
+          import json
+          
+          with open('manifest.json') as f:
+              manifest = json.load(f)
+          
+          required = ['manifest_version', 'name', 'version', 'description']
+          for field in required:
+              if field not in manifest:
+                  print(f"❌ Missing required field: {field}")
+                  exit(1)
+              print(f"✅ {field}: {manifest[field]}")
+          
+          if manifest['manifest_version'] != 3:
+              print("❌ Must be Manifest V3")
+              exit(1)
+          
+          print("✅ All required fields present")
+          EOF
+
+  package-extension:
+    name: Package Extension
+    runs-on: ubuntu-latest
+    needs: [build-wasm, test-wasm, validate-manifest]
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Download WASM artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: neodetect-wasm
+          path: extension/chrome/wasm/
+      
+      - name: Create extension package
+        run: |
+          cd extension/chrome
+          zip -r ../neodetect-${{ github.sha }}.zip . \
+            -x "*.DS_Store" \
+            -x "__MACOSX/*" \
+            -x "screenshots/*" \
+            -x "promo/*"
+          
+          echo "Package created:"
+          ls -la ../neodetect-${{ github.sha }}.zip
+      
+      - name: Upload extension package
+        uses: actions/upload-artifact@v4
+        with:
+          name: neodetect-extension
+          path: extension/neodetect-*.zip

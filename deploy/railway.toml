@@ -1,0 +1,19 @@
+# Railway Deployment Configuration for Trinity MCP Server
+# φ² + 1/φ² = 3 = TRINITY
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile.railway"
+
+[deploy]
+startCommand = null  # Use Dockerfile ENTRYPOINT (trinity-mcp Zig binary)
+healthcheckPath = "/health"
+healthcheckTimeout = 300
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+[[services]]
+type = "web"
+name = "trinity-mcp"
+env = "PORT"
+forwardedPorts = [8899]

@@ -1,0 +1,30 @@
+name: multi_cluster_test
+version: "1.0.0"
+language: zig
+module: tri.multi_cluster_test
+
+description: |
+  Multi-cluster end-to-end test for state persistence and CRDT merge.
+  Tests cluster state persistence (.tri-cluster.json), tier-based reward
+  calculation, CRDT merge between federations, and pending rewards claiming.
+
+behaviors:
+  - name: testStatePersistence
+    given: Cluster state data
+    when: Save/load cycle is executed
+    then: State is correctly persisted and restored from .tri-cluster.json
+
+  - name: testCrdtMerge
+    given: Two federation states with concurrent changes
+    when: CRDT merge is performed
+    then: States converge correctly without data loss
+
+  - name: testRewardClaiming
+    given: Tier-based pending rewards
+    when: Rewards are claimed
+    then: Correct amounts are distributed per tier
+
+export_functions:
+  - testStatePersistence
+  - testCrdtMerge
+  - testRewardClaiming

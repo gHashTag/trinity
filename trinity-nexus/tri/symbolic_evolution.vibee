@@ -1,0 +1,34 @@
+name: symbolic_evolution
+version: "1.0.0"
+language: zig
+module: symbolic_evolution
+
+constants:
+  DIM: 4096
+  NUM_ENTITIES: 500
+  V1_PAIRS: 10
+  V2_PAIRS: 20
+
+types:
+  VersionMetrics:
+    fields:
+      version: String
+      pairs: Int
+      accuracy: Int
+      backward_compat: Bool
+
+behaviors:
+  - name: versionComparison
+    given: "v1 with 10 pairs, v2 with 20 pairs (superset)."
+    when: "Query first 10 keys in both v1 and v2"
+    then: "20/20 (100%) — both versions maintain accuracy on shared keys"
+
+  - name: safeIncrementalExpansion
+    given: "3 domains added sequentially (10 pairs each)."
+    when: "Query each domain after addition"
+    then: "30/30 (100%) — each domain works independently"
+
+  - name: backwardCompatibility
+    given: "Domain 1 and v1 memories unchanged after expansion."
+    when: "Re-query all original keys after adding new domains"
+    then: "20/20 (100%) — backward compatibility maintained"

@@ -1,0 +1,36 @@
+name: chat_server
+version: "3.0.0"
+language: zig
+module: tri.chat_server
+
+description: |
+  Trinity Chat HTTP server for Cosmic UI.
+  Endpoints: POST /chat, POST /chat/clear, GET /health, GET /api/files,
+  POST /api/compile, GET /api/pas/*, WS /ws/pas, GET /api/chem/*.
+
+behaviors:
+  - name: handleChat
+    given: POST request with message body
+    when: /chat endpoint is called
+    then: Returns hybrid chat response
+
+  - name: handleHealth
+    given: GET request
+    when: /health endpoint is called
+    then: Returns server health status
+
+  - name: handleCompile
+    given: POST request with VIBEE/Zig source
+    when: /api/compile endpoint is called
+    then: Compiles source and returns result
+
+  - name: handleChemistry
+    given: GET request with element or equation
+    when: /api/chem/* endpoints are called
+    then: Returns chemistry data (molar mass, element info, balance, predict)
+
+export_functions:
+  - handleChat
+  - handleHealth
+  - handleCompile
+  - handleChemistry
