@@ -123,14 +123,18 @@ pub const CommBus = struct {
         };
 
         // Create synapses to all modules except sender
-        const all_modules = std.meta.tags(Module);
-        var new_signals = std.ArrayList(Synapse).init(allocator);
+        const all_modules = [_]Module{
+            .queen_dlpfc,               .queen_vmpfc,             .queen_vlpfc,     .queen_dmpfc,
+            .queen_ofc,                 .phoenix_locus_coeruleus, .phoenix_medulla, .phoenix_pons,
+            .hippocampus,               .thalamus,                .reticular_aras,  .reticular_raphe,
+            .reticular_gigantocellular, .basal_ganglia,           .cerebellum,
+        };
+        var new_signals = try std.ArrayList(Synapse).initCapacity(allocator, all_modules.len);
 
-        for (all_modules) |mod_tag| {
-            const target_mod = @field(Module, mod_tag.name);
+        for (all_modules) |target_mod| {
             if (target_mod == from) continue;
 
-            try new_signals.append(Synapse.init(from, target_mod, sig));
+            try new_signals.append(allocator, Synapse.init(from, target_mod, sig));
         }
 
         self.signals = try new_signals.toOwnedSlice(allocator);
@@ -138,28 +142,24 @@ pub const CommBus = struct {
     }
 
     /// Get signals for a specific module (filters by target)
-    /// Returns slice of signals where `target` matches the given module
-    pub fn getSignals(self: *const CommBus, target: Module) []const Synapse {
+    /// Returns allocated slice of signals where `to` matches the given module
+    /// Caller owns the returned memory and must free it
+    pub fn getSignals(self: *const CommBus, allocator: Allocator, target: Module) ![]const Synapse {
         // Count matching signals first
         var count: usize = 0;
         for (self.signals) |sig| {
-            if (sig.target == target) count += 1;
+            if (sig.to == target) count += 1;
         }
 
-        // If no matches, return empty slice
-        if (count == 0) return &.{};
-
-        // Return slice from first match to end (simplified - caller gets all signals from first match)
-        // This is safe because signals are time-ordered and we want the most recent
-        var first_idx: usize = 0;
-        for (self.signals, 0..) |sig, i| {
-            if (sig.target == target) {
-                first_idx = i;
-                break;
+        // Allocate and collect matching signals (empty slice if no matches)
+        var filtered = try std.ArrayList(Synapse).initCapacity(allocator, count);
+        for (self.signals) |sig| {
+            if (sig.to == target) {
+                try filtered.append(allocator, sig);
             }
         }
 
-        return self.signals[first_idx..];
+        return filtered.toOwnedSlice(allocator);
     }
 };
 
@@ -204,7 +204,7 @@ pub fn syncBridge(
 
     // Broadcast sync signal
     const data = "sync";
-    try bus.broadcast(allocator, .corpus_callosum, .heartbeat, data);
+    try bus.broadcast(allocator, .hippocampus, .heartbeat, data);
 
     // Write to hippocampus
     const hippocampus = @import("hippocampus.zig");
@@ -215,12 +215,7 @@ pub fn syncBridge(
     );
     defer allocator.free(log_data);
 
-    _ = try hippocampus.write(allocator, .{
-        .agent = "corpus_callosum",
-        .kind = .observation,
-        .summary = "bridge sync completed",
-        .data = log_data,
-    });
+    _ = try hippocampus.writeObservation(allocator, "corpus_callosum", "bridge sync completed", log_data);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -390,4 +385,171 @@ test "corpus_callosum — CommBus initialization" {
 
     try std.testing.expectEqual(@as(usize, 0), bus.signals.len);
     try std.testing.expectEqual(@as(i64, 0), bus.last_broadcast);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// URGENCY ENUM TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "corpus_callosum — Urgency enum values" {
+    try std.testing.expectEqual(@as(u8, 0), @intFromEnum(Urgency.normal));
+    try std.testing.expectEqual(@as(u8, 1), @intFromEnum(Urgency.high));
+    try std.testing.expectEqual(@as(u8, 2), @intFromEnum(Urgency.critical));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIGNAL STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "corpus_callosum — Signal defaults" {
+    const sig = Signal{
+        .kind = .heartbeat,
+        .data = "",
+        .urgency = .normal,
+    };
+
+    try std.testing.expectEqual(SignalKind.heartbeat, sig.kind);
+    try std.testing.expectEqualStrings("", sig.data);
+    try std.testing.expectEqual(Urgency.normal, sig.urgency);
+}
+
+test "corpus_callosum — Signal isAlert with high urgency" {
+    const sig = Signal{
+        .kind = .request,
+        .data = "urgent request",
+        .urgency = .high,
+    };
+
+    try std.testing.expect(sig.isAlert());
+}
+
+test "corpus_callosum — Signal isAlert with normal urgency" {
+    const sig = Signal{
+        .kind = .response,
+        .data = "normal response",
+        .urgency = .normal,
+    };
+
+    try std.testing.expect(!sig.isAlert());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMM BUS TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "corpus_callosum — CommBus broadcast creates signals" {
+    var bus = try initCommBus(std.testing.allocator);
+    defer {
+        std.testing.allocator.free(bus.signals);
+    }
+
+    try bus.broadcast(std.testing.allocator, .queen_dlpfc, .alert, "test alert");
+
+    try std.testing.expect(bus.signals.len > 0);
+    try std.testing.expect(bus.last_broadcast > 0);
+}
+
+test "corpus_callosum — CommBus getSignals empty for no match" {
+    var bus = try initCommBus(std.testing.allocator);
+    defer {
+        std.testing.allocator.free(bus.signals);
+    }
+
+    const signals = try bus.getSignals(std.testing.allocator, .hippocampus);
+    defer std.testing.allocator.free(signals);
+    try std.testing.expectEqual(@as(usize, 0), signals.len);
+}
+
+test "corpus_callosum — CommBus getSignals filters by target" {
+    var bus = try initCommBus(std.testing.allocator);
+    defer {
+        std.testing.allocator.free(bus.signals);
+    }
+
+    try bus.broadcast(std.testing.allocator, .queen_dlpfc, .heartbeat, "ping");
+
+    // Get signals for hippocampus (should have one from queen_dlpfc)
+    const signals = try bus.getSignals(std.testing.allocator, .hippocampus);
+    defer std.testing.allocator.free(signals);
+    try std.testing.expect(signals.len > 0);
+
+    // All signals should target hippocampus
+    for (signals) |sig| {
+        try std.testing.expectEqual(.hippocampus, sig.to);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BRIDGE STATE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "corpus_callosum — BridgeState sync threshold" {
+    const state = BridgeState{
+        .last_sync = std.time.timestamp() - 59, // 59 seconds ago
+    };
+
+    try std.testing.expect(!state.needsSync()); // < 60 seconds
+}
+
+test "corpus_callosum — BridgeState sync increment" {
+    var state = BridgeState{};
+    const before = state.sync_count;
+
+    var bus = try initCommBus(std.testing.allocator);
+    defer {
+        std.testing.allocator.free(bus.signals);
+    }
+
+    try syncBridge(std.testing.allocator, &bus, &state);
+
+    try std.testing.expectEqual(before + 1, state.sync_count);
+    try std.testing.expect(state.last_sync > 0);
+}
+
+test "corpus_callosum — BridgeState custom phoenix state" {
+    const state = BridgeState{
+        .phoenix_sleep_state = .sleeping,
+    };
+
+    try std.testing.expectEqual(PhoenixSleepState.sleeping, state.phoenix_sleep_state);
+}
+
+test "corpus_callosum — PhoenixSleepState enum values" {
+    try std.testing.expectEqual(PhoenixSleepState.awake, .awake);
+    try std.testing.expectEqual(PhoenixSleepState.sleeping, .sleeping);
+    try std.testing.expectEqual(PhoenixSleepState.waking, .waking);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CELL HEALTH TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "corpus_callosum — CellHealth timestamp" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
+
+test "corpus_callosum — CellHealth defaults" {
+    const h = CellHealth{};
+
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
+
+test "corpus_callosum — CellHealth Status enum" {
+    try std.testing.expectEqual(CellHealth.Status.healthy, .healthy);
+    try std.testing.expectEqual(CellHealth.Status.weak, .weak);
+    try std.testing.expectEqual(CellHealth.Status.broken, .broken);
+}
+
+test "corpus_callosum — CellHealth custom values" {
+    var h = CellHealth{};
+    h.status = .weak;
+    h.cycle = 5;
+    h.last_check = 12345;
+
+    try std.testing.expectEqual(CellHealth.Status.weak, h.status);
+    try std.testing.expectEqual(@as(u32, 5), h.cycle);
+    try std.testing.expectEqual(@as(i64, 12345), h.last_check);
 }
