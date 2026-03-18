@@ -1,3 +1,4 @@
+# Large directories
 fpga/prjxray
 fpga/nextpnr-xilinx
 data/tinystories/real_tinystories.txt
@@ -8,3 +9,14 @@ data/predictions
 data/curves
 docs
 papers
+docsite
+archive
+
+# Build/cache directories
+.zig-cache
+.cache
+zig-out
+build
+
+# Git (Railway should skip, but explicit)
+.git
