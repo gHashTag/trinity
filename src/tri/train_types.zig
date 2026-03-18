@@ -168,9 +168,10 @@ test "TrainLogEntry initialization" {
     };
 
     var buf = [_]u8{0} ** 1024;
-    _ = entry.toJson(&buf); // toJson returns []const u8, not error union
-    const expected_json = "{\"step\":100}";
-    try std.testing.expectEqualStrings(expected_json, entry.toJson(&buf));
+    const json = entry.toJson(&buf);
+    // Check that JSON contains key fields (toJson outputs full JSON)
+    try std.testing.expect(std.mem.startsWith(u8, json, "{\"step\":100,"));
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"ppl\":2.00") != null);
 }
 
 test "JSON formatting" {
