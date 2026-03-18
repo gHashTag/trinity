@@ -328,18 +328,18 @@ struct DNDListRow<Content: View>: View {
                 onDrag()
             }
         }
-        .onDrop(of: [UTType.text], delegate: DropDelegate(onDrop: onDrop))
+        .onDrop(of: [UTType.text], delegate: ListDropDelegate(onDrop: onDrop))
     }
 }
 
-struct DropDelegate: SwiftUI.DropDelegate {
+struct ListDropDelegate: SwiftUI.DropDelegate {
     let onDrop: () -> Bool
 
-    func performDrop(info: [NSItemProvider], in location: CGPoint) -> Bool {
+    func performDrop(info: DropInfo) -> Bool {
         onDrop()
     }
 
-    func validateDrop(info: [NSItemProvider], in location: CGPoint) -> Bool {
+    func validateDrop(info: DropInfo) -> Bool {
         return true
     }
 }

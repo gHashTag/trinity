@@ -137,7 +137,7 @@ pub fn parse(content: []const u8) CellManifest {
     while (lines.next()) |line| {
         offset += line.len + 1;
         if (offset > content.len) offset = content.len;
-        const trimmed = std.mem.trim(u8, line, " \t\r");
+        const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
         if (trimmed.len == 0) continue;
 
         // Section headers
@@ -173,8 +173,8 @@ pub fn parse(content: []const u8) CellManifest {
         // Parse key = value
         const eq_pos = std.mem.indexOf(u8, trimmed, "=") orelse continue;
         if (eq_pos == 0) continue;
-        const key = std.mem.trim(u8, trimmed[0..eq_pos], " \t");
-        const value = std.mem.trim(u8, trimmed[eq_pos + 1 ..], " \t\"");
+        const key = std.mem.trim(u8, trimmed[0..eq_pos], &[_]u8{' ', '\t'});
+        const value = std.mem.trim(u8, trimmed[eq_pos + 1 ..], &[_]u8{' ', '\t', '"'});
 
         switch (current_section) {
             .cell => {
@@ -444,13 +444,13 @@ pub const ArrayIterator = struct {
     inner: std.mem.SplitIterator(u8, .sequence),
 
     pub fn init(raw: []const u8) ArrayIterator {
-        const stripped = std.mem.trim(u8, raw, "[]\" ");
+        const stripped = std.mem.trim(u8, raw, &[_]u8{'[', ']', '"', ' '});
         return .{ .inner = std.mem.splitSequence(u8, stripped, "\", \"") };
     }
 
     pub fn next(self: *ArrayIterator) ?[]const u8 {
         while (self.inner.next()) |item| {
-            const trimmed = std.mem.trim(u8, item, "\" ");
+            const trimmed = std.mem.trim(u8, item, &[_]u8{'"', ' '});
             if (trimmed.len > 0) return trimmed;
         }
         return null;
@@ -467,13 +467,13 @@ pub const DepIterator = struct {
 
     pub fn next(self: *DepIterator) ?struct { id: []const u8, constraint: []const u8 } {
         while (self.lines.next()) |line| {
-            const trimmed = std.mem.trim(u8, line, " \t\r");
+            const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
             if (trimmed.len == 0) continue;
             if (trimmed[0] == '[') break;
             const eq_pos = std.mem.indexOf(u8, trimmed, "=") orelse continue;
             if (eq_pos == 0) continue;
-            const key = std.mem.trim(u8, trimmed[0..eq_pos], " \t\"");
-            const value = std.mem.trim(u8, trimmed[eq_pos + 1 ..], " \t\"");
+            const key = std.mem.trim(u8, trimmed[0..eq_pos], &[_]u8{' ', '\t', '"'});
+            const value = std.mem.trim(u8, trimmed[eq_pos + 1 ..], &[_]u8{' ', '\t', '"'});
             if (key.len > 0 and value.len > 0) {
                 return .{ .id = key, .constraint = value };
             }

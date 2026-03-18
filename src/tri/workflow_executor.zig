@@ -567,7 +567,7 @@ pub const ConditionEvaluator = struct {
     }
 
     fn evaluateExpression(self: *ConditionEvaluator, expr: []const u8) !bool {
-        const trimmed = std.mem.trim(u8, expr, " \t\n\r");
+        const trimmed = std.mem.trim(u8, expr, &[_]u8{' ', '\t', '\n', '\r'});
 
         // Handle basic boolean expressions
         if (std.mem.eql(u8, trimmed, "true")) return true;
@@ -591,8 +591,8 @@ pub const ConditionEvaluator = struct {
 
         // Handle != operator (check before == to avoid matching != as ==)
         if (std.mem.indexOf(u8, trimmed, "!=")) |pos| {
-            const lhs = std.mem.trim(u8, trimmed[0..pos], " \t");
-            const rhs = std.mem.trim(u8, trimmed[pos + 2 ..], " \t");
+            const lhs = std.mem.trim(u8, trimmed[0..pos], &[_]u8{' ', '\t'});
+            const rhs = std.mem.trim(u8, trimmed[pos + 2 ..], &[_]u8{' ', '\t'});
             const rhs_clean = stripQuotes(rhs);
             const lhs_clean = stripQuotes(lhs);
             return !std.mem.eql(u8, lhs_clean, rhs_clean);
@@ -600,8 +600,8 @@ pub const ConditionEvaluator = struct {
 
         // Handle == operator
         if (std.mem.indexOf(u8, trimmed, "==")) |pos| {
-            const lhs = std.mem.trim(u8, trimmed[0..pos], " \t");
-            const rhs = std.mem.trim(u8, trimmed[pos + 2 ..], " \t");
+            const lhs = std.mem.trim(u8, trimmed[0..pos], &[_]u8{' ', '\t'});
+            const rhs = std.mem.trim(u8, trimmed[pos + 2 ..], &[_]u8{' ', '\t'});
             const rhs_clean = stripQuotes(rhs);
             const lhs_clean = stripQuotes(lhs);
             return std.mem.eql(u8, lhs_clean, rhs_clean);

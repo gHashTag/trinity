@@ -473,7 +473,7 @@ fn headerContains(request: []const u8, header_name: []const u8, value: []const u
         if (asciiStartsWithIgnoreCase(request[pos..], header_name)) {
             const after = pos + header_name.len;
             const line_end = std.mem.indexOfScalar(u8, request[after..], '\r') orelse (request.len - after);
-            const hval = std.mem.trim(u8, request[after..][0..line_end], " ");
+            const hval = std.mem.trim(u8, request[after..][0..line_end], &[_]u8{' '});
             return asciiContainsIgnoreCase(hval, value);
         }
         // Advance to next line
@@ -490,7 +490,7 @@ fn extractHeader(request: []const u8, header_name: []const u8) ?[]const u8 {
         if (asciiStartsWithIgnoreCase(request[pos..], header_name)) {
             const after = pos + header_name.len;
             const line_end = std.mem.indexOfScalar(u8, request[after..], '\r') orelse (request.len - after);
-            return std.mem.trim(u8, request[after..][0..line_end], " ");
+            return std.mem.trim(u8, request[after..][0..line_end], &[_]u8{' '});
         }
         if (std.mem.indexOfScalar(u8, request[pos..], '\n')) |nl| {
             pos += nl + 1;

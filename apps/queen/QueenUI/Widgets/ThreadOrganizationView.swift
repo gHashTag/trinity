@@ -66,8 +66,7 @@ struct ThreadTagsManager: View {
             .padding(.horizontal, 10)
             .padding(.vertical, 6)
             .background(
-                Capsule()
-                    .fill(isSelected ? TrinityTheme.accent.opacity(0.15) : TrinityTheme.bgCard)
+                RoundedRectangle(cornerRadius: 12).fill(isSelected ? TrinityTheme.accent.opacity(0.15) : TrinityTheme.bgCard)
             )
         }
         .buttonStyle(.plain)

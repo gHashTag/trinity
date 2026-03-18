@@ -110,7 +110,7 @@ pub const Config = struct {
 
         while (lines.next()) |line| {
             // Skip comments and empty lines
-            const trimmed = std.mem.trim(u8, line, " \t\r");
+            const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
             if (trimmed.len == 0 or trimmed[0] == '#') continue;
 
             // Parse key=value
@@ -118,8 +118,8 @@ pub const Config = struct {
             const key = trimmed[0..eq_idx];
             const val = trimmed[eq_idx + 1 ..];
 
-            const key_trimmed = std.mem.trim(u8, key, " \t");
-            const val_trimmed = std.mem.trim(u8, val, " \t\"'");
+            const key_trimmed = std.mem.trim(u8, key, &[_]u8{' ', '\t'});
+            const val_trimmed = std.mem.trim(u8, val, &[_]u8{' ', '\t', '"', '\''});
 
             // Apply settings
             applySetting(self, key_trimmed, val_trimmed) catch |err| {

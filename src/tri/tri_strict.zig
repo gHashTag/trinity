@@ -417,7 +417,7 @@ fn fixSingleFile(allocator: std.mem.Allocator, full_path: []const u8, filename: 
     var fn_count: usize = 0;
     var lines_iter = std.mem.splitScalar(u8, source, '\n');
     while (lines_iter.next()) |line| {
-        const trimmed = std.mem.trim(u8, line, " \t\r");
+        const trimmed = std.mem.trim(u8, line, &[_]u8{' ', '\t', '\r'});
         if (std.mem.startsWith(u8, trimmed, "pub const ") and std.mem.indexOf(u8, trimmed, ": f64 =") != null) {
             const_count += 1;
         }

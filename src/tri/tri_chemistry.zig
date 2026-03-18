@@ -322,11 +322,11 @@ fn cmdBalance(allocator: std.mem.Allocator, args: []const []const u8) !void {
     var reactant_str: []const u8 = "";
     var product_str: []const u8 = "";
     if (std.mem.indexOf(u8, equation, "->")) |idx| {
-        reactant_str = std.mem.trim(u8, equation[0..idx], " ");
-        product_str = std.mem.trim(u8, equation[idx + 2 ..], " ");
+        reactant_str = std.mem.trim(u8, equation[0..idx], &[_]u8{' '});
+        product_str = std.mem.trim(u8, equation[idx + 2 ..], &[_]u8{' '});
     } else if (std.mem.indexOfScalar(u8, equation, '=')) |idx| {
-        reactant_str = std.mem.trim(u8, equation[0..idx], " ");
-        product_str = std.mem.trim(u8, equation[idx + 1 ..], " ");
+        reactant_str = std.mem.trim(u8, equation[0..idx], &[_]u8{' '});
+        product_str = std.mem.trim(u8, equation[idx + 1 ..], &[_]u8{' '});
     } else {
         std.debug.print("Error: Use '->' or '=' to separate reactants and products\n", .{});
         return;
@@ -338,12 +338,12 @@ fn cmdBalance(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
     var r_iter = std.mem.splitScalar(u8, reactant_str, '+');
     while (r_iter.next()) |part| {
-        const trimmed = std.mem.trim(u8, part, " ");
+        const trimmed = std.mem.trim(u8, part, &[_]u8{' '});
         if (trimmed.len > 0) try reactant_formulas.append(alloc, trimmed);
     }
     var p_iter = std.mem.splitScalar(u8, product_str, '+');
     while (p_iter.next()) |part| {
-        const trimmed = std.mem.trim(u8, part, " ");
+        const trimmed = std.mem.trim(u8, part, &[_]u8{' '});
         if (trimmed.len > 0) try prod_formulas.append(alloc, trimmed);
     }
 
@@ -1029,11 +1029,11 @@ fn cmdRedox(allocator: std.mem.Allocator, args: []const []const u8) !void {
     var reactant_str: []const u8 = "";
     var product_str: []const u8 = "";
     if (std.mem.indexOf(u8, equation, "->")) |idx| {
-        reactant_str = std.mem.trim(u8, equation[0..idx], " ");
-        product_str = std.mem.trim(u8, equation[idx + 2 ..], " ");
+        reactant_str = std.mem.trim(u8, equation[0..idx], &[_]u8{' '});
+        product_str = std.mem.trim(u8, equation[idx + 2 ..], &[_]u8{' '});
     } else if (std.mem.indexOfScalar(u8, equation, '=')) |idx| {
-        reactant_str = std.mem.trim(u8, equation[0..idx], " ");
-        product_str = std.mem.trim(u8, equation[idx + 1 ..], " ");
+        reactant_str = std.mem.trim(u8, equation[0..idx], &[_]u8{' '});
+        product_str = std.mem.trim(u8, equation[idx + 1 ..], &[_]u8{' '});
     } else {
         std.debug.print("Error: Use '->' or '=' to separate reactants and products\n", .{});
         return;
@@ -1045,12 +1045,12 @@ fn cmdRedox(allocator: std.mem.Allocator, args: []const []const u8) !void {
 
     var r_iter = std.mem.splitScalar(u8, reactant_str, '+');
     while (r_iter.next()) |part| {
-        const trimmed = std.mem.trim(u8, part, " ");
+        const trimmed = std.mem.trim(u8, part, &[_]u8{' '});
         if (trimmed.len > 0) try reactant_formulas.append(alloc, stripCoefficient(trimmed));
     }
     var p_iter = std.mem.splitScalar(u8, product_str, '+');
     while (p_iter.next()) |part| {
-        const trimmed = std.mem.trim(u8, part, " ");
+        const trimmed = std.mem.trim(u8, part, &[_]u8{' '});
         if (trimmed.len > 0) try product_formulas.append(alloc, stripCoefficient(trimmed));
     }
 
