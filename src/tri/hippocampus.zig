@@ -1610,3 +1610,161 @@ test "empty agent returns error on write" {
     const result = write(std.testing.allocator, &record);
     try std.testing.expectError(error.EmptyAgent, result);
 }
+
+test "MemoryKind all values have toString" {
+    try std.testing.expect(MemoryKind.heartbeat.toString().len > 0);
+    try std.testing.expect(MemoryKind.learning.toString().len > 0);
+    try std.testing.expect(MemoryKind.episode.toString().len > 0);
+    try std.testing.expect(MemoryKind.rule.toString().len > 0);
+    try std.testing.expect(MemoryKind.@"error".toString().len > 0);
+    try std.testing.expect(MemoryKind.observation.toString().len > 0);
+}
+
+test "MemoryKind all values fromString roundtrip" {
+    try std.testing.expectEqual(MemoryKind.heartbeat, MemoryKind.fromString("heartbeat").?);
+    try std.testing.expectEqual(MemoryKind.learning, MemoryKind.fromString("learning").?);
+    try std.testing.expectEqual(MemoryKind.episode, MemoryKind.fromString("episode").?);
+    try std.testing.expectEqual(MemoryKind.rule, MemoryKind.fromString("rule").?);
+    try std.testing.expectEqual(MemoryKind.@"error", MemoryKind.fromString("error").?);
+    try std.testing.expectEqual(MemoryKind.observation, MemoryKind.fromString("observation").?);
+}
+
+test "MemoryKind heartbeat TTL is 7 days" {
+    const ttl = MemoryKind.heartbeat.defaultTtl();
+    try std.testing.expectEqual(@as(u64, 7 * 24 * 60 * 60), ttl);
+}
+
+test "MemoryKind episode TTL is 30 days" {
+    const ttl = MemoryKind.episode.defaultTtl();
+    try std.testing.expectEqual(@as(u64, 30 * 24 * 60 * 60), ttl);
+}
+
+test "MemoryKind error TTL is 14 days" {
+    const ttl = MemoryKind.@"error".defaultTtl();
+    try std.testing.expectEqual(@as(u64, 14 * 24 * 60 * 60), ttl);
+}
+
+test "MemoryKind observation TTL is 30 days" {
+    const ttl = MemoryKind.observation.defaultTtl();
+    try std.testing.expectEqual(@as(u64, 30 * 24 * 60 * 60), ttl);
+}
+
+test "MemoryRecord getTag returns empty string for invalid index" {
+    var record = MemoryRecord{};
+    record.tag_count = 0;
+    try std.testing.expectEqual(@as(usize, 0), record.getTag(0).len);
+    try std.testing.expectEqual(@as(usize, 0), record.getTag(5).len);
+}
+
+test "MemoryRecord getTag with multiple tags" {
+    var record = MemoryRecord{};
+    copyToFixed(32, &record.tags[0], &record.tag_lens[0], "build");
+    copyToFixed(32, &record.tags[1], &record.tag_lens[1], "test");
+    copyToFixed(32, &record.tags[2], &record.tag_lens[2], "fix");
+    record.tag_count = 3;
+
+    try std.testing.expectEqualStrings("build", record.getTag(0));
+    try std.testing.expectEqualStrings("test", record.getTag(1));
+    try std.testing.expectEqualStrings("fix", record.getTag(2));
+    try std.testing.expectEqual(@as(usize, 0), record.getTag(3).len); // invalid index returns empty
+}
+
+test "MemoryRecord agent returns empty string when len is 0" {
+    const record = MemoryRecord{};
+    try std.testing.expectEqual(@as(usize, 0), record.agent().len);
+}
+
+test "MemoryRecord summary returns empty string when len is 0" {
+    const record = MemoryRecord{};
+    try std.testing.expectEqual(@as(usize, 0), record.summary().len);
+}
+
+test "MemoryRecord data returns empty string when len is 0" {
+    const record = MemoryRecord{};
+    try std.testing.expectEqual(@as(usize, 0), record.data().len);
+}
+
+test "generateId with different agents produces different IDs" {
+    var id_buf1: [64]u8 = undefined;
+    var id_len1: u8 = 0;
+    generateId(&id_buf1, &id_len1, 1773750360, "mu");
+
+    var id_buf2: [64]u8 = undefined;
+    var id_len2: u8 = 0;
+    generateId(&id_buf2, &id_len2, 1773750360, "ralph");
+
+    try std.testing.expect(!std.mem.eql(u8, id_buf1[0..id_len1], id_buf2[0..id_len2]));
+}
+
+test "generateId with different timestamps produces different IDs" {
+    var id_buf1: [64]u8 = undefined;
+    var id_len1: u8 = 0;
+    generateId(&id_buf1, &id_len1, 1773750360, "mu");
+
+    var id_buf2: [64]u8 = undefined;
+    var id_len2: u8 = 0;
+    generateId(&id_buf2, &id_len2, 1773750361, "mu");
+
+    try std.testing.expect(!std.mem.eql(u8, id_buf1[0..id_len1], id_buf2[0..id_len2]));
+}
+
+test "extractJsonString with missing key returns null" {
+    const json = "{\"id\":\"mem_123\"}";
+    try std.testing.expectEqual(@as(?[]const u8, null), extractJsonString(json, "\"missing\":\""));
+}
+
+test "extractJsonNumber with missing key returns null" {
+    const json = "{\"ts\":1773750360}";
+    try std.testing.expectEqual(@as(?u64, null), extractJsonNumber(json, "\"missing\":"));
+}
+
+test "serializeRecord includes all required fields" {
+    var record = MemoryRecord{};
+    copyToFixed(32, &record.agent_buf, &record.agent_len, "test_agent");
+    copyToFixed(256, &record.summary_buf, &record.summary_len, "test summary");
+    record.kind = .heartbeat;
+    record.ts = 12345;
+    record.ttl = 100;
+    generateId(&record.id_buf, &record.id_len, record.ts, record.agent());
+
+    var buf: [4096]u8 = undefined;
+    const json = try serializeRecord(&buf, &record);
+
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"id\":") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"agent\":") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"kind\":") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"ts\":") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"ttl\":") != null);
+}
+
+test "copyToFixed with empty input" {
+    var buf: [16]u8 = undefined;
+    var len: u8 = 0;
+    copyToFixed(16, &buf, &len, "");
+    try std.testing.expectEqual(@as(u8, 0), len);
+}
+
+test "copyToFixed fits exactly" {
+    var buf: [16]u8 = undefined;
+    var len: u8 = 0;
+    copyToFixed(16, &buf, &len, "exactly 16 byte!");
+    try std.testing.expectEqual(@as(u8, 16), len);
+    try std.testing.expectEqualStrings("exactly 16 byte!", buf[0..len]);
+}
+
+test "MemoryRecord with all kinds serialize correctly" {
+    const kinds = [_]MemoryKind{ .heartbeat, .learning, .episode, .rule, .@"error", .observation };
+
+    for (kinds) |k| {
+        var record = MemoryRecord{};
+        copyToFixed(32, &record.agent_buf, &record.agent_len, "test");
+        record.kind = k;
+        record.ts = 1000;
+        generateId(&record.id_buf, &record.id_len, record.ts, record.agent());
+
+        var buf: [4096]u8 = undefined;
+        const json = try serializeRecord(&buf, &record);
+
+        try std.testing.expect(std.mem.indexOf(u8, json, k.toString()) != null);
+    }
+}
