@@ -1329,8 +1329,8 @@ struct ChatScreen: View {
         if !client.isStreaming,
            let last = thread?.messages.last,
            last.role == .assistant,
-           last.hasError {
-            let errKind = last.errorKind!
+           last.hasError,
+           let errKind = last.errorKind {
             VStack(alignment: .leading, spacing: 8) {
                 HStack(spacing: 8) {
                     Image(systemName: errKind.icon)
