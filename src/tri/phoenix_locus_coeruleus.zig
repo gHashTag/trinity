@@ -210,6 +210,89 @@ fn logToHippocampus(state: *const LocusState, kind: AlertKind, message: []const 
 }
 
 // ═════════════════════════════════════════════════════════════════
+// FILE PERSISTENCE — Save/load LC state for cross-cycle continuity
+// ═════════════════════════════════════════════════════════════════
+
+const LOCUS_STATE_PATH = ".trinity/queen/locus_state.json";
+
+/// Save LC state to file
+pub fn saveState(state: LocusState) void {
+    var file = std.fs.cwd().openFile(LOCUS_STATE_PATH, .{ .mode = .write_only }) catch {
+        // Create parent dirs if missing
+        std.fs.cwd().makePath(".trinity/queen") catch return;
+        return std.fs.cwd().createFile(LOCUS_STATE_PATH, .{}) catch |err| {
+            _ = err;
+            return;
+        };
+    };
+    defer file.close();
+
+    // Truncate existing file
+    file.setEndPos(0) catch {};
+
+    var buf: [512]u8 = undefined;
+    const msg = std.fmt.bufPrint(&buf,
+        \\{{"arousal":{d},"alert_count":{d},"last_alert_ts":{d}}}
+    , .{
+        @intFromEnum(state.arousal),
+        state.alert_count,
+        state.last_alert.timestamp,
+    }) catch return;
+
+    file.writeAll(msg) catch {};
+}
+
+/// Load LC state from file (returns default if missing)
+pub fn loadState() LocusState {
+    const file = std.fs.cwd().openFile(LOCUS_STATE_PATH, .{}) catch return LocusState{};
+    defer file.close();
+
+    var buf: [512]u8 = undefined;
+    const n = file.readAll(&buf) catch return LocusState{};
+    if (n == 0) return LocusState{};
+
+    const data = buf[0..n];
+    var state = LocusState{};
+
+    // Parse JSON manually (avoid full JSON parser for simplicity)
+    if (std.mem.indexOf(u8, data, "\"arousal\":")) |idx| {
+        var start = idx + "\"arousal\":".len;
+        if (start < data.len and data[start] == ' ') start += 1;
+        var end = start;
+        while (end < data.len and data[end] >= '0' and data[end] <= '5') : (end += 1) {}
+        if (end > start) {
+            const level_str = data[start..end];
+            const level = std.fmt.parseInt(u8, level_str, 10) catch 0;
+            if (level <= 5) {
+                state.arousal = @as(ArousalLevel, @enumFromInt(@as(u2, @intCast(level))));
+            }
+        }
+    }
+
+    if (std.mem.indexOf(u8, data, "\"alert_count\":")) |idx| {
+        var start = idx + "\"alert_count\":".len;
+        if (start < data.len and data[start] == ' ') start += 1;
+        var end = start;
+        while (end < data.len and data[end] >= '0' and data[end] <= '9') : (end += 1) {}
+        if (end > start) {
+            state.alert_count = std.fmt.parseInt(u32, data[start..end], 10) catch 0;
+        }
+    }
+
+    if (std.mem.indexOf(u8, data, "\"last_alert_ts\":")) |idx| {
+        var start = idx + "\"last_alert_ts\":".len;
+        if (start < data.len and data[start] == ' ') start += 1;
+        var end = start;
+        while (end < data.len and (data[end] >= '0' and data[end] <= '9' or data[end] == '-')) : (end += 1) {}
+        if (end > start) {
+            state.last_alert.timestamp = std.fmt.parseInt(i64, data[start..end], 10) catch 0;
+        }
+    }
+
+    return state;
+}
+
+// ═════════════════════════════════════════════════════════════════
 // CELL HEALTH — for tri cell status
 // ═════════════════════════════════════════════════════════════════
 
