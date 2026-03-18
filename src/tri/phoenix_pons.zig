@@ -325,3 +325,175 @@ test "pons — CellHealth defaults" {
     try std.testing.expectEqual(@as(u32, 0), h.cycle);
     try std.testing.expectEqual(@as(i64, 0), h.last_check);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// FARM SWEEP RESULTS TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pons — FarmSweepResults default values" {
+    const results = FarmSweepResults{};
+    try std.testing.expectEqual(@as(usize, 0), results.stale_count);
+    try std.testing.expectEqual(@as(usize, 0), results.crashed_workers.len);
+}
+
+test "pons — FarmSweepResults problemCount with only stale" {
+    const results = FarmSweepResults{ .stale_count = 10 };
+    try std.testing.expectEqual(@as(u32, 10), results.problemCount());
+}
+
+test "pons — FarmSweepResults problemCount with only crashed" {
+    const results = FarmSweepResults{
+        .crashed_workers = &[_][]const u8{ "w1", "w2", "w3", "w4", "w5" },
+    };
+    try std.testing.expectEqual(@as(u32, 5), results.problemCount());
+}
+
+test "pons — FarmSweepResults problemCount wrapping" {
+    const results = FarmSweepResults{
+        .stale_count = 100,
+        .crashed_workers = &[_][]const u8{"w1"},
+    };
+    try std.testing.expectEqual(@as(u32, 101), results.problemCount());
+}
+
+test "pons — FarmSweepResults with mixed problems" {
+    const results = FarmSweepResults{
+        .stale_count = 7,
+        .crashed_workers = &[_][]const u8{ "w1", "w2", "w3" },
+    };
+    try std.testing.expectEqual(@as(u32, 10), results.problemCount());
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ERROR TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pons — Error default values" {
+    const err = Error{ .code = "TEST" };
+    try std.testing.expectEqual(@as(usize, 0), err.message_len);
+    try std.testing.expectEqual(@as(usize, 0), err.messageStr().len);
+}
+
+test "pons — Error messageStr with empty message" {
+    var err = Error{ .code = "TEST" };
+    try std.testing.expectEqual(@as(usize, 0), err.messageStr().len);
+    try std.testing.expectEqualStrings("", err.messageStr());
+}
+
+test "pons — Error setMessage with empty string" {
+    var err = Error{ .code = "TEST" };
+    err.setMessage("");
+    try std.testing.expectEqual(@as(usize, 0), err.message_len);
+}
+
+test "pons — Error setMessage multiple calls" {
+    var err = Error{ .code = "TEST" };
+    err.setMessage("First message");
+    try std.testing.expectEqual(@as(usize, 13), err.message_len);
+
+    err.setMessage("Second");
+    try std.testing.expectEqual(@as(usize, 6), err.message_len);
+    try std.testing.expectEqualStrings("Second", err.messageStr());
+}
+
+test "pons — Error code field" {
+    const err = Error{ .code = "E001" };
+    try std.testing.expectEqualStrings("E001", err.code);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// REM DREAMING TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pons — remDreaming with unknown error code" {
+    var errors = [_]Error{.{ .code = "UNKNOWN" }};
+    errors[0].setMessage("Unknown error type");
+
+    _ = try remDreaming(std.testing.allocator, &errors);
+    // Should not panic - uses generic suggestion
+}
+
+test "pons — remDreaming with multiple error types" {
+    var errors = [_]Error{
+        .{ .code = "BUILD_FAIL" },
+        .{ .code = "TEST_FAIL" },
+        .{ .code = "DEADLOCK" },
+        .{ .code = "UNKNOWN" },
+    };
+    errors[0].setMessage("Build error");
+    errors[1].setMessage("Test error");
+    errors[2].setMessage("Lock error");
+    errors[3].setMessage("Mystery error");
+
+    _ = try remDreaming(std.testing.allocator, &errors);
+    // Should not panic - processes all errors
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// BRIDGE TO CEREBELLUM TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pons — bridgeToCerebellum status A (no problems)" {
+    const results = FarmSweepResults{};
+    _ = try bridgeToCerebellum(std.testing.allocator, results);
+    // Should log status A
+}
+
+test "pons — bridgeToCerebellum status B (1-4 problems)" {
+    const results = FarmSweepResults{
+        .stale_count = 3,
+        .crashed_workers = &[_][]const u8{"w1"},
+    };
+    _ = try bridgeToCerebellum(std.testing.allocator, results);
+    // Should log status B
+}
+
+test "pons — bridgeToCerebellum status C (5-9 problems)" {
+    const results = FarmSweepResults{
+        .stale_count = 7,
+        .crashed_workers = &[_][]const u8{ "w1", "w2" },
+    };
+    _ = try bridgeToCerebellum(std.testing.allocator, results);
+    // Should log status C
+}
+
+test "pons — bridgeToCerebellum status F (10+ problems)" {
+    var crashed = [_][]const u8{ "w1", "w2", "w3", "w4", "w5", "w6", "w7", "w8", "w9", "w10" };
+    const results = FarmSweepResults{
+        .stale_count = 5,
+        .crashed_workers = &crashed,
+    };
+    _ = try bridgeToCerebellum(std.testing.allocator, results);
+    // Should log status F
+}
+
+test "pons — bridgeToCerebellum with only stale" {
+    const results = FarmSweepResults{ .stale_count = 15 };
+    _ = try bridgeToCerebellum(std.testing.allocator, results);
+    // Should log status F
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CELL HEALTH TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pons — CellHealth custom values" {
+    var h = CellHealth{};
+    h.status = .weak;
+    h.cycle = 5;
+    h.last_check = 12345;
+
+    try std.testing.expectEqual(CellHealth.Status.weak, h.status);
+    try std.testing.expectEqual(@as(u32, 5), h.cycle);
+    try std.testing.expectEqual(@as(i64, 12345), h.last_check);
+}
+
+test "pons — CellHealth all statuses" {
+    const healthy = CellHealth{ .status = .healthy };
+    const weak = CellHealth{ .status = .weak };
+    const broken = CellHealth{ .status = .broken };
+
+    try std.testing.expectEqual(CellHealth.Status.healthy, healthy.status);
+    try std.testing.expectEqual(CellHealth.Status.weak, weak.status);
+    try std.testing.expectEqual(CellHealth.Status.broken, broken.status);
+}
