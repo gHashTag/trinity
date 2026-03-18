@@ -1428,16 +1428,23 @@ fn collectMetricsForAccount(
     defer allocator.free(batch_resp);
     result.api_calls += 1;
 
-    const batch_parsed = std.json.parseFromSlice(std.json.Value, allocator, batch_resp, .{}) catch return;
+    const batch_parsed = std.json.parseFromSlice(std.json.Value, allocator, batch_resp, .{}) catch {
+        result.status = .timeout;
+        return;
+    };
     defer batch_parsed.deinit();
 
-    const edges = getEdgesFromProject(batch_parsed.value) orelse return;
+    const edges = getEdgesFromProject(batch_parsed.value) orelse {
+        result.status = .timeout;
+        return;
+    };
 
     result.status = .ok;
 
     // O1: Phase 1 — Collect all (deployment_id, svc_idx, log_limit) tuples
     var batch_entries: [MAX_UPDATES_PER_ACCOUNT]BatchLogEntry = undefined;
     var batch_count: u32 = 0;
+    var pending_skip_count: u32 = 0; // Track skips without progress update
 
     for (edges) |edge| {
         const node = getJsonObject(edge, "node") orelse continue;
@@ -1465,6 +1472,7 @@ fn collectMetricsForAccount(
 
         // Skip stalled services that haven't changed in 2+ polls, re-poll every 3rd cycle
         if (matched_svc.status == .stalled and matched_svc.stall_count >= 2 and matched_svc.stall_count % 3 != 0) {
+            pending_skip_count += 1;
             continue;
         }
 
@@ -1488,6 +1496,7 @@ fn collectMetricsForAccount(
 
         const did = dep_id orelse {
             result.skipped += 1;
+            pending_skip_count += 1;
             continue;
         };
 
@@ -1502,7 +1511,13 @@ fn collectMetricsForAccount(
         }
     }
 
-    if (batch_count == 0) return;
+    if (batch_count == 0) {
+        // Update progress for services skipped in phase 1
+        if (pending_skip_count > 0) {
+            _ = progress.fetchAdd(pending_skip_count, .monotonic);
+        }
+        return;
+    }
 
     // O1: Phase 2 — Send batched aliased queries (chunks of BATCH_LOG_CHUNK)
     var chunk_start: u32 = 0;
@@ -1623,6 +1638,10 @@ fn collectMetricsForAccount(
 
         chunk_start = chunk_end;
     }
+    // Update progress for services skipped in phase 1 (stalled, no dep_id)
+    if (pending_skip_count > 0) {
+        _ = progress.fetchAdd(pending_skip_count, .monotonic);
+    }
 }
 
 /// Parallel metric collection — 1 thread per Railway account, ~8× speedup.
@@ -1690,6 +1709,8 @@ pub fn collectMetricsParallel(allocator: Allocator, state: *EvolutionState, api_
     {
         var joined: [MAX_FARM_ACCOUNTS]bool = undefined;
         for (0..MAX_FARM_ACCOUNTS) |i| joined[i] = false;
+        const start_ns = std.time.nanoTimestamp();
+        const TIMEOUT_NS = 120 * std.time.ns_per_s; // 2 minute hard timeout
         while (true) {
             std.Thread.sleep(500 * std.time.ns_per_ms);
             const done = progress.load(.monotonic);
@@ -1709,6 +1730,12 @@ pub fn collectMetricsParallel(allocator: Allocator, state: *EvolutionState, api_
             }
             if (accounts_reported >= account_count) break;
             if (done >= expected) break;
+            // Timeout safeguard: if stuck for >2 minutes, force join
+            const elapsed = std.time.nanoTimestamp() - start_ns;
+            if (elapsed > TIMEOUT_NS) {
+                print("\n  {s}⏱️ Timeout after 120s, forcing join...{s}\n", .{ YELLOW, RESET });
+                break;
+            }
         }
     }
 
