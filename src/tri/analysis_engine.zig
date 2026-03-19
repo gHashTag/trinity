@@ -24,13 +24,13 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
 
     // 1. Build broken — everything blocked
     if (!snapshot.build_ok) {
-        w.print("Сборка сломана — всё стоит. ", .{}) catch |err| {
+        w.print("Build broken — everything blocked. ", .{}) catch |err| {
             std.log.debug("analysis_engine: write build broken failed: {}", .{err});
         };
-        w.print("Факультет {d}/6 ({d}%). ", .{ active, faculty_pct }) catch |err| {
+        w.print("Faculty {d}/6 ({d}%). ", .{ active, faculty_pct }) catch |err| {
             std.log.debug("analysis_engine: write faculty count failed: {}", .{err});
         };
-        w.print("Пока build не починен, ни один движок не работает.", .{}) catch |err| {
+        w.print("While build not fixed, no engine works. ", .{}) catch |err| {
             std.log.debug("analysis_engine: write build block message failed: {}", .{err});
         };
         return stream.getWritten();
@@ -38,10 +38,10 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
 
     // 2. Compile rate low
     if (snapshot.compile_rate < 80) {
-        w.print("Генератор сбоит — {d}% проходят. ", .{snapshot.compile_rate}) catch |err| {
+        w.print("Generator failing — {d}% pass. ", .{snapshot.compile_rate}) catch |err| {
             std.log.debug("analysis_engine: write compile rate failed: {}", .{err});
         };
-        w.print("Пайплайн заблокирован до починки кодогена.", .{}) catch |err| {
+        w.print("Pipeline blocked until codegen fixed.", .{}) catch |err| {
             std.log.debug("analysis_engine: write pipeline blocked failed: {}", .{err});
         };
         if (active < 6) {
@@ -78,14 +78,14 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
     for (snapshot.agents) |a| {
         if (a.status == .down) {
             const consequence: []const u8 = switch (a.agent) {
-                .ralph => "задачи не двигаются",
-                .oracle => "нет надзора",
-                .linter => "сбои не видны",
-                .mu => "ошибки не ловятся",
-                .scholar => "нет исследований",
-                .swarm => "нет распределения",
+                .ralph => "tasks not moving",
+                .oracle => "no supervision",
+                .linter => "errors not visible",
+                .mu => "errors not caught",
+                .scholar => "no research",
+                .swarm => "no distribution",
             };
-            w.print("{s} лежит — {s}. ", .{ a.agent.name(), consequence }) catch |err| {
+            w.print("{s} lies down — {s}. ", .{ a.agent.name(), consequence }) catch |err| {
                 std.log.debug("analysis_engine: write agent down status failed: {}", .{err});
             };
             has_bottleneck = true;
@@ -95,7 +95,7 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
 
     // 5. Entropy warning
     if (snapshot.dirty_files > 15) {
-        w.print("Энтропия растёт — {d} грязных файлов. ", .{snapshot.dirty_files}) catch |err| {
+        w.print("Entropy rising — {d} dirty files. ", .{snapshot.dirty_files}) catch |err| {
             std.log.debug("analysis_engine: write entropy warning failed: {}", .{err});
         };
         has_bottleneck = true;
@@ -109,15 +109,15 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
             if (delta.compile_frozen and fail > 0) {
                 // Compile rate hasn't changed for over an hour
                 const hours: i64 = @divTrunc(delta.seconds_ago, 3600);
-                w.print("Compile замёрзла на {d}%", .{snapshot.compile_rate}) catch |err| {
+                w.print("Compile frozen at {d}%", .{snapshot.compile_rate}) catch |err| {
                     std.log.debug("analysis_engine: write compile frozen failed: {}", .{err});
                 };
                 if (hours > 0) {
-                    w.print(" ({d}ч)", .{hours}) catch |err| {
+                    w.print(" ({d}h)", .{hours}) catch |err| {
                         std.log.debug("analysis_engine: write frozen hours failed: {}", .{err});
                     };
                 }
-                w.print(" — {d} спеков не чинятся.", .{fail}) catch |err| {
+                w.print(" — {d} specs not fixing.", .{fail}) catch |err| {
                     std.log.debug("analysis_engine: write failed specs count failed: {}", .{err});
                 };
             } else if (delta.compile_rate_delta > 0) {
@@ -127,19 +127,19 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
                     std.log.debug("analysis_engine: write compile improved failed: {}", .{err});
                 };
             } else if (delta.compile_rate_delta < 0) {
-                w.print("Compile {d}→{d}% ({d}pp). Регрессия!", .{
+                w.print("Compile {d}→{d}% ({d}pp). Regression!", .{
                     delta.prev_compile_rate, snapshot.compile_rate, delta.compile_rate_delta,
                 }) catch |err| {
                     std.log.debug("analysis_engine: write compile regression failed: {}", .{err});
                 };
             } else if (delta.dirty_delta < -3) {
-                w.print("Dirty {d}→{d}. Порядок наводится.", .{
+                w.print("Dirty {d}→{d}. Order restored.", .{
                     delta.prev_dirty, snapshot.dirty_files,
                 }) catch |err| {
                     std.log.debug("analysis_engine: write dirty reduced failed: {}", .{err});
                 };
             } else if (delta.dirty_delta > 5) {
-                w.print("Dirty {d}→{d}. Энтропия нарастает.", .{
+                w.print("Dirty {d}→{d}. Entropy rising.", .{
                     delta.prev_dirty, snapshot.dirty_files,
                 }) catch |err| {
                     std.log.debug("analysis_engine: write dirty increased failed: {}", .{err});
@@ -149,7 +149,7 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
                     std.log.debug("analysis_engine: write all working failed: {}", .{err});
                 };
             } else {
-                w.print("Без изменений. Стабильно.", .{}) catch |err| {
+                w.print("No changes. Stable.", .{}) catch |err| {
                     std.log.debug("analysis_engine: write stable failed: {}", .{err});
                 };
             }
@@ -160,11 +160,11 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
                     std.log.debug("analysis_engine: write all working fallback failed: {}", .{err});
                 };
             } else if (active < 4) {
-                w.print("Большинство агентов не активны — возможности ограничены.", .{}) catch |err| {
+                w.print("Most agents not active — capabilities limited.", .{}) catch |err| {
                     std.log.debug("analysis_engine: write agents inactive failed: {}", .{err});
                 };
             } else {
-                w.print("Система стабильна, но есть резерв роста.", .{}) catch |err| {
+                w.print("System stable but growth reserve exists.", .{}) catch |err| {
                     std.log.debug("analysis_engine: write stable with potential failed: {}", .{err});
                 };
             }
@@ -260,7 +260,7 @@ test "analysis — build broken" {
     var buf: [512]u8 = undefined;
     const snap = makeSnapshot(false, 85, 3, 5);
     const text = generateAnalysis(snap, no_delta, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, text, "сломана") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "broken") != null);
 }
 
 test "analysis — low compile rate" {
@@ -268,7 +268,7 @@ test "analysis — low compile rate" {
     const snap = makeSnapshot(true, 60, 3, 5);
     const text = generateAnalysis(snap, no_delta, &buf);
     try std.testing.expect(std.mem.indexOf(u8, text, "60%") != null);
-    try std.testing.expect(std.mem.indexOf(u8, text, "заблокирован") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "blocked") != null);
 }
 
 test "analysis — healthy system" {
@@ -276,14 +276,14 @@ test "analysis — healthy system" {
     const snap = makeSnapshot(true, 98, 6, 3);
     const text = generateAnalysis(snap, no_delta, &buf);
     try std.testing.expect(std.mem.indexOf(u8, text, "6/6") != null);
-    try std.testing.expect(std.mem.indexOf(u8, text, "штатно") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "normally") != null);
 }
 
 test "analysis — high entropy" {
     var buf: [512]u8 = undefined;
     const snap = makeSnapshot(true, 90, 4, 20);
     const text = generateAnalysis(snap, no_delta, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, text, "Энтропия") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "Entropy") != null);
     try std.testing.expect(std.mem.indexOf(u8, text, "20") != null);
 }
 
@@ -293,7 +293,7 @@ test "analysis — agent down" {
     snap.agents[0].status = .down; // ralph down
     const text = generateAnalysis(snap, no_delta, &buf);
     try std.testing.expect(std.mem.indexOf(u8, text, "Ralph") != null);
-    try std.testing.expect(std.mem.indexOf(u8, text, "лежит") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "lies down") != null);
 }
 
 test "analysis — delta compile frozen" {
@@ -309,9 +309,9 @@ test "analysis — delta compile frozen" {
         .prev_dirty = 5,
     };
     const text = generateAnalysis(snap, delta, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, text, "замёрзла") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "frozen") != null);
     try std.testing.expect(std.mem.indexOf(u8, text, "90%") != null);
-    try std.testing.expect(std.mem.indexOf(u8, text, "2ч") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "2h") != null);
 }
 
 test "analysis — delta compile improved" {
@@ -345,7 +345,7 @@ test "analysis — Agent TRI healing credits" {
         .prev_dirty = 5,
     };
     const text = generateAnalysis(snap, delta, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, text, "паттерны работают") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "patterns work") != null);
 }
 
 test "analysis — MU up Scholar missing frozen" {
@@ -362,7 +362,7 @@ test "analysis — MU up Scholar missing frozen" {
         .prev_dirty = 5,
     };
     const text = generateAnalysis(snap, delta, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, text, "Scholar не нанят") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "Scholar not hired") != null);
 }
 
 test "analysis — delta faculty changed" {
@@ -395,7 +395,7 @@ test "analysis — delta dirty reduced" {
     const text = generateAnalysis(snap, delta, &buf);
     try std.testing.expect(std.mem.indexOf(u8, text, "15") != null);
     try std.testing.expect(std.mem.indexOf(u8, text, "5") != null);
-    try std.testing.expect(std.mem.indexOf(u8, text, "Порядок") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "Order") != null);
 }
 
 test "analysis — delta no change stable" {
@@ -409,5 +409,5 @@ test "analysis — delta no change stable" {
         .prev_dirty = 5,
     };
     const text = generateAnalysis(snap, delta, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, text, "Без изменений") != null);
+    try std.testing.expect(std.mem.indexOf(u8, text, "No changes") != null);
 }

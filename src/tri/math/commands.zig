@@ -26,8 +26,7 @@ const prediction_mod = @import("prediction.zig");
 // sacred module exports proof commands from proof_builder.zig
 const sacred = @import("sacred");
 // Angular Gyrus: Format introspection for sensation system
-// TODO: Add hslm as module in build.zig before enabling this import
-// const angular_gyrus = @import("../../hslm/angular_gyrus.zig");
+const angular_gyrus = @import("src/hslm/angular_gyrus.zig");
 
 // BSD Elliptic Curve Scanner
 const bsd = @import("bsd");

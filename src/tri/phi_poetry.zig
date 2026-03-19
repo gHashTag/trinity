@@ -20,17 +20,17 @@ pub fn generatePhiLine(snapshot: FacultySnapshot, buf: []u8) []const u8 {
 
     // Special patterns first
     if (active == 3) {
-        return std.fmt.bufPrint(buf, "3 спят, 3 бодрствуют. \xCF\x86\xC2\xB2+1/\xCF\x86\xC2\xB2=3 — баланс НАРУШЕН.", .{}) catch
-            "3/6. Trinity в равновесии разлада.";
+        return std.fmt.bufPrint(buf, "3 awake, 3 awake. \xCF\x86\xC2\xB2+1/\xCF\x86\xC2\xB2=3 — balance ACHIEVED.", .{}) catch
+            "3/6. Trinity in balance disrupted.";
     }
 
     if (!snapshot.build_ok) {
-        return std.fmt.bufPrint(buf, "Даже спираль должна коснуться нуля, прежде чем подняться.", .{}) catch
+        return std.fmt.bufPrint(buf, "Even spiral must touch zero before rising.", .{}) catch
             "Build broken. Spiral touches zero.";
     }
 
     if (active == 6 and snapshot.compile_rate >= 95) {
-        return std.fmt.bufPrint(buf, "Полный факультет. Спираль на максимуме. V={d:.2}", .{v}) catch
+        return std.fmt.bufPrint(buf, "Full faculty. Spiral at maximum. V={d:.2}", .{v}) catch
             "Full faculty. Spiral at max.";
     }
 
@@ -38,31 +38,31 @@ pub fn generatePhiLine(snapshot: FacultySnapshot, buf: []u8) []const u8 {
     const phi = Sacred.PHI;
     const diff = @abs(v - phi);
     if (diff < phi * 0.05) {
-        return std.fmt.bufPrint(buf, "V={d:.3}. \xCF\x86 улыбается.", .{v}) catch
+        return std.fmt.bufPrint(buf, "V={d:.3}. \xCF\x86 smiles.", .{v}) catch
             "V near φ. Golden ratio smiles.";
     }
 
     // V near φ² (2.618)
     const diff_sq = @abs(v - Sacred.PHI_SQ);
     if (diff_sq < Sacred.PHI_SQ * 0.05) {
-        return std.fmt.bufPrint(buf, "V={d:.3} \xE2\x89\x88 \xCF\x86\xC2\xB2. Второй уровень гармонии.", .{v}) catch
+        return std.fmt.bufPrint(buf, "V={d:.3} \xE2\x89\x88 \xCF\x86\xC2\xB2. Second harmonic.", .{v}) catch
             "V near φ². Second harmonic.";
     }
 
     // V zones
     if (v > 1.5) {
-        return std.fmt.bufPrint(buf, "V={d:.2}. Золотая зона. \xCF\x86={d:.3}", .{ v, phi }) catch
+        return std.fmt.bufPrint(buf, "V={d:.2}. Gold zone. \xCF\x86={d:.3}", .{ v, phi }) catch
             "Gold zone.";
     }
 
     if (v >= 1.0) {
-        return std.fmt.bufPrint(buf, "V={d:.2}. Стабильно, но до \xCF\x86 ещё {d:.2}.", .{ v, phi - v }) catch
+        return std.fmt.bufPrint(buf, "V={d:.2}. Stable but room to grow to \xCF\x86 {d:.2}.", .{ v, phi - v }) catch
             "Stable but room to grow.";
     }
 
     // Drift zone
     if (active <= 2) {
-        return std.fmt.bufPrint(buf, "V={d:.2}. Два агента не держат спираль. Нужен третий.", .{v}) catch
+        return std.fmt.bufPrint(buf, "V={d:.2}. Two agents can't hold spiral. Need third.", .{v}) catch
             "Two agents can't hold the spiral.";
     }
 
@@ -106,28 +106,28 @@ test "phi poetry — 3/6 balance" {
     const snap = makeSnap(3, 1.0, true, 85);
     const line = generatePhiLine(snap, &buf);
     try std.testing.expect(std.mem.indexOf(u8, line, "3") != null);
-    try std.testing.expect(std.mem.indexOf(u8, line, "НАРУШЕН") != null);
+    try std.testing.expect(std.mem.indexOf(u8, line, "ACHIEVED") != null);
 }
 
 test "phi poetry — build broken" {
     var buf: [256]u8 = undefined;
     const snap = makeSnap(2, 0.5, false, 0);
     const line = generatePhiLine(snap, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, line, "нуля") != null);
+    try std.testing.expect(std.mem.indexOf(u8, line, "zero") != null);
 }
 
 test "phi poetry — full faculty" {
     var buf: [256]u8 = undefined;
     const snap = makeSnap(6, 1.62, true, 98);
     const line = generatePhiLine(snap, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, line, "Полный") != null);
+    try std.testing.expect(std.mem.indexOf(u8, line, "Full") != null);
 }
 
 test "phi poetry — near phi" {
     var buf: [256]u8 = undefined;
     const snap = makeSnap(4, 1.618, true, 90);
     const line = generatePhiLine(snap, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, line, "улыбается") != null);
+    try std.testing.expect(std.mem.indexOf(u8, line, "smiles") != null);
 }
 
 test "FacultySnapshot struct" {
