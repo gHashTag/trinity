@@ -2220,3 +2220,258 @@ test "MemoryRecord isExpired with very large TTL" {
 
     try std.testing.expect(!rec.isExpired(1000000000));
 }
+<<<<<<< HEAD
+
+// ═══════════════════════════════════════════════════════════════════
+// WRITE CONVENIENCE FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+
+test "writeHeartbeat creates record with correct kind" {
+    const allocator = std.testing.allocator;
+    var mem = try init(allocator);
+    defer mem.deinit();
+
+    try mem.writeHeartbeat("test-agent", "system ok", 95.0);
+
+    try std.testing.expectEqual(@as(usize, 1), mem.records.len);
+    try std.testing.expectEqual(MemoryKind.heartbeat, mem.records[0].kind);
+}
+
+test "writeLearning creates permanent record" {
+    const allocator = std.testing.allocator;
+    var mem = try init(allocator);
+    defer mem.deinit();
+
+    try mem.writeLearning("test-agent", "learned pattern X", .{});
+
+    try std.testing.expectEqual(@as(usize, 1), mem.records.len);
+    try std.testing.expectEqual(MemoryKind.learning, mem.records[0].kind);
+    try std.testing.expectEqual(@as(u32, 0), mem.records[0].ttl); // Permanent
+}
+
+test "writeEpisode creates record with episode TTL" {
+    const allocator = std.testing.allocator;
+    var mem = try init(allocator);
+    defer mem.deinit();
+
+    try mem.writeEpisode("test-agent", "episode data", .{});
+
+    try std.testing.expectEqual(@as(usize, 1), mem.records.len);
+    try std.testing.expectEqual(MemoryKind.episode, mem.records[0].kind);
+    try std.testing.expect(mem.records[0].ttl > 0); // Has TTL
+}
+
+test "writeError creates record with error TTL" {
+    const allocator = std.testing.allocator;
+    var mem = try init(allocator);
+    defer mem.deinit();
+
+    try mem.writeError("test-agent", "error message");
+
+    try std.testing.expectEqual(@as(usize, 1), mem.records.len);
+    try std.testing.expectEqual(MemoryKind.error, mem.records[0].kind);
+}
+
+test "writeObservation creates record with observation TTL" {
+    const allocator = std.testing.allocator;
+    var mem = try init(allocator);
+    defer mem.deinit();
+
+    try mem.writeObservation("test-agent", "observed data");
+
+    try std.testing.expectEqual(@as(usize, 1), mem.records.len);
+    try std.testing.expectEqual(MemoryKind.observation, mem.records[0].kind);
+}
+
+test "writeRule creates permanent rule record" {
+    const allocator = std.testing.allocator;
+    var mem = try init(allocator);
+    defer mem.deinit();
+
+    try mem.writeRule("test-agent", "rule description");
+
+    try std.testing.expectEqual(@as(usize, 1), mem.records.len);
+    try std.testing.expectEqual(MemoryKind.rule, mem.records[0].kind);
+    try std.testing.expectEqual(@as(u32, 0), mem.records[0].ttl); // Permanent
+}
+
+test "writeCellHealth creates cellhealth record" {
+    const allocator = std.testing.allocator;
+    var mem = try init(allocator);
+    defer mem.deinit();
+
+    try mem.writeCellHealth("test-agent", .dlpfc, .healthy, 42);
+
+    try std.testing.expectEqual(@as(usize, 1), mem.records.len);
+    try std.testing.expectEqual(MemoryKind.cellhealth, mem.records[0].kind);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MemoryKind enum tests
+// ═══════════════════════════════════════════════════════════════════
+
+test "MemoryKind toString all values" {
+    try std.testing.expectEqualStrings("heartbeat", @tagName(MemoryKind.heartbeat));
+    try std.testing.expectEqualStrings("learning", @tagName(MemoryKind.learning));
+    try std.testing.expectEqualStrings("episode", @tagName(MemoryKind.episode));
+    try std.testing.expectEqualStrings("rule", @tagName(MemoryKind.rule));
+    try std.testing.expectEqualStrings("error", @tagName(MemoryKind.error));
+    try std.testing.expectEqualStrings("observation", @tagName(MemoryKind.observation));
+    try std.testing.expectEqualStrings("cellhealth", @tagName(MemoryKind.cellhealth));
+}
+
+test "MemoryKind fromString valid values" {
+    try std.testing.expectEqual(MemoryKind.heartbeat, MemoryKind.fromString("heartbeat"));
+    try std.testing.expectEqual(MemoryKind.learning, MemoryKind.fromString("learning"));
+    try std.testing.expectEqual(MemoryKind.episode, MemoryKind.fromString("episode"));
+    try std.testing.expectEqual(MemoryKind.rule, MemoryKind.fromString("rule"));
+}
+
+test "MemoryKind fromString invalid returns null" {
+    try std.testing.expectEqual(@as(?MemoryKind, null), MemoryKind.fromString("invalid"));
+    try std.testing.expectEqual(@as(?MemoryKind, null), MemoryKind.fromString(""));
+}
+
+test "MemoryKind defaultTtl values" {
+    try std.testing.expectEqual(@as(u32, 0), MemoryKind.heartbeat.defaultTtl()); // Permanent
+    try std.testing.expectEqual(@as(u32, 0), MemoryKind.learning.defaultTtl()); // Permanent
+    try std.testing.expectEqual(@as(u32, 0), MemoryKind.rule.defaultTtl()); // Permanent
+    try std.testing.expect(MemoryKind.episode.defaultTtl() > 0); // Has TTL
+    try std.testing.expect(MemoryKind.error.defaultTtl() > 0); // Has TTL
+    try std.testing.expect(MemoryKind.observation.defaultTtl() > 0); // Has TTL
+    try std.testing.expect(MemoryKind.cellhealth.defaultTtl() > 0); // Has TTL
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// generateId tests
+// ═══════════════════════════════════════════════════════════════════
+
+test "generateId creates valid ID format" {
+    var id_buf: [64]u8 = undefined;
+    var id_len: u8 = 0;
+
+    generateId(&id_buf, &id_len, 12345, "test");
+
+    try std.testing.expect(id_len > 0);
+    try std.testing.expect(id_len <= id_buf.len);
+}
+
+test "generateId produces unique IDs" {
+    var id_buf1: [64]u8 = undefined;
+    var id_len1: u8 = 0;
+    var id_buf2: [64]u8 = undefined;
+    var id_len2: u8 = 0;
+
+    generateId(&id_buf1, &id_len1, 12345, "test");
+    generateId(&id_buf2, &id_len2, 12346, "test");
+
+    const id1 = id_buf1[0..id_len1];
+    const id2 = id_buf2[0..id_len2];
+
+    try std.testing.expect(!std.mem.eql(u8, id1, id2));
+}
+
+test "generateId with empty agent" {
+    var id_buf: [64]u8 = undefined;
+    var id_len: u8 = 0;
+
+    generateId(&id_buf, &id_len, 12345, "");
+
+    try std.testing.expect(id_len > 0);
+}
+
+test "generateId with long agent name" {
+    var id_buf: [64]u8 = undefined;
+    var id_len: u8 = 0;
+
+    const long_agent = "very-long-agent-name-that-exceeds-normal-length";
+    generateId(&id_buf, &id_len, 12345, long_agent);
+
+    try std.testing.expect(id_len > 0);
+    try std.testing.expect(id_len <= id_buf.len);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// copyToFixed tests
+// ═══════════════════════════════════════════════════════════════════
+
+test "copyToFixed copies short string" {
+    var buf: [32]u8 = undefined;
+    var len: u8 = 0;
+
+    copyToFixed(32, &buf, &len, "hello");
+
+    try std.testing.expectEqual(@as(usize, 5), len);
+    try std.testing.expectEqualSlices(u8, "hello", buf[0..len]);
+}
+
+test "copyToFixed truncates long string" {
+    var buf: [8]u8 = undefined;
+    var len: u8 = 0;
+
+    copyToFixed(8, &buf, &len, "hello world");
+
+    try std.testing.expectEqual(@as(usize, 8), len); // Truncated to buffer size
+    try std.testing.expectEqualSlices(u8, "hello wo", buf[0..len]);
+}
+
+test "copyToFixed with empty string" {
+    var buf: [32]u8 = undefined;
+    var len: u8 = 0;
+
+    copyToFixed(32, &buf, &len, "");
+
+    try std.testing.expectEqual(@as(usize, 0), len);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// containsIgnoreCase tests
+// ═══════════════════════════════════════════════════════════════════
+
+test "containsIgnoreCase finds match" {
+    try std.testing.expect(containsIgnoreCase("Hello World", "hello"));
+    try std.testing.expect(containsIgnoreCase("Hello World", "WORLD"));
+    try std.testing.expect(containsIgnoreCase("Hello World", "o W"));
+}
+
+test "containsIgnoreCase case mismatch" {
+    try std.testing.expect(!containsIgnoreCase("Hello World", "goodbye"));
+    try std.testing.expect(!containsIgnoreCase("Hello", "Hello World"));
+}
+
+test "containsIgnoreCase mixed case ascii" {
+    try std.testing.expect(containsIgnoreCase("HeLLo WoRLd", "hello"));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Struct default values tests
+// ═══════════════════════════════════════════════════════════════════
+
+test "GcResult default values" {
+    const result = GcResult{};
+
+    try std.testing.expectEqual(@as(usize, 0), result.deleted);
+    try std.testing.expectEqual(@as(usize, 0), result.kept);
+}
+
+test "ReadOptions default values" {
+    const opts = ReadOptions{};
+
+    try std.testing.expectEqual(@as(?MemoryKind, null), opts.kind_filter));
+    try std.testing.expectEqual(@as(?[]const u8, null), opts.tag_filter));
+    try std.testing.expectEqual(@as(usize, 0), opts.limit);
+}
+
+test "CellHealthData all fields set correctly" {
+    const data = CellHealthData{
+        .cell = .dlpfc,
+        .status = .healthy,
+        .cycle = 42,
+    };
+
+    try std.testing.expectEqual(CellType.dlpfc, data.cell);
+    try std.testing.expectEqual(HealthStatus.healthy, data.status);
+    try std.testing.expectEqual(@as(u8, 42), data.cycle);
+}
+=======
+>>>>>>> origin/main

@@ -216,6 +216,13 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
     } else if (std.mem.eql(u8, sub, "score")) {
         // v5: Full 12-dimension Ouroboros report via API
         const queen_ouroboros = @import("queen_ouroboros.zig");
+<<<<<<< HEAD
+        const ouro = queen_ouroboros.fetch();
+
+        // Use large buffer for full 12-dimension report
+        var ouro_buf: [4096]u8 = undefined;
+        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, ouro);
+=======
         const ouro = queen_ouroboros.fetch(ctx.allocator, .{}) catch brk: {
             // Fallback to simple score if API unreachable
             const msg = std.fmt.bufPrint(&buf, qt.E_CYCLE ++ " Ouroboros Score: {d:.1}\n\n" ++
@@ -237,10 +244,17 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
         // Use large buffer for full 12-dimension report
         var ouro_buf: [4096]u8 = undefined;
         const msg = queen_ouroboros.fmtTelegram(&ouro_buf, &ouro);
+>>>>>>> origin/main
         tgSend(ctx.tg, msg);
     } else if (std.mem.eql(u8, sub, "dimensions")) {
         // v5: Explicit dimensions-only report
         const queen_ouroboros = @import("queen_ouroboros.zig");
+<<<<<<< HEAD
+        const ouro = queen_ouroboros.fetch();
+
+        var ouro_buf: [3072]u8 = undefined;
+        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, ouro);
+=======
         const ouro = queen_ouroboros.fetch(ctx.allocator, .{}) catch brk: {
             const msg = std.fmt.bufPrint(&buf, qt.E_SIREN ++ " Ouroboros API unreachable");
             tgSend(ctx.tg, msg);
@@ -250,6 +264,7 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
 
         var ouro_buf: [3072]u8 = undefined;
         const msg = queen_ouroboros.fmtTelegram(&ouro_buf, &ouro);
+>>>>>>> origin/main
         tgSend(ctx.tg, msg);
     } else if (std.mem.eql(u8, sub, "farm")) {
         const result = queen_actions.execute(ctx.allocator, .farm_status);
