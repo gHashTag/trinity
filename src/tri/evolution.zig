@@ -179,6 +179,19 @@ const ServiceEntry = struct {
     tok_per_sec: f32 = 0,
     val_ppl: f32 = 999.0, // P1: validation PPL (999 = not yet measured)
     status: ServiceStatus = .unknown,
+
+    // +++ IGLA Bench Metrics +++
+    igla_score: f32 = 0.0,         // IGLA retrieval score [0,1]
+    igla_last_eval_step: u32 = 0,     // Step of last IGLA evaluation
+    igla_format_accuracy: [4]f32 = .{ 0 }, // Accuracy per format: STD/BF16/GF16/TF3
+    igla_retrieve_acc: f32 = 0.0,       // IGLA-RETRIEVE accuracy
+    igla_multi_acc: f32 = 0.0,          // IGLA-MULTI accuracy
+    igla_ternary_acc: f32 = 0.0,        // IGLA-TERNARY accuracy
+    igla_chain_acc: f32 = 0.0,           // IGLA-CHAIN accuracy
+    igla_latency_ms: f32 = 0.0,         // Avg latency (ms)
+    igla_tok_per_sec: f32 = 0.0,         // Throughput (tok/s)
+    // --- IGLA Bench Metrics ---
+
     // Per-service rung tracking
     rungs_passed: [NUM_RUNGS]bool = .{ false, false, false, false },
     // Data shard assignment (T10)
