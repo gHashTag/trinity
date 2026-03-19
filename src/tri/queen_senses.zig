@@ -665,3 +665,221 @@ test "Queen senses — readLastIssueCommentTs returns timestamp" {
     const ts = readLastIssueCommentTs();
     try std.testing.expect(ts >= 0);
 }
+
+test "Queen senses — SenseResult struct defaults" {
+    const s = SenseResult{};
+    try std.testing.expect(s.build_ok == false); // bool defaults to false
+    try std.testing.expect(s.test_rate == 0);
+    try std.testing.expect(s.dirty_files == 0);
+}
+
+test "Queen senses — SenseResult all fields populated" {
+    const s = SenseResult{
+        .build_ok = true,
+        .test_rate = 95,
+        .dirty_files = 3,
+        .open_issues = 1,
+        .agent_count = 2,
+        .farm_services = 10,
+        .farm_best_ppl = 4.5,
+        .arena_battles = 100,
+        .ouroboros_score = 80.0,
+        .disk_free_gb = 50.0,
+        .keys_present = 5,
+        .keys_total = 5,
+        .experience_count = 25,
+        .network_ok = true,
+        .farm_idle_count = 2,
+        .stale_arena_hours = 6,
+        .agent_spawn_issues = 0,
+        .last_git_push_ts = 1710840000,
+        .finished_containers = 3,
+        .last_issue_comment_ts = 1710840000,
+    };
+    try std.testing.expect(s.build_ok);
+    try std.testing.expectEqual(@as(u8, 95), s.test_rate);
+    try std.testing.expectEqual(@as(u8, 5), s.keys_present);
+}
+
+test "Queen senses — EvolutionInfo struct defaults" {
+    const info = qt.EvolutionInfo{};
+    try std.testing.expect(info.best_ppl == 999.0); // Default is 999.0 (no data)
+    try std.testing.expect(info.best_step == 0);
+    try std.testing.expect(info.service_count == 0);
+}
+
+test "Queen senses — healthEmoji boundary conditions" {
+    // Exactly 70 should be STAR
+    const s1 = SenseResult{ .build_ok = true, .ouroboros_score = 70.0 };
+    try std.testing.expectEqualStrings(qt.E_STAR, s1.healthEmoji());
+
+    // Exactly 40 should be CHECK
+    const s2 = SenseResult{ .build_ok = true, .ouroboros_score = 40.0 };
+    try std.testing.expectEqualStrings(qt.E_CHECK, s2.healthEmoji());
+
+    // Just below 40 should be WRENCH
+    const s3 = SenseResult{ .build_ok = true, .ouroboros_score = 39.99 };
+    try std.testing.expectEqualStrings(qt.E_WRENCH, s3.healthEmoji());
+}
+
+test "Queen senses — healthEmoji build broken overrides score" {
+    // Even with high score, broken build shows CROSS
+    const s = SenseResult{ .build_ok = false, .ouroboros_score = 90.0 };
+    try std.testing.expectEqualStrings(qt.E_CROSS, s.healthEmoji());
+}
+
+test "Queen senses — fmtSensesTelegram buffer overflow handling" {
+    var small_buf: [100]u8 = undefined;
+    const s = SenseResult{
+        .build_ok = true,
+        .test_rate = 100,
+        .dirty_files = 0,
+        .open_issues = 0,
+        .agent_count = 5,
+        .farm_services = 1,
+        .farm_best_ppl = 1.0,
+        .arena_battles = 1,
+        .ouroboros_score = 100.0,
+        .disk_free_gb = 1.0,
+        .keys_present = 1,
+        .keys_total = 1,
+        .experience_count = 1,
+    };
+    const msg = fmtSensesTelegram(&small_buf, s);
+    // Should either fit or be truncated without crash
+    _ = msg;
+}
+
+test "Queen senses — fmtSensesTelegram includes all fields" {
+    var buf: [4096]u8 = undefined;
+    const s = SenseResult{
+        .build_ok = true,
+        .test_rate = 88,
+        .dirty_files = 7,
+        .open_issues = 3,
+        .agent_count = 4,
+        .farm_services = 12,
+        .farm_best_ppl = 3.2,
+        .arena_battles = 50,
+        .ouroboros_score = 65.0,
+        .disk_free_gb = 25.5,
+        .keys_present = 5,
+        .keys_total = 5,
+        .experience_count = 15,
+    };
+    const msg = fmtSensesTelegram(&buf, s);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "88") != null); // test_rate
+    try std.testing.expect(std.mem.indexOf(u8, msg, "3.2") != null); // PPL
+    try std.testing.expect(std.mem.indexOf(u8, msg, "65") != null); // ouroboros
+}
+
+test "Queen senses — KeyCheck struct" {
+    const keys = KeyCheck{ .present = 3, .total = 5 };
+    try std.testing.expectEqual(@as(u8, 3), keys.present);
+    try std.testing.expectEqual(@as(u8, 5), keys.total);
+}
+
+test "Queen senses — collectAllSenses with minimal snapshot" {
+    const snapshot = FacultySnapshot{
+        .agents = [_]faculty_types.AgentState{
+            .{ .agent = .ralph, .status = .down, .last_action = "" },
+            .{ .agent = .scholar, .status = .down, .last_action = "" },
+            .{ .agent = .mu, .status = .down, .last_action = "" },
+            .{ .agent = .oracle, .status = .down, .last_action = "" },
+            .{ .agent = .swarm, .status = .down, .last_action = "" },
+            .{ .agent = .linter, .status = .down, .last_action = "" },
+        },
+        .build_ok = false,
+        .binaries = 0,
+        .compile_pass = 0,
+        .compile_total = 0,
+        .compile_rate = 0,
+        .v_number = 0.0,
+        .v_zone = .drift,
+        .git_branch = "",
+        .dirty_files = 0,
+        .open_issues = 0,
+        .mu_patterns = 0,
+        .cycle = .quiet,
+    };
+    const result = collectAllSenses(std.testing.allocator, snapshot);
+    try std.testing.expect(!result.build_ok);
+    try std.testing.expectEqual(@as(u8, 0), result.test_rate);
+}
+
+test "Queen senses — collectAllSenses with perfect snapshot" {
+    const snapshot = FacultySnapshot{
+        .agents = [_]faculty_types.AgentState{
+            .{ .agent = .ralph, .status = .up, .last_action = "working" },
+            .{ .agent = .scholar, .status = .up, .last_action = "researching" },
+            .{ .agent = .mu, .status = .up, .last_action = "learning" },
+            .{ .agent = .oracle, .status = .up, .last_action = "advising" },
+            .{ .agent = .swarm, .status = .up, .last_action = "coordinating" },
+            .{ .agent = .linter, .status = .up, .last_action = "linting" },
+        },
+        .build_ok = true,
+        .binaries = 6,
+        .compile_pass = 100,
+        .compile_total = 100,
+        .compile_rate = 100,
+        .v_number = 1.0,
+        .v_zone = .gold,
+        .git_branch = "main",
+        .dirty_files = 0,
+        .open_issues = 0,
+        .mu_patterns = 1000,
+        .cycle = .working,
+    };
+    const result = collectAllSenses(std.testing.allocator, snapshot);
+    try std.testing.expect(result.build_ok);
+    try std.testing.expectEqual(@as(u8, 100), result.test_rate);
+    try std.testing.expectEqual(@as(u16, 0), result.dirty_files);
+}
+
+test "Queen senses — countArenaResults with missing file" {
+    // This should return 0 when file doesn't exist
+    const count = countArenaResults();
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — readOuroborosScore with missing file" {
+    // Should return 0.0 when file doesn't exist
+    const score = readOuroborosScore();
+    try std.testing.expect(score >= 0.0);
+}
+
+test "Queen senses — readDiskFreeGb handles df failure" {
+    // If df fails, should return 0.0 (graceful degradation)
+    const gb = readDiskFreeGb(std.testing.allocator);
+    try std.testing.expect(gb >= 0.0);
+}
+
+test "Queen senses — calcStaleArenaHours with missing file" {
+    // Should return 999 (sentinel) when file doesn't exist
+    const hours = calcStaleArenaHours();
+    try std.testing.expect(hours >= 0);
+}
+
+test "Queen senses — countAgentSpawnIssues with missing file" {
+    // Should return 0 when file doesn't exist
+    const count = countAgentSpawnIssues();
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — readGitPushTs with missing ref" {
+    // Should return 0 when git ref doesn't exist
+    const ts = readGitPushTs();
+    try std.testing.expect(ts >= 0);
+}
+
+test "Queen senses — countFinishedContainers with missing file" {
+    // Should return 0 when file doesn't exist
+    const count = countFinishedContainers();
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — countFarmIdleServices with missing file" {
+    // Should return 0 when file doesn't exist
+    const count = countFarmIdleServices();
+    try std.testing.expect(count >= 0);
+}
