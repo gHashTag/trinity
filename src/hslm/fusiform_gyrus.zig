@@ -200,7 +200,7 @@ pub fn tf3ToF32Slice(allocator: Allocator, input: []const TernaryFloat9) ![]f32 
 pub fn f32ToGf16SliceSimd(allocator: Allocator, input: []const f32) ![]GoldenFloat16 {
     const vec_len = simd_config.capabilities.optimal_f32_width;
     const num_vecs = input.len / vec_len;
-    const tail_len = input.len % vec_len;
+    _ = input.len % vec_len; // tail_len - calculated for future SIMD tail handling
 
     const output = try allocator.alloc(GoldenFloat16, input.len);
 
@@ -226,7 +226,7 @@ pub fn f32ToGf16SliceSimd(allocator: Allocator, input: []const f32) ![]GoldenFlo
 pub fn gf16ToF32SliceSimd(allocator: Allocator, input: []const GoldenFloat16) ![]f32 {
     const vec_len = simd_config.capabilities.optimal_f32_width;
     const num_vecs = input.len / vec_len;
-    const tail_len = input.len % vec_len;
+    _ = input.len % vec_len; // tail_len - calculated for future SIMD tail handling
 
     const output = try allocator.alloc(f32, input.len);
 
@@ -351,7 +351,7 @@ test "gf16 to fp16 cross format" {
     for (vals) |val| {
         const gf = ips.gf16FromF32(val);
         const fp16_bits = gf16ToFp16(gf);
-        const fp16 = @bitCast(fp16_bits);
+        const fp16 = @as(u16, @bitCast(fp16_bits));
         const back = ips.gf16ToF32(@bitCast(fp16));
         try std.testing.expectApproxEqAbs(val, back, @abs(val) * 0.02 + 0.01);
     }
@@ -362,7 +362,7 @@ test "gf16 to bf16 cross format" {
     for (vals) |val| {
         const gf = ips.gf16FromF32(val);
         const bf16_bits = gf16Tobf16(gf);
-        const bf16 = @bitCast(bf16_bits);
+        const bf16 = @as(u16, @bitCast(bf16_bits));
         const back = ips.gf16ToF32(@bitCast(bf16));
         try std.testing.expectApproxEqAbs(val, back, @abs(val) * 0.05 + 0.01);
     }
