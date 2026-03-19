@@ -538,64 +538,59 @@ trinity/
 
 ---
 
-## Autonomous Development (Ralph)
+## Autonomous Development
 
-Trinity uses the **Ralph Loop** for sustained autonomous development, optimization, and code generation.
+Trinity includes built-in autonomous agents for sustained development, optimization, and code generation.
 
-> [!TIP]
-> **🐣 New to Ralph?** Read our [Beginner's Guide to Ralph](.ralph/README.md) to understand how to add tasks and use the autonomous workflow effectively.
+### Built-in Agents
 
-### Installation
-
-To use Ralph, you must first install it globally:
-
-```bash
-git clone https://github.com/frankbria/ralph-claude-code.git
-cd ralph-claude-code
-./install.sh
-```
+| Binary | Purpose |
+|--------|---------|
+| `ralph-agent` | Sleep-wake daemon, picks GitHub issues |
+| `ralph-hook` | Hook events → Telegram notifications |
+| `tri-api` | Standalone agentic loop (Claude Code replacement) |
+| `tri-bot` | Telegram bot with SSE streaming |
 
 ### Quick Start
 
-Navigate to the Trinity root and run:
-
 ```bash
-ralph --monitor        # Recommended: Start Ralph with live monitor in tmux
+# Build all agents
+zig build
+
+# Run Ralph agent
+./zig-out/bin/ralph-agent --help
+
+# Run tri-api (interactive agentic loop)
+./zig-out/bin/tri-api
+
+# Run Telegram bot
+./zig-out/bin/tri-bot
 ```
 
-### Custom Autonomy Tools
+### Agent Workflow
 
-We've integrated specialized scripts in the `.ralph/` directory to ensure high-fidelity work:
-
-| Script | Purpose |
-|--------|---------|
-| `.ralph/gate.sh` | **Quality Gate**: build + test + format + branch safety |
-| `.ralph/bench.sh` | **Performance Guard**: Prevents latency/throughput regressions |
-| `.ralph/sync_tree.sh` | **Tech Tree Sync**: Updates `TECH_TREE.md` from VIBEE specs |
-| `.ralph/audit.sh` | **Health Audit**: Checks modularity and unresolved markers |
-
-### Workflow
-
-1. **Define**: Edit or create a specification in `specs/tri/*.vibee`
+1. **Define**: Edit or create a specification in `specs/tri/*.tri`
 2. **Plan**: Update `.ralph/fix_plan.md` with your next objective
-3. **Run**: Execute `ralph --monitor`
-4. **Verify**: Ralph automatically generates code, runs tests, and checks performance
-5. **Commit**: Upon success, Ralph updates `.ralph/SUCCESS_HISTORY.md`
+3. **Run**: Execute `tri agent run <issue-number>` for autonomous issue resolution
+4. **Verify**: Agent generates code, runs tests, and checks performance
+5. **Commit**: Upon success, agent updates `.ralph/SUCCESS_HISTORY.md`
 
-For detailed protocols, see **[.ralph/RULES.md](.ralph/RULES.md)**.
+For detailed protocols, see **[.ralph/RULES.md](.ralph/RULES.md)** and **[docs/docs/development/ralph.md](docs/docs/development/ralph.md)**.
 
 ---
 
 ## Build Commands
 
 ```bash
-zig build                    # Build all targets
-zig build tri                # Unified TRI CLI
+zig build                    # Build all 50+ binaries
+zig build tri                # Unified TRI CLI (32 MB)
 zig build test               # Run ALL tests
 zig build bench              # Run benchmarks
 zig build release            # Cross-platform release builds
 zig build vibee              # VIBEE Compiler CLI
 zig build firebird           # Firebird LLM CLI
+zig build libvsa             # Build libtrinity-vsa C API
+zig build libqueen           # Build libtrinity-queen C API
 zig fmt src/                 # Format code
 ```
 

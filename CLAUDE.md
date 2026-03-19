@@ -29,10 +29,13 @@ PreToolUse hook enforces this — creating .sh files is blocked. See `.claude/ru
 
 ## Binaries
 
-6 binaries from one `build.zig` (Zig 0.15.x, std only, zero external deps):
+50+ binaries from one `build.zig` (Zig 0.15.x, std only, zero external deps):
+
+### Core Binaries
 
 | Binary | Build | Purpose |
 |--------|-------|---------|
+| `tri` | `zig build tri` | Unified TRI CLI (32 MB, all-in-one) |
 | `trinity-mcp` | `zig build` | MCP server, 47+ tools, Oracle watchdog |
 | `ralph-agent` | `zig build` | Sleep-wake daemon, picks GitHub issues |
 | `ralph-hook` | `zig build` | Hook events → Telegram notifications |
@@ -40,16 +43,34 @@ PreToolUse hook enforces this — creating .sh files is blocked. See `.claude/ru
 | `tri-api` | `zig build tri-api` | Standalone agentic loop (2,555 LOC, 11 files) |
 | `hslm-entrypoint` | `zig build` | Railway training entrypoint (replaces bash) |
 
+### Additional Binaries
+
+| Binary | Purpose |
+|--------|---------|
+| `arena` | LLM battle arena with ELO tracking |
+| `b2t` | BitNet-to-Ternary conversion |
+| `firebird` | LLM engine CLI |
+| `forge` | Build system tool |
+| `fluent` | Fluent code generator |
+| `needle-mcp` | Needle semantic search MCP server |
+| `scholar-agent` | Research-focused agent |
+| `vibee` | VIBEE compiler |
+| `trinity-node` | DePIN node |
+| `hslm-train` | HSLM training entrypoint |
+| `mu-agent` | Memory/learning agent |
+
 ## Commands
 
 ```bash
-zig build              # All 5 binaries (only direct zig call allowed)
+zig build              # All 50+ binaries (only direct zig call allowed)
 tri test               # Run tests
 tri issue list         # See task queue
 tri git status         # Working tree status
 tri git commit "feat(scope): msg"  # Commit (zig fmt auto, format enforced)
 tri faculty            # Agent status dashboard
 tri notify "msg"       # Telegram notification
+tri agent run <N>      # Autonomous issue resolution
+tri cloud spawn <N>    # Spawn Railway container for issue
 ```
 
 ## Key Paths
