@@ -355,6 +355,85 @@ pub const Arena = struct {
         file.writeAll(fbs.getWritten()) catch {};
     }
 
+    /// Load leaderboard from JSON file
+    pub fn loadLeaderboard(self: *Arena) !void {
+        const file = std.fs.cwd().openFile(LEADERBOARD_PATH, .{}) catch {
+            // File doesn't exist yet, use defaults
+            return;
+        };
+        defer file.close();
+
+        const stat = file.stat() catch return;
+        if (stat.size == 0) return;
+
+        const contents = try self.allocator.alloc(u8, stat.size);
+        defer self.allocator.free(contents);
+        _ = file.readAll(contents) catch return;
+
+        // Simple JSON parsing for {"fighters":[...],"total_battles":N}
+        const fighters_start = std.mem.indexOf(u8, contents, "\"fighters\":[") orelse return;
+        const fighters_end = std.mem.indexOf(u8, contents[fighters_start..], "],\"total_battles\"") orelse return;
+        const fighters_json = contents[fighters_start + 12 .. fighters_start + fighters_end];
+
+        var json_iter = std.mem.splitScalar(u8, fighters_json, '}');
+        while (json_iter.next()) |entry| {
+            if (entry.len == 0) continue;
+
+            const name_start = std.mem.indexOf(u8, entry, "\"name\":\"") orelse continue;
+            const name_end = std.mem.indexOf(u8, entry[name_start + 8 ..], "\"") orelse continue;
+            const name = entry[name_start + 8 .. name_start + 8 + name_end];
+
+            const elo_start = std.mem.indexOf(u8, entry, "\"elo\":") orelse continue;
+            const elo_end_str = entry[elo_start + 6 ..];
+            const elo_end = std.mem.indexOfAny(u8, elo_end_str, ",}") orelse continue;
+            const elo_str = elo_end_str[0..elo_end];
+            const elo_rating = std.fmt.parseFloat(f32, elo_str) catch 1000.0;
+
+            const wins_start = std.mem.indexOf(u8, entry, "\"wins\":") orelse continue;
+            const wins_end_str = entry[wins_start + 7 ..];
+            const wins_end = std.mem.indexOfAny(u8, wins_end_str, ",}") orelse continue;
+            const wins = std.fmt.parseInt(u32, wins_end_str[0..wins_end], 10) catch 0;
+
+            const losses_start = std.mem.indexOf(u8, entry, "\"losses\":") orelse continue;
+            const losses_end_str = entry[losses_start + 9 ..];
+            const losses_end = std.mem.indexOfAny(u8, losses_end_str, ",}") orelse continue;
+            const losses = std.fmt.parseInt(u32, losses_end_str[0..losses_end], 10) catch 0;
+
+            const ties_start = std.mem.indexOf(u8, entry, "\"ties\":") orelse continue;
+            const ties_end_str = entry[ties_start + 7 ..];
+            const ties_end = std.mem.indexOfAny(u8, ties_end_str, ",}") orelse continue;
+            const ties = std.fmt.parseInt(u32, ties_end_str[0..ties_end], 10) catch 0;
+
+            // Find or create fighter
+            const fighter = self.findFighter(name);
+            if (fighter == null) {
+                if (self.fighter_count < types.MAX_FIGHTERS) {
+                    const new_fighter = &self.fighters[self.fighter_count];
+                    new_fighter.setName(name);
+                    new_fighter.active = true;
+                    new_fighter.elo = @floatCast(elo_rating);
+                    new_fighter.wins = wins;
+                    new_fighter.losses = losses;
+                    new_fighter.ties = ties;
+                    self.fighter_count += 1;
+                } else {
+                    continue;
+                }
+            } else if (fighter) |f| {
+                f.elo = @floatCast(elo_rating);
+                f.wins = wins;
+                f.losses = losses;
+                f.ties = ties;
+            }
+        }
+
+        // Parse total_battles
+        const battles_start = std.mem.indexOf(u8, contents, "\"total_battles\":") orelse return;
+        const battles_end_str = contents[battles_start + 15 ..];
+        const battles_end = std.mem.indexOfAny(u8, battles_end_str, ",}") orelse return;
+        self.total_battles = std.fmt.parseInt(u32, battles_end_str[0..battles_end], 10) catch 0;
+    }
+
     /// Print leaderboard to stdout
     pub fn printLeaderboard(self: *Arena) void {
         const print = std.debug.print;

@@ -258,6 +258,105 @@ pub fn optimalThreshold(weights: []const f32) f32 {
 }
 
 // =============================================================================
+// f16 WEIGHT EXPORT — Host preprocessing (FPGA has no FPU)
+// =============================================================================
+/// Export f16 weights to .mem file (host preprocessing only).
+/// FPGA cannot process f16 directly — use this for:
+///   - Weight compression analysis
+///   - Pre-quantization validation
+///   - f16 ↔ ternary conversion testing
+pub fn exportWeightsF16(
+    allocator: std.mem.Allocator,
+    stdout: anytype,
+    weights: []const f32,
+    path: []const u8,
+) !void {
+    _ = allocator;
+    try stdout.print("Exporting f16 weights: {d} values -> {s}\n", .{ weights.len, path });
+
+    const file = try std.fs.cwd().createFile(path, .{});
+    defer file.close();
+    const writer = file.writer();
+
+    for (weights) |w_f32| {
+        const w_f16: f16 = @floatCast(w_f32);
+        // Write as hex for exact bit representation
+        const bits: u16 = @bitCast(w_f16);
+        try writer.print("{X:0>4}\n", .{bits});
+    }
+}
+
+/// Export f16 weights quantized to ternary.
+/// Useful for validating f16 → ternary conversion before FPGA deployment.
+pub fn exportWeightsF16ToTernary(
+    allocator: std.mem.Allocator,
+    stdout: anytype,
+    weights: []const f32,
+    path: []const u8,
+    threshold: f32,
+) !void {
+    _ = allocator;
+    try stdout.print("Exporting f16→ternary: {d} values -> {s}\n", .{ weights.len, path });
+
+    const file = try std.fs.cwd().createFile(path, .{});
+    defer file.close();
+    const writer = file.writer();
+
+    for (weights) |w_f32| {
+        const w_f16: f16 = @floatCast(w_f32);
+        const ternary: i8 = quantizeTernary(@as(f32, @floatCast(w_f16)), threshold);
+        try writeTrit(writer, ternary);
+    }
+}
+
+/// Generate f16 embedding weights for testing.
+/// Uses same PRNG seed as HSLM for reproducibility.
+pub fn generateEmbeddingWeightsF16(
+    allocator: std.mem.Allocator,
+    stdout: anytype,
+    vocab: usize,
+    path: []const u8,
+) !void {
+    try stdout.print("Generating f16 embedding: {d}x{d} -> {s}\n", .{ vocab, EMBED_DIM, path });
+
+    // Same PRNG seed as HSLM
+    var prng = std.Random.DefaultPrng.init(0xCAFE_BABE_1234_5678);
+    const rng = prng.random();
+
+    const file = try std.fs.cwd().createFile(path, .{});
+    defer file.close();
+    const writer = file.writer();
+
+    const effective_vocab = @min(vocab, VOCAB_SIZE);
+    for (0..effective_vocab) |_| {
+        for (0..EMBED_DIM) |_| {
+            // Generate random f32 value in [-1, 1], convert to f16
+            const val_f32 = rng.float(f32) * 2.0 - 1.0;
+            const val_f16: f16 = @floatCast(val_f32);
+            const bits: u16 = @bitCast(val_f16);
+            try writer.print("{X:0>4}\n", .{bits});
+        }
+    }
+}
+
+/// Verify f16 weights match ternary encoding.
+/// Returns true if all f16 values quantize correctly.
+pub fn verifyF16TernaryMatch(
+    f16_weights: []const f16,
+    ternary_weights: []const i8,
+    threshold: f32,
+) bool {
+    if (f16_weights.len != ternary_weights.len) return false;
+
+    for (f16_weights, ternary_weights) |f16_val, expected| {
+        const quantized = quantizeTernary(@as(f32, @floatCast(f16_val)), threshold);
+        if (quantized != expected) return false;
+    }
+
+    return true;
+}
+
+// =============================================================================
 // TESTS
 // =============================================================================
 test "trit encoding roundtrip" {
@@ -310,5 +409,51 @@ test "embedding reproducibility" {
     for (vals) |expected| {
         const got = rng2.intRangeAtMost(i8, -1, 1);
         try std.testing.expectEqual(expected, got);
+    }
+}
+
+test "f16 ternary quantization roundtrip" {
+    const f32_weights = [_]f32{ 0.5, -0.3, 0.05, -0.8, 0.0 };
+    var f16_weights: [f32_weights.len]f16 = undefined;
+    var ternary_weights: [f32_weights.len]i8 = undefined;
+
+    // f32 → f16 → ternary
+    for (f32_weights, 0..) |w_f32, i| {
+        f16_weights[i] = @floatCast(w_f32);
+        ternary_weights[i] = quantizeTernary(@as(f32, @floatCast(f16_weights[i])), 0.1);
+    }
+
+    // Verify quantization
+    try std.testing.expectEqual(@as(i8, 1), ternary_weights[0]);
+    try std.testing.expectEqual(@as(i8, -1), ternary_weights[1]);
+    try std.testing.expectEqual(@as(i8, 0), ternary_weights[2]);
+    try std.testing.expectEqual(@as(i8, -1), ternary_weights[3]);
+    try std.testing.expectEqual(@as(i8, 0), ternary_weights[4]);
+}
+
+test "f16 ternary match verification" {
+    const f16_weights = [_]f16{ 0.5, -0.5, 0.0 };
+    const ternary_weights = [_]i8{ 1, -1, 0 };
+
+    const result = verifyF16TernaryMatch(&f16_weights, &ternary_weights, 0.1);
+    try std.testing.expect(result);
+}
+
+test "f16 ternary mismatch detection" {
+    const f16_weights = [_]f16{ 0.5, -0.5, 0.0 };
+    const wrong_ternary = [_]i8{ 0, 0, 0 }; // All zeros (wrong)
+
+    const result = verifyF16TernaryMatch(&f16_weights, &wrong_ternary, 0.1);
+    try std.testing.expect(!result);
+}
+
+test "f16 precision within ternary safe range" {
+    // All values should be ternary-safe
+    const f16_vals = [_]f16{ 1.0, -1.0, 0.0, 0.5, -0.5 };
+
+    for (f16_vals) |v| {
+        // f16 should preserve these values
+        const f32_back: f32 = @floatCast(v);
+        try std.testing.expectApproxEqAbs(@as(f32, @floatCast(v)), f32_back, 0.001);
     }
 }

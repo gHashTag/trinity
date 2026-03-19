@@ -1674,6 +1674,8 @@ pub const BlockPool = struct {
     blocks: std.ArrayList(KVBlock), // All allocated blocks
     free_list: std.ArrayList(usize), // Free block indices
     num_allocated: usize,
+    cow_copies: usize, // Total copy-on-write operations
+    evictions: usize, // Total blocks evicted (when pool is full)
 
     pub fn init(allocator: std.mem.Allocator, config: PagedAttentionConfig) !BlockPool {
         var pool = BlockPool{
@@ -1682,6 +1684,8 @@ pub const BlockPool = struct {
             .blocks = std.ArrayList(KVBlock){},
             .free_list = std.ArrayList(usize){},
             .num_allocated = 0,
+            .cow_copies = 0,
+            .evictions = 0,
         };
 
         // Pre-allocate all blocks
@@ -1704,7 +1708,11 @@ pub const BlockPool = struct {
 
     /// Allocate a block from the pool
     pub fn allocateBlock(self: *BlockPool) ?usize {
-        if (self.free_list.items.len == 0) return null;
+        if (self.free_list.items.len == 0) {
+            // Pool exhausted, need to evict
+            self.evictions += 1;
+            return null;
+        }
         const block_id = self.free_list.pop() orelse return null;
         self.num_allocated += 1;
         self.blocks.items[block_id].ref_count = 1;
@@ -1746,6 +1754,9 @@ pub const BlockPool = struct {
         new_block.num_tokens = block.num_tokens;
         new_block.layer_idx = block.layer_idx;
 
+        // Track copy-on-write operation
+        self.cow_copies += 1;
+
         // Decrement old block ref count
         block.ref_count -= 1;
 
@@ -1766,8 +1777,8 @@ pub const BlockPool = struct {
             .memory_used_bytes = allocated * mem_per_block,
             .memory_total_bytes = total * mem_per_block,
             .utilization_percent = if (total > 0) @as(f32, @floatFromInt(allocated)) / @as(f32, @floatFromInt(total)) * 100.0 else 0.0,
-            .cow_copies = 0, // TODO: track
-            .evictions = 0, // TODO: track
+            .cow_copies = self.cow_copies,
+            .evictions = self.evictions,
         };
     }
 };

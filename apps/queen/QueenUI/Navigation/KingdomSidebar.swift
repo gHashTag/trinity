@@ -18,9 +18,8 @@ struct KingdomSidebar: View {
                     Text(realmTitle(kingdom))
                         .font(.system(size: 11, weight: .bold, design: .monospaced))
                         .foregroundStyle(Self.realmColors[kingdom] ?? .white)
-                        .padding(.top, 16)
-                        .padding(.bottom, 4)
-                        .padding(.horizontal, 16)
+                        .padding(.vertical, LayoutConstants.compactSpacing)
+                        .padding(.horizontal, LayoutConstants.standardPadding)
 
                     // Screen items
                     ForEach(Screen.screens(for: kingdom)) { screen in
