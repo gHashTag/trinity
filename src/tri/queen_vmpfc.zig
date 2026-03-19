@@ -411,3 +411,107 @@ test "vmpfc — ValueAssessment setReason with special chars" {
 
     try std.testing.expectEqualStrings(text, assessment.reasonStr());
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL FUNCTION TESTS — Testing actual computation and logic
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vmpfc — phiWeightedScore calculates phi multiplication correctly" {
+    const phi: f32 = 1.618033988749895;
+
+    // Test various inputs produce expected phi-multiplied outputs
+    const result_1 = phiWeightedScore(1.0);
+    try std.testing.expectApproxEqAbs(phi, result_1, 0.001);
+
+    const result_5 = phiWeightedScore(5.0);
+    try std.testing.expectApproxEqAbs(5.0 * phi, result_5, 0.001);
+
+    const result_10 = phiWeightedScore(10.0);
+    try std.testing.expectApproxEqAbs(10.0 * phi, result_10, 0.001);
+}
+
+test "vmpfc — phiWeightedScore handles fractional inputs" {
+    const phi: f32 = 1.618033988749895;
+
+    // Test 0.5 * phi
+    const result = phiWeightedScore(0.5);
+    try std.testing.expectApproxEqAbs(0.5 * phi, result, 0.001);
+
+    // Verify result is between 0 and phi
+    try std.testing.expect(result > 0.0);
+    try std.testing.expect(result < phi);
+}
+
+test "vmpfc — health returns valid timestamp" {
+    const h = health();
+    const now = std.time.timestamp();
+
+    // Timestamp should be recent (within last second)
+    try std.testing.expect(h.last_check > 0);
+    try std.testing.expect(h.last_check <= now);
+    try std.testing.expect(now - h.last_check <= 1);
+}
+
+test "vmpfc — health returns healthy status with zero cycle" {
+    const h = health();
+
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+}
+
+test "vmpfc — ValueAssessment setReason and reasonStr roundtrip" {
+    var assessment = ValueAssessment{};
+
+    const original = "Farm needs recycling due to stale workers";
+    assessment.setReason(original);
+
+    try std.testing.expectEqualStrings(original, assessment.reasonStr());
+    try std.testing.expectEqual(original.len, assessment.reason_len);
+}
+
+test "vmpfc — ValueAssessment setReason preserves UTF-8 bytes" {
+    var assessment = ValueAssessment{};
+
+    // UTF-8 string with multi-byte characters
+    const text = "φ² + 1/φ² = 3 — Trinity identity";
+    assessment.setReason(text);
+
+    try std.testing.expectEqualStrings(text, assessment.reasonStr());
+    try std.testing.expectEqual(text.len, assessment.reason_len);
+}
+
+test "vmpfc — ValueAssessment setReason handles multibyte truncation" {
+    var assessment = ValueAssessment{};
+
+    // Long UTF-8 string that will be truncated
+    const long_text = "φ" ** 100; // 100 phi symbols (each 2 bytes in UTF-8)
+    assessment.setReason(long_text);
+
+    // Should truncate to 128 bytes (64 phi symbols)
+    try std.testing.expectEqual(@as(usize, 128), assessment.reason_len);
+    try std.testing.expect(assessment.reasonStr().len == 128);
+}
+
+test "vmpfc — assessFarmAction evolve has fixed high ROI" {
+    const assessment = try assessFarmAction(
+        std.testing.allocator,
+        .evolve,
+        999.0, // PPL shouldn't matter for evolve
+    );
+
+    // Evolve always has ROI of 5.0
+    try std.testing.expectApproxEqAbs(@as(f32, 5.0), assessment.roi, 0.01);
+    try std.testing.expectEqual(Recommendation.execute, assessment.recommendation);
+}
+
+test "vmpfc — assessFarmAction inject confidence ranges correctly" {
+    // Test with different PPL values to check confidence calculation
+    const assessment_low = try assessFarmAction(std.testing.allocator, .inject, 100.0);
+    const assessment_high = try assessFarmAction(std.testing.allocator, .inject, 1.0);
+
+    // Confidence should be in valid range regardless of PPL
+    try std.testing.expect(assessment_low.confidence >= 0.0);
+    try std.testing.expect(assessment_low.confidence <= 1.0);
+    try std.testing.expect(assessment_high.confidence >= 0.0);
+    try std.testing.expect(assessment_high.confidence <= 1.0);
+}
