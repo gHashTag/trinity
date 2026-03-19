@@ -216,42 +216,71 @@ pub fn runFullBenchmark(allocator: Allocator, formats: []const WeightFormat, con
         for (context_lengths) |ctx_len| {
             for (num_needles_list) |n_needles| {
                 for (depths) |depth| {
-                    const haystack = try generateHaystack(allocator, "h", ctx_len, n_needles, depth);
-                    const start = std.time.nanoTimestamp();
-
-                    var correct_count: usize = 0;
-                    for (haystack.questions) |q| {
-                        const result = try runInference(allocator, haystack, q, format);
-                        if (result.correct) correct_count += 1;
-                    }
-
-                    const elapsed_ms = @as(f32, @floatFromInt(@divFloor(std.time.nanoTimestamp() - start, 1_000_000)));
-
-                    const accuracy = if (haystack.questions.len > 0)
-                        @as(f32, @floatFromInt(correct_count)) / @as(f32, @floatFromInt(haystack.questions.len))
-                    else
-                        0;
-
-                    const tok_per_sec = if (elapsed_ms > 0)
-                        @as(f32, @floatFromInt(ctx_len)) / (elapsed_ms / 1000.0)
-                    else
-                        0;
-
-                    try results.append(allocator, ConfigResult{
-                        .format = format,
-                        .context_length = ctx_len,
-                        .num_needles = n_needles,
-                        .depth_percent = depth,
-                        .accuracy = accuracy,
-                        .latency_ms = elapsed_ms,
-                        .tok_per_sec = tok_per_sec,
-                    });
+                    const result = try runSingleConfig(allocator, format, ctx_len, n_needles, depth);
+                    try results.append(allocator, result);
                 }
             }
         }
     }
 
     return try results.toOwnedSlice(allocator);
+}
+
+/// Run benchmark for a single configuration
+/// Returns ConfigResult with accuracy, latency, and tok_per_sec
+pub fn runSingleConfig(allocator: Allocator, format: WeightFormat, context_length: usize, num_needles: usize, depth_percent: f32) !ConfigResult {
+    const haystack = try generateHaystack(allocator, "single", context_length, num_needles, depth_percent);
+    defer {
+        allocator.free(haystack.content);
+        allocator.free(haystack.needles);
+        allocator.free(haystack.questions);
+    }
+
+    const start = std.time.nanoTimestamp();
+    var correct_count: usize = 0;
+    var total_latency_ms: f32 = 0;
+
+    for (haystack.questions) |q| {
+        const result = try runInference(allocator, haystack, q, format);
+        if (result.correct) correct_count += 1;
+        total_latency_ms += result.latency_ms;
+    }
+
+    const elapsed_ms = @as(f32, @floatFromInt(@divFloor(std.time.nanoTimestamp() - start, 1_000_000)));
+
+    const accuracy = if (haystack.questions.len > 0)
+        @as(f32, @floatFromInt(correct_count)) / @as(f32, @floatFromInt(haystack.questions.len))
+    else
+        0;
+
+    const avg_latency_ms = if (haystack.questions.len > 0)
+        total_latency_ms / @as(f32, @floatFromInt(haystack.questions.len))
+    else
+        0;
+
+    const tok_per_sec = if (elapsed_ms > 0)
+        @as(f32, @floatFromInt(context_length)) / (elapsed_ms / 1000.0)
+    else
+        0;
+
+    return ConfigResult{
+        .format = format,
+        .context_length = context_length,
+        .num_needles = num_needles,
+        .depth_percent = depth_percent,
+        .accuracy = accuracy,
+        .latency_ms = avg_latency_ms,
+        .tok_per_sec = tok_per_sec,
+    };
+}
+
+/// Parse format string to WeightFormat (for integration with evolution.zig)
+pub fn parseFormatString(format_str: []const u8) WeightFormat {
+    if (std.mem.eql(u8, format_str, "bf16")) return .BF16;
+    if (std.mem.eql(u8, format_str, "gf16")) return .GF16;
+    if (std.mem.eql(u8, format_str, "tf3")) return .TF3;
+    if (std.mem.eql(u8, format_str, "gf16tf3")) return .GF16; // Hybrid defaults to GF16
+    return .STD; // Default
 }
 
 test "igla_bench_generateHaystack" {
@@ -303,4 +332,25 @@ test "igla_bench_runFullBenchmark" {
     try std.testing.expectEqual(results.len, 1);
     try std.testing.expect(results[0].format == .STD);
     try std.testing.expect(results[0].context_length == 27);
+}
+
+test "igla_bench_runSingleConfig" {
+    const allocator = std.testing.allocator;
+
+    const result = try runSingleConfig(allocator, .GF16, 81, 1, 0.5);
+
+    try std.testing.expectEqual(result.format, .GF16);
+    try std.testing.expectEqual(result.context_length, 81);
+    try std.testing.expectEqual(result.num_needles, 1);
+    try std.testing.expect(result.accuracy >= 0 and result.accuracy <= 1);
+    try std.testing.expect(result.latency_ms >= 0);
+}
+
+test "igla_bench_parseFormatString" {
+    try std.testing.expect(parseFormatString("std") == .STD);
+    try std.testing.expect(parseFormatString("bf16") == .BF16);
+    try std.testing.expect(parseFormatString("gf16") == .GF16);
+    try std.testing.expect(parseFormatString("tf3") == .TF3);
+    try std.testing.expect(parseFormatString("gf16tf3") == .GF16);
+    try std.testing.expect(parseFormatString("unknown") == .STD);
 }
