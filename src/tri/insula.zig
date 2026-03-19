@@ -102,19 +102,11 @@ pub const TimingSnapshot = struct {
     start: std.time.Instant,
     thalamus_end: ?std.time.Instant = null,
     dlpfc_end: ?std.time.Instant = null,
+    test_mode: bool = false,
 
     pub fn init() TimingSnapshot {
-        // Use a fixed timestamp for comptime compatibility
-        // In runtime contexts, this gets updated on first actual timing operation
-        if (@inComptime()) {
-            return .{
-                .start = undefined,
-            };
-        }
         return .{
-            .start = std.time.Instant.now() catch return TimingSnapshot{
-                .start = undefined,
-            },
+            .start = std.time.Instant.now() catch undefined,
         };
     }
 
@@ -122,6 +114,7 @@ pub const TimingSnapshot = struct {
     pub fn initTest() TimingSnapshot {
         return .{
             .start = undefined,
+            .test_mode = true,
         };
     }
 
@@ -137,22 +130,22 @@ pub const TimingSnapshot = struct {
 
     /// Calculate cycle latency (total time from start to now)
     pub fn cycleLatencyUs(self: *const TimingSnapshot) u64 {
-        // Handle undefined start (test mode)
-        if (@as(usize, @bitCast(self.start)) == 0) return 0;
+        // Handle test mode
+        if (self.test_mode) return 0;
 
         const now = std.time.Instant.now() catch return 0;
-        const elapsed = self.start.since(now);
-        return @as(u64, @intFromFloat(elapsed * 1_000_000));
+        const elapsed_ns = now.since(self.start); // Returns nanoseconds
+        return elapsed_ns / 1000; // Convert to microseconds
     }
 
     /// Calculate thalamus latency
     pub fn thalamusLatencyUs(self: *const TimingSnapshot) u64 {
         if (self.thalamus_end) |end| {
-            // Handle undefined start (test mode)
-            if (@as(usize, @bitCast(self.start)) == 0) return 0;
+            // Handle test mode
+            if (self.test_mode) return 0;
 
-            const elapsed = self.start.since(end);
-            return @as(u64, @intFromFloat(elapsed * 1_000_000));
+            const elapsed_ns = end.since(self.start); // Returns nanoseconds
+            return elapsed_ns / 1000; // Convert to microseconds
         }
         return 0;
     }
@@ -162,11 +155,11 @@ pub const TimingSnapshot = struct {
         if (self.dlpfc_end) |end| {
             const thalamus_time = self.thalamus_end orelse self.start;
 
-            // Handle undefined start (test mode)
-            if (@as(usize, @bitCast(self.start)) == 0) return 0;
+            // Handle test mode
+            if (self.test_mode) return 0;
 
-            const elapsed = thalamus_time.since(end);
-            return @as(u64, @intFromFloat(elapsed * 1_000_000));
+            const elapsed_ns = end.since(thalamus_time); // Returns nanoseconds
+            return elapsed_ns / 1000; // Convert to microseconds
         }
         return 0;
     }
@@ -545,4 +538,154 @@ test "insula — parseJsonI64" {
 test "insula — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+test "insula — CellHealth Status enum" {
+    try std.testing.expectEqual(@as(i32, 0), @intFromEnum(CellHealth.Status.healthy));
+    try std.testing.expectEqual(@as(i32, 1), @intFromEnum(CellHealth.Status.weak));
+    try std.testing.expectEqual(@as(i32, 2), @intFromEnum(CellHealth.Status.broken));
+}
+
+test "insula — CellHealth struct defaults" {
+    const h = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
+
+test "insula — TimingSnapshot initTest" {
+    const snap = TimingSnapshot.initTest();
+    try std.testing.expectEqual(@as(u64, 0), snap.cycleLatencyUs());
+    try std.testing.expectEqual(@as(u64, 0), snap.thalamusLatencyUs());
+    try std.testing.expectEqual(@as(u64, 0), snap.dlpfcLatencyUs());
+}
+
+test "insula — TimingSnapshot markThalamus" {
+    var snap = TimingSnapshot.initTest();
+    snap.markThalamus();
+    // Verify method doesn't crash in test mode
+    // (thalamus_end may be null or set depending on platform)
+}
+
+test "insula — TimingSnapshot markDlpfc" {
+    var snap = TimingSnapshot.initTest();
+    snap.markDlpfc();
+    // Verify method doesn't crash in test mode
+    // (dlpfc_end may be null or set depending on platform)
+}
+
+test "insula — measureState basic" {
+    const timing = TimingSnapshot.initTest();
+    const state = try measureState(
+        std.testing.allocator,
+        0,
+        timing,
+        5, // actions_taken
+        2, // actions_suppressed
+        10, // total_cycles
+    );
+    try std.testing.expectEqual(@as(u32, 5), state.actions_taken);
+    try std.testing.expectEqual(@as(u32, 2), state.actions_suppressed);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), state.action_rate, 0.01);
+}
+
+test "insula — measureState zero cycles" {
+    const timing = TimingSnapshot.initTest();
+    const state = try measureState(
+        std.testing.allocator,
+        0,
+        timing,
+        0,
+        0,
+        0, // total_cycles = 0
+    );
+    try std.testing.expectEqual(@as(f32, 0.0), state.action_rate);
+}
+
+test "insula — parseJsonU64 handles invalid input" {
+    const result = parseJsonU64("abc");
+    try std.testing.expectError(error.InvalidJson, result);
+}
+
+test "insula — parseJsonF32 handles invalid input" {
+    const result = parseJsonF32("xyz");
+    try std.testing.expectError(error.InvalidJson, result);
+}
+
+test "insula — parseJsonI64 handles invalid input" {
+    const result = parseJsonI64("not-a-number");
+    try std.testing.expectError(error.InvalidJson, result);
+}
+
+test "insula — parseJsonU32 overflow" {
+    const result = parseJsonU32("999999999999999999999");
+    try std.testing.expectError(error.Overflow, result);
+}
+
+test "insula — parseInternalStateFromJson basic" {
+    const json = "{\"cycle_latency_us\":123456,\"thalamus_latency_us\":30000,\"dlpfc_decision_us\":20000,\"alloc_bytes\":50000000,\"alloc_count\":100,\"actions_taken\":5,\"actions_suppressed\":1,\"action_rate\":0.5,\"measured_at\":1710840000}";
+    const state = try parseInternalStateFromJson(json);
+    try std.testing.expectEqual(@as(u64, 123456), state.cycle_latency_us);
+    try std.testing.expectEqual(@as(u64, 30000), state.thalamus_latency_us);
+    try std.testing.expectEqual(@as(u64, 20000), state.dlpfc_decision_us);
+    try std.testing.expectEqual(@as(u64, 50000000), state.alloc_bytes);
+    try std.testing.expectEqual(@as(u32, 100), state.alloc_count);
+    try std.testing.expectEqual(@as(u32, 5), state.actions_taken);
+    try std.testing.expectEqual(@as(u32, 1), state.actions_suppressed);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), state.action_rate, 0.01);
+    try std.testing.expectEqual(@as(i64, 1710840000), state.measured_at);
+}
+
+test "insula — parseInternalStateFromJson partial" {
+    const json = "{\"cycle_latency_us\":100000,\"action_rate\":0.25}";
+    const state = try parseInternalStateFromJson(json);
+    try std.testing.expectEqual(@as(u64, 100000), state.cycle_latency_us);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.25), state.action_rate, 0.01);
+    // Unparsed fields should be 0
+    try std.testing.expectEqual(@as(u64, 0), state.alloc_bytes);
+}
+
+test "insula — InternalState unhealthy overall" {
+    var state = InternalState.init();
+    state.cycle_latency_us = 500_000; // Too slow
+    try std.testing.expect(!state.isHealthy());
+}
+
+test "insula — InternalState unhealthy memory" {
+    var state = InternalState.init();
+    state.alloc_bytes = 100_000_000; // Too much memory
+    try std.testing.expect(!state.isHealthy());
+}
+
+test "insula — InternalState unhealthy activity" {
+    var state = InternalState.init();
+    state.action_rate = 0.01; // Too low
+    try std.testing.expect(!state.isHealthy());
+}
+
+test "insula — InternalState threshold boundary" {
+    var state = InternalState.init();
+    state.cycle_latency_us = 299_999; // Just under threshold
+    try std.testing.expect(state.isHealthyLatency());
+
+    state.cycle_latency_us = 300_000; // Exactly at threshold
+    try std.testing.expect(!state.isHealthyLatency());
+}
+
+test "insula — InternalState memory threshold" {
+    var state = InternalState.init();
+    state.alloc_bytes = 74_999_999; // Just under threshold
+    try std.testing.expect(state.isHealthyMemory());
+
+    state.alloc_bytes = 75_000_000; // Exactly at threshold
+    try std.testing.expect(!state.isHealthyMemory());
+}
+
+test "insula — InternalState activity threshold" {
+    var state = InternalState.init();
+    state.action_rate = 0.049; // Just under threshold
+    try std.testing.expect(!state.isHealthyActivity());
+
+    state.action_rate = 0.05; // Exactly at threshold
+    try std.testing.expect(state.isHealthyActivity());
 }
