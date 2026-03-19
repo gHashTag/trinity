@@ -2361,6 +2361,7 @@ struct ChatScreen: View {
             .frame(minWidth: 280)
             .background(Color(hex: 0x141414))
     }
+
     private func contextPreviewRow(icon: String, label: String, detail: String, preview: String?) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 6) {
@@ -5521,7 +5522,7 @@ struct MentionPopup: View {
             .frame(maxWidth: 340)
                 .frame(minWidth: 280)
                 .background(Color(hex: 0x1A1A1A))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.white.opacity(0.1), lineWidth: 1)
@@ -7281,7 +7282,7 @@ struct SaveAsTemplatePopover: View {
                 .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
             }
         }
-        .padding(16)
+        .padding(LayoutConstants.inputAreaPadding)
             .frame(maxWidth: 300)
             .frame(minWidth: 260)
             .background(Color(hex: 0x1A1A1A))
@@ -7365,7 +7366,7 @@ struct TemplatePicker: View {
         .frame(maxWidth: 320)
             .frame(minWidth: 280)
             .background(Color(hex: 0x0A0A0A))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
         .shadow(color: .black.opacity(0.5), radius: 12)
     }
 
