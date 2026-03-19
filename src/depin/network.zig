@@ -168,18 +168,6 @@ pub const ClusterNode = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// Format IP address from std.net.Address to string
-fn formatIpAddress(allocator: std.mem.Allocator, addr: *const std.net.Address) ![]const u8 {
-    // Use std.net.Address.format() for proper formatting
-    var buf: [std.net.Address.MAX_FORMAT_SIZE]u8 = undefined;
-    const addr_str = try addr.format(&buf);
-    return allocator.dupe(u8, addr_str);
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // UDP DISCOVERY
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -311,14 +299,17 @@ pub const UDPDiscovery = struct {
         const node_id_end = std.mem.indexOf(u8, data[node_id_start + 11 ..], "\"") orelse return NetworkError.InvalidPacket;
         const node_id = data[node_id_start + 11 .. node_id_start + 11 + node_id_end];
 
-        const ip_str = try formatIpAddress(self.allocator, &src_addr);
-        errdefer self.allocator.free(ip_str);
+        // Get IP string from src_addr (IPv4 only for now)
+        // Extract bytes from the in_addr struct
+        const bytes: *const [4]u8 = @ptrCast(&src_addr.in.sa.addr);
+        const ip_alloc = try std.fmt.allocPrint(self.allocator, "{d}.{d}.{d}.{d}", .{ bytes[0], bytes[1], bytes[2], bytes[3] });
+        errdefer self.allocator.free(ip_alloc);
 
         return NodeDiscovery{
             .cluster_id = try self.allocator.dupe(u8, cluster_id),
             .node_id = try self.allocator.dupe(u8, node_id),
             .addr = SocketAddr{
-                .ip = ip_str,
+                .ip = ip_alloc,
                 .port = src_addr.getPort(),
             },
             .role = .worker, // Default
@@ -620,7 +611,7 @@ pub const ClusterManager = struct {
         );
         defer state.deinit(self.allocator);
 
-        const now = std.time.timestamp();
+        const now = @as(u64, @intCast(std.time.timestamp()));
 
         for (self.nodes.items) |node| {
             const peer = persistence.PeerState{
