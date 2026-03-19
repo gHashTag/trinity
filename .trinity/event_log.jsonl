@@ -160,3 +160,193 @@
 {"ts":1773885952,"seq":1478,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
 {"ts":1773885952,"seq":1479,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
 {"ts":1773885952,"seq":1480,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":242,"build_ok":true,"dirty":17,"issues":46,"alerts":0}
+{"ts":1773886252,"seq":1481,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773886254,"seq":1482,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773886254,"seq":1483,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773886254,"seq":1484,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773886254,"seq":1485,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773886254,"seq":1486,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773886254,"seq":1487,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773886254,"seq":1488,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773886256,"seq":1489,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773886256,"seq":1490,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773886256,"seq":1491,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773886256,"seq":1492,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773886256,"seq":1493,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":244,"build_ok":true,"dirty":5,"issues":46,"alerts":0}
+{"ts":1773886476,"seq":1430,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773886477,"seq":1431,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773886477,"seq":1432,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773886477,"seq":1433,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773886477,"seq":1434,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773886477,"seq":1435,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773886478,"seq":1436,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773886478,"seq":1437,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773886480,"seq":1438,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773886480,"seq":1439,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773886480,"seq":1440,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773886480,"seq":1441,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773886480,"seq":1442,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":236,"build_ok":true,"dirty":13,"issues":46,"alerts":0}
+{"ts":1773886510,"seq":856,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773886511,"seq":857,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773886511,"seq":858,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773886511,"seq":859,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773886511,"seq":860,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773886511,"seq":861,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773886511,"seq":862,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773886511,"seq":863,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773886513,"seq":864,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773886513,"seq":865,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773886513,"seq":866,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773886513,"seq":867,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773886513,"seq":868,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":148,"build_ok":true,"dirty":15,"issues":46,"alerts":0}
+{"ts":1773886556,"seq":1494,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773886557,"seq":1495,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773886557,"seq":1496,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773886557,"seq":1497,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773886557,"seq":1498,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773886557,"seq":1499,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773886560,"seq":1500,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773886560,"seq":1501,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773886563,"seq":1502,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773886563,"seq":1503,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773886563,"seq":1504,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773886563,"seq":1505,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773886563,"seq":1506,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":246,"build_ok":true,"dirty":18,"issues":46,"alerts":0}
+{"ts":1773886760,"seq":768,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773886761,"seq":769,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773886761,"seq":770,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773886761,"seq":771,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773886761,"seq":772,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773886761,"seq":773,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773886761,"seq":774,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773886761,"seq":775,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773886763,"seq":776,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773886763,"seq":777,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773886763,"seq":778,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773886763,"seq":779,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773886763,"seq":780,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":134,"build_ok":true,"dirty":21,"issues":46,"alerts":0}
+{"ts":1773886780,"seq":1443,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773886781,"seq":1444,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773886781,"seq":1445,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773886781,"seq":1446,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773886781,"seq":1447,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773886781,"seq":1448,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773886781,"seq":1449,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773886781,"seq":1450,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773886783,"seq":1451,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773886783,"seq":1452,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773886783,"seq":1453,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773886783,"seq":1454,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773886783,"seq":1455,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":238,"build_ok":true,"dirty":22,"issues":46,"alerts":0}
+{"ts":1773886863,"seq":1507,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773886864,"seq":1508,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773886864,"seq":1509,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773886864,"seq":1510,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773886864,"seq":1511,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773886864,"seq":1512,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773886865,"seq":1513,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773886865,"seq":1514,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773886867,"seq":1515,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773886867,"seq":1516,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773886867,"seq":1517,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773886867,"seq":1518,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773886867,"seq":1519,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":248,"build_ok":true,"dirty":22,"issues":46,"alerts":0}
+{"ts":1773887083,"seq":1456,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773887084,"seq":1457,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773887085,"seq":1458,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773887085,"seq":1459,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773887085,"seq":1460,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773887085,"seq":1461,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773887086,"seq":1462,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773887086,"seq":1463,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773887088,"seq":1464,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773887088,"seq":1465,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773887088,"seq":1466,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773887088,"seq":1467,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773887088,"seq":1468,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":240,"build_ok":true,"dirty":21,"issues":46,"alerts":0}
+{"ts":1773887113,"seq":869,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773887116,"seq":870,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773887117,"seq":871,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773887117,"seq":872,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773887117,"seq":873,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773887117,"seq":874,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773887117,"seq":875,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773887117,"seq":876,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773887120,"seq":877,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773887120,"seq":878,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773887120,"seq":879,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773887120,"seq":880,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773887120,"seq":881,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":150,"build_ok":true,"dirty":22,"issues":46,"alerts":0}
+{"ts":1773887167,"seq":1520,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773887169,"seq":1521,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773887170,"seq":1522,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773887170,"seq":1523,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773887170,"seq":1524,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773887170,"seq":1525,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773887173,"seq":1526,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773887173,"seq":1527,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773887176,"seq":1528,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773887176,"seq":1529,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773887176,"seq":1530,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773887176,"seq":1531,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773887176,"seq":1532,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":250,"build_ok":true,"dirty":25,"issues":46,"alerts":0}
+{"ts":1773887363,"seq":781,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773887365,"seq":782,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773887365,"seq":783,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773887365,"seq":784,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773887365,"seq":785,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773887365,"seq":786,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773887365,"seq":787,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773887365,"seq":788,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773887367,"seq":789,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773887368,"seq":790,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773887368,"seq":791,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773887368,"seq":792,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773887368,"seq":793,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":136,"build_ok":true,"dirty":29,"issues":46,"alerts":0}
+{"ts":1773887388,"seq":1469,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773887393,"seq":1470,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773887393,"seq":1471,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773887393,"seq":1472,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773887393,"seq":1473,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773887393,"seq":1474,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773887394,"seq":1475,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773887394,"seq":1476,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773887397,"seq":1477,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773887401,"seq":1478,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773887401,"seq":1479,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773887401,"seq":1480,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773887401,"seq":1481,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":242,"build_ok":true,"dirty":31,"issues":46,"alerts":0}
+{"ts":1773887476,"seq":1533,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773887479,"seq":1534,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773887479,"seq":1535,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773887479,"seq":1536,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773887479,"seq":1537,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773887479,"seq":1538,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773887480,"seq":1539,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773887480,"seq":1540,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773887486,"seq":1541,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773887487,"seq":1542,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773887487,"seq":1543,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773887487,"seq":1544,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773887487,"seq":1545,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":252,"build_ok":true,"dirty":36,"issues":46,"alerts":0}
+{"ts":1773887701,"seq":1482,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773887703,"seq":1483,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773887703,"seq":1484,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773887703,"seq":1485,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773887703,"seq":1486,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773887703,"seq":1487,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773887704,"seq":1488,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773887704,"seq":1489,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}
+{"ts":1773887706,"seq":1490,"agent":"queen","kind":"queen_cycle","step":8,"total":12,"text":"Heartbeat check"}
+{"ts":1773887706,"seq":1491,"agent":"queen","kind":"queen_cycle","step":9,"total":12,"text":"Daily summary check"}
+{"ts":1773887706,"seq":1492,"agent":"queen","kind":"queen_cycle","step":10,"total":12,"text":"Update delta state"}
+{"ts":1773887706,"seq":1493,"agent":"queen","kind":"queen_cycle","step":11,"total":12,"text":"Persist state"}
+{"ts":1773887706,"seq":1494,"agent":"queen","kind":"queen_cycle","event":"queen_cycle","cycle":244,"build_ok":true,"dirty":36,"issues":46,"alerts":0}
+{"ts":1773887720,"seq":882,"agent":"queen","kind":"queen_cycle","step":1,"total":10,"text":"System snapshot"}
+{"ts":1773887721,"seq":883,"agent":"queen","kind":"queen_cycle","step":2,"total":10,"text":"Collecting 18 senses"}
+{"ts":1773887721,"seq":884,"agent":"queen","kind":"queen_cycle","step":3,"total":10,"text":"Writing SwiftUI data"}
+{"ts":1773887721,"seq":885,"agent":"queen","kind":"queen_cycle","step":4,"total":10,"text":"Reading evolution + arena"}
+{"ts":1773887721,"seq":886,"agent":"queen","kind":"queen_cycle","step":5,"total":10,"text":"Detecting alerts"}
+{"ts":1773887721,"seq":887,"agent":"queen","kind":"queen_cycle","step":6,"total":10,"text":"Policy-gated auto-actions"}
+{"ts":1773887721,"seq":888,"agent":"queen","kind":"queen_cycle","step":7,"total":12,"text":"Phase 2 Brain (PMC → M1)"}
+{"ts":1773887721,"seq":889,"agent":"queen","kind":"queen_cycle","step":8,"total":13,"text":"Phase 3 Brain (DLPFC)"}

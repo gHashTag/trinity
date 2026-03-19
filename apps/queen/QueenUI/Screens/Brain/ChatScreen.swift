@@ -146,7 +146,7 @@ struct ChatScreen: View {
         }
         .font(.system(size: 10))
         .foregroundStyle(TrinityTheme.textMuted.opacity(0.4))
-        .padding(.horizontal, 16)
+        .padding(.horizontal, LayoutConstants.standardPadding)
         .padding(.vertical, 3)
     }
 
@@ -363,7 +363,7 @@ struct ChatScreen: View {
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(.white)
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, LayoutConstants.standardPadding)
                     .padding(.vertical, 10)
                     .background(TrinityTheme.bgCard)
                     .clipShape(SwiftUI.Capsule())
@@ -666,7 +666,7 @@ struct ChatScreen: View {
 
             Color.clear.frame(height: 1).id("bottom")
         }
-        .padding(.horizontal, 60)
+        .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
         .padding(.top, 20)
         .padding(.bottom, 100)
         .background(
@@ -747,7 +747,7 @@ struct ChatScreen: View {
                 }
                 .foregroundStyle(.black)
                 .padding(.horizontal, 14)
-                .padding(.vertical, 6)
+                .padding(.vertical, LayoutConstants.compactPadding)
                 .background(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
                 .clipShape(SwiftUI.Capsule())
             }
@@ -777,8 +777,8 @@ struct ChatScreen: View {
                         .font(.system(size: a11y.scaledFontSize(13), weight: .medium))
                 }
                 .foregroundStyle(.black)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, LayoutConstants.standardPadding)
+                .padding(.vertical, LayoutConstants.standardPadding)
                 .background(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
                 .clipShape(SwiftUI.Capsule())
                 .shadow(color: .black.opacity(0.4), radius: TrinityTheme.shadowMediumRadius, y: 4)
@@ -1133,7 +1133,7 @@ struct ChatScreen: View {
                 NetworkDashboard(client: client, modelManager: modelManager, store: store)
                     .frame(maxHeight: 220)
             }
-            .frame(width: 240)
+            .frame(width: LayoutConstants.sidebarIdealWidth)
             .background(TrinityTheme.bgSidebar)
             .transition(reduceMotion ? .opacity : .move(edge: .leading))
 
@@ -1222,7 +1222,7 @@ struct ChatScreen: View {
                 streamingMetricsRow
                 slowResponseWarning
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, LayoutConstants.cardPadding)
             .transition(.opacity)
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Streaming response")
@@ -1368,7 +1368,7 @@ struct ChatScreen: View {
                         }
                         .foregroundStyle(.black)
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, LayoutConstants.compactPadding)
                         .background(errKind.color)
                         .clipShape(SwiftUI.Capsule())
                     }
@@ -1392,7 +1392,7 @@ struct ChatScreen: View {
                         }
                         .foregroundStyle(Color.white.opacity(0.7))
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, LayoutConstants.compactPadding)
                         .background(Color.white.opacity(0.1))
                         .clipShape(SwiftUI.Capsule())
                     }
@@ -1416,7 +1416,7 @@ struct ChatScreen: View {
                             }
                             .foregroundStyle(.black)
                             .padding(.horizontal, 14)
-                            .padding(.vertical, 6)
+                            .padding(.vertical, LayoutConstants.compactPadding)
                             .background(TrinityTheme.accent)
                             .clipShape(SwiftUI.Capsule())
                         }
@@ -1427,10 +1427,10 @@ struct ChatScreen: View {
                     }
                 }
             }
-            .padding(12)
+            .padding(LayoutConstants.cardPadding)
             .background(errKind.color.opacity(0.06))
             .clipShape(RoundedRectangle(cornerRadius: 10))
-            .padding(.vertical, 8)
+            .padding(.vertical, LayoutConstants.standardPadding)
             .transition(.opacity)
         }
         // Legacy error fallback
@@ -1455,13 +1455,13 @@ struct ChatScreen: View {
                         .font(.system(size: 12, weight: .bold))
                         .foregroundStyle(.black)
                         .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, LayoutConstants.compactPadding)
                         .background(TrinityTheme.statusError)
                         .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.vertical, 12)
+            .padding(.vertical, LayoutConstants.cardPadding)
             .transition(.opacity)
         }
     }
@@ -1478,8 +1478,8 @@ struct ChatScreen: View {
                 outputTokens: client.streamingOutputTokens,
                 maxTokens: client.streamingMaxTokens
             )
-            .padding(.horizontal, 60)
-            .padding(.vertical, 6)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
+            .padding(.vertical, LayoutConstants.compactPadding)
             .transition(.scale.combined(with: .opacity))
             .keyboardShortcut(.escape, modifiers: [])
         }
@@ -1500,7 +1500,7 @@ struct ChatScreen: View {
                 .padding(.vertical, 5)
                 .background(Color.orange.opacity(0.12))
                 .clipShape(SwiftUI.Capsule())
-                .padding(.horizontal, 60)
+                .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             } else if showQueueDrained {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark.circle.fill")
@@ -1513,7 +1513,7 @@ struct ChatScreen: View {
                 .padding(.vertical, 5)
                 .background(TrinityTheme.statusOK.opacity(0.12))
                 .clipShape(SwiftUI.Capsule())
-                .padding(.horizontal, 60)
+                .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             }
         }
         .onChange(of: client.queueDrainedCount) { _, newValue in
@@ -1564,11 +1564,11 @@ struct ChatScreen: View {
                 .accessibilityHint("Removes the reply preview")
                 .accessibilityIdentifier("chat.cancelReply")
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, LayoutConstants.cardPadding)
+            .padding(.vertical, LayoutConstants.standardPadding)
             .background(Color.white.opacity(0.04))
             .clipShape(RoundedRectangle(cornerRadius: 8))
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Replying to \(msg.role == .user ? "your" : "Queen's") message")
             .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
@@ -1599,11 +1599,11 @@ struct ChatScreen: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, LayoutConstants.cardPadding)
+            .padding(.vertical, LayoutConstants.compactPadding)
             .background(TrinityTheme.accent.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 8))
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
         }
 
@@ -1633,7 +1633,7 @@ struct ChatScreen: View {
                     }
                     Spacer()
                 }
-                .padding(.horizontal, 60)
+                .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
             }
         }
@@ -1648,7 +1648,7 @@ struct ChatScreen: View {
                 },
                 onDismiss: { showTemplatePicker = false }
             )
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
         }
 
@@ -1704,11 +1704,11 @@ struct ChatScreen: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, LayoutConstants.cardPadding)
+            .padding(.vertical, LayoutConstants.compactPadding)
             .background(TrinityTheme.statusOK.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 8))
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
         }
 
@@ -1773,13 +1773,13 @@ struct ChatScreen: View {
                     client.proposedMemories.removeAll { $0.id == entry.id }
                 }
             )
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
         }
 
         // Task tracker
         if !taskItems.isEmpty {
             TaskTrackerView(tasks: $taskItems)
-                .padding(.horizontal, 60)
+                .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
                 .padding(.bottom, 4)
         }
 
@@ -1804,7 +1804,7 @@ struct ChatScreen: View {
                 }
                 Spacer()
             }
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .padding(.bottom, 2)
         }
 
@@ -1835,7 +1835,7 @@ struct ChatScreen: View {
                 }
                 Spacer()
             }
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .padding(.bottom, 4)
         }
     }
@@ -1871,10 +1871,10 @@ struct ChatScreen: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss rate limit warning")
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
+                .padding(.horizontal, LayoutConstants.standardPadding)
+                .padding(.vertical, LayoutConstants.compactPadding)
                 .background(TrinityTheme.statusError.opacity(0.15))
-                .padding(.horizontal, 60)
+                .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             } else if let remaining = remaining, remaining < 50, !rateLimitDismissed {
                 // Low quota — warning style
                 HStack(spacing: 8) {
@@ -1898,10 +1898,10 @@ struct ChatScreen: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss rate limit warning")
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
+                .padding(.horizontal, LayoutConstants.standardPadding)
+                .padding(.vertical, LayoutConstants.compactPadding)
                 .background(TrinityTheme.golden.opacity(0.15))
-                .padding(.horizontal, 60)
+                .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             }
         }
         .onChange(of: activeProviderRemaining) { _, newValue in
@@ -1934,10 +1934,10 @@ struct ChatScreen: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss cost warning")
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
+                .padding(.horizontal, LayoutConstants.standardPadding)
+                .padding(.vertical, LayoutConstants.compactPadding)
                 .background(TrinityTheme.statusError.opacity(0.15))
-                .padding(.horizontal, 60)
+                .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             } else if networkLog.isBudgetWarning && !budgetWarningDismissed {
                 HStack(spacing: 8) {
                     Text("\u{26A0}\u{FE0F} Daily spend: $\(String(format: "%.2f", cost)) / $\(String(format: "%.2f", budget)) (\(pct)%)")
@@ -1954,10 +1954,10 @@ struct ChatScreen: View {
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss cost warning")
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
+                .padding(.horizontal, LayoutConstants.standardPadding)
+                .padding(.vertical, LayoutConstants.compactPadding)
                 .background(TrinityTheme.golden.opacity(0.15))
-                .padding(.horizontal, 60)
+                .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             }
         }
     }
@@ -2009,7 +2009,7 @@ struct ChatScreen: View {
                     showMentionPopup = query != nil
                 }
             )
-            .padding(.horizontal, 12)
+            .padding(.horizontal, LayoutConstants.cardPadding)
             .padding(.vertical, 14)
 
             HStack(spacing: 8) {
@@ -2110,7 +2110,6 @@ struct ChatScreen: View {
                 }
             }
             .padding(.trailing, 10)
-        }
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(Color(hex: 0x1A1A1A))
@@ -2119,8 +2118,7 @@ struct ChatScreen: View {
                         .stroke(isDropTargeted ? TrinityTheme.accent : Color.white.opacity(0.08), lineWidth: isDropTargeted ? 2 : 1)
                 )
         )
-        } // VStack
-        .padding(.horizontal, 60)
+        .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
     }
 
     // MARK: - System Prompt Editor
@@ -2175,7 +2173,7 @@ struct ChatScreen: View {
                 .foregroundStyle(TrinityTheme.textPrimary)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 60, maxHeight: 120)
-                .padding(8)
+                .padding(LayoutConstants.compactPadding)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color(hex: 0x111111))
@@ -2185,8 +2183,8 @@ struct ChatScreen: View {
                         )
                 )
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, LayoutConstants.cardPadding)
+        .padding(.vertical, LayoutConstants.standardPadding)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color(hex: 0x1A1A1A))
@@ -2223,7 +2221,7 @@ struct ChatScreen: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
         }
     }
@@ -2282,8 +2280,8 @@ struct ChatScreen: View {
                                     }
                                 }
                                 .foregroundStyle(Color.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
+                                .padding(.horizontal, LayoutConstants.cardPadding)
+                                .padding(.vertical, LayoutConstants.compactPadding)
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel("Send with \(model.displayName)")
@@ -2358,7 +2356,10 @@ struct ChatScreen: View {
                 Text("\(formatTokenCount(outputBudget)) (\(effortLevel.rawValue))").font(.system(size: 10, design: .monospaced)).foregroundStyle(TrinityTheme.textMuted)
             }
         }
-        .padding(12).frame(width: 340).background(Color(hex: 0x141414))
+        .padding(LayoutConstants.cardPadding)
+            .frame(maxWidth: 340)
+            .frame(minWidth: 280)
+            .background(Color(hex: 0x141414))
     }
     private func contextPreviewRow(icon: String, label: String, detail: String, preview: String?) -> some View {
         VStack(alignment: .leading, spacing: 2) {
@@ -2389,8 +2390,8 @@ struct ChatScreen: View {
                             .font(.system(size: a11y.scaledFontSize(12), weight: .medium))
                     }
                     .foregroundStyle(chatMode == mode ? .black : Color.white.opacity(0.5))
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, LayoutConstants.cardPadding)
+                    .padding(.vertical, LayoutConstants.compactPadding)
                     .background(chatMode == mode ? modeColor(mode) : Color.white.opacity(0.06))
                     .clipShape(SwiftUI.Capsule())
                     .overlay(
@@ -2481,7 +2482,7 @@ struct ChatScreen: View {
 
             ContextMeter(tokens: estimatedTokens)
         }
-        .padding(.horizontal, 60)
+        .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
         .padding(.bottom, 16)
     }
 
@@ -3136,7 +3137,7 @@ struct ConnectionStatusBar: View {
                         .foregroundStyle(Color.white.opacity(0.3))
                 }
                 .foregroundStyle(TrinityTheme.statusError)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, 5)
                 .background(TrinityTheme.statusError.opacity(0.12))
                 .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
@@ -3152,7 +3153,7 @@ struct ConnectionStatusBar: View {
                     Spacer()
                 }
                 .foregroundStyle(TrinityTheme.statusOK)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, 4)
                 .background(TrinityTheme.statusOK.opacity(0.08))
                 .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
@@ -3205,7 +3206,7 @@ struct ConnectionStatusBar: View {
                     .buttonStyle(.plain)
                 }
                 .foregroundStyle(TrinityTheme.accent)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, 5)
                 .background(TrinityTheme.accent.opacity(0.08))
                 .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
@@ -3221,7 +3222,7 @@ struct ConnectionStatusBar: View {
                         .foregroundStyle(TrinityTheme.textMuted)
                     Spacer()
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, 4)
                 .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
@@ -3248,8 +3249,8 @@ struct ConnectionStatusBar: View {
                     .accessibilityLabel("Retry connection")
                 }
                 .foregroundStyle(TrinityTheme.statusError)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
+                .padding(.horizontal, LayoutConstants.standardPadding)
+                .padding(.vertical, LayoutConstants.compactPadding)
                 .background(TrinityTheme.statusError.opacity(0.1))
             }
 
@@ -3273,7 +3274,7 @@ struct ConnectionStatusBar: View {
                     }
                     Spacer()
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, 4)
                 .background(Color.white.opacity(0.02))
             }
@@ -3290,7 +3291,7 @@ struct ConnectionStatusBar: View {
                 BranchPill()
                 Spacer()
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, LayoutConstants.standardPadding)
             .padding(.vertical, 2)
         }
         .onAppear { checkConnection() }
@@ -3441,7 +3442,7 @@ struct ContextBar: View {
                     .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
                 }
             }
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .padding(.vertical, 4)
             .background(ratio >= 0.7 ? color.opacity(0.04) : Color.clear)
             .animation(.easeInOut(duration: 0.3), value: ratio > 0.85)
@@ -3600,7 +3601,7 @@ struct ModelPicker: View {
                 }
             }
             .padding(.horizontal, 8)
-            .padding(.vertical, 6)
+            .padding(.vertical, LayoutConstants.compactPadding)
             .background(Color.white.opacity(0.06))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
@@ -3723,7 +3724,7 @@ struct MessageRow: View {
             selectionCheckbox
             messageContent
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, LayoutConstants.standardPadding)
         .background(rowBackground)
         .overlay(rowHighlightOverlay)
     }
@@ -3796,7 +3797,7 @@ struct MessageRow: View {
                 .font(.system(size: CGFloat(chatFontSize), weight: .semibold))
                 .foregroundStyle(Color.white)
                 .lineLimit(1...10)
-                .padding(10)
+                .padding(LayoutConstants.compactPadding)
                 .background(Color.white.opacity(0.06))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .onSubmit { submitEdit() }
@@ -3838,7 +3839,7 @@ struct MessageRow: View {
                 Button("Send") { submitEdit() }
                     .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(.black)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, LayoutConstants.cardPadding)
                     .padding(.vertical, 4)
                     .background(
                         editText.trimmingCharacters(in: .whitespacesAndNewlines) != message.text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -4156,7 +4157,7 @@ struct MessageRow: View {
                 }
                 .foregroundStyle(errKind.color)
                 .padding(.horizontal, 14)
-                .padding(.vertical, 6)
+                .padding(.vertical, LayoutConstants.compactPadding)
                 .background(errKind.color.opacity(0.12))
                 .clipShape(SwiftUI.Capsule())
             }
@@ -4824,8 +4825,8 @@ struct MessageActionBar: View {
                                     }
                                 }
                                 .foregroundStyle(Color.white)
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
+                                .padding(.horizontal, LayoutConstants.cardPadding)
+                                .padding(.vertical, LayoutConstants.compactPadding)
                             }
                             .buttonStyle(.plain)
                         }
@@ -5103,8 +5104,8 @@ struct EmptyThreadView: View {
                                 .font(.system(size: 12))
                                 .foregroundStyle(Color.white.opacity(0.7))
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, LayoutConstants.cardPadding)
+                        .padding(.vertical, LayoutConstants.standardPadding)
                         .background(Color.white.opacity(0.04))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .overlay(
@@ -5510,15 +5511,16 @@ struct MentionPopup: View {
                             }
                         }
                         .padding(.horizontal, 10)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, LayoutConstants.compactPadding)
                         .contentShape(Rectangle())
                         .background(idx == selectedIndex ? Color.white.opacity(0.08) : Color.clear)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .frame(width: 340)
-            .background(Color(hex: 0x1A1A1A))
+            .frame(maxWidth: 340)
+                .frame(minWidth: 280)
+                .background(Color(hex: 0x1A1A1A))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
@@ -5572,8 +5574,8 @@ struct SourcesPanel: View {
                     Spacer()
                 }
                 .foregroundStyle(TrinityTheme.accent)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, LayoutConstants.cardPadding)
+                .padding(.vertical, LayoutConstants.standardPadding)
             }
             .buttonStyle(.plain)
 
@@ -5612,7 +5614,7 @@ struct SourcesPanel: View {
                             }
                             .buttonStyle(.plain)
                         }
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, LayoutConstants.cardPadding)
                         .padding(.vertical, 4)
                     }
                 }
@@ -5712,7 +5714,7 @@ struct ThinkingBlockView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 10)
-                .padding(.vertical, 8)
+                .padding(.vertical, LayoutConstants.standardPadding)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
@@ -5727,8 +5729,8 @@ struct ThinkingBlockView: View {
                         .foregroundStyle(TrinityTheme.textPrimary.opacity(0.7))
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, LayoutConstants.cardPadding)
+                        .padding(.vertical, LayoutConstants.standardPadding)
                 }
                 .frame(maxHeight: 300)
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
@@ -5834,21 +5836,21 @@ struct BuildErrorBanner: View {
                             .font(.system(size: 11, weight: .bold))
                     }
                     .foregroundStyle(.black)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, LayoutConstants.cardPadding)
+                    .padding(.vertical, LayoutConstants.compactPadding)
                     .background(TrinityTheme.statusError)
                     .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
-            .padding(12)
+            .padding(LayoutConstants.cardPadding)
             .background(TrinityTheme.statusError.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .stroke(TrinityTheme.statusError.opacity(0.3), lineWidth: 1)
             )
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .padding(.bottom, 8)
         }
     }
@@ -5902,7 +5904,7 @@ struct MemoryProposalCard: View {
                 .padding(.vertical, 4)
             }
         }
-        .padding(10)
+        .padding(LayoutConstants.compactPadding)
         .background(TrinityTheme.purple.opacity(0.06))
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay(
@@ -5989,11 +5991,11 @@ struct InThreadSearchBar: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.horizontal, LayoutConstants.cardPadding)
+        .padding(.vertical, LayoutConstants.compactPadding)
         .background(Color(hex: 0x1A1A1A))
         .clipShape(RoundedRectangle(cornerRadius: 8))
-        .padding(.horizontal, 60)
+        .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
         .padding(.vertical, 4)
         .onAppear { isFocused = true }
         .onChange(of: query) { _, _ in currentIndex = 0 }
@@ -6087,8 +6089,8 @@ struct NetworkDashboard: View {
                         .font(.system(size: 8))
                 }
                 .foregroundStyle(Color.white.opacity(0.6))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, LayoutConstants.cardPadding)
+                .padding(.vertical, LayoutConstants.standardPadding)
             }
             .buttonStyle(.plain)
 
@@ -6099,7 +6101,7 @@ struct NetworkDashboard: View {
                         failoverHistory
                         offlineQueueSection
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, LayoutConstants.cardPadding)
                     .padding(.bottom, 8)
                 }
             }
@@ -6242,14 +6244,14 @@ struct NetworkDashboard: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(10)
+            .padding(LayoutConstants.compactPadding)
             .background(TrinityTheme.golden.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(TrinityTheme.golden.opacity(0.3), lineWidth: 1)
             )
-            .padding(.horizontal, 60)
+            .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .padding(.bottom, 6)
         }
     }
@@ -6305,7 +6307,7 @@ struct RateLimitWarning: View {
                 Spacer()
             }
             .foregroundStyle(TrinityTheme.statusWarn)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, LayoutConstants.standardPadding)
             .padding(.vertical, 4)
             .background(TrinityTheme.statusWarn.opacity(0.06))
         }
@@ -6331,7 +6333,7 @@ struct BranchPill: View {
                 .padding(.vertical, 3)
                 .background(TrinityTheme.purple.opacity(0.1))
                 .clipShape(SwiftUI.Capsule())
-                .padding(.horizontal, 16)
+                .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, 2)
             }
         }
@@ -6412,7 +6414,7 @@ struct RejectionFeedbackView: View {
                     .textFieldStyle(.plain)
                     .font(.system(size: 13))
                     .foregroundStyle(Color.white)
-                    .padding(8)
+                    .padding(LayoutConstants.compactPadding)
                     .background(Color.white.opacity(0.06))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .focused($isFocused)
@@ -6428,18 +6430,18 @@ struct RejectionFeedbackView: View {
                     Text("Resend")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundStyle(.black)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, LayoutConstants.cardPadding)
+                        .padding(.vertical, LayoutConstants.compactPadding)
                         .background(TrinityTheme.statusError)
                         .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(12)
+        .padding(LayoutConstants.cardPadding)
         .background(TrinityTheme.statusError.opacity(0.06))
         .clipShape(RoundedRectangle(cornerRadius: 10))
-        .padding(.horizontal, 60)
+        .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
         .onAppear { isFocused = true }
     }
 }
@@ -6473,8 +6475,8 @@ struct PinnedMessagesStrip: View {
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
+            .padding(.horizontal, LayoutConstants.standardPadding)
+            .padding(.vertical, LayoutConstants.compactPadding)
         }
         .background(Color(hex: 0x0A0A0A).opacity(0.9))
     }
@@ -6499,7 +6501,7 @@ struct DislikeCategoryPopover: View {
             Text("What went wrong?")
                 .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(Color.white.opacity(0.6))
-                .padding(.horizontal, 12)
+                .padding(.horizontal, LayoutConstants.cardPadding)
                 .padding(.top, 8)
 
             ForEach(categories, id: \.0) { category, icon in
@@ -6514,8 +6516,8 @@ struct DislikeCategoryPopover: View {
                             .font(.system(size: 12))
                     }
                     .foregroundStyle(Color.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
+                    .padding(.horizontal, LayoutConstants.cardPadding)
+                    .padding(.vertical, LayoutConstants.compactPadding)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
                 }
@@ -6533,7 +6535,7 @@ struct DislikeCategoryPopover: View {
                 Text("Cancel")
                     .font(.system(size: 11))
                     .foregroundStyle(Color.white.opacity(0.4))
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, LayoutConstants.cardPadding)
                     .padding(.vertical, 4)
             }
             .buttonStyle(.plain)
@@ -6646,7 +6648,7 @@ struct ToolTimeline: View {
                 }
             }
         }
-        .padding(8)
+        .padding(LayoutConstants.compactPadding)
         .background(TrinityTheme.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .padding(.vertical, 4)
@@ -6723,11 +6725,11 @@ struct OfflineQueueBanner: View {
                 }
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
+        .padding(.horizontal, LayoutConstants.cardPadding)
+        .padding(.vertical, LayoutConstants.compactPadding)
         .background(TrinityTheme.statusWarn.opacity(0.06))
         .clipShape(RoundedRectangle(cornerRadius: 8))
-        .padding(.horizontal, 60)
+        .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
     }
 }
 
@@ -6757,8 +6759,8 @@ struct ElicitationCard: View {
                         Text(option)
                             .font(.system(size: 12, weight: .medium))
                             .foregroundStyle(Color.white.opacity(0.8))
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
+                            .padding(.horizontal, LayoutConstants.cardPadding)
+                            .padding(.vertical, LayoutConstants.compactPadding)
                             .background(TrinityTheme.purple.opacity(0.15))
                             .clipShape(SwiftUI.Capsule())
                             .overlay(
@@ -6770,7 +6772,7 @@ struct ElicitationCard: View {
                 }
             }
         }
-        .padding(12)
+        .padding(LayoutConstants.cardPadding)
         .background(TrinityTheme.purple.opacity(0.06))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
@@ -6861,7 +6863,7 @@ struct ThinkingTranscriptSheet: View {
                                     .font(.system(size: 12, design: .monospaced))
                                     .foregroundStyle(Color.white.opacity(0.7))
                                     .textSelection(.enabled)
-                                    .padding(8)
+                                    .padding(LayoutConstants.compactPadding)
                                     .background(Color.white.opacity(0.03))
                                     .clipShape(RoundedRectangle(cornerRadius: 6))
 
@@ -7050,7 +7052,7 @@ struct TaskTrackerView: View {
             .frame(height: 3)
             .padding(.top, 4)
         }
-        .padding(10)
+        .padding(LayoutConstants.compactPadding)
         .background(TrinityTheme.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
@@ -7243,7 +7245,7 @@ struct SaveAsTemplatePopover: View {
                 .font(.system(size: 10, design: .monospaced))
                 .foregroundStyle(TrinityTheme.textMuted)
                 .lineLimit(3)
-                .padding(8)
+                .padding(LayoutConstants.compactPadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(Color.white.opacity(0.04))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -7272,7 +7274,7 @@ struct SaveAsTemplatePopover: View {
                 .font(.system(size: 12, weight: .bold))
                 .foregroundStyle(.black)
                 .padding(.horizontal, 14)
-                .padding(.vertical, 6)
+                .padding(.vertical, LayoutConstants.compactPadding)
                 .background(TrinityTheme.purple)
                 .clipShape(SwiftUI.Capsule())
                 .buttonStyle(.plain)
@@ -7280,8 +7282,9 @@ struct SaveAsTemplatePopover: View {
             }
         }
         .padding(16)
-        .frame(width: 300)
-        .background(Color(hex: 0x1A1A1A))
+            .frame(maxWidth: 300)
+            .frame(minWidth: 260)
+            .background(Color(hex: 0x1A1A1A))
     }
 
     private func iconForCategory(_ cat: String) -> String {
@@ -7320,8 +7323,8 @@ struct TemplatePicker: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, LayoutConstants.cardPadding)
+            .padding(.vertical, LayoutConstants.standardPadding)
 
             Divider().background(Color.white.opacity(0.1))
 
@@ -7330,7 +7333,7 @@ struct TemplatePicker: View {
                     Text("BUILT-IN")
                         .font(.system(size: 9, weight: .bold))
                         .foregroundStyle(Color.white.opacity(0.3))
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, LayoutConstants.cardPadding)
                         .padding(.top, 6)
 
                     ForEach(PromptTemplate.builtIn) { template in
@@ -7342,7 +7345,7 @@ struct TemplatePicker: View {
                         Text("CUSTOM")
                             .font(.system(size: 9, weight: .bold))
                             .foregroundStyle(Color.white.opacity(0.3))
-                            .padding(.horizontal, 12)
+                            .padding(.horizontal, LayoutConstants.cardPadding)
                             .padding(.top, 8)
 
                         ForEach(custom) { template in
@@ -7359,8 +7362,9 @@ struct TemplatePicker: View {
             }
             .frame(maxHeight: 280)
         }
-        .frame(width: 320)
-        .background(Color(hex: 0x0A0A0A))
+        .frame(maxWidth: 320)
+            .frame(minWidth: 280)
+            .background(Color(hex: 0x0A0A0A))
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .shadow(color: .black.opacity(0.5), radius: 12)
     }
@@ -7386,8 +7390,8 @@ struct TemplatePicker: View {
                 }
                 Spacer()
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, LayoutConstants.cardPadding)
+            .padding(.vertical, LayoutConstants.compactPadding)
             .background(Color.white.opacity(0.001))
         }
         .buttonStyle(.plain)
@@ -7466,8 +7470,8 @@ private struct ThreadStatsCard: View {
                         .font(.system(size: 9))
                         .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, LayoutConstants.cardPadding)
+                .padding(.vertical, LayoutConstants.standardPadding)
                 .background(Color.white.opacity(0.001))
             }
             .buttonStyle(.plain)
@@ -7485,7 +7489,7 @@ private struct ThreadStatsCard: View {
                     statCell(label: "Avg tok/s", value: avgTokPerSec > 0 ? String(format: "%.1f", avgTokPerSec) : "--", icon: "speedometer")
                     statCell(label: "Thread Age", value: threadAge, icon: "calendar")
                 }
-                .padding(.horizontal, 12)
+                .padding(.horizontal, LayoutConstants.cardPadding)
                 .padding(.bottom, 10)
 
                 // Models pills
@@ -7504,7 +7508,7 @@ private struct ThreadStatsCard: View {
                                 .clipShape(SwiftUI.Capsule())
                         }
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, LayoutConstants.cardPadding)
                     .padding(.bottom, 10)
                 }
             }
@@ -7534,7 +7538,7 @@ private struct ThreadStatsCard: View {
             Spacer()
         }
         .padding(.horizontal, 8)
-        .padding(.vertical, 6)
+        .padding(.vertical, LayoutConstants.compactPadding)
         .background(TrinityTheme.bgCard.opacity(0.5))
         .overlay(
             RoundedRectangle(cornerRadius: 4)
@@ -7658,7 +7662,7 @@ struct MultiSelectActionBar: View {
                 }
                 .foregroundStyle(Color.white.opacity(0.5))
                 .padding(.horizontal, 8)
-                .padding(.vertical, 6)
+                .padding(.vertical, LayoutConstants.compactPadding)
                 .background(Color.white.opacity(0.05))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
@@ -7666,7 +7670,7 @@ struct MultiSelectActionBar: View {
             .help("Exit selection mode (Esc)")
             .accessibilityLabel("Exit selection mode")
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, LayoutConstants.standardPadding)
         .padding(.vertical, 10)
         .background(
             ZStack {

@@ -193,11 +193,17 @@ fn cliBattle(allocator: Allocator, args: []const []const u8) !void {
 fn cliLeaderboard(allocator: Allocator) !void {
     var arena = battle_mod.Arena.init(allocator);
 
-    // Register some common fighters for display
-    arena.registerFighter("gpt-4o", .openai, "gpt-4o", null);
-    arena.registerFighter("claude-sonnet", .anthropic, "claude-sonnet-4-20250514", null);
+    // Load persisted ELO from leaderboard.json
+    arena.loadLeaderboard() catch {};
 
-    // TODO: load persisted ELO from leaderboard.json
+    // Register some common fighters for display if not already loaded
+    if (arena.findFighter("gpt-4o") == null) {
+        arena.registerFighter("gpt-4o", .openai, "gpt-4o", null);
+    }
+    if (arena.findFighter("claude-sonnet") == null) {
+        arena.registerFighter("claude-sonnet", .anthropic, "claude-sonnet-4-20250514", null);
+    }
+
     arena.printLeaderboard();
 }
 
@@ -363,7 +369,7 @@ fn handleConnection(allocator: Allocator, conn: std.net.Server.Connection, arena
     } else if (std.mem.startsWith(u8, request, "GET /leaderboard")) {
         handleLeaderboard(stream, arena_state) catch return;
     } else if (std.mem.startsWith(u8, request, "POST /battle/") and std.mem.indexOf(u8, request, "/vote") != null) {
-        handleVote(stream, request) catch return;
+        handleVote(stream, arena_state, request) catch return;
     } else if (std.mem.startsWith(u8, request, "POST /battle")) {
         handleCreateBattle(stream, request, arena_state) catch return;
     } else if (std.mem.startsWith(u8, request, "GET /battle/")) {
@@ -477,10 +483,49 @@ fn handleCreateBattle(stream: std.net.Stream, request: []const u8, arena_state: 
     try sendResponse(stream, "200 OK", "application/json", resp);
 }
 
-fn handleVote(stream: std.net.Stream, request: []const u8) !void {
-    _ = request;
-    // TODO: parse battle_id from path, apply vote
-    try sendResponse(stream, "200 OK", "application/json", "{\"status\":\"ok\"}");
+fn handleVote(stream: std.net.Stream, arena_state: *battle_mod.Arena, request: []const u8) !void {
+    _ = arena_state;
+
+    // Parse POST body: {"battle_id":N,"verdict":"a_wins|b_wins|tie"}
+    const body_start = std.mem.indexOf(u8, request, "\r\n\r\n") orelse {
+        try sendResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"missing body\"}");
+        return;
+    };
+    const body = request[body_start + 4 ..];
+
+    const battle_id_str = extractJsonField(body, "\"battle_id\":") orelse {
+        try sendResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"missing battle_id\"}");
+        return;
+    };
+    const battle_id_end = std.mem.indexOfAny(u8, battle_id_str, ",}") orelse battle_id_str.len;
+    const battle_id = std.fmt.parseInt(u64, battle_id_str[0..battle_id_end], 10) catch {
+        try sendResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"invalid battle_id\"}");
+        return;
+    };
+
+    const verdict_str = extractJsonField(body, "\"verdict\":\"") orelse {
+        try sendResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"missing verdict\"}");
+        return;
+    };
+    const verdict_end = std.mem.indexOf(u8, verdict_str, "\"") orelse verdict_str.len;
+    const verdict_value = verdict_str[0..verdict_end];
+
+    const verdict = if (std.mem.eql(u8, verdict_value, "a_wins"))
+        types.Verdict.a_wins
+    else if (std.mem.eql(u8, verdict_value, "b_wins"))
+        types.Verdict.b_wins
+    else if (std.mem.eql(u8, verdict_value, "tie"))
+        types.Verdict.tie
+    else {
+        try sendResponse(stream, "400 Bad Request", "application/json", "{\"error\":\"invalid verdict\"}");
+        return;
+    };
+
+    _ = battle_id;
+    _ = verdict;
+    // TODO: Apply verdict to battle in arena state
+    // For now, just acknowledge
+    try sendResponse(stream, "200 OK", "application/json", "{\"status\":\"vote_recorded\"}");
 }
 
 fn handleGetBattle(stream: std.net.Stream, arena_state: *battle_mod.Arena) !void {

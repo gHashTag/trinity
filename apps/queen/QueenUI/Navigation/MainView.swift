@@ -66,7 +66,12 @@ public struct MainView: View {
             // Agent Stream overlay (Cmd+J)
             if showAgentStream {
                 AgentStreamView()
-                    .frame(width: 350)
+                    .frame(
+                        minWidth: LayoutConstants.agentStreamMinWidth,
+                        idealWidth: LayoutConstants.agentStreamIdealWidth,
+                        maxWidth: LayoutConstants.agentStreamMaxWidth
+                    )
+                    .frame(maxWidth: .infinity, alignment: .trailing)
                     .background(TrinityTheme.bgSidebar.opacity(0.95))
                     .transition(.move(edge: .trailing))
             }

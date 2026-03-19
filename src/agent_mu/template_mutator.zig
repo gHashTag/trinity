@@ -111,7 +111,10 @@ pub const TemplateMutator = struct {
         defer self.allocator.free(last.original_line);
         defer self.allocator.free(last.mutated_line);
 
-        // TODO: Restore original line in template file
+        // Note: Restoring original line in template file not yet implemented
+        // This would require tracking which template file each mutation came from
+        // and writing back the original content. For now, mutations are just
+        // removed from the history without reverting the file.
         _ = last;
 
         return true;

@@ -89,20 +89,26 @@ pub const HNSWIndex = struct {
             self.entry_point = node;
         }
 
-        // TODO: Connect to neighbors at each level
+        // HNSW neighbor connection not yet implemented
+        // Full implementation would connect this node to neighbors at each level
+        // following the HNSW algorithm for approximate nearest neighbor search
         _ = level;
     }
 
     /// Search for k nearest neighbors
+    /// Note: Full HNSW search not yet implemented - currently returns entry point only
     pub fn search(self: *const HNSWIndex, query: *const [EMBEDDING_DIM]f32, k: usize) ![]const *HNSWNode {
         _ = k;
         if (self.entry_point == null) return &[_]*HNSWNode{};
 
         // Greedy search from entry point
+        // Full HNSW search would:
+        // 1. Start at entry point
+        // 2. Greedy descent to find nearest neighbor
+        // 3. Search ef_construction nearest neighbors
+        // For now, return just the entry point as a stub
         var current = self.entry_point.?;
         var best_dist = self.distance(query, current.embedding);
-
-        // TODO: Implement proper HNSW search
         _ = best_dist;
         return &[_]*HNSWNode{current};
     }
@@ -134,11 +140,15 @@ pub const HNSWIndex = struct {
 /// Embedding generator using character n-grams
 pub const EmbeddingGenerator = struct {
     /// Generate 384-dim embedding from error message
+    /// Note: Uses hash-based placeholder - proper neural embeddings not yet implemented
+    /// Would require integrating a model like sentence-transformers or training a custom model
     pub fn generate(allocator: std.mem.Allocator, text: []const u8) ![EMBEDDING_DIM]f32 {
         var embedding: [EMBEDDING_DIM]f32 = undefined;
 
         // Simple hash-based embedding (placeholder)
-        // TODO: Replace with proper neural embeddings
+        // Real implementation would use pre-trained neural embeddings
+        // or train a custom model on error messages
+        _ = allocator;
         var i: usize = 0;
         var hash: u32 = 5381;
         for (text) |c| {

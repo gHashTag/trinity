@@ -31,6 +31,9 @@ enum LayoutConstants {
     static let compactPadding: CGFloat = 8
     static let standardPadding: CGFloat = 16
     static let loosePadding: CGFloat = 24
+    static let messageHorizontalPadding: CGFloat = 60
+    static let cardPadding: CGFloat = 12
+    static let inputAreaPadding: CGFloat = 16
 
     // MARK: - Buttons
 
