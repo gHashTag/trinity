@@ -94,6 +94,18 @@ pub fn getGlobal(allocator: std.mem.Allocator) !*EventBus {
     return bus;
 }
 
+/// Reset global event bus (for testing)
+pub fn resetGlobal(allocator: std.mem.Allocator) void {
+    global_mutex.lock();
+    defer global_mutex.unlock();
+
+    if (global_event_bus) |bus| {
+        bus.deinit();
+        allocator.destroy(bus);
+        global_event_bus = null;
+    }
+}
+
 pub const EventBus = struct {
     mutex: std.Thread.Mutex,
     allocator: std.mem.Allocator,
@@ -177,7 +189,7 @@ pub const EventBus = struct {
         defer self.mutex.unlock();
 
         // Add to buffer, trim if necessary
-        try self.events.append(stored);
+        try self.events.append(self.allocator, stored);
         if (self.events.items.len > MAX_EVENTS) {
             // Remove oldest event
             const removed = self.events.orderedRemove(0);

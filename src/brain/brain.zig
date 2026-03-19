@@ -160,7 +160,7 @@ pub const AgentCoordination = struct {
             },
         };
 
-        _ = self.event_bus.publish(.task_completed, event_data);
+        try self.event_bus.publish(.task_completed, event_data);
     }
 
     /// Report task failure to reticular formation
@@ -177,7 +177,7 @@ pub const AgentCoordination = struct {
             },
         };
 
-        _ = self.event_bus.publish(.task_failed, event_data);
+        try self.event_bus.publish(.task_failed, event_data);
     }
 
     /// Get backoff delay for next retry attempt
@@ -337,6 +337,8 @@ test "AgentCoordination claim and complete" {
     const allocator = std.testing.allocator;
     var coord = try AgentCoordination.init(allocator);
     defer {
+        reticular_formation.resetGlobal(allocator);
+        basal_ganglia.resetGlobal(allocator);
         // coord.deinit() would go here when implemented
     }
 
@@ -363,6 +365,8 @@ test "AgentCoordination health check" {
     const allocator = std.testing.allocator;
     var coord = try AgentCoordination.init(allocator);
     defer {
+        reticular_formation.resetGlobal(allocator);
+        basal_ganglia.resetGlobal(allocator);
         // coord.deinit() would go here when implemented
     }
 
