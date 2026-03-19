@@ -2015,6 +2015,21 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    const amygdala_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/amygdala.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const persistence_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/persistence.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const telemetry_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/telemetry.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     const brain_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/brain.zig"),
         .target = target,
@@ -2023,6 +2038,9 @@ pub fn build(b: *std.Build) void {
             .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
             .{ .name = "reticular_formation", .module = reticular_formation_mod },
             .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+            .{ .name = "amygdala", .module = amygdala_mod },
+            .{ .name = "persistence", .module = persistence_mod },
+            .{ .name = "telemetry", .module = telemetry_mod },
         },
     });
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -2205,6 +2223,9 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
                 .{ .name = "reticular_formation", .module = reticular_formation_mod },
                 .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+                .{ .name = "amygdala", .module = amygdala_mod },
+                .{ .name = "persistence", .module = persistence_mod },
+                .{ .name = "telemetry", .module = telemetry_mod },
                 .{ .name = "brain", .module = brain_mod },
                 // Bench module — IGLA benchmark
                 .{ .name = "bench", .module = bench_mod },
@@ -2337,6 +2358,30 @@ pub fn build(b: *std.Build) void {
     const run_locus_coeruleus_tests = b.addRunArtifact(locus_coeruleus_tests);
     const locus_coeruleus_tests_step = b.step("test-locus-coeruleus", "Run Locus Coeruleus Tests");
     locus_coeruleus_tests_step.dependOn(&run_locus_coeruleus_tests.step);
+
+    // Amygdala (Emotional Salience) tests
+    const amygdala_tests = b.addTest(.{
+        .root_module = amygdala_mod,
+    });
+    const run_amygdala_tests = b.addRunArtifact(amygdala_tests);
+    const amygdala_tests_step = b.step("test-amygdala", "Run Amygdala Tests");
+    amygdala_tests_step.dependOn(&run_amygdala_tests.step);
+
+    // Hippocampus (Persistence) tests
+    const persistence_tests = b.addTest(.{
+        .root_module = persistence_mod,
+    });
+    const run_persistence_tests = b.addRunArtifact(persistence_tests);
+    const persistence_tests_step = b.step("test-persistence", "Run Persistence Tests");
+    persistence_tests_step.dependOn(&run_persistence_tests.step);
+
+    // Corpus Callosum (Telemetry) tests
+    const telemetry_tests = b.addTest(.{
+        .root_module = telemetry_mod,
+    });
+    const run_telemetry_tests = b.addRunArtifact(telemetry_tests);
+    const telemetry_tests_step = b.step("test-telemetry", "Run Telemetry Tests");
+    telemetry_tests_step.dependOn(&run_telemetry_tests.step);
 
     const brain_tests = b.addTest(.{
         .root_module = brain_mod,

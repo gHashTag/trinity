@@ -107,7 +107,10 @@ pub const EventBus = struct {
         return EventBus{
             .mutex = std.Thread.Mutex{},
             .allocator = allocator,
-            .events = std.ArrayList(StoredEvent).init(allocator, .{}),
+            .events = std.ArrayList(StoredEvent).initCapacity(allocator, 256) catch |err| {
+                std.log.err("Failed to allocate EventBus: {}", .{err});
+                @panic("EventBus init failed");
+            },
             .stats = .{ .published = 0, .polled = 0 },
         };
     }
@@ -174,7 +177,7 @@ pub const EventBus = struct {
         defer self.mutex.unlock();
 
         // Add to buffer, trim if necessary
-        try self.events.append(self.allocator, stored);
+        try self.events.append(stored);
         if (self.events.items.len > MAX_EVENTS) {
             // Remove oldest event
             const removed = self.events.orderedRemove(0);
@@ -189,7 +192,9 @@ pub const EventBus = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        var results = std.ArrayList(AgentEventRecord).init(allocator, .{});
+        var results = std.ArrayList(AgentEventRecord).initCapacity(allocator, 16) catch |err| {
+            return err;
+        };
 
         for (self.events.items) |stored| {
             if (stored.timestamp > since) {
@@ -233,11 +238,11 @@ pub const EventBus = struct {
         }
 
         self.stats.polled += 1;
-        return results.toOwnedSlice();
+        return results.toOwnedSlice(allocator);
     }
 
     /// Get current statistics
-    pub fn getStats(self: *const EventBus) struct { published: u64, polled: u64, buffered: usize } {
+    pub fn getStats(self: *EventBus) struct { published: u64, polled: u64, buffered: usize } {
         self.mutex.lock();
         defer self.mutex.unlock();
 
