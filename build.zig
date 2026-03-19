@@ -2104,23 +2104,6 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // S³AI Brain Circuit Modules (v5.1 - Neuroanatomical Architecture)
-    const basal_ganglia_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/basal_ganglia.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const reticular_formation_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/reticular_formation.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const locus_coeruleus_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -2162,10 +2145,6 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "depin_observability", .module = depin_observability_mod },
                 .{ .name = "depin_production", .module = depin_production_mod },
                 .{ .name = "firebird_governance", .module = firebird_governance_mod },
-                // S³AI Brain Circuit (v5.1 - Neuroanatomical Architecture)
-                .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
-                .{ .name = "reticular_formation", .module = reticular_formation_mod },
-                .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
             },
         }),
     });
@@ -2257,43 +2236,6 @@ pub fn build(b: *std.Build) void {
     const run_tri_error_tests = b.addRunArtifact(tri_error_tests);
     const tri_error_tests_step = b.step("test-tri-error", "Run TRI Error Tests");
     tri_error_tests_step.dependOn(&run_tri_error_tests.step);
-
-    // S³AI Brain Circuit Tests (v5.1 - Neuroanatomical Architecture)
-    // Basal Ganglia (Action Selection) tests
-    const basal_ganglia_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/brain/basal_ganglia.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_basal_ganglia_tests = b.addRunArtifact(basal_ganglia_tests);
-    const basal_ganglia_tests_step = b.step("test-basal-ganglia", "Run Basal Ganglia Tests");
-    basal_ganglia_tests_step.dependOn(&run_basal_ganglia_tests.step);
-
-    // Reticular Formation (Broadcast) tests
-    const reticular_formation_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/brain/reticular_formation.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_reticular_formation_tests = b.addRunArtifact(reticular_formation_tests);
-    const reticular_formation_tests_step = b.step("test-reticular-formation", "Run Reticular Formation Tests");
-    reticular_formation_tests_step.dependOn(&run_reticular_formation_tests.step);
-
-    // Locus Coeruleus (Arousal) tests
-    const locus_coeruleus_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    const run_locus_coeruleus_tests = b.addRunArtifact(locus_coeruleus_tests);
-    const locus_coeruleus_tests_step = b.step("test-locus-coeruleus", "Run Locus Coeruleus Tests");
-    locus_coeruleus_tests_step.dependOn(&run_locus_coeruleus_tests.step);
 
     // Trinity Hybrid Local Coder (IGLA + Ollama)
     const hybrid_local = b.addExecutable(.{
@@ -2856,6 +2798,5 @@ pub fn build(b: *std.Build) void {
     sacred_synth_report_step.dependOn(&sacred_synth_report.step);
 
     const run_sacred_synth_report = b.addRunArtifact(sacred_synth_report);
-    const sacred_synth_report_run_step = b.step("sacred-synth-report-run", "Run sacred-synth-report");
-    sacred_synth_report_run_step.dependOn(&run_sacred_synth_report.step);
+    run_sacred_synth_report.step.dependOn(b.getInstallStep());
 }
