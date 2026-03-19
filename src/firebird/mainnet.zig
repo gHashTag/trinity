@@ -60,18 +60,20 @@ pub const MAINNET_CONFIG = NetworkConfig{
 // MIGRATION STATE
 // ═════════════════════════════════════════════════════════════════════════════════════════
 
+pub const MigrationStep = enum {
+    not_started,
+    in_progress,
+    stakes_verified,
+    data_migrated,
+    slashing_configured,
+    completed,
+};
+
 pub const MigrationState = struct {
     current_network: NetworkType,
     migration_timestamp: ?i64,
     last_checkpoint_hash: ?[]const u8,
-    migration_step: enum {
-        not_started,
-        in_progress,
-        stakes_verified,
-        data_migrated,
-        slashing_configured,
-        completed,
-    },
+    migration_step: MigrationStep,
 };
 
 pub const MainnetManager = struct {
@@ -145,7 +147,7 @@ pub const MainnetManager = struct {
 
 pub const MigrationStatus = struct {
     current_network: NetworkType,
-    step: MigrationState.MigrationStep,
+    step: MigrationStep,
     started_at: ?i64,
     progress_percentage: f64,
 };

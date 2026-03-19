@@ -110,7 +110,7 @@ pub fn generateBranchQuota(allocator: std.mem.Allocator, quota: u32) ![]const u8
 pub fn validateInlineLoop(allocator: std.mem.Allocator, loop_code: []const u8) !bool {
     _ = allocator;
     // Check for unrollable patterns
-    if (std.mem.indexOf(u8, loop_code, "while (true)") |_| {
+    if (std.mem.indexOf(u8, loop_code, "while (true)")) |_| {
         return false; // Cannot inline infinite loop
     }
     return true;
@@ -179,7 +179,7 @@ test "INLINE_FIX: comptime expression" {
         .file = "src/comptime.zig",
         .line = 60,
         .column = 8,
-        "code": "comptime_eval_failed",
+        .code = "comptime_eval_failed",
     };
 
     const result = try applyInlineFix(allocator, &err_info);
