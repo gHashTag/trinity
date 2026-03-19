@@ -1,17 +1,17 @@
-# Профессиональная FPGA Разработка — Руководство 2026
+# Professional FPGA Development — Guide 2026
 
-## Содержание
-1. Инструменты и сравнение
-2. Лучшие практики (Best Practices)
-3. ESP32-FPGA интеграция
-4. Как прокачать проект
-5. Обучающие ресурсы
+## Table of Contents
+1. Tools and comparison
+2. Best Practices
+3. ESP32-FPGA integration
+4. How to level up the project
+5. Learning resources
 
 ---
 
-## 1. Инструменты и сравнение
+## 1. Tools and comparison
 
-### Полный стек разработки
+### Full development stack
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -31,47 +31,47 @@
 │  | Simulate│  | Verify  │  | Debug   │  | Program │   │
 │  │          │  │          │  │          │  │          │   │
 │  │Verilator│  │  Cocotb  │  │  ILA    │  │ OpenOCD  │   │
-│  │ ModelSim │  │   UVM    │  │ ChipScope│  │ Vivado  │   │
+│  │ ModelSim │  │   UVM    │  │ ChipScope│  │  Vivado  │   │
 │  └──────────┘  └──────────┘  └──────────┘  └──────────┘   │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Сравнение toolchain
+### Toolchain comparison
 
-| Инструмент | Статус | Плюсы | Минусы | Когда использовать |
-|------------|--------|-------|--------|-------------------|
-| **Vivado** | 🔵 Проприетарный | Лучший QoR, полный стек | 50GB+, платный | Производство |
-| **Yosys** | 🟢 Open Source | Быстрый, кроссплатформенный | -10% плотности | Open source проекты |
-| **nextpnr-xilinx** | 🟡 Экспериментальный | Современный PnR | Xilinx 7-series alpha | Развлечения |
-| **Verilator** | 🟢 Open Source | 100x быстрее ModelSim | Только синтаксис | Верификация |
+| Tool | Status | Pros | Cons | When to use |
+|-------|--------|------|-------|-------------|
+| **Vivado** | 🔵 Proprietary | Best QoR, full stack | 50GB+, paid | Production |
+| **Yosys** | 🟢 Open Source | Fast, cross-platform | -10% density | Open source projects |
+| **nextpnr-xilinx** | 🟡 Experimental | Modern PnR | Xilinx 7-series alpha | Fun projects |
+| **Verilator** | 🟢 Open Source | 100x faster than ModelSim | Syntax only | Verification |
 
-### Рекомендация для вашего проекта
+### Recommendation for your project
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   Ваша ситуация                             │
+│                   Your situation                        │
 ├─────────────────────────────────────────────────────────────┤
-│ ✓ Есть: QMTECH XC7A100T                                    │
-│ ✓ Есть: openXC7 Docker (WORKING!)                          │
-│ ✓ Есть: FORGE (Zig) - экспериментальный                    │
-│ ✓ Есть: JTAG кабель                                        │
+│ ✓ Have: QMTECH XC7A100T                                    │
+│ ✓ Have: openXC7 Docker (WORKING!)                          │
+│ ✓ Have: FORGE (Zig) - experimental                    │
+│ ✓ Have: JTAG cable                                        │
 │                                                             │
-│ РЕКОМЕНДАЦИЯ:                                              │
-│ 1. Используйте openXC7 для production                      │
-│ 2. Используйте Verilator для симуляции                     │
-│ 3. FORGE только для экспериментов                          │
+│ RECOMMENDATION:                                              │
+│ 1. Use openXC7 for production                      │
+│ 2. Use Verilator for simulation                     │
+│ 3. FORGE only for experiments                          │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 2. Лучшие практики (Best Practices)
+## 2. Best Practices
 
-### Кодинг стандарты
+### Coding standards
 
 ```systemverilog
-// ===== ПРАВИЛЬНО =====
+// ===== CORRECT =====
 module uart_tx #(
     parameter int CLK_FREQ = 50_000_000,
     parameter int BAUD_RATE = 115200
@@ -84,7 +84,7 @@ module uart_tx #(
     output logic tx_busy
 );
 
-    // Состояния
+    // States
     typedef enum logic [1:0] {
         IDLE  = 2'b00,
         START = 2'b01,
@@ -94,7 +94,7 @@ module uart_tx #(
 
     state_t state, next_state;
 
-    // Синхронный сброс (предпочтительнее)
+    // Synchronous reset (preferred)
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             state <= IDLE;
@@ -103,7 +103,7 @@ module uart_tx #(
         end
     end
 
-    // Combinatorial логика separately
+    // Combinatorial logic separately
     always_comb begin
         next_state = state;  // Default
         case (state)
@@ -136,7 +136,7 @@ module sync_2flop (
 endmodule
 ```
 
-### Reset стратегия
+### Reset strategy
 
 ```systemverilog
 // ===== Reset bridge (async -> sync) =====
@@ -161,18 +161,18 @@ endmodule
 
 ---
 
-## 3. ESP32-FPGA интеграция
+## 3. ESP32-FPGA integration
 
-### Рекомендуемые протоколы
+### Recommended protocols
 
-| Протокол | Скорость | Сложность | Применение |
-|----------|----------|-----------|------------|
-| **UART** | 115200 - 921600 baud | ⭐ | Команды, отладка |
-| **SPI** | До 80 MHz | ⭐⭐ | Данные, пиксели |
-| **I2C** | 400 kHz | ⭐ | Сенсоры |
-| **Ethernet** | 100 Mbps | ⭐⭐⭐⭐ | Сеть |
+| Protocol | Speed | Complexity | Application |
+|----------|--------|-------------|--------------|
+| **UART** | 115200 - 921600 baud | ⭐ | Commands, debug |
+| **SPI** | Up to 80 MHz | ⭐⭐ | Data, pixels |
+| **I2C** | 400 kHz | ⭐ | Sensors |
+| **Ethernet** | 100 Mbps | ⭐⭐⭐⭐ | Network |
 
-### UART подключение (рекомендуется)
+### UART connection (recommended)
 
 ```
 ESP32 DIYTZT              FPGA Artix-7
@@ -182,7 +182,7 @@ GPIO5 (RX) <────────────── K20 (TX)
 GND ─────────────────────> GND
 ```
 
-### Код ESP32 (Arduino)
+### ESP32 code (Arduino)
 
 ```cpp
 // esp32_fpga_uart.ino
@@ -211,30 +211,30 @@ void loop() {
 
 ---
 
-## 4. Как прокачать проект
+## 4. How to level up the project
 
-### Уровень 1: Базовый (текущий)
+### Level 1: Basic (current)
 
 ```
-✅ Сделано:
-- openXC7 toolchain настроен
-- Базовые Verilog модули
-- JTAG прошивка
-- ESP32 UART мост
+✅ Done:
+- openXC7 toolchain configured
+- Basic Verilog modules
+- JTAG programming
+- ESP32 UART bridge
 ```
 
-### Уровень 2: Intermediate (следующие шаги)
+### Level 2: Intermediate (next steps)
 
 ```
 🔄 TODO:
-- [ ] Добавить Verilator для симуляции
-- [ ] Создать testbench для всех модулей
+- [ ] Add Verilator for simulation
+- [ ] Create testbench for all modules
 - [ ] Implement CDC checking
-- [ ] Добавить assertions в код
-- [ ] Setup CI/CD для тестов
+- [ ] Add assertions to code
+- [ ] Setup CI/CD for tests
 ```
 
-### Уровень 3: Advanced
+### Level 3: Advanced
 
 ```
 🎯 TODO:
@@ -245,83 +245,83 @@ void loop() {
 - [ ] Documentation generation
 ```
 
-### Приоритеты
+### Priorities
 
-| Приоритет | Задача | Время | Impact |
-|-----------|--------|-------|--------|
-| 🔥 High | Verilator симуляция | 2 дня | Высокий |
-| 🔥 High | Testbench для UART | 1 день | Высокий |
-| 🔥 High | ESP32 код + LVGL | 3 дня | Высокий |
-| ⚡ Medium | CDC проверка | 2 дня | Средний |
-| ⚡ Medium | Assertions | 1 день | Средний |
-| 💡 Low | UVM | 1 неделя | Низкий |
+| Priority | Task | Time | Impact |
+|----------|-------|-------|--------|
+| 🔥 High | Verilator simulation | 2 days | High |
+| 🔥 High | Testbench for UART | 1 day | High |
+| 🔥 High | ESP32 code + LVGL | 3 days | High |
+| ⚡ Medium | CDC checking | 2 days | Medium |
+| ⚡ Medium | Assertions | 1 day | Medium |
+| 💡 Low | UVM | 1 week | Low |
 
 ---
 
-## 5. Обучающие ресурсы
+## 5. Learning resources
 
-### Книги
+### Books
 
-| Книга | Автор | Уровень |
-|-------|-------|---------|
-| "FPGA Prototyping by Verilog Examples" | Pong P. Chu | Начальный |
-| "Advanced FPGA Design" | Steve Kilts | Средний |
-| "Computer Architecture: A Quantitative Approach" | Hennessy & Patterson | Продвинутый |
+| Book | Author | Level |
+|------|--------|-------|
+| "FPGA Prototyping by Verilog Examples" | Pong P. Chu | Beginner |
+| "Advanced FPGA Design" | Steve Kilts | Intermediate |
+| "Computer Architecture: A Quantitative Approach" | Hennessy & Patterson | Advanced |
 
-### Онлайн курсы
+### Online courses
 
-- **Nandland**: https://www.nandland.com/ (лучший для начинающих)
+- **Nandland**: https://www.nandland.com/ (best for beginners)
 - **FPGA4Fun**: https://www.fpga4fun.com/
-- **ZipCPU**: https://zipcpu.com/ (продвинутый)
+- **ZipCPU**: https://zipcpu.com/ (advanced)
 
-### GitHub проекты для изучения
+### GitHub projects to study
 
-- **LiteX**: SoC builder на Python
-- **VexRiscv**: 32-бит RISC-V на Scala/Verilog
-- **picorv32**: Маленький RISC-V core
+- **LiteX**: SoC builder in Python
+- **VexRiscv**: 32-bit RISC-V in Scala/Verilog
+- **picorv32**: Small RISC-V core
 - **serdes**: High-speed serial examples
 
 ---
 
-## 6. AliExpress анализ
+## 6. AliExpress analysis
 
-### Ссылка: https://th.aliexpress.com/item/1005009035385463.html
+### Link: https://th.aliexpress.com/item/1005009035385463.html
 
-Вероятно это **ESP32-S3 с LCD дисплеем** или **FPGA плата расширения**.
+Probably an **ESP32-S3 with LCD display** or **FPGA expansion board**.
 
-#### Характеристики типичных плат:
+#### Typical board specs:
 
-| Компонент | ESP32 Board | FPGA Board |
+| Component | ESP32 Board | FPGA Board |
 |-----------|-------------|------------|
-| Микроконтроллер | ESP32-WROVER | - |
+| Microcontroller | ESP32-WROVER | - |
 | FPGA | - | XC7A35T/100T |
 | RAM | 8MB PSRAM | DDR3 |
 | Flash | 16MB | SPI Flash |
 | LCD | 2.4" ST7789 | - |
-| Touch | Резистивный | - |
+| Touch | Resistive | - |
 | WiFi | 802.11 b/g/n | - |
 | Bluetooth | BLE 4.2/5.0 | - |
 
-#### Что выбрать для вашего проекта:
+#### What to choose for your project:
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ ВАШ ВЫБОР                                                   │
+│ YOUR CHOICE                                                 │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
 │ 1. ESP32 + LCD (DIYTZT)                                     │
-│    ✓ Уже есть                                              │
-│    ✓ Отлично подходит для UI                                │
-│    ✓ WiFi/Bluetooth для связи                               │
+│    ✓ Already have                                              │
+│    ✓ Great for UI                                     │
+│    ✓ WiFi/Bluetooth for communication                         │
 │                                                             │
-│ 2. FPGA расширение (если это оно)                           │
-│    ⚠️ Проверьте совместимость с XC7A100T                    │
-│    ⚠️ Возможно дублирует текущую плату                      │
+│ 2. FPGA expansion (if that's what it is)                       │
+│    ⚠️ Check compatibility with XC7A100T                    │
+│    ⚠️ May duplicate current board                         │
 │                                                             │
-│ 3. Комбо плата (ESP32 + FPGA на одной)                     │
-│    ✅ Идеально для интеграции                              │
-│    ✅ Меньше проводов                                      │
-│    ⚠️ Меньше I/O пинов                                     │
+│ 3. Combo board (ESP32 + FPGA on one)                     │
+│    ✅ Ideal for integration                              │
+│    ✅ Fewer wires                                          │
+│    ⚠️ Fewer I/O pins                                    │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
@@ -331,36 +331,36 @@ void loop() {
 ## 7. Quick Start Checklist
 
 ```bash
-# 1. Симуляция с Verilator
+# 1. Simulation with Verilator
 brew install verilator
 cd fpga/openxc7-synth
 verilator --Wall uart_bridge.v
 
-# 2. Синтез с openXC7
+# 2. Synthesis with openXC7
 ./synth.sh uart_bridge.v uart_bridge
 
-# 3. Прошивка
+# 3. Programming
 sudo fpga/tools/fxload -v -t fx2 -d 03fd:0013 -i fpga/tools/xusb_xp2.hex
-# переподключить кабель
+# reconnect cable
 sudo fpga/tools/jtag_program uart_bridge.bit
 
-# 4. ESP32 код
-# Открыть Arduino IDE, выбрать "ESP32 Dev Module"
-# Загрузить esp32_fpga_uart.ino
-# Отправлять команды из Serial Monitor
+# 4. ESP32 code
+# Open Arduino IDE, select "ESP32 Dev Module"
+# Upload esp32_fpga_uart.ino
+# Send commands from Serial Monitor
 ```
 
 ---
 
-## Итог
+## Summary
 
-| Аспект | Рекомендация |
-|--------|--------------|
-| Toolchain | openXC7 для production |
-| Симуляция | Verilator |
-| Верификация | Cocotb + assertions |
-| ESP32 связь | UART 115200 |
-| LCD | LVGL на ESP32 |
-| Следующий шаг | Добавить Verilator в проект |
+| Aspect | Recommendation |
+|--------|---------------|
+| Toolchain | openXC7 for production |
+| Simulation | Verilator |
+| Verification | Cocotb + assertions |
+| ESP32 connection | UART 115200 |
+| LCD | LVGL on ESP32 |
+| Next step | Add Verilator to project |
 
 φ² + 1/φ² = 3 = TRINITY
