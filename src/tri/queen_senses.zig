@@ -883,3 +883,40 @@ test "Queen senses — countFarmIdleServices with missing file" {
     const count = countFarmIdleServices();
     try std.testing.expect(count >= 0);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL function tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Queen senses — readEvolutionInfo returns struct" {
+    const info = readEvolutionInfo();
+    // EvolutionInfo has fields like run_count, best_ppl, etc.
+    _ = info.run_count;
+    _ = info.best_ppl;
+}
+
+test "Queen senses — readEvolutionInfo has valid numbers" {
+    const info = readEvolutionInfo();
+    try std.testing.expect(info.run_count >= 0);
+    try std.testing.expect(info.best_ppl >= 0);
+}
+
+test "Queen senses — SenseResult init" {
+    const result = SenseResult{};
+    try std.testing.expectEqual(@as(f32, 0), result.ouroboros_score);
+    try std.testing.expectEqual(@as(u32, 0), result.farm_active);
+}
+
+test "Queen senses — EvolutionInfo fields" {
+    const info = readEvolutionInfo();
+    _ = info.best_name;
+    _ = info.total_configs;
+    _ = info.total_killed;
+}
+
+test "Queen senses — fmtSensesTelegram produces output" {
+    var buf: [1024]u8 = undefined;
+    const result = SenseResult{};
+    const msg = fmtSensesTelegram(&buf, result);
+    try std.testing.expect(msg.len > 0);
+}
