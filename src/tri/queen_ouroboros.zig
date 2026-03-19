@@ -446,3 +446,142 @@ test "ouroboros — findJsonI64 handles positive numbers" {
     try std.testing.expect(result != null);
     try std.testing.expectEqual(@as(i64, 1700000000), result.?);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Additional JSON parser tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ouroboros — findJsonI64 handles negative numbers" {
+    const data = "{\"delta\":-5}";
+    const result = findJsonI64(data, "\"delta\":");
+    try std.testing.expect(result != null);
+    try std.testing.expectEqual(@as(i64, -5), result.?);
+}
+
+test "ouroboros — findJsonI64 returns null for malformed" {
+    const data = "{\"started\":\"not_a_number\"}";
+    const result = findJsonI64(data, "\"started\":");
+    try std.testing.expect(result == null);
+}
+
+test "ouroboros — findJsonF32 returns null for malformed" {
+    const data = "{\"score\":\"not_a_number\"}";
+    const result = findJsonF32(data, "\"score\":");
+    try std.testing.expect(result == null);
+}
+
+test "ouroboros — findJsonU32 returns null for malformed" {
+    const data = "{\"cycle\":\"not_a_number\"}";
+    const result = findJsonU32(data, "\"cycle\":");
+    try std.testing.expect(result == null);
+}
+
+test "ouroboros — findJsonStr handles quoted values" {
+    const data = "{\"strategy\":\"\\\"nested\\\"\"}";
+    const result = findJsonStr(data, "\"strategy\":");
+    try std.testing.expect(result != null);
+}
+
+test "ouroboros — findJsonF32 handles decimal" {
+    const data = "{\"score\":42.5}";
+    const result = findJsonF32(data, "\"score\":");
+    try std.testing.expect(result != null);
+    try std.testing.expectEqual(@as(f32, 42.5), result.?);
+}
+
+test "ouroboros — findJsonU32 handles zero" {
+    const data = "{\"cycle\":0}";
+    const result = findJsonU32(data, "\"cycle\":");
+    try std.testing.expect(result != null);
+    try std.testing.expectEqual(@as(u32, 0), result.?);
+}
+
+test "ouroboros — findJsonI64 handles zero" {
+    const data = "{\"delta\":0}";
+    const result = findJsonI64(data, "\"delta\":");
+    try std.testing.expect(result != null);
+    try std.testing.expectEqual(@as(i64, 0), result.?);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OuroborosState tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ouroboros — OuroborosState score calculation" {
+    const state = OuroborosState{
+        .score = 75.5,
+        .cycle = 100,
+        .delta = 5,
+        .started = 1700000000,
+    };
+    try std.testing.expectEqual(@as(f32, 75.5), getScore(state));
+}
+
+test "ouroboros — OuroborosState with negative delta" {
+    const state = OuroborosState{
+        .score = 50.0,
+        .cycle = 50,
+        .delta = -10,
+        .started = 1700000000,
+    };
+    try std.testing.expectEqual(@as(i64, -10), state.delta);
+}
+
+test "ouroboros — OuroborosState dimensions" {
+    const state = OuroborosState{
+        .score = 60.0,
+        .cycle = 42,
+        .delta = 3,
+        .started = 1700000000,
+        .build_health = 80.0,
+        .farm_health = 70.0,
+        .docs_health = 90.0,
+    };
+    try std.testing.expectEqual(@as(f32, 80.0), state.build_health);
+    try std.testing.expectEqual(@as(f32, 70.0), state.farm_health);
+    try std.testing.expectEqual(@as(f32, 90.0), state.docs_health);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// fmtTelegram edge cases
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ouroboros — fmtTelegram with perfect score" {
+    const state = OuroborosState{
+        .score = 100.0,
+        .cycle = 1000,
+        .delta = 0,
+        .started = 1700000000,
+    };
+    var buf: [512]u8 = undefined;
+    const msg = fmtTelegram(&buf, state);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "100") != null);
+}
+
+test "ouroboros — fmtTelegram with critical score" {
+    const state = OuroborosState{
+        .score = 25.0,
+        .cycle = 10,
+        .delta = -5,
+        .started = 1700000000,
+    };
+    var buf: [512]u8 = undefined;
+    const msg = fmtTelegram(&buf, state);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "25") != null);
+}
+
+test "ouroboros — fmtTelegram includes strategy" {
+    const state = OuroborosState{
+        .score = 60.0,
+        .cycle = 50,
+        .delta = 0,
+        .started = 1700000000,
+        .strategy = "sacred",
+    };
+    var buf: [512]u8 = undefined;
+    const msg = fmtTelegram(&buf, state);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "sacred") != null);
+}
