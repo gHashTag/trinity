@@ -820,3 +820,65 @@ Your branch is ahead of 'origin/arena-1773850674-gladiator' by "}
 {"ts":1773888332,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
 {"ts":1773888346,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
 {"ts":1773888397,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773892058,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773892112,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892114,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892197,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892198,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892287,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773892362,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773892419,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892421,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892590,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773892604,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892604,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892666,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773892724,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892725,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892801,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892802,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773892895,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773892897,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773892970,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773892971,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773893028,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893029,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893201,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773893210,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893211,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893275,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773893276,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773893331,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893333,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893404,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893405,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893505,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773893506,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773893581,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773893582,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773893636,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893638,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893810,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773893811,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773893815,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893816,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893887,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773893888,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773893940,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773893942,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894009,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894011,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894116,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
+{"ts":1773894117,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773894198,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773894244,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894246,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894419,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894420,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894421,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773894501,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773894548,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894549,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894614,"kind":"auto_denied","action":"experience save","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894615,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773894724,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}

@@ -616,6 +616,25 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
     var candidates = CandidateList.init(ctx.allocator);
     defer candidates.deinit();
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // RULE 0: NIGHT GUARD — Block destructive actions during protected hours
+    // ═══════════════════════════════════════════════════════════════════════════════
+    const night_mode = isNightModeActive();
+    const circuit_tripped = isCircuitBreakerTripped();
+
+    if (night_mode or circuit_tripped) {
+        // If circuit tripped, add high-priority notification
+        if (circuit_tripped) {
+            try candidates.append(.{
+                .kind = .notify,
+                .urgency = .critical,
+                .value = 1.0,
+                .cost = 0.0,
+            });
+        }
+        // Continue with candidates (destructive actions blocked in filter below)
+    }
+
     // Rule 1: Build broken → doctor_quick (high urgency)
     if (!ctx.build_ok) {
         try candidates.append(.{
@@ -721,6 +740,36 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
 
     // Select via Basal Ganglia action selection
     const selected = basal_ganglia.selectAction(candidates.items);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // NIGHT GUARD FILTER — Block destructive actions during night mode
+    // ═══════════════════════════════════════════════════════════════════════════════
+    if (night_mode or circuit_tripped) {
+        if (selected) |action| {
+            // Destructive actions that are blocked during night mode
+            const is_destructive = switch (action) {
+                .farm_recycle, .farm_evolve_step, .cloud_spawn, .cloud_kill, .cloud_cleanup, .doctor_heal => true,
+                else => false,
+            };
+
+            if (is_destructive) {
+                // Return read-only notification instead
+                var blocked_reason: [256]u8 = undefined;
+                const blocked_msg = if (circuit_tripped)
+                    "🛡️ CIRCUIT BREAKER: Destructive actions blocked (manual review required)"
+                else
+                    "🌙 NIGHT MODE: Destructive actions blocked (22:00-08:00)";
+                @memcpy(blocked_reason[0..blocked_msg.len], blocked_msg);
+                return Decision{
+                    .action = .notify,
+                    .urgency = .normal,
+                    .confidence = 1.0,
+                    .reason = blocked_reason,
+                    .reason_len = blocked_msg.len,
+                };
+            }
+        }
+    }
 
     if (selected) |action| {
         // Find the candidate to get urgency
@@ -1904,6 +1953,48 @@ test "dlpfc — generateGoalsFromTrends v-zone trend" {
     const goals = try generateGoalsFromTrends(std.testing.allocator, analysis, 5.0);
     defer std.testing.allocator.free(goals);
     try std.testing.expect(goals.len >= 1);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NIGHT GUARD HELPERS — Queen brain integration with farm protection
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Check if .trinity/night_mode flag exists (blocks destructive actions 22:00-08:00)
+fn isNightModeActive() bool {
+    const flag_path = ".trinity/night_mode";
+    std.fs.cwd().access(flag_path, .{}) catch |err| {
+        if (err == error.FileNotFound) return false;
+        return false;
+    };
+    return true;
+}
+
+/// Check if circuit breaker was tripped (auto-enabled night mode after too many kills)
+fn isCircuitBreakerTripped() bool {
+    const cb_path = ".trinity/circuit_breaker_tripped";
+    std.fs.cwd().access(cb_path, .{}) catch |err| {
+        if (err == error.FileNotFound) return false;
+        return false;
+    };
+    return true;
+}
+
+/// Check if a service name is in the sacred workers list
+fn isSacredWorker(svc_name: []const u8) bool {
+    const file_path = ".trinity/sacred_workers.txt";
+    const file = std.fs.cwd().openFile(file_path, .{}) catch return false;
+    defer file.close();
+
+    var buf: [4096]u8 = undefined;
+    const content = file.readAll(&buf) catch return false;
+
+    var iter = std.mem.splitScalar(u8, content, '\n');
+    while (iter.next()) |line| {
+        const trimmed = std.mem.trim(u8, line, " \t\r\n");
+        if (trimmed.len == 0 or trimmed[0] == '#') continue;
+        if (std.mem.eql(u8, trimmed, svc_name)) return true;
+    }
+    return false;
 }
 
 test "dlpfc — health returns CellHealth" {

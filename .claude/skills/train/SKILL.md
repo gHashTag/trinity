@@ -8,6 +8,21 @@ context: fork
 
 # HSLM Training Observatory v2
 
+## Step 0: Auto-Monitoring Check (REQUIRED)
+
+First, check if monitoring loop is running:
+
+```bash
+# Check if 15-min monitoring loop is active
+crontab -l 2>/dev/null | grep -q "tri train" && echo "✅ Мониторинг активен" || echo "⚠️ Мониторинг НЕ настроен"
+```
+
+If NOT active, offer to set up:
+```
+⚠️ Автомониторинг не запущен. Для мониторинга каждые 15 минут:
+/loop 15m /train
+```
+
 ## Step 1: Show the Dashboard (REQUIRED)
 
 Run and **display the FULL output to the user as-is**:
@@ -15,6 +30,14 @@ Run and **display the FULL output to the user as-is**:
 !`cd /Users/playra/trinity-w1 && ./zig-out/bin/tri train dashboard 2>&1`
 
 **CRITICAL**: The output of `tri train dashboard` IS the report. Show it COMPLETELY. Do NOT summarize, do NOT rephrase, do NOT hide it. The user wants to SEE the ANSI dashboard output directly.
+
+### Sacred Workers Status (ALWAYS show)
+
+After dashboard, show sacred workers explicitly:
+
+```bash
+cd /Users/playra/trinity-w1 && ./zig-out/bin/tri train dashboard 2>&1 | grep -E "(hslm-r6|hslm-r33|hslm-r5|hslm-r12|hslm-r13|hslm-r11|hslm-r18|hslm-w7-50)" | head -10
+```
 
 ## Step 2: Wave 8 Status (REQUIRED)
 
@@ -71,22 +94,34 @@ Kill thresholds: 800/400/200/80
 After showing the full dashboard + wave 8 table, add a SHORT (5-10 lines) analytical block in Russian:
 
 ```
-### Аналитика
+### 📊 Аналитика [UTC: $(date -u +%H:%M)]
 
-{emoji} **{topic}**: {one-line insight}
-{emoji} **{topic}**: {one-line insight}
-{emoji} **{topic}**: {one-line insight}
+{emoji} **Лидер**: {name} PPL={val} @ {step} — {insight}
+{emoji} **Сакральные**: {count}/{total} активны — {status}
+{emoji} **Stalled**: {count} воркеров — {action if any}
+{emoji} **Эволюция**: Step {step} — {kills} kills за сессию
+{emoji} **Волна 7**: {best} w7-50 PPL={val} — {insight}
 
 **Вердикт**: {one sentence — act or wait}
 ```
 
 Rules:
-- Compare leader with R33 PPL=4.6 (verified king)
-- Flag any ctx<81 with PPL<50 as mirage risk
+- Compare leader with R6 PPL=28.07 (current king)
+- Flag sacred workers that are STALLED (r5, r13, r33, etc.)
+- Count stalled total vs previous run
 - Note which objective (NTP/NCA/JEPA) is winning
 - Say the phase: EARLY (<10K) / MIDDLE (10-50K) / LATE (50K+)
 - Report wave 8 build progress (how many building/running/failed)
 - Max 10 lines. Dense. No fluff.
+
+### Sacred Workers Alert
+
+If ANY sacred worker is STALLED, add:
+
+```
+🚨 **СТОП! Сакральный воркер {name} stalled на {step} шагов!**
+   Действие: railway restart --service {name}
+```
 
 ## Step 4: Additional Data (if $ARGUMENTS specified)
 
