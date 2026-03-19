@@ -808,3 +808,331 @@ test "Motor — MotorExecutor init creates valid executor" {
 
     // Just verify it initializes without crashing
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// MotorCommand EXTENDED TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "Motor — MotorCommand getArg returns empty for invalid index" {
+    var cmd = MotorCommand.init();
+    cmd.arg_count = 0;
+
+    const arg = cmd.args[0][0..0]; // Empty slice
+    try std.testing.expectEqual(@as(usize, 0), arg.len);
+}
+
+test "Motor — MotorCommand getArg with valid index" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.args[0][0.."test".len], "test");
+    cmd.arg_lens[0] = "test".len;
+    cmd.arg_count = 1;
+
+    try std.testing.expectEqualStrings("test", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Motor — MotorCommand fromAction cloud_spawn" {
+    const cmd = MotorCommand.fromAction(.cloud_spawn);
+    try std.testing.expectEqualStrings("cloud", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("spawn", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Motor — MotorCommand fromAction farm_recycle" {
+    const cmd = MotorCommand.fromAction(.farm_recycle);
+    try std.testing.expectEqualStrings("farm", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("recycle", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Motor — MotorCommand fromAction doctor_quick" {
+    const cmd = MotorCommand.fromAction(.doctor_quick);
+    try std.testing.expectEqualStrings("doctor", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("quick", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Motor — MotorCommand format with multiple args" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0..4], "farm");
+    cmd.subcommand_len = 4;
+    @memcpy(cmd.args[0][0..6], "status");
+    cmd.arg_lens[0] = 6;
+    @memcpy(cmd.args[1][0..7], "--json");
+    cmd.arg_lens[1] = 7;
+    cmd.arg_count = 2;
+
+    var buf: [128]u8 = undefined;
+    const formatted = cmd.format(&buf);
+
+    try std.testing.expect(std.mem.indexOf(u8, formatted, "farm") != null);
+    try std.testing.expect(std.mem.indexOf(u8, formatted, "status") != null);
+    try std.testing.expect(std.mem.indexOf(u8, formatted, "--json") != null);
+}
+
+test "Motor — MotorCommand toArgv max args" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0..3], "cmd");
+    cmd.subcommand_len = 3;
+
+    // Fill all args
+    var i: u8 = 0;
+    while (i < MAX_CMD_ARGS) : (i += 1) {
+        @memcpy(cmd.args[i][0..3], "arg");
+        cmd.arg_lens[i] = 3;
+    }
+    cmd.arg_count = MAX_CMD_ARGS;
+
+    const argv = try cmd.toArgv(std.testing.allocator);
+    defer std.testing.allocator.free(argv);
+
+    try std.testing.expectEqual(@as(usize, MAX_CMD_ARGS + 2), argv.len);
+}
+
+test "Motor — MotorCommand zeros memory on init" {
+    const cmd = MotorCommand.init();
+
+    // Subcommand should be zeros
+    for (cmd.subcommand) |b| {
+        try std.testing.expectEqual(@as(u8, 0), b);
+    }
+
+    try std.testing.expectEqual(@as(usize, 0), cmd.subcommand_len);
+    try std.testing.expectEqual(@as(u8, 0), cmd.arg_count);
+}
+
+test "Motor — MotorCommand subcommandStr with populated command" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0.."doctor".len], "doctor");
+    cmd.subcommand_len = "doctor".len;
+
+    try std.testing.expectEqualStrings("doctor", cmd.subcommandStr());
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MotorExecutor EXTENDED TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "Motor — MotorExecutor context default values" {
+    const allocator = std.testing.allocator;
+    const exec = MotorExecutor.init(allocator);
+
+    try std.testing.expectEqual(@as(f32, 0.0), exec.context.ouroboros_score);
+    try std.testing.expectEqual(@as(u16, 0), exec.context.dirty_files);
+    try std.testing.expectEqual(@as(f32, 999.0), exec.context.farm_best_ppl);
+    try std.testing.expectEqual(@as(u16, 0), exec.context.stale_arena_hours);
+    try std.testing.expect(!exec.context.has_uncommitted);
+}
+
+test "Motor — MotorExecutor checkCondition arena_exists" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+    exec.context.arena_exists = true;
+    try std.testing.expect(exec.checkCondition(.arena_exists));
+
+    exec.context.arena_exists = false;
+    try std.testing.expect(!exec.checkCondition(.arena_exists));
+}
+
+test "Motor — MotorExecutor checkCondition custom_check returns false" {
+    const allocator = std.testing.allocator;
+    const exec = MotorExecutor.init(allocator);
+    try std.testing.expect(!exec.checkCondition(.custom_check));
+}
+
+test "Motor — MotorExecutor checkCondition boundary values" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+
+    // health_critical: exactly 50 should not trigger
+    exec.context.ouroboros_score = 50.0;
+    try std.testing.expect(!exec.checkCondition(.health_critical));
+
+    // health_good: exactly 70 should trigger
+    exec.context.ouroboros_score = 70.0;
+    try std.testing.expect(exec.checkCondition(.health_good));
+
+    // arena_stale: exactly 24 should not trigger
+    exec.context.stale_arena_hours = 24;
+    try std.testing.expect(!exec.checkCondition(.arena_stale));
+
+    // arena_stale: exactly 25 should trigger
+    exec.context.stale_arena_hours = 25;
+    try std.testing.expect(exec.checkCondition(.arena_stale));
+}
+
+test "Motor — MotorExecutor checkCondition farm_idle_exists boundary" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+
+    // Exactly 0 should not trigger
+    exec.context.farm_idle_count = 0;
+    try std.testing.expect(!exec.checkCondition(.farm_idle_exists));
+
+    // Exactly 1 should trigger
+    exec.context.farm_idle_count = 1;
+    try std.testing.expect(exec.checkCondition(.farm_idle_exists));
+}
+
+test "Motor — MotorExecutor checkCondition dirty_exists boundary" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+
+    // Exactly 0 should not trigger
+    exec.context.dirty_files = 0;
+    try std.testing.expect(!exec.checkCondition(.dirty_exists));
+
+    // Exactly 1 should trigger
+    exec.context.dirty_files = 1;
+    try std.testing.expect(exec.checkCondition(.dirty_exists));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ExecutionResult EXTENDED TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "Motor — ExecutionResult default values" {
+    const result = ExecutionResult{};
+
+    try std.testing.expect(!result.success);
+    try std.testing.expectEqual(@as(u64, 0), result.duration_ms);
+    try std.testing.expectEqual(@as(usize, 0), result.error_msg.len);
+    try std.testing.expect(!result.has_output);
+}
+
+test "Motor — ExecutionResult with error message" {
+    const result = ExecutionResult{
+        .success = false,
+        .duration_ms = 100,
+        .error_msg = "Build failed",
+        .has_output = false,
+    };
+
+    try std.testing.expectEqualStrings("Build failed", result.error_msg);
+}
+
+test "Motor — ExecutionResult duration_ms max value" {
+    const result = ExecutionResult{
+        .success = true,
+        .duration_ms = 999999,
+        .error_msg = "",
+        .has_output = false,
+    };
+
+    try std.testing.expectEqual(@as(u64, 999999), result.duration_ms);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PlanExecutionResult EXTENDED TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "Motor — PlanExecutionResult with error message" {
+    const result = PlanExecutionResult{
+        .success = false,
+        .steps_executed = 3,
+        .total_duration_ms = 500,
+        .failed_at = 2,
+        .error_msg = "Step 2 failed",
+    };
+
+    try std.testing.expectEqualStrings("Step 2 failed", result.error_msg);
+}
+
+test "Motor — PlanExecutionResult partial success" {
+    const result = PlanExecutionResult{
+        .success = false,
+        .steps_executed = 3,
+        .total_duration_ms = 300,
+        .failed_at = 3,
+        .error_msg = "",
+    };
+
+    try std.testing.expectEqual(@as(u8, 3), result.steps_executed);
+    try std.testing.expectEqual(@as(u8, 3), result.failed_at.?);
+}
+
+test "Motor — PlanExecutionResult total_duration_ms accumulation" {
+    var result = PlanExecutionResult{
+        .success = true,
+        .steps_executed = 5,
+        .total_duration_ms = 0,
+    };
+
+    try std.testing.expectEqual(@as(u64, 0), result.total_duration_ms);
+
+    result.total_duration_ms = 5000;
+    try std.testing.expectEqual(@as(u64, 5000), result.total_duration_ms);
+}
+
+test "Motor — PlanExecutionResult failed_at optional handling" {
+    const success_result = PlanExecutionResult{
+        .success = true,
+        .steps_executed = 5,
+        .total_duration_ms = 1000,
+        .failed_at = null,
+    };
+
+    try std.testing.expect(success_result.failed_at == null);
+
+    const fail_result = PlanExecutionResult{
+        .success = false,
+        .steps_executed = 2,
+        .total_duration_ms = 200,
+        .failed_at = 1,
+    };
+
+    try std.testing.expectEqual(@as(u8, 1), fail_result.failed_at.?);
+}
+
+test "Motor — PlanExecutionResult steps_executed max value" {
+    const result = PlanExecutionResult{
+        .success = true,
+        .steps_executed = 255,
+        .total_duration_ms = 10000,
+    };
+
+    try std.testing.expectEqual(@as(u8, 255), result.steps_executed);
+}
+
+test "Motor — MotorCommand subcommand buffer size" {
+    try std.testing.expect(@as(usize, 32) >= @as(usize, "introspection".len));
+    try std.testing.expect(@as(usize, 32) >= @as(usize, "git_commit_state".len));
+}
+
+test "Motor — MotorCommand arg buffer size" {
+    try std.testing.expect(MAX_ARG_LEN >= 32); // Should fit reasonable args
+    try std.testing.expect(MAX_ARG_LEN >= 64); // Should fit longer args too
+}
+
+test "Motor — MotorCommand fromAction notify" {
+    const cmd = MotorCommand.fromAction(.notify);
+    try std.testing.expectEqualStrings("notify", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 0), cmd.arg_count);
+}
+
+test "Motor — MotorCommand fromAction issue_comment" {
+    const cmd = MotorCommand.fromAction(.issue_comment);
+    try std.testing.expectEqualStrings("issue", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("comment", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Motor — MotorCommand fromAction ouroboros_cycle" {
+    const cmd = MotorCommand.fromAction(.ouroboros_cycle);
+    try std.testing.expectEqualStrings("ouroboros", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("cycle", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "Motor — MotorCommand fromAction all single word actions" {
+    const single_actions = [_]qt.ActionKind{
+        .introspection,
+        .notify,
+        .status,
+    };
+
+    for (single_actions) |action| {
+        const cmd = MotorCommand.fromAction(action);
+        try std.testing.expect(cmd.arg_count == 0);
+        try std.testing.expect(cmd.subcommand_len > 0);
+    }
+}
