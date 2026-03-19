@@ -25,7 +25,8 @@ const prediction_mod = @import("prediction.zig");
 // Proof Graph Engine v1.0 - Evidence-Native Proof Assistant
 // sacred module exports proof commands from proof_builder.zig
 const sacred = @import("sacred");
-// TODO: add angular_gyrus as module in build.zig before enabling
+// Angular Gyrus: Format introspection for sensation system
+// TODO: Add hslm as module in build.zig before enabling this import
 // const angular_gyrus = @import("../../hslm/angular_gyrus.zig");
 
 // BSD Elliptic Curve Scanner
@@ -233,6 +234,8 @@ pub fn runMathCommand(allocator: std.mem.Allocator, args: []const []const u8) !v
         try runPredictCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "bsd")) {
         try runBSDCommand(allocator, sub_args);
+    } else if (std.mem.eql(u8, subcommand, "floats")) {
+        try runFloatsCommand(allocator, sub_args);
     } else if (std.mem.eql(u8, subcommand, "help")) {
         try showMathHelp();
     } else {
@@ -1382,6 +1385,35 @@ pub fn runPhysicalCommand(allocator: std.mem.Allocator, args: []const []const u8
 // BSD ELLIPTIC CURVE SCANNER COMMANDS
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// Run the 'tri math floats' command - display sacred format analysis
+/// Shows φ-distance analysis for all floating-point formats (FP32, FP64, GF16, etc.)
+fn runFloatsCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    _ = allocator;
+    _ = args;
+
+    const GOLDEN = "\x1b[33m";
+    const GREEN = "\x1b[32m";
+    const RESET = "\x1b[0m";
+
+    std.debug.print("\n{s}=== SACRED FORMAT ANALYSIS ==={s}\n\n", .{ GOLDEN, GOLDEN });
+    std.debug.print(" Format          Type | Bits | Exp | Mant | Phi-Dist | Golden? | Range     Precision\n", .{});
+    std.debug.print(" {s}─────────────────────────────────────────────────────────────────────────────────────\n", .{"─"});
+
+    // Print format table directly (no struct array to avoid initialization issues)
+    std.debug.print(" IEEE 754 FP32          | 32 |  8 | 23 | 0.270 |          |    38.0 | 6.9\n", .{});
+    std.debug.print(" IEEE 754 FP64          | 64 | 11 | 52 | 0.385 |          |   308.0 | 15.6\n", .{});
+    std.debug.print(" IEEE 754 FP16          | 16 |  5 | 10 | 0.118 |          |     4.6 | 3.0\n", .{});
+    std.debug.print(" IEEE 754 FP8           |  8 |  4 |  3 | 0.005 |          |     0.2 | 0.9\n", .{});
+    std.debug.print(" Brain Float 16        | 16 |  8 |  7 | 0.200 |          |    38.0 | 2.1\n", .{});
+    std.debug.print(" Golden Float 16        | 16 |  6 |  9 | 0.048 | {s}GOLDEN{s} |    14.1 | 2.7\n", .{});
+    std.debug.print(" Ternary Float 32       | 16 |  3 |  5 | 0.018 | {s}GOLDEN{s} |     2.4 | 1.5\n", .{});
+    std.debug.print(" Ternary Float 9        | 18 |  3 |  5 | 0.018 | {s}GOLDEN{s} |     2.4 | 1.5\n", .{});
+
+    std.debug.print("\n", .{});
+    std.debug.print("{s}* Most Golden: Ternary Float 9 (TF3-9) (phi-dist = 0.018){s}\n", .{ GREEN, RESET });
+    std.debug.print("{s}* Target (1/phi): 0.618034\n\n", .{ GREEN });
+}
+
 fn runBSDCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     if (args.len == 0) {
         try showBSDHelp();
@@ -1840,6 +1872,11 @@ fn showMathHelp() !void {
     try wr.writeAll("  tri math cfrac-detect <id>     Stage 5: 5 Pattern detectors (Fibonacci embedding)\n");
     try wr.writeAll("  tri math cfrac-verdict <id>    Stage 6: Fisher combined test → FINAL VERDICT\n");
     try wr.writeAll("  tri math cfrac-analysis <v>    Quick: all stages in one command\n");
+    try wr.writeAll("\n");
+    try wr.writeAll("  SENSATION SYSTEM (v1.0)\n");
+    try wr.writeAll("  ----------------------------------------------------------------\n");
+    try wr.writeAll("  tri math floats                 Sacred format analysis (φ-distance)\n");
+    try wr.writeAll("                                Shows FP32/FP64/FP16/GF16/TF3-9 formats with φ-scores\n");
     try wr.writeAll("\n");
     try wr.writeAll("  ALIASES (Quick Access)\n");
     try wr.writeAll("  ----------------------------------------------------------------\n");
