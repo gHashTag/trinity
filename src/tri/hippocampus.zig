@@ -2220,6 +2220,7 @@ test "MemoryRecord isExpired with very large TTL" {
 
     try std.testing.expect(!rec.isExpired(1000000000));
 }
+<<<<<<< HEAD
 
 // ═══════════════════════════════════════════════════════════════════
 // WRITE CONVENIENCE FUNCTIONS
@@ -2472,3 +2473,5 @@ test "CellHealthData all fields set correctly" {
     try std.testing.expectEqual(HealthStatus.healthy, data.status);
     try std.testing.expectEqual(@as(u8, 42), data.cycle);
 }
+=======
+>>>>>>> origin/main
