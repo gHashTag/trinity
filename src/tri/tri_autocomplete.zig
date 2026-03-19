@@ -942,3 +942,147 @@ test "Config default aliases" {
     try std.testing.expect(aliases.get("c") != null);
     try std.testing.expectEqualStrings("cell", aliases.get("c").?);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// AUTOCOMPLETE COMPREHENSIVE TESTS
+// ═══════════════════════════════════════════════════════════════
+
+test "autocomplete_config_init" {
+    const allocator = std.testing.allocator;
+    const config = Config.init(allocator);
+    defer config.deinit(allocator);
+    try std.testing.expectEqual(@as(usize, 0), config.aliases.count());
+}
+
+test "autocomplete_config_deinit" {
+    const allocator = std.testing.allocator;
+    var config = Config.init(allocator);
+    try config.aliases.put(allocator, "test", try allocator.dupe(u8, "value"));
+
+    config.deinit(allocator);
+    // After deinit, hashmap should be cleared
+}
+
+test "autocomplete_config_get_default_aliases" {
+    const allocator = std.testing.allocator;
+    var aliases = Config.getDefaultAliases(allocator);
+    defer {
+        var iter = aliases.iterator();
+        while (iter.next()) |entry| {
+            allocator.free(entry.key_ptr.*);
+            allocator.free(entry.value_ptr.*);
+        }
+        aliases.deinit(allocator);
+    }
+
+    try std.testing.expect(aliases.get("c") != null);
+    try std.testing.expect(aliases.get("f") != null);
+    try std.testing.expect(aliases.get("g") != null);
+}
+
+test "autocomplete_config_get_all_defaults" {
+    const allocator = std.testing.allocator;
+    const aliases = Config.getDefaultAliases(allocator);
+    defer {
+        var iter = aliases.iterator();
+        while (iter.next()) |entry| {
+            allocator.free(entry.key_ptr.*);
+            allocator.free(entry.value_ptr.*);
+        }
+        aliases.deinit(allocator);
+    }
+
+    // Check default aliases exist
+    const defaults = [_][]const u8{ "c", "f", "g", "i", "a", "p", "d", "s", "t", "cs", "fs", "cl" };
+    for (defaults) |def| {
+        try std.testing.expect(aliases.get(def) != null);
+    }
+}
+
+test "autocomplete_config_path_constants" {
+    try std.testing.expectEqualStrings(".tri", TRI_CONFIG_DIR);
+    try std.testing.expectEqualStrings("config.json", TRI_CONFIG_FILE);
+}
+
+test "autocomplete_commands_count" {
+    const commands = getCommands();
+    try std.testing.expect(commands.len > 0);
+}
+
+test "autocomplete_commands_cell_valid" {
+    const commands = getCommands();
+    var found_cell = false;
+
+    for (commands) |cmd| {
+        if (std.mem.eql(u8, cmd.name, "cell")) {
+            found_cell = true;
+            try std.testing.expect(cmd.name.len > 0);
+            try std.testing.expect(cmd.description.len > 0);
+            try std.testing.expect(cmd.subcommands.len > 0);
+            try std.testing.expect(cmd.flags.len > 0);
+        }
+    }
+
+    try std.testing.expect(found_cell, "cell command should exist");
+}
+
+test "autocomplete_commands_farm_valid" {
+    const commands = getCommands();
+    var found_farm = false;
+
+    for (commands) |cmd| {
+        if (std.mem.eql(u8, cmd.name, "farm")) {
+            found_farm = true;
+            try std.testing.expectEqualStrings("Railway training farm management", cmd.description);
+        }
+    }
+
+    try std.testing.expect(found_farm, "farm command should exist");
+}
+
+test "autocomplete_commands_cloud_valid" {
+    const commands = getCommands();
+    var found_cloud = false;
+
+    for (commands) |cmd| {
+        if (std.mem.eql(u8, cmd.name, "cloud")) {
+            found_cloud = true;
+            // Cloud has many subcommands
+            try std.testing.expect(cmd.subcommands.len > 10);
+        }
+    }
+
+    try std.testing.expect(found_cloud, "cloud command should exist");
+}
+
+test "autocomplete_commands_git_valid" {
+    const commands = getCommands();
+    var found_git = false;
+
+    for (commands) |cmd| {
+        if (std.mem.eql(u8, cmd.name, "git")) {
+            found_git = true;
+            try std.testing.expect(cmd.name.len > 0);
+        }
+    }
+
+    try std.testing.expect(found_git, "git command should exist");
+}
+
+test "autocomplete_commands_all_have_flags" {
+    const commands = getCommands();
+
+    for (commands) |cmd| {
+        // Every command should have at least one flag (--help or more)
+        try std.testing.expect(cmd.flags.len > 0);
+    }
+}
+
+test "autocomplete_colors_defined" {
+    try std.testing.expect(RESET.len > 0);
+    try std.testing.expect(GREEN.len > 0);
+    try std.testing.expect(CYAN.len > 0);
+    try std.testing.expect(YELLOW.len > 0);
+    try std.testing.expect(GOLDEN.len > 0);
+    try std.testing.expect(BOLD.len > 0);
+}
