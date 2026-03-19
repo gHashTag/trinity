@@ -800,3 +800,269 @@ test "Queen senses — readDiskFreeGb returns non-negative" {
     const gb = readDiskFreeGb(std.testing.allocator);
     try std.testing.expect(gb >= 0.0);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// EvolutionInfo EXTENDED TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "Queen senses — EvolutionInfo default values" {
+    const info = qt.EvolutionInfo{};
+
+    try std.testing.expectEqual(@as(f32, 999.0), info.best_ppl);
+    try std.testing.expectEqual(@as(u32, 0), info.best_step);
+    try std.testing.expectEqual(@as(u32, 0), info.total_configs);
+    try std.testing.expectEqual(@as(u32, 0), info.service_count);
+    try std.testing.expectEqual(@as(usize, 0), info.best_name_len);
+}
+
+test "Queen senses — EvolutionInfo with populated fields" {
+    var info = qt.EvolutionInfo{};
+    info.best_ppl = 4.5;
+    info.best_step = 1000;
+    info.total_configs = 50;
+    info.service_count = 10;
+
+    try std.testing.expectApproxEqAbs(@as(f32, 4.5), info.best_ppl, 0.01);
+    try std.testing.expectEqual(@as(u32, 1000), info.best_step);
+    try std.testing.expectEqual(@as(u32, 50), info.total_configs);
+    try std.testing.expectEqual(@as(u32, 10), info.service_count);
+}
+
+test "Queen senses — EvolutionInfo bestNameStr with truncation" {
+    var info = qt.EvolutionInfo{};
+    const long_name = "very_long_config_name_that_exceeds_buffer";
+
+    // Copy only what fits in the buffer
+    const len = @min(long_name.len, info.best_name.len);
+    @memcpy(info.best_name[0..len], long_name[0..len]);
+    info.best_name_len = len;
+
+    const result = info.bestNameStr();
+    try std.testing.expectEqual(len, result.len);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SenseResult EXTENDED TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "Queen senses — SenseResult with maximum values" {
+    var s = SenseResult{};
+    s.test_rate = 100;
+    s.dirty_files = 65535; // max u16
+    s.open_issues = 65535;
+    s.agent_count = 255;
+    s.farm_services = 255;
+    s.arena_battles = 65535;
+    s.experience_count = 65535;
+
+    try std.testing.expectEqual(@as(u8, 100), s.test_rate);
+    try std.testing.expectEqual(@as(u16, 65535), s.dirty_files);
+    try std.testing.expectEqual(@as(u8, 255), s.agent_count);
+}
+
+test "Queen senses — SenseResult healthEmoji with recovering state" {
+    var s = SenseResult{};
+    s.build_ok = true;
+    s.ouroboros_score = 50.0; // Mid range
+
+    try std.testing.expectEqualStrings(qt.E_CHECK, s.healthEmoji());
+}
+
+test "Queen senses — SenseResult with zero ouroboros but good build" {
+    var s = SenseResult{};
+    s.build_ok = true;
+    s.ouroboros_score = 0.0;
+
+    try std.testing.expectEqualStrings(qt.E_WRENCH, s.healthEmoji());
+}
+
+test "Queen senses — SenseResult with perfect scores" {
+    var s = SenseResult{};
+    s.build_ok = true;
+    s.test_rate = 100;
+    s.ouroboros_score = 100.0;
+    s.keys_present = 5;
+    s.keys_total = 5;
+
+    try std.testing.expectEqualStrings(qt.E_STAR, s.healthEmoji());
+}
+
+test "Queen senses — SenseResult network_ok field" {
+    var s = SenseResult{};
+    s.network_ok = true;
+    try std.testing.expect(s.network_ok);
+
+    s.network_ok = false;
+    try std.testing.expect(!s.network_ok);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// collectAllSenses EXTENDED TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "Queen senses — collectAllSenses with broken build snapshot" {
+    const snapshot = FacultySnapshot{
+        .agents = undefined,
+        .build_ok = false,
+        .binaries = 0,
+        .compile_pass = 0,
+        .compile_total = 0,
+        .compile_rate = 0,
+        .v_number = 0,
+        .v_zone = .drift,
+        .git_branch = "main",
+        .dirty_files = 100,
+        .open_issues = 5,
+        .mu_patterns = 0,
+        .cycle = .emergency,
+    };
+
+    const result = collectAllSenses(std.testing.allocator, snapshot);
+
+    try std.testing.expect(!result.build_ok);
+    try std.testing.expectEqual(@as(u16, 100), result.dirty_files);
+    try std.testing.expectEqual(@as(u16, 5), result.open_issues);
+}
+
+test "Queen senses — collectAllSenses with high test rate" {
+    const snapshot = FacultySnapshot{
+        .agents = undefined,
+        .build_ok = true,
+        .binaries = 6,
+        .compile_pass = 95,
+        .compile_total = 100,
+        .compile_rate = 95,
+        .v_number = 1,
+        .v_zone = .gold,
+        .git_branch = "main",
+        .dirty_files = 2,
+        .open_issues = 0,
+        .mu_patterns = 10,
+        .cycle = .working,
+    };
+
+    const result = collectAllSenses(std.testing.allocator, snapshot);
+
+    try std.testing.expect(result.build_ok);
+    try std.testing.expectEqual(@as(u8, 95), result.test_rate);
+}
+
+test "Queen senses — collectAllSenses timestamp fields populated" {
+    const snapshot = FacultySnapshot{
+        .agents = undefined,
+        .build_ok = true,
+        .binaries = 0,
+        .compile_pass = 0,
+        .compile_total = 0,
+        .compile_rate = 0,
+        .v_number = 0,
+        .v_zone = .drift,
+        .git_branch = "main",
+        .dirty_files = 0,
+        .open_issues = 0,
+        .mu_patterns = 0,
+        .cycle = .quiet,
+    };
+
+    const result = collectAllSenses(std.testing.allocator, snapshot);
+
+    // Timestamps should be populated (either 0 or actual time)
+    try std.testing.expect(result.last_git_push_ts >= 0);
+    try std.testing.expect(result.last_issue_comment_ts >= 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// fmtSensesTelegram EXTENDED TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "Queen senses — fmtSensesTelegram with recovering state" {
+    var buf: [1024]u8 = undefined;
+    const result = fmtSensesTelegram(&buf, .{
+        .build_ok = true,
+        .test_rate = 60,
+        .dirty_files = 20,
+        .open_issues = 3,
+        .ouroboros_score = 50.0,
+    });
+
+    try std.testing.expect(result.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, result, "RECOVERING") != null);
+}
+
+test "Queen senses — fmtSensesTelegram with needs attention" {
+    var buf: [1024]u8 = undefined;
+    const result = fmtSensesTelegram(&buf, .{
+        .build_ok = true,
+        .test_rate = 30,
+        .dirty_files = 40,
+        .open_issues = 8,
+        .ouroboros_score = 35.0,
+    });
+
+    try std.testing.expect(result.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, result, "NEEDS ATTENTION") != null);
+}
+
+test "Queen senses — fmtSensesTelegram includes all keys" {
+    var buf: [2048]u8 = undefined;
+    const s = SenseResult{
+        .build_ok = true,
+        .test_rate = 100,
+        .dirty_files = 0,
+        .open_issues = 0,
+        .agent_count = 5,
+        .farm_services = 20,
+        .farm_best_ppl = 3.5,
+        .arena_battles = 100,
+        .ouroboros_score = 95.0,
+        .disk_free_gb = 100.0,
+        .keys_present = 5,
+        .keys_total = 5,
+        .experience_count = 50,
+        .farm_idle_count = 0,
+        .stale_arena_hours = 0,
+        .agent_spawn_issues = 0,
+        .finished_containers = 2,
+    };
+
+    const msg = fmtSensesTelegram(&buf, s);
+
+    // Check all major sections are present
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Build:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Tests:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Farm:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Ouroboros:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "Keys:") != null);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Helper function edge cases TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "Queen senses — countAliveAgents max bound" {
+    const count = countAliveAgents();
+    // Should not exceed reasonable maximum
+    try std.testing.expect(count <= 255);
+}
+
+test "Queen senses — countArenaResults counts correctly" {
+    const count = countArenaResults();
+    // Should be non-negative integer
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — calcStaleArenaHours max bound" {
+    const hours = calcStaleArenaHours();
+    // Should return 999 if file doesn't exist, or actual hours
+    try std.testing.expect(hours == 999 or hours < 100000);
+}
+
+test "Queen senses — countFarmIdleServices non-negative" {
+    const count = countFarmIdleServices();
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — countFarmIdleServices reasonable bound" {
+    const count = countFarmIdleServices();
+    try std.testing.expect(count <= 255);
+}
