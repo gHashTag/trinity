@@ -10,6 +10,12 @@
 
 const std = @import("std");
 
+// S³AI Brain Regions (Neuroanatomy v5.1)
+const brain = @import("../brain/brain.zig");
+const basal_ganglia = brain.basal_ganglia;
+const reticular_formation = brain.reticular_formation;
+const locus_coeruleus = brain.locus_coeruleus;
+
 // Shared orchestrator types — local copy to avoid circular dep on trinity.vibeec
 // Source of truth: src/vibeec/tri_orchestrator.zig
 pub const PHI = 1.618033988749895;
@@ -61,7 +67,18 @@ pub const NodeType = enum {
 };
 
 pub const OrchestratorPhase = enum {
-    idle, decompose, plan, spec_create, gen, @"test", bench, verdict, git, loop_decide, complete, failed,
+    idle,
+    decompose,
+    plan,
+    spec_create,
+    gen,
+    @"test",
+    bench,
+    verdict,
+    git,
+    loop_decide,
+    complete,
+    failed,
 };
 
 pub const LoopDecision = enum { @"continue", stop, retry, skip, circuit_break };
@@ -121,7 +138,7 @@ pub const CoordinatedTask = struct {
     pub const TaskResult = struct {
         success: bool,
         output: []const u8,
-        error: ?[]const u8,
+        err_msg: ?[]const u8,
         duration_ms: u64,
         pas_score: f64,
     };
@@ -147,7 +164,7 @@ pub const CoordinatedTask = struct {
         if (self.assigned_node) |node| allocator.free(node);
         if (self.result) |*r| {
             allocator.free(r.output);
-            if (r.error) |err| allocator.free(err);
+            if (r.err_msg) |err| allocator.free(err);
         }
     }
 
@@ -210,7 +227,7 @@ pub const CoordinatedNode = struct {
 
     pub fn isAvailable(self: *const CoordinatedNode) bool {
         return self.health >= 0.5 and
-               (self.status == .active or self.status == .busy);
+            (self.status == .active or self.status == .busy);
     }
 
     pub fn canAcceptTask(self: *const CoordinatedNode, task_realm: Realm) bool {
@@ -255,6 +272,10 @@ pub const OrchestratorCoordinator = struct {
     metrics: CoordinatorMetrics,
     agent_counter: u32,
 
+    // S³AI Brain Integration (v5.1)
+    coordination: brain.AgentCoordination,
+    backoff_attempts: std.StringHashMap(u32), // Track retries per task
+
     /// Initialize the coordinator with 3-node cluster
     pub fn init(allocator: std.mem.Allocator, config: CoordinatorConfig) !OrchestratorCoordinator {
         // Create 3-node cluster
@@ -275,7 +296,7 @@ pub const OrchestratorCoordinator = struct {
             .completed_tasks = 0,
             .failed_tasks = 0,
             .last_heartbeat = std.time.timestamp(),
-            .capabilities = &[_][]const u8{"routing", "planning", "analysis", "decompose"},
+            .capabilities = &[_][]const u8{ "routing", "planning", "analysis", "decompose" },
         };
         initialized_nodes = 1;
 
@@ -289,7 +310,7 @@ pub const OrchestratorCoordinator = struct {
             .completed_tasks = 0,
             .failed_tasks = 0,
             .last_heartbeat = std.time.timestamp(),
-            .capabilities = &[_][]const u8{"storage", "memory", "data", "spec-create", "gen"},
+            .capabilities = &[_][]const u8{ "storage", "memory", "data", "spec-create", "gen" },
         };
         initialized_nodes = 2;
 
@@ -303,7 +324,7 @@ pub const OrchestratorCoordinator = struct {
             .completed_tasks = 0,
             .failed_tasks = 0,
             .last_heartbeat = std.time.timestamp(),
-            .capabilities = &[_][]const u8{"execution", "tools", "actions", "test", "bench"},
+            .capabilities = &[_][]const u8{ "execution", "tools", "actions", "test", "bench" },
         };
 
         return OrchestratorCoordinator{
@@ -315,6 +336,9 @@ pub const OrchestratorCoordinator = struct {
             .completed_tasks = std.ArrayList(CoordinatedTask).init(allocator),
             .metrics = CoordinatorMetrics{},
             .agent_counter = 0,
+            // S³AI Brain Integration
+            .coordination = try brain.AgentCoordination.init(allocator),
+            .backoff_attempts = std.StringHashMap(u32).init(allocator),
         };
     }
 
@@ -339,6 +363,13 @@ pub const OrchestratorCoordinator = struct {
             task.deinit(self.allocator);
         }
         self.completed_tasks.deinit();
+
+        // Cleanup S³AI Brain Integration
+        var backoff_iter = self.backoff_attempts.iterator();
+        while (backoff_iter.next()) |entry| {
+            self.allocator.free(entry.key_ptr.*);
+        }
+        self.backoff_attempts.deinit();
     }
 
     /// Start all nodes
@@ -389,9 +420,30 @@ pub const OrchestratorCoordinator = struct {
         return assigned;
     }
 
-    /// Assign task to best available node
+    /// Assign task to best available node with Basal Ganglia claim
     fn assignToNode(self: *OrchestratorCoordinator, task: *CoordinatedTask) !bool {
-        // Find node with matching realm and lowest load
+        // First, try to claim task via Basal Ganglia
+        const agent_id = if (task.assigned_node) |node| node else "orchestrator";
+        const claimed = try self.coordination.claimTask(task.id, agent_id);
+
+        if (!claimed) {
+            // Task already claimed — record backoff attempt
+            const attempt = self.backoff_attempts.get(task.id) orelse 0;
+            try self.backoff_attempts.put(
+                try self.allocator.dupe(u8, task.id),
+                attempt + 1,
+            );
+
+            if (self.config.verbose) {
+                const delay_ms = self.coordination.getBackoffDelay(attempt);
+                std.debug.print("[Brain] Task {s} already claimed, backoff {d}ms (attempt {d})\n", .{
+                    task.id, delay_ms, attempt + 1,
+                });
+            }
+            return false;
+        }
+
+        // Claim successful — find best node
         var best_node: ?*CoordinatedNode = null;
         var min_load: u32 = std.math.maxInt(u32);
 
@@ -404,19 +456,28 @@ pub const OrchestratorCoordinator = struct {
             }
         }
 
-        if (best_node == null) return false;
-
-            // Assign task to node
-            task.assigned_node = try self.allocator.dupe(u8, best_node.?.id);
-            task.status = .assigned;
-            best_node.?.active_tasks += 1;
-            best_node.?.last_heartbeat = std.time.timestamp();
-            if (best_node.?.active_tasks > 0) {
-                best_node.?.status = .busy;
-            }
-
-            return true;
+        if (best_node == null) {
+            // No node available — release claim
+            _ = self.coordination.completeTask(task.id, agent_id, 0);
+            return false;
         }
+
+        // Assign task to node
+        task.assigned_node = try self.allocator.dupe(u8, best_node.?.id);
+        task.status = .assigned;
+        best_node.?.active_tasks += 1;
+        best_node.?.last_heartbeat = std.time.timestamp();
+        if (best_node.?.active_tasks > 0) {
+            best_node.?.status = .busy;
+        }
+
+        // Clear backoff attempts on success
+        if (self.backoff_attempts.fetchRemove(task.id)) |entry| {
+            self.allocator.free(entry.key);
+        }
+
+        return true;
+    }
 
     /// Execute a task using TRI CLI command
     pub fn executeTask(self: *OrchestratorCoordinator, task_id: []const u8) !void {
@@ -432,6 +493,16 @@ pub const OrchestratorCoordinator = struct {
         task.completed_at = std.time.timestamp();
         task.status = if (result.success) .completed else .failed;
         task.result = result;
+
+        // Publish completion/failure event to Reticular Formation
+        const agent_id = if (task.assigned_node) |node| node else "orchestrator";
+        if (result.success) {
+            const duration_ms = if (task.getDurationMs()) |d| d else 0;
+            try self.coordination.completeTask(task_id, agent_id, duration_ms);
+        } else {
+            const err_msg = if (result.err_msg) |err| err else "unknown error";
+            try self.coordination.failTask(task_id, agent_id, err_msg);
+        }
 
         // Update metrics
         if (result.success) {
@@ -490,7 +561,7 @@ pub const OrchestratorCoordinator = struct {
             return CoordinatedTask.TaskResult{
                 .success = false,
                 .output = "",
-                .error = try self.allocator.dupe(u8, @tagName(err)),
+                .err_msg = try self.allocator.dupe(u8, @tagName(err)),
                 .duration_ms = 0,
                 .pas_score = 0,
             };
@@ -510,7 +581,7 @@ pub const OrchestratorCoordinator = struct {
             return CoordinatedTask.TaskResult{
                 .success = false,
                 .output = stdout,
-                .error = try self.allocator.dupe(u8, @tagName(err)),
+                .err_msg = try self.allocator.dupe(u8, @tagName(err)),
                 .duration_ms = @as(u64, @intCast(@divTrunc(std.time.nanoTimestamp() - start_time, 1_000_000))),
                 .pas_score = 0,
             };
@@ -525,7 +596,7 @@ pub const OrchestratorCoordinator = struct {
         return CoordinatedTask.TaskResult{
             .success = exit_code == 0,
             .output = stdout,
-            .error = if (exit_code != 0 and stderr.len > 0) try self.allocator.dupe(u8, stderr) else null,
+            .err_msg = if (exit_code != 0 and stderr.len > 0) try self.allocator.dupe(u8, stderr) else null,
             .duration_ms = duration_ms,
             .pas_score = if (exit_code == 0) 0.97 else 0.3, // Simplified PAS score
         };
@@ -554,7 +625,7 @@ pub const OrchestratorCoordinator = struct {
             const weight = vote.node_type.phiWeight() * vote.confidence;
             total_weight += weight;
 
-            if (vote.decision == .continue) {
+            if (vote.decision == .@"continue") {
                 proceed_weight += weight;
             }
         }
@@ -562,7 +633,7 @@ pub const OrchestratorCoordinator = struct {
         const agreement = if (total_weight > 0) proceed_weight / total_weight else 0;
 
         const final_decision: LoopDecision = if (agreement >= 0.5)
-            .continue
+            .@"continue"
         else if (agreement >= 0.3)
             .retry
         else
@@ -620,6 +691,13 @@ pub const OrchestratorCoordinator = struct {
             self.metrics.completed_tasks,
         });
         try report.print("║  Success Rate: {d:.1}%                                                ║\n", .{self.metrics.getSuccessRate() * 100});
+        try report.appendSlice("╠═════════════════════════════════════════════════════════════╣\n");
+        const brain_stats = self.coordination.getStats();
+        try report.print("║  Brain: {d:4} active claims │ {d:5} events │{s}\n", .{
+            brain_stats.active_claims,
+            brain_stats.total_events_published,
+            RESET,
+        });
         try report.appendSlice("╚═══════════════════════════════════════════════════════════════╝\n");
 
         return report.toOwnedSlice();
@@ -734,7 +812,7 @@ test "OrchestratorCoordinator φ consensus" {
         .{
             .agent_id = "alpha-001",
             .node_type = .alpha,
-            .decision = .continue,
+            .decision = .@"continue",
             .confidence = 0.95,
             .pas_score = 0.97,
             .reasoning = null,
@@ -743,7 +821,7 @@ test "OrchestratorCoordinator φ consensus" {
         .{
             .agent_id = "beta-001",
             .node_type = .beta,
-            .decision = .continue,
+            .decision = .@"continue",
             .confidence = 0.90,
             .pas_score = 0.92,
             .reasoning = null,
@@ -762,7 +840,7 @@ test "OrchestratorCoordinator φ consensus" {
 
     const result = coord.calculateConsensus(&votes);
 
-    try std.testing.expectEqual(.continue, result.final_decision);
+    try std.testing.expectEqual(.@"continue", result.final_decision);
     try std.testing.expect(result.consensus_score > 0.5); // Alpha + Beta should outweigh Gamma
 }
 

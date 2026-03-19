@@ -2120,6 +2120,12 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    // NOTE: thalamus_logs disabled due to duplicate struct member error
+    // const thalamus_logs_mod = b.createModule(.{
+    //     .root_source_file = b.path("src/brain/thalamus_logs.zig"),
+    //     .target = target,
+    //     .optimize = optimize,
+    // });
     const brain_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/brain.zig"),
         .target = target,
@@ -2129,6 +2135,13 @@ pub fn build(b: *std.Build) void {
             .{ .name = "reticular_formation", .module = reticular_formation_mod },
             .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
         },
+    });
+
+    // Bench module — IGLA (Needle In A Haystack) benchmark
+    const bench_mod = b.createModule(.{
+        .root_source_file = b.path("src/bench/bench.zig"),
+        .target = target,
+        .optimize = optimize,
     });
 
     // zig-hslm — Official HSLM Numerical Library
@@ -2194,6 +2207,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "reticular_formation", .module = reticular_formation_mod },
                 .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
                 .{ .name = "brain", .module = brain_mod },
+                // Bench module — IGLA benchmark
+                .{ .name = "bench", .module = bench_mod },
                 // zig-hslm — Official HSLM Numerical Library
                 .{ .name = "hslm", .module = hslm_mod },
                 // Intraparietal Sulcus — Numerical Layer
@@ -2332,14 +2347,17 @@ pub fn build(b: *std.Build) void {
     brain_tests_step.dependOn(&run_brain_tests.step);
 
     // zig-hslm — Official HSLM Numerical Library tests
-    const hslm_tests = b.addTest(.{
+    const hslm_f16_mod = b.createModule(.{
         .root_source_file = b.path("external/zig-hslm/src/f16_utils.zig"),
         .target = target,
         .optimize = optimize,
     });
-    const run_hslm_tests = b.addRunArtifact(hslm_tests);
-    const hslm_tests_step = b.step("test-hslm", "Run HSLM F16 Utils Tests");
-    hslm_tests_step.dependOn(&run_hslm_tests.step);
+    const hslm_f16_tests = b.addTest(.{
+        .root_module = hslm_f16_mod,
+    });
+    const run_hslm_f16_tests = b.addRunArtifact(hslm_f16_tests);
+    const hslm_f16_tests_step = b.step("test-hslm-f16", "Run HSLM F16 Utils Tests");
+    hslm_f16_tests_step.dependOn(&run_hslm_f16_tests.step);
 
     // Intraparietal Sulcus (Numerical Layer) tests
     const intraparietal_tests = b.addTest(.{
@@ -2348,6 +2366,22 @@ pub fn build(b: *std.Build) void {
     const run_intraparietal_tests = b.addRunArtifact(intraparietal_tests);
     const intraparietal_tests_step = b.step("test-intraparietal", "Run Intraparietal Sulcus Tests");
     intraparietal_tests_step.dependOn(&run_intraparietal_tests.step);
+
+    // S³AI Brain Stress Test — Load testing for 1000 tasks × 10 agents
+    const stress_test_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/stress_test.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "brain", .module = brain_mod },
+        },
+    });
+    const stress_tests = b.addTest(.{
+        .root_module = stress_test_mod,
+    });
+    const run_stress_tests = b.addRunArtifact(stress_tests);
+    const stress_tests_step = b.step("test-brain-stress", "Run S³AI Brain Stress Test");
+    stress_tests_step.dependOn(&run_stress_tests.step);
 
     // Trinity Hybrid Local Coder (IGLA + Ollama)
     const hybrid_local = b.addExecutable(.{
