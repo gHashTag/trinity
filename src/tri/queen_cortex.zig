@@ -531,3 +531,108 @@ test "cortex — combinedCycle with all zero" {
     const total = combinedCycle(&h);
     try std.testing.expectEqual(@as(u32, 0), total);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL FUNCTION TESTS — Testing actual exported functions with real behavior
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "cortex — vmpfc phiWeightedScore calculates phi multiplication" {
+    // Test the actual phi-weighted score calculation
+    const base: f32 = 10.0;
+    const result = vmpfc.phiWeightedScore(base);
+    // phi ≈ 1.618, so 10 * 1.618 ≈ 16.18
+    try std.testing.expectApproxEqAbs(@as(f32, 16.18), result, 0.01);
+}
+
+test "cortex — vmpfc phiWeightedScore with zero returns zero" {
+    const result = vmpfc.phiWeightedScore(0.0);
+    try std.testing.expectEqual(@as(f32, 0.0), result);
+}
+
+test "cortex — vmpfc phiWeightedScore with negative value" {
+    const base: f32 = -5.0;
+    const result = vmpfc.phiWeightedScore(base);
+    // -5 * phi ≈ -8.09
+    try std.testing.expectApproxEqAbs(@as(f32, -8.09), result, 0.01);
+}
+
+test "cortex — ofc inferMood returns alarm when build broken" {
+    const mood = ofc.inferMood(false, 50.0, false);
+    try std.testing.expectEqual(ofc.Mood.alarm, mood);
+}
+
+test "cortex — ofc inferMood returns euphoria on PPL record" {
+    const mood = ofc.inferMood(true, 80.0, true);
+    try std.testing.expectEqual(ofc.Mood.euphoria, mood);
+}
+
+test "cortex — ofc inferMood returns calm when all good" {
+    const mood = ofc.inferMood(true, 85.0, false);
+    try std.testing.expectEqual(ofc.Mood.calm, mood);
+}
+
+test "cortex — ofc inferMood returns alert on low ouroboros score" {
+    const mood = ofc.inferMood(true, 60.0, false);
+    try std.testing.expectEqual(ofc.Mood.alert, mood);
+}
+
+test "cortex — ofc inferMood returns alarm on critical ouroboros score" {
+    const mood = ofc.inferMood(true, 30.0, false);
+    try std.testing.expectEqual(ofc.Mood.alarm, mood);
+}
+
+test "cortex — ofc ChatRoute chatId returns correct strings" {
+    try std.testing.expectEqualStrings("144022504", ofc.ChatRoute.personal.chatId());
+    try std.testing.expectEqualStrings("-5160767429", ofc.ChatRoute.group.chatId());
+    try std.testing.expectEqualStrings("-5160767429", ofc.ChatRoute.agent.chatId());
+    try std.testing.expectEqualStrings("-5160767429", ofc.ChatRoute.alert.chatId());
+}
+
+test "cortex — ofc Mood emoji returns correct emoji for each mood" {
+    try std.testing.expectEqualStrings("\xe2\x9c\x85", ofc.Mood.calm.emoji()); // E_CHECK
+    try std.testing.expectEqualStrings("\xf0\x9f\x94\xa7", ofc.Mood.alert.emoji()); // E_WRENCH
+    try std.testing.expectEqualStrings("\xf0\x9f\x9a\xa8", ofc.Mood.alarm.emoji()); // E_SIREN
+    try std.testing.expectEqualStrings("\xf0\x9f\x8f\x86", ofc.Mood.euphoria.emoji()); // E_TROPHY
+}
+
+test "cortex — dmpfc SelfCheck grade returns correct letter" {
+    var check = dmpfc.SelfCheck{
+        .health_score = 0.95,
+        .timestamp = 0,
+    };
+    try std.testing.expectEqualStrings("A", check.grade());
+
+    check.health_score = 0.75;
+    try std.testing.expectEqualStrings("B", check.grade());
+
+    check.health_score = 0.55;
+    try std.testing.expectEqualStrings("C", check.grade());
+
+    check.health_score = 0.3;
+    try std.testing.expectEqualStrings("F", check.grade());
+}
+
+test "cortex — dmpfc SelfCheck isHealthy threshold at 0.7" {
+    var check = dmpfc.SelfCheck{
+        .health_score = 0.7,
+        .timestamp = 0,
+    };
+    try std.testing.expect(check.isHealthy());
+
+    check.health_score = 0.69;
+    try std.testing.expect(!check.isHealthy());
+}
+
+test "cortex — vlpfc FocusArea enum has all expected values" {
+    // Verify FocusArea has the expected focus areas
+    const all_focuses = [_]vlpfc.FocusArea{
+        .all,
+        .farm,
+        .training,
+        .github,
+        .self_check,
+    };
+    _ = all_focuses;
+    // This test verifies compile-time existence of all focus areas
+    try std.testing.expect(true);
+}
