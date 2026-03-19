@@ -1275,3 +1275,7 @@ test "tamagotchi — GrowthStage fromUptime minute calculation" {
         try std.testing.expectEqual(tc.expected_minutes, minutes);
     }
 }
+
+pub fn main() void {
+    _ = {};
+}

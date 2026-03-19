@@ -1,12 +1,12 @@
-# Полное руководство по подключениям и WiFi для Trinity FPGA
+# Complete Guide to Connections and WiFi for Trinity FPGA
 
-## Часть 1: Куда подключать DSlogic Plus?
+## Part 1: Where to Connect DSlogic Plus?
 
-### Точки подключения на FPGA плате
+### Connection Points on FPGA Board
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│              QMTECH XC7A100TFGG676 - Точки подключения             │
+│              QMTECH XC7A100TFGG676 - Connection Points           │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ┌──────────────────────────────────────────────────────────────┐  │
@@ -17,11 +17,11 @@
 │  │   │  (3.3V) │  │  (3.3V) │  │  (3.3V) │  │  (3.3V) │         │  │
 │  │   └─────────┘  └─────────┘  └─────────┘  └─────────┘        │  │
 │  │                                                               │  │
-│  │   Всего: ~300+ пользовательских пинов!                        │  │
+│  │   Total: ~300+ user pins!                                 │  │
 │  └──────────────────────────────────────────────────────────────┘  │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
-│  │  PLS-EXT разъём (если есть)                                  │   │
+│  │  PLS-EXT connector (if available)                              │   │
 │  │  ┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐                  │   │
 │  │  │GND│VCC│IO1│IO2│IO3│IO4│IO5│IO6│IO7│IO8│ ...              │   │
 │  │  └───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘                  │   │
@@ -30,80 +30,80 @@
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### 16 каналов — на что хватит?
+### 16 Channels — What's Enough?
 
-| Канал | Сигнал | Описание |
-|-------|--------|----------|
-| CH0 | ESP32_TX → FPGA_RX | UART данные |
-| CH1 | FPGA_TX → ESP32_RX | UART данные |
+| Channel | Signal | Description |
+|---------|---------|-------------|
+| CH0 | ESP32_TX → FPGA_RX | UART data |
+| CH1 | FPGA_TX → ESP32_RX | UART data |
 | CH2 | ESP32_SCLK | SPI clock |
-| CH3 | ESP32_MOSI | SPI данные → FPGA |
-| CH4 | ESP32_MISO | SPI данные → ESP32 |
+| CH3 | ESP32_MOSI | SPI data → FPGA |
+| CH4 | ESP32_MISO | SPI data → ESP32 |
 | CH5 | ESP32_CS | SPI chip select |
-| CH6 | FPGA_CLK | 50 MHz системный клок |
-| CH7 | LED output | Статус LED |
-| CH8 | VSA_result[0] | Результат VSA |
-| CH9 | VSA_result[1] | Результат VSA |
-| CH10 | state[0] | FSM состояние |
-| CH11 | state[1] | FSM состояние |
-| CH12 | trigger_out | Триггер для осциллографа |
-| CH13 | spare | Запас |
-| CH14 | spare | Запас |
-| CH15 | spare | Запас |
+| CH6 | FPGA_CLK | 50 MHz system clock |
+| CH7 | LED output | LED status |
+| CH8 | VSA_result[0] | VSA result |
+| CH9 | VSA_result[1] | VSA result |
+| CH10 | state[0] | FSM state |
+| CH11 | state[1] | FSM state |
+| CH12 | trigger_out | Oscilloscope trigger |
+| CH13 | spare | Spare |
+| CH14 | spare | Spare |
+| CH15 | spare | Spare |
 
-### Как физически подключаться
+### How to Physically Connect
 
-**Метод 1: Pogo Pin тестовые точки**
+**Method 1: Pogo Pin Test Points**
 ```
         ┌─────┐
-        │  ○  │ ← Pogo pin прижимается к пину
+        │  ○  │ ← Pogo pin pressed against pin
         └─────┘
            │
-           │ ← Пружинный зонд
+           │ ← Spring probe
            │
         ┌───┴───┐
         │ DSlogic│
         └───────┘
 ```
 
-**Метод 2: Test clips (крокодилы)**
+**Method 2: Test clips (alligator clips)**
 ```
-FPGA Pin ──[🔧 крокодил]─── Wire ──── DSlogic CH0
+FPGA Pin ──[🔧 alligator]─── Wire ──── DSlogic CH0
 ```
 
-**Метод 3: Монтажные провода**
+**Method 3: Jumper wires**
 ```
 FPGA Pin ──┐
-           │ ← Dupont провод (male-to-female)
+           │ ← Dupont wire (male-to-female)
 DSlogic ───┘
 ```
 
 ---
 
-## Часть 2: WiFi на FPGA
+## Part 2: WiFi on FPGA
 
-### Варианты подключения WiFi
+### WiFi Connection Options
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                      WiFi Опции для FPGA                            │
+│                      WiFi Options for FPGA                          │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  Вариант 1: ESP32 как мост (РЕКОМЕНДУЕТСЯ)                          │
+│  Option 1: ESP32 as bridge (RECOMMENDED)                        │
 │  ┌─────────┐    UART/SPI    ┌─────────┐    Ethernet/WiFi        │  │
 │  │ ESP32   │ ←────────────→ │  FPGA   │ ←───────────────────────│  │
 │  │ + WiFi  │                │         │                         │  │
 │  └─────────┘                └─────────┘                         │  │
 │       │                                                           │  │
-│       └─── WiFi AP → Пользователи подключаются                    │  │
+│       └─── WiFi AP → Users connect                               │  │
 │                                                                     │
-│  Вариант 2: Ethernet PHY + WiFi Router                             │
+│  Option 2: Ethernet PHY + WiFi Router                             │
 │  ┌─────────┐    RGMII      ┌─────────┐    ┌──────────┐          │  │
 │  │  FPGA   │ ←────────────→│ Ethernet│ ←→│ WiFi AP  │          │  │
 │  └─────────┘               │   PHY   │    └──────────┘          │  │
 │                             └─────────┘                           │  │
 │                                                                     │
-│  Вариант 3: ESP32 WROVER с Ethernet                                │
+│  Option 3: ESP32 WROVER with Ethernet                                │
 │  ┌─────────┐    SPI         ┌─────────┐    ┌──────────┐          │  │
 │  │ESP32-WRO│ ←────────────→ │  FPGA   │    │ Ethernet │          │  │
 │  │+WiFi+Eth│                │         │    │ + WiFi   │          │  │
@@ -112,22 +112,22 @@ DSlogic ───┘
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### РЕКОМЕНДАЦИЯ: ESP32 как WiFi мост
+### RECOMMENDATION: ESP32 as WiFi Bridge
 
-**Почему это лучший вариант:**
+**Why this is the best option:**
 
-| Плюс | Объяснение |
-|------|------------|
-| ✅ Простой | Уже есть UART мост |
-| ✅ Дёшево | ESP32 стоит ~$5 |
-| � | WiFi + Bluetooth |
-| ✅ HTTPS | ESP32 поддерживает TLS |
-| ✅ Лёгкий UI | Web интерфейс |
-| ✅ OTA | Обновление по воздуху |
+| Plus | Explanation |
+|------|-------------|
+| ✅ Simple | Already have UART bridge |
+| ✅ Cheap | ESP32 costs ~$5 |
+| ✅ WiFi + Bluetooth | Both included |
+| ✅ HTTPS | ESP32 supports TLS |
+| ✅ Easy UI | Web interface |
+| ✅ OTA | Over-the-air updates |
 
 ---
 
-## Часть 3: Архитектура системы для пользователей
+## Part 3: System Architecture for Users
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -135,7 +135,7 @@ DSlogic ───┘
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
-│  │                         ПОЛЬЗОВАТЕЛЬ                         │   │
+│  │                         USER                              │   │
 │  │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │   │
 │  │  │   Web UI    │  │ Mobile App  │  │   CLI Tool  │         │   │
 │  │  │  (Browser)  │  │  (iOS/Android)│  │  (Python)   │         │   │
@@ -169,8 +169,8 @@ DSlogic ───┘
 │  ┌───────────────────────────────────────────────────────────────┐ │
 │  │                    Results/Output                             │ │
 │  │  • LED indication                                              │ │
-│  │  • 7-segment display (опц.)                                    │ │
-│  │  • HDMI/Video output (опц.)                                    │ │
+│  │  • 7-segment display (opt.)                                    │ │
+│  │  • HDMI/Video output (opt.)                                    │ │
 │  └───────────────────────────────────────────────────────────────┘ │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -178,16 +178,16 @@ DSlogic ───┘
 
 ---
 
-## Часть 4: Как пользователи будут работать
+## Part 4: How Users Will Work
 
-### Сценарий 1: Web UI (самый простой)
+### Scenario 1: Web UI (Simplest)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Пользователь открывает браузер:                                  │
+│  User opens browser:                                            │
 │                                                                     │
-│  1. Подключиться к WiFi: "Trinity-FPGA"                           │
-│  2. Перейти на: http://trinity.local  (или 192.168.4.1)           │
+│  1. Connect to WiFi: "Trinity-FPGA"                           │
+│  2. Go to: http://trinity.local  (or 192.168.4.1)           │
 │                                                                     │
 │  ┌─────────────────────────────────────────────────────────────┐   │
 │  │                    Trinity Control Panel                    │   │
@@ -215,7 +215,7 @@ DSlogic ───┘
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Сценарий 2: Mobile App
+### Scenario 2: Mobile App
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -224,7 +224,7 @@ DSlogic ───┘
 │  ┌───────────────────────────────────────────┐                     │
 │  │  ┌─────────────────────────────────────┐  │                     │
 │  │  │         TRINITY                     │  │                     │
-│  │  │    φ² + 1/φ² = 3                    │  │                     │
+│  │  │    φ² +1/φ² = 3                    │  │                     │
 │  │  ├─────────────────────────────────────┤  │                     │
 │  │  │                                     │  │                     │
 │  │  │  Status: ● Running                  │  │                     │
@@ -246,7 +246,7 @@ DSlogic ───┘
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Сценарий 3: CLI Tool
+### Scenario 3: CLI Tool
 
 ```
 $ trinity-cli --host trinity.local status
@@ -271,9 +271,9 @@ OK: LED blinking enabled
 
 ---
 
-## Часть 5: Реализация WiFi моста на ESP32
+## Part 5: Implementing WiFi Bridge on ESP32
 
-### ESP32 код (WebSocket сервер)
+### ESP32 Code (WebSocket Server)
 
 ```cpp
 // esp32_wifi_bridge.ino
@@ -303,10 +303,10 @@ void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload,
             break;
 
         case WStype_TEXT:
-            // Получить команду от Web UI
+            // Get command from Web UI
             Serial.printf("[%u] Command: %s\n", num, payload);
 
-            // Отправить в FPGA
+            // Send to FPGA
             if (strcmp((char*)payload, "PING") == 0) {
                 FPGASerial.write(0x03);
             } else if (strcmp((char*)payload, "LED_ON") == 0) {
@@ -332,7 +332,7 @@ void setup() {
     webSocket.begin();
     webSocket.onEvent(webSocketEvent);
 
-    // HTTP server для Web UI
+    // HTTP server for Web UI
     server.on("/", []() {
         server.send(200, "text/html", getWebPage());
     });
@@ -345,7 +345,7 @@ void loop() {
     webSocket.loop();
     server.handleClient();
 
-    // Ретранслировать FPGA ответы в WebSocket
+    // Relay FPGA responses to WebSocket
     if (FPGASerial.available()) {
         uint8_t data = FPGASerial.read();
         char msg[32];
@@ -394,14 +394,14 @@ String getWebPage() {
 
 ---
 
-## Часть 6: Общая архитектура
+## Part 6: Overall Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    ПОЛНАЯ АРХИТЕКТУРА                               │
+│                    FULL ARCHITECTURE                              │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  Пользователи                                                       │
+│  Users                                                             │
 │  ┌──────────┐  ┌──────────┐  ┌──────────┐                        │
 │  │ Browser  │  │ Mobile   │  │  CLI     │                        │
 │  └────┬─────┘  └────┬─────┘  └────┬─────┘                        │
@@ -437,67 +437,65 @@ String getWebPage() {
 
 ---
 
-## Часть 7: План реализации
+## Part 7: Implementation Plan
 
-### Шаг 1: Базовый UART мост (сейчас)
+### Step 1: Basic UART Bridge (current)
 ```
 ESP32 ←UART→ FPGA
 ```
 
-### Шаг 2: Добавить WiFi AP
+### Step 2: Add WiFi AP
 ```
 User → WiFi → ESP32 ←UART→ FPGA
 ```
 
-### Шаг 3: Web UI
+### Step 3: Web UI
 ```
 User → Browser → WiFi → ESP32 ←UART→ FPGA
 ```
 
-### Шаг 4: Mobile App
+### Step 4: Mobile App
 ```
 User → App → WiFi → ESP32 ←UART→ FPGA
 ```
 
-### Шаг 5: Облачная интеграция (опц.)
+### Step 5: Cloud Integration (opt.)
 ```
 User → App → Cloud → WiFi → ESP32 ←UART→ FPGA
 ```
 
 ---
 
-## Часть 8: Как пользователи подключаются
+## Part 8: How Users Connect
 
-### Первичная настройка (один раз)
-
+### Initial Setup (one time)
 ```
-1. Включить устройство
-2. Подключиться к WiFi: "Trinity-FPGA"
-3. Открыть браузер: http://192.168.4.1
-4. Настроить:
-   - Имя устройства
-   - Домашний WiFi (для bridge режима)
-   - Пароль администратора
-5. Готово!
+1. Power on device
+2. Connect to WiFi: "Trinity-FPGA"
+3. Open browser: http://192.168.4.1
+4. Configure:
+   - Device name
+   - Home WiFi (for bridge mode)
+   - Admin password
+5. Done!
 ```
 
-### Ежедневное использование
-
+### Daily Use
 ```
-1. Включить устройство (автоподключение к домашнему WiFi)
-2. Открыть: http://trinity.local
-3. Работать!
+1. Power on device (auto-connect to home WiFi)
+2. Open: http://trinity.local
+3. Work!
 ```
 
 ---
 
-## Итог
+## Summary
 
-| Вопрос | Ответ |
+| Question | Answer |
 |--------|-------|
-| **Куда подключать DSlogic?** | ~300 пинов на FPGA, 16 каналов хватит для всего |
-| **Как WiFi на FPGA?** | Через ESP32 мост (проще и дешевле) |
-| **Как с компьютера?** | Web UI (browser) или Mobile App |
-| **Как пользователям?** | Простой интерфейс, никаких технических знаний |
+| **Where to connect DSlogic?** | ~300 pins on FPGA, 16 channels enough for everything |
+| **How to WiFi on FPGA?** | Via ESP32 bridge (simpler and cheaper) |
+| **How from computer?** | Web UI (browser) or Mobile App |
+| **How for users?** | Simple interface, no technical knowledge needed |
 
 φ² + 1/φ² = 3 = TRINITY

@@ -1,7 +1,7 @@
 # TRINITY V1 — Video Script (30-60 seconds)
 
 ## Title
-**"TRINITY V1: FPGA с VSA + BitNet + Quantum Violation — Ждём кабель"**
+**"TRINITY V1: FPGA with VSA + BitNet + Quantum Violation — Waiting for cable"**
 
 ## Style
 - **Music**: Ambient electronic (sacred geometry vibes)
@@ -157,7 +157,7 @@ PRIORITY: Inference > Similarity > Mode
 
 **Overlay** (center, large):
 ```
-⏳ ЖДЁМ UART КАБЕЛЬ ⏳
+⏳ UART CABLE SOON ⏳
 WAITING FOR CABLE
 ```
 
@@ -181,8 +181,8 @@ ETA: TBD
 ```
 ╔════════════════════════════════════════════════════════════════════════════╗
 ║                                                                            ║
-║                    КАБЕЛЬ СКОРО БУДЕТ                                     ║
-║                    TRINITY V1 GOVORIT                                     ║
+║                    CABLE COMING SOON                                     ║
+║                    TRINITY V1 AWAKENS                                     ║
 ║                                                                            ║
 ║                   github.com/gHashTag/trinity                             ║
 ║                                                                            ║

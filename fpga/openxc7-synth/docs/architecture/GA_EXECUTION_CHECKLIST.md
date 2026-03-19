@@ -254,9 +254,9 @@
 
 ### Step 6.2: Toxic Verdict
 - [ ] Verdict generated
-- [ ] "Что работает" documented
-- [ ] "Что требует работы" documented
-- [ ] "Честная оценка" provided
+- [ ] "What works" documented
+- [ ] "What needs work" documented
+- [ ] "Honest assessment" provided
 - [ ] SHIP/NO-SHIP decision clear
 
 **Command:** `./zig-out/bin/tri verdict`

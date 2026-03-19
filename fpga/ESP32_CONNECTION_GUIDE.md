@@ -1,21 +1,21 @@
-# Подключение ESP32 к FPGA Artix-7
+# Connecting ESP32 to FPGA Artix-7
 
-## Что лучше подходит?
+## What Works Best?
 
-| Интерфейс | Сложность | Скорость | Для чего подходит | Рейтинг |
-|-----------|-----------|----------|-------------------|---------|
-| **UART** | ⭐ Простой | ~1 Mbps | Команды, лог, отладка | ✅ **ЛУЧШИЙ ДЛЯ НАЧАЛА** |
-| **SPI** | ⭐⭐ Средний | ~50 Mbps | Данные, пиксели | ⚡ Быстро |
-| **I2C** | ⭐ Простой | ~400 kHz | Сенсоры, настройки | 🔧 Для периферии |
-| **GPIO** | ⭐ Простейший | - | Кнопки, LED | 💡 Управление |
+| Interface | Complexity | Speed | Best For | Rating |
+|-----------|-----------|--------|-----------|--------|
+| **UART** | ⭐ Simple | ~1 Mbps | Commands, logs, debugging | ✅ **BEST TO START** |
+| **SPI** | ⭐⭐ Medium | ~50 Mbps | Data, pixels | ⚡ Fast |
+| **I2C** | ⭐ Simple | ~400 kHz | Sensors, settings | 🔧 For peripherals |
+| **GPIO** | ⭐ Simplest | - | Buttons, LED | 💡 Control |
 
-**РЕКОМЕНДАЦИЯ**: Начните с **UART** — самый простой и надёжный вариант.
+**RECOMMENDATION**: Start with **UART** — the simplest and most reliable option.
 
 ---
 
-## Вариант 1: UART (Рекомендуемый)
+## Option 1: UART (Recommended)
 
-### Схема подключения
+### Connection Diagram
 
 ```
 ┌─────────────────────┐              ┌─────────────────────┐
@@ -27,42 +27,42 @@
 │                     │              │                     │
 │  GPIO5 (RX) <───────┼──────────────┼── K20 (UART_TX)    │
 │                     │              │                     │
-│  GND ───────────────┼──────────────┼── GND (ВАЖНО!)     │
+│  GND ───────────────┼──────────────┼── GND (IMPORTANT!)  │
 │                     │              │                     │
-│  3.3V ──────────────┼──(опция)────┼── 3.3V (если нужно)│
+│  3.3V ──────────────┼──(optional)──┼── 3.3V (if needed) │
 │                     │              │                     │
 └─────────────────────┘              └─────────────────────┘
 ```
 
-### Пины ESP32 DIYTZT
+### ESP32 DIYTZT Pins
 
-| ESP32 Пин | Название | Куда подключить | Примечание |
-|-----------|----------|-----------------|------------|
-| GPIO4 | TX | FPGA Pin L20 | ESP32 передаёт |
-| GPIO5 | RX | FPGA Pin K20 | ESP32 принимает |
-| GND | GND | FPGA GND | **ОБЯЗАТЕЛЬНО!** |
-| 3V3 | 3.3V | - | Не подключать (есть свой) |
-| 5V | 5V | - | Не подключать |
+| ESP32 Pin | Name | Connect To | Note |
+|-----------|------|-------------|-------|
+| GPIO4 | TX | FPGA Pin L20 | ESP32 transmits |
+| GPIO5 | RX | FPGA Pin K20 | ESP32 receives |
+| GND | GND | FPGA GND | **REQUIRED!** |
+| 3V3 | 3.3V | - | Don't connect (has its own) |
+| 5V | 5V | - | Don't connect |
 
-### Пины FPGA (FGG676)
+### FPGA Pins (FGG676)
 
-| FPGA Пин | Банк | Название | Куда подключить |
-|----------|------|----------|-----------------|
+| FPGA Pin | Bank | Name | Connect To |
+|----------|------|------|-------------|
 | L20 | 35 | IO_L1N_N0_A14_35 | ESP32 TX |
 | K20 | 35 | IO_L1P_P0_A13_35 | ESP32 RX |
 | GND | - | GND | ESP32 GND |
 
-### Провода
+### Wires
 
-Используйте:
-- **DuPont провода** (Female-Female) — самый простой вариант
-- Или **монтажные провода** с паяльником
+Use:
+- **DuPont wires** (Female-Female) — simplest option
+- Or **jumper wires** with soldering iron
 
 ---
 
-## Вариант 2: SPI (Для высоких скоростей)
+## Option 2: SPI (For High Speeds)
 
-### Схема подключения
+### Connection Diagram
 
 ```
 ESP32                    FPGA
@@ -74,40 +74,40 @@ GPIO15 (CS) ───────────> F22 (SPI_CS)
 GND ───────────────────> GND
 ```
 
-**Когда использовать**: Когда нужно передавать много данных (например, пиксели для LCD).
+**When to use**: When you need to transfer lots of data (e.g., pixels for LCD).
 
 ---
 
-## Вариант 3: I2C (Для сенсоров)
+## Option 3: I2C (For Sensors)
 
-### Схема подключения
+### Connection Diagram
 
 ```
 ESP32                    FPGA
 ────────────────────────────────────────
-GPIO21 (SDA) ────────>── I2C_SDA (с резистором 4.7k)
-GPIO22 (SCL) ────────>── I2C_SCL (с резистором 4.7k)
+GPIO21 (SDA) ────────>── I2C_SDA (with 4.7k resistor)
+GPIO22 (SCL) ────────>── I2C_SCL (with 4.7k resistor)
 GND ───────────────────> GND
 ```
 
-**Примечание**: Нужны подтягивающие резисторы 4.7kΩ на SDA и SCL.
+**Note**: Pull-up resistors 4.7kΩ required on SDA and SCL.
 
 ---
 
-## Физическое подключение (пошагово)
+## Physical Connection (Step by Step)
 
-### Способ 1: DuPont провода (проще всего)
+### Method 1: DuPont Wires (Simplest)
 
-1. Возьмите 3 Duport провода (Female-Female)
-2. Соедините:
-   - **Чёрный**: GND → GND
-   - **Белый**: GPIO4 → Pin L20
-   - **Синий**: GPIO5 → Pin K20
-3. Проверьте соединения (мультиметром или визуально)
+1. Take 3 DuPont wires (Female-Female)
+2. Connect:
+   - **Black**: GND → GND
+   - **White**: GPIO4 → Pin L20
+   - **Blue**: GPIO5 → Pin K20
+3. Check connections (with multimeter or visually)
 
-### Способ 2: PLS-EXT платка (профессионально)
+### Method 2: PLS-EXT Board (Professional)
 
-QMTech предоставляет расширительную плату с разъёмами:
+QMTech provides an expansion board with connectors:
 
 ```
 PLS-EXT Connector:
@@ -117,43 +117,43 @@ PLS-EXT Connector:
 └────────────────────────────┘
 ```
 
-Подключите ESP32 к этим пинам.
+Connect ESP32 to these pins.
 
 ---
 
-## Проверка соединений
+## Testing Connections
 
-### 1. Проверка GND (обязательно!)
+### 1. Test GND (Required!)
 
 ```bash
-# Мультиметром: прозвоните GND ESP32 и GND FPGA
-# Должно быть ~0 Ом
+# With multimeter: check continuity of GND ESP32 and GND FPGA
+# Should be ~0 ohms
 ```
 
-### 2. Проверка уровней напряжения
+### 2. Check Voltage Levels
 
-- ESP32: **3.3V логика** ✓
-- FPGA: **3.3V логика** (LVCMOS33) ✓
-- **Совместимы напрямую!** (не нужны конвертеры)
+- ESP32: **3.3V logic** ✓
+- FPGA: **3.3V logic** (LVCMOS33) ✓
+- **Directly compatible!** (no converters needed)
 
-### 3. Осмотр пинов
+### 3. Inspect Pins
 
-| Проверка | Как |
-|----------|-----|
-| Короткое замыкание | Мультиметр: VCC-GND не должны звониться |
-| Правильный пин | Схемота FPGA + маркировка на плате |
-| Плохой контакт | Покачайте провод |
+| Check | How |
+|-------|-----|
+| Short circuit | Multimeter: VCC-GND should not beep |
+| Correct pin | FPGA schematic + board markings |
+| Bad contact | Wiggle the wire |
 
 ---
 
-## Сбор и прошивка FPGA
+## Synthesis and Flashing FPGA
 
-### 1. Синтезировать дизайн
+### 1. Synthesize Design
 
 ```bash
 cd /Users/playra/trinity-w1/fpga/openxc7-synth
 
-# Создать упрощённый XDC (только для uart_bridge)
+# Create simplified XDC (only for uart_bridge)
 cat > uart_bridge.xdc << 'EOF'
 # Clock
 set_property LOC U22 [get_ports clk]
@@ -171,7 +171,7 @@ set_property LOC T23 [get_ports led]
 set_property IOSTANDARD LVCMOS33 [get_ports led]
 EOF
 
-# Синтез с openXC7
+# Synthesize with openXC7
 docker run --rm --platform linux/amd64 \
     -v "$(pwd):/work" -w /work \
     regymm/openxc7 \
@@ -183,25 +183,25 @@ docker run --rm --platform linux/amd64 \
 ./synth.sh uart_bridge.v uart_bridge
 ```
 
-### 2. Прошить FPGA
+### 2. Flash FPGA
 
 ```bash
-# Загрузить прошивку кабеля
+# Load cable firmware
 sudo fpga/tools/fxload -v -t fx2 -d 03fd:0013 -i fpga/tools/xusb_xp2.hex
 
-# Переподключить кабель (подождать 2 секунды)
+# Reconnect cable (wait 2 seconds)
 
-# Прошить битстрим
+# Flash bitstream
 sudo fpga/tools/jtag_program uart_bridge.bit
 ```
 
 ---
 
-## ESP32 код (Arduino)
+## ESP32 Code (Arduino)
 
 ```cpp
 // esp32_uart_fpga.ino
-// Подключение:
+// Connection:
 //   ESP32 GPIO4 (TX) -> FPGA L20 (RX)
 //   ESP32 GPIO5 (RX) <- FPGA K20 (TX)
 //   ESP32 GND       -> FPGA GND
@@ -210,18 +210,18 @@ sudo fpga/tools/jtag_program uart_bridge.bit
 #define TX_PIN 4
 #define BAUD_RATE 115200
 
-// Команды FPGA
+// FPGA commands
 #define CMD_PING      0x03
 #define CMD_LED_ON    0x10
 #define CMD_LED_OFF   0x11
 #define CMD_LED_BLINK 0x12
 
-// Ответы FPGA
+// FPGA responses
 #define RESP_PONG     0x83
 #define RESP_OK       0xFF
 #define RESP_ACK      0xAA
 
-HardwareSerial SerialFPGA(1); // Использовать UART1
+HardwareSerial SerialFPGA(1); // Use UART1
 
 void setup() {
     Serial.begin(115200);
@@ -232,7 +232,7 @@ void setup() {
 }
 
 void loop() {
-    // Проверка команд из Serial Monitor
+    // Check commands from Serial Monitor
     if (Serial.available()) {
         char cmd = Serial.read();
 
@@ -262,7 +262,7 @@ void loop() {
                 break;
         }
 
-        // Ждём ответа от FPGA
+        // Wait for FPGA response
         delay(100);
         if (SerialFPGA.available()) {
             uint8_t resp = SerialFPGA.read();
@@ -273,7 +273,7 @@ void loop() {
         }
     }
 
-    // Ретранслировать данные из FPGA в Serial Monitor
+    // Relay data from FPGA to Serial Monitor
     if (SerialFPGA.available()) {
         uint8_t data = SerialFPGA.read();
         Serial.print("FPGA: 0x");
@@ -282,60 +282,60 @@ void loop() {
 }
 ```
 
-### Загрузка в ESP32
+### Upload to ESP32
 
-1. Откройте Arduino IDE
-2. Выберите плату: **ESP32 Dev Module**
-3. Выберите порт: `/dev/cu.usbserial-*` (или COMx на Windows)
-4. Загрузите скетч
-5. Откройте Serial Monitor (115200 baud)
-6. Отправляйте команды: `p`, `o`, `f`, `b`
+1. Open Arduino IDE
+2. Select board: **ESP32 Dev Module**
+3. Select port: `/dev/cu.usbserial-*` (or COMx on Windows)
+4. Upload sketch
+5. Open Serial Monitor (115200 baud)
+6. Send commands: `p`, `o`, `f`, `b`
 
 ---
 
-## Тестирование
+## Testing
 
-### Тест 1: Проверка связи
+### Test 1: Check Communication
 
 ```bash
-# В Arduino IDE Serial Monitor отправьте:
+# In Arduino IDE Serial Monitor send:
 p
-# Должно вернуться: Response: 0x83
+# Should return: Response: 0x83
 ```
 
-### Тест 2: Управление LED
+### Test 2: LED Control
 
 ```bash
-o  # LED включится
-f  # LED выключится
-b  # LED начнёт мигать
+o  # LED turns on
+f  # LED turns off
+b  # LED starts blinking
 ```
 
-### Тест 3: Осциллограф
+### Test 3: Oscilloscope
 
-Проверьте сигналы TX/RX осциллографом:
-- Скорость: 115200 baud
-- Бит: 8N1 (8 data bits, No parity, 1 stop bit)
-- Уровни: 0V = лог. 0, 3.3V = лог. 1
+Check TX/RX signals with oscilloscope:
+- Speed: 115200 baud
+- Bits: 8N1 (8 data bits, No parity, 1 stop bit)
+- Levels: 0V = logic 0, 3.3V = logic 1
 
 ---
 
-## Схема пинов FPGA (полная)
+## FPGA Pinout (Complete)
 
-### Bank 35 (используется для UART)
+### Bank 35 (used for UART)
 
 ```
 Pin  | Name          | ESP32 Connection
 -----|---------------|------------------
 L20  | IO_L1N_N0_A14 | UART_RX (GPIO4 TX)
 K20  | IO_L1P_P0_A13 | UART_TX (GPIO5 RX)
-M22  | IO_L2N_N1_A16 | Debug[0] (опц.)
-N21  | IO_L2P_P1_A17 | Debug[1] (опц.)
-N20  | IO_L3N_N2_A20 | Debug[2] (опц.)
-P22  | IO_L3P_P2_A21 | Debug[3] (опц.)
+M22  | IO_L2N_N1_A16 | Debug[0] (opt.)
+N21  | IO_L2P_P1_A17 | Debug[1] (opt.)
+N20  | IO_L3N_N2_A20 | Debug[2] (opt.)
+P22  | IO_L3P_P2_A21 | Debug[3] (opt.)
 ```
 
-### Расположение пинов на FPGA
+### Pin Locations on FPGA
 
 ```
         ┌───────────────────────┐
@@ -349,22 +349,22 @@ P22  | IO_L3P_P2_A21 | Debug[3] (опц.)
 
 ---
 
-## Поиск проблем
+## Troubleshooting
 
-| Проблема | Причина | Решение |
-|----------|---------|---------|
-| Нет ответа от FPGA | GND не подключен | Соедините GND! |
-| Нет ответа от FPGA | Неправильные пины | Проверьте XDC файл |
-| ESP32 перезагружается | Питание | Не используйте 5V от FPGA |
-| Мусор в Serial Monitor | Скорость не совпадает | Проверьте BAUD_RATE |
-| LED не работает | Синтез прошёл с ошибками | Проверьте логи синтеза |
+| Problem | Cause | Solution |
+|----------|--------|----------|
+| No FPGA response | GND not connected | Connect GND! |
+| No FPGA response | Wrong pins | Check XDC file |
+| ESP32 reboots | Power | Don't use 5V from FPGA |
+| Garbage in Serial Monitor | Speed mismatch | Check BAUD_RATE |
+| LED not working | Synthesis errors | Check synthesis logs |
 
 ---
 
-## Следующие шаги
+## Next Steps
 
-1. **VSA вычисления**: FPGA вычисляет VSA, ESP32 отображает на LCD
-2. **WiFi мост**: ESP32 пересылает данные через WiFi в компьютер
-3. **LVGL интерфейс**: Красивый UI на ESP32 для управления FPGA
+1. **VSA computations**: FPGA computes VSA, ESP32 displays on LCD
+2. **WiFi bridge**: ESP32 forwards data via WiFi to computer
+3. **LVGL interface**: Nice UI on ESP32 for FPGA control
 
 φ² + 1/φ² = 3 = TRINITY

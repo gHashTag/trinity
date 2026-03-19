@@ -129,7 +129,7 @@ B. Position board next to monitor, film both together
 
 **Overlay text** (center):
 ```
-⏳ ЖДЁМ UART КАБЕЛЬ ⏳
+⏳ UART CABLE SOON ⏳
 WAITING FOR CABLE
 ```
 
@@ -171,8 +171,8 @@ WAITING FOR CABLE
 
 **Text**:
 ```
-КАБЕЛЬ СКОРО БУДЕТ
-TRINITY V1 GOVORIT
+CABLE COMING SOON
+TRINITY V1 AWAKES
 
 github.com/gHashTag/trinity
 

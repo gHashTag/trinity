@@ -1966,39 +1966,7 @@ struct ChatScreen: View {
     }
 
     private var inputBarView: some View {
-        VStack(spacing: 0) {
-            if showSystemPrompt {
-                systemPromptEditorView
-            }
-            HStack(spacing: 4) {
-                ModelPicker(modelManager: modelManager)
-                PersonaPicker(selectedPersona: $selectedPersona, showLibrary: $showPersonaLibrary)
-                Button {
-                    if !showSystemPrompt {
-                        if let tid = store.activeThreadID,
-                           let thread = store.threads.first(where: { $0.id == tid }) {
-                            systemPromptDraft = thread.customSystemPrompt ?? ""
-                        } else {
-                            systemPromptDraft = ""
-                        }
-                    }
-                    showSystemPrompt.toggle()
-                } label: {
-                    Image(systemName: "terminal")
-                        .font(.system(size: a11y.scaledFontSize(13)))
-                        .foregroundStyle(
-                            showSystemPrompt ? (a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent) :
-                            (store.activeThread()?.customSystemPrompt != nil ? TrinityTheme.golden : Color.white.opacity(0.4))
-                        )
-                }
-                .buttonStyle(.plain)
-                .help("System prompt editor")
-                .accessibilityLabel("Edit system prompt")
-                .accessibilityHint("Double tap to open the system prompt editor")
-                .accessibilityIdentifier("chat.systemPrompt")
-            }
-            .padding(.leading, 14)
-
+        HStack(spacing: 12) {
             MultilineInput(
                 text: $input,
                 placeholder: placeholder,
@@ -2012,108 +1980,23 @@ struct ChatScreen: View {
                     showMentionPopup = query != nil
                 }
             )
-            .frame(height: 24)  // FIXED: compact single-line (24pt)
-            .padding(.horizontal, LayoutConstants.cardPadding)
-            .padding(.vertical, 14)
+            .layoutPriority(1)
 
-            HStack(spacing: 8) {
-                Button { openFilePicker() } label: {
-                    Image(systemName: "paperclip")
-                        .font(.system(size: a11y.scaledFontSize(15)))
-                        .foregroundStyle(Color.white.opacity(0.4))
-                }
-                .buttonStyle(.plain)
-                .help("Attach file (⌘O)")
-                .accessibilityLabel("Attach file")
-                .accessibilityHint("Double tap to open file picker and attach a file")
-                .accessibilityIdentifier("chat.attachFile")
-
-                Button { showShortcuts.toggle() } label: {
-                    Image(systemName: "keyboard")
-                        .font(.system(size: a11y.scaledFontSize(15)))
-                        .foregroundStyle(Color.white.opacity(0.4))
-                }
-                .buttonStyle(.plain)
-                .help("Shortcuts & Focus (⌘/)")
-                .accessibilityLabel("Keyboard shortcuts")
-                .accessibilityHint("Double tap to show available keyboard shortcuts")
-                .accessibilityIdentifier("chat.shortcuts")
-
-                Button { toggleVoiceInput() } label: {
-                    ZStack {
-                        if isRecording {
-                            Circle()
-                                .stroke(a11y.highContrast ? TrinityTheme.HighContrast.error : TrinityTheme.accent, lineWidth: 2)
-                                .frame(width: 36, height: 36)
-                                .scaleEffect(a11y.isReduceMotionEnabled() ? 1.0 : pulseScale)
-                                .opacity(isRecording ? 0 : 1)
-                                .animation(!a11y.isReduceMotionEnabled() ? .easeInOut(duration: 1.0).repeatForever(autoreverses: false) : nil, value: isRecording)
-                                .onAppear {
-                                    withAnimation {
-                                        pulseScale = 1.8
-                                    }
-                                }
-                        }
-                        Image(systemName: isRecording ? "mic.fill" : "mic")
-                            .font(.system(size: a11y.scaledFontSize(15)))
-                            .foregroundStyle(isRecording ? (a11y.highContrast ? TrinityTheme.HighContrast.error : TrinityTheme.accent) : Color.white.opacity(0.4))
-                    }
-                }
-                .buttonStyle(.plain)
-                .help("Voice input")
-                .accessibilityLabel(isRecording ? "Stop recording" : "Voice input")
-                .accessibilityHint(isRecording ? "Double tap to stop voice recording" : "Double tap to start voice input")
-                .accessibilityIdentifier(isRecording ? "chat.stopRecording" : "chat.voiceInput")
-
-                // Estimated cost of next message
-                if let costStr = estimatedCostString, !client.isStreaming {
-                    Text(costStr)
-                        .font(.system(size: a11y.scaledFontSize(9), weight: .medium, design: .monospaced))
-                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
-                        .help("Estimated cost of next message")
-                        .accessibilityLabel("Estimated cost: \(costStr)")
-                }
-
-                // Context preview button
-                if !client.isStreaming {
-                    Button { showContextPreview.toggle() } label: {
-                        Image(systemName: "eye")
-                            .font(.system(size: a11y.scaledFontSize(11)))
-                            .foregroundStyle(showContextPreview ? (a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent) : Color.white.opacity(0.3))
-                    }
-                    .buttonStyle(.plain)
-                    .help("Preview context that will be sent to API")
-                    .accessibilityLabel("Preview context")
-                    .accessibilityHint("Double tap to preview the context that will be sent to the API")
-                    .accessibilityIdentifier("chat.previewContext")
-                    .popover(isPresented: $showContextPreview) {
-                        contextPreviewPopover
-                    }
-                }
-
-                sendButton
-
-                // Send confirmation tick
-                if showSentConfirmation {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(TrinityTheme.accent)
-                        .transition(reduceMotion ? .opacity : .opacity.combined(with: .scale))
-                }
-                // Draft saved indicator + character counter
-                if showDraftSaved && !showSentConfirmation && !client.isStreaming {
-                    Text("Draft")
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.2))
-                        .transition(.opacity)
-                }
-                if input.count > 200 {
-                    Text("\(input.count)")
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
-                        .foregroundStyle(input.count > 8000 ? TrinityTheme.statusError : Color.white.opacity(0.2))
-                }
+            Button {
+                send()
+            } label: {
+                Image(systemName: "arrow.up.circle.fill")
+                    .font(.system(size: 24))
+                    .foregroundStyle(input.isEmpty ? TrinityTheme.accent.opacity(0.3) : TrinityTheme.accent)
             }
-            .padding(.trailing, 10)
+            .buttonStyle(.plain)
+            .help("Send message (⌘+)")
+            .accessibilityLabel("Send message")
+            .accessibilityHint("Double tap to send your message")
+            .disabled(input.isEmpty)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 24)
                 .fill(Color(hex: 0x1A1A1A))
@@ -2123,7 +2006,7 @@ struct ChatScreen: View {
                 )
         )
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
-        .frame(height: 52)  // FIXED: compact fixed height (52pt)
+        .frame(height: 52)
         .fixedSize(horizontal: false, vertical: true)
     }
 

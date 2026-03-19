@@ -165,8 +165,9 @@ fn printConvertHelp() void {
 
 pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
     // Import generated serve_full module (from .tri spec: specs/integration/full-serve-v1.tri)
+    // FIXME: trinity-nexus submodule missing
+    // const serve_full = @import("serve_full");
     // Single Source of Truth: trinity-nexus/output/lang/zig/full-serve-v1.zig
-    const serve_full = @import("serve_full");
 
     // parseServeCommand expects "serve" as first arg, prepend it
     const all_args = try allocator.alloc([]const u8, args.len + 1);
