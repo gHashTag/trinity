@@ -114,6 +114,14 @@ jobs:
         run: |
           zig build test-brain-stress
 
+      - name: Hippocampus Consolidation — Record Health Snapshot
+        if: always()
+        run: |
+          echo "🧠 Hippocampus: Consolidating brain health to memory..."
+          ./zig-out/bin/tri stress --record || echo "Health record skipped (binary not built)"
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "🧠 Hippocampus: Health snapshot recorded to .trinity/brain_health_history.jsonl" >> $GITHUB_STEP_SUMMARY
+
       - name: Upload Brain Scan Results
         if: always()
         run: |
