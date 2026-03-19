@@ -293,4 +293,5 @@ fpga/openxc7-synth/synth_reports/hslm_full_top.json
 apps/queen/*.d
 apps/queen/*.swiftdeps
 apps/queen/*.swiftdeps~
+apps/queen/*.png
 data/cells/
