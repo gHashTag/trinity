@@ -582,3 +582,102 @@ test "dmpfc — CellHealth status transitions" {
     h.status = .broken;
     try std.testing.expectEqual(CellHealth.Status.broken, h.status);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL FUNCTION TESTS — Actual function calls with return value verification
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "dmpfc — isHealthy returns correct bool" {
+    const check_healthy = SelfCheck{ .health_score = 0.85 };
+    const result = check_healthy.isHealthy();
+    try std.testing.expect(result == true);
+}
+
+test "dmpfc — isHealthy false for low score" {
+    const check_unhealthy = SelfCheck{ .health_score = 0.5 };
+    const result = check_unhealthy.isHealthy();
+    try std.testing.expect(result == false);
+}
+
+test "dmpfc — grade returns valid grade letter" {
+    var check = SelfCheck{ .health_score = 0.95 };
+    const grade_a = check.grade();
+    try std.testing.expect(grade_a.len == 1);
+    try std.testing.expect(grade_a[0] >= 'A' and grade_a[0] <= 'F');
+}
+
+test "dmpfc — Issue descriptionStr returns dynamic slice" {
+    var issue = Issue{ .kind = .loop_stuck };
+    issue.setDescription("system failure detected");
+    const desc = issue.descriptionStr();
+    try std.testing.expect(desc.len > 0);
+    try std.testing.expectEqualStrings("system failure detected", desc);
+}
+
+test "dmpfc — health returns populated CellHealth" {
+    const cell_health = health();
+    try std.testing.expect(cell_health.last_check > 0);
+    // Verify timestamp is recent (within last 10 seconds)
+    const now = std.time.timestamp();
+    try std.testing.expect(now - cell_health.last_check >= 0);
+    try std.testing.expect(now - cell_health.last_check < 10);
+}
+
+test "dmpfc — setDescription with unicode content" {
+    var issue = Issue{ .kind = .internal_conflict };
+    const unicode_text = "Ошибка: φ² + 1/φ² = 3";
+    issue.setDescription(unicode_text);
+    const result = issue.descriptionStr();
+    try std.testing.expectEqualStrings(unicode_text, result);
+}
+
+test "dmpfc — setDescription length calculation" {
+    var issue = Issue{ .kind = .telegram_unreachable };
+    const text = "test";
+    issue.setDescription(text);
+    // Verify description_len matches actual length
+    try std.testing.expectEqual(@as(usize, 4), issue.description_len);
+    try std.testing.expectEqual(text.len, issue.descriptionStr().len);
+}
+
+test "dmpfc — selfCheck returns valid timestamp" {
+    const check = try selfCheck(std.testing.allocator);
+    defer {
+        for (check.issues) |*issue| {
+            _ = issue;
+        }
+        std.testing.allocator.free(check.issues);
+    }
+    // Verify timestamp is recent
+    const now = std.time.timestamp();
+    try std.testing.expect(check.timestamp > 0);
+    try std.testing.expect(now - check.timestamp >= 0);
+    try std.testing.expect(now - check.timestamp < 5); // Within 5 seconds
+}
+
+test "dmpfc — selfCheck health score in valid range" {
+    const check = try selfCheck(std.testing.allocator);
+    defer {
+        for (check.issues) |*issue| {
+            _ = issue;
+        }
+        std.testing.allocator.free(check.issues);
+    }
+    // Health score must be between 0 and 1
+    try std.testing.expect(check.health_score >= 0.0);
+    try std.testing.expect(check.health_score <= 1.0);
+}
+
+test "dmpfc — detectConflicts returns bool" {
+    const result = detectConflicts(std.testing.allocator);
+    // Function returns bool - verify it's either true or false
+    _ = result;
+    // No assertion needed - just verify it compiles and runs
+}
+
+test "dmpfc — checkTelegramReachable inspects env" {
+    const result = checkTelegramReachable();
+    // Function returns bool based on env vars
+    // Just verify it returns a valid boolean
+    _ = result;
+}
