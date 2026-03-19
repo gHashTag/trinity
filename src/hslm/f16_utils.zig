@@ -365,3 +365,247 @@ test "dequantize ternary to f16" {
     try std.testing.expectEqual(@as(f16, -1.0), dequantizeTernaryToF16(-1));
     try std.testing.expectEqual(@as(f16, 0.0), dequantizeTernaryToF16(0));
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ADDITIONAL UTILITIES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Alias for l2NormF16 — matches VSA API naming.
+pub fn vectorNormF16(v: []const f16) f64 {
+    return l2NormF16(v);
+}
+
+/// Count non-finite values (NaN, Inf) in f16 slice.
+pub fn countNonFiniteF16(data: []const f16) usize {
+    var count: usize = 0;
+    for (data) |v| {
+        if (!isTernarySafeF16(v)) count += 1;
+    }
+    return count;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FUZZ TESTS (Zig 0.15+)
+// Run: zig build test --fuzz
+// Coverage: http://localhost:XXXXX/ (shown in terminal)
+// Partially addresses ziglang/zig#352 (code coverage)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "fuzz f16 roundtrip precision" {
+    const Fuzzer = struct {
+        fn run(ctx: @TypeOf(.{}), input: []const u8) anyerror!void {
+            _ = ctx;
+            if (input.len < 4) return;
+            const val: f32 = @bitCast(input[0..4].*);
+            if (!std.math.isFinite(val)) return;
+            if (@abs(val) > 65504.0) return; // f16 max
+            if (@abs(val) > 0.0 and @abs(val) < 6.1e-5) return; // subnormal range
+
+            const narrow: f16 = @floatCast(val);
+            if (!std.math.isFinite(narrow)) return;
+            const wide: f32 = @floatCast(narrow);
+            const err = @abs(val - wide);
+            try std.testing.expect(err <= @abs(val) * 0.002 + 0.001);
+        }
+    };
+    try std.testing.fuzz(.{}, Fuzzer.run, .{});
+}
+
+test "fuzz ternary quantize invariant" {
+    const Fuzzer = struct {
+        fn run(ctx: @TypeOf(.{}), input: []const u8) anyerror!void {
+            _ = ctx;
+            if (input.len < 2) return;
+            const val: f16 = @bitCast(input[0..2].*);
+            if (!std.math.isFinite(val)) return;
+
+            const threshold: f16 = 0.5;
+            const ternary = quantizeF16ToTernary(val, threshold);
+
+            try std.testing.expect(ternary == -1 or ternary == 0 or ternary == 1);
+            if (val > threshold) try std.testing.expect(ternary == 1)
+            else if (val < -threshold) try std.testing.expect(ternary == -1)
+            else try std.testing.expect(ternary == 0);
+        }
+    };
+    try std.testing.fuzz(.{}, Fuzzer.run, .{});
+}
+
+test "fuzz dotProductF16 stability" {
+    const Fuzzer = struct {
+        fn run(ctx: @TypeOf(.{}), input: []const u8) anyerror!void {
+            _ = ctx;
+            if (input.len < 16) return;
+            const a: [4]f16 = @bitCast(input[0..8].*);
+            const b: [4]f16 = @bitCast(input[8..16].*);
+
+            for (a) |v| if (!std.math.isFinite(@as(f32, @floatCast(v)))) return;
+            for (b) |v| if (!std.math.isFinite(@as(f32, @floatCast(v)))) return;
+
+            const dot = dotProductF16(&a, &b);
+            try std.testing.expect(std.math.isFinite(dot));
+        }
+    };
+    try std.testing.fuzz(.{}, Fuzzer.run, .{});
+}
+
+test "fuzz slice conversion roundtrip" {
+    const Fuzzer = struct {
+        fn run(ctx: @TypeOf(.{}), input: []const u8) anyerror!void {
+            _ = ctx;
+            if (input.len < 4) return;
+            const count = @min(input.len / 4, 32);
+            if (count == 0) return;
+
+            var f32_in: [32]f32 = undefined;
+            for (0..count) |i| {
+                const offset = i * 4;
+                if (offset + 4 > input.len) break;
+                f32_in[i] = @bitCast(input[offset..][0..4].*);
+                if (!std.math.isFinite(f32_in[i])) return;
+                if (@abs(f32_in[i]) > 65504.0) return;
+            }
+
+            var f16_buf: [32]f16 = undefined;
+            var f32_out: [32]f32 = undefined;
+            f32ToF16Slice(f32_in[0..count], f16_buf[0..count]);
+            f16ToF32Slice(f16_buf[0..count], f32_out[0..count]);
+
+            for (0..count) |i| {
+                if (!std.math.isFinite(f32_out[i])) return;
+                const err = @abs(f32_in[i] - f32_out[i]);
+                try std.testing.expect(err <= @abs(f32_in[i]) * 0.002 + 0.001);
+            }
+        }
+    };
+    try std.testing.fuzz(.{}, Fuzzer.run, .{});
+}
+
+test "fuzz cosineSimilarityF16 self-similarity" {
+    const Fuzzer = struct {
+        fn run(ctx: @TypeOf(.{}), input: []const u8) anyerror!void {
+            _ = ctx;
+            if (input.len < 8) return;
+            const count = @min(input.len / 2, 16);
+            if (count == 0) return;
+
+            var data: [16]f16 = @splat(@as(f16, 0.0));
+            var all_zero = true;
+            for (0..count) |i| {
+                const offset = i * 2;
+                if (offset + 2 > input.len) break;
+                data[i] = @bitCast(input[offset..][0..2].*);
+                if (!std.math.isFinite(@as(f32, @floatCast(data[i])))) return;
+                if (data[i] != 0.0) all_zero = false;
+            }
+            if (all_zero) return;
+
+            const sim = cosineSimilarityF16(data[0..count], data[0..count]);
+            try std.testing.expect(std.math.isFinite(sim));
+            try std.testing.expect(sim > 0.99);
+        }
+    };
+    try std.testing.fuzz(.{}, Fuzzer.run, .{});
+}
+
+test "fuzz maxAbsF16 non-negative" {
+    const Fuzzer = struct {
+        fn run(ctx: @TypeOf(.{}), input: []const u8) anyerror!void {
+            _ = ctx;
+            if (input.len < 2) return;
+            const count = @min(input.len / 2, 32);
+            if (count == 0) return;
+
+            var data: [32]f16 = undefined;
+            for (0..count) |i| {
+                const offset = i * 2;
+                if (offset + 2 > input.len) break;
+                data[i] = @bitCast(input[offset..][0..2].*);
+                if (!std.math.isFinite(@as(f32, @floatCast(data[i])))) return;
+            }
+
+            const result = maxAbsF16(data[0..count]);
+            try std.testing.expect(std.math.isFinite(@as(f32, @floatCast(result))));
+            try std.testing.expect(result >= 0.0);
+
+            for (0..count) |i| {
+                const abs_val = if (data[i] < 0) -data[i] else data[i];
+                try std.testing.expect(abs_val <= result + 0.001);
+            }
+        }
+    };
+    try std.testing.fuzz(.{}, Fuzzer.run, .{});
+}
+
+test "fuzz vec16 ternary lossless" {
+    const Fuzzer = struct {
+        fn run(ctx: @TypeOf(.{}), input: []const u8) anyerror!void {
+            _ = ctx;
+            if (input.len < 16) return;
+
+            var vec: [16]f16 = undefined;
+            for (&vec, 0..) |*v, i| {
+                v.* = switch (input[i] % 3) {
+                    0 => @as(f16, -1.0),
+                    1 => @as(f16, 0.0),
+                    2 => @as(f16, 1.0),
+                    else => unreachable,
+                };
+            }
+
+            const simd_vec: Vec16f16 = vec;
+            const widened = vec16F16ToF32(simd_vec);
+            const narrowed = vec16F32ToF16(widened);
+            const result: [16]f16 = narrowed;
+
+            for (vec, result) |orig, res| {
+                try std.testing.expect(orig == res);
+            }
+        }
+    };
+    try std.testing.fuzz(.{}, Fuzzer.run, .{});
+}
+
+test "count non finite f16" {
+    const data = [_]f16{ 1.0, std.math.inf(f16), -2.0, std.math.nan(f16), 0.5 };
+    const count = countNonFiniteF16(&data);
+    try std.testing.expectEqual(@as(usize, 2), count);
+}
+
+test "vectorNormF16 alias" {
+    const v = [_]f16{ 3.0, 4.0 };
+    const norm = vectorNormF16(&v);
+    try std.testing.expectApproxEqAbs(@as(f64, 5.0), norm, 0.01);
+}
+
+test "roundtrip f32 to f16 to f32 preserves ternary values" {
+    const ternary_values = [_]f32{ -1.0, 0.0, 1.0 };
+
+    for (ternary_values) |val| {
+        const f16_val: f16 = @floatCast(val);
+        const f32_back: f32 = @floatCast(f16_val);
+        try std.testing.expectApproxEqAbs(val, f32_back, 0.0001);
+    }
+}
+
+test "f16 overflow behavior" {
+    // f16 max = 65504, values above overflow to infinity
+    const too_large: f16 = @floatCast(@as(f32, 100000.0));
+    const too_large_f32: f32 = @floatCast(too_large);
+    // Should be infinity (or very large value if saturated)
+    try std.testing.expect(too_large_f32 >= 65504.0 or std.math.isInf(too_large_f32));
+
+    const fits: f16 = @floatCast(@as(f32, 1000.0));
+    try std.testing.expect(fits > 999.0 and fits < 1001.0);
+}
+
+test "f16 subnormal handling" {
+    // Smallest normal f16 = 2^-14 ≈ 6.1e-5
+    const tiny: f16 = @floatCast(@as(f32, 1e-6));
+
+    // Should round to zero or subnormal
+    const f32_back: f32 = @floatCast(tiny);
+    try std.testing.expect(f32_back >= 0 and f32_back < 1e-4);
+}
+
+// φ² + 1/φ² = 3 | TRINITY
