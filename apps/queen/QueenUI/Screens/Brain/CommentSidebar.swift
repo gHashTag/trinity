@@ -117,7 +117,11 @@ struct CommentSidebar: View {
             .padding(.vertical, 10)
             .background(Color(hex: 0x111111))
         }
-        .frame(width: 280)
+        .frame(
+            minWidth: LayoutConstants.commentSidebarMinWidth,
+            idealWidth: LayoutConstants.commentSidebarIdealWidth,
+            maxWidth: LayoutConstants.commentSidebarMaxWidth
+        )
         .background(Color(hex: 0x0A0A0A))
         .transition(.move(edge: .trailing).combined(with: .opacity))
         .onAppear { commentFocused = true }

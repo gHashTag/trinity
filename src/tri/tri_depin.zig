@@ -1,21 +1,23 @@
 // @origin(spec:tri_depin.tri) @regen(manual-impl)
 // ═══════════════════════════════════════════════════════════════════════════════
-// TRI DEPIN — DePIN Node Protocol (Phase 1)
+// TRI DEPIN — DePIN Node Protocol (Phase 1.1 - Directed Discovery)
 // ═══════════════════════════════════════════════════════════════════════════════
 //
-// Treats Railway services as DePIN nodes. Phase 1: read-only status + fitness.
+// Treats Railway services as DePIN nodes with directed discovery.
 //
 // Commands:
-//   tri depin status   — network overview dashboard
-//   tri depin nodes    — list all nodes with type/status/fitness
-//   tri depin fitness  — aggregate fitness across node types
+//   tri depin status    — network overview dashboard
+//   tri depin nodes     — list all nodes with type/status/fitness
+//   tri depin fitness   — aggregate fitness across node types
+//   tri depin discover  — directed discovery to bootstrap peer
+//   tri depin peers     — list known peers with quality scores
 //
 // Node types:
 //   TRAIN — hslm-* services (training workloads)
 //   CODE  — agent-* services (code generation agents)
 //   INFER — other services (inference/API)
 //
-// φ² + 1/φ² = 3 = TRINITY
+// φ² + 1/φ² = 3 = TRINITY | Phase 1.1
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
@@ -24,6 +26,11 @@ const railway_api = @import("railway_api.zig");
 const RailwayApi = railway_api.RailwayApi;
 const farm_accounts_mod = @import("farm_accounts.zig");
 const Account = farm_accounts_mod.Account;
+
+// DePIN modules for directed discovery (imported via build.zig)
+const depin_network = @import("depin_network");
+const depin_bootstrap = @import("depin_bootstrap");
+const depin_persistence = @import("depin_persistence");
 
 const print = std.debug.print;
 
@@ -72,6 +79,10 @@ pub fn runDepinCommand(allocator: Allocator, args: []const []const u8) !void {
         try runDepinNodes(allocator);
     } else if (std.mem.eql(u8, subcmd, "fitness")) {
         try runDepinFitness(allocator);
+    } else if (std.mem.eql(u8, subcmd, "discover")) {
+        try runDepinDiscover(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "peers")) {
+        try runDepinPeers(allocator);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -352,12 +363,203 @@ fn classifyNode(name: []const u8) NodeType {
 }
 
 fn printHelp() void {
-    print("\n{s}🌐 DePIN NODE PROTOCOL{s}\n", .{ BOLD, RESET });
+    print("\n{s}🌐 DePIN NODE PROTOCOL (Phase 1.1){s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
-    print("  {s}status{s}   Network overview dashboard\n", .{ CYAN, RESET });
-    print("  {s}nodes{s}    List all nodes with type/status\n", .{ CYAN, RESET });
-    print("  {s}fitness{s}  Aggregate fitness by node type\n", .{ CYAN, RESET });
-    print("\n  Usage: {s}tri depin <command>{s}\n\n", .{ BOLD, RESET });
+    print("  {s}status{s}    Network overview dashboard\n", .{ CYAN, RESET });
+    print("  {s}nodes{s}     List all nodes with type/status\n", .{ CYAN, RESET });
+    print("  {s}fitness{s}   Aggregate fitness by node type\n", .{ CYAN, RESET });
+    print("  {s}discover{s}  Directed discovery to bootstrap peer\n", .{ CYAN, RESET });
+    print("  {s}peers{s}     List known peers with quality scores\n", .{ CYAN, RESET });
+    print("\n  Usage: {s}tri depin <command>{s}\n", .{ BOLD, RESET });
+    print("\n  {s}Examples:{s}\n", .{ DIM, RESET });
+    print("    tri depin discover --bootstrap 1.2.3.4:9333\n", .{});
+    print("    tri depin peers\n", .{});
+    print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DISCOVER — Directed discovery to bootstrap peer
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runDepinDiscover(allocator: Allocator, args: []const []const u8) !void {
+    print("\n{s}🔍 DePIN DIRECTED DISCOVERY{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // Parse --bootstrap argument
+    var bootstrap_target: ?[]const u8 = null;
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--bootstrap") and i + 1 < args.len) {
+            bootstrap_target = args[i + 1];
+            i += 1;
+        }
+    }
+
+    if (bootstrap_target == null) {
+        print("{s}Usage: tri depin discover --bootstrap <ip>:<port>{s}\n", .{ YELLOW, RESET });
+        print("{s}Example: tri depin discover --bootstrap 1.2.3.4:9333{s}\n\n", .{ DIM, RESET });
+        return;
+    }
+
+    const target = bootstrap_target.?;
+
+    // Parse IP:port
+    const colon_idx = std.mem.lastIndexOfScalar(u8, target, ':') orelse {
+        print("{s}Error: Invalid bootstrap format. Use <ip>:<port>{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    const ip = target[0..colon_idx];
+    const port_str = target[colon_idx + 1 ..];
+    const port = std.fmt.parseInt(u16, port_str, 10) catch {
+        print("{s}Error: Invalid port number{s}\n", .{ RED, RESET });
+        return;
+    };
+
+    print("  {s}Target:{s} {s}:{d}\n", .{ CYAN, RESET, ip, port });
+    print("  {s}Sending directed discovery...{s}\n", .{ DIM, RESET });
+
+    // Create cluster manager for discovery
+    const cluster_id = "trinity-cluster";
+    const node_id = "local-node";
+
+    var cluster = try depin_network.ClusterManager.init(
+        cluster_id,
+        node_id,
+        .worker,
+        .free,
+        allocator,
+    );
+    defer cluster.deinit();
+
+    // Try to load existing state
+    const loaded = cluster.loadState() catch false;
+    if (loaded) {
+        print("  {s}Loaded {d} known peers from .tri-cluster.json{s}\n", .{
+            GREEN, cluster.nodes.items.len, RESET,
+        });
+    }
+
+    // Start UDP discovery
+    cluster.udp = try depin_network.UDPDiscovery.init(depin_network.UDP_DISCOVERY_PORT, allocator);
+    defer cluster.udp.?.deinit();
+
+    // Add bootstrap peer
+    try cluster.addBootstrapPeer(ip, port);
+
+    // Perform directed discovery
+    const discovered = try cluster.discoverFromPeer(ip, port);
+
+    print("  {s}Discovered {d} new peer(s){s}\n\n", .{
+        if (discovered > 0) GREEN else YELLOW,
+        discovered,
+        RESET,
+    });
+
+    if (discovered > 0) {
+        print("  {s}Total known peers: {d}{s}\n\n", .{
+            CYAN, cluster.nodes.items.len, RESET,
+        });
+
+        print("  {s}Tip: Run 'tri depin peers' to see all known peers{s}\n\n", .{
+            DIM, RESET,
+        });
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PEERS — List known peers with quality scores
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runDepinPeers(allocator: Allocator) !void {
+    print("\n{s}👥 DePIN KNOWN PEERS{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // Try to load cluster state
+    var persistence_mgr = depin_persistence.PersistenceManager.init(allocator);
+    defer persistence_mgr.deinit();
+
+    const state = try persistence_mgr.load() orelse {
+        print("{s}No cluster state found. Run 'tri depin discover' first.{s}\n\n", .{
+            YELLOW, RESET,
+        });
+        return;
+    };
+    defer state.deinit(allocator);
+
+    if (state.peers.items.len == 0) {
+        print("{s}No known peers. Run 'tri depin discover' to find nodes.{s}\n\n", .{
+            YELLOW, RESET,
+        });
+        return;
+    }
+
+    print("  {s}Node ID                    Host           Port    Quality   Status{s}\n", .{ DIM, RESET });
+    print("  {s}──────────────────────────  ─────────────  ──────  ────────  ───────{s}\n", .{ DIM, RESET });
+
+    const now = std.time.timestamp();
+
+    for (state.peers.items) |peer| {
+        const status_emoji = if (peer.isHealthy())
+            "🟢"
+        else if (now - peer.last_seen < 3600)
+            "🟡"
+        else
+            "🔴";
+
+        const status_text = if (peer.isHealthy())
+            "healthy"
+        else if (now - peer.last_seen < 3600)
+            "stale"
+        else
+            "offline";
+
+        const quality_color = if (peer.quality_score >= 0.7)
+            GREEN
+        else if (peer.quality_score >= 0.4)
+            YELLOW
+        else
+            RED;
+
+        print("  {s} {s:<25}  {s:<14}  {d:<5}  {s}{d:.2}{s}    {s} {s}{s}\n", .{
+            status_emoji,
+            peer.node_id[0..@min(25, peer.node_id.len)],
+            peer.host,
+            peer.port,
+            quality_color,
+            peer.quality_score,
+            RESET,
+            status_text,
+            if (peer.isHealthy()) GREEN else if (now - peer.last_seen < 3600) YELLOW else RED,
+            status_text,
+        });
+    }
+
+    print("\n", .{});
+
+    // Statistics
+    var healthy: usize = 0;
+    var total_quality: f64 = 0.0;
+
+    for (state.peers.items) |peer| {
+        if (peer.isHealthy()) healthy += 1;
+        total_quality += peer.quality_score;
+    }
+
+    const avg_quality = if (state.peers.items.len > 0)
+        total_quality / @as(f64, @floatFromInt(state.peers.items.len))
+    else
+        0.0;
+
+    print("  {s}Statistics:{s}\n", .{ BOLD, RESET });
+    print("    Total peers:  {d}\n", .{state.peers.items.len});
+    print("    Healthy:      {s}{d}/{d}{s}\n", .{
+        if (healthy == state.peers.items.len) GREEN else YELLOW,
+        healthy,
+        state.peers.items.len,
+        RESET,
+    });
+    print("    Avg quality:  {d:.2}/1.0\n\n", .{avg_quality});
 }
 
 test "NodeType toString" {
