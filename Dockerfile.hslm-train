@@ -42,3 +42,4 @@ LABEL version="2.2.0" \
       build.timestamp="2026-03-19T12:30:00Z" \
       build.arch="x86_64-linux" \
       cache.bust="v2-path-change-2026-03-19"
+# Cache-bust: 1773886072

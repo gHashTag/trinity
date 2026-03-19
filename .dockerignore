@@ -35,3 +35,5 @@ zig-out/doc/
 # Large file patterns
 *.jsonl
 *.vcd
+!data/tinystories/train_100k.txt
+!data/tinystories/train_100k.txt
