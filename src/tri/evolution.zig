@@ -181,15 +181,15 @@ const ServiceEntry = struct {
     status: ServiceStatus = .unknown,
 
     // +++ IGLA Bench Metrics +++
-    igla_score: f32 = 0.0,         // IGLA retrieval score [0,1]
-    igla_last_eval_step: u32 = 0,     // Step of last IGLA evaluation
-    igla_format_accuracy: [4]f32 = .{ 0 }, // Accuracy per format: STD/BF16/GF16/TF3
-    igla_retrieve_acc: f32 = 0.0,       // IGLA-RETRIEVE accuracy
-    igla_multi_acc: f32 = 0.0,          // IGLA-MULTI accuracy
-    igla_ternary_acc: f32 = 0.0,        // IGLA-TERNARY accuracy
-    igla_chain_acc: f32 = 0.0,           // IGLA-CHAIN accuracy
-    igla_latency_ms: f32 = 0.0,         // Avg latency (ms)
-    igla_tok_per_sec: f32 = 0.0,         // Throughput (tok/s)
+    igla_score: f32 = 0.0, // IGLA retrieval score [0,1]
+    igla_last_eval_step: u32 = 0, // Step of last IGLA evaluation
+    igla_format_accuracy: [5]f32 = .{ 0, 0, 0, 0, 0 }, // Accuracy per format: STD/BF16/GF16/TF3/BF16
+    igla_retrieve_acc: f32 = 0.0, // IGLA-RETRIEVE accuracy
+    igla_multi_acc: f32 = 0.0, // IGLA-MULTI accuracy
+    igla_ternary_acc: f32 = 0.0, // IGLA-TERNARY accuracy
+    igla_chain_acc: f32 = 0.0, // IGLA-CHAIN accuracy
+    igla_latency_ms: f32 = 0.0, // Avg latency (ms)
+    igla_tok_per_sec: f32 = 0.0, // Throughput (tok/s)
     // --- IGLA Bench Metrics ---
 
     // Per-service rung tracking
@@ -964,6 +964,34 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
         saveState(state) catch {};
     }
 
+    // +++ IGLA Evaluation — every 30K steps for workers with 30K+ steps +++
+    print("{s}🔍 IGLA Evaluation...{s}\n", .{ CYAN, RESET });
+    var igla_eval_count: usize = 0;
+    for (state.services[0..state.service_count]) |*svc| {
+        // Only evaluate running services with 30K+ steps
+        if (svc.status != .running) continue;
+        if (svc.current_step < 30000) continue;
+        // Skip if evaluated in last 10K steps
+        if (svc.current_step - svc.igla_last_eval_step < 10000) continue;
+
+        const result = runIGLABenchmark(allocator, svc.context) catch |err| {
+            print("  {s}IGLA eval failed for {s}: {s}{s}\n", .{
+                DIM, svc.svcName(), @errorName(err), RESET,
+            }) catch {};
+            continue;
+        };
+
+        // Log IGLA results (ServiceEntry update in next phase)
+        print("  {s}{s}{s}: score={d:.2} lat={d:.1}ms tps={d:.1}tok/s\n\n", .{
+            GREEN,        svc.svcName(),     RESET,
+            result.score, result.latency_ms, result.tok_per_sec,
+        });
+
+        igla_eval_count += 1;
+    }
+    print("  IGLA evaluated: {d} workers\n\n", .{igla_eval_count});
+    // --- IGLA Evaluation ---
+
     // 1b. DIAGNOSE mode: if actively training < 50% → warn and skip recycle
     //     Only .running counts as alive — .stalled means process stopped (EARLY KILL or hang)
     var alive_count: usize = 0;
@@ -1736,6 +1764,42 @@ fn collectMetricsForAccount(
     if (pending_skip_count > 0) {
         _ = progress.fetchAdd(pending_skip_count, .monotonic);
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IGLA Bench — Ternary Needle In A Haystack Benchmark
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// IGLA benchmark result — returned to caller for ServiceEntry update
+pub const IGLAResult = struct {
+    score: f32,
+    format_accuracy: [4]f32,
+    retrieve_acc: f32,
+    multi_acc: f32,
+    ternary_acc: f32,
+    chain_acc: f32,
+    latency_ms: f32,
+    tok_per_sec: f32,
+};
+
+/// Run IGLA NIAH benchmark on a service configuration.
+/// Returns IGLA metrics without modifying the service entry (caller updates).
+/// This is called from evolveStep every 30K steps.
+/// TODO: Implement igla_bench.zig module
+pub fn runIGLABenchmark(allocator: Allocator, ctx_len: usize) !IGLAResult {
+    _ = allocator;
+    _ = ctx_len;
+    // TODO: Import igla_bench module when implemented
+    return IGLAResult{
+        .score = 0,
+        .format_accuracy = .{ 0, 0, 0, 0 },
+        .retrieve_acc = 0,
+        .multi_acc = 0,
+        .ternary_acc = 0,
+        .chain_acc = 0,
+        .latency_ms = 0,
+        .tok_per_sec = 0,
+    };
 }
 
 /// Parallel metric collection — 1 thread per Railway account, ~8× speedup.

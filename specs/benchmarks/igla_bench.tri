@@ -127,8 +127,8 @@ test_cases:
     given:
       context_length: 81
       needle_type: ternary
-      content: "нейрон N=243 в блоке B=3 хранит тернарный вес -1"
-      question: "Какое тернарное значение имеет нейрон 243 в блоке 3?"
+      content: "neuron N=243 in block B=3 stores ternary weight -1"
+      question: "What ternary value does neuron 243 have in block 3?"
       expected_answer: "-1"
     expected:
       accuracy: >= 0.95
@@ -229,7 +229,7 @@ implementation: |
       _ = id;
 
       // Create filler context (repeated neutral sentences)
-      const filler = "Каждый нейрон в сети представляет собой математическую абстракцию, связывающую понятия через алгебраическую структуру. ";
+      const filler = "Each neuron in the network represents a mathematical abstraction, connecting concepts through an algebraic structure. ";
       const filler_tokens_per_line = 10;
       const lines_needed = context_length / filler_tokens_per_line;
       var buffer = try std.ArrayList(u8).initCapacity(allocator, context_length * 10);
@@ -249,7 +249,7 @@ implementation: |
       for (0..num_needles) |n_idx| {
           const needle_id = try std.fmt.allocPrint(allocator, "needle_{d}", .{n_idx});
           const needle_content = try std.fmt.allocPrint(allocator,
-              "Специальный факт #{d}: нейрон {d} имеет значение -1", .{n_idx, n_idx * 81});
+              "Special fact #{d}: neuron {d} has value -1", .{n_idx, n_idx * 81});
           const insert_pos = @min(depth_pos, base_content_len - 20);
 
           var needle_obj = Needle{
@@ -273,7 +273,7 @@ implementation: |
           const needle_id = try std.fmt.allocPrint(allocator, "needle_{d}", .{n_idx});
           const question = Question{
               .id = try std.fmt.allocPrint(allocator, "q_{d}", .{n_idx}),
-              .text = try std.fmt.allocPrint(allocator, "Какое значение имеет нейрон {d}?", .{n_idx * 81}),
+              .text = try std.fmt.allocPrint(allocator, "What value does neuron {d} have?", .{n_idx * 81}),
               .expected_answer = "-1",
               .type = .retrieve,
               .needle_id = needle_id,
@@ -314,7 +314,7 @@ implementation: |
       for (needles, 0..) |needle, idx| {
           const question = Question{
               .id = try std.fmt.allocPrint(allocator, "ternary_q_{d}", .{idx}),
-              .text = try std.fmt.allocPrint(allocator, "Какое тернарное значение: {s}?", .{needle.content}),
+              .text = try std.fmt.allocPrint(allocator, "What ternary value: {s}?", .{needle.content}),
               .expected_answer = "-1",
               .type = .ternary,
               .needle_id = needle.id,
