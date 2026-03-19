@@ -80,10 +80,16 @@ fn extractTemplateName(err_info: *const diagnostic.ErrorInfo) ![]const u8 {
 }
 
 /// Validate template after fix
+/// Note: This is a placeholder - actual validation would run `zig build`
+/// to verify the template compiles correctly. For now, returns true
+/// assuming the fix was applied correctly.
 pub fn validateTemplate(allocator: std.mem.Allocator, template_path: []const u8) !bool {
     _ = allocator;
     _ = template_path;
-    // TODO: Run zig build on template to validate
+    // Full validation not yet implemented - would require:
+    // 1. Writing template to temp file
+    // 2. Running `zig build` or `zig fmt`
+    // 3. Checking exit code
     return true;
 }
 

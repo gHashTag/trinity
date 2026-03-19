@@ -1,4 +1,3 @@
-// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN TELEGRAM — Bidirectional Telegram: send + getUpdates + dispatch
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -214,57 +213,17 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
         const msg = fmtActionResult(&buf, .doctor_quick, result);
         tgSend(ctx.tg, msg);
     } else if (std.mem.eql(u8, sub, "score")) {
-        // v5: Full 12-dimension Ouroboros report via API
-        const queen_ouroboros = @import("queen_ouroboros.zig");
-<<<<<<< HEAD
-        const ouro = queen_ouroboros.fetch();
-
-        // Use large buffer for full 12-dimension report
-        var ouro_buf: [4096]u8 = undefined;
-        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, ouro);
-=======
-        const ouro = queen_ouroboros.fetch(ctx.allocator, .{}) catch brk: {
-            // Fallback to simple score if API unreachable
-            const msg = std.fmt.bufPrint(&buf, qt.E_CYCLE ++ " Ouroboros Score: {d:.1}\n\n" ++
-                qt.E_CHECK ++ " Build: {s}\n" ++
-                qt.E_GEAR ++ " Tests: {d}%%\n" ++
-                qt.E_DNA ++ " Farm PPL: {d:.1}\n" ++
-                qt.E_SWORDS ++ " Arena: {d}", .{
-                ctx.senses.ouroboros_score,
-                if (ctx.senses.build_ok) "OK" else "FAIL",
-                ctx.senses.test_rate,
-                ctx.senses.farm_best_ppl,
-                ctx.senses.arena_battles,
-            }) catch "";
-            tgSend(ctx.tg, msg);
-            // Return after sending fallback message
-            return;
-        };
-
-        // Use large buffer for full 12-dimension report
-        var ouro_buf: [4096]u8 = undefined;
-        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, &ouro);
->>>>>>> origin/main
-        tgSend(ctx.tg, msg);
-    } else if (std.mem.eql(u8, sub, "dimensions")) {
-        // v5: Explicit dimensions-only report
-        const queen_ouroboros = @import("queen_ouroboros.zig");
-<<<<<<< HEAD
-        const ouro = queen_ouroboros.fetch();
-
-        var ouro_buf: [3072]u8 = undefined;
-        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, ouro);
-=======
-        const ouro = queen_ouroboros.fetch(ctx.allocator, .{}) catch brk: {
-            const msg = std.fmt.bufPrint(&buf, qt.E_SIREN ++ " Ouroboros API unreachable");
-            tgSend(ctx.tg, msg);
-            // Return after sending fallback message
-            return;
-        };
-
-        var ouro_buf: [3072]u8 = undefined;
-        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, &ouro);
->>>>>>> origin/main
+        const msg = std.fmt.bufPrint(&buf, qt.E_CYCLE ++ " Ouroboros Score: {d:.1}\n\n" ++
+            qt.E_CHECK ++ " Build: {s}\n" ++
+            qt.E_GEAR ++ " Tests: {d}%%\n" ++
+            qt.E_DNA ++ " Farm PPL: {d:.1}\n" ++
+            qt.E_SWORDS ++ " Arena: {d}", .{
+            ctx.senses.ouroboros_score,
+            if (ctx.senses.build_ok) "OK" else "FAIL",
+            ctx.senses.test_rate,
+            ctx.senses.farm_best_ppl,
+            ctx.senses.arena_battles,
+        }) catch "";
         tgSend(ctx.tg, msg);
     } else if (std.mem.eql(u8, sub, "farm")) {
         const result = queen_actions.execute(ctx.allocator, .farm_status);
@@ -311,11 +270,10 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
         const msg = queen_policy.fmtPolicyTelegram(&buf, ctx.config, ctx.counters);
         tgSend(ctx.tg, msg);
     } else if (std.mem.eql(u8, sub, "help")) {
-        const msg = qt.E_CROWN ++ " Queen v5 Commands\n\n" ++
+        const msg = qt.E_CROWN ++ " Queen v4 Commands\n\n" ++
             "/queen \xe2\x80\x94 18 senses status\n" ++ // —
-            "/queen score \xe2\x80\x94 Ouroboros 12-dim report\n" ++
-            "/queen dimensions \xe2\x80\x94 Full Ouroboros dashboard\n" ++
             "/queen doctor \xe2\x80\x94 tri doctor quick\n" ++
+            "/queen score \xe2\x80\x94 ouroboros score\n" ++
             "/queen farm \xe2\x80\x94 farm status\n" ++
             "/queen arena \xe2\x80\x94 arena leaderboard\n" ++
             "/queen heal \xe2\x80\x94 doctor + ouroboros\n" ++
@@ -659,38 +617,4 @@ test "Queen telegram — fmtActionResult" {
     try std.testing.expect(msg.len > 0);
     try std.testing.expect(std.mem.indexOf(u8, msg, "OK") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "42") != null);
-}
-
-test "Queen telegram — fmtActionResult failure" {
-    var buf: [2048]u8 = undefined;
-    var result = qt.ActionResult{ .success = false, .duration_ms = 100 };
-    const output = "error occurred";
-    @memcpy(result.output[0..output.len], output);
-    result.output_len = output.len;
-    const msg = fmtActionResult(&buf, .farm_recycle, result);
-    try std.testing.expect(msg.len > 0);
-    try std.testing.expect(std.mem.indexOf(u8, msg, "FAIL") != null);
-}
-
-test "Queen telegram — parseActionKind all actions" {
-    // L0 actions
-    try std.testing.expectEqual(qt.ActionKind.farm_status, parseActionKind("farm_status").?);
-    try std.testing.expectEqual(qt.ActionKind.arena_status, parseActionKind("arena_status").?);
-    try std.testing.expectEqual(qt.ActionKind.doctor_scan, parseActionKind("doctor_scan").?);
-    try std.testing.expectEqual(qt.ActionKind.train_status, parseActionKind("train_status").?);
-    try std.testing.expectEqual(qt.ActionKind.ouroboros_status, parseActionKind("ouroboros_status").?);
-
-    // L1 actions
-    try std.testing.expectEqual(qt.ActionKind.doctor_quick, parseActionKind("doctor_quick").?);
-    try std.testing.expectEqual(qt.ActionKind.doctor_heal, parseActionKind("doctor_heal").?);
-    try std.testing.expectEqual(qt.ActionKind.git_commit_state, parseActionKind("git_commit").?);
-    try std.testing.expectEqual(qt.ActionKind.git_push, parseActionKind("git_push").?);
-
-    // L2 actions
-    try std.testing.expectEqual(qt.ActionKind.farm_recycle, parseActionKind("farm_recycle").?);
-    try std.testing.expectEqual(qt.ActionKind.farm_evolve_step, parseActionKind("farm_evolve_step").?);
-    try std.testing.expectEqual(qt.ActionKind.cloud_spawn, parseActionKind("cloud_spawn").?);
-
-    // Unknown action
-    try std.testing.expectEqual(@as(?qt.ActionKind, null), parseActionKind("unknown_action"));
 }

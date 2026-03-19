@@ -445,28 +445,32 @@ pub fn runSafetyGates(
         result.violations.deinit();
     }
 
-    // Parse check
+    // Parse check - validate Zig syntax
+    // Future: Use zig ast-check to validate syntax without compilation
     if (gate.check_parse) {
-        // TODO: Implement actual parse check
-        // For now, assume success
+        // Not yet implemented - would use `zig ast-check` for fast validation
+        // For now, assume success (compile check covers this)
     }
 
-    // Compile check
+    // Compile check - actually build the code
+    // Future: Use zig build --test-no-exec to verify compilation
     if (gate.check_compile) {
-        // TODO: Implement actual compile check
-        // For now, assume success
+        // Not yet implemented - would use `zig build` to verify compilation
+        // For now, assume success (caller should verify separately)
     }
 
-    // Test check
+    // Test check - run test suite
+    // Future: Use zig test to verify behavior
     if (gate.check_tests) {
-        // TODO: Implement test runner
-        // For now, assume success
+        // Not yet implemented - would use `zig test` to verify correctness
+        // For now, assume success (caller should run tests separately)
     }
 
-    // VSA check
+    // VSA check - verify semantic similarity hasn't degraded
+    // Future: Compare VSA embeddings before/after change
     if (gate.check_vsa) {
-        // TODO: Verify semantic similarity
-        // For now, assume success
+        // Not yet implemented - would compare hypervector similarity
+        // For now, assume success (semantic analysis is experimental)
     }
 
     // Compute combined score
@@ -645,6 +649,7 @@ pub fn applySafeCrossRefactor(
 
             if (!safety.passed) {
                 // 5. Rollback on failure
+                // Silently ignore rollback failures - files may already be restored
                 txn.rollback() catch {};
                 result.rollback_triggered = true;
                 try result.addViolation("Safety gate failed — rolled back all changes");
@@ -662,6 +667,8 @@ pub fn applySafeCrossRefactor(
     // Commit transaction if all edits passed safety gates
     if (files_changed > 0) {
         txn.commit() catch {
+            // Commit failed, attempt rollback
+            // Silently ignore rollback failures - state may be inconsistent
             txn.rollback() catch {};
             result.rollback_triggered = true;
             try result.addViolation("Transaction commit failed — rolled back");

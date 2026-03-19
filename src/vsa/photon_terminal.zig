@@ -69,7 +69,8 @@ const TerminalState = struct {
     }
 
     pub fn deinit(self: *TerminalState) void {
-        posix.tcsetattr(self.stdin_fd, .FLUSH, self.original_termios) catch {};
+        // Silently ignore restore failures - terminal may already be closed
+        _ = posix.tcsetattr(self.stdin_fd, .FLUSH, self.original_termios) catch {};
     }
 
     pub fn readKey(self: *TerminalState) ?u8 {

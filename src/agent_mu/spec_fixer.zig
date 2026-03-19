@@ -88,10 +88,16 @@ pub fn applySpecFix(
 }
 
 /// Validate .tri spec against schema
+/// Note: Full YAML validation not yet implemented. Would require:
+/// 1. YAML parser (or using std.json if TOML format)
+/// 2. Schema definition for .tri files
+/// 3. Field validation against schema
 pub fn validateSpec(allocator: std.mem.Allocator, spec_path: []const u8) !bool {
     _ = allocator;
     _ = spec_path;
-    // TODO: Parse YAML and validate required fields
+    // Basic validation: check file exists and is readable
+    const file = std.fs.cwd().openFile(spec_path, .{}) catch return false;
+    file.close();
     return true;
 }
 

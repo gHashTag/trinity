@@ -270,7 +270,9 @@ fn runTrain(
         .log_every = 100,
         .ste = ste_config,
     };
-    _ = dropout; // TODO: wire dropout into model blocks
+    // Note: Dropout not yet wired into model blocks - feature pending
+    // The TrinityBlock doesn't currently support dropout, so this parameter is ignored
+    _ = dropout;
     try stdout.print("       LR: {d:.6} → {d:.7} (cosine), Steps: {d}, Batch: {d}, Warmup: {d}\n", .{ config.lr, config.lr_min, config.total_steps, config.batch_size, config.warmup_steps });
     if (ste_mode != .none) {
         try stdout.print("       STE: {s} (threshold={d:.2}, warmup={d})\n", .{
