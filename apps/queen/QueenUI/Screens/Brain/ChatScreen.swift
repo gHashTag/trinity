@@ -4,10 +4,6 @@ import AVFoundation
 import Speech
 import UniformTypeIdentifiers
 
-// Fix Swift 5.4 generic type inference
-extension Edge {
-    var bottom: Self { bottom }
-}
 struct ChatScreen: View {
     @StateObject private var store = ThreadStore()
     @StateObject private var client = ChatClient()
@@ -2016,7 +2012,7 @@ struct ChatScreen: View {
                     showMentionPopup = query != nil
                 }
             )
-            .frame(height: 24)  // ФИКС: фиксированная высота — однострочный инпут
+            .frame(minHeight: 24, maxHeight: 120)  // FIXED: adaptive multiline input (24-120pt)
             .padding(.horizontal, LayoutConstants.cardPadding)
             .padding(.vertical, 14)
 
@@ -2127,7 +2123,7 @@ struct ChatScreen: View {
                 )
         )
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
-        .frame(height: 52)  // ФИКС: фиксирую высоту всего inputBarView
+        .frame(minHeight: 44, maxHeight: 120)  // FIXED: adaptive height (44-120pt)
     }
     }
 
@@ -5198,29 +5194,25 @@ struct MultilineInput: NSViewRepresentable {
         textView.textColor = .white
         textView.backgroundColor = .clear
         textView.drawsBackground = false
-        // ФИКС: отключаем вертикальное изменение размера
-        textView.isVerticallyResizable = false
+        // FIXED: enable vertical resizing for dynamic height
+        textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = true
-        // ФИКС: compression resistance для горизонтали
+        // FIXED: compression resistance for horizontal
         textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        // ФИКС: устанавливаем минимальную ширину контейнера
-        textView.textContainer?.containerSize = NSSize(width: 400, height: 24)
-        textView.textContainer?.heightTracksTextView = false
+        // FIXED: allow unlimited vertical height (constrained by SwiftUI frame)
+        textView.textContainer?.containerSize = NSSize(width: 400, height: CGFloat.greatestFiniteMagnitude)
+        textView.textContainer?.heightTracksTextView = true
         textView.textContainer?.widthTracksTextView = true
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.insertionPointColor = .white
-        // ФИКС: устанавливаем фиксированный фрейм
-        textView.setFrameSize(NSSize(width: 400, height: 24))
 
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = false
         scrollView.hasHorizontalScroller = false
         scrollView.drawsBackground = false
         scrollView.borderType = .noBorder
-        // ФИКС: фиксируем размер scrollview
-        scrollView.setFrameSize(NSSize(width: 400, height: 24))
 
         context.coordinator.textView = textView
         return scrollView
@@ -5323,11 +5315,11 @@ struct MultilineInput: NSViewRepresentable {
                 onSlashTrigger?(String?.none)  // dismiss popup
             }
 
-            // Constrain height to ~8 lines
+            // Constrain height to ~5 lines
             if let container = textView.textContainer, let layoutManager = textView.layoutManager {
                 layoutManager.ensureLayout(for: container)
                 let rect = layoutManager.usedRect(for: container)
-                let maxHeight: CGFloat = 200  // ~8 lines
+                let maxHeight: CGFloat = 120  // ~5 lines
                 if let scrollView = textView.enclosingScrollView {
                     scrollView.hasVerticalScroller = rect.height > maxHeight
                 }
