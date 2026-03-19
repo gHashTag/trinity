@@ -47,6 +47,10 @@ const SACRED_PHI_INV_SQ_F32: f32 = 0.382;
 
 const SACRED_GRAD_CLIPS = [_]f32{ 0.618, 1.0, 1.618 }; // φ^(-1), φ^0, φ^1
 const SACRED_WARMUPS = [_]u32{ 243, 729, 2187 }; // 3^5, 3^6, 3^7
+// Sacred phi scale grid: φ^p for p ∈ {-3..3}
+const SACRED_PHI_SCALES = [_]f32{ 0.236, 0.382, 0.618, 1.0, 1.618, 2.618, 4.236 }; // φ^(-3) to φ^(+3)
+// Sacred ternary thresholds: φ-based ternarization points
+const SACRED_TERNARY_THRESHOLDS = [_]f32{ 0.236, 0.382, 0.5, 0.618, 1.0, 1.618, 2.618 }; // 1/φ³, 1/φ², 1/2, 1/φ, 1, φ, φ²
 
 // Deploy/mutation bounds (single source of truth)
 const LR_MIN: f64 = 1e-5;
@@ -2698,6 +2702,36 @@ pub fn mutateConfigEx(leader: *const ServiceEntry, prng_seed: u32, allow_ctx_mut
         config.format_len = @intCast(parent_format.len);
     }
 
+    // --- Phi scale mutation: 95% inherit, 5% mutate via sacred φ grid (φ^p for p ∈ {-3..3}) ---
+    // Only applies to GF16/TF3 formats (zig-hslm sacred quantization)
+    const is_gf16_format = std.mem.eql(u8, config.format_str[0..config.format_len], "gf16") or
+                           std.mem.eql(u8, config.format_str[0..config.format_len], "tf3") or
+                           std.mem.eql(u8, config.format_str[0..config.format_len], "gf16tf3");
+    if (is_gf16_format) {
+        const rng_phi_scale = mulberry32(prng_seed +% 37);
+        if (rng_phi_scale % 20 == 0) {
+            // Mutate to random sacred phi scale (φ^p for p ∈ {-3..3})
+            config.phi_scale = SACRED_PHI_SCALES[rng_phi_scale / 20 % SACRED_PHI_SCALES.len];
+        } else {
+            // Inherit parent's phi_scale (default 1.0 if parent not set)
+            config.phi_scale = 1.0;
+        }
+
+        // --- Phi threshold mutation: 95% inherit, 5% mutate via sacred ternary values ---
+        const rng_phi_thresh = mulberry32(prng_seed +% 41);
+        if (rng_phi_thresh % 20 == 0) {
+            // Mutate to random sacred ternary threshold
+            config.phi_threshold = SACRED_TERNARY_THRESHOLDS[rng_phi_thresh / 20 % SACRED_TERNARY_THRESHOLDS.len];
+        } else {
+            // Inherit default sacred threshold (1/φ)
+            config.phi_threshold = SACRED_PHI_INV_F32;
+        }
+    } else {
+        // Non-GF16 formats use defaults
+        config.phi_scale = 1.0;
+        config.phi_threshold = SACRED_PHI_INV_F32;
+    }
+
     return config;
 }
 
@@ -2824,6 +2858,20 @@ pub fn mutateConfigSacred(leader: *const ServiceEntry, prng_seed: u32, allow_ctx
 
     // --- Kill PPL 30K: inherit ---
     config.kill_ppl_30k = leader.kill_ppl_30k;
+
+    // --- Phi scale mutation: sacred φ grid (φ^p for p ∈ {-3..3}) ---
+    const is_gf16_format = std.mem.indexOf(u8, leader.format[0..leader.format_len], "gf16") != null or
+                           std.mem.indexOf(u8, leader.format[0..leader.format_len], "tf3") != null;
+    if (is_gf16_format) {
+        const rng_phi_scale = mulberry32(prng_seed +% 47);
+        config.phi_scale = SACRED_PHI_SCALES[rng_phi_scale % SACRED_PHI_SCALES.len];
+
+        const rng_phi_thresh = mulberry32(prng_seed +% 53);
+        config.phi_threshold = SACRED_TERNARY_THRESHOLDS[rng_phi_thresh % SACRED_TERNARY_THRESHOLDS.len];
+    } else {
+        config.phi_scale = 1.0;
+        config.phi_threshold = SACRED_PHI_INV_F32;
+    }
 
     return config;
 }
@@ -3135,15 +3183,21 @@ pub fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: 
     defer allocator.free(ctx_str);
     const sched_str: []const u8 = config.lr_schedule.toStr();
 
+    // Phi parameters for GF16/TF3 (zig-hslm sacred quantization)
+    const phi_scale_str = std.fmt.allocPrint(allocator, "{d:.3}", .{config.phi_scale}) catch return;
+    defer allocator.free(phi_scale_str);
+    const phi_threshold_str = std.fmt.allocPrint(allocator, "{d:.3}", .{config.phi_threshold}) catch return;
+    defer allocator.free(phi_threshold_str);
+
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","HSLM_FORMAT":"{s}","HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","HSLM_FORMAT":"{s}","HSLM_PHI_SCALE":"{s}","HSLM_PHI_THRESHOLD":"{s}","HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
         config.optimizer_str[0..config.optimizer_len], sched_str,                             if (config.fresh) "1" else "0",
         warmup_str,                                    grad_clip_str,                         ctx_str,
         shard_str,                                     num_shards_str,                        config.objective,
-        config.format_str[0..config.format_len],
+        config.format_str[0..config.format_len],       phi_scale_str,                         phi_threshold_str,
     }) catch return;
     defer allocator.free(set_vars_json);
 
@@ -3221,6 +3275,16 @@ pub fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: 
     // Log format with zig-hslm version
     const format_display = if (victim.format_len > 0) victim.format[0..victim.format_len] else "std";
     print("  {s}→ format={s} (zig-hslm:{s}){s}\n", .{ DIM, format_display, "zig-hslm-f16-utils-from-codeberg", RESET });
+
+    // Log phi parameters for GF16/TF3 formats (zig-hslm sacred)
+    const is_gf16_format = std.mem.eql(u8, format_display, "gf16") or
+                           std.mem.eql(u8, format_display, "tf3") or
+                           std.mem.eql(u8, format_display, "gf16tf3");
+    if (is_gf16_format) {
+        print("  {s}→ phi_scale={d:.3} phi_threshold={d:.3} (zig-hslm sacred){s}\n", .{
+            DIM, config.phi_scale, config.phi_threshold, RESET,
+        });
+    }
 
     victim.generation += 1;
     copyToFixed(&victim.parent, &victim.parent_len, parent_name);
@@ -6683,6 +6747,8 @@ fn mutateConfigGentle(worker: *const ServiceEntry, prng_seed: u32) MutatedConfig
         .lr_schedule = worker.lr_schedule,
         .context = worker.context,
         .kill_ppl_30k = worker.kill_ppl_30k,
+        .phi_scale = 1.0, // gentle: keep default
+        .phi_threshold = SACRED_PHI_INV_F32, // gentle: keep default
     };
 
     const base_lr = std.fmt.parseFloat(f64, worker.lrStr()) catch 3e-4;
@@ -6713,6 +6779,8 @@ fn mutateConfigGentleSacred(worker: *const ServiceEntry, prng_seed: u32) Mutated
         .context = worker.context,
         .kill_ppl_30k = worker.kill_ppl_30k,
         .sacred = true,
+        .phi_scale = 1.0, // gentle: keep default
+        .phi_threshold = SACRED_PHI_INV_F32, // gentle: keep default
     };
 
     const base_lr = std.fmt.parseFloat(f64, worker.lrStr()) catch 3e-4;
