@@ -119,7 +119,7 @@ pub fn main() !void {
         rotator_value = rotator.*;
         rotator_opt = &rotator_value.?;
     } else |err| {
-        std.debug.print("[tri-api] Token rotator init failed: {}, using direct API key\n", .{@errorName(err)});
+        std.debug.print("[tri-api] Token rotator init failed: {s}, using direct API key\n", .{@errorName(err)});
     }
     defer if (rotator_value) |*r| r.deinit();
 
@@ -563,7 +563,7 @@ fn httpPost(allocator: std.mem.Allocator, url: []const u8, body: []const u8, rot
         if (token_rotator.is429Error(resp_body)) {
             const retry_after = token_rotator.extractRetryAfter(resp_body);
             r.on429Error(retry_after) catch |err| {
-                std.debug.print("[tri-api] Failed to handle 429: {}\n", .{@errorName(err)});
+                std.debug.print("[tri-api] Failed to handle 429: {s}\n", .{@errorName(err)});
             };
             std.debug.print("[tri-api] Rate limit hit, rotating token...\n", .{});
             return error.RateLimitExceeded;
