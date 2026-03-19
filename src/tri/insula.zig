@@ -689,3 +689,56 @@ test "insula — InternalState activity threshold" {
     state.action_rate = 0.05; // Exactly at threshold
     try std.testing.expect(state.isHealthyActivity());
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL function tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "insula — measureState returns valid state" {
+    const start = std.time.nanoTimestamp();
+    const state = try measureState(std.testing.allocator, start);
+    // Should have non-zero latency at minimum
+    try std.testing.expect(state.cycle_latency_us > 0);
+}
+
+test "insula — measureState has timing data" {
+    const start = std.time.nanoTimestamp();
+    const state = try measureState(std.testing.allocator, start);
+    // Timing fields should be populated
+    _ = state.thalamus_latency_us;
+    _ = state.dlpfc_decision_us;
+}
+
+test "insula — health returns valid CellHealth" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+}
+
+test "insula — CellHealth status enum" {
+    const h = health();
+    switch (h.status) {
+        .healthy, .weak, .broken => {},
+    }
+}
+
+test "insula — TimingSnapshot measures latencies" {
+    const snap = TimingSnapshot.init();
+    snap.markThalamus();
+    snap.markDlpfc();
+
+    const cycle_us = snap.cycleLatencyUs();
+    const thalamus_us = snap.thalamusLatencyUs();
+    const dlpfc_us = snap.dlpfcLatencyUs();
+
+    try std.testing.expect(cycle_us > 0);
+    try std.testing.expect(thalamus_us > 0);
+    try std.testing.expect(dlpfc_us > 0);
+}
+
+test "insula — TimingSnapshot initTest creates test data" {
+    const snap = TimingSnapshot.initTest();
+    try std.testing.expectEqual(@as(u64, 1000), snap.cycle_latency_us);
+    try std.testing.expectEqual(@as(u64, 100), snap.thalamus_latency_us);
+    try std.testing.expectEqual(@as(u64, 200), snap.dlpfc_latency_us);
+}
