@@ -32,13 +32,13 @@ const sacred = @import("../common.zig").constants;
 ///
 /// Key characteristics that define an FPGA design's synthesis strategy:
 pub const DesignCharacteristics = struct {
-    num_luts: usize,           // Number of LUTs (0-100000)
-    num_ffs: usize,            // Number of flip-flops (0-100000)
-    num_carries: usize,        // Number of CARRY4 chains (0-10000)
-    num_iobs: usize,           // Number of IO blocks (0-500)
-    has_bram: bool,            // Uses block RAM
-    has_dsp: bool,             // Uses DSP blocks
-    clock_frequency_mhz: f32,  // Target clock frequency (0-500)
+    num_luts: usize, // Number of LUTs (0-100000)
+    num_ffs: usize, // Number of flip-flops (0-100000)
+    num_carries: usize, // Number of CARRY4 chains (0-10000)
+    num_iobs: usize, // Number of IO blocks (0-500)
+    has_bram: bool, // Uses block RAM
+    has_dsp: bool, // Uses DSP blocks
+    clock_frequency_mhz: f32, // Target clock frequency (0-500)
     target_device: DeviceType, // Target FPGA device
 
     pub const DeviceType = enum {
@@ -103,7 +103,7 @@ pub const SynthesisStrategy = struct {
     name: []const u8,
     placer_effort: PlacerEffort,
     router_effort: RouterEffort,
-    target_density: f32,        // 0.0-1.0 (lower = more spread out)
+    target_density: f32, // 0.0-1.0 (lower = more spread out)
     use_timing_driven: bool,
     strategy_type: StrategyType,
 
@@ -121,10 +121,10 @@ pub const SynthesisStrategy = struct {
     };
 
     pub const StrategyType = enum {
-        area_optimized,      // Minimize resource usage
-        timing_optimized,    // Maximize clock frequency
-        power_optimized,     // Minimize power consumption
-        balanced,            // Trade-off between all
+        area_optimized, // Minimize resource usage
+        timing_optimized, // Maximize clock frequency
+        power_optimized, // Minimize power consumption
+        balanced, // Trade-off between all
         consciousness_aware, // φ-based guided placement
     };
 };
@@ -161,14 +161,6 @@ pub const FPGAVSAMemory = struct {
     strategies: std.StringHashMap(SynthesisStrategy),
     allocator: Allocator,
 
-/// ═══════════════════════════════════════════════════════════════════════════════
-/// FPGA VSA MEMORY
-/// ═══════════════════════════════════════════════════════════════════════════════
-pub const FPGAVSAMemory = struct {
-    vsa_memory: VSAMemory,
-    strategies: std.StringHashMap(SynthesisStrategy),
-    allocator: Allocator,
-
     /// Initialize FPGA VSA Memory with φ-powered dimension
     pub fn init(allocator: Allocator) !FPGAVSAMemory {
         // Use φ²-powered dimension for optimal symbolic representation
@@ -186,7 +178,6 @@ pub const FPGAVSAMemory = struct {
     /// ═══════════════════════════════════════════════════════════════════════════════
     /// LEARNING: Store successful strategies
     /// ═══════════════════════════════════════════════════════════════════════════════
-
     /// Learn from a successful synthesis run
     pub fn learnFromSuccess(
         self: *FPGAVSAMemory,
@@ -217,7 +208,6 @@ pub const FPGAVSAMemory = struct {
     /// ═══════════════════════════════════════════════════════════════════════════════
     /// RECOMMENDATION: Suggest strategy for new design
     /// ═══════════════════════════════════════════════════════════════════════════════
-
     /// Recommend strategy for a new design
     pub fn recommendStrategy(
         self: *FPGAVSAMemory,
@@ -254,7 +244,6 @@ pub const FPGAVSAMemory = struct {
     /// ═══════════════════════════════════════════════════════════════════════════════
     /// PLACEMENT AND ROUTING
     /// ═══════════════════════════════════════════════════════════════════════════════
-
     /// Place and route with φ-weighted simulated annealing
     pub fn placeAndRoute(
         self: *FPGAVSAMemory,
@@ -365,7 +354,9 @@ pub const FPGAVSAMemory = struct {
         const strategy = SynthesisStrategy{
             .name = "default_phi_guided",
             .placer_effort = if (design_char.num_luts > 10000)
-                .high else .medium,
+                .high
+            else
+                .medium,
             .router_effort = .high,
             .target_density = 0.75,
             .use_timing_driven = design_char.clock_frequency_mhz > 100,
@@ -387,7 +378,6 @@ pub const FPGAVSAMemory = struct {
     /// ═══════════════════════════════════════════════════════════════════════════════
     /// UTILITY
     /// ═══════════════════════════════════════════════════════════════════════════════
-
     /// Copy strategy (owns its memory)
     fn copyStrategy(self: *FPGAVSAMemory, strategy: SynthesisStrategy) !SynthesisStrategy {
         const name_copy = try self.allocator.dupe(u8, strategy.name);
@@ -433,10 +423,10 @@ pub const FPGAVSAMemory = struct {
 /// SYNTHESIS OUTCOME
 /// ═══════════════════════════════════════════════════════════════════════════════
 pub const SynthesisOutcome = struct {
-    pass_rate: f32,           // 0.0-1.0 (quality of result)
-    timing_met: bool,         // Did timing closure succeed?
-    route_success: bool,      // Did routing complete?
-    area_efficiency: f32,     // 0.0-1.0 (lower is better)
+    pass_rate: f32, // 0.0-1.0 (quality of result)
+    timing_met: bool, // Did timing closure succeed?
+    route_success: bool, // Did routing complete?
+    area_efficiency: f32, // 0.0-1.0 (lower is better)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -11,7 +11,7 @@ const Allocator = std.mem.Allocator;
 // CHAIN DEFINITIONS
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════
 
-pub const ChainId = enum {
+pub const ChainId = enum(u64) {
     ethereum = 1,
     polygon = 137,
     arbitrum = 42161,
@@ -96,13 +96,13 @@ pub const MultiChainManager = struct {
 
     /// Add chain support
     pub fn enableChain(self: *MultiChainManager, chain_id: ChainId) !void {
-        try self.active_chains.put(allocator, chain_id, true);
+        try self.active_chains.put(self.allocator, chain_id, true);
         std.log.info("MULTICHAIN: Enabled chain {s}", .{@tagName(chain_id)});
     }
 
     /// Disable chain
     pub fn disableChain(self: *MultiChainManager, chain_id: ChainId) !void {
-        try self.active_chains.put(allocator, chain_id, false);
+        try self.active_chains.put(self.allocator, chain_id, false);
         std.log.info("MULTICHAIN: Disabled chain {s}", .{@tagName(chain_id)});
     }
 
@@ -157,8 +157,8 @@ pub const MultiChainManager = struct {
         while (iter.next()) |entry| {
             if (entry.value_ptr.*) count += 1;
         }
+        _ = count;
         // Return empty list if no active chains
-        _ = self;
         return &[_]ChainId{};
     }
 

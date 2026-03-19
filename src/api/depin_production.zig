@@ -97,8 +97,8 @@ pub const ProductionApiServer = struct {
             const support_count: usize = 0;
             const against_count: usize = 0;
 
-            for (proposal.votes.items) |vote| {
-                if (vote.support) support_count += 1 else against_count += 1;
+            for (proposal.votes.items) |v| {
+                if (v.support) support_count += 1 else against_count += 1;
             }
 
             const total_votes = support_count + against_count;
@@ -134,8 +134,8 @@ pub const ProductionApiServer = struct {
             self.allocator.free(entry.key_ptr.*);
             self.allocator.free(proposal.title);
             self.allocator.free(proposal.description);
-            for (proposal.votes.items) |*vote| {
-                self.allocator.free(vote.voter);
+            for (proposal.votes.items) |*v| {
+                self.allocator.free(v.voter);
             }
             proposal.votes.deinit(self.allocator);
         }
@@ -257,7 +257,7 @@ test "governance proposal" {
         .start_time = std.time.timestamp(),
         .end_time = std.time.timestamp() + 86400,
         .status = .active,
-        .votes = std.ArrayListUnmanaged(VoteRecord).init(allocator),
+        .votes = .{},
     };
 
     const proposal_id = try server.createProposal(proposal);

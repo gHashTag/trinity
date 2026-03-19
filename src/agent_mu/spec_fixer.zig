@@ -142,7 +142,7 @@ test "SPEC_FIX: missing version" {
         .file = "specs/tri/test.tri",
         .line = 2,
         .column = 1,
-        "code": "missing_version",
+        .code = "missing_version",
     };
 
     const result = try applySpecFix(allocator, &err_info);
@@ -155,10 +155,10 @@ test "SPEC_FIX: unknown error" {
     const err_info = diagnostic.ErrorInfo{
         .fix_type = SPEC_FIX,
         .message = "error: unknown spec error",
-        .file": "specs/tri/test.tri",
+        .file = "specs/tri/test.tri",
         .line = 1,
         .column = 1,
-        .code": "unknown",
+        .code = "unknown",
     };
 
     const result = try applySpecFix(allocator, &err_info);
