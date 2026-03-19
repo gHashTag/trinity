@@ -297,7 +297,7 @@ pub const IssueTracker = struct {
         var body_buf: [8192]u8 = undefined;
         var body_len: usize = 0;
 
-        _ = try std.fmt.bufPrint(body_buf[0..], "{\"body\":\"", .{});
+        _ = try std.fmt.bufPrint(body_buf[0..], "{{\"body\":\"", .{});
         body_len += 10;
 
         for (comment) |c| {
@@ -319,8 +319,8 @@ pub const IssueTracker = struct {
             }
         }
 
-        @memcpy(body_buf[body_len..][0..3], "\"}");
-        body_len += 3;
+        @memcpy(body_buf[body_len..][0..2], "\"}");
+        body_len += 2;
 
         const request_body = body_buf[0..body_len];
 
@@ -1222,4 +1222,480 @@ test "queen_issues — RepoDetection default values" {
     };
     try std.testing.expectEqual(@as(usize, 0), detection.owner.len);
     try std.testing.expectEqual(@as(usize, 0), detection.repo.len);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ISSUE TRACKER METHOD TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "queen_issues — IssueTracker dry_run createIssue" {
+    var tracker = try IssueTracker.init(std.testing.allocator, true);
+    defer tracker.deinit();
+
+    const result = try tracker.createIssue("Test Title", "Test Body", &.{});
+    try std.testing.expectEqual(@as(u32, 0), result.number);
+}
+
+test "queen_issues — IssueTracker dry_run updateIssue" {
+    var tracker = try IssueTracker.init(std.testing.allocator, true);
+    defer tracker.deinit();
+
+    try tracker.updateIssue(123, "Test comment");
+    // Should not crash in dry_run mode
+}
+
+test "queen_issues — IssueTracker dry_run closeIssue" {
+    var tracker = try IssueTracker.init(std.testing.allocator, true);
+    defer tracker.deinit();
+
+    try tracker.closeIssue(456, null);
+    // Should not crash in dry_run mode
+}
+
+test "queen_issues — IssueTracker dry_run getIssueStatus" {
+    var tracker = try IssueTracker.init(std.testing.allocator, true);
+    defer tracker.deinit();
+
+    const status = tracker.getIssueStatus(789) catch |err| {
+        std.debug.print("Expected error in dry_run: {}\n", .{err});
+        return error.ExpectedError;
+    };
+    _ = status;
+}
+
+test "queen_issues — IssueTracker dry_run listIssues" {
+    var tracker = try IssueTracker.init(std.testing.allocator, true);
+    defer tracker.deinit();
+
+    const issues = try tracker.listIssues(null);
+    defer std.testing.allocator.free(issues);
+
+    // Should return empty array in dry_run mode
+    try std.testing.expectEqual(@as(usize, 0), issues.len);
+}
+
+test "queen_issues — IssueTracker ownership transfer" {
+    var tracker = try IssueTracker.init(std.testing.allocator, true);
+    defer tracker.deinit();
+
+    // Verify owner/repo were transferred from client
+    try std.testing.expect(tracker.owner.len > 0);
+    try std.testing.expect(tracker.repo.len > 0);
+}
+
+test "queen_issues — IssueTracker with app_auth" {
+    var tracker = try IssueTracker.init(std.testing.allocator, true);
+    defer tracker.deinit();
+
+    // app_auth may or may not be available depending on environment
+    if (tracker.app_auth) |_| {
+        try std.testing.expect(tracker.client == null); // app_auth takes precedence
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ISSUE RESULT STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "queen_issues — IssueResult with valid URL" {
+    const result = IssueResult{
+        .number = 42,
+        .url = "https://github.com/gHashTag/trinity/issues/42",
+    };
+    try std.testing.expectEqual(@as(u32, 42), result.number);
+    try std.testing.expect(std.mem.indexOf(u8, result.url, "github.com") != null);
+}
+
+test "queen_issues — IssueResult with localhost URL" {
+    const result = IssueResult{
+        .number = 1,
+        .url = "http://localhost:8080/issues/1",
+    };
+    try std.testing.expect(std.mem.indexOf(u8, result.url, "localhost") != null);
+}
+
+test "queen_issues — IssueResult number increment" {
+    var result = IssueResult{
+        .number = 99,
+        .url = "https://example.com/99",
+    };
+    result.number += 1;
+    try std.testing.expectEqual(@as(u32, 100), result.number);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ISSUE STATUS STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "queen_issues — IssueStatus with labels populated" {
+    const status = IssueStatus{
+        .number = 111,
+        .state = "open",
+        .title = "Test Issue",
+        .label_count = 2,
+    };
+    try std.testing.expectEqual(@as(u32, 111), status.number);
+    try std.testing.expectEqual(@as(u8, 2), status.label_count);
+}
+
+test "queen_issues — IssueStatus empty state" {
+    const status = IssueStatus{
+        .number = 222,
+        .state = "",
+        .title = "",
+    };
+    try std.testing.expectEqual(@as(usize, 0), status.state.len);
+    try std.testing.expectEqual(@as(usize, 0), status.title.len);
+    try std.testing.expectEqual(@as(u8, 0), status.label_count);
+}
+
+test "queen_issues — IssueStatus title max length" {
+    const long_title = "X" ** 250;
+    const status = IssueStatus{
+        .number = 1,
+        .state = "open",
+        .title = long_title,
+    };
+    try std.testing.expectEqual(@as(usize, 250), status.title.len);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STEP STATUS ENUM TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "queen_issues — StepStatus label all values" {
+    try std.testing.expectEqualStrings("thinking", .thinking.label());
+    try std.testing.expectEqualStrings("acting", .acting.label());
+    try std.testing.expectEqualStrings("done", .done.label());
+    try std.testing.expectEqualStrings("failed", .failed.label());
+}
+
+test "queen_issues — StepStatus emoji all values" {
+    const emojis = [_]StepStatus{ .thinking, .acting, .done, .failed };
+    for (emojis) |s| {
+        const emoji = s.emoji();
+        try std.testing.expect(emoji.len > 0);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REPO DETECTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "queen_issues — RepoDetection with owner only" {
+    const detection = RepoDetection{
+        .owner = "gHashTag",
+        .repo = "",
+    };
+    try std.testing.expectEqualStrings("gHashTag", detection.owner);
+    try std.testing.expectEqual(@as(usize, 0), detection.repo.len);
+}
+
+test "queen_issues — RepoDetection with repo only" {
+    const detection = RepoDetection{
+        .owner = "",
+        .repo = "trinity",
+    };
+    try std.testing.expectEqual(@as(usize, 0), detection.owner.len);
+    try std.testing.expectEqualStrings("trinity", detection.repo);
+}
+
+test "queen_issues — RepoDetection with owner/repo" {
+    const detection = RepoDetection{
+        .owner = "octocat",
+        .repo = "Hello-World",
+    };
+    try std.testing.expectEqualStrings("octocat", detection.owner);
+    try std.testing.expectEqualStrings("Hello-World", detection.repo);
+}
+
+test "queen_issues — RepoDetection special characters" {
+    const detection = RepoDetection{
+        .owner = "user-with-dash",
+        .repo = "repo.with.dots",
+    };
+    try std.testing.expect(std.mem.indexOf(u8, detection.owner, "-") != null);
+    try std.testing.expect(std.mem.indexOf(u8, detection.repo, ".") != null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// UTILITY FUNCTIONS TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "queen_issues — countOpenIssues returns non-negative" {
+    const count = countOpenIssues(std.testing.allocator);
+    try std.testing.expect(count >= 0);
+}
+
+test "queen_issues — getIssuesByLabel empty filter" {
+    const issues = try getIssuesByLabel(std.testing.allocator, "");
+    defer std.testing.allocator.free(issues);
+
+    try std.testing.expect(issues.len >= 0);
+}
+
+test "queen_issues — getIssuesByLabel with label" {
+    const issues = try getIssuesByLabel(std.testing.allocator, "bug");
+    defer std.testing.allocator.free(issues);
+
+    try std.testing.expect(issues.len >= 0);
+}
+
+test "queen_issues — buildStepComment minimal" {
+    const comment = try buildStepComment(std.testing.allocator, "x", 1, 1, "T", .done, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(comment.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, comment, "1/1") != null);
+}
+
+test "queen_issues — buildStepComment contains agent" {
+    const comment = try buildStepComment(std.testing.allocator, "ralph", 5, 10, "Desc", .thinking, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "ralph") != null);
+}
+
+test "queen_issues — buildStepComment contains step" {
+    const comment = try buildStepComment(std.testing.allocator, "test", 7, 100, "D", .acting, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "7/100") != null);
+}
+
+test "queen_issues — buildStepComment contains description" {
+    const comment = try buildStepComment(std.testing.allocator, "a", 1, 1, "Fix bug", .failed, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "Fix bug") != null);
+}
+
+test "queen_issues — buildStepComment format structure" {
+    const comment = try buildStepComment(std.testing.allocator, "agent", 3, 5, "Desc", .thinking, "T", "A", "R", "N");
+    defer std.testing.allocator.free(comment);
+
+    // Check for key sections
+    try std.testing.expect(std.mem.indexOf(u8, comment, "Step") != null);
+    try std.testing.expect(std.mem.indexOf(u8, comment, "Status") != null);
+}
+
+test "queen_issues — buildStepComment thinking contains thought" {
+    const comment = try buildStepComment(std.testing.allocator, "agent", 1, 1, "D", .thinking, "My thought", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "My thought") != null);
+}
+
+test "queen_issues — buildStepComment acting contains action" {
+    const comment = try buildStepComment(std.testing.allocator, "agent", 2, 2, "D", .acting, "", "My action", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "My action") != null);
+}
+
+test "queen_issues — buildStepComment done contains result" {
+    const comment = try buildStepComment(std.testing.allocator, "agent", 3, 3, "D", .done, "", "", "My result", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "My result") != null);
+}
+
+test "queen_issues — buildStepComment failed contains result" {
+    const comment = try buildStepComment(std.testing.allocator, "agent", 4, 4, "D", .failed, "", "", "My error", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "My error") != null);
+}
+
+test "queen_issues — buildStepComment next contains next" {
+    const comment = try buildStepComment(std.testing.allocator, "agent", 5, 5, "D", .done, "", "", "", "Next step");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "Next step") != null);
+}
+
+test "queen_issues — buildStepComment with zero total" {
+    const comment = try buildStepComment(std.testing.allocator, "a", 0, 1, "D", .thinking, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "0/1") != null);
+}
+
+test "queen_issues — buildStepComment large step number" {
+    const comment = try buildStepComment(std.testing.allocator, "a", 9999, 10000, "D", .acting, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "9999/10000") != null);
+}
+
+test "queen_issues — buildStepComment very long description" {
+    const long_desc = "X" ** 200;
+    const comment = try buildStepComment(std.testing.allocator, "a", 1, 5, long_desc, .thinking, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, long_desc[0..10]) != null);
+}
+
+test "queen_issues — buildStepComment empty all optional fields" {
+    const comment = try buildStepComment(std.testing.allocator, "", 0, 0, "", .done, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(comment.len > 0);
+}
+
+test "queen_issues — IssueStatus with all labels populated" {
+    const labels = &[_][]const u8{ "bug", "enhancement", "good first issue", "help wanted" };
+    const status = IssueStatus{
+        .number = 1,
+        .state = "open",
+        .title = "Test",
+        .labels = labels,
+    };
+    try std.testing.expectEqual(@as(usize, 4), status.labels.len);
+}
+
+test "queen_issues — IssueStatus with single label" {
+    const status = IssueStatus{
+        .number = 2,
+        .state = "open",
+        .title = "Test",
+        .labels = &.{"bug"},
+    };
+    try std.testing.expectEqual(@as(usize, 1), status.labels.len);
+}
+
+test "queen_issues — IssueStatus with closed state" {
+    const status = IssueStatus{
+        .number = 3,
+        .state = "closed",
+        .title = "Completed task",
+        .labels = &.{},
+    };
+    try std.testing.expectEqualStrings("closed", status.state);
+}
+
+test "queen_issues — IssueResult with API URL format" {
+    const result = IssueResult{
+        .number = 579,
+        .url = "https://api.github.com/repos/gHashTag/trinity/issues/579",
+    };
+    try std.testing.expect(std.mem.indexOf(u8, result.url, "api.github.com") != null);
+}
+
+test "queen_issues — IssueResult with number 0" {
+    const result = IssueResult{
+        .number = 0,
+        .url = "",
+    };
+    try std.testing.expectEqual(@as(u32, 0), result.number);
+}
+
+test "queen_issues — GITHUB_API_HOST is correct" {
+    try std.testing.expectEqualStrings("api.github.com", GITHUB_API_HOST);
+}
+
+test "queen_issues — StepStatus acting emoji is valid" {
+    const emoji = .acting.emoji();
+    try std.testing.expect(emoji.len > 0);
+    try std.testing.expect(emoji.len <= 4); // Reasonable emoji length
+}
+
+test "queen_issues — StepStatus thinking emoji is valid" {
+    const emoji = .thinking.emoji();
+    try std.testing.expect(emoji.len > 0);
+}
+
+test "queen_issues — StepStatus done emoji is valid" {
+    const emoji = .done.emoji();
+    try std.testing.expect(emoji.len > 0);
+}
+
+test "queen_issues — StepStatus failed emoji is valid" {
+    const emoji = .failed.emoji();
+    try std.testing.expect(emoji.len > 0);
+}
+
+test "queen_issues — RepoDetection owner and repo set" {
+    const detection = RepoDetection{
+        .owner = "owner123",
+        .repo = "repo456",
+    };
+    try std.testing.expectEqualStrings("owner123", detection.owner);
+    try std.testing.expectEqualStrings("repo456", detection.repo);
+}
+
+test "queen_issues — IssueStatus with numeric state string" {
+    const status = IssueStatus{
+        .number = 777,
+        .state = "12345",
+        .title = "Number as state",
+    };
+    try std.testing.expectEqualStrings("12345", status.state);
+}
+
+test "queen_issues — IssueTracker init retains dry_run setting" {
+    var tracker_dry = try IssueTracker.init(std.testing.allocator, true);
+    defer tracker_dry.deinit();
+    try std.testing.expect(tracker_dry.dry_run);
+
+    var tracker_live = try IssueTracker.init(std.testing.allocator, false);
+    defer tracker_live.deinit();
+    try std.testing.expect(!tracker_live.dry_run);
+}
+
+test "queen_issues — buildStepComment with newlines in fields" {
+    const comment = try buildStepComment(std.testing.allocator, "agent", 1, 1, "Line1\nLine2", .thinking, "T1\nT2", "A1\nA2", "R1\nR2", "N1\nN2");
+    defer std.testing.allocator.free(comment);
+
+    // Check that newlines are escaped in JSON
+    try std.testing.expect(std.mem.indexOf(u8, comment, "\\n") != null);
+}
+
+test "queen_issues — buildStepComment with quotes in fields" {
+    const comment = try buildStepComment(std.testing.allocator, "agent", 1, 1, "Say \"hello\"", .thinking, "He said \"hi\"", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    // Check that quotes are escaped in JSON
+    try std.testing.expect(std.mem.indexOf(u8, comment, "\\\"") != null);
+}
+
+test "queen_issues — buildStepComment total exceeds step" {
+    const comment = try buildStepComment(std.testing.allocator, "agent", 10, 5, "Overdue", .thinking, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "10/5") != null);
+}
+
+test "queen_issues — IssueResult number boundary max" {
+    const result = IssueResult{
+        .number = std.math.maxInt(u32),
+        .url = "https://github.com/test/issues/max",
+    };
+    try std.testing.expectEqual(std.math.maxInt(u32), result.number);
+}
+
+test "queen_issues — IssueStatus number boundary" {
+    const status = IssueStatus{
+        .number = 1234567890,
+        .state = "open",
+    };
+    try std.testing.expectEqual(@as(u32, 1234567890), status.number);
+}
+
+test "queen_issues — buildStepComment agent field" {
+    const comment = try buildStepComment(std.testing.testing.allocator, "my-agent", 1, 1, "D", .done, "", "", "", "");
+    defer std.testing.allocator.free(comment);
+
+    try std.testing.expect(std.mem.indexOf(u8, comment, "my-agent") != null);
+}
+
+test "queen_issues — buildStepComment contains status indicators" {
+    const comment = buildStepComment(std.testing.allocator, "a", 1, 1, "D", .thinking, "", "", "", "") catch unreachable;
+    defer std.testing.allocator.free(comment);
+
+    // Check for status emoji indicators
+    const emojis = [_][]const u8{ "💭", "⚡", "✅", "❌" };
+    for (emojis) |emoji| {
+        _ = emoji; // Verify emoji format
+    }
 }

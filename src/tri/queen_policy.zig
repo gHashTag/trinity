@@ -954,3 +954,588 @@ test "Policy — PolicyVerdict reasons" {
     try std.testing.expectEqualStrings("level exceeds max_auto_level", PolicyVerdict.denied_level.reason());
     try std.testing.expectEqualStrings("per-action rate limit", PolicyVerdict.denied_rate.reason());
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SAFETYLEVEL ENUM TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — SafetyLevel all values" {
+    const levels = [_]SafetyLevel{ .read_only, .soft_write, .dangerous };
+    for (levels) |level| {
+        _ = level.label();
+        _ = level.emoji();
+    }
+}
+
+test "Policy — SafetyLevel label read_only" {
+    try std.testing.expectEqualStrings("L0 read-only", SafetyLevel.read_only.label());
+}
+
+test "Policy — SafetyLevel label soft_write" {
+    try std.testing.expectEqualStrings("L1 soft-write", SafetyLevel.soft_write.label());
+}
+
+test "Policy — SafetyLevel label dangerous" {
+    try std.testing.expectEqualStrings("L2 dangerous", SafetyLevel.dangerous.label());
+}
+
+test "Policy — SafetyLevel emoji read_only" {
+    try std.testing.expectEqualStrings(qt.E_CHECK, SafetyLevel.read_only.emoji());
+}
+
+test "Policy — SafetyLevel emoji soft_write" {
+    try std.testing.expectEqualStrings(qt.E_WRENCH, SafetyLevel.soft_write.emoji());
+}
+
+test "Policy — SafetyLevel emoji dangerous" {
+    try std.testing.expectEqualStrings(qt.E_SIREN, SafetyLevel.dangerous.emoji());
+}
+
+test "Policy — SafetyLevel integer values" {
+    try std.testing.expectEqual(@as(u8, 0), @intFromEnum(SafetyLevel.read_only));
+    try std.testing.expectEqual(@as(u8, 1), @intFromEnum(SafetyLevel.soft_write));
+    try std.testing.expectEqual(@as(u8, 2), @intFromEnum(SafetyLevel.dangerous));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACTIONLEVEL FUNCTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — actionLevel L0 farm_status" {
+    try std.testing.expectEqual(SafetyLevel.read_only, actionLevel(.farm_status));
+}
+
+test "Policy — actionLevel L0 arena_status" {
+    try std.testing.expectEqual(SafetyLevel.read_only, actionLevel(.arena_status));
+}
+
+test "Policy — actionLevel L0 doctor_scan" {
+    try std.testing.expectEqual(SafetyLevel.read_only, actionLevel(.doctor_scan));
+}
+
+test "Policy — actionLevel L0 train_status" {
+    try std.testing.expectEqual(SafetyLevel.read_only, actionLevel(.train_status));
+}
+
+test "Policy — actionLevel L0 ouroboros_status" {
+    try std.testing.expectEqual(SafetyLevel.read_only, actionLevel(.ouroboros_status));
+}
+
+test "Policy — actionLevel L1 doctor_quick" {
+    try std.testing.expectEqual(SafetyLevel.soft_write, actionLevel(.doctor_quick));
+}
+
+test "Policy — actionLevel L1 doctor_heal" {
+    try std.testing.expectEqual(SafetyLevel.soft_write, actionLevel(.doctor_heal));
+}
+
+test "Policy — actionLevel L1 ouroboros_cycle" {
+    try std.testing.expectEqual(SafetyLevel.soft_write, actionLevel(.ouroboros_cycle));
+}
+
+test "Policy — actionLevel L1 git_commit_state" {
+    try std.testing.expectEqual(SafetyLevel.soft_write, actionLevel(.git_commit_state));
+}
+
+test "Policy — actionLevel L1 git_push" {
+    try std.testing.expectEqual(SafetyLevel.soft_write, actionLevel(.git_push));
+}
+
+test "Policy — actionLevel L2 farm_recycle" {
+    try std.testing.expectEqual(SafetyLevel.dangerous, actionLevel(.farm_recycle));
+}
+
+test "Policy — actionLevel L2 cloud_spawn" {
+    try std.testing.expectEqual(SafetyLevel.dangerous, actionLevel(.cloud_spawn));
+}
+
+test "Policy — actionLevel L2 cloud_kill" {
+    try std.testing.expectEqual(SafetyLevel.dangerous, actionLevel(.cloud_kill));
+}
+
+test "Policy — actionLevel L2 issue_create" {
+    try std.testing.expectEqual(SafetyLevel.dangerous, actionLevel(.issue_create));
+}
+
+test "Policy — actionLevel L2 swarm_decompose" {
+    try std.testing.expectEqual(SafetyLevel.dangerous, actionLevel(.swarm_decompose));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACTIONRATELIMIT FUNCTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — actionRateLimit farm_status" {
+    const limit = actionRateLimit(.farm_status);
+    try std.testing.expectEqual(@as(u8, 12), limit.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 300), limit.cooldown_sec);
+}
+
+test "Policy — actionRateLimit doctor_quick" {
+    const limit = actionRateLimit(.doctor_quick);
+    try std.testing.expectEqual(@as(u8, 3), limit.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 600), limit.cooldown_sec);
+}
+
+test "Policy — actionRateLimit doctor_heal" {
+    const limit = actionRateLimit(.doctor_heal);
+    try std.testing.expectEqual(@as(u8, 1), limit.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 3600), limit.cooldown_sec);
+}
+
+test "Policy — actionRateLimit farm_recycle" {
+    const limit = actionRateLimit(.farm_recycle);
+    try std.testing.expectEqual(@as(u8, 1), limit.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 3600), limit.cooldown_sec);
+}
+
+test "Policy — actionRateLimit farm_evolve_step" {
+    const limit = actionRateLimit(.farm_evolve_step);
+    try std.testing.expectEqual(@as(u8, 1), limit.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 7200), limit.cooldown_sec);
+}
+
+test "Policy — actionRateLimit cloud_spawn" {
+    const limit = actionRateLimit(.cloud_spawn);
+    try std.testing.expectEqual(@as(u8, 2), limit.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 1800), limit.cooldown_sec);
+}
+
+test "Policy — ActionRateLimit struct fields" {
+    const limit = ActionRateLimit{
+        .max_per_hour = 10,
+        .cooldown_sec = 60,
+    };
+    try std.testing.expectEqual(@as(u8, 10), limit.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 60), limit.cooldown_sec);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// POLICYVERDICT ENUM TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — PolicyVerdict all values" {
+    const verdicts = [_]PolicyVerdict{
+        .allowed,
+        .denied_level,
+        .denied_rate,
+        .denied_cooldown,
+        .denied_escalated,
+        .needs_approval,
+    };
+    for (verdicts) |v| {
+        _ = v.reason();
+        _ = v.isAllowed();
+    }
+}
+
+test "Policy — PolicyVerdict isAllowed allowed" {
+    try std.testing.expect(PolicyVerdict.allowed.isAllowed());
+}
+
+test "Policy — PolicyVerdict isAllowed denied_level" {
+    try std.testing.expect(!PolicyVerdict.denied_level.isAllowed());
+}
+
+test "Policy — PolicyVerdict isAllowed denied_rate" {
+    try std.testing.expect(!PolicyVerdict.denied_rate.isAllowed());
+}
+
+test "Policy — PolicyVerdict isAllowed denied_cooldown" {
+    try std.testing.expect(!PolicyVerdict.denied_cooldown.isAllowed());
+}
+
+test "Policy — PolicyVerdict isAllowed denied_escalated" {
+    try std.testing.expect(!PolicyVerdict.denied_escalated.isAllowed());
+}
+
+test "Policy — PolicyVerdict isAllowed needs_approval" {
+    try std.testing.expect(!PolicyVerdict.needs_approval.isAllowed());
+}
+
+test "Policy — PolicyVerdict reason denied_cooldown" {
+    try std.testing.expectEqualStrings("cooldown not elapsed", PolicyVerdict.denied_cooldown.reason());
+}
+
+test "Policy — PolicyVerdict reason denied_escalated" {
+    try std.testing.expectEqualStrings("incident escalation", PolicyVerdict.denied_escalated.reason());
+}
+
+test "Policy — PolicyVerdict reason needs_approval" {
+    try std.testing.expectEqualStrings("needs human approval", PolicyVerdict.needs_approval.reason());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACTIONCOUNTERS STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — ActionCounters init zero" {
+    const counters = ActionCounters{};
+    for (@as([30]qt.ActionKind, std.enums.values(qt.ActionKind))) |kind| {
+        const count = counters.getCount(kind);
+        try std.testing.expectEqual(@as(u8, 0), count);
+    }
+}
+
+test "Policy — ActionCounters record increments" {
+    var counters = ActionCounters{};
+    counters.record(.doctor_quick);
+    try std.testing.expectEqual(@as(u8, 1), counters.getCount(.doctor_quick));
+
+    counters.record(.doctor_quick);
+    try std.testing.expectEqual(@as(u8, 2), counters.getCount(.doctor_quick));
+}
+
+test "Policy — ActionCounters record different actions" {
+    var counters = ActionCounters{};
+    counters.record(.farm_status);
+    counters.record(.doctor_quick);
+    counters.record(.farm_recycle);
+
+    try std.testing.expectEqual(@as(u8, 1), counters.getCount(.farm_status));
+    try std.testing.expectEqual(@as(u8, 1), counters.getCount(.doctor_quick));
+    try std.testing.expectEqual(@as(u8, 1), counters.getCount(.farm_recycle));
+}
+
+test "Policy — ActionCounters windowSec" {
+    const counters = ActionCounters{};
+    const before = counters.window_sec;
+
+    std.Thread.sleep(1 * std.time.ns_per_ms);
+
+    const after = counters.window_sec;
+    _ = after;
+    _ = before;
+    // window_sec should be close to current timestamp
+}
+
+test "Policy — ActionCounters resetAll clears all" {
+    var counters = ActionCounters{};
+    counters.record(.doctor_quick);
+    counters.record(.farm_recycle);
+    counters.resetAll();
+
+    try std.testing.expectEqual(@as(u8, 0), counters.getCount(.doctor_quick));
+    try std.testing.expectEqual(@as(u8, 0), counters.getCount(.farm_recycle));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INCIDENTKIND ENUM TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — IncidentKind all values have labels" {
+    const kinds = [_]IncidentKind{
+        .auto_action,
+        .human_command,
+        .denial,
+        .escalation,
+        .recovery,
+    };
+    for (kinds) |k| {
+        _ = k.label();
+    }
+}
+
+test "Policy — IncidentKind label auto_action" {
+    try std.testing.expectEqualStrings("auto", IncidentKind.auto_action.label());
+}
+
+test "Policy — IncidentKind label human_command" {
+    try std.testing.expectEqualStrings("human", IncidentKind.human_command.label());
+}
+
+test "Policy — IncidentKind label denial" {
+    try std.testing.expectEqualStrings("denial", IncidentKind.denial.label());
+}
+
+test "Policy — IncidentKind label escalation" {
+    try std.testing.expectEqualStrings("escalation", IncidentKind.escalation.label());
+}
+
+test "Policy — IncidentKind label recovery" {
+    try std.testing.expectEqualStrings("recovery", IncidentKind.recovery.label());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INCIDENT STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — Incident timestamp non-zero" {
+    const incident = Incident{
+        .kind = .auto_action,
+        .action = .doctor_quick,
+        .success = true,
+        .detail = "test",
+    };
+    try std.testing.expect(incident.timestamp > 0);
+}
+
+test "Policy — Incident detail field" {
+    const incident = Incident{
+        .kind = .auto_action,
+        .action = .farm_recycle,
+        .success = false,
+        .detail = "recycle failed",
+    };
+    try std.testing.expectEqualStrings("recycle failed", incident.detail);
+}
+
+test "Policy — Incident success field" {
+    const incident_success = Incident{
+        .kind = .auto_action,
+        .action = .doctor_quick,
+        .success = true,
+        .detail = "ok",
+    };
+    try std.testing.expect(incident_success.success);
+
+    const incident_fail = Incident{
+        .kind = .auto_action,
+        .action = .doctor_quick,
+        .success = false,
+        .detail = "fail",
+    };
+    try std.testing.expect(!incident_fail.success);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INCIDENTMEMORY STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — IncidentMemory init empty" {
+    const memory = IncidentMemory{};
+    try std.testing.expectEqual(@as(usize, 0), memory.count);
+}
+
+test "Policy — IncidentMemory record single" {
+    var memory = IncidentMemory{};
+    memory.record(.auto_action, .doctor_quick, true, "test");
+
+    try std.testing.expectEqual(@as(usize, 1), memory.count);
+}
+
+test "Policy — IncidentMemory record multiple" {
+    var memory = IncidentMemory{};
+    memory.record(.auto_action, .doctor_quick, true, "test1");
+    memory.record(.human_command, .farm_status, true, "test2");
+    memory.record(.denial, .farm_recycle, false, "test3");
+
+    try std.testing.expectEqual(@as(usize, 3), memory.count);
+}
+
+test "Policy — IncidentMemory lastN empty" {
+    const memory = IncidentMemory{};
+    const slice = memory.lastN(5);
+    try std.testing.expectEqual(@as(usize, 0), slice.len);
+}
+
+test "Policy — IncidentMemory lastN partial" {
+    var memory = IncidentMemory{};
+    memory.record(.auto_action, .doctor_quick, true, "test1");
+    memory.record(.human_command, .farm_status, true, "test2");
+
+    const slice = memory.lastN(5);
+    try std.testing.expectEqual(@as(usize, 2), slice.len);
+}
+
+test "Policy — IncidentMemory lastN exact" {
+    var memory = IncidentMemory{};
+    memory.record(.auto_action, .doctor_quick, true, "test1");
+    memory.record(.human_command, .farm_status, true, "test2");
+    memory.record(.denial, .farm_recycle, false, "test3");
+
+    const slice = memory.lastN(3);
+    try std.testing.expectEqual(@as(usize, 3), slice.len);
+}
+
+test "Policy — IncidentMemory wraparound" {
+    var memory = IncidentMemory{};
+    var i: usize = 0;
+    while (i < MAX_INCIDENTS + 5) : (i += 1) {
+        memory.record(.auto_action, .doctor_quick, true, "test");
+    }
+
+    try std.testing.expectEqual(@as(usize, MAX_INCIDENTS + 5), memory.count);
+}
+
+test "Policy — IncidentMemory failure tracking" {
+    var memory = IncidentMemory{};
+    // Record multiple failures
+    var i: usize = 0;
+    while (i < 5) : (i += 1) {
+        memory.record(.auto_action_fail, .farm_recycle, false, "failed");
+    }
+
+    const recent = memory.lastN(10);
+    var fail_count: usize = 0;
+    for (recent) |inc| {
+        if (!inc.success) fail_count += 1;
+    }
+    try std.testing.expectEqual(@as(usize, 5), fail_count);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PENDINGQUEUE STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — PendingQueue init empty" {
+    const queue = PendingQueue{};
+    try std.testing.expectEqual(@as(usize, 0), queue.count);
+}
+
+test "Policy — PendingQueue add" {
+    var queue = PendingQueue{};
+    const id = queue.add(.farm_recycle, "recycle all");
+    try std.testing.expectEqual(@as(usize, 1), queue.count);
+    try std.testing.expect(id > 0);
+}
+
+test "Policy — PendingQueue add multiple" {
+    var queue = PendingQueue{};
+    const id1 = queue.add(.farm_recycle, "recycle 1");
+    const id2 = queue.add(.cloud_spawn, "spawn 1");
+    const id3 = queue.add(.farm_kill, "kill 1");
+
+    try std.testing.expectEqual(@as(usize, 3), queue.count);
+    try std.testing.expect(id1 < id2);
+    try std.testing.expect(id2 < id3);
+}
+
+test "Policy — PendingQueue approve" {
+    var queue = PendingQueue{};
+    const id = queue.add(.farm_recycle, "recycle all");
+
+    const approved = queue.approve(id);
+    try std.testing.expect(approved);
+    try std.testing.expectEqual(@as(usize, 0), queue.count);
+}
+
+test "Policy — PendingQueue deny" {
+    var queue = PendingQueue{};
+    const id = queue.add(.farm_recycle, "recycle all");
+
+    const denied = queue.deny(id);
+    try std.testing.expect(denied);
+    try std.testing.expectEqual(@as(usize, 0), queue.count);
+}
+
+test "Policy — PendingQueue approve non-existent returns false" {
+    var queue = PendingQueue{};
+    const approved = queue.approve(999);
+    try std.testing.expect(!approved);
+}
+
+test "Policy — PendingQueue deny non-existent returns false" {
+    var queue = PendingQueue{};
+    const denied = queue.deny(999);
+    try std.testing.expect(!denied);
+}
+
+test "Policy — PendingQueue full capacity" {
+    var queue = PendingQueue{};
+    var i: usize = 0;
+    while (i < MAX_PENDING) : (i += 1) {
+        _ = queue.add(.farm_recycle, "test");
+    }
+
+    try std.testing.expectEqual(@as(u8, MAX_PENDING), queue.pendingCount());
+
+    // Adding to full queue returns null
+    const id = queue.add(.farm_recycle, "overflow");
+    try std.testing.expectEqual(@as(?u16, null), id);
+}
+
+test "Policy — PendingQueue TTL expiration" {
+    var queue = PendingQueue{};
+    _ = queue.add(.farm_recycle, "old");
+
+    // Simulate time passing by manipulating timestamp
+    const old_items = &queue.items;
+    old_items[0].requested_at = std.time.timestamp() - 1800 - 1; // 30 min + 1 sec ago
+
+    // Run expiration
+    queue.expireOld();
+
+    // Item should be expired
+    try std.testing.expect(!old_items[0].active);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CHECKPOLICY FUNCTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — checkPolicy L0 always allowed" {
+    var counters = ActionCounters{};
+    var incidents = IncidentMemory{};
+    const config = qt.QueenConfig{
+        .max_auto_level = 0,
+    };
+
+    const verdict = checkPolicy(.farm_status, config, &counters, &incidents);
+    try std.testing.expect(verdict.isAllowed());
+}
+
+test "Policy — checkPolicy L1 with max_auto_level 1" {
+    var counters = ActionCounters{};
+    var incidents = IncidentMemory{};
+    const config = qt.QueenConfig{
+        .max_auto_level = 1,
+    };
+
+    const verdict = checkPolicy(.doctor_quick, config, &counters, &incidents);
+    try std.testing.expect(verdict.isAllowed());
+}
+
+test "Policy — checkPolicy L2 blocked with max_auto_level 1" {
+    var counters = ActionCounters{};
+    var incidents = IncidentMemory{};
+    const config = qt.QueenConfig{
+        .max_auto_level = 1,
+    };
+
+    const verdict = checkPolicy(.farm_recycle, config, &counters, &incidents);
+    try std.testing.expect(!verdict.isAllowed());
+}
+
+test "Policy — checkPolicy rate limit" {
+    var counters = ActionCounters{};
+    var incidents = IncidentMemory{};
+    const config = qt.QueenConfig{
+        .max_auto_level = 2,
+    };
+
+    // Record max actions
+    var i: u8 = 0;
+    while (i < 12) : (i += 1) {
+        counters.record(.farm_status);
+    }
+
+    const verdict = checkPolicy(.farm_status, config, &counters, &incidents);
+    try std.testing.expect(!verdict.isAllowed());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FORMAT FUNCTIONS TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — fmtPolicyTelegram basic" {
+    var counters = ActionCounters{};
+    const config = qt.QueenConfig{
+        .max_auto_level = 1,
+    };
+    counters.record(.doctor_quick);
+
+    var buf: [1024]u8 = undefined;
+    const msg = fmtPolicyTelegram(&buf, config, &counters);
+    try std.testing.expect(msg.len > 0);
+}
+
+test "Policy — fmtHistoryTelegram with multiple incidents" {
+    var incidents = IncidentMemory{};
+    incidents.record(.auto_action, .doctor_quick, true, "ok");
+    incidents.record(.denial, .farm_recycle, false, "blocked");
+
+    var buf: [2048]u8 = undefined;
+    const msg = fmtHistoryTelegram(&buf, &incidents);
+    try std.testing.expect(msg.len > 0);
+}

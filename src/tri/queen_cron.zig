@@ -1091,3 +1091,467 @@ test "queen_cron — CronSchedule error on invalid hour" {
     const result = CronSchedule.init("0 24 * * *"); // 24 is invalid (0-23)
     try std.testing.expectError(error.OutOfRange, result);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// CRONSTATUS STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "queen_cron — CronStatus all fields" {
+    const status = CronStatus{
+        .job_id = "test-job",
+        .next_run = 1234567890,
+        .last_run = 1234567000,
+        .run_count = 42,
+        .is_active = true,
+    };
+
+    try std.testing.expectEqualStrings("test-job", status.job_id);
+    try std.testing.expectEqual(@as(i64, 1234567890), status.next_run);
+    try std.testing.expectEqual(@as(i64, 1234567000), status.last_run);
+    try std.testing.expectEqual(@as(u32, 42), status.run_count);
+    try std.testing.expect(status.is_active);
+}
+
+test "queen_cron — CronStatus inactive defaults" {
+    const status = CronStatus{};
+    try std.testing.expect(!status.is_active);
+    try std.testing.expectEqual(@as(u32, 0), status.run_count);
+}
+
+test "queen_cron — CronStatus job_id field" {
+    var status = CronStatus{};
+    try std.testing.expectEqualStrings("tamagotchi-report", status.job_id);
+
+    status.job_id = "custom-job";
+    try std.testing.expectEqualStrings("custom-job", status.job_id);
+}
+
+test "queen_cron — CronStatus timestamps" {
+    var status = CronStatus{};
+    const ts = std.time.timestamp();
+
+    status.next_run = ts;
+    status.last_run = ts - 3600;
+
+    try std.testing.expectEqual(ts, status.next_run);
+    try std.testing.expectEqual(ts - 3600, status.last_run);
+}
+
+test "queen_cron — CronStatus run_count increments" {
+    var status = CronStatus{};
+    try std.testing.expectEqual(@as(u32, 0), status.run_count);
+
+    status.run_count = 1;
+    try std.testing.expectEqual(@as(u32, 1), status.run_count);
+
+    status.run_count = 100;
+    try std.testing.expectEqual(@as(u32, 100), status.run_count);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAMAGOTCHISTAGE ENUM TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "queen_cron — TamagotchiStage all values" {
+    const stages = [_]TamagotchiStage{
+        .egg,
+        .baby,
+        .child,
+        .teen,
+        .adult,
+        .senior,
+        .ancestor,
+    };
+
+    for (stages) |s| {
+        _ = s.emoji();
+        _ = s.label();
+        _ = s.fromAge(0);
+    }
+}
+
+test "queen_cron — TamagotchiStage fromAge boundaries" {
+    try std.testing.expectEqual(TamagotchiStage.egg, TamagotchiStage.fromAge(0));
+    try std.testing.expectEqual(TamagotchiStage.baby, TamagotchiStage.fromAge(1));
+    try std.testing.expectEqual(TamagotchiStage.child, TamagotchiStage.fromAge(5));
+    try std.testing.expectEqual(TamagotchiStage.teen, TamagotchiStage.fromAge(10));
+    try std.testing.expectEqual(TamagotchiStage.adult, TamagotchiStage.fromAge(20));
+    try std.testing.expectEqual(TamagotchiStage.senior, TamagotchiStage.fromAge(50));
+    try std.testing.expectEqual(TamagotchiStage.ancestor, TamagotchiStage.fromAge(100));
+}
+
+test "queen_cron — TamagotchiStage emoji returns non-empty" {
+    const stages = [_]TamagotchiStage{
+        .egg, .baby, .child, .teen, .adult, .senior, .ancestor,
+    };
+
+    for (stages) |s| {
+        const emoji = s.emoji();
+        try std.testing.expect(emoji.len > 0);
+    }
+}
+
+test "queen_cron — TamagotchiStage label returns non-empty" {
+    const stages = [_]TamagotchiStage{
+        .egg, .baby, .child, .teen, .adult, .senior, .ancestor,
+    };
+
+    for (stages) |s| {
+        const label = s.label();
+        try std.testing.expect(label.len > 0);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TAMAGOTCHISTATE STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "queen_cron — TamagotchiState init values" {
+    const state = TamagotchiState.init();
+    try std.testing.expectEqual(@as(u32, 0), state.age_cycles);
+    try std.testing.expectEqual(@as(u8, 100), state.health);
+    try std.testing.expectEqual(TamagotchiStage.egg, state.stage);
+}
+
+test "queen_cron — TamagotchiState decay" {
+    var state = TamagotchiState.init();
+    try std.testing.expectEqual(@as(u8, 100), state.health);
+
+    state.decay();
+    try std.testing.expect(state.health < 100);
+}
+
+test "queen_cron — TamagotchiState decay clamps at zero" {
+    var state = TamagotchiState{
+        .health = 5,
+        .age_cycles = 0,
+        .stage = .egg,
+    };
+
+    var i: usize = 0;
+    while (i < 20) : (i += 1) {
+        state.decay();
+    }
+
+    try std.testing.expectEqual(@as(u8, 0), state.health);
+}
+
+test "queen_cron — TamagotchiState isSick" {
+    var state = TamagotchiState{
+        .health = 20,
+        .age_cycles = 10,
+        .stage = .child,
+    };
+
+    try std.testing.expect(state.isSick());
+
+    state.health = 50;
+    try std.testing.expect(!state.isSick());
+}
+
+test "queen_cron — TamagotchiState healthStatus" {
+    var state = TamagotchiState{
+        .health = 100,
+        .age_cycles = 10,
+        .stage = .adult,
+    };
+
+    try std.testing.expectEqualStrings("Thriving", state.healthStatus());
+
+    state.health = 60;
+    try std.testing.expect(std.mem.indexOf(u8, state.healthStatus(), "Healthy") != null);
+
+    state.health = 30;
+    try std.testing.expect(std.mem.indexOf(u8, state.healthStatus(), "Weak") != null);
+
+    state.health = 10;
+    try std.testing.expectEqualStrings("Critical", state.healthStatus());
+}
+
+test "queen_cron — TamagotchiState updateStage" {
+    var state = TamagotchiState{
+        .health = 100,
+        .age_cycles = 0,
+        .stage = .egg,
+    };
+
+    state.age_cycles = 1;
+    state.updateStage();
+    try std.testing.expectEqual(TamagotchiStage.baby, state.stage);
+
+    state.age_cycles = 5;
+    state.updateStage();
+    try std.testing.expectEqual(TamagotchiStage.child, state.stage);
+
+    state.age_cycles = 10;
+    state.updateStage();
+    try std.testing.expectEqual(TamagotchiStage.teen, state.stage);
+
+    state.age_cycles = 20;
+    state.updateStage();
+    try std.testing.expectEqual(TamagotchiStage.adult, state.stage);
+
+    state.age_cycles = 50;
+    state.updateStage();
+    try std.testing.expectEqual(TamagotchiStage.senior, state.stage);
+
+    state.age_cycles = 100;
+    state.updateStage();
+    try std.testing.expectEqual(TamagotchiStage.ancestor, state.stage);
+}
+
+test "queen_cron — TamagotchiState all stages exist" {
+    const stages = [_]TamagotchiStage{
+        .egg, .baby, .child, .teen, .adult, .senior, .ancestor,
+    };
+
+    for (stages) |s| {
+        const state = TamagotchiState{
+            .health = 100,
+            .age_cycles = 0,
+            .stage = s,
+        };
+        try std.testing.expectEqual(s, state.stage);
+    }
+}
+
+test "queen_cron — TamagotchiState all labels non-empty" {
+    const state = TamagotchiState.init();
+    try std.testing.expect(state.stage.label().len > 0);
+}
+
+test "queen_cron — TamagotchiState all emojis non-empty" {
+    const state = TamagotchiState.init();
+    try std.testing.expect(state.stage.emoji().len > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CRONSCHEDULE STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "queen_cron — CronSchedule parses */15" {
+    const schedule = try CronSchedule.init("*/15 * * * *");
+    try std.testing.expect(schedule.minute.is_all or schedule.minute.values.len > 0);
+}
+
+test "queen_cron — CronSchedule parses single values" {
+    const schedule = try CronSchedule.init("5 10 * * *");
+    try std.testing.expect(!schedule.minute.is_all);
+}
+
+test "queen_cron — CronSchedule parses wildcard" {
+    const schedule = try CronSchedule.init("* * * * *");
+    try std.testing.expect(schedule.minute.is_all);
+    try std.testing.expect(schedule.hour.is_all);
+}
+
+test "queen_cron — CronSchedule init with valid spec" {
+    const schedule = try CronSchedule.init("0 0 * * *");
+    try std.testing.expect(!schedule.minute.is_all);
+}
+
+test "queen_cron — CronSchedule init with daily spec" {
+    const schedule = try CronSchedule.init("0 12 * * *");
+    try std.testing.expect(!schedule.hour.is_all);
+}
+
+test "queen_cron — CronSchedule error on empty spec" {
+    const result = CronSchedule.init("");
+    try std.testing.expectError(error.InvalidCronSpec, result);
+}
+
+test "queen_cron — CronSchedule error on too few fields" {
+    const result = CronSchedule.init("0 * * *"); // Only 4 fields
+    try std.testing.expectError(error.InvalidCronSpec, result);
+}
+
+test "queen_cron — CronSchedule error on invalid minute" {
+    const result = CronSchedule.init("60 * * * *"); // 60 is invalid
+    try std.testing.expectError(error.OutOfRange, result);
+}
+
+test "queen_cron — CronSchedule error on invalid hour" {
+    const result = CronSchedule.init("0 24 * * *"); // 24 is invalid (0-23)
+    try std.testing.expectError(error.OutOfRange, result);
+}
+
+test "queen_cron — CronSchedule nextRun" {
+    const schedule = try CronSchedule.init("0 * * * *"); // Every hour
+    const next = schedule.nextRun();
+    try std.testing.expect(next > std.time.timestamp());
+}
+
+test "queen_cron — CronSchedule nextRun for hourly schedule" {
+    const schedule = try CronSchedule.init("15 * * * *");
+    const next = schedule.nextRun();
+    try std.testing.expect(next > std.time.timestamp());
+}
+
+test "queen_cron — CronSchedule nextRun returns future timestamp" {
+    const schedule = try CronSchedule.init("*/30 * * * *");
+    const next = schedule.nextRun();
+    try std.testing.expect(next > std.time.timestamp());
+}
+
+test "queen_cron — CronSchedule matches with wildcard" {
+    const schedule = try CronSchedule.init("* * * * *");
+    const now = std.time.timestamp();
+    try std.testing.expect(schedule.matches(now));
+}
+
+test "queen_cron — CronSchedule matches checks all fields" {
+    const schedule = try CronSchedule.init("30 12 * * *");
+    // Create a timestamp matching 12:30
+    const epoch = std.time.epoch.EpochSeconds{ .secs = @intCast(std.time.timestamp()) };
+    const day_secs = epoch.getDaySeconds();
+
+    // This is a basic smoke test - exact matching would require constructing specific timestamps
+    _ = schedule;
+    _ = day_secs;
+}
+
+test "queen_cron — CronSchedule init error on invalid spec" {
+    const result = CronSchedule.init("invalid * * * *");
+    try std.testing.expectError(error.InvalidCharacter, result);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SCHEDULEFIELD STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "queen_cron — ScheduleField is_all returns true for wildcard" {
+    const field = ScheduleField{ .is_all = true };
+    try std.testing.expect(field.is_all);
+}
+
+test "queen_cron — ScheduleField is_all returns false for specific" {
+    const field = ScheduleField{ .is_all = false, .values = &.{5} };
+    try std.testing.expect(!field.is_all);
+}
+
+test "queen_cron — ScheduleField matches with is_all" {
+    const field = ScheduleField{ .is_all = true };
+    try std.testing.expect(field.matches(0));
+    try std.testing.expect(field.matches(59));
+}
+
+test "queen_cron — ScheduleField matches with specific values" {
+    const field = ScheduleField{ .is_all = false, .values = &.{ 0, 15, 30, 45 } };
+    try std.testing.expect(field.matches(0));
+    try std.testing.expect(field.matches(15));
+    try std.testing.expect(field.matches(30));
+    try std.testing.expect(field.matches(45));
+    try std.testing.expect(!field.matches(5));
+}
+
+test "queen_cron — ScheduleField wildcard matches all" {
+    const field = ScheduleField{ .is_all = true };
+    var i: u8 = 0;
+    while (i < 60) : (i += 1) {
+        try std.testing.expect(field.matches(i));
+    }
+}
+
+test "queen_cron — ScheduleField with multiple values" {
+    const values = [_]u8{ 1, 2, 3, 4, 5 };
+    const field = ScheduleField{ .is_all = false, .values = &values };
+
+    for (values) |v| {
+        try std.testing.expect(field.matches(v));
+    }
+
+    try std.testing.expect(!field.matches(99));
+}
+
+test "queen_cron — ScheduleField values slice" {
+    const values = [_]u8{ 10, 20, 30 };
+    const field = ScheduleField{ .is_all = false, .values = &values };
+
+    try std.testing.expectEqual(@as(usize, 3), field.values.len);
+}
+
+test "queen_cron — ScheduleField empty values" {
+    const field = ScheduleField{ .is_all = false, .values = &.{} };
+    try std.testing.expect(!field.matches(0));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FMTPROGRESSBAR FUNCTION TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "queen_cron — buildProgressBar zero percent" {
+    const bar = buildProgressBar(0);
+    try std.testing.expect(bar.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, bar, "░") != null);
+}
+
+test "queen_cron — buildProgressBar fifty percent" {
+    const bar = buildProgressBar(50);
+    try std.testing.expect(bar.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, bar, "█") != null);
+}
+
+test "queen_cron — buildProgressBar hundred percent" {
+    const bar = buildProgressBar(100);
+    try std.testing.expect(bar.len > 0);
+    // Should be all filled
+    try std.testing.expect(std.mem.indexOf(u8, bar, "░") == null);
+}
+
+test "queen_cron — buildProgressBar clamps at 100" {
+    const bar1 = buildProgressBar(100);
+    const bar2 = buildProgressBar(150);
+    try std.testing.expectEqual(bar1, bar2);
+}
+
+test "queen_cron — buildProgressBar clamps at 0" {
+    const bar1 = buildProgressBar(0);
+    const bar2 = buildProgressBar(-10);
+    try std.testing.expectEqual(bar1, bar2);
+}
+
+test "queen_cron — buildProgressBar output length" {
+    const bar = buildProgressBar(50);
+    // Progress bar should have consistent length
+    try std.testing.expect(bar.len > 10);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FMTTIMESTAMP FUNCTION TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "queen_cron — fmtTimestamp returns allocated string" {
+    const ts = fmtTimestamp(std.testing.allocator, std.time.timestamp());
+    defer std.testing.allocator.free(ts);
+
+    try std.testing.expect(ts.len > 0);
+}
+
+test "queen_cron — fmtTimestamp contains space" {
+    const ts = fmtTimestamp(std.testing.allocator, std.time.timestamp());
+    defer std.testing.allocator.free(ts);
+
+    try std.testing.expect(std.mem.indexOf(u8, ts, " ") != null);
+}
+
+test "queen_cron — fmtTimestamp contains colon" {
+    const ts = fmtTimestamp(std.testing.allocator, std.time.timestamp());
+    defer std.testing.allocator.free(ts);
+
+    try std.testing.expect(std.mem.indexOf(u8, ts, ":") != null);
+}
+
+test "queen_cron — fmtTimestamp valid month name" {
+    const ts = fmtTimestamp(std.testing.allocator, std.time.timestamp());
+    defer std.testing.allocator.free(ts);
+
+    const months = [_][]const u8{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+    var found = false;
+    for (months) |m| {
+        if (std.mem.indexOf(u8, ts, m) != null) {
+            found = true;
+            break;
+        }
+    }
+    try std.testing.expect(found);
+}

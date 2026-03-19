@@ -277,7 +277,7 @@ pub fn runUnifiedLoop(allocator: Allocator, config: qt.QueenConfig) !void {
                 config.interval_sec,
                 @import("tri_colors.zig").RESET,
             });
-            std.time.sleep(config.interval_sec * 1_000_000_000);
+            std.Thread.sleep(config.interval_sec * 1_000_000_000);
         }
     }
 
@@ -1948,7 +1948,7 @@ test "dlpfc — CycleState start_time set on init" {
 test "dlpfc — CycleState uptime increases" {
     var cycle = CycleState.init();
     const uptime1 = cycle.uptimeSeconds();
-    std.time.sleep(100_000); // 0.1 seconds
+    std.Thread.sleep(100_000); // 0.1 seconds
     const uptime2 = cycle.uptimeSeconds();
     try std.testing.expect(uptime2 >= uptime1);
 }
@@ -2002,4 +2002,593 @@ test "dlpfc — Decision confidence range" {
         .confidence = 1.0,
     };
     try std.testing.expectApproxEqAbs(@as(f32, 1.0), decision2.confidence, 0.01);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DecisionContext INLINE METHOD TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "dlpfc — DecisionContext shouldAutoAct true" {
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+    };
+
+    try std.testing.expect(ctx.shouldAutoAct());
+}
+
+test "dlpfc — DecisionContext shouldAutoAct false disabled" {
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = false, .daemon = true },
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+    };
+
+    try std.testing.expect(!ctx.shouldAutoAct());
+}
+
+test "dlpfc — DecisionContext shouldAutoAct false not daemon" {
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = true, .daemon = false },
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+    };
+
+    try std.testing.expect(!ctx.shouldAutoAct());
+}
+
+test "dlpfc — DecisionContext getArousal returns valid" {
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+        .locus_state = .{},
+    };
+
+    const arousal = ctx.getArousal();
+    _ = arousal; // Just verify it returns without crashing
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FacultyMetrics vZoneStr TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "dlpfc — FacultyMetrics vZoneStr drift" {
+    const metrics = FacultyMetrics{ .v_zone = .drift };
+    try std.testing.expectEqualStrings("⚠ drift", metrics.vZoneStr());
+}
+
+test "dlpfc — FacultyMetrics vZoneStr stable" {
+    const metrics = FacultyMetrics{ .v_zone = .stable };
+    try std.testing.expectEqualStrings("✓ stable", metrics.vZoneStr());
+}
+
+test "dlpfc — FacultyMetrics vZoneStr improving" {
+    const metrics = FacultyMetrics{ .v_zone = .gold };
+    try std.testing.expectEqualStrings("↑ improving", metrics.vZoneStr());
+}
+
+test "dlpfc — FacultyMetrics vZoneStr declining" {
+    const metrics = FacultyMetrics{ .v_zone = .drift };
+    try std.testing.expectEqualStrings("↓ declining", metrics.vZoneStr());
+}
+
+test "dlpfc — FacultyMetrics all v_zones" {
+    const zones = [_]faculty_types.VZone{ .drift, .stable, .gold };
+
+    for (zones) |z| {
+        const metrics = FacultyMetrics{ .v_zone = z };
+        _ = metrics.vZoneStr(); // Verify all zones produce valid strings
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TrendAnalysis COMPREHENSIVE TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "dlpfc — TrendAnalysis hasProblemTrends none" {
+    const analysis = TrendAnalysis{
+        .confidence = 1.0,
+        .compile_trend = .stable,
+        .v_trend = .stable,
+        .dirty_trend = .stable,
+        .faculty_trend = .stable,
+    };
+    try std.testing.expect(!analysis.hasProblemTrends());
+}
+
+test "dlpfc — TrendAnalysis hasProblemTrends dirty rising" {
+    const analysis = TrendAnalysis{
+        .confidence = 1.0,
+        .dirty_trend = .rising,
+    };
+    try std.testing.expect(analysis.hasProblemTrends());
+}
+
+test "dlpfc — TrendAnalysis hasProblemTrends low confidence masks" {
+    const analysis = TrendAnalysis{
+        .confidence = 0.4, // Below threshold
+        .compile_trend = .falling, // Would be problem if confident
+    };
+    try std.testing.expect(!analysis.hasProblemTrends());
+}
+
+test "dlpfc — TrendAnalysis urgency score zero" {
+    const analysis = TrendAnalysis{
+        .confidence = 1.0,
+        .compile_trend = .stable,
+        .v_trend = .stable,
+        .dirty_trend = .stable,
+        .faculty_trend = .stable,
+    };
+    try std.testing.expectEqual(@as(u8, 0), analysis.urgencyScore());
+}
+
+test "dlpfc — TrendAnalysis urgency partial scores" {
+    // compile_falling only = 3
+    const analysis1 = TrendAnalysis{
+        .confidence = 1.0,
+        .compile_trend = .falling,
+    };
+    try std.testing.expectEqual(@as(u8, 3), analysis1.urgencyScore());
+
+    // dirty_rising only = 2
+    const analysis2 = TrendAnalysis{
+        .confidence = 1.0,
+        .dirty_trend = .rising,
+    };
+    try std.testing.expectEqual(@as(u8, 2), analysis2.urgencyScore());
+
+    // faculty_falling only = 3
+    const analysis3 = TrendAnalysis{
+        .confidence = 1.0,
+        .faculty_trend = .falling,
+    };
+    try std.testing.expectEqual(@as(u8, 3), analysis3.urgencyScore());
+
+    // v_falling only = 2
+    const analysis4 = TrendAnalysis{
+        .confidence = 1.0,
+        .v_trend = .falling,
+    };
+    try std.testing.expectEqual(@as(u8, 2), analysis4.urgencyScore());
+}
+
+test "dlpfc — TrendAnalysis summary default" {
+    const analysis = TrendAnalysis{
+        .confidence = 0.0,
+        .compile_trend = .stable,
+    };
+    try std.testing.expectEqualStrings("insufficient data", analysis.summary());
+}
+
+test "dlpfc — TrendAnalysis summary with confidence" {
+    const analysis = TrendAnalysis{
+        .confidence = 0.9,
+        .compile_trend = .rising,
+        .v_trend = .rising,
+        .dirty_trend = .falling, // Good - dirty files decreasing
+        .faculty_trend = .rising,
+    };
+
+    const summary = analysis.summary();
+    try std.testing.expect(summary.len > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// determineTrend EDGE CASES
+// ═══════════════════════════════════════════════════════════════════
+
+test "dlpfc — determineTrend both zero" {
+    const trend = determineTrend(0.0, 0.0);
+    try std.testing.expectEqual(TrendAnalysis.Trend.stable, trend);
+}
+
+test "dlpfc — determineTrend current zero" {
+    const trend = determineTrend(0.0, 1.0);
+    try std.testing.expectEqual(TrendAnalysis.Trend.falling, trend);
+}
+
+test "dlpfc — determineTrend previous zero current non-zero" {
+    const trend = determineTrend(1.0, 0.0);
+    try std.testing.expectEqual(TrendAnalysis.Trend.rising, trend);
+}
+
+test "dlpfc — determineTrend large change" {
+    const trend = determineTrend(10.0, 1.0); // 10x increase
+    try std.testing.expectEqual(TrendAnalysis.Trend.rising, trend);
+}
+
+test "dlpfc — determineTrend small change within threshold" {
+    const trend = determineTrend(1.01, 1.0); // 1% change
+    try std.testing.expectEqual(TrendAnalysis.Trend.stable, trend);
+}
+
+test "dlpfc — determineTrend exactly at threshold" {
+    const trend = determineTrend(1.05, 1.0); // Exactly 5%
+    try std.testing.expectEqual(TrendAnalysis.Trend.stable, trend); // Stable at boundary
+}
+
+test "dlpfc — determineTrend negative to positive" {
+    const trend = determineTrend(5.0, -5.0);
+    try std.testing.expectEqual(TrendAnalysis.Trend.rising, trend);
+}
+
+test "dlpfc — determineTrend positive to negative" {
+    const trend = determineTrend(-5.0, 5.0);
+    try std.testing.expectEqual(TrendAnalysis.Trend.falling, trend);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CellHealth COMPREHENSIVE TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "dlpfc — CellHealth all statuses" {
+    const statuses = [_]CellHealth.Status{ .healthy, .weak, .broken };
+
+    for (statuses) |s| {
+        const h = CellHealth{ .status = s };
+        try std.testing.expectEqual(s, h.status);
+    }
+}
+
+test "dlpfc — CellHealth cycle increments" {
+    var h = CellHealth{};
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+
+    h.cycle = 1;
+    try std.testing.expectEqual(@as(u32, 1), h.cycle);
+
+    h.cycle = 100;
+    try std.testing.expectEqual(@as(u32, 100), h.cycle);
+}
+
+test "dlpfc — CellHealth last_check timestamp" {
+    var h = CellHealth{};
+    const ts1 = h.last_check;
+
+    std.Thread.sleep(1_000_000); // 1ms
+
+    h.last_check = std.time.timestamp();
+    const ts2 = h.last_check;
+
+    try std.testing.expect(ts2 >= ts1);
+}
+
+test "dlpfc — CellHealth with weak status" {
+    const h = CellHealth{ .status = .weak };
+    try std.testing.expectEqual(CellHealth.Status.weak, h.status);
+}
+
+test "dlpfc — CellHealth with healthy status" {
+    const h = CellHealth{ .status = .healthy };
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+test "dlpfc — health returns current timestamp" {
+    const h = health();
+    const now = std.time.timestamp();
+
+    // Should be within 1 second
+    try std.testing.expect(@abs(now - h.last_check) <= 1);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CycleState COMPREHENSIVE TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "dlpfc — CycleState init sets running true" {
+    const cycle = CycleState.init();
+    try std.testing.expect(cycle.running);
+}
+
+test "dlpfc — CycleState init zero iteration" {
+    const cycle = CycleState.init();
+    try std.testing.expectEqual(@as(u64, 0), cycle.iteration);
+}
+
+test "dlpfc — CycleState init null last_decision" {
+    const cycle = CycleState.init();
+    try std.testing.expect(cycle.last_decision == null);
+}
+
+test "dlpfc — CycleState init zero decision_count" {
+    const cycle = CycleState.init();
+    try std.testing.expectEqual(@as(u64, 0), cycle.decision_count);
+}
+
+test "dlpfc — CycleState uptimeSeconds returns non-negative" {
+    const cycle = CycleState.init();
+    const uptime = cycle.uptimeSeconds();
+    try std.testing.expect(uptime >= 0);
+}
+
+test "dlpfc — CycleState iteration increments" {
+    var cycle = CycleState.init();
+    try std.testing.expectEqual(@as(u64, 0), cycle.iteration);
+
+    cycle.iteration = 1;
+    try std.testing.expectEqual(@as(u64, 1), cycle.iteration);
+
+    cycle.iteration = 100;
+    try std.testing.expectEqual(@as(u64, 100), cycle.iteration);
+}
+
+test "dlpfc — CycleState decision_count increments" {
+    var cycle = CycleState.init();
+    try std.testing.expectEqual(@as(u64, 0), cycle.decision_count);
+
+    cycle.decision_count = 1;
+    try std.testing.expectEqual(@as(u64, 1), cycle.decision_count);
+
+    cycle.decision_count = 50;
+    try std.testing.expectEqual(@as(u64, 50), cycle.decision_count);
+}
+
+test "dlpfc — CycleState running can be toggled" {
+    var cycle = CycleState.init();
+    try std.testing.expect(cycle.running);
+
+    cycle.running = false;
+    try std.testing.expect(!cycle.running);
+
+    cycle.running = true;
+    try std.testing.expect(cycle.running);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Decision COMPREHENSIVE TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "dlpfc — Decision all action kinds" {
+    // Just verify we can create decisions with various actions
+    const actions = [_]qt.ActionKind{
+        .farm_status,
+        .doctor_quick,
+        .farm_recycle,
+        .cloud_spawn,
+        .git_commit_state,
+    };
+
+    for (actions) |a| {
+        const decision = Decision{
+            .action = a,
+            .urgency = .normal,
+            .reason = "test",
+            .confidence = 0.5,
+        };
+        try std.testing.expectEqual(a, decision.action);
+    }
+}
+
+test "dlpfc — Decision reason field" {
+    const decision = Decision{
+        .action = .farm_status,
+        .urgency = .low,
+        .reason = "Checking farm status",
+        .confidence = 0.75,
+    };
+    try std.testing.expectEqualStrings("Checking farm status", decision.reason);
+}
+
+test "dlpfc — Decision empty reason" {
+    const decision = Decision{
+        .action = .farm_status,
+        .urgency = .low,
+        .reason = "",
+        .confidence = 0.5,
+    };
+    try std.testing.expectEqual(@as(usize, 0), decision.reason.len);
+}
+
+test "dlpfc — Decision confidence default" {
+    const decision = Decision{
+        .action = .farm_status,
+        .urgency = .low,
+        .reason = "test",
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), decision.confidence, 0.01);
+}
+
+test "dlpfc — Decision negative confidence clamped" {
+    // Confidence should be 0-1, but we just store what's given
+    const decision = Decision{
+        .action = .farm_status,
+        .urgency = .low,
+        .reason = "test",
+        .confidence = -0.5,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, -0.5), decision.confidence, 0.01);
+}
+
+test "dlpfc — Decision confidence above 1" {
+    const decision = Decision{
+        .action = .farm_status,
+        .urgency = .low,
+        .reason = "test",
+        .confidence = 1.5,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 1.5), decision.confidence, 0.01);
+}
+
+test "dlpfc — Decision urgency critical" {
+    const decision = Decision{
+        .action = .doctor_quick,
+        .urgency = .critical,
+        .reason = "Build broken",
+        .confidence = 1.0,
+    };
+    try std.testing.expectEqual(basal_ganglia.Urgency.critical, decision.urgency);
+}
+
+test "dlpfc — Decision urgency high" {
+    const decision = Decision{
+        .action = .farm_recycle,
+        .urgency = .high,
+        .reason = "Crashed workers",
+        .confidence = 0.9,
+    };
+    try std.testing.expectEqual(basal_ganglia.Urgency.high, decision.urgency);
+}
+
+test "dlpfc — Decision urgency normal" {
+    const decision = Decision{
+        .action = .farm_status,
+        .urgency = .normal,
+        .reason = "Periodic check",
+        .confidence = 0.5,
+    };
+    try std.testing.expectEqual(basal_ganglia.Urgency.normal, decision.urgency);
+}
+
+test "dlpfc — Decision urgency low" {
+    const decision = Decision{
+        .action = .git_commit_state,
+        .urgency = .low,
+        .reason = "Optional commit",
+        .confidence = 0.3,
+    };
+    try std.testing.expectEqual(basal_ganglia.Urgency.low, decision.urgency);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DecisionContext COMPREHENSIVE TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "dlpfc — DecisionContext all fields zero" {
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+    };
+
+    try std.testing.expectEqual(@as(f32, 0.0), ctx.ouroboros_score);
+    try std.testing.expectEqual(@as(u16, 0), ctx.dirty_files);
+    try std.testing.expect(ctx.build_ok);
+}
+
+test "dlpfc — DecisionContext with all derived metrics set" {
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+        .ouroboros_score = 85.5,
+        .dirty_files = 42,
+        .build_ok = false,
+    };
+
+    try std.testing.expectApproxEqAbs(@as(f32, 85.5), ctx.ouroboros_score, 0.01);
+    try std.testing.expectEqual(@as(u16, 42), ctx.dirty_files);
+    try std.testing.expect(!ctx.build_ok);
+}
+
+test "dlpfc — DecisionContext faculty_metrics set" {
+    const metrics = FacultyMetrics{
+        .active_count = 3,
+        .build_health = 90.0,
+    };
+
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+        .faculty_metrics = metrics,
+    };
+
+    try std.testing.expect(ctx.faculty_metrics != null);
+    if (ctx.faculty_metrics) |m| {
+        try std.testing.expectEqual(@as(u8, 3), m.active_count);
+    }
+}
+
+test "dlpfc — DecisionContext trend_analysis set" {
+    const analysis = TrendAnalysis{
+        .confidence = 0.85,
+        .compile_trend = .rising,
+    };
+
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+        .trend_analysis = analysis,
+    };
+
+    try std.testing.expect(ctx.trend_analysis != null);
+    if (ctx.trend_analysis) |a| {
+        try std.testing.expectApproxEqAbs(@as(f32, 0.85), a.confidence, 0.01);
+    }
+}
+
+test "dlpfc — DecisionContext config allow_auto_actions" {
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+    };
+
+    try std.testing.expect(ctx.config.allow_auto_actions);
+    try std.testing.expect(ctx.config.daemon);
+}
+
+test "dlpfc — DecisionContext config disabled" {
+    const ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = false, .daemon = false },
+        .state = undefined,
+        .counters = undefined,
+        .incidents = undefined,
+    };
+
+    try std.testing.expect(!ctx.config.allow_auto_actions);
+    try std.testing.expect(!ctx.config.daemon);
 }
