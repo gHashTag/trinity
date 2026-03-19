@@ -165,12 +165,12 @@ fn extractTemplateMetadata(allocator: std.mem.Allocator, line: []const u8, file_
     var bugs = ArrayListManaged([]const u8).init(allocator);
 
     // Extract function name
-    const name = if (std.mem.indexOf(u8, line, "fn ")) |pos| {
+    const name = if (std.mem.indexOf(u8, line, "fn ")) |pos| blk1: {
         const after_fn = line[pos + 3 ..];
         const end = std.mem.indexOfScalar(u8, after_fn, '(') orelse after_fn.len;
-        after_fn[0..end]
-    } else {
-        "unknown_template"
+        break :blk1 after_fn[0..end];
+    } else blk2: {
+        break :blk2 "unknown_template";
     };
 
     // TODO: Extract parameters and bug patterns from actual source

@@ -35,7 +35,7 @@ pub const PhiLoopStatus = struct {
         try writer.print("\"node_alpha\":\"{s}\",", .{self.cluster_stats.node_alpha});
         try writer.print("\"node_beta\":\"{s}\",", .{self.cluster_stats.node_beta});
         try writer.print("\"node_gamma\":\"{s}\"", .{self.cluster_stats.node_gamma});
-        try writer.writeAll},");
+        try writer.writeAll("},");
 
         try writer.writeAll("\"sacred_constants\":{");
         try writer.print("\"phi\":{d:.15},", .{self.sacred_constants.phi});
@@ -45,7 +45,7 @@ pub const PhiLoopStatus = struct {
         try writer.print("\"sigma\":{d:.3},", .{self.sacred_constants.sigma});
         try writer.print("\"epsilon\":{d:.3},", .{self.sacred_constants.epsilon});
         try writer.print("\"lucas_10\":{d}", .{self.sacred_constants.lucas_10});
-        try writer.writeAll},");
+        try writer.writeAll("},");
 
         try writer.print("\"timestamp\":{d}", .{self.timestamp});
         try writer.writeAll("}");

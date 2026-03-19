@@ -7,18 +7,18 @@
 const std = @import("std");
 
 pub const Convergent = struct {
-    n: usize,          // Index
-    p: u128,           // Numerator
-    q: u128,           // Denominator
-    value: f64,        // p/q
-    error: f64,        // |x - p/q|
-    error_log: f64,    // log10(error)
+    n: usize, // Index
+    p: u128, // Numerator
+    q: u128, // Denominator
+    value: f64, // p/q
+    error_val: f64, // |x - p/q|
+    error_log: f64, // log10(error)
 
     pub fn format(self: *const Convergent, comptime fmt: []const u8, options: anytype, writer: anytype) !void {
         _ = fmt;
         _ = options;
         try writer.print("Convergent({d}: {d}/{d} = {d:.12}, err={d:.3e})", .{
-            self.n, self.p, self.q, self.value, self.error,
+            self.n, self.p, self.q, self.value, self.error_val,
         });
     }
 };
@@ -26,7 +26,7 @@ pub const Convergent = struct {
 pub const ExperimentThreshold = struct {
     name: []const u8,
     date: []const u8,
-    precision: f64,  // Required precision (as log10 error)
+    precision: f64, // Required precision (as log10 error)
     max_denominator: u128,
     status: []const u8,
 };
@@ -133,7 +133,7 @@ pub fn computeConvergents(
             .p = p_new,
             .q = q_new,
             .value = p_q,
-            .error = error_val,
+            .error_val = error_val,
             .error_log = error_log,
         };
         n_convergents += 1;
@@ -210,7 +210,7 @@ pub fn runApproxCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         std.debug.print("{s}EXPERIMENTAL THRESHOLDS (Ω_DM):{s}\n", .{ YELLOW, RESET });
         for (omega_dm_thresholds) |threshold| {
             std.debug.print("  {s}{s:>20}{s} ({s}): precision 10^{d:.1}, max denom {d:>8} {s}\n", .{
-                MAGENTA, threshold.name, RESET, threshold.date,
+                MAGENTA,             threshold.name,            RESET,            threshold.date,
                 threshold.precision, threshold.max_denominator, threshold.status,
             });
         }
@@ -261,10 +261,10 @@ pub fn runApproxCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     const show_count = @min(10, approx.n_convergents);
     for (approx.convergents[0..show_count]) |conv| {
         var err_buf: [32]u8 = undefined;
-        const exp_notation = if (conv.error < 0.0001 or conv.error > 1000)
-            std.fmt.bufPrint(&err_buf, "{e:.2}", .{conv.error}) catch "?"
+        const exp_notation = if (conv.error_val < 0.0001 or conv.error_val > 1000)
+            std.fmt.bufPrint(&err_buf, "{e:.2}", .{conv.error_val}) catch "?"
         else
-            std.fmt.bufPrint(&err_buf, "{d:.6}", .{conv.error}) catch "?";
+            std.fmt.bufPrint(&err_buf, "{d:.6}", .{conv.error_val}) catch "?";
 
         std.debug.print("  {s}║ {d:3} ║ {d:7}/{d:7} ║ {d:11.9} ║ {s:>10} ║ {d:8.2f}  ║{s}\n", .{
             MAGENTA, conv.n, conv.p, conv.q, RESET, conv.value, exp_notation, conv.error_log, MAGENTA,
@@ -276,7 +276,7 @@ pub fn runApproxCommand(allocator: std.mem.Allocator, args: []const []const u8) 
     if (approx.best_convergent) |best| {
         std.debug.print("  {s}BEST CONVERGENT:{s}\n", .{ WHITE, RESET });
         std.debug.print("    {d}/{d} = {d:.15}\n", .{ best.p, best.q, best.value });
-        std.debug.print("    Error: {e:.3} ({d:.2f} decimal places)\n\n", .{ best.error, -best.error_log });
+        std.debug.print("    Error: {e:.3} ({d:.2f} decimal places)\n\n", .{ best.error_val, -best.error_log });
     }
 
     // Show experimental thresholds
@@ -294,7 +294,7 @@ pub fn runApproxCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         std.debug.print("      Required: 10^{d:.1} ({d:.1} decimal places)\n", .{
             threshold.precision, -threshold.precision,
         });
-        std.debug.print("      Max denom: {d}\n", .{ threshold.max_denominator });
+        std.debug.print("      Max denom: {d}\n", .{threshold.max_denominator});
 
         if (approx.best_convergent) |best| {
             if (achieved) {

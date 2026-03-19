@@ -34,7 +34,7 @@ pub const EdgeNode = struct {
 
         const a = std.math.sin(dLat / 2) * std.math.sin(dLat / 2) +
             std.math.cos(toRadians(self.latitude)) * std.math.cos(toRadians(other.latitude)) *
-            std.math.sin(dLon / 2) * std.math.sin(dLon / 2);
+                std.math.sin(dLon / 2) * std.math.sin(dLon / 2);
 
         const c = 2 * std.math.asin(std.math.sqrt(a));
         return R * c;
@@ -67,10 +67,8 @@ pub const EdgeTopology = struct {
         for (self.nodes) |*node| {
             if (node.health == .down) continue;
 
-            const distance = std.math.sqrt(
-                std.math.pow(client_lat - node.latitude, 2) +
-                std.math.pow(client_lon - node.longitude, 2)
-            );
+            const distance = std.math.sqrt(std.math.pow(client_lat - node.latitude, 2) +
+                std.math.pow(client_lon - node.longitude, 2));
 
             if (distance < min_distance) {
                 min_distance = distance;
@@ -150,7 +148,7 @@ pub const HealthCheckResult = struct {
     healthy: bool,
     latency_ms: u32,
     timestamp: i64,
-    error: ?[]const u8 = null,
+    error_msg: ?[]const u8 = null,
 };
 
 /// Perform health check on a node
@@ -180,19 +178,19 @@ pub fn formatGlobalMap(allocator: std.mem.Allocator) ![]const u8 {
         \\
         \\         ┌─────────────────────────────────────┐
         \\         │         TRINITY GLOBAL EDGE          │
-        │         │       Anycast: ENABLED              │
-        │         └─────────────────────────────────────┘
+        \\         │       Anycast: ENABLED              │
+        \\         └─────────────────────────────────────┘
         \\
         \\                    [SYD] 35ms
-        │                     │
-        │                     │
+        \\                     │
+        \\                     │
         \\              [NRT] 30ms  [SIN] 15ms ◄── PRIMARY
         \\                    │         │
         \\                    │         │
         \\              [LAX] 25ms      │
         \\                    │         │
         \\                    │         │
-        │              [FRA] 20ms [AMS] 20ms
+        \\              [FRA] 20ms [AMS] 20ms
         \\                    │
         \\                    │
         \\              (target: <30ms worldwide)
