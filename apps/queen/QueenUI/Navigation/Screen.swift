@@ -17,7 +17,7 @@ enum Kingdom: String, CaseIterable, Identifiable, Codable {
 }
 
 enum Screen: String, CaseIterable, Identifiable, Codable {
-    // Brain (9)
+    // Brain (10)
     case chat = "Queen Chat"
     case sevoFarm = "SEVO Farm"
     case arenaLLM = "Arena LLM"
@@ -27,6 +27,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
     case muMemory = "MU Memory"
     case scholar = "Scholar"
     case swarm = "Swarm"
+    case brainHealth = "Brain Health"
 
     // Body (9)
     case build = "Build"
@@ -55,7 +56,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
 
     var kingdom: Kingdom {
         switch self {
-        case .chat, .sevoFarm, .arenaLLM, .arenaCode, .faculty, .oracle, .muMemory, .scholar, .swarm:
+        case .chat, .sevoFarm, .arenaLLM, .arenaCode, .faculty, .oracle, .muMemory, .scholar, .swarm, .brainHealth:
             return .brain
         case .build, .triTools, .issues, .git, .deploy, .bridge, .telegram, .keys, .state, .files:
             return .body
@@ -75,6 +76,7 @@ enum Screen: String, CaseIterable, Identifiable, Codable {
         case .muMemory: return "🧠"
         case .scholar: return "📚"
         case .swarm: return "🐝"
+        case .brainHealth: return "🩺"
         case .build: return "🔨"
         case .triTools: return "🛠️"
         case .issues: return "📋"
