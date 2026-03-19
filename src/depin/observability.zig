@@ -58,9 +58,9 @@ pub const ObservabilityManager = struct {
     alerts_triggered: u64,
 
     // Default thresholds
-    const UPTIME_WARNING: f64 = 99.5;  // %
+    const UPTIME_WARNING: f64 = 99.5; // %
     const UPTIME_CRITICAL: f64 = 99.0; // %
-    const LATENCY_WARNING: f64 = 100.0;  // ms
+    const LATENCY_WARNING: f64 = 100.0; // ms
     const LATENCY_CRITICAL: f64 = 500.0; // ms
     const SUCCESS_RATE_WARNING: f64 = 0.95; // 95%
     const SUCCESS_RATE_CRITICAL: f64 = 0.90; // 90%

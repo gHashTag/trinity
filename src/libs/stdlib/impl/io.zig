@@ -144,15 +144,15 @@ pub fn dirExists(path: []const u8) bool {
 pub fn listDir(allocator: std.mem.Allocator, path: []const u8) ![][]const u8 {
     var dir = try fs.cwd().openDir(path, .{ .iterate = true });
     defer dir.close();
-    
+
     var entries = std.ArrayList([]const u8).init(allocator);
     var iter = dir.iterate();
-    
+
     while (try iter.next()) |entry| {
         const name = try allocator.dupe(u8, entry.name);
         try entries.append(name);
     }
-    
+
     return entries.toOwnedSlice();
 }
 
@@ -220,7 +220,7 @@ pub fn absolutePath(allocator: std.mem.Allocator, path: []const u8) ![]u8 {
 pub const BufferedWriter = struct {
     file: fs.File,
     buffer: std.io.BufferedWriter(4096, fs.File.Writer),
-    
+
     pub fn init(path: []const u8) !BufferedWriter {
         const file = try fs.cwd().createFile(path, .{});
         return BufferedWriter{
@@ -228,20 +228,20 @@ pub const BufferedWriter = struct {
             .buffer = std.io.bufferedWriter(file.writer()),
         };
     }
-    
+
     pub fn write(self: *BufferedWriter, data: []const u8) !void {
         try self.buffer.writer().writeAll(data);
     }
-    
+
     pub fn writeLine(self: *BufferedWriter, data: []const u8) !void {
         try self.buffer.writer().writeAll(data);
         try self.buffer.writer().writeAll("\n");
     }
-    
+
     pub fn flush(self: *BufferedWriter) !void {
         try self.buffer.flush();
     }
-    
+
     pub fn close(self: *BufferedWriter) void {
         self.buffer.flush() catch {};
         self.file.close();
@@ -251,7 +251,7 @@ pub const BufferedWriter = struct {
 pub const BufferedReader = struct {
     file: fs.File,
     buffer: std.io.BufferedReader(4096, fs.File.Reader),
-    
+
     pub fn init(path: []const u8) !BufferedReader {
         const file = try fs.cwd().openFile(path, .{});
         return BufferedReader{
@@ -259,14 +259,14 @@ pub const BufferedReader = struct {
             .buffer = std.io.bufferedReader(file.reader()),
         };
     }
-    
+
     pub fn readLine(self: *BufferedReader, allocator: std.mem.Allocator) !?[]u8 {
         return self.buffer.reader().readUntilDelimiterAlloc(allocator, '\n', 4096) catch |err| {
             if (err == error.EndOfStream) return null;
             return err;
         };
     }
-    
+
     pub fn close(self: *BufferedReader) void {
         self.file.close();
     }
@@ -292,20 +292,20 @@ test "path utilities" {
 test "file operations" {
     const test_file = "/tmp/vibee_io_test.txt";
     const content = "Hello, VIBEE!";
-    
+
     // Write
     try writeFile(test_file, content);
     try std.testing.expect(fileExists(test_file));
-    
+
     // Read
     const read_content = try readFile(std.testing.allocator, test_file);
     defer std.testing.allocator.free(read_content);
     try std.testing.expectEqualStrings(content, read_content);
-    
+
     // Size
     const size = try fileSize(test_file);
     try std.testing.expectEqual(@as(u64, content.len), size);
-    
+
     // Delete
     try deleteFile(test_file);
     try std.testing.expect(!fileExists(test_file));
@@ -313,11 +313,11 @@ test "file operations" {
 
 test "directory operations" {
     const test_dir = "/tmp/vibee_dir_test";
-    
+
     // Create
     createDir(test_dir) catch {};
     try std.testing.expect(dirExists(test_dir));
-    
+
     // Delete
     try deleteDir(test_dir);
     try std.testing.expect(!dirExists(test_dir));

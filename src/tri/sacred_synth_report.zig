@@ -75,26 +75,30 @@ fn countCellTypes(allocator: std.mem.Allocator, modules: std.json.Value) !Synthe
 
                                     // Match cell types
                                     if (std.mem.eql(u8, cell_type, "$lut") or
-                                        std.mem.indexOf(u8, cell_type, "LUT") != null) {
+                                        std.mem.indexOf(u8, cell_type, "LUT") != null)
+                                    {
                                         stats.luts += 1;
                                     }
 
                                     if (std.mem.eql(u8, cell_type, "$dff") or
                                         std.mem.eql(u8, cell_type, "$_DF_") or
                                         std.mem.indexOf(u8, cell_type, "DFF") != null or
-                                        std.mem.indexOf(u8, cell_type, "_DFF") != null) {
+                                        std.mem.indexOf(u8, cell_type, "_DFF") != null)
+                                    {
                                         stats.dffs += 1;
                                     }
 
                                     if (std.mem.indexOf(u8, cell_type, "DSP48") != null or
-                                        std.mem.indexOf(u8, cell_type, "DSP48E1") != null) {
+                                        std.mem.indexOf(u8, cell_type, "DSP48E1") != null)
+                                    {
                                         stats.dsp += 1;
                                     }
 
                                     if (std.mem.indexOf(u8, cell_type, "BRAM") != null or
                                         std.mem.indexOf(u8, cell_type, "RAMB") != null or
                                         std.mem.indexOf(u8, cell_type, "RAMB18") != null or
-                                        std.mem.indexOf(u8, cell_type, "RAMB36") != null) {
+                                        std.mem.indexOf(u8, cell_type, "RAMB36") != null)
+                                    {
                                         stats.bram += 1;
                                     }
                                 }
@@ -196,14 +200,10 @@ pub fn runSacredSynthReportCommand(allocator: std.mem.Allocator, args: []const [
     const bram_util = (@as(f64, @floatFromInt(stats.bram)) / @as(f64, @floatFromInt(artix_bram_max))) * 100.0;
 
     std.debug.print("\n{s}XC7A100T Resource Limits:{s}\n", .{ GOLD, RESET });
-    std.debug.print("  LUT:   {d:6}/{d:6} ({d:5.1}%)\n", .{
-        stats.luts, artix_lut_max, lut_util });
-    std.debug.print("  FF:    {d:6}/{d:6} ({d:5.1}%)\n", .{
-        stats.dffs, artix_ff_max, ff_util });
-    std.debug.print("  DSP:   {d:6}/{d:6} ({d:5.1}%)\n", .{
-        stats.dsp, artix_dsp_max, dsp_util });
-    std.debug.print("  BRAM:  {d:6}/{d:6} ({d:5.1}%)\n\n", .{
-        stats.bram, artix_bram_max, bram_util });
+    std.debug.print("  LUT:   {d:6}/{d:6} ({d:5.1}%)\n", .{ stats.luts, artix_lut_max, lut_util });
+    std.debug.print("  FF:    {d:6}/{d:6} ({d:5.1}%)\n", .{ stats.dffs, artix_ff_max, ff_util });
+    std.debug.print("  DSP:   {d:6}/{d:6} ({d:5.1}%)\n", .{ stats.dsp, artix_dsp_max, dsp_util });
+    std.debug.print("  BRAM:  {d:6}/{d:6} ({d:5.1}%)\n\n", .{ stats.bram, artix_bram_max, bram_util });
 
     std.debug.print("{s}φ² + 1/φ² = 3 = TRINITY{s}\n\n", .{ GOLD, RESET });
 }
@@ -214,11 +214,11 @@ fn printHumanReport(stats: SynthesisStats) !void {
     std.debug.print("{s}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━{s}\n\n", .{ GOLD, RESET });
 
     std.debug.print("{s}Resource Usage:{s}\n", .{ GREEN, RESET });
-    std.debug.print("  LUT cells:    {d:6}\n", .{stats.luts });
-    std.debug.print("  DFF registers: {d:6}\n", .{stats.dffs });
-    std.debug.print("  DSP48E1:      {d:6}\n", .{stats.dsp });
-    std.debug.print("  BRAM blocks:   {d:6}\n", .{stats.bram });
-    std.debug.print("  Total cells:   {d:6}\n\n", .{stats.cells });
+    std.debug.print("  LUT cells:    {d:6}\n", .{stats.luts});
+    std.debug.print("  DFF registers: {d:6}\n", .{stats.dffs});
+    std.debug.print("  DSP48E1:      {d:6}\n", .{stats.dsp});
+    std.debug.print("  BRAM blocks:   {d:6}\n", .{stats.bram});
+    std.debug.print("  Total cells:   {d:6}\n\n", .{stats.cells});
 
     std.debug.print("{s}Sacred ALU Modes:{s}\n", .{ CYAN, RESET });
     std.debug.print("  MODE_GF16_ADD  — Golden Float 16 addition\n", .{});
@@ -230,14 +230,12 @@ fn printHumanReport(stats: SynthesisStats) !void {
 fn printCsvReport(stats: SynthesisStats) !void {
     const module_name = stats.module_name orelse "unknown";
     std.debug.print("module,luts,dffs,dsp,bram,cells\n", .{});
-    std.debug.print("{s},{d},{d},{d},{d},{d}\n", .{
-        module_name, stats.luts, stats.dffs, stats.dsp, stats.bram, stats.cells });
+    std.debug.print("{s},{d},{d},{d},{d},{d}\n", .{ module_name, stats.luts, stats.dffs, stats.dsp, stats.bram, stats.cells });
 }
 
 fn printJsonReport(stats: SynthesisStats) !void {
     const module_name = stats.module_name orelse "unknown";
-    std.debug.print("{{ \"module\": \"{s}\", \"resources\": {{ \"luts\": {d}, \"dffs\": {d}, \"dsp\": {d}, \"bram\": {d}, \"cells\": {d} }} }}\n", .{
-        module_name, stats.luts, stats.dffs, stats.dsp, stats.bram, stats.cells });
+    std.debug.print("{{ \"module\": \"{s}\", \"resources\": {{ \"luts\": {d}, \"dffs\": {d}, \"dsp\": {d}, \"bram\": {d}, \"cells\": {d} }} }}\n", .{ module_name, stats.luts, stats.dffs, stats.dsp, stats.bram, stats.cells });
 }
 
 fn printSynthReportHelp() !void {
