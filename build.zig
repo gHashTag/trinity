@@ -1996,6 +1996,37 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // S³AI Brain Modules (Neuroanatomy v5.1) — MUST be before tri_commands_mod
+    // ═══════════════════════════════════════════════════════════════════════════════
+    const basal_ganglia_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/basal_ganglia.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const reticular_formation_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/reticular_formation.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const locus_coeruleus_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const brain_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/brain.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+        },
+    });
+    // ═══════════════════════════════════════════════════════════════════════════════
+
     const tri_utils_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_utils.zig"),
         .target = target,
@@ -2011,6 +2042,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "tri_colors", .module = tri_colors_mod },
+            .{ .name = "brain", .module = brain_mod },
             // FIXME: trinity-nexus submodule missing
             // .{ .name = "serve_full", .module = serve_full_mod },
         },
@@ -2102,39 +2134,6 @@ pub fn build(b: *std.Build) void {
         .root_source_file = b.path("src/firebird/governance.zig"),
         .target = target,
         .optimize = optimize,
-    });
-
-    // S³AI Brain Modules (Neuroanatomy v5.1)
-    const basal_ganglia_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/basal_ganglia.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const reticular_formation_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/reticular_formation.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    const locus_coeruleus_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-    // NOTE: thalamus_logs disabled due to duplicate struct member error
-    // const thalamus_logs_mod = b.createModule(.{
-    //     .root_source_file = b.path("src/brain/thalamus_logs.zig"),
-    //     .target = target,
-    //     .optimize = optimize,
-    // });
-    const brain_mod = b.createModule(.{
-        .root_source_file = b.path("src/brain/brain.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
-            .{ .name = "reticular_formation", .module = reticular_formation_mod },
-            .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
-        },
     });
 
     // Bench module — IGLA (Needle In A Haystack) benchmark
