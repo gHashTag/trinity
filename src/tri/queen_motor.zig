@@ -1132,7 +1132,7 @@ test "Motor — MotorCommand fromAction all single word actions" {
     const single_actions = [_]qt.ActionKind{
         .introspection,
         .notify,
-        .farm_status,
+        .fmt, // single-word action
     };
 
     for (single_actions) |action| {
@@ -1140,4 +1140,130 @@ test "Motor — MotorCommand fromAction all single word actions" {
         try std.testing.expect(cmd.arg_count == 0);
         try std.testing.expect(cmd.subcommand_len > 0);
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// REAL FUNCTION TESTS — Functions that return calculated values
+// ═══════════════════════════════════════════════════════════════════
+
+test "motor — subcommandStr returns valid slice" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0.."doctor".len], "doctor");
+    cmd.subcommand_len = "doctor".len;
+
+    const result = cmd.subcommandStr();
+    try std.testing.expectEqual(@as(usize, 6), result.len);
+    try std.testing.expectEqualStrings("doctor", result);
+}
+
+test "motor — format returns correctly formatted command string" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0.."farm".len], "farm");
+    cmd.subcommand_len = "farm".len;
+    @memcpy(cmd.args[0][0.."recycle".len], "recycle");
+    cmd.arg_lens[0] = "recycle".len;
+    cmd.arg_count = 1;
+
+    var buf: [128]u8 = undefined;
+    const result = cmd.format(&buf);
+
+    try std.testing.expect(result.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, result, "tri") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "farm") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "recycle") != null);
+}
+
+test "motor — toArgv returns correct argv array length" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0.."arena".len], "arena");
+    cmd.subcommand_len = "arena".len;
+    @memcpy(cmd.args[0][0.."status".len], "status");
+    cmd.arg_lens[0] = "status".len;
+    cmd.arg_count = 1;
+
+    const argv = try cmd.toArgv(std.testing.allocator);
+    defer std.testing.allocator.free(argv);
+
+    // Should return ["tri", "arena", "status"]
+    try std.testing.expectEqual(@as(usize, 3), argv.len);
+}
+
+test "motor — toArgv first element is always tri" {
+    var cmd = MotorCommand.init();
+    @memcpy(cmd.subcommand[0.."test".len], "test");
+    cmd.subcommand_len = "test".len;
+
+    const argv = try cmd.toArgv(std.testing.allocator);
+    defer std.testing.allocator.free(argv);
+
+    try std.testing.expectEqualStrings("tri", argv[0]);
+}
+
+test "motor — checkCondition returns boolean for health_critical" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+
+    // Score below 50 should return true
+    exec.context.ouroboros_score = 30.0;
+    try std.testing.expect(exec.checkCondition(.health_critical) == true);
+
+    // Score above 50 should return false
+    exec.context.ouroboros_score = 75.0;
+    try std.testing.expect(exec.checkCondition(.health_critical) == false);
+}
+
+test "motor — checkCondition returns boolean for farm_best_ppl_good" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+
+    // PPL below 10 should return true
+    exec.context.farm_best_ppl = 5.5;
+    try std.testing.expect(exec.checkCondition(.farm_best_ppl_good) == true);
+
+    // PPL above 10 should return false
+    exec.context.farm_best_ppl = 15.0;
+    try std.testing.expect(exec.checkCondition(.farm_best_ppl_good) == false);
+}
+
+test "motor — checkCondition returns boolean for arena_stale" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+
+    // More than 24 hours stale should return true
+    exec.context.stale_arena_hours = 48;
+    try std.testing.expect(exec.checkCondition(.arena_stale) == true);
+
+    // Less than 24 hours stale should return false
+    exec.context.stale_arena_hours = 12;
+    try std.testing.expect(exec.checkCondition(.arena_stale) == false);
+}
+
+test "motor — checkCondition returns boolean for farm_has_leaders" {
+    const allocator = std.testing.allocator;
+    var exec = MotorExecutor.init(allocator);
+
+    // 3 or more idle leaders should return true
+    exec.context.farm_idle_count = 5;
+    try std.testing.expect(exec.checkCondition(.farm_has_leaders) == true);
+
+    // Less than 3 idle leaders should return false
+    exec.context.farm_idle_count = 2;
+    try std.testing.expect(exec.checkCondition(.farm_has_leaders) == false);
+}
+
+test "motor — fromAction splits two-word commands correctly" {
+    const cmd = MotorCommand.fromAction(.farm_status);
+
+    // "farm status" should become subcommand="farm", arg[0]="status"
+    try std.testing.expectEqualStrings("farm", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 1), cmd.arg_count);
+    try std.testing.expectEqualStrings("status", cmd.args[0][0..cmd.arg_lens[0]]);
+}
+
+test "motor — fromAction handles single-word commands" {
+    const cmd = MotorCommand.fromAction(.introspection);
+
+    // Single word should have no args
+    try std.testing.expectEqualStrings("introspection", cmd.subcommandStr());
+    try std.testing.expectEqual(@as(u8, 0), cmd.arg_count);
 }
