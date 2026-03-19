@@ -13,10 +13,10 @@ const igla_bench = @import("igla_bench.zig");
 const Allocator = std.mem.Allocator;
 
 pub const TaskType = enum {
-    Retrieve,  // Single needle
-    Multi,     // Multi-needle
-    Ternary,  // Ternary fact
-    Chain,     // Sequential facts
+    Retrieve, // Single needle
+    Multi, // Multi-needle
+    Ternary, // Ternary fact
+    Chain, // Sequential facts
 };
 
 /// Task configuration for generating test cases
@@ -30,12 +30,7 @@ pub const TaskConfig = struct {
 
 /// Generate IGLA-RETRIEVE test case
 /// Single needle at specified depth
-pub fn generateRetrieveTask(
-    allocator: Allocator,
-    ctx_len: usize,
-    depth_pct: f32,
-    format: igla_bench.WeightFormat
-) !struct {
+pub fn generateRetrieveTask(allocator: Allocator, ctx_len: usize, depth_pct: f32, format: igla_bench.WeightFormat) !struct {
     haystack: igla_bench.Haystack,
     questions: []const igla_bench.Question,
 } {
@@ -70,12 +65,7 @@ pub fn generateRetrieveTask(
 
 /// Generate IGLA-MULTI test case
 /// Multiple needles requiring reasoning across facts
-pub fn generateMultiTask(
-    allocator: Allocator,
-    ctx_len: usize,
-    depths: []const f32,
-    format: igla_bench.WeightFormat
-) !struct {
+pub fn generateMultiTask(allocator: Allocator, ctx_len: usize, depths: []const f32, format: igla_bench.WeightFormat) !struct {
     haystack: igla_bench.Haystack,
     questions: []const igla_bench.Question,
 } {
@@ -85,8 +75,7 @@ pub fn generateMultiTask(
 
     for (depths, 0..) |depth, idx| {
         const needle_id = try std.fmt.allocPrint(allocator, "multi_needle_{d}", .{idx});
-        const needle_content = try std.fmt.allocPrint(allocator,
-            "Fact #{d} at depth {d:.0}: neuron {d} = +1", .{idx, @as(u32, @intFromFloat(depth * 100)), idx * 97});
+        const needle_content = try std.fmt.allocPrint(allocator, "Fact #{d} at depth {d:.0}: neuron {d} = +1", .{ idx, @as(u32, @intFromFloat(depth * 100)), idx * 97 });
 
         const position = @as(usize, @intFromFloat(@as(f32, @floatFromInt(ctx_len)) * depth));
 
@@ -125,9 +114,7 @@ pub fn generateMultiTask(
     for (needles_list.items, 0..) |needle, idx| {
         const q = igla_bench.Question{
             .id = try std.fmt.allocPrint(allocator, "multi_q_{d}", .{idx}),
-            .text = try std.fmt.allocPrint(allocator,
-                "What value does neuron {d} have (depth {d:.0}%)?",
-                .{needle.position, @as(u32, @intFromFloat(needle.depth_percent * 100))}),
+            .text = try std.fmt.allocPrint(allocator, "What value does neuron {d} have (depth {d:.0}%)?", .{ needle.position, @as(u32, @intFromFloat(needle.depth_percent * 100)) }),
             .expected_answer = "+1",
             .type = .multi,
             .needle_id = needle.id,
@@ -152,11 +139,7 @@ pub fn generateMultiTask(
 
 /// Generate IGLA-TERNARY test case
 /// Verify ternary value knowledge
-pub fn generateTernaryTask(
-    allocator: Allocator,
-    ctx_len: usize,
-    format: igla_bench.WeightFormat
-) !struct {
+pub fn generateTernaryTask(allocator: Allocator, ctx_len: usize, format: igla_bench.WeightFormat) !struct {
     haystack: igla_bench.Haystack,
     questions: []const igla_bench.Question,
 } {
@@ -191,12 +174,7 @@ pub fn generateTernaryTask(
 
 /// Generate IGLA-CHAIN test case
 /// Sequential facts requiring multi-step reasoning
-pub fn generateChainTask(
-    allocator: Allocator,
-    ctx_len: usize,
-    num_facts: usize,
-    format: igla_bench.WeightFormat
-) !struct {
+pub fn generateChainTask(allocator: Allocator, ctx_len: usize, num_facts: usize, format: igla_bench.WeightFormat) !struct {
     haystack: igla_bench.Haystack,
     questions: []const igla_bench.Question,
 } {
@@ -207,8 +185,7 @@ pub fn generateChainTask(
     for (0..num_facts) |idx| {
         const needle_id = try std.fmt.allocPrint(allocator, "chain_fact_{d}", .{idx});
         const chain_value = if (idx % 2 == 0) "-1" else "+1";
-        const fact_content = try std.fmt.allocPrint(allocator,
-            "Chain fact #{d}: neuron {d} = {s}", .{idx, idx * 13, chain_value});
+        const fact_content = try std.fmt.allocPrint(allocator, "Chain fact #{d}: neuron {d} = {s}", .{ idx, idx * 13, chain_value });
 
         const needle = igla_bench.Needle{
             .id = needle_id,
@@ -230,9 +207,7 @@ pub fn generateChainTask(
             const next_needle = needles_list.items[idx + 1];
             const q = igla_bench.Question{
                 .id = try std.fmt.allocPrint(allocator, "chain_q_{d}", .{idx}),
-                .text = try std.fmt.allocPrint(allocator,
-                    "What value does neuron {d} have before {d}?",
-                    .{needle.position, next_needle.position}),
+                .text = try std.fmt.allocPrint(allocator, "What value does neuron {d} have before {d}?", .{ needle.position, next_needle.position }),
                 .expected_answer = if (idx % 2 == 0) "-1" else "+1",
                 .type = .chain,
                 .needle_id = needle.id,
@@ -245,9 +220,7 @@ pub fn generateChainTask(
     // Final question
     const final_q = igla_bench.Question{
         .id = try std.fmt.allocPrint(allocator, "chain_final_q", .{}),
-        .text = try std.fmt.allocPrint(allocator,
-            "What value does the last neuron in the chain have?",
-            .{}),
+        .text = try std.fmt.allocPrint(allocator, "What value does the last neuron in the chain have?", .{}),
         .expected_answer = if ((num_facts - 1) % 2 == 0) "-1" else "+1",
         .type = .chain,
         .needle_id = needles_list.items[num_facts - 1].id,

@@ -363,8 +363,8 @@ test "bf16 to gf16 roundtrip basic" {
 
         // BF16 uses same 8-bit exponent as f32, but only 7 bits of mantissa
         const bf16_bits: u16 = (@as(u16, sign) << 15) |
-                                 (@as(u16, exp_f32) << 7) |
-                                 @as(u16, @truncate(mant_f32_u32 >> 16));
+            (@as(u16, exp_f32) << 7) |
+            @as(u16, @truncate(mant_f32_u32 >> 16));
 
         const gf = bf16ToGf16(bf16_bits);
         const gf_back = ips.gf16ToF32(gf);

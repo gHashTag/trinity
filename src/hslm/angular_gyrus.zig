@@ -223,9 +223,9 @@ pub fn findMostGoldenFormat() FormatDescriptor {
 /// Format a single format descriptor for terminal output
 pub fn verbalizeFormat(writer: anytype, desc: FormatDescriptor) !void {
     try writer.print("  {s:8} {s:24} |", .{ @tagName(desc.format_type), desc.name });
-    try writer.print("{d:2} bits | ", .{ desc.total_bits });
+    try writer.print("{d:2} bits | ", .{desc.total_bits});
     try writer.print("{d:2} exp, {d:2} mant | ", .{ desc.exp_bits, desc.mant_bits });
-    try writer.print("phi-dist {d:.3} | ", .{ desc.phi_distance });
+    try writer.print("phi-dist {d:.3} | ", .{desc.phi_distance});
 
     if (desc.is_golden) {
         try writer.writeAll("GOLDEN * | ");

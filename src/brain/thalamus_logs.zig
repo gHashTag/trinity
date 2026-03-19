@@ -10,6 +10,8 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 // Import sensation module for HSLM access
 const sensation_mod = @import("trinity-sensation");
+// Import sensation module for HSLM access
+const sensation_mod = @import("trinity-sensation");
 const ips = sensation_mod.ips;
 const weber = sensation_mod.weber;
 const fusiform = sensation_mod.fusiform;

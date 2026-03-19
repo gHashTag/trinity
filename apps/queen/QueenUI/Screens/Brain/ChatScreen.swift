@@ -2012,7 +2012,7 @@ struct ChatScreen: View {
                     showMentionPopup = query != nil
                 }
             )
-            .frame(minHeight: 24, maxHeight: 120)  // FIXED: adaptive multiline input (24-120pt)
+            .frame(height: 24)  // FIXED: compact single-line (24pt)
             .padding(.horizontal, LayoutConstants.cardPadding)
             .padding(.vertical, 14)
 
@@ -2123,8 +2123,8 @@ struct ChatScreen: View {
                 )
         )
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
-        .frame(minHeight: 44, maxHeight: 120)  // FIXED: adaptive height (44-120pt)
-    }
+        .frame(height: 52)  // FIXED: compact fixed height (52pt)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     // MARK: - System Prompt Editor
@@ -5194,25 +5194,29 @@ struct MultilineInput: NSViewRepresentable {
         textView.textColor = .white
         textView.backgroundColor = .clear
         textView.drawsBackground = false
-        // FIXED: enable vertical resizing for dynamic height
-        textView.isVerticallyResizable = true
-        textView.isHorizontallyResizable = true
+        // FIXED: disable vertical resizing for compact single-line input
+        textView.isVerticallyResizable = false
+        textView.isHorizontallyResizable = false
         // FIXED: compression resistance for horizontal
         textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        // FIXED: allow unlimited vertical height (constrained by SwiftUI frame)
-        textView.textContainer?.containerSize = NSSize(width: 400, height: CGFloat.greatestFiniteMagnitude)
-        textView.textContainer?.heightTracksTextView = true
+        // FIXED: fixed container size - no expansion
+        textView.textContainer?.containerSize = NSSize(width: 400, height: 24)
+        textView.textContainer?.heightTracksTextView = false
         textView.textContainer?.widthTracksTextView = true
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.insertionPointColor = .white
+        // FIXED: fixed frame size
+        textView.setFrameSize(NSSize(width: 400, height: 24))
 
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = false
         scrollView.hasHorizontalScroller = false
         scrollView.drawsBackground = false
         scrollView.borderType = .noBorder
+        // FIXED: fixed scrollview frame
+        scrollView.setFrameSize(NSSize(width: 400, height: 24))
 
         context.coordinator.textView = textView
         return scrollView
