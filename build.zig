@@ -2030,6 +2030,16 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    const thalamus_logs_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/thalamus_logs.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const prefrontal_cortex_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/prefrontal_cortex.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     const brain_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/brain.zig"),
         .target = target,
@@ -2041,6 +2051,8 @@ pub fn build(b: *std.Build) void {
             .{ .name = "amygdala", .module = amygdala_mod },
             .{ .name = "persistence", .module = persistence_mod },
             .{ .name = "telemetry", .module = telemetry_mod },
+            .{ .name = "thalamus_logs", .module = thalamus_logs_mod },
+            .{ .name = "prefrontal_cortex", .module = prefrontal_cortex_mod },
         },
     });
     // ═══════════════════════════════════════════════════════════════════════════════
