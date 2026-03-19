@@ -61,10 +61,10 @@ pub fn verifyGoldenIdentity() bool {
 
 // Sacred formula: V = n × 3^k × π^m × φ^p × e^q
 pub fn sacredFormula(n: f64, k: f64, m: f64, p: f64, q: f64) f64 {
-    return n * std.math.pow(f64, 3.0, k) * 
-           std.math.pow(f64, PI, m) * 
-           std.math.pow(f64, PHI, p) * 
-           std.math.pow(f64, E, q);
+    return n * std.math.pow(f64, 3.0, k) *
+        std.math.pow(f64, PI, m) *
+        std.math.pow(f64, PHI, p) *
+        std.math.pow(f64, E, q);
 }
 
 // Primality test
@@ -72,7 +72,7 @@ pub fn isPrime(n: u64) bool {
     if (n < 2) return false;
     if (n == 2) return true;
     if (n % 2 == 0) return false;
-    
+
     var i: u64 = 3;
     while (i * i <= n) : (i += 2) {
         if (n % i == 0) return false;
@@ -113,7 +113,7 @@ pub fn factorial(n: u64) u64 {
 pub fn binomial(n: u64, k: u64) u64 {
     if (k > n) return 0;
     if (k == 0 or k == n) return 1;
-    
+
     var result: u64 = 1;
     var i: u64 = 0;
     while (i < k) : (i += 1) {
