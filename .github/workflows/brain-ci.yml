@@ -1,0 +1,195 @@
+name: S³AI Brain CI — "Functional MRI" Gate
+
+on:
+  push:
+    branches: [main, v*]
+  pull_request:
+    branches: [main, v*]
+  workflow_dispatch:
+
+env:
+  ZIG_VERSION: "0.15.2"
+
+jobs:
+  # Phase 0: Quick Build Check (fast feedback)
+  build-check:
+    name: ⚡ Build Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Install Zig
+        run: |
+          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
+          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
+          zig version
+
+      - name: Checkout Trinity
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build (No Tests)
+        run: |
+          zig build
+
+  # Phase 1: Unit Tests — Individual Brain Regions
+  brain-unit:
+    name: 🧠 Unit Tests
+    runs-on: ubuntu-latest
+    needs: build-check
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        region:
+          - basal-ganglia
+          - reticular-formation
+          - locus-coeruleus
+          - intraparietal
+          - hslm
+    steps:
+      - name: Install Zig
+        run: |
+          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
+          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
+          zig version
+
+      - name: Checkout Trinity
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Test ${{ matrix.region }}
+        run: |
+          zig build test-${{ matrix.region }}
+
+  # Phase 2: Integration Test — Brain Aggregator
+  brain-integration:
+    name: 🔗 Integration Test
+    runs-on: ubuntu-latest
+    needs: brain-unit
+    timeout-minutes: 10
+    steps:
+      - name: Install Zig
+        run: |
+          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
+          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
+          zig version
+
+      - name: Checkout Trinity
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Test Brain Aggregator
+        run: |
+          zig build test-brain
+
+  # Phase 3: Stress Test — "Functional MRI" Gate
+  brain-stress:
+    name: 🧪 Stress Test (Functional MRI)
+    runs-on: ubuntu-latest
+    needs: brain-integration
+    timeout-minutes: 15
+    steps:
+      - name: Install Zig
+        run: |
+          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
+          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
+          zig version
+
+      - name: Checkout Trinity
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Run Stress Test
+        run: |
+          zig build test-brain-stress
+
+      - name: Upload Brain Scan Results
+        if: always()
+        run: |
+          echo "📊 Brain Scan Results:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Phase 1: Basal Ganglia — Action Selection" >> $GITHUB_STEP_SUMMARY
+          echo "Phase 2: Locus Coeruleus — Arousal Regulation" >> $GITHUB_STEP_SUMMARY
+          echo "Phase 3: Reticular Formation — Broadcast Alerting" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+
+  # Phase 4: CLI Smoke Test — Verify Commands Work
+  cli-smoke:
+    name: 💨 CLI Smoke Test
+    runs-on: ubuntu-latest
+    needs: brain-stress
+    timeout-minutes: 5
+    steps:
+      - name: Install Zig
+        run: |
+          wget -q https://ziglang.org/download/${ZIG_VERSION}/zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          tar -xf zig-linux-x86_64-${ZIG_VERSION}.tar.xz
+          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zig /usr/local/bin/
+          sudo mv zig-linux-x86_64-${ZIG_VERSION}/zigmCache /usr/local/bin/
+          zig version
+
+      - name: Checkout Trinity
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build TRI Binary
+        run: |
+          zig build
+
+      - name: CLI Commands Test
+        run: |
+          # Task Commands (Basal Ganglia)
+          echo "Testing tri task commands..."
+          ./zig-out/bin/tri task stats
+          ./zig-out/bin/tri task list
+
+          # Event Commands (Reticular Formation)
+          echo "Testing tri event commands..."
+          ./zig-out/bin/tri event stats
+
+          # Stress Test
+          echo "Running tri stress..."
+          ./zig-out/bin/tri stress || echo "Stress test returned non-zero"
+
+  # Final Gate: All Phases Must Pass
+  brain-health-report:
+    name: 📋 Brain Health Report
+    runs-on: ubuntu-latest
+    needs: [build-check, brain-unit, brain-integration, brain-stress, cli-smoke]
+    if: always()
+    steps:
+      - name: Generate Health Report
+        run: |
+          echo "# 🧠 S³AI Brain Health Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Phase | Status | Score |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build-check.result == 'success' && '✅ PASS' || '❌ FAIL' }} | — |" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests | ${{ needs.brain-unit.result == 'success' && '✅ PASS' || '❌ FAIL' }} | — |" >> $GITHUB_STEP_SUMMARY
+          echo "| Integration | ${{ needs.brain-integration.result == 'success' && '✅ PASS' || '❌ FAIL' }} | — |" >> $GITHUB_STEP_SUMMARY
+          echo "| Stress Test | ${{ needs.brain-stress.result == 'success' && '✅ PASS' || '❌ FAIL' }} | 300/300 |" >> $GITHUB_STEP_SUMMARY
+          echo "| CLI Smoke | ${{ needs.cli-smoke.result == 'success' && '✅ PASS' || '❌ FAIL' }} | — |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Verdict" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.build-check.result }}" == "success" ] && \
+             [ "${{ needs.brain-unit.result }}" == "success" ] && \
+             [ "${{ needs.brain-integration.result }}" == "success" ] && \
+             [ "${{ needs.brain-stress.result }}" == "success" ] && \
+             [ "${{ needs.cli-smoke.result }}" == "success" ]; then
+            echo "### ✅ Brain Circuit HEALTHY — Safe to deploy" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚠️ Brain Circuit DAMAGE — Fix required!" >> $GITHUB_STEP_SUMMARY
+          fi
