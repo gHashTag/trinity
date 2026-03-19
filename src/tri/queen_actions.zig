@@ -67,6 +67,7 @@ fn kindToArgv(kind: ActionKind) []const []const u8 {
         .experience_recall => &.{ "./zig-out/bin/tri", "experience", "mistakes" },
         .farm_evolve_status => &.{ "./zig-out/bin/tri", "farm", "evolve", "status" },
         .swarm_status => &.{ "./zig-out/bin/tri", "swarm", "status" },
+        .introspection => &.{ "./zig-out/bin/tri", "queen", "introspection" },
         // L1 — Soft Write
         .doctor_quick => &.{ "./zig-out/bin/tri", "doctor", "quick" },
         .doctor_heal => &.{ "./zig-out/bin/tri", "doctor", "heal" },
