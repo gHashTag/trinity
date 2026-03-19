@@ -18,6 +18,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const railway_api = @import("../railway_api.zig");
+const contracts = @import("contracts.zig");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // DATA STRUCTURES
@@ -191,6 +192,19 @@ pub const Thalamus = struct {
     pub fn getWorkerMetrics(self: *Self, service_name: []const u8) !WorkerMetrics {
         const state = try self.getWorkerLiveStatus(service_name);
         return state.metrics;
+    }
+
+    /// Get worker view with explicit source and staleness markers (Phase 2)
+    /// ALL returns from Thalamus have source: .live and stale: false
+    pub fn getWorkerView(self: *Self, service_name: []const u8) !contracts.WorkerView {
+        const live_state = try self.getWorkerLiveStatus(service_name);
+
+        return contracts.WorkerView.fromLive(
+            self.allocator,
+            service_name,
+            live_state.status,
+            live_state.metrics,
+        );
     }
 
     /// Get live states for all sacred workers

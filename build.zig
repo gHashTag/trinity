@@ -2598,6 +2598,16 @@ pub fn build(b: *std.Build) void {
     // Also run as part of build step
     // b.getInstallStep().dependOn(&run_registry_export.step);
 
+    // ═════════════════════════════════════════════════════════════════════════════
+    // Token Rotator for z.ai keys
+    // ═════════════════════════════════════════════════════════════════════════════════════════
+
+    const token_rotator_mod = b.createModule(.{
+        .root_source_file = b.path("src/tri/token_rotator.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     // ═══════════════════════════════════════════════════════════════════════════════
     // TRI-API — Direct Anthropic API Agent (Issue #60)
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -2608,6 +2618,9 @@ pub fn build(b: *std.Build) void {
             .root_source_file = b.path("src/tri-api/main.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "token_rotator", .module = token_rotator_mod },
+            },
         }),
     });
     b.installArtifact(tri_api);
@@ -2644,4 +2657,25 @@ pub fn build(b: *std.Build) void {
     });
     const run_arena_tests = b.addRunArtifact(arena_tests);
     test_step.dependOn(&run_arena_tests.step);
+
+    // ============================================================
+    // Sacred ALU Synthesis — GF16/TF3-9 Arithmetic for XC7A100T
+    // ============================================================
+
+    const sacred = b.addExecutable(.{
+        .name = "tri-sacred",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/sacred_alu.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(sacred);
+
+    const run_sacred = b.addRunArtifact(sacred);
+    if (b.args) |run_args| {
+        run_sacred.addArgs(run_args);
+    }
+    const sacred_synth_step = b.step("sacred", "Synthesize Sacred GF16/TF3-9 ALU modules for XC7A100T");
+    sacred_synth_step.dependOn(&run_sacred.step);
 }

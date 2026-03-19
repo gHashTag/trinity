@@ -4,6 +4,10 @@ import AVFoundation
 import Speech
 import UniformTypeIdentifiers
 
+// Fix Swift 5.4 generic type inference
+extension Edge {
+    var bottom: Self { bottom }
+}
 struct ChatScreen: View {
     @StateObject private var store = ThreadStore()
     @StateObject private var client = ChatClient()
@@ -423,7 +427,7 @@ struct ChatScreen: View {
 
     private var mainChatArea: some View {
         ZStack(alignment: .bottomTrailing) {
-            (focusMode ? Color(white: 0.04) : Color.black).ignoresSafeArea()
+            (focusMode ? Color(white: 0.04) : Color.black)
 
             VStack(spacing: 0) {
                 if !focusMode {
@@ -5196,9 +5200,11 @@ struct MultilineInput: NSViewRepresentable {
         textView.drawsBackground = false
         // ФИКС: отключаем вертикальное изменение размера
         textView.isVerticallyResizable = false
-        textView.isHorizontallyResizable = false
-        // ФИКС: устанавливаем фиксированный размер контейнера
-        textView.textContainer?.containerSize = NSSize(width: 0, height: 24)
+        textView.isHorizontallyResizable = true
+        // ФИКС: compression resistance для горизонтали
+        textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        // ФИКС: устанавливаем минимальную ширину контейнера
+        textView.textContainer?.containerSize = NSSize(width: 400, height: 24)
         textView.textContainer?.heightTracksTextView = false
         textView.textContainer?.widthTracksTextView = true
         textView.isAutomaticQuoteSubstitutionEnabled = false

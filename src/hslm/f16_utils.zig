@@ -56,8 +56,70 @@ pub fn f16ToF32Slice(input: []const f16, output: []f32) void {
     std.debug.assert(input.len == output.len);
 
     for (input, 0..) |val_f16, i| {
-        output[i] = @floatCast(val_f16);
+        output[i] = f16ToF32(val_f16);
     }
+}
+
+/// Convert single f16 (IEEE 754 16-bit) to f32
+/// Properly interprets the FP16 bit layout (sign:1, exp:5, mant:10)
+pub inline fn f16ToF32(val: f16) f32 {
+    const bits: u16 = @bitCast(val);
+    const sign: u1 = @truncate(bits >> 15);
+    const exp: u5 = @truncate((bits >> 10) & 0x1F);
+    const mant: u10 = @truncate(bits & 0x3FF);
+
+    if (exp == 0 and mant == 0) {
+        // Zero or subnormal → return zero
+        return if (sign == 1) -0.0 else 0.0;
+    }
+    if (exp == 31) {
+        // Inf/NaN → return Inf
+        const sign_bit: u32 = @as(u32, sign) << 31;
+        const bits_inf: u32 = sign_bit | (0xFF << 23);
+        return @bitCast(bits_inf);
+    }
+
+    // FP16 exponent bias = 15, f32 bias = 127
+    const unbiased: i32 = @as(i32, exp) - 15;
+    const f32_exp: i32 = unbiased + 127;
+
+    // Mantissa: 10 bits → 23 bits (zero-pad low bits)
+    const mant_bits: u32 = @as(u32, mant) << 13;
+
+    const sign_bit: u32 = @as(u32, sign) << 31;
+    const exp_bits: u32 = @as(u32, @intCast(f32_exp & 0xFF)) << 23;
+
+    const result_bits: u32 = sign_bit | exp_bits | mant_bits;
+    return @bitCast(result_bits);
+}
+
+/// Convert BF16 (bfloat16) to f32
+/// BF16: sign:1, exp:8, mant:7 (same exponent as f32)
+pub inline fn bf16ToF32(val: f16) f32 {
+    const bits: u16 = @bitCast(val);
+    const sign: u1 = @truncate(bits >> 15);
+    const exp: u8 = @truncate((bits >> 7) & 0xFF);
+    const mant: u7 = @truncate(bits & 0x7F);
+
+    if (exp == 0 and mant == 0) {
+        // Zero or subnormal → return zero
+        return if (sign == 1) -0.0 else 0.0;
+    }
+    if (exp == 255) {
+        // Inf/NaN → return Inf
+        const sign_bit: u32 = @as(u32, sign) << 31;
+        const bits_inf: u32 = sign_bit | (0xFF << 23);
+        return @bitCast(bits_inf);
+    }
+
+    // BF16 exponent bias = 127, f32 bias = 127 (same!)
+    // So exponent bits are identical
+    const sign_bit: u32 = @as(u32, sign) << 31;
+    const exp_bits: u32 = @as(u32, exp) << 23;
+    const mant_bits: u32 = @as(u32, mant) << 16; // 7 bits → 23 bits (pad 16 zeros)
+
+    const result_bits: u32 = sign_bit | exp_bits | mant_bits;
+    return @bitCast(result_bits);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
