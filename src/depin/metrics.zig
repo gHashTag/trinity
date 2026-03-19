@@ -58,7 +58,7 @@ pub const LatencyWindow = struct {
 test "latency window" {
     const allocator = std.testing.allocator;
     var window = LatencyWindow.init(allocator, 10);
-    defer window.deinit(allocator);
+    defer window.deinit();
 
     try window.addSample(100);
     try window.addSample(200);
@@ -71,7 +71,7 @@ test "latency window" {
 test "latency window deinit" {
     const allocator = std.testing.allocator;
     var window = LatencyWindow.init(allocator, 10);
-    window.deinit(allocator);
+    window.deinit();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -84,7 +84,7 @@ pub const DowntimeWindow = struct {
     reason: ?[]const u8,
 
     pub fn durationSeconds(self: *const DowntimeWindow) u64 {
-        return @intCast(self.end_time - self.start_time);
+        return @as(u64, @intCast(self.end_time - self.start_time));
     }
 };
 
@@ -248,9 +248,7 @@ pub const NodeQualityMetrics = struct {
         const uptime_pct = self.uptime_tracker.getUptimePercentage();
         const latency_score = self.getLatencyScore();
 
-        return SUCCESS_WEIGHT * success_rate
-            + UPTIME_WEIGHT * uptime_pct
-            + LATENCY_WEIGHT * latency_score;
+        return SUCCESS_WEIGHT * success_rate + UPTIME_WEIGHT * uptime_pct + LATENCY_WEIGHT * latency_score;
     }
 
     pub fn isQualified(self: *const NodeQualityMetrics) bool {

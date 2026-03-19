@@ -36,6 +36,17 @@ pub fn build(b: *std.Build) void {
         .link_libc = true,
     });
 
+    // ═══════════════════════════════════════════════════════════════════
+    // trinity-sensation — Trinity Cortex Integration Module
+    // ═══════════════════════════════════════════════════════════════════════
+    // Unifies all 5 HSLM cortex modules: IPS, Weber, Fusiform, Angular, OFC
+    // Provides single import point for Thalamus → Cortex relay
+    const sensation_mod = b.addModule("trinity-sensation", .{
+        .root_source_file = .{ .path = "src/hslm/sensation/root.zig" },
+        .target = target,
+        .optimize = optimize,
+    });
+
     // Library artifact
     const lib = b.addLibrary(.{
         .name = "trinity",

@@ -59,10 +59,7 @@ fn lcAlertSink(alert: locus_coeruleus.Alert, arousal: locus_coeruleus.ArousalLev
     const kind_name = @tagName(alert.kind);
 
     var msg_buf: [512]u8 = undefined;
-    const msg = std.fmt.bufPrint(&msg_buf,
-        "{s}{s} LC ALERT: {s}\n{s}",
-        .{ level_emoji, level_label, kind_name, alert.messageStr() }
-    ) catch "";
+    const msg = std.fmt.bufPrint(&msg_buf, "{s}{s} LC ALERT: {s}\n{s}", .{ level_emoji, level_label, kind_name, alert.messageStr() }) catch "";
 
     queen_telegram.tgSend(phoenix_tg_config, msg);
 }

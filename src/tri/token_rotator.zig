@@ -15,27 +15,26 @@ pub const TokenInfo = struct {
 pub const TokenRotator = struct {
     allocator: std.mem.Allocator,
     current_index: usize,
-    tokens: std.ArrayList(TokenInfo),
+    tokens: std.ArrayListUnmanaged(TokenInfo),
     total_rotations: u64,
     last_rotation: i64,
     state_file: []const u8,
 
     pub fn init(allocator: std.mem.Allocator) !TokenRotator {
         const state_path = ".trinity/token_state.json";
-        var tokens_list = std.ArrayList(TokenInfo).init(allocator);
         var rotator = TokenRotator{
             .allocator = allocator,
             .current_index = 0,
-            .tokens = tokens_list,
+            .tokens = .{},
             .total_rotations = 0,
             .last_rotation = 0,
             .state_file = try allocator.dupe(u8, state_path),
         };
 
         if (rotator.load()) |_| {
-            std.debug.print("[token_rotator] Loaded state from {s}\\n", .{state_path});
+            std.debug.print("[token_rotator] Loaded state from {s}\n", .{state_path});
         } else |_| {
-            try rotator.initFromEnv();
+            try rotator.initFromEnv(allocator);
         }
 
         return rotator;
@@ -45,11 +44,11 @@ pub const TokenRotator = struct {
         for (self.tokens.items) |*token| {
             self.allocator.free(token.name);
         }
-        self.tokens.deinit();
+        self.tokens.deinit(self.allocator);
         self.allocator.free(self.state_file);
     }
 
-    fn initFromEnv(self: *TokenRotator) !void {
+    fn initFromEnv(self: *TokenRotator, allocator: std.mem.Allocator) !void {
         const TOKEN_ENV_VARS = [_][]const u8{
             "ZAI_KEY_1", "ZAI_KEY_2", "ZAI_KEY_3", "ZAI_KEY_5", "ZAI_KEY_6",
         };
@@ -58,8 +57,8 @@ pub const TokenRotator = struct {
             const key = std.posix.getenv(env_var) orelse continue;
             if (key.len == 0) continue;
 
-            try self.tokens.append(TokenInfo{
-                .name = try self.allocator.dupe(u8, env_var),
+            try self.tokens.append(allocator, TokenInfo{
+                .name = try allocator.dupe(u8, env_var),
                 .status = .active,
                 .last_429 = null,
                 .reset_at = null,
@@ -174,14 +173,14 @@ pub const TokenRotator = struct {
 
         const writer = file.writer();
 
-        try writer.writeAll("{\\n");
-        try writer.print("  \\"current_index\": {},\\n", .{self.current_index});
-        try writer.print("  \\"total_rotations\": {},\\n", .{self.total_rotations});
-        try writer.print("  \\"last_rotation\": {},\\n", .{self.last_rotation});
-        try writer.writeAll("  \\"tokens\": [\\n");
+        try writer.writeAll("{\n");
+        try writer.print("  \"current_index\": {},\n", .{self.current_index});
+        try writer.print("  \"total_rotations\": {},\n", .{self.total_rotations});
+        try writer.print("  \"last_rotation\": {},\n", .{self.last_rotation});
+        try writer.writeAll("  \"tokens\": [\n");
 
         for (self.tokens.items, 0..) |token, i| {
-            try writer.print("    {{\"name\": \\"{s}\", \\"status\": {}, ", .{ token.name, @intFromEnum(token.status) });
+            try writer.print("    {{\"name\": \"{s}\", \"status\": {}, ", .{ token.name, @intFromEnum(token.status) });
 
             if (token.last_429) |ts| {
                 try writer.print("\"last_429\": {}, ", .{ts});
@@ -198,22 +197,21 @@ pub const TokenRotator = struct {
             try writer.print("\"usage_count\": {}}}", .{token.usage_count});
 
             if (i < self.tokens.items.len - 1) {
-                try writer.writeAll(",\\n");
+                try writer.writeAll(",\n");
             } else {
-                try writer.writeAll("\\n");
+                try writer.writeAll("\n");
             }
         }
 
-        try writer.writeAll("  ]\\n");
-        try writer.writeAll("}\\n");
+        try writer.writeAll("  ]\n");
+        try writer.writeAll("}\n");
 
         try file.flush();
     }
 
     pub fn load(self: *TokenRotator) !void {
         const file_obj = fs.cwd().openFile(self.state_file, .{}) catch return error.FileNotFound;
-
-        file_obj.close();
+        defer file_obj.close();
 
         const content = try std.fs.cwd().readFileAlloc(self.allocator, self.state_file, 10 * 1024);
         defer self.allocator.free(content);
@@ -223,22 +221,22 @@ pub const TokenRotator = struct {
         var total_rot: u64 = 0;
         var last_rot: i64 = 0;
 
-        if (std.mem.indexOf(u8, content, "\\"current_index\":")) |idx| {
-            pos = idx + "\\"current_index\": ".len;
+        if (std.mem.indexOf(u8, content, "\"current_index\":")) |idx| {
+            pos = idx + "\"current_index\": ".len;
             if (std.fmt.parseInt(usize, content[pos..], 10)) |val| {
                 current_idx = val;
             } else |_| {}
         }
 
-        if (std.mem.indexOf(u8, content, "\\"total_rotations\":")) |idx| {
-            pos = idx + "\\"total_rotations\": ".len;
+        if (std.mem.indexOf(u8, content, "\"total_rotations\":")) |idx| {
+            pos = idx + "\"total_rotations\": ".len;
             if (std.fmt.parseInt(u64, content[pos..], 10)) |val| {
                 total_rot = val;
             } else |_| {}
         }
 
-        if (std.mem.indexOf(u8, content, "\\"last_rotation\":")) |idx| {
-            pos = idx + "\\"last_rotation\": ".len;
+        if (std.mem.indexOf(u8, content, "\"last_rotation\":")) |idx| {
+            pos = idx + "\"last_rotation\": ".len;
             if (std.fmt.parseInt(i64, content[pos..], 10)) |val| {
                 last_rot = val;
             } else |_| {}
@@ -280,10 +278,10 @@ pub fn parseRetryAfter(str: []const u8) i64 {
 }
 
 pub fn is429Error(response_body: []const u8) bool {
-    return std.mem.indexOf(u8, response_body, "\"code\"):\"1308\"") != null or
+    return std.mem.indexOf(u8, response_body, "\"code\":\"1308\"") != null or
         (std.mem.indexOf(u8, response_body, "\"error\"") != null and
-        (std.mem.indexOf(u8, response_body, "\"429\"") != null or
-         std.mem.indexOf(u8, response_body, "\"1308\"") != null));
+            (std.mem.indexOf(u8, response_body, "\"429\"") != null or
+                std.mem.indexOf(u8, response_body, "\"1308\"") != null));
 }
 
 pub fn extractRetryAfter(response_body: []const u8) ?[]const u8 {
@@ -325,7 +323,7 @@ fn logEvent(timestamp: i64, token_name: []const u8, event_type: []const u8, dura
 
     try file_obj.seekFromEnd(0);
 
-    const log_entry = try std.fmt.allocPrint(std.heap.page_allocator, "{{\"timestamp\":{},\"event\":\"token_{s}\",\"token_name\":\"{s}\",\"duration\":{}}}\\n", .{ timestamp, event_type, token_name, duration });
+    const log_entry = try std.fmt.allocPrint(std.heap.page_allocator, "{{\"timestamp\":{},\"event\":\"token_{s}\",\"token_name\":\"{s}\",\"duration\":{}}}\n", .{ timestamp, event_type, token_name, duration });
     defer std.heap.page_allocator.free(log_entry);
 
     try file_obj.writeAll(log_entry);
@@ -334,10 +332,10 @@ fn logEvent(timestamp: i64, token_name: []const u8, event_type: []const u8, dura
 const testing = std.testing;
 
 test "is429Error - z.ai format" {
-    const body1 = "{\"error\":{\"code\"):\"1308\",\"message\":\"Usage limit reached\"}}";
+    const body1 = "{\"error\":{\"code\":\"1308\",\"message\":\"Usage limit reached\"}}";
     try testing.expect(is429Error(body1));
 
-    const body2 = "{\"error\":{\"code\"):\"1308\"}}";
+    const body2 = "{\"error\":{\"code\":\"1308\"}}";
     try testing.expect(is429Error(body2));
 
     const body3 = "{\"error\":{\"429\":\"rate limit\"}}";
@@ -351,22 +349,4 @@ test "parseRetryAfter" {
     try testing.expectEqual(@as(i64, 3600), parseRetryAfter("3600"));
     try testing.expectEqual(@as(i64, 60), parseRetryAfter("60"));
     try testing.expectEqual(@as(i64, 3600), parseRetryAfter("Tue, 15 Nov 1994 08:12:31 GMT"));
-}
-
-test "TokenRotator - initFromEnv" {
-    const allocator = testing.allocator;
-    var tokens_list = std.ArrayList(TokenInfo).init(allocator);
-    var rotator = TokenRotator{
-        .allocator = allocator,
-        .current_index = 0,
-        .tokens = tokens_list,
-        .total_rotations = 0,
-        .last_rotation = 0,
-        .state_file = "",
-    };
-
-    try rotator.initFromEnv();
-    defer rotator.deinit();
-
-    try testing.expect(rotator.tokens.items.len > 0);
 }

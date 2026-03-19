@@ -113,11 +113,15 @@ pub fn main() !void {
     defer perms.deinit(allocator);
 
     // Initialize token rotator for z.ai tokens
-    var rotator = token_rotator.TokenRotator.init(allocator) catch |err| {
+    var rotator_value: ?token_rotator.TokenRotator = null;
+    var rotator_opt: ?*token_rotator.TokenRotator = null;
+    if (token_rotator.TokenRotator.init(allocator)) |*rotator| {
+        rotator_value = rotator.*;
+        rotator_opt = &rotator_value.?;
+    } else |err| {
         std.debug.print("[tri-api] Token rotator init failed: {}, using direct API key\n", .{@errorName(err)});
-        error.NoTokensAvailable;
-    };
-    defer rotator.deinit();
+    }
+    defer if (rotator_value) |*r| r.deinit();
 
     // Load MCP servers from settings
     var mcp = mcp_client.McpManager.init(allocator);
@@ -195,7 +199,7 @@ pub fn main() !void {
             try messages.appendSlice(allocator, "\"}");
 
             // Run agentic loop for this prompt
-            const stats = runAgenticLoop(allocator, api_url, model, system_prompt, &messages, &tool_exec, &mcp, &ui, &rotator);
+            const stats = runAgenticLoop(allocator, api_url, model, system_prompt, &messages, &tool_exec, &mcp, &ui, rotator_opt);
             ui.printTokens(stats.input_tokens, stats.output_tokens);
 
             // Save session
@@ -258,7 +262,7 @@ pub fn main() !void {
 
     std.debug.print("[tri-api] permissions: {d} allow, {d} deny rules\n", .{ perms.allow_rules.items.len, perms.deny_rules.items.len });
 
-    const stats = runAgenticLoop(allocator, api_url, model, system_prompt, &messages, &tool_exec, &mcp, null, &rotator);
+    const stats = runAgenticLoop(allocator, api_url, model, system_prompt, &messages, &tool_exec, &mcp, null, rotator_opt);
 
     // Close messages array and save session
     try messages.appendSlice(allocator, "]");
@@ -279,7 +283,7 @@ fn runAgenticLoop(
     tool_exec: *executor.ToolExecutor,
     mcp: *mcp_client.McpManager,
     ui_opt: ?*tui.Tui,
-    rotator: *token_rotator.TokenRotator,
+    rotator_opt: ?*token_rotator.TokenRotator,
 ) LoopStats {
     var total_input_tokens: u32 = 0;
     var total_output_tokens: u32 = 0;
@@ -350,7 +354,7 @@ fn runAgenticLoop(
             std.debug.print("[tri-api] turn {d}: sending {d} bytes...\n", .{ turn + 1, request_body.items.len });
         }
 
-        const response_body = httpPost(allocator, api_url_param, request_body.items, &rotator) catch |err| {
+        const response_body = httpPost(allocator, api_url_param, request_body.items, rotator_opt) catch |err| {
             if (ui_opt) |ui| {
                 ui.printError(@errorName(err));
             } else {
