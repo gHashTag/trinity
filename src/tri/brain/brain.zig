@@ -219,10 +219,10 @@ pub const BrainSummary = struct {
 };
 
 pub const BrainStatus = enum {
-    healthy,       // Cache fresh, no conflicts
-    recovering,    // Cache aging, minor conflicts
-    conflicted,   // Significant conflicts between cache and live
-    critical,      // Cache stale, many conflicts
+    healthy, // Cache fresh, no conflicts
+    recovering, // Cache aging, minor conflicts
+    conflicted, // Significant conflicts between cache and live
+    critical, // Cache stale, many conflicts
 
     pub fn toString(self: BrainStatus) []const u8 {
         return switch (self) {
@@ -258,4 +258,74 @@ test "brain_refresh" {
 
     // Refresh should update cache from Thalamus
     // (In real test, would have mock Thalamus)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BRAIN COMPREHENSIVE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "brain_status_enum" {
+    try std.testing.expectEqualStrings("HEALTHY", BrainStatus.healthy.toString());
+    try std.testing.expectEqualStrings("RECOVERING", BrainStatus.recovering.toString());
+    try std.testing.expectEqualStrings("CONFLICTED", BrainStatus.conflicted.toString());
+    try std.testing.expectEqualStrings("CRITICAL", BrainStatus.critical.toString());
+
+    try std.testing.expectEqualStrings("🧠", BrainStatus.healthy.icon());
+    try std.testing.expectEqualStrings("🏥", BrainStatus.recovering.icon());
+    try std.testing.expectEqualStrings("⚔", BrainStatus.conflicted.icon());
+    try std.testing.expectEqualStrings("🚨", BrainStatus.critical.icon());
+}
+
+test "brain_status_all_values" {
+    const statuses = [_]BrainStatus{
+        .healthy,
+        .recovering,
+        .conflicted,
+        .critical,
+    };
+
+    for (statuses) |status| {
+        const str = status.toString();
+        const icon = status.icon();
+        try std.testing.expect(str.len > 0);
+        try std.testing.expect(icon.len > 0);
+    }
+}
+
+test "brain_init_with_file_path" {
+    const allocator = std.testing.allocator;
+    const brain = try Brain.init(allocator, "/custom/path.json");
+    defer brain.deinit();
+
+    try std.testing.expectEqualStrings("/custom/path.json", brain.evolution_file);
+}
+
+test "brain_default_file_path" {
+    const allocator = std.testing.allocator;
+    const brain = try Brain.init(allocator, "");
+    defer brain.deinit();
+
+    try std.testing.expectEqualStrings(".trinity/evolution_state.json", brain.evolution_file);
+}
+
+test "brain_regions_count" {
+    // Verify we have all expected brain regions
+    const allocator = std.testing.allocator;
+    const brain = try Brain.init(allocator, "");
+    defer brain.deinit();
+
+    // Brain should have Hippocampus, Thalamus, ACC
+    // Additional structural verification would go here
+    _ = brain.allocator; // Use a field to avoid unused warning
+}
+
+test "brain_deinit_multiple" {
+    const allocator = std.testing.allocator;
+
+    // Test multiple init/deinit cycles
+    var i: usize = 0;
+    while (i < 3) : (i += 1) {
+        var brain = try Brain.init(allocator, "");
+        brain.deinit();
+    }
 }

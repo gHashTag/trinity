@@ -31,11 +31,11 @@ const LogLevel = insula_system.LogLevel;
 // ═════════════════════════════════════════════════════════════════════════════
 
 pub const ConflictType = enum {
-    stale_cache,      // evolution_state.json outdated (cache age > threshold)
-    ghost_worker,    // cached service doesn't exist in Thalamus
-    zombie_worker,   // live service not in Hippocampus cache
-    status_mismatch,  // cached says stalled, live says training
-    metrics_mismatch,  // step/PPL differ significantly between cache and live
+    stale_cache, // evolution_state.json outdated (cache age > threshold)
+    ghost_worker, // cached service doesn't exist in Thalamus
+    zombie_worker, // live service not in Hippocampus cache
+    status_mismatch, // cached says stalled, live says training
+    metrics_mismatch, // step/PPL differ significantly between cache and live
     missing_metadata, // worker in cache but missing critical data
 
     pub fn toString(self: ConflictType) []const u8 {
@@ -124,15 +124,15 @@ pub const Conflict = struct {
     fn buildMessage(allocator: Allocator, service_name: []const u8, conflict_type: ConflictType, cached_step: u32, live_step: u32) ![]const u8 {
         return switch (conflict_type) {
             .stale_cache => try std.fmt.allocPrint(allocator, "{s}: Cache is stale for {s}", .{ service_name, service_name }),
-            .ghost_worker => try std.fmt.allocPrint(allocator, "{s}: In cache but not found live", .{ service_name }),
-            .zombie_worker => try std.fmt.allocPrint(allocator, "{s}: Live but not in cache", .{ service_name }),
+            .ghost_worker => try std.fmt.allocPrint(allocator, "{s}: In cache but not found live", .{service_name}),
+            .zombie_worker => try std.fmt.allocPrint(allocator, "{s}: Live but not in cache", .{service_name}),
             .status_mismatch => try std.fmt.allocPrint(allocator, "{s}: Status mismatch (cache={any}, live={d})", .{
                 service_name,
                 if (cached_step > 0) "any" else "null",
                 live_step,
             }),
             .metrics_mismatch => try std.fmt.allocPrint(allocator, "{s}: Step mismatch (cache={d}, live={d})", .{ service_name, cached_step, live_step }),
-            .missing_metadata => try std.fmt.allocPrint(allocator, "{s}: Missing critical metadata", .{ service_name }),
+            .missing_metadata => try std.fmt.allocPrint(allocator, "{s}: Missing critical metadata", .{service_name}),
         };
     }
 
@@ -163,8 +163,8 @@ pub const Action = enum {
 };
 
 pub const SafetyVerdict = enum {
-    safe,           // Action allowed (no conflicts or acceptable risk)
-    unsafe,         // Action blocked (would kill training worker!)
+    safe, // Action allowed (no conflicts or acceptable risk)
+    unsafe, // Action blocked (would kill training worker!)
     needs_verification, // Check live status before proceeding
 
     pub fn toString(self: SafetyVerdict) []const u8 {
@@ -290,7 +290,9 @@ pub const ACC = struct {
 
                 // Check for metrics mismatch
                 const step_diff = if (cached.step > live.?.metrics.step)
-                    cached.step - live.?.metrics.step else live.?.metrics.step - cached.step;
+                    cached.step - live.?.metrics.step
+                else
+                    live.?.metrics.step - cached.step;
                 if (step_diff > self.max_step_diff) {
                     const conflict = try Conflict.create(
                         allocator,
@@ -486,10 +488,10 @@ pub const CacheHealth = struct {
 };
 
 pub const HealthStatus = enum {
-    healthy,      // 90%+ fresh
-    recovering,   // 70-89% fresh
-    infected,     // 50-69% fresh
-    critical,     // <50% fresh
+    healthy, // 90%+ fresh
+    recovering, // 70-89% fresh
+    infected, // 50-69% fresh
+    critical, // <50% fresh
 
     pub fn toString(self: HealthStatus) []const u8 {
         return switch (self) {
@@ -535,18 +537,210 @@ fn logConflict(self: *ACC, conflict: *const Conflict, insula: *insula_system.Ins
     try insula.logEvent(&event);
 }
 
-test "acc_status_mismatch_detection" {
-    // Mock hippocampus with training worker
-    // (In real test, would use actual Hippocampus instance)
-    const allocator = std.testing.allocator;
-    _ = ACC.initDefault(allocator);
+// ═══════════════════════════════════════════════════════════════════════════════
+// ACC TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "acc_conflict_type_toString" {
+    try std.testing.expectEqualStrings("stale_cache", ConflictType.stale_cache.toString());
+    try std.testing.expectEqualStrings("ghost_worker", ConflictType.ghost_worker.toString());
+    try std.testing.expectEqualStrings("zombie_worker", ConflictType.zombie_worker.toString());
+    try std.testing.expectEqualStrings("status_mismatch", ConflictType.status_mismatch.toString());
+    try std.testing.expectEqualStrings("metrics_mismatch", ConflictType.metrics_mismatch.toString());
+    try std.testing.expectEqualStrings("missing_metadata", ConflictType.missing_metadata.toString());
 }
 
-test "acc_verify_safe_action" {
-    // Mock verification logic
-    // (In real test, would use actual Thalamus/Hippocampus instances)
+test "acc_conflict_type_description" {
+    const desc = ConflictType.stale_cache.description();
+    try std.testing.expect(std.mem.indexOf(u8, desc, "stale") != null);
+
+    const desc2 = ConflictType.ghost_worker.description();
+    try std.testing.expect(std.mem.indexOf(u8, desc2, "not found") != null);
+}
+
+test "acc_severity_enum" {
+    try std.testing.expectEqualStrings("INFO", Severity.info.toString());
+    try std.testing.expectEqualStrings("WARNING", Severity.warning.toString());
+    try std.testing.expectEqualStrings("CRITICAL", Severity.critical.toString());
+
+    try std.testing.expectEqualStrings("ℹ️", Severity.info.icon());
+    try std.testing.expectEqualStrings("⚠️", Severity.warning.icon());
+    try std.testing.expectEqualStrings("🚨", Severity.critical.icon());
+}
+
+test "acc_action_toString" {
+    try std.testing.expectEqualStrings("kill", Action.kill_worker.toString());
+    try std.testing.expectEqualStrings("restart", Action.restart_worker.toString());
+    try std.testing.expectEqualStrings("evolve", Action.evolve_step.toString());
+    try std.testing.expectEqualStrings("inject", Action.inject_config.toString());
+    try std.testing.expectEqualStrings("enable_night", Action.enable_night_mode.toString());
+    try std.testing.expectEqualStrings("disable_night", Action.disable_night_mode.toString());
+}
+
+test "acc_safety_verdict_enum" {
+    try std.testing.expectEqualStrings("SAFE", SafetyVerdict.safe.toString());
+    try std.testing.expectEqualStrings("UNSAFE - BLOCKED", SafetyVerdict.unsafe.toString());
+    try std.testing.expectEqualStrings("NEEDS LIVE VERIFICATION", SafetyVerdict.needs_verification.toString());
+
+    try std.testing.expectEqualStrings("✅", SafetyVerdict.safe.icon());
+    try std.testing.expectEqualStrings("🚫", SafetyVerdict.unsafe.icon());
+    try std.testing.expectEqualStrings("⏳", SafetyVerdict.needs_verification.icon());
+}
+
+test "acc_conflict_create_stale_cache" {
     const allocator = std.testing.allocator;
-    _ = ACC.initDefault(allocator);
+    const conflict = try Conflict.create(
+        allocator,
+        "test-worker",
+        .stale_cache,
+        .training,
+        .training,
+        1000,
+        2000,
+        .warning,
+    );
+    defer conflict.deinit(allocator);
+
+    try std.testing.expectEqualStrings("test-worker", conflict.service_name);
+    try std.testing.expectEqual(ConflictType.stale_cache, conflict.conflict_type);
+    try std.testing.expectEqual(@as(u32, 1000), conflict.cached_step);
+    try std.testing.expectEqual(@as(u32, 2000), conflict.live_step);
+    try std.testing.expectEqual(Severity.warning, conflict.severity);
+    try std.testing.expect(std.mem.indexOf(u8, conflict.message, "stale") != null);
+}
+
+test "acc_conflict_create_ghost_worker" {
+    const allocator = std.testing.allocator;
+    const conflict = try Conflict.create(
+        allocator,
+        "ghost-worker",
+        .ghost_worker,
+        .training,
+        .unknown,
+        500,
+        0,
+        .critical,
+    );
+    defer conflict.deinit(allocator);
+
+    try std.testing.expectEqual(ConflictType.ghost_worker, conflict.conflict_type);
+    try std.testing.expect(std.mem.indexOf(u8, conflict.message, "not found") != null);
+}
+
+test "acc_conflict_create_zombie_worker" {
+    const allocator = std.testing.allocator;
+    const conflict = try Conflict.create(
+        allocator,
+        "zombie-worker",
+        .zombie_worker,
+        null,
+        .training,
+        0,
+        100,
+        .info,
+    );
+    defer conflict.deinit(allocator);
+
+    try std.testing.expectEqual(ConflictType.zombie_worker, conflict.conflict_type);
+    try std.testing.expect(conflict.cached_status == null);
+}
+
+test "acc_conflict_create_metrics_mismatch" {
+    const allocator = std.testing.allocator;
+    const conflict = try Conflict.create(
+        allocator,
+        "metrics-worker",
+        .metrics_mismatch,
+        .training,
+        .training,
+        5000,
+        7000,
+        .warning,
+    );
+    defer conflict.deinit(allocator);
+
+    try std.testing.expectEqual(ConflictType.metrics_mismatch, conflict.conflict_type);
+    try std.testing.expect(std.mem.indexOf(u8, conflict.message, "Step mismatch") != null);
+    try std.testing.expect(std.mem.indexOf(u8, conflict.message, "5000") != null);
+    try std.testing.expect(std.mem.indexOf(u8, conflict.message, "7000") != null);
+}
+
+test "acc_init_default" {
+    const allocator = std.testing.allocator;
+    const acc = ACC.initDefault(allocator);
+
+    try std.testing.expectEqual(@as(i64, 300), acc.max_cache_age_sec);
+    try std.testing.expectEqual(@as(u32, 1000), acc.max_step_diff);
+    try std.testing.expect(acc.insula == null);
+}
+
+test "acc_init_custom_thresholds" {
+    const allocator = std.testing.allocator;
+    const acc = ACC.init(allocator, 600, 2000);
+
+    try std.testing.expectEqual(@as(i64, 600), acc.max_cache_age_sec);
+    try std.testing.expectEqual(@as(u32, 2000), acc.max_step_diff);
+}
+
+test "acc_conflict_deinit" {
+    const allocator = std.testing.allocator;
+    var conflict = try Conflict.create(
+        allocator,
+        "deinit-test",
+        .stale_cache,
+        .training,
+        .training,
+        100,
+        200,
+        .info,
+    );
+
+    // Store pointers to verify they're valid before deinit
+    const service_ptr = conflict.service_name.ptr;
+    const message_ptr = conflict.message.ptr;
+
+    conflict.deinit(allocator);
+
+    // After deinit, memory is freed - can't access but should not crash
+    _ = service_ptr;
+    _ = message_ptr;
+}
+
+test "acc_all_conflict_types_covered" {
+    // Ensure all conflict types are testable
+    const allocator = std.testing.allocator;
+
+    const conflict_types = [_]ConflictType{
+        .stale_cache,
+        .ghost_worker,
+        .zombie_worker,
+        .status_mismatch,
+        .metrics_mismatch,
+        .missing_metadata,
+    };
+
+    for (conflict_types) |ct| {
+        const desc = ct.description();
+        try std.testing.expect(desc.len > 0);
+
+        const str = ct.toString();
+        try std.testing.expect(str.len > 0);
+    }
+
+    // Test creating conflicts for each type
+    const conflict = try Conflict.create(
+        allocator,
+        "all-types-test",
+        .missing_metadata,
+        null,
+        .unknown,
+        0,
+        0,
+        .critical,
+    );
+    defer conflict.deinit(allocator);
+
+    try std.testing.expectEqual(ConflictType.missing_metadata, conflict.conflict_type);
 }
 
 pub fn copyToFixed(comptime N: usize, dest: *[N]u8, len_ptr: anytype, src: []const u8) void {

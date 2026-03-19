@@ -51,10 +51,10 @@ pub const LogLevel = enum {
 };
 
 pub const EventType = enum {
-    decision_made,   // kill/restart/evolve decision
-    error_occurred,  // panic, OOM, dataset not found
-    state_change,    // night mode enabled/disabled
-    circuit_break,  // safety trigger activated
+    decision_made, // kill/restart/evolve decision
+    error_occurred, // panic, OOM, dataset not found
+    state_change, // night mode enabled/disabled
+    circuit_break, // safety trigger activated
     conflict_detected, // ACC conflict alert
     worker_lifecycle, // worker created/destroyed
     config_change, // configuration update
@@ -487,4 +487,212 @@ pub fn copyToFixed(comptime N: usize, dest: *[N]u8, len_ptr: anytype, src: []con
     const copy_len = @min(src.len, N);
     @memcpy(dest[0..copy_len], src[0..copy_len]);
     len_ptr.* = @intCast(copy_len);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INSULA COMPREHENSIVE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "insula_log_level_enum_comprehensive" {
+    try std.testing.expectEqualStrings("DEBUG", LogLevel.debug.toString());
+    try std.testing.expectEqualStrings("INFO", LogLevel.info.toString());
+    try std.testing.expectEqualStrings("WARN", LogLevel.warn.toString());
+    try std.testing.expectEqualStrings("ERROR", LogLevel.err.toString());
+    try std.testing.expectEqualStrings("CRITICAL", LogLevel.critical.toString());
+
+    try std.testing.expectEqualStrings("🔍", LogLevel.debug.icon());
+    try std.testing.expectEqualStrings("ℹ️", LogLevel.info.icon());
+    try std.testing.expectEqualStrings("⚠️", LogLevel.warn.icon());
+    try std.testing.expectEqualStrings("❌", LogLevel.err.icon());
+    try std.testing.expectEqualStrings("🚨", LogLevel.critical.icon());
+}
+
+test "insula_event_type_enum_comprehensive" {
+    try std.testing.expectEqualStrings("decision", EventType.decision_made.toString());
+    try std.testing.expectEqualStrings("error", EventType.error_occurred.toString());
+    try std.testing.expectEqualStrings("state", EventType.state_change.toString());
+    try std.testing.expectEqualStrings("circuit", EventType.circuit_break.toString());
+    try std.testing.expectEqualStrings("conflict", EventType.conflict_detected.toString());
+    try std.testing.expectEqualStrings("lifecycle", EventType.worker_lifecycle.toString());
+    try std.testing.expectEqualStrings("config", EventType.config_change.toString());
+}
+
+test "insula_event_all_levels" {
+    const allocator = std.testing.allocator;
+    const levels = [_]LogLevel{ .debug, .info, .warn, .err, .critical };
+
+    for (levels) |level| {
+        const event = try SystemEvent.create(
+            allocator,
+            level,
+            "level-test",
+            .error_occurred,
+            "Test all levels",
+        );
+        defer event.deinit(allocator);
+        try std.testing.expectEqual(level, event.level);
+    }
+}
+
+test "insula_event_all_types" {
+    const allocator = std.testing.allocator;
+    const event_types = [_]EventType{
+        .decision_made,
+        .error_occurred,
+        .state_change,
+        .circuit_break,
+        .conflict_detected,
+        .worker_lifecycle,
+        .config_change,
+    };
+
+    for (event_types) |event_type| {
+        const event = try SystemEvent.create(
+            allocator,
+            .info,
+            "type-test",
+            event_type,
+            "Test all event types",
+        );
+        defer event.deinit(allocator);
+        try std.testing.expectEqual(event_type, event.event_type);
+    }
+}
+
+test "insula_event_timestamp" {
+    const allocator = std.testing.allocator;
+    const before = std.time.timestamp();
+
+    const event = try SystemEvent.create(
+        allocator,
+        .debug,
+        "timing-test",
+        .state_change,
+        "Timestamp test",
+    );
+    defer event.deinit(allocator);
+
+    const after = std.time.timestamp();
+    try std.testing.expect(event.timestamp >= before);
+    try std.testing.expect(event.timestamp <= after);
+}
+
+test "insula_event_with_metadata" {
+    const allocator = std.testing.allocator;
+
+    var obj = try std.json.Value.Object.init(allocator, 2);
+    try obj.put(allocator, "worker", std.json.Value.string("test-worker"));
+    try obj.put(allocator, "ppl", std.json.Value.number(@floatFromInt(@as(i32, 45))));
+
+    const event = try SystemEvent.createWithMetadata(
+        allocator,
+        .info,
+        "ouroboros",
+        .worker_lifecycle,
+        "Worker created",
+        std.json.Value.object(obj),
+    );
+    defer event.deinit(allocator);
+
+    try std.testing.expect(event.metadata != null);
+    try std.testing.expect(event.metadata.? == .object);
+}
+
+test "insula_log_multiple_events" {
+    const allocator = std.testing.allocator;
+    var insula = Insula.init(allocator);
+    insula.file_path = ".trinity/test_events_multi.jsonl";
+
+    var i: usize = 0;
+    while (i < 5) : (i += 1) {
+        const event = try SystemEvent.create(
+            allocator,
+            .info,
+            "multi-test",
+            .decision_made,
+            "Event",
+        );
+        defer event.deinit(allocator);
+        try insula.logEvent(&event);
+    }
+
+    const file = std.fs.cwd().openFile(insula.file_path, .{}) catch {
+        try std.testing.expect(false);
+        return;
+    };
+    defer {
+        file.close();
+        std.fs.cwd().deleteFile(insula.file_path) catch {};
+    }
+
+    const content = try file.readToEndAlloc(allocator, 4096);
+    defer allocator.free(content);
+
+    var line_count: usize = 0;
+    var iter = std.mem.splitScalar(u8, content, '\n');
+    while (iter.next()) |line| {
+        if (line.len > 0) line_count += 1;
+    }
+    try std.testing.expectEqual(@as(usize, 5), line_count);
+}
+
+test "insula_buffer_accessor" {
+    var buffer: EventBuffer = .{};
+    copyToFixed(32, &buffer.component_len, buffer.component_buf, "thalamus");
+    copyToFixed(512, &buffer.message_len, buffer.message_buf, "Worker training completed");
+
+    try std.testing.expectEqualStrings("thalamus", buffer.component());
+    try std.testing.expectEqualStrings("Worker training completed", buffer.message());
+}
+
+test "insula_copy_to_fixed_truncation" {
+    var dest_buf: [10]u8 = undefined;
+    var len: u8 = 0;
+
+    const long_src = "This is a very long string that exceeds buffer";
+    copyToFixed(10, &len, &dest_buf, long_src);
+
+    try std.testing.expectEqual(@as(usize, 10), len);
+    try std.testing.expectEqualStrings("This is a ", dest_buf[0..len]);
+}
+
+test "insula_copy_to_fixed_short_source" {
+    var dest_buf: [100]u8 = undefined;
+    var len: u8 = 0;
+
+    const short_src = "Short";
+    copyToFixed(100, &len, &dest_buf, short_src);
+
+    try std.testing.expectEqual(@as(usize, 5), len);
+    try std.testing.expectEqualStrings("Short", dest_buf[0..len]);
+}
+
+test "insula_get_recent_events_empty" {
+    const allocator = std.testing.allocator;
+    var insula = Insula.init(allocator);
+    insula.file_path = ".trinity/test_events_empty.jsonl";
+
+    const events = try insula.getRecentEvents(10);
+    defer {
+        for (events.items) |e| e.deinit(allocator);
+        events.deinit();
+    }
+
+    try std.testing.expectEqual(@as(usize, 0), events.items.len);
+}
+
+test "insula_init_creates_directory" {
+    const allocator = std.testing.allocator;
+    std.fs.cwd().deleteTree(".trinity") catch {};
+
+    const insula = Insula.init(allocator);
+    _ = insula; // Initialize creates .trinity directory
+
+    const dir = std.fs.cwd().openDir(".trinity", .{}) catch {
+        try std.testing.expect(false);
+        return;
+    };
+    dir.close();
+
+    std.fs.cwd().deleteTree(".trinity") catch {};
 }
