@@ -150,7 +150,11 @@ pub fn describeFormat(format_type: FormatType) FormatDescriptor {
         .FP16, .FP8, .BF16, .GF16, .TF32, .TF3_9 => 15,
     };
 
-    const total_bits = sign_bits + exp_bits + mant_bits;
+    // For ternary formats, total_bits = trit_count * 2 (bits per trit)
+    const total_bits: u8 = switch (format_type) {
+        .TF3_9 => 18, // 9 trits × 2 bits
+        else => sign_bits + exp_bits + mant_bits,
+    };
     const phi_dist = goldenDistance(exp_bits, mant_bits);
     const is_golden = phi_dist < 0.1;
     const dyn_range = calcDynamicRange(exp_bits, mant_bits, exp_bias);
@@ -187,14 +191,15 @@ pub fn describeFormat(format_type: FormatType) FormatDescriptor {
 
 /// Get comptime table of all format descriptors
 pub fn allFormatsTable() []const FormatDescriptor {
-    return comptime blk: {
-        var table: [8]FormatDescriptor = undefined;
+    const table = comptime blk: {
+        var result: [8]FormatDescriptor = undefined;
         for (0..8) |i| {
             const ft: FormatType = @enumFromInt(i);
-            table[i] = describeFormat(ft);
+            result[i] = describeFormat(ft);
         }
-        break :blk table;
+        break :blk result;
     };
+    return &table;
 }
 
 /// Find the most "golden" format (closest to 1/φ)
@@ -279,34 +284,34 @@ pub fn formatTypeToString(ft: FormatType) []const u8 {
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════
 
 test "golden distance fp32" {
-    // FP32: exp=8, mant=23 → ratio = 8/23 = 0.348
+    // FP32: exp=8, mant=23 → ratio = 8/23 ≈ 0.348
+    // Distance from 1/φ (0.618): |0.348 - 0.618| ≈ 0.27
     const dist = goldenDistance(8, 23);
-    const target = 1.0 / 1.61803398875; // 1/φ ≈ 0.618
-    try std.testing.expectApproxEqAbs(target, dist, 0.01);
+    try std.testing.expect(dist > 0.25 and dist < 0.30); // Not golden
     try std.testing.expect(!ips.isGoldenFormat(8, 23));
 }
 
 test "golden distance fp16" {
     // FP16: exp=5, mant=10 → ratio = 5/10 = 0.5
+    // Distance from 1/φ (0.618): |0.5 - 0.618| ≈ 0.118
     const dist = goldenDistance(5, 10);
-    const target = 1.0 / 1.61803398875;
-    try std.testing.expectApproxEqAbs(target, dist, 0.12);
+    try std.testing.expect(dist > 0.10 and dist < 0.15); // Not golden
     try std.testing.expect(!ips.isGoldenFormat(5, 10));
 }
 
 test "golden distance gf16" {
     // GF16: exp=6, mant=9 → ratio = 6/9 = 0.666
+    // Distance from 1/φ (0.618): |0.666 - 0.618| ≈ 0.048
     const dist = goldenDistance(6, 9);
-    const target = 1.0 / 1.61803398875;
-    try std.testing.expectApproxEqAbs(target, dist, 0.05);
+    try std.testing.expect(dist > 0.04 and dist < 0.06); // Golden!
     try std.testing.expect(ips.isGoldenFormat(6, 9));
 }
 
 test "golden distance tf3_9" {
     // TF3-9: exp=3, mant=5 → ratio = 3/5 = 0.6
+    // Distance from 1/φ (0.618): |0.6 - 0.618| ≈ 0.018
     const dist = goldenDistance(3, 5);
-    const target = 1.0 / 1.61803398875;
-    try std.testing.expectApproxEqAbs(target, dist, 0.02);
+    try std.testing.expect(dist > 0.01 and dist < 0.03); // Golden!
     try std.testing.expect(ips.isGoldenFormat(3, 5));
 }
 
@@ -354,8 +359,9 @@ test "dynamic range fp16 is reasonable" {
 
 test "dynamic range gf16 is reasonable" {
     const desc = describeFormat(.GF16);
-    // GF16 (6-bit exp) should reach ~10^19
-    try std.testing.expect(desc.dynamic_range > 18 and desc.dynamic_range < 20);
+    // GF16 (6-bit exp, bias=15): max_exp = 2^6 - 2 - 15 = 47
+    // log10(2^47) ≈ 47 * 0.301 ≈ 14.15
+    try std.testing.expect(desc.dynamic_range > 14 and desc.dynamic_range < 15);
 }
 
 test "precision calculation mant bits" {
