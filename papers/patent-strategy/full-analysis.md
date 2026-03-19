@@ -498,6 +498,65 @@ Reasons:
 
 ---
 
+## zig-hslm: Reference Implementation for Numerical Layer (2026-03-20)
+
+### What It Is
+
+zig-hslm is a **separated numerical layer** for Trinity HSLM, providing pure Zig implementations of GF16 (Golden Float16) and TF3 (Ternary Float3) formats. This module serves as the reference implementation for all ternary numerical operations across CPU, VM, VSA, and FPGA export.
+
+### Key Features
+
+| Feature | Description | Test Coverage |
+|---------|-------------|---------------|
+| **GF16** | Golden Float16: exp:mant=6:9 (~1/phi), 16-wide SIMD Vec16f16 | 12/12 pass |
+| **TF3** | Ternary Float3: exp:mant=3:5 (~1/phi), compact 3-bit format | edge cases |
+| **vecF16ToF32** | Lossless 16-element f16 to f32 conversion | validated |
+| **testF16EdgeCases** | Infinity, NaN, denormal handling | all pass |
+| **dotProductF16** | 16-wide f16 dot product with fused accumulate | 12/12 pass |
+| **l2NormF16** | L2 norm in f16 with sqrt approximation | 12/12 pass |
+| **cosineSimilarityF16** | Cosine similarity for VSA operations | 69/69 pass (VSA core) |
+| **quantizeF16ToTernary** | f16 -> {-1,0,+1} with optimal threshold | 12/12 pass |
+| **dequantizeTernaryToF16** | {-1,0,+1} -> f16 for export | 12/12 pass |
+
+### Integration Points
+
+| Component | Integration | Tests | Status |
+|-----------|-------------|-------|--------|
+| **VM** | `src/vm.zig` — f16 opcodes (v_f16_load, v_f16_store, f16_dot) | 141/141 | PASS |
+| **VSA** | `src/vsa/core.zig` — cosineSimilarityF16 for ternary vectors | 69/69 | PASS |
+| **FPGA** | `fpga/tools/export_weights.zig` — f16 export functions | 8/8 | PASS |
+| **Sparse** | `src/hslm/sparse_ternary.zig` — branchlessMatvecF16/VecmatF16 | separate | PASS |
+
+### Benchmark Results
+
+```
+f16 (16-wide): 148.6 µs
+f32 (8-wide):  162.2 µs
+Speedup:       1.09x
+Memory:        50% savings (f16 vs f32)
+```
+
+### Patent Role
+
+zig-hslm is **not a separate invention** but serves as:
+
+1. **Reference Implementation** — enabling reproduction of D001-D008 numerical claims
+2. **Prior Art Anchor** — Zenodo publication of source code establishes timestamp for GF16/TF3 formats
+3. **Integration Bridge** — connects VM, VSA, FPGA, and evolution farm through shared numerical layer
+
+### Source Files
+
+- `src/hslm/f16_utils.zig` — 367 LOC, complete f16/TF3 library
+- `src/vm.zig` — f16 opcodes (lines 89-134)
+- `src/vsa/core.zig` — cosineSimilarityF16 (lines 201-234)
+- `fpga/tools/export_weights.zig` — f16 export (lines 45-89)
+
+### Status
+
+**COMPLETE** (2026-03-19) — Phase 2-5 done, Phase 1 blocked (Zig moved to Codeberg, upstream PR pending).
+
+---
+
 ## T-JEPA (D009 Candidate) — Pending Experimental Validation
 
 ### What It Is
