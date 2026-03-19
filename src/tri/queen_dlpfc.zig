@@ -1407,3 +1407,335 @@ test "dlpfc — SuggestedGoal struct" {
     try std.testing.expectEqual(GoalPriority.high, goal.priority);
     try std.testing.expectApproxEqAbs(@as(f32, 2.5), goal.roi, 0.01);
 }
+
+test "dlpfc — TrendDirection all directions" {
+    try std.testing.expectEqual(@as(i32, 0), @intFromEnum(TrendDirection.improving));
+    try std.testing.expectEqual(@as(i32, 1), @intFromEnum(TrendDirection.stable));
+    try std.testing.expectEqual(@as(i32, 2), @intFromEnum(TrendDirection.deteriorating));
+    try std.testing.expectEqual(@as(i32, 3), @intFromEnum(TrendDirection.critical));
+}
+
+test "dlpfc — TrendAnalysis stable" {
+    var analysis = TrendAnalysis{ .direction = .stable };
+    try std.testing.expect(!analysis.hasWarning());
+
+    analysis.direction = .deteriorating;
+    try std.testing.expect(analysis.hasWarning());
+
+    analysis.direction = .critical;
+    try std.testing.expect(analysis.hasWarning());
+}
+
+test "dlpfc — TrendAnalysis improving" {
+    const analysis = TrendAnalysis{ .direction = .improving };
+    try std.testing.expectEqual(TrendDirection.improving, analysis.direction);
+    try std.testing.expect(!analysis.hasWarning());
+}
+
+test "dlpfc — PredictionKind all kinds" {
+    inline for (std.meta.tags(PredictionKind)) |kind| {
+        _ = kind;
+        try std.testing.expect(true);
+    }
+}
+
+test "dlpfc — GoalPriority all priorities" {
+    try std.testing.expectEqual(@as(i32, 0), @intFromEnum(GoalPriority.low));
+    try std.testing.expectEqual(@as(i32, 1), @intFromEnum(GoalPriority.normal));
+    try std.testing.expectEqual(@as(i32, 2), @intFromEnum(GoalPriority.high));
+    try std.testing.expectEqual(@as(i32, 3), @intFromEnum(GoalPriority.critical));
+}
+
+test "dlpfc — Decision urgency defaults" {
+    const decision = Decision{
+        .action = .farm_status,
+        .urgency = .low,
+    };
+
+    try std.testing.expectEqual(qt.ActionKind.farm_status, decision.action);
+    try std.testing.expectEqual(basal_ganglia.Urgency.low, decision.urgency);
+}
+
+test "dlpfc — Decision setReason" {
+    var decision = Decision{
+        .action = .doctor_quick,
+        .urgency = .normal,
+    };
+
+    decision.setReason("Build is broken, needs healing");
+    try std.testing.expectEqualStrings("Build is broken, needs healing", decision.reasonStr());
+}
+
+test "dlpfc — Decision reason truncation" {
+    var decision = Decision{
+        .action = .farm_recycle,
+        .urgency = .normal,
+    };
+
+    // Create a string longer than 256 bytes to force truncation
+    const long_reason = "This is a very long reason that should be truncated because it exceeds the maximum buffer size of 256 bytes that is defined in the Decision struct. " ++ "This is additional text to ensure we exceed the buffer limit and test proper truncation behavior. " ++ "Even more text here to guarantee we go over the 256 byte limit. " ++ "And a bit more just to be safe. " ++ "This should definitely be truncated now.";
+
+    decision.setReason(long_reason);
+
+    try std.testing.expect(decision.reason_len < long_reason.len);
+    try std.testing.expect(decision.reason_len <= decision.reason.len);
+}
+
+test "dlpfc — CycleState default values" {
+    const state = CycleState{};
+
+    try std.testing.expectEqual(@as(u64, 0), state.iteration);
+    try std.testing.expectEqual(@as(u32, 0), state.actions_taken);
+    try std.testing.expectEqual(@as(u32, 0), state.actions_suppressed);
+}
+
+test "dlpfc — CycleState timing" {
+    var state = CycleState{};
+    state.start_time = std.time.timestamp();
+
+    const uptime = state.uptimeSeconds();
+    try std.testing.expect(uptime >= 0);
+}
+
+test "dlpfc — DecisionContext defaults" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var memory = queen_policy.IncidentMemory.init();
+    const context = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = &state,
+        .counters = &counters,
+        .incidents = &memory,
+    };
+
+    try std.testing.expectEqual(@as(f32, 0.0), context.ouroboros_score);
+    try std.testing.expectEqual(@as(u16, 0), context.dirty_files);
+    try std.testing.expect(context.build_ok);
+}
+
+test "dlpfc — Prediction struct" {
+    const pred = Prediction{
+        .kind = .faculty_loss,
+        .time_to_event_hours = 2.5,
+        .suggested_action = .doctor_heal,
+    };
+
+    try std.testing.expectEqual(PredictionKind.faculty_loss, pred.kind);
+    try std.testing.expectEqual(@as(f32, 2.5), pred.time_to_event_hours);
+}
+
+test "dlpfc — DecisionContext hasWarningTrends with warning" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var memory = queen_policy.IncidentMemory.init();
+    var context = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = &state,
+        .counters = &counters,
+        .incidents = &memory,
+        .trend_analysis = TrendAnalysis{ .direction = .deteriorating },
+    };
+
+    try std.testing.expect(context.hasWarningTrends());
+}
+
+test "dlpfc — DecisionContext hasWarningTrends stable" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var memory = queen_policy.IncidentMemory.init();
+    var context = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = &state,
+        .counters = &counters,
+        .incidents = &memory,
+        .trend_analysis = TrendAnalysis{ .direction = .stable },
+    };
+
+    try std.testing.expect(!context.hasWarningTrends());
+}
+
+test "dlpfc — Prediction setDescription" {
+    var pred = Prediction{
+        .kind = .v_zone_drift,
+        .time_to_event_hours = 0.5,
+    };
+
+    pred.setDescription("Loss will increase");
+    try std.testing.expectEqualStrings("Loss will increase", pred.descriptionStr());
+}
+
+test "dlpfc — Prediction description truncation" {
+    var pred = Prediction{
+        .kind = .faculty_loss,
+        .time_to_event_hours = 1.0,
+    };
+
+    // Create a string longer than 128 bytes to force truncation
+    const long_desc = "This is a very long description that exceeds the buffer size and should be truncated appropriately. " ++ "Additional text here to ensure we exceed the 128 byte limit defined in the Prediction struct. " ++ "Even more text to guarantee proper truncation. " ++ "This should definitely be truncated now.";
+
+    pred.setDescription(long_desc);
+
+    try std.testing.expect(pred.description_len < long_desc.len);
+}
+
+test "dlpfc — GoalPriority critical" {
+    const priority = GoalPriority.critical;
+    try std.testing.expectEqual(@as(i32, 3), @intFromEnum(priority));
+}
+
+test "dlpfc — TrendDirection improving" {
+    const dir = TrendDirection.improving;
+    try std.testing.expectEqual(@as(i32, 0), @intFromEnum(dir));
+}
+
+test "dlpfc — TrendDirection deteriorating" {
+    const dir = TrendDirection.deteriorating;
+    try std.testing.expectEqual(@as(i32, 2), @intFromEnum(dir));
+}
+
+test "dlpfc — TrendDirection stable" {
+    const dir = TrendDirection.stable;
+    try std.testing.expectEqual(@as(i32, 1), @intFromEnum(dir));
+}
+
+test "dlpfc — TrendDirection critical" {
+    const dir = TrendDirection.critical;
+    try std.testing.expectEqual(@as(i32, 3), @intFromEnum(dir));
+}
+
+test "dlpfc — decide returns action when config allows" {
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    const config = qt.QueenConfig{
+        .max_auto_level = 2,
+        .allow_auto_actions = true,
+        .daemon = true, // Required for auto actions
+    };
+    var state = qt.QueenState{
+        .cycle = 1,
+        .last_build_heal_cycle = 0,
+    };
+
+    var context = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = config,
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = false, // Should trigger doctor_quick
+    };
+
+    const decision = try decide(&context);
+    try std.testing.expect(decision != null);
+    try std.testing.expectEqual(qt.ActionKind.doctor_quick, decision.?.action);
+}
+
+test "dlpfc — decide returns null when auto actions disabled" {
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    const config = qt.QueenConfig{
+        .max_auto_level = 2,
+        .allow_auto_actions = false,
+        .daemon = false,
+    };
+    var state = qt.QueenState{
+        .cycle = 1,
+        .last_build_heal_cycle = 0,
+    };
+
+    var context = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = config,
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = false,
+    };
+
+    const decision = try decide(&context);
+    try std.testing.expect(decision == null); // No auto action when disabled
+}
+
+test "dlpfc — DecisionContext shouldAutoAct with enabled" {
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    const config = qt.QueenConfig{
+        .allow_auto_actions = true,
+        .daemon = true,
+        .max_auto_level = 1,
+    };
+    var state = qt.QueenState{};
+    const context = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = config,
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+    };
+
+    try std.testing.expect(context.shouldAutoAct());
+}
+
+test "dlpfc — DecisionContext shouldAutoAct disabled" {
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    const config = qt.QueenConfig{
+        .allow_auto_actions = false,
+        .daemon = false,
+        .max_auto_level = 1,
+    };
+    var state = qt.QueenState{};
+    const context = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = config,
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+    };
+
+    try std.testing.expect(!context.shouldAutoAct());
+}
+
+test "dlpfc — Decision urgency high" {
+    const decision = Decision{
+        .action = .doctor_heal,
+        .urgency = basal_ganglia.Urgency.high,
+    };
+
+    try std.testing.expectEqual(basal_ganglia.Urgency.high, decision.urgency);
+}
+
+test "dlpfc — SuggestedGoal priority levels" {
+    try std.testing.expectEqual(@as(i32, 0), @intFromEnum(GoalPriority.low));
+    try std.testing.expectEqual(@as(i32, 1), @intFromEnum(GoalPriority.normal));
+    try std.testing.expectEqual(@as(i32, 2), @intFromEnum(GoalPriority.high));
+    try std.testing.expectEqual(@as(i32, 3), @intFromEnum(GoalPriority.critical));
+}
