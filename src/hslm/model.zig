@@ -1,5 +1,3 @@
-// @origin(spec:model.tri) @regen(manual-impl)
-// @origin(manual) @regen(pending)
 // HSLM — Full Model Assembly
 // Embedding → 3× TrinityBlock → Output Projection
 // ~1.24M ternary parameters, ~248KB
@@ -11,16 +9,12 @@ const embedding_mod = @import("embedding.zig");
 const trinity_block = @import("trinity_block.zig");
 const autograd = @import("autograd.zig");
 const simd_ops = @import("simd_ops.zig");
-const sparse_ternary = @import("sparse_ternary.zig");
 const ste_mod = @import("ste.zig");
-const trit_encoding = @import("trit_encoding.zig");
-const ternary_position = @import("ternary_position.zig");
-const ternary_activations = @import("ternary_activations.zig");
-const ternary_inference = @import("ternary_inference.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM = constants.EMBED_DIM;
 const VSA_DIM = constants.VSA_DIM;
+const NUM_BLOCKS = constants.NUM_BLOCKS;
 const CONTEXT_LEN = constants.CONTEXT_LEN;
 const Config = constants.Config;
 
@@ -35,7 +29,7 @@ const SACRED_LOGIT_SCALE: f32 = @floatCast(1.0 / std.math.pow(f64, @as(f64, EMBE
 pub const HSLM = struct {
     config: Config,
     emb: embedding_mod.Embedding,
-    blocks: []trinity_block.TrinityBlock,
+    blocks: [NUM_BLOCKS]trinity_block.TrinityBlock,
     // Output projection: EMBED_DIM → VOCAB_SIZE (ternary weights)
     output_weights: []i8,
     output_bias: []f32,
@@ -46,12 +40,10 @@ pub const HSLM = struct {
     // Training cache
     cache_pre_rms: [EMBED_DIM]f32 = [_]f32{0.0} ** EMBED_DIM,
     cache_rms_scale: f32 = 1.0,
+    // STE (Straight-Through Estimator) config for true ternary training
+    ste_config: ste_mod.SteConfig = .{},
+    alpha_output: f32 = 1.0,
     is_worker: bool = false,
-    // Dropout (applied in forwardTrain only)
-    dropout_rate: f32 = 0.0,
-    dropout_prng: std.Random.DefaultPrng = std.Random.DefaultPrng.init(0x1234_5678),
-    // Optional ternary architecture components
-    use_ternary_inference: bool = false,
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -69,31 +61,11 @@ pub const HSLM = struct {
     }
 
     pub fn initWithConfigAndSeed(allocator: std.mem.Allocator, config: Config, seed_offset: u64) !Self {
-        return initFull(allocator, config, seed_offset, false);
-    }
-
-    /// Initialize with all weights zeroed. Reduces seed variance in ternary models
-    /// by starting from a deterministic state. All shadow weights = 0, all ternary = 0.
-    /// Symmetry is broken by the optimizer (AdamW/LAMB momentum) and input data order.
-    pub fn initZero(allocator: std.mem.Allocator) !Self {
-        return initFull(allocator, Config{}, 0, true);
-    }
-
-    pub fn initZeroWithConfig(allocator: std.mem.Allocator, config: Config) !Self {
-        return initFull(allocator, config, 0, true);
-    }
-
-    fn initFull(allocator: std.mem.Allocator, config: Config, seed_offset: u64, zero_init: bool) !Self {
         const emb = try embedding_mod.Embedding.init(allocator);
 
-        const num_blocks = config.num_blocks;
-        const blocks = try allocator.alloc(trinity_block.TrinityBlock, num_blocks);
-        errdefer allocator.free(blocks);
-        var blocks_inited: usize = 0;
-        errdefer for (blocks[0..blocks_inited]) |*b| b.deinit();
-        for (0..num_blocks) |i| {
+        var blocks: [NUM_BLOCKS]trinity_block.TrinityBlock = undefined;
+        for (0..NUM_BLOCKS) |i| {
             blocks[i] = try trinity_block.TrinityBlock.init(allocator);
-            blocks_inited += 1;
         }
 
         const out_w = try allocator.alloc(i8, EMBED_DIM * VOCAB_SIZE);
@@ -106,37 +78,15 @@ pub const HSLM = struct {
         @memset(g_os, 0.0);
         @memset(g_ob, 0.0);
 
-        if (zero_init) {
-            // Zero initialization: all shadows = 0, all ternary = 0, all biases = 0
-            // Symmetry broken by optimizer momentum and data order
-            @memset(out_s, 0.0);
-            @memset(out_w, 0);
-            @memset(out_b, 0.0);
-
-            // Zero all block weights too
-            for (blocks) |*block| {
-                @memset(block.tnn.shadow_up, 0.0);
-                @memset(block.tnn.shadow_down, 0.0);
-                @memset(block.tnn.bias_up, 0.0);
-                @memset(block.tnn.bias_down, 0.0);
-                block.tnn.requantize();
-                @memset(block.sacred_attn.shadow_q, 0.0);
-                @memset(block.sacred_attn.shadow_k, 0.0);
-                @memset(block.sacred_attn.shadow_v, 0.0);
-                @memset(block.sacred_attn.shadow_o, 0.0);
-                block.sacred_attn.requantize();
-            }
-        } else {
-            // Standard Xavier init (seed_offset XORed for reproducibility experiments)
-            const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(EMBED_DIM)));
-            var prng = std.Random.DefaultPrng.init(0xDEAD_CAFE ^ seed_offset);
-            const rng = prng.random();
-            for (0..EMBED_DIM * VOCAB_SIZE) |i| {
-                out_s[i] = (rng.float(f32) * 2.0 - 1.0) * scale;
-            }
-            quantizeAbsMean(out_s, out_w);
-            @memset(out_b, 0.0);
+        // Init output projection (seed_offset XORed for reproducibility experiments)
+        const scale = 1.0 / @sqrt(@as(f32, @floatFromInt(EMBED_DIM)));
+        var prng = std.Random.DefaultPrng.init(0xDEAD_CAFE ^ seed_offset);
+        const rng = prng.random();
+        for (0..EMBED_DIM * VOCAB_SIZE) |i| {
+            out_s[i] = (rng.float(f32) * 2.0 - 1.0) * scale;
         }
+        quantizeAbsMean(out_s, out_w);
+        @memset(out_b, 0.0);
 
         return Self{
             .config = config,
@@ -155,20 +105,11 @@ pub const HSLM = struct {
     /// Workers process forward/backward but never requantize or run optimizer.
     /// Saves ~7MB per worker (no shadow weights for TNN, attention, or output projection).
     pub fn initWorker(allocator: std.mem.Allocator) !Self {
-        return initWorkerWithConfig(allocator, Config{});
-    }
-
-    pub fn initWorkerWithConfig(allocator: std.mem.Allocator, config: Config) !Self {
         const emb = try embedding_mod.Embedding.init(allocator);
 
-        const num_blocks = config.num_blocks;
-        const blocks = try allocator.alloc(trinity_block.TrinityBlock, num_blocks);
-        errdefer allocator.free(blocks);
-        var blocks_inited: usize = 0;
-        errdefer for (blocks[0..blocks_inited]) |*b| b.deinit();
-        for (0..num_blocks) |i| {
+        var blocks: [NUM_BLOCKS]trinity_block.TrinityBlock = undefined;
+        for (0..NUM_BLOCKS) |i| {
             blocks[i] = try trinity_block.TrinityBlock.initWorker(allocator);
-            blocks_inited += 1;
         }
 
         const out_w = try allocator.alloc(i8, EMBED_DIM * VOCAB_SIZE);
@@ -183,7 +124,7 @@ pub const HSLM = struct {
         @memset(g_ob, 0.0);
 
         return Self{
-            .config = config,
+            .config = Config{},
             .emb = emb,
             .blocks = blocks,
             .output_weights = out_w,
@@ -198,8 +139,7 @@ pub const HSLM = struct {
 
     pub fn deinit(self: *Self) void {
         self.emb.deinit();
-        for (self.blocks) |*b| b.deinit();
-        self.allocator.free(self.blocks);
+        for (&self.blocks) |*b| b.deinit();
         self.allocator.free(self.output_weights);
         self.allocator.free(self.output_bias);
         if (!self.is_worker) {
@@ -211,15 +151,7 @@ pub const HSLM = struct {
 
     /// Forward pass for a single sequence
     /// Returns logits for the last position (VOCAB_SIZE)
-    /// When use_ternary_inference is true, uses full ternary pipeline
-    /// (trit encoding → ternary PE → ternary activations → ternary attention).
     pub fn forward(self: *Self, tokens: []const u16, logits: []f32) void {
-        // Ternary inference mode is a flag for future integration.
-        // Full ternary pipeline (ternary_inference.zig) operates at the module
-        // level and is tested independently. Integration into the block-level
-        // forward pass requires matching the TrinityBlock interface.
-        _ = self.use_ternary_inference;
-
         const seq_len = @min(tokens.len, CONTEXT_LEN);
 
         // Step 1: Embed all tokens (float + trit)
@@ -233,7 +165,7 @@ pub const HSLM = struct {
         var next_float: [CONTEXT_LEN * EMBED_DIM]f32 = undefined;
         var next_trit: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
 
-        for (self.blocks) |*block| {
+        for (&self.blocks) |*block| {
             block.sacred_attn.resetCache();
             for (0..seq_len) |pos| {
                 const f_off = pos * EMBED_DIM;
@@ -265,7 +197,8 @@ pub const HSLM = struct {
             norm_hidden[ii] = last_hidden[ii] / rms;
         }
 
-        sparse_ternary.branchlessMatvec(&norm_hidden, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
+        simd_ops.ternaryMatvecSimd(&norm_hidden, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
+        ste_mod.applyAlpha(logits[0..VOCAB_SIZE], self.alpha_output); // TWN scaling
         for (0..VOCAB_SIZE) |j| {
             logits[j] = logits[j] * SACRED_LOGIT_SCALE + self.output_bias[j];
         }
@@ -284,7 +217,7 @@ pub const HSLM = struct {
         var next_float: [CONTEXT_LEN * EMBED_DIM]f32 = undefined;
         var next_trit: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
 
-        for (self.blocks) |*block| {
+        for (&self.blocks) |*block| {
             block.sacred_attn.resetCache();
             for (0..seq_len) |pos| {
                 const f_off = pos * EMBED_DIM;
@@ -317,7 +250,7 @@ pub const HSLM = struct {
                 norm_hidden[ii] = cur_float[f_off + ii] / rms;
             }
 
-            sparse_ternary.branchlessMatvec(
+            simd_ops.ternaryMatvecSimd(
                 &norm_hidden,
                 self.output_weights,
                 all_logits[l_off .. l_off + VOCAB_SIZE],
@@ -327,58 +260,6 @@ pub const HSLM = struct {
             for (0..VOCAB_SIZE) |j| {
                 all_logits[l_off + j] = all_logits[l_off + j] * SACRED_LOGIT_SCALE + self.output_bias[j];
             }
-        }
-    }
-
-    /// Forward pass returning hidden states (before output projection) for all positions.
-    /// Used by T-JEPA to extract representations.
-    pub fn forwardHidden(self: *Self, tokens: []const u16, hidden_out: []f32) void {
-        const seq_len = @min(tokens.len, CONTEXT_LEN);
-
-        var float_seq: [CONTEXT_LEN * EMBED_DIM]f32 = undefined;
-        var trit_seq: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
-        self.emb.embedSequence(tokens[0..seq_len], &float_seq, &trit_seq);
-
-        var cur_float: [CONTEXT_LEN * EMBED_DIM]f32 = float_seq;
-        var cur_trit: [CONTEXT_LEN * VSA_DIM]i8 = trit_seq;
-        var next_float: [CONTEXT_LEN * EMBED_DIM]f32 = undefined;
-        var next_trit: [CONTEXT_LEN * VSA_DIM]i8 = undefined;
-
-        for (self.blocks) |*block| {
-            block.sacred_attn.resetCache();
-            for (0..seq_len) |pos| {
-                const f_off = pos * EMBED_DIM;
-                const t_off = pos * VSA_DIM;
-                block.forward(
-                    pos,
-                    cur_float[f_off .. f_off + EMBED_DIM],
-                    cur_trit[0 .. (pos + 1) * VSA_DIM],
-                    next_float[f_off .. f_off + EMBED_DIM],
-                    next_trit[t_off .. t_off + VSA_DIM],
-                );
-            }
-            cur_float = next_float;
-            cur_trit = next_trit;
-        }
-
-        // Copy hidden states (no output projection)
-        @memcpy(hidden_out[0 .. seq_len * EMBED_DIM], cur_float[0 .. seq_len * EMBED_DIM]);
-    }
-
-    /// Backward pass through blocks only (no output projection).
-    /// Used by T-JEPA where gradient comes from representation loss, not logits.
-    pub fn backwardHidden(self: *Self, grad_hidden: []const f32) void {
-        var grad_current: [EMBED_DIM]f32 = undefined;
-        @memcpy(&grad_current, grad_hidden[0..EMBED_DIM]);
-        var grad_next: [EMBED_DIM]f32 = undefined;
-
-        var block_idx: usize = self.blocks.len;
-        while (block_idx > 0) {
-            block_idx -= 1;
-            self.blocks[block_idx].tnn.backward(&grad_current, &grad_next);
-            var grad_attn_input: [EMBED_DIM]f32 = undefined;
-            self.blocks[block_idx].sacred_attn.backward(&grad_next, &grad_attn_input);
-            grad_current = grad_attn_input;
         }
     }
 
@@ -500,33 +381,40 @@ pub const HSLM = struct {
         return len;
     }
 
-    /// Get consciousness statistics (average ratio across all blocks)
-    pub fn consciousnessStats(self: *const Self) struct { ratio: f64 } {
+    /// Get consciousness statistics
+    pub fn consciousnessStats(self: *const Self) struct { ratio: f64, per_block: [NUM_BLOCKS]f64 } {
         var total_ratio: f64 = 0.0;
-        for (self.blocks) |*block| {
-            total_ratio += block.gate.consciousnessRatio();
+        var per_block: [NUM_BLOCKS]f64 = undefined;
+        for (0..NUM_BLOCKS) |i| {
+            per_block[i] = self.blocks[i].gate.consciousnessRatio();
+            total_ratio += per_block[i];
         }
         return .{
-            .ratio = if (self.blocks.len > 0) total_ratio / @as(f64, @floatFromInt(self.blocks.len)) else 0.0,
+            .ratio = total_ratio / @as(f64, NUM_BLOCKS),
+            .per_block = per_block,
         };
     }
 
     /// Re-quantize all ternary weights from shadow floats
     pub fn requantize(self: *Self) void {
-        for (self.blocks) |*block| {
+        if (self.ste_config.mode != .none) {
+            self.requantizeSte(0); // step=0 for non-step-aware call
+            return;
+        }
+        for (&self.blocks) |*block| {
             block.tnn.requantize();
             block.sacred_attn.requantize();
         }
         quantizeAbsMean(self.output_shadow, self.output_weights);
     }
 
-    /// Re-quantize using STE mode (TWN/vanilla/progressive)
-    pub fn requantizeSte(self: *Self, config: ste_mod.SteConfig, step: u32) void {
-        for (self.blocks) |*block| {
-            block.tnn.requantizeSte(config, step);
-            block.sacred_attn.requantizeSte(config, step);
+    /// STE-aware requantize: dispatches to configured mode, stores alpha per layer
+    pub fn requantizeSte(self: *Self, current_step: u32) void {
+        for (&self.blocks) |*block| {
+            block.tnn.requantizeSte(self.ste_config, current_step);
+            block.sacred_attn.requantizeSte(self.ste_config, current_step);
         }
-        _ = ste_mod.quantizeForMode(self.output_shadow, self.output_weights, config, step);
+        self.alpha_output = ste_mod.quantizeForMode(self.output_shadow, self.output_weights, self.ste_config, current_step);
     }
 
     /// Forward pass with activation caching for training
@@ -546,7 +434,7 @@ pub const HSLM = struct {
 
         const last_pos = seq_len - 1;
 
-        for (self.blocks) |*block| {
+        for (&self.blocks) |*block| {
             block.sacred_attn.resetCache();
 
             for (0..seq_len) |pos| {
@@ -606,39 +494,27 @@ pub const HSLM = struct {
             cur_trit = next_trit;
         }
 
-        // Step 3: Fused dropout + RMS norm (single pass over memory)
+        // Step 3: Cache pre-RMS hidden and compute RMS norm
         const last_off = last_pos * EMBED_DIM;
         const last_hidden = cur_float[last_off .. last_off + EMBED_DIM];
+        @memcpy(&self.cache_pre_rms, last_hidden);
 
-        // Fused: dropout → cache → RMS accumulate in one pass
+        // RMS normalization
         var rms_sq: f64 = 0.0;
-        if (self.dropout_rate > 0.0) {
-            const inv_keep = 1.0 / (1.0 - self.dropout_rate);
-            const rng = self.dropout_prng.random();
-            for (0..EMBED_DIM) |ii| {
-                const val = if (rng.float(f32) < self.dropout_rate) @as(f32, 0.0) else last_hidden[ii] * inv_keep;
-                last_hidden[ii] = val;
-                self.cache_pre_rms[ii] = val;
-                rms_sq += @as(f64, val) * @as(f64, val);
-            }
-        } else {
-            for (0..EMBED_DIM) |ii| {
-                const val = last_hidden[ii];
-                self.cache_pre_rms[ii] = val;
-                rms_sq += @as(f64, val) * @as(f64, val);
-            }
+        for (0..EMBED_DIM) |ii| {
+            rms_sq += @as(f64, last_hidden[ii]) * @as(f64, last_hidden[ii]);
         }
         const rms: f32 = @floatCast(@sqrt(rms_sq / @as(f64, EMBED_DIM) + 1e-6));
         self.cache_rms_scale = rms;
 
-        const inv_rms = 1.0 / rms;
         var normalized: [EMBED_DIM]f32 = undefined;
         for (0..EMBED_DIM) |ii| {
-            normalized[ii] = self.cache_pre_rms[ii] * inv_rms;
+            normalized[ii] = last_hidden[ii] / rms;
         }
 
         // Output projection from normalized (sacred scale: 1/d^γ, γ = φ⁻³)
-        sparse_ternary.branchlessMatvec(&normalized, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
+        simd_ops.ternaryMatvecSimd(&normalized, self.output_weights, logits, EMBED_DIM, VOCAB_SIZE);
+        ste_mod.applyAlpha(logits[0..VOCAB_SIZE], self.alpha_output); // TWN scaling
         for (0..VOCAB_SIZE) |j| {
             logits[j] = logits[j] * SACRED_LOGIT_SCALE + self.output_bias[j];
         }
@@ -649,7 +525,7 @@ pub const HSLM = struct {
         // Step 1: Output projection backward (sacred scale: 1/d^γ)
         // ∂L/∂hidden_rms[i] = sum_j(grad_logits[j] * scale * W[i*VOCAB+j]) using ternary STE
         var grad_hidden_rms: [EMBED_DIM]f32 = undefined;
-        sparse_ternary.branchlessVecmat(grad_logits, self.output_weights, &grad_hidden_rms, EMBED_DIM, VOCAB_SIZE);
+        simd_ops.ternaryVecmatSimd(grad_logits, self.output_weights, &grad_hidden_rms, EMBED_DIM, VOCAB_SIZE);
         for (0..EMBED_DIM) |i| {
             grad_hidden_rms[i] *= SACRED_LOGIT_SCALE;
         }
@@ -678,7 +554,7 @@ pub const HSLM = struct {
         var grad_current: [EMBED_DIM]f32 = grad_pre_rms;
         var grad_next: [EMBED_DIM]f32 = undefined;
 
-        var block_idx: usize = self.blocks.len;
+        var block_idx: usize = NUM_BLOCKS;
         while (block_idx > 0) {
             block_idx -= 1;
             // TNN Dense FFN backward
@@ -695,7 +571,7 @@ pub const HSLM = struct {
     pub fn zeroGrad(self: *Self) void {
         @memset(self.grad_output_shadow, 0.0);
         @memset(self.grad_output_bias, 0.0);
-        for (self.blocks) |*block| {
+        for (&self.blocks) |*block| {
             block.tnn.zeroGrad();
             block.sacred_attn.zeroGrad();
         }
@@ -703,7 +579,9 @@ pub const HSLM = struct {
 
     /// Total parameter count
     pub fn paramCount(self: *const Self) usize {
-        return self.config.paramCount();
+        _ = self;
+        const cfg = Config{};
+        return cfg.paramCount();
     }
 };
 
@@ -765,7 +643,7 @@ test "hslm init/deinit" {
     defer model.deinit();
 
     try std.testing.expect(model.config.vocab_size == VOCAB_SIZE);
-    try std.testing.expect(model.config.num_blocks == constants.DEFAULT_BLOCKS);
+    try std.testing.expect(model.config.num_blocks == NUM_BLOCKS);
 }
 
 test "hslm forward" {

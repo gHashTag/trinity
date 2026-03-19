@@ -112,3 +112,13 @@
 {"gen":1,"child":"w8-mock-16","parent":"w7-66","parent_ppl":6.44,"sacred":false,"mutations":{"lr":"1e-3->9.26e-4","grad_clip":"1.0->1.0","warmup":"2000->1665","schedule":"cosine","context":"27"},"timestamp":1773584021285}
 {"gen":2,"type":"sevo_batch","configs_injected":19,"mutations":{"baseline":"LAMB 1e-3 cosine ctx=81","conservative":"LAMB 5e-4 cosine ctx=81","aggressive":"LAMB 2e-3 cosine ctx=81","large_batch":"b=128","small_batch":"b=32"},"timestamp":1773856282}
 {"gen":2,"type":"sevo_recycle","workers_recycled":27,"config":{"lr":"1e-3","optimizer":"LAMB","schedule":"cosine","batch":66,"ctx":81,"warmup":2000,"steps":100000},"seeds":{"start":601,"end":619},"timestamp":1773856576}
+{"ts":1773861611722,"wave":"sevo-10","config":"w8-v1","lr":"5e-4","batch":66,"warmup":2000}
+{"ts":1773861611722,"wave":"sevo-10","config":"w8-v2","lr":"1.5e-3","batch":66,"warmup":2000}
+{"ts":1773861611722,"wave":"sevo-10","config":"w8-v3","lr":"1e-3","batch":32,"warmup":2000}
+{"ts":1773861611722,"wave":"sevo-10","config":"w8-v4","lr":"1e-3","batch":128,"warmup":2000}
+{"ts":1773861611722,"wave":"sevo-10","config":"w8-v5","lr":"1e-3","batch":66,"warmup":1000}
+{"ts":1773861611722,"wave":"sevo-10","config":"w8-v6","lr":"1e-3","batch":66,"warmup":5000}
+{"ts":1773861611722,"wave":"sevo-10","config":"w8-v7","lr":"5e-4","batch":32,"warmup":2000}
+{"ts":1773861611722,"wave":"sevo-10","config":"w8-v8","lr":"1.5e-3","batch":128,"warmup":2000}
+{"ts":1773861611722,"wave":"sevo-10","config":"w8-v9","lr":"8e-4","batch":66,"warmup":3000}
+{"ts":1773861611722,"wave":"sevo-10","config":"w8-v10","lr":"1e-3","batch":66,"warmup":2000}

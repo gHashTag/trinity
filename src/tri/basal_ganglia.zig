@@ -283,3 +283,184 @@ test "basal_ganglia — Trigger enum coverage" {
         _ = t; // Verify all enum values exist
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// ACTION CANDIDATE TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "basal_ganglia — ActionCandidate defaults" {
+    const c = ActionCandidate{
+        .kind = .farm_status,
+        .urgency = .normal,
+    };
+
+    try std.testing.expectEqual(@as(f32, 0.0), c.value);
+    try std.testing.expectEqual(@as(f32, 0.0), c.cost);
+    try std.testing.expect(!c.suppressed);
+}
+
+test "basal_ganglia — ActionCandidate score zero value" {
+    const c = ActionCandidate{
+        .kind = .farm_status,
+        .urgency = .normal,
+        .value = 0.0,
+        .cost = 0.5,
+    };
+    // score = 0.0 - (0.5 * 0.5) = -0.25
+    try std.testing.expect(c.score() < 0);
+}
+
+test "basal_ganglia — ActionCandidate score zero cost" {
+    const c = ActionCandidate{
+        .kind = .farm_status,
+        .urgency = .normal,
+        .value = 0.8,
+        .cost = 0.0,
+    };
+    // score = 0.8 - (0.0 * 0.5) = 0.8
+    try std.testing.expectApproxEqAbs(@as(f32, 0.8), c.score(), 0.01);
+}
+
+test "basal_ganglia — ActionCandidate with critical urgency" {
+    const c = ActionCandidate{
+        .kind = .farm_status,
+        .urgency = .critical,
+        .value = 0.5,
+        .cost = 0.1,
+    };
+    // score = 0.5 - (0.1 * 0.5) = 0.45
+    // weighted = 0.45 * 4.0 = 1.8
+    try std.testing.expectApproxEqAbs(@as(f32, 0.45), c.score(), 0.01);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// URGENCY TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "basal_ganglia — Urgency all values" {
+    const urgencies = [_]Urgency{ .critical, .high, .normal, .low };
+    for (urgencies) |u| {
+        _ = u; // Verify all enum values exist
+    }
+}
+
+test "basal_ganglia — Urgency low weight" {
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), Urgency.low.weight(), 0.01);
+}
+
+test "basal_ganglia — selectAction with low urgency" {
+    const candidates = [_]ActionCandidate{
+        .{ .kind = .farm_status, .urgency = .low, .value = 1.0 },
+        .{ .kind = .doctor_quick, .urgency = .normal, .value = 0.6 },
+    };
+    // low: 1.0 * 0.5 = 0.5, normal: 0.6 * 1.0 = 0.6
+    const selected = selectAction(&candidates);
+    try std.testing.expectEqual(qt.ActionKind.doctor_quick, selected.?);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HABIT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "basal_ganglia — Habit defaults" {
+    const h = Habit{
+        .action = .farm_status,
+        .trigger = .always,
+    };
+
+    try std.testing.expectEqual(@as(u32, 0), h.count);
+    try std.testing.expectEqual(@as(i64, 0), h.last_executed);
+}
+
+test "basal_ganglia — Habit isReady always trigger" {
+    const now: i64 = 100000;
+
+    const always_habit = Habit{
+        .action = .farm_status,
+        .trigger = .always,
+        .last_executed = now, // Just executed
+    };
+    try std.testing.expect(always_habit.isReady(now));
+}
+
+test "basal_ganglia — Habit isReady hourly boundary" {
+    const now: i64 = 100000;
+
+    const exactly_hour = Habit{
+        .action = .farm_status,
+        .trigger = .hourly,
+        .last_executed = now - 3600, // Exactly 1 hour
+    };
+    try std.testing.expect(exactly_hour.isReady(now));
+}
+
+test "basal_ganglia — Habit isReady daily boundary" {
+    const now: i64 = 100000;
+
+    const exactly_daily = Habit{
+        .action = .doctor_quick,
+        .trigger = .daily,
+        .last_executed = now - (24 * 3600), // Exactly 24 hours
+    };
+    try std.testing.expect(exactly_daily.isReady(now));
+}
+
+test "basal_ganglia — Habit all triggers" {
+    const now: i64 = 100000;
+
+    const triggers = [_]Trigger{ .always, .hourly, .daily };
+    for (triggers) |t| {
+        const h = Habit{
+            .action = .farm_status,
+            .trigger = t,
+            .last_executed = now - 100000,
+        };
+        _ = h.isReady(now); // Should not panic
+    }
+}
+
+test "basal_ganglia — Habit count increments" {
+    var h = Habit{
+        .action = .farm_status,
+        .trigger = .daily,
+        .count = 5,
+    };
+
+    try std.testing.expectEqual(@as(u32, 5), h.count);
+
+    h.count = 10;
+    try std.testing.expectEqual(@as(u32, 10), h.count);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CELL HEALTH TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "basal_ganglia — CellHealth timestamp" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
+
+test "basal_ganglia — CellHealth defaults" {
+    const h = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
+
+test "basal_ganglia — CellHealth Status enum" {
+    try std.testing.expectEqual(CellHealth.Status.healthy, .healthy);
+    try std.testing.expectEqual(CellHealth.Status.weak, .weak);
+    try std.testing.expectEqual(CellHealth.Status.broken, .broken);
+}
+
+test "basal_ganglia — CellHealth custom values" {
+    var h = CellHealth{};
+    h.status = .weak;
+    h.cycle = 3;
+    h.last_check = 54321;
+
+    try std.testing.expectEqual(CellHealth.Status.weak, h.status);
+    try std.testing.expectEqual(@as(u32, 3), h.cycle);
+    try std.testing.expectEqual(@as(i64, 54321), h.last_check);
+}

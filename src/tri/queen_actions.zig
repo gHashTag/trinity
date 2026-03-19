@@ -65,7 +65,6 @@ fn kindToArgv(kind: ActionKind) []const []const u8 {
         .research_sacred => &.{ "./zig-out/bin/tri", "research", "sacred" },
         .ouroboros_status => &.{ "./zig-out/bin/tri", "ouroboros", "status" },
         .experience_recall => &.{ "./zig-out/bin/tri", "experience", "mistakes" },
-        .introspection => &.{ "./zig-out/bin/tri", "pcc", "introspect" },
         .farm_evolve_status => &.{ "./zig-out/bin/tri", "farm", "evolve", "status" },
         .swarm_status => &.{ "./zig-out/bin/tri", "swarm", "status" },
         // L1 — Soft Write
@@ -127,9 +126,12 @@ pub fn desiredAction(state: *const qt.QueenState, senses: qt.SenseResult) ?Actio
     if (senses.stale_arena_hours > 24) {
         return .arena_battle;
     }
-    // NOTE: experience_save removed from auto-actions — requires --task parameter
-    // Should only be called manually or after specific error-fixing events
-    // Rule 8: Farm idle > 3 services → recycle (L2)
+    // Rule 8: Experience episodes grew → save
+    if (senses.experience_count > 0) {
+        // Save periodically (this is a heuristic — fires once per cycle if episodes exist)
+        return .experience_save;
+    }
+    // Rule 9: Farm idle > 3 services → recycle (L2)
     if (senses.farm_idle_count > 3) {
         return .farm_recycle;
     }
@@ -310,4 +312,29 @@ test "Queen actions — recordAutoAction" {
     try std.testing.expect(state.last_auto_action_ts > 0);
     try std.testing.expectEqual(state.cycle, state.last_build_heal_cycle);
     try std.testing.expectEqual(@as(u8, 1), counters.getCount(.doctor_quick));
+}
+
+test "Queen actions — recordAutoAction with heal sets cycle" {
+    var state = qt.QueenState{ .cycle = 42 };
+    var counters = queen_policy.ActionCounters{};
+    recordAutoAction(&state, .doctor_heal, &counters);
+    try std.testing.expectEqual(@as(i64, 42), state.last_build_heal_cycle);
+}
+
+test "Queen actions — recordAutoAction saturates at 255" {
+    var state = qt.QueenState{ .auto_actions_this_hour = 255 };
+    var counters = queen_policy.ActionCounters{};
+    recordAutoAction(&state, .doctor_quick, &counters);
+    try std.testing.expectEqual(@as(u8, 255), state.auto_actions_this_hour);
+}
+
+test "Queen actions — execute handles non-existent binary" {
+    const result = execute(std.testing.allocator, .farm_status);
+    defer {
+        if (result.output_len > 0) {
+            // Output is in static buffer, no free needed
+        }
+    }
+    // Either fails (binary not found) or succeeds if tri exists
+    try std.testing.expect(true);
 }

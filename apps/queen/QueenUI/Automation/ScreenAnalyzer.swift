@@ -270,7 +270,7 @@ public struct ActionSuggestion {
 }
 
 extension CGRect {
-    var center: CGPoint {
+    public var center: CGPoint {
         CGPoint(x: midX, y: midY)
     }
 }

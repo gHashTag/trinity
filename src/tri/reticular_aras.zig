@@ -28,7 +28,7 @@ pub const SweepResult = struct {
 
     pub fn problemCount(self: *const SweepResult) u32 {
         var count: u32 = @intCast(self.crashed_workers.len);
-        count += self.stale_count;
+        count +%= @as(u32, @intCast(self.stale_count));
         return count;
     }
 
@@ -142,7 +142,7 @@ pub fn sweepOnce(allocator: Allocator, state: *ArasState) !SweepResult {
     }
 
     // Count stale workers (stuck > 30 minutes)
-    const now = std.time.timestamp();
+    _ = std.time.timestamp(); // For future timeout calculation
     for (state.workers[0..state.workers_len]) |w| {
         if (std.mem.eql(u8, w.state, "stale")) {
             // Check step stuck via evolution state timestamps
@@ -218,7 +218,7 @@ pub fn getSweepStats(state: *const ArasState) struct {
     return .{
         .last_sweep = state.last_sweep,
         .sweep_count = state.sweep_count,
-        .problems_last = state.last_result.crashed_workers.len + state.last_result.stale_count,
+        .problems_last = @intCast(state.last_result.crashed_workers.len + state.last_result.stale_count),
         .crashed_last = state.last_result.crashed_workers.len,
         .stale_last = state.last_result.stale_count,
     };
@@ -268,4 +268,304 @@ test "aras — sweepResult problemCount" {
 test "aras — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+test "aras — SweepResult hasProblems" {
+    var result = SweepResult{};
+    try std.testing.expect(!result.hasProblems());
+
+    result.crashed_workers = &[_][]const u8{"w1"};
+    try std.testing.expect(result.hasProblems());
+
+    result = SweepResult{ .stale_count = 1 };
+    try std.testing.expect(result.hasProblems());
+}
+
+test "aras — SweepResult timestamp" {
+    const before = std.time.timestamp();
+    var result = SweepResult{};
+    try std.testing.expectEqual(@as(i64, 0), result.timestamp);
+
+    result.timestamp = std.time.timestamp();
+    try std.testing.expect(result.timestamp >= before);
+}
+
+test "aras — SweepResult total_services" {
+    const result = SweepResult{ .total_services = 100 };
+    try std.testing.expectEqual(@as(usize, 100), result.total_services);
+}
+
+test "aras — ArasState defaults" {
+    const state = ArasState{};
+    try std.testing.expectEqual(@as(u32, 300), state.interval_sec);
+    try std.testing.expectEqual(@as(u32, 0), state.sweep_count);
+    try std.testing.expectEqual(@as(i64, 0), state.last_sweep);
+    try std.testing.expect(state.alert_sink == null);
+}
+
+test "aras — WorkerStatus fields" {
+    const worker = WorkerStatus{
+        .name = "test-worker",
+        .state = "running",
+        .last_ppl = 1.5,
+        .last_step = 1000,
+        .steps_stuck = 0,
+    };
+
+    try std.testing.expectEqualStrings("test-worker", worker.name);
+    try std.testing.expectEqualStrings("running", worker.state);
+    try std.testing.expectEqual(@as(f32, 1.5), worker.last_ppl);
+}
+
+test "aras — CellHealth Status enum" {
+    try std.testing.expectEqual(CellHealth.Status.healthy, .healthy);
+    try std.testing.expectEqual(CellHealth.Status.weak, .weak);
+    try std.testing.expectEqual(CellHealth.Status.broken, .broken);
+}
+
+test "aras — CellHealth last_check" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PROBLEM COUNT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "aras — problemCount with empty result" {
+    const result = SweepResult{};
+    try std.testing.expectEqual(@as(u32, 0), result.problemCount());
+}
+
+test "aras — problemCount with only crashed" {
+    const result = SweepResult{ .crashed_workers = &[_][]const u8{ "w1", "w2", "w3" } };
+    try std.testing.expectEqual(@as(u32, 3), result.problemCount());
+}
+
+test "aras — problemCount with only stale" {
+    const result = SweepResult{ .stale_count = 5 };
+    try std.testing.expectEqual(@as(u32, 5), result.problemCount());
+}
+
+test "aras — problemCount wrapping addition" {
+    // Test the +% (wrapping) addition with large values
+    const result = SweepResult{
+        .crashed_workers = &[_][]const u8{"w1"},
+        .stale_count = 100,
+    };
+    try std.testing.expectEqual(@as(u32, 101), result.problemCount());
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SWEEP STATS TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "aras — getSweepStats returns zero for fresh state" {
+    const state = ArasState{};
+    const stats = getSweepStats(&state);
+
+    try std.testing.expectEqual(@as(i64, 0), stats.last_sweep);
+    try std.testing.expectEqual(@as(u32, 0), stats.sweep_count);
+    try std.testing.expectEqual(@as(u32, 0), stats.problems_last);
+    try std.testing.expectEqual(@as(usize, 0), stats.crashed_last);
+    try std.testing.expectEqual(@as(usize, 0), stats.stale_last);
+}
+
+test "aras — getSweepStats returns populated values" {
+    var state = ArasState{
+        .sweep_count = 42,
+        .last_sweep = 12345,
+        .last_result = SweepResult{
+            .crashed_workers = &[_][]const u8{ "w1", "w2" },
+            .stale_count = 3,
+            .total_services = 100,
+        },
+    };
+
+    const stats = getSweepStats(&state);
+
+    try std.testing.expectEqual(@as(i64, 12345), stats.last_sweep);
+    try std.testing.expectEqual(@as(u32, 42), stats.sweep_count);
+    try std.testing.expectEqual(@as(u32, 5), stats.problems_last);
+    try std.testing.expectEqual(@as(usize, 2), stats.crashed_last);
+    try std.testing.expectEqual(@as(usize, 3), stats.stale_last);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "aras — init with valid sink" {
+    const state = init(dummySink);
+    try std.testing.expect(state.alert_sink != null);
+    try std.testing.expectEqual(@as(u32, 300), state.interval_sec);
+    try std.testing.expectEqual(@as(u32, 0), state.sweep_count);
+}
+
+test "aras — init sets all defaults" {
+    const state = init(dummySink);
+
+    try std.testing.expectEqual(@as(u32, 300), state.interval_sec);
+    try std.testing.expectEqual(@as(u32, 0), state.sweep_count);
+    try std.testing.expectEqual(@as(i64, 0), state.last_sweep);
+    try std.testing.expectEqual(@as(usize, 0), state.workers_len);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ARAS STATE TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "aras — ArasState custom interval" {
+    const state = ArasState{ .interval_sec = 600 };
+    try std.testing.expectEqual(@as(u32, 600), state.interval_sec);
+}
+
+test "aras — ArasState with sweep count" {
+    var state = ArasState{ .sweep_count = 10 };
+    try std.testing.expectEqual(@as(u32, 10), state.sweep_count);
+
+    state.sweep_count = 100;
+    try std.testing.expectEqual(@as(u32, 100), state.sweep_count);
+}
+
+test "aras — ArasState workers array" {
+    var workers = [_]WorkerStatus{
+        .{ .name = "w1", .state = "running" },
+        .{ .name = "w2", .state = "stale" },
+    };
+
+    const state = ArasState{
+        .workers = &workers,
+        .workers_len = 2,
+    };
+
+    try std.testing.expectEqual(@as(usize, 2), state.workers_len);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CELL HEALTH TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "aras — CellHealth custom values" {
+    var h = CellHealth{};
+    h.status = .weak;
+    h.cycle = 5;
+    h.last_check = 12345;
+
+    try std.testing.expectEqual(CellHealth.Status.weak, h.status);
+    try std.testing.expectEqual(@as(u32, 5), h.cycle);
+    try std.testing.expectEqual(@as(i64, 12345), h.last_check);
+}
+
+test "aras — CellHealth all status values" {
+    const healthy = CellHealth{ .status = .healthy };
+    const weak = CellHealth{ .status = .weak };
+    const broken = CellHealth{ .status = .broken };
+
+    try std.testing.expectEqual(CellHealth.Status.healthy, healthy.status);
+    try std.testing.expectEqual(CellHealth.Status.weak, weak.status);
+    try std.testing.expectEqual(CellHealth.Status.broken, broken.status);
+}
+
+test "aras — CellHealth default cycle" {
+    const h = CellHealth{};
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// WORKER STATUS TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "aras — WorkerStatus steps_stuck" {
+    const worker = WorkerStatus{
+        .name = "stuck-worker",
+        .state = "stale",
+        .steps_stuck = 1800, // 30 minutes
+    };
+
+    try std.testing.expectEqual(@as(u32, 1800), worker.steps_stuck);
+}
+
+test "aras — WorkerStatus default values" {
+    const worker = WorkerStatus{
+        .name = "test",
+        .state = "idle",
+    };
+
+    try std.testing.expectEqual(@as(f32, 999.0), worker.last_ppl);
+    try std.testing.expectEqual(@as(u32, 0), worker.last_step);
+    try std.testing.expectEqual(@as(u32, 0), worker.steps_stuck);
+}
+
+test "aras — WorkerStatus all states" {
+    const states = [_][]const u8{ "running", "idle", "stale", "crashed", "error" };
+
+    for (states) |state_name| {
+        const worker = WorkerStatus{
+            .name = "worker",
+            .state = state_name,
+        };
+        try std.testing.expectEqualStrings(state_name, worker.state);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SWEEP RESULT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "aras — SweepResult default values" {
+    const result = SweepResult{};
+
+    try std.testing.expectEqual(@as(usize, 0), result.crashed_workers.len);
+    try std.testing.expectEqual(@as(usize, 0), result.stale_count);
+    try std.testing.expectEqual(@as(usize, 0), result.total_services);
+    try std.testing.expectEqual(@as(i64, 0), result.timestamp);
+}
+
+test "aras — SweepResult hasProblems combinations" {
+    // No problems
+    {
+        const result = SweepResult{};
+        try std.testing.expect(!result.hasProblems());
+    }
+
+    // Only crashed
+    {
+        const result = SweepResult{ .crashed_workers = &[_][]const u8{"w1"} };
+        try std.testing.expect(result.hasProblems());
+    }
+
+    // Only stale
+    {
+        const result = SweepResult{ .stale_count = 1 };
+        try std.testing.expect(result.hasProblems());
+    }
+
+    // Both crashed and stale
+    {
+        const result = SweepResult{
+            .crashed_workers = &[_][]const u8{ "w1", "w2" },
+            .stale_count = 3,
+        };
+        try std.testing.expect(result.hasProblems());
+    }
+}
+
+test "aras — SweepResult multiple crashed workers" {
+    const crashed = [_][]const u8{ "w1", "w2", "w3", "w4", "w5" };
+    const result = SweepResult{ .crashed_workers = &crashed };
+
+    try std.testing.expectEqual(@as(usize, 5), result.crashed_workers.len);
+    try std.testing.expectEqual(@as(u32, 5), result.problemCount());
+}
+
+test "aras — SweepResult with large counts" {
+    const result = SweepResult{
+        .crashed_workers = &[_][]const u8{"w1"},
+        .stale_count = 999,
+        .total_services = 1000,
+    };
+
+    try std.testing.expectEqual(@as(u32, 1000), result.problemCount());
+    try std.testing.expectEqual(@as(usize, 1000), result.total_services);
 }

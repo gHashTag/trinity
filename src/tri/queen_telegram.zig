@@ -1,4 +1,4 @@
-// @origin(manual) @regen(manual-impl)
+// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN TELEGRAM — Bidirectional Telegram: send + getUpdates + dispatch
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -10,8 +10,6 @@ const qt = @import("queen_types.zig");
 const queen_senses = @import("queen_senses.zig");
 const queen_actions = @import("queen_actions.zig");
 const queen_policy = @import("queen_policy.zig");
-const queen_ouroboros = @import("queen_ouroboros.zig");
-const queen_cortex = @import("queen_cortex.zig");
 
 const Allocator = std.mem.Allocator;
 const print = std.debug.print;
@@ -208,18 +206,6 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
         // /queen — full status (senses)
         const msg = queen_senses.fmtSensesTelegram(&buf, ctx.senses);
         tgSend(ctx.tg, msg);
-    } else if (std.mem.eql(u8, sub, "score")) {
-        // v5: Ouroboros score with details
-        dispatchScore(ctx, &buf);
-    } else if (std.mem.eql(u8, sub, "trends")) {
-        // v5: Score trends (last 3 values)
-        dispatchTrends(ctx, &buf);
-    } else if (std.mem.eql(u8, sub, "forecast")) {
-        // v5: Forecast based on trends
-        dispatchForecast(ctx, &buf);
-    } else if (std.mem.eql(u8, sub, "brain")) {
-        // v5: All brain cells status
-        dispatchBrain(ctx, &buf);
     } else if (std.mem.eql(u8, sub, "doctor")) {
         ctx.incidents.record(.human_command, .doctor_quick, true, "tg /queen doctor");
         const result = queen_actions.execute(ctx.allocator, .doctor_quick);
@@ -228,17 +214,42 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
         const msg = fmtActionResult(&buf, .doctor_quick, result);
         tgSend(ctx.tg, msg);
     } else if (std.mem.eql(u8, sub, "score")) {
-        const msg = std.fmt.bufPrint(&buf, qt.E_CYCLE ++ " Ouroboros Score: {d:.1}\n\n" ++
-            qt.E_CHECK ++ " Build: {s}\n" ++
-            qt.E_GEAR ++ " Tests: {d}%%\n" ++
-            qt.E_DNA ++ " Farm PPL: {d:.1}\n" ++
-            qt.E_SWORDS ++ " Arena: {d}", .{
-            ctx.senses.ouroboros_score,
-            if (ctx.senses.build_ok) "OK" else "FAIL",
-            ctx.senses.test_rate,
-            ctx.senses.farm_best_ppl,
-            ctx.senses.arena_battles,
-        }) catch "";
+        // v5: Full 12-dimension Ouroboros report via API
+        const queen_ouroboros = @import("queen_ouroboros.zig");
+        const ouro = queen_ouroboros.fetch(ctx.allocator, .{}) catch brk: {
+            // Fallback to simple score if API unreachable
+            const msg = std.fmt.bufPrint(&buf, qt.E_CYCLE ++ " Ouroboros Score: {d:.1}\n\n" ++
+                qt.E_CHECK ++ " Build: {s}\n" ++
+                qt.E_GEAR ++ " Tests: {d}%%\n" ++
+                qt.E_DNA ++ " Farm PPL: {d:.1}\n" ++
+                qt.E_SWORDS ++ " Arena: {d}", .{
+                ctx.senses.ouroboros_score,
+                if (ctx.senses.build_ok) "OK" else "FAIL",
+                ctx.senses.test_rate,
+                ctx.senses.farm_best_ppl,
+                ctx.senses.arena_battles,
+            }) catch "";
+            tgSend(ctx.tg, msg);
+            // Return after sending fallback message
+            return;
+        };
+
+        // Use large buffer for full 12-dimension report
+        var ouro_buf: [4096]u8 = undefined;
+        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, &ouro);
+        tgSend(ctx.tg, msg);
+    } else if (std.mem.eql(u8, sub, "dimensions")) {
+        // v5: Explicit dimensions-only report
+        const queen_ouroboros = @import("queen_ouroboros.zig");
+        const ouro = queen_ouroboros.fetch(ctx.allocator, .{}) catch brk: {
+            const msg = std.fmt.bufPrint(&buf, qt.E_SIREN ++ " Ouroboros API unreachable");
+            tgSend(ctx.tg, msg);
+            // Return after sending fallback message
+            return;
+        };
+
+        var ouro_buf: [3072]u8 = undefined;
+        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, &ouro);
         tgSend(ctx.tg, msg);
     } else if (std.mem.eql(u8, sub, "farm")) {
         const result = queen_actions.execute(ctx.allocator, .farm_status);
@@ -287,10 +298,8 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
     } else if (std.mem.eql(u8, sub, "help")) {
         const msg = qt.E_CROWN ++ " Queen v5 Commands\n\n" ++
             "/queen \xe2\x80\x94 18 senses status\n" ++ // —
-            "/queen score \xe2\x80\x94 ouroboros score\n" ++
-            "/queen trends \xe2\x80\x94 score history (3)\n" ++
-            "/queen forecast \xe2\x80\x94 trend prediction\n" ++
-            "/queen brain \xe2\x80\x94 all brain cells\n" ++
+            "/queen score \xe2\x80\x94 Ouroboros 12-dim report\n" ++
+            "/queen dimensions \xe2\x80\x94 Full Ouroboros dashboard\n" ++
             "/queen doctor \xe2\x80\x94 tri doctor quick\n" ++
             "/queen farm \xe2\x80\x94 farm status\n" ++
             "/queen arena \xe2\x80\x94 arena leaderboard\n" ++
@@ -552,223 +561,6 @@ pub fn tgSendAutoReport(tg: qt.TgConfig, kind: qt.ActionKind, result: qt.ActionR
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// V5 COMMAND HANDLERS — score, trends, forecast, brain
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// /queen score — detailed Ouroboros score breakdown
-fn dispatchScore(ctx: DispatchContext, buf: []u8) void {
-    const state = queen_ouroboros.fetch();
-    const score = queen_ouroboros.getScore(state);
-    const delta = score - state.initial;
-    const sign = if (delta >= 0) "+" else "";
-
-    // Grade emoji
-    const grade_emoji = if (score >= 90) qt.E_STAR else if (score >= 70) qt.E_CHECK else if (score >= 50) qt.E_WRENCH else qt.E_CROSS;
-
-    const msg = std.fmt.bufPrint(buf,
-        \\{s} Ouroboros Score
-        \\{s} {d:.1}/100 ({s}{d:.1})
-        \\
-        \\{s} Cycle: {d}
-        \\{s} Strategy: {s}
-        \\{s} Stagnation: {d}
-        \\
-        \\Dimensions:
-        \\  {s} Efficiency: {d:.0}%%
-        \\  {s} Build: {s}
-        \\  {s} Tests: {d:.0}%%
-        \\  {s} Farm PPL: {d:.1}
-        \\  {s} Arena: {d}
-    , .{
-        grade_emoji,
-        qt.E_STAR,
-        score,
-        sign,
-        delta,
-        qt.E_CYCLE,
-        state.cycle,
-        qt.E_BRAIN,
-        state.strategyStr(),
-        qt.E_CHART,
-        state.stagnation,
-        qt.E_GEAR,
-        state.efficiency,
-        qt.E_CHECK,
-        if (state.build_health > 50) "OK" else "FAIL",
-        qt.E_CLIP,
-        state.test_coverage,
-        qt.E_DNA,
-        state.farm_productivity,
-        qt.E_SWORDS,
-        state.arena_activity,
-    }) catch "";
-    tgSend(ctx.tg, msg);
-}
-
-/// /queen trends — last 3 score values with trend direction
-fn dispatchTrends(ctx: DispatchContext, buf: []u8) void {
-    // Read history from ouroboros_state.json
-    const file = std.fs.cwd().openFile(".trinity/ouroboros_state.json", .{}) catch {
-        const msg = std.fmt.bufPrint(buf, "{s} No history data", .{qt.E_WRENCH}) catch "";
-        tgSend(ctx.tg, msg);
-        return;
-    };
-    defer file.close();
-
-    var data_buf: [8192]u8 = undefined;
-    const n = file.readAll(&data_buf) catch return;
-    const data = data_buf[0..n];
-
-    // Extract current, initial, and if available previous values
-    const current = qt.findJsonF32(data, "\"current\":") orelse 0.0;
-    const initial = qt.findJsonF32(data, "\"initial\":") orelse 0.0;
-
-    // Look for previous_initial if exists (trend tracking)
-    const prev_initial = qt.findJsonF32(data, "\"prev_initial\":") orelse initial;
-
-    // Calculate trend
-    const trend_emoji = if (current >= initial) qt.E_CHART else "\xf0\x9f\x93\x89"; // 📉
-    const trend_str = if (current >= initial) "\xe2\x96\xb2" else "\xe2\x96\xbc"; // ▲/▼
-
-    const msg = std.fmt.bufPrint(buf,
-        \\{s} Ouroboros Trends
-        \\
-        \\  {s} Now: {d:.1}
-        \\  {s} Start: {d:.1}
-        \\  {s} Prev: {d:.1}
-        \\
-        \\{s} {s} {d:.1}
-    , .{
-        qt.E_CHART,
-        qt.E_STAR,
-        current,
-        qt.E_CYCLE,
-        initial,
-        qt.E_TIMER,
-        prev_initial,
-        trend_emoji,
-        trend_str,
-        current - initial,
-    }) catch "";
-    tgSend(ctx.tg, msg);
-}
-
-/// /queen forecast — prediction based on trend direction
-fn dispatchForecast(ctx: DispatchContext, buf: []u8) void {
-    const state = queen_ouroboros.fetch();
-    const score = queen_ouroboros.getScore(state);
-    const delta = score - state.initial;
-
-    // Simple linear forecast: assume same trend continues
-    const forecast = score + delta;
-
-    // Confidence based on stagnation (lower = more confident)
-    const confidence = if (state.stagnation == 0) "HIGH" else if (state.stagnation < 3) "MED" else "LOW";
-    const conf_emoji = if (state.stagnation == 0) qt.E_STAR else if (state.stagnation < 3) qt.E_EYE else qt.E_WRENCH;
-
-    // Recommendation
-    const rec = if (delta > 5) "Keep going!" else if (delta > 0) "Steady progress" else if (delta > -5) "Stable" else "Action needed";
-
-    const msg = std.fmt.bufPrint(buf,
-        \\{s} Ouroboros Forecast
-        \\
-        \\Current: {d:.1}
-        \\{s} Forecast: {d:.1}
-        \\{s} Confidence: {s}
-        \\
-        \\Recommendation: {s}
-        \\
-        \\Strategy: {s}
-    , .{
-        qt.E_BRAIN,
-        score,
-        qt.E_CHART,
-        forecast,
-        conf_emoji,
-        confidence,
-        rec,
-        state.strategyStr(),
-    }) catch "";
-    tgSend(ctx.tg, msg);
-}
-
-/// /queen brain — status of all brain cells
-fn dispatchBrain(ctx: DispatchContext, buf: []u8) void {
-    // Get health directly from each cell (they don't take allocator)
-    const dlpfc_health = queen_cortex.dlpfc.health();
-    const vmpfc_health = queen_cortex.vmpfc.health();
-    const ofc_health = queen_cortex.ofc.health();
-    const vlpfc_health = queen_cortex.vlpfc.health();
-    const dmpfc_health = queen_cortex.dmpfc.health();
-
-    // Count healthy cells
-    var healthy: u8 = 0;
-    if (dlpfc_health.status == .healthy) healthy += 1;
-    if (vmpfc_health.status == .healthy) healthy += 1;
-    if (ofc_health.status == .healthy) healthy += 1;
-    if (vlpfc_health.status == .healthy) healthy += 1;
-    if (dmpfc_health.status == .healthy) healthy += 1;
-
-    const grade = if (healthy == 5) "A" else if (healthy >= 3) "B" else "C";
-    const grade_emoji = if (grade[0] == 'A') qt.E_STAR else if (grade[0] == 'B') qt.E_CHECK else qt.E_WRENCH;
-
-    // Combined cycles
-    const combined = dlpfc_health.cycle + vmpfc_health.cycle + ofc_health.cycle +
-        vlpfc_health.cycle + dmpfc_health.cycle;
-
-    const msg = std.fmt.bufPrint(buf,
-        \\{s} Brain Cells Status
-        \\
-        \\Overall: {d}/5 healthy ({s})
-        \\
-        \\{s} DLPFC: {s} (cycle {d})
-        \\{s} VMPFC: {s} (cycle {d})
-        \\{s} OFC: {s} (cycle {d})
-        \\{s} VLPFC: {s} (cycle {d})
-        \\{s} DMPFC: {s} (cycle {d})
-        \\
-        \\Combined cycles: {d}
-    , .{
-        grade_emoji,
-        healthy,
-        grade,
-        cellEmoji(dlpfc_health.status),
-        statusStr(dlpfc_health.status),
-        dlpfc_health.cycle,
-        cellEmoji(vmpfc_health.status),
-        statusStr(vmpfc_health.status),
-        vmpfc_health.cycle,
-        cellEmoji(ofc_health.status),
-        statusStr(ofc_health.status),
-        ofc_health.cycle,
-        cellEmoji(vlpfc_health.status),
-        statusStr(vlpfc_health.status),
-        vlpfc_health.cycle,
-        cellEmoji(dmpfc_health.status),
-        statusStr(dmpfc_health.status),
-        dmpfc_health.cycle,
-        combined,
-    }) catch "";
-    tgSend(ctx.tg, msg);
-}
-
-fn cellEmoji(status: anytype) []const u8 {
-    const Status = @TypeOf(status);
-    if (@hasField(Status, "healthy")) {
-        return if (status == .healthy) qt.E_CHECK else qt.E_CROSS;
-    }
-    return qt.E_EYE;
-}
-
-fn statusStr(status: anytype) []const u8 {
-    return switch (status) {
-        .healthy => "OK",
-        .weak => "SLOW",
-        .broken => "FAIL",
-    };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -852,4 +644,38 @@ test "Queen telegram — fmtActionResult" {
     try std.testing.expect(msg.len > 0);
     try std.testing.expect(std.mem.indexOf(u8, msg, "OK") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "42") != null);
+}
+
+test "Queen telegram — fmtActionResult failure" {
+    var buf: [2048]u8 = undefined;
+    var result = qt.ActionResult{ .success = false, .duration_ms = 100 };
+    const output = "error occurred";
+    @memcpy(result.output[0..output.len], output);
+    result.output_len = output.len;
+    const msg = fmtActionResult(&buf, .farm_recycle, result);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "FAIL") != null);
+}
+
+test "Queen telegram — parseActionKind all actions" {
+    // L0 actions
+    try std.testing.expectEqual(qt.ActionKind.farm_status, parseActionKind("farm_status").?);
+    try std.testing.expectEqual(qt.ActionKind.arena_status, parseActionKind("arena_status").?);
+    try std.testing.expectEqual(qt.ActionKind.doctor_scan, parseActionKind("doctor_scan").?);
+    try std.testing.expectEqual(qt.ActionKind.train_status, parseActionKind("train_status").?);
+    try std.testing.expectEqual(qt.ActionKind.ouroboros_status, parseActionKind("ouroboros_status").?);
+
+    // L1 actions
+    try std.testing.expectEqual(qt.ActionKind.doctor_quick, parseActionKind("doctor_quick").?);
+    try std.testing.expectEqual(qt.ActionKind.doctor_heal, parseActionKind("doctor_heal").?);
+    try std.testing.expectEqual(qt.ActionKind.git_commit_state, parseActionKind("git_commit").?);
+    try std.testing.expectEqual(qt.ActionKind.git_push, parseActionKind("git_push").?);
+
+    // L2 actions
+    try std.testing.expectEqual(qt.ActionKind.farm_recycle, parseActionKind("farm_recycle").?);
+    try std.testing.expectEqual(qt.ActionKind.farm_evolve_step, parseActionKind("farm_evolve_step").?);
+    try std.testing.expectEqual(qt.ActionKind.cloud_spawn, parseActionKind("cloud_spawn").?);
+
+    // Unknown action
+    try std.testing.expectEqual(@as(?qt.ActionKind, null), parseActionKind("unknown_action"));
 }

@@ -81,8 +81,8 @@ pub const Memory = struct {
         defer file.close();
 
         // Seek to end
-        file.seekFromEnd(0) catch |seek_err| {
-            std.log.warn("memory: seekFromEnd failed for MEMORY.md: {}", .{seek_err});
+        file.seekFromEnd(0) catch |err| {
+            std.log.warn("memory: seekFromEnd failed for MEMORY.md: {}", .{err});
         };
 
         // Write entry with separator

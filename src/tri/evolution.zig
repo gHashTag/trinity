@@ -200,7 +200,7 @@ const ServiceEntry = struct {
         return self.svc_id[0..self.svc_id_len];
     }
 
-    fn svcName(self: *const ServiceEntry) []const u8 {
+    pub fn svcName(self: *const ServiceEntry) []const u8 {
         return self.svc_name[0..self.svc_name_len];
     }
 
@@ -281,7 +281,7 @@ const Event = struct {
     }
 };
 
-const MAX_SERVICES = 160;
+pub const MAX_SERVICES = 160;
 const MAX_EVENTS = 512;
 
 pub const EvolutionState = struct {
@@ -301,7 +301,7 @@ pub const EvolutionState = struct {
         return self.best_name[0..self.best_name_len];
     }
 
-    fn addEvent(self: *EvolutionState, etype: EventType, name: []const u8, detail: []const u8) void {
+    pub fn addEvent(self: *EvolutionState, etype: EventType, name: []const u8, detail: []const u8) void {
         if (self.event_count >= MAX_EVENTS) return;
         var ev = &self.events[self.event_count];
         ev.* = .{};
@@ -399,6 +399,9 @@ pub fn runEvolveCommand(allocator: Allocator, args: []const []const u8) !void {
         return runRestart(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "mirage")) {
         return runMirage(allocator, args[1..]);
+    } else if (std.mem.eql(u8, subcmd, "sevo")) {
+        const sevo_mod = @import("sevo.zig");
+        return sevo_mod.runSevoCommand(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -972,6 +975,21 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     var summary_buf: [2048]u8 = undefined;
     var summary_len: usize = 0;
 
+    // Load sacred workers list EARLY (needed for both rung processing and stalled cleanup)
+    const sacred_list = loadSacredList(allocator) catch &.{};
+    defer {
+        for (sacred_list) |item| allocator.free(item);
+        allocator.free(sacred_list);
+    }
+
+    // Night mode check: block ALL destructive actions during nighttime (22:00-08:00)
+    const night_mode = isNightModeActive();
+    if (night_mode) {
+        print("  {s}🌙 NIGHT MODE ACTIVE:{s} Destructive actions BLOCKED (22:00-08:00)\n", .{ CYAN, RESET });
+        print("  {s}  Allowed: status, dashboard, logs, alerts{s}\n", .{ DIM, RESET });
+        print("  {s}  Blocked: evolve step, kill, recycle, deploy, delete{s}\n\n", .{ DIM, RESET });
+    }
+
     const active_rungs = if (sacred_mode) &SACRED_RUNGS else &DEFAULT_RUNGS;
     if (diagnose_mode) {
         // In diagnose mode: still save metrics/dashboard but don't kill anything
@@ -979,7 +997,7 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     }
     for (active_rungs, 0..) |rung, rung_idx| {
         if (diagnose_mode) continue;
-        const result = processRung(allocator, &state, @intCast(rung_idx), rung, dry_run, &api_calls, sacred_mode);
+        const result = processRung(allocator, &state, @intCast(rung_idx), rung, dry_run, &api_calls, sacred_mode, sacred_list, night_mode);
         total_killed += result.killed;
         total_spawned += result.spawned;
 
@@ -992,10 +1010,23 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     }
 
     // 2b. Kill stalled workers (--kill-stalled or auto-kill long-stalled)
-    if (kill_stalled and !diagnose_mode) {
+    // Sacred workers check: NEVER kill sacred workers
+    if (kill_stalled and !diagnose_mode and !night_mode) {
         var stalled_killed: usize = 0;
         for (state.services[0..state.service_count]) |*svc| {
             if (svc.status == .stalled and svc.stall_count >= 2) {
+                // Check if sacred (protected from killing)
+                const is_sacred = for (sacred_list) |sacred_name| {
+                    if (std.mem.eql(u8, sacred_name, svc.svcName())) break true;
+                } else false;
+
+                if (is_sacred) {
+                    print("  {s}🛡️ SACRED:{s} {s} (stall_count={d}, step={d}, PPL={d:.1}) — PROTECTED from kill\n", .{
+                        CYAN, RESET, svc.svcName(), svc.stall_count, svc.current_step, svc.current_ppl,
+                    });
+                    continue; // Skip sacred workers
+                }
+
                 print("  {s}💀 KILL STALLED:{s} {s} (stall_count={d}, step={d}, PPL={d:.1})\n", .{
                     RED, RESET, svc.svcName(), svc.stall_count, svc.current_step, svc.current_ppl,
                 });
@@ -2139,7 +2170,7 @@ const RungResult = struct {
     spawned: usize,
 };
 
-fn processRung(allocator: Allocator, state: *EvolutionState, rung_idx: u8, rung: Rung, dry_run: bool, api_calls: *u32, sacred: bool) RungResult {
+fn processRung(allocator: Allocator, state: *EvolutionState, rung_idx: u8, rung: Rung, dry_run: bool, api_calls: *u32, sacred_mode: bool, sacred_list: []const []const u8, night_mode: bool) RungResult {
     // Find eligible services: running, step >= threshold, rung not yet passed
     var eligible_indices: [MAX_SERVICES]usize = undefined;
     var eligible_count: usize = 0;
@@ -2156,8 +2187,8 @@ fn processRung(allocator: Allocator, state: *EvolutionState, rung_idx: u8, rung:
 
     if (eligible_count == 0) return .{ .killed = 0, .spawned = 0 };
 
-    // Sort eligible by fitness (sacred uses φ-weighted composite, default uses PPL)
-    if (sacred) sortBySacredFitness(state, eligible_indices[0..eligible_count]) else sortByPpl(state, eligible_indices[0..eligible_count]);
+    // Sort eligible by fitness (sacred_mode uses φ-weighted composite, default uses PPL)
+    if (sacred_mode) sortBySacredFitness(state, eligible_indices[0..eligible_count]) else sortByPpl(state, eligible_indices[0..eligible_count]);
 
     // Outlier capping: PPL above per-rung threshold are auto-victims
     const PPL_OUTLIER_THRESHOLD: f32 = rung.outlier_threshold;
@@ -2199,19 +2230,41 @@ fn processRung(allocator: Allocator, state: *EvolutionState, rung_idx: u8, rung:
     var killed: usize = 0;
     var spawned: usize = 0;
 
-    // Kill from bottom (worst PPL)
+    // Kill from bottom (worst PPL), but skip sacred workers
     var ki: usize = 0;
-    while (ki < kill_count) : (ki += 1) {
+    var actual_killed: usize = 0;
+    while (ki < kill_count and actual_killed < kill_count) : (ki += 1) {
+        if (ki >= eligible_count) break; // Safety: don't go beyond eligible list
         const victim_idx = eligible_indices[eligible_count - 1 - ki];
         const victim = &state.services[victim_idx];
+
+        // Sacred worker protection: NEVER kill sacred workers
+        const is_sacred = for (sacred_list) |sacred_name| {
+            if (std.mem.eql(u8, sacred_name, victim.svcName())) break true;
+        } else false;
+
+        if (is_sacred) {
+            print("  {s}🛡️ SACRED SKIP:{s} {s} PPL={d:.1} — PROTECTED from ASHA kill\n", .{
+                CYAN, RESET, victim.svcName(), victim.current_ppl,
+            });
+            continue; // Skip this victim, try next
+        }
+
+        // Night mode protection: block ALL killing
+        if (night_mode) {
+            print("  {s}🌙 NIGHT MODE SKIP:{s} {s} — killing blocked\n", .{
+                CYAN, RESET, victim.svcName(),
+            });
+            continue;
+        }
 
         // Pick parent via truncation selection (diverse parents per child)
         const prng_seed: u32 = @truncate(@as(u64, @intCast(std.time.milliTimestamp())) +% ki);
         const leader_idx = selectParentTruncation(state, prng_seed) orelse eligible_indices[0];
         const leader = &state.services[leader_idx];
 
-        // Mutate config (sacred uses φ-grid, random uses continuous)
-        const new_config = if (sacred) mutateConfigSacred(leader, prng_seed +% 1, false) else mutateConfig(leader, prng_seed +% 1);
+        // Mutate config (sacred_mode uses φ-grid, random uses continuous)
+        const new_config = if (sacred_mode) mutateConfigSacred(leader, prng_seed +% 1, false) else mutateConfig(leader, prng_seed +% 1);
 
         print("  {s}💀 KILL{s} {s} PPL={d:.1} → mutant of {s} LR={s}\n", .{
             RED, RESET, victim.svcName(), victim.current_ppl, leader.svcName(), new_config.lr_str[0..new_config.lr_len],
@@ -2228,6 +2281,7 @@ fn processRung(allocator: Allocator, state: *EvolutionState, rung_idx: u8, rung:
             spawned += 1;
         }
         killed += 1;
+        actual_killed += 1;
     }
 
     // Mark all eligible as passed for this rung
@@ -2248,7 +2302,11 @@ fn getPplForRanking(svc: *const ServiceEntry) f32 {
     return svc.current_ppl;
 }
 
-fn sortByPpl(state: *EvolutionState, indices: []usize) void {
+pub fn collectMetricsSevo(allocator: Allocator, state: *EvolutionState, api_calls: *u32) void {
+    return collectMetrics(allocator, state, api_calls);
+}
+
+pub fn sortByPpl(state: *EvolutionState, indices: []usize) void {
     // Simple insertion sort (small N), ranks by val_ppl if available
     var ii: usize = 1;
     while (ii < indices.len) : (ii += 1) {
@@ -2453,7 +2511,7 @@ fn makeRecommendation(severity: Recommendation.Severity, comptime msg_fmt: []con
     return rec;
 }
 
-const MutatedConfig = struct {
+pub const MutatedConfig = struct {
     lr_str: [16]u8,
     lr_len: u8,
     batch_str: [8]u8,
@@ -2548,6 +2606,56 @@ pub fn mutateConfigEx(leader: *const ServiceEntry, prng_seed: u32, allow_ctx_mut
     config.kill_ppl_30k = leader.kill_ppl_30k;
 
     return config;
+}
+
+/// Load sacred workers list from .trinity/sacred_workers.txt
+/// Returns list of worker names that must NEVER be killed by evolution
+fn loadSacredList(allocator: std.mem.Allocator) ![][]const u8 {
+    const file_path = ".trinity/sacred_workers.txt";
+    const file = std.fs.cwd().openFile(file_path, .{}) catch |err| {
+        if (err == error.FileNotFound) {
+            // No sacred list = no protection
+            return allocator.alloc([]const u8, 0);
+        }
+        return err;
+    };
+    defer file.close();
+
+    const content = try file.readToEndAlloc(allocator, 1024 * 64); // Max 64KB
+    defer allocator.free(content);
+
+    // Count non-empty, non-comment lines first
+    var line_count: usize = 0;
+    var iter = std.mem.splitScalar(u8, content, '\n');
+    while (iter.next()) |line| {
+        const trimmed = std.mem.trim(u8, line, " \t\r\n");
+        if (trimmed.len > 0 and trimmed[0] != '#') line_count += 1;
+    }
+
+    // Allocate result array
+    const result = try allocator.alloc([]const u8, line_count);
+
+    // Fill array
+    var idx: usize = 0;
+    iter = std.mem.splitScalar(u8, content, '\n');
+    while (iter.next()) |line| {
+        const trimmed = std.mem.trim(u8, line, " \t\r\n");
+        if (trimmed.len == 0 or trimmed[0] == '#') continue;
+        result[idx] = try allocator.dupe(u8, trimmed);
+        idx += 1;
+    }
+
+    return result;
+}
+
+/// Check if .trinity/night_mode flag exists (blocks destructive actions 22:00-08:00)
+fn isNightModeActive() bool {
+    const flag_path = ".trinity/night_mode";
+    std.fs.cwd().access(flag_path, .{}) catch |err| {
+        if (err == error.FileNotFound) return false;
+        return false;
+    };
+    return true;
 }
 
 /// Sacred LR grid: base_lr × φ^p for p ∈ {-3..3}, filtered to [1e-5, 1e-2]
@@ -2897,7 +3005,7 @@ fn computeStd(values: []const f64, n: f64) f64 {
 // Core: Service Recycling
 // ═══════════════════════════════════════════════════════════════════════════════
 
-fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usize, config: MutatedConfig, parent_name: []const u8, api_calls: *u32) void {
+pub fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: usize, config: MutatedConfig, parent_name: []const u8, api_calls: *u32) void {
     const victim = &state.services[victim_idx];
 
     var accounts_buf: [MAX_FARM_ACCOUNTS]Account = undefined;
@@ -7291,7 +7399,7 @@ test "rankAndSelect min survivors" {
     }
 
     var api_calls_min: u32 = 0;
-    const result = processRung(std.testing.allocator, &state, 0, DEFAULT_RUNGS[0], true, &api_calls_min, false);
+    const result = processRung(std.testing.allocator, &state, 0, DEFAULT_RUNGS[0], true, &api_calls_min, false, &.{}, false);
     try std.testing.expect(result.killed <= 1);
 }
 
@@ -7306,7 +7414,7 @@ test "rankAndSelect empty eligible" {
     }
 
     var api_calls: u32 = 0;
-    const result = processRung(std.testing.allocator, &state, 0, DEFAULT_RUNGS[0], true, &api_calls, false);
+    const result = processRung(std.testing.allocator, &state, 0, DEFAULT_RUNGS[0], true, &api_calls, false, &.{}, false);
     try std.testing.expectEqual(@as(usize, 0), result.killed);
     try std.testing.expectEqual(@as(usize, 0), result.spawned);
 }
@@ -7350,7 +7458,7 @@ test "outlier PPL auto-victim" {
     // 7 total, MIN_SURVIVORS=4, so max killable = 3
     // All 4 outliers proposed but capped to 3 by MIN_SURVIVORS
     var api_calls_out: u32 = 0;
-    const result = processRung(std.testing.allocator, &state, 0, DEFAULT_RUNGS[0], true, &api_calls_out, false);
+    const result = processRung(std.testing.allocator, &state, 0, DEFAULT_RUNGS[0], true, &api_calls_out, false, &.{}, false);
     try std.testing.expect(result.killed == 3); // 7 - MIN_SURVIVORS(4) = 3
 }
 

@@ -1,6 +1,1 @@
-{
-  "last_link": 8,
-  "task": "Subagent Task Decomposition] 5/5 — VERIFY (stale, reset)",
-  "status": "idle",
-  "timestamp": 1773143438
-}
+{"status":"COMPLETED","job_count":1,"group_count":1,"groups":[{"id":0,"completed":0,"failed":0,"total":0}],"jobs":[{"id":0,"status":"COMPLETED","exit":0,"ms":0}]}

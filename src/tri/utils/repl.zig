@@ -197,7 +197,8 @@ pub fn processInput(state: anytype, input: []const u8) void {
 pub fn runInteractiveMode(state: anytype) !void {
     print_utils.printBanner();
 
-    const reader = std.io.getStdIn().reader();
+    var in_stream = std.io.getStdIn();
+    const reader = in_stream.reader();
     var buffer: [4096]u8 = undefined;
 
     std.debug.print("{s}Type /help for commands, /quit to exit.{s}\n\n", .{ GRAY, RESET });

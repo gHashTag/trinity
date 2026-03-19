@@ -1789,39 +1789,22 @@ pub fn build(b: *std.Build) void {
     const railway_set_dockerfile_step = b.step("railway-set-dockerfile", "Run Railway Dockerfile builder setter");
     railway_set_dockerfile_step.dependOn(&run_railway_set_dockerfile.step);
 
-    // Railway service cleanup — delete base services to free slots
-    const railway_cleanup = b.addExecutable(.{
-        .name = "railway-cleanup",
+    // Railway mass rename utility — renames hslm-*, w*-*, r*-* to trinity-train-{N}
+    const railway_rename = b.addExecutable(.{
+        .name = "railway-rename",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/cli/railway_cleanup.zig"),
+            .root_source_file = b.path("src/cli/railway_rename.zig"),
             .target = target,
             .optimize = optimize,
             .link_libc = true,
         }),
     });
-    b.installArtifact(railway_cleanup);
+    b.installArtifact(railway_rename);
 
-    const run_railway_cleanup = b.addRunArtifact(railway_cleanup);
-    if (b.args) |args| run_railway_cleanup.addArgs(args);
-    const railway_cleanup_step = b.step("railway-cleanup", "Run Railway cleanup: delete base services");
-    railway_cleanup_step.dependOn(&run_railway_cleanup.step);
-
-    // Railway delete trinity — delete "trinity" base service
-    const railway_delete_trinity = b.addExecutable(.{
-        .name = "railway-delete-trinity",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/cli/railway_delete_trinity.zig"),
-            .target = target,
-            .optimize = optimize,
-            .link_libc = true,
-        }),
-    });
-    b.installArtifact(railway_delete_trinity);
-
-    const run_railway_delete_trinity = b.addRunArtifact(railway_delete_trinity);
-    if (b.args) |args| run_railway_delete_trinity.addArgs(args);
-    const railway_delete_trinity_step = b.step("railway-delete-trinity", "Run Railway delete trinity service");
-    railway_delete_trinity_step.dependOn(&run_railway_delete_trinity.step);
+    const run_railway_rename = b.addRunArtifact(railway_rename);
+    if (b.args) |args| run_railway_rename.addArgs(args);
+    const railway_rename_step = b.step("railway-rename", "Run Railway mass rename utility");
+    railway_rename_step.dependOn(&run_railway_rename.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
     // SWE Agent Entrypoint — Pure Zig entrypoint for dev agent Railway containers
@@ -2615,23 +2598,5 @@ pub fn build(b: *std.Build) void {
     });
     const run_arena_tests = b.addRunArtifact(arena_tests);
     test_step.dependOn(&run_arena_tests.step);
-
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // RAILWAY RENAME — Bulk rename hslm-* services to trinity-train-{N}
-    // ═══════════════════════════════════════════════════════════════════════════════
-
-    const railway_rename = b.addExecutable(.{
-        .name = "railway-rename",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/cli/railway_rename.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    b.installArtifact(railway_rename);
-    const run_railway_rename = b.addRunArtifact(railway_rename);
-    if (b.args) |args| run_railway_rename.addArgs(args);
-    const railway_rename_step = b.step("railway-rename", "Run Railway Rename — Bulk rename hslm-* services");
-    railway_rename_step.dependOn(&run_railway_rename.step);
 
 }

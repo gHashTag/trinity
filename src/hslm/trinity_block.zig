@@ -1,5 +1,3 @@
-// @origin(spec:trinity_block.tri) @regen(manual-impl)
-// @origin(manual) @regen(pending)
 // HSLM — Trinity Block
 // One block = TNN Dense (System 1) + VSA Attention + VSA Reasoning (System 2)
 // System 2 activates only when consciousness gate fires (similarity > φ⁻¹)
@@ -12,8 +10,7 @@ const consciousness = @import("consciousness.zig");
 const embedding = @import("embedding.zig");
 const sacred_attention_mod = @import("sacred_attention.zig");
 const simd_ops = @import("simd_ops.zig");
-const sparse_ternary = @import("sparse_ternary.zig");
-const ste_mod = @import("ste.zig");
+const ste = @import("ste.zig");
 
 const EMBED_DIM = constants.EMBED_DIM;
 const HIDDEN_DIM = constants.HIDDEN_DIM;
@@ -43,6 +40,9 @@ pub const TernaryDense = struct {
     // Activation cache for backward pass (last position only)
     cache_input: []f32, // EMBED_DIM
     cache_hidden: []f32, // HIDDEN_DIM (post-ReLU)
+    // TWN alpha scale factors (per-layer, computed during requantize)
+    alpha_up: f32 = 1.0,
+    alpha_down: f32 = 1.0,
     is_worker: bool,
     allocator: std.mem.Allocator,
 
@@ -50,27 +50,17 @@ pub const TernaryDense = struct {
 
     pub fn init(allocator: std.mem.Allocator) !Self {
         const w_up = try allocator.alloc(i8, EMBED_DIM * HIDDEN_DIM);
-        errdefer allocator.free(w_up);
         const b_up = try allocator.alloc(f32, HIDDEN_DIM);
-        errdefer allocator.free(b_up);
         const w_dn = try allocator.alloc(i8, HIDDEN_DIM * EMBED_DIM);
-        errdefer allocator.free(w_dn);
         const b_dn = try allocator.alloc(f32, EMBED_DIM);
-        errdefer allocator.free(b_dn);
         const s_up = try allocator.alloc(f32, EMBED_DIM * HIDDEN_DIM);
-        errdefer allocator.free(s_up);
         const s_dn = try allocator.alloc(f32, HIDDEN_DIM * EMBED_DIM);
-        errdefer allocator.free(s_dn);
 
         // Gradient buffers
         const g_up = try allocator.alloc(f32, EMBED_DIM * HIDDEN_DIM);
-        errdefer allocator.free(g_up);
         const g_dn = try allocator.alloc(f32, HIDDEN_DIM * EMBED_DIM);
-        errdefer allocator.free(g_dn);
         const gb_up = try allocator.alloc(f32, HIDDEN_DIM);
-        errdefer allocator.free(gb_up);
         const gb_dn = try allocator.alloc(f32, EMBED_DIM);
-        errdefer allocator.free(gb_dn);
         @memset(g_up, 0.0);
         @memset(g_dn, 0.0);
         @memset(gb_up, 0.0);
@@ -78,7 +68,6 @@ pub const TernaryDense = struct {
 
         // Activation cache
         const c_in = try allocator.alloc(f32, EMBED_DIM);
-        errdefer allocator.free(c_in);
         const c_hid = try allocator.alloc(f32, HIDDEN_DIM);
         @memset(c_in, 0.0);
         @memset(c_hid, 0.0);
@@ -125,13 +114,9 @@ pub const TernaryDense = struct {
     /// Saves ~1.35MB per TernaryDense instance.
     pub fn initWorker(allocator: std.mem.Allocator) !Self {
         const w_up = try allocator.alloc(i8, EMBED_DIM * HIDDEN_DIM);
-        errdefer allocator.free(w_up);
         const b_up = try allocator.alloc(f32, HIDDEN_DIM);
-        errdefer allocator.free(b_up);
         const w_dn = try allocator.alloc(i8, HIDDEN_DIM * EMBED_DIM);
-        errdefer allocator.free(w_dn);
         const b_dn = try allocator.alloc(f32, EMBED_DIM);
-        errdefer allocator.free(b_dn);
         @memset(w_up, 0);
         @memset(b_up, 0.0);
         @memset(w_dn, 0);
@@ -139,13 +124,9 @@ pub const TernaryDense = struct {
 
         // Gradient buffers
         const g_up = try allocator.alloc(f32, EMBED_DIM * HIDDEN_DIM);
-        errdefer allocator.free(g_up);
         const g_dn = try allocator.alloc(f32, HIDDEN_DIM * EMBED_DIM);
-        errdefer allocator.free(g_dn);
         const gb_up = try allocator.alloc(f32, HIDDEN_DIM);
-        errdefer allocator.free(gb_up);
         const gb_dn = try allocator.alloc(f32, EMBED_DIM);
-        errdefer allocator.free(gb_dn);
         @memset(g_up, 0.0);
         @memset(g_dn, 0.0);
         @memset(gb_up, 0.0);
@@ -153,7 +134,6 @@ pub const TernaryDense = struct {
 
         // Activation cache
         const c_in = try allocator.alloc(f32, EMBED_DIM);
-        errdefer allocator.free(c_in);
         const c_hid = try allocator.alloc(f32, HIDDEN_DIM);
         @memset(c_in, 0.0);
         @memset(c_hid, 0.0);
@@ -198,7 +178,8 @@ pub const TernaryDense = struct {
     pub fn forward(self: *const Self, input: []const f32, output: []f32) void {
         // Up projection: EMBED_DIM → HIDDEN_DIM
         var hidden: [HIDDEN_DIM]f32 = undefined;
-        sparse_ternary.branchlessMatvec(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
+        simd_ops.ternaryMatvecSimd(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
+        ste.applyAlpha(&hidden, self.alpha_up); // TWN scaling
         for (0..HIDDEN_DIM) |j| {
             hidden[j] += self.bias_up[j];
             // ReLU activation
@@ -206,7 +187,8 @@ pub const TernaryDense = struct {
         }
 
         // Down projection: HIDDEN_DIM → EMBED_DIM
-        sparse_ternary.branchlessMatvec(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
+        simd_ops.ternaryMatvecSimd(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
+        ste.applyAlpha(output[0..EMBED_DIM], self.alpha_down); // TWN scaling
         for (0..EMBED_DIM) |j| {
             output[j] += self.bias_down[j] + input[j]; // Residual connection
         }
@@ -218,10 +200,10 @@ pub const TernaryDense = struct {
         quantizeAbsMean(self.shadow_down, self.weights_down);
     }
 
-    /// Re-quantize using STE mode (TWN/vanilla/progressive)
-    pub fn requantizeSte(self: *Self, config: ste_mod.SteConfig, step: u32) void {
-        _ = ste_mod.quantizeForMode(self.shadow_up, self.weights_up, config, step);
-        _ = ste_mod.quantizeForMode(self.shadow_down, self.weights_down, config, step);
+    /// STE-aware requantize: uses configured mode, stores alpha for TWN
+    pub fn requantizeSte(self: *Self, config: ste.SteConfig, current_step: u32) void {
+        self.alpha_up = ste.quantizeForMode(self.shadow_up, self.weights_up, config, current_step);
+        self.alpha_down = ste.quantizeForMode(self.shadow_down, self.weights_down, config, current_step);
     }
 
     /// Forward with activation caching (for training backward pass)
@@ -231,7 +213,8 @@ pub const TernaryDense = struct {
 
         // Up projection: EMBED_DIM → HIDDEN_DIM
         var hidden: [HIDDEN_DIM]f32 = undefined;
-        sparse_ternary.branchlessMatvec(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
+        simd_ops.ternaryMatvecSimd(input, self.weights_up, &hidden, EMBED_DIM, HIDDEN_DIM);
+        ste.applyAlpha(&hidden, self.alpha_up); // TWN scaling
         for (0..HIDDEN_DIM) |j| {
             hidden[j] += self.bias_up[j];
             // ReLU activation
@@ -242,7 +225,8 @@ pub const TernaryDense = struct {
         @memcpy(self.cache_hidden, &hidden);
 
         // Down projection: HIDDEN_DIM → EMBED_DIM
-        sparse_ternary.branchlessMatvec(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
+        simd_ops.ternaryMatvecSimd(&hidden, self.weights_down, output, HIDDEN_DIM, EMBED_DIM);
+        ste.applyAlpha(output[0..EMBED_DIM], self.alpha_down); // TWN scaling
         for (0..EMBED_DIM) |j| {
             output[j] += self.bias_down[j] + input[j]; // Residual connection
         }
@@ -256,7 +240,7 @@ pub const TernaryDense = struct {
         // Step 2: Down projection backward
         // Input grad: ∂L/∂hidden[i] = sum_j(∂L/∂output[j] * W_down[i*EMBED+j])
         var grad_hidden: [HIDDEN_DIM]f32 = undefined;
-        sparse_ternary.branchlessVecmat(grad_output, self.weights_down, &grad_hidden, HIDDEN_DIM, EMBED_DIM);
+        simd_ops.ternaryVecmatSimd(grad_output, self.weights_down, &grad_hidden, HIDDEN_DIM, EMBED_DIM);
         // Weight grad: ∂L/∂W_down[i*EMBED+j] += ∂L/∂output[j] * cache_hidden[i]
         simd_ops.outerProductAccumSimd(self.grad_shadow_down, grad_output, self.cache_hidden, HIDDEN_DIM, EMBED_DIM);
         // Bias grad down
@@ -271,7 +255,7 @@ pub const TernaryDense = struct {
 
         // Step 4: Up projection backward
         // Input grad: ∂L/∂input[i] += sum_j(∂L/∂hidden[j] * W_up[i*HIDDEN+j])
-        sparse_ternary.branchlessVecmatAccum(&grad_hidden, self.weights_up, grad_input, EMBED_DIM, HIDDEN_DIM);
+        simd_ops.ternaryVecmatSimdAccum(&grad_hidden, self.weights_up, grad_input, EMBED_DIM, HIDDEN_DIM);
         // Weight grad: ∂L/∂W_up[i*HIDDEN+j] += ∂L/∂hidden[j] * cache_input[i]
         simd_ops.outerProductAccumSimd(self.grad_shadow_up, &grad_hidden, self.cache_input, EMBED_DIM, HIDDEN_DIM);
         // Bias grad up

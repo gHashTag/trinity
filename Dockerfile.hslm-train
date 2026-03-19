@@ -23,8 +23,11 @@ RUN echo "dadd1b5b28380dbc22619105c21b9543da81fd95d3d39e7f1ab01f43abe3fb53  /usr
     && chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
 # /data is Railway persistent volume mount point
-# Data downloaded at runtime by entrypoint if needed
+# Dataset baked into image for persistence across redeployments
 RUN mkdir -p /data/tinystories /data/checkpoints
+
+# Copy dataset into image (baked in — survives Railway redeploy)
+COPY data/tinystories/train_100k.txt /data/tinystories/train_100k.txt
 
 WORKDIR /data
 

@@ -454,3 +454,231 @@ test "cerebellum — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// RESOURCE POOL TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "cerebellum — ResourcePool defaults" {
+    const pool = ResourcePool{};
+    try std.testing.expectEqual(@as(u32, 0), pool.total_workers);
+    try std.testing.expectEqual(@as(u32, 0), pool.active_workers);
+    try std.testing.expectEqual(@as(u32, 0), pool.idle_workers);
+    try std.testing.expectEqual(@as(u32, 0), pool.crashed_workers);
+    try std.testing.expectEqual(@as(f32, 0.0), pool.total_ppl);
+}
+
+test "cerebellum — ResourcePool utilization zero total" {
+    const pool = ResourcePool{
+        .total_workers = 0,
+        .active_workers = 0,
+    };
+    try std.testing.expectEqual(@as(f32, 0.0), pool.utilization());
+}
+
+test "cerebellum — ResourcePool utilization full" {
+    const pool = ResourcePool{
+        .total_workers = 100,
+        .active_workers = 100,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), pool.utilization(), 0.01);
+}
+
+test "cerebellum — ResourcePool healthScore positive" {
+    const pool = ResourcePool{
+        .total_workers = 100,
+        .active_workers = 80,
+        .crashed_workers = 2,
+    };
+    // 0.8 - (2 * 0.1) = 0.8 - 0.2 = 0.6
+    try std.testing.expectApproxEqAbs(@as(f32, 0.6), pool.healthScore(), 0.01);
+}
+
+test "cerebellum — ResourcePool avgPpl zero workers" {
+    const pool = ResourcePool{
+        .active_workers = 0,
+        .total_ppl = 0.0,
+    };
+    try std.testing.expectEqual(@as(f32, 0.0), pool.avgPpl());
+}
+
+test "cerebellum — ResourcePool avgPpl with values" {
+    const pool = ResourcePool{
+        .active_workers = 5,
+        .total_ppl = 25.0,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 5.0), pool.avgPpl(), 0.01);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// COORDINATION PLAN TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "cerebellum — CoordinationPlan defaults" {
+    const plan = CoordinationPlan{};
+    try std.testing.expectEqual(@as(u32, 4), plan.parallel_slots);
+    try std.testing.expectEqual(@as(usize, 0), plan.queue.len);
+    try std.testing.expectEqual(@as(u32, 0), plan.estimated_duration_sec);
+}
+
+test "cerebellum — CoordinationPlan canRunParallel empty queue" {
+    const plan = CoordinationPlan{
+        .parallel_slots = 4,
+        .queue = &.{},
+    };
+    try std.testing.expect(plan.canRunParallel(4));
+    try std.testing.expect(!plan.canRunParallel(5));
+}
+
+test "cerebellum — CoordinationPlan canRunParallel at limit" {
+    const plan = CoordinationPlan{
+        .parallel_slots = 4,
+        .queue = &[_]qt.ActionKind{ .farm_status, .arena_status, .doctor_scan, .introspection },
+    };
+    try std.testing.expect(!plan.canRunParallel(1)); // 4 + 1 = 5 > 4
+    try std.testing.expect(plan.canRunParallel(0)); // 4 + 0 = 4 <= 4
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// MOVEMENT PATTERN TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "cerebellum — MovementPattern defaults" {
+    const pattern = MovementPattern{};
+    try std.testing.expectEqual(@as(usize, 0), pattern.actions.len);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), pattern.timing_multiplier, 0.01);
+    try std.testing.expectEqual(@as(u32, 0), pattern.success_count);
+    try std.testing.expectEqual(@as(u32, 0), pattern.failure_count);
+}
+
+test "cerebellum — MovementPattern successRate all success" {
+    const pattern = MovementPattern{
+        .success_count = 10,
+        .failure_count = 0,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), pattern.successRate(), 0.01);
+}
+
+test "cerebellum — MovementPattern successRate all failure" {
+    const pattern = MovementPattern{
+        .success_count = 0,
+        .failure_count = 10,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), pattern.successRate(), 0.01);
+}
+
+test "cerebellum — MovementPattern successRate mixed" {
+    const pattern = MovementPattern{
+        .success_count = 3,
+        .failure_count = 7,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 0.3), pattern.successRate(), 0.01);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SEQUENCE COORDINATOR TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "cerebellum — SequenceCoordinator defaults" {
+    const coord = SequenceCoordinator{};
+    try std.testing.expectEqual(CoordinationState.idle, coord.state);
+    try std.testing.expectEqual(@as(usize, 0), coord.current_index);
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), coord.timing_adjust, 0.01);
+}
+
+test "cerebellum — SequenceCoordinator learnPattern mid success" {
+    var coord = SequenceCoordinator{
+        .pattern = .{ .timing_multiplier = 1.0 },
+    };
+
+    // Mixed success/failure -> no timing change after initial state
+    var i: usize = 0;
+    while (i < 5) : (i += 1) {
+        coord.learnPattern(true);
+        coord.learnPattern(false);
+    }
+
+    // First success (rate=1.0) reduces timing to 0.9, then rate stays ~0.5
+    try std.testing.expectApproxEqAbs(@as(f32, 0.9), coord.pattern.timing_multiplier, 0.01);
+}
+
+test "cerebellum — SequenceCoordinator adjustTiming zero expected" {
+    var coord = SequenceCoordinator{ .timing_adjust = 1.0 };
+    coord.adjustTiming(100, 0); // Should return early, no change
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), coord.timing_adjust, 0.01);
+}
+
+test "cerebellum — SequenceCoordinator adjustTiming exact match" {
+    var coord = SequenceCoordinator{ .timing_adjust = 1.0 };
+    coord.adjustTiming(100, 100);
+    // ratio = 1.0, target = 1.0, new = 0.9 * 1.0 + 0.1 * 1.0 = 1.0
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), coord.timing_adjust, 0.01);
+}
+
+test "cerebellum — SequenceCoordinator reset preserves timing" {
+    const actions = [_]qt.ActionKind{.farm_status};
+    var coord = SequenceCoordinator{
+        .state = .executing,
+        .current_index = 10,
+        .timing_adjust = 1.8,
+        .pattern = .{
+            .actions = &.{.arena_status},
+            .timing_multiplier = 0.6,
+        },
+    };
+
+    coord.reset(&actions);
+
+    try std.testing.expectEqual(CoordinationState.idle, coord.state);
+    try std.testing.expectEqual(@as(usize, 0), coord.current_index);
+    // Preserves pattern timing_multiplier
+    try std.testing.expectApproxEqAbs(@as(f32, 0.6), coord.pattern.timing_multiplier, 0.01);
+    // timing_adjust field is separate, not reset
+    try std.testing.expectApproxEqAbs(@as(f32, 1.8), coord.timing_adjust, 0.01);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// COORDINATION STATE TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "cerebellum — CoordinationState all values" {
+    const states = [_]CoordinationState{
+        .idle, .planning, .executing, .waiting, .completed, .failed,
+    };
+    for (states) |s| {
+        _ = s; // Verify all enum values exist
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CELL HEALTH TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "cerebellum — CellHealth timestamp" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
+
+test "cerebellum — CellHealth defaults" {
+    const h = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
+
+test "cerebellum — CellHealth Status enum" {
+    try std.testing.expectEqual(CellHealth.Status.healthy, .healthy);
+    try std.testing.expectEqual(CellHealth.Status.weak, .weak);
+    try std.testing.expectEqual(CellHealth.Status.broken, .broken);
+}
+
+test "cerebellum — CellHealth custom values" {
+    var h = CellHealth{};
+    h.status = .broken;
+    h.cycle = 7;
+    h.last_check = 99999;
+
+    try std.testing.expectEqual(CellHealth.Status.broken, h.status);
+    try std.testing.expectEqual(@as(u32, 7), h.cycle);
+    try std.testing.expectEqual(@as(i64, 99999), h.last_check);
+}

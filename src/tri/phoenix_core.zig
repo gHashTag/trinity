@@ -915,3 +915,342 @@ test "FPGAOrchestrator initialization" {
     try std.testing.expectEqual(OrchestratorState.sleeping, fpga_orch.base.status.state);
     try std.testing.expect(fpga_orch.base.config.enable_fpga_mode);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED CONSTANTS TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "phoenix_core — PHI constant" {
+    try std.testing.expectEqual(@as(f64, 1.618033988749895), PHI);
+}
+
+test "phoenix_core — PHI_INV constant" {
+    try std.testing.expectEqual(@as(f64, 0.618033988749895), PHI_INV);
+}
+
+test "phoenix_core — TRINITY constant" {
+    try std.testing.expectEqual(@as(f64, 3.0), TRINITY);
+}
+
+test "phoenix_core — DEFAULT_WAKE_INTERVAL_SEC" {
+    try std.testing.expectEqual(@as(u64, 600), DEFAULT_WAKE_INTERVAL_SEC);
+}
+
+test "phoenix_core — MAX_IDLE_CYCLES" {
+    try std.testing.expectEqual(@as(u32, 6), MAX_IDLE_CYCLES);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENUM TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "phoenix_core — OrchestratorState enum values" {
+    try std.testing.expectEqual(OrchestratorState.sleeping, .sleeping);
+    try std.testing.expectEqual(OrchestratorState.waking, .waking);
+    try std.testing.expectEqual(OrchestratorState.analyzing, .analyzing);
+    try std.testing.expectEqual(OrchestratorState.consolidating, .consolidating);
+    try std.testing.expectEqual(OrchestratorState.executing, .executing);
+    try std.testing.expectEqual(OrchestratorState.reporting, .reporting);
+    try std.testing.expectEqual(OrchestratorState.waiting, .waiting);
+    try std.testing.expectEqual(OrchestratorState.exiting, .exiting);
+}
+
+test "phoenix_core — TaskPriority enum values" {
+    try std.testing.expectEqual(TaskPriority.p1_critical, .p1_critical);
+    try std.testing.expectEqual(TaskPriority.p2_high, .p2_high);
+    try std.testing.expectEqual(TaskPriority.p3_normal, .p3_normal);
+    try std.testing.expectEqual(TaskPriority.p4_low, .p4_low);
+}
+
+test "phoenix_core — TaskStatus enum values" {
+    try std.testing.expectEqual(TaskStatus.pending, .pending);
+    try std.testing.expectEqual(TaskStatus.in_progress, .in_progress);
+    try std.testing.expectEqual(TaskStatus.completed, .completed);
+    try std.testing.expectEqual(TaskStatus.blocked, .blocked);
+    try std.testing.expectEqual(TaskStatus.failed, .failed);
+}
+
+test "phoenix_core — OrchestratorAction enum values" {
+    try std.testing.expectEqual(OrchestratorAction.sleep, .sleep);
+    try std.testing.expectEqual(OrchestratorAction.proceed, .proceed);
+    try std.testing.expectEqual(OrchestratorAction.retry, .retry);
+    try std.testing.expectEqual(OrchestratorAction.wait, .wait);
+    try std.testing.expectEqual(OrchestratorAction.exit, .exit);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "phoenix_core — PhoenixTask creation and deinit" {
+    const allocator = std.testing.allocator;
+
+    var task = PhoenixTask{
+        .id = try allocator.dupe(u8, "TASK-001"),
+        .description = try allocator.dupe(u8, "Test task"),
+        .priority = .p2_high,
+        .status = .pending,
+        .tech_tree_id = try allocator.dupe(u8, "TECH-001"),
+        .acceptance_criteria = try allocator.dupe(u8, "Must pass tests"),
+        .files = .{},
+        .blocked_by = .{},
+    };
+    defer task.deinit(allocator);
+
+    try std.testing.expectEqualStrings("TASK-001", task.id);
+    try std.testing.expectEqualStrings("Test task", task.description);
+    try std.testing.expectEqual(TaskPriority.p2_high, task.priority);
+    try std.testing.expectEqual(TaskStatus.pending, task.status);
+}
+
+test "phoenix_core — PhoenixTask with null tech_tree_id" {
+    const allocator = std.testing.allocator;
+
+    var task = PhoenixTask{
+        .id = try allocator.dupe(u8, "TASK-002"),
+        .description = try allocator.dupe(u8, "Simple task"),
+        .priority = .p3_normal,
+        .status = .pending,
+        .tech_tree_id = null,
+        .acceptance_criteria = try allocator.dupe(u8, ""),
+        .files = .{},
+        .blocked_by = .{},
+    };
+    defer task.deinit(allocator);
+
+    try std.testing.expect(task.tech_tree_id == null);
+}
+
+test "phoenix_core — PhoenixCoreState defaults" {
+    const state = PhoenixCoreState{
+        .state = .sleeping,
+        .current_branch = undefined,
+        .active_task = null,
+        .idle_cycles = 0,
+        .total_cycles = 0,
+        .tasks_completed_this_session = 0,
+        .last_exit_signal = false,
+        .circuit_breaker_open = false,
+        .wake_time = 0,
+        .next_wake_interval = 600,
+        .last_sleep_ts = 0,
+    };
+
+    try std.testing.expectEqual(OrchestratorState.sleeping, state.state);
+    try std.testing.expectEqual(@as(u32, 0), state.idle_cycles);
+    try std.testing.expectEqual(@as(u32, 0), state.total_cycles);
+    try std.testing.expectEqual(@as(u32, 0), state.tasks_completed_this_session);
+    try std.testing.expect(!state.last_exit_signal);
+    try std.testing.expect(!state.circuit_breaker_open);
+}
+
+test "phoenix_core — PhoenixCoreConfig defaults" {
+    const config = PhoenixCoreConfig{
+        .wake_interval_sec = 600,
+        .max_idle_cycles = 6,
+        .enable_telegram = true,
+        .enable_fpga_mode = false,
+        .project_root = undefined,
+        .phoenix_path = undefined,
+    };
+
+    try std.testing.expectEqual(@as(u64, 600), config.wake_interval_sec);
+    try std.testing.expectEqual(@as(u32, 6), config.max_idle_cycles);
+    try std.testing.expect(config.enable_telegram);
+    try std.testing.expect(!config.enable_fpga_mode);
+}
+
+test "phoenix_core — OrchestratorResult creation" {
+    const result = OrchestratorResult{
+        .success = true,
+        .action = .proceed,
+        .message = "Task completed",
+        .seconds_until_next_wake = 300,
+    };
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(OrchestratorAction.proceed, result.action);
+    try std.testing.expectEqualStrings("Task completed", result.message);
+    try std.testing.expectEqual(@as(u64, 300), result.seconds_until_next_wake);
+}
+
+test "phoenix_core — TaskResult creation" {
+    const result = TaskResult{
+        .success = true,
+        .task_id = "TASK-001",
+        .duration_ms = 1234,
+        .message = "All good",
+    };
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqualStrings("TASK-001", result.task_id);
+    try std.testing.expectEqual(@as(u64, 1234), result.duration_ms);
+    try std.testing.expectEqualStrings("All good", result.message);
+}
+
+test "phoenix_core — FPGABuildResult defaults" {
+    const result = FPGABuildResult{
+        .synthesis_success = true,
+        .pnr_success = true,
+        .bitstream_generated = true,
+        .luts_used = 5000,
+        .max_freq_mhz = 50.0,
+        .flash_success = true,
+        .led_verified = true,
+    };
+
+    try std.testing.expect(result.synthesis_success);
+    try std.testing.expect(result.pnr_success);
+    try std.testing.expect(result.bitstream_generated);
+    try std.testing.expectEqual(@as(u32, 5000), result.luts_used);
+    try std.testing.expectApproxEqAbs(50.0, result.max_freq_mhz, 0.01);
+}
+
+test "phoenix_core — FPGABuildResult all false" {
+    const result = FPGABuildResult{
+        .synthesis_success = false,
+        .pnr_success = false,
+        .bitstream_generated = false,
+        .luts_used = 0,
+        .max_freq_mhz = 0.0,
+        .flash_success = false,
+        .led_verified = false,
+    };
+
+    try std.testing.expect(!result.synthesis_success);
+    try std.testing.expect(!result.pnr_success);
+    try std.testing.expectEqual(@as(u32, 0), result.luts_used);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHOENIX CORE BEHAVIOR TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "phoenix_core — PhoenixCore init with custom config" {
+    const allocator = std.testing.allocator;
+
+    var core = try PhoenixCore.init(allocator, PhoenixCoreConfig{
+        .wake_interval_sec = 300, // 5 minutes
+        .max_idle_cycles = 3,
+        .enable_telegram = false,
+        .enable_fpga_mode = false,
+        .project_root = try allocator.dupe(u8, "."),
+        .phoenix_path = try allocator.dupe(u8, "phoenix"),
+    });
+    defer core.deinit();
+
+    try std.testing.expectEqual(@as(u64, 300), core.config.wake_interval_sec);
+    try std.testing.expectEqual(@as(u32, 3), core.config.max_idle_cycles);
+    try std.testing.expect(!core.config.enable_telegram);
+}
+
+test "phoenix_core — PhoenixCore tick returns sleep before wake time" {
+    const allocator = std.testing.allocator;
+
+    var core = try PhoenixCore.init(allocator, PhoenixCoreConfig{
+        .wake_interval_sec = 3600, // 1 hour in future
+        .max_idle_cycles = 6,
+        .enable_telegram = false,
+        .enable_fpga_mode = false,
+        .project_root = try allocator.dupe(u8, "."),
+        .phoenix_path = try allocator.dupe(u8, "phoenix"),
+    });
+    defer core.deinit();
+
+    const result = try core.tick();
+
+    try std.testing.expect(result.success);
+    try std.testing.expectEqual(OrchestratorAction.sleep, result.action);
+    try std.testing.expect(result.seconds_until_next_wake > 0);
+    allocator.free(result.message);
+}
+
+test "phoenix_core — PhoenixCore initial state values" {
+    const allocator = std.testing.allocator;
+
+    var core = try PhoenixCore.init(allocator, PhoenixCoreConfig{
+        .wake_interval_sec = 0,
+        .max_idle_cycles = 1,
+        .enable_telegram = false,
+        .enable_fpga_mode = false,
+        .project_root = try allocator.dupe(u8, "/tmp"),
+        .phoenix_path = try allocator.dupe(u8, "phoenix"),
+    });
+    defer core.deinit();
+
+    try std.testing.expectEqual(@as(u32, 0), core.status.idle_cycles);
+    try std.testing.expectEqual(@as(u32, 0), core.status.total_cycles);
+    try std.testing.expect(core.status.active_task == null);
+    try std.testing.expect(!core.status.circuit_breaker_open);
+}
+
+test "phoenix_core — PhoenixCore wake time calculation" {
+    const allocator = std.testing.allocator;
+
+    var core = try PhoenixCore.init(allocator, PhoenixCoreConfig{
+        .wake_interval_sec = 600,
+        .max_idle_cycles = 6,
+        .enable_telegram = false,
+        .enable_fpga_mode = false,
+        .project_root = try allocator.dupe(u8, "/tmp"),
+        .phoenix_path = try allocator.dupe(u8, "phoenix"),
+    });
+    defer core.deinit();
+
+    // Wake time should be in the future
+    const current_time: i64 = @intCast(@divTrunc(std.time.nanoTimestamp(), 1_000_000_000));
+    try std.testing.expect(core.status.wake_time > current_time);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FPGA ORCHESTRATOR TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "phoenix_core — FPGAOrchestrator runFPGABuild returns success" {
+    const allocator = std.testing.allocator;
+
+    var fpga_orch = try FPGAOrchestrator.init(allocator, ".");
+    defer fpga_orch.deinit();
+
+    const result = try fpga_orch.runFPGABuild(&.{});
+
+    try std.testing.expect(result.synthesis_success);
+    try std.testing.expect(result.pnr_success);
+    try std.testing.expect(result.bitstream_generated);
+    try std.testing.expect(result.flash_success);
+    try std.testing.expect(result.led_verified);
+}
+
+test "phoenix_core — FPGAOrchestrator runFPGABuild metrics" {
+    const allocator = std.testing.allocator;
+
+    var fpga_orch = try FPGAOrchestrator.init(allocator, ".");
+    defer fpga_orch.deinit();
+
+    const result = try fpga_orch.runFPGABuild(&.{});
+
+    try std.testing.expect(result.luts_used > 0);
+    try std.testing.expect(result.max_freq_mhz > 0);
+}
+
+test "phoenix_core — FPGAOrchestrator config inheritance" {
+    const allocator = std.testing.allocator;
+
+    var fpga_orch = try FPGAOrchestrator.init(allocator, ".");
+    defer fpga_orch.deinit();
+
+    try std.testing.expect(fpga_orch.base.config.enable_fpga_mode);
+    try std.testing.expectEqual(@as(u64, 600), fpga_orch.base.config.wake_interval_sec);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FIBONACCI EDGE CASES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "phoenix_core — Fibonacci larger values" {
+    try std.testing.expectEqual(@as(u64, 21), PhoenixCore.fibonacci(8));
+    try std.testing.expectEqual(@as(u64, 34), PhoenixCore.fibonacci(9));
+    try std.testing.expectEqual(@as(u64, 55), PhoenixCore.fibonacci(10));
+    try std.testing.expectEqual(@as(u64, 89), PhoenixCore.fibonacci(11));
+    try std.testing.expectEqual(@as(u64, 144), PhoenixCore.fibonacci(12));
+}

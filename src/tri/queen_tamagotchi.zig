@@ -632,3 +632,265 @@ test "queen_tamagotchi — arousal levels affect output" {
         try std.testing.expect(std.mem.indexOf(u8, report, arousal.label()) != null);
     }
 }
+
+test "queen_tamagotchi — GrowthStage description" {
+    try std.testing.expect(GrowthStage.egg.description().len > 0);
+    try std.testing.expect(GrowthStage.baby.description().len > 0);
+    try std.testing.expect(GrowthStage.child.description().len > 0);
+    try std.testing.expect(GrowthStage.teen.description().len > 0);
+    try std.testing.expect(GrowthStage.adult.description().len > 0);
+}
+
+test "queen_tamagotchi — TamagotchiMetrics default values" {
+    const metrics = TamagotchiMetrics{};
+    try std.testing.expectEqual(@as(f32, 50.0), metrics.hunger);
+    try std.testing.expectEqual(@as(u64, 0), metrics.hunger_steps_remaining);
+    try std.testing.expectEqual(@as(f32, 0.0), metrics.happiness_delta);
+    try std.testing.expectEqual(@as(f32, 999.0), metrics.happiness_best_ppl);
+    try std.testing.expectEqual(@as(u32, 0), metrics.discipline_fixes);
+    try std.testing.expectEqual(@as(f32, 0.5), metrics.rest_idle_ratio);
+}
+
+test "queen_tamagotchi — TamagotchiMetrics bestServiceStr" {
+    var metrics = TamagotchiMetrics{};
+    @memcpy(metrics.happiness_best_service[0.."hslm-r33".len], "hslm-r33");
+    metrics.happiness_best_service_len = "hslm-r33".len;
+
+    try std.testing.expectEqualStrings("hslm-r33", metrics.bestServiceStr());
+}
+
+test "queen_tamagotchi — TamagotchiMetrics bestServiceStr empty" {
+    const metrics = TamagotchiMetrics{};
+    try std.testing.expectEqual(@as(usize, 0), metrics.bestServiceStr().len);
+}
+
+test "queen_tamagotchi — CellStatus label" {
+    try std.testing.expectEqualStrings("UNKNOWN", ModuleHealth.CellStatus.unknown.label());
+    try std.testing.expectEqualStrings("OK", ModuleHealth.CellStatus.healthy.label());
+    try std.testing.expectEqualStrings("WEAK", ModuleHealth.CellStatus.weak.label());
+    try std.testing.expectEqualStrings("BROKEN", ModuleHealth.CellStatus.broken.label());
+}
+
+test "queen_tamagotchi — ModuleHealth default values" {
+    const health = ModuleHealth{};
+    try std.testing.expectEqual(ModuleHealth.CellStatus.unknown, health.medulla);
+    try std.testing.expectEqual(@as(i64, 0), health.medulla_last_beat_age);
+    try std.testing.expectEqual(ModuleHealth.CellStatus.unknown, health.pons);
+    try std.testing.expect(!health.pons_bridge_active);
+    try std.testing.expectEqual(ModuleHealth.CellStatus.unknown, health.lc);
+    try std.testing.expectEqual(locus_coeruleus.ArousalLevel.normal, health.lc_arousal);
+}
+
+test "queen_tamagotchi — ModuleHealth all broken score" {
+    var health = ModuleHealth{};
+    health.medulla = .broken;
+    health.pons = .broken;
+    health.lc = .broken;
+    health.hippocampus = .broken;
+
+    try std.testing.expectEqual(@as(u8, 0), health.overallScore());
+    try std.testing.expectEqualStrings("Critical failures", health.overallLabel());
+}
+
+test "queen_tamagotchi — ModuleHealth all weak score" {
+    var health = ModuleHealth{};
+    health.medulla = .weak;
+    health.pons = .weak;
+    health.lc = .weak;
+    health.hippocampus = .weak;
+
+    try std.testing.expectEqual(@as(u8, 60), health.overallScore());
+}
+
+test "queen_tamagotchi — GrowthStage boundary at exactly 10 min" {
+    // 10 minutes = 600 seconds
+    try std.testing.expectEqual(GrowthStage.baby, GrowthStage.fromUptime(600));
+}
+
+test "queen_tamagotchi — GrowthStage boundary at exactly 60 min" {
+    // 60 minutes = 3600 seconds
+    try std.testing.expectEqual(GrowthStage.child, GrowthStage.fromUptime(3600));
+}
+
+test "queen_tamagotchi — GrowthStage boundary at exactly 4 hours" {
+    // 4 hours = 14400 seconds
+    try std.testing.expectEqual(GrowthStage.teen, GrowthStage.fromUptime(14400));
+}
+
+test "queen_tamagotchi — GrowthStage boundary at exactly 12 hours" {
+    // 12 hours = 43200 seconds
+    try std.testing.expectEqual(GrowthStage.adult, GrowthStage.fromUptime(43200));
+}
+
+test "queen_tamagotchi — formatQuickReport with zero values" {
+    const farm_status = thalamus.FarmStatus{
+        .total_services = 0,
+        .active = 0,
+        .best_ppl = 0.0,
+    };
+
+    const report = try formatQuickReport(
+        std.testing.allocator,
+        300, // 5 min = Egg stage
+        farm_status,
+        0,
+        .sleep,
+    );
+    defer std.testing.allocator.free(report);
+
+    try std.testing.expect(report.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, report, "Egg") != null);
+}
+
+test "queen_tamagotchi — formatTamagotchiReport with many fixes" {
+    const farm_status = thalamus.FarmStatus{};
+    const module_health = ModuleHealth{};
+
+    const report = try formatTamagotchiReport(
+        std.testing.allocator,
+        7200,
+        farm_status,
+        10, // Many fixes
+        0.5,
+        module_health,
+        .alert,
+    );
+    defer std.testing.allocator.free(report);
+
+    try std.testing.expect(std.mem.indexOf(u8, report, "10 fixes") != null or std.mem.indexOf(u8, report, "10 fix") != null);
+}
+
+test "queen_tamagotchi — ModuleHealth overallScore edge cases" {
+    var health = ModuleHealth{};
+
+    // All unknown = 100
+    try std.testing.expectEqual(@as(u8, 100), health.overallScore());
+
+    // One weak = 90
+    health.medulla = .weak;
+    try std.testing.expectEqual(@as(u8, 90), health.overallScore());
+
+    // One broken = 75
+    health.medulla = .broken;
+    try std.testing.expectEqual(@as(u8, 75), health.overallScore());
+}
+
+test "tamagotchi — GrowthStage all enum values" {
+    const stages = [_]GrowthStage{ .egg, .baby, .child, .teen, .adult };
+    for (stages) |s| {
+        _ = s; // Verify all exist
+    }
+}
+
+test "tamagotchi — GrowthStage label all values" {
+    try std.testing.expectEqualStrings("Egg", GrowthStage.egg.label());
+    try std.testing.expectEqualStrings("Baby", GrowthStage.baby.label());
+    try std.testing.expectEqualStrings("Child", GrowthStage.child.label());
+    try std.testing.expectEqualStrings("Teen", GrowthStage.teen.label());
+    try std.testing.expectEqualStrings("Adult", GrowthStage.adult.label());
+}
+
+test "tamagotchi — GrowthStage emoji all values" {
+    // Egg 🥚 = F0 9F A5 9A
+    try std.testing.expectEqual("\xf0\x9f\xa5\x9a", GrowthStage.egg.emoji());
+    // Baby 👶 = F0 9F 91 B6
+    try std.testing.expectEqual("\xf0\x9f\x91\xb6", GrowthStage.baby.emoji());
+    // Child 🧒 = F0 9F A7 92
+    try std.testing.expectEqual("\xf0\x9f\xa7\x92", GrowthStage.child.emoji());
+    // Teen 👦 = F0 9F 91 A6
+    try std.testing.expectEqual("\xf0\x9f\x91\xa6", GrowthStage.teen.emoji());
+    // Adult 👑 = qt.E_CROWN
+    try std.testing.expectEqual(qt.E_CROWN, GrowthStage.adult.emoji());
+}
+
+test "tamagotchi — GrowthStage fromUptime with zero" {
+    try std.testing.expectEqual(GrowthStage.egg, GrowthStage.fromUptime(0));
+}
+
+test "tamagotchi — GrowthStage fromUptime with 30 minutes" {
+    const seconds = 30 * 60;
+    try std.testing.expectEqual(GrowthStage.baby, GrowthStage.fromUptime(seconds));
+}
+
+test "tamagotchi — GrowthStage fromUptime with 6 hours" {
+    const seconds = 6 * 60 * 60;
+    try std.testing.expectEqual(GrowthStage.teen, GrowthStage.fromUptime(seconds));
+}
+
+test "tamagotchi — GrowthStage fromUptime with 24 hours" {
+    const seconds = 24 * 60 * 60;
+    try std.testing.expectEqual(GrowthStage.adult, GrowthStage.fromUptime(seconds));
+}
+
+test "tamagotchi — nextMilestone for egg stage" {
+    const stage = GrowthStage.egg;
+    const milestone = stage.nextMilestone(300); // 5 minutes
+    try std.testing.expect(milestone.len > 0);
+}
+
+test "tamagotchi — nextMilestone for adult stage" {
+    const stage = GrowthStage.adult;
+    const milestone = stage.nextMilestone(72000);
+    try std.testing.expect(milestone.len > 0);
+}
+
+test "tamagotchi — GrowthStage description all stages" {
+    const stages = [_]GrowthStage{ .egg, .baby, .child, .teen, .adult };
+    for (stages) |s| {
+        const desc = s.description();
+        try std.testing.expect(desc.len > 0);
+    }
+}
+
+test "tamagotchi — ModuleHealth with all healthy" {
+    const health = ModuleHealth{};
+    try std.testing.expectEqual(@as(u8, 100), health.overallScore());
+    try std.testing.expectEqualStrings("All modules OK", health.overallLabel());
+}
+
+test "tamagotchi — ModuleHealth with all broken" {
+    var health = ModuleHealth{};
+    health.medulla = .broken;
+    health.pons = .broken;
+    health.lc = .broken;
+    health.hippocampus = .broken;
+
+    try std.testing.expectEqual(@as(u8, 0), health.overallScore());
+    try std.testing.expectEqualStrings("Critical failures", health.overallLabel());
+}
+
+test "tamagotchi — CellStatus all values" {
+    const statuses = [_]ModuleHealth.CellStatus{ .unknown, .healthy, .weak, .broken };
+    for (statuses) |s| {
+        _ = s; // Verify all exist
+    }
+}
+
+test "tamagotchi — CellStatus emoji all values" {
+    // Unknown ❓ = E2 9D 93
+    try std.testing.expectEqual("\xe2\x9d\x93", ModuleHealth.CellStatus.unknown.emoji());
+    // Healthy ✅ = E2 9C 85
+    try std.testing.expectEqual(qt.E_CHECK, ModuleHealth.CellStatus.healthy.emoji());
+    // Weak ⚠️ = E2 9A A0 EF B8 8F
+    try std.testing.expectEqual("\xe2\x9a\xa0\xef\xb8\x8f", ModuleHealth.CellStatus.weak.emoji());
+    // Broken ❌ = E2 9D 8C
+    try std.testing.expectEqual(qt.E_CROSS, ModuleHealth.CellStatus.broken.emoji());
+}
+
+test "tamagotchi — CellStatus label all values" {
+    try std.testing.expectEqualStrings("UNKNOWN", ModuleHealth.CellStatus.unknown.label());
+    try std.testing.expectEqualStrings("OK", ModuleHealth.CellStatus.healthy.label());
+    try std.testing.expectEqualStrings("WEAK", ModuleHealth.CellStatus.weak.label());
+    try std.testing.expectEqualStrings("BROKEN", ModuleHealth.CellStatus.broken.label());
+}
+
+test "tamagotchi — TamagotchiMetrics bestServiceStr" {
+    var metrics = TamagotchiMetrics{};
+    @memcpy(metrics.happiness_best_service[0.."w7-66".len], "w7-66");
+    metrics.happiness_best_service_len = "w7-66".len;
+    metrics.happiness_best_ppl = 4.6;
+
+    const result = metrics.bestServiceStr();
+    try std.testing.expectEqualStrings("w7-66", result);
+    try std.testing.expectApproxEqAbs(@as(f32, 4.6), metrics.happiness_best_ppl, 0.01);
+}
