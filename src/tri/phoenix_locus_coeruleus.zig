@@ -12,6 +12,7 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 const qt = @import("queen_types.zig");
 const hippocampus = @import("hippocampus.zig");
+const insula = @import("insula.zig");
 
 // ═════════════════════════════════════════════════════════════════════════
 // AROUSAL LEVEL — 0-5: sleep to emergency
@@ -180,6 +181,32 @@ pub fn getArousal(state: *const LocusState) ArousalLevel {
 /// Get alert count
 pub fn getAlertCount(state: *const LocusState) u32 {
     return state.alert_count;
+}
+
+/// Check Insula state and adjust arousal if thresholds exceeded
+/// This integrates interoception (internal state monitoring) into the arousal system
+pub fn evaluateInteroception(state: insula.InternalState) ArousalLevel {
+    // Check cycle latency — if >300ms, system is sluggish
+    if (state.cycle_latency_us > 300_000) {
+        return .alarm; // "Too slow!"
+    }
+
+    // Check memory usage — if >75MB, possible leak
+    if (state.alloc_bytes > 75_000_000) {
+        return .emergency; // "Memory pressure!"
+    }
+
+    // Check activity rate — if <5%, system is inactive
+    if (state.action_rate < 0.05) {
+        return .sleep; // "Inactive"
+    }
+
+    // Check decision time — if >100ms, slowing down
+    if (state.dlpfc_decision_us > 100_000) {
+        return .alert; // "Slowing down"
+    }
+
+    return .alert; // Normal monitoring
 }
 
 /// Decay arousal over time (natural relaxation)
@@ -417,6 +444,95 @@ test "locus_coeruleus — AlertKind severity ranges" {
         const sev = kind.severity();
         try std.testing.expect(sev >= 3 and sev <= 5);
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTEROCEPTION INTEGRATION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "locus_coeruleus — evaluateInteroception normal" {
+    const state = insula.InternalState{
+        .cycle_latency_us = 100_000, // 100ms
+        .thalamus_latency_us = 30_000,
+        .dlpfc_decision_us = 40_000,
+        .alloc_bytes = 50_000_000, // 50MB
+        .alloc_count = 100,
+        .actions_taken = 5,
+        .actions_suppressed = 1,
+        .action_rate = 0.1, // 10%
+        .measured_at = 0,
+    };
+
+    const arousal = evaluateInteroception(state);
+    try std.testing.expectEqual(ArousalLevel.alert, arousal);
+}
+
+test "locus_coeruleus — evaluateInteroception high latency" {
+    const state = insula.InternalState{
+        .cycle_latency_us = 400_000, // 400ms > 300ms threshold
+        .thalamus_latency_us = 0,
+        .dlpfc_decision_us = 0,
+        .action_rate = 0.1,
+        .alloc_bytes = 50_000_000,
+        .alloc_count = 0,
+        .actions_taken = 0,
+        .actions_suppressed = 0,
+        .measured_at = 0,
+    };
+
+    const arousal = evaluateInteroception(state);
+    try std.testing.expectEqual(ArousalLevel.alarm, arousal);
+}
+
+test "locus_coeruleus — evaluateInteroception memory pressure" {
+    const state = insula.InternalState{
+        .cycle_latency_us = 100_000,
+        .thalamus_latency_us = 0,
+        .dlpfc_decision_us = 0,
+        .alloc_bytes = 100_000_000, // 100MB > 75MB threshold
+        .alloc_count = 0,
+        .actions_taken = 0,
+        .actions_suppressed = 0,
+        .action_rate = 0.1,
+        .measured_at = 0,
+    };
+
+    const arousal = evaluateInteroception(state);
+    try std.testing.expectEqual(ArousalLevel.emergency, arousal);
+}
+
+test "locus_coeruleus — evaluateInteroception low activity" {
+    const state = insula.InternalState{
+        .cycle_latency_us = 100_000,
+        .thalamus_latency_us = 0,
+        .dlpfc_decision_us = 0,
+        .alloc_bytes = 50_000_000,
+        .alloc_count = 0,
+        .actions_taken = 0,
+        .actions_suppressed = 0,
+        .action_rate = 0.01, // 1% < 5% threshold
+        .measured_at = 0,
+    };
+
+    const arousal = evaluateInteroception(state);
+    try std.testing.expectEqual(ArousalLevel.sleep, arousal);
+}
+
+test "locus_coeruleus — evaluateInteroception slow decision" {
+    const state = insula.InternalState{
+        .cycle_latency_us = 100_000,
+        .thalamus_latency_us = 0,
+        .dlpfc_decision_us = 150_000, // 150ms > 100ms threshold
+        .alloc_bytes = 50_000_000,
+        .alloc_count = 0,
+        .actions_taken = 0,
+        .actions_suppressed = 0,
+        .action_rate = 0.1,
+        .measured_at = 0,
+    };
+
+    const arousal = evaluateInteroception(state);
+    try std.testing.expectEqual(ArousalLevel.alert, arousal);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

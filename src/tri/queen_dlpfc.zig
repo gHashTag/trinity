@@ -22,6 +22,8 @@ const basal_ganglia = @import("basal_ganglia.zig");
 const cerebellum = @import("cerebellum.zig");
 const queen_policy = @import("queen_policy.zig");
 const queen_vmpfc = @import("queen_vmpfc.zig");
+const insula = @import("insula.zig");
+const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
 
 // Faculty board integration (lazy import to avoid circular deps)
 const faculty_cortex = @import("cortex.zig");
@@ -432,12 +434,16 @@ pub const CycleState = struct {
     iteration: u64 = 0,
     last_decision: ?Decision = null,
     decision_count: u64 = 0,
+    actions_taken: u32 = 0,
+    actions_suppressed: u32 = 0,
     running: bool = true,
     start_time: i64 = 0,
+    timing: insula.TimingSnapshot = insula.TimingSnapshot.init(),
 
     pub fn init() CycleState {
         return .{
             .start_time = std.time.timestamp(),
+            .timing = insula.TimingSnapshot.init(),
         };
     }
 
@@ -483,9 +489,11 @@ pub fn runUnifiedLoop(allocator: Allocator, config: qt.QueenConfig) !void {
 
         // PHASE 1: READ — Gather all sensor data
         try readSenses(allocator, &ctx);
+        cycle_state.timing.markThalamus();
 
         // PHASE 2: THINK — Decide what to do
         const decision = try decide(&ctx);
+        cycle_state.timing.markDlpfc();
 
         // PHASE 3: ACT — Execute action (or skip if none)
         var result = qt.ActionResult{ .success = true };
@@ -493,10 +501,42 @@ pub fn runUnifiedLoop(allocator: Allocator, config: qt.QueenConfig) !void {
             cycle_state.last_decision = d;
             cycle_state.decision_count += 1;
             result = try act(&ctx, d);
+            if (result.success) {
+                cycle_state.actions_taken += 1;
+            } else {
+                cycle_state.actions_suppressed += 1;
+            }
+        } else {
+            cycle_state.actions_suppressed += 1;
         }
 
         // PHASE 4: SPEAK — Report via OFC
         try speak(&ctx, decision, result);
+
+        // PHASE 5: INTEROCEPTION — Measure internal state
+        // Only measure every cycle (could be throttled to every N cycles)
+        const internal_state = insula.measureState(
+            allocator,
+            cycle_state.start_time,
+            cycle_state.timing,
+            cycle_state.actions_taken,
+            cycle_state.actions_suppressed,
+            cycle_state.iteration,
+        ) catch |err| blk: {
+            // Log error but don't fail the cycle
+            std.debug.print("Warning: Insula measurement failed: {}\n", .{err});
+            break :blk insula.InternalState.init();
+        };
+
+        // Report to Hippocampus for persistent memory
+        insula.reportState(allocator, internal_state) catch |err| {
+            // Non-fatal: just log the error
+            std.debug.print("Warning: Insula report failed: {}\n", .{err});
+        };
+
+        // Optional: Check if LC should adjust arousal based on interoception
+        // This is a placeholder for future alert functionality
+        _ = locus_coeruleus.evaluateInteroception(internal_state);
 
         // Sleep until next cycle
         if (!config.daemon) {
@@ -1135,4 +1175,235 @@ test "dlpfc — Prediction setDescription and descriptionStr" {
 test "dlpfc — GoalPriority emoji" {
     try std.testing.expectEqualStrings("\xe2\x97\xbb", GoalPriority.low.emoji());
     try std.testing.expectEqualStrings("\xf0\x9f\x94\xb4", GoalPriority.critical.emoji());
+}
+
+test "dlpfc — DecisionContext hasWarningTrends" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    // No trend analysis → no warning
+    var ctx1 = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .trend_analysis = null,
+    };
+    try std.testing.expect(!ctx1.hasWarningTrends());
+
+    // Deteriorating trend → warning
+    const analysis = TrendAnalysis{ .direction = .deteriorating };
+    var ctx2 = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+    };
+    ctx2.trend_analysis = analysis;
+    try std.testing.expect(ctx2.hasWarningTrends());
+}
+
+test "dlpfc — DecisionContext getSuggestedGoals" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{},
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+    };
+
+    const goals = ctx.getSuggestedGoals();
+    try std.testing.expectEqual(@as(usize, 0), goals.len);
+}
+
+test "dlpfc — TrendAnalysis summary" {
+    var analysis = TrendAnalysis{ .direction = .improving };
+    try std.testing.expectEqualStrings("System metrics improving", analysis.summary());
+
+    analysis.direction = .stable;
+    try std.testing.expectEqualStrings("All metrics stable", analysis.summary());
+
+    analysis.direction = .deteriorating;
+    try std.testing.expectEqualStrings("Metrics declining, attention needed", analysis.summary());
+
+    analysis.direction = .critical;
+    try std.testing.expectEqualStrings("Critical degradation detected", analysis.summary());
+}
+
+test "dlpfc — TrendDirection color" {
+    const improving = TrendDirection.improving;
+    try std.testing.expect(improving.color().len > 0);
+
+    const critical = TrendDirection.critical;
+    try std.testing.expect(critical.color().len > 0);
+}
+
+test "dlpfc — TrendDirection emoji" {
+    try std.testing.expectEqualStrings("\xe2\x96\xb2", TrendDirection.improving.emoji());
+    try std.testing.expectEqualStrings("\xf0\x9f\x9a\xa8", TrendDirection.critical.emoji());
+}
+
+test "dlpfc — decide handles trend-based predictions" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    // Create trend analysis with deteriorating compile rate
+    const analysis = TrendAnalysis{
+        .direction = .deteriorating,
+        .compile_trend = .deteriorating,
+        .urgency = .high,
+    };
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = true,
+    };
+    ctx.trend_analysis = analysis;
+
+    const decision = try decide(&ctx);
+    // Should trigger doctor_scan due to deteriorating compile trend
+    try std.testing.expect(decision != null);
+}
+
+test "dlpfc — decide with dirty trend and many dirty files" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    const analysis = TrendAnalysis{
+        .direction = .deteriorating,
+        .dirty_trend = .deteriorating,
+    };
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = true,
+        .dirty_files = 25, // >20 threshold
+    };
+    ctx.trend_analysis = analysis;
+
+    const decision = try decide(&ctx);
+    // Should trigger git_commit_state
+    try std.testing.expect(decision != null);
+    if (decision) |d| {
+        try std.testing.expectEqual(qt.ActionKind.git_commit_state, d.action);
+    }
+}
+
+test "dlpfc — decide with faculty loss trend" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    const analysis = TrendAnalysis{
+        .direction = .deteriorating,
+        .faculty_trend = .deteriorating,
+    };
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = true,
+    };
+    ctx.trend_analysis = analysis;
+
+    const decision = try decide(&ctx);
+    // Should trigger farm_status
+    try std.testing.expect(decision != null);
+    if (decision) |d| {
+        try std.testing.expectEqual(qt.ActionKind.farm_status, d.action);
+    }
+}
+
+test "dlpfc — decide escalates critical trend" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+    var incidents = queen_policy.IncidentMemory.init();
+
+    const analysis = TrendAnalysis{
+        .direction = .critical,
+        .urgency = .critical,
+        .compile_trend = .deteriorating, // Add specific trend to trigger candidate
+    };
+
+    var ctx = DecisionContext{
+        .allocator = std.testing.allocator,
+        .farm = .{},
+        .issues = .{},
+        .mu_heartbeat = .{},
+        .config = .{ .allow_auto_actions = true, .daemon = true },
+        .state = &state,
+        .counters = &counters,
+        .incidents = &incidents,
+        .build_ok = true,
+    };
+    ctx.trend_analysis = analysis;
+
+    const decision = try decide(&ctx);
+    // Should have decision with high urgency
+    try std.testing.expect(decision != null);
+    if (decision) |d| {
+        try std.testing.expectEqual(basal_ganglia.Urgency.critical, d.urgency);
+    }
+}
+
+test "dlpfc — PredictionKind enum values" {
+    // Count enum fields by iterating over tags
+    var count: usize = 0;
+    inline for (std.meta.tags(PredictionKind)) |_| {
+        count += 1;
+    }
+    try std.testing.expectEqual(@as(usize, 6), count);
+}
+
+test "dlpfc — SuggestedGoal struct" {
+    const goal = SuggestedGoal{
+        .action = .doctor_scan,
+        .priority = .high,
+        .roi = 2.5,
+        .confidence = 0.8,
+        .recommendation = queen_vmpfc.Recommendation.execute,
+        .reason = "Test reason",
+    };
+
+    try std.testing.expectEqual(qt.ActionKind.doctor_scan, goal.action);
+    try std.testing.expectEqual(GoalPriority.high, goal.priority);
+    try std.testing.expectApproxEqAbs(@as(f32, 2.5), goal.roi, 0.01);
 }
