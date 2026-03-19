@@ -1512,4 +1512,3 @@ test "premotor — planFromGoal returns correct step_count for each goal" {
     const emergency_seq = planFromGoal(.emergency_shutdown);
     try std.testing.expectEqual(@as(u8, 1), emergency_seq.step_count);
 }
-

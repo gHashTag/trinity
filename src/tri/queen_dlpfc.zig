@@ -25,6 +25,13 @@ const queen_vmpfc = @import("queen_vmpfc.zig");
 const insula = @import("insula.zig");
 const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
 
+// S³AI Brain Module Integration
+const brain = @import("brain.zig");
+const Brain = brain.Brain;
+const WorkerLiveState = brain.WorkerLiveState;
+const SafetyVerdict = brain.SafetyVerdict;
+const ACCAction = brain.Action;
+
 // Faculty board integration (lazy import to avoid circular deps)
 const faculty_cortex = @import("cortex.zig");
 const faculty_types = @import("faculty_types.zig");
@@ -64,6 +71,9 @@ pub const DecisionContext = struct {
     state: *qt.QueenState,
     counters: *queen_policy.ActionCounters,
     incidents: *queen_policy.IncidentMemory,
+
+    // S³AI Brain context (for conflict detection & safety verification)
+    brain: ?*Brain = null,
 
     // Derived metrics
     ouroboros_score: f32 = 0.0,
