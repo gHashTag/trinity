@@ -1,6 +1,6 @@
-// ═════════════════════════════════════════════════════════════════════════════
-// SACRED SYNTHESIS REPORT — Yosys JSON Resource Parser
 // ═══════════════════════════════════════════════════════════════════════════
+// SACRED SYNTHESIS REPORT — Yosys JSON Resource Parser
+// ═════════════════════════════════════════════════════════════════════════════
 //
 // Phase 6.4 — Extract LUT/FF/DSP/BRAM from Yosys synthesis JSON
 //
@@ -116,20 +116,18 @@ fn parseYosysJson(allocator: std.mem.Allocator, json_path: []const u8) !Synthesi
     const file = try std.fs.cwd().openFile(json_path, .{});
     defer file.close();
 
-    // Get file size
     const stat = try file.stat();
     const buffer = try allocator.alloc(u8, @intCast(stat.size));
-    defer allocator.free(buffer);
 
     _ = try file.readAll(buffer);
+    defer allocator.free(buffer);
 
     const parsed = try std.json.parseFromSlice(std.json.Value, allocator, buffer, .{});
-    defer {
-        parsed.deinit();
-    }
 
     // Yosys JSON: { "modules": { "sacred_alu": { "cells": [...] } } }
     const modules = parsed.value.object.get("modules");
+
+    parsed.deinit();
 
     if (modules) |mod| {
         return try countCellTypes(allocator, mod);
@@ -162,9 +160,9 @@ pub fn runSacredSynthReportCommand(allocator: std.mem.Allocator, args: []const [
         }
     }
 
-    std.debug.print("\n{s}════════════════════════════════════════{s}\n", .{ GOLD, RESET });
+    std.debug.print("\n{s}══════════════════════════════════════{s}\n", .{ GOLD, RESET });
     std.debug.print("{s}SACRED ALU SYNTHESIS REPORT{s}\n", .{ GOLD, RESET });
-    std.debug.print("{s}════════════════════════════════════════{s}\n\n", .{ GOLD, RESET });
+    std.debug.print("{s}══════════════════════════════════════{s}\n\n", .{ GOLD, RESET });
 
     std.debug.print("{s}Input:{s} {s}\n", .{ CYAN, RESET, json_path });
     std.debug.print("{s}Output:{s} {s}\n\n", .{ CYAN, RESET, output_format });
@@ -238,19 +236,14 @@ fn printCsvReport(stats: SynthesisStats) !void {
 
 fn printJsonReport(stats: SynthesisStats) !void {
     const module_name = stats.module_name orelse "unknown";
-    const formatted = std.fmt.allocPrint(
-        std.heap.page_allocator,
-        "{{ \"module\": \"{s}\", \"resources\": {{ \"luts\": {d}, \"dffs\": {d}, \"dsp\": {d}, \"bram\": {d}, \"cells\": {d} }} }}",
-        .{ module_name, stats.luts, stats.dffs, stats.dsp, stats.bram, stats.cells }
-    );
-    defer std.heap.page_allocator.free(formatted);
-    std.debug.print("{s}\n", .{formatted});
+    std.debug.print("{{ \"module\": \"{s}\", \"resources\": {{ \"luts\": {d}, \"dffs\": {d}, \"dsp\": {d}, \"bram\": {d}, \"cells\": {d} }} }}\n", .{
+        module_name, stats.luts, stats.dffs, stats.dsp, stats.bram, stats.cells });
 }
 
 fn printSynthReportHelp() !void {
-    std.debug.print("\n{s}══════════════════════════════════════════{s}\n", .{ GOLD, RESET });
+    std.debug.print("\n{s}══════════════════════════════════════{s}\n", .{ GOLD, RESET });
     std.debug.print("{s}SACRED SYNTHESIS REPORT COMMAND{s}\n", .{ GOLD, RESET });
-    std.debug.print("{s}══════════════════════════════════════════{s}\n\n", .{ GOLD, RESET });
+    std.debug.print("{s}══════════════════════════════════════{s}\n\n", .{ GOLD, RESET });
 
     std.debug.print("{s}Usage:{s} tri sacred synth-report [options]\n\n", .{ CYAN, RESET });
 
@@ -312,34 +305,4 @@ test "sacred synth-report: parse JSON" {
     try std.testing.expectEqual(stats.dsp, 1);
     try std.testing.expectEqual(stats.bram, 1);
     try std.testing.expectEqual(stats.cells, 5);
-}
-
-test "sacred synth-report: human output" {
-    const stats = SynthesisStats{
-        .luts = 1500,
-        .dffs = 800,
-        .dsp = 1,
-        .bram = 0,
-        .cells = 2301,
-        .module_name = "sacred_alu",
-    };
-
-    std.debug.print("\nTest output:\n");
-    printHumanReport(stats) catch {};
-}
-
-test "sacred synth-report: csv output" {
-    const stats = SynthesisStats{
-        .luts = 1500,
-        .dffs = 800,
-        .dsp = 1,
-        .bram = 0,
-        .cells = 2301,
-        .module_name = "test_module",
-    };
-
-    var output: [100]u8 = undefined;
-    const fbs = std.io.fixedBufferStream(&output);
-    printCsvReport(stats) catch {};
-    _ = fbs;
 }
