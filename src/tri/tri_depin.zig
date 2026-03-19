@@ -479,7 +479,7 @@ fn runDepinPeers(allocator: Allocator) !void {
     var persistence_mgr = depin_persistence.PersistenceManager.init(allocator);
     defer persistence_mgr.deinit();
 
-    const state = try persistence_mgr.load() orelse {
+    var state = try persistence_mgr.load() orelse {
         print("{s}No cluster state found. Run 'tri depin discover' first.{s}\n\n", .{
             YELLOW, RESET,
         });
@@ -497,7 +497,7 @@ fn runDepinPeers(allocator: Allocator) !void {
     print("  {s}Node ID                    Host           Port    Quality   Status{s}\n", .{ DIM, RESET });
     print("  {s}──────────────────────────  ─────────────  ──────  ────────  ───────{s}\n", .{ DIM, RESET });
 
-    const now = std.time.timestamp();
+    const now = @as(u64, @intCast(std.time.timestamp()));
 
     for (state.peers.items) |peer| {
         const status_emoji = if (peer.isHealthy())

@@ -134,7 +134,7 @@ pub const PeerState = struct {
         if (success) {
             // Increase quality for successful interactions
             // Latency bonus: faster = higher quality
-            const latency_bonus = if (latency_ms < 100)
+            const latency_bonus: f64 = if (latency_ms < 100)
                 0.05
             else if (latency_ms < 500)
                 0.02
@@ -426,26 +426,24 @@ pub const PersistenceManager = struct {
         try json_buffer.appendSlice(self.allocator, "  \"peers\": [\n");
         for (json_obj.peers, 0..) |peer, i| {
             if (i > 0) try json_buffer.appendSlice(self.allocator, ",\n");
-            try json_buffer.writer(self.allocator).print(
-                \\    {{
-                \\      "node_id": "{s}",
-                \\      "host": "{s}",
-                \\      "port": {d},
-                \\      "cluster_id": "{s}",
-                \\      "quality_score": {d:.5},
-                \\      "last_seen": {d},
-                \\      "first_seen": {d},
-                \\      "role": "{s}",
-                \\      "tier": "{s}"
-                \\    }}
-            , .{ peer.node_id, peer.host, peer.port, peer.cluster_id, peer.quality_score, peer.last_seen, peer.first_seen, peer.role, peer.tier });
+            try json_buffer.appendSlice(self.allocator, "    {\n");
+            try json_buffer.writer(self.allocator).print("      \"node_id\": \"{s}\",\n", .{peer.node_id});
+            try json_buffer.writer(self.allocator).print("      \"host\": \"{s}\",\n", .{peer.host});
+            try json_buffer.writer(self.allocator).print("      \"port\": {d},\n", .{peer.port});
+            try json_buffer.writer(self.allocator).print("      \"cluster_id\": \"{s}\",\n", .{peer.cluster_id});
+            try json_buffer.writer(self.allocator).print("      \"quality_score\": {d:.5},\n", .{peer.quality_score});
+            try json_buffer.writer(self.allocator).print("      \"last_seen\": {d},\n", .{peer.last_seen});
+            try json_buffer.writer(self.allocator).print("      \"first_seen\": {d},\n", .{peer.first_seen});
+            try json_buffer.writer(self.allocator).print("      \"role\": \"{s}\",\n", .{peer.role});
+            try json_buffer.writer(self.allocator).print("      \"tier\": \"{s}\"\n", .{peer.tier});
+            try json_buffer.appendSlice(self.allocator, "    }");
         }
         try json_buffer.appendSlice(self.allocator, "\n  ],\n");
         try json_buffer.writer(self.allocator).print("  \"version\": {d},\n", .{json_obj.version});
         try json_buffer.writer(self.allocator).print("  \"last_updated\": {d}\n", .{json_obj.last_updated});
         try json_buffer.appendSlice(self.allocator, "}\n");
 
-        const json_string = json_buffer.toOwnedSlice(self.allocator);
+        const json_string = try json_buffer.toOwnedSlice(self.allocator);
         defer self.allocator.free(json_string);
 
         // Write to file
@@ -499,7 +497,7 @@ pub const PersistenceManager = struct {
 
 test "ClusterState init and add peer" {
     const allocator = std.testing.allocator;
-    var state = ClusterState.init(allocator, "test-cluster", "test-node");
+    var state = ClusterState.init("test-cluster", "test-node");
     defer state.deinit(allocator);
 
     const now = @as(u64, @intCast(std.time.timestamp()));
@@ -523,7 +521,7 @@ test "ClusterState init and add peer" {
 
 test "ClusterState get peer" {
     const allocator = std.testing.allocator;
-    var state = ClusterState.init(allocator, "test-cluster", "test-node");
+    var state = ClusterState.init("test-cluster", "test-node");
     defer state.deinit(allocator);
 
     const now = @as(u64, @intCast(std.time.timestamp()));
@@ -548,7 +546,7 @@ test "ClusterState get peer" {
 
 test "ClusterState healthy peers filter" {
     const allocator = std.testing.allocator;
-    var state = ClusterState.init(allocator, "test-cluster", "test-node");
+    var state = ClusterState.init("test-cluster", "test-node");
     defer state.deinit(allocator);
 
     const now = @as(u64, @intCast(std.time.timestamp()));
@@ -622,7 +620,7 @@ test "PersistenceManager save and load" {
     defer manager.deinit();
 
     const now = @as(u64, @intCast(std.time.timestamp()));
-    var state = ClusterState.init(allocator, "test-cluster", "test-node");
+    var state = ClusterState.init("test-cluster", "test-node");
 
     const peer = PeerState{
         .node_id = "peer-1",
@@ -645,7 +643,7 @@ test "PersistenceManager save and load" {
     var manager2 = PersistenceManager.init(allocator);
     defer manager2.deinit();
 
-    const loaded = try manager2.load();
+    var loaded = try manager2.load();
     try std.testing.expect(loaded != null);
 
     try std.testing.expectEqualStrings("test-cluster", loaded.?.cluster_id);
