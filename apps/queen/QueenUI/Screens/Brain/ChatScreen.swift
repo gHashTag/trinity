@@ -2012,6 +2012,7 @@ struct ChatScreen: View {
                     showMentionPopup = query != nil
                 }
             )
+            .frame(maxHeight: 150)  // Ограничение высоты инпута ~6-7 строк
             .padding(.horizontal, LayoutConstants.cardPadding)
             .padding(.vertical, 14)
 
