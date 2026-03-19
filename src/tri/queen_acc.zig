@@ -523,7 +523,7 @@ test "ACC — health returns healthy" {
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
 }
 
-test "ACC — ConflictKind enum coverage" {
+test "ACC — ConflictKind all values" {
     const kinds = [_]ConflictKind{
         .mutual_exclusion,
         .sequential,
@@ -711,4 +711,252 @@ test "ACC — CellHealth Status enum values" {
     for (statuses) |s| {
         _ = s; // Verify all enum values exist
     }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CONFLICT KIND TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "ACC — ConflictKind each value" {
+    const kinds = [_]ConflictKind{
+        .mutual_exclusion,
+        .sequential,
+        .resource_contention,
+        .redundancy,
+        .unknown,
+    };
+    for (kinds) |k| {
+        _ = k; // Verify all enum values exist
+    }
+}
+
+test "ACC — Conflict format output" {
+    const conflict = Conflict{
+        .kind = .mutual_exclusion,
+        .action1 = .cloud_spawn,
+        .action2 = .cloud_kill,
+        .reason = "Test reason",
+        .severity = .high,
+    };
+
+    var buf: [256]u8 = undefined;
+    const output = conflict.format(&buf);
+    try std.testing.expect(output.len > 0);
+    // Labels use spaces, e.g., "cloud spawn" not "cloud_spawn"
+    try std.testing.expect(std.mem.indexOf(u8, output, "<->") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "Test reason") != null);
+}
+
+test "ACC — Conflict default severity" {
+    const conflict = Conflict{
+        .kind = .mutual_exclusion,
+        .action1 = .farm_status,
+        .action2 = .arena_status,
+        .reason = "test",
+    };
+    try std.testing.expectEqual(Conflict.Severity.medium, conflict.severity);
+}
+
+test "ACC — Conflict severity all values" {
+    try std.testing.expectEqual(@as(u8, 0), @intFromEnum(Conflict.Severity.low));
+    try std.testing.expectEqual(@as(u8, 1), @intFromEnum(Conflict.Severity.medium));
+    try std.testing.expectEqual(@as(u8, 2), @intFromEnum(Conflict.Severity.high));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CONTROL SIGNAL TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "ACC — ControlSignal with inhibit" {
+    const signal = ControlSignal{
+        .inhibit = true,
+        .boost = false,
+        .reason = "conflict detected",
+    };
+    try std.testing.expect(signal.inhibit);
+    try std.testing.expect(!signal.boost);
+}
+
+test "ACC — ControlSignal with boost" {
+    const signal = ControlSignal{
+        .inhibit = false,
+        .boost = true,
+        .reason = "high urgency",
+    };
+    try std.testing.expect(signal.boost);
+    try std.testing.expect(!signal.inhibit);
+}
+
+test "ACC — ControlSignal both inhibit and boost" {
+    const signal = ControlSignal{
+        .inhibit = true,
+        .boost = true,
+        .reason = "special case",
+    };
+    try std.testing.expect(signal.inhibit);
+    try std.testing.expect(signal.boost);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ERROR MONITOR TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "ACC — ErrorMonitor addError increments count" {
+    var monitor = ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+
+    try monitor.addError("test", "error1", .err);
+    try std.testing.expectEqual(@as(usize, 1), monitor.errors.items.len);
+
+    try monitor.addError("test", "error2", .warning);
+    try std.testing.expectEqual(@as(usize, 2), monitor.errors.items.len);
+}
+
+test "ACC — ErrorMonitor countBySeverity counts correctly" {
+    var monitor = ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+
+    try monitor.addError("test1", "err1", .err);
+    try monitor.addError("test2", "err2", .err);
+    try monitor.addError("test3", "warn1", .warning);
+    try monitor.addError("test4", "warn2", .warning);
+
+    try std.testing.expectEqual(@as(usize, 2), monitor.countBySeverity(.err));
+    try std.testing.expectEqual(@as(usize, 2), monitor.countBySeverity(.warning));
+}
+
+test "ACC — ErrorMonitor threshold exceeded after adding" {
+    var monitor = ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+
+    try std.testing.expect(!monitor.thresholdExceeded());
+
+    // Add 3 errors (threshold is 3)
+    try monitor.addError("test", "error1", .err);
+    try monitor.addError("test", "error2", .err);
+    try monitor.addError("test", "error3", .err);
+
+    try std.testing.expect(monitor.thresholdExceeded());
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CELL HEALTH TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "ACC — CellHealth custom values" {
+    var cell_health = CellHealth{};
+    cell_health.status = .weak;
+    cell_health.cycle = 5;
+    cell_health.last_check = 12345;
+
+    try std.testing.expectEqual(CellHealth.Status.weak, cell_health.status);
+    try std.testing.expectEqual(@as(u32, 5), cell_health.cycle);
+    try std.testing.expectEqual(@as(i64, 12345), cell_health.last_check);
+}
+
+test "ACC — CellHealth timestamp" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CONFLICT DETECTION TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "ACC — detectConflicts finds redundancy" {
+    const candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .doctor_quick, .urgency = .normal },
+        .{ .kind = .doctor_heal, .urgency = .normal },
+    };
+
+    const conflicts = try detectConflicts(std.testing.allocator, &candidates);
+    defer std.testing.allocator.free(conflicts);
+
+    try std.testing.expect(conflicts.len > 0);
+    try std.testing.expectEqual(ConflictKind.redundancy, conflicts[0].kind);
+}
+
+test "ACC — detectConflicts finds resource_contention" {
+    const candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .farm_recycle, .urgency = .normal },
+        .{ .kind = .farm_status, .urgency = .normal },
+    };
+
+    const conflicts = try detectConflicts(std.testing.allocator, &candidates);
+    defer std.testing.allocator.free(conflicts);
+
+    try std.testing.expect(conflicts.len > 0);
+    try std.testing.expectEqual(ConflictKind.resource_contention, conflicts[0].kind);
+}
+
+test "ACC — detectConflicts multiple conflicts" {
+    const candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .cloud_spawn, .urgency = .normal },
+        .{ .kind = .cloud_kill, .urgency = .normal },
+        .{ .kind = .farm_recycle, .urgency = .normal },
+    };
+
+    const conflicts = try detectConflicts(std.testing.allocator, &candidates);
+    defer std.testing.allocator.free(conflicts);
+
+    // Should have at least 2 conflicts: spawn-kill and recycle-dangerous
+    try std.testing.expect(conflicts.len >= 2);
+}
+
+test "ACC — shouldSuppress medium severity" {
+    const conflicts = [_]Conflict{
+        .{
+            .kind = .resource_contention,
+            .action1 = .farm_recycle,
+            .action2 = .farm_status,
+            .reason = "state conflict",
+            .severity = .medium,
+        },
+    };
+
+    try std.testing.expect(shouldSuppress(.farm_status, .farm_recycle, &conflicts));
+    try std.testing.expect(shouldSuppress(.farm_recycle, .farm_status, &conflicts));
+}
+
+test "ACC — shouldSuppress no match" {
+    const conflicts = [_]Conflict{
+        .{
+            .kind = .mutual_exclusion,
+            .action1 = .cloud_spawn,
+            .action2 = .cloud_kill,
+            .reason = "test",
+            .severity = .high,
+        },
+    };
+
+    // farm_status is not in the conflict
+    try std.testing.expect(!shouldSuppress(.farm_status, .cloud_spawn, &conflicts));
+}
+
+test "ACC — suppressConflicting multiple candidates" {
+    var candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .cloud_spawn, .urgency = .normal, .suppressed = false },
+        .{ .kind = .cloud_kill, .urgency = .normal, .suppressed = false },
+        .{ .kind = .cloud_cleanup, .urgency = .normal, .suppressed = false },
+        .{ .kind = .farm_status, .urgency = .normal, .suppressed = false },
+    };
+
+    try suppressConflicting(&candidates, .cloud_spawn);
+
+    // cloud_kill and cloud_cleanup should be suppressed (both conflict with spawn)
+    try std.testing.expect(candidates[1].suppressed);
+    try std.testing.expect(candidates[2].suppressed);
+    // farm_status should not be suppressed
+    try std.testing.expect(!candidates[3].suppressed);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ERROR SEVERITY TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "ACC — ErrorSeverity enum values" {
+    try std.testing.expectEqual(@as(u8, 0), @intFromEnum(ErrorSeverity.info));
+    try std.testing.expectEqual(@as(u8, 1), @intFromEnum(ErrorSeverity.warning));
+    try std.testing.expectEqual(@as(u8, 2), @intFromEnum(ErrorSeverity.err));
+    try std.testing.expectEqual(@as(u8, 3), @intFromEnum(ErrorSeverity.critical));
 }
