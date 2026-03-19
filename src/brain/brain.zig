@@ -23,6 +23,18 @@ pub const reticular_formation = @import("reticular_formation");
 /// Backoff policy — regulates timing and retry behavior
 pub const locus_coeruleus = @import("locus_coeruleus");
 
+/// Hippocampus (Memory Persistence)
+/// Event logging to JSONL for replay and analysis
+pub const persistence = @import("persistence");
+
+/// Corpus Callosum (Telemetry)
+/// Time-series metrics aggregation
+pub const telemetry = @import("telemetry");
+
+/// Amygdala (Emotional Salience)
+/// Detects emotionally significant events and prioritizes them
+pub const amygdala = @import("amygdala");
+
 /// Thalamus (Sensory Relay)
 /// Railway live logs relay
 // NOTE: Temporarily disabled due to pre-existing compilation errors
@@ -65,6 +77,26 @@ pub const BRAIN_ATLAS = [_]BrainRegion{
         .name = "Locus Coeruleus",
         .biological_function = "Arousal Regulation — backoff/timing policy",
         .file = "locus_coeruleus.zig",
+    },
+    .{
+        .name = "Amygdala",
+        .biological_function = "Emotional Salience — prioritizes urgent/critical events",
+        .file = "amygdala.zig",
+    },
+    .{
+        .name = "Intraparietal Sulcus",
+        .biological_function = "Numerical Processing — f16/GF16/TF3 conversions",
+        .file = "intraparietal_sulcus.zig",
+    },
+    .{
+        .name = "Hippocampus",
+        .biological_function = "Memory Persistence — JSONL event logging",
+        .file = "persistence.zig",
+    },
+    .{
+        .name = "Corpus Callosum",
+        .biological_function = "Telemetry — time-series metrics aggregation",
+        .file = "telemetry.zig",
     },
 };
 
@@ -256,6 +288,29 @@ pub const AgentCoordination = struct {
         try writer.print("║    Max Delay:        {d:>6} ms                             ║\n", .{self.backoff_policy.max_ms});
         try writer.print("╚═══════════════════════════════════════════════════════════════╝\n", .{});
     }
+
+    /// Visual ASCII brain scan (for TUI display)
+    pub fn scan(self: *const AgentCoordination) struct {
+        basal_ganglia: []const u8,
+        reticular_formation: []const u8,
+        locus_coeruleus: []const u8,
+        overall: []const u8,
+    } {
+        const stats = self.getStats();
+        const health = self.healthCheck();
+
+        // Activity levels based on stats
+        const bg_level: []const u8 = if (stats.active_claims == 0) "💤" else if (stats.active_claims < 10) "🟢" else if (stats.active_claims < 100) "🟡" else "🔴";
+        const rf_level: []const u8 = if (stats.total_events_published == 0) "💤" else if (stats.buffered_events < 100) "🟢" else if (stats.buffered_events < 1000) "🟡" else "🔴";
+        const lc_level: []const u8 = "🟢"; // Always healthy (stateless)
+
+        return .{
+            .basal_ganglia = bg_level,
+            .reticular_formation = rf_level,
+            .locus_coeruleus = lc_level,
+            .overall = if (health.healthy) "✅" else "⚠️",
+        };
+    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -263,7 +318,7 @@ pub const AgentCoordination = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Brain atlas completeness" {
-    try std.testing.expectEqual(@as(usize, 4), BRAIN_ATLAS.len);
+    try std.testing.expectEqual(@as(usize, 8), BRAIN_ATLAS.len);
     try std.testing.expect(std.mem.eql(u8, "Basal Ganglia", BRAIN_ATLAS[1].name));
 }
 

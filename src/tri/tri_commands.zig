@@ -1921,8 +1921,7 @@ fn printEventStreamHelp() void {
 
 pub fn runStressTestCommand(args: []const []const u8) !void {
     const brain = @import("brain");
-    const stress_test = @import("../brain/stress_test.zig");
-    const stdout = std.io.getStdOut().writer();
+    const stress_test = @import("brain");
 
     if (args.len > 0) {
         if (std.mem.eql(u8, args[0], "--health")) {
@@ -1945,14 +1944,32 @@ pub fn runStressTestCommand(args: []const []const u8) !void {
             }
         } else if (std.mem.eql(u8, args[0], "--metrics")) {
             // Export Prometheus metrics
-            const allocator = std.heap.page_allocator;
-            var coord = try brain.AgentCoordination.init(allocator);
-            try coord.exportMetrics(stdout);
+            std.debug.print("Metrics export temporarily disabled (API change)\n", .{});
         } else if (std.mem.eql(u8, args[0], "--dump")) {
             // Dump brain state
+            std.debug.print("Dump temporarily disabled (API change)\n", .{});
+        } else if (std.mem.eql(u8, args[0], "--scan")) {
+            // Visual brain scan
             const allocator = std.heap.page_allocator;
             var coord = try brain.AgentCoordination.init(allocator);
-            try coord.dump(stdout);
+            const scan = coord.scan();
+
+            std.debug.print("{s}╔═══════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+            std.debug.print("{s}║  S³AI BRAIN SCAN — v5.1               ║{s}\n", .{ YELLOW, RESET });
+            std.debug.print("{s}╠═══════════════════════════════════════╣{s}\n", .{ CYAN, RESET });
+            std.debug.print("{s}║  Basal Ganglia:     {s}  Action     ║{s}\n", .{ RESET, scan.basal_ganglia, RESET });
+            std.debug.print("{s}║  Reticular Form.:  {s}  Alert      ║{s}\n", .{ RESET, scan.reticular_formation, RESET });
+            std.debug.print("{s}║  Locus Coeruleus:  {s}  Arousal    ║{s}\n", .{ RESET, scan.locus_coeruleus, RESET });
+            std.debug.print("{s}╠═══════════════════════════════════════╣{s}\n", .{ CYAN, RESET });
+            std.debug.print("{s}║  Overall Status:    {s}             ║{s}\n", .{ RESET, scan.overall, RESET });
+            std.debug.print("{s}╚═══════════════════════════════════════╝{s}\n", .{ CYAN, RESET });
+        } else if (std.mem.eql(u8, args[0], "--telemetry")) {
+            // Show telemetry summary
+            // FIXME: telemetry module import disabled
+            std.debug.print("Telemetry temporarily disabled\n", .{});
+        } else if (std.mem.eql(u8, args[0], "--telemetry-full")) {
+            // FIXME: telemetry module import disabled
+            std.debug.print("Telemetry full temporarily disabled\n", .{});
         } else {
             // Full stress test
             try stress_test.runStressTestCommand(args);
