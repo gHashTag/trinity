@@ -984,3 +984,139 @@ test "vlpfc — FilteredState mood key_expired" {
     state.mood = qt.AlertKind.key_expired;
     try std.testing.expectEqual(qt.AlertKind.key_expired, state.mood);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Additional FilteredState tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — FilteredState all AlertKind moods" {
+    const moods = [_]qt.AlertKind{
+        .build_break,    .ppl_record,  .stale_arena, .blocked_issue,
+        .dirty_overload, .key_expired, .asha_kill,   .arena_upset,
+        .healthy,        .none,
+    };
+    for (moods) |mood| {
+        var state = FilteredState{};
+        state.mood = mood;
+        try std.testing.expectEqual(mood, state.mood);
+    }
+}
+
+test "vlpfc — FilteredState owned_values cleanup" {
+    var state = FilteredState{};
+    state.owned_values = &.{};
+    state.owned_count = 0;
+
+    // Should not crash with empty owned values
+    state.deinit(std.testing.allocator);
+}
+
+test "vlpfc — FilteredState suppress list" {
+    var state = FilteredState{};
+    state.suppress[0] = qt.AlertKind.build_break;
+    state.suppress[1] = qt.AlertKind.ppl_record;
+    state.suppress_len = 2;
+
+    try std.testing.expectEqual(@as(u8, 2), state.suppress_len);
+    try std.testing.expectEqual(qt.AlertKind.build_break, state.suppress[0]);
+}
+
+test "vlpfc — FilteredState alert_count max value" {
+    var state = FilteredState{};
+    state.alert_count = 255;
+    try std.testing.expectEqual(@as(u8, 255), state.alert_count);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PriorityRelay tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — PriorityRelay score boundaries" {
+    const relay = PriorityRelay{
+        .kind = .farm_status,
+        .score = 1.0,
+        .value = "test",
+    };
+    try std.testing.expectEqual(@as(f32, 1.0), relay.score);
+}
+
+test "vlpfc — PriorityRelay zero score" {
+    const relay = PriorityRelay{
+        .kind = .doctor_scan,
+        .score = 0.0,
+        .value = "test",
+    };
+    try std.testing.expectEqual(@as(f32, 0.0), relay.score);
+}
+
+test "vlpfc — PriorityRelay negative score" {
+    const relay = PriorityRelay{
+        .kind = .ouroboros_cycle,
+        .score = -5.0,
+        .value = "test",
+    };
+    try std.testing.expectEqual(@as(f32, -5.0), relay.score);
+}
+
+test "vlpfc — PriorityRelay all ActionKind values" {
+    const actions = [_]qt.ActionKind{
+        .farm_status,      .arena_status,      .doctor_scan,   .train_status,
+        .train_diagnose,   .experiment_chart,  .patent_status, .research_sacred,
+        .ouroboros_status, .experience_recall, .introspection, .farm_evolve_status,
+        .swarm_status,     .doctor_quick,      .doctor_heal,   .ouroboros_cycle,
+        .git_commit_state, .git_push,          .issue_comment, .notify,
+        .arena_battle,     .experience_save,   .fmt,           .farm_recycle,
+        .farm_evolve_step, .cloud_spawn,       .cloud_kill,    .cloud_cleanup,
+        .issue_create,     .swarm_decompose,
+    };
+    for (actions) |action| {
+        const relay = PriorityRelay{
+            .kind = action,
+            .score = 0.5,
+            .value = "test",
+        };
+        try std.testing.expectEqual(action, relay.kind);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CellHealth tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — CellHealth all statuses" {
+    const statuses = [_]CellHealth.Status{ .healthy, .weak, .broken };
+    for (statuses) |status| {
+        const h = CellHealth{ .status = status };
+        try std.testing.expectEqual(status, h.status);
+    }
+}
+
+test "vlpfc — CellHealth with score" {
+    const h = CellHealth{
+        .status = .weak,
+        .score = 50,
+    };
+    try std.testing.expectEqual(@as(u8, 50), h.score);
+    try std.testing.expectEqual(CellHealth.Status.weak, h.status);
+}
+
+test "vlpfc — CellHealth with detail" {
+    const h = CellHealth{
+        .status = .broken,
+        .score = 0,
+    };
+    try std.testing.expectEqual(CellHealth.Status.broken, h.status);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FilterConfig tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — FilterConfig empty suppress" {
+    const config = FilterConfig{
+        .focus = .farm,
+        .max_relay_count = 5,
+        .suppress = &.{},
+    };
+    try std.testing.expectEqual(@as(usize, 0), config.suppress.len);
+}
