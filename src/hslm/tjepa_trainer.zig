@@ -199,7 +199,7 @@ pub const TJepaTrainer = struct {
         offset += VOCAB_SIZE;
 
         // Block parameters
-        for (online.blocks) |*block| {
+        for (&online.blocks) |*block| {
             // TNN
             autograd.clipGradNorm(block.tnn.grad_shadow_up, clip);
             autograd.clipGradNorm(block.tnn.grad_shadow_down, clip);
