@@ -1,0 +1,36 @@
+# ════════════════════════════════════════════════════════════════════════════════════════
+# IGLA BENCH v1.0 — Ternary Needle In A Haystack Benchmark
+# ═════════════════════════════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Railway deployment for IGLA benchmark evaluation service
+# Role: eval (not a training worker, provides retrieval metrics for PBT)
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+# Stage 1: Build stage
+FROM ziglang/zig:0.13.0-ubuntu-22.04 AS builder
+
+WORKDIR /trinity
+
+COPY . .
+
+# Build tri binary
+RUN cd /trinity && \
+    zig build -Drelease-safe=true && \
+    cp zig-out/bin/tri /usr/local/bin/
+
+# Stage 2: Runtime stage (minimal)
+FROM ubuntu:22.04
+
+WORKDIR /app
+
+COPY --from=builder /usr/local/bin/tri /usr/local/bin/tri
+
+# No bash, python3, or sh in RUN commands — pure Zig binary entrypoint
+ENTRYPOINT ["/usr/local/bin/tri"]
+CMD ["bench", "igla", "--evolve"]
+
+# Health check for Railway
+HEALTHCHECK --interval=60s --timeout=10s --start-period=5s --retries=3 \
+    CMD ["tri", "bench", "igla", "help"]

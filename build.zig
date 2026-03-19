@@ -42,7 +42,10 @@ pub fn build(b: *std.Build) void {
     // Unifies all 5 HSLM cortex modules: IPS, Weber, Fusiform, Angular, OFC
     // Provides single import point for Thalamus → Cortex relay
     const sensation_mod = b.addModule("trinity-sensation", .{
-        .root_source_file = .{ .path = "src/hslm/sensation/root.zig" },
+        .root_source_path = "src/hslm/sensation/root.zig",
+        .target = target,
+        .optimize = optimize,
+    });
         .target = target,
         .optimize = optimize,
     });
