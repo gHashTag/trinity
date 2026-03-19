@@ -285,6 +285,11 @@ pub const Command = enum {
     metrics,
     // Context Loader (Kiro-inspired)
     context_load,
+    // Agent Coordination (v5.1 - Brain Regions)
+    task_claim,
+    event_stream,
+    // Stress Testing
+    stress_test,
 };
 
 pub const CLIState = struct {
@@ -996,6 +1001,11 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "metrics")) return .metrics;
     // Context Loader
     if (std.mem.eql(u8, arg, "context-load") or std.mem.eql(u8, arg, "ctx-load")) return .context_load;
+    // Agent Coordination (v5.1 - Brain Regions)
+    if (std.mem.eql(u8, arg, "task")) return .task_claim;
+    if (std.mem.eql(u8, arg, "event")) return .event_stream;
+    // Stress Testing
+    if (std.mem.eql(u8, arg, "stress")) return .stress_test;
     return .none;
 }
 
