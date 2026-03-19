@@ -2,7 +2,7 @@
 // ═══════════════════════════════════════════════════════════════════════════════
 // Voice Engine — Agent voice generator for Faculty Board
 // ═══════════════════════════════════════════════════════════════════════════════
-// Each agent speaks in character based on their state and the system snapshot.
+// Each agent speaks in character based on their state and system snapshot.
 // No allocations — writes into caller-owned buffer via bufPrint.
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -75,7 +75,7 @@ fn readLastAgentCmd(emoji: []const u8, buf: []u8) []const u8 {
     const n = file.readAll(&file_buf) catch return "";
     const data = file_buf[0..n];
 
-    // Find last line containing the emoji
+    // Find last line containing emoji
     var last_line: ?[]const u8 = null;
     var iter = std.mem.splitScalar(u8, data, '\n');
     while (iter.next()) |line| {
@@ -94,7 +94,7 @@ fn readLastAgentCmd(emoji: []const u8, buf: []u8) []const u8 {
     return "";
 }
 
-/// Generate a voice line for the given agent based on system state and delta.
+/// Generate a voice line for given agent based on system state and delta.
 /// Returns a slice into `buf`.
 pub fn generateVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u8) []const u8 {
     return switch (agent.agent) {
@@ -112,20 +112,20 @@ fn ralphVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta,
         .up => blk: {
             if (delta.has_prev) {
                 if (delta.compile_rate_delta > 0) {
-                    break :blk std.fmt.bufPrint(buf, "Build {d}/{d} (+{d}pp). \xd0\x94\xd0\xb2\xd0\xb8\xd0\xb3\xd0\xb0\xd0\xb5\xd0\xbc\xd1\x81\xd1\x8f.", .{
+                    break :blk std.fmt.bufPrint(buf, "Build {d}/{d} (+{d}pp). Success.", .{
                         snapshot.compile_pass, snapshot.compile_total, delta.compile_rate_delta,
                     }) catch "Ralph works.";
                 } else if (delta.compile_rate_delta < 0) {
-                    break :blk std.fmt.bufPrint(buf, "Build {d}/{d} ({d}pp). \xd0\xa0\xd0\xb5\xd0\xb3\xd1\x80\xd0\xb5\xd1\x81\xd1\x81\xd0\xb8\xd1\x8f!", .{
+                    break :blk std.fmt.bufPrint(buf, "Build {d}/{d} ({d}pp). Regression!", .{
                         snapshot.compile_pass, snapshot.compile_total, delta.compile_rate_delta,
                     }) catch "Ralph works.";
                 } else if (delta.compile_frozen and snapshot.compile_rate < 100) {
                     const hours = @divTrunc(delta.seconds_ago, 3600);
-                    break :blk std.fmt.bufPrint(buf, "Build {d}/{d}. \xd0\x9f\xd0\xbb\xd0\xb0\xd1\x82\xd0\xbe {d}\xd1\x87. \xd0\x9d\xd1\x83\xd0\xb6\xd0\xb5\xd0\xbd \xd1\x82\xd0\xbe\xd0\xbb\xd1\x87\xd0\xbe\xd0\xba.", .{
+                    break :blk std.fmt.bufPrint(buf, "Build {d}/{d}. Stuck {d}h. Need breakthrough.", .{
                         snapshot.compile_pass, snapshot.compile_total, hours,
                     }) catch "Ralph works.";
                 } else if (snapshot.dirty_files > 15) {
-                    break :blk std.fmt.bufPrint(buf, "Build {d}/{d}. {d} dirty \xe2\x80\x94 \xd0\xbd\xd0\xb0\xd0\xb4\xd0\xbe \xd0\xba\xd0\xbe\xd0\xbc\xd0\xbc\xd0\xb8\xd1\x82\xd0\xb8\xd1\x82\xd1\x8c.", .{
+                    break :blk std.fmt.bufPrint(buf, "Build {d}/{d}. {d} dirty — need commit.", .{
                         snapshot.compile_pass, snapshot.compile_total, snapshot.dirty_files,
                     }) catch "Ralph works.";
                 }
@@ -134,15 +134,15 @@ fn ralphVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta,
             var commit_buf: [80]u8 = undefined;
             const last_commit = readLastCommit(&commit_buf);
             if (last_commit.len > 0) {
-                break :blk std.fmt.bufPrint(buf, "{d}/{d}. \xd0\x9f\xd0\xbe\xd1\x81\xd0\xbb\xd0\xb5\xd0\xb4\xd0\xbd\xd0\xb8\xd0\xb9: {s}", .{
+                break :blk std.fmt.bufPrint(buf, "{d}/{d}. Last commit: {s}", .{
                     snapshot.compile_pass, snapshot.compile_total, last_commit,
                 }) catch "Ralph works.";
             }
-            break :blk std.fmt.bufPrint(buf, "\xd0\x9d\xd0\xb0 \xd0\xbf\xd0\xbe\xd1\x81\xd1\x82\xd1\x83. Build {d}/{d}.", .{
+            break :blk std.fmt.bufPrint(buf, "I'm working. Build {d}/{d}.", .{
                 snapshot.compile_pass, snapshot.compile_total,
             }) catch "Ralph works.";
         },
-        .down => std.fmt.bufPrint(buf, "\xd0\x9b\xd0\xb5\xd0\xb6\xd1\x83. \xd0\x9f\xd0\xb5\xd1\x80\xd0\xb5\xd0\xb7\xd0\xb0\xd0\xbf\xd1\x83\xd1\x81\xd1\x82\xd0\xb8\xd1\x82\xd0\xb5.", .{}) catch "Ralph lies down.",
+        .down => std.fmt.bufPrint(buf, "Down. Please restart.", .{}) catch "Ralph lies down.",
         .stub => std.fmt.bufPrint(buf, "Stub agent. Not implemented yet.", .{}) catch "Ralph stub.",
         .tbd => std.fmt.bufPrint(buf, "TBD agent. Coming soon.", .{}) catch "Ralph TBD.",
     };
@@ -150,7 +150,7 @@ fn ralphVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta,
 
 fn scholarVoice(agent: AgentState, buf: []u8) []const u8 {
     return switch (agent.status) {
-        .tbd => std.fmt.bufPrint(buf, "\xd0\x9d\xd0\x95 \xd0\x9d\xd0\x90\xd0\x9d\xd0\xaf\xd0\xa2. Ralph \xd0\xb3\xd0\xb0\xd0\xb4\xd0\xb0\xd0\xb5\xd1\x82 \xd0\xb1\xd0\xb5\xd0\xb7 \xd0\xba\xd0\xbe\xd0\xbd\xd1\x82\xd0\xb5\xd0\xba\xd1\x81\xd1\x82\xd0\xb0.", .{}) catch "Scholar TBD.",
+        .tbd => std.fmt.bufPrint(buf, "SCHOLAR TBD. Ralph hired me, searching for patterns.", .{}) catch "Scholar TBD.",
         .up => blk: {
             // v2: read scholar heartbeat for live data
             const hb = readScholarHeartbeat();
@@ -158,31 +158,31 @@ fn scholarVoice(agent: AgentState, buf: []u8) []const u8 {
                 if (hb.fed_mu > 0) {
                     break :blk std.fmt.bufPrint(buf, "Wake #{d}. Researched {d}, fed Agent TRI {d}.", .{
                         hb.wake, hb.researched, hb.fed_mu,
-                    }) catch "Scholar \xd0\xb8\xd1\x89\xd0\xb5\xd1\x82.";
+                    }) catch "Scholar works.";
                 } else if (hb.fails_found > 0) {
-                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. {d} \xd1\x84\xd0\xb5\xd0\xb9\xd0\xbb\xd0\xbe\xd0\xb2. \xd0\x98\xd1\x89\xd1\x83 \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd1\x8b.", .{
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. {d} failures found. Looking for patterns.", .{
                         hb.wake, hb.fails_found,
-                    }) catch "Scholar \xd0\xb8\xd1\x89\xd0\xb5\xd1\x82.";
+                    }) catch "Scholar works.";
                 } else {
-                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. 0 \xd1\x84\xd0\xb5\xd0\xb9\xd0\xbb\xd0\xbe\xd0\xb2. \xd0\x92\xd1\x81\xd1\x91 \xd1\x87\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe.", .{
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. 0 failures found. Everything is clear.", .{
                         hb.wake,
-                    }) catch "Scholar: \xd1\x87\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe.";
+                    }) catch "Scholar: clear.";
                 }
             }
             if (agent.last_action.len > 0)
-                break :blk std.fmt.bufPrint(buf, "\xd0\x98\xd1\x89\xd1\x83: {s}.", .{agent.last_action}) catch "Scholar \xd0\xb8\xd1\x89\xd0\xb5\xd1\x82."
+                break :blk std.fmt.bufPrint(buf, "Working: {s}.", .{agent.last_action}) catch "Scholar working."
             else
-                break :blk std.fmt.bufPrint(buf, "\xd0\x98\xd1\x89\xd1\x83 \xd0\xb8\xd0\xbd\xd1\x84\xd0\xbe\xd1\x80\xd0\xbc\xd0\xb0\xd1\x86\xd0\xb8\xd1\x8e.", .{}) catch "Scholar \xd0\xb8\xd1\x89\xd0\xb5\xd1\x82.";
+                break :blk std.fmt.bufPrint(buf, "Gathering information.", .{}) catch "Scholar working.";
         },
-        .stub => std.fmt.bufPrint(buf, "\xd0\x97\xd0\xb0\xd0\xb3\xd0\xbb\xd1\x83\xd1\x88\xd0\xba\xd0\xb0. \xd0\x9d\xd1\x83\xd0\xb6\xd0\xbd\xd0\xb0 \xd0\xb8\xd0\xbc\xd0\xbf\xd0\xbb\xd0\xb5\xd0\xbc\xd0\xb5\xd0\xbd\xd1\x82\xd0\xb0\xd1\x86\xd0\xb8\xd1\x8f.", .{}) catch "Scholar stub.",
-        .down => std.fmt.bufPrint(buf, "\xd0\xa3\xd0\xbf\xd0\xb0\xd0\xbb. \xd0\x98\xd1\x81\xd1\x81\xd0\xbb\xd0\xb5\xd0\xb4\xd0\xbe\xd0\xb2\xd0\xb0\xd0\xbd\xd0\xb8\xd1\x8f \xd0\xb2\xd1\x81\xd1\x82\xd0\xb0\xd0\xbb\xd0\xb8.", .{}) catch "Scholar down.",
+        .stub => std.fmt.bufPrint(buf, "Stub. Not implemented.", .{}) catch "Scholar stub.",
+        .down => std.fmt.bufPrint(buf, "Down. No research done.", .{}) catch "Scholar down.",
     };
 }
 
 fn muVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u8) []const u8 {
     _ = delta;
     return switch (agent.status) {
-        .stub => std.fmt.bufPrint(buf, "\xd0\xa1\xd0\x9f\xd0\x98\xd0\xa2. {d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2 \xd0\xb2\xd1\x80\xd1\x83\xd1\x87\xd0\xbd\xd1\x83\xd1\x8e.", .{
+        .stub => std.fmt.bufPrint(buf, "TRI TBD. {d} patterns learned.", .{
             snapshot.mu_patterns,
         }) catch "TRI sleeps.",
         .up => blk: {
@@ -192,99 +192,99 @@ fn muVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta, bu
                 const test_s: []const u8 = if (hb.test_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c";
                 const build_s: []const u8 = if (hb.build_ok) "\xe2\x9c\x85" else "\xe2\x9d\x8c";
                 if (hb.fixes > 0) {
-                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\x92\xd1\x8b\xd0\xbb\xd0\xb5\xd1\x87\xd0\xb8\xd0\xbb {d}. Build{s} Test{s}", .{
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. Fixed {d}. Build{s} Test{s}", .{
                         hb.wake, hb.fixes, build_s, test_s,
-                    }) catch "TRI лечит.";
+                    }) catch "TRI healing.";
                 } else if (hb.errors > 0) {
-                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. {d} \xd0\xbe\xd1\x88\xd0\xb8\xd0\xb1\xd0\xbe\xd0\xba. \xd0\x9f\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd1\x8b \xd0\xbd\xd0\xb5 \xd0\xbc\xd0\xb0\xd1\x82\xd1\x87\xd0\xb0\xd1\x82.", .{
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. {d} errors found. Looking for patterns.", .{
                         hb.wake, hb.errors,
-                    }) catch "TRI лечит.";
+                    }) catch "TRI healing.";
                 } else if (!hb.test_ok) {
-                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\xa2\xd0\xb5\xd1\x81\xd1\x82\xd1\x8b \xd0\xbd\xd0\xb5 \xd0\xbf\xd1\x80\xd0\xbe\xd1\x85\xd0\xbe\xd0\xb4\xd1\x8f\xd1\x82. Build{s}", .{
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. Tests failing. Build{s}", .{
                         hb.wake, build_s,
-                    }) catch "TRI: тесты падают.";
+                    }) catch "TRI: tests failing.";
                 } else if (hb.age_s > 3600) {
                     const hours = @divTrunc(hb.age_s, 3600);
-                    break :blk std.fmt.bufPrint(buf, "{d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2. \xd0\xa1\xd0\xbf\xd0\xb0\xd0\xbb {d}\xd1\x87. Build{s} Test{s}", .{
+                    break :blk std.fmt.bufPrint(buf, "{d} patterns learned. Sleeping {d}h. Build{s} Test{s}", .{
                         snapshot.mu_patterns, hours, build_s, test_s,
-                    }) catch "TRI лечит.";
+                    }) catch "TRI healing.";
                 } else {
-                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. \xd0\xa7\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe. Build{s} Test{s}", .{
+                    break :blk std.fmt.bufPrint(buf, "Wake #{d}. Clean. Build{s} Test{s}", .{
                         hb.wake, build_s, test_s,
-                    }) catch "TRI: чисто.";
+                    }) catch "TRI: clean.";
                 }
             }
-            break :blk std.fmt.bufPrint(buf, "{d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2. \xd0\x9b\xd0\xb5\xd1\x87\xd1\x83 \xd0\xbf\xd0\xb0\xd0\xb9\xd0\xbf\xd0\xbb\xd0\xb0\xd0\xb9\xd0\xbd.", .{
+            break :blk std.fmt.bufPrint(buf, "{d} patterns. Waiting for fixes.", .{
                 snapshot.mu_patterns,
-            }) catch "TRI лечит.";
+            }) catch "TRI healing.";
         },
-        .tbd => std.fmt.bufPrint(buf, "\xd0\x92 \xd0\x9f\xd0\xa0\xd0\x9e\xd0\x95\xd0\x9a\xd0\xa2\xd0\x95. \xd0\x9e\xd1\x88\xd0\xb8\xd0\xb1\xd0\xba\xd0\xb8 \xd0\xba\xd0\xbe\xd0\xbf\xd1\x8f\xd1\x82\xd1\x81\xd1\x8f.", .{}) catch "TRI TBD.",
-        .down => std.fmt.bufPrint(buf, "\xd0\xa3\xd0\xbf\xd0\xb0\xd0\xbb. \xd0\x9e\xd1\x88\xd0\xb8\xd0\xb1\xd0\xba\xd0\xb8 \xd0\xbd\xd0\xb5 \xd0\xbb\xd0\xbe\xd0\xb2\xd1\x8f\xd1\x82\xd1\x81\xd1\x8f.", .{}) catch "TRI down.",
+        .tbd => std.fmt.bufPrint(buf, "TRI TBD. No capabilities yet.", .{}) catch "TRI TBD.",
+        .down => std.fmt.bufPrint(buf, "Down. Tasks not working.", .{}) catch "TRI down.",
     };
 }
 
 fn oracleVoice(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u8) []const u8 {
     if (delta.has_prev) {
         if (delta.compile_rate_delta > 0) {
-            return std.fmt.bufPrint(buf, "V={d:.2}. \xd0\xa0\xd0\xb0\xd1\x81\xd1\x82\xd1\x91\xd1\x82 (+{d}pp).", .{
+            return std.fmt.bufPrint(buf, "V={d:.2}. Growth (+{d}pp).", .{
                 snapshot.v_number, delta.compile_rate_delta,
-            }) catch "Oracle: рост.";
+            }) catch "Oracle: growth.";
         } else if (delta.compile_rate_delta < 0) {
-            return std.fmt.bufPrint(buf, "V={d:.2}. \xd0\x9f\xd0\xb0\xd0\xb4\xd0\xb0\xd0\xb5\xd1\x82 ({d}pp).", .{
+            return std.fmt.bufPrint(buf, "V={d:.2}. Decline ({d}pp).", .{
                 snapshot.v_number, delta.compile_rate_delta,
-            }) catch "Oracle: падение.";
+            }) catch "Oracle: decline.";
         } else if (delta.compile_frozen) {
-            return std.fmt.bufPrint(buf, "V={d:.2}. \xd0\x97\xd0\xb0\xd0\xbc\xd1\x91\xd1\x80\xd0\xb7.", .{
+            return std.fmt.bufPrint(buf, "V={d:.2}. Frozen.", .{
                 snapshot.v_number,
-            }) catch "Oracle: заморозка.";
+            }) catch "Oracle: frozen.";
         }
     }
     // Default: zone-based
     if (snapshot.v_number > 1.5) {
-        return std.fmt.bufPrint(buf, "V={d:.2}. \xCF\x86-\xd0\xb3\xd0\xb0\xd1\x80\xd0\xbc\xd0\xbe\xd0\xbd\xd0\xb8\xd1\x8f \xE2\x9C\xA8", .{
+        return std.fmt.bufPrint(buf, "V={d:.2}. φ-harmony \xE2\x9C\xA8", .{
             snapshot.v_number,
-        }) catch "Oracle: золото.";
+        }) catch "Oracle: gold.";
     } else if (snapshot.v_number >= 1.0) {
-        return std.fmt.bufPrint(buf, "V={d:.2}. \xCF\x86\xE2\x81\xBB\xE2\x81\xB0\xC2\xB7\xC2\xB3 \xd0\xb7\xd0\xbe\xd0\xbd\xd0\xb0. \xd0\xa1\xd1\x82\xd0\xb0\xd0\xb1\xd0\xb8\xd0\xbb\xd1\x8c\xd0\xbd\xd0\xbe.", .{
+        return std.fmt.bufPrint(buf, "V={d:.2}. φ→zone. Stable.", .{
             snapshot.v_number,
-        }) catch "Oracle: стабильно.";
+        }) catch "Oracle: stable.";
     } else {
-        return std.fmt.bufPrint(buf, "V={d:.2}. \xd0\xa1\xd0\xbf\xd0\xb8\xd1\x80\xd0\xb0\xd0\xbb\xd1\x8c \xd1\x82\xd0\xb5\xd1\x80\xd1\x8f\xd0\xb5\xd1\x82 \xd1\x84\xd0\xbe\xd1\x80\xd0\xbc\xd1\x83.", .{
+        return std.fmt.bufPrint(buf, "V={d:.2}. Spiral downward.", .{
             snapshot.v_number,
-        }) catch "Oracle: дрифт.";
+        }) catch "Oracle: drift.";
     }
 }
 
 fn swarmVoice(agent: AgentState, buf: []u8) []const u8 {
     return switch (agent.status) {
-        .tbd => std.fmt.bufPrint(buf, "\xd0\x92 \xd0\x97\xd0\x90\xd0\xa0\xd0\x9e\xd0\x94\xd0\xab\xd0\xa8\xd0\x95. \xd0\x9f\xd0\xbe\xd1\x82\xd0\xb5\xd0\xbd\xd1\x86\xd0\xb8\xd0\xb0\xd0\xbb: 5\xC3\x97 \xd0\xb1\xd1\x8b\xd1\x81\xd1\x82\xd1\x80\xd0\xb5\xd0\xb5.", .{}) catch "Swarm TBD.",
+        .tbd => std.fmt.bufPrint(buf, "SWARM TBD. Potential: 7× agents faster.", .{}) catch "Swarm TBD.",
         .up => blk: {
             // Read swarm_state.json for live counts
             const swarm = readSwarmCounts();
             if (swarm.agents > 0 and swarm.assigned > 0) {
-                break :blk std.fmt.bufPrint(buf, "{d} \xd0\xb0\xd0\xb3\xd0\xb5\xd0\xbd\xd1\x82\xd0\xbe\xd0\xb2, {d} \xd0\xb7\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87. \xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e.", .{
+                break :blk std.fmt.bufPrint(buf, "{d} agents, {d} assigned. Marhshrooding.", .{
                     swarm.agents, swarm.assigned,
-                }) catch "\xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e.";
+                }) catch "Marhshrooding.";
             }
             if (agent.last_action.len > 0)
-                break :blk std.fmt.bufPrint(buf, "\xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e: {s}.", .{agent.last_action}) catch "\xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e."
+                break :blk std.fmt.bufPrint(buf, "Marhshrooding: {s}.", .{agent.last_action}) catch "Marhshrooding."
             else
-                break :blk std.fmt.bufPrint(buf, "\xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e \xd0\xb7\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87\xd0\xb8.", .{}) catch "\xd0\x9c\xd0\xb0\xd1\x80\xd1\x88\xd1\x80\xd1\x83\xd1\x82\xd0\xb8\xd0\xb7\xd0\xb8\xd1\x80\xd1\x83\xd1\x8e.";
+                break :blk std.fmt.bufPrint(buf, "Marhshrooding tasks.", .{}) catch "Marhshrooding.";
         },
         .stub => blk: {
             const swarm = readSwarmCounts();
             if (swarm.agents > 0 and swarm.assigned == 0) {
-                break :blk std.fmt.bufPrint(buf, "{d} \xd0\xb0\xd0\xb3\xd0\xb5\xd0\xbd\xd1\x82\xd0\xbe\xd0\xb2, \xd0\xb6\xd0\xb4\xd1\x83\xd1\x82 \xd0\xb7\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87.", .{
+                break :blk std.fmt.bufPrint(buf, "{d} agents, idle. Need tasks.", .{
                     swarm.agents,
-                }) catch "\xd0\x97\xd0\xb0\xd0\xb3\xd0\xbb\xd1\x83\xd1\x88\xd0\xba\xd0\xb0.";
+                }) catch "Stuck.";
             } else if (swarm.agents == 0 and swarm.tasks > 0) {
-                break :blk std.fmt.bufPrint(buf, "{d} \xd0\xb7\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87 \xd0\xb1\xd0\xb5\xd0\xb7 \xd0\xb0\xd0\xb3\xd0\xb5\xd0\xbd\xd1\x82\xd0\xbe\xd0\xb2.", .{
+                break :blk std.fmt.bufPrint(buf, "{d} tasks, no agents.", .{
                     swarm.tasks,
-                }) catch "\xd0\x97\xd0\xb0\xd0\xb3\xd0\xbb\xd1\x83\xd1\x88\xd0\xba\xd0\xb0.";
+                }) catch "Stuck.";
             }
-            break :blk std.fmt.bufPrint(buf, "\xd0\x97\xd0\xb0\xd0\xb3\xd0\xbb\xd1\x83\xd1\x88\xd0\xba\xd0\xb0. \xd0\x9e\xd0\xb4\xd0\xb8\xd0\xbd \xd0\xb0\xd0\xb3\xd0\xb5\xd0\xbd\xd1\x82 \xd0\xb7\xd0\xb0 \xd0\xb2\xd1\x81\xd0\xb5\xd1\x85.", .{}) catch "\xd0\x97\xd0\xb0\xd0\xb3\xd0\xbb\xd1\x83\xd1\x88\xd0\xba\xd0\xb0.";
+            break :blk std.fmt.bufPrint(buf, "Stuck. Need agent for all tasks.", .{}) catch "Stuck.";
         },
-        .down => std.fmt.bufPrint(buf, "\xd0\xa3\xd0\xbf\xd0\xb0\xd0\xbb. \xd0\x97\xd0\xb0\xd0\xb4\xd0\xb0\xd1\x87\xd0\xb8 \xd0\xbd\xd0\xb5 \xd1\x80\xd0\xb0\xd1\x81\xd0\xbf\xd1\x80\xd0\xb5\xd0\xb4\xd0\xb5\xd0\xbb\xd1\x8f\xd1\x8e\xd1\x82\xd1\x81\xd1\x8f.", .{}) catch "Swarm down.",
+        .down => std.fmt.bufPrint(buf, "Down. No tasks distributing.", .{}) catch "Swarm down.",
     };
 }
 
@@ -296,39 +296,39 @@ fn linterVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta
             // v2: also check MU test status
             const hb = readMuHeartbeat();
             if (hb.wake > 0 and hb.test_ok) {
-                return std.fmt.bufPrint(buf, "{d}/{d}. \xd0\xa7\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe. \xd0\xa2\xd0\xb5\xd1\x81\xd1\x82\xd1\x8b \xe2\x9c\x85", .{
+                return std.fmt.bufPrint(buf, "{d}/{d}. Clean. All OK \xe2\x9c\x85", .{
                     snapshot.compile_pass, snapshot.compile_total,
-                }) catch "Linter: чисто.";
+                }) catch "Linter: clean.";
             } else if (hb.wake > 0 and !hb.test_ok) {
-                return std.fmt.bufPrint(buf, "{d}/{d}. Specs OK, \xd1\x82\xd0\xb5\xd1\x81\xd1\x82\xd1\x8b \xe2\x9d\x8c", .{
+                return std.fmt.bufPrint(buf, "{d}/{d}. Specs OK, tests \xe2\x9d\x8c", .{
                     snapshot.compile_pass, snapshot.compile_total,
-                }) catch "Linter: тесты!";
+                }) catch "Linter: tests!";
             }
-            return std.fmt.bufPrint(buf, "{d}/{d} \xd0\xbf\xd1\x80\xd0\xbe\xd1\x85\xd0\xbe\xd0\xb4\xd1\x8f\xd1\x82. \xd0\xa7\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe.", .{
+            return std.fmt.bufPrint(buf, "{d}/{d} passed. Clean.", .{
                 snapshot.compile_pass, snapshot.compile_total,
-            }) catch "Linter: чисто.";
+            }) catch "Linter: clean.";
         }
         if (delta.has_prev) {
             if (delta.compile_frozen and fail > 0) {
                 const hours = @divTrunc(delta.seconds_ago, 3600);
-                return std.fmt.bufPrint(buf, "{d}/{d}. \xd0\x9f\xd0\xbb\xd0\xb0\xd1\x82\xd0\xbe \xe2\x80\x94 \xd1\x82\xd0\xb5 \xd0\xb6\xd0\xb5 {d} \xd1\x81\xd0\xb1\xd0\xbe\xd0\xb5\xd0\xb2 \xd1\x83\xd0\xb6\xd0\xb5 {d}\xd1\x87.", .{
+                return std.fmt.bufPrint(buf, "{d}/{d}. Plateau — {d} specs stuck {d}h.", .{
                     snapshot.compile_pass, snapshot.compile_total, fail, hours,
-                }) catch "Linter: плато.";
+                }) catch "Linter: stuck.";
             } else if (delta.compile_rate_delta > 0) {
-                return std.fmt.bufPrint(buf, "{d}/{d} (+{d}pp). {d} \xd0\xbe\xd1\x81\xd1\x82\xd0\xb0\xd0\xbb\xd0\xbe\xd1\x81\xd1\x8c.", .{
+                return std.fmt.bufPrint(buf, "{d}/{d} (+{d}pp). {d} failures.", .{
                     snapshot.compile_pass, snapshot.compile_total, delta.compile_rate_delta, fail,
-                }) catch "Linter: прогресс.";
+                }) catch "Linter: progress.";
             } else if (delta.compile_rate_delta < 0) {
-                return std.fmt.bufPrint(buf, "{d}/{d} ({d}pp). \xd0\xa0\xd0\xb5\xd0\xb3\xd1\x80\xd0\xb5\xd1\x81\xd1\x81\xd0\xb8\xd1\x8f! {d} \xd1\x81\xd0\xb1\xd0\xbe\xd0\xb5\xd0\xb2.", .{
+                return std.fmt.bufPrint(buf, "{d}/{d} ({d}pp). Regression! {d} failures.", .{
                     snapshot.compile_pass, snapshot.compile_total, delta.compile_rate_delta, fail,
-                }) catch "Linter: регрессия.";
+                }) catch "Linter: regression.";
             }
         }
-        return std.fmt.bufPrint(buf, "{d}/{d} \xd0\xbf\xd1\x80\xd0\xbe\xd1\x85\xd0\xbe\xd0\xb4\xd1\x8f\xd1\x82. {d} \xd1\x81\xd0\xb1\xd0\xbe\xd0\xb5\xd0\xb2.", .{
+        return std.fmt.bufPrint(buf, "{d}/{d} passed. {d} failures.", .{
             snapshot.compile_pass, snapshot.compile_total, fail,
-        }) catch "Linter: есть сбои.";
+        }) catch "Linter: has failures.";
     } else {
-        return std.fmt.bufPrint(buf, "\xd0\xa1\xd0\xbb\xd0\xb5\xd0\xbf\xd0\xbe\xd0\xb9. \xd0\x9d\xd0\xb5\xd1\x82 \xd0\xb4\xd0\xb0\xd0\xbd\xd0\xbd\xd1\x8b\xd1\x85 \xd0\xb0\xd1\x83\xd0\xb4\xd0\xb8\xd1\x82\xd0\xb0.", .{}) catch "Linter: слепой.";
+        return std.fmt.bufPrint(buf, "Blind. No audit data.", .{}) catch "Linter: blind.";
     }
 }
 
@@ -525,14 +525,14 @@ test "scholar voice TBD" {
     var buf: [256]u8 = undefined;
     const snap = testSnapshot();
     const voice = generateVoice(snap.agents[1], snap, .{}, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, voice, "\xd0\x9d\xd0\x95 \xd0\x9d\xd0\x90\xd0\x9d\xd0\xaf\xd0\xa2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, voice, "SCHOLAR") != null);
 }
 
-test "Agent TRI voice STUB" {
+test "TRI voice STUB" {
     var buf: [256]u8 = undefined;
     const snap = testSnapshot();
     const voice = generateVoice(snap.agents[2], snap, .{}, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, voice, "\xd0\xa1\xd0\x9f\xd0\x98\xd0\xa2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, voice, "TRI") != null);
     try std.testing.expect(std.mem.indexOf(u8, voice, "12") != null);
 }
 
@@ -565,7 +565,7 @@ test "swarm voice TBD" {
     const agent_state = types.AgentState{ .agent = .swarm, .status = .tbd, .last_action = "" };
     const snap = testSnapshot();
     const voice = generateVoice(agent_state, snap, .{}, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, voice, "\xd0\x97\xd0\x90\xd0\xa0\xd0\x9e\xd0\x94\xd0\xab\xd0\xa8\xd0\x95") != null);
+    try std.testing.expect(std.mem.indexOf(u8, voice, "SWARM") != null);
 }
 
 test "swarm voice STUB with agents" {
@@ -591,7 +591,7 @@ test "linter voice clean" {
     snap.compile_pass = 47;
     const agent_state = types.AgentState{ .agent = .linter, .status = .up, .last_action = "" };
     const voice = generateVoice(agent_state, snap, .{}, &buf);
-    try std.testing.expect(std.mem.indexOf(u8, voice, "\xd0\xa7\xd0\xb8\xd1\x81\xd1\x82\xd0\xbe") != null);
+    try std.testing.expect(std.mem.indexOf(u8, voice, "Clean") != null);
 }
 
 test "linter voice frozen plateau" {

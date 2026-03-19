@@ -568,7 +568,7 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
     if (!config.dry_run) {
         var buf: [512]u8 = undefined;
         const msg = std.fmt.bufPrint(&buf, qt.E_CROWN ++ " Queen v4 \xd0\xb7\xd0\xb0\xd0\xbf\xd1\x83\xd1\x89\xd0\xb5\xd0\xbd\xd0\xb0\n\n" ++ // запущена
-            qt.E_TIMER ++ " \xd0\x98\xd0\xbd\xd1\x82\xd0\xb5\xd1\x80\xd0\xb2\xd0\xb0\xd0\xbb: {d} \xd0\xbc\xd0\xb8\xd0\xbd\n" ++ // Интервал: N мин
+            qt.E_TIMER ++ " \xd0\x98\xd0\xbd\xd1\x82\xd0\xb5\xd1\x80\xd0\xb2\xd0\xb0\xd0\xbb: {d} \xd0\xbc\xd0\xb8\xd0\xbd\n" ++ // Interval: N min
             qt.E_BOLT ++ " Auto: {s} | L{d}\n" ++
             qt.E_GEAR ++ " 12 hard bans | 29 actions\n" ++
             qt.E_CYCLE ++ " 18 senses | 12 rules | /queen", .{
@@ -1402,7 +1402,7 @@ fn detectAlerts(state: *QueenState, snap: FacultySnapshot, evo: EvolutionInfo, a
 
     // Build broken (was OK, now broken)
     if (state.prev_build_ok and !snap.build_ok) {
-        addAlert(alerts, count, .build_broken, "zig build \xd1\x83\xd0\xbf\xd0\xb0\xd0\xbb"); // zig build упал
+        addAlert(alerts, count, .build_broken, "zig build \xd1\x83\xd0\xbf\xd0\xb0\xd0\xbb"); // zig build failed
     }
 
     // New PPL record
@@ -1517,10 +1517,10 @@ fn fmtDaily(buf: []u8, snap: FacultySnapshot, evo: EvolutionInfo, arena: ArenaIn
     return std.fmt.bufPrint(buf, qt.E_CROWN ++ " Queen v2 Daily\n" ++
         "\n" ++
         qt.E_DNA ++ " SEVO\n" ++
-        "   \xd0\x9b\xd0\xb8\xd0\xb4\xd0\xb5\xd1\x80: {s} \xe2\x80\x94 PPL {d:.1} (\xd1\x88\xd0\xb0\xd0\xb3 {d}K)\n" ++ // Лидер: ... — PPL ... (шаг ...K)
-        "   {d} \xd0\xba\xd0\xbe\xd0\xbd\xd1\x84\xd0\xb8\xd0\xb3\xd0\xbe\xd0\xb2 | {d} \xd1\x81\xd0\xb5\xd1\x80\xd0\xb2\xd0\xb8\xd1\x81\xd0\xbe\xd0\xb2\n" ++ // конфигов | сервисов
+        "   \xd0\x9b\xd0\xb8\xd0\xb4\xd0\xb5\xd1\x80: {s} \xe2\x80\x94 PPL {d:.1} (\xd1\x88\xd0\xb0\xd0\xb3 {d}K)\n" ++ // Leader: ... — PPL ... (step ...K)
+        "   {d} \xd0\xba\xd0\xbe\xd0\xbd\xd1\x84\xd0\xb8\xd0\xb3\xd0\xbe\xd0\xb2 | {d} \xd1\x81\xd0\xb5\xd1\x80\xd0\xb2\xd0\xb8\xd1\x81\xd0\xbe\xd0\xb2\n" ++ // configs | services
         "\n" ++
-        qt.E_SWORDS ++ " Arena: {d} \xd0\xb1\xd0\xbe\xd1\x91\xd0\xb2\n" ++ // боёв
+        qt.E_SWORDS ++ " Arena: {d} \xd0\xb1\xd0\xbe\xd1\x91\xd0\xb2\n" ++ // battles
         "\n" ++
         qt.E_CLIP ++ " Issues: {d} open\n" ++
         qt.E_WRENCH ++ " Build: {s} | Dirty: {d} | V={d:.2}\n" ++
@@ -1529,7 +1529,7 @@ fn fmtDaily(buf: []u8, snap: FacultySnapshot, evo: EvolutionInfo, arena: ArenaIn
         qt.E_EYE ++ " Senses: {d}%% tests | {d:.1}GB disk | {d}/{d} keys\n" ++
         qt.E_CYCLE ++ " Ouroboros: {d:.1} | XP: {d}\n" ++
         "\n" ++
-        qt.E_CYCLE ++ " \xd0\xa6\xd0\xb8\xd0\xba\xd0\xbb: {d} | Uptime: {d}h", // Цикл: N | Uptime: Nh
+        qt.E_CYCLE ++ " \xd0\xa6\xd0\xb8\xd0\xba\xd0\xbb: {d} | Uptime: {d}h", // Cycle: N | Uptime: Nh
         .{
             evo.bestNameStr(),
             evo.best_ppl,

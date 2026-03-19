@@ -49,7 +49,7 @@ pub fn runVerifyLMFDBCommand(allocator: std.mem.Allocator, args: []const []const
     for (db.curves) |curve| {
         if (curve.rank != 0) continue;
 
-        // Compute Sha from BSD formula: Ш = L(E,1) * (torsion^2) / (Omega * c_p)
+        // Compute Sha from BSD formula: Sha = L(E,1) * (torsion^2) / (Omega * c_p)
         const torsion_sq = @as(f64, @floatFromInt(curve.torsion_order * curve.torsion_order));
         const tamagawa = @as(f64, @floatFromInt(curve.tamagawa_product));
 

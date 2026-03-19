@@ -1,16 +1,11 @@
 // @origin(spec:depin_observability.tri) @regen(manual-impl)
-// ═════════════════════════════════════════════════════════════════════════════════════
 // Phase 5: Advanced Monitoring & Observability
-// φ² + 1/φ² = 3 = TRINITY
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+// phi^2 + 1/phi^2 = 3 = TRINITY
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-// ═════════════════════════════════════════════════════════════════════════════════════════
 // METRIC TYPES
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
 pub const MetricType = enum {
     uptime,
     latency,
@@ -47,23 +42,19 @@ pub const AlertThreshold = struct {
     enabled: bool,
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════════════════════
 // OBSERVABILITY MANAGER
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
 pub const ObservabilityManager = struct {
     allocator: Allocator,
     metrics: std.ArrayListUnmanaged(Metric),
     alert_thresholds: std.ArrayListUnmanaged(AlertThreshold),
     alerts_triggered: u64,
 
-    // Default thresholds
-    const UPTIME_WARNING: f64 = 99.5;  // %
-    const UPTIME_CRITICAL: f64 = 99.0; // %
-    const LATENCY_WARNING: f64 = 100.0;  // ms
-    const LATENCY_CRITICAL: f64 = 500.0; // ms
-    const SUCCESS_RATE_WARNING: f64 = 0.95; // 95%
-    const SUCCESS_RATE_CRITICAL: f64 = 0.90; // 90%
+    const UPTIME_WARNING: f64 = 99.5;
+    const UPTIME_CRITICAL: f64 = 99.0;
+    const LATENCY_WARNING: f64 = 100.0;
+    const LATENCY_CRITICAL: f64 = 500.0;
+    const SUCCESS_RATE_WARNING: f64 = 0.95;
+    const SUCCESS_RATE_CRITICAL: f64 = 0.90;
 
     pub fn init(allocator: Allocator) ObservabilityManager {
         var manager = ObservabilityManager{
@@ -73,7 +64,6 @@ pub const ObservabilityManager = struct {
             .alerts_triggered = 0,
         };
 
-        // Add default thresholds
         manager.addThreshold("uptime_pct", UPTIME_WARNING, UPTIME_CRITICAL, .less_than, true);
         manager.addThreshold("latency_avg_ms", LATENCY_WARNING, LATENCY_CRITICAL, .greater_than, true);
         manager.addThreshold("success_rate", SUCCESS_RATE_WARNING, SUCCESS_RATE_CRITICAL, .less_than, true);
@@ -81,7 +71,6 @@ pub const ObservabilityManager = struct {
         return manager;
     }
 
-    /// Record a metric
     pub fn recordMetric(self: *ObservabilityManager, name: []const u8, mtype: MetricType, value: MetricValue) !void {
         const metric = Metric{
             .name = name,
@@ -91,37 +80,9 @@ pub const ObservabilityManager = struct {
             .labels = .{},
         };
         try self.metrics.append(self.allocator, metric);
-
-        // Check alert thresholds
         self.checkThresholds(metric);
     }
 
-    /// Record a metric with labels
-    pub fn recordMetricWithLabels(
-        self: *ObservabilityManager,
-        name: []const u8,
-        mtype: MetricType,
-        value: MetricValue,
-        labels: []const struct { []const u8, []const u8 },
-    ) !void {
-        var label_map = std.StringHashMapUnmanaged([]const u8).init(self.allocator);
-        for (labels) |label| {
-            try label_map.put(self.allocator, label.key, label.value);
-        }
-
-        const metric = Metric{
-            .name = name,
-            .mtype = mtype,
-            .value = value,
-            .timestamp = std.time.timestamp(),
-            .labels = label_map,
-        };
-        try self.metrics.append(self.allocator, metric);
-
-        self.checkThresholds(metric);
-    }
-
-    /// Add alert threshold
     pub fn addThreshold(
         self: *ObservabilityManager,
         metric_name: []const u8,
@@ -140,7 +101,6 @@ pub const ObservabilityManager = struct {
         try self.alert_thresholds.append(self.allocator, threshold);
     }
 
-    /// Check if any threshold is triggered
     fn checkThresholds(self: *ObservabilityManager, metric: Metric) void {
         for (self.alert_thresholds.items) |threshold| {
             if (!threshold.enabled) continue;
@@ -149,7 +109,7 @@ pub const ObservabilityManager = struct {
             const value = switch (metric.value) {
                 .counter => @as(f64, @floatFromInt(metric.value.counter)),
                 .gauge => metric.value.gauge,
-                .histogram => return, // Histograms need special handling
+                .histogram => return,
             };
 
             const triggered = switch (threshold.comparison) {
@@ -167,7 +127,6 @@ pub const ObservabilityManager = struct {
         }
     }
 
-    /// Get metrics by type
     pub fn getMetricsByType(self: *const ObservabilityManager, mtype: MetricType, allocator: Allocator) ![]Metric {
         var result = std.ArrayList(Metric).init(allocator);
         for (self.metrics.items) |metric| {
@@ -178,17 +137,14 @@ pub const ObservabilityManager = struct {
         return result.toOwnedSlice();
     }
 
-    /// Get alert count
     pub fn getAlertCount(self: *const ObservabilityManager) u64 {
         return self.alerts_triggered;
     }
 
-    /// Reset alert counter
     pub fn resetAlerts(self: *ObservabilityManager) void {
         self.alerts_triggered = 0;
     }
 
-    /// Export metrics in Prometheus format
     pub fn exportPrometheus(self: *const ObservabilityManager, allocator: Allocator) ![]const u8 {
         var buffer = std.ArrayList(u8).init(allocator);
 
@@ -196,7 +152,7 @@ pub const ObservabilityManager = struct {
             const value_str = switch (metric.value) {
                 .counter => try std.fmt.allocPrint(allocator, "{d}", .{metric.value.counter}),
                 .gauge => try std.fmt.allocPrint(allocator, "{d:.2}", .{metric.value.gauge}),
-                .histogram => continue, // Skip histograms for now
+                .histogram => continue,
             };
 
             try buffer.writer().print(
@@ -221,16 +177,13 @@ pub const ObservabilityManager = struct {
     }
 };
 
-// ═════════════════════════════════════════════════════════════════════════════════════
 // TESTS
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
 test "record metric" {
     const allocator = std.testing.allocator;
     var manager = ObservabilityManager.init(allocator);
     defer manager.deinit();
 
-    try manager.recordMetric("test_counter", .counter, .{ .counter = 42 });
+    try manager.recordMetric("test_counter", .uptime, .{ .counter = 42 });
     try manager.recordMetric("test_gauge", .uptime, .{ .gauge = 99.9 });
 
     try std.testing.expectEqual(@as(usize, 2), manager.metrics.items.len);
@@ -241,10 +194,8 @@ test "threshold warning" {
     var manager = ObservabilityManager.init(allocator);
     defer manager.deinit();
 
-    // Set threshold to trigger on value > 10
-    try manager.addThreshold("test_metric", 5.0, 10.0, .greater_than, true);
+    manager.addThreshold("test_metric", 5.0, 10.0, .greater_than, true);
 
-    // Record value 15 - should trigger alert
     try manager.recordMetric("test_metric", .uptime, .{ .gauge = 15.0 });
 
     try std.testing.expectEqual(@as(u64, 1), manager.getAlertCount());

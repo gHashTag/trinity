@@ -2,8 +2,8 @@
 // BSD ELLIPTIC CURVE SCANNER - BSD Formula Verification
 // ═══════════════════════════════════════════════════════════════════════════════
 // Verify Birch and Swinnerton-Dyer conjecture formula
-// rank 0: L(E,1)/Ω_E = |Ш(E/Q)| / #E(Q)_tors
-// rank 1: L'(E,1)/Ω_E = |Ш(E/Q)| * R_E / #E(Q)_tors^2
+// rank 0: L(E,1)/Ω_E = |Sha(E/Q)| / #E(Q)_tors
+// rank 1: L'(E,1)/Ω_E = |Sha(E/Q)| * R_E / #E(Q)_tors^2
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -20,7 +20,7 @@ const RankInfo = @import("selmer.zig").RankInfo;
 
 pub const BSDFormula = struct {
     lhs: f64, // L(E,1)/Ω_E (rank 0) or L'(E,1)/Ω_E (rank 1)
-    rhs: f64, // (Ш * R * C) / torsion^2
+    rhs: f64, // (Sha * R * C) / torsion^2
     error_value: f64, // |lhs - rhs|
     relative_error: f64,
     verified: bool, // Whether error < threshold
@@ -32,7 +32,7 @@ pub const BSDComponents = struct {
     period: f64, // Real period Ω_E
     period_lattice: [2]f64, // [Ω_1, Ω_2] - complex periods
     regulator: f64, // Canonical height regulator R_E
-    sha_order: u64, // Order of Ш(E/Q)
+    sha_order: u64, // Order of Sha(E/Q)
     torsion_order: u32, // #E(Q)_tors
     tamagawa_product: u32, // Product of Tamagawa numbers ∏ c_p
     tamagawa_numbers: []u32, // Individual Tamagawa numbers
@@ -41,7 +41,7 @@ pub const BSDComponents = struct {
     geometric_rank: u8,
     manin_constant: f64, // Manin constant for BSD formula
     root_number: i8, // w_E = ±1
-    sha_is_trivial: bool, // Whether Ш(E/Q) is trivial
+    sha_is_trivial: bool, // Whether Sha(E/Q) is trivial
 };
 
 pub const BSDConfig = struct {
@@ -89,7 +89,7 @@ pub fn verifyBSD(
         else => return error.UnsupportedRank,
     };
 
-    // Compute RHS: (Ш * R * C) / torsion^2
+    // Compute RHS: (Sha * R * C) / torsion^2
     const rhs = computeBSDRHS(&components);
 
     // Compute error
@@ -142,7 +142,7 @@ pub fn computeBSDComponents(
     // Tamagawa product
     const tamagawa_product: u32 = 1;
 
-    // Ш order (assume trivial for now)
+    // Sha order (assume trivial for now)
     const sha_order: u64 = 1;
 
     // Torsion order (simplified)
@@ -168,14 +168,14 @@ pub fn computeBSDComponents(
     };
 }
 
-/// Compute RHS of BSD formula: (Ш * R * C) / torsion^2
+/// Compute RHS of BSD formula: (Sha * R * C) / torsion^2
 fn computeBSDRHS(components: *const BSDComponents) f64 {
     const sha = @as(f64, @floatFromInt(components.sha_order));
     const regulator = components.regulator;
     const tamagawa = @as(f64, @floatFromInt(components.tamagawa_product));
     const torsion_sq = @as(f64, @floatFromInt(components.torsion_order * components.torsion_order));
 
-    // RHS = (Ш * R * ∏c_p) / torsion^2
+    // RHS = (Sha * R * ∏c_p) / torsion^2
     return (sha * regulator * tamagawa) / torsion_sq;
 }
 
@@ -400,23 +400,23 @@ fn computeTamagawaAtPrime(curve: *const EllipticCurve, p: u64) !u32 {
 // TATE-SHAFAREVICH GROUP ORDER
 // ═══════════════════════════════════════════════════════════════════════════════
 
-/// Compute order of Ш(E/Q)[2] (2-primary part)
+/// Compute order of Sha(E/Q)[2] (2-primary part)
 /// This is equal to |Sel_2(E)| / |E(Q)/2E(Q)| for complete descent
 pub fn computeSha2Order(curve: *const EllipticCurve) !u64 {
-    // For curves with rank 0 or 1, Ш is often trivial
+    // For curves with rank 0 or 1, Sha is often trivial
     // This requires full 2-descent computation
 
     const selmer = try @import("selmer.zig").compute2Selmer(curve);
     defer selmer.deinit();
 
-    // |Ш| = |Sel_2| / 2^rank for complete descent
-    // Simplified: assume trivial Ш
+    // |Sha| = |Sel_2| / 2^rank for complete descent
+    // Simplified: assume trivial Sha
     _ = selmer.size;
 
     return 1;
 }
 
-/// Estimate Ш order from BSD formula (reverse computation)
+/// Estimate Sha order from BSD formula (reverse computation)
 pub fn estimateShaFromBSD(
     curve: *const EllipticCurve,
     rank: u8,
@@ -425,8 +425,8 @@ pub fn estimateShaFromBSD(
 ) !u64 {
     _ = curve;
 
-    // rank 0: Ш = L(E,1) * torsion / Ω_E
-    // rank 1: Ш = L'(E,1) * torsion^2 / (Ω_E * R)
+    // rank 0: Sha = L(E,1) * torsion / Ω_E
+    // rank 1: Sha = L'(E,1) * torsion^2 / (Ω_E * R)
 
     const torsion: u64 = 1; // Simplified
 
@@ -536,14 +536,14 @@ test "computeBSDRHS" {
 
     const rhs = computeBSDRHS(&components);
 
-    // For trivial Ш, R=1, C=1, torsion=1: RHS = 1
+    // For trivial Sha, R=1, C=1, torsion=1: RHS = 1
     try std.testing.expect(@abs(rhs - 1.0) < 0.01);
 }
 
 test "verifyBSD - rank 0 curve" {
     const allocator = std.testing.allocator;
 
-    // Simple curve with expected trivial Ш
+    // Simple curve with expected trivial Sha
     const curve = try EllipticCurve.init(allocator, -1, 0);
     defer curve.deinit();
 

@@ -278,11 +278,13 @@ pub fn main() !u8 {
 
     // Skip binary name
     if (args.len > 1) {
+        std.debug.print("DEBUG: Running with args: {any}\n", .{args});
         try runSacredSynthReportCommand(allocator, args[1..]);
         return 0;
     }
 
     // No arguments: show help
+    std.debug.print("DEBUG: No args, showing help\n", .{});
     try printSynthReportHelp();
     return 0;
 }

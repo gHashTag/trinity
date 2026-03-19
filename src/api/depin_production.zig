@@ -1,16 +1,11 @@
 // @origin(spec:depin_production_api.tri) @regen(manual-impl)
-// ═════════════════════════════════════════════════════════════════════════════════════════════════
 // Phase 5: Production REST API Extension
-// φ² + 1/φ² = 3 = TRINITY
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
+// phi^2 + 1/phi^2 = 3 = TRINITY
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-// ═════════════════════════════════════════════════════════════════════════════════════════════════
 // PRODUCTION API TYPES
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
 pub const ProductionApiServer = struct {
     allocator: Allocator,
     port: u16,
@@ -28,7 +23,6 @@ pub const ProductionApiServer = struct {
         };
     }
 
-    /// Get all stakes
     pub fn getAllStakes(self: *const ProductionApiServer) ![]const StakeInfo {
         const keys = self.stakes.keys();
         var result = try self.allocator.alloc(StakeInfo, keys.len);
@@ -39,13 +33,11 @@ pub const ProductionApiServer = struct {
         return result;
     }
 
-    /// Add stake record
     pub fn addStake(self: *ProductionApiServer, stake: StakeInfo) !void {
         const stake_id = try std.fmt.allocPrint(self.allocator, "{x}", .{stake.address});
         try self.stakes.put(self.allocator, stake_id, stake);
     }
 
-    /// Get pending rewards
     pub fn getPendingRewards(self: *const ProductionApiServer, address: [20]u8) ![]const RewardInfo {
         var result = std.ArrayList(RewardInfo).init(self.allocator);
         var iter = self.pending_rewards.iterator();
@@ -57,7 +49,6 @@ pub const ProductionApiServer = struct {
         return result.toOwnedSlice();
     }
 
-    /// Claim rewards
     pub fn claimRewards(self: *ProductionApiServer, address: [20]u8) !u128 {
         var total: u128 = 0;
         var iter = self.pending_rewards.iterator();
@@ -72,14 +63,12 @@ pub const ProductionApiServer = struct {
         return total;
     }
 
-    /// Create governance proposal
     pub fn createProposal(self: *ProductionApiServer, proposal: GovernanceProposal) ![]const u8 {
         const proposal_id = try std.fmt.allocPrint(self.allocator, "gov_{d}", .{std.time.timestamp()});
         try self.governance.put(self.allocator, proposal_id, proposal);
         return proposal_id;
     }
 
-    /// Vote on proposal
     pub fn vote(self: *ProductionApiServer, proposal_id: []const u8, voter: [20]u8, support: bool) !void {
         if (self.governance.get(proposal_id)) |*proposal| {
             const vote_record = VoteRecord{
@@ -91,7 +80,6 @@ pub const ProductionApiServer = struct {
         }
     }
 
-    /// Get proposal status
     pub fn getProposalStatus(self: *const ProductionApiServer, proposal_id: []const u8) ?ProposalStatus {
         return if (self.governance.get(proposal_id)) |proposal| {
             const support_count: usize = 0;
@@ -143,10 +131,7 @@ pub const ProductionApiServer = struct {
     }
 };
 
-// ═════════════════════════════════════════════════════════════════════════════════════
 // API TYPES
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════
-
 pub const StakeInfo = struct {
     address: [20]u8,
     amount: u128,
@@ -206,10 +191,7 @@ pub const ProposalStatusResponse = struct {
     approval_percentage: f64,
 };
 
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════
 // TESTS
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
 test "ProductionApiServer init" {
     const allocator = std.testing.allocator;
     const server = ProductionApiServer.init(allocator, 8080);
@@ -263,9 +245,6 @@ test "governance proposal" {
     const proposal_id = try server.createProposal(proposal);
     defer allocator.free(proposal_id);
 
-    // Add some votes
-    var voter1: [20]u8 = undefined;
-    @memset(&voter1, 0);
     voter1[0] = 0x11;
 
     try server.vote(proposal_id, voter1, true);

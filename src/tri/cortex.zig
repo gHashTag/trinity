@@ -219,7 +219,7 @@ pub fn renderCompact(snapshot: FacultySnapshot, delta: FacultyDelta, writer: any
             .up => if (a.last_action.len > 0) a.last_action else "active",
             .down => "offline",
             .stub => "stub",
-            .tbd => "\xd0\xbd\xd0\xb5 \xd0\xbd\xd0\xb0\xd0\xbd\xd1\x8f\xd1\x82",
+            .tbd => "not found",
         };
         // Voice line from voice_engine
         var voice_buf: [256]u8 = undefined;
@@ -229,7 +229,7 @@ pub fn renderCompact(snapshot: FacultySnapshot, delta: FacultyDelta, writer: any
         });
     }
 
-    // ═══ ТРИ ПУТИ ═══
+    // ═══ THREE PATHS ═══
     try writer.print("\n  {s}\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80 \xd0\xa2\xd0\xa0\xd0\x98 \xd0\x9f\xd0\xa3\xd0\xa2\xd0\x98 \xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80\xe2\x94\x80{s}\n\n", .{ G, R });
     var paths: [3]Path = undefined;
     var action_bufs: [3][128]u8 = undefined;

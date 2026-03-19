@@ -2,7 +2,7 @@
 // BSD ELLIPTIC CURVE SCANNER - 2-Selmer Group and Rank Bounds
 // ═══════════════════════════════════════════════════════════════════════════════
 // Compute 2-Selmer group to bound the Mordell-Weil rank
-// E(Q)^2 ⊗ Q → Sel_2(E) → E(Q)/2E(Q) → Ш(E/Q)[2]
+// E(Q)^2 ⊗ Q → Sel_2(E) → E(Q)/2E(Q) → Sha(E/Q)[2]
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -43,7 +43,7 @@ pub const RankInfo = struct {
     analytic_rank: u8, // From L-series (ord_{s=1} L(E,s))
     geometric_rank: u8, // From Mordell-Weil group
     selmer_rank: u8, // Upper bound from 2-Selmer
-    sha_rank: u8, // From Ш(E/Q)[2]
+    sha_rank: u8, // From Sha(E/Q)[2]
     rank_bound: u8, // Final bound: rank ≤ selmer_rank
 };
 
@@ -51,7 +51,7 @@ pub const TwoSelmerGroup = struct {
     elements: []SelmerElement,
     size: usize, // Always a power of 2
     rank_bound: u8, // log2(size)
-    complete: bool, // Whether Sel_2(E) = Ш(E/Q)[2]
+    complete: bool, // Whether Sel_2(E) = Sha(E/Q)[2]
     allocator: std.mem.Allocator,
 
     const Self = @This();

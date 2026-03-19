@@ -1522,7 +1522,7 @@ fn runBSDVerifyCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         std.debug.print("  Error: {e:.10}\n", .{bsd_result.error_value});
         std.debug.print("  Period: {e:.10}\n", .{bsd_result.components.period});
         std.debug.print("  Regulator: {e:.10}\n", .{bsd_result.components.regulator});
-        std.debug.print("  |Ш|: {d}\n", .{bsd_result.components.sha_order});
+        std.debug.print("   |Sha|: {d}\n", .{bsd_result.components.sha_order});
     } else {
         std.debug.print("  {s}BSD Formula: NOT VERIFIED{s}\n", .{ RED, RESET });
         std.debug.print("  Error: {e:.10}\n", .{bsd_result.error_value});

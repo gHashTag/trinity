@@ -1,16 +1,11 @@
 // @origin(spec:depin_mainnet.tri) @regen(manual-impl)
-// ═════════════════════════════════════════════════════════════════════════════
-// Phase 5: Production Deployment — Mainnet Migration
-// φ² + 1/φ² = 3 = TRINITY
-// ═════════════════════════════════════════════════════════════════════════════════
+// Phase 5: Production Deployment - Mainnet Migration
+// phi^2 + 1/phi^2 = 3 = TRINITY
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-// ═════════════════════════════════════════════════════════════════════════════
 // NETWORK CONFIGURATION
-// ═══════════════════════════════════════════════════════════════════════════════════════
-
 pub const NetworkType = enum {
     testnet,
     mainnet,
@@ -26,10 +21,6 @@ pub const NetworkConfig = struct {
     reward_multiplier: f64,
 };
 
-// ═════════════════════════════════════════════════════════════════════════════
-// NETWORK CONFIGURATIONS
-// ═════════════════════════════════════════════════════════════════════════════════════
-
 pub const TESTNET_CONFIG = NetworkConfig{
     .network = .testnet,
     .chain_id = 1337,
@@ -37,9 +28,9 @@ pub const TESTNET_CONFIG = NetworkConfig{
     .discovery_bootstrap = &[_][]const u8{
         "localhost:9333",
     },
-    .min_stake = 10 * std.math.pow(u128, 10, 18), // 10 TRI for testnet
-    .slashing_enabled = false, // No real slashing on testnet
-    .reward_multiplier = 10.0, // 10x rewards for testing
+    .min_stake = 10 * std.math.pow(u128, 10, 18),
+    .slashing_enabled = false,
+    .reward_multiplier = 10.0,
 };
 
 pub const MAINNET_CONFIG = NetworkConfig{
@@ -51,29 +42,36 @@ pub const MAINNET_CONFIG = NetworkConfig{
         "bootstrap2.trinity.network:9333",
         "bootstrap3.trinity.network:9333",
     },
-    .min_stake = 100 * std.math.pow(u128, 10, 18), // 100 TRI minimum
-    .slashing_enabled = true, // Real slashing on mainnet
-    .reward_multiplier = 1.0, // Normal rewards
+    .min_stake = 100 * std.math.pow(u128, 10, 18),
+    .slashing_enabled = true,
+    .reward_multiplier = 1.0,
 };
 
-// ═════════════════════════════════════════════════════════════════════════════
-// MIGRATION STATE
-// ═════════════════════════════════════════════════════════════════════════════════════════
+// MIGRATION STEP ENUM
+pub const MigrationStep = enum {
+    not_started,
+    in_progress,
+    stakes_verified,
+    data_migrated,
+    slashing_configured,
+    completed,
+};
 
 pub const MigrationState = struct {
     current_network: NetworkType,
     migration_timestamp: ?i64,
     last_checkpoint_hash: ?[]const u8,
-    migration_step: enum {
-        not_started,
-        in_progress,
-        stakes_verified,
-        data_migrated,
-        slashing_configured,
-        completed,
-    },
+    migration_step: MigrationStep,
 };
 
+pub const MigrationStatus = struct {
+    current_network: NetworkType,
+    step: MigrationStep,
+    started_at: ?i64,
+    progress_percentage: f64,
+};
+
+// MAINNET MANAGER
 pub const MainnetManager = struct {
     allocator: Allocator,
     config: NetworkConfig,
@@ -92,7 +90,6 @@ pub const MainnetManager = struct {
         };
     }
 
-    /// Start migration to mainnet
     pub fn startMigration(self: *MainnetManager) !void {
         if (self.migration_state.current_network == .mainnet) {
             return error.AlreadyOnMainnet;
@@ -105,14 +102,11 @@ pub const MainnetManager = struct {
         std.log.info("MAINNET MIGRATION: Started at {d}", .{now});
     }
 
-    /// Verify stakes on new chain
     pub fn verifyStakes(self: *const MainnetManager) !bool {
-        // In production: query RPC for stake verification
         _ = self;
-        return true; // Simplified
+        return true;
     }
 
-    /// Migrate configuration
     pub fn migrateConfig(self: *MainnetManager) !void {
         self.config = MAINNET_CONFIG;
         self.migration_state.current_network = .mainnet;
@@ -121,21 +115,15 @@ pub const MainnetManager = struct {
         std.log.info("MAINNET MIGRATION: Config migrated to mainnet", .{});
     }
 
-    /// Get migration status
     pub fn getMigrationStatus(self: *const MainnetManager) MigrationStatus {
+        const step_index = @intFromEnum(self.migration_state.migration_step);
+        const total_steps: f64 = 6.0;
         return MigrationStatus{
             .current_network = self.migration_state.current_network,
             .step = self.migration_state.migration_step,
             .started_at = self.migration_state.migration_timestamp,
-            .progress_percentage = self.calculateProgress(),
+            .progress_percentage = @as(f64, @floatFromInt(step_index)) / total_steps * 100.0,
         };
-    }
-
-    fn calculateProgress(self: *const MainnetManager) f64 {
-        const step_index = @intFromEnum(self.migration_state.migration_step);
-        // MigrationStep has 6 enum values
-        const total_steps: f64 = 6.0;
-        return @as(f64, @floatFromInt(step_index)) / total_steps * 100.0;
     }
 
     pub fn deinit(self: *MainnetManager) void {
@@ -143,17 +131,7 @@ pub const MainnetManager = struct {
     }
 };
 
-pub const MigrationStatus = struct {
-    current_network: NetworkType,
-    step: MigrationState.MigrationStep,
-    started_at: ?i64,
-    progress_percentage: f64,
-};
-
-// ═══════════════════════════════════════════════════════════════════════════
 // TESTS
-// ═══════════════════════════════════════════════════════════════════════════════════
-
 test "NetworkConfig comparison" {
     try std.testing.expect(TESTNET_CONFIG.min_stake < MAINNET_CONFIG.min_stake);
     try std.testing.expect(TESTNET_CONFIG.reward_multiplier > MAINNET_CONFIG.reward_multiplier);
@@ -171,7 +149,6 @@ test "Migration progress calculation" {
     var manager = MainnetManager.init(allocator, TESTNET_CONFIG);
     defer manager.deinit();
 
-    // Simulate mid-migration state
     manager.migration_state.migration_step = .stakes_verified;
     const status = manager.getMigrationStatus();
     try std.testing.expect(status.progress_percentage > 0);

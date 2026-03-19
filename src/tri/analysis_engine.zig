@@ -45,7 +45,7 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
             std.log.debug("analysis_engine: write pipeline blocked failed: {}", .{err});
         };
         if (active < 6) {
-            w.print(" Факультет {d}/6.", .{active}) catch |err| {
+            w.print(" Faculty {d}/6.", .{active}) catch |err| {
                 std.log.debug("analysis_engine: write faculty count failed: {}", .{err});
             };
         }
@@ -53,7 +53,7 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
     }
 
     // 3. Faculty count + delta
-    w.print("Факультет {d}/6 ({d}%)", .{ active, faculty_pct }) catch |err| {
+    w.print("Faculty {d}/6 ({d}%)", .{ active, faculty_pct }) catch |err| {
         std.log.debug("analysis_engine: write faculty header failed: {}", .{err});
     };
     if (delta.has_prev and delta.active_delta != 0) {
@@ -145,7 +145,7 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
                     std.log.debug("analysis_engine: write dirty increased failed: {}", .{err});
                 };
             } else if (active == 6 and snapshot.compile_rate >= 95) {
-                w.print("Всё работает штатно.", .{}) catch |err| {
+                w.print("All working normally.", .{}) catch |err| {
                     std.log.debug("analysis_engine: write all working failed: {}", .{err});
                 };
             } else {
@@ -156,7 +156,7 @@ pub fn generateAnalysis(snapshot: FacultySnapshot, delta: FacultyDelta, buf: []u
         } else {
             // No delta — static fallback (first run)
             if (active == 6 and snapshot.compile_rate >= 95) {
-                w.print("Всё работает штатно.", .{}) catch |err| {
+                w.print("All working normally.", .{}) catch |err| {
                     std.log.debug("analysis_engine: write all working fallback failed: {}", .{err});
                 };
             } else if (active < 4) {
@@ -185,7 +185,7 @@ fn appendCausalChain(w: anytype, snapshot: FacultySnapshot, delta: FacultyDelta)
 
     // Agent TRI healing + compile improving → credit Agent TRI
     if (mu_up and delta.has_prev and delta.compile_rate_delta > 0) {
-        w.print(" Agent TRI лечит — паттерны работают.", .{}) catch |err| {
+        w.print(" Agent TRI healing — patterns working.", .{}) catch |err| {
             std.log.debug("analysis_engine: write Agent TRI healing failed: {}", .{err});
         };
         return;
@@ -193,7 +193,7 @@ fn appendCausalChain(w: anytype, snapshot: FacultySnapshot, delta: FacultyDelta)
 
     // Agent TRI up + compile frozen + Scholar missing → bottleneck is new patterns
     if (mu_up and !scholar_up and delta.compile_frozen and fail > 0) {
-        w.print(" Agent TRI лечит известное, но Scholar не нанят — новые паттерны некому искать.", .{}) catch |err| {
+        w.print(" Agent TRI healing known issues, but Scholar not hired — no one searching for new patterns.", .{}) catch |err| {
             std.log.debug("analysis_engine: write Scholar missing failed: {}", .{err});
         };
         return;
@@ -201,7 +201,7 @@ fn appendCausalChain(w: anytype, snapshot: FacultySnapshot, delta: FacultyDelta)
 
     // Agent TRI up + compile regressed → Agent TRI fix may have caused it
     if (mu_up and delta.has_prev and delta.compile_rate_delta < -2) {
-        w.print(" Регрессия при Agent TRI UP — проверить последний fix.", .{}) catch |err| {
+        w.print(" Regression when Agent TRI UP — check last fix.", .{}) catch |err| {
             std.log.debug("analysis_engine: write Agent TRI regression failed: {}", .{err});
         };
         return;
@@ -209,7 +209,7 @@ fn appendCausalChain(w: anytype, snapshot: FacultySnapshot, delta: FacultyDelta)
 
     // Faculty grew → acknowledge
     if (delta.has_prev and delta.active_delta > 0) {
-        w.print(" +{d} агент.", .{delta.active_delta}) catch |err| {
+        w.print(" +{d} agent.", .{delta.active_delta}) catch |err| {
             std.log.debug("analysis_engine: write faculty grew failed: {}", .{err});
         };
     }

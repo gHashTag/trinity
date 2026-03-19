@@ -1,22 +1,17 @@
 // @origin(spec:depin_multichain.tri) @regen(manual-impl)
-// ═══════════════════════════════════════════════════════════════════════════════════════
 // Phase 5: Multi-Chain Support — Cross-Chain Stake Delegation
-// φ² + 1/φ² = 3 = TRINITY
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════
+// phi^2 + 1/phi^2 = 3 = TRINITY
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-// ═══════════════════════════════════════════════════════════════════════════════════════
 // CHAIN DEFINITIONS
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════
-
 pub const ChainId = enum {
-    ethereum = 1,
-    polygon = 137,
-    arbitrum = 42161,
-    optimism = 10,
-    base = 8453,
+    ethereum,
+    polygon,
+    arbitrum,
+    optimism,
+    base,
 };
 
 pub const ChainConfig = struct {
@@ -29,7 +24,7 @@ pub const ChainConfig = struct {
 };
 
 pub const SUPPORTED_CHAINS = [_]ChainConfig{
-    .{ 
+    .{
         .id = .ethereum,
         .name = "Ethereum",
         .rpc_url = "https://eth.llamarpc.com",
@@ -53,12 +48,25 @@ pub const SUPPORTED_CHAINS = [_]ChainConfig{
         .native_token = "ETH",
         .block_time_ms = 1000,
     },
+    .{
+        .id = .optimism,
+        .name = "Optimism",
+        .rpc_url = "https://mainnet.optimism.io",
+        .explorer_url = "https://optimistic.etherscan.io",
+        .native_token = "ETH",
+        .block_time_ms = 12000,
+    },
+    .{
+        .id = .base,
+        .name = "Base",
+        .rpc_url = "https://mainnet.base.org",
+        .explorer_url = "https://basescan.org",
+        .native_token = "ETH",
+        .block_time_ms = 12000,
+    },
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════════════════
 // CROSS-CHAIN STAKE DELEGATION
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════
-
 pub const CrossChainDelegation = struct {
     source_chain: ChainId,
     target_chain: ChainId,
@@ -74,39 +82,36 @@ pub const CrossChainDelegation = struct {
     }
 };
 
+// MULTI-CHAIN MANAGER
 pub const MultiChainManager = struct {
     allocator: Allocator,
     delegations: std.ArrayListUnmanaged(CrossChainDelegation),
-    active_chains: std.AutoHashMapUnmanaged(ChainId, bool),
+    active_chains: std.AutoHashMap(ChainId, bool),
 
     pub fn init(allocator: Allocator) MultiChainManager {
         var manager = MultiChainManager{
             .allocator = allocator,
             .delegations = .{},
-            .active_chains = std.AutoHashMapUnmanaged(ChainId, bool).init(allocator),
+            .active_chains = std.AutoHashMap(ChainId, bool).init(allocator),
         };
 
-        // Mark all supported chains as active
         for (SUPPORTED_CHAINS) |chain| {
-            manager.active_chains.put(chain.id) catch {};
+            manager.active_chains.put(chain.id, true) catch {};
         }
 
         return manager;
     }
 
-    /// Add chain support
     pub fn enableChain(self: *MultiChainManager, chain_id: ChainId) !void {
-        try self.active_chains.put(allocator, chain_id, true);
+        try self.active_chains.put(chain_id, true);
         std.log.info("MULTICHAIN: Enabled chain {s}", .{@tagName(chain_id)});
     }
 
-    /// Disable chain
     pub fn disableChain(self: *MultiChainManager, chain_id: ChainId) !void {
-        try self.active_chains.put(allocator, chain_id, false);
+        try self.active_chains.put(chain_id, false);
         std.log.info("MULTICHAIN: Disabled chain {s}", .{@tagName(chain_id)});
     }
 
-    /// Create cross-chain delegation
     pub fn createDelegation(
         self: *MultiChainManager,
         source_chain: ChainId,
@@ -115,12 +120,14 @@ pub const MultiChainManager = struct {
         operator: [20]u8,
         amount: u128,
     ) ![]const u8 {
-        if (!self.active_chains.get(source_chain) or !self.active_chains.get(target_chain)) {
+        if (!self.active_chains.get(source_chain) orelse !self.active_chains.get(target_chain)) {
             return error.ChainNotSupported;
         }
 
         const now = std.time.timestamp();
-        const delegation_id = try std.fmt.allocPrint(self.allocator, "xfer_{d}_{x}", .{ now, std.math.maxInt(u64, std.math.maxInt(u64)) });
+        const delegation_id = try std.fmt.allocPrint(self.allocator, "xfer_{d}_{x}", .{
+            now, std.math.maxInt(u64),
+        });
 
         const delegation = CrossChainDelegation{
             .source_chain = source_chain,
@@ -142,31 +149,10 @@ pub const MultiChainManager = struct {
         return delegation_id;
     }
 
-    /// Get chain config
-    pub fn getChainConfig(self: *const MultiChainManager, chain_id: ChainId) ?ChainConfig {
-        for (SUPPORTED_CHAINS) |chain| {
-            if (chain.id == chain_id) return chain;
-        }
-        return null;
-    }
-
-    /// Get all active chains
-    pub fn getActiveChains(self: *const MultiChainManager) []const ChainId {
-        var count: usize = 0;
-        var iter = self.active_chains.iterator();
-        while (iter.next()) |entry| {
-            if (entry.value_ptr.*) count += 1;
-        }
-        // Return empty list if no active chains
-        _ = self;
-        return &[_]ChainId{};
-    }
-
-    /// Calculate reward multiplier based on chain
-    pub fn getRewardMultiplier(self: *const MultiChainManager, chain_id: ChainId) f64 {
+    pub fn getRewardMultiplier(_: *const MultiChainManager, chain_id: ChainId) f64 {
         return switch (chain_id) {
             .ethereum => 1.0,
-            .polygon => 1.5, // Higher rewards for Polygon
+            .polygon => 1.5,
             .arbitrum => 1.2,
             .optimism => 1.3,
             .base => 0.8,
@@ -182,10 +168,7 @@ pub const MultiChainManager = struct {
     }
 };
 
-// ═════════════════════════════════════════════════════════════════════════════════════
 // TESTS
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════
-
 test "chain config lookup" {
     const eth = SUPPORTED_CHAINS[0];
     try std.testing.expectEqual(ChainId.ethereum, eth.id);
@@ -197,12 +180,13 @@ test "MultiChainManager init" {
     var manager = MultiChainManager.init(allocator);
     defer manager.deinit();
 
-    try std.testing.expect(SUPPORTED_CHAINS.len == manager.active_chains.count());
+    const expected_count = SUPPORTED_CHAINS.len;
+    try std.testing.expect(expected_count == manager.active_chains.count());
 }
 
 test "reward multipliers" {
     const allocator = std.testing.allocator;
-    const manager = MultiChainManager.init(allocator);
+    var manager = MultiChainManager.init(allocator);
     defer manager.deinit();
 
     const poly_mult = manager.getRewardMultiplier(.polygon);

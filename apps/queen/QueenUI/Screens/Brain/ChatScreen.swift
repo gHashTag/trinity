@@ -1966,27 +1966,28 @@ struct ChatScreen: View {
     }
 
     private var inputBarView: some View {
-        HStack(spacing: 12) {
-            MultilineInput(
-                text: $input,
-                placeholder: placeholder,
-                isFocused: $focused,
-                onSubmit: { send() },
-                onImagePaste: { name, path in
-                    attachedFiles.append((name: name, content: "[Image: \(name)]"))
-                },
-                onMentionTrigger: { query in
-                    mentionQuery = query ?? ""
-                    showMentionPopup = query != nil
+        HStack(spacing: 10) {
+            ZStack(alignment: .leading) {
+                if input.isEmpty {
+                    Text(placeholder)
+                        .font(.system(size: 14))
+                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
                 }
-            )
-            .layoutPriority(1)
+                TextField("", text: $input)
+                    .focused($focused)
+                    .font(.system(size: 14))
+                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .textFieldStyle(.plain)
+                    .background(Color.clear)
+                    .onSubmit { send() }
+                    .layoutPriority(1)
+            }
 
             Button {
                 send()
             } label: {
                 Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 24))
+                    .font(.system(size: 22))
                     .foregroundStyle(input.isEmpty ? TrinityTheme.accent.opacity(0.3) : TrinityTheme.accent)
             }
             .buttonStyle(.plain)
@@ -1995,13 +1996,13 @@ struct ChatScreen: View {
             .accessibilityHint("Double tap to send your message")
             .disabled(input.isEmpty)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
         .background(
-            RoundedRectangle(cornerRadius: 24)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color(hex: 0x1A1A1A))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 24)
+                    RoundedRectangle(cornerRadius: 16)
                         .stroke(isDropTargeted ? TrinityTheme.accent : Color.white.opacity(0.08), lineWidth: isDropTargeted ? 2 : 1)
                 )
         )

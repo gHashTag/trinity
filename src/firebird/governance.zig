@@ -1,16 +1,11 @@
 // @origin(spec:depin_governance.tri) @regen(manual-impl)
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════
 // Phase 5: Governance Module — DAO for Slash Appeals
-// φ² + 1/φ² = 3 = TRINITY
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+// phi^2 + 1/phi^2 = 3 = TRINITY
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════
 // GOVERNANCE TYPES
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
 pub const SlashAppeal = struct {
     appeal_id: []const u8,
     slashed_node: [20]u8,
@@ -29,9 +24,10 @@ pub const SlashAppeal = struct {
 pub const AppealStatus = enum {
     pending,
     voting,
-    approved, // Slash overturned
-    rejected, // Slash upheld
+    approved,
+    rejected,
     executed,
+    cancelled,
 };
 
 pub const ParameterChangeProposal = struct {
@@ -44,6 +40,7 @@ pub const ParameterChangeProposal = struct {
     created_at: i64,
     voting_end_at: i64,
     status: ProposalStatus,
+    votes: std.ArrayListUnmanaged(VoteRecord),
 };
 
 pub const ProposalStatus = enum {
@@ -62,40 +59,25 @@ pub const Vote = struct {
     stake_weight: u128,
 };
 
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // GOVERNANCE CONFIG
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
 pub const GovernanceConfig = struct {
-    // Voting parameters
-    const VOTING_PERIOD_HOURS: u64 = 72; // 3 days
-    const EXECUTION_DELAY_HOURS: u64 = 24; // 1 day after voting ends
-    const APPEAL_DEADLINE_HOURS: u64 = 168; // 7 days to submit appeal
-    const MIN_STAKE_FOR_VOTE: u128 = 100 * std.math.pow(u128, 10, 18); // 100 TRI
-
-    // Quorum requirements
-    const PARAM_CHANGE_QUORUM: f64 = 0.60; // 60%
-    const SLASH_APPEAL_QUORUM: f64 = 0.75; // 75% needed to overturn
-
-    // Slash parameters
-    const APPEAL_COST: u128 = 10 * std.math.pow(u128, 10, 18); // 10 TRI cost to appeal
-    const APPEAL_REWARD: u128 = 1000 * std.math.pow(u128, 10, 18); // 1000 TRI if appeal succeeds
-
-    // Governor limits
-    const MAX_PROPOSALS_PER_WEEK: usize = 10;
-    const MAX_APPEALS_PER_MONTH: usize = 3;
+    const VOTING_PERIOD_HOURS: u64 = 72;
+    const EXECUTION_DELAY_HOURS: u64 = 24;
+    const APPEAL_DEADLINE_HOURS: u64 = 168;
+    const MIN_STAKE_FOR_VOTE: u128 = 100 * std.math.pow(u128, 10, 18);
+    const PARAM_CHANGE_QUORUM: f64 = 0.60;
+    const SLASH_APPEAL_QUORUM: f64 = 0.75;
+    const APPEAL_COST: u128 = 10 * std.math.pow(u128, 10, 18);
+    const APPEAL_REWARD: u128 = 1000 * std.math.pow(u128, 10, 18);
 };
 
-// ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // GOVERNANCE MANAGER
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
 pub const GovernanceManager = struct {
     allocator: Allocator,
     appeals: std.StringHashMapUnmanaged(SlashAppeal),
     proposals: std.StringHashMapUnmanaged(ParameterChangeProposal),
     votes: std.StringHashMapUnmanaged(std.ArrayListUnmanaged(Vote)),
-    governance_token: [20]u8, // TRI token contract address
+    governance_token: [20]u8,
 
     pub fn init(allocator: Allocator) GovernanceManager {
         return GovernanceManager{
@@ -103,11 +85,10 @@ pub const GovernanceManager = struct {
             .appeals = .{},
             .proposals = .{},
             .votes = std.StringHashMapUnmanaged(std.ArrayListUnmanaged(Vote)).init(allocator),
-            .governance_token = undefined, // Set in production
+            .governance_token = undefined,
         };
     }
 
-    /// Submit slash appeal
     pub fn submitAppeal(
         self: *GovernanceManager,
         slashed_node: [20]u8,
@@ -150,7 +131,6 @@ pub const GovernanceManager = struct {
         return appeal_id;
     }
 
-    /// Vote on appeal
     pub fn voteOnAppeal(
         self: *GovernanceManager,
         appeal_id: []const u8,
@@ -159,6 +139,7 @@ pub const GovernanceManager = struct {
         stake_weight: u128,
     ) !void {
         const appeal = self.appeals.get(appeal_id) orelse return error.AppealNotFound;
+
         if (appeal.status != .voting and appeal.status != .pending) {
             return error.AppealNotVoting;
         }
@@ -175,7 +156,6 @@ pub const GovernanceManager = struct {
             .stake_weight = stake_weight,
         };
 
-        // Add vote to proposal
         if (self.votes.get(appeal_id)) |*vote_list| {
             try vote_list.append(self.allocator, vote);
         } else {
@@ -184,32 +164,26 @@ pub const GovernanceManager = struct {
             try self.votes.put(self.allocator, appeal_id, list);
         }
 
-        // Update appeal vote counts
-        if (self.appeals.getEntry(appeal_id)) |entry| {
-            if (support) {
-                entry.value_ptr.votes_for += 1;
-            } else {
-                entry.value_ptr.votes_against += 1;
-            }
+        const entry = self.appeals.getEntry(appeal_id).?;
+        if (support) {
+            entry.value_ptr.votes_for += 1;
+        } else {
+            entry.value_ptr.votes_against += 1;
         }
 
-        // Check if quorum reached
         const total_votes = entry.value_ptr.votes_for + entry.value_ptr.votes_against;
         if (total_votes >= entry.value_ptr.required_quorum) {
             const support_ratio = @as(f64, @floatFromInt(entry.value_ptr.votes_for * 100)) / @as(f64, @floatFromInt(total_votes));
             if (support_ratio >= GovernanceConfig.SLASH_APPEAL_QUORUM * 100.0) {
-                // Appeal approved - overturn slash
                 entry.value_ptr.status = .approved;
                 std.log.info("GOVERNANCE: Appeal {s} approved - slash overturned", .{appeal_id});
             } else {
-                // Appeal rejected - slash upheld
                 entry.value_ptr.status = .rejected;
                 std.log.info("GOVERNANCE: Appeal {s} rejected - slash upheld", .{appeal_id});
             }
         }
     }
 
-    /// Submit parameter change proposal
     pub fn submitProposal(
         self: *GovernanceManager,
         parameter_name: []const u8,
@@ -218,7 +192,7 @@ pub const GovernanceManager = struct {
         reason: []const u8,
         proposer: [20]u8,
     ) ![]const u8 {
-        const proposal_id = try std.fmt.allocPrint(self.allocator, "param_{d}_{x}", .{
+        const proposal_id = try std.fmt.allocPrint(self.allocator, "gov_{d}_{x}", .{
             std.time.timestamp(), std.math.maxInt(u64),
         });
 
@@ -243,7 +217,6 @@ pub const GovernanceManager = struct {
         return proposal_id;
     }
 
-    /// Execute passed proposal
     pub fn executeProposal(self: *GovernanceManager, proposal_id: []const u8) !void {
         const proposal = self.proposals.get(proposal_id) orelse return error.ProposalNotFound;
 
@@ -258,13 +231,11 @@ pub const GovernanceManager = struct {
         });
     }
 
-    /// Get appeal by ID
-    pub fn getAppeal(self: *const GovernanceManager, appeal_id: []const u8) ?SlashAppeal {
+    pub fn getAppeal(self: *GovernanceManager, appeal_id: []const u8) ?SlashAppeal {
         return self.appeals.get(appeal_id);
     }
 
-    /// Get all active appeals
-    pub fn getActiveAppeals(self: *const GovernanceManager, allocator: Allocator) ![]SlashAppeal {
+    pub fn getActiveAppeals(self: *GovernanceManager, allocator: Allocator) ![]SlashAppeal {
         var result = std.ArrayList(SlashAppeal).init(allocator);
         var iter = self.appeals.iterator();
         while (iter.next()) |entry| {
@@ -279,7 +250,6 @@ pub const GovernanceManager = struct {
         var iter = self.appeals.iterator();
         while (iter.next()) |entry| {
             const appeal = entry.value_ptr;
-            self.allocator.free(entry.key_ptr.*);
             self.allocator.free(appeal.appeal_id);
             self.allocator.free(appeal.original_violation);
             self.allocator.free(appeal.appeal_reason);
@@ -299,6 +269,10 @@ pub const GovernanceManager = struct {
             self.allocator.free(proposal.new_value);
             self.allocator.free(proposal.reason);
             self.allocator.free(proposal.proposal_id);
+            for (proposal.votes.items) |*vote| {
+                self.allocator.free(vote.voter);
+            }
+            proposal.votes.deinit(self.allocator);
         }
         self.proposals.deinit(self.allocator);
 
@@ -315,10 +289,7 @@ pub const GovernanceManager = struct {
     }
 };
 
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // TESTS
-// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
 test "submit appeal" {
     const allocator = std.testing.allocator;
     var gov = GovernanceManager.init(allocator);
