@@ -1854,7 +1854,7 @@ pub fn runEventStreamCommand(allocator: std.mem.Allocator, args: []const []const
     }
 
     const action = args[0];
-    const bus = reticular_formation.EventBus.init();
+    const bus = try reticular_formation.getGlobal(allocator);
 
     if (std.mem.eql(u8, action, "stream")) {
         var since: i64 = 0;
@@ -1880,6 +1880,7 @@ pub fn runEventStreamCommand(allocator: std.mem.Allocator, args: []const []const
         std.debug.print("{s}Reticular Formation Stats:{s}\n", .{ GOLDEN, RESET });
         std.debug.print("  Published: {d}\n", .{stats.published});
         std.debug.print("  Polled: {d}\n", .{stats.polled});
+        std.debug.print("  Buffered: {d}\n", .{stats.buffered});
     } else if (std.mem.eql(u8, action, "clear")) {
         bus.clear();
         std.debug.print("{s}✓{s} Event bus cleared\n", .{ GREEN, RESET });
@@ -1890,7 +1891,7 @@ pub fn runEventStreamCommand(allocator: std.mem.Allocator, args: []const []const
         }
         const count = try std.fmt.parseInt(usize, args[1], 10);
         bus.trim(count);
-        std.debug.print("{s}✓{s} Trimmed {d} events\n", .{ GREEN, RESET, count });
+        std.debug.print("{s}✓{s} Trimmed to {d} events\n", .{ GREEN, RESET, count });
     } else {
         printEventStreamHelp();
     }
@@ -1919,11 +1920,47 @@ fn printEventStreamHelp() void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runStressTestCommand(args: []const []const u8) !void {
-    _ = args;
-    std.debug.print("{s}Stress test command temporarily disabled due to compilation errors in stress_test.zig{s}\n", .{ YELLOW, RESET });
-    // TODO: Fix stress_test.zig and re-enable
-    // const brain = @import("brain");
-    // try brain.stress_test.runStressTestCommand(args);
+    const brain = @import("brain");
+    const stress_test = @import("../brain/stress_test.zig");
+    const stdout = std.io.getStdOut().writer();
+
+    if (args.len > 0) {
+        if (std.mem.eql(u8, args[0], "--health")) {
+            // Quick health check
+            const allocator = std.heap.page_allocator;
+            var coord = try brain.AgentCoordination.init(allocator);
+            const health = coord.healthCheck();
+
+            std.debug.print("{s}╔═══════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+            std.debug.print("{s}║  S³AI BRAIN HEALTH CHECK            ║{s}\n", .{ YELLOW, RESET });
+            std.debug.print("{s}╚═══════════════════════════════════════╝{s}\n", .{ CYAN, RESET });
+            std.debug.print("\n  Score: {d:.1}/100\n", .{health.score});
+            std.debug.print("  Status: {s}{s}{s}\n\n", .{ if (health.healthy) GREEN else RED, if (health.healthy) "HEALTHY" else "UNHEALTHY", RESET });
+            std.debug.print("  Active Claims: {d}\n", .{health.details.claims_count});
+            std.debug.print("  Events Published: {d}\n", .{health.details.events_published});
+            std.debug.print("  Events Buffered: {d}\n", .{health.details.events_buffered});
+
+            if (!health.healthy) {
+                return error.BrainUnhealthy;
+            }
+        } else if (std.mem.eql(u8, args[0], "--metrics")) {
+            // Export Prometheus metrics
+            const allocator = std.heap.page_allocator;
+            var coord = try brain.AgentCoordination.init(allocator);
+            try coord.exportMetrics(stdout);
+        } else if (std.mem.eql(u8, args[0], "--dump")) {
+            // Dump brain state
+            const allocator = std.heap.page_allocator;
+            var coord = try brain.AgentCoordination.init(allocator);
+            try coord.dump(stdout);
+        } else {
+            // Full stress test
+            try stress_test.runStressTestCommand(args);
+        }
+    } else {
+        // Full stress test (no args)
+        try stress_test.runStressTestCommand(args);
+    }
 }
 
 const qt = @import("queen_types.zig");
