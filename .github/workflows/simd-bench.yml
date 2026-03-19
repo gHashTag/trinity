@@ -1,0 +1,27 @@
+name: SIMD Benchmark
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'src/hslm/simd_bench.zig'
+      - 'src/hslm/f16_utils.zig'
+      - 'src/hslm/simd_config.zig'
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ziglang/setup-zig@v1
+        with:
+          zig-version: 0.15.2
+      
+      - name: Run SIMD Benchmarks
+        run: |
+          zig test src/hslm/simd_bench.zig 2>&1 | tee benchmark.txt
+      
+      - name: Upload Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark.txt
