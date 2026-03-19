@@ -1563,6 +1563,20 @@ fn dispatchCommand(
             const ctx_loader = @import("context_loader.zig");
             ctx_loader.runContextCommand(allocator, cmd_args);
         },
+        // S³AI Brain Circuit Commands (v5.1)
+        .task_claim => {
+            const tri_commands_mod = @import("tri_commands.zig");
+            try tri_commands_mod.runTaskClaimCommand(allocator, cmd_args);
+        },
+        .event_stream => {
+            const tri_commands_mod = @import("tri_commands.zig");
+            try tri_commands_mod.runEventStreamCommand(allocator, cmd_args);
+        },
+        // Stress Testing
+        .stress_test => {
+            const tri_commands_mod = @import("tri_commands.zig");
+            try tri_commands_mod.runStressTestCommand(cmd_args);
+        },
         else => |c| {
             std.debug.print("{s}Command not yet accessible via namespace: {s}{s}\n", .{ "\x1b[38;2;255;100m", @tagName(c), "\x1b[0m" });
             std.debug.print("Use the flat command name for now (e.g., {s}tri {s}{s} instead of {s}tri <namespace> {s}{s})\n", .{ "\x1b[38;2;0;229;153m", @tagName(c), "\x1b[0m", "\x1b[38;2;0;229;153m", @tagName(c), "\x1b[0m" });

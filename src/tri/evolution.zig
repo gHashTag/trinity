@@ -956,17 +956,17 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     var kill_stalled = false;
     var issue_num: ?[]const u8 = null;
 
-    var i: usize = 0;
-    while (i < args.len) : (i += 1) {
-        if (std.mem.eql(u8, args[i], "--dry-run")) {
+    var arg_idx: usize = 0;
+    while (arg_idx < args.len) : (arg_idx += 1) {
+        if (std.mem.eql(u8, args[arg_idx], "--dry-run")) {
             dry_run = true;
-        } else if (std.mem.eql(u8, args[i], "--sacred")) {
+        } else if (std.mem.eql(u8, args[arg_idx], "--sacred")) {
             sacred_mode = true;
-        } else if (std.mem.eql(u8, args[i], "--kill-stalled")) {
+        } else if (std.mem.eql(u8, args[arg_idx], "--kill-stalled")) {
             kill_stalled = true;
-        } else if (std.mem.eql(u8, args[i], "--issue") and i + 1 < args.len) {
-            i += 1;
-            issue_num = args[i];
+        } else if (std.mem.eql(u8, args[arg_idx], "--issue") and arg_idx + 1 < args.len) {
+            arg_idx += 1;
+            issue_num = args[arg_idx];
         }
     }
 
