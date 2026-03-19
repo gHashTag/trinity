@@ -2013,3 +2013,52 @@ test "dlpfc — CellHealth struct defaults" {
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
     try std.testing.expectEqual(@as(u32, 0), h.cycle);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL function tests (not struct padding)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "dlpfc — Decision reasonStr returns text" {
+    const decision = Decision{
+        .kind = .doctor_quick,
+        .reason = "build broken",
+    };
+    try std.testing.expectEqualStrings("build broken", decision.reasonStr());
+}
+
+test "dlpfc — DecisionContext shouldAutoAct checks" {
+    const ctx = DecisionContext{};
+    try std.testing.expect(!ctx.shouldAutoAct()); // No permissions = false
+}
+
+test "dlpfc — DecisionContext hasWarningTrends checks" {
+    const ctx = DecisionContext{};
+    try std.testing.expect(!ctx.hasWarningTrends()); // Empty trends = no warning
+}
+
+test "dlpfc — CycleState uptimeSeconds calculates" {
+    const state = CycleState{ .start_ts = std.time.timestamp() - 3600 };
+    const uptime = state.uptimeSeconds();
+    try std.testing.expect(uptime >= 3590 and uptime <= 3610); // ~1 hour
+}
+
+test "dlpfc — TrendDirection emoji returns valid" {
+    try std.testing.expectEqualStrings("📈", TrendDirection.improving.emoji());
+    try std.testing.expectEqualStrings("📉", TrendDirection.deteriorating.emoji());
+}
+
+test "dlpfc — TrendDirection color returns valid" {
+    try std.testing.expectEqualStrings("green", TrendDirection.improving.color());
+    try std.testing.expectEqualStrings("red", TrendDirection.deteriorating.color());
+}
+
+test "dlpfc — GoalPriority emoji returns valid" {
+    try std.testing.expectEqualStrings("🔴", GoalPriority.critical.emoji());
+    try std.testing.expectEqualStrings("🟡", GoalPriority.high.emoji());
+}
+
+test "dlpfc — FacultyMetrics timestamp returns i64" {
+    const metrics = FacultyMetrics{};
+    const ts = metrics.timestamp();
+    try std.testing.expect(ts >= 0);
+}
