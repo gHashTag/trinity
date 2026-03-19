@@ -36,20 +36,6 @@ pub fn build(b: *std.Build) void {
         .link_libc = true,
     });
 
-    // ═══════════════════════════════════════════════════════════════════
-    // trinity-sensation — Trinity Cortex Integration Module
-    // ═══════════════════════════════════════════════════════════════════════
-    // Unifies all 5 HSLM cortex modules: IPS, Weber, Fusiform, Angular, OFC
-    // Provides single import point for Thalamus → Cortex relay
-    const sensation_mod = b.addModule("trinity-sensation", .{
-        .root_source_path = "src/hslm/sensation/root.zig",
-        .target = target,
-        .optimize = optimize,
-    });
-        .target = target,
-        .optimize = optimize,
-    });
-
     // Library artifact
     const lib = b.addLibrary(.{
         .name = "trinity",
@@ -2692,20 +2678,4 @@ pub fn build(b: *std.Build) void {
     }
     const sacred_synth_step = b.step("sacred", "Synthesize Sacred GF16/TF3-9 ALU modules for XC7A100T");
     sacred_synth_step.dependOn(&run_sacred.step);
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    // tri-sacred-synth-report — Parse Yosys JSON synthesis output (Phase 6.4)
-    // ═════════════════════════════════════════════════════════════════════════════
-    const sacred_synth_report = b.addExecutable(.{
-        .name = "tri-sacred-synth-report",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tri/sacred_synth_report.zig"),
-            .target = target,
-            .optimize = .ReleaseFast,
-        }),
-    });
-    b.installArtifact(sacred_synth_report);
-
-    const sacred_synth_report_step = b.step("sacred-synth-report", "Parse Yosys JSON synthesis output for Sacred ALU");
-    sacred_synth_report_step.dependOn(&sacred_synth_report.step);
 }

@@ -116,11 +116,17 @@ fn parseYosysJson(allocator: std.mem.Allocator, json_path: []const u8) !Synthesi
     const file = try std.fs.cwd().openFile(json_path, .{});
     defer file.close();
 
-    const content = try file.readToEndAlloc(allocator, 0);
-    defer allocator.free(content);
+    // Get file size
+    const stat = try file.stat();
+    const buffer = try allocator.alloc(u8, @intCast(stat.size));
+    defer allocator.free(buffer);
 
-    const parsed = try std.json.parseFromSlice(std.json.Value, allocator, content, .{});
-    defer parsed.deinit();
+    _ = try file.readAll(buffer);
+
+    const parsed = try std.json.parseFromSlice(std.json.Value, allocator, buffer, .{});
+    defer {
+        parsed.deinit();
+    }
 
     // Yosys JSON: { "modules": { "sacred_alu": { "cells": [...] } } }
     const modules = parsed.value.object.get("modules");
