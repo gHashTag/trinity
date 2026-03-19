@@ -38,9 +38,9 @@ pub const BootstrapPeer = struct {
     }
 
     pub fn isHealthy(self: *const BootstrapPeer) bool {
-        const now = std.time.timestamp();
+        const now: i64 = std.time.timestamp();
         const hours_since_seen: f64 = if (self.last_seen > 0)
-            @as(f64, @floatFromInt(now - self.last_seen)) / 3600.0
+            @as(f64, @floatFromInt(now - @as(i64, @intCast(self.last_seen)))) / 3600.0
         else
             999999.0;
 
@@ -316,7 +316,8 @@ test "BootstrapPeer health check" {
     try std.testing.expect(peer.isHealthy());
 
     // Old peer (seen 25 hours ago)
-    peer.last_seen = std.time.timestamp() - @as(u64, @intCast(25 * 3600));
+    const now = std.time.timestamp();
+    peer.last_seen = @intCast(now - @as(i64, @intCast(25 * 3600)));
     try std.testing.expect(!peer.isHealthy());
 }
 
