@@ -94,7 +94,7 @@ pub const Thalamus = struct {
 
     /// Initialize Thalamus with Railway API client
     pub fn init(allocator: Allocator, suffix: []const u8) !Self {
-        var api = try railway_api.RailwayApi.initWithSuffix(allocator, suffix);
+        const api = try railway_api.RailwayApi.initWithSuffix(allocator, suffix);
         return .{
             .allocator = allocator,
             .api = api,
@@ -316,7 +316,7 @@ fn parseLatestLoss(logs_json: []const u8) f32 {
 
 /// Check if logs are fresh (contain entries from last 5 minutes)
 fn areLogsFresh(logs_json: []const u8) bool {
-    const MAX_FRESHNESS_SEC: i64 = 5 * 60; // 5 minutes
+    _ = 5 * 60; // MAX_FRESHNESS_SEC for future use
 
     var iter = std.mem.splitSequence(u8, logs_json, "T");
     while (iter.next()) |part| {
