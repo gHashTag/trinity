@@ -431,6 +431,13 @@ pub fn main() !void {
             try tri_experience.runExperienceCommand(allocator, exp_args);
             return;
         }
+        // Brain: route `tri brain [--show|--json|--region|--quick|--watch]` to metrics dashboard
+        if (std.mem.eql(u8, first_arg, "brain")) {
+            const brain_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            try commands.runBrainDashboardCommand(allocator, brain_args);
+            return;
+        }
         // UI: route `tri ui [build|kill]` to Queen UI launcher
         if (std.mem.eql(u8, first_arg, "ui")) {
             const ui_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
@@ -930,6 +937,10 @@ pub fn main() !void {
         .stress_test => {
             const tri_commands_mod = @import("tri_commands.zig");
             try tri_commands_mod.runStressTestCommand(cmd_args);
+        },
+        .brain_simulate => {
+            const tri_commands_mod = @import("tri_commands.zig");
+            try tri_commands_mod.runBrainSimulateCommand(allocator, cmd_args);
         },
         .phi,
         .fib,
@@ -1589,6 +1600,11 @@ fn dispatchCommand(
         .stress_test => {
             const tri_commands_mod = @import("tri_commands.zig");
             try tri_commands_mod.runStressTestCommand(cmd_args);
+        },
+        // Brain Simulation
+        .brain_simulate => {
+            const tri_commands_mod = @import("tri_commands.zig");
+            try tri_commands_mod.runBrainSimulateCommand(allocator, cmd_args);
         },
         else => |c| {
             std.debug.print("{s}Command not yet accessible via namespace: {s}{s}\n", .{ "\x1b[38;2;255;100m", @tagName(c), "\x1b[0m" });
