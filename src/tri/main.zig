@@ -928,6 +928,10 @@ pub fn main() !void {
         .cosmos,
         .neuro,
         .chem,
+        // Brain commands (not yet fully implemented)
+        .task_claim,
+        .event_stream,
+        .stress_test,
         => {
             std.debug.print("Error: Command '{s}' not yet implemented\n", .{@tagName(cmd)});
             std.process.exit(1);

@@ -13,11 +13,7 @@ pub const SalienceLevel = enum(u3) {
     critical = 4,
 
     pub fn fromScore(score: f32) SalienceLevel {
-        return if (score < 20) .none
-        else if (score < 40) .low
-        else if (score < 60) .medium
-        else if (score < 80) .high
-        else .critical;
+        return if (score < 20) .none else if (score < 40) .low else if (score < 60) .medium else if (score < 80) .high else .critical;
     }
 
     pub fn emoji(self: SalienceLevel) []const u8 {
@@ -93,7 +89,7 @@ pub const Amygdala = struct {
 
         // Critical error patterns
         const critical_patterns = [_][]const u8{
-            "segfault", "panic", "out of memory", "deadlock",
+            "segfault",   "panic",    "out of memory",  "deadlock",
             "corruption", "security", "authentication", "injection",
         };
 
