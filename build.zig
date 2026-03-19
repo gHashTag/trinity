@@ -2796,4 +2796,7 @@ pub fn build(b: *std.Build) void {
 
     const sacred_synth_report_step = b.step("sacred-synth-report", "Parse Yosys JSON synthesis output for Sacred ALU");
     sacred_synth_report_step.dependOn(&sacred_synth_report.step);
+
+    const run_sacred_synth_report = b.addRunArtifact(sacred_synth_report);
+    run_sacred_synth_report.step.dependOn(b.getInstallStep());
 }
