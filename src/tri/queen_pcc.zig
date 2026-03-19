@@ -934,3 +934,491 @@ test "pcc — SelfModel struct initialization" {
     _ = model.goals;
     _ = model.learning_state;
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// IntrospectionResult TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — IntrospectionResult AwarenessLevel enum coverage" {
+    const levels = [_]IntrospectionResult.AwarenessLevel{
+        .dormant,
+        .reflexive,
+        .self_aware,
+        .self_analytical,
+        .self_improving,
+    };
+    for (levels) |l| {
+        _ = l; // Verify all levels exist
+    }
+}
+
+test "pcc — IntrospectionResult timestamp field" {
+    const result = IntrospectionResult{
+        .model = .{},
+        .timestamp = 1234567890,
+    };
+
+    try std.testing.expectEqual(@as(i64, 1234567890), result.timestamp);
+}
+
+test "pcc — IntrospectionResult with all fields set" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{},
+        .goals = .{},
+        .learning_state = .{},
+    };
+
+    const result = IntrospectionResult{
+        .model = model,
+        .health_score = 85.5,
+        .awareness_level = .self_analytical,
+        .timestamp = 1234567890,
+    };
+
+    try std.testing.expectApproxEqAbs(@as(f32, 85.5), result.health_score, 0.01);
+    try std.testing.expectEqual(IntrospectionResult.AwarenessLevel.self_analytical, result.awareness_level);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SelfAwarenessContext TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — SelfAwarenessContext canAct with conscious state" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{ .binaries_available = 6 }, // High score
+        .goals = .{},
+        .learning_state = .{},
+    };
+
+    const context = SelfAwarenessContext{
+        .model = model,
+        .consciousness = .{ .status = .conscious },
+    };
+
+    try std.testing.expect(context.canAct());
+}
+
+test "pcc — SelfAwarenessContext canAct with looping state" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{ .binaries_available = 6 },
+        .goals = .{},
+        .learning_state = .{},
+    };
+
+    const context = SelfAwarenessContext{
+        .model = model,
+        .consciousness = .{ .status = .looping },
+    };
+
+    try std.testing.expect(!context.canAct()); // Looping prevents action
+}
+
+test "pcc — SelfAwarenessContext canAct with low capability score" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{}, // Low score
+        .goals = .{},
+        .learning_state = .{},
+    };
+
+    const context = SelfAwarenessContext{
+        .model = model,
+        .consciousness = .{ .status = .conscious },
+    };
+
+    try std.testing.expect(!context.canAct()); // Low score prevents action
+}
+
+test "pcc — SelfAwarenessContext isProgressing with recent lesson" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{},
+        .goals = .{},
+        .learning_state = .{ .last_lesson_ts = std.time.timestamp() - 1000 }, // 16 min ago
+    };
+
+    const context = SelfAwarenessContext{
+        .model = model,
+        .consciousness = .{},
+    };
+
+    try std.testing.expect(context.isProgressing());
+}
+
+test "pcc — SelfAwarenessContext isProgressing with old lesson" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{},
+        .goals = .{},
+        .learning_state = .{ .last_lesson_ts = std.time.timestamp() - 7200 }, // 2 hours ago
+    };
+
+    const context = SelfAwarenessContext{
+        .model = model,
+        .consciousness = .{},
+    };
+
+    try std.testing.expect(!context.isProgressing());
+}
+
+test "pcc — SelfAwarenessContext shouldEscalate with stuck state" {
+    const context = SelfAwarenessContext{
+        .model = .{},
+        .consciousness = .{ .status = .stuck },
+    };
+
+    try std.testing.expect(context.shouldEscalate());
+}
+
+test "pcc — SelfAwarenessContext shouldEscalate with conscious state" {
+    const context = SelfAwarenessContext{
+        .model = .{},
+        .consciousness = .{ .status = .conscious },
+    };
+
+    try std.testing.expect(!context.shouldEscalate());
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ConsciousnessState Status enum TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — ConsciousnessState Status enum coverage" {
+    const statuses = [_]ConsciousnessState.Status{
+        .conscious,
+        .looping,
+        .stuck,
+        .dead_end,
+        .degraded,
+    };
+    for (statuses) |s| {
+        _ = s; // Verify all statuses exist
+    }
+}
+
+test "pcc — ConsciousnessState dead_end needs help" {
+    var state = ConsciousnessState{ .status = .dead_end };
+    try std.testing.expect(state.needsHelp());
+}
+
+test "pcc — ConsciousnessState degraded does not need help" {
+    var state = ConsciousnessState{ .status = .degraded };
+    try std.testing.expect(!state.needsHelp());
+}
+
+test "pcc — ConsciousnessState stuck_duration_seconds" {
+    var state = ConsciousnessState{
+        .stuck_duration_seconds = 3600, // 1 hour
+    };
+
+    try std.testing.expectEqual(@as(i64, 3600), state.stuck_duration_seconds);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CellHealth TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — CellHealth Status enum coverage" {
+    const statuses = [_]CellHealth.Status{ .healthy, .weak, .broken };
+    for (statuses) |s| {
+        _ = s; // Verify all statuses exist
+    }
+}
+
+test "pcc — CellHealth timestamp" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
+
+test "pcc — CellHealth custom values" {
+    var h = CellHealth{};
+    h.status = .weak;
+    h.cycle = 5;
+    h.last_check = 1234567890;
+
+    try std.testing.expectEqual(CellHealth.Status.weak, h.status);
+    try std.testing.expectEqual(@as(u32, 5), h.cycle);
+    try std.testing.expectEqual(@as(i64, 1234567890), h.last_check);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Goals string methods TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — Goals primaryStr method" {
+    var goals = SelfModel.Goals{};
+    const primary = "Train HSLM model";
+
+    @memcpy(goals.primary[0..primary.len], primary);
+    goals.primary_len = primary.len;
+
+    try std.testing.expectEqualStrings("Train HSLM model", goals.primaryStr());
+}
+
+test "pcc — Goals secondaryStr method" {
+    var goals = SelfModel.Goals{};
+    const secondary = "Maintain farm health";
+
+    @memcpy(goals.secondary[0..secondary.len], secondary);
+    goals.secondary_len = secondary.len;
+
+    try std.testing.expectEqualStrings("Maintain farm health", goals.secondaryStr());
+}
+
+test "pcc — Goals empty strings" {
+    const goals = SelfModel.Goals{};
+
+    try std.testing.expectEqual(@as(usize, 0), goals.primaryStr().len);
+    try std.testing.expectEqual(@as(usize, 0), goals.secondaryStr().len);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LearningState lastLessonStr TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — LearningState lastLessonStr method" {
+    var state = SelfModel.LearningState{};
+    const lesson = "Batch size 64 works best";
+
+    @memcpy(state.last_lesson[0..lesson.len], lesson);
+    state.last_lesson_len = lesson.len;
+
+    try std.testing.expectEqualStrings("Batch size 64 works best", state.lastLessonStr());
+}
+
+test "pcc — LearningState lastLessonStr empty" {
+    const state = SelfModel.LearningState{};
+    try std.testing.expectEqual(@as(usize, 0), state.lastLessonStr().len);
+}
+
+test "pcc — LearningState best_ppl field" {
+    var state = SelfModel.LearningState{ .best_ppl = 4.5 };
+    try std.testing.expectApproxEqAbs(@as(f32, 4.5), state.best_ppl, 0.01);
+}
+
+test "pcc — LearningState active_experiments field" {
+    var state = SelfModel.LearningState{ .active_experiments = 3 };
+    try std.testing.expectEqual(@as(u8, 3), state.active_experiments);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// Capabilities edge cases TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — Capabilities farm_workers field" {
+    var caps = SelfModel.Capabilities{ .farm_workers = 42 };
+    try std.testing.expectEqual(@as(u8, 42), caps.farm_workers);
+}
+
+test "pcc — Capabilities cloud_containers field" {
+    var caps = SelfModel.Capabilities{ .cloud_containers = 8 };
+    try std.testing.expectEqual(@as(u8, 8), caps.cloud_containers);
+}
+
+test "pcc — Capabilities capabilityScore with all features" {
+    var caps = SelfModel.Capabilities{
+        .binaries_available = 6,
+        .mcp_servers = 4,
+        .github_ok = true,
+        .railway_ok = true,
+        .telegram_ok = true,
+        .farm_workers = 50,
+    };
+
+    const score = caps.capabilityScore();
+    // Max score: 0.3 + 0.2 + 0.15 + 0.15 + 0.1 + 0.1 = 1.0
+    try std.testing.expect(score > 0.9);
+}
+
+test "pcc — Capabilities capabilityScore with minimal features" {
+    const caps = SelfModel.Capabilities{};
+    const score = caps.capabilityScore();
+    try std.testing.expect(score < 0.1);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SelfModel.Identity fields TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — SelfModel Identity role field" {
+    var identity = SelfModel.Identity{ .role = .training_farm };
+    try std.testing.expectEqual(SelfModel.AgentRole.training_farm, identity.role);
+}
+
+test "pcc — SelfModel Identity uptime_seconds field" {
+    var identity = SelfModel.Identity{ .uptime_seconds = 86400 }; // 1 day
+    try std.testing.expectEqual(@as(i64, 86400), identity.uptime_seconds);
+}
+
+test "pcc — SelfModel Identity pid field" {
+    var identity = SelfModel.Identity{ .pid = 12345 };
+    try std.testing.expectEqual(@as(u32, 12345), identity.pid);
+}
+
+test "pcc — SelfModel Identity all roles" {
+    const roles = [_]SelfModel.AgentRole{
+        .autonomous_swarm,
+        .training_farm,
+        .arena_evaluator,
+        .cloud_orchestrator,
+    };
+
+    for (roles) |r| {
+        var identity = SelfModel.Identity{ .role = r };
+        try std.testing.expectEqual(r, identity.role);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CurrentState fields TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — CurrentState mode field" {
+    var state = SelfModel.CurrentState{ .mode = .monitoring };
+    try std.testing.expectEqual(SelfModel.CurrentState.Mode.monitoring, state.mode);
+}
+
+test "pcc — CurrentState cycle_count field" {
+    var state = SelfModel.CurrentState{ .cycle_count = 100 };
+    try std.testing.expectEqual(@as(u32, 100), state.cycle_count);
+}
+
+test "pcc — CurrentState last_action field" {
+    var state = SelfModel.CurrentState{ .last_action = .doctor_quick };
+    try std.testing.expectEqual(qt.ActionKind.doctor_quick, state.last_action);
+}
+
+test "pcc — CurrentState last_action_ts field" {
+    var state = SelfModel.CurrentState{ .last_action_ts = 1234567890 };
+    try std.testing.expectEqual(@as(i64, 1234567890), state.last_action_ts);
+}
+
+test "pcc — CurrentState all modes" {
+    const modes = [_]SelfModel.CurrentState.Mode{
+        .idle,
+        .monitoring,
+        .deciding,
+        .acting,
+        .sleeping,
+        .emergency,
+    };
+
+    for (modes) |m| {
+        var state = SelfModel.CurrentState{ .mode = m };
+        try std.testing.expectEqual(m, state.mode);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// LoopDetector edge cases TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — LoopDetector history wraps around" {
+    var detector = LoopDetector{};
+
+    // Fill history beyond buffer size (16)
+    var i: usize = 0;
+    while (i < 20) : (i += 1) {
+        _ = detector.record(.farm_status);
+    }
+
+    // Should still detect loop with last 4 same actions
+    const is_loop = detector.record(.farm_status);
+    try std.testing.expect(is_loop);
+}
+
+test "pcc — LoopDetector with threshold of 1" {
+    var detector = LoopDetector{ .loop_threshold = 1 };
+
+    // Should detect loop immediately
+    const is_loop = detector.record(.introspection);
+    try std.testing.expect(is_loop);
+}
+
+test "pcc — LoopDetector reset clears history" {
+    var detector = LoopDetector{};
+
+    // Add some history
+    _ = detector.record(.farm_status);
+    _ = detector.record(.doctor_quick);
+    _ = detector.record(.introspection);
+
+    try std.testing.expectEqual(@as(usize, 3), detector.history_len);
+
+    detector.reset();
+
+    try std.testing.expectEqual(@as(usize, 0), detector.history_len);
+
+    // After reset, need threshold actions again
+    _ = detector.record(.farm_status);
+    _ = detector.record(.farm_status);
+    _ = detector.record(.farm_status);
+    try std.testing.expect(!detector.record(.farm_status)); // Need 4th
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// diagnoseConsciousness edge cases TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pcc — diagnoseConsciousness with degraded capabilities" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{}, // Low capability score
+        .goals = .{},
+        .learning_state = .{},
+    };
+    var detector = LoopDetector{};
+
+    const now = std.time.timestamp();
+    const state = diagnoseConsciousness(model, &detector, now);
+
+    try std.testing.expectEqual(ConsciousnessState.Status.degraded, state.status);
+}
+
+test "pcc — diagnoseConsciousness conscious with good capabilities" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{ .binaries_available = 6 }, // High score
+        .goals = .{},
+        .learning_state = .{},
+    };
+    var detector = LoopDetector{};
+
+    const now = std.time.timestamp();
+    const state = diagnoseConsciousness(model, &detector, now);
+
+    try std.testing.expectEqual(ConsciousnessState.Status.conscious, state.status);
+}
+
+test "pcc — diagnoseConsciousness loop takes priority" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{ .binaries_available = 6 }, // Good capabilities
+        .goals = .{},
+        .learning_state = .{},
+    };
+    var detector = LoopDetector{};
+
+    // Create a loop
+    _ = detector.record(.introspection);
+    _ = detector.record(.introspection);
+    _ = detector.record(.introspection);
+    _ = detector.record(.introspection);
+
+    const now = std.time.timestamp();
+    const state = diagnoseConsciousness(model, &detector, now);
+
+    try std.testing.expectEqual(ConsciousnessState.Status.looping, state.status);
+}
