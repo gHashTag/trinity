@@ -5195,7 +5195,8 @@ struct MultilineInput: NSViewRepresentable {
         textView.drawsBackground = false
         textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
-        textView.textContainer?.containerSize = NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude)
+        // ФИКС: ограничиваем максимальную высоту контейнера текста
+        textView.textContainer?.containerSize = NSSize(width: 0, height: 150)  // было greatestFiniteMagnitude
         textView.textContainer?.widthTracksTextView = true
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
@@ -5207,6 +5208,10 @@ struct MultilineInput: NSViewRepresentable {
         scrollView.hasHorizontalScroller = false
         scrollView.drawsBackground = false
         scrollView.borderType = .noBorder
+
+        // ФИКС: ограничиваем высоту самого scroll view
+        scrollView.heightAnchor.constraint lessThanOrEqualToConstant: 150
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
 
         context.coordinator.textView = textView
         return scrollView
