@@ -21,16 +21,18 @@ pub const BrainTelemetry = struct {
     const Self = @This();
 
     pub fn init(allocator: std.mem.Allocator, max_points: usize) Self {
+        var points: std.ArrayList(TelemetryPoint) = .empty;
+        points.ensureTotalCapacity(allocator, max_points) catch {};
         return Self{
             .allocator = allocator,
-            .points = std.ArrayList(TelemetryPoint).init(allocator),
+            .points = points,
             .max_points = max_points,
             .mutex = std.Thread.Mutex{},
         };
     }
 
     pub fn deinit(self: *Self) void {
-        self.points.deinit();
+        self.points.deinit(self.allocator);
     }
 
     /// Record a telemetry point
@@ -38,7 +40,7 @@ pub const BrainTelemetry = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        try self.points.append(point);
+        try self.points.append(self.allocator, point);
 
         // Trim if over limit
         while (self.points.items.len > self.max_points) {

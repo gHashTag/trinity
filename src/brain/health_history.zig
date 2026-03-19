@@ -26,28 +26,48 @@ pub const BrainHealthHistory = struct {
     }
 
     /// Record a health snapshot
-    pub fn record(_: *BrainHealthHistory, snapshot: HealthSnapshot) !void {
+    pub fn record(snapshot_ptr: *BrainHealthHistory, snapshot: HealthSnapshot) !void {
+        _ = snapshot_ptr;
         const file = try std.fs.cwd().createFile(BRAIN_HEALTH_LOG, .{ .read = true });
         defer file.close();
 
         try file.seekFromEnd(0);
 
-        // Write JSONL line
-        try file.writer().print(
-            \\{"ts":{d},"health":{d:.1},"ok":{},"claims":{d},"events_pub":{d},"events_buf":{d},"stress_ok":{}}
-        , .{
-            snapshot.timestamp,
-            snapshot.health_score,
-            snapshot.healthy,
-            snapshot.active_claims,
-            snapshot.events_published,
-            snapshot.events_buffered,
-            snapshot.stress_test_passed,
-        });
+        // Build JSON line manually to avoid format string issues
+        var buffer: [512]u8 = undefined;
+        var fbs = std.io.fixedBufferStream(&buffer);
+        const writer = fbs.writer();
+
+        // Write JSON opening
+        try writer.writeAll("{\"ts\":");
+        try writer.print("{d}", .{snapshot.timestamp});
+
+        try writer.writeAll(",\"health\":");
+        try writer.print("{d:.1}", .{snapshot.health_score});
+
+        try writer.writeAll(",\"ok\":");
+        try writer.writeAll(if (snapshot.healthy) "true" else "false");
+
+        try writer.writeAll(",\"claims\":");
+        try writer.print("{d}", .{snapshot.active_claims});
+
+        try writer.writeAll(",\"events_pub\":");
+        try writer.print("{d}", .{snapshot.events_published});
+
+        try writer.writeAll(",\"events_buf\":");
+        try writer.print("{d}", .{snapshot.events_buffered});
+
+        try writer.writeAll(",\"stress_ok\":");
+        try writer.writeAll(if (snapshot.stress_test_passed) "true" else "false");
+
         if (snapshot.stress_test_score) |score| {
-            try file.writer().print(",\"stress_score\":{d}", .{score});
+            try writer.writeAll(",\"stress_score\":");
+            try writer.print("{d}", .{score});
         }
-        try file.writer().writeAll("}\n");
+
+        try writer.writeAll("}\n");
+
+        try file.writeAll(fbs.getWritten());
     }
 
     /// Read recent history (last N entries)
@@ -59,24 +79,33 @@ pub const BrainHealthHistory = struct {
         const content = try file.readToEndAlloc(self.allocator, 1024 * 1024);
         defer self.allocator.free(content);
 
-        var lines = std.mem.splitScalar(u8, content, '\n');
-
-        var snapshots = std.ArrayList(HealthSnapshot).init(self.allocator);
-
-        // Parse last N non-empty lines
-        var count: usize = 0;
-        var line_iter = lines.reverseIterator();
-        while (line_iter.next()) |line| {
-            if (line.len == 0) continue;
-            if (count >= n) break;
-
-            // Parse JSON (simple manual parsing for key fields)
-            const snapshot = try parseSnapshot(line);
-            try snapshots.append(snapshot);
-            count += 1;
+        // Collect all non-empty lines
+        var all_lines: std.ArrayList([]const u8) = .empty;
+        try all_lines.ensureTotalCapacity(self.allocator, 1000);
+        defer {
+            for (all_lines.items) |line| self.allocator.free(line);
+            all_lines.deinit(self.allocator);
         }
 
-        return snapshots.toOwnedSlice();
+        var lines = std.mem.splitScalar(u8, content, '\n');
+        while (lines.next()) |line| {
+            if (line.len > 0) {
+                const line_copy = try self.allocator.dupe(u8, line);
+                try all_lines.append(self.allocator, line_copy);
+            }
+        }
+
+        // Take last N lines
+        var snapshots: std.ArrayList(HealthSnapshot) = .empty;
+        try snapshots.ensureTotalCapacity(self.allocator, @min(n, all_lines.items.len));
+
+        const start = if (all_lines.items.len > n) all_lines.items.len - n else 0;
+        for (all_lines.items[start..]) |line| {
+            const snapshot = try parseSnapshot(line);
+            try snapshots.append(self.allocator, snapshot);
+        }
+
+        return snapshots.toOwnedSlice(self.allocator);
     }
 
     /// Get trend: improving, stable, or declining
