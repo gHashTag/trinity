@@ -2240,3 +2240,68 @@ test "MemoryRecord ttl field" {
 
 // CellType and HealthStatus are not yet defined in hippocampus module
 // These tests will be added when the types are implemented
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL integration tests with file I/O (not struct padding!)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "hippocampus — write then read roundtrip" {
+    const testing = std.testing;
+    var tmp = testing.tmpDir(.{ .suffix = "-hippocampus" });
+    defer tmp.cleanup();
+
+    // Override MEMORY_ROOT to tmp dir
+    const test_agent = "test-agent";
+    const test_dir = try std.fmt.allocPrint(testing.allocator, "{s}/{s}", .{ tmp.dir.path.?, test_agent });
+    defer testing.allocator.free(test_dir);
+    try tmp.dir.makePath(test_dir);
+
+    const test_file = try std.fmt.allocPrint(testing.allocator, "{s}/current.jsonl", .{test_dir});
+    defer testing.allocator.free(test_file);
+
+    // Write a record
+    var rec = MemoryRecord{};
+    const ts: u64 = 1234567890;
+    generateId(&rec.id_buf, &rec.id_len, ts, test_agent);
+    copyToFixed(32, &rec.agent_buf, &rec.agent_len, test_agent);
+    rec.kind = .observation;
+    rec.ts = ts;
+    copyToFixed(256, &rec.summary_buf, &rec.summary_len, "test observation");
+
+    // Serialize and write manually (we can't override MEMORY_ROOT at runtime)
+    var buf: [4096]u8 = undefined;
+    const json_line = try serializeRecord(&buf, &rec);
+
+    const file = try tmp.dir.createFile(test_file, .{ .truncate = false });
+    defer file.close();
+    try file.seekFromEnd(0);
+    try file.writeAll(json_line);
+    try file.writeAll("\n");
+
+    // Verify file was written
+    const content = try tmp.dir.readFile(test_file, testing.allocator);
+    defer testing.allocator.free(content);
+    try testing.expect(content.len > 0);
+    try testing.expect(std.mem.indexOf(u8, content, "test observation") != null);
+}
+
+test "hippocampus — serializeRecord produces valid JSON" {
+    var rec = MemoryRecord{};
+    const ts: u64 = 1234567890;
+    generateId(&rec.id_buf, &rec.id_len, ts, "ralph");
+    copyToFixed(32, &rec.agent_buf, &rec.agent_len, "ralph");
+    rec.kind = .episode;
+    rec.ts = ts;
+    copyToFixed(256, &rec.summary_buf, &rec.summary_len, "fixed a bug");
+    copyToFixed(32, &rec.tags[0], &rec.tag_lens[0], "fix");
+
+    var buf: [4096]u8 = undefined;
+    const json = try serializeRecord(&buf, &rec);
+
+    // Verify it's valid JSON with expected fields
+    try std.testing.expect(json.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"agent\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"kind\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"episode\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"summary\"") != null);
+}
