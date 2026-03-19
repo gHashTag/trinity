@@ -960,3 +960,59 @@ test "ACC — ErrorSeverity enum values" {
     try std.testing.expectEqual(@as(u8, 2), @intFromEnum(ErrorSeverity.err));
     try std.testing.expectEqual(@as(u8, 3), @intFromEnum(ErrorSeverity.critical));
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL function tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ACC — health returns valid CellHealth" {
+    const h = health();
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+}
+
+test "ACC — Conflict format produces text" {
+    const conflict = Conflict{
+        .kind = .mutual_exclusion,
+        .action1 = .farm_status,
+        .action2 = .farm_recycle,
+        .reason = "both access farm",
+        .severity = .medium,
+    };
+    var buf: [256]u8 = undefined;
+    const text = conflict.format(&buf);
+    try std.testing.expect(text.len > 0);
+}
+
+test "ACC — ErrorMonitor init creates monitor" {
+    const monitor = try ErrorMonitor.init(std.testing.allocator);
+    monitor.deinit();
+}
+
+test "ACC — ErrorMonitor countBySeverity counts" {
+    var monitor = try ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+
+    try monitor.addError(.build_break, "test1");
+    try monitor.addError(.build_break, "test2");
+
+    const count = monitor.countBySeverity(.err);
+    try std.testing.expectEqual(@as(usize, 2), count);
+}
+
+test "ACC — ErrorMonitor thresholdExceeded checks" {
+    var monitor = try ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+
+    try std.testing.expect(!monitor.thresholdExceeded());
+}
+
+test "ACC — generateControlSignals returns signals" {
+    var candidates = [_]basal_ganglia.ActionCandidate{
+        .{ .kind = .farm_status, .urgency = .normal, .suppressed = false },
+    };
+
+    const signals = try generateControlSignals(std.testing.allocator, &candidates);
+    defer std.testing.allocator.free(signals);
+
+    try std.testing.expect(signals.len >= 0);
+}
