@@ -803,9 +803,9 @@ test "Policy — SafetyLevel emoji" {
 
 test "Policy — actionLevel all L0 actions" {
     const l0_actions = [_]qt.ActionKind{
-        .farm_status, .arena_status, .doctor_scan, .train_status, .train_diagnose,
-        .experiment_chart, .patent_status, .research_sacred, .ouroboros_status,
-        .experience_recall, .introspection, .farm_evolve_status, .swarm_status,
+        .farm_status,      .arena_status,       .doctor_scan,     .train_status,     .train_diagnose,
+        .experiment_chart, .patent_status,      .research_sacred, .ouroboros_status, .experience_recall,
+        .introspection,    .farm_evolve_status, .swarm_status,
     };
     for (l0_actions) |action| {
         try std.testing.expectEqual(SafetyLevel.read_only, actionLevel(action));
@@ -814,8 +814,9 @@ test "Policy — actionLevel all L0 actions" {
 
 test "Policy — actionLevel all L1 actions" {
     const l1_actions = [_]qt.ActionKind{
-        .doctor_quick, .doctor_heal, .ouroboros_cycle, .git_commit_state,
-        .git_push, .issue_comment, .notify, .arena_battle, .experience_save, .fmt,
+        .doctor_quick,    .doctor_heal,   .ouroboros_cycle, .git_commit_state,
+        .git_push,        .issue_comment, .notify,          .arena_battle,
+        .experience_save, .fmt,
     };
     for (l1_actions) |action| {
         try std.testing.expectEqual(SafetyLevel.soft_write, actionLevel(action));
@@ -824,8 +825,8 @@ test "Policy — actionLevel all L1 actions" {
 
 test "Policy — actionLevel all L2 actions" {
     const l2_actions = [_]qt.ActionKind{
-        .farm_recycle, .farm_evolve_step, .cloud_spawn, .cloud_kill,
-        .cloud_cleanup, .issue_create, .swarm_decompose,
+        .farm_recycle,  .farm_evolve_step, .cloud_spawn,     .cloud_kill,
+        .cloud_cleanup, .issue_create,     .swarm_decompose,
     };
     for (l2_actions) |action| {
         try std.testing.expectEqual(SafetyLevel.dangerous, actionLevel(action));
@@ -1204,4 +1205,173 @@ test "Policy — Incident detailStr returns slice" {
     inc.setDetail(text);
 
     try std.testing.expectEqualStrings(text, inc.detailStr());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Additional SafetyLevel tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — SafetyLevel L0 safe" {
+    try std.testing.expectEqualStrings("safe", .L0.label());
+    try std.testing.expectEqualStrings("🟢", .L0.emoji());
+}
+
+test "Policy — SafetyLevel L1 caution" {
+    try std.testing.expectEqualStrings("caution", .L1.label());
+    try std.testing.expectEqualStrings("🟡", .L1.emoji());
+}
+
+test "Policy — SafetyLevel L2 danger" {
+    try std.testing.expectEqualStrings("danger", .L2.label());
+    try std.testing.expectEqualStrings("🔴", .L2.emoji());
+}
+
+test "Policy — SafetyLevel L3 critical" {
+    try std.testing.expectEqualStrings("critical", .L3.label());
+    try std.testing.expectEqualStrings("⚠️", .L3.emoji());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IncidentKind all values
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — IncidentKind all values exist" {
+    _ = IncidentKind.alert;
+    _ = IncidentKind.auto_action;
+    _ = IncidentKind.auto_action_fail;
+    _ = IncidentKind.human_command;
+    _ = IncidentKind.approval;
+    _ = IncidentKind.denial;
+    _ = IncidentKind.escalation;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PendingAction reasonStr
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — PendingAction reasonStr empty" {
+    const item = PendingAction{};
+    try std.testing.expectEqualStrings("", item.reasonStr());
+}
+
+test "Policy — PendingAction reasonStr with text" {
+    var item = PendingAction{};
+    const text = "need approval";
+    item.setReason(text);
+
+    try std.testing.expectEqualStrings(text, item.reasonStr());
+}
+
+test "Policy — PendingAction setDetail truncates" {
+    var item = PendingAction{};
+    const long_text = [1]u8{'X'} ** 256;
+    item.setReason(&long_text);
+
+    try std.testing.expectEqual(@as(u8, 128), item.reason_len);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ActionCounters window edge cases
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — ActionCounters window exactly 3600 sec" {
+    var c = ActionCounters{};
+    const now: i64 = 1234567890;
+    c.windows[0].start_ts = now - 3600;
+    c.windows[0].count = 5;
+    c.windows[1].start_ts = now;
+    c.windows[1].count = 3;
+
+    const total = c.getCount(.farm_status);
+    try std.testing.expectEqual(@as(u8, 3), total); // Only recent window
+}
+
+test "Policy — ActionCounters getLastTs returns latest" {
+    var c = ActionCounters{};
+    c.windows[0].last_ts = 1000;
+    c.windows[1].last_ts = 2000;
+
+    try std.testing.expectEqual(@as(i64, 2000), c.getLastTs(.doctor_quick));
+}
+
+test "Policy — ActionCounters record updates last_ts" {
+    var c = ActionCounters{};
+    const now: i64 = 999999;
+    c.record(.farm_recycle, now);
+
+    try std.testing.expectEqual(@as(i64, 999999), c.getLastTs(.farm_recycle));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// IncidentMemory lastN full buffer
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — IncidentMemory lastN returns oldest first" {
+    var m = IncidentMemory.init();
+    m.record(.alert, .doctor_quick, true, "first");
+    m.record(.auto_action, .farm_recycle, true, "second");
+    m.record(.escalation, .farm_evolve, true, "third");
+
+    var buf: [MAX_INCIDENTS]Incident = undefined;
+    const count = m.lastN(&buf);
+
+    try std.testing.expectEqual(@as(u32, 3), count);
+    // Oldest should be first
+    try std.testing.expectEqualStrings("first", buf[0].detailStr());
+}
+
+test "Policy — IncidentMemory lastN respects ring wrap" {
+    var m = IncidentMemory.init();
+    // Fill buffer to cause wrap
+    var i: u32 = 0;
+    while (i < MAX_INCIDENTS + 5) : (i += 1) {
+        m.record(.alert, .doctor_quick, true, "test");
+    }
+
+    var buf: [MAX_INCIDENTS]Incident = undefined;
+    const count = m.lastN(&buf);
+
+    try std.testing.expectEqual(@as(u32, MAX_INCIDENTS), count);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PendingQueue edge cases
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — PendingQueue expireOld all expired" {
+    var q = PendingQueue.init();
+    _ = q.add(.doctor_quick, "test1");
+    _ = q.add(.farm_status, "test2");
+
+    // Age all items
+    const now = std.time.timestamp();
+    for (&q.items) |*item| {
+        if (item.active) {
+            item.requested_at = now - 2000;
+        }
+    }
+
+    q.expireOld();
+    try std.testing.expectEqual(@as(u8, 0), q.pendingCount());
+}
+
+test "Policy — PendingQueue expireOld keeps recent" {
+    var q = PendingQueue.init();
+    _ = q.add(.doctor_quick, "test");
+
+    q.expireOld();
+    try std.testing.expectEqual(@as(u8, 1), q.pendingCount());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PolicyVerdict reason texts
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Policy — PolicyVerdict reason texts" {
+    try std.testing.expectEqualStrings("allowed", .allowed.reason());
+    try std.testing.expectEqualStrings("level", .denied_level.reason());
+    try std.testing.expectEqualStrings("rate", .denied_rate.reason());
+    try std.testing.expectEqualStrings("cooldown", .denied_cooldown.reason());
+    try std.testing.expectEqualStrings("escalated", .denied_escalated.reason());
+    try std.testing.expectEqualStrings("approval", .needs_approval.reason());
 }
