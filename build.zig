@@ -20,24 +20,21 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    // VIBEEC compiler module — single source of truth from trinity-nexus/lang
     const trinity_lang_mod = b.createModule(.{
-        .root_source_file = b.path("trinity-nexus/lang/src/root.zig"),
         .target = target,
         .optimize = optimize,
     });
 
     // Generated serve module — from .tri spec: specs/integration/full-serve-v1.tri
     // Links libc because full-serve-v1.zig uses std.c.getpid() for daemonize
-    const serve_full_mod = b.createModule(.{
-        .root_source_file = b.path("trinity-nexus/output/lang/zig/full-serve-v1.zig"),
-        .target = target,
-        .optimize = optimize,
-        .link_libc = true,
-    });
-
-    // Library artifact
-    const lib = b.addLibrary(.{
+//     // const serve_full_mod = b.createModule(.{
+//         .target = target,
+//         .optimize = optimize,
+//         .link_libc = true,
+//     });
+// 
+//     // Library artifact
+//     const lib = b.addLibrary(.{
         .name = "trinity",
         .linkage = .static,
         .root_module = b.createModule(.{
@@ -1118,8 +1115,6 @@ pub fn build(b: *std.Build) void {
     const b2t_step = b.step("b2t", "Run B2T CLI");
     b2t_step.dependOn(&run_b2t.step);
 
-    // Ralph CLI is in trinity-nexus/tools - run from there:
-    //   cd trinity-nexus/tools && zig build ralph
 
     // Claude UI Demo
     const claude_ui = b.addExecutable(.{
@@ -1953,7 +1948,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "tri_colors", .module = tri_colors_mod },
-            .{ .name = "serve_full", .module = serve_full_mod },
+            , .module = serve_full_mod },
         },
     });
 
