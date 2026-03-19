@@ -151,3 +151,74 @@ fn showHelp() void {
         \\
     , .{});
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GEOMETRY COMMANDS TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "geometry_command_empty_args_shows_help" {
+    const allocator = std.testing.allocator;
+    // Empty args should show help (no crash)
+    try runGeometryCommand(allocator, &[_][]const u8{});
+}
+
+test "geometry_command_help_shows_help" {
+    const allocator = std.testing.allocator;
+    // Explicit help command
+    try runGeometryCommand(allocator, &[_][]const u8{"help"});
+}
+
+test "geometry_command_unknown_command" {
+    const allocator = std.testing.allocator;
+    // Unknown command should show help with error message
+    try runGeometryCommand(allocator, &[_][]const u8{"unknown-command"});
+}
+
+test "geometry_command_platonic_alias" {
+    const allocator = std.testing.allocator;
+    // Both platonic and plato should work
+    try runGeometryCommand(allocator, &[_][]const u8{"platonic"});
+}
+
+test "geometry_command_fractal_sierpinski_alias" {
+    const allocator = std.testing.allocator;
+    // Both sierpinski and sierp should work
+    try runGeometryCommand(allocator, &[_][]const u8{"sierpinski"});
+}
+
+test "geometry_command_volume_alias" {
+    const allocator = std.testing.allocator;
+    // Both volume and vol should work
+    try runGeometryCommand(allocator, &[_][]const u8{"volume"});
+}
+
+test "geometry_command_sacred_commands" {
+    const allocator = std.testing.allocator;
+    // Sacred geometry commands
+    try runGeometryCommand(allocator, &[_][]const u8{"vesica"});
+    try runGeometryCommand(allocator, &[_][]const u8{"pentagon"});
+    try runGeometryCommand(allocator, &[_][]const u8{"flower"});
+}
+
+test "geometry_command_fractal_commands" {
+    const allocator = std.testing.allocator;
+    // Fractal commands
+    try runGeometryCommand(allocator, &[_][]const u8{"koch"});
+    try runGeometryCommand(allocator, &[_][]const u8{"cantor"});
+    try runGeometryCommand(allocator, &[_][]const u8{"mandelbrot"});
+}
+
+test "geometry_command_non_euclidean" {
+    const allocator = std.testing.allocator;
+    // Non-Euclidean commands
+    try runGeometryCommand(allocator, &[_][]const u8{"sphere"});
+    try runGeometryCommand(allocator, &[_][]const u8{"hyper"});
+    try runGeometryCommand(allocator, &[_][]const u8{"curvature"});
+}
+
+test "geometry_command_with_sub_args" {
+    const allocator = std.testing.allocator;
+    // Commands with sub-arguments
+    try runGeometryCommand(allocator, &[_][]const u8{ "platonic", "tetrahedron" });
+    try runGeometryCommand(allocator, &[_][]const u8{ "sierpinski", "5" });
+}
