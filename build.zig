@@ -2003,6 +2003,13 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Firebird Slashing module (DePIN slashing conditions)
+    const firebird_slashing_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/slashing.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -2029,6 +2036,8 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "os", .module = os_mod },
                 // BSD Elliptic Curve Scanner module
                 .{ .name = "bsd", .module = bsd_mod },
+                // Firebird Slashing module (DePIN)
+                .{ .name = "firebird_slashing", .module = firebird_slashing_mod },
                 // P1.6: Registry module for commands export and MCP tools
                 .{ .name = "registry", .module = registry_mod },
                 // DePIN modules for directed discovery (Phase 1.1)
