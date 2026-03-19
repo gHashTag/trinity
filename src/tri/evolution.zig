@@ -202,6 +202,16 @@ const ServiceEntry = struct {
     last_ckpt_step: u32 = 0,
     // O3: Timestamp of last successful log poll (ns since boot, from nanoTimestamp)
     last_poll_ts: i128 = 0,
+    // IGLA Benchmark fields (Phase 3: Multi-Objective Fitness)
+    igla_score: f32 = 0.0, // Overall retrieval score [0,1]
+    igla_last_eval_step: u32 = 0, // Step of last IGLA evaluation
+    igla_format_accuracy: [4]f32 = .{0} ** 4, // By format: STD/BF16/GF16/TF3
+    igla_retrieve_acc: f32 = 0.0, // IGLA-RETRIEVE accuracy
+    igla_multi_acc: f32 = 0.0, // IGLA-MULTI accuracy
+    igla_ternary_acc: f32 = 0.0, // IGLA-TERNARY accuracy
+    igla_chain_acc: f32 = 0.0, // IGLA-CHAIN accuracy
+    igla_latency_ms: f32 = 0.0, // Average latency
+    igla_tok_per_sec: f32 = 0.0, // Inference speed
 
     fn svcId(self: *const ServiceEntry) []const u8 {
         return self.svc_id[0..self.svc_id_len];
@@ -241,6 +251,26 @@ const ServiceEntry = struct {
     fn formatStr(self: *const ServiceEntry) []const u8 {
         if (self.format_len == 0) return "std";
         return self.format[0..self.format_len];
+    }
+
+    // Multi-objective fitness: 60% PPL + 40% IGLA with penalty
+    fn computeIGLAFitness(svc: *const ServiceEntry) f32 {
+        const ppl_weight = 0.6;
+        const igla_weight = 0.4;
+
+        // Normalize PPL: 999 -> 0, 2.0 -> 1
+        const ppl_normalized = if (svc.current_ppl >= 999.0)
+            0.0
+        else
+            @max(0.0, 1.0 - (svc.current_ppl - 2.0) / 997.0);
+
+        // IGLA score: [0,1]
+        const igla_score = @max(0.0, @min(1.0, svc.igla_score));
+
+        // Penalty: if IGLA < 0.5, fitness cut in half
+        const penalty = if (igla_score < 0.5) 0.5 else 0.0;
+
+        return (ppl_weight * ppl_normalized + igla_weight * igla_score) * (1.0 - penalty);
     }
 
     fn parentName(self: *const ServiceEntry) []const u8 {
@@ -2705,8 +2735,8 @@ pub fn mutateConfigEx(leader: *const ServiceEntry, prng_seed: u32, allow_ctx_mut
     // --- Phi scale mutation: 95% inherit, 5% mutate via sacred φ grid (φ^p for p ∈ {-3..3}) ---
     // Only applies to GF16/TF3 formats (zig-hslm sacred quantization)
     const is_gf16_format = std.mem.eql(u8, config.format_str[0..config.format_len], "gf16") or
-                           std.mem.eql(u8, config.format_str[0..config.format_len], "tf3") or
-                           std.mem.eql(u8, config.format_str[0..config.format_len], "gf16tf3");
+        std.mem.eql(u8, config.format_str[0..config.format_len], "tf3") or
+        std.mem.eql(u8, config.format_str[0..config.format_len], "gf16tf3");
     if (is_gf16_format) {
         const rng_phi_scale = mulberry32(prng_seed +% 37);
         if (rng_phi_scale % 20 == 0) {
@@ -2861,7 +2891,7 @@ pub fn mutateConfigSacred(leader: *const ServiceEntry, prng_seed: u32, allow_ctx
 
     // --- Phi scale mutation: sacred φ grid (φ^p for p ∈ {-3..3}) ---
     const is_gf16_format = std.mem.indexOf(u8, leader.format[0..leader.format_len], "gf16") != null or
-                           std.mem.indexOf(u8, leader.format[0..leader.format_len], "tf3") != null;
+        std.mem.indexOf(u8, leader.format[0..leader.format_len], "tf3") != null;
     if (is_gf16_format) {
         const rng_phi_scale = mulberry32(prng_seed +% 47);
         config.phi_scale = SACRED_PHI_SCALES[rng_phi_scale % SACRED_PHI_SCALES.len];
@@ -3278,8 +3308,8 @@ pub fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: 
 
     // Log phi parameters for GF16/TF3 formats (zig-hslm sacred)
     const is_gf16_format = std.mem.eql(u8, format_display, "gf16") or
-                           std.mem.eql(u8, format_display, "tf3") or
-                           std.mem.eql(u8, format_display, "gf16tf3");
+        std.mem.eql(u8, format_display, "tf3") or
+        std.mem.eql(u8, format_display, "gf16tf3");
     if (is_gf16_format) {
         print("  {s}→ phi_scale={d:.3} phi_threshold={d:.3} (zig-hslm sacred){s}\n", .{
             DIM, config.phi_scale, config.phi_threshold, RESET,
@@ -6959,7 +6989,7 @@ fn exportJson(state: *const EvolutionState) void {
     for (state.services[0..state.service_count], 0..) |*svc, si| {
         if (si > 0) print(",", .{});
         print(
-            \\{{"name":"{s}","status":"{s}","ppl":{d:.2},"val_ppl":{d:.2},"step":{d},"gen":{d},"lr":"{s}","batch":"{s}","optimizer":"{s}","grad_clip":{d:.3},"warmup":{d},"context":{d},"objective":"{s}","schedule":"{s}","shard":{d},"seed":{d},"tok_per_sec":{d:.1},"loss":{d:.4},"parent":"{s}"}}
+            \\{{"name":"{s}","status":"{s}","ppl":{d:.2},"val_ppl":{d:.2},"step":{d},"gen":{d},"lr":"{s}","batch":"{s}","optimizer":"{s}","grad_clip":{d:.3},"warmup":{d},"context":{d},"objective":"{s}","schedule":"{s}","shard":{d},"seed":{d},"tok_per_sec":{d:.1},"loss":{d:.4},"parent":"{s}","format":"{s}"}}
         , .{
             svc.svcName(),
             statusToStr(svc.status),
@@ -6980,6 +7010,7 @@ fn exportJson(state: *const EvolutionState) void {
             svc.tok_per_sec,
             svc.current_loss,
             svc.parentName(),
+            svc.formatStr(),
         });
     }
     print("]\n", .{});
