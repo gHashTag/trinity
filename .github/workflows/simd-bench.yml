@@ -14,16 +14,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Install Zig
+      - name: Install Zig and Run Benchmarks
         run: |
           wget https://ziglang.org/download/0.15.2/zig-linux-x86_64-0.15.2.tar.xz || \
           wget https://ziglang.org/download/0.15.2/zig-0.15.2.tar.xz
           tar -xf zig-*.tar.xz
           mv zig-linux-x86_64-0.15.2 zig || mv zig-0.15.2 zig
-          echo "$PWD/zig" >> $GITHUB_PATH
-      
-      - name: Run SIMD Benchmarks
-        run: |
+          export PATH="$PWD/zig:$PATH"
           zig test src/hslm/simd_bench.zig 2>&1 | tee benchmark.txt
       
       - name: Upload Results
