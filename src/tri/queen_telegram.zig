@@ -288,7 +288,7 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
             "/q = /queen";
         tgSend(ctx.tg, msg);
     } else {
-        const msg = std.fmt.bufPrint(&buf, qt.E_HAND ++ " \xd0\x9d\xd0\xb5\xd0\xb8\xd0\xb7\xd0\xb2\xd0\xb5\xd1\x81\xd1\x82\xd0\xbd\xd0\xb0\xd1\x8f \xd0\xba\xd0\xbe\xd0\xbc\xd0\xb0\xd0\xbd\xd0\xb4\xd0\xb0: {s}\n/queen help", .{sub}) catch ""; // Неизвестная команда
+        const msg = std.fmt.bufPrint(&buf, qt.E_HAND ++ " \xd0\x9d\xd0\xb5\xd0\xb8\xd0\xb7\xd0\xb2\xd0\xb5\xd1\x81\xd1\x82\xd0\xbd\xd0\xb0\xd1\x8f \xd0\xba\xd0\xbe\xd0\xbc\xd0\xb0\xd0\xbd\xd0\xb4\xd0\xb0: {s}\n/queen help", .{sub}) catch ""; // Unknown command
         tgSend(ctx.tg, msg);
     }
 }

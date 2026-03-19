@@ -167,23 +167,23 @@ pub fn generatePathsWithIssues(
 
     // === PATH A: SAFE ===
     if (!snapshot.build_ok) {
-        paths[0] = .{ .tier = .safe, .label = "Починить сборку", .action = "zig build 2>&1 | head -20 → fix errors" };
+        paths[0] = .{ .tier = .safe, .label = "Fix build", .action = "zig build 2>&1 | head -20 → fix errors" };
     } else if (snapshot.compile_rate < 80) {
-        paths[0] = .{ .tier = .safe, .label = "Починить генератор", .action = "tri verify → fix failing specs" };
+        paths[0] = .{ .tier = .safe, .label = "Fix generator", .action = "tri verify → fix failing specs" };
     } else if (snapshot.dirty_files > 15) {
-        paths[0] = .{ .tier = .safe, .label = "Зафиксировать прогресс", .action = "git add -A && git commit" };
+        paths[0] = .{ .tier = .safe, .label = "Commit progress", .action = "git add -A && git commit" };
     } else if (snapshot.compile_pass < snapshot.compile_total and snapshot.compile_total > 0) {
         // Try to find a real fix issue
         if (issues.fixIssues()) |issue| {
             const action = std.fmt.bufPrint(&action_bufs[0], "Fix #{d} → compile {d}%→95%+", .{
                 issue.number, snapshot.compile_rate,
             }) catch "/tri audit → fix specs";
-            paths[0] = .{ .tier = .safe, .label = "Починить broken спеки", .action = action };
+            paths[0] = .{ .tier = .safe, .label = "Fix broken specs", .action = action };
         } else {
-            paths[0] = .{ .tier = .safe, .label = "Починить broken спеки", .action = "/tri audit → fix specs → vibee gen" };
+            paths[0] = .{ .tier = .safe, .label = "Fix broken specs", .action = "/tri audit → fix specs → vibee gen" };
         }
     } else {
-        paths[0] = .{ .tier = .safe, .label = "Прогнать тесты", .action = "zig build test" };
+        paths[0] = .{ .tier = .safe, .label = "Run tests", .action = "zig build test" };
     }
 
     // === PATH B: BALANCED ===
@@ -191,9 +191,9 @@ pub fn generatePathsWithIssues(
         const next = nextAgentToWake(snapshot, issues, &action_bufs[1]);
         paths[1] = .{ .tier = .balanced, .label = next.label, .action = next.action };
     } else if (snapshot.compile_rate < 95) {
-        paths[1] = .{ .tier = .balanced, .label = "Довести compile до 95%+", .action = "tri verify → fix remaining specs" };
+        paths[1] = .{ .tier = .balanced, .label = "Bring compile to 95%+", .action = "tri verify → fix remaining specs" };
     } else {
-        paths[1] = .{ .tier = .balanced, .label = "Почистить dirty файлы", .action = "git status → stage & commit" };
+        paths[1] = .{ .tier = .balanced, .label = "Clean dirty files", .action = "git status → stage & commit" };
     }
 
     // === PATH C: BOLD ===
@@ -201,11 +201,11 @@ pub fn generatePathsWithIssues(
         const action = std.fmt.bufPrint(&action_bufs[2], "#{d} {s}", .{
             epic.number, epic.title[0..@min(epic.title.len, 60)],
         }) catch "Swarm + A2A federation";
-        paths[2] = .{ .tier = .bold, .label = "Трансформация", .action = action };
+        paths[2] = .{ .tier = .bold, .label = "Transformation", .action = action };
     } else if (active <= 3) {
-        paths[2] = .{ .tier = .bold, .label = "Запустить Swarm оркестрацию", .action = "Implement #75 → multi-agent routing" };
+        paths[2] = .{ .tier = .bold, .label = "Launch Swarm orchestration", .action = "Implement #75 → multi-agent routing" };
     } else if (snapshot.open_issues > 20) {
-        paths[2] = .{ .tier = .bold, .label = "Автоматизировать issue-triage", .action = "Scholar + Agent TRI → auto-label & prioritize" };
+        paths[2] = .{ .tier = .bold, .label = "Automate issue-triage", .action = "Scholar + Agent TRI → auto-label & prioritize" };
     } else {
         paths[2] = .{ .tier = .bold, .label = "A2A Federation", .action = "Connect Trinity swarm to external A2A agents" };
     }
@@ -217,7 +217,7 @@ fn nextAgentToWake(snapshot: FacultySnapshot, issues: *const IssueSet, buf: *[12
     // Agent TRI → Scholar → Swarm dependency chain
     for (snapshot.agents) |a| {
         if (a.agent == .mu and a.status != .up) {
-            return .{ .label = "Разбудить Agent TRI", .action = "tri mu start → auto error healing" };
+            return .{ .label = "Wake Agent TRI", .action = "tri mu start → auto error healing" };
         }
     }
     for (snapshot.agents) |a| {
@@ -225,17 +225,17 @@ fn nextAgentToWake(snapshot: FacultySnapshot, issues: *const IssueSet, buf: *[12
             // Try to find scholar issue
             if (issues.agentIssue()) |issue| {
                 const action = std.fmt.bufPrint(buf, "#{d} → Faculty 5/6", .{issue.number}) catch "Implement #79 → research agent";
-                return .{ .label = "Нанять Scholar", .action = action };
+                return .{ .label = "Hire Scholar", .action = action };
             }
             return .{ .label = "Нанять Scholar", .action = "Implement #79 → research agent" };
         }
     }
     for (snapshot.agents) |a| {
         if (a.agent == .swarm and a.status != .up) {
-            return .{ .label = "Запустить Swarm", .action = "Implement #75 → task routing" };
+            return .{ .label = "Launch Swarm", .action = "Implement #75 → task routing" };
         }
     }
-    return .{ .label = "Активировать агента", .action = "Выбрать следующий agent из backlog" };
+    return .{ .label = "Activate agent", .action = "Choose next agent from backlog" };
 }
 
 /// Legacy: generate paths without issue data (static strings only).
@@ -281,21 +281,21 @@ test "paths — build broken → fix build first" {
     var paths: [3]Path = undefined;
     const snap = testSnap(false, 85, 3, 5);
     generatePaths(snap, &paths);
-    try std.testing.expect(std.mem.indexOf(u8, paths[0].label, "сборку") != null);
+    try std.testing.expect(std.mem.indexOf(u8, paths[0].label, "build") != null);
 }
 
 test "paths — dirty files → commit" {
     var paths: [3]Path = undefined;
     const snap = testSnap(true, 95, 6, 20);
     generatePaths(snap, &paths);
-    try std.testing.expect(std.mem.indexOf(u8, paths[0].label, "Зафиксировать") != null);
+    try std.testing.expect(std.mem.indexOf(u8, paths[0].label, "Commit") != null);
 }
 
 test "paths — low compile → fix generator" {
     var paths: [3]Path = undefined;
     const snap = testSnap(true, 60, 3, 5);
     generatePaths(snap, &paths);
-    try std.testing.expect(std.mem.indexOf(u8, paths[0].label, "генератор") != null);
+    try std.testing.expect(std.mem.indexOf(u8, paths[0].label, "generator") != null);
 }
 
 test "paths — faculty < 6 → wake agent" {
