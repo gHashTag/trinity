@@ -1405,13 +1405,13 @@ fn runFloatsCommand(allocator: std.mem.Allocator, args: []const []const u8) !voi
     std.debug.print(" IEEE 754 FP16          | 16 |  5 | 10 | 0.118 |          |     4.6 | 3.0\n", .{});
     std.debug.print(" IEEE 754 FP8           |  8 |  4 |  3 | 0.005 |          |     0.2 | 0.9\n", .{});
     std.debug.print(" Brain Float 16        | 16 |  8 |  7 | 0.200 |          |    38.0 | 2.1\n", .{});
-    std.debug.print(" Golden Float 16        | 16 |  6 |  9 | 0.048 | {s}GOLDEN{s} |    14.1 | 2.7\n", .{});
-    std.debug.print(" Ternary Float 32       | 16 |  3 |  5 | 0.018 | {s}GOLDEN{s} |     2.4 | 1.5\n", .{});
-    std.debug.print(" Ternary Float 9        | 18 |  3 |  5 | 0.018 | {s}GOLDEN{s} |     2.4 | 1.5\n", .{});
+    std.debug.print(" Golden Float 16        | 16 |  6 |  9 | 0.048 | {s}GOLDEN{s} |    14.1 | 2.7\n", .{ GOLDEN, RESET });
+    std.debug.print(" Ternary Float 32       | 16 |  3 |  5 | 0.018 | {s}GOLDEN{s} |     2.4 | 1.5\n", .{ GOLDEN, RESET });
+    std.debug.print(" Ternary Float 9        | 18 |  3 |  5 | 0.018 | {s}GOLDEN{s} |     2.4 | 1.5\n", .{ GOLDEN, RESET });
 
     std.debug.print("\n", .{});
     std.debug.print("{s}* Most Golden: Ternary Float 9 (TF3-9) (phi-dist = 0.018){s}\n", .{ GREEN, RESET });
-    std.debug.print("{s}* Target (1/phi): 0.618034\n\n", .{ GREEN });
+    std.debug.print("{s}* Target (1/phi): 0.618034\n\n", .{GREEN});
 }
 
 fn runBSDCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {

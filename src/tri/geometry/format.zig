@@ -91,3 +91,79 @@ pub fn verified(label: []const u8, ok: bool) void {
         std.debug.print("  {s: <22}{s}FAILED{s}\n", .{ label, RED, RESET });
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GEOMETRY FORMAT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "format_colors_defined" {
+    try std.testing.expect(GOLD.len > 0);
+    try std.testing.expect(CYAN.len > 0);
+    try std.testing.expect(PURPLE.len > 0);
+    try std.testing.expect(GREEN.len > 0);
+    try std.testing.expect(WHITE.len > 0);
+    try std.testing.expect(GRAY.len > 0);
+    try std.testing.expect(RED.len > 0);
+    try std.testing.expect(RESET.len > 0);
+    try std.testing.expect(BOLD.len > 0);
+}
+
+test "format_trit_indicator_positive" {
+    // Test positive trit (+1) - should print green +1
+    // Can't easily test output, but can verify function doesn't crash
+    tritIndicator(1);
+}
+
+test "format_trit_indicator_zero" {
+    // Test zero trit (0) - should print cyan 0
+    tritIndicator(0);
+}
+
+test "format_trit_indicator_negative" {
+    // Test negative trit (-1) - should print purple -1
+    tritIndicator(-1);
+}
+
+test "format_trit_indicator_invalid" {
+    // Test invalid trit value
+    tritIndicator(2);
+    tritIndicator(-2);
+}
+
+test "format_label_functions" {
+    // Test all label functions don't crash
+    labelFloat("Test Float", 3.14159);
+    labelFloatUnit("Test Unit", 2.71828, "rad");
+    labelInt("Test Int", 42);
+    labelStr("Test Str", "hello");
+}
+
+test "format_box_functions" {
+    // Test box formatting functions don't crash
+    boxHeader("Test Header");
+    separator();
+    sectionHeader("Test Section");
+    boxFooter();
+}
+
+test "format_trit_result" {
+    // Test trit result with all values
+    tritResult("Positive Test", 1);
+    tritResult("Zero Test", 0);
+    tritResult("Negative Test", -1);
+}
+
+test "format_verified" {
+    // Test verified function
+    verified("Good Test", true);
+    verified("Bad Test", false);
+}
+
+test "format_all_trit_values" {
+    // Verify all valid trit values
+    const trit_values = [_]i8{ -1, 0, 1 };
+    for (trit_values) |v| {
+        tritIndicator(v);
+        tritResult("Test", v);
+    }
+}
