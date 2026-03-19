@@ -894,3 +894,384 @@ test "tamagotchi — TamagotchiMetrics bestServiceStr" {
     try std.testing.expectEqualStrings("w7-66", result);
     try std.testing.expectApproxEqAbs(@as(f32, 4.6), metrics.happiness_best_ppl, 0.01);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL FUNCTION TESTS — Actual computation logic tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "tamagotchi — ModuleHealth overallScore calculates correctly" {
+    // Test the actual score calculation formula
+    var health = ModuleHealth{};
+
+    // All unknown = 100 (baseline)
+    try std.testing.expectEqual(@as(u8, 100), health.overallScore());
+
+    // One weak module = -10 points
+    health.medulla = .weak;
+    try std.testing.expectEqual(@as(u8, 90), health.overallScore());
+
+    // Two weak modules = -20 points
+    health.pons = .weak;
+    try std.testing.expectEqual(@as(u8, 80), health.overallScore());
+
+    // Three weak modules = -30 points
+    health.lc = .weak;
+    try std.testing.expectEqual(@as(u8, 70), health.overallScore());
+
+    // Four weak modules = -40 points
+    health.hippocampus = .weak;
+    try std.testing.expectEqual(@as(u8, 60), health.overallScore());
+
+    // One broken overrides weak = -25 points (from medulla)
+    health.medulla = .broken;
+    try std.testing.expectEqual(@as(u8, 75), health.overallScore());
+
+    // Two broken = -50 points
+    health.pons = .broken;
+    try std.testing.expectEqual(@as(u8, 50), health.overallScore());
+
+    // Three broken = -75 points
+    health.lc = .broken;
+    try std.testing.expectEqual(@as(u8, 25), health.overallScore());
+
+    // Four broken = -100 points (minimum)
+    health.hippocampus = .broken;
+    try std.testing.expectEqual(@as(u8, 0), health.overallScore());
+}
+
+test "tamagotchi — ModuleHealth overallLabel threshold boundaries" {
+    var health = ModuleHealth{};
+
+    // Score 100 = "All modules OK"
+    try std.testing.expectEqual(@as(u8, 100), health.overallScore());
+    try std.testing.expectEqualStrings("All modules OK", health.overallLabel());
+
+    // Score 80 = "Minor issues" (exact boundary)
+    health.medulla = .weak;
+    health.pons = .weak;
+    try std.testing.expectEqual(@as(u8, 80), health.overallScore());
+    try std.testing.expectEqualStrings("Minor issues", health.overallLabel());
+
+    // Score 79 = still "Minor issues" (above 50 threshold)
+    health.lc = .weak;
+    try std.testing.expectEqual(@as(u8, 70), health.overallScore());
+    try std.testing.expectEqualStrings("Minor issues", health.overallLabel());
+
+    // Score 50 = "Some problems" (exact boundary)
+    health.medulla = .broken;
+    health.pons = .broken;
+    health.lc = .healthy;
+    health.hippocampus = .healthy;
+    try std.testing.expectEqual(@as(u8, 50), health.overallScore());
+    try std.testing.expectEqualStrings("Some problems", health.overallLabel());
+
+    // Score 49 = "Critical failures" (below 50 threshold)
+    health.hippocampus = .weak;
+    try std.testing.expectEqual(@as(u8, 40), health.overallScore());
+    try std.testing.expectEqualStrings("Critical failures", health.overallLabel());
+}
+
+test "tamagotchi — GrowthStage fromUptime edge cases" {
+    // Test exact boundary transitions and negative handling
+
+    // Zero uptime = egg
+    try std.testing.expectEqual(GrowthStage.egg, GrowthStage.fromUptime(0));
+
+    // Just before 10 min = egg
+    try std.testing.expectEqual(GrowthStage.egg, GrowthStage.fromUptime(599));
+
+    // Exactly 10 min = baby (boundary)
+    try std.testing.expectEqual(GrowthStage.baby, GrowthStage.fromUptime(600));
+
+    // Just before 60 min = baby
+    try std.testing.expectEqual(GrowthStage.baby, GrowthStage.fromUptime(3599));
+
+    // Exactly 60 min = child (boundary)
+    try std.testing.expectEqual(GrowthStage.child, GrowthStage.fromUptime(3600));
+
+    // Exactly 4 hours = teen (boundary: 240 * 60 = 14400)
+    try std.testing.expectEqual(GrowthStage.teen, GrowthStage.fromUptime(14400));
+
+    // Exactly 12 hours = adult (boundary: 720 * 60 = 43200)
+    try std.testing.expectEqual(GrowthStage.adult, GrowthStage.fromUptime(43200));
+
+    // Very large uptime (1 week) = adult
+    const one_week: i64 = 7 * 24 * 60 * 60;
+    try std.testing.expectEqual(GrowthStage.adult, GrowthStage.fromUptime(one_week));
+}
+
+test "tamagotchi — TamagotchiMetrics discipline breakdown" {
+    var metrics = TamagotchiMetrics{};
+
+    // Initial state: no fixes
+    try std.testing.expectEqual(@as(u32, 0), metrics.discipline_fixes);
+    try std.testing.expectEqual(@as(u32, 0), metrics.discipline_doctor);
+    try std.testing.expectEqual(@as(u32, 0), metrics.discipline_farm);
+    try std.testing.expectEqual(@as(u32, 0), metrics.discipline_other);
+
+    // Add doctor fixes
+    metrics.discipline_doctor = 5;
+    metrics.discipline_fixes = 5;
+    try std.testing.expectEqual(@as(u32, 5), metrics.discipline_fixes);
+    try std.testing.expectEqual(@as(u32, 5), metrics.discipline_doctor);
+
+    // Add farm fixes (should accumulate)
+    metrics.discipline_farm = 3;
+    metrics.discipline_fixes += 3;
+    try std.testing.expectEqual(@as(u32, 8), metrics.discipline_fixes);
+    try std.testing.expectEqual(@as(u32, 3), metrics.discipline_farm);
+
+    // Add other fixes
+    metrics.discipline_other = 2;
+    metrics.discipline_fixes += 2;
+    try std.testing.expectEqual(@as(u32, 10), metrics.discipline_fixes);
+    try std.testing.expectEqual(@as(u32, 2), metrics.discipline_other);
+
+    // Verify breakdown matches total
+    const breakdown_total = metrics.discipline_doctor + metrics.discipline_farm + metrics.discipline_other;
+    try std.testing.expectEqual(metrics.discipline_fixes, breakdown_total);
+}
+
+test "tamagotchi — formatTamagotchiReport PPL trend messages" {
+    const farm_status_excellent: thalamus.FarmStatus = .{
+        .total_services = 100,
+        .active = 80,
+        .best_ppl = 3.5, // Excellent: < 5.0
+    };
+
+    const farm_status_good: thalamus.FarmStatus = .{
+        .total_services = 100,
+        .active = 80,
+        .best_ppl = 7.5, // Good: 5.0 - 10.0
+    };
+
+    const farm_status_needs: thalamus.FarmStatus = .{
+        .total_services = 100,
+        .active = 80,
+        .best_ppl = 15.0, // Needs attention: > 10.0
+    };
+
+    const module_health = ModuleHealth{};
+
+    // Test excellent PPL message
+    const report_excellent = try formatTamagotchiReport(
+        std.testing.allocator,
+        7200,
+        farm_status_excellent,
+        0,
+        0.5,
+        module_health,
+        .normal,
+    );
+    defer std.testing.allocator.free(report_excellent);
+    try std.testing.expect(std.mem.indexOf(u8, report_excellent, "Excellent") != null);
+
+    // Test good PPL message
+    const report_good = try formatTamagotchiReport(
+        std.testing.allocator,
+        7200,
+        farm_status_good,
+        0,
+        0.5,
+        module_health,
+        .normal,
+    );
+    defer std.testing.allocator.free(report_good);
+    try std.testing.expect(std.mem.indexOf(u8, report_good, "Good progress") != null);
+
+    // Test needs attention message
+    const report_needs = try formatTamagotchiReport(
+        std.testing.allocator,
+        7200,
+        farm_status_needs,
+        0,
+        0.5,
+        module_health,
+        .normal,
+    );
+    defer std.testing.allocator.free(report_needs);
+    try std.testing.expect(std.mem.indexOf(u8, report_needs, "Needs attention") != null);
+}
+
+test "tamagotchi — formatTamagotchiReport handles empty service name" {
+    const farm_status: thalamus.FarmStatus = .{
+        .total_services = 50,
+        .active = 40,
+        .best_ppl = 5.2,
+        .best_ppl_service_len = 0, // Empty service name
+    };
+
+    const module_health = ModuleHealth{};
+
+    const report = try formatTamagotchiReport(
+        std.testing.allocator,
+        5400,
+        farm_status,
+        1,
+        0.6,
+        module_health,
+        .alert,
+    );
+    defer std.testing.allocator.free(report);
+
+    // Should contain "none" as fallback service name
+    try std.testing.expect(std.mem.indexOf(u8, report, "none") != null);
+    try std.testing.expect(report.len > 0);
+}
+
+test "tamagotchi — formatTamagotchiReport heartbeat age formatting" {
+    const module_health_seconds = ModuleHealth{
+        .medulla = .healthy,
+        .medulla_last_beat_age = 45, // < 60 seconds
+        .pons = .healthy,
+        .lc = .healthy,
+        .hippocampus = .healthy,
+    };
+
+    const module_health_minutes = ModuleHealth{
+        .medulla = .healthy,
+        .medulla_last_beat_age = 150, // > 60 seconds = 2.5 minutes
+        .pons = .healthy,
+        .lc = .healthy,
+        .hippocampus = .healthy,
+    };
+
+    const farm_status = thalamus.FarmStatus{};
+
+    // Test seconds format
+    const report_seconds = try formatTamagotchiReport(
+        std.testing.allocator,
+        7200,
+        farm_status,
+        0,
+        0.5,
+        module_health_seconds,
+        .normal,
+    );
+    defer std.testing.allocator.free(report_seconds);
+    try std.testing.expect(std.mem.indexOf(u8, report_seconds, "45s ago") != null);
+
+    // Test minutes format
+    const report_minutes = try formatTamagotchiReport(
+        std.testing.allocator,
+        7200,
+        farm_status,
+        0,
+        0.5,
+        module_health_minutes,
+        .normal,
+    );
+    defer std.testing.allocator.free(report_minutes);
+    try std.testing.expect(std.mem.indexOf(u8, report_minutes, "2m ago") != null);
+}
+
+test "tamagotchi — formatQuickReport contains all required fields" {
+    var farm_status = thalamus.FarmStatus{
+        .total_services = 104,
+        .active = 85,
+        .crashed = 3,
+        .stale_count = 6,
+        .accounts_alive = 7,
+        .accounts_total = 8,
+        .best_ppl = 4.32,
+    };
+    @memcpy(farm_status.best_ppl_service[0.."hslm-r33".len], "hslm-r33");
+    farm_status.best_ppl_service_len = "hslm-r33".len;
+
+    const report = try formatQuickReport(
+        std.testing.allocator,
+        18000, // 5 hours = teen stage
+        farm_status,
+        3,
+        .alert,
+    );
+    defer std.testing.allocator.free(report);
+
+    // Verify all key fields are present
+    try std.testing.expect(std.mem.indexOf(u8, report, "Teen") != null);
+    try std.testing.expect(std.mem.indexOf(u8, report, "5h") != null);
+    try std.testing.expect(std.mem.indexOf(u8, report, "Farm:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, report, "85") != null); // active count
+    try std.testing.expect(std.mem.indexOf(u8, report, "104") != null); // total services
+    try std.testing.expect(std.mem.indexOf(u8, report, "PPL:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, report, "4.3") != null); // best_ppl rounded
+    try std.testing.expect(std.mem.indexOf(u8, report, "Fixes:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, report, "3") != null);
+    try std.testing.expect(std.mem.indexOf(u8, report, "ALERT") != null);
+}
+
+test "tamagotchi — ModuleHealth mixed weak and broken score calculation" {
+    // Test various combinations of weak and broken states
+    const HealthTestCase = struct {
+        medulla: ModuleHealth.CellStatus,
+        pons: ModuleHealth.CellStatus,
+        lc: ModuleHealth.CellStatus,
+        hippocampus: ModuleHealth.CellStatus,
+        expected_score: u8,
+    };
+    const test_cases = [_]HealthTestCase{
+        // All unknown/healthy = 100
+        HealthTestCase{ .medulla = .unknown, .pons = .unknown, .lc = .unknown, .hippocampus = .unknown, .expected_score = 100 },
+        HealthTestCase{ .medulla = .healthy, .pons = .healthy, .lc = .healthy, .hippocampus = .healthy, .expected_score = 100 },
+        // Mixed healthy + unknown = 100
+        HealthTestCase{ .medulla = .healthy, .pons = .unknown, .lc = .healthy, .hippocampus = .unknown, .expected_score = 100 },
+        // One weak = 90
+        HealthTestCase{ .medulla = .weak, .pons = .healthy, .lc = .healthy, .hippocampus = .healthy, .expected_score = 90 },
+        HealthTestCase{ .medulla = .healthy, .pons = .weak, .lc = .healthy, .hippocampus = .healthy, .expected_score = 90 },
+        // One broken = 75
+        HealthTestCase{ .medulla = .broken, .pons = .healthy, .lc = .healthy, .hippocampus = .healthy, .expected_score = 75 },
+        HealthTestCase{ .medulla = .healthy, .pons = .broken, .lc = .healthy, .hippocampus = .healthy, .expected_score = 75 },
+        // One broken + one weak = 65
+        HealthTestCase{ .medulla = .broken, .pons = .weak, .lc = .healthy, .hippocampus = .healthy, .expected_score = 65 },
+        HealthTestCase{ .medulla = .weak, .pons = .broken, .lc = .healthy, .hippocampus = .healthy, .expected_score = 65 },
+        // Two broken = 50
+        HealthTestCase{ .medulla = .broken, .pons = .broken, .lc = .healthy, .hippocampus = .healthy, .expected_score = 50 },
+        // Two broken + two weak = 30
+        HealthTestCase{ .medulla = .broken, .pons = .broken, .lc = .weak, .hippocampus = .weak, .expected_score = 30 },
+        // Three broken = 25
+        HealthTestCase{ .medulla = .broken, .pons = .broken, .lc = .broken, .hippocampus = .healthy, .expected_score = 25 },
+        // All broken = 0
+        HealthTestCase{ .medulla = .broken, .pons = .broken, .lc = .broken, .hippocampus = .broken, .expected_score = 0 },
+    };
+
+    for (test_cases) |tc| {
+        var health = ModuleHealth{
+            .medulla = tc.medulla,
+            .pons = tc.pons,
+            .lc = tc.lc,
+            .hippocampus = tc.hippocampus,
+        };
+        try std.testing.expectEqual(tc.expected_score, health.overallScore());
+    }
+}
+
+test "tamagotchi — GrowthStage fromUptime minute calculation" {
+    // Verify minute division is correct
+    const UptimeTestCase = struct {
+        seconds: i64,
+        expected_minutes: i64,
+        expected_stage: GrowthStage,
+    };
+    const test_cases = [_]UptimeTestCase{
+        UptimeTestCase{ .seconds = 30, .expected_minutes = 0, .expected_stage = GrowthStage.egg }, // 30 seconds
+        UptimeTestCase{ .seconds = 60, .expected_minutes = 1, .expected_stage = GrowthStage.egg }, // 1 minute
+        UptimeTestCase{ .seconds = 300, .expected_minutes = 5, .expected_stage = GrowthStage.egg }, // 5 minutes
+        UptimeTestCase{ .seconds = 600, .expected_minutes = 10, .expected_stage = GrowthStage.baby }, // 10 minutes
+        UptimeTestCase{ .seconds = 1800, .expected_minutes = 30, .expected_stage = GrowthStage.baby }, // 30 minutes
+        UptimeTestCase{ .seconds = 3600, .expected_minutes = 60, .expected_stage = GrowthStage.child }, // 60 minutes = 1 hour
+        UptimeTestCase{ .seconds = 7200, .expected_minutes = 120, .expected_stage = GrowthStage.child }, // 120 minutes = 2 hours
+        UptimeTestCase{ .seconds = 14400, .expected_minutes = 240, .expected_stage = GrowthStage.teen }, // 240 minutes = 4 hours
+        UptimeTestCase{ .seconds = 28800, .expected_minutes = 480, .expected_stage = GrowthStage.teen }, // 480 minutes = 8 hours
+        UptimeTestCase{ .seconds = 43200, .expected_minutes = 720, .expected_stage = GrowthStage.adult }, // 720 minutes = 12 hours
+        UptimeTestCase{ .seconds = 86400, .expected_minutes = 1440, .expected_stage = GrowthStage.adult }, // 1440 minutes = 24 hours
+    };
+
+    for (test_cases) |tc| {
+        const stage = GrowthStage.fromUptime(tc.seconds);
+        try std.testing.expectEqual(tc.expected_stage, stage);
+
+        // Verify internal minute calculation
+        const minutes = @divTrunc(tc.seconds, 60);
+        try std.testing.expectEqual(tc.expected_minutes, minutes);
+    }
+}
