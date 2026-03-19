@@ -52,7 +52,8 @@ pub const PrefrontalCortex = struct {
         // Check queue depth
         const queue_per_agent = if (ctx.active_agents > 0)
             @as(f32, @floatFromInt(ctx.task_count)) / @as(f32, @floatFromInt(ctx.active_agents))
-        else 0;
+        else
+            0;
 
         if (queue_per_agent > 10) {
             if (action == .proceed) action = .scale_up;

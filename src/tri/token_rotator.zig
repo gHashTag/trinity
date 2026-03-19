@@ -168,12 +168,11 @@ pub const TokenRotator = struct {
         const state_dir = std.fs.path.dirname(self.state_file) orelse ".";
         try fs.cwd().makePath(state_dir);
 
-        var file = try fs.cwd().createFile(self.state_file, .{ .mode = 0o600 });
-        defer file.close();
+        var buffer = std.ArrayList(u8).initCapacity(self.allocator, 1024) catch return error.OutOfMemory;
+        defer buffer.deinit(self.allocator);
 
-        const writer = file.writer();
-
-        try writer.writeAll("{\n");
+        const writer = buffer.writer(self.allocator);
+        try writer.print("{{\n", .{});
         try writer.print("  \"current_index\": {},\n", .{self.current_index});
         try writer.print("  \"total_rotations\": {},\n", .{self.total_rotations});
         try writer.print("  \"last_rotation\": {},\n", .{self.last_rotation});
@@ -206,7 +205,9 @@ pub const TokenRotator = struct {
         try writer.writeAll("  ]\n");
         try writer.writeAll("}\n");
 
-        try file.flush();
+        var file = try fs.cwd().createFile(self.state_file, .{ .mode = 0o600 });
+        defer file.close();
+        try file.writeAll(buffer.items);
     }
 
     pub fn load(self: *TokenRotator) !void {

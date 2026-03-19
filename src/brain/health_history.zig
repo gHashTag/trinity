@@ -110,7 +110,7 @@ pub const BrainHealthHistory = struct {
         if (std.mem.indexOf(u8, json, "\"health\":")) |pos| {
             const start = pos + 9;
             if (std.mem.indexOf(u8, json[start..], ",")) |end| {
-                const score_str = json[start..start + end];
+                const score_str = json[start .. start + end];
                 snapshot.health_score = try std.fmt.parseFloat(f32, score_str);
             }
         }
@@ -118,7 +118,7 @@ pub const BrainHealthHistory = struct {
         // Extract healthy
         if (std.mem.indexOf(u8, json, "\"ok\":")) |pos| {
             const start = pos + 5;
-            const val = json[start..start + 4];
+            const val = json[start .. start + 4];
             snapshot.healthy = std.mem.eql(u8, val, "true");
         }
 
