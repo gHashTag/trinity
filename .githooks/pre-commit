@@ -1,45 +1,112 @@
 #!/bin/bash
-# ═══════════════════════════════════════════════════════════════════════════
-# VIBEE PRE-COMMIT HOOK - ЗАПРЕТ LEGACY ФАЙЛОВ
-# ═══════════════════════════════════════════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRINITY PRE-COMMIT HOOK — φ-Validation
+# ═══════════════════════════════════════════════════════════════════════════════
 #
-# СВЯЩЕННАЯ ФОРМУЛА: V = n × 3^k × π^m × φ^p × e^q
-# ЗОЛОТАЯ ИДЕНТИЧНОСТЬ: φ² + 1/φ² = 3
+# Validates sacred constants and FPGA specs before commit.
+# Prevents broken commits from reaching main.
 #
-# ПРАВИЛО: .vibee → .999 → runtime.html
-# ═══════════════════════════════════════════════════════════════════════════
+# φ² + 1/φ² = 3 = TRINITY
+#
+# Installation:
+#   cp .git/hooks/pre-commit.trinity .git/hooks/pre-commit
+#   chmod +x .git/hooks/pre-commit
+#
+# ═══════════════════════════════════════════════════════════════════════════════
 
+set -e
+
+# Colors
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-NC='\033[0m'
+YELLOW='\033[0;33m'
+CYAN='\033[0;36m'
+RESET='\033[0m'
 
-echo "VIBEE PRE-COMMIT: Checking for forbidden files..."
+echo -e "${CYAN}═══════════════════════════════════════════════════════════════${RESET}"
+echo -e "${CYAN}  TRINITY PRE-COMMIT VALIDATION${RESET}"
+echo -e "${CYAN}═══════════════════════════════════════════════════════════════${RESET}"
+echo ""
 
-STAGED_FILES=$(git diff --cached --name-only --diff-filter=ACM)
-ERRORS=0
+# ═══════════════════════════════════════════════════════════════════════════════
+# 1. SACRED CONSTANTS VALIDATION
+# ═══════════════════════════════════════════════════════════════════════════════
+echo -e "[1/3] ${YELLOW}Sacred Constants Validation${RESET}..."
 
-for FILE in $STAGED_FILES; do
-    EXT="${FILE##*.}"
-    
-    case "$EXT" in
-        html)
-            if [[ "$FILE" != "runtime/runtime.html" ]]; then
-                echo -e "${RED}FORBIDDEN: $FILE - HTML files not allowed${NC}"
-                ERRORS=$((ERRORS + 1))
-            fi
-            ;;
-        css|js|ts|jsx|tsx)
-            echo -e "${RED}FORBIDDEN: $FILE - Legacy file type${NC}"
-            ERRORS=$((ERRORS + 1))
-            ;;
-    esac
-done
-
-if [ $ERRORS -gt 0 ]; then
-    echo "COMMIT BLOCKED: $ERRORS forbidden files found"
-    echo "Use: .vibee -> .999 -> runtime.html"
-    exit 1
+if [ -f "fpga/openxc7-synth/sacred_constants.zig" ]; then
+    cd fpga/openxc7-synth
+    # Use working zig 0.15.2 from Homebrew (default zig has dyld issues)
+    ZIG_BIN="/opt/homebrew/Cellar/zig/0.15.2/bin/zig"
+    if [ ! -f "$ZIG_BIN" ]; then
+        ZIG_BIN="zig"  # Fallback to PATH
+    fi
+    if $ZIG_BIN test sacred_constants.zig > /tmp/sacred_test.log 2>&1; then
+        echo -e "     ${GREEN}✓${RESET} All sacred constants tests passed"
+    else
+        echo -e "     ${RED}✗${RESET} Sacred constants tests failed!"
+        echo -e "     ${YELLOW}Run:${RESET} cd fpga/openxc7-synth && zig test sacred_constants.zig"
+        cat /tmp/sacred_test.log
+        exit 1
+    fi
+    cd ../..
+else
+    echo -e "     ${YELLOW}⊘${RESET} Sacred constants not found (skipped)"
 fi
 
-echo -e "${GREEN}OK: All files comply with VIBEE rules${NC}"
+# ═══════════════════════════════════════════════════════════════════════════════
+# 2. CHANGED FPGA SPEC VALIDATION
+# ═══════════════════════════════════════════════════════════════════════════════
+echo -e "[2/3] ${YELLOW}FPGA Spec Validation${RESET}..."
+
+CHANGED_SPECS=$(git diff --cached --name-only --diff-filter=ACM | grep 'specs/fpga/.*\.vibee$' || true)
+
+if [ -n "$CHANGED_SPECS" ]; then
+    # Build TRI if needed
+    if [ ! -f "zig-out/bin/tri" ]; then
+        echo -e "     Building TRI..."
+        zig build tri > /dev/null 2>&1
+    fi
+
+    for spec in $CHANGED_SPECS; do
+        spec_name=$(basename "$spec")
+        echo -ne "     Testing $spec_name ... "
+
+        # Test VIBEE generation
+        if timeout 60 ./zig-out/bin/tri fpga gen "$spec" > /tmp/vibee_test.log 2>&1; then
+            echo -e "${GREEN}✓${RESET}"
+        else
+            echo -e "${RED}✗${RESET}"
+            echo -e "     ${YELLOW}Error:${RESET} VIBEE generation failed for $spec_name"
+            cat /tmp/vibee_test.log
+            exit 1
+        fi
+    done
+else
+    echo -e "     ${YELLOW}⊘${RESET} No FPGA specs changed"
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 3. FORMAT CHECK
+# ═══════════════════════════════════════════════════════════════════════════════
+echo -e "[3/3] ${YELLOW}Code Format Check${RESET}..."
+
+if zig fmt --check src/ > /dev/null 2>&1; then
+    echo -e "     ${GREEN}✓${RESET} All code formatted"
+else
+    echo -e "     ${YELLOW}⚠${RESET} Code formatting issues found"
+    echo -e "     ${YELLOW}Run:${RESET} zig fmt src/"
+    # Don't fail on format issues, just warn
+fi
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SUMMARY
+# ═══════════════════════════════════════════════════════════════════════════════
+echo ""
+echo -e "${CYAN}═══════════════════════════════════════════════════════════════${RESET}"
+echo -e "${GREEN}  ✓ PRE-COMMIT VALIDATION COMPLETE${RESET}"
+echo -e "${CYAN}═══════════════════════════════════════════════════════════════${RESET}"
+echo ""
+echo -e "${CYAN}φ² + 1/φ² = 3 = TRINITY${RESET}"
+echo ""
+
 exit 0
