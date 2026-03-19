@@ -2012,7 +2012,7 @@ struct ChatScreen: View {
                     showMentionPopup = query != nil
                 }
             )
-            .frame(height: 44)  // ФИКС: фиксированная высота инпута
+            .frame(height: 24)  // ФИКС: фиксированная высота — однострочный инпут
             .padding(.horizontal, LayoutConstants.cardPadding)
             .padding(.vertical, 14)
 
@@ -2123,6 +2123,7 @@ struct ChatScreen: View {
                 )
         )
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
+        .frame(height: 52)  // ФИКС: фиксирую высоту всего inputBarView
     }
     }
 
@@ -5193,25 +5194,27 @@ struct MultilineInput: NSViewRepresentable {
         textView.textColor = .white
         textView.backgroundColor = .clear
         textView.drawsBackground = false
-        textView.isVerticallyResizable = true
+        // ФИКС: отключаем вертикальное изменение размера
+        textView.isVerticallyResizable = false
         textView.isHorizontallyResizable = false
-        // ФИКС: ограничиваем максимальную высоту контейнера текста
-        textView.textContainer?.containerSize = NSSize(width: 0, height: 150)  // было greatestFiniteMagnitude
+        // ФИКС: устанавливаем фиксированный размер контейнера
+        textView.textContainer?.containerSize = NSSize(width: 0, height: 24)
+        textView.textContainer?.heightTracksTextView = false
         textView.textContainer?.widthTracksTextView = true
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.insertionPointColor = .white
+        // ФИКС: устанавливаем фиксированный фрейм
+        textView.setFrameSize(NSSize(width: 400, height: 24))
 
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = false
         scrollView.hasHorizontalScroller = false
         scrollView.drawsBackground = false
         scrollView.borderType = .noBorder
-
-        // ФИКС: ограничиваем высоту самого scroll view
-        scrollView.heightAnchor.constraint lessThanOrEqualToConstant: 150
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        // ФИКС: фиксируем размер scrollview
+        scrollView.setFrameSize(NSSize(width: 400, height: 24))
 
         context.coordinator.textView = textView
         return scrollView

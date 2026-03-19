@@ -31,6 +31,7 @@ const Account = farm_accounts_mod.Account;
 const depin_network = @import("depin_network");
 const depin_bootstrap = @import("depin_bootstrap");
 const depin_persistence = @import("depin_persistence");
+const firebird_slashing = @import("firebird_slashing");
 
 const print = std.debug.print;
 
@@ -83,6 +84,8 @@ pub fn runDepinCommand(allocator: Allocator, args: []const []const u8) !void {
         try runDepinDiscover(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "peers")) {
         try runDepinPeers(allocator);
+    } else if (std.mem.eql(u8, subcmd, "slash")) {
+        try runDepinSlash(allocator, args[1..]);
     } else if (std.mem.eql(u8, subcmd, "help") or std.mem.eql(u8, subcmd, "--help")) {
         printHelp();
     } else {
@@ -363,17 +366,91 @@ fn classifyNode(name: []const u8) NodeType {
 }
 
 fn printHelp() void {
-    print("\n{s}🌐 DePIN NODE PROTOCOL (Phase 1.1){s}\n", .{ BOLD, RESET });
+    print("\n{s}🌐 DePIN NODE PROTOCOL (Phase 2 - Security Layer){s}\n", .{ BOLD, RESET });
     print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
     print("  {s}status{s}    Network overview dashboard\n", .{ CYAN, RESET });
     print("  {s}nodes{s}     List all nodes with type/status\n", .{ CYAN, RESET });
     print("  {s}fitness{s}   Aggregate fitness by node type\n", .{ CYAN, RESET });
     print("  {s}discover{s}  Directed discovery to bootstrap peer\n", .{ CYAN, RESET });
     print("  {s}peers{s}     List known peers with quality scores\n", .{ CYAN, RESET });
+    print("  {s}slash{s}     Apply penalty to a node\n", .{ RED, RESET });
     print("\n  Usage: {s}tri depin <command>{s}\n", .{ BOLD, RESET });
     print("\n  {s}Examples:{s}\n", .{ DIM, RESET });
     print("    tri depin discover --bootstrap 1.2.3.4:9333\n", .{});
     print("    tri depin peers\n", .{});
+    print("    tri depin slash --node abc123 --reason downtime\n", .{});
+    print("\n  {s}Violation types:{s}\n", .{ DIM, RESET });
+    print("    downtime           - Temporary downtime (5%% penalty)\n", .{});
+    print("    repeated_downtime - Repeated downtime (10%% penalty)\n", .{});
+    print("    extended_downtime  - Extended downtime (20%% penalty)\n", .{});
+    print("    double_spend       - Double-spending (50%% penalty)\n", .{});
+    print("    fraud              - Fraud (100%% penalty)\n", .{});
+    print("\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SLASH — Apply penalty to a node
+// ═══════════════════════════════════════════════════════════════════════════════
+
+fn runDepinSlash(allocator: Allocator, args: []const []const u8) !void {
+    print("\n{s}⚔️ DePIN SLASHING ENGINE{s}\n", .{ BOLD, RESET });
+    print("{s}════════════════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
+
+    // Parse arguments
+    var node_id: ?[]const u8 = null;
+    var violation_str: ?[]const u8 = null;
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--node") and i + 1 < args.len) {
+            node_id = args[i + 1];
+            i += 1;
+        } else if (std.mem.eql(u8, args[i], "--reason") and i + 1 < args.len) {
+            violation_str = args[i + 1];
+            i += 1;
+        }
+    }
+
+    if (node_id == null) {
+        print("{s}Error: --node argument is required{s}\n", .{ RED, RESET });
+        print("{s}Usage: tri depin slash --node <id> --reason <violation>{s}\n\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    if (violation_str == null) {
+        print("{s}Error: --reason argument is required{s}\n", .{ RED, RESET });
+        print("{s}Usage: tri depin slash --node <id> --reason <violation>{s}\n\n", .{ YELLOW, RESET });
+        return;
+    }
+
+    // Parse violation type
+    const violation = firebird_slashing.SlashingEngine.parseViolationType(violation_str.?) orelse {
+        print("{s}Error: Invalid violation type: {s}{s}\n", .{ RED, violation_str.?, RESET });
+        print("{s}Valid types: downtime, repeated_downtime, extended_downtime, double_spend, fraud{s}\n\n", .{ DIM, RESET });
+        return;
+    };
+
+    // Initialize slashing engine
+    var engine = firebird_slashing.SlashingEngine.init(allocator);
+    defer engine.deinit();
+
+    // Calculate slash amount (assuming 24h uptime for demo)
+    const uptime_hours: f64 = 24.0;
+    const amount = engine.calculateSlash(violation, uptime_hours);
+    const penalty_pct = firebird_slashing.SlashingEngine.getPenaltyPercentage(violation) * 100.0;
+
+    print("  {s}Node ID:{s}      {s}\n", .{ CYAN, RESET, node_id.? });
+    print("  {s}Violation:{s}    {s}{s}{s}\n", .{ CYAN, RESET, RED, @tagName(violation), RESET });
+    print("  {s}Penalty:{s}      {s}{d:.1}%%{s}\n", .{ CYAN, RESET, YELLOW, penalty_pct, RESET });
+    print("  {s}Amount:{s}       {s}{d} TRI wei{s}\n", .{ CYAN, RESET, BOLD, amount, RESET });
+    print("\n", .{});
+
+    // Simulate applying slash (in real implementation, this would update blockchain)
+    print("  {s}⚠️  SIMULATION MODE - No actual slashing performed{s}\n", .{ YELLOW, RESET });
+    print("  {s}In production, this would:{s}\n", .{ DIM, RESET });
+    print("    1. Burn tokens from node's stake\n", .{});
+    print("    2. Record violation in slashing log\n", .{});
+    print("    3. Update node quality score\n", .{});
     print("\n", .{});
 }
 

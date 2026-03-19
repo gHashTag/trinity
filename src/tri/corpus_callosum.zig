@@ -944,4 +944,3 @@ test "corpus_callosum — Signal isAlert boundary cases" {
     };
     try std.testing.expect(!normal_sig.isAlert());
 }
-

@@ -252,7 +252,7 @@ test "F16ShadowStorage addGradient" {
     storage.weights[0] = 1.0;
     storage.weights[1] = 2.0;
 
-    storage.addGradient(&[_]f16{0.5, -1.0, 0.25});
+    storage.addGradient(&[_]f16{ 0.5, -1.0, 0.25 });
 
     const w0: f32 = storage.weights[0];
     const w1: f32 = storage.weights[1];
@@ -264,8 +264,8 @@ test "F16ShadowStorage addGradient" {
 test "F16ShadowStorage quantizeToTernary positive" {
     var storage = F16ShadowStorage.init();
     storage.weights[0] = 1.5; // > 0.5 -> +1
-    storage.weights[1] = 0.8;  // > 0.5 -> +1
-    storage.weights[2] = 0.2;  // < 0.5 -> 0
+    storage.weights[1] = 0.8; // > 0.5 -> +1
+    storage.weights[2] = 0.2; // < 0.5 -> 0
 
     const result = storage.quantizeToTernary();
 
@@ -278,8 +278,8 @@ test "F16ShadowStorage quantizeToTernary positive" {
 test "F16ShadowStorage quantizeToTernary negative" {
     var storage = F16ShadowStorage.init();
     storage.weights[0] = -1.5; // < -0.5 -> -1
-    storage.weights[1] = -0.8;  // < -0.5 -> -1
-    storage.weights[2] = -0.2;  // > -0.5 -> 0
+    storage.weights[1] = -0.8; // < -0.5 -> -1
+    storage.weights[2] = -0.2; // > -0.5 -> 0
 
     const result = storage.quantizeToTernary();
 
@@ -291,7 +291,7 @@ test "F16ShadowStorage quantizeToTernary negative" {
 test "F16ShadowStorage quantizeToTernary nearZero" {
     var storage = F16ShadowStorage.init();
     storage.weights[0] = @as(f16, 1e-7); // Near zero -> 0
-    storage.weights[1] = 0.0;   // Exactly zero -> 0
+    storage.weights[1] = 0.0; // Exactly zero -> 0
     storage.weights[2] = @as(f16, -1e-8); // Near zero -> 0
 
     const result = storage.quantizeToTernary();
