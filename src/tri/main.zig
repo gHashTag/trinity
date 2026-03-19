@@ -917,6 +917,20 @@ pub fn main() !void {
         // Math commands
         .math,
         .constants_cmd,
+        // S³AI Brain Circuit Commands (v5.1) - dispatch to tri_commands
+        .task_claim,
+        => {
+            const tri_commands_mod = @import("tri_commands.zig");
+            try tri_commands_mod.runTaskClaimCommand(allocator, cmd_args);
+        },
+        .event_stream => {
+            const tri_commands_mod = @import("tri_commands.zig");
+            try tri_commands_mod.runEventStreamCommand(allocator, cmd_args);
+        },
+        .stress_test => {
+            const tri_commands_mod = @import("tri_commands.zig");
+            try tri_commands_mod.runStressTestCommand(cmd_args);
+        },
         .phi,
         .fib,
         .lucas,
@@ -928,10 +942,6 @@ pub fn main() !void {
         .cosmos,
         .neuro,
         .chem,
-        // Brain commands (not yet fully implemented)
-        .task_claim,
-        .event_stream,
-        .stress_test,
         => {
             std.debug.print("Error: Command '{s}' not yet implemented\n", .{@tagName(cmd)});
             std.process.exit(1);
