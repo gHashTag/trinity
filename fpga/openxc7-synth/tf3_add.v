@@ -9,7 +9,7 @@
 //   exp_trits:    3 trits  // 6 bits
 //   mant_trits:   5 trits  // 10 bits
 //
-// exp:mant (по тритам) = 3:5 → ratio 0.6, φ-distance ≈ 0.018
+// exp:mant (by trits) = 3:5 → ratio 0.6, φ-distance ≈ 0.018
 //
 // Trit encoding: 00 = -1, 01 = 0, 10 = +1, 11 = reserved
 //

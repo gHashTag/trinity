@@ -143,7 +143,8 @@ fn ralphVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta,
             }) catch "Ralph works.";
         },
         .down => std.fmt.bufPrint(buf, "\xd0\x9b\xd0\xb5\xd0\xb6\xd1\x83. \xd0\x9f\xd0\xb5\xd1\x80\xd0\xb5\xd0\xb7\xd0\xb0\xd0\xbf\xd1\x83\xd1\x81\xd1\x82\xd0\xb8\xd1\x82\xd0\xb5.", .{}) catch "Ralph lies down.",
-            }
+        .stub => std.fmt.bufPrint(buf, "Stub agent. Not implemented yet.", .{}) catch "Ralph stub.",
+        .tbd => std.fmt.bufPrint(buf, "TBD agent. Coming soon.", .{}) catch "Ralph TBD.",
     };
 }
 
@@ -614,3 +615,5 @@ test "parseJsonU32 extracts number" {
     try std.testing.expectEqual(@as(u32, 3), parseJsonU32(data, "\"fixes_applied\":"));
     try std.testing.expectEqual(@as(u32, 0), parseJsonU32(data, "\"missing\":"));
 }
+
+test "dummy" {}

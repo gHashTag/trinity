@@ -155,6 +155,7 @@ pub fn generateTernaryTask(allocator: Allocator, ctx_len: usize, format: igla_be
         .depth_percent = 0.5,
     };
 
+    var questions = try std.ArrayList(igla_bench.Question).initCapacity(allocator, 1);
     const question = igla_bench.Question{
         .id = "ternary_q_0",
         .text = question_text,
@@ -163,12 +164,13 @@ pub fn generateTernaryTask(allocator: Allocator, ctx_len: usize, format: igla_be
         .needle_id = needle.id,
         .difficulty = 2,
     };
+    try questions.append(allocator, question);
 
     const haystack = try igla_bench.generateHaystack(allocator, "ternary_test", ctx_len, 1, 0.5);
 
     return .{
         .haystack = haystack,
-        .questions = &.{question},
+        .questions = try questions.toOwnedSlice(allocator),
     };
 }
 

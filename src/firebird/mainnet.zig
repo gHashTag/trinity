@@ -132,9 +132,10 @@ pub const MainnetManager = struct {
     }
 
     fn calculateProgress(self: *const MainnetManager) f64 {
-        const steps = @intFromEnum(@typeInfo(@TypeOf(Self)).@"union".MigrationStep).fields.len);
-        const current_step = @intFromEnum(self.migration_state.migration_step);
-        return @as(f64, @floatFromInt(current_step)) / @as(f64, @floatFromInt(steps)) * 100.0;
+        const step_index = @intFromEnum(self.migration_state.migration_step);
+        // MigrationStep has 6 enum values
+        const total_steps: f64 = 6.0;
+        return @as(f64, @floatFromInt(step_index)) / total_steps * 100.0;
     }
 
     pub fn deinit(self: *MainnetManager) void {

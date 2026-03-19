@@ -1,12 +1,12 @@
 # Fly.io FPGA Synthesis — Cloud Pipeline
 
-Синтез FPGA в облаке без нагрузки локальной машины.
+FPGA synthesis in the cloud without loading local machine.
 
-## Архитектура
+## Architecture
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────┐
-│  Локальная Mac  │────▶│  fly.io (облако) │────▶│   FPGA      │
+│  Local Mac     │────▶│  fly.io (cloud)│────▶│   FPGA      │
 │                 │◀────│                  │     │  (JTAG)     │
 │  - JTAG only    │     │  - Yosys         │     │             │
 │  - UART client  │     │  - nextpnr       │     │             │
@@ -14,9 +14,9 @@
 └─────────────────┘     └──────────────────┘     └─────────────┘
 ```
 
-## Быстрый старт
+## Quick Start
 
-### 1. Деплой на fly.io (один раз)
+### 1. Deploy to fly.io (one time)
 
 ```bash
 cd fpga/openxc7-synth
@@ -24,35 +24,35 @@ fly launch --no-deploy
 fly deploy
 ```
 
-### 2. Синтез в облаке
+### 2. Synthesis in the Cloud
 
 ```bash
-# Простой способ
+# Simple way
 fpga/tools/cloud-synth.sh uart_top.v uart_top
 
-# Получишь uart_top.bit готовый для прошивки
+# You get uart_top.bit ready for flashing
 ```
 
-### 3. Прошивка FPGA
+### 3. Flash FPGA
 
 ```bash
-# Сначала firmware для JTAG (если нужно)
+# First firmware for JTAG (if needed)
 sudo fpga/tools/fxload -v -t fx2 -d 03fd:0013 -i fpga/tools/xusb_xp2.hex
-# Переподключить кабель
+# Reconnect cable
 
-# Прошить
+# Flash
 sudo fpga/tools/jtag_program uart_top.bit
 ```
 
-## Файлы
+## Files
 
-| Файл | Описание |
-|------|----------|
-| `fly.toml` | Конфиг fly.io (4 CPU, 8GB RAM) |
-| `Dockerfile.fly` | Docker образ с Python API |
-| `synth_cloud.py` | HTTP API для синтеза |
-| `../tools/cloud-synth.sh` | Клиент для локальной машины |
-| `../tools/uart-bitstream.py` | UART доставка (опционально) |
+| File | Description |
+|------|-------------|
+| `fly.toml` | fly.io configuration (4 CPU, 8GB RAM) |
+| `Dockerfile.fly` | Docker image with Python API |
+| `synth_cloud.py` | HTTP API for synthesis |
+| `../tools/cloud-synth.sh` | Client for local machine |
+| `../tools/uart-bitstream.py` | UART delivery (optional) |
 
 ## API
 
@@ -62,7 +62,7 @@ sudo fpga/tools/jtag_program uart_top.bit
 {
     "verilog": "module top...",
     "top": "uart_top",
-    "xdc": "set_property..." // опционально
+    "xdc": "set_property..." // optional
 }
 ```
 
@@ -77,16 +77,16 @@ Response:
 
 ### GET /
 
-Health check — возвращает статус сервиса.
+Health check — returns service status.
 
-## Стоимость
+## Cost
 
 - **CPU**: 4 vCPU
 - **RAM**: 8 GB
 - **Disk**: 40 GB
-- **Остановка**: auto_stop_machines = true (не платишь когда не используешь)
+- **Setup**: auto_stop_machines = true (don't pay when not using)
 
-Примерная цена: ~$0.50/час активного использования.
+Estimated price: ~$0.50/hour of active usage.
 
 ## Troubleshooting
 
@@ -96,7 +96,7 @@ fly status -a trinity-fpga-synth
 ```
 
 ### "Synthesis timeout"
-Увеличь timeout в `synth_cloud.py` (default: 300 сек)
+Increase timeout in `synth_cloud.py` (default: 300 sec)
 
 ### "chipdb not found"
-Скопируй `chipdb/xc7a100tfgg676.bin` в директорию перед деплоем.
+Copy `chipdb/xc7a100tfgg676.bin` to directory before deploy.

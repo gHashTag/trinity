@@ -1,35 +1,35 @@
-# DSlogic Plus — Возможности для Trinity FPGA + ESP32
+# DSlogic Plus — Capabilities for Trinity FPGA + ESP32
 
-## Характеристики
+## Specifications
 
-| Параметр | Значение |
-|----------|----------|
-| **Каналы** | 16 digital + 1 analog |
-| **Частота дискретизации** | 400 MS/s (мега-выборок/сек) |
-| **Глубина буфера** | до 16Gb (с SD карты) |
-| **Напряжение** | 1.2V - 5V (программируемое) |
-| **Интерфейс** | USB 2.0 High Speed |
-| **ПО** | DSView (open source) |
-| **Цена** | ~$100-150 |
+| Parameter | Value |
+|-----------|-------|
+| **Channels** | 16 digital + 1 analog |
+| **Sampling Rate** | 400 MS/s (mega-samples/sec) |
+| **Buffer Depth** | up to 16Gb (with SD card) |
+| **Voltage** | 1.2V - 5V (programmable) |
+| **Interface** | USB 2.0 High Speed |
+| **Software** | DSView (open source) |
+| **Price** | ~$100-150 |
 
 ---
 
-## 🔍 Что он Даст (по сравнению с просто UART монитором)
+## 🔍 What It Provides (compared to just UART monitor)
 
-### 1. **Видеть всё одновременно**
+### 1. **See Everything at Once**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     UART монитор (обычный)                          │
+│                     UART monitor (usual)                          │
 │  ┌───────────────────────────────────────────────────────────────┐ │
 │  │  RX: 03 FF AA                                                │ │
 │  │  TX: 83                                                      │ │
 │  └───────────────────────────────────────────────────────────────┘ │
-│                     ↑ Только данные                               │
+│                     ↑ Only data                                   │
 └─────────────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     DSlogic Plus (анализатор)                      │
+│                     DSlogic Plus (analyzer)                        │
 │  ┌───────────────────────────────────────────────────────────────┐ │
 │  │  CH0-CH7:   ESP32 → FPGA (SPI data)                          │ │
 │  │  CH8:       SPI Clock                                         │ │
@@ -40,20 +40,20 @@
 │  │  CH14:      FPGA_CLK (50 MHz)                                 │ │
 │  │  CH15:      LED output                                        │ │
 │  └───────────────────────────────────────────────────────────────┘ │
-│                     ↑ Все сигналы с таймингами!                   │
+│                     ↑ All signals with timings!                      │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Конкретные возможности
+## 🚀 Specific Capabilities
 
-### 1. **Декодирование протоколов в реальном времени**
+### 1. **Real-time Protocol Decoding**
 
 ```
 SPI Decode:
 ┌─────────────────────────────────────────────────────────────────────┐
-│ CS   │ CLK │ MOSI │ MISO │ ДЕКОДИРОВАНО                           │
+│ CS   │ CLK │ MOSI │ MISO │ DECODED                             │
 ├──────┼─────┼──────┼──────┼───────────────────────────────────────┤
 │  ────┘ ┐   │  AA   │  XX  │ CMD: PING                            │
 │        └───┘  BB   │  83  │ RESP: PONG                           │
@@ -62,23 +62,23 @@ SPI Decode:
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Поддерживаемые протоколы:**
-- ✅ UART (асинхронный)
-- ✅ SPI (синхронный)
-- ✅ I2C (двухпроводный)
-- ✅ I2S (аудио)
-- ✅ CAN (автомобильный)
+**Supported Protocols:**
+- ✅ UART (asynchronous)
+- ✅ SPI (synchronous)
+- ✅ I2C (two-wire)
+- ✅ I2S (audio)
+- ✅ CAN (automotive)
 - ✅ LIN
 - ✅ 1-Wire
-- ✅ И 10+ других
+- ✅ And 10+ others
 
 ---
 
-### 2. **Измерение таймингов**
+### 2. **Timing Measurements**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Измерение задержки между UART TX и FPGA RX:                      │
+│  Measuring delay between UART TX and FPGA RX:                     │
 │                                                                     │
 │  ESP32_TX ─┐                                                      │
 │            │  ← 150 ns                                            │
@@ -91,76 +91,76 @@ SPI Decode:
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Что можно измерить:**
-- Частота сигнала
-- Длительность импульса
-- Задержки между сигналами
+**What can be measured:**
+- Signal frequency
+- Pulse duration
+- Delays between signals
 - Duty cycle
 - Rise/Fall time
 
 ---
 
-### 3. **Поиск проблем (Debugging)**
+### 3. **Finding Problems (Debugging)**
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│  Триггер: Найти glitch на SPI clock                               │
+│  Trigger: Find glitch on SPI clock                               │
 │                                                                     │
 │  CLK: ──┐  ┌──┐  ┌──┐  ┌──┐  ┌─┐┌──┐  ┌──┐                      │
 │        └──┘  └──┘  └──┘  └──┘  ┘ └──┘  └──┘                     │
 │                    ↑ glitch!                                      │
 │                                                                     │
-│  DSLogic автоматически остановится на проблеме                     │
+│  DSLogic automatically stops on the problem                          │
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Типы триггеров:**
-- Edge (↑ или ↓ фронт)
-- Pulse (ширина импульса)
-- Protocol (конкретная команда)
-- Glitch (короткий импульс)
-- Pattern (последовательность)
+**Trigger Types:**
+- Edge (↑ or ↓ front)
+- Pulse (pulse width)
+- Protocol (specific command)
+- Glitch (short pulse)
+- Pattern (sequence)
 
 ---
 
-### 4. **Экспорт данных**
+### 4. **Data Export**
 
 ```
-Захваченные данные → Экспорт в:
-├── CSV (для Excel/Python анализа)
-├── JSON (для автоматизации)
-├── Binary (сырые данные)
-├── Waveform (скриншоты)
-└── MATLAB (для анализа)
+Captured data → Export to:
+├── CSV (for Excel/Python analysis)
+├── JSON (for automation)
+├── Binary (raw data)
+├── Waveform (screenshots)
+└── MATLAB (for analysis)
 ```
 
 ---
 
-## 📊 Сравнение: UART Monitor vs DSlogic Plus
+## 📊 Comparison: UART Monitor vs DSlogic Plus
 
-| Возможность | UART Monitor | DSlogic Plus |
+| Capability | UART Monitor | DSlogic Plus |
 |-------------|--------------|--------------|
-| **Видеть данные** | ✅ | ✅ |
-| **Декодировать протокол** | ✅ 1 протокол | ✅ 20+ протоколов |
-| **Видеть тайминги** | ❌ | ✅ (до 2.5 ns) |
-| **Много сигналов сразу** | ❌ | ✅ 16 каналов |
-| **Триггеры** | ❌ | ✅ |
-| **Измерять частоту** | ❌ | ✅ |
-| **Искать glitches** | ❌ | ✅ |
-| **SPI анализ** | ❌ | ✅ |
-| **I2C анализ** | ❌ | ✅ |
-| **Аналоговый канал** | ❌ | ✅ 1 канал |
-| **Цена** | Free | ~$100 |
+| **See data** | ✅ | ✅ |
+| **Decode protocol** | ✅ 1 protocol | ✅ 20+ protocols |
+| **See timings** | ❌ | ✅ (down to 2.5 ns) |
+| **Many signals at once** | ❌ | ✅ 16 channels |
+| **Triggers** | ❌ | ✅ |
+| **Measure frequency** | ❌ | ✅ |
+| **Find glitches** | ❌ | ✅ |
+| **SPI analysis** | ❌ | ✅ |
+| **I2C analysis** | ❌ | ✅ |
+| **Analog channel** | ❌ | ✅ 1 channel |
+| **Price** | Free | ~$100 |
 
 ---
 
-## 🔧 Подключение к вашему проекту
+## 🔧 Connection to Your Project
 
-### Схема подключения для Trinity FPGA + ESP32
+### Connection Diagram for Trinity FPGA + ESP32
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     DSlogic Plus подключение                       │
+│                     DSlogic Plus connection                       │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ESP32                    FPGA                      DSLogic         │
@@ -191,117 +191,117 @@ SPI Decode:
 
 ---
 
-## 💡 Реальные сценарии использования
+## 💡 Real Use Cases
 
-### Сценарий 1: SPI не работает
+### Use Case 1: SPI Not Working
 
-**С UART монитором:**
+**With UART monitor:**
 ```
-UART: "Данные не приходят... 🤷"
-```
-
-**С DSlogic Plus:**
-```
-1. Видите: Clock идёт, MOSI работает
-2. Проблема: CS line всегда HIGH (не опускается)
-3. Решение: ESP32 пин неправильно сконфигурирован
+UART: "Data not arriving... 🤷"
 ```
 
----
-
-### Сценарий 2: FPGA возвращает неверные данные
-
-**С UART монитором:**
+**With DSlogic Plus:**
 ```
-UART: "Получил 0xFF вместо 0x83... почему?"
-```
-
-**С DSlogic Plus:**
-```
-1. Измеряете: Timing violation на MISO
-2. Видите: Data changes 5 ns after clock edge
-3. Решение: Добавить 1 такт задержки в FPGA
+1. You see: Clock is running, MOSI is working
+2. Problem: CS line always HIGH (never goes down)
+3. Solution: ESP32 pin is misconfigured
 ```
 
 ---
 
-### Сценарий 3: Случайные перезагрузки ESP32
+### Use Case 2: FPGA Returns Incorrect Data
 
-**С UART монитором:**
+**With UART monitor:**
 ```
-UART: "ESP32 перезагрузился... brownout?"
+UART: "Got 0xFF instead of 0x83... why?"
 ```
 
-**С DSlogic Plus:**
+**With DSlogic Plus:**
 ```
-1. Аналоговый канал показывает: 3.3V падает до 2.1V
-2. Причина: FPGA потребляет слишком much при переключении
-3. Решение: Добавить конденсатор 100µF
+1. You measure: Timing violation on MISO
+2. You see: Data changes 5 ns after clock edge
+3. Solution: Add 1 clock cycle delay in FPGA
 ```
 
 ---
 
-## 🎯 Для Trinity проекта
+### Use Case 3: Random ESP32 Reboots
 
-### Что конкретно можно отладить:
+**With UART monitor:**
+```
+UART: "ESP32 rebooted... brownout?"
+```
 
-| Компонент | Что проверить |
+**With DSlogic Plus:**
+```
+1. Analog channel shows: 3.3V drops to 2.1V
+2. Cause: FPGA consumes too much during switching
+3. Solution: Add 100µF capacitor
+```
+
+---
+
+## 🎯 For Trinity Project
+
+### What specifically can be debugged:
+
+| Component | What to Check |
 |-----------|---------------|
-| **UART** | Тайминги, baud rate accuracy |
+| **UART** | Timings, baud rate accuracy |
 | **SPI** | Clock polarity, phase, setup/hold |
-| **VSA вычисления** | Результаты через memory-mapped I/O |
-| **LED控制** | Toggle frequency, glitch detection |
-| **Power rail** | Напряжение при нагрузке (аналог) |
+| **VSA calculations** | Results via memory-mapped I/O |
+| **LED control** | Toggle frequency, glitch detection |
+| **Power rail** | Voltage under load (analog) |
 | **Clock tree** | Jitter, frequency accuracy |
 
 ---
 
-## 📦 Что в коробке
+## 📦 What's in the Box
 
 ```
 DSlogic Plus Box:
-├── DSlogic Plus устройство
-├── ZIF-clip (зажим для IC)
-├── Test hooks (крючки)
+├── DSlogic Plus device
+├── ZIF-clip (IC clamp)
+├── Test hooks (crocodile clips)
 ├── Flywire cables
 ├── USB cable
-└── Корпус
+└── Case
 ```
 
 ---
 
-## 💰 Целесообразность покупки
+## 💰 Purchase Reasoning
 
-### Купите, если:
+### Buy if:
 
-- ✅ Разрабатываете сложные протоколы (SPI, I2C вместе)
-- ✅ Нужна точная отладка таймингов
-- ✅ Хотите видеть всё одновременно
-- ✅ Учатесь FPGA/электронике
-- ✅ $100 не проблема
+- ✅ Developing complex protocols (SPI, I2C together)
+- ✅ Need precise timing debugging
+- ✅ Want to see everything at once
+- ✅ Learning FPGA/electronics
+- ✅ $100 is not a problem
 
-### Не покупайте, если:
+### Don't buy if:
 
-- ❌ Используете только UART (вам хватит CoolTerm)
-- ❌ Бюджет ограничен
-- ❌ Простой проект (LED blink)
+- ❌ Using only UART (CoolTerm is enough)
+- ❌ Budget is limited
+- ❌ Simple project (LED blink)
 
 ---
 
-## 📝 Итог
+## 📝 Summary
 
-**DSlogic Plus даст:**
+**DSlogic Plus will provide:**
 
-1. ✅ Видеть 16 сигналов одновременно (vs 2 с UART монитором)
-2. ✅ Декодировать 20+ протоколов (vs 1)
-3. ✅ Измерять тайминги до 2.5 ns
-4. ✅ Искать glitches и проблемы
-5. ✅ Аналоговые измерения
-6. ✅ Профессиональную отладку
+1. ✅ See 16 signals simultaneously (vs 2 with UART monitor)
+2. ✅ Decode 20+ protocols (vs 1)
+3. ✅ Measure timings down to 2.5 ns
+4. ✅ Find glitches and problems
+5. ✅ Analog measurements
+6. ✅ Professional debugging
 
-**Для Trinity FPGA + ESP32:**
-- Полезен при отладке SPI
-- Необходим при сложной синхронизации
-- Обязателен при разработке новых протоколов
+**For Trinity FPGA + ESP32:**
+- Useful for debugging SPI
+- Necessary for complex synchronization
+- Required when developing new protocols
 
 φ² + 1/φ² = 3 = TRINITY

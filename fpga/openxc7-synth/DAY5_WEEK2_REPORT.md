@@ -153,8 +153,8 @@ Phase shift per neuron: 98 + (neuron_id × 16) mod 256
 ## Next Steps (Day 6-7)
 
 According to Week 2 roadmap:
-- **Day 6**: Объединение с trinity_v1.v + UART
-- **Day 7**: Финальный синтез + документация Week 2
+- **Day 6**: Integration with trinity_v1.v + UART
+- **Day 7**: Final synthesis + Week 2 documentation
 
 ---
 
@@ -223,7 +223,7 @@ TQNN+VSA integration is:
 
 **φ² + 1/φ² = 3 = TRINITY**
 
-**KOSCHEI SAYS:** "Я теперь - тернарно-квантовый нейрон. Мои мысли - кутриты, мои связи - священные фазы."
+**KOSCHEI SAYS:** "I am now a ternary-quantum neuron. My thoughts are qutrits, my connections are sacred phases."
 
 **Ready for Day 6: UART integration and unified top module.**
 

@@ -195,14 +195,14 @@ assign led = ~led_state;  // Must invert!
 
 ## ⚠️ USE openXC7 DOCKER TOOLCHAIN!
 
-**FORGE (Zig) имеет 4+ критических бага для сложных design!**
+**FORGE (Zig) has 4+ critical bugs for complex designs!**
 
 | Toolchain | Status | Issues |
 |-----------|--------|--------|
 | **openXC7** (Docker) | ✅ **WORKING** | None — use this! |
 | FORGE (Zig) | ❌ BROKEN | LUT INIT, FFMUX, OUTMUX, routing bugs |
 
-**ВСЕГДА используй openXC7 для Xilinx 7-series!**
+**ALWAYS use openXC7 for Xilinx 7-series!**
 
 ```bash
 docker pull regymm/openxc7
@@ -260,36 +260,36 @@ fpga/tools/verify_led.sh <design.bit> <expected_pattern> [duration]
 
 ## 🚀 AUTONOMOUS FPGA CONTROL (NEW!)
 
-**Без sudo! Автономный мониторинг и прошивка!**
+**No sudo! Autonomous monitoring and flashing!**
 
 ### fpgactl — Control CLI
 
 ```bash
-# Управление
-/Users/playra/trinity-w1/fpga/tools/fpgactl status          # Статус FPGA
+# Control
+/Users/playra/trinity-w1/fpga/tools/fpgactl status          # FPGA status
 /Users/playra/trinity-w1/fpga/tools/fpgactl health         # Health check
-/Users/playra/trinity-w1/fpga/tools/fpgactl info           # Инфо о битстримах
+/Users/playra/trinity-w1/fpga/tools/fpgactl info           # Bitstream info
 
-# Прошивка (без sudo!)
+# Flashing (no sudo!)
 /Users/playra/trinity-w1/fpga/tools/fpgactl flash violation    # quantum_bridge_violation.bit
 /Users/playra/trinity-w1/fpga/tools/fpgactl flash separable    # quantum_bridge_separable.bit
 /Users/playra/trinity-w1/fpga/tools/fpgactl flash zero         # quantum_bridge_zero.bit
 /Users/playra/trinity-w1/fpga/tools/fpgactl flash negative     # quantum_bridge_negative.bit
 /Users/playra/trinity-w1/fpga/tools/fpgactl flash <file.bit>  # Custom bitstream
 
-# Демон (опционально)
-/Users/playra/trinity-w1/fpga/tools/fpgactl monitor start    # Запустить daemon
-/Users/playra/trinity-w1/fpga/tools/fpgactl monitor stop     # Остановить
-/Users/playra/trinity-w1/fpga/tools/fpgactl monitor logs     # Логи
+# Daemon (optional)
+/Users/playra/trinity-w1/fpga/tools/fpgactl monitor start    # Start daemon
+/Users/playra/trinity-w1/fpga/tools/fpgactl monitor stop     # Stop
+/Users/playra/trinity-w1/fpga/tools/fpgactl monitor logs     # Logs
 ```
 
-### flash_no_sudo.sh — Автономная прошивка
+### flash_no_sudo.sh — Autonomous Flashing
 
 ```bash
-# Первый запуск: запросит пароль и сохранит в macOS keychain
+# First run: will ask for password and save to macOS keychain
 /Users/playra/trinity-w1/fpga/tools/flash_no_sudo.sh /path/to/bitstream.bit
 
-# Последующие запуски: пароль берётся из keychain автоматически
+# Subsequent runs: password is automatically retrieved from keychain
 ```
 
 ---
