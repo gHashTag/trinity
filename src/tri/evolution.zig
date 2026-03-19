@@ -25,6 +25,8 @@ const RailwayApi = railway_api.RailwayApi;
 const tri_commands = @import("tri_commands.zig");
 const farm_ws = @import("tri_farm_ws.zig");
 const hippocampus = @import("hippocampus.zig");
+// TODO: Enable IGLA bench integration when build system supports cross-module imports
+// const igla_bench_mod = @import("../bench/igla_bench.zig");
 const print = std.debug.print;
 
 // ANSI colors
@@ -183,7 +185,7 @@ const ServiceEntry = struct {
     // +++ IGLA Bench Metrics +++
     igla_score: f32 = 0.0, // IGLA retrieval score [0,1]
     igla_last_eval_step: u32 = 0, // Step of last IGLA evaluation
-    igla_format_accuracy: [5]f32 = .{ 0, 0, 0, 0, 0 }, // Accuracy per format: STD/BF16/GF16/TF3/BF16
+    igla_format_accuracy: [4]f32 = .{ 0, 0, 0, 0 }, // Accuracy per format: STD/BF16/GF16/TF3
     igla_retrieve_acc: f32 = 0.0, // IGLA-RETRIEVE accuracy
     igla_multi_acc: f32 = 0.0, // IGLA-MULTI accuracy
     igla_ternary_acc: f32 = 0.0, // IGLA-TERNARY accuracy
@@ -927,17 +929,17 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     var kill_stalled = false;
     var issue_num: ?[]const u8 = null;
 
-    var i: usize = 0;
-    while (i < args.len) : (i += 1) {
-        if (std.mem.eql(u8, args[i], "--dry-run")) {
+    var arg_i: usize = 0;
+    while (arg_i < args.len) : (arg_i += 1) {
+        if (std.mem.eql(u8, args[arg_i], "--dry-run")) {
             dry_run = true;
-        } else if (std.mem.eql(u8, args[i], "--sacred")) {
+        } else if (std.mem.eql(u8, args[arg_i], "--sacred")) {
             sacred_mode = true;
-        } else if (std.mem.eql(u8, args[i], "--kill-stalled")) {
+        } else if (std.mem.eql(u8, args[arg_i], "--kill-stalled")) {
             kill_stalled = true;
-        } else if (std.mem.eql(u8, args[i], "--issue") and i + 1 < args.len) {
-            i += 1;
-            issue_num = args[i];
+        } else if (std.mem.eql(u8, args[arg_i], "--issue") and arg_i + 1 < args.len) {
+            arg_i += 1;
+            issue_num = args[arg_i];
         }
     }
 
@@ -981,10 +983,41 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
             continue;
         };
 
-        // Log IGLA results (ServiceEntry update in next phase)
-        print("  {s}{s}{s}: score={d:.2} lat={d:.1}ms tps={d:.1}tok/s\n\n", .{
-            GREEN,        svc.svcName(),     RESET,
-            result.score, result.latency_ms, result.tok_per_sec,
+        // Update ServiceEntry with IGLA results
+        svc.igla_score = result.score;
+        svc.igla_last_eval_step = svc.current_step;
+        for (0..@min(result.format_accuracy.len, 4)) |i| {
+            svc.igla_format_accuracy[i] = result.format_accuracy[i];
+        }
+        svc.igla_retrieve_acc = result.retrieve_acc;
+        svc.igla_multi_acc = result.multi_acc;
+        svc.igla_ternary_acc = result.ternary_acc;
+        svc.igla_chain_acc = result.chain_acc;
+        svc.igla_latency_ms = result.latency_ms;
+        svc.igla_tok_per_sec = result.tok_per_sec;
+
+        // Log IGLA results with task breakdown
+        // Find best format (inline)
+        const format_names = [_][]const u8{ "STD", "BF16", "GF16", "TF3" };
+        var fmt_best_idx: usize = 0;
+        var fmt_best_acc: f32 = 0.0;
+        for (result.format_accuracy, 0..) |acc, fi| {
+            if (acc > fmt_best_acc) {
+                fmt_best_acc = acc;
+                fmt_best_idx = fi;
+            }
+        }
+        const fmt_best = format_names[fmt_best_idx];
+        print("  {s}{s}{s}: IGLA={d:.2} R={d:.0} M={d:.0} T={d:.0} C={d:.0} lat={d:.0}ms tps={d:.0} FmtBest={s}\n", .{
+            GREEN, svc.svcName(), RESET,
+            result.score * 100, // Show as percentage
+            result.retrieve_acc * 100,
+            result.multi_acc * 100,
+            result.ternary_acc * 100,
+            result.chain_acc * 100,
+            result.latency_ms,
+            result.tok_per_sec,
+            fmt_best,
         });
 
         igla_eval_count += 1;
@@ -2892,6 +2925,46 @@ pub fn computeSacredFitness(entry: *const ServiceEntry) f32 {
     return fitness;
 }
 
+/// ═══════════════════════════════════════════════════════════════════════════════
+/// IGLA Multi-Objective Fitness — PPL + Retrieval Quality
+/// ═══════════════════════════════════════════════════════════════════════════════
+///
+/// Multi-objective fitness combining PPL (perplexity) and IGLA (retrieval quality).
+/// Weighted sum: 60% PPL + 40% IGLA score.
+/// Threshold penalty: if IGLA < 0.5, fitness is cut in half (bad retrieval).
+///
+/// Lower = better (same convention as computeFitness).
+///
+/// Formula:
+///   ppl_norm = normalize(ppl)  [0,1] where 999→0, 2→1
+///   igla_score = entry.igla_score  [0,1] already normalized
+///   penalty = 0.5 if igla_score < 0.5 else 0.0
+///   fitness = (0.6 * ppl_norm + 0.4 * igla_score) * (1.0 - penalty) + ppl_baseline
+///
+/// This ensures workers with good PPL but terrible retrieval (IGLA < 0.5)
+/// are heavily penalized, encouraging balanced performance.
+pub fn computeIGLAFitness(entry: *const ServiceEntry) f32 {
+    // Normalize PPL to [0,1]: 999 → 0, 2.0 → 1
+    const ppl_norm: f32 = if (entry.current_ppl >= 999.0)
+        0.0
+    else
+        @max(0.0, 1.0 - (entry.current_ppl - 2.0) / 997.0);
+
+    // IGLA score is already [0,1]
+    const igla_score = @max(0.0, @min(1.0, entry.igla_score));
+
+    // Penalty: if retrieval is terrible (< 50%), cut fitness in half
+    const penalty: f32 = if (igla_score < 0.5) 0.5 else 0.0;
+
+    // Weighted combination: 60% PPL + 40% IGLA
+    const weighted_score = 0.6 * ppl_norm + 0.4 * igla_score;
+
+    // Apply penalty and scale to PPL range for compatibility
+    const fitness = entry.current_ppl * (1.0 - weighted_score * (1.0 - penalty));
+
+    return fitness;
+}
+
 fn sortBySacredFitness(state: *EvolutionState, indices: []usize) void {
     // Insertion sort by sacred fitness ascending (best first)
     var ii: usize = 1;
@@ -3550,8 +3623,8 @@ fn printDashboard(state: *const EvolutionState) void {
     }
 
     print("  {s}LEADERBOARD:{s}\n", .{ BOLD, RESET });
-    print("  {s}#  | Service              | PPL      | ValPPL   | Step  | Gen | LR         | Shard{s}\n", .{ DIM, RESET });
-    print("  {s}───┼──────────────────────┼──────────┼──────────┼───────┼─────┼────────────┼──────{s}\n", .{ DIM, RESET });
+    print("  {s}#  | Service              | PPL      | ValPPL   | Step  | Gen | LR         | IGLA   | FmtBest{s}\n", .{ DIM, RESET });
+    print("  {s}───┼──────────────────────┼──────────┼──────────┼───────┼─────┼────────────┼─────────┼────────{s}\n", .{ DIM, RESET });
 
     const show = @min(sorted_count, 10);
     for (0..show) |rank| {
@@ -3575,7 +3648,23 @@ fn printDashboard(state: *const EvolutionState) void {
         padTo(countDigits(svc.generation), 4);
         print("| {s}", .{svc.lrStr()});
         padTo(svc.lr_len, 11);
-        print("| {d}\n", .{svc.data_shard});
+        // IGLA score (as percentage)
+        if (svc.igla_score > 0) {
+            print("| {d:.0}", .{svc.igla_score * 100});
+        } else {
+            print("| {s}---{s}", .{ DIM, RESET });
+        }
+        // Best format (inline helper)
+        const format_names = [_][]const u8{ "STD", "BF16", "GF16", "TF3" };
+        var fmt_best_idx: usize = 0;
+        var fmt_best_acc: f32 = 0.0;
+        for (svc.igla_format_accuracy[0..4], 0..) |acc, fi| {
+            if (acc > fmt_best_acc) {
+                fmt_best_acc = acc;
+                fmt_best_idx = fi;
+            }
+        }
+        print("| {s}\n", .{format_names[fmt_best_idx]});
     }
 
     // Rung progress
