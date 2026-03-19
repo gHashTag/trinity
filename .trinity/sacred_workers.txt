@@ -1,0 +1,20 @@
+# KINGS - Verified best performers (PPL < 30)
+# Updated: 2026-03-19 03:45 UTC
+hslm-r6
+hslm-r33
+hslm-r5
+hslm-r12
+hslm-r13
+hslm-r11
+hslm-r18
+
+# ELITE - Top performers (PPL < 50)
+hslm-w7-50
+hslm-r24
+hslm-r15
+hslm-r21
+hslm-t1
+hslm-r14
+hslm-r27
+hslm-w7-65
+hslm-r10

@@ -2841,6 +2841,7 @@ struct ChatScreen: View {
             }
         }
     }
+}
 
 // MARK: - Notification Receivers Modifier
 
