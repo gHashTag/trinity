@@ -24,6 +24,8 @@ const queen_policy = @import("queen_policy.zig");
 const queen_vmpfc = @import("queen_vmpfc.zig");
 const insula = @import("insula.zig");
 const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
+const medulla = @import("phoenix_medulla.zig");
+const pons = @import("phoenix_pons.zig");
 
 // S³AI Brain Module Integration
 const brain = @import("brain/brain.zig");
@@ -71,6 +73,7 @@ pub const DecisionContext = struct {
     state: *qt.QueenState,
     counters: *queen_policy.ActionCounters,
     incidents: *queen_policy.IncidentMemory,
+    locus_state: ?*locus_coeruleus.LocusState = null,
 
     // S³AI Brain context (for conflict detection & safety verification)
     brain: ?*Brain = null,
@@ -626,6 +629,11 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
     var candidates = CandidateList.init(ctx.allocator);
     defer candidates.deinit();
 
+    // ═══════════════════════════════════════════
+    // MEDULLA INTEGRATION — Heartbeat at cycle start
+    _ = medulla.heartbeatPing(ctx.allocator) catch |err| {
+        std.debug.print("Medulla heartbeat failed: {s}\n", .{@errorName(err)});
+    };
     // ═══════════════════════════════════════════════════════════════════════════════
     // RULE 0: NIGHT GUARD — Block destructive actions during protected hours
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -643,6 +651,22 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
             });
         }
         // Continue with candidates (destructive actions blocked in filter below)
+    }
+
+    // ═════════════════════════════════════════════════════════════════════════════════
+    // PHASE 1: LOCUS COERULEUS ALARM INTEGRATION
+    // Trigger alarms for critical events
+    if (ctx.locus_state) |state| {
+        // Build broken → emergency alarm
+        if (!ctx.build_ok) {
+            _ = locus_coeruleus.triggerAlarm(state, .build_broken, "Build system failed", null) catch {};
+        }
+        // Farm crashed workers → emergency alarm
+        if (ctx.farm.crashed > 3) {
+            _ = locus_coeruleus.triggerAlarm(state, .worker_crashed, "Multiple workers crashed", null) catch {};
+        }
+        // Token expired → alarm alert (TODO: check Railway token count)
+        // _ = locus_coeruleus.triggerAlarm(state, .token_expired, "API tokens expired", null) catch {};
     }
 
     // Rule 1: Build broken → doctor_quick (high urgency)
@@ -886,6 +910,22 @@ pub fn act(ctx: *DecisionContext, decision: Decision) !qt.ActionResult {
         decision.reasonStr(),
     );
 
+    // ═════
+    // PHASE 4: PONS BRIDGE — Bridge farm results to cerebellum
+    if (decision.action == .farm_recycle and result.success) {
+        // Prepare FarmSweepResults from farm context
+        var crashed_workers = [_][]const u8{};
+        var crashed_count: usize = 0;
+        // Collect crashed worker names (simplified - just use count for now)
+        crashed_count = ctx.farm.crashed;
+
+        _ = pons.bridgeToCerebellum(ctx.allocator, .{
+            .stale_count = ctx.farm.stale_count,
+            .crashed_workers = &crashed_workers,
+        }) catch |err| {
+            std.debug.print("Pons bridge failed: {s}\n", .{@errorName(err)});
+        };
+    }
     return result;
 }
 

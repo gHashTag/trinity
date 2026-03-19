@@ -37,10 +37,35 @@ const queen_dlpfc = @import("queen_dlpfc.zig");
 // Phoenix brainstem modules
 const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
 const thalamus = @import("thalamus.zig");
+const medulla = @import("phoenix_medulla.zig");
 
 const Allocator = std.mem.Allocator;
 const FacultySnapshot = faculty_types.FacultySnapshot;
 const print = std.debug.print;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PHOENIX ALERT SINK — Global context for LC alarms
+// ═══════════════════════════════════════════════════════════════════════════════
+threadlocal var phoenix_tg_config: qt.TgConfig = .{
+    .bot_token = "",
+    .chat_id = "",
+    .enabled = false,
+};
+
+/// LC alert sink — sends arousal-alert messages to Telegram
+fn lcAlertSink(alert: locus_coeruleus.Alert, arousal: locus_coeruleus.ArousalLevel) void {
+    const level_emoji = arousal.emoji();
+    const level_label = arousal.label();
+    const kind_name = @tagName(alert.kind);
+
+    var msg_buf: [512]u8 = undefined;
+    const msg = std.fmt.bufPrint(&msg_buf,
+        "{s}{s} LC ALERT: {s}\n{s}",
+        .{ level_emoji, level_label, kind_name, alert.messageStr() }
+    ) catch "";
+
+    queen_telegram.tgSend(phoenix_tg_config, msg);
+}
 
 const GREEN = colors.GREEN;
 const GOLDEN = colors.GOLDEN;
@@ -471,10 +496,16 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
 
     const tg = qt.initTelegram();
 
+    // Phoenix: Set up LC alert sink context
+    phoenix_tg_config = tg;
+
     // v3: Policy state
     var counters = queen_policy.ActionCounters{};
     var incidents = queen_policy.IncidentMemory.init();
     var pending = queen_policy.PendingQueue.init();
+
+    // Phoenix: Locus Coeruleus (alarm system) — initialize with alert sink
+    var locus_state = locus_coeruleus.init(&lcAlertSink);
 
     // Start Telegram poll thread if enabled
     var cmd_queue = queen_telegram.CommandQueue{};
@@ -666,6 +697,7 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
                 .state = &state,
                 .counters = &counters,
                 .incidents = &incidents,
+                .locus_state = &locus_state,
                 .build_ok = snapshot.build_ok,
                 .dirty_files = snapshot.dirty_files,
             };
@@ -761,6 +793,16 @@ fn runQueenLoop(allocator: Allocator, config: QueenConfig) !void {
             if (!config.dry_run) queen_telegram.tgSend(tg, msg);
             state.last_daily = cycle_start;
             if (!config.daemon) print("  " ++ qt.E_CHECK ++ " Daily\n", .{});
+        }
+
+        // 8. Medulla sleep cycle (every 24 hours)
+        emitStep(&state, 9, 12, "Medulla sleep cycle check");
+        if (shouldRunSleepCycle(state, cycle_start)) {
+            _ = medulla.sleepCycle(allocator) catch |err| {
+                if (!config.daemon) print("  {s}" ++ qt.E_CROSS ++ " Sleep cycle failed: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            };
+            state.last_sleep_ts = cycle_start;
+            if (!config.daemon) print("  " ++ qt.E_BRAIN ++ " Sleep cycle\n", .{});
         }
 
         // 8. Update delta state
@@ -1500,6 +1542,15 @@ fn shouldSendDaily(state: QueenState, now: i64) bool {
     const day_sec: u64 = @intCast(@mod(now, 86400));
     const hour = day_sec / 3600;
     return (hour == 23);
+}
+
+/// Medulla sleep cycle — run every 24 hours at 03:00 (optimal REM consolidation window)
+fn shouldRunSleepCycle(state: QueenState, now: i64) bool {
+    // 86400 = 24 hours, 82800 = 23 hours (hysteresis)
+    if ((now - state.last_sleep_ts) < 82800) return false;
+    const day_sec: u64 = @intCast(@mod(now, 86400));
+    const hour = day_sec / 3600;
+    return (hour == 3);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
