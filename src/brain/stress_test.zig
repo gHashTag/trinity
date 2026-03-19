@@ -15,6 +15,13 @@ const NUM_TASKS: usize = 1000;
 const NUM_AGENTS: usize = 10;
 const CONCURRENT_AGENTS: usize = 5;
 
+// ANSI color codes for terminal output
+const RESET = "\x1b[0m";
+const RED = "\x1b[31m";
+const GREEN = "\x1b[32m";
+const YELLOW = "\x1b[33m";
+const CYAN = "\x1b[36m";
+
 pub fn runStressTest() !void {
     std.debug.print("\n{s}╔═══════════════════════════════════════════════════════════════╗{s}\n", .{ YELLOW, RESET });
     std.debug.print("{s}║  S³AI BRAIN STRESS TEST — 1000 Tasks × 10 Agents                ║{s}\n", .{ GREEN, RESET });
