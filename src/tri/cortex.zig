@@ -94,7 +94,8 @@ pub fn collectSnapshot(allocator: Allocator) !FacultySnapshot {
         0;
 
     // Git branch + dirty files
-    snap.git_branch = getGitBranch(allocator);
+    var branch_buf: [64]u8 = undefined;
+    snap.git_branch = getGitBranch(allocator, &branch_buf);
     snap.dirty_files = countDirtyFiles(allocator);
 
     // Open issues
@@ -1004,15 +1005,15 @@ fn parseRegenReport(allocator: Allocator) RegenStats {
     return .{ .pass = pass, .total = total };
 }
 
-fn getGitBranch(allocator: Allocator) []const u8 {
+fn getGitBranch(allocator: Allocator, buf: []u8) []const u8 {
     const result = runCmd(allocator, &.{ "git", "branch", "--show-current" }) catch return "unknown";
     defer allocator.free(result);
-    // Result is allocated, but we return a static fallback or leak intentionally for CLI
-    // (program exits after printing)
     if (result.len > 0) {
         const trimmed = std.mem.trimRight(u8, result, "\n\r ");
         if (trimmed.len > 0) {
-            return allocator.dupe(u8, trimmed) catch "unknown";
+            const len = @min(trimmed.len, buf.len);
+            @memcpy(buf[0..len], trimmed[0..len]);
+            return buf[0..len];
         }
     }
     return "unknown";

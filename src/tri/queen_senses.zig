@@ -205,9 +205,15 @@ fn countEnvKeys() KeyCheck {
 }
 
 fn readOuroborosScore() f32 {
-    const ouroboros = @import("queen_ouroboros.zig");
-    const state = ouroboros.fetch();
-    return ouroboros.getScore(state);
+    // Use queen_ouroboros module for API + file fallback
+    const queen_ouroboros = @import("queen_ouroboros.zig");
+    return queen_ouroboros.getScoreFromFile(".trinity/ouroboros_state.json");
+}
+
+/// Extended: fetch full Ouroboros state with all 12 dimensions
+pub fn fetchOuroborosState(allocator: Allocator) @import("queen_ouroboros.zig").OuroborosState {
+    const queen_ouroboros = @import("queen_ouroboros.zig");
+    return queen_ouroboros.fetch(allocator, .{}) catch return .{};
 }
 
 fn countExperienceEpisodes() u32 {
@@ -507,4 +513,38 @@ test "Queen senses — fmtSensesTelegram" {
     try std.testing.expect(msg.len > 0);
     try std.testing.expect(std.mem.indexOf(u8, msg, "4.6") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "HEALTHY") != null);
+}
+
+test "Queen senses — fmtSensesTelegram build broken" {
+    var buf: [2048]u8 = undefined;
+    const s = SenseResult{
+        .build_ok = false,
+        .test_rate = 0,
+        .dirty_files = 5,
+        .open_issues = 2,
+        .agent_count = 1,
+        .farm_services = 5,
+        .farm_best_ppl = 999.0,
+        .arena_battles = 10,
+        .ouroboros_score = 35.0,
+        .disk_free_gb = 20.0,
+        .keys_present = 3,
+        .keys_total = 5,
+        .experience_count = 0,
+    };
+    const msg = fmtSensesTelegram(&buf, s);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "BUILD BROKEN") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "FAIL") != null);
+}
+
+test "Queen senses — SenseResult healthEmoji" {
+    const s1 = SenseResult{ .build_ok = true, .ouroboros_score = 80.0 };
+    try std.testing.expectEqualStrings(qt.E_STAR, s1.healthEmoji());
+
+    const s2 = SenseResult{ .build_ok = true, .ouroboros_score = 55.0 };
+    try std.testing.expectEqualStrings(qt.E_CHECK, s2.healthEmoji());
+
+    const s3 = SenseResult{ .build_ok = false, .ouroboros_score = 20.0 };
+    try std.testing.expectEqualStrings(qt.E_CROSS, s3.healthEmoji());
 }

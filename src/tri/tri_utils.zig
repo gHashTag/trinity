@@ -62,15 +62,140 @@ pub const Command = enum {
     // Spec & Loop (v8.27)
     spec_create,
     loop_decide,
+    // TVC (Distributed Learning)
+    tvc_demo,
+    tvc_stats,
+    // Multi-Agent System
+    agents_demo,
+    agents_bench,
+    // Long Context
+    context_demo,
+    context_bench,
+    // RAG (Retrieval-Augmented Generation)
+    rag_demo,
+    rag_bench,
+    // Voice I/O (TTS + STT)
+    voice_demo,
+    voice_bench,
+    // Code Execution Sandbox
+    sandbox_demo,
+    sandbox_bench,
+    // Streaming Output
+    stream_demo,
+    stream_bench,
+    // Local Vision
+    vision_demo,
+    vision_bench,
+    // Fine-Tuning Engine
+    finetune_demo,
+    finetune_bench,
+    // Batched Stealing
+    batched_demo,
+    batched_bench,
+    // Priority Queue
+    priority_demo,
+    priority_bench,
+    // Deadline Scheduling
+    deadline_demo,
+    deadline_bench,
+    // Multi-Modal Unified (Cycle 26)
+    multimodal_demo,
+    multimodal_bench,
+    // Multi-Modal Tool Use (Cycle 27)
+    tooluse_demo,
+    tooluse_bench,
+    // Unified Multi-Modal Agent (Cycle 30)
+    unified_demo,
+    unified_bench,
+    // Autonomous Agent (Cycle 31)
+    autonomous_demo,
+    autonomous_bench,
+    // Multi-Agent Orchestration (Cycle 32)
+    orchestration_demo,
+    orchestration_bench,
+    // MM Multi-Agent Orchestration (Cycle 33)
+    mm_orch_demo,
+    mm_orch_bench,
+    // Agent Memory & Cross-Modal Learning (Cycle 34)
+    memory_demo,
+    memory_bench,
+    // Persistent Memory & Disk Serialization (Cycle 35)
+    persist_demo,
+    persist_bench,
+    // Dynamic Agent Spawning & Load Balancing (Cycle 36)
+    spawn_demo,
+    spawn_bench,
+    // Distributed Multi-Node Agents (Cycle 37)
+    cluster_demo,
+    cluster_bench,
+    // Adaptive Work-Stealing Scheduler (Cycle 39)
+    worksteal_demo,
+    worksteal_bench,
+    // Plugin & Extension System (Cycle 40)
+    plugin_demo,
+    plugin_bench,
+    // Agent Communication Protocol (Cycle 41)
+    comms_demo,
+    comms_bench,
+    // Observability & Tracing System (Cycle 42)
+    observe_demo,
+    observe_bench,
+    // Consensus & Coordination Protocol (Cycle 43)
+    consensus_demo,
+    consensus_bench,
+    // Speculative Execution Engine (Cycle 44)
+    specexec_demo,
+    specexec_bench,
+    // Adaptive Resource Governor (Cycle 45)
+    governor_demo,
+    governor_bench,
+    // Federated Learning Protocol (Cycle 46)
+    fedlearn_demo,
+    fedlearn_bench,
+    // Event Sourcing & CQRS Engine (Cycle 47)
+    eventsrc_demo,
+    eventsrc_bench,
+    // Capability-Based Security Model (Cycle 48)
+    capsec_demo,
+    capsec_bench,
+    // Distributed Transaction Coordinator (Cycle 49)
+    dtxn_demo,
+    dtxn_bench,
+    // Adaptive Caching & Memoization (Cycle 50)
+    cache_demo,
+    cache_bench,
+    // Contract-Based Agent Negotiation (Cycle 51)
+    contract_demo,
+    contract_bench,
+    // Temporal Workflow Engine (Cycle 52)
+    workflow_demo,
+    workflow_bench,
     // Distributed Inference
     distributed,
     // Multi-Cluster (Cycle #97)
     multi_cluster,
+    // Sacred Mathematics (v3.6)
+    math,
+    constants_cmd,
+    phi,
+    fib,
+    lucas,
+    spiral,
+    gematria,
+    formula_cmd,
+    sacred,
+    // Biology (v14.0)
+    bio,
+    // Cosmology (v15.0)
+    cosmos,
+    // Neuroscience (v16.0)
+    neuro,
+    // Chemistry (v6.0)
+    chem,
     // Intelligence System
     intelligence,
     // Dev Utilities
     doctor,
-    regen, // Wave 5: Immune System
     clean,
     fmt_cmd,
     stats_cmd,
@@ -160,8 +285,6 @@ pub const Command = enum {
     metrics,
     // Context Loader (Kiro-inspired)
     context_load,
-    // HSLM Inference
-    infer,
 };
 
 pub const CLIState = struct {
@@ -572,7 +695,6 @@ pub fn printHelp() void {
 
     std.debug.print("{s}DEV UTILITIES:{s}\n", .{ CYAN, RESET });
     std.debug.print("  {s}doctor{s} [sub]                  Codebase health (scan/mark/report/plan/heal/enforce/status)\n", .{ GREEN, RESET });
-    std.debug.print("  {s}regen{s} [analyze|plan|execute|status] Immune system auto-healing\n", .{ GREEN, RESET });
     std.debug.print("  {s}clean{s}                       Clean build artifacts (.zig-cache, zig-out)\n", .{ GREEN, RESET });
     std.debug.print("  {s}fmt{s}                         Format Zig source (zig fmt src/)\n", .{ GREEN, RESET });
     std.debug.print("  {s}stats{s}                       Project statistics (files, LOC, specs, tests)\n", .{ GREEN, RESET });
@@ -654,14 +776,139 @@ pub fn parseCommand(arg: []const u8) Command {
     // Spec & Loop (v8.27)
     if (std.mem.eql(u8, arg, "spec-create") or std.mem.eql(u8, arg, "spec_create")) return .spec_create;
     if (std.mem.eql(u8, arg, "loop-decide") or std.mem.eql(u8, arg, "loop_decide")) return .loop_decide;
+    // TVC (Distributed Learning)
+    if (std.mem.eql(u8, arg, "tvc-demo") or std.mem.eql(u8, arg, "tvc")) return .tvc_demo;
+    if (std.mem.eql(u8, arg, "tvc-stats")) return .tvc_stats;
+    // Multi-Agent System
+    if (std.mem.eql(u8, arg, "agents-demo") or std.mem.eql(u8, arg, "agents")) return .agents_demo;
+    if (std.mem.eql(u8, arg, "agents-bench")) return .agents_bench;
+    // Long Context
+    if (std.mem.eql(u8, arg, "context-demo")) return .context_demo;
+    if (std.mem.eql(u8, arg, "context-bench")) return .context_bench;
+    // RAG
+    if (std.mem.eql(u8, arg, "rag-demo") or std.mem.eql(u8, arg, "rag")) return .rag_demo;
+    if (std.mem.eql(u8, arg, "rag-bench")) return .rag_bench;
+    // Voice I/O
+    if (std.mem.eql(u8, arg, "voice-demo") or std.mem.eql(u8, arg, "voice") or std.mem.eql(u8, arg, "mic")) return .voice_demo;
+    if (std.mem.eql(u8, arg, "voice-bench") or std.mem.eql(u8, arg, "mic-bench")) return .voice_bench;
+    // Code Sandbox
+    if (std.mem.eql(u8, arg, "sandbox-demo") or std.mem.eql(u8, arg, "sandbox")) return .sandbox_demo;
+    if (std.mem.eql(u8, arg, "sandbox-bench")) return .sandbox_bench;
+    // Streaming Multi-Modal Pipeline (Cycle 38)
+    if (std.mem.eql(u8, arg, "stream-demo") or std.mem.eql(u8, arg, "stream") or std.mem.eql(u8, arg, "pipeline")) return .stream_demo;
+    if (std.mem.eql(u8, arg, "stream-bench") or std.mem.eql(u8, arg, "pipeline-bench")) return .stream_bench;
+    // Local Vision
+    if (std.mem.eql(u8, arg, "vision-demo") or std.mem.eql(u8, arg, "vision") or std.mem.eql(u8, arg, "eye")) return .vision_demo;
+    if (std.mem.eql(u8, arg, "vision-bench") or std.mem.eql(u8, arg, "eye-bench")) return .vision_bench;
+    // Fine-Tuning Engine
+    if (std.mem.eql(u8, arg, "finetune-demo") or std.mem.eql(u8, arg, "finetune")) return .finetune_demo;
+    if (std.mem.eql(u8, arg, "finetune-bench")) return .finetune_bench;
+    // Batched Stealing
+    if (std.mem.eql(u8, arg, "batched-demo") or std.mem.eql(u8, arg, "batched")) return .batched_demo;
+    if (std.mem.eql(u8, arg, "batched-bench")) return .batched_bench;
+    // Priority Queue
+    if (std.mem.eql(u8, arg, "priority-demo") or std.mem.eql(u8, arg, "priority")) return .priority_demo;
+    if (std.mem.eql(u8, arg, "priority-bench")) return .priority_bench;
+    // Deadline Scheduling
+    if (std.mem.eql(u8, arg, "deadline-demo") or std.mem.eql(u8, arg, "deadline")) return .deadline_demo;
+    if (std.mem.eql(u8, arg, "deadline-bench")) return .deadline_bench;
+    // Multi-Modal Unified (Cycle 26)
+    if (std.mem.eql(u8, arg, "multimodal-demo") or std.mem.eql(u8, arg, "multimodal") or std.mem.eql(u8, arg, "mm")) return .multimodal_demo;
+    if (std.mem.eql(u8, arg, "multimodal-bench") or std.mem.eql(u8, arg, "mm-bench")) return .multimodal_bench;
+    // Multi-Modal Tool Use (Cycle 27)
+    if (std.mem.eql(u8, arg, "tooluse-demo") or std.mem.eql(u8, arg, "tooluse") or std.mem.eql(u8, arg, "tools")) return .tooluse_demo;
+    if (std.mem.eql(u8, arg, "tooluse-bench") or std.mem.eql(u8, arg, "tools-bench")) return .tooluse_bench;
+    // Unified Multi-Modal Agent (Cycle 30)
+    if (std.mem.eql(u8, arg, "unified-demo") or std.mem.eql(u8, arg, "unified") or std.mem.eql(u8, arg, "agent")) return .unified_demo;
+    if (std.mem.eql(u8, arg, "unified-bench") or std.mem.eql(u8, arg, "agent-bench")) return .unified_bench;
+    // Autonomous Agent (Cycle 31)
+    if (std.mem.eql(u8, arg, "auto-demo") or std.mem.eql(u8, arg, "auto") or std.mem.eql(u8, arg, "autonomous")) return .autonomous_demo;
+    if (std.mem.eql(u8, arg, "auto-bench") or std.mem.eql(u8, arg, "autonomous-bench")) return .autonomous_bench;
+    // Multi-Agent Orchestration (Cycle 32)
+    if (std.mem.eql(u8, arg, "orch-demo") or std.mem.eql(u8, arg, "orch") or std.mem.eql(u8, arg, "orchestrate")) return .orchestration_demo;
+    if (std.mem.eql(u8, arg, "orch-bench") or std.mem.eql(u8, arg, "orchestrate-bench")) return .orchestration_bench;
+    // MM Multi-Agent Orchestration (Cycle 33)
+    if (std.mem.eql(u8, arg, "mmo-demo") or std.mem.eql(u8, arg, "mmo") or std.mem.eql(u8, arg, "mm-orch")) return .mm_orch_demo;
+    if (std.mem.eql(u8, arg, "mmo-bench") or std.mem.eql(u8, arg, "mm-orch-bench")) return .mm_orch_bench;
+    // Agent Memory & Cross-Modal Learning (Cycle 34)
+    if (std.mem.eql(u8, arg, "memory-demo") or std.mem.eql(u8, arg, "memory") or std.mem.eql(u8, arg, "mem")) return .memory_demo;
+    if (std.mem.eql(u8, arg, "memory-bench") or std.mem.eql(u8, arg, "mem-bench")) return .memory_bench;
+    // Persistent Memory & Disk Serialization (Cycle 35)
+    if (std.mem.eql(u8, arg, "persist-demo") or std.mem.eql(u8, arg, "persist") or std.mem.eql(u8, arg, "save")) return .persist_demo;
+    if (std.mem.eql(u8, arg, "persist-bench") or std.mem.eql(u8, arg, "persist-bench") or std.mem.eql(u8, arg, "save-bench")) return .persist_bench;
+    // Dynamic Agent Spawning & Load Balancing (Cycle 36)
+    if (std.mem.eql(u8, arg, "spawn-demo") or std.mem.eql(u8, arg, "spawn") or std.mem.eql(u8, arg, "pool")) return .spawn_demo;
+    if (std.mem.eql(u8, arg, "spawn-bench") or std.mem.eql(u8, arg, "pool-bench")) return .spawn_bench;
+    // Distributed Multi-Node Agents (Cycle 37)
+    if (std.mem.eql(u8, arg, "cluster-demo") or std.mem.eql(u8, arg, "cluster") or std.mem.eql(u8, arg, "nodes")) return .cluster_demo;
+    if (std.mem.eql(u8, arg, "cluster-bench") or std.mem.eql(u8, arg, "nodes-bench")) return .cluster_bench;
+    // Adaptive Work-Stealing Scheduler (Cycle 39)
+    if (std.mem.eql(u8, arg, "worksteal-demo") or std.mem.eql(u8, arg, "worksteal") or std.mem.eql(u8, arg, "steal")) return .worksteal_demo;
+    if (std.mem.eql(u8, arg, "worksteal-bench") or std.mem.eql(u8, arg, "steal-bench")) return .worksteal_bench;
+    // Plugin & Extension System (Cycle 40)
+    if (std.mem.eql(u8, arg, "plugin-demo") or std.mem.eql(u8, arg, "plugin") or std.mem.eql(u8, arg, "ext")) return .plugin_demo;
+    if (std.mem.eql(u8, arg, "plugin-bench") or std.mem.eql(u8, arg, "ext-bench")) return .plugin_bench;
+    // Agent Communication Protocol (Cycle 41)
+    if (std.mem.eql(u8, arg, "comms-demo") or std.mem.eql(u8, arg, "comms") or std.mem.eql(u8, arg, "msg")) return .comms_demo;
+    if (std.mem.eql(u8, arg, "comms-bench") or std.mem.eql(u8, arg, "msg-bench")) return .comms_bench;
+    // Observability & Tracing System (Cycle 42)
+    if (std.mem.eql(u8, arg, "observe-demo") or std.mem.eql(u8, arg, "observe") or std.mem.eql(u8, arg, "otel")) return .observe_demo;
+    if (std.mem.eql(u8, arg, "observe-bench") or std.mem.eql(u8, arg, "otel-bench")) return .observe_bench;
+    // Consensus & Coordination Protocol (Cycle 43)
+    if (std.mem.eql(u8, arg, "consensus-demo") or std.mem.eql(u8, arg, "consensus") or std.mem.eql(u8, arg, "raft")) return .consensus_demo;
+    if (std.mem.eql(u8, arg, "consensus-bench") or std.mem.eql(u8, arg, "raft-bench")) return .consensus_bench;
+    // Speculative Execution Engine (Cycle 44)
+    if (std.mem.eql(u8, arg, "specexec-demo") or std.mem.eql(u8, arg, "specexec") or std.mem.eql(u8, arg, "spec")) return .specexec_demo;
+    if (std.mem.eql(u8, arg, "specexec-bench") or std.mem.eql(u8, arg, "spec-bench")) return .specexec_bench;
+    // Adaptive Resource Governor (Cycle 45)
+    if (std.mem.eql(u8, arg, "governor-demo") or std.mem.eql(u8, arg, "governor") or std.mem.eql(u8, arg, "gov")) return .governor_demo;
+    if (std.mem.eql(u8, arg, "governor-bench") or std.mem.eql(u8, arg, "gov-bench")) return .governor_bench;
+    // Federated Learning Protocol (Cycle 46)
+    if (std.mem.eql(u8, arg, "fedlearn-demo") or std.mem.eql(u8, arg, "fedlearn") or std.mem.eql(u8, arg, "fl")) return .fedlearn_demo;
+    if (std.mem.eql(u8, arg, "fedlearn-bench") or std.mem.eql(u8, arg, "fl-bench")) return .fedlearn_bench;
+    // Event Sourcing & CQRS Engine (Cycle 47)
+    if (std.mem.eql(u8, arg, "eventsrc-demo") or std.mem.eql(u8, arg, "eventsrc") or std.mem.eql(u8, arg, "es")) return .eventsrc_demo;
+    if (std.mem.eql(u8, arg, "eventsrc-bench") or std.mem.eql(u8, arg, "es-bench")) return .eventsrc_bench;
+    // Capability-Based Security Model (Cycle 48)
+    if (std.mem.eql(u8, arg, "capsec-demo") or std.mem.eql(u8, arg, "capsec") or std.mem.eql(u8, arg, "sec")) return .capsec_demo;
+    if (std.mem.eql(u8, arg, "capsec-bench") or std.mem.eql(u8, arg, "sec-bench")) return .capsec_bench;
+    // Distributed Transaction Coordinator (Cycle 49)
+    if (std.mem.eql(u8, arg, "dtxn-demo") or std.mem.eql(u8, arg, "dtxn") or std.mem.eql(u8, arg, "txn")) return .dtxn_demo;
+    if (std.mem.eql(u8, arg, "dtxn-bench") or std.mem.eql(u8, arg, "txn-bench")) return .dtxn_bench;
+    // Adaptive Caching & Memoization (Cycle 50)
+    if (std.mem.eql(u8, arg, "cache-demo") or std.mem.eql(u8, arg, "cache") or std.mem.eql(u8, arg, "memo")) return .cache_demo;
+    if (std.mem.eql(u8, arg, "cache-bench") or std.mem.eql(u8, arg, "memo-bench")) return .cache_bench;
+    // Contract-Based Agent Negotiation (Cycle 51)
+    if (std.mem.eql(u8, arg, "contract-demo") or std.mem.eql(u8, arg, "contract") or std.mem.eql(u8, arg, "sla")) return .contract_demo;
+    if (std.mem.eql(u8, arg, "contract-bench") or std.mem.eql(u8, arg, "sla-bench")) return .contract_bench;
+    // Temporal Workflow Engine (Cycle 52)
+    if (std.mem.eql(u8, arg, "workflow-demo") or std.mem.eql(u8, arg, "workflow") or std.mem.eql(u8, arg, "wf")) return .workflow_demo;
+    if (std.mem.eql(u8, arg, "workflow-bench") or std.mem.eql(u8, arg, "wf-bench")) return .workflow_bench;
     if (std.mem.eql(u8, arg, "distributed") or std.mem.eql(u8, arg, "dist")) return .distributed;
     // Multi-Cluster (Cycle #97)
     if (std.mem.eql(u8, arg, "multi-cluster") or std.mem.eql(u8, arg, "mc")) return .multi_cluster;
+    // Sacred Mathematics (v3.6)
+    if (std.mem.eql(u8, arg, "math")) return .math;
+    if (std.mem.eql(u8, arg, "constants")) return .constants_cmd;
+    if (std.mem.eql(u8, arg, "phi")) return .phi;
+    if (std.mem.eql(u8, arg, "fib")) return .fib;
+    if (std.mem.eql(u8, arg, "lucas")) return .lucas;
+    if (std.mem.eql(u8, arg, "spiral")) return .spiral;
+    if (std.mem.eql(u8, arg, "gematria") or std.mem.eql(u8, arg, "gem")) return .gematria;
+    if (std.mem.eql(u8, arg, "formula")) return .formula_cmd;
+    if (std.mem.eql(u8, arg, "sacred")) return .sacred;
+    // Biology (v14.0)
+    if (std.mem.eql(u8, arg, "bio") or std.mem.eql(u8, arg, "biology")) return .bio;
+    // Cosmology (v15.0)
+    if (std.mem.eql(u8, arg, "cosmos") or std.mem.eql(u8, arg, "cosmology")) return .cosmos;
+    // Neuroscience (v16.0)
+    if (std.mem.eql(u8, arg, "neuro") or std.mem.eql(u8, arg, "neuroscience")) return .neuro;
+    // Chemistry (v6.0)
+    if (std.mem.eql(u8, arg, "chem") or std.mem.eql(u8, arg, "chemistry")) return .chem;
     // Intelligence System
     if (std.mem.eql(u8, arg, "intelligence") or std.mem.eql(u8, arg, "intel")) return .intelligence;
     // Dev Utilities
     if (std.mem.eql(u8, arg, "doctor") or std.mem.eql(u8, arg, "dr")) return .doctor;
-    if (std.mem.eql(u8, arg, "regen")) return .regen;
     if (std.mem.eql(u8, arg, "clean")) return .clean;
     if (std.mem.eql(u8, arg, "fmt") or std.mem.eql(u8, arg, "format")) return .fmt_cmd;
     if (std.mem.eql(u8, arg, "stats")) return .stats_cmd;
@@ -688,7 +935,6 @@ pub fn parseCommand(arg: []const u8) Command {
     if (std.mem.eql(u8, arg, "deck") or std.mem.eql(u8, arg, "deck-generate")) return .deck_generate;
     if (std.mem.eql(u8, arg, "fpga")) return .fpga;
     if (std.mem.eql(u8, arg, "train")) return .train;
-    if (std.mem.eql(u8, arg, "infer")) return .infer;
     if (std.mem.eql(u8, arg, "cloud")) return .cloud;
     if (std.mem.eql(u8, arg, "farm")) return .farm;
     if (std.mem.eql(u8, arg, "fpga-demo")) return .fpga_demo;
@@ -877,7 +1123,7 @@ pub fn printStats(state: *CLIState) void {
 }
 
 pub fn processInput(state: *CLIState, input: []const u8) void {
-    const trimmed = std.mem.trim(u8, input, &[_]u8{ ' ', '\t', '\n', '\r' });
+    const trimmed = std.mem.trim(u8, input, " \t\n\r");
     if (trimmed.len == 0) return;
 
     // Check for REPL commands
@@ -1001,8 +1247,108 @@ pub fn printCommandHelp(cmd: Command) void {
     std.debug.print("{s}USAGE:{s}\n", .{ CYAN, RESET });
 
     switch (cmd) {
-        // Help entries for commands now handled by full_handlers in tri_cell_dispatch.zig
-        // are not listed here — they have their own built-in help.
+        .chem => {
+            std.debug.print("  tri chem <subcommand> [options]\n\n", .{});
+            std.debug.print("{s}SUBCOMMANDS:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  {s}periodic{s}                    Show periodic table (118 elements)\n", .{ GREEN, RESET });
+            std.debug.print("  {s}element{s} <symbol|number>     Show element information card\n", .{ GREEN, RESET });
+            std.debug.print("  {s}mass{s} <formula>              Calculate molar mass\n", .{ GREEN, RESET });
+            std.debug.print("  {s}formula{s} <formula>            Analyze formula composition\n", .{ GREEN, RESET });
+            std.debug.print("  {s}balance{s} <equation>           Balance chemical equation\n", .{ GREEN, RESET });
+            std.debug.print("  {s}moles{s} <mass> <formula>       Calculate moles, molecules\n", .{ GREEN, RESET });
+            std.debug.print("  {s}atoms{s} <moles> <formula>       Calculate atom counts\n", .{ GREEN, RESET });
+            std.debug.print("  {s}ideal-gas{s} <P>=<V>=<n>=<T>   Solve PV=nRT\n", .{ GREEN, RESET });
+            std.debug.print("  {s}ph{s} <concentration|M>         Calculate pH\n", .{ GREEN, RESET });
+            std.debug.print("  {s}redox{s} <reaction>            Balance redox equation\n\n", .{ GREEN, RESET });
+            std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  tri chem periodic                  # Show all 118 elements\n", .{});
+            std.debug.print("  tri chem element Au                # Show gold (Au) element info\n", .{});
+            std.debug.print("  tri chem element 79                # Same as above (atomic number)\n", .{});
+            std.debug.print("  tri chem mass H2O                  # Molar mass of water (18.015 g/mol)\n", .{});
+            std.debug.print("  tri chem formula C6H12O6            # Analyze glucose composition\n", .{});
+        },
+        .cosmos => {
+            std.debug.print("  tri cosmos <subcommand> [options]\n\n", .{});
+            std.debug.print("{s}SUBCOMMANDS:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  {s}hubble{s}                      Hubble tension resolution via φ\n", .{ GREEN, RESET });
+            std.debug.print("  {s}dark{s}                        Dark energy/matter as π-patterns\n", .{ GREEN, RESET });
+            std.debug.print("  {s}predict{s}                     Predict sacred constants\n", .{ GREEN, RESET });
+            std.debug.print("  {s}expand{s}                      Universe expansion timeline\n", .{ GREEN, RESET });
+            std.debug.print("  {s}big-bang{s}                     Big Bang through sacred lens\n\n", .{ GREEN, RESET });
+            std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  tri cosmos hubble                  # Sacred H₀ resolution (70.74 km/s/Mpc)\n", .{});
+            std.debug.print("  tri cosmos dark                    # Dark energy as (π-1)/π ≈ 0.682\n", .{});
+            std.debug.print("  tri cosmos predict                 # Predict α, μ, sin²θ_W\n", .{});
+        },
+        .bio => {
+            std.debug.print("  tri bio <subcommand> [options]\n\n", .{});
+            std.debug.print("{s}SUBCOMMANDS:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  {s}periodic{s}                    Show DNA/RNA periodic table (16 codons)\n", .{ GREEN, RESET });
+            std.debug.print("  {s}transcribe{s} <dna>           DNA → mRNA transcription\n", .{ GREEN, RESET });
+            std.debug.print("  {s}translate{s} <rna>            mRNA → protein translation\n", .{ GREEN, RESET });
+            std.debug.print("  {s}reverse{s} <seq>               Reverse DNA/RNA sequence\n", .{ GREEN, RESET });
+            std.debug.print("  {s}complement{s} <dna>           DNA complementary strand\n", .{ GREEN, RESET });
+            std.debug.print("  {s}gc-content{s} <seq>            Calculate GC content %%\n", .{ GREEN, RESET });
+            std.debug.print("  {s}molecular-weight{s} <seq>      Calculate molecular weight\n", .{ GREEN, RESET });
+            std.debug.print("  {s}codons{s} <seq>                Show all codons for sequence\n\n", .{ GREEN, RESET });
+            std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  tri bio periodic                   # Show sacred biology periodic table\n", .{});
+            std.debug.print("  tri bio transcribe ATGCGTA        # Transcribe to mRNA\n", .{});
+            std.debug.print("  tri bio translate AUGCCG            # Translate to protein\n", .{});
+        },
+        .neuro => {
+            std.debug.print("  tri neuro <subcommand> [options]\n\n", .{});
+            std.debug.print("{s}SUBCOMMANDS:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  {s}waves{s} [freq]                Brain waves (φ-patterned frequencies)\n", .{ GREEN, RESET });
+            std.debug.print("  {s}consciousness{s} [C t E]       Compute consciousness level Ψ\n", .{ GREEN, RESET });
+            std.debug.print("  {s}regions{s}                     Sacred brain regions (φ-index)\n", .{ GREEN, RESET });
+            std.debug.print("  {s}network{s} [layers...]          Analyze neural network sacredness\n", .{ GREEN, RESET });
+            std.debug.print("  {s}synapse{s}                      Synaptic transmission timing\n", .{ GREEN, RESET });
+            std.debug.print("  {s}neurons{s}                      Brain statistics & sacred constants\n\n", .{ GREEN, RESET });
+            std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  tri neuro waves                    # Show all brain waves\n", .{});
+            std.debug.print("  tri neuro waves 10                 # Analyze 10 Hz (alpha)\n", .{});
+            std.debug.print("  tri neuro consciousness             # Compute Ψ with defaults\n", .{});
+            std.debug.print("  tri neuro consciousness 70 3 25     # Custom Ψ computation\n", .{});
+            std.debug.print("  tri neuro network 784 144 233 10    # Analyze Golden MLP\n", .{});
+            std.debug.print("  tri neuro network 3 9 27 9 3        # Analyze Trinitary network\n", .{});
+        },
+        .phi => {
+            std.debug.print("  tri phi [n]\n\n", .{});
+            std.debug.print("Calculate φⁿ (golden ratio power)\n\n", .{});
+            std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  tri phi 1                         # φ = 1.618033...\n", .{});
+            std.debug.print("  tri phi 2                         # φ² = 2.618033...\n", .{});
+            std.debug.print("  tri phi -1                        # 1/φ = 0.618033...\n", .{});
+        },
+        .fib => {
+            std.debug.print("  tri fib <n>\n\n", .{});
+            std.debug.print("Calculate Fibonacci number F(n) using BigInt\n\n", .{});
+            std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  tri fib 10                        # F(10) = 55\n", .{});
+            std.debug.print("  tri fib 100                       # F(100) = 354224848179261915075\n", .{});
+        },
+        .lucas => {
+            std.debug.print("  tri lucas <n>\n\n", .{});
+            std.debug.print("Calculate Lucas number L(n) — L(2) = 3 = TRINITY\n\n", .{});
+            std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  tri lucas 10                      # L(10) = 123\n", .{});
+            std.debug.print("  tri lucas 100                     # L(100) = 792070839848372253127\n", .{});
+        },
+        .gematria => {
+            std.debug.print("  tri gematria <word>\n\n", .{});
+            std.debug.print("Calculate gematria (English, Hebrew, Greek, Coptic)\n\n", .{});
+            std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  tri gematria TRINITY              # English: 202 = 3×φ×π×e×...\n", .{});
+            std.debug.print("  tri gematria שכינה                # Hebrew: 405\n", .{});
+        },
+        .formula_cmd => {
+            std.debug.print("  tri formula <expression>\n\n", .{});
+            std.debug.print("Evaluate mathematical formula: V = n × 3^k × π^m × φ^p × e^q\n\n", .{});
+            std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
+            std.debug.print("  tri formula \"2 + 2\"              # Basic arithmetic\n", .{});
+            std.debug.print("  tri formula \"φ^2 + 1/φ^2\"        # Sacred identity = 3\n", .{});
+        },
         .gen => {
             std.debug.print("  tri gen <spec.tri> [options]\n\n", .{});
             std.debug.print("Compile VIBEE spec to Zig/Verilog\n\n", .{});
@@ -1018,7 +1364,7 @@ pub fn printCommandHelp(cmd: Command) void {
             std.debug.print("Start HTTP API server with REST + GraphQL\n\n", .{});
             std.debug.print("{s}OPTIONS:{s}\n", .{ CYAN, RESET });
             std.debug.print("  --port PORT    Listen port (default: 8899)\n", .{});
-            std.debug.print("  --host HOST    Bind address (default: 127.0.0.1)\n", .{});
+            std.debug.print("  --host HOST    Bind address (default: 0.0.0.0)\n", .{});
             std.debug.print("  --daemon       Background mode\n\n", .{});
             std.debug.print("{s}EXAMPLES:{s}\n", .{ CYAN, RESET });
             std.debug.print("  tri serve                              # Start on port 8899\n", .{});

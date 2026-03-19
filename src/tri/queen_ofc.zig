@@ -35,7 +35,7 @@ pub const ChatRoute = enum {
         return switch (self) {
             .personal => "144022504",
             .group => "-5160767429",
-            .agent => "-5160767429", // TODO: agent-specific channels
+            .agent => "-5160767429", // Future: dedicated channels per agent
             .alert => "-5160767429", // Same as group, but pinned
         };
     }
@@ -703,4 +703,102 @@ test "ofc — meanAbsoluteError calculates correctly" {
 test "ofc — meanAbsoluteError zero when no predictions" {
     const rp = RewardPrediction.init(50.0);
     try std.testing.expectEqual(0.0, rp.meanAbsoluteError());
+}
+
+test "ofc — Mood all values" {
+    const moods = [_]Mood{ .calm, .alert, .alarm, .euphoria };
+    for (moods) |m| {
+        _ = m; // Verify all enum values exist
+    }
+}
+
+test "ofc — Mood emoji all values" {
+    try std.testing.expectEqual(qt.E_CHECK, Mood.calm.emoji());
+    try std.testing.expectEqual(qt.E_WRENCH, Mood.alert.emoji());
+    try std.testing.expectEqual(qt.E_SIREN, Mood.alarm.emoji());
+    try std.testing.expectEqual(qt.E_TROPHY, Mood.euphoria.emoji());
+}
+
+test "ofc — Mood label all values" {
+    try std.testing.expectEqualStrings("CALM", Mood.calm.label());
+    try std.testing.expectEqualStrings("ALERT", Mood.alert.label());
+    try std.testing.expectEqualStrings("ALARM", Mood.alarm.label());
+    try std.testing.expectEqualStrings("EUPHORIA", Mood.euphoria.label());
+}
+
+test "ofc — inferMood alert threshold" {
+    // Low ouroboros score but build OK
+    const mood = inferMood(true, 60, false);
+    try std.testing.expectEqual(Mood.alert, mood);
+}
+
+test "ofc — inferMood calm threshold" {
+    // High ouroboros score, build OK, no PPL record
+    const mood = inferMood(true, 85, false);
+    try std.testing.expectEqual(Mood.calm, mood);
+}
+
+test "ofc — ChatRoute agent emoji" {
+    try std.testing.expectEqual(qt.E_ROBOT, ChatRoute.agent.emoji());
+}
+
+test "ofc — ChatRoute agent chatId" {
+    try std.testing.expectEqualStrings("-5160767429", ChatRoute.agent.chatId());
+}
+
+test "ofc — moodLabelWithExplanation calm" {
+    const label = moodLabelWithExplanation(.calm, 10, 15);
+    try std.testing.expect(label.len > 0);
+}
+
+test "ofc — moodLabelWithExplanation alarm" {
+    const label = moodLabelWithExplanation(.alarm, 0, 15);
+    try std.testing.expect(label.len > 0);
+}
+
+test "ofc — moodLabelWithExplanation euphoria" {
+    const label = moodLabelWithExplanation(.euphoria, 15, 15);
+    try std.testing.expect(label.len > 0);
+}
+
+test "ofc — RewardPrediction initialization" {
+    const rp = RewardPrediction.init(42.0);
+    try std.testing.expectEqual(@as(f32, 42.0), rp.predictReward());
+}
+
+test "ofc — RewardPrediction predictReward" {
+    const rp = RewardPrediction.init(50.0);
+    const prediction = rp.predictReward();
+    try std.testing.expectApproxEqAbs(@as(f32, 50.0), prediction, 0.01);
+}
+
+test "ofc — RewardPrediction compareExpectedVsActual" {
+    const rp = RewardPrediction.init(50.0);
+    const pred_err = rp.compareExpectedVsActual(60.0);
+    try std.testing.expect(pred_err.actual == 60.0);
+}
+
+test "ofc — PredictionError fields" {
+    const pred_err = PredictionError{
+        .expected = 50.0,
+        .actual = 60.0,
+        .error_value = 10.0,
+        .absolute_error = 10.0,
+        .is_accurate = false,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 50.0), pred_err.expected, 0.01);
+    try std.testing.expectApproxEqAbs(@as(f32, 60.0), pred_err.actual, 0.01);
+    try std.testing.expectApproxEqAbs(@as(f32, 10.0), pred_err.error_value, 0.01);
+    try std.testing.expect(!pred_err.is_accurate);
+}
+
+test "ofc — CellHealth struct" {
+    const cell_h = CellHealth{
+        .status = .healthy,
+        .cycle = 0,
+        .last_check = 12345,
+    };
+    try std.testing.expectEqual(CellHealth.Status.healthy, cell_h.status);
+    try std.testing.expectEqual(@as(u32, 0), cell_h.cycle);
+    try std.testing.expectEqual(@as(i64, 12345), cell_h.last_check);
 }

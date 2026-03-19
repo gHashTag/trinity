@@ -557,3 +557,275 @@ test "Queen types — QueenConfig god mode" {
     try std.testing.expectEqual(@as(u8, 2), config.max_auto_level);
     try std.testing.expect(!config.require_human_approval);
 }
+
+test "Queen types — QueenConfig default values" {
+    const config = QueenConfig{};
+    try std.testing.expectEqual(@as(u64, 600), config.interval_sec);
+    try std.testing.expect(!config.daemon);
+    try std.testing.expect(!config.dry_run);
+    try std.testing.expect(!config.allow_auto_actions);
+    try std.testing.expectEqual(@as(u8, 1), config.max_auto_level);
+    try std.testing.expect(config.require_human_approval);
+}
+
+test "Queen types — Alert detailStr" {
+    var alert = Alert{ .kind = .build_broken };
+    @memcpy(alert.detail[0.."test detail".len], "test detail");
+    alert.detail_len = "test detail".len;
+    try std.testing.expectEqualStrings("test detail", alert.detailStr());
+}
+
+test "Queen types — EvolutionInfo bestNameStr" {
+    var info = EvolutionInfo{};
+    @memcpy(info.best_name[0.."R33".len], "R33");
+    info.best_name_len = "R33".len;
+    try std.testing.expectEqualStrings("R33", info.bestNameStr());
+}
+
+test "Queen types — ArenaInfo default values" {
+    const info = ArenaInfo{};
+    try std.testing.expectEqual(@as(u32, 0), info.total_battles);
+    try std.testing.expectEqual(@as(u32, 0), info.today_battles);
+}
+
+test "Queen types — QueenState default values" {
+    const state = QueenState{};
+    try std.testing.expectEqual(@as(u32, 0), state.cycle);
+    try std.testing.expectEqual(@as(i64, 0), state.last_heartbeat);
+    try std.testing.expect(state.prev_build_ok);
+    try std.testing.expectEqual(@as(f32, 999.0), state.prev_best_ppl);
+}
+
+test "Queen types — SenseResult default values" {
+    const result = SenseResult{};
+    try std.testing.expect(!result.build_ok);
+    try std.testing.expectEqual(@as(u8, 0), result.test_rate);
+    try std.testing.expectEqual(@as(u16, 0), result.dirty_files);
+    try std.testing.expectEqual(@as(f32, 999.0), result.farm_best_ppl);
+}
+
+test "Queen types — OuroborosState strategyStr" {
+    var state = OuroborosState{};
+    @memcpy(state.strategy[0.."test_strategy".len], "test_strategy");
+    state.strategy_len = "test_strategy".len;
+    try std.testing.expectEqualStrings("test_strategy", state.strategyStr());
+}
+
+test "Queen types — ActionResult outputStr" {
+    var result = ActionResult{ .success = true };
+    @memcpy(result.output[0.."test output".len], "test output");
+    result.output_len = "test output".len;
+    try std.testing.expectEqualStrings("test output", result.outputStr());
+}
+
+test "Queen types — TgConfig enabled when tokens present" {
+    const config = TgConfig{
+        .bot_token = "token123",
+        .chat_id = "chat456",
+        .enabled = true,
+    };
+    try std.testing.expect(config.enabled);
+}
+
+test "Queen types — ActionKind label returns valid strings" {
+    try std.testing.expect(ActionKind.doctor_quick.label().len > 0);
+    try std.testing.expect(ActionKind.farm_status.label().len > 0);
+    try std.testing.expect(ActionKind.farm_recycle.label().len > 0);
+    try std.testing.expect(ActionKind.cloud_spawn.label().len > 0);
+}
+
+test "Queen types — AlertKind all emoji return valid strings" {
+    try std.testing.expect(AlertKind.build_broken.emoji().len > 0);
+    try std.testing.expect(AlertKind.new_ppl_record.emoji().len > 0);
+    try std.testing.expect(AlertKind.senior_killed.emoji().len > 0);
+    try std.testing.expect(AlertKind.arena_upset.emoji().len > 0);
+    try std.testing.expect(AlertKind.blocked_issue.emoji().len > 0);
+    try std.testing.expect(AlertKind.dirty_overload.emoji().len > 0);
+    try std.testing.expect(AlertKind.key_expired.emoji().len > 0);
+}
+
+test "Queen types — buildTgBody JSON escaping" {
+    var buf: [512]u8 = undefined;
+    const text = "hello\nworld\"quote\\backslash";
+    const result = buildTgBody(&buf, "123", null, text) orelse unreachable;
+    try std.testing.expect(std.mem.indexOf(u8, result, "\\n") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "\\\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "\\\\") != null);
+}
+
+test "Queen types — findJsonF32 edge cases" {
+    try std.testing.expect(findJsonF32("no key here", "\"x\":") == null);
+    try std.testing.expect(findJsonF32("{\"x\":}", "\"x\":") == null);
+    try std.testing.expectApproxEqAbs(@as(f32, -1.5), findJsonF32("{\"x\":-1.5}", "\"x\":").?, 0.01);
+}
+
+test "Queen types — findJsonU32 edge cases" {
+    try std.testing.expect(findJsonU32("no key here", "\"x\":") == null);
+    try std.testing.expect(findJsonU32("{\"x\":}", "\"x\":") == null);
+    try std.testing.expectEqual(@as(u32, 12345), findJsonU32("{\"x\":12345}", "\"x\":").?);
+}
+
+test "Queen types — findJsonI64 negative" {
+    try std.testing.expectEqual(@as(i64, -42), findJsonI64("{\"x\":-42}", "\"x\":").?);
+    try std.testing.expect(findJsonI64("no key", "\"x\":") == null);
+}
+
+test "Queen types — findJsonBool edge cases" {
+    try std.testing.expect(findJsonBool("no bool", "\"ok\":") == null);
+    try std.testing.expectEqual(@as(?bool, true), findJsonBool("{\"ok\":true}", "\"ok\":"));
+    try std.testing.expectEqual(@as(?bool, false), findJsonBool("{\"ok\":false}", "\"ok\":"));
+}
+
+test "Queen types — findJsonStr edge cases" {
+    try std.testing.expect(findJsonStr("no str", "\"x\":\"") == null);
+    try std.testing.expectEqualStrings("hello", findJsonStr("{\"x\":\"hello\"}", "\"x\":\"").?);
+}
+
+test "Queen types — OuroborosState all dimensions initialized" {
+    const state = OuroborosState{};
+    try std.testing.expectEqual(@as(f32, 0.0), state.score);
+    try std.testing.expectEqual(@as(f32, 0.0), state.initial);
+    try std.testing.expectEqual(@as(f32, 0.0), state.efficiency);
+    try std.testing.expectEqual(@as(f32, 0.0), state.build_health);
+    try std.testing.expectEqual(@as(f32, 0.0), state.test_coverage);
+}
+
+test "Queen types — SenseResult healthEmoji edge cases" {
+    const perfect = SenseResult{ .build_ok = true, .ouroboros_score = 100 };
+    try std.testing.expectEqualStrings(E_STAR, perfect.healthEmoji());
+    const weak = SenseResult{ .build_ok = true, .ouroboros_score = 50 };
+    try std.testing.expectEqualStrings(E_CHECK, weak.healthEmoji());
+    const bad = SenseResult{ .build_ok = true, .ouroboros_score = 20 };
+    try std.testing.expectEqualStrings(E_WRENCH, bad.healthEmoji());
+}
+
+test "Queen types — buildTgBody buffer overflow returns null" {
+    var small_buf: [10]u8 = undefined;
+    const result = buildTgBody(&small_buf, "123", null, "hello");
+    try std.testing.expect(result == null);
+}
+
+test "Queen types — AlertKind labelRu all return values" {
+    try std.testing.expect(AlertKind.build_broken.labelRu().len > 0);
+    try std.testing.expect(AlertKind.new_ppl_record.labelRu().len > 0);
+    try std.testing.expect(AlertKind.arena_upset.labelRu().len > 0);
+}
+
+test "Queen types — SenseResult v4 fields" {
+    const result = SenseResult{
+        .farm_idle_count = 5,
+        .stale_arena_hours = 24,
+        .agent_spawn_issues = 3,
+        .finished_containers = 2,
+        .doctor_quick_fails = 1,
+    };
+    try std.testing.expectEqual(@as(u8, 5), result.farm_idle_count);
+    try std.testing.expectEqual(@as(u16, 24), result.stale_arena_hours);
+    try std.testing.expectEqual(@as(u8, 3), result.agent_spawn_issues);
+}
+
+test "Queen types — all emoji constants have valid UTF-8 length" {
+    // UTF-8 emojis are 3-4 bytes (some with variation selector are 6)
+    try std.testing.expect(E_CROWN.len == 4 or E_CROWN.len == 3);
+    try std.testing.expect(E_BRAIN.len == 4 or E_BRAIN.len == 3);
+    try std.testing.expect(E_SWORDS.len >= 3); // ⚔️ + variation selector = 6 bytes
+    try std.testing.expect(E_CLIP.len >= 3);
+    try std.testing.expect(E_WRENCH.len >= 3);
+    try std.testing.expect(E_DNA.len >= 3);
+    try std.testing.expect(E_CYCLE.len >= 3);
+    try std.testing.expect(E_TIMER.len >= 3);
+    try std.testing.expect(E_CHECK.len >= 2);
+    try std.testing.expect(E_CROSS.len >= 2);
+}
+
+test "Queen types — ActionKind emojiIcon returns valid strings" {
+    const actions = [_]ActionKind{
+        .farm_status,  .arena_status, .doctor_scan, .train_status,
+        .doctor_quick, .farm_recycle, .cloud_spawn, .notify,
+    };
+    for (actions) |action| {
+        try std.testing.expect(action.emojiIcon().len > 0);
+    }
+}
+
+test "Queen types — EvolutionInfo fields default" {
+    const info = EvolutionInfo{};
+    try std.testing.expectEqual(@as(f32, 999.0), info.best_ppl);
+    try std.testing.expectEqual(@as(u32, 0), info.best_step);
+    try std.testing.expectEqual(@as(u32, 0), info.total_configs);
+    try std.testing.expectEqual(@as(u32, 0), info.service_count);
+}
+
+test "Queen types — ArenaInfo fields default" {
+    const info = ArenaInfo{};
+    try std.testing.expectEqual(@as(u32, 0), info.total_battles);
+    try std.testing.expectEqual(@as(u32, 0), info.today_battles);
+}
+
+test "Queen types — AlertKind all combinations" {
+    const kinds = [_]AlertKind{
+        .build_broken, .new_ppl_record, .senior_killed,
+        .arena_upset,  .blocked_issue,  .dirty_overload,
+        .key_expired,
+    };
+    for (kinds) |kind| {
+        const emoji = kind.emoji();
+        const label = kind.labelRu();
+        try std.testing.expect(emoji.len > 0);
+        try std.testing.expect(label.len > 0);
+    }
+}
+
+test "Queen types — ActionKind level 0 are read-only" {
+    const level0_actions = [_]ActionKind{
+        .farm_status,      .arena_status,      .doctor_scan,   .train_status,
+        .train_diagnose,   .experiment_chart,  .patent_status, .research_sacred,
+        .ouroboros_status, .experience_recall, .introspection, .farm_evolve_status,
+        .swarm_status,
+    };
+    for (level0_actions) |action| {
+        const val = @intFromEnum(action);
+        try std.testing.expect(val < 13); // First 13 are level 0
+    }
+}
+
+test "Queen types — ActionKind level 2 are dangerous" {
+    const level2_actions = [_]ActionKind{
+        .farm_recycle,  .farm_evolve_step, .cloud_spawn,     .cloud_kill,
+        .cloud_cleanup, .issue_create,     .swarm_decompose,
+    };
+    for (level2_actions) |action| {
+        const val = @intFromEnum(action);
+        try std.testing.expect(val >= 23); // Last 7 are level 2
+    }
+}
+
+test "Queen types — TgConfig constants" {
+    try std.testing.expectEqualStrings(".trinity/queen_state.json", STATE_PATH);
+    try std.testing.expectEqualStrings(".trinity/queen/supervisor.pid", SUPERVISOR_PID_PATH);
+    try std.testing.expectEqualStrings(".trinity/queen/supervisor.log", SUPERVISOR_LOG_PATH);
+}
+
+test "Queen types — OuroborosState initial score is zero" {
+    const state = OuroborosState{};
+    try std.testing.expectEqual(@as(f32, 0.0), state.score);
+    try std.testing.expectEqual(@as(f32, 0.0), state.initial);
+}
+
+test "Queen types — QueenConfig applyGodMode sets all flags" {
+    var config = QueenConfig{};
+    config.applyGodMode();
+    try std.testing.expect(config.allow_auto_actions);
+    try std.testing.expectEqual(@as(u8, 2), config.max_auto_level);
+    try std.testing.expect(!config.require_human_approval);
+}
+
+test "Queen types — ActionResult duration defaults to 0" {
+    const result = ActionResult{ .success = true };
+    try std.testing.expectEqual(@as(u64, 0), result.duration_ms);
+}
+
+test "Queen types — ActionKind COUNT matches enum size" {
+    // ActionKind.COUNT should be 30
+    try std.testing.expectEqual(@as(u8, 30), ActionKind.COUNT);
+}

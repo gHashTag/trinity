@@ -877,3 +877,140 @@ test "count test passes" {
     const count = countTestPasses(output);
     try std.testing.expect(count >= 2);
 }
+
+test "Contestant all values" {
+    // Verify both enum values exist and can be referenced
+    const baseline = Contestant.baseline;
+    const gladiator = Contestant.gladiator;
+    _ = baseline;
+    _ = gladiator;
+}
+
+test "Contestant label all values" {
+    try std.testing.expectEqualStrings("Baseline", Contestant.baseline.label());
+    try std.testing.expectEqualStrings("Gladiator", Contestant.gladiator.label());
+}
+
+test "Contestant key all values" {
+    try std.testing.expectEqualStrings("baseline", Contestant.baseline.key());
+    try std.testing.expectEqualStrings("gladiator", Contestant.gladiator.key());
+}
+
+test "Winner all values" {
+    const winners = [_]Winner{ .baseline, .gladiator, .tie };
+    for (winners) |w| {
+        _ = w; // Verify all exist
+    }
+}
+
+test "Winner label all values" {
+    try std.testing.expectEqualStrings("BASELINE", Winner.baseline.label());
+    try std.testing.expectEqualStrings("GLADIATOR", Winner.gladiator.label());
+    try std.testing.expectEqualStrings("TIE", Winner.tie.label());
+}
+
+test "Difficulty all values" {
+    const difficulties = [_]Difficulty{ .easy, .medium, .hard };
+    for (difficulties) |d| {
+        _ = d; // Verify all exist
+    }
+}
+
+test "Difficulty label all values" {
+    try std.testing.expectEqualStrings("Easy", Difficulty.easy.label());
+    try std.testing.expectEqualStrings("Medium", Difficulty.medium.label());
+    try std.testing.expectEqualStrings("Hard", Difficulty.hard.label());
+}
+
+test "BattleResult default values" {
+    const result = BattleResult{};
+    try std.testing.expect(!result.build_ok);
+    try std.testing.expect(!result.test_ok);
+    try std.testing.expectEqual(@as(u32, 0), result.test_count);
+    try std.testing.expectEqual(@as(u32, 0), result.diff_lines);
+    try std.testing.expectEqual(@as(u64, 0), result.elapsed_ms);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), result.toxic_score, 0.01);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.0), result.total_score, 0.01);
+}
+
+test "BattleResult with values" {
+    const result = BattleResult{
+        .build_ok = true,
+        .test_ok = true,
+        .test_count = 10,
+        .diff_lines = 5,
+        .elapsed_ms = 1000,
+        .toxic_score = 0.5,
+        .total_score = 0.8,
+    };
+    try std.testing.expect(result.build_ok);
+    try std.testing.expect(result.test_ok);
+    try std.testing.expectEqual(@as(u32, 10), result.test_count);
+}
+
+test "EloState default values" {
+    const state = EloState{};
+    try std.testing.expectApproxEqAbs(@as(f64, 1000.0), state.baseline, 0.01);
+    try std.testing.expectApproxEqAbs(@as(f64, 1000.0), state.gladiator, 0.01);
+    try std.testing.expectEqual(@as(u32, 0), state.total_battles);
+    try std.testing.expectEqual(@as(u32, 0), state.baseline_wins);
+    try std.testing.expectEqual(@as(u32, 0), state.gladiator_wins);
+    try std.testing.expectEqual(@as(u32, 0), state.ties);
+}
+
+test "PILOT_TASKS count" {
+    try std.testing.expect(PILOT_TASKS.len >= 5);
+}
+
+test "PILOT_TASKS have valid IDs" {
+    for (PILOT_TASKS) |task| {
+        try std.testing.expect(task.id.len > 0);
+        try std.testing.expect(task.task.len > 0);
+    }
+}
+
+test "PILOT_TASKS difficulties" {
+    const has_easy = for (PILOT_TASKS) |task| {
+        if (task.difficulty == .easy) break true;
+    } else false;
+    try std.testing.expect(has_easy);
+
+    const has_medium = for (PILOT_TASKS) |task| {
+        if (task.difficulty == .medium) break true;
+    } else false;
+    try std.testing.expect(has_medium);
+
+    const has_hard = for (PILOT_TASKS) |task| {
+        if (task.difficulty == .hard) break true;
+    } else false;
+    try std.testing.expect(has_hard);
+}
+
+test "extractJsonStr with missing key returns null" {
+    const json = "{\"winner\":\"GLADIATOR\"}";
+    const result = extractJsonStr(json, "\"task\":\"");
+    try std.testing.expect(result == null);
+}
+
+test "extractJsonStr with empty input returns null" {
+    const result = extractJsonStr("", "\"winner\":\"");
+    try std.testing.expect(result == null);
+}
+
+test "elo update gladiator wins" {
+    const result = updateElo(1000.0, 1000.0, .gladiator);
+    try std.testing.expect(result[0] < 1000.0); // baseline loses
+    try std.testing.expect(result[1] > 1000.0); // gladiator gains
+}
+
+test "computeScore with zero tests" {
+    const score = computeScore(true, true, 0, 10, 30_000, 300_000, 100.0);
+    try std.testing.expect(score > 0.0);
+    try std.testing.expect(score < 1.0);
+}
+
+test "computeScore with very slow execution" {
+    const score = computeScore(true, true, 5, 50, 600_000, 300_000, 90.0);
+    // 2x timeout should still pass but be lower than perfect score
+    try std.testing.expect(score < 0.95);
+}

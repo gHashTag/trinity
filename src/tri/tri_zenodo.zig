@@ -8,7 +8,7 @@
 //   tri zenodo publish <version>  — create new version, upload, publish
 //   tri zenodo status             — show current record info
 //   tri zenodo draft <version>    — create draft without publishing
-//   tri zenodo update [D004-D008] — upgrade descriptions to defensive publications
+//   tri zenodo update [D004-D007] — upgrade descriptions to defensive publications
 //
 // φ² + 1/φ² = 3 = TRINITY
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -67,11 +67,6 @@ pub fn runZenodoCommand(allocator: std.mem.Allocator, args: []const []const u8) 
         } else {
             try updateAllRecords(allocator);
         }
-    } else if (std.mem.eql(u8, subcmd, "sacred")) {
-        const draft_only = for (sub_args) |a| {
-            if (std.mem.eql(u8, a, "--draft")) break true;
-        } else false;
-        try runSacredPublish(allocator, draft_only);
     } else {
         print("{s}Unknown subcommand: {s}{s}\n", .{ RED, subcmd, RESET });
         printHelp();
@@ -114,13 +109,6 @@ const disc_table = [_]Discovery{
         .description = "Four matrix-vector multiply variants for ternary weights: (1) Packed 2-bit 16 weights/u32, (2) Branchless bit-manipulation 9.2x speedup, (3) Sparse CSR, (4) SIMD f16/f32 4-33x speedup. Zero multiplications. 2 bits/param. 1200+ LOC pure Zig.",
         .keywords = "sparse-matmul,ternary,branchless,simd,matrix-multiplication,zig",
         .files = &.{"src/hslm/sparse_ternary.zig"},
-    },
-    .{
-        .id = "D008",
-        .title = "Trinity D008: SEVO — Sacred EVolutionary Objective Search",
-        .description = "Population-based evolutionary training that mutates not just hyperparameters but the training objective itself (NTP/JEPA/NCA/hybrid). Combines ASHA successive halving + PBT mutation + diversity-preserving injection with sacred 3^k constraints. PPL=0.0 sentinel prevents premature elimination. FRESH/RESUME auto-detection. 108 workers, 6700+ LOC pure Zig.",
-        .keywords = "sevo,evolutionary,population-based-training,objective-mutation,asha,pbt,ternary,zig",
-        .files = &.{"src/tri/tri_farm_evolve.zig"},
     },
 };
 
@@ -178,14 +166,6 @@ const update_records = [_]UpdateRecord{
         .keywords = "sparse-matmul,branchless,simd,ternary,defensive-publication",
         .cpc = "G06F7/544,G06F7/72,G06F17/16",
     },
-    .{
-        .id = "D008",
-        .zenodo_id = "TBD",
-        .file = "papers/patent-strategy/zenodo-descriptions/D008.html",
-        .title = "Trinity D008: SEVO — Sacred EVolutionary Objective Search",
-        .keywords = "sevo,evolutionary,population-based-training,objective-mutation,asha,pbt,defensive-publication",
-        .cpc = "G06N3/086,G06N20/00,G06F18/24",
-    },
 };
 
 fn updateAllRecords(allocator: std.mem.Allocator) !void {
@@ -213,7 +193,7 @@ fn updateOneRecord(allocator: std.mem.Allocator, record_id: []const u8) !void {
             return;
         }
     }
-    print("{s}Unknown record: {s}. Valid: D001-D003, D004, D005, D006, D007, D008{s}\n", .{ RED, record_id, RESET });
+    print("{s}Unknown record: {s}. Valid: D001-D003, D004, D005, D006, D007{s}\n", .{ RED, record_id, RESET });
 }
 
 fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
@@ -292,11 +272,11 @@ fn updateSingleRecord(allocator: std.mem.Allocator, rec: UpdateRecord) !void {
     kw_pos += 1;
 
     const related_ids =
-        \\[{"identifier":"10.5281/zenodo.18939352","relation_type":"ispartof","resource_type":"software"},{"identifier":"10.5281/zenodo.19020211","relation_type":"isrelatedto","resource_type":"software"},{"identifier":"10.5281/zenodo.19020213","relation_type":"isrelatedto","resource_type":"software"},{"identifier":"10.5281/zenodo.19020215","relation_type":"isrelatedto","resource_type":"software"},{"identifier":"10.5281/zenodo.19020217","relation_type":"isrelatedto","resource_type":"software"}]
+        \\[{"identifier":"10.5281/zenodo.18939352","relation":"isPartOf","resource_type":"software"},{"identifier":"10.5281/zenodo.19020211","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020213","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020215","relation":"isRelatedTo","resource_type":"software"},{"identifier":"10.5281/zenodo.19020217","relation":"isRelatedTo","resource_type":"software"}]
     ;
 
     const meta_body = try std.fmt.allocPrint(allocator,
-        \\{{"metadata":{{"title":"{s}","description":"{s}","keywords":{s},"notes":"CPC Classifications: {s}. Defensive publication.","upload_type":"software","publication_date":"2026-03-14","creators":[{{"person_or_org":{{"name":"Vasilev, Dmitrii"}},"affiliations":[{{"name":"Trinity"}}]}}],"license":{{"id":"MIT"}},"version":"v1.1.0","related_identifiers":{s}}}}}
+        \\{{"metadata":{{"title":"{s}","description":"{s}","keywords":{s},"notes":"CPC Classifications: {s}. Defensive publication.","upload_type":"software","publication_date":"2026-03-14","creators":[{{"name":"Vasilev, Dmitrii","affiliation":"Trinity"}}],"license":{{"id":"MIT"}},"version":"v1.1.0","related_identifiers":{s}}}}}
     , .{ rec.title, description, kw_buf[0..kw_pos], rec.cpc, related_ids });
     defer allocator.free(meta_body);
 
@@ -378,11 +358,11 @@ fn publishDiscovery(allocator: std.mem.Allocator, discovery_id: []const u8) !voi
             return;
         }
     }
-    print("{s}Unknown discovery: {s}. Valid: D004, D005, D006, D007, D008{s}\n", .{ RED, discovery_id, RESET });
+    print("{s}Unknown discovery: {s}. Valid: D004, D005, D006, D007{s}\n", .{ RED, discovery_id, RESET });
 }
 
 fn publishAllDiscoveries(allocator: std.mem.Allocator) !void {
-    print("\n{s}{s}ZENODO DISCOVERY DOI — Publishing 5 records{s}\n", .{ GOLDEN, BOLD, RESET });
+    print("\n{s}{s}ZENODO DISCOVERY DOI — Publishing 4 records{s}\n", .{ GOLDEN, BOLD, RESET });
     print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
 
     for (disc_table) |d| {
@@ -428,7 +408,7 @@ fn publishOneDiscovery(allocator: std.mem.Allocator, d: Discovery) !void {
     kw_pos += 1;
 
     const body = try std.fmt.allocPrint(allocator,
-        \\{{"metadata":{{"title":"{s}","upload_type":"software","publication_date":"2026-03-14","description":"{s}","creators":[{{"person_or_org":{{"name":"Vasilev, Dmitrii"}},"affiliations":[{{"name":"Trinity"}}]}}],"keywords":{s},"license":{{"id":"MIT"}},"version":"v1.0.0","related_identifiers":[{{"identifier":"10.5281/zenodo.18939352","relation":"isPartOf","resource_type":"software"}}]}}}}
+        \\{{"metadata":{{"title":"{s}","upload_type":"software","publication_date":"2026-03-14","description":"{s}","creators":[{{"name":"Vasilev, Dmitrii","affiliation":"Trinity"}}],"keywords":{s},"license":{{"id":"MIT"}},"version":"v1.0.0","related_identifiers":[{{"identifier":"10.5281/zenodo.18939352","relation":"isPartOf","resource_type":"software"}}]}}}}
     , .{ d.title, d.description, kw_buf[0..kw_pos] });
     defer allocator.free(body);
 
@@ -509,12 +489,11 @@ fn publishOneDiscovery(allocator: std.mem.Allocator, d: Discovery) !void {
 
 fn printHelp() void {
     print("\n{s}{s}TRI ZENODO — DOI Publishing{s}\n\n", .{ GOLDEN, BOLD, RESET });
-    print("  tri zenodo publish <version>     Create new version, upload, publish\n", .{});
-    print("  tri zenodo status                Show current record info\n", .{});
-    print("  tri zenodo draft <version>       Create draft without publishing\n", .{});
+    print("  tri zenodo publish <version>    Create new version, upload, publish\n", .{});
+    print("  tri zenodo status               Show current record info\n", .{});
+    print("  tri zenodo draft <version>      Create draft without publishing\n", .{});
     print("  tri zenodo discovery [D004-D007] Publish discovery DOI (or all)\n", .{});
-    print("  tri zenodo update [D001-D007]    Upgrade descriptions (defensive pub)\n", .{});
-    print("  tri zenodo sacred [--draft]      Publish frozen sacred predictions\n\n", .{});
+    print("  tri zenodo update [D001-D007]    Upgrade descriptions (defensive pub)\n\n", .{});
     print("  Requires ZENODO_TOKEN in .env\n", .{});
     print("  Record: {s}\n\n", .{RECORD_ID});
 }
@@ -543,7 +522,7 @@ fn loadToken(allocator: std.mem.Allocator) ![]const u8 {
     // Find ZENODO_TOKEN=xxx line
     var lines = std.mem.splitScalar(u8, content, '\n');
     while (lines.next()) |line| {
-        const trimmed = std.mem.trim(u8, line, &[_]u8{ ' ', '\t', '\r' });
+        const trimmed = std.mem.trim(u8, line, " \t\r");
         if (std.mem.startsWith(u8, trimmed, "ZENODO_TOKEN=")) {
             const val = trimmed["ZENODO_TOKEN=".len..];
             return allocator.dupe(u8, val);
@@ -734,7 +713,7 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
     defer allocator.free(draft_url);
 
     const metadata_json = try std.fmt.allocPrint(allocator,
-        \\{{"metadata":{{"title":"gHashTag/trinity: Trinity {s} — FPGA Autoregressive Ternary LLM (PPL=2.90, TMU K=32, 1503 tok/s)","description":"HSLM: 1.95M-parameter ternary language model. PPL=2.90 (R23v2, LAMB optimizer, cosine schedule). TMU K=32 parallel ternary matmul — 1,503 tok/s (+82%% over K=16). Zero-DSP FPGA inference on $30 Artix-7: 0 DSP48 (real Yosys 0.63 synthesis). Ouroboros self-evolution score 95/100 LEGENDARY. FPL 2026 paper included. 386 KB checkpoint, pure Zig, zero external dependencies.","creators":[{{"person_or_org":{{"family_name":"Vasilev","given_name":"Dmitrii","type":"personal"}}}}],"publication_date":"{d}-{d:0>2}-{d:0>2}","version":"{s}","resource_type":{{"id":"software"}},"publisher":"Zenodo","related_identifiers":[{{"identifier":"https://github.com/gHashTag/trinity","relation_type":{{"id":"issupplementto"}},"scheme":"url"}}]}}}}
+        \\{{"metadata":{{"title":"gHashTag/trinity: Trinity {s} — FPGA Autoregressive Ternary LLM + Training Results","description":"HSLM: 1.95M-parameter ternary language model with zero-DSP FPGA inference. PPL=125 on TinyStories, 1,872KB model, 0 DSP48, $30 FPGA.","creators":[{{"person_or_org":{{"family_name":"Vasilev","given_name":"Dmitrii","type":"personal"}}}}],"publication_date":"{d}-{d:0>2}-{d:0>2}","version":"{s}","resource_type":{{"id":"software"}},"publisher":"Zenodo","related_identifiers":[{{"identifier":"https://github.com/gHashTag/trinity","relation_type":{{"id":"issupplementto"}},"scheme":"url"}}]}}}}
     , .{
         version,
         @as(u16, @intCast(std.time.epoch.EpochSeconds.getEpochDay(@as(std.time.epoch.EpochSeconds, .{ .secs = @intCast(std.time.timestamp()) })).calculateYearDay().year)),
@@ -765,7 +744,6 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
             "fpga/openxc7-synth/", "fpga/tools/fpga_eye.py", "papers/",
             "specs/tri/",
         },
-        .max_output_bytes = 10 * 1024 * 1024,
     });
     allocator.free(zip_result.stdout);
     allocator.free(zip_result.stderr);
@@ -842,158 +820,6 @@ fn runPublish(allocator: std.mem.Allocator, version: []const u8, do_publish: boo
     std.fs.deleteFileAbsolute(zip_path) catch |err| {
         std.log.debug("tri_zenodo: failed to cleanup zip file: {}", .{err});
     };
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// SACRED PREDICTIONS — Zenodo Upload
-// ═══════════════════════════════════════════════════════════════════════════════
-
-fn runSacredPublish(allocator: std.mem.Allocator, draft_only: bool) !void {
-    const token = try loadToken(allocator);
-    defer allocator.free(token);
-
-    const action_name = if (draft_only) "DRAFT" else "PUBLISH";
-    print("\n{s}{s}ZENODO SACRED PREDICTIONS — {s}{s}\n", .{ GOLDEN, BOLD, action_name, RESET });
-    print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
-
-    // Step 1: Get git commit hash
-    print("1/6 Getting git commit hash...\n", .{});
-    const git_result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &.{ "git", "rev-parse", "--short", "HEAD" },
-    }) catch |err| {
-        print("  {s}git failed: {}{s}\n", .{ RED, err, RESET });
-        return err;
-    };
-    defer allocator.free(git_result.stdout);
-    defer allocator.free(git_result.stderr);
-    const commit_hash = std.mem.trim(u8, git_result.stdout, &[_]u8{ ' ', '\t', '\r', '\n' });
-
-    // Step 2: Create new version from concept DOI
-    print("2/6 Creating new version draft from concept {s}...\n", .{RECORD_ID});
-    const versions_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/versions", .{ API, RECORD_ID });
-    defer allocator.free(versions_url);
-
-    const draft_response = try curlPost(allocator, versions_url, token, null);
-    defer allocator.free(draft_response);
-
-    const draft_id = jsonExtractString(draft_response, "id") orelse {
-        print("  {s}Failed to create draft. Response: {s}{s}\n", .{ RED, draft_response[0..@min(200, draft_response.len)], RESET });
-        return error.DraftCreationFailed;
-    };
-    print("  Draft ID: {s}\n\n", .{draft_id});
-
-    // Step 3: Read HTML description
-    print("3/6 Reading description HTML...\n", .{});
-    const desc_path = "papers/sacred/zenodo-description.html";
-    const desc_file = std.fs.cwd().openFile(desc_path, .{}) catch {
-        print("  {s}File not found: {s}{s}\n", .{ RED, desc_path, RESET });
-        print("  Run 'tri sacred export' first to generate files.\n", .{});
-        return error.FileNotFound;
-    };
-    defer desc_file.close();
-    const raw_desc = desc_file.readToEndAlloc(allocator, 131072) catch return error.ReadFailed;
-    defer allocator.free(raw_desc);
-    const description = try jsonEscapeString(allocator, raw_desc);
-    defer allocator.free(description);
-
-    // Step 4: Update metadata
-    print("4/6 Updating metadata...\n", .{});
-    const draft_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/draft", .{ API, draft_id });
-    defer allocator.free(draft_url);
-
-    const metadata_json = try std.fmt.allocPrint(allocator,
-        \\{{"metadata":{{"title":"Tri Sacred v3.0: 4-Tier Prediction Registry with Semiblind Entries (14 predictions, 4 SBL)","description":"{s}","creators":[{{"person_or_org":{{"family_name":"Vasilev","given_name":"Dmitrii","type":"personal"}}}}],"publication_date":"2026-03-16","version":"sacred-v3.0","resource_type":{{"id":"dataset"}},"publisher":"Zenodo","keywords":["numerical ansatz","physical constants","golden ratio","semiblind predictions","4-tier classification","neutrino CP violation","dark energy","gravitational waves","DESI","DUNE","NANOGrav","falsifiable predictions"],"related_identifiers":[{{"identifier":"https://github.com/gHashTag/trinity","relation_type":{{"id":"issupplementto"}},"scheme":"url"}}],"notes":"Git commit: {s} | Freeze date: 2026-03-16 UTC | Registry v10.4: 5 PST + 5 PRI + 4 SBL + 0 BLD = 14 predictions"}}}}
-    , .{ description, commit_hash });
-    defer allocator.free(metadata_json);
-
-    const meta_resp = try curlPut(allocator, draft_url, token, metadata_json);
-    defer allocator.free(meta_resp);
-
-    if (std.mem.indexOf(u8, meta_resp, "\"status\": 4") != null or std.mem.indexOf(u8, meta_resp, "\"status\":4") != null) {
-        print("  {s}Metadata update failed. Response: {s}{s}\n", .{ RED, meta_resp[0..@min(300, meta_resp.len)], RESET });
-        return error.MetadataUpdateFailed;
-    }
-    print("  Metadata updated.\n\n", .{});
-
-    // Step 5: Upload files (CSV + HTML)
-    print("5/6 Uploading files...\n", .{});
-
-    // Delete old files first
-    const files_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/draft/files", .{ API, draft_id });
-    defer allocator.free(files_url);
-
-    const files_resp = try curlGet(allocator, files_url, token);
-    defer allocator.free(files_resp);
-
-    var search_pos: usize = 0;
-    while (std.mem.indexOfPos(u8, files_resp, search_pos, "\"key\":\"")) |pos| {
-        const start = pos + 7;
-        const end = std.mem.indexOfPos(u8, files_resp, start, "\"") orelse break;
-        const old_file = files_resp[start..end];
-        const del_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/draft/files/{s}", .{ API, draft_id, old_file });
-        defer allocator.free(del_url);
-        curlDelete(allocator, del_url, token) catch {};
-        search_pos = end + 1;
-    }
-
-    // Upload each file
-    const sacred_files = [_][]const u8{
-        "data/predictions/registry.json",
-        "papers/sacred/sacred_constants.csv",
-        "papers/sacred/sacred_predictions.csv",
-        "papers/sacred/sacred_random_control.csv",
-        "papers/sacred/zenodo-description.html",
-    };
-
-    for (sacred_files) |filepath| {
-        // Extract filename from path
-        const filename = if (std.mem.lastIndexOfScalar(u8, filepath, '/')) |idx| filepath[idx + 1 ..] else filepath;
-
-        // Initiate upload
-        const init_body = try std.fmt.allocPrint(allocator, "[{{\"key\":\"{s}\"}}]", .{filename});
-        defer allocator.free(init_body);
-        const init_resp = try curlPost(allocator, files_url, token, init_body);
-        allocator.free(init_resp);
-
-        // Upload content
-        const upload_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/draft/files/{s}/content", .{ API, draft_id, filename });
-        defer allocator.free(upload_url);
-        const upload_resp = try curlUpload(allocator, upload_url, token, filepath);
-        allocator.free(upload_resp);
-
-        // Commit file
-        const commit_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/draft/files/{s}/commit", .{ API, draft_id, filename });
-        defer allocator.free(commit_url);
-        const commit_resp = try curlPost(allocator, commit_url, token, null);
-        allocator.free(commit_resp);
-
-        print("  Uploaded: {s}\n", .{filename});
-    }
-
-    // Step 6: Publish or leave as draft
-    if (!draft_only) {
-        print("\n6/6 Publishing...\n", .{});
-        const pub_url = try std.fmt.allocPrint(allocator, "{s}/records/{s}/draft/actions/publish", .{ API, draft_id });
-        defer allocator.free(pub_url);
-        const pub_resp = try curlPost(allocator, pub_url, token, null);
-        defer allocator.free(pub_resp);
-
-        const doi = jsonExtractString(pub_resp, "doi") orelse "pending";
-
-        print("\n{s}═══════════════════════════════════════════════════{s}\n", .{ GOLDEN, RESET });
-        print("{s}{s}Published! Sacred Predictions frozen with DOI.{s}\n\n", .{ GREEN, BOLD, RESET });
-        print("   DOI:     {s}\n", .{doi});
-        print("   URL:     https://doi.org/{s}\n", .{doi});
-        print("   Record:  https://zenodo.org/records/{s}\n", .{draft_id});
-        print("   Commit:  {s}\n", .{commit_hash});
-        print("{s}═══════════════════════════════════════════════════{s}\n\n", .{ GOLDEN, RESET });
-    } else {
-        print("\n6/6 Draft created (not published)\n", .{});
-        print("   Draft: https://zenodo.org/records/{s}\n", .{draft_id});
-        print("   Commit: {s}\n", .{commit_hash});
-        print("   To publish: tri zenodo sacred\n\n", .{});
-    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

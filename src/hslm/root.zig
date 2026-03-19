@@ -1,5 +1,3 @@
-// @origin(spec:root.tri) @regen(manual-impl)
-// @origin(manual) @regen(pending)
 // HSLM — Hybrid Symbolic Language Model
 // Root module: re-exports all public API
 //
@@ -25,7 +23,7 @@ pub const bench = @import("bench.zig");
 pub const sacred_attention = @import("sacred_attention.zig");
 pub const simd_ops = @import("simd_ops.zig");
 pub const parallel = @import("parallel.zig");
-pub const nca = @import("nca.zig");
+pub const ste = @import("ste.zig");
 
 // Re-export primary types
 pub const HSLM = model.HSLM;
@@ -48,7 +46,8 @@ pub const TrainMetrics = trainer.TrainMetrics;
 pub const BenchResult = bench.BenchResult;
 pub const SacredAttention = sacred_attention.SacredAttention;
 pub const ParallelTrainer = parallel.ParallelTrainer;
-pub const NcaConfig = nca.NcaConfig;
+pub const SteMode = ste.SteMode;
+pub const SteConfig = ste.SteConfig;
 
 // Re-export constants
 pub const VOCAB_SIZE = constants.VOCAB_SIZE;
@@ -89,7 +88,7 @@ comptime {
     _ = sacred_attention;
     _ = simd_ops;
     _ = parallel;
-    _ = nca;
+    _ = ste;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

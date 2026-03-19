@@ -1,5 +1,3 @@
-// @origin(spec:trainer.tri) @regen(manual-impl)
-// @origin(manual) @regen(pending)
 // HSLM — Full Training Loop with Autograd
 // API defined in specs/tri/hslm_trainer.tri
 // Implementation uses autograd engine for real gradient-based training
@@ -11,9 +9,6 @@ const data_mod = @import("data.zig");
 const autograd = @import("autograd.zig");
 const tokenizer_mod = @import("tokenizer.zig");
 const ste_mod = @import("ste.zig");
-const ternary_schedule = @import("ternary_schedule.zig");
-const ternary_gradients = @import("ternary_gradients.zig");
-const adaptive_sparsity_mod = @import("adaptive_sparsity.zig");
 
 const VOCAB_SIZE = constants.VOCAB_SIZE;
 const EMBED_DIM = constants.EMBED_DIM;
@@ -23,20 +18,6 @@ const CONTEXT_LEN = constants.CONTEXT_LEN;
 // ═══════════════════════════════════════════════════════════════════════════════
 // TRAIN CONFIG (from specs/tri/hslm_trainer.tri)
 // ═══════════════════════════════════════════════════════════════════════════════
-
-pub const OptimizerType = enum {
-    adamw,
-    lamb,
-};
-
-pub const LrScheduleType = enum {
-    sacred, // Default: φ-cosine (sacredLrSchedule)
-    cosine, // Simple cosine annealing (lrSchedule)
-    cosine_restarts, // SGDR warm restarts (cosineRestartsLrSchedule)
-    wsd, // Warmup-Stable-Decay (MiniCPM-style)
-    phi_restart, // Cosine with φ-ratio warm restarts
-    d2z, // Linear Decay-to-Zero (ICLR 2025)
-};
 
 pub const TrainConfig = struct {
     lr: f32 = 3e-4, // Peak LR (after warmup)
@@ -49,18 +30,8 @@ pub const TrainConfig = struct {
     weight_decay: f32 = 0.1,
     checkpoint_every: u32 = 10000,
     log_every: u32 = 100,
+    // STE (Straight-Through Estimator) for true ternary training
     ste: ste_mod.SteConfig = .{},
-    optimizer: OptimizerType = .adamw, // LAMB for large batch training
-    lamb_clamp: f32 = 10.0, // Trust ratio clamp (LAMB only)
-    lr_schedule: LrScheduleType = .sacred, // LR schedule type
-    label_smoothing: f32 = 0.1, // Label smoothing epsilon (0=off, 0.1=default)
-    restart_period: u32 = 25000, // Cosine-restarts: initial period in steps
-    restart_mult: f32 = 1.0, // Cosine-restarts: period multiplier each cycle
-    stable_ratio: f32 = 0.7, // WSD: fraction of post-warmup steps at peak LR
-    // Ternary architecture features
-    ternary_grads: bool = false, // TernGrad gradient compression
-    adaptive_sparsity: bool = false, // 3-level adaptive sparsity masks
-    ternary_schedule: bool = false, // 3-phase φ-decaying LR schedule
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -144,95 +115,21 @@ const TNN_PARAMS_PER_BLOCK: usize = EMBED_DIM * HIDDEN_DIM + HIDDEN_DIM * EMBED_
 // Per block Attention: Q(243×243) + K(243×243) + V(243×243) + O(243×243) + rms_gamma(243) = 236,439
 const ATTN_PARAMS_PER_BLOCK: usize = EMBED_DIM * EMBED_DIM * 4 + EMBED_DIM;
 const PARAMS_PER_BLOCK: usize = TNN_PARAMS_PER_BLOCK + ATTN_PARAMS_PER_BLOCK;
+const TOTAL_BLOCK_PARAMS: usize = PARAMS_PER_BLOCK * constants.NUM_BLOCKS;
 // Output projection: weights(243×729) + bias(729) = 177,876
 const OUTPUT_PARAMS: usize = EMBED_DIM * VOCAB_SIZE + VOCAB_SIZE;
-
-/// Compute total trainable params for a given number of blocks
-pub fn totalTrainableParams(num_blocks: usize) usize {
-    return PARAMS_PER_BLOCK * num_blocks + OUTPUT_PARAMS;
-}
-
-// Legacy compile-time constant for backward compat (DEFAULT_BLOCKS=3)
-const TOTAL_TRAINABLE_PARAMS: usize = totalTrainableParams(constants.DEFAULT_BLOCKS);
+const TOTAL_TRAINABLE_PARAMS: usize = TOTAL_BLOCK_PARAMS + OUTPUT_PARAMS;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // FULL TRAINER — STE backprop through all blocks
 // ═══════════════════════════════════════════════════════════════════════════════
-
-const Optimizer = union(enum) {
-    adamw: autograd.AdamW,
-    lamb: autograd.Lamb,
-
-    fn setLr(self: *Optimizer, lr: f32) void {
-        switch (self.*) {
-            .adamw => |*o| o.lr = lr,
-            .lamb => |*o| o.lr = lr,
-        }
-    }
-
-    fn incrementT(self: *Optimizer) void {
-        switch (self.*) {
-            .adamw => |*o| o.t += 1,
-            .lamb => |*o| o.t += 1,
-        }
-    }
-
-    pub fn setWeightDecay(self: *Optimizer, wd: f32) void {
-        switch (self.*) {
-            .adamw => |*o| o.weight_decay = wd,
-            .lamb => |*o| o.weight_decay = wd,
-        }
-    }
-
-    pub fn setT(self: *Optimizer, t: u32) void {
-        switch (self.*) {
-            .adamw => |*o| o.t = t,
-            .lamb => |*o| o.t = t,
-        }
-    }
-
-    pub fn getM(self: *Optimizer) []f32 {
-        return switch (self.*) {
-            .adamw => |*o| o.m,
-            .lamb => |*o| o.m,
-        };
-    }
-
-    pub fn getV(self: *Optimizer) []f32 {
-        return switch (self.*) {
-            .adamw => |*o| o.v,
-            .lamb => |*o| o.v,
-        };
-    }
-
-    pub fn getT(self: *Optimizer) u32 {
-        return switch (self.*) {
-            .adamw => |o| o.t,
-            .lamb => |o| o.t,
-        };
-    }
-
-    fn stepSlice(self: *Optimizer, params: []f32, grads: []const f32, offset: usize) void {
-        switch (self.*) {
-            .adamw => |*o| autograd.adamwStepSlice(o, params, grads, offset),
-            .lamb => |*o| autograd.lambStepSlice(o, params, grads, offset),
-        }
-    }
-
-    fn deinit(self: *Optimizer) void {
-        switch (self.*) {
-            .adamw => |*o| o.deinit(),
-            .lamb => |*o| o.deinit(),
-        }
-    }
-};
 
 pub const FullTrainer = struct {
     model: *model_mod.HSLM,
     dataset: *data_mod.Dataset,
     config: TrainConfig,
     metrics: TrainMetrics,
-    optimizer: Optimizer,
+    optimizer: autograd.AdamW,
     // Batch accumulation
     accum_count: usize,
     allocator: std.mem.Allocator,
@@ -245,30 +142,18 @@ pub const FullTrainer = struct {
         dataset: *data_mod.Dataset,
         config: TrainConfig,
     ) !Self {
-        const num_params = totalTrainableParams(model.blocks.len);
-        const optimizer: Optimizer = switch (config.optimizer) {
-            .adamw => blk: {
-                var opt = try autograd.AdamW.init(allocator, num_params, config.lr);
-                opt.weight_decay = config.weight_decay;
-                break :blk .{ .adamw = opt };
-            },
-            .lamb => blk: {
-                var opt = try autograd.Lamb.init(allocator, num_params, config.lr);
-                opt.weight_decay = config.weight_decay;
-                opt.clamp_value = config.lamb_clamp;
-                break :blk .{ .lamb = opt };
-            },
-        };
+        var opt = try autograd.AdamW.init(allocator, TOTAL_TRAINABLE_PARAMS, config.lr);
+        opt.weight_decay = config.weight_decay;
 
-        // Set global label smoothing for autograd loss functions
-        autograd.label_smoothing = config.label_smoothing;
+        // Apply STE config to model
+        model.ste_config = config.ste;
 
         return Self{
             .model = model,
             .dataset = dataset,
             .config = config,
             .metrics = TrainMetrics{},
-            .optimizer = optimizer,
+            .optimizer = opt,
             .accum_count = 0,
             .allocator = allocator,
         };
@@ -281,7 +166,6 @@ pub const FullTrainer = struct {
     /// Accumulate gradients for one sample (call batch_size times, then optimizerStep)
     pub fn accumulateGrad(self: *Self, input: []const u16, target: []const u16) f32 {
         const seq_len = @min(input.len, CONTEXT_LEN);
-        if (seq_len == 0) return 0.0;
 
         // Full forward through blocks with caching
         var logits: [VOCAB_SIZE]f32 = undefined;
@@ -307,66 +191,21 @@ pub const FullTrainer = struct {
         return loss;
     }
 
-    /// Apply accumulated gradients: average → clip → optimizer step → requantize
+    /// Apply accumulated gradients: average → clip → AdamW step → requantize
     pub fn optimizerStep(self: *Self) void {
         if (self.accum_count == 0) return;
         const scale = 1.0 / @as(f32, @floatFromInt(self.accum_count));
 
-        // LR schedule dispatch (ternary schedule overrides if enabled)
-        self.metrics.lr_current = if (self.config.ternary_schedule) blk: {
-            const sched = ternary_schedule.TernarySchedule{
-                .max_lr = self.config.lr,
-                .min_lr = self.config.lr_min,
-            };
-            break :blk sched.getLR(@as(u64, self.metrics.step), @as(u64, self.config.total_steps));
-        } else switch (self.config.lr_schedule) {
-            .sacred => autograd.sacredLrSchedule(
-                self.metrics.step,
-                self.config.warmup_steps,
-                self.config.total_steps,
-                self.config.lr,
-                self.config.lr_min,
-            ),
-            .cosine => autograd.lrSchedule(
-                self.metrics.step,
-                self.config.warmup_steps,
-                self.config.total_steps,
-                self.config.lr,
-            ),
-            .cosine_restarts => autograd.cosineRestartsLrSchedule(
-                self.metrics.step,
-                self.config.warmup_steps,
-                self.config.total_steps,
-                self.config.lr,
-                self.config.lr_min,
-                self.config.restart_period,
-                self.config.restart_mult,
-            ),
-            .wsd => autograd.wsdLrSchedule(
-                self.metrics.step,
-                self.config.warmup_steps,
-                self.config.total_steps,
-                self.config.lr,
-                self.config.lr_min,
-                self.config.stable_ratio,
-            ),
-            .phi_restart => autograd.phiRestartLrSchedule(
-                self.metrics.step,
-                self.config.warmup_steps,
-                self.config.total_steps,
-                self.config.lr,
-                self.config.lr_min,
-                self.config.restart_period,
-            ),
-            .d2z => autograd.d2zLrSchedule(
-                self.metrics.step,
-                self.config.warmup_steps,
-                self.config.total_steps,
-                self.config.lr,
-            ),
-        };
-        self.optimizer.setLr(self.metrics.lr_current);
-        self.optimizer.incrementT();
+        // Sacred φ-cosine LR: warmup → φ-asymmetric decay → lr_min
+        self.metrics.lr_current = autograd.sacredLrSchedule(
+            self.metrics.step,
+            self.config.warmup_steps,
+            self.config.total_steps,
+            self.config.lr,
+            self.config.lr_min,
+        );
+        self.optimizer.lr = self.metrics.lr_current;
+        self.optimizer.t += 1;
 
         // --- Output projection ---
         // Average + clip output shadow grads
@@ -377,13 +216,13 @@ pub const FullTrainer = struct {
 
         // AdamW step on output projection
         var offset: usize = 0;
-        self.optimizer.stepSlice(self.model.output_shadow, self.model.grad_output_shadow, offset);
+        autograd.adamwStepSlice(&self.optimizer, self.model.output_shadow, self.model.grad_output_shadow, offset);
         offset += EMBED_DIM * VOCAB_SIZE;
-        self.optimizer.stepSlice(self.model.output_bias, self.model.grad_output_bias, offset);
+        autograd.adamwStepSlice(&self.optimizer, self.model.output_bias, self.model.grad_output_bias, offset);
         offset += VOCAB_SIZE;
 
         // --- Block parameters ---
-        for (self.model.blocks) |*block| {
+        for (&self.model.blocks) |*block| {
             // --- TNN params ---
             // Average + clip per-block gradients
             for (block.tnn.grad_shadow_up) |*g| g.* *= scale;
@@ -395,13 +234,13 @@ pub const FullTrainer = struct {
             autograd.clipGradNorm(block.tnn.grad_shadow_down, self.config.grad_clip);
 
             // AdamW step on TNN params
-            self.optimizer.stepSlice(block.tnn.shadow_up, block.tnn.grad_shadow_up, offset);
+            autograd.adamwStepSlice(&self.optimizer, block.tnn.shadow_up, block.tnn.grad_shadow_up, offset);
             offset += EMBED_DIM * HIDDEN_DIM;
-            self.optimizer.stepSlice(block.tnn.shadow_down, block.tnn.grad_shadow_down, offset);
+            autograd.adamwStepSlice(&self.optimizer, block.tnn.shadow_down, block.tnn.grad_shadow_down, offset);
             offset += HIDDEN_DIM * EMBED_DIM;
-            self.optimizer.stepSlice(block.tnn.bias_up, block.tnn.grad_bias_up, offset);
+            autograd.adamwStepSlice(&self.optimizer, block.tnn.bias_up, block.tnn.grad_bias_up, offset);
             offset += HIDDEN_DIM;
-            self.optimizer.stepSlice(block.tnn.bias_down, block.tnn.grad_bias_down, offset);
+            autograd.adamwStepSlice(&self.optimizer, block.tnn.bias_down, block.tnn.grad_bias_down, offset);
             offset += EMBED_DIM;
 
             // --- Sacred Attention params ---
@@ -417,45 +256,26 @@ pub const FullTrainer = struct {
             autograd.clipGradNorm(block.sacred_attn.grad_o, self.config.grad_clip);
 
             // AdamW step on attention params
-            self.optimizer.stepSlice(block.sacred_attn.shadow_q, block.sacred_attn.grad_q, offset);
+            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_q, block.sacred_attn.grad_q, offset);
             offset += EMBED_DIM * EMBED_DIM;
-            self.optimizer.stepSlice(block.sacred_attn.shadow_k, block.sacred_attn.grad_k, offset);
+            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_k, block.sacred_attn.grad_k, offset);
             offset += EMBED_DIM * EMBED_DIM;
-            self.optimizer.stepSlice(block.sacred_attn.shadow_v, block.sacred_attn.grad_v, offset);
+            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_v, block.sacred_attn.grad_v, offset);
             offset += EMBED_DIM * EMBED_DIM;
-            self.optimizer.stepSlice(block.sacred_attn.shadow_o, block.sacred_attn.grad_o, offset);
+            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.shadow_o, block.sacred_attn.grad_o, offset);
             offset += EMBED_DIM * EMBED_DIM;
-            self.optimizer.stepSlice(block.sacred_attn.rms_gamma, block.sacred_attn.grad_rms_gamma, offset);
+            autograd.adamwStepSlice(&self.optimizer, block.sacred_attn.rms_gamma, block.sacred_attn.grad_rms_gamma, offset);
             offset += EMBED_DIM;
         }
 
         // Verify offset matches total param count (watch point #2)
-        std.debug.assert(offset == totalTrainableParams(self.model.blocks.len));
+        std.debug.assert(offset == TOTAL_TRAINABLE_PARAMS);
 
-        // TernGrad: stochastic ternarize gradients before requantize
-        // This compresses gradient communication and adds regularization.
-        if (self.config.ternary_grads) {
-            ternGradCompressInPlace(self.model.grad_output_shadow);
-            for (self.model.blocks) |*block| {
-                ternGradCompressInPlace(block.tnn.grad_shadow_up);
-                ternGradCompressInPlace(block.tnn.grad_shadow_down);
-            }
-        }
-
-        // Requantize all ternary weights (STE mode if configured)
+        // Requantize all ternary weights (STE-aware if mode != none)
         if (self.config.ste.mode != .none) {
-            self.model.requantizeSte(self.config.ste, self.metrics.step);
+            self.model.requantizeSte(self.metrics.step);
         } else {
             self.model.requantize();
-        }
-
-        // Adaptive sparsity: zero out small-magnitude shadows to increase sparsity
-        if (self.config.adaptive_sparsity) {
-            applyAdaptiveSparsityF32(self.model.output_shadow);
-            for (self.model.blocks) |*block| {
-                applyAdaptiveSparsityF32(block.tnn.shadow_up);
-                applyAdaptiveSparsityF32(block.tnn.shadow_down);
-            }
         }
 
         // Zero all grads for next accumulation
@@ -515,12 +335,10 @@ pub const FullTrainer = struct {
             self.model.forward(input, &logits);
 
             const seq_len = @min(input.len, CONTEXT_LEN);
-            if (seq_len == 0) continue;
-            var eval_grad: [VOCAB_SIZE]f32 = [_]f32{0.0} ** VOCAB_SIZE;
             const loss = autograd.forwardCrossEntropy(
                 &autograd.Tensor{
                     .data = &logits,
-                    .grad = &eval_grad,
+                    .grad = @constCast(&[_]f32{0.0} ** VOCAB_SIZE),
                     .rows = 1,
                     .cols = VOCAB_SIZE,
                     .requires_grad = false,
@@ -538,62 +356,13 @@ pub const FullTrainer = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TERNARY TRAINING HELPERS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// TernGrad in-place: ternarize gradients to {-scale, 0, +scale} using max(|g|).
-/// Equivalent to TernGrad quantize → dequantize in one pass. Adds stochastic regularization.
-fn ternGradCompressInPlace(grads: []f32) void {
-    // Find max absolute value
-    var max_abs: f32 = 0.0;
-    for (grads) |g| {
-        const abs_g = @abs(g);
-        if (abs_g > max_abs) max_abs = abs_g;
-    }
-    if (max_abs == 0.0) return;
-
-    // Deterministic ternarization (threshold at 50% of max)
-    const threshold = max_abs * 0.5;
-    for (grads) |*g| {
-        if (@abs(g.*) < threshold) {
-            g.* = 0.0;
-        } else if (g.* > 0) {
-            g.* = max_abs;
-        } else {
-            g.* = -max_abs;
-        }
-    }
-}
-
-/// Adaptive sparsity on float shadows: zero out weights below mean(|w|) × 0.33.
-/// Increases ternary sparsity (more zeros after requantize).
-fn applyAdaptiveSparsityF32(shadows: []f32) void {
-    var sum: f64 = 0.0;
-    for (shadows) |w| {
-        sum += @abs(@as(f64, w));
-    }
-    const mean_abs: f32 = @floatCast(sum / @as(f64, @floatFromInt(shadows.len)));
-    const threshold = mean_abs * 0.33;
-
-    for (shadows) |*w| {
-        if (@abs(w.*) < threshold) {
-            w.* = 0.0;
-        }
-    }
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // CHECKPOINT (binary format)
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const CHECKPOINT_MAGIC: u32 = 0x484C534D; // "HSLM"
-pub const CHECKPOINT_VERSION: u32 = 3; // v3: adds block count header
+pub const CHECKPOINT_VERSION: u32 = 1;
 
 pub fn loadCheckpoint(model: *model_mod.HSLM, path: []const u8) !u32 {
-    return loadCheckpointOpt(model, path, null);
-}
-
-pub fn loadCheckpointOpt(model: *model_mod.HSLM, path: []const u8, optimizer: ?*Optimizer) !u32 {
     const file = try std.fs.cwd().openFile(path, .{});
     defer file.close();
     const reader = file.deprecatedReader();
@@ -602,43 +371,20 @@ pub fn loadCheckpointOpt(model: *model_mod.HSLM, path: []const u8, optimizer: ?*
     const magic = try reader.readInt(u32, .little);
     if (magic != CHECKPOINT_MAGIC) return error.InvalidCheckpoint;
     const version = try reader.readInt(u32, .little);
-    if (version > CHECKPOINT_VERSION) return error.UnsupportedVersion;
+    if (version != CHECKPOINT_VERSION) return error.UnsupportedVersion;
     const step = try reader.readInt(u32, .little);
     var loss_bytes: [4]u8 = undefined;
     _ = try reader.readAll(&loss_bytes);
-
-    // v3+: read saved block count and validate
-    if (version >= 3) {
-        const saved_blocks = try reader.readInt(u32, .little);
-        if (saved_blocks != @as(u32, @intCast(model.blocks.len))) return error.BlockCountMismatch;
-    } else {
-        // v2 checkpoints were always 3 blocks
-        if (model.blocks.len != constants.DEFAULT_BLOCKS) return error.BlockCountMismatch;
-    }
 
     // Shadow weights (output projection)
     _ = try reader.readAll(std.mem.sliceAsBytes(model.output_shadow));
 
     // Block shadow weights
-    for (model.blocks) |*block| {
+    for (&model.blocks) |*block| {
         _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.shadow_up));
         _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.shadow_down));
         _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.bias_up));
         _ = try reader.readAll(std.mem.sliceAsBytes(block.tnn.bias_down));
-    }
-
-    // Optimizer state (v2+ checkpoints only)
-    const num_params = totalTrainableParams(model.blocks.len);
-    if (version >= 2) {
-        if (optimizer) |opt| {
-            const saved_num_params = try reader.readInt(u32, .little);
-            if (saved_num_params != num_params) return error.ParamCountMismatch;
-            const saved_t = try reader.readInt(u32, .little);
-            opt.setT(saved_t);
-            _ = try reader.readAll(std.mem.sliceAsBytes(opt.getM()));
-            _ = try reader.readAll(std.mem.sliceAsBytes(opt.getV()));
-        }
-        // If no optimizer passed, skip optimizer data (still valid)
     }
 
     // Requantize ternary weights from shadow
@@ -648,10 +394,6 @@ pub fn loadCheckpointOpt(model: *model_mod.HSLM, path: []const u8, optimizer: ?*
 }
 
 pub fn saveCheckpoint(model: *model_mod.HSLM, step: u32, loss: f32, path: []const u8) !void {
-    return saveCheckpointOpt(model, step, loss, path, null);
-}
-
-pub fn saveCheckpointOpt(model: *model_mod.HSLM, step: u32, loss: f32, path: []const u8, optimizer: ?*Optimizer) !void {
     const file = try std.fs.cwd().createFile(path, .{});
     defer file.close();
     const writer = file.deprecatedWriter();
@@ -662,27 +404,15 @@ pub fn saveCheckpointOpt(model: *model_mod.HSLM, step: u32, loss: f32, path: []c
     try writer.writeInt(u32, step, .little);
     try writer.writeAll(std.mem.asBytes(&loss));
 
-    // v3: block count
-    try writer.writeInt(u32, @intCast(model.blocks.len), .little);
-
     // Shadow weights (output projection)
     try writer.writeAll(std.mem.sliceAsBytes(model.output_shadow));
 
     // Block shadow weights
-    for (model.blocks) |*block| {
+    for (&model.blocks) |*block| {
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.shadow_up));
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.shadow_down));
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.bias_up));
         try writer.writeAll(std.mem.sliceAsBytes(block.tnn.bias_down));
-    }
-
-    // Optimizer state (v3)
-    const num_params = totalTrainableParams(model.blocks.len);
-    if (optimizer) |opt| {
-        try writer.writeInt(u32, @intCast(num_params), .little);
-        try writer.writeInt(u32, opt.getT(), .little);
-        try writer.writeAll(std.mem.sliceAsBytes(opt.getM()));
-        try writer.writeAll(std.mem.sliceAsBytes(opt.getV()));
     }
 }
 

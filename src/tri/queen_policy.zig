@@ -47,7 +47,7 @@ pub const SafetyLevel = enum(u8) {
 pub fn actionLevel(kind: qt.ActionKind) SafetyLevel {
     return switch (kind) {
         // L0 — Read-Only
-        .farm_status, .arena_status, .doctor_scan, .train_status, .train_diagnose, .experiment_chart, .patent_status, .research_sacred, .ouroboros_status, .experience_recall, .introspection, .farm_evolve_status, .swarm_status => .read_only,
+        .farm_status, .arena_status, .doctor_scan, .train_status, .train_diagnose, .experiment_chart, .patent_status, .research_sacred, .ouroboros_status, .experience_recall, .farm_evolve_status, .swarm_status => .read_only,
         // L1 — Soft Write
         .doctor_quick, .doctor_heal, .ouroboros_cycle, .git_commit_state, .git_push, .issue_comment, .notify, .arena_battle, .experience_save, .fmt => .soft_write,
         // L2 — Dangerous
@@ -68,7 +68,7 @@ pub fn actionRateLimit(kind: qt.ActionKind) ActionRateLimit {
     return switch (kind) {
         // L0 — generous limits
         .farm_status, .arena_status, .train_status, .ouroboros_status, .farm_evolve_status, .swarm_status => .{ .max_per_hour = 12, .cooldown_sec = 300 },
-        .doctor_scan, .train_diagnose, .experiment_chart, .patent_status, .research_sacred, .experience_recall, .introspection => .{ .max_per_hour = 6, .cooldown_sec = 600 },
+        .doctor_scan, .train_diagnose, .experiment_chart, .patent_status, .research_sacred, .experience_recall => .{ .max_per_hour = 6, .cooldown_sec = 600 },
         // L1 — moderate limits
         .doctor_quick, .fmt => .{ .max_per_hour = 3, .cooldown_sec = 600 },
         .doctor_heal => .{ .max_per_hour = 1, .cooldown_sec = 3600 },
@@ -728,4 +728,63 @@ test "Policy — fmtHistoryTelegram empty" {
     const msg = fmtHistoryTelegram(&buf, &m);
     try std.testing.expect(msg.len > 0);
     try std.testing.expect(std.mem.indexOf(u8, msg, "no incidents") != null);
+}
+
+test "Policy — actionRateLimit returns correct limits" {
+    const l0 = actionRateLimit(.farm_status);
+    try std.testing.expectEqual(@as(u8, 12), l0.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 300), l0.cooldown_sec);
+
+    const l1 = actionRateLimit(.doctor_quick);
+    try std.testing.expectEqual(@as(u8, 3), l1.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 600), l1.cooldown_sec);
+
+    const l2 = actionRateLimit(.farm_recycle);
+    try std.testing.expectEqual(@as(u8, 1), l2.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 3600), l2.cooldown_sec);
+}
+
+test "Policy — PolicyVerdict reasons" {
+    try std.testing.expectEqualStrings("OK", PolicyVerdict.allowed.reason());
+    try std.testing.expectEqualStrings("level exceeds max_auto_level", PolicyVerdict.denied_level.reason());
+    try std.testing.expectEqualStrings("per-action rate limit", PolicyVerdict.denied_rate.reason());
+    try std.testing.expectEqualStrings("cooldown not elapsed", PolicyVerdict.denied_cooldown.reason());
+    try std.testing.expectEqualStrings("incident escalated, human required", PolicyVerdict.denied_escalated.reason());
+    try std.testing.expectEqualStrings("Level 2: needs /queen approve", PolicyVerdict.needs_approval.reason());
+}
+
+test "Policy — PendingQueue expireOld" {
+    var q = PendingQueue.init();
+    const id = q.add(.doctor_quick, "test").?;
+    try std.testing.expectEqual(@as(u8, 1), q.pendingCount());
+
+    // Simulate old item (age > 30 min)
+    const now = std.time.timestamp();
+    for (&q.items) |*item| {
+        if (item.id == id) {
+            item.requested_at = now - 2000;
+        }
+    }
+    q.expireOld();
+    try std.testing.expectEqual(@as(u8, 0), q.pendingCount());
+}
+
+test "Policy — IncidentMemory recentFailCount" {
+    var m = IncidentMemory.init();
+    // Record 2 failures within last hour
+    m.record(.auto_action_fail, .doctor_quick, false, "fail 1");
+    m.record(.auto_action_fail, .doctor_quick, false, "fail 2");
+    try std.testing.expectEqual(@as(u8, 2), m.recentFailCount(.doctor_quick));
+    // Different action should have 0 fails
+    try std.testing.expectEqual(@as(u8, 0), m.recentFailCount(.farm_recycle));
+}
+
+test "Policy — ActionCounters window reset" {
+    var c = ActionCounters{};
+    c.window_start = std.time.timestamp() - 4000; // > 1 hour ago
+    c.counts[@intFromEnum(qt.ActionKind.doctor_quick)] = 100;
+
+    // Recording should reset window
+    c.record(.doctor_quick);
+    try std.testing.expectEqual(@as(u8, 1), c.getCount(.doctor_quick));
 }

@@ -2848,12 +2848,21 @@ fn writeJsonGraph(
         if (!first) try output.appendSlice(",\n");
         first = false;
 
+        const escaped_id = try escapeJsonString(allocator, info.id);
+        defer allocator.free(escaped_id);
+        const escaped_name = try escapeJsonString(allocator, info.name);
+        defer allocator.free(escaped_name);
+        const escaped_bio = try escapeJsonString(allocator, info.bio_system);
+        defer allocator.free(escaped_bio);
+        const escaped_status = try escapeJsonString(allocator, info.status);
+        defer allocator.free(escaped_status);
+
         try output.writer().print("    {{\"id\": \"{s}\", \"name\": \"{s}\", \"score\": {d}, \"bio_system\": \"{s}\", \"status\": \"{s}\"}}", .{
-            escapeJsonString(info.id),
-            escapeJsonString(info.name),
+            escaped_id,
+            escaped_name,
             info.score,
-            info.bio_system,
-            info.status,
+            escaped_bio,
+            escaped_status,
         });
     }
 
@@ -2868,9 +2877,14 @@ fn writeJsonGraph(
             if (!first) try output.appendSlice(",\n");
             first = false;
 
+            const escaped_from = try escapeJsonString(allocator, from_id);
+            defer allocator.free(escaped_from);
+            const escaped_to = try escapeJsonString(allocator, to_id);
+            defer allocator.free(escaped_to);
+
             try output.writer().print("    {{\"from\": \"{s}\", \"to\": \"{s}\"}}", .{
-                escapeJsonString(from_id),
-                escapeJsonString(to_id),
+                escaped_from,
+                escaped_to,
             });
         }
     }
@@ -2938,12 +2952,21 @@ fn writeHtmlGraph(
         if (!first) try output.appendSlice(",\n        ");
         first = false;
 
+        const escaped_id = try escapeJsString(allocator, info.id);
+        defer allocator.free(escaped_id);
+        const escaped_name = try escapeJsString(allocator, info.name);
+        defer allocator.free(escaped_name);
+        const escaped_bio = try escapeJsString(allocator, info.bio_system);
+        defer allocator.free(escaped_bio);
+        const escaped_status = try escapeJsString(allocator, info.status);
+        defer allocator.free(escaped_status);
+
         try output.writer().print("{{id:\"{s}\",name:\"{s}\",score:{d},bio:\"{s}\",status:\"{s}\"}}", .{
-            escapeJsString(info.id),
-            escapeJsString(info.name),
+            escaped_id,
+            escaped_name,
             info.score,
-            info.bio_system,
-            info.status,
+            escaped_bio,
+            escaped_status,
         });
     }
 
@@ -2962,9 +2985,14 @@ fn writeHtmlGraph(
             if (!first) try output.appendSlice(",\n        ");
             first = false;
 
+            const escaped_from = try escapeJsString(allocator, from_id);
+            defer allocator.free(escaped_from);
+            const escaped_to = try escapeJsString(allocator, to_id);
+            defer allocator.free(escaped_to);
+
             try output.writer().print("{{source:\"{s}\",target:\"{s}\"}}", .{
-                escapeJsString(from_id),
-                escapeJsString(to_id),
+                escaped_from,
+                escaped_to,
             });
         }
     }
@@ -3061,17 +3089,65 @@ fn escapeLabel(allocator: std.mem.Allocator, s: []const u8) ![]const u8 {
 }
 
 // Escape string for JSON
-fn escapeJsonString(s: []const u8) []const u8 {
-    // Simple version - just return as-is for now. Full implementation would escape quotes, backslashes, etc.
-    // TODO: Implement proper JSON escaping
-    return s;
+fn escapeJsonString(allocator: std.mem.Allocator, s: []const u8) ![]const u8 {
+    // Proper JSON string escaping per RFC 8259
+    // Escapes: ", \, /, \b, \f, \n, \r, \t and control characters (U+0000 to U+001F)
+    var result = try std.ArrayList(u8).initCapacity(allocator, s.len + s.len / 2); // reserve space for escapes
+    defer result.deinit(allocator);
+
+    for (s) |c| {
+        switch (c) {
+            '"' => try result.appendSlice(allocator, "\\\""),
+            '\\' => try result.appendSlice(allocator, "\\\\"),
+            '/' => try result.appendSlice(allocator, "\\/"),
+            0x08 => try result.appendSlice(allocator, "\\b"), // backspace
+            0x0C => try result.appendSlice(allocator, "\\f"), // form feed
+            '\n' => try result.appendSlice(allocator, "\\n"),
+            '\r' => try result.appendSlice(allocator, "\\r"),
+            '\t' => try result.appendSlice(allocator, "\\t"),
+            else => {
+                // Control characters (U+0000 to U+001F) get \uXXXX escape
+                if (c < 0x20) {
+                    try result.print(allocator, "\\u{X:0>4}", .{c});
+                } else {
+                    try result.append(allocator, c);
+                }
+            },
+        }
+    }
+
+    return result.toOwnedSlice(allocator);
 }
 
 // Escape string for JavaScript
-fn escapeJsString(s: []const u8) []const u8 {
-    // Simple version - just return as-is for now. Full implementation would escape quotes, backslashes, etc.
-    // TODO: Implement proper JS escaping
-    return s;
+fn escapeJsString(allocator: std.mem.Allocator, s: []const u8) ![]const u8 {
+    // JavaScript string escaping for use in JS literals
+    // Escapes: ', ", \, newlines, and other special characters
+    var result = try std.ArrayList(u8).initCapacity(allocator, s.len + s.len / 2); // reserve space for escapes
+    defer result.deinit(allocator);
+
+    for (s) |c| {
+        switch (c) {
+            '\'' => try result.appendSlice(allocator, "\\'"),
+            '"' => try result.appendSlice(allocator, "\\\""),
+            '\\' => try result.appendSlice(allocator, "\\\\"),
+            '\n' => try result.appendSlice(allocator, "\\n"),
+            '\r' => try result.appendSlice(allocator, "\\r"),
+            '\t' => try result.appendSlice(allocator, "\\t"),
+            0x08 => try result.appendSlice(allocator, "\\b"), // backspace
+            0x0C => try result.appendSlice(allocator, "\\f"), // form feed
+            else => {
+                // Control characters get \uXXXX escape
+                if (c < 0x20) {
+                    try result.print(allocator, "\\u{X:0>4}", .{c});
+                } else {
+                    try result.append(allocator, c);
+                }
+            },
+        }
+    }
+
+    return result.toOwnedSlice(allocator);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

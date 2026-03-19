@@ -358,3 +358,295 @@ test "locus_coeruleus — health returns healthy" {
     const h = health();
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AROUSAL LEVEL TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "locus_coeruleus — ArousalLevel all values" {
+    try std.testing.expectEqual(@as(u8, 0), @intFromEnum(ArousalLevel.sleep));
+    try std.testing.expectEqual(@as(u8, 1), @intFromEnum(ArousalLevel.idle));
+    try std.testing.expectEqual(@as(u8, 2), @intFromEnum(ArousalLevel.normal));
+    try std.testing.expectEqual(@as(u8, 3), @intFromEnum(ArousalLevel.alert));
+    try std.testing.expectEqual(@as(u8, 4), @intFromEnum(ArousalLevel.alarm));
+    try std.testing.expectEqual(@as(u8, 5), @intFromEnum(ArousalLevel.emergency));
+}
+
+test "locus_coeruleus — ArousalLevel labels" {
+    try std.testing.expectEqualStrings("SLEEP", ArousalLevel.sleep.label());
+    try std.testing.expectEqualStrings("IDLE", ArousalLevel.idle.label());
+    try std.testing.expectEqualStrings("NORMAL", ArousalLevel.normal.label());
+    try std.testing.expectEqualStrings("ALERT", ArousalLevel.alert.label());
+    try std.testing.expectEqualStrings("ALARM", ArousalLevel.alarm.label());
+    try std.testing.expectEqualStrings("EMERGENCY", ArousalLevel.emergency.label());
+}
+
+test "locus_coeruleus — ArousalLevel emoji" {
+    // Just verify the emoji function returns something non-empty
+    for (std.meta.tags(ArousalLevel)) |level| {
+        const emoji = level.emoji();
+        try std.testing.expect(emoji.len > 0);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT KIND TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "locus_coeruleus — AlertKind all labels" {
+    try std.testing.expectEqualStrings("WORKER CRASHED", AlertKind.worker_crashed.label());
+    try std.testing.expectEqualStrings("PPL DIVERGENCE", AlertKind.ppl_divergence.label());
+    try std.testing.expectEqualStrings("BUILD BROKEN", AlertKind.build_broken.label());
+    try std.testing.expectEqualStrings("TOKEN EXPIRED", AlertKind.token_expired.label());
+    try std.testing.expectEqualStrings("HEALTH CRITICAL", AlertKind.health_critical.label());
+    try std.testing.expectEqualStrings("MEMORY CORRUPTION", AlertKind.memory_corruption.label());
+}
+
+test "locus_coeruleus — AlertKind all severities" {
+    try std.testing.expectEqual(@as(u8, 4), AlertKind.worker_crashed.severity());
+    try std.testing.expectEqual(@as(u8, 5), AlertKind.ppl_divergence.severity());
+    try std.testing.expectEqual(@as(u8, 5), AlertKind.build_broken.severity());
+    try std.testing.expectEqual(@as(u8, 3), AlertKind.token_expired.severity());
+    try std.testing.expectEqual(@as(u8, 5), AlertKind.health_critical.severity());
+    try std.testing.expectEqual(@as(u8, 4), AlertKind.memory_corruption.severity());
+}
+
+test "locus_coeruleus — AlertKind severity ranges" {
+    // Verify severity is always in valid range 3-5
+    for (std.meta.tags(AlertKind)) |kind| {
+        const sev = kind.severity();
+        try std.testing.expect(sev >= 3 and sev <= 5);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT STRUCT TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "locus_coeruleus — Alert setMessage" {
+    var alert = Alert{
+        .kind = .worker_crashed,
+        .level = .alarm,
+    };
+
+    try std.testing.expectEqual(@as(usize, 0), alert.message_len);
+
+    alert.setMessage("Test message");
+    try std.testing.expectEqualStrings("Test message", alert.messageStr());
+    try std.testing.expectEqual(@as(usize, 12), alert.message_len);
+}
+
+test "locus_coeruleus — Alert setMessage truncates" {
+    var alert = Alert{
+        .kind = .worker_crashed,
+        .level = .alarm,
+    };
+
+    // Create a message longer than 256 bytes
+    var long_text: [300]u8 = undefined;
+    @memset(&long_text, 'A');
+    long_text[299] = 0;
+
+    alert.setMessage(&long_text);
+    try std.testing.expectEqual(@as(usize, 256), alert.message_len); // Truncated to max
+}
+
+test "locus_coeruleus — Alert setMessage updates timestamp" {
+    var alert = Alert{
+        .kind = .worker_crashed,
+        .level = .alarm,
+    };
+
+    try std.testing.expectEqual(@as(i64, 0), alert.timestamp);
+
+    const before = std.time.timestamp();
+    alert.setMessage("Test");
+    const after = std.time.timestamp();
+
+    try std.testing.expect(alert.timestamp >= before);
+    try std.testing.expect(alert.timestamp <= after);
+}
+
+test "locus_coeruleus — Alert messageStr empty" {
+    const alert = Alert{
+        .kind = .worker_crashed,
+        .level = .alarm,
+        .message_len = 0,
+    };
+
+    try std.testing.expectEqualStrings("", alert.messageStr());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// LOCUS STATE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "locus_coeruleus — LocusState defaults" {
+    const state = LocusState{};
+
+    try std.testing.expectEqual(ArousalLevel.normal, state.arousal);
+    try std.testing.expectEqual(@as(u32, 0), state.alert_count);
+    try std.testing.expect(state.alert_sink == null);
+}
+
+test "locus_coeruleus — LocusState last_alert defaults" {
+    const state = LocusState{};
+
+    try std.testing.expectEqual(AlertKind.worker_crashed, state.last_alert.kind);
+    try std.testing.expectEqual(ArousalLevel.normal, state.last_alert.level);
+    try std.testing.expectEqual(@as(usize, 0), state.last_alert.message_len);
+    try std.testing.expectEqual(@as(i64, 0), state.last_alert.timestamp);
+}
+
+test "locus_coeruleus — init without sink" {
+    const state = LocusState{};
+
+    try std.testing.expectEqual(ArousalLevel.normal, state.arousal);
+    try std.testing.expect(state.alert_sink == null);
+}
+
+test "locus_coeruleus — getArousal" {
+    var state = LocusState{};
+    state.arousal = .alarm;
+
+    try std.testing.expectEqual(ArousalLevel.alarm, getArousal(&state));
+}
+
+test "locus_coeruleus — getAlertCount" {
+    var state = LocusState{};
+    state.alert_count = 42;
+
+    try std.testing.expectEqual(@as(u32, 42), getAlertCount(&state));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TRIGGER ALARM TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "locus_coeruleus — triggerAlarm increments count" {
+    var state = init(sinkFn);
+
+    try triggerAlarm(&state, .build_broken, "Build failed", null);
+    try triggerAlarm(&state, .token_expired, "Token expired", null);
+
+    try std.testing.expectEqual(@as(u32, 2), state.alert_count);
+}
+
+test "locus_coeruleus — triggerAlarm with null level uses inference" {
+    var state = init(sinkFn);
+
+    try triggerAlarm(&state, .ppl_divergence, "PPL spike", null);
+
+    // ppl_divergence has severity 5 → should be emergency
+    try std.testing.expectEqual(ArousalLevel.emergency, state.arousal);
+}
+
+test "locus_coeruleus — triggerAlarm with explicit level" {
+    var state = init(sinkFn);
+
+    try triggerAlarm(&state, .worker_crashed, "Worker died", .alert);
+
+    try std.testing.expectEqual(ArousalLevel.alert, state.arousal);
+}
+
+test "locus_coeruleus — triggerAlarm updates last_alert" {
+    var state = init(sinkFn);
+
+    try triggerAlarm(&state, .health_critical, "Critical health", null);
+
+    try std.testing.expectEqual(AlertKind.health_critical, state.last_alert.kind);
+    try std.testing.expectEqualStrings("Critical health", state.last_alert.messageStr());
+}
+
+test "locus_coeruleus — triggerAlarm only raises arousal if higher" {
+    var state = init(sinkFn);
+
+    try triggerAlarm(&state, .token_expired, "Token expired", null); // severity 3 → alert
+    try std.testing.expectEqual(ArousalLevel.alert, state.arousal);
+
+    try triggerAlarm(&state, .worker_crashed, "Worker crashed", null); // severity 4 → alarm
+    try std.testing.expectEqual(ArousalLevel.alarm, state.arousal);
+
+    // Lower severity should not decrease arousal
+    try triggerAlarm(&state, .token_expired, "Another token", null);
+    try std.testing.expectEqual(ArousalLevel.alarm, state.arousal);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DECAY AROUSAL TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "locus_coeruleus — decayArousal from emergency" {
+    var state = init(sinkFn);
+    state.arousal = .emergency;
+    state.last_alert.timestamp = std.time.timestamp() - 400; // 400 seconds ago
+
+    decayArousal(&state, 300);
+
+    // Should decay by 1 level after 5 minutes
+    try std.testing.expectEqual(ArousalLevel.alarm, state.arousal);
+}
+
+test "locus_coeruleus — decayArousal from sleep stays sleep" {
+    var state = init(sinkFn);
+    state.arousal = .sleep;
+
+    decayArousal(&state, 300);
+
+    try std.testing.expectEqual(ArousalLevel.sleep, state.arousal);
+}
+
+test "locus_coeruleus — decayArousal recent alert no decay" {
+    var state = init(sinkFn);
+    state.arousal = .alarm;
+    state.last_alert.timestamp = std.time.timestamp(); // Just now
+
+    decayArousal(&state, 300);
+
+    try std.testing.expectEqual(ArousalLevel.alarm, state.arousal);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CELL HEALTH TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "locus_coeruleus — CellHealth timestamp" {
+    const h = health();
+    try std.testing.expect(h.last_check > 0);
+}
+
+test "locus_coeruleus — CellHealth defaults" {
+    const h = CellHealth{};
+
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
+
+test "locus_coeruleus — CellHealth Status enum" {
+    try std.testing.expectEqual(CellHealth.Status.healthy, .healthy);
+    try std.testing.expectEqual(CellHealth.Status.weak, .weak);
+    try std.testing.expectEqual(CellHealth.Status.broken, .broken);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INFER AROUSAL TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "locus_coeruleus — inferArousal severity 5 to emergency" {
+    // ppl_divergence, build_broken, health_critical all have severity 5
+    const arousal = inferArousal(.ppl_divergence);
+    try std.testing.expectEqual(ArousalLevel.emergency, arousal);
+}
+
+test "locus_coeruleus — inferArousal severity 4 to alarm" {
+    // worker_crashed, memory_corruption have severity 4
+    const arousal = inferArousal(.worker_crashed);
+    try std.testing.expectEqual(ArousalLevel.alarm, arousal);
+}
+
+test "locus_coeruleus — inferArousal severity 3 to alert" {
+    // token_expired has severity 3
+    const arousal = inferArousal(.token_expired);
+    try std.testing.expectEqual(ArousalLevel.alert, arousal);
+}

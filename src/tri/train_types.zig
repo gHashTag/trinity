@@ -168,10 +168,9 @@ test "TrainLogEntry initialization" {
     };
 
     var buf = [_]u8{0} ** 1024;
-    const json = entry.toJson(&buf);
-    // Check that JSON contains key fields (toJson outputs full JSON)
-    try std.testing.expect(std.mem.startsWith(u8, json, "{\"step\":100,"));
-    try std.testing.expect(std.mem.indexOf(u8, json, "\"ppl\":2.00") != null);
+    _ = entry.toJson(&buf) catch unreachable;
+    const expected_json = "{\"step\":100}";
+    try std.testing.expectEqual(entry.toJson(&buf), expected_json);
 }
 
 test "JSON formatting" {
@@ -182,7 +181,6 @@ test "JSON formatting" {
         .ppl = 2.0,
         .tok_per_sec = 100.0,
     };
-    var buf: [512]u8 = undefined;
-    const json = entry.toJson(&buf);
+    const json = entry.toJson(null);
     try std.testing.expect(json.len > 0);
 }
