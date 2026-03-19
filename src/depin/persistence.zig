@@ -409,7 +409,13 @@ pub const PersistenceManager = struct {
             .last_updated = @as(u64, @intCast(std.time.timestamp())),
         };
 
-        // Write JSON directly to file using std.json.stringifyToWriter
+        // Atomic write: write to temp file, then rename
+        const temp_file = CLUSTER_STATE_FILE ++ ".tmp";
+
+        // Rotate backups
+        self.rotateBackups() catch {};
+
+        // Write JSON directly to file
         const file = try std.fs.cwd().createFile(temp_file, .{ .read = true });
         defer file.close();
 
