@@ -7,16 +7,22 @@
 ## Quick Start
 
 ```bash
-# 1. Add a task to the fix plan
+# 1. Build the binaries
+zig build
+
+# 2. Add a task to the fix plan
 # Edit .ralph/fix_plan.md and add your task
 
-# 2. Launch Ralph with monitoring dashboard
-ralph --monitor
+# 3. Run Ralph agent
+./zig-out/bin/ralph-agent --help
 
-# Ralph will:
+# For autonomous issue resolution
+tri agent run <issue-number>
+
+# Ralph agent will:
 # - Read TECH_TREE.md, fix_plan.md, SUCCESS_HISTORY.md, REGRESSION_PATTERNS.md
 # - Pick highest-priority task
-# - Create ralph/<task-slug> branch
+# - Create feature branch
 # - Implement via Golden Chain cycle
 # - Run quality gates (build + test + format)
 # - Update tech tree and memory files
@@ -877,10 +883,17 @@ Overall: 3.6x improvement
 ## Ralph Commands
 
 ```bash
-ralph --monitor          # Start with live monitoring dashboard
-ralph --help             # Show options
-ralph-enable             # Enable Ralph in project
-ralph-import prd.md      # Convert PRD to Ralph tasks
+# Built-in binaries
+./zig-out/bin/ralph-agent          # Start Ralph agent
+./zig-out/bin/ralph-hook           # Start hook daemon
+./zig-out/bin/scholar-agent        # Start research agent
+
+# TRI CLI commands
+tri agent run <issue-number>       # Autonomous issue resolution
+tri agent list                     # List active agents
+tri cloud spawn <N>                # Spawn Railway container
+tri cloud kill <N>                 # Destroy container
+tri faculty                        # Agent status dashboard
 ```
 
 ---
@@ -945,4 +958,4 @@ These constants are validated in every production cycle.
 
 **φ² + 1/φ² = 3 | TRINITY AUTONOMOUS DEVELOPMENT**
 
-*Ralph Repository:* https://github.com/frankbria/ralph-claude-code
+*Trinity Repository:* https://github.com/gHashTag/trinity

@@ -1,12 +1,12 @@
-# 🤖 Ralph v0.11.0 — Suborbital Order
+# 🤖 Ralph — Trinity Autonomous Development
 
-Welcome to the autonomous heart of Trinity. **Ralph** is not just an agent; it's a workflow designed to help you build complex ternary AI systems with high reliability.
+Welcome to the autonomous heart of Trinity. **Ralph** is the built-in workflow system for developing complex ternary AI systems with high reliability.
 
 ## 🚀 How to Start (The 1-2-3)
 
-1.  **Requirement**: Ensure you have [Ralph](https://github.com/frankbria/ralph-claude-code) installed globally.
+1.  **Build**: Run `zig build` to compile all binaries including `ralph-agent`.
 2.  **Pick a Task**: Open [.ralph/fix_plan.md](fix_plan.md) and add a task you want Ralph to do.
-3.  **Launch**: Run `ralph --monitor` in your terminal. Watch Ralph work in the live dashboard.
+3.  **Launch**: Run `./zig-out/bin/ralph-agent` or use `tri agent run <issue-number>` for autonomous issue resolution.
 
 ## 📂 What are these files?
 
@@ -30,20 +30,18 @@ You don't need to wait for Ralph to run these. You can use them manually:
 *   `./.ralph/scripts/audit.sh`: "Is the project messy?" — Finds large files and unresolved TODOs.
 *   `./.ralph/scripts/bench.sh`: "Is it still fast?" — Compares speed against the baseline.
 
-## 🏢 Multi-Window Ralph (v0.11.0+)
+## 🔧 Built-in Binaries
 
-Running Ralph with `--monitor` now creates two specialized windows:
+Trinity includes Ralph as built-in binaries:
 
-1.  **Main (Window 1)**: Core loop, tool execution, and global status.
-2.  **Symbolic (Window 2)**: Dedicated environment for **B2T** (Binary-to-Ternary) symbolic AI development.
-    -   **B2T CLI**: Instant access to symbolic conversion tools.
-    -   **B2T Tests**: Real-time test runner for symbolic logic.
-    -   **B2T Trace**: State and trace monitoring for ternary VM.
+| Binary | Purpose |
+|--------|---------|
+| `ralph-agent` | Sleep-wake daemon, picks GitHub issues |
+| `ralph-hook` | Hook events → Telegram notifications |
+| `scholar-agent` | Research-focused agent |
+| `mu-agent` | Memory/learning agent |
 
-**Shortcuts:**
-*   `Ctrl+B n`: Next window (Main -> Symbolic)
-*   `Ctrl+B p`: Previous window (Symbolic -> Main)
-*   `Ctrl+B 0-1`: Switch to specific window by number.
+## 💡 Pro Tip
 
 ## 💡 Pro Tip
 When Ralph finishes a task, always check **`.ralph/memory/SUCCESS_HISTORY.md`**. It's the best way to learn the specific coding patterns used in this project!
