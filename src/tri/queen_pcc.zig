@@ -605,7 +605,7 @@ test "pcc — ConsciousnessState needsHelp" {
 }
 
 test "pcc — diagnoseConsciousness detects stuck" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{},
@@ -793,7 +793,7 @@ test "pcc — CurrentState Mode enum coverage" {
 }
 
 test "pcc — ConsciousnessState default values" {
-    var state = ConsciousnessState{};
+    const state = ConsciousnessState{};
 
     try std.testing.expectEqual(ConsciousnessState.Status.conscious, state.status);
     try std.testing.expectEqual(@as(i64, 0), state.stuck_duration_seconds);
@@ -919,7 +919,7 @@ test "pcc — LoopDetector different actions no loop" {
 }
 
 test "pcc — SelfModel struct initialization" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{},
@@ -968,7 +968,7 @@ test "pcc — IntrospectionResult timestamp field" {
 }
 
 test "pcc — IntrospectionResult with all fields set" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{},
@@ -992,10 +992,16 @@ test "pcc — IntrospectionResult with all fields set" {
 // ═══════════════════════════════════════════════════════════════════
 
 test "pcc — SelfAwarenessContext canAct with conscious state" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
-        .capabilities = .{ .binaries_available = 6 }, // High score
+        .capabilities = .{
+            .binaries_available = 6,
+            .mcp_servers = 4,
+            .github_ok = true,
+            .railway_ok = true,
+            .telegram_ok = true,
+        }, // High score
         .goals = .{},
         .learning_state = .{},
     };
@@ -1009,7 +1015,7 @@ test "pcc — SelfAwarenessContext canAct with conscious state" {
 }
 
 test "pcc — SelfAwarenessContext canAct with looping state" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{ .binaries_available = 6 },
@@ -1026,7 +1032,7 @@ test "pcc — SelfAwarenessContext canAct with looping state" {
 }
 
 test "pcc — SelfAwarenessContext canAct with low capability score" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{}, // Low score
@@ -1043,7 +1049,7 @@ test "pcc — SelfAwarenessContext canAct with low capability score" {
 }
 
 test "pcc — SelfAwarenessContext isProgressing with recent lesson" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{},
@@ -1060,7 +1066,7 @@ test "pcc — SelfAwarenessContext isProgressing with recent lesson" {
 }
 
 test "pcc — SelfAwarenessContext isProgressing with old lesson" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{},
@@ -1124,17 +1130,17 @@ test "pcc — ConsciousnessState Status enum coverage" {
 }
 
 test "pcc — ConsciousnessState dead_end needs help" {
-    var state = ConsciousnessState{ .status = .dead_end };
+    const state = ConsciousnessState{ .status = .dead_end };
     try std.testing.expect(state.needsHelp());
 }
 
 test "pcc — ConsciousnessState degraded does not need help" {
-    var state = ConsciousnessState{ .status = .degraded };
+    const state = ConsciousnessState{ .status = .degraded };
     try std.testing.expect(!state.needsHelp());
 }
 
 test "pcc — ConsciousnessState stuck_duration_seconds" {
-    var state = ConsciousnessState{
+    const state = ConsciousnessState{
         .stuck_duration_seconds = 3600, // 1 hour
     };
 
@@ -1214,17 +1220,17 @@ test "pcc — LearningState lastLessonStr method" {
 }
 
 test "pcc — LearningState lastLessonStr empty" {
-    var state = SelfModel.LearningState{};
+    const state = SelfModel.LearningState{};
     try std.testing.expectEqual(@as(usize, 0), state.lastLessonStr().len);
 }
 
 test "pcc — LearningState best_ppl field" {
-    var state = SelfModel.LearningState{ .best_ppl = 4.5 };
+    const state = SelfModel.LearningState{ .best_ppl = 4.5 };
     try std.testing.expectApproxEqAbs(@as(f32, 4.5), state.best_ppl, 0.01);
 }
 
 test "pcc — LearningState active_experiments field" {
-    var state = SelfModel.LearningState{ .active_experiments = 3 };
+    const state = SelfModel.LearningState{ .active_experiments = 3 };
     try std.testing.expectEqual(@as(u8, 3), state.active_experiments);
 }
 
@@ -1233,17 +1239,17 @@ test "pcc — LearningState active_experiments field" {
 // ═══════════════════════════════════════════════════════════════════
 
 test "pcc — Capabilities farm_workers field" {
-    var caps = SelfModel.Capabilities{ .farm_workers = 42 };
+    const caps = SelfModel.Capabilities{ .farm_workers = 42 };
     try std.testing.expectEqual(@as(u8, 42), caps.farm_workers);
 }
 
 test "pcc — Capabilities cloud_containers field" {
-    var caps = SelfModel.Capabilities{ .cloud_containers = 8 };
+    const caps = SelfModel.Capabilities{ .cloud_containers = 8 };
     try std.testing.expectEqual(@as(u8, 8), caps.cloud_containers);
 }
 
 test "pcc — Capabilities capabilityScore with all features" {
-    var caps = SelfModel.Capabilities{
+    const caps = SelfModel.Capabilities{
         .binaries_available = 6,
         .mcp_servers = 4,
         .github_ok = true,
@@ -1268,17 +1274,17 @@ test "pcc — Capabilities capabilityScore with minimal features" {
 // ═══════════════════════════════════════════════════════════════════
 
 test "pcc — SelfModel Identity role field" {
-    var identity = SelfModel.Identity{ .role = .training_farm };
+    const identity = SelfModel.Identity{ .role = .training_farm };
     try std.testing.expectEqual(SelfModel.AgentRole.training_farm, identity.role);
 }
 
 test "pcc — SelfModel Identity uptime_seconds field" {
-    var identity = SelfModel.Identity{ .uptime_seconds = 86400 }; // 1 day
+    const identity = SelfModel.Identity{ .uptime_seconds = 86400 }; // 1 day
     try std.testing.expectEqual(@as(i64, 86400), identity.uptime_seconds);
 }
 
 test "pcc — SelfModel Identity pid field" {
-    var identity = SelfModel.Identity{ .pid = 12345 };
+    const identity = SelfModel.Identity{ .pid = 12345 };
     try std.testing.expectEqual(@as(u32, 12345), identity.pid);
 }
 
@@ -1291,7 +1297,7 @@ test "pcc — SelfModel Identity all roles" {
     };
 
     for (roles) |r| {
-        var identity = SelfModel.Identity{ .role = r };
+        const identity = SelfModel.Identity{ .role = r };
         try std.testing.expectEqual(r, identity.role);
     }
 }
@@ -1301,22 +1307,22 @@ test "pcc — SelfModel Identity all roles" {
 // ═══════════════════════════════════════════════════════════════════
 
 test "pcc — CurrentState mode field" {
-    var state = SelfModel.CurrentState{ .mode = .monitoring };
+    const state = SelfModel.CurrentState{ .mode = .monitoring };
     try std.testing.expectEqual(SelfModel.CurrentState.Mode.monitoring, state.mode);
 }
 
 test "pcc — CurrentState cycle_count field" {
-    var state = SelfModel.CurrentState{ .cycle_count = 100 };
+    const state = SelfModel.CurrentState{ .cycle_count = 100 };
     try std.testing.expectEqual(@as(u32, 100), state.cycle_count);
 }
 
 test "pcc — CurrentState last_action field" {
-    var state = SelfModel.CurrentState{ .last_action = .doctor_quick };
+    const state = SelfModel.CurrentState{ .last_action = .doctor_quick };
     try std.testing.expectEqual(qt.ActionKind.doctor_quick, state.last_action);
 }
 
 test "pcc — CurrentState last_action_ts field" {
-    var state = SelfModel.CurrentState{ .last_action_ts = 1234567890 };
+    const state = SelfModel.CurrentState{ .last_action_ts = 1234567890 };
     try std.testing.expectEqual(@as(i64, 1234567890), state.last_action_ts);
 }
 
@@ -1331,7 +1337,7 @@ test "pcc — CurrentState all modes" {
     };
 
     for (modes) |m| {
-        var state = SelfModel.CurrentState{ .mode = m };
+        const state = SelfModel.CurrentState{ .mode = m };
         try std.testing.expectEqual(m, state.mode);
     }
 }
@@ -1376,11 +1382,11 @@ test "pcc — LoopDetector reset clears history" {
 
     try std.testing.expectEqual(@as(usize, 0), detector.history_len);
 
-    // After reset, need threshold actions again
-    _ = detector.record(.farm_status);
-    _ = detector.record(.farm_status);
-    _ = detector.record(.farm_status);
-    try std.testing.expect(!detector.record(.farm_status)); // Need 4th
+    // After reset, need threshold actions again to detect loop
+    _ = detector.record(.farm_status); // history_len=1
+    _ = detector.record(.farm_status); // history_len=2
+    _ = detector.record(.farm_status); // history_len=3, >= threshold, loop detected
+    try std.testing.expect(detector.record(.farm_status)); // 4th also returns true (loop continues)
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -1388,7 +1394,7 @@ test "pcc — LoopDetector reset clears history" {
 // ═══════════════════════════════════════════════════════════════════
 
 test "pcc — diagnoseConsciousness with degraded capabilities" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{}, // Low capability score
@@ -1404,7 +1410,7 @@ test "pcc — diagnoseConsciousness with degraded capabilities" {
 }
 
 test "pcc — diagnoseConsciousness conscious with good capabilities" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{ .binaries_available = 6 }, // High score
@@ -1420,7 +1426,7 @@ test "pcc — diagnoseConsciousness conscious with good capabilities" {
 }
 
 test "pcc — diagnoseConsciousness loop takes priority" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{ .binaries_available = 6 }, // Good capabilities
@@ -1446,7 +1452,7 @@ test "pcc — diagnoseConsciousness loop takes priority" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "pcc — capabilityScore calculates partial score correctly" {
-    var caps = SelfModel.Capabilities{
+    const caps = SelfModel.Capabilities{
         .binaries_available = 3, // Half of 6 = 0.15
         .mcp_servers = 2, // Below threshold = 0.0
         .github_ok = true, // 0.15
@@ -1461,7 +1467,7 @@ test "pcc — capabilityScore calculates partial score correctly" {
 }
 
 test "pcc — capabilityScore max score with all enabled" {
-    var caps = SelfModel.Capabilities{
+    const caps = SelfModel.Capabilities{
         .binaries_available = 6,
         .mcp_servers = 5,
         .github_ok = true,
@@ -1549,7 +1555,7 @@ test "pcc — describeSelf contains expected format elements" {
 }
 
 test "pcc — diagnoseConsciousness returns valid ConsciousnessState" {
-    var model = SelfModel{
+    const model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{ .binaries_available = 3 },
