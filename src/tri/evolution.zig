@@ -162,6 +162,9 @@ const ServiceEntry = struct {
     // Objective (ntp, jepa, hybrid, nca-ntp, etc.)
     objective: [24]u8 = undefined,
     objective_len: u8 = 0,
+    // zig-hslm format: std | gf16 | tf3 | gf16tf3
+    format: [12]u8 = undefined,
+    format_len: u8 = 0,
     // Phase (ntp/jepa/hybrid/nca — distinct from objective for hybrid switching)
     phase: [12]u8 = undefined,
     phase_len: u8 = 0,
@@ -229,6 +232,11 @@ const ServiceEntry = struct {
     fn waveStr(self: *const ServiceEntry) []const u8 {
         if (self.wave_len == 0) return "?";
         return self.wave[0..self.wave_len];
+    }
+
+    fn formatStr(self: *const ServiceEntry) []const u8 {
+        if (self.format_len == 0) return "std";
+        return self.format[0..self.format_len];
     }
 
     fn parentName(self: *const ServiceEntry) []const u8 {
@@ -2576,6 +2584,9 @@ pub const MutatedConfig = struct {
     kill_ppl_30k: f32 = 999.0, // inherit from parent
     sacred: bool = false, // true = sacred-guided mutations
     objective: []const u8 = "ntp", // ntp | jepa | hybrid | nca-ntp | nca-jepa-ntp | nca-jepa-ntp-v2
+    // zig-hslm format: std | gf16 | tf3 | gf16tf3
+    format_str: [12]u8 = undefined,
+    format_len: u8 = 0,
     nca_steps: u32 = 0, // NCA pre-pre-training steps (0 = no NCA)
     nca_entropy_min: []const u8 = "1.5",
     nca_entropy_max: []const u8 = "2.8",
@@ -2654,6 +2665,35 @@ pub fn mutateConfigEx(leader: *const ServiceEntry, prng_seed: u32, allow_ctx_mut
 
     // --- Kill PPL 30K: inherit from parent ---
     config.kill_ppl_30k = leader.kill_ppl_30k;
+
+    // --- zig-hslm format mutation: std → gf16 → tf3 → gf16tf3 ---
+    // 90% inherit, 10% mutate to next format in chain
+    const formats = [_][]const u8{ "std", "gf16", "tf3", "gf16tf3" };
+    const parent_format = if (leader.format_len > 0)
+        leader.format[0..leader.format_len]
+    else
+        "std";
+
+    // Find parent format index
+    var fmt_idx: usize = 0;
+    for (formats, 0..) |fmt, fi| {
+        if (std.mem.eql(u8, fmt, parent_format)) {
+            fmt_idx = fi;
+            break;
+        }
+    }
+
+    const rng_fmt = mulberry32(prng_seed +% 31);
+    if (rng_fmt % 10 == 0) {
+        // Mutate to next format (cyclic)
+        const new_idx = (fmt_idx + 1) % formats.len;
+        const fmt_result = std.fmt.bufPrint(&config.format_str, "{s}", .{formats[new_idx]});
+        config.format_len = @intCast(fmt_result.len);
+    } else {
+        // Inherit parent format
+        @memcpy(config.format_str[0..parent_format.len], parent_format);
+        config.format_len = @intCast(parent_format.len);
+    }
 
     return config;
 }
@@ -3093,13 +3133,14 @@ pub fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: 
     const sched_str: []const u8 = config.lr_schedule.toStr();
 
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","HSLM_FORMAT":"{s}","HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
         config.optimizer_str[0..config.optimizer_len], sched_str,                             if (config.fresh) "1" else "0",
         warmup_str,                                    grad_clip_str,                         ctx_str,
         shard_str,                                     num_shards_str,                        config.objective,
+        config.format_str[0..config.format_len],
     }) catch return;
     defer allocator.free(set_vars_json);
 
@@ -3168,6 +3209,16 @@ pub fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: 
     const obj_n = @min(obj_src.len, victim.objective.len);
     @memcpy(victim.objective[0..obj_n], obj_src[0..obj_n]);
     victim.objective_len = @intCast(obj_n);
+    // Copy format from config (zig-hslm)
+    const fmt_src = config.format_str[0..config.format_len];
+    const fmt_n = @min(fmt_src.len, victim.format.len);
+    @memcpy(victim.format[0..fmt_n], fmt_src);
+    victim.format_len = @intCast(fmt_n);
+
+    // Log format with zig-hslm version
+    const format_display = if (victim.format_len > 0) victim.format[0..victim.format_len] else "std";
+    print("  {s}→ format={s} (zig-hslm:{s}){s}\n", .{ DIM, format_display, "zig-hslm-f16-utils-from-codeberg", RESET });
+
     victim.generation += 1;
     copyToFixed(&victim.parent, &victim.parent_len, parent_name);
     victim.current_step = 0;
@@ -3473,8 +3524,8 @@ fn printDashboard(state: *const EvolutionState) void {
     }
 
     print("  {s}LEADERBOARD:{s}\n", .{ BOLD, RESET });
-    print("  {s}#  | Service              | PPL      | ValPPL   | Step  | Gen | LR         | Shard{s}\n", .{ DIM, RESET });
-    print("  {s}───┼──────────────────────┼──────────┼──────────┼───────┼─────┼────────────┼──────{s}\n", .{ DIM, RESET });
+    print("  {s}#  | Service              | PPL      | ValPPL   | Step  | Gen | LR         | Shard   | Fmt   | IGLA{s}\n", .{ DIM, RESET });
+    print("  {s}───┼──────────────────────┼──────────┼──────────┼───────┼─────┼────────────┼─────────┼───────┼─────{s}\n", .{ DIM, RESET });
 
     const show = @min(sorted_count, 10);
     for (0..show) |rank| {
@@ -3498,7 +3549,21 @@ fn printDashboard(state: *const EvolutionState) void {
         padTo(countDigits(svc.generation), 4);
         print("| {s}", .{svc.lrStr()});
         padTo(svc.lr_len, 11);
-        print("| {d}\n", .{svc.data_shard});
+        print("| {d}", .{svc.data_shard});
+        padTo(countDigits(svc.data_shard), 8);
+        // Format column
+        if (svc.format_len > 0) {
+            print("| {s}", .{svc.format[0..svc.format_len]});
+            padTo(svc.format_len, 6);
+        } else {
+            print("| {s}std{s}  ", .{ DIM, RESET });
+        }
+        // IGLA score (as percentage)
+        if (svc.igla_score > 0) {
+            print("| {d:.0}\n", .{svc.igla_score * 100});
+        } else {
+            print("| {s}-{s}\n", .{ DIM, RESET });
+        }
     }
 
     // Rung progress
@@ -4218,12 +4283,13 @@ fn deployConfigToService(
 
     const set_vars_gql = "mutation($input: VariableCollectionUpsertInput!) { variableCollectionUpsert(input: $input) }";
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_FORMAT":"{s}","HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
         config.optimizer_str[0..config.optimizer_len], sched_str,                             if (config.fresh) "1" else "0",
         warmup_str,                                    grad_clip_str,                         ctx_str,
+        config.format_str[0..config.format_len],
     }) catch return false;
     defer allocator.free(set_vars_json);
 
