@@ -268,7 +268,7 @@ fn cmdTamagotchiReport(allocator: Allocator) !void {
     print("\n{s}" ++ qt.E_CROWN ++ " TRINITY QUEEN — Tamagotchi Growth Report{s}\n", .{ GOLDEN, RESET });
     print("{s}═════════════════════════════════════════════{s}\n\n", .{ GRAY, RESET });
 
-    // Stage line
+    // Stage line with ASCII art
     const stage_color = if (stage == .adult or stage == .teen) GREEN else if (stage == .child) CYAN else RESET;
     print("  {s} Stage: {s}{s} ({s} uptime){s}\n\n", .{
         qt.E_BRAIN,
@@ -277,6 +277,33 @@ fn cmdTamagotchiReport(allocator: Allocator) !void {
         uptime_str,
         RESET,
     });
+
+    // ASCII art based on stage
+    if (stage == .egg) {
+        print("      {s}{s}{s}\n", .{ GOLDEN, qt.E_CROWN, RESET });
+        print("    {s}  /\\_/\\   {s}\n", .{ GOLDEN, RESET });
+        print("   {s} ( o.o )  {s}\n", .{ GOLDEN, RESET });
+        print("   {s} (  \"  )  {s}\n\n", .{ GOLDEN, RESET });
+    } else if (stage == .baby) {
+        print("      {s}👶 BABY QUEEN{s}\n\n", .{ GOLDEN, RESET });
+        print("     {s}  o   o  {s}\n", .{ GOLDEN, RESET });
+        print("    {s}  \\___/   {s}\n\n", .{ GOLDEN, RESET });
+    } else if (stage == .child) {
+        print("      {s}🧒 CHILD QUEEN{s}\n\n", .{ GOLDEN, RESET });
+        print("      {s}  /\\---\\  {s}\n", .{ GOLDEN, RESET });
+        print("     {s} |  O  |  {s}\n", .{ GOLDEN, RESET });
+        print("      {s}  \\---/   {s}\n\n", .{ GOLDEN, RESET });
+    } else if (stage == .teen) {
+        print("      {s}🧑 TEEN QUEEN{s}\n\n", .{ GOLDEN, RESET });
+        print("      {s}    /|\\  {s}\n", .{ GOLDEN, RESET });
+        print("     {s}   / O \\  {s}\n", .{ GOLDEN, RESET });
+        print("    {s}  /|   \\   {s}\n\n", .{ GOLDEN, RESET });
+    } else if (stage == .adult) {
+        print("      {s}🧓 ADULT QUEEN{s}\n\n", .{ GOLDEN, RESET });
+        print("      {s}  _┌──┐_  {s}\n", .{ GOLDEN, RESET });
+        print("      {s}   │👑│  {s}\n", .{ GOLDEN, RESET });
+        print("      {s}  └──┘   {s}\n\n", .{ GOLDEN, RESET });
+    }
 
     // Hunger (farm activity)
     const hunger_color = if (hunger_pct >= 50.0) GREEN else if (hunger_pct >= 20.0) GOLDEN else RED;
