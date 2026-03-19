@@ -1,0 +1,417 @@
+# ═════════════════════════════════════════════════════════════════════════════
+# IGLA BENCH v1.0 — Ternary Needle In A Haystack Benchmark
+# ═════════════════════════════════════════════════════════════════════════════
+#
+# Purpose: Measure retrieval quality of ternary LLMs (HSLM/Trinity) with NIAH-style tests
+# Problem: PPL doesn't measure retrieval quality. Worker with PPL=28 but IGLA=60% is worse than PPL=30 but IGLA=95%
+# Solution: Add retrieval score to evolution_state.json, used by PBT for worker selection
+#
+# Key features:
+#   - Ternary weights {-1, 0, +1} with GF16/TF3 formats
+#   - Sacred context lengths: 3^k = 27, 81, 243, 729, 2187
+#   - Multi-needle reasoning and sequential fact extraction
+#   - 4 task types: RETRIEVE, MULTI, TERNARY, CHAIN
+#
+# φ² + 1/φ² = 3 = TRINITY | KOSCHEI IS IMMORTAL
+# ═════════════════════════════════════════════════════════════════════════════════
+
+name: igla_bench
+version: "1.0.0"
+language: zig
+module: benchmark_igla
+
+types:
+  # Haystack — context with needle(s)
+  Haystack:
+    fields:
+      id: String
+      tokens: Int
+      content: String
+      needles: List<Needle>
+      questions: List<Question>
+
+  # Needle — embedded fact
+  Needle:
+    fields:
+      id: String
+      position: Int          # Position in tokens
+      content: String
+      type: NeedleType     # ternary|numeric|text
+      depth_percent: Float   # 0%, 25%, 50%, 75%, 100%
+
+  # Question — question for model
+  Question:
+    fields:
+      id: String
+      text: String
+      expected_answer: String
+      type: QuestionType     # retrieve|multi|ternary|chain
+      needle_id: String?      # Which needle to check
+      difficulty: Int       # 1=easy, 2=medium, 3=hard (for accuracy vs difficulty)
+
+  NeedleType: enum [ternary, numeric, text]
+  QuestionType: enum [retrieve, multi, ternary, chain]
+
+  # Benchmark result
+  IGLAResult:
+    fields:
+      question_id: String
+      correct: Bool
+      answer: String
+      latency_ms: Float
+      tok_per_sec: Float
+
+  # Full result for configuration
+  ConfigResult:
+    fields:
+      format: WeightFormat
+      context_length: Int
+      num_needles: Int
+      depth_percent: Float
+      accuracy: Float
+      latency_ms: Float
+      tok_per_sec: Float
+
+  WeightFormat: enum [STD, BF16, GF16, TF3]
+
+behaviors:
+  - name: generateHaystack
+    given: context_length, num_needles, depth_percent
+    when: Creates context with needles at specified positions
+    then: Haystack with inserted facts
+
+  - name: insertNeedle
+    given: haystack, needle, position
+    when: Inserts needle into context
+    then: Updated haystack
+
+  - name: generateQuestion
+    given: needle, question_type
+    when: Creates question to verify retrieval
+    then: Question with expected_answer
+
+  - name: runInference
+    given: haystack, question, weight_format
+    when: Runs HSLM inference
+    then: Model answer + latency + throughput
+
+  - name: scoreAnswer
+    given: answer, expected_answer
+    when: Checks answer correctness
+    then: Bool + normalized answer
+
+test_cases:
+  # IGLA-RETRIEVE: single needle
+  - name: igla_retrieve_single
+    given:
+      context_length: 243
+      num_needles: 1
+      depth_percent: 50
+      format: GF16
+    expected:
+      accuracy: >= 0.90
+      latency_ms: < 500
+
+  # IGLA-MULTI: 3 needles reasoning
+  - name: igla_multi_3needles
+    given:
+      context_length: 729
+      num_needles: 3
+      depth_percent: [10, 50, 90]
+      format: TF3
+    expected:
+      accuracy: >= 0.80
+
+  # IGLA-TERNARY: ternary fact
+  - name: igla_ternary_fact
+    given:
+      context_length: 81
+      needle_type: ternary
+      content: "нейрон N=243 в блоке B=3 хранит тернарный вес -1"
+      question: "Какое тернарное значение имеет нейрон 243 в блоке 3?"
+      expected_answer: "-1"
+    expected:
+      accuracy: >= 0.95
+
+  # IGLA-CHAIN: sequential facts
+  - name: igla_chain_3facts
+    given:
+      context_length: 2187
+      num_facts: 3
+      chain_type: sequential
+    expected:
+      accuracy: >= 0.70
+
+implementation: |
+  const std = @import("std");
+  const Allocator = std.mem.Allocator;
+
+  pub const WeightFormat = enum {
+      STD,  // f32 baseline
+      BF16, // Bfloat16
+      GF16, // Gaussian Float 16
+      TF3,  // Ternary Float 3 {-1,0,1}
+
+      pub fn displayName(self: WeightFormat) []const u8 {
+          return switch (self) {
+              .STD => "STD(f32)",
+              .BF16 => "BF16",
+              .GF16 => "GF16",
+              .TF3 => "TF3",
+          };
+      }
+  };
+
+  pub const NeedleType = enum {
+      ternary,  // Three values {-1,0,1}
+      numeric,  // Numeric facts
+      text,     // Plain text
+  };
+
+  pub const QuestionType = enum {
+      retrieve,  // Single needle extraction
+      multi,     // Multi-needle reasoning
+      ternary,  // Ternary fact
+      chain,     // Sequential facts
+  };
+
+  pub const Needle = struct {
+      id: []const u8,
+      content: []const u8,
+      type: NeedleType,
+      position: usize,        // Position in tokens
+      depth_percent: f32,  // 0.0, 0.25, 0.5, 0.75, 1.0
+  };
+
+  pub const Question = struct {
+      id: []const u8,
+      text: []const u8,
+      expected_answer: []const u8,
+      type: QuestionType,
+      needle_id: ?[]const u8,
+      difficulty: u8,  // 1=easy, 2=medium, 3=hard
+  };
+
+  pub const Haystack = struct {
+      id: []const u8,
+      content: []const u8,
+      tokens: usize,
+      needles: []const Needle,
+      questions: []const Question,
+  };
+
+  pub const IGLAResult = struct {
+      question_id: []const u8,
+      correct: bool,
+      answer: []const u8,
+      latency_ms: f32,
+      tok_per_sec: f32,
+  };
+
+  pub const ConfigResult = struct {
+      format: WeightFormat,
+      context_length: usize,
+      num_needles: usize,
+      depth_percent: f32,
+      accuracy: f32,
+      latency_ms: f32,
+      tok_per_sec: f32,
+  };
+
+  /// Generate haystack with context filler text and inserted needles
+  pub fn generateHaystack(
+      allocator: Allocator,
+      id: []const u8,
+      context_length: usize,
+      num_needles: usize,
+      depth_percent: f32
+  ) !Haystack {
+      _ = id;
+
+      // Create filler context (repeated neutral sentences)
+      const filler = "Каждый нейрон в сети представляет собой математическую абстракцию, связывающую понятия через алгебраическую структуру. ";
+      const filler_tokens_per_line = 10;
+      const lines_needed = context_length / filler_tokens_per_line;
+      var buffer = try std.ArrayList(u8).initCapacity(allocator, context_length * 10);
+
+      // Build base context
+      var i: usize = 0;
+      while (i < lines_needed) : (i += 1) {
+          try buffer.appendSlice(filler);
+          try buffer.append("\n");
+      }
+
+      // Insert needles at specified depths
+      var needles_list = try std.ArrayList(Needle).initCapacity(allocator, num_needles);
+      const base_content_len = buffer.items.len;
+      const depth_pos = @as(usize, @intFromFloat(@as(f32, @floatFromInt(context_length)) * depth_percent));
+
+      for (0..num_needles) |n_idx| {
+          const needle_id = try std.fmt.allocPrint(allocator, "needle_{d}", .{n_idx});
+          const needle_content = try std.fmt.allocPrint(allocator,
+              "Специальный факт #{d}: нейрон {d} имеет значение -1", .{n_idx, n_idx * 81});
+          const insert_pos = @min(depth_pos, base_content_len - 20);
+
+          var needle_obj = Needle{
+              .id = needle_id,
+              .content = needle_content,
+              .type = .text,
+              .position = insert_pos,
+              .depth_percent = depth_percent,
+          };
+          try needles_list.append(needle_obj);
+
+          // Insert into buffer (simplified - just append for now)
+          try buffer.appendSlice("\n>> ФАКТ: ");
+          try buffer.appendSlice(needle_content);
+          try buffer.appendSlice(" <<\n");
+      }
+
+      // Generate questions
+      var questions_list = try std.ArrayList(Question).initCapacity(allocator, num_needles);
+      for (0..num_needles) |n_idx| {
+          const needle_id = try std.fmt.allocPrint(allocator, "needle_{d}", .{n_idx});
+          const question = Question{
+              .id = try std.fmt.allocPrint(allocator, "q_{d}", .{n_idx}),
+              .text = try std.fmt.allocPrint(allocator, "Какое значение имеет нейрон {d}?", .{n_idx * 81}),
+              .expected_answer = "-1",
+              .type = .retrieve,
+              .needle_id = needle_id,
+              .difficulty = 1,
+          };
+          try questions_list.append(question);
+      }
+
+      return Haystack{
+          .id = "haystack_0",
+          .content = try buffer.toOwnedSlice(allocator),
+          .tokens = context_length,
+          .needles = try needles_list.toOwnedSlice(allocator),
+          .questions = try questions_list.toOwnedSlice(allocator),
+      };
+  }
+
+  /// Insert needle at specific position in haystack
+  pub fn insertNeedle(
+      haystack: *Haystack,
+      needle: Needle,
+      allocator: Allocator
+  ) !void {
+      _ = allocator;
+
+      // For now, needle insertion is handled during generateHaystack
+      _ = haystack;
+      _ = needle;
+  }
+
+  /// Generate ternary-specific questions
+  pub fn generateTernaryQuestions(
+      allocator: Allocator,
+      needles: []const Needle
+  ) ![]Question {
+      var questions = try std.ArrayList(Question).initCapacity(allocator, needles.len);
+
+      for (needles, 0..) |needle, idx| {
+          const question = Question{
+              .id = try std.fmt.allocPrint(allocator, "ternary_q_{d}", .{idx}),
+              .text = try std.fmt.allocPrint(allocator, "Какое тернарное значение: {s}?", .{needle.content}),
+              .expected_answer = "-1",
+              .type = .ternary,
+              .needle_id = needle.id,
+              .difficulty = 2,
+          };
+          try questions.append(question);
+      }
+
+      return try questions.toOwnedSlice(allocator);
+  }
+
+  /// Run inference (mock for now - will connect to HSLM serve)
+  pub fn runInference(
+      allocator: Allocator,
+      haystack: Haystack,
+      question: Question,
+      format: WeightFormat
+  ) !IGLAResult {
+      _ = allocator;
+      _ = format;
+
+      const start = std.time.nanoTimestamp();
+      // Mock inference - in real implementation, call HSLM API
+      // For testing, simulate 85% accuracy
+      const mock_correct = @as(f32, @floatFromInt(@truncate(u8, @abs(@intFromFloat(std.time.nanoTimestamp() % 100)))) < 15.0;
+      const latency_ns = std.time.nanoTimestamp() - start;
+
+      return IGLAResult{
+          .question_id = question.id,
+          .correct = mock_correct,
+          .answer = if (mock_correct) "-1" else "0",
+          .latency_ms = @as(f32, @floatFromInt(@divFloor(latency_ns, 1_000_000))),
+          .tok_per_sec = if (latency_ns > 0) @as(f32, @floatFromInt(haystack.tokens)) / (@as(f32, @floatFromInt(latency_ns)) / 1_000_000.0) else 0,
+      };
+  }
+
+  /// Score answer by normalizing and comparing
+  pub fn scoreAnswer(
+      answer: []const u8,
+      expected: []const u8
+  ) bool {
+      // Normalize: trim, lowercase
+      const normalized_answer = std.mem.trim(u8, answer, &std.ascii.whitespace);
+      const normalized_expected = std.mem.trim(u8, expected, &std.ascii.whitespace);
+
+      // Direct comparison for ternary values
+      if (std.mem.eql(u8, normalized_answer, normalized_expected)) {
+          return true;
+      }
+
+      // For numeric/text, check substring
+      return std.mem.indexOf(u8, normalized_expected, normalized_answer) != null;
+  }
+
+  /// Run full benchmark across format matrix
+  pub fn runFullBenchmark(
+      allocator: Allocator,
+      formats: []const WeightFormat,
+      context_lengths: []const usize,
+      num_needles_list: []const usize,
+      depths: []const f32
+  ) ![]ConfigResult {
+      var results = try std.ArrayList(ConfigResult).initCapacity(
+          allocator,
+          formats.len * context_lengths.len * num_needles_list.len * depths.len
+      );
+
+      for (formats) |format| {
+          for (context_lengths) |ctx_len| {
+              for (num_needles_list) |n_needles| {
+                  for (depths) |depth| {
+                      const haystack = try generateHaystack(allocator, "h", ctx_len, n_needles, depth);
+                      const start = std.time.nanoTimestamp();
+
+                      var correct_count: usize = 0;
+                      for (haystack.questions) |q| {
+                          const result = try runInference(allocator, haystack, q, format);
+                          if (result.correct) correct_count += 1;
+                      }
+
+                      const elapsed_ms = @as(f32, @floatFromInt(@divFloor(std.time.nanoTimestamp() - start, 1_000_000)));
+
+                      const accuracy = @as(f32, @floatFromInt(correct_count)) / @as(f32, @floatFromInt(haystack.questions.len));
+
+                      try results.append(ConfigResult{
+                          .format = format,
+                          .context_length = ctx_len,
+                          .num_needles = n_needles,
+                          .depth_percent = depth,
+                          .accuracy = accuracy,
+                          .latency_ms = elapsed_ms,
+                          .tok_per_sec = @as(f32, @floatFromInt(ctx_len)) / (if (elapsed_ms > 0) elapsed_ms / 1000.0 else 1.0),
+                      });
+                  }
+              }
+          }
+      }
+
+      return try results.toOwnedSlice(allocator);
+  }
