@@ -24,6 +24,8 @@ pub const sacred_attention = @import("sacred_attention.zig");
 pub const simd_ops = @import("simd_ops.zig");
 pub const parallel = @import("parallel.zig");
 pub const ste = @import("ste.zig");
+pub const intraparietal_sulcus = @import("intraparietal_sulcus.zig");
+pub const weber_tuning = @import("weber_tuning.zig");
 
 // Re-export primary types
 pub const HSLM = model.HSLM;
@@ -48,6 +50,10 @@ pub const SacredAttention = sacred_attention.SacredAttention;
 pub const ParallelTrainer = parallel.ParallelTrainer;
 pub const SteMode = ste.SteMode;
 pub const SteConfig = ste.SteConfig;
+
+// Re-export sensation types
+pub const GoldenFloat16 = intraparietal_sulcus.GoldenFloat16;
+pub const TernaryFloat9 = intraparietal_sulcus.TernaryFloat9;
 
 // Re-export constants
 pub const VOCAB_SIZE = constants.VOCAB_SIZE;
@@ -89,6 +95,8 @@ comptime {
     _ = simd_ops;
     _ = parallel;
     _ = ste;
+    _ = intraparietal_sulcus;
+    _ = weber_tuning;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
