@@ -1038,3 +1038,70 @@ fn runListNodes(allocator: std.mem.Allocator, args: []const []const u8) void {
     std.debug.print("  └──────────────────────┴──────────────────┴────────┴──────────┴──────────┴────────┴──────────┘\n", .{});
     std.debug.print("\n  {s}{d} node(s) in cluster | Total: {d:.4} $TRI{s}\n\n", .{ GREEN, state.node_count, state.total_tri_earned, RESET });
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MULTI-CLUSTER TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "multi_cluster_node_entry_empty" {
+    const entry = NodeEntry.empty();
+    try std.testing.expectEqual(@as(usize, 0), entry.id_len);
+    try std.testing.expectEqual(@as(usize, 0), entry.address_len);
+    try std.testing.expectEqual(@as(u16, 0), entry.port);
+    try std.testing.expectEqual(NodeTier.free, entry.tier);
+    try std.testing.expectEqual(@as(u64, 0), entry.operations);
+    try std.testing.expectEqual(@as(f64, 0.0), entry.earned_tri);
+}
+
+test "multi_cluster_node_tier_multipliers" {
+    var entry = NodeEntry.empty();
+
+    entry.tier = .free;
+    try std.testing.expectApproxEqRel(@as(f64, 1.0), entry.getTierMultiplier(), 0.01);
+
+    entry.tier = .staker;
+    try std.testing.expectApproxEqRel(@as(f64, 1.5), entry.getTierMultiplier(), 0.01);
+
+    entry.tier = .power;
+    try std.testing.expectApproxEqRel(@as(f64, 2.0), entry.getTierMultiplier(), 0.01);
+
+    entry.tier = .whale;
+    try std.testing.expectApproxEqRel(@as(f64, 3.0), entry.getTierMultiplier(), 0.01);
+}
+
+test "multi_cluster_node_calculate_reward" {
+    var entry = NodeEntry.empty();
+    const base_reward: f64 = 100.0;
+
+    entry.tier = .free;
+    try std.testing.expectApproxEqRel(@as(f64, 100.0), entry.calculateReward(base_reward), 0.01);
+
+    entry.tier = .staker;
+    try std.testing.expectApproxEqRel(@as(f64, 150.0), entry.calculateReward(base_reward), 0.01);
+
+    entry.tier = .power;
+    try std.testing.expectApproxEqRel(@as(f64, 200.0), entry.calculateReward(base_reward), 0.01);
+
+    entry.tier = .whale;
+    try std.testing.expectApproxEqRel(@as(f64, 300.0), entry.calculateReward(base_reward), 0.01);
+}
+
+test "multi_cluster_federation_link_empty" {
+    const link = FederationLink.empty();
+    try std.testing.expectEqual(@as(usize, 0), link.address_len);
+    try std.testing.expectEqual(@as(usize, 0), link.sync_mode_len);
+    try std.testing.expectEqual(@as(i64, 0), link.linked_at);
+}
+
+test "multi_cluster_constants" {
+    try std.testing.expect(MAX_CLUSTER_NODES == 64);
+    try std.testing.expect(REWARD_PER_OPERATION > 0);
+    try std.testing.expect(REWARD_PER_BENCHMARK > 0);
+    try std.testing.expect(REWARD_PER_SYNC > 0);
+}
+
+test "multi_cluster_sacred_constants" {
+    try std.testing.expect(PHI > 1.6 and PHI < 1.62);
+    try std.testing.expect(PHI_INVERSE > 0.61 and PHI_INVERSE < 0.62);
+    try std.testing.expectApproxEqRel(TRINITY_SUM, 3.0, 0.001);
+}
