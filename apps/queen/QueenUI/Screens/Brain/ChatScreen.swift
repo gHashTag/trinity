@@ -2120,6 +2120,7 @@ struct ChatScreen: View {
         )
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
     }
+    }
 
     // MARK: - System Prompt Editor
 
