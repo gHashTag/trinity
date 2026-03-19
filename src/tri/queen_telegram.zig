@@ -2019,3 +2019,226 @@ test "Queen telegram — CommandQueue new queue empty" {
 
     try std.testing.expectEqual(@as(?TgCommand, null), q.pop());
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL FUNCTION TESTS — Actual computation, return values, data processing
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Queen telegram — parseActionKind returns correct enum for all 29 actions" {
+    // Verify each action maps to the correct enum value
+    const tests = .{
+        .{ "farm_status", qt.ActionKind.farm_status },
+        .{ "arena_status", qt.ActionKind.arena_status },
+        .{ "doctor_scan", qt.ActionKind.doctor_scan },
+        .{ "train_status", qt.ActionKind.train_status },
+        .{ "train_diagnose", qt.ActionKind.train_diagnose },
+        .{ "experiment_chart", qt.ActionKind.experiment_chart },
+        .{ "patent_status", qt.ActionKind.patent_status },
+        .{ "research_sacred", qt.ActionKind.research_sacred },
+        .{ "ouroboros_status", qt.ActionKind.ouroboros_status },
+        .{ "experience_recall", qt.ActionKind.experience_recall },
+        .{ "farm_evolve_status", qt.ActionKind.farm_evolve_status },
+        .{ "swarm_status", qt.ActionKind.swarm_status },
+        .{ "doctor_quick", qt.ActionKind.doctor_quick },
+        .{ "doctor_heal", qt.ActionKind.doctor_heal },
+        .{ "ouroboros_cycle", qt.ActionKind.ouroboros_cycle },
+        .{ "git_commit", qt.ActionKind.git_commit_state },
+        .{ "git_push", qt.ActionKind.git_push },
+        .{ "issue_comment", qt.ActionKind.issue_comment },
+        .{ "notify", qt.ActionKind.notify },
+        .{ "arena_battle", qt.ActionKind.arena_battle },
+        .{ "experience_save", qt.ActionKind.experience_save },
+        .{ "fmt", qt.ActionKind.fmt },
+        .{ "farm_recycle", qt.ActionKind.farm_recycle },
+        .{ "farm_evolve_step", qt.ActionKind.farm_evolve_step },
+        .{ "cloud_spawn", qt.ActionKind.cloud_spawn },
+        .{ "cloud_kill", qt.ActionKind.cloud_kill },
+        .{ "cloud_cleanup", qt.ActionKind.cloud_cleanup },
+        .{ "issue_create", qt.ActionKind.issue_create },
+        .{ "swarm_decompose", qt.ActionKind.swarm_decompose },
+    };
+
+    inline for (tests) |t| {
+        const result = parseActionKind(t[0]);
+        try std.testing.expect(result != null);
+        try std.testing.expectEqual(t[1], result.?);
+    }
+}
+
+test "Queen telegram — parseActionKind returns null for invalid inputs" {
+    // Test that parseActionKind correctly returns null for invalid strings
+    const invalid_inputs = .{
+        "",
+        "   ",
+        "unknown_action",
+        "FARM_STATUS", // uppercase
+        "farm_status ", // trailing space
+        " farm_status", // leading space
+        "farm-status", // wrong separator
+        "farmstatus", // missing separator
+        "arena", // prefix only
+        "doctor_", // incomplete
+    };
+
+    inline for (invalid_inputs) |input| {
+        const result = parseActionKind(input);
+        try std.testing.expectEqual(@as(?qt.ActionKind, null), result);
+    }
+}
+
+test "Queen telegram — fmtActionResult calculates preview_len correctly" {
+    // Verify that fmtActionResult truncates output to preview_len = @min(output_len, 400)
+    var buf: [2048]u8 = undefined;
+
+    // Test with output < 400 chars (should use full output)
+    var short_result = qt.ActionResult{
+        .success = true,
+        .duration_ms = 100,
+    };
+    const short_text = "short output";
+    @memcpy(short_result.output[0..short_text.len], short_text);
+    short_result.output_len = short_text.len;
+
+    const short_msg = fmtActionResult(&buf, .doctor_quick, short_result);
+    try std.testing.expect(std.mem.indexOf(u8, short_msg, short_text) != null);
+
+    // Test with output > 400 chars (should truncate)
+    var long_result = qt.ActionResult{
+        .success = true,
+        .duration_ms = 100,
+    };
+    const long_text = [1]u8{'X'} ** 500;
+    @memcpy(long_result.output[0..long_text.len], &long_text);
+    long_result.output_len = long_text.len;
+
+    const long_msg = fmtActionResult(&buf, .doctor_quick, long_result);
+    // Count X's in output - should be at most 400 (but may be less due to truncation)
+    var x_count: usize = 0;
+    for (long_msg) |c| {
+        if (c == 'X') x_count += 1;
+    }
+    // The preview should be truncated to 400 chars max
+    try std.testing.expect(x_count <= 400);
+}
+
+test "Queen telegram — CommandQueue push returns boolean indicating capacity" {
+    var q = CommandQueue{};
+
+    // First MAX_COMMANDS-1 pushes should succeed
+    var i: u32 = 0;
+    while (i < MAX_COMMANDS - 1) : (i += 1) {
+        const result = q.push(.{ .update_id = @as(i64, i) });
+        try std.testing.expectEqual(true, result);
+    }
+
+    // Next push should fail (queue full)
+    const full_result = q.push(.{ .update_id = 999 });
+    try std.testing.expectEqual(false, full_result);
+
+    // Pop one item
+    _ = q.pop();
+
+    // Push should succeed again
+    const after_pop_result = q.push(.{ .update_id = 1000 });
+    try std.testing.expectEqual(true, after_pop_result);
+}
+
+test "Queen telegram — CommandQueue pop returns optional with correct state" {
+    var q = CommandQueue{};
+
+    // Pop on empty queue should return null
+    const empty_result = q.pop();
+    try std.testing.expectEqual(@as(?TgCommand, null), empty_result);
+
+    // Push and verify pop returns the command
+    const test_cmd = TgCommand{ .update_id = 42 };
+    _ = q.push(test_cmd);
+
+    const popped = q.pop();
+    try std.testing.expect(popped != null);
+    try std.testing.expectEqual(@as(i64, 42), popped.?.update_id);
+
+    // Pop again should return null
+    const after_result = q.pop();
+    try std.testing.expectEqual(@as(?TgCommand, null), after_result);
+}
+
+test "Queen telegram — TgCommand textStr returns correct slice" {
+    var cmd = TgCommand{};
+
+    // Test empty text
+    cmd.text_len = 0;
+    try std.testing.expectEqualStrings("", cmd.textStr());
+    try std.testing.expectEqual(@as(usize, 0), cmd.textStr().len);
+
+    // Test with content
+    const text = "/queen act farm_recycle";
+    @memcpy(cmd.text[0..text.len], text);
+    cmd.text_len = text.len;
+
+    const result = cmd.textStr();
+    try std.testing.expectEqualStrings(text, result);
+    try std.testing.expectEqual(@as(usize, text.len), result.len);
+    try std.testing.expectEqual(@as(usize, text.len), cmd.text_len);
+
+    // Verify result points to cmd.text array
+    try std.testing.expectEqual(@as([*]const u8, @ptrCast(&cmd.text)), result.ptr);
+}
+
+test "Queen telegram — fmtActionResult includes correct success/failure status" {
+    var buf: [2048]u8 = undefined;
+
+    // Test success case
+    var success_result = qt.ActionResult{
+        .success = true,
+        .duration_ms = 50,
+    };
+    const success_output = "all good";
+    @memcpy(success_result.output[0..success_output.len], success_output);
+    success_result.output_len = success_output.len;
+
+    const success_msg = fmtActionResult(&buf, .doctor_quick, success_result);
+    try std.testing.expect(std.mem.indexOf(u8, success_msg, "OK") != null);
+    try std.testing.expect(std.mem.indexOf(u8, success_msg, "FAIL") == null);
+
+    // Test failure case
+    var failure_result = qt.ActionResult{
+        .success = false,
+        .duration_ms = 50,
+    };
+    const fail_output = "error occurred";
+    @memcpy(failure_result.output[0..fail_output.len], fail_output);
+    failure_result.output_len = fail_output.len;
+
+    const failure_msg = fmtActionResult(&buf, .farm_recycle, failure_result);
+    try std.testing.expect(std.mem.indexOf(u8, failure_msg, "FAIL") != null);
+    try std.testing.expect(std.mem.indexOf(u8, failure_msg, "OK") == null);
+}
+
+test "Queen telegram — fmtActionResult formats duration correctly" {
+    var buf: [2048]u8 = undefined;
+    var result = qt.ActionResult{
+        .success = true,
+        .duration_ms = 12345,
+    };
+    const output = "test";
+    @memcpy(result.output[0..output.len], output);
+    result.output_len = output.len;
+
+    const msg = fmtActionResult(&buf, .doctor_quick, result);
+
+    // Verify duration is in the message
+    try std.testing.expect(std.mem.indexOf(u8, msg, "12345") != null);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "ms") != null);
+}
+
+test "Queen telegram — parseActionKind handles substring matching correctly" {
+    // Verify exact matching only (no prefix/suffix matches)
+    try std.testing.expectEqual(qt.ActionKind.farm_status, parseActionKind("farm_status").?);
+
+    // These should NOT match (different strings)
+    try std.testing.expectEqual(@as(?qt.ActionKind, null), parseActionKind("farm_statuses"));
+    try std.testing.expectEqual(@as(?qt.ActionKind, null), parseActionKind("farm_status_extra"));
+    try std.testing.expectEqual(@as(?qt.ActionKind, null), parseActionKind("my_farm_status"));
+    try std.testing.expectEqual(@as(?qt.ActionKind, null), parseActionKind("farm"));
+}
