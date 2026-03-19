@@ -2104,6 +2104,50 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // S³AI Brain Modules (Neuroanatomy v5.1)
+    const basal_ganglia_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/basal_ganglia.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const reticular_formation_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/reticular_formation.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const locus_coeruleus_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const brain_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/brain.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+        },
+    });
+
+    // zig-hslm — Official HSLM Numerical Library
+    const hslm_mod = b.createModule(.{
+        .root_source_file = b.path("external/zig-hslm/src/f16_utils.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Intraparietal Sulcus — Numerical Layer (uses hslm)
+    const intraparietal_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/intraparietal_sulcus.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "hslm", .module = hslm_mod },
+        },
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -2145,6 +2189,15 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "depin_observability", .module = depin_observability_mod },
                 .{ .name = "depin_production", .module = depin_production_mod },
                 .{ .name = "firebird_governance", .module = firebird_governance_mod },
+                // S³AI Brain Regions (v5.1 - Neuroanatomy)
+                .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+                .{ .name = "reticular_formation", .module = reticular_formation_mod },
+                .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+                .{ .name = "brain", .module = brain_mod },
+                // zig-hslm — Official HSLM Numerical Library
+                .{ .name = "hslm", .module = hslm_mod },
+                // Intraparietal Sulcus — Numerical Layer
+                .{ .name = "intraparietal", .module = intraparietal_mod },
             },
         }),
     });
@@ -2236,6 +2289,65 @@ pub fn build(b: *std.Build) void {
     const run_tri_error_tests = b.addRunArtifact(tri_error_tests);
     const tri_error_tests_step = b.step("test-tri-error", "Run TRI Error Tests");
     tri_error_tests_step.dependOn(&run_tri_error_tests.step);
+
+    // S³AI Brain Regions Tests (v5.1 - Neuroanatomy)
+    const basal_ganglia_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/brain/basal_ganglia.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_basal_ganglia_tests = b.addRunArtifact(basal_ganglia_tests);
+    const basal_ganglia_tests_step = b.step("test-basal-ganglia", "Run Basal Ganglia Tests");
+    basal_ganglia_tests_step.dependOn(&run_basal_ganglia_tests.step);
+
+    const reticular_formation_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/brain/reticular_formation.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_reticular_formation_tests = b.addRunArtifact(reticular_formation_tests);
+    const reticular_formation_tests_step = b.step("test-reticular-formation", "Run Reticular Formation Tests");
+    reticular_formation_tests_step.dependOn(&run_reticular_formation_tests.step);
+
+    const locus_coeruleus_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/brain/locus_coeruleus.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_locus_coeruleus_tests = b.addRunArtifact(locus_coeruleus_tests);
+    const locus_coeruleus_tests_step = b.step("test-locus-coeruleus", "Run Locus Coeruleus Tests");
+    locus_coeruleus_tests_step.dependOn(&run_locus_coeruleus_tests.step);
+
+    const brain_tests = b.addTest(.{
+        .root_module = brain_mod,
+    });
+    const run_brain_tests = b.addRunArtifact(brain_tests);
+    const brain_tests_step = b.step("test-brain", "Run Brain Aggregator Tests");
+    brain_tests_step.dependOn(&run_brain_tests.step);
+
+    // zig-hslm — Official HSLM Numerical Library tests
+    const hslm_tests = b.addTest(.{
+        .root_source_file = b.path("external/zig-hslm/src/f16_utils.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const run_hslm_tests = b.addRunArtifact(hslm_tests);
+    const hslm_tests_step = b.step("test-hslm", "Run HSLM F16 Utils Tests");
+    hslm_tests_step.dependOn(&run_hslm_tests.step);
+
+    // Intraparietal Sulcus (Numerical Layer) tests
+    const intraparietal_tests = b.addTest(.{
+        .root_module = intraparietal_mod,
+    });
+    const run_intraparietal_tests = b.addRunArtifact(intraparietal_tests);
+    const intraparietal_tests_step = b.step("test-intraparietal", "Run Intraparietal Sulcus Tests");
+    intraparietal_tests_step.dependOn(&run_intraparietal_tests.step);
 
     // Trinity Hybrid Local Coder (IGLA + Ollama)
     const hybrid_local = b.addExecutable(.{
