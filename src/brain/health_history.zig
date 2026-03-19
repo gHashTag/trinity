@@ -26,7 +26,7 @@ pub const BrainHealthHistory = struct {
     }
 
     /// Record a health snapshot
-    pub fn record(self: *BrainHealthHistory, snapshot: HealthSnapshot) !void {
+    pub fn record(_: *BrainHealthHistory, snapshot: HealthSnapshot) !void {
         const file = try std.fs.cwd().createFile(BRAIN_HEALTH_LOG, .{ .read = true });
         defer file.close();
 

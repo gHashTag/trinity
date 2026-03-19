@@ -2040,6 +2040,16 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    const health_history_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/health_history.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const microglia_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/microglia.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     const brain_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/brain.zig"),
         .target = target,
@@ -2053,6 +2063,8 @@ pub fn build(b: *std.Build) void {
             .{ .name = "telemetry", .module = telemetry_mod },
             .{ .name = "thalamus_logs", .module = thalamus_logs_mod },
             .{ .name = "prefrontal_cortex", .module = prefrontal_cortex_mod },
+            .{ .name = "health_history", .module = health_history_mod },
+            .{ .name = "microglia", .module = microglia_mod },
         },
     });
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -2394,6 +2406,22 @@ pub fn build(b: *std.Build) void {
     const run_telemetry_tests = b.addRunArtifact(telemetry_tests);
     const telemetry_tests_step = b.step("test-telemetry", "Run Telemetry Tests");
     telemetry_tests_step.dependOn(&run_telemetry_tests.step);
+
+    // Hippocampus (Health History) tests
+    const health_history_tests = b.addTest(.{
+        .root_module = health_history_mod,
+    });
+    const run_health_history_tests = b.addRunArtifact(health_history_tests);
+    const health_history_tests_step = b.step("test-health-history", "Run Health History Tests");
+    health_history_tests_step.dependOn(&run_health_history_tests.step);
+
+    // Microglia (Immune Surveillance) tests
+    const microglia_tests = b.addTest(.{
+        .root_module = microglia_mod,
+    });
+    const run_microglia_tests = b.addRunArtifact(microglia_tests);
+    const microglia_tests_step = b.step("test-microglia", "Run Microglia Tests");
+    microglia_tests_step.dependOn(&run_microglia_tests.step);
 
     const brain_tests = b.addTest(.{
         .root_module = brain_mod,

@@ -33,15 +33,17 @@ pub const BackoffPolicy = struct {
         // Apply jitter
         return switch (self.jitter_type) {
             .none => base_delay,
-            .uniform => {
-                const seed = @as(u32, @truncate(std.time.nanoTimestamp()));
+            .uniform => blk: {
+                const ts = std.time.nanoTimestamp();
+                const seed = @as(u32, @intCast(ts & 0xFFFFFFFF));
                 const factor = @as(f32, @floatFromInt(seed % 1000)) / 1000.0;
-                @as(u64, @intFromFloat(base_delay * (1.0 + factor)));
+                break :blk @as(u64, @intFromFloat(@as(f32, @floatFromInt(base_delay)) * (1.0 + factor)));
             },
-            .phi_weighted => {
-                const seed = @as(u32, @truncate(std.time.nanoTimestamp()));
-                const factor = if (seed % 2 == 0) 0.618 else 1.618;
-                @as(u64, @intFromFloat(base_delay * factor));
+            .phi_weighted => blk: {
+                const ts = std.time.nanoTimestamp();
+                const seed = @as(u32, @intCast(ts & 0xFFFFFFFF));
+                const factor: f32 = if (seed % 2 == 0) 0.618 else 1.618;
+                break :blk @as(u64, @intFromFloat(@as(f32, @floatFromInt(base_delay)) * factor));
             },
         };
     }
