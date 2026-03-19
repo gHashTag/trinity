@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y \
 COPY prebuilt/v2/train-bin /usr/local/bin/hslm-train
 COPY prebuilt/v2/entrypoint-bin /usr/local/bin/hslm-entrypoint
 
-RUN echo "dadd1b5b28380dbc22619105c21b9543da81fd95d3d39e7f1ab01f43abe3fb53  /usr/local/bin/hslm-train" | sha256sum -c - \
-    && echo "37c0c840f402b83879589859d88b6e578a5eac1490a4cde75688576b878793af  /usr/local/bin/hslm-entrypoint" | sha256sum -c - \
+RUN echo "a3c4fdcbd158745bd14880ad1ad3724a57b2d884c502636d94beb90207d7b7a5  /usr/local/bin/hslm-train" | sha256sum -c - \
+    && echo "1710417ae16c4b248c3b6b247473f3722b68f53f87912c6aa64d69c034c4b254  /usr/local/bin/hslm-entrypoint" | sha256sum -c - \
     && chmod a+rx /usr/local/bin/hslm-train /usr/local/bin/hslm-entrypoint
 
 # /data is Railway persistent volume mount point
@@ -33,18 +33,19 @@ WORKDIR /data
 
 ENTRYPOINT ["/usr/local/bin/hslm-entrypoint"]
 
-LABEL version="2.2.0" \
+LABEL version="2.3.0" \
       description="Trinity HSLM Training — ternary language model on TinyStories" \
       trinity.identity="phi^2 + 1/phi^2 = 3" \
       trinity.service="ai-training" \
       trinity.purpose="nlp-research" \
       trinity.not-mining="legitimate-ai-training" \
-      build.timestamp="2026-03-19T12:30:00Z" \
+      build.timestamp="2026-03-20T02:00:00Z" \
       build.arch="x86_64-linux" \
-      cache.bust="v2-path-change-2026-03-19"
+      cache.bust="v3-hslm-objective-support-2026-03-20"
 # Cache-bust: 1773886072
 # Trigger redeploy: 1773889302
 # Redeploy hslm-r5: 1773890611
 # Redeploy hslm-r13: 1773891010
 # Redeploy all sacred: 1773891441
 # FORCE NEW BUILD: dataset wget fix - 1773892500
+# v2.3.0: HSLM_OBJECTIVE + HSLM_LR_SCHEDULE support - 1774000000
