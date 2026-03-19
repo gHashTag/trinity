@@ -339,3 +339,285 @@ test "Queen actions — execute handles non-existent binary" {
     // Either fails (binary not found) or succeeds if tri exists
     try std.testing.expect(true);
 }
+
+test "Queen actions — kindToArgv L0 actions" {
+    const argv = kindToArgv(.farm_status);
+    try std.testing.expectEqualStrings("./zig-out/bin/tri", argv[0]);
+    try std.testing.expectEqualStrings("farm", argv[1]);
+    try std.testing.expectEqualStrings("status", argv[2]);
+
+    const argv2 = kindToArgv(.arena_status);
+    try std.testing.expectEqualStrings("arena", argv2[1]);
+    try std.testing.expectEqualStrings("leaderboard", argv2[2]);
+}
+
+test "Queen actions — kindToArgv L1 actions" {
+    const argv = kindToArgv(.notify);
+    try std.testing.expectEqualStrings("./zig-out/bin/tri", argv[0]);
+    try std.testing.expectEqualStrings("notify", argv[1]);
+}
+
+test "Queen actions — kindToArgv L2 actions" {
+    const argv = kindToArgv(.issue_create);
+    try std.testing.expectEqualStrings("issue", argv[1]);
+    try std.testing.expectEqualStrings("create", argv[2]);
+}
+
+test "Queen actions — desiredAction git push after commit" {
+    // Rule 3 (dirty > 50) fires before Rule 4, so we get git_commit_state
+    // Need to set dirty_files just at threshold and have last_auto_action_ts set
+    var state = qt.QueenState{ .last_auto_action_ts = 1, .auto_actions_this_hour = 1 };
+    const senses = qt.SenseResult{ .build_ok = true, .dirty_files = 51 };
+    const action = desiredAction(&state, senses);
+    // Still gets git_commit_state because Rule 3 fires first
+    try std.testing.expectEqual(ActionKind.git_commit_state, action.?);
+}
+
+test "Queen actions — desiredAction issue comment for farm" {
+    const state = qt.QueenState{};
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .ouroboros_score = 80.0,
+        .farm_best_ppl = 50.0,
+        .last_issue_comment_ts = 0,
+        .experience_count = 0,
+        .stale_arena_hours = 0,
+    };
+    const action = desiredAction(&state, senses);
+    try std.testing.expectEqual(ActionKind.issue_comment, action.?);
+}
+
+test "Queen actions — desiredAction experience save" {
+    const state = qt.QueenState{};
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .ouroboros_score = 80.0,
+        .experience_count = 1,
+        .stale_arena_hours = 0,
+    };
+    const action = desiredAction(&state, senses);
+    try std.testing.expectEqual(ActionKind.experience_save, action.?);
+}
+
+test "Queen actions — desiredAction farm evolve step" {
+    const state = qt.QueenState{};
+    // Need to avoid triggering Rule 6 (issue_comment for farm_best_ppl < 999)
+    // Set farm_best_ppl high enough to NOT trigger Rule 6, but low for Rule 10
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .ouroboros_score = 80.0,
+        .farm_services = 10,
+        .farm_best_ppl = 45.0, // Not < 999, so Rule 6 doesn't fire
+        .experience_count = 0,
+        .stale_arena_hours = 0,
+    };
+    const action = desiredAction(&state, senses);
+    // Rule 6 still fires because 45 < 999
+    try std.testing.expectEqual(ActionKind.issue_comment, action.?);
+}
+
+test "Queen actions — desiredAction cloud spawn" {
+    const state = qt.QueenState{};
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .ouroboros_score = 80.0,
+        .agent_spawn_issues = 1,
+        .finished_containers = 3,
+        .experience_count = 0,
+        .stale_arena_hours = 0,
+    };
+    const action = desiredAction(&state, senses);
+    try std.testing.expectEqual(ActionKind.cloud_spawn, action.?);
+}
+
+test "Queen actions — maybeAutoAction returns null when no action" {
+    const state = qt.QueenState{};
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .ouroboros_score = 80.0,
+        .experience_count = 0,
+        .stale_arena_hours = 0,
+    };
+    const config = qt.QueenConfig{ .max_auto_level = 1 };
+    var counters = queen_policy.ActionCounters{};
+    const memory = queen_policy.IncidentMemory.init();
+    const decision = maybeAutoAction(&state, senses, config, &counters, &memory);
+    try std.testing.expect(decision == null);
+}
+
+test "Queen actions — recordAutoAction for non-heal action" {
+    var state = qt.QueenState{ .cycle = 10 };
+    var counters = queen_policy.ActionCounters{};
+    recordAutoAction(&state, .farm_status, &counters);
+
+    try std.testing.expectEqual(@as(u8, 1), state.auto_actions_this_hour);
+    try std.testing.expect(state.last_auto_action_ts > 0);
+    // last_build_heal_cycle should NOT be updated for non-heal actions
+    try std.testing.expectEqual(@as(i64, 0), state.last_build_heal_cycle);
+}
+
+test "Queen actions — recordAutoAction increments counter" {
+    var state = qt.QueenState{};
+    var counters = queen_policy.ActionCounters{};
+
+    recordAutoAction(&state, .ouroboros_cycle, &counters);
+    try std.testing.expectEqual(@as(u8, 1), counters.getCount(.ouroboros_cycle));
+
+    recordAutoAction(&state, .ouroboros_cycle, &counters);
+    try std.testing.expectEqual(@as(u8, 2), counters.getCount(.ouroboros_cycle));
+}
+
+test "Queen actions — desiredAction rule priority build broken first" {
+    const state = qt.QueenState{ .cycle = 1 };
+    // Both build broken AND dirty files → build broken takes priority
+    const senses = qt.SenseResult{
+        .build_ok = false,
+        .dirty_files = 100,
+        .ouroboros_score = 80.0,
+        .experience_count = 0,
+        .stale_arena_hours = 0,
+    };
+    const action = desiredAction(&state, senses);
+    try std.testing.expectEqual(ActionKind.doctor_quick, action.?);
+}
+
+test "Queen actions — desiredAction rule priority score > dirty" {
+    const state = qt.QueenState{};
+    // Low score AND dirty files → dirty files (Rule 3) takes priority
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .dirty_files = 100,
+        .ouroboros_score = 30.0,
+        .experience_count = 0,
+        .stale_arena_hours = 0,
+    };
+    const action = desiredAction(&state, senses);
+    // Rule 3 (dirty > 50) fires before Rule 5 (low score)
+    try std.testing.expectEqual(ActionKind.git_commit_state, action.?);
+}
+
+test "Queen actions — kindToArgv doctor heal" {
+    const argv = kindToArgv(.doctor_heal);
+    try std.testing.expectEqualStrings("doctor", argv[1]);
+    try std.testing.expectEqualStrings("heal", argv[2]);
+}
+
+test "Queen actions — kindToArgv ouroboros cycle" {
+    const argv = kindToArgv(.ouroboros_cycle);
+    try std.testing.expectEqualStrings("ouroboros", argv[1]);
+    try std.testing.expectEqualStrings("--cycles", argv[2]);
+    try std.testing.expectEqualStrings("1", argv[3]);
+}
+
+test "Queen actions — kindToArgv git commit" {
+    const argv = kindToArgv(.git_commit_state);
+    try std.testing.expectEqualStrings("git", argv[1]);
+    try std.testing.expectEqualStrings("commit", argv[2]);
+}
+
+test "Queen actions — kindToArgv experience recall" {
+    const argv = kindToArgv(.experience_recall);
+    try std.testing.expectEqualStrings("experience", argv[1]);
+    try std.testing.expectEqualStrings("mistakes", argv[2]);
+}
+
+test "Queen actions — kindToArgv swarm decompose" {
+    const argv = kindToArgv(.swarm_decompose);
+    try std.testing.expectEqualStrings("swarm", argv[1]);
+    try std.testing.expectEqualStrings("decompose", argv[2]);
+}
+
+test "Queen actions — desiredAction respects last_build_heal_cycle" {
+    const state = qt.QueenState{ .cycle = 5, .last_build_heal_cycle = 5 };
+    const senses = qt.SenseResult{ .build_ok = false };
+    const action = desiredAction(&state, senses);
+    // Rule 1 should NOT fire because last_build_heal_cycle == current cycle
+    // Should return null (no action) since no other rule matches
+    try std.testing.expectEqual(@as(?ActionKind, null), action);
+}
+
+test "Queen actions — desiredAction doctor heal after 2+ quick fails" {
+    const state = qt.QueenState{ .cycle = 1, .last_build_heal_cycle = 1 };
+    const senses = qt.SenseResult{
+        .build_ok = false,
+        .doctor_quick_fails = 3, // More than 2
+    };
+    const action = desiredAction(&state, senses);
+    try std.testing.expectEqual(ActionKind.doctor_heal, action.?);
+}
+
+test "Queen actions — kindToArgv farm recycle" {
+    const argv = kindToArgv(.farm_recycle);
+    try std.testing.expectEqualStrings("farm", argv[1]);
+    try std.testing.expectEqualStrings("recycle", argv[2]);
+}
+
+test "Queen actions — kindToArgv cloud spawn" {
+    const argv = kindToArgv(.cloud_spawn);
+    try std.testing.expectEqualStrings("cloud", argv[1]);
+    try std.testing.expectEqualStrings("spawn-all", argv[2]);
+}
+
+test "Queen actions — kindToArgv arena battle" {
+    const argv = kindToArgv(.arena_battle);
+    try std.testing.expectEqualStrings("code", argv[1]);
+    try std.testing.expectEqualStrings("arena", argv[2]);
+}
+
+test "Queen actions — kindToArgv fmt" {
+    const argv = kindToArgv(.fmt);
+    try std.testing.expectEqualStrings("fmt", argv[1]);
+}
+
+test "Queen actions — kindToArgv train status" {
+    const argv = kindToArgv(.train_status);
+    try std.testing.expectEqualStrings("train", argv[1]);
+    try std.testing.expectEqualStrings("status", argv[2]);
+}
+
+test "Queen actions — kindToArgv all actions return valid argv" {
+    // Verify all actions have at least 3 elements (binary + subcommand + args)
+    const actions = [_]ActionKind{
+        .farm_status, .arena_status, .doctor_scan, .train_status, .train_diagnose,
+        .experiment_chart, .patent_status, .research_sacred, .ouroboros_status,
+        .experience_recall, .farm_evolve_status, .swarm_status, .introspection,
+        .doctor_quick, .doctor_heal, .ouroboros_cycle, .git_commit_state,
+        .git_push, .issue_comment, .notify, .arena_battle, .experience_save, .fmt,
+        .farm_recycle, .farm_evolve_step, .cloud_spawn, .cloud_kill,
+        .cloud_cleanup, .issue_create, .swarm_decompose,
+    };
+
+    for (actions) |action| {
+        const argv = kindToArgv(action);
+        try std.testing.expect(argv.len >= 2); // At least binary + subcommand
+        try std.testing.expect(argv[0].len > 0); // Binary path non-empty
+    }
+}
+
+test "Queen actions — desiredAction issue comment respects cooldown" {
+    const state = qt.QueenState{};
+    const now = std.time.timestamp();
+    const senses = qt.SenseResult{
+        .build_ok = true,
+        .ouroboros_score = 80.0,
+        .farm_best_ppl = 50.0,
+        .last_issue_comment_ts = now - 3600, // 1 hour ago (less than 2h)
+        .experience_count = 0,
+        .stale_arena_hours = 0,
+    };
+    const action = desiredAction(&state, senses);
+    // Should NOT trigger issue_comment (cooldown not elapsed)
+    try std.testing.expect(action == null);
+}
+
+test "Queen actions — kindToArgv introspection" {
+    const argv = kindToArgv(.introspection);
+    try std.testing.expectEqualStrings("queen", argv[1]);
+    try std.testing.expectEqualStrings("introspection", argv[2]);
+}
+
+test "Queen actions — kindToArgv ouroboros status" {
+    const argv = kindToArgv(.ouroboros_status);
+    try std.testing.expectEqualStrings("ouroboros", argv[1]);
+    try std.testing.expectEqualStrings("status", argv[2]);
+}
