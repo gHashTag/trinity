@@ -19,8 +19,8 @@ jobs:
           wget https://ziglang.org/download/0.15.2/zig-linux-x86_64-0.15.2.tar.xz || \
           wget https://ziglang.org/download/0.15.2/zig-0.15.2.tar.xz
           tar -xf zig-*.tar.xz
-          echo "$PWD/zig-linux-x86_64-0.15.2" >> $GITHUB_PATH || \
-          echo "$PWD/zig-0.15.2" >> $GITHUB_PATH
+          mv zig-linux-x86_64-0.15.2 zig || mv zig-0.15.2 zig
+          echo "$PWD/zig" >> $GITHUB_PATH
       
       - name: Run SIMD Benchmarks
         run: |
