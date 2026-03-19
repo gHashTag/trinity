@@ -618,3 +618,190 @@ test "Queen telegram — fmtActionResult" {
     try std.testing.expect(std.mem.indexOf(u8, msg, "OK") != null);
     try std.testing.expect(std.mem.indexOf(u8, msg, "42") != null);
 }
+
+test "Queen telegram — fmtActionResult failure" {
+    var buf: [2048]u8 = undefined;
+    var result = qt.ActionResult{ .success = false, .duration_ms = 123 };
+    const output = "build broken";
+    @memcpy(result.output[0..output.len], output);
+    result.output_len = output.len;
+    const msg = fmtActionResult(&buf, .farm_status, result);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "FAIL") != null);
+}
+
+test "Queen telegram — parseUpdates handles /q command" {
+    var q = CommandQueue{};
+    var last_id = std.atomic.Value(i64).init(0);
+    var running = std.atomic.Value(bool).init(true);
+
+    var ctx = PollContext{
+        .tg = .{ .bot_token = "test", .chat_id = "123", .enabled = true },
+        .queue = &q,
+        .last_update_id = &last_id,
+        .allowed_chat_id = "123",
+        .running = &running,
+    };
+
+    const body =
+        \\{"ok":true,"result":[{"update_id":200,"message":{"chat":{"id":123},"text":"/q farm"}}]}
+    ;
+
+    parseUpdates(&ctx, body);
+
+    const cmd = q.pop().?;
+    try std.testing.expectEqualStrings("/q farm", cmd.textStr());
+}
+
+test "Queen telegram — parseUpdates ignores non-queen commands" {
+    var q = CommandQueue{};
+    var last_id = std.atomic.Value(i64).init(0);
+    var running = std.atomic.Value(bool).init(true);
+
+    var ctx = PollContext{
+        .tg = .{ .bot_token = "test", .chat_id = "123", .enabled = true },
+        .queue = &q,
+        .last_update_id = &last_id,
+        .allowed_chat_id = "123",
+        .running = &running,
+    };
+
+    const body =
+        \\{"ok":true,"result":[{"update_id":300,"message":{"chat":{"id":123},"text":"/random"}}]}
+    ;
+
+    parseUpdates(&ctx, body);
+
+    try std.testing.expectEqual(@as(?TgCommand, null), q.pop());
+}
+
+test "Queen telegram — parseUpdates handles multiple updates" {
+    var q = CommandQueue{};
+    var last_id = std.atomic.Value(i64).init(0);
+    var running = std.atomic.Value(bool).init(true);
+
+    var ctx = PollContext{
+        .tg = .{ .bot_token = "test", .chat_id = "123", .enabled = true },
+        .queue = &q,
+        .last_update_id = &last_id,
+        .allowed_chat_id = "123",
+        .running = &running,
+    };
+
+    const body =
+        \\{"ok":true,"result":[
+        \\  {"update_id":400,"message":{"chat":{"id":123},"text":"/queen"}},
+        \\  {"update_id":401,"message":{"chat":{"id":123},"text":"/q score"}}
+        \\]}
+    ;
+
+    parseUpdates(&ctx, body);
+
+    try std.testing.expectEqual(@as(i64, 401), last_id.load(.acquire));
+
+    const cmd1 = q.pop().?;
+    try std.testing.expectEqualStrings("/queen", cmd1.textStr());
+
+    const cmd2 = q.pop().?;
+    try std.testing.expectEqualStrings("/q score", cmd2.textStr());
+
+    try std.testing.expectEqual(@as(?TgCommand, null), q.pop());
+}
+
+test "Queen telegram — TgCommand textStr returns text" {
+    var cmd = TgCommand{};
+    const text = "/queen doctor";
+    @memcpy(cmd.text[0..text.len], text);
+    cmd.text_len = text.len;
+
+    try std.testing.expectEqualStrings(text, cmd.textStr());
+}
+
+test "Queen telegram — TgCommand empty text" {
+    var cmd = TgCommand{};
+    cmd.text_len = 0;
+
+    try std.testing.expectEqualStrings("", cmd.textStr());
+}
+
+test "Queen telegram — TgCommand stores chat_id" {
+    var cmd = TgCommand{};
+    const chat_id = "123456";
+    @memcpy(cmd.chat_id[0..chat_id.len], chat_id);
+    cmd.chat_id_len = chat_id.len;
+
+    try std.testing.expectEqual(@as(usize, chat_id.len), cmd.chat_id_len);
+    try std.testing.expectEqualStrings(chat_id, cmd.chat_id[0..cmd.chat_id_len]);
+}
+
+test "Queen telegram — CommandQueue wraparound" {
+    var q = CommandQueue{};
+
+    // Fill to MAX_COMMANDS - 1 (ring buffer can only hold MAX-1)
+    var i: u32 = 0;
+    while (i < MAX_COMMANDS - 1) : (i += 1) {
+        try std.testing.expect(q.push(.{ .update_id = @as(i64, i) }));
+    }
+
+    // Should be full now
+    try std.testing.expect(!q.push(.{}));
+
+    // Pop all
+    i = 0;
+    while (i < MAX_COMMANDS - 1) : (i += 1) {
+        const cmd = q.pop().?;
+        try std.testing.expectEqual(@as(i64, i), cmd.update_id);
+    }
+
+    // Should be empty
+    try std.testing.expectEqual(@as(?TgCommand, null), q.pop());
+
+    // Should be able to push again
+    try std.testing.expect(q.push(.{ .update_id = 999 }));
+    const cmd = q.pop().?;
+    try std.testing.expectEqual(@as(i64, 999), cmd.update_id);
+}
+
+test "Queen telegram — parseUpdates with escaped text" {
+    var q = CommandQueue{};
+    var last_id = std.atomic.Value(i64).init(0);
+    var running = std.atomic.Value(bool).init(true);
+
+    var ctx = PollContext{
+        .tg = .{ .bot_token = "test", .chat_id = "123", .enabled = true },
+        .queue = &q,
+        .last_update_id = &last_id,
+        .allowed_chat_id = "123",
+        .running = &running,
+    };
+
+    const body =
+        \\{"ok":true,"result":[{"update_id":500,"message":{"chat":{"id":123},"text":"/queen act farm_recycle"}}]}
+    ;
+
+    parseUpdates(&ctx, body);
+
+    const cmd = q.pop().?;
+    try std.testing.expectEqualStrings("/queen act farm_recycle", cmd.textStr());
+}
+
+test "Queen telegram — CommandQueue concurrent push pop order" {
+    var q = CommandQueue{};
+
+    var cmd1 = TgCommand{ .update_id = 1 };
+    cmd1.text[0] = 'a';
+    cmd1.text_len = 1;
+
+    var cmd2 = TgCommand{ .update_id = 2 };
+    cmd2.text[0] = 'b';
+    cmd2.text_len = 1;
+
+    try std.testing.expect(q.push(cmd1));
+    try std.testing.expect(q.push(cmd2));
+
+    const popped1 = q.pop().?;
+    try std.testing.expectEqual(@as(i64, 1), popped1.update_id);
+
+    const popped2 = q.pop().?;
+    try std.testing.expectEqual(@as(i64, 2), popped2.update_id);
+}
