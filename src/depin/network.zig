@@ -1,10 +1,12 @@
 // ═══════════════════════════════════════════════════════════════════════════════
-// DePIN NETWORK v1.0 — Real UDP Discovery + TCP Job Distribution
+// DePIN NETWORK v1.1 — Directed Discovery + Persistence Integration
 // UDP: 9333 | TCP Jobs: 9334 | REST API: 8080
-// φ² + 1/φ² = 3 = TRINITY | Order #100-1
+// φ² + 1/φ² = 3 = TRINITY | Order #100-1 | Phase 1 Update
 // ═══════════════════════════════════════════════════════════════════════════════
 
 const std = @import("std");
+const bootstrap = @import("bootstrap");
+const persistence = @import("persistence");
 
 // Forward decls for firebird types (will be imported by build.zig)
 pub const NodeStatus = enum {
@@ -125,11 +127,57 @@ pub const ClusterNode = struct {
     earned_tri: f64,
     pending_tri: f64,
     last_heartbeat: u64,
+    /// Quality score (0.0-1.0) based on uptime/responsiveness
+    quality_score: f64 = 1.0,
+    /// First discovered timestamp
+    first_seen: u64 = 0,
 
     pub fn calculateReward(self: *const ClusterNode, base_reward: f64) f64 {
-        return base_reward * self.tier.getMultiplier();
+        return base_reward * self.tier.getMultiplier() * self.quality_score;
+    }
+
+    /// Check if node is healthy (seen in last hour, quality > 0.3)
+    pub fn isHealthy(self: *const ClusterNode) bool {
+        const now = std.time.timestamp();
+        const hours_since_seen: f64 = if (self.last_heartbeat > 0)
+            @as(f64, @floatFromInt(now - self.last_heartbeat)) / 3600.0
+        else
+            999999.0;
+
+        return hours_since_seen < 1.0 and self.quality_score > 0.3;
+    }
+
+    /// Update quality score based on interaction
+    pub fn updateQuality(self: *ClusterNode, success: bool, latency_ms: u64) void {
+        const now = std.time.timestamp();
+        if (self.first_seen == 0) self.first_seen = now;
+        self.last_heartbeat = now;
+
+        if (success) {
+            const latency_bonus = if (latency_ms < 100)
+                0.05
+            else if (latency_ms < 500)
+                0.02
+            else
+                0.0;
+            self.quality_score = @min(1.0, self.quality_score + 0.1 + latency_bonus);
+        } else {
+            self.quality_score = @max(0.0, self.quality_score - 0.2);
+        }
     }
 };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HELPER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Format IP address from std.net.Address to string
+fn formatIpAddress(allocator: std.mem.Allocator, addr: *const std.net.Address) ![]const u8 {
+    // Use std.net.Address.format() for proper formatting
+    var buf: [std.net.Address.MAX_FORMAT_SIZE]u8 = undefined;
+    const addr_str = try addr.format(&buf);
+    return allocator.dupe(u8, addr_str);
+}
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // UDP DISCOVERY
@@ -186,6 +234,45 @@ pub const UDPDiscovery = struct {
         _ = try std.posix.sendto(self.socket, packet, 0, &broadcast_addr.any, broadcast_addr.getOsSockLen());
     }
 
+    /// Directed discovery to specific IP address (for Railway public IPs)
+    pub fn directedDiscovery(self: *const UDPDiscovery, target_ip: []const u8, target_port: u16, cluster_id: []const u8, node_id: []const u8) !void {
+        const packet = try std.fmt.allocPrint(self.allocator,
+            \\{{"type":"discovery","cluster_id":"{s}","node_id":"{s}","timestamp":{d}}}
+        , .{ cluster_id, node_id, std.time.milliTimestamp() });
+        defer self.allocator.free(packet);
+
+        // Parse IP address
+        var iter = std.mem.splitScalar(u8, target_ip, '.');
+        var octets: [4]u8 = undefined;
+        var i: usize = 0;
+        while (iter.next()) |octet| {
+            octets[i] = try std.fmt.parseInt(u8, octet, 10);
+            i += 1;
+        }
+
+        const target_addr = std.net.Address.initIp4(octets, target_port);
+
+        _ = try std.posix.sendto(self.socket, packet, 0, &target_addr.any, target_addr.getOsSockLen());
+    }
+
+    /// Directed discovery to multiple bootstrap peers
+    pub fn discoverFromBootstrap(self: *const UDPDiscovery, bootstrap_peers: []const bootstrap.BootstrapPeer, cluster_id: []const u8, node_id: []const u8) !usize {
+        var sent: usize = 0;
+
+        for (bootstrap_peers) |peer| {
+            // Only send to healthy peers
+            if (!peer.isHealthy()) continue;
+
+            self.directedDiscovery(peer.host, peer.port, cluster_id, node_id) catch |err| {
+                std.log.debug("network: failed to send discovery to {s}: {}", .{ peer.host, err });
+                continue;
+            };
+            sent += 1;
+        }
+
+        return sent;
+    }
+
     pub fn receiveDiscovery(self: *UDPDiscovery, timeout_ms: u64) !?NodeDiscovery {
         // Set receive timeout
         if (timeout_ms > 0) {
@@ -224,7 +311,7 @@ pub const UDPDiscovery = struct {
         const node_id_end = std.mem.indexOf(u8, data[node_id_start + 11 ..], "\"") orelse return NetworkError.InvalidPacket;
         const node_id = data[node_id_start + 11 .. node_id_start + 11 + node_id_end];
 
-        const ip_str = try self.allocator.dupe(u8, src_addr.ip());
+        const ip_str = try formatIpAddress(self.allocator, &src_addr);
         errdefer self.allocator.free(ip_str);
 
         return NodeDiscovery{
@@ -236,14 +323,14 @@ pub const UDPDiscovery = struct {
             },
             .role = .worker, // Default
             .tier = .free, // Default
-            .timestamp = std.time.milliTimestamp(),
+            .timestamp = @as(u64, @intCast(std.time.milliTimestamp())),
         };
     }
 
     pub fn respondToDiscovery(self: *const UDPDiscovery, dest_addr: std.net.Address, cluster_id: []const u8, node_id: []const u8, role: NodeRole, tier: NodeTier) !void {
         const packet = try std.fmt.allocPrint(self.allocator,
             \\{{"type":"discovery_response","cluster_id":"{s}","node_id":"{s}","role":"{s}","tier":"{s}","timestamp":{d}}}
-        , .{ cluster_id, node_id, role.toString(), tier.toString(), std.time.milliTimestamp() });
+        , .{ cluster_id, node_id, role.toString(), tier.toString(), @as(u64, @intCast(std.time.milliTimestamp())) });
         defer self.allocator.free(packet);
 
         _ = try std.posix.sendto(self.socket, packet, 0, &dest_addr.any, dest_addr.getOsSockLen());
@@ -439,6 +526,12 @@ pub const ClusterManager = struct {
     udp: ?UDPDiscovery,
     tcp_server: ?TCPJobServer,
     allocator: std.mem.Allocator,
+    /// Bootstrap manager for directed discovery
+    bootstrap_mgr: bootstrap.BootstrapManager,
+    /// Persistence manager for state save/load
+    persistence_mgr: persistence.PersistenceManager,
+    /// State file loaded flag
+    state_loaded: bool = false,
 
     pub fn init(cluster_id: []const u8, node_id: []const u8, role: NodeRole, tier: NodeTier, allocator: std.mem.Allocator) !ClusterManager {
         return ClusterManager{
@@ -450,6 +543,8 @@ pub const ClusterManager = struct {
             .udp = null,
             .tcp_server = null,
             .allocator = allocator,
+            .bootstrap_mgr = bootstrap.BootstrapManager.init(allocator),
+            .persistence_mgr = persistence.PersistenceManager.init(allocator),
         };
     }
 
@@ -465,6 +560,96 @@ pub const ClusterManager = struct {
 
         if (self.udp) |*udp| udp.deinit();
         if (self.tcp_server) |*tcp| tcp.deinit();
+
+        self.bootstrap_mgr.deinit();
+        self.persistence_mgr.deinit();
+    }
+
+    /// Load cluster state from .tri-cluster.json
+    pub fn loadState(self: *ClusterManager) !bool {
+        var state = try self.persistence_mgr.load() orelse return false;
+
+        // Convert PeerState to ClusterNode
+        for (state.peers.items) |peer| {
+            const ip = try self.allocator.dupe(u8, peer.host);
+            errdefer self.allocator.free(ip);
+
+            const node_id_copy = try self.allocator.dupe(u8, peer.node_id);
+            errdefer self.allocator.free(node_id_copy);
+
+            const node = ClusterNode{
+                .id = node_id_copy,
+                .address = SocketAddr{
+                    .ip = ip,
+                    .port = peer.port,
+                },
+                .role = if (peer.role == .coordinator) .coordinator else if (peer.role == .storage) .storage else .worker,
+                .tier = if (peer.tier == .staker) .staker else if (peer.tier == .power) .power else if (peer.tier == .whale) .whale else .free,
+                .status = .offline,
+                .operations_count = 0,
+                .earned_tri = 0.0,
+                .pending_tri = 0.0,
+                .last_heartbeat = peer.last_seen,
+                .quality_score = peer.quality_score,
+                .first_seen = peer.first_seen,
+            };
+
+            try self.nodes.append(self.allocator, node);
+        }
+
+        // Also add to bootstrap manager
+        for (state.peers.items) |peer| {
+            try self.bootstrap_mgr.addDiscoveredPeer(
+                peer.host,
+                peer.port,
+                peer.cluster_id,
+                peer.node_id,
+            );
+        }
+
+        state.deinit(self.allocator);
+        self.state_loaded = true;
+        return true;
+    }
+
+    /// Save cluster state to .tri-cluster.json
+    pub fn saveState(self: *ClusterManager) !void {
+        var state = persistence.ClusterState.init(
+            self.cluster_id,
+            self.node_id,
+        );
+        defer state.deinit(self.allocator);
+
+        const now = std.time.timestamp();
+
+        for (self.nodes.items) |node| {
+            const peer = persistence.PeerState{
+                .node_id = node.id,
+                .host = node.address.ip,
+                .port = node.address.port,
+                .cluster_id = self.cluster_id,
+                .quality_score = node.quality_score,
+                .last_seen = node.last_heartbeat,
+                .first_seen = if (node.first_seen > 0) node.first_seen else now,
+                .role = if (node.role == .coordinator) .coordinator else if (node.role == .storage) .storage else .worker,
+                .tier = if (node.tier == .staker) .staker else if (node.tier == .power) .power else if (node.tier == .whale) .whale else .free,
+            };
+
+            try state.addOrUpdatePeer(self.allocator, peer);
+        }
+
+        try self.persistence_mgr.save(&state);
+    }
+
+    /// Add bootstrap peer for directed discovery
+    pub fn addBootstrapPeer(self: *ClusterManager, host: []const u8, port: u16) !void {
+        try self.bootstrap_mgr.addHardcodedPeer(host, port);
+    }
+
+    /// Get discovered peers count
+    pub fn getDiscoveredCount(self: *const ClusterManager) usize {
+        const stats = self.bootstrap_mgr.getStats();
+        return stats.total_discovered;
     }
 
     pub fn startCoordinator(self: *ClusterManager, udp_port: u16, tcp_port: u16) !void {
@@ -482,6 +667,13 @@ pub const ClusterManager = struct {
     pub fn discoverNodes(self: *ClusterManager, timeout_ms: u64) !usize {
         if (self.udp == null) return NetworkError.SocketCreateFailed;
 
+        // First, try directed discovery to bootstrap peers
+        const bootstrap_peers = self.bootstrap_mgr.getBootstrapPeers();
+        if (bootstrap_peers.len > 0) {
+            _ = try self.udp.?.discoverFromBootstrap(bootstrap_peers, self.cluster_id, self.node_id);
+        }
+
+        // Fall back to broadcast (for local subnet)
         try self.udp.?.broadcastDiscovery(self.cluster_id, self.node_id);
 
         var discovered: usize = 0;
@@ -490,21 +682,45 @@ pub const ClusterManager = struct {
         while (std.time.milliTimestamp() - start_time < timeout_ms) {
             const discovery = try self.udp.?.receiveDiscovery(1000);
             if (discovery) |d| {
-                // Add node to cluster
-                const node = ClusterNode{
-                    .id = try self.allocator.dupe(u8, d.node_id),
-                    .address = d.addr,
-                    .role = d.role,
-                    .tier = d.tier,
-                    .status = .online,
-                    .operations_count = 0,
-                    .earned_tri = 0.0,
-                    .pending_tri = 0.0,
-                    .last_heartbeat = d.timestamp,
-                };
+                // Check if node already exists
+                var exists = false;
+                for (self.nodes.items) |*node| {
+                    if (std.mem.eql(u8, node.id, d.node_id)) {
+                        exists = true;
+                        // Update existing node
+                        node.last_heartbeat = d.timestamp;
+                        break;
+                    }
+                }
 
-                try self.nodes.append(self.allocator, node);
-                discovered += 1;
+                if (!exists) {
+                    // Add node to cluster
+                    const node = ClusterNode{
+                        .id = try self.allocator.dupe(u8, d.node_id),
+                        .address = d.addr,
+                        .role = d.role,
+                        .tier = d.tier,
+                        .status = .online,
+                        .operations_count = 0,
+                        .earned_tri = 0.0,
+                        .pending_tri = 0.0,
+                        .last_heartbeat = d.timestamp,
+                        .quality_score = 0.5, // Start with medium quality
+                        .first_seen = d.timestamp,
+                    };
+
+                    try self.nodes.append(self.allocator, node);
+
+                    // Add to bootstrap manager for future discovery
+                    try self.bootstrap_mgr.addDiscoveredPeer(
+                        d.addr.ip,
+                        d.addr.port,
+                        d.cluster_id,
+                        d.node_id,
+                    );
+
+                    discovered += 1;
+                }
 
                 // Free discovery allocations
                 self.allocator.free(d.cluster_id);
@@ -512,6 +728,70 @@ pub const ClusterManager = struct {
                 self.allocator.free(d.addr.ip);
             }
         }
+
+        // Auto-save state after discovery
+        self.saveState() catch |err| {
+            std.log.debug("network: failed to save state: {}", .{err});
+        };
+
+        return discovered;
+    }
+
+    /// Directed discovery to specific bootstrap peer
+    pub fn discoverFromPeer(self: *ClusterManager, host: []const u8, port: u16) !usize {
+        if (self.udp == null) return NetworkError.SocketCreateFailed;
+
+        try self.udp.?.directedDiscovery(host, port, self.cluster_id, self.node_id);
+
+        // Wait for responses
+        var discovered: usize = 0;
+        const timeout_ms = 5000;
+        const start_time = std.time.milliTimestamp();
+
+        while (std.time.milliTimestamp() - start_time < timeout_ms) {
+            const recv_result = self.udp.?.receiveDiscovery(1000) catch |err| {
+                if (err == error.WouldBlock) continue;
+                return err;
+            };
+
+            if (recv_result) |d| {
+                // Check if node already exists
+                var exists = false;
+                for (self.nodes.items) |*node| {
+                    if (std.mem.eql(u8, node.id, d.node_id)) {
+                        exists = true;
+                        node.last_heartbeat = d.timestamp;
+                        break;
+                    }
+                }
+
+                if (!exists) {
+                    const node = ClusterNode{
+                        .id = try self.allocator.dupe(u8, d.node_id),
+                        .address = d.addr,
+                        .role = d.role,
+                        .tier = d.tier,
+                        .status = .online,
+                        .operations_count = 0,
+                        .earned_tri = 0.0,
+                        .pending_tri = 0.0,
+                        .last_heartbeat = d.timestamp,
+                        .quality_score = 0.5,
+                        .first_seen = d.timestamp,
+                    };
+
+                    try self.nodes.append(self.allocator, node);
+                    discovered += 1;
+                }
+
+                self.allocator.free(d.cluster_id);
+                self.allocator.free(d.node_id);
+                self.allocator.free(d.addr.ip);
+            }
+        }
+
+        // Auto-save state
+        self.saveState() catch {};
 
         return discovered;
     }

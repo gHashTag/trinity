@@ -78,6 +78,7 @@ src/vibeec/bitnet_inference_test
 zig-macos-*/
 zig-linux-*/
 zig-windows-*/
+zig/
 *.tar.xz
 
 # Ralph logs (keep config)
