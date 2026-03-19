@@ -49,3 +49,4 @@ LABEL version="2.3.0" \
 # Redeploy all sacred: 1773891441
 # FORCE NEW BUILD: dataset wget fix - 1773892500
 # v2.3.0: HSLM_OBJECTIVE + HSLM_LR_SCHEDULE support - 1774000000
+# v2.3.1: Binary rebuild for HSLM_OBJECTIVE compatibility - 1773950700
