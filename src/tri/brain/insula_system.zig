@@ -26,7 +26,7 @@ pub const LogLevel = enum {
     debug,
     info,
     warn,
-    error,
+    err,
     critical,
 
     pub fn toString(self: LogLevel) []const u8 {
@@ -34,7 +34,7 @@ pub const LogLevel = enum {
             .debug => "DEBUG",
             .info => "INFO",
             .warn => "WARN",
-            .error => "ERROR",
+            .err => "ERROR",
             .critical => "CRITICAL",
         };
     }
@@ -44,7 +44,7 @@ pub const LogLevel = enum {
             .debug => "🔍",
             .info => "ℹ️",
             .warn => "⚠️",
-            .error => "❌",
+            .err => "❌",
             .critical => "🚨",
         };
     }
@@ -235,6 +235,7 @@ pub const Insula = struct {
 
         // Read from end (reverse)
         const start_idx = if (lines_list.items.len > limit) lines_list.items.len - limit else 0;
+        _ = start_idx; // Calculated for future use in optimized reading
 
         var idx: usize = lines_list.items.len;
         while (idx > 0 and results.items.len < limit) : (idx -= 1) {
@@ -480,4 +481,10 @@ pub fn fromString(self: EventType, s: []const u8) ?EventType {
         .worker_lifecycle => if (std.mem.eql(u8, s, "lifecycle")) self else null,
         .config_change => if (std.mem.eql(u8, s, "config")) self else null,
     };
+}
+
+pub fn copyToFixed(comptime N: usize, dest: *[N]u8, len_ptr: anytype, src: []const u8) void {
+    const copy_len = @min(src.len, N);
+    @memcpy(dest[0..copy_len], src[0..copy_len]);
+    len_ptr.* = @intCast(copy_len);
 }

@@ -445,3 +445,6 @@
 {"ts":1773893315649,"type":"health","svc":"hslm-r15","detail":"stalled: step unchanged 2+ polls","step":58300}
 {"ts":1773893781285,"type":"health","svc":"hslm-r27","detail":"stalled: step unchanged 2+ polls","step":10000}
 {"ts":1773893788032,"type":"health","svc":"hslm-r11","detail":"stalled: step unchanged 2+ polls","step":4300}
+{"ts":1773897374462,"type":"health","svc":"hslm-r33","detail":"stalled: step unchanged 2+ polls","step":11200}
+{"ts":1773897374462,"type":"health","svc":"hslm-r12","detail":"stalled: step unchanged 2+ polls","step":6700}
+{"ts":1773897374462,"type":"health","svc":"hslm-r26","detail":"stalled: step unchanged 2+ polls","step":10700}

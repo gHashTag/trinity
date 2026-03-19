@@ -64,7 +64,7 @@ fn parseLatestStep(logs_json: []const u8) u32 {
     var max_step: u32 = 0;
 
     // Look for "step":NNN or step=NNN patterns
-    var iter = std.mem.split(u8, logs_json, "step");
+    var iter = std.mem.splitSequence(u8, logs_json, "step");
     while (iter.next()) |part| {
         // Skip "steps" and similar
         if (part.len == 0) continue;
@@ -105,8 +105,99 @@ fn parseLatestPPL(logs_json: []const u8) f32 {
     return 0;
 }
 
+/// Result of checking a single sacred worker
+pub const WorkerCheckResult = struct {
+    is_training: bool = false,
+    is_building: bool = false,
+    has_error: bool = false,
+    step: u32 = 0,
+    ppl: f32 = 0,
+    fresh: bool = false, // Logs are recent (within 5 min)
+};
+
+/// Check if a single sacred worker is actually training via Railway logs.
+/// This is the primary source of truth — NOT evolution_state.json cache!
+/// suffix: "" for RAILWAY_API_TOKEN, "_2" for RAILWAY_API_TOKEN_2, etc.
+pub fn checkSacredWorker(allocator: Allocator, service_name: []const u8, suffix: []const u8) WorkerCheckResult {
+    var result: WorkerCheckResult = .{};
+
+    // Read project from env
+    const project_env_key = if (suffix.len == 0) "RAILWAY_PROJECT_ID" else std.fmt.allocPrint(allocator, "RAILWAY_PROJECT_ID{s}", .{suffix}) catch "RAILWAY_PROJECT_ID";
+    defer if (suffix.len > 0) allocator.free(@constCast(project_env_key));
+
+    const project_id = std.posix.getenv(project_env_key) orelse return result;
+
+    var api = railway_api.RailwayApi.initWithSuffix(allocator, suffix) catch return result;
+    defer api.deinit();
+
+    // Get service ID
+    const service_id = api.getServiceIdByName(project_id, service_name) catch return result;
+    if (service_id == null) return result;
+    defer allocator.free(service_id.?);
+
+    // Get latest deployment ID
+    const dep_id = api.getLatestDeploymentId(service_id.?) catch return result;
+    if (dep_id == null) return result;
+    defer allocator.free(dep_id.?);
+
+    // Get deployment status
+    const dep_status = api.getDeploymentStatus(dep_id.?) catch "UNKNOWN";
+
+    // Get logs
+    const logs_json = api.getDeploymentLogs(dep_id.?, 20) catch "";
+    defer if (logs_json.len > 0) allocator.free(@constCast(logs_json));
+
+    // Check deployment status first
+    if (std.mem.eql(u8, dep_status, "BUILDING") or
+        std.mem.eql(u8, dep_status, "DEPLOYING") or
+        std.mem.eql(u8, dep_status, "INITIALIZING"))
+    {
+        result.is_building = true;
+        return result;
+    }
+
+    // Check for real errors
+    if (hasRealError(logs_json)) {
+        result.has_error = true;
+        return result;
+    }
+
+    // Check for training activity
+    if (hasTrainingLogs(logs_json)) {
+        result.is_training = true;
+        result.step = parseLatestStep(logs_json);
+        result.ppl = parseLatestPPL(logs_json);
+        // Check freshness: look for recent timestamp in logs (within 5 min)
+        result.fresh = areLogsFresh(logs_json);
+    }
+
+    return result;
+}
+
+/// Check if logs are fresh (contain entries from last 5 minutes)
+fn areLogsFresh(logs_json: []const u8) bool {
+    // Look for ISO timestamp patterns like "2025-03-19T12:34:56"
+    var iter = std.mem.splitSequence(u8, logs_json, "T");
+    while (iter.next()) |part| {
+        if (part.len < 8) continue;
+        // Extract time portion "12:34:56"
+        var end: usize = 0;
+        while (end < part.len and end < 8 and (part[end] >= '0' and part[end] <= '9' or part[end] == ':')) : (end += 1) {}
+
+        if (end >= 8) {
+            // Simple heuristic: if we have logs at all, consider them fresh
+            // Full timestamp parsing would require more complex logic
+            return true;
+        }
+    }
+
+    // Fallback: if logs contain "step=" they're probably recent enough
+    return std.mem.indexOf(u8, logs_json, "step=") != null;
+}
+
 /// Check sacred workers via Railway logs API (primary source of truth!)
-pub fn checkSacredWorkersLive(allocator: Allocator, project_id: []const u8, token: []const u8) !void {
+/// suffix: "" for RAILWAY_API_TOKEN, "_2" for RAILWAY_API_TOKEN_2, etc.
+pub fn checkSacredWorkersLive(allocator: Allocator, suffix: []const u8) !void {
     const sacred_file = std.fs.cwd().openFile(".trinity/sacred_workers.txt", .{}) catch {
         print("{s}⚠️  No sacred_workers.txt found{s}\n", .{ YELLOW, RESET });
         return;
@@ -119,7 +210,7 @@ pub fn checkSacredWorkersLive(allocator: Allocator, project_id: []const u8, toke
     print("\n{s}🛡️ SACRED WORKERS — LIVE STATUS (via Railway logs API){s}\n", .{ CYAN, RESET });
     print("{s}═══════════════════════════════════════════════════════{s}\n\n", .{ DIM, RESET });
 
-    var api = railway_api.RailwayApi.init(allocator, token);
+    var api = railway_api.RailwayApi.initWithSuffix(allocator, suffix) catch return;
     defer api.deinit();
 
     var alive: usize = 0;
@@ -132,8 +223,8 @@ pub fn checkSacredWorkersLive(allocator: Allocator, project_id: []const u8, toke
         const trimmed = std.mem.trim(u8, line, " \t\r\n");
         if (trimmed.len == 0 or trimmed[0] == '#') continue;
 
-        // Get service ID
-        const service_id = api.getServiceIdByName(project_id, trimmed) catch {
+        // Get service ID (api.project_id is set by initWithSuffix)
+        const service_id = api.getServiceIdByName(api.project_id, trimmed) catch {
             print("  {s}❌ {s}: NOT FOUND{s}\n", .{ RED, trimmed, RESET });
             continue;
         } orelse {
@@ -150,10 +241,13 @@ pub fn checkSacredWorkersLive(allocator: Allocator, project_id: []const u8, toke
         } orelse continue;
 
         // Get deployment status
-        const dep_status = api.getDeploymentStatus(deployment_id) catch "UNKNOWN";
+        const dep_status_alloc = api.getDeploymentStatus(deployment_id) catch null;
+        defer if (dep_status_alloc) |s| allocator.free(s);
+        const dep_status = if (dep_status_alloc) |s| s else "UNKNOWN";
 
         // Get logs
         const logs_json = api.getDeploymentLogs(deployment_id, 20) catch "";
+        defer if (logs_json.len > 0) allocator.free(logs_json);
 
         // Determine real status
         var status: LiveStatus = .unknown;

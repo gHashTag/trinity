@@ -117,7 +117,6 @@ pub const Brain = struct {
             self.allocator,
             service_name,
             action,
-            &self.hippocampus,
             &self.thalamus,
         );
     }
@@ -246,21 +245,17 @@ pub const BrainStatus = enum {
 
 test "brain_init" {
     const allocator = std.testing.allocator;
-    var brain = try Brain.init(allocator, "");
+    const brain = try Brain.init(allocator, "");
     defer brain.deinit();
 
     // Should initialize all regions
-    _ = brain;
-    _ = allocator;
 }
 
 test "brain_refresh" {
     const allocator = std.testing.allocator;
-    var brain = try Brain.init(allocator, "");
+    const brain = try Brain.init(allocator, "");
     defer brain.deinit();
 
     // Refresh should update cache from Thalamus
     // (In real test, would have mock Thalamus)
-    _ = brain;
-    _ = allocator;
 }

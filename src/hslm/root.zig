@@ -26,6 +26,8 @@ pub const parallel = @import("parallel.zig");
 pub const ste = @import("ste.zig");
 pub const intraparietal_sulcus = @import("intraparietal_sulcus.zig");
 pub const weber_tuning = @import("weber_tuning.zig");
+pub const fusiform_gyrus = @import("fusiform_gyrus.zig");
+pub const angular_gyrus = @import("angular_gyrus.zig");
 
 // Re-export primary types
 pub const HSLM = model.HSLM;

@@ -276,7 +276,6 @@ test "expected speedup is reasonable" {
     try std.testing.expect(speedup >= 0.25 and speedup <= 4.0);
 }
 
-
 test "x86_64 avx2 detection" {
     if (builtin.cpu.arch == .x86_64) {
         // On x86_64, should have at least SSE2

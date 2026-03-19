@@ -239,7 +239,7 @@ pub fn countZeroChunks(data: []const i8) usize {
     var i: usize = 0;
     while (i < num_chunks * CHUNK_SIZE) : (i += CHUNK_SIZE) {
         var all_zero = true;
-        for (data[i..i+CHUNK_SIZE]) |v| {
+        for (data[i .. i + CHUNK_SIZE]) |v| {
             if (v != 0) {
                 all_zero = false;
                 break;
