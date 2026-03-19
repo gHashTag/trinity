@@ -47,6 +47,10 @@ pub const health_history = @import("health_history");
 /// Railway live logs relay
 pub const thalamus_logs = @import("thalamus_logs");
 
+/// Microglia (Immune Surveillance)
+/// The Constant Gardeners — patrol, prune, and stimulate regrowth
+pub const microglia = @import("microglia");
+
 /// Stress Test (Load Testing)
 /// Brain load testing and stress testing utilities
 pub const stress_test = @import("stress_test");
@@ -108,6 +112,11 @@ pub const BRAIN_ATLAS = [_]BrainRegion{
         .name = "Corpus Callosum",
         .biological_function = "Telemetry — time-series metrics aggregation",
         .file = "telemetry.zig",
+    },
+    .{
+        .name = "Microglia",
+        .biological_function = "Immune Surveillance — The Constant Gardeners. Patrols farm every 30min, prunes crashed workers, stimulates regrowth from leaders",
+        .file = "microglia.zig",
     },
 };
 
@@ -329,8 +338,9 @@ pub const AgentCoordination = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Brain atlas completeness" {
-    try std.testing.expectEqual(@as(usize, 9), BRAIN_ATLAS.len);
+    try std.testing.expectEqual(@as(usize, 10), BRAIN_ATLAS.len);
     try std.testing.expect(std.mem.eql(u8, "Basal Ganglia", BRAIN_ATLAS[1].name));
+    try std.testing.expect(std.mem.eql(u8, "Microglia", BRAIN_ATLAS[9].name));
 }
 
 test "AgentCoordination claim and complete" {

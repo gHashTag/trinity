@@ -82,8 +82,6 @@ const ClaimStats = struct {
 };
 
 fn testConcurrentClaims(coord: *brain.AgentCoordination, agent_ids: *const [NUM_AGENTS][]const u8) !ClaimStats {
-    var claimed = std.ArrayList([]const u8).init(allocator);
-    var failed = std.ArrayList([]const u8).init(allocator);
     var successful: usize = 0;
     var duplicates: usize = 0;
 
@@ -92,20 +90,19 @@ fn testConcurrentClaims(coord: *brain.AgentCoordination, agent_ids: *const [NUM_
         const start_task = agent_idx * 100;
         for (0..100) |i| {
             const task_id = try std.fmt.allocPrint(allocator, "stress-task-{d}", .{start_task + i});
+            defer allocator.free(task_id);
             const claimed_task = try coord.claimTask(task_id, agent_id);
 
             if (claimed_task) {
-                try claimed.append(task_id);
                 successful += 1;
             } else {
-                try failed.append(task_id);
                 duplicates += 1;
             }
         }
     }
 
-    const score = if (successful == NUM_TASKS)
-        @as(u32, 100)
+    const score: u32 = if (successful == NUM_TASKS)
+        100
     else if (successful >= NUM_TASKS * 95 / 100)
         90
     else if (successful >= NUM_TASKS * 80 / 100)
@@ -117,8 +114,8 @@ fn testConcurrentClaims(coord: *brain.AgentCoordination, agent_ids: *const [NUM_
         .total_attempts = NUM_TASKS,
         .successful_claims = successful,
         .failed_duplicates = duplicates,
-        .claimed_tasks = try claimed.toOwnedSlice(),
-        .failed_claims = try failed.toOwnedSlice(),
+        .claimed_tasks = &[_][]const u8{},
+        .failed_claims = &[_][]const u8{},
         .score = score,
     };
 }
@@ -128,8 +125,8 @@ fn printClaimStats(stats: *const ClaimStats) void {
     std.debug.print("  Successful Claims:  {d}\n", .{stats.successful_claims});
     std.debug.print("  Duplicate Blocks:   {d}\n", .{stats.failed_duplicates});
     std.debug.print("  Coverage:           {d:.1}%\n", .{@as(f32, @floatFromInt(stats.successful_claims)) / @as(f32, @floatFromInt(stats.total_attempts)) * 100.0});
-    const grade = if (stats.score == 100) "{s}A{s}" else if (stats.score >= 90) "{s}B{s}" else if (stats.score >= 70) "{s}C{s}" else "{s}F{s}";
-    std.debug.print("  Score:               {s}{d}/100{s}\n", .{ grade.?, RESET, stats.score, grade.? });
+    const grade = if (stats.score == 100) "A" else if (stats.score >= 90) "B" else if (stats.score >= 70) "C" else "F";
+    std.debug.print("  Score:               {s}{d}/100\n", .{ grade, stats.score });
 }
 
 const BackoffStats = struct {
@@ -145,7 +142,7 @@ fn testBackoffFairness(coord: *brain.AgentCoordination, agent_ids: *const [NUM_A
     var delays_per_agent: [NUM_AGENTS]f32 = undefined;
 
     // Simulate backoff progression
-    for (agent_ids, 0..) |agent_id, agent_idx| {
+    for (agent_ids, 0..) |_, agent_idx| {
         var agent_total: f32 = 0;
         for (0..10) |attempt| {
             const delay = coord.getBackoffDelay(@intCast(attempt));
@@ -159,8 +156,8 @@ fn testBackoffFairness(coord: *brain.AgentCoordination, agent_ids: *const [NUM_A
     const avg = total_delay / NUM_AGENTS;
     const fairness = computeFairness(&delays_per_agent);
 
-    const score = if (fairness >= 0.95)
-        @as(u32, 100)
+    const score: u32 = if (fairness >= 0.95)
+        100
     else if (fairness >= 0.85)
         90
     else if (fairness >= 0.70)
@@ -192,8 +189,8 @@ fn printBackoffStats(stats: *const BackoffStats) void {
     std.debug.print("  Average Delay:      {d:.1} ms\n", .{stats.avg_delay_ms});
     std.debug.print("  Maximum Delay:      {d} ms\n", .{stats.max_delay_ms});
     std.debug.print("  Fairness Index:     {d:.3} (1.0 = perfect)\n", .{stats.fairness_index});
-    const grade = if (stats.score == 100) "{s}A{s}" else if (stats.score >= 90) "{s}B{s}" else if (stats.score >= 70) "{s}C{s}" else "{s}F{s}";
-    std.debug.print("  Score:               {s}{d}/100{s}\n", .{ grade.?, RESET, stats.score, grade.? });
+    const grade = if (stats.score == 100) "A" else if (stats.score >= 90) "B" else if (stats.score >= 70) "C" else "F";
+    std.debug.print("  Score:               {s}{d}/100\n", .{ grade, stats.score });
 }
 
 const EventStats = struct {
@@ -221,8 +218,8 @@ fn testEventBroadcast(coord: *brain.AgentCoordination, agent_ids: *const [NUM_AG
     else
         0;
 
-    const score = if (delivery_rate >= 0.95)
-        @as(u32, 100)
+    const score: u32 = if (delivery_rate >= 0.95)
+        100
     else if (delivery_rate >= 0.85)
         90
     else if (delivery_rate >= 0.70)
@@ -242,8 +239,8 @@ fn printEventStats(stats: *const EventStats) void {
     std.debug.print("  Events Published:   {d}\n", .{stats.events_published});
     std.debug.print("  Events Polled:      {d}\n", .{stats.events_polled});
     std.debug.print("  Delivery Rate:      {d:.1}%\n", .{stats.delivery_rate * 100.0});
-    const grade = if (stats.score == 100) "{s}A{s}" else if (stats.score >= 90) "{s}B{s}" else if (stats.score >= 70) "{s}C{s}" else "{s}F{s}";
-    std.debug.print("  Score:               {s}{d}/100{s}\n", .{ grade.?, RESET, stats.score, grade.? });
+    const grade = if (stats.score == 100) "A" else if (stats.score >= 90) "B" else if (stats.score >= 70) "C" else "F";
+    std.debug.print("  Score:               {s}{d}/100\n", .{ grade, stats.score });
 }
 
 // CLI entry point
