@@ -169,20 +169,11 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !
     // const serve_full = @import("serve_full");
     // Single Source of Truth: trinity-nexus/output/lang/zig/full-serve-v1.zig
 
-    // parseServeCommand expects "serve" as first arg, prepend it
-    const all_args = try allocator.alloc([]const u8, args.len + 1);
-    defer allocator.free(all_args);
-    all_args[0] = "serve";
-    @memcpy(all_args[1..], args);
+    _ = args;
+    _ = allocator;
 
-    // Parse command arguments
-    const cmd = serve_full.parseServeCommand(all_args);
-
-    // Validate (errors will be returned to caller)
-    try serve_full.validateServeCommand(cmd);
-
-    // Execute serve command (help is handled inside via cmd.help flag)
-    try serve_full.executeServeCommand(allocator, cmd);
+    std.debug.print("🚧 Serve command not implemented yet. Requires trinity-nexus submodule.\n", .{});
+    return error.NotImplemented;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
