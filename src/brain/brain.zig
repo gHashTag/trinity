@@ -35,15 +35,17 @@ pub const telemetry = @import("telemetry");
 /// Detects emotionally significant events and prioritizes them
 pub const amygdala = @import("amygdala");
 
+/// Prefrontal Cortex (Executive Function)
+/// Decision making, planning, and cognitive control
+pub const prefrontal_cortex = @import("prefrontal_cortex");
+
 /// Thalamus (Sensory Relay)
 /// Railway live logs relay
-// NOTE: Temporarily disabled due to pre-existing compilation errors
-// pub const thalamus_logs = @import("thalamus_logs");
+pub const thalamus_logs = @import("thalamus_logs");
 
 /// Stress Test (Load Testing)
 /// Brain load testing and stress testing utilities
-// NOTE: Temporarily disabled due to pre-existing compilation errors
-// pub const stress_test = @import("stress_test.zig");
+pub const stress_test = @import("stress_test");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BRAIN ATLAS — Complete Neuroanatomy
@@ -82,6 +84,11 @@ pub const BRAIN_ATLAS = [_]BrainRegion{
         .name = "Amygdala",
         .biological_function = "Emotional Salience — prioritizes urgent/critical events",
         .file = "amygdala.zig",
+    },
+    .{
+        .name = "Prefrontal Cortex",
+        .biological_function = "Executive Function — decision making and planning",
+        .file = "prefrontal_cortex.zig",
     },
     .{
         .name = "Intraparietal Sulcus",
@@ -318,7 +325,7 @@ pub const AgentCoordination = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Brain atlas completeness" {
-    try std.testing.expectEqual(@as(usize, 8), BRAIN_ATLAS.len);
+    try std.testing.expectEqual(@as(usize, 9), BRAIN_ATLAS.len);
     try std.testing.expect(std.mem.eql(u8, "Basal Ganglia", BRAIN_ATLAS[1].name));
 }
 
