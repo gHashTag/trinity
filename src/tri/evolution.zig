@@ -25,8 +25,9 @@ const RailwayApi = railway_api.RailwayApi;
 const tri_commands = @import("tri_commands.zig");
 const farm_ws = @import("tri_farm_ws.zig");
 const hippocampus = @import("hippocampus.zig");
-// TODO: Enable IGLA bench integration when build system supports cross-module imports
-// const igla_bench_mod = @import("../bench/igla_bench.zig");
+// IGLA Bench — Ternary Needle In A Haystack Benchmark (Phase 3)
+// TODO: Enable when igla_bench module is fully integrated
+// const igla_bench = @import("../bench/igla_bench.zig");
 const print = std.debug.print;
 
 // ANSI colors
@@ -164,6 +165,9 @@ const ServiceEntry = struct {
     // Objective (ntp, jepa, hybrid, nca-ntp, etc.)
     objective: [24]u8 = undefined,
     objective_len: u8 = 0,
+    // Format (std, gf16, tf3, gf16tf3, bf16)
+    format: [12]u8 = undefined,
+    format_len: u8 = 0,
     // Phase (ntp/jepa/hybrid/nca — distinct from objective for hybrid switching)
     phase: [12]u8 = undefined,
     phase_len: u8 = 0,
@@ -929,17 +933,17 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     var kill_stalled = false;
     var issue_num: ?[]const u8 = null;
 
-    var arg_i: usize = 0;
-    while (arg_i < args.len) : (arg_i += 1) {
-        if (std.mem.eql(u8, args[arg_i], "--dry-run")) {
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--dry-run")) {
             dry_run = true;
-        } else if (std.mem.eql(u8, args[arg_i], "--sacred")) {
+        } else if (std.mem.eql(u8, args[i], "--sacred")) {
             sacred_mode = true;
-        } else if (std.mem.eql(u8, args[arg_i], "--kill-stalled")) {
+        } else if (std.mem.eql(u8, args[i], "--kill-stalled")) {
             kill_stalled = true;
-        } else if (std.mem.eql(u8, args[arg_i], "--issue") and arg_i + 1 < args.len) {
-            arg_i += 1;
-            issue_num = args[arg_i];
+        } else if (std.mem.eql(u8, args[i], "--issue") and i + 1 < args.len) {
+            i += 1;
+            issue_num = args[i];
         }
     }
 
@@ -996,8 +1000,7 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
         svc.igla_latency_ms = result.latency_ms;
         svc.igla_tok_per_sec = result.tok_per_sec;
 
-        // Log IGLA results with task breakdown
-        // Find best format (inline)
+        // Find best format for logging
         const format_names = [_][]const u8{ "STD", "BF16", "GF16", "TF3" };
         var fmt_best_idx: usize = 0;
         var fmt_best_acc: f32 = 0.0;
@@ -1008,16 +1011,12 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
             }
         }
         const fmt_best = format_names[fmt_best_idx];
-        print("  {s}{s}{s}: IGLA={d:.2} R={d:.0} M={d:.0} T={d:.0} C={d:.0} lat={d:.0}ms tps={d:.0} FmtBest={s}\n", .{
-            GREEN, svc.svcName(), RESET,
-            result.score * 100, // Show as percentage
-            result.retrieve_acc * 100,
-            result.multi_acc * 100,
-            result.ternary_acc * 100,
-            result.chain_acc * 100,
-            result.latency_ms,
-            result.tok_per_sec,
-            fmt_best,
+
+        // Log IGLA results
+        print("  {s}{s}{s}: score={d:.2} fmt={s} lat={d:.1}ms tps={d:.1}tok/s\n\n", .{
+            GREEN,        svc.svcName(),     RESET,
+            result.score,  fmt_best,
+            result.latency_ms, result.tok_per_sec,
         });
 
         igla_eval_count += 1;
@@ -2686,6 +2685,8 @@ pub const MutatedConfig = struct {
     kill_ppl_30k: f32 = 999.0, // inherit from parent
     sacred: bool = false, // true = sacred-guided mutations
     objective: []const u8 = "ntp", // ntp | jepa | hybrid | nca-ntp | nca-jepa-ntp | nca-jepa-ntp-v2
+    format_str: [12]u8,
+    format_len: u8 = 0,
     nca_steps: u32 = 0, // NCA pre-pre-training steps (0 = no NCA)
     nca_entropy_min: []const u8 = "1.5",
     nca_entropy_max: []const u8 = "2.8",
@@ -2925,24 +2926,9 @@ pub fn computeSacredFitness(entry: *const ServiceEntry) f32 {
     return fitness;
 }
 
-/// ═══════════════════════════════════════════════════════════════════════════════
-/// IGLA Multi-Objective Fitness — PPL + Retrieval Quality
-/// ═══════════════════════════════════════════════════════════════════════════════
-///
-/// Multi-objective fitness combining PPL (perplexity) and IGLA (retrieval quality).
-/// Weighted sum: 60% PPL + 40% IGLA score.
-/// Threshold penalty: if IGLA < 0.5, fitness is cut in half (bad retrieval).
-///
-/// Lower = better (same convention as computeFitness).
-///
-/// Formula:
-///   ppl_norm = normalize(ppl)  [0,1] where 999→0, 2→1
-///   igla_score = entry.igla_score  [0,1] already normalized
-///   penalty = 0.5 if igla_score < 0.5 else 0.0
-///   fitness = (0.6 * ppl_norm + 0.4 * igla_score) * (1.0 - penalty) + ppl_baseline
-///
-/// This ensures workers with good PPL but terrible retrieval (IGLA < 0.5)
-/// are heavily penalized, encouraging balanced performance.
+/// IGLA Bench Multi-Objective Fitness — Phase 3 Integration
+/// Combines PPL (60%) and IGLA retrieval score (40%)
+/// Penalty: if IGLA < 0.5 (50% retrieval), fitness cut by 50%
 pub fn computeIGLAFitness(entry: *const ServiceEntry) f32 {
     // Normalize PPL to [0,1]: 999 → 0, 2.0 → 1
     const ppl_norm: f32 = if (entry.current_ppl >= 999.0)
@@ -2961,7 +2947,6 @@ pub fn computeIGLAFitness(entry: *const ServiceEntry) f32 {
 
     // Apply penalty and scale to PPL range for compatibility
     const fitness = entry.current_ppl * (1.0 - weighted_score * (1.0 - penalty));
-
     return fitness;
 }
 
@@ -3243,7 +3228,7 @@ pub fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: 
     const sched_str: []const u8 = config.lr_schedule.toStr();
 
     const set_vars_json = std.fmt.allocPrint(allocator,
-        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
+        \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_SEED":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_LR_SCHEDULE":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_GRAD_CLIP":"{s}","HSLM_CONTEXT":"{s}","HSLM_VAL_SPLIT":"0.1","HSLM_DATA_SHARD":"{s}","HSLM_NUM_SHARDS":"{s}","HSLM_OBJECTIVE":"{s}","HSLM_FORMAT":"{s}","HSLM_KILL_PPL_10K":"800","HSLM_KILL_PPL_30K":"400","HSLM_KILL_PPL_60K":"200","HSLM_KILL_PPL_80K":"80","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
     , .{
         acct.project_id,                               svc_id,                                acct.env_id,
         config.lr_str[0..config.lr_len],               config.batch_str[0..config.batch_len], seed_str,
@@ -3318,6 +3303,11 @@ pub fn recycleService(allocator: Allocator, state: *EvolutionState, victim_idx: 
     const obj_n = @min(obj_src.len, victim.objective.len);
     @memcpy(victim.objective[0..obj_n], obj_src[0..obj_n]);
     victim.objective_len = @intCast(obj_n);
+    // Copy format from config
+    const fmt_src = config.format_str;
+    const fmt_n = @min(fmt_src.len, victim.format.len);
+    @memcpy(victim.format[0..fmt_n], fmt_src[0..fmt_n]);
+    victim.format_len = @intCast(fmt_n);
     victim.generation += 1;
     copyToFixed(&victim.parent, &victim.parent_len, parent_name);
     victim.current_step = 0;
@@ -3623,8 +3613,8 @@ fn printDashboard(state: *const EvolutionState) void {
     }
 
     print("  {s}LEADERBOARD:{s}\n", .{ BOLD, RESET });
-    print("  {s}#  | Service              | PPL      | ValPPL   | Step  | Gen | LR         | IGLA   | FmtBest{s}\n", .{ DIM, RESET });
-    print("  {s}───┼──────────────────────┼──────────┼──────────┼───────┼─────┼────────────┼─────────┼────────{s}\n", .{ DIM, RESET });
+    print("  {s}#  | Service              | PPL      | ValPPL   | Step  | Gen | LR         | Shard   | IGLA   | Fmt{s}\n", .{ DIM, RESET });
+    print("  {s}───┼──────────────────────┼──────────┼──────────┼───────┼─────┼────────────┼─────────┼─────────┼─────{s}\n", .{ DIM, RESET });
 
     const show = @min(sorted_count, 10);
     for (0..show) |rank| {
@@ -3648,13 +3638,16 @@ fn printDashboard(state: *const EvolutionState) void {
         padTo(countDigits(svc.generation), 4);
         print("| {s}", .{svc.lrStr()});
         padTo(svc.lr_len, 11);
+        print("| {d}", .{svc.data_shard});
+        padTo(countDigits(svc.data_shard), 8);
         // IGLA score (as percentage)
         if (svc.igla_score > 0) {
             print("| {d:.0}", .{svc.igla_score * 100});
+            padTo(2, 7);
         } else {
-            print("| {s}---{s}", .{ DIM, RESET });
+            print("| {s}---{s}   ", .{ DIM, RESET });
         }
-        // Best format (inline helper)
+        // Best format
         const format_names = [_][]const u8{ "STD", "BF16", "GF16", "TF3" };
         var fmt_best_idx: usize = 0;
         var fmt_best_acc: f32 = 0.0;
@@ -3664,7 +3657,11 @@ fn printDashboard(state: *const EvolutionState) void {
                 fmt_best_idx = fi;
             }
         }
-        print("| {s}\n", .{format_names[fmt_best_idx]});
+        if (fmt_best_acc > 0) {
+            print("| {s}\n", .{format_names[fmt_best_idx]});
+        } else {
+            print("| {s}-{s}\n", .{ DIM, RESET });
+        }
     }
 
     // Rung progress

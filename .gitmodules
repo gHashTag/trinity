@@ -1,0 +1,3 @@
+[submodule "zig-hslm"]
+    path = zig-hslm
+    url = https://codeberg.org/gHashTag/zig-hslm.git
