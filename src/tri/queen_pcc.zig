@@ -605,7 +605,7 @@ test "pcc — ConsciousnessState needsHelp" {
 }
 
 test "pcc — diagnoseConsciousness detects stuck" {
-    const model = SelfModel{
+    var model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{},
@@ -688,7 +688,7 @@ test "pcc — learnFromActionResult updates model" {
         .duration_ms = 50,
     };
 
-    try learnFromActionResult(&model, .farm_status, result);
+    try learnFromActionResult(&model, .farm_evolve_status, result);
 
     try std.testing.expect(model.current_state.cycle_count > 0);
 }
@@ -793,7 +793,7 @@ test "pcc — CurrentState Mode enum coverage" {
 }
 
 test "pcc — ConsciousnessState default values" {
-    const state = ConsciousnessState{};
+    var state = ConsciousnessState{};
 
     try std.testing.expectEqual(ConsciousnessState.Status.conscious, state.status);
     try std.testing.expectEqual(@as(i64, 0), state.stuck_duration_seconds);
@@ -919,7 +919,7 @@ test "pcc — LoopDetector different actions no loop" {
 }
 
 test "pcc — SelfModel struct initialization" {
-    const model = SelfModel{
+    var model = SelfModel{
         .identity = .{},
         .current_state = .{},
         .capabilities = .{},
@@ -1214,7 +1214,7 @@ test "pcc — LearningState lastLessonStr method" {
 }
 
 test "pcc — LearningState lastLessonStr empty" {
-    const state = SelfModel.LearningState{};
+    var state = SelfModel.LearningState{};
     try std.testing.expectEqual(@as(usize, 0), state.lastLessonStr().len);
 }
 
@@ -1502,7 +1502,7 @@ test "pcc — learnFromActionResult updates cycle_count on success" {
         .duration_ms = 50,
     };
 
-    try learnFromActionResult(&model, .farm_status, result);
+    try learnFromActionResult(&model, .farm_evolve_status, result);
 
     try std.testing.expectEqual(initial_count + 1, model.current_state.cycle_count);
 }
@@ -1522,7 +1522,7 @@ test "pcc — learnFromActionResult does not update on failure" {
         .duration_ms = 10,
     };
 
-    try learnFromActionResult(&model, .farm_status, result);
+    try learnFromActionResult(&model, .farm_evolve_status, result);
 
     try std.testing.expectEqual(@as(u32, 5), model.current_state.cycle_count);
 }

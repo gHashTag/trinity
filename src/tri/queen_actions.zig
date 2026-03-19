@@ -628,23 +628,21 @@ test "Queen actions — kindToArgv ouroboros status" {
 test "Queen actions — AutoDecision fields" {
     const decision = AutoDecision{
         .action = .doctor_quick,
-        .allowed = true,
         .verdict = .allowed,
     };
 
     try std.testing.expectEqual(qt.ActionKind.doctor_quick, decision.action);
-    try std.testing.expect(decision.allowed);
+    try std.testing.expect(decision.verdict.isAllowed());
     try std.testing.expectEqual(queen_policy.PolicyVerdict.allowed, decision.verdict);
 }
 
 test "Queen actions — AutoDecision denied" {
     const decision = AutoDecision{
-        .action = .farm_recycle,
-        .allowed = false,
+        .action = .farm_evolve_status,
         .verdict = .denied_level,
     };
 
-    try std.testing.expect(!decision.allowed);
+    try std.testing.expect(!decision.verdict.isAllowed());
     try std.testing.expectEqual(queen_policy.PolicyVerdict.denied_level, decision.verdict);
 }
 

@@ -1288,18 +1288,17 @@ test "Policy — ActionCounters window exactly 3600 sec" {
 
 test "Policy — ActionCounters getLastTs returns latest" {
     var c = ActionCounters{};
-    c.windows[0].last_ts = 1000;
-    c.windows[1].last_ts = 2000;
+    c.last_ts[@intFromEnum(qt.ActionKind.doctor_quick)] = 1000;
+    c.last_ts[@intFromEnum(qt.ActionKind.doctor_heal)] = 2000;
 
     try std.testing.expectEqual(@as(i64, 2000), c.getLastTs(.doctor_quick));
 }
 
 test "Policy — ActionCounters record updates last_ts" {
     var c = ActionCounters{};
-    const now: i64 = 999999;
-    c.record(.farm_recycle, now);
+    c.record(.farm_recycle);
 
-    try std.testing.expectEqual(@as(i64, 999999), c.getLastTs(.farm_recycle));
+    try std.testing.expect(c.getLastTs(.farm_recycle) > 0);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1310,7 +1309,7 @@ test "Policy — IncidentMemory lastN returns oldest first" {
     var m = IncidentMemory.init();
     m.record(.alert, .doctor_quick, true, "first");
     m.record(.auto_action, .farm_recycle, true, "second");
-    m.record(.escalation, .farm_evolve, true, "third");
+    m.record(.escalation, .farm_evolve_status, true, "third");
 
     var buf: [MAX_INCIDENTS]Incident = undefined;
     const count = m.lastN(&buf);
@@ -1368,10 +1367,10 @@ test "Policy — PendingQueue expireOld keeps recent" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Policy — PolicyVerdict reason texts" {
-    try std.testing.expectEqualStrings("allowed", .allowed.reason());
-    try std.testing.expectEqualStrings("level", .denied_level.reason());
-    try std.testing.expectEqualStrings("rate", .denied_rate.reason());
-    try std.testing.expectEqualStrings("cooldown", .denied_cooldown.reason());
-    try std.testing.expectEqualStrings("escalated", .denied_escalated.reason());
-    try std.testing.expectEqualStrings("approval", .needs_approval.reason());
+    try std.testing.expectEqualStrings("OK", PolicyVerdict.allowed.reason());
+    try std.testing.expectEqualStrings("level exceeds max_auto_level", PolicyVerdict.denied_level.reason());
+    try std.testing.expectEqualStrings("per-action rate limit", PolicyVerdict.denied_rate.reason());
+    try std.testing.expectEqualStrings("cooldown not elapsed", PolicyVerdict.denied_cooldown.reason());
+    try std.testing.expectEqualStrings("incident escalated, human required", PolicyVerdict.denied_escalated.reason());
+    try std.testing.expectEqualStrings("Level 2: needs /queen approve", PolicyVerdict.needs_approval.reason());
 }

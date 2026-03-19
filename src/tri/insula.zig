@@ -173,7 +173,7 @@ pub const TimingSnapshot = struct {
 pub fn measureState(
     allocator: Allocator,
     cycle_start: i64,
-    timing: TimingSnapshot,
+    timing: *const TimingSnapshot,
     actions_taken: u32,
     actions_suppressed: u32,
     total_cycles: u32,
@@ -579,7 +579,7 @@ test "insula — measureState basic" {
     const state = try measureState(
         std.testing.allocator,
         0,
-        timing,
+        &timing,
         5, // actions_taken
         2, // actions_suppressed
         10, // total_cycles
@@ -594,7 +594,7 @@ test "insula — measureState zero cycles" {
     const state = try measureState(
         std.testing.allocator,
         0,
-        timing,
+        &timing,
         0,
         0,
         0, // total_cycles = 0
@@ -695,15 +695,19 @@ test "insula — InternalState activity threshold" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "insula — measureState returns valid state" {
-    const start = std.time.nanoTimestamp();
-    const state = try measureState(std.testing.allocator, start);
+    const start = @as(i64, @intCast(std.time.nanoTimestamp()));
+    var timing = TimingSnapshot.init();
+    // Add delay to ensure measurable time passes
+    std.Thread.sleep(1 * std.time.ns_per_ms);
+    const state = try measureState(std.testing.allocator, start, &timing, 1, 0, 1);
     // Should have non-zero latency at minimum
-    try std.testing.expect(state.cycle_latency_us > 0);
+    try std.testing.expect(state.cycle_latency_us >= 1000); // At least 1ms
 }
 
 test "insula — measureState has timing data" {
-    const start = std.time.nanoTimestamp();
-    const state = try measureState(std.testing.allocator, start);
+    const start = @as(i64, @intCast(std.time.nanoTimestamp()));
+    var timing = TimingSnapshot.init();
+    const state = try measureState(std.testing.allocator, start, &timing, 5, 1, 10);
     // Timing fields should be populated
     _ = state.thalamus_latency_us;
     _ = state.dlpfc_decision_us;
@@ -723,22 +727,26 @@ test "insula — CellHealth status enum" {
 }
 
 test "insula — TimingSnapshot measures latencies" {
-    const snap = TimingSnapshot.init();
+    var snap = TimingSnapshot.init();
+    // Add small delay to ensure measurable time passes
+    std.Thread.sleep(1 * std.time.ns_per_ms);
     snap.markThalamus();
+    std.Thread.sleep(1 * std.time.ns_per_ms);
     snap.markDlpfc();
 
     const cycle_us = snap.cycleLatencyUs();
     const thalamus_us = snap.thalamusLatencyUs();
     const dlpfc_us = snap.dlpfcLatencyUs();
 
-    try std.testing.expect(cycle_us > 0);
-    try std.testing.expect(thalamus_us > 0);
-    try std.testing.expect(dlpfc_us > 0);
+    try std.testing.expect(cycle_us >= 2000); // At least 2ms
+    try std.testing.expect(thalamus_us >= 1000); // At least 1ms
+    try std.testing.expect(dlpfc_us >= 1000); // At least 1ms
 }
 
-test "insula — TimingSnapshot initTest creates test data" {
+test "insula — TimingSnapshot initTest creates test mode" {
     const snap = TimingSnapshot.initTest();
-    try std.testing.expectEqual(@as(u64, 1000), snap.cycle_latency_us);
-    try std.testing.expectEqual(@as(u64, 100), snap.thalamus_latency_us);
-    try std.testing.expectEqual(@as(u64, 200), snap.dlpfc_latency_us);
+    // Test mode returns 0 for all latencies
+    try std.testing.expectEqual(@as(u64, 0), snap.cycleLatencyUs());
+    try std.testing.expectEqual(@as(u64, 0), snap.thalamusLatencyUs());
+    try std.testing.expectEqual(@as(u64, 0), snap.dlpfcLatencyUs());
 }
