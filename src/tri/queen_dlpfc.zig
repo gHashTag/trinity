@@ -1172,11 +1172,6 @@ test "dlpfc — Prediction setDescription and descriptionStr" {
     try std.testing.expectEqualStrings("test prediction", pred.descriptionStr());
 }
 
-test "dlpfc — GoalPriority emoji" {
-    try std.testing.expectEqualStrings("\xe2\x97\xbb", GoalPriority.low.emoji());
-    try std.testing.expectEqualStrings("\xf0\x9f\x94\xb4", GoalPriority.critical.emoji());
-}
-
 test "dlpfc — DecisionContext hasWarningTrends" {
     var state = qt.QueenState{};
     var counters = queen_policy.ActionCounters{};
@@ -1738,4 +1733,192 @@ test "dlpfc — SuggestedGoal priority levels" {
     try std.testing.expectEqual(@as(i32, 1), @intFromEnum(GoalPriority.normal));
     try std.testing.expectEqual(@as(i32, 2), @intFromEnum(GoalPriority.high));
     try std.testing.expectEqual(@as(i32, 3), @intFromEnum(GoalPriority.critical));
+}
+
+test "dlpfc — GoalPriority emoji" {
+    try std.testing.expectEqualStrings("\xe2\x97\xbb", GoalPriority.low.emoji());
+    try std.testing.expectEqualStrings("\xe2\x97\xbc", GoalPriority.normal.emoji());
+    try std.testing.expectEqualStrings("\xe2\x96\xaa", GoalPriority.high.emoji());
+    try std.testing.expectEqualStrings("\xf0\x9f\x94\xb4", GoalPriority.critical.emoji());
+}
+
+test "dlpfc — FacultyMetrics struct" {
+    const snapshot = faculty_types.FacultySnapshot{
+        .agents = [_]faculty_types.AgentState{
+            .{ .agent = .ralph, .status = .up, .last_action = "test" },
+            .{ .agent = .scholar, .status = .up, .last_action = "test" },
+            .{ .agent = .mu, .status = .up, .last_action = "test" },
+            .{ .agent = .oracle, .status = .up, .last_action = "test" },
+            .{ .agent = .swarm, .status = .up, .last_action = "test" },
+            .{ .agent = .linter, .status = .up, .last_action = "test" },
+        },
+        .build_ok = true,
+        .binaries = 1,
+        .compile_pass = 90,
+        .compile_total = 100,
+        .compile_rate = 90,
+        .v_number = 0.9,
+        .v_zone = .gold,
+        .git_branch = "main",
+        .dirty_files = 5,
+        .open_issues = 1,
+        .mu_patterns = 50,
+        .cycle = .working,
+    };
+    const metrics = FacultyMetrics{
+        .snapshot = snapshot,
+        .delta = .{},
+        .collected_at = 1710840000,
+    };
+    try std.testing.expectEqual(@as(i64, 1710840000), metrics.collected_at);
+    try std.testing.expectEqual(@as(u8, 90), metrics.snapshot.compile_rate);
+}
+
+test "dlpfc — analyzeTrends with no history" {
+    const snapshot = faculty_types.FacultySnapshot{
+        .agents = [_]faculty_types.AgentState{
+            .{ .agent = .ralph, .status = .down, .last_action = "" },
+            .{ .agent = .scholar, .status = .down, .last_action = "" },
+            .{ .agent = .mu, .status = .down, .last_action = "" },
+            .{ .agent = .oracle, .status = .down, .last_action = "" },
+            .{ .agent = .swarm, .status = .down, .last_action = "" },
+            .{ .agent = .linter, .status = .down, .last_action = "" },
+        },
+        .build_ok = true,
+        .binaries = 0,
+        .compile_pass = 0,
+        .compile_total = 0,
+        .compile_rate = 0,
+        .v_number = 0.0,
+        .v_zone = .drift,
+        .git_branch = "",
+        .dirty_files = 0,
+        .open_issues = 0,
+        .mu_patterns = 0,
+        .cycle = .quiet,
+    };
+    const current = FacultyMetrics{
+        .snapshot = snapshot,
+        .delta = .{},
+        .collected_at = 0,
+    };
+    const analysis = try analyzeTrends(std.testing.allocator, current, &.{});
+    try std.testing.expectEqual(TrendDirection.stable, analysis.direction);
+    try std.testing.expectEqual(@as(f32, 0.3), analysis.confidence);
+}
+
+test "dlpfc — analyzeTrends with history" {
+    const snapshot = faculty_types.FacultySnapshot{
+        .agents = [_]faculty_types.AgentState{
+            .{ .agent = .ralph, .status = .down, .last_action = "" },
+            .{ .agent = .scholar, .status = .down, .last_action = "" },
+            .{ .agent = .mu, .status = .down, .last_action = "" },
+            .{ .agent = .oracle, .status = .down, .last_action = "" },
+            .{ .agent = .swarm, .status = .down, .last_action = "" },
+            .{ .agent = .linter, .status = .down, .last_action = "" },
+        },
+        .build_ok = true,
+        .binaries = 0,
+        .compile_pass = 0,
+        .compile_total = 0,
+        .compile_rate = 0,
+        .v_number = 0.0,
+        .v_zone = .drift,
+        .git_branch = "",
+        .dirty_files = 0,
+        .open_issues = 0,
+        .mu_patterns = 0,
+        .cycle = .quiet,
+    };
+    const current = FacultyMetrics{
+        .snapshot = snapshot,
+        .delta = .{},
+        .collected_at = 0,
+    };
+    const history = [_]FacultyMetrics{
+        current,
+    };
+    const analysis = try analyzeTrends(std.testing.allocator, current, &history);
+    try std.testing.expectEqual(@as(f32, 0.7), analysis.confidence);
+}
+
+test "dlpfc — TrendAnalysis hasWarning with critical" {
+    const analysis = TrendAnalysis{ .direction = .critical };
+    try std.testing.expect(analysis.hasWarning());
+}
+
+test "dlpfc — TrendAnalysis hasWarning with deteriorating" {
+    const analysis = TrendAnalysis{ .direction = .deteriorating };
+    try std.testing.expect(analysis.hasWarning());
+}
+
+test "dlpfc — TrendAnalysis hasWarning stable" {
+    const analysis = TrendAnalysis{ .direction = .stable };
+    try std.testing.expect(!analysis.hasWarning());
+}
+
+test "dlpfc — TrendAnalysis hasWarning improving" {
+    const analysis = TrendAnalysis{ .direction = .improving };
+    try std.testing.expect(!analysis.hasWarning());
+}
+
+test "dlpfc — generateGoalsFromTrends empty predictions" {
+    const analysis = TrendAnalysis{};
+    const goals = try generateGoalsFromTrends(std.testing.allocator, analysis, 5.0);
+    defer std.testing.allocator.free(goals);
+    try std.testing.expect(goals.len >= 0); // Should not crash
+}
+
+test "dlpfc — generateGoalsFromTrends with predictions" {
+    var analysis = TrendAnalysis{};
+    analysis.predictions[0] = Prediction{
+        .kind = .build_break,
+        .suggested_action = .doctor_quick,
+        .time_to_event_hours = 1.0,
+    };
+    analysis.prediction_count = 1;
+    analysis.direction = .critical;
+
+    const goals = try generateGoalsFromTrends(std.testing.allocator, analysis, 5.0);
+    defer std.testing.allocator.free(goals);
+    try std.testing.expect(goals.len >= 1);
+}
+
+test "dlpfc — generateGoalsFromTrends compile trend" {
+    const analysis = TrendAnalysis{
+        .direction = .deteriorating,
+        .compile_trend = .deteriorating,
+    };
+
+    const goals = try generateGoalsFromTrends(std.testing.allocator, analysis, 5.0);
+    defer std.testing.allocator.free(goals);
+    try std.testing.expect(goals.len >= 1);
+}
+
+test "dlpfc — generateGoalsFromTrends v-zone trend" {
+    const analysis = TrendAnalysis{
+        .direction = .deteriorating,
+        .v_zone_trend = .deteriorating,
+    };
+
+    const goals = try generateGoalsFromTrends(std.testing.allocator, analysis, 5.0);
+    defer std.testing.allocator.free(goals);
+    try std.testing.expect(goals.len >= 1);
+}
+
+test "dlpfc — health returns CellHealth" {
+    const h = health();
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+test "dlpfc — CellHealth Status enum" {
+    try std.testing.expectEqual(@as(i32, 0), @intFromEnum(CellHealth.Status.healthy));
+    try std.testing.expectEqual(@as(i32, 1), @intFromEnum(CellHealth.Status.weak));
+    try std.testing.expectEqual(@as(i32, 2), @intFromEnum(CellHealth.Status.broken));
+}
+
+test "dlpfc — CellHealth struct defaults" {
+    const h = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
 }
