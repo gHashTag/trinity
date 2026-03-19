@@ -51,9 +51,31 @@ pub const thalamus_logs = @import("thalamus_logs");
 /// The Constant Gardeners — patrol, prune, and stimulate regrowth
 pub const microglia = @import("microglia");
 
-/// Stress Test (Load Testing)
-/// Brain load testing and stress testing utilities
-pub const stress_test = @import("stress_test");
+/// Metrics Dashboard (Command Center)
+/// Aggregates metrics from all brain regions with trend detection
+pub const metrics_dashboard = @import("metrics_dashboard");
+
+/// Brain Alerts (Critical Health Notification System)
+/// Monitors brain health and sends alerts when thresholds are crossed
+pub const alerts = @import("alerts");
+
+/// Simulation (Synthetic Workload Testing)
+/// Realistic workload testing for brain circuit validation
+pub const simulation = @import("simulation");
+
+// TODO: state_recovery module - pending implementation (task #34)
+// /// State Recovery (Persistence)
+// /// Crash recovery and state persistence for brain components
+// pub const state_recovery = @import("state_recovery");
+
+// Note: benchmarks is NOT imported here to avoid build system complexity.
+// Use @import("benchmarks") directly in benchmark code.
+
+// Note: stress_test is NOT imported here to avoid circular dependency.
+// Stress test imports brain, but brain does not import stress_test.
+
+// Note: stress_test is NOT imported here to avoid circular dependency.
+// Stress test imports brain, but brain does not import stress_test.
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // BRAIN ATLAS — Complete Neuroanatomy
@@ -117,6 +139,17 @@ pub const BRAIN_ATLAS = [_]BrainRegion{
         .name = "Microglia",
         .biological_function = "Immune Surveillance — The Constant Gardeners. Patrols farm every 30min, prunes crashed workers, stimulates regrowth from leaders",
         .file = "microglia.zig",
+    },
+    // TODO: State Recovery - pending implementation (task #34)
+    // .{
+    //     .name = "State Recovery",
+    //     .biological_function = "Crash Recovery — Persistent state storage with versioning and migration",
+    //     .file = "state_recovery.zig",
+    // },
+    .{
+        .name = "Brain Alerts",
+        .biological_function = "Critical Health Notification — monitors health and sends alerts when thresholds are crossed",
+        .file = "alerts.zig",
     },
 };
 
@@ -338,9 +371,20 @@ pub const AgentCoordination = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Brain atlas completeness" {
-    try std.testing.expectEqual(@as(usize, 10), BRAIN_ATLAS.len);
+    try std.testing.expectEqual(@as(usize, 11), BRAIN_ATLAS.len);
     try std.testing.expect(std.mem.eql(u8, "Basal Ganglia", BRAIN_ATLAS[1].name));
     try std.testing.expect(std.mem.eql(u8, "Microglia", BRAIN_ATLAS[9].name));
+    try std.testing.expect(std.mem.eql(u8, "Brain Alerts", BRAIN_ATLAS[10].name));
+}
+
+test "Metrics dashboard collects all regions" {
+    const allocator = std.testing.allocator;
+    const dashboard = metrics_dashboard;
+    var metrics = dashboard.AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    try metrics.collect();
+    try std.testing.expectEqual(@as(usize, 10), metrics.regions.items.len);
 }
 
 test "AgentCoordination claim and complete" {
