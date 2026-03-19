@@ -24,6 +24,9 @@
     {"name": "sparse-ternary-matmul", "id": "D007", "doi": "10.5281/zenodo.19020217", "status": "defensive_publication", "priority": "MEDIUM", "strength": "MEDIUM", "claims": 1, "cpc": ["G06F7/544", "G06F7/72", "G06F17/16"]},
     {"name": "sevo-evolutionary-objective", "id": "D008", "status": "draft", "priority": "HIGH", "strength": "HIGH", "claims": 5, "cpc": ["G06N3/086", "G06N20/00", "G06F18/24"]}
   ],
+  "modules": [
+    {"name": "zig-hslm", "version": "zig-hslm-f16-utils-from-codeberg", "status": "reference_implementation", "features": ["GF16", "TF3", "vecF16ToF32", "testF16EdgeCases"], "patent_claim": "D004", "date": "2026-03-20", "source": "src/hslm/f16_utils.zig"}
+  ],
   "strategy": {
     "approach": "defensive_publication",
     "phase1_provisionals": "$7,000-10,500",
@@ -32,5 +35,5 @@
     "total_3yr": "$50,000-83,000"
   },
   "ip_score": "8/8 = 100%",
-  "updated": "2026-03-16"
+  "updated": "2026-03-20"
 }
