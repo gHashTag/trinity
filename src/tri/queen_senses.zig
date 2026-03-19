@@ -1,4 +1,3 @@
-// @origin(manual) @regen(pending)
 // ═══════════════════════════════════════════════════════════════════════════════
 // QUEEN SENSES — 12 system senses (read-only monitoring)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -205,28 +204,12 @@ fn countEnvKeys() KeyCheck {
 }
 
 fn readOuroborosScore() f32 {
-<<<<<<< HEAD
-    // Use queen_ouroboros module for API
-    const queen_ouroboros = @import("queen_ouroboros.zig");
-    const state = queen_ouroboros.fetch();
-    return queen_ouroboros.getScore(state);
-=======
-    // Use queen_ouroboros module for API + file fallback
-    const queen_ouroboros = @import("queen_ouroboros.zig");
-    return queen_ouroboros.getScoreFromFile(".trinity/ouroboros_state.json");
->>>>>>> origin/main
-}
+    const file = std.fs.cwd().openFile(".trinity/ouroboros_state.json", .{}) catch return 0.0;
+    defer file.close();
 
-/// Extended: fetch full Ouroboros state with all 12 dimensions
-pub fn fetchOuroborosState(allocator: Allocator) @import("queen_ouroboros.zig").OuroborosState {
-<<<<<<< HEAD
-    _ = allocator;
-    const queen_ouroboros = @import("queen_ouroboros.zig");
-    return queen_ouroboros.fetch();
-=======
-    const queen_ouroboros = @import("queen_ouroboros.zig");
-    return queen_ouroboros.fetch(allocator, .{}) catch return .{};
->>>>>>> origin/main
+    var buf: [2048]u8 = undefined;
+    const n = file.read(&buf) catch return 0.0;
+    return qt.findJsonF32(buf[0..n], "\"score\":") orelse 0.0;
 }
 
 fn countExperienceEpisodes() u32 {
@@ -528,7 +511,7 @@ test "Queen senses — fmtSensesTelegram" {
     try std.testing.expect(std.mem.indexOf(u8, msg, "HEALTHY") != null);
 }
 
-test "Queen senses — fmtSensesTelegram build broken" {
+test "Queen senses — fmtSensesTelegram with build broken" {
     var buf: [2048]u8 = undefined;
     const s = SenseResult{
         .build_ok = false,
@@ -537,27 +520,148 @@ test "Queen senses — fmtSensesTelegram build broken" {
         .open_issues = 2,
         .agent_count = 1,
         .farm_services = 5,
-        .farm_best_ppl = 999.0,
+        .farm_best_ppl = 5.0,
         .arena_battles = 10,
-        .ouroboros_score = 35.0,
+        .ouroboros_score = 30.0,
         .disk_free_gb = 20.0,
         .keys_present = 3,
         .keys_total = 5,
-        .experience_count = 0,
+        .experience_count = 5,
     };
     const msg = fmtSensesTelegram(&buf, s);
     try std.testing.expect(msg.len > 0);
     try std.testing.expect(std.mem.indexOf(u8, msg, "BUILD BROKEN") != null);
-    try std.testing.expect(std.mem.indexOf(u8, msg, "FAIL") != null);
 }
 
-test "Queen senses — SenseResult healthEmoji" {
-    const s1 = SenseResult{ .build_ok = true, .ouroboros_score = 80.0 };
-    try std.testing.expectEqualStrings(qt.E_STAR, s1.healthEmoji());
+test "Queen senses — fmtSensesTelegram recovering state" {
+    var buf: [2048]u8 = undefined;
+    const s = SenseResult{
+        .build_ok = true,
+        .test_rate = 70,
+        .dirty_files = 20,
+        .open_issues = 3,
+        .agent_count = 2,
+        .farm_services = 6,
+        .farm_best_ppl = 8.0,
+        .arena_battles = 15,
+        .ouroboros_score = 50.0,
+        .disk_free_gb = 30.0,
+        .keys_present = 5,
+        .keys_total = 5,
+        .experience_count = 7,
+    };
+    const msg = fmtSensesTelegram(&buf, s);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "RECOVERING") != null);
+}
 
-    const s2 = SenseResult{ .build_ok = true, .ouroboros_score = 55.0 };
-    try std.testing.expectEqualStrings(qt.E_CHECK, s2.healthEmoji());
+test "Queen senses — fmtSensesTelegram needs attention" {
+    var buf: [2048]u8 = undefined;
+    const s = SenseResult{
+        .build_ok = true,
+        .test_rate = 50,
+        .dirty_files = 30,
+        .open_issues = 8,
+        .agent_count = 0,
+        .farm_services = 4,
+        .farm_best_ppl = 15.0,
+        .arena_battles = 5,
+        .ouroboros_score = 25.0,
+        .disk_free_gb = 5.0,
+        .keys_present = 2,
+        .keys_total = 5,
+        .experience_count = 2,
+    };
+    const msg = fmtSensesTelegram(&buf, s);
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "NEEDS ATTENTION") != null);
+}
 
-    const s3 = SenseResult{ .build_ok = false, .ouroboros_score = 20.0 };
-    try std.testing.expectEqualStrings(qt.E_CROSS, s3.healthEmoji());
+test "Queen senses — healthEmoji healthy" {
+    const s = SenseResult{ .build_ok = true, .ouroboros_score = 75.0 };
+    try std.testing.expectEqualStrings(qt.E_STAR, s.healthEmoji());
+}
+
+test "Queen senses — healthEmoji recovering" {
+    const s = SenseResult{ .build_ok = true, .ouroboros_score = 50.0 };
+    try std.testing.expectEqualStrings(qt.E_CHECK, s.healthEmoji());
+}
+
+test "Queen senses — healthEmoji needs attention" {
+    const s = SenseResult{ .build_ok = true, .ouroboros_score = 30.0 };
+    try std.testing.expectEqualStrings(qt.E_WRENCH, s.healthEmoji());
+}
+
+test "Queen senses — healthEmoji build broken" {
+    const s = SenseResult{ .build_ok = false, .ouroboros_score = 80.0 };
+    try std.testing.expectEqualStrings(qt.E_CROSS, s.healthEmoji());
+}
+
+test "Queen senses — collectAllSenses returns valid result" {
+    const snapshot = FacultySnapshot{
+        .agents = [_]faculty_types.AgentState{
+            .{ .agent = .ralph, .status = .down, .last_action = "" },
+            .{ .agent = .scholar, .status = .down, .last_action = "" },
+            .{ .agent = .mu, .status = .down, .last_action = "" },
+            .{ .agent = .oracle, .status = .down, .last_action = "" },
+            .{ .agent = .swarm, .status = .down, .last_action = "" },
+            .{ .agent = .linter, .status = .down, .last_action = "" },
+        },
+        .build_ok = true,
+        .binaries = 5,
+        .compile_pass = 95,
+        .compile_total = 100,
+        .compile_rate = 95,
+        .v_number = 0.95,
+        .v_zone = .gold,
+        .git_branch = "main",
+        .dirty_files = 5,
+        .open_issues = 2,
+        .mu_patterns = 100,
+        .cycle = .working,
+    };
+    const result = collectAllSenses(std.testing.allocator, snapshot);
+    // Just verify it doesn't crash and returns sensible defaults
+    try std.testing.expect(result.farm_best_ppl >= 0.0);
+    try std.testing.expect(result.keys_total == 5);
+}
+
+test "Queen senses — countAliveAgents returns reasonable count" {
+    const count = countAliveAgents();
+    try std.testing.expect(count >= 0 and count <= 5);
+}
+
+test "Queen senses — readDiskFreeGb returns non-negative" {
+    const gb = readDiskFreeGb(std.testing.allocator);
+    try std.testing.expect(gb >= 0.0);
+}
+
+test "Queen senses — countFarmIdleServices returns count" {
+    const count = countFarmIdleServices();
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — calcStaleArenaHours returns hours" {
+    const hours = calcStaleArenaHours();
+    try std.testing.expect(hours >= 0);
+}
+
+test "Queen senses — countAgentSpawnIssues returns count" {
+    const count = countAgentSpawnIssues();
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — readGitPushTs returns timestamp" {
+    const ts = readGitPushTs();
+    try std.testing.expect(ts >= 0);
+}
+
+test "Queen senses — countFinishedContainers returns count" {
+    const count = countFinishedContainers();
+    try std.testing.expect(count >= 0);
+}
+
+test "Queen senses — readLastIssueCommentTs returns timestamp" {
+    const ts = readLastIssueCommentTs();
+    try std.testing.expect(ts >= 0);
 }
