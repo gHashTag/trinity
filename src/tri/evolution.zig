@@ -2591,6 +2591,9 @@ pub const MutatedConfig = struct {
     nca_entropy_min: []const u8 = "1.5",
     nca_entropy_max: []const u8 = "2.8",
     fresh: bool = false, // true = HSLM_FRESH=1 (new training from scratch)
+    // GF16/TF3 phi parameters for zig-hslm sacred quantization
+    phi_scale: f32 = 1.0, // scale factor for Gaussian quantization (φ^p grid)
+    phi_threshold: f32 = 0.618, // threshold for ternarization (sacred ternary values)
 };
 
 pub fn mutateConfig(leader: *const ServiceEntry, prng_seed: u32) MutatedConfig {
@@ -3279,9 +3282,9 @@ pub fn saveState(state: EvolutionState) !void {
         }) catch return error.OutOfMemory).len;
 
         // Architecture config (nested cfg object)
-        pos += (std.fmt.bufPrint(buf[pos..], ",\"cfg\":{{\"obj\":\"{s}\",\"ctx\":{d},\"gc\":{d:.2},\"wu\":{d},\"sched\":\"{s}\",\"phase\":\"{s}\",\"wave\":\"{s}\"}}", .{
-            svc.objectiveStr(), svc.context,   svc.grad_clip, svc.warmup, svc.lr_schedule.toStr(),
-            svc.phaseStr(),     svc.waveStr(),
+        pos += (std.fmt.bufPrint(buf[pos..], ",\"cfg\":{{\"obj\":\"{s}\",\"ctx\":{d},\"gc\":{d:.2},\"wu\":{d},\"sched\":\"{s}\",\"phase\":\"{s}\",\"wave\":\"{s}\",\"fmt\":\"{s}\"}}", .{
+            svc.objectiveStr(), svc.context,   svc.grad_clip,   svc.warmup, svc.lr_schedule.toStr(),
+            svc.phaseStr(),     svc.waveStr(), svc.formatStr(),
         }) catch return error.OutOfMemory).len;
 
         // I1: Loss history array
