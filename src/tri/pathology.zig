@@ -1794,3 +1794,340 @@ pub fn runAutoTaskCheck(allocator: std.mem.Allocator) !void {
     try createDoctorTaskIfNeeded(allocator, score.total, cell_health);
     std.debug.print("\n Auto-task check complete\n", .{});
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// VERDICT LEVEL TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pathology — VerdictLevel emoji" {
+    try std.testing.expectEqualStrings("💎", VerdictLevel.legendary.emoji());
+    try std.testing.expectEqualStrings("🟢", VerdictLevel.solid.emoji());
+    try std.testing.expectEqualStrings("🟡", VerdictLevel.mediocre.emoji());
+    try std.testing.expectEqualStrings("🔴", VerdictLevel.garbage.emoji());
+    try std.testing.expectEqualStrings("💀", VerdictLevel.disaster.emoji());
+}
+
+test "pathology — VerdictLevel label" {
+    try std.testing.expectEqualStrings("LEGENDARY", VerdictLevel.legendary.label());
+    try std.testing.expectEqualStrings("SOLID", VerdictLevel.solid.label());
+    try std.testing.expectEqualStrings("MEDIOCRE", VerdictLevel.mediocre.label());
+    try std.testing.expectEqualStrings("GARBAGE", VerdictLevel.garbage.label());
+    try std.testing.expectEqualStrings("DISASTER", VerdictLevel.disaster.label());
+}
+
+test "pathology — VerdictLevel color" {
+    try std.testing.expectEqual(GOLDEN, VerdictLevel.legendary.color());
+    try std.testing.expectEqualStrings(GREEN, VerdictLevel.solid.color());
+    try std.testing.expectEqualStrings(YELLOW, VerdictLevel.mediocre.color());
+    try std.testing.expectEqualStrings(RED, VerdictLevel.garbage.color());
+    try std.testing.expectEqualStrings(RED, VerdictLevel.disaster.color());
+}
+
+test "pathology — classifyLevel boundary values" {
+    try std.testing.expect(classifyLevel(90) == .legendary);
+    try std.testing.expect(classifyLevel(100) == .legendary);
+    try std.testing.expect(classifyLevel(70) == .solid);
+    try std.testing.expect(classifyLevel(89) == .solid);
+    try std.testing.expect(classifyLevel(50) == .mediocre);
+    try std.testing.expect(classifyLevel(69) == .mediocre);
+    try std.testing.expect(classifyLevel(30) == .garbage);
+    try std.testing.expect(classifyLevel(49) == .garbage);
+    try std.testing.expect(classifyLevel(0) == .disaster);
+    try std.testing.expect(classifyLevel(29) == .disaster);
+}
+
+test "pathology — classifyLevel edge cases" {
+    try std.testing.expect(classifyLevel(89.9) == .solid); // Just below legendary
+    try std.testing.expect(classifyLevel(90.0) == .legendary); // Exactly legendary
+    try std.testing.expect(classifyLevel(69.9) == .mediocre); // Just below solid
+    try std.testing.expect(classifyLevel(70.0) == .solid); // Exactly solid
+}
+
+test "pathology — classifyDimension boundary values" {
+    try std.testing.expect(classifyDimension(85) == .strong);
+    try std.testing.expect(classifyDimension(100) == .strong);
+    try std.testing.expect(classifyDimension(80) == .strong);
+    try std.testing.expect(classifyDimension(65) == .ok);
+    try std.testing.expect(classifyDimension(60) == .ok);
+    try std.testing.expect(classifyDimension(45) == .weak);
+    try std.testing.expect(classifyDimension(40) == .weak);
+    try std.testing.expect(classifyDimension(0) == .critical);
+    try std.testing.expect(classifyDimension(39) == .critical);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VERDICT INPUT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pathology — VerdictInput defaults" {
+    const input = VerdictInput{
+        .build_ok = true,
+        .test_passed = 10,
+        .test_total = 10,
+    };
+    try std.testing.expectEqual(@as(u32, 0), input.files_with_tests);
+    try std.testing.expectEqual(@as(u32, 0), input.files_total_zig);
+    try std.testing.expectEqual(@as(u32, 0), input.todo_count);
+    try std.testing.expectEqual(@as(u32, 0), input.fixme_count);
+    try std.testing.expectEqual(@as(u32, 0), input.hack_count);
+    try std.testing.expectEqual(@as(u32, 50), input.token_cost_score);
+}
+
+test "pathology — VerdictInput all fields" {
+    const input = VerdictInput{
+        .build_ok = true,
+        .test_passed = 95,
+        .test_total = 100,
+        .files_with_tests = 80,
+        .files_total_zig = 100,
+        .todo_count = 10,
+        .fixme_count = 5,
+        .hack_count = 2,
+        .god_files = 1,
+        .stub_fns = 10,
+        .total_pub_fns = 200,
+        .duplicate_groups = 3,
+        .spec_gaps = 20,
+        .spec_total = 100,
+        .scholar_wakes = 50,
+        .scholar_researched = 40,
+        .experience_total = 10,
+        .experience_pass = 8,
+        .token_cost_score = 80,
+    };
+    try std.testing.expectEqual(@as(u32, 95), input.test_passed);
+    try std.testing.expectEqual(@as(u32, 80), input.token_cost_score);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// VERDICT SCORE TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pathology — VerdictScore tier_weights" {
+    // Perfect input should give 100 for each dimension
+    const input = VerdictInput{
+        .build_ok = true,
+        .test_passed = 100,
+        .test_total = 100,
+        .files_with_tests = 100,
+        .files_total_zig = 100,
+        .todo_count = 0,
+        .fixme_count = 0,
+        .hack_count = 0,
+        .god_files = 0,
+        .stub_fns = 0,
+        .total_pub_fns = 100,
+        .duplicate_groups = 0,
+        .spec_gaps = 0,
+        .spec_total = 100,
+        .scholar_wakes = 10,
+        .scholar_researched = 10,
+        .experience_total = 10,
+        .experience_pass = 10,
+        .token_cost_score = 100,
+    };
+    const score = computeScore(input);
+
+    // Each dimension should be 100 for perfect input
+    try std.testing.expect(score.build_score == 100.0);
+    try std.testing.expect(score.test_score == 100.0);
+    try std.testing.expect(score.cover_score == 100.0);
+    try std.testing.expect(score.debt_score == 100.0);
+    try std.testing.expect(score.god_score == 100.0);
+    try std.testing.expect(score.dead_score == 100.0);
+    try std.testing.expect(score.dup_score == 100.0);
+    try std.testing.expect(score.spec_score == 100.0);
+    try std.testing.expect(score.research_score == 100.0);
+    try std.testing.expect(score.cost_score == 100.0);
+    try std.testing.expect(score.energy_score == 100.0);
+
+    // Total should be 100 (weighted and capped)
+    try std.testing.expect(score.total == 100.0);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CELL HEALTH TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pathology — CellHealth defaults" {
+    const health = CellHealth{
+        .healthy = 0,
+        .weak = 0,
+        .broken = 0,
+        .total = 0,
+        .timestamp = 0,
+    };
+    try std.testing.expectEqual(@as(u32, 0), health.healthy);
+    try std.testing.expectEqual(@as(u32, 0), health.weak);
+    try std.testing.expectEqual(@as(u32, 0), health.broken);
+    try std.testing.expectEqual(@as(u32, 0), health.total);
+}
+
+test "pathology — CellHealth with values" {
+    const health = CellHealth{
+        .healthy = 100,
+        .weak = 10,
+        .broken = 5,
+        .total = 115,
+        .timestamp = 1234567890,
+    };
+    try std.testing.expectEqual(@as(u32, 100), health.healthy);
+    try std.testing.expectEqual(@as(u32, 10), health.weak);
+    try std.testing.expectEqual(@as(u32, 5), health.broken);
+    try std.testing.expectEqual(@as(u32, 115), health.total);
+}
+
+test "pathology — CellHealth timestamp" {
+    const health = CellHealth{
+        .healthy = 50,
+        .weak = 5,
+        .broken = 0,
+        .total = 55,
+        .timestamp = std.time.timestamp(),
+    };
+    try std.testing.expect(health.timestamp > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SIMPLE JSON PARSING TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pathology — simpleJsonStr missing key" {
+    const json = "{\"pattern\":\"test\"}";
+    const result = simpleJsonStr(json, "missing");
+    try std.testing.expect(result == null);
+}
+
+test "pathology — simpleJsonStr empty string" {
+    const json = "{\"value\":\"\"}";
+    const result = simpleJsonStr(json, "value");
+    try std.testing.expect(result != null);
+    try std.testing.expectEqualStrings("", result.?);
+}
+
+test "pathology — simpleJsonU32 missing key" {
+    const json = "{\"count\":42}";
+    const result = simpleJsonU32(json, "missing");
+    try std.testing.expect(result == null);
+}
+
+test "pathology — simpleJsonU32 zero" {
+    const json = "{\"count\":0}";
+    const result = simpleJsonU32(json, "count");
+    try std.testing.expect(result != null);
+    try std.testing.expectEqual(@as(u32, 0), result.?);
+}
+
+test "pathology — simpleJsonU32 large number" {
+    const json = "{\"value\":999999}";
+    const result = simpleJsonU32(json, "value");
+    try std.testing.expect(result != null);
+    try std.testing.expectEqual(@as(u32, 999999), result.?);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PAST COMPARISON TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pathology — PastComparison structure" {
+    const comp = PastComparison{
+        .prev_score = 75.0,
+        .delta = 5.0,
+        .trend_up = true,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, 75.0), comp.prev_score, 0.01);
+    try std.testing.expectApproxEqAbs(@as(f32, 5.0), comp.delta, 0.01);
+    try std.testing.expect(comp.trend_up);
+}
+
+test "pathology — PastComparison downward trend" {
+    const comp = PastComparison{
+        .prev_score = 70.0,
+        .delta = -10.0,
+        .trend_up = false,
+    };
+    try std.testing.expectApproxEqAbs(@as(f32, -10.0), comp.delta, 0.01);
+    try std.testing.expect(!comp.trend_up);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TOXIC VERDICT TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pathology — ToxicVerdict structure" {
+    const input = VerdictInput{
+        .build_ok = true,
+        .test_passed = 100,
+        .test_total = 100,
+    };
+    const score = computeScore(input);
+    const level = classifyLevel(score.total);
+    const comparison = PastComparison{
+        .prev_score = 80.0,
+        .delta = 5.0,
+        .trend_up = true,
+    };
+
+    const verdict = ToxicVerdict{
+        .score = score,
+        .level = level,
+        .input = input,
+        .comparison = comparison,
+        .timestamp = std.time.timestamp(),
+    };
+
+    // With minimal input, score will be mediocre (around 50-60 range)
+    try std.testing.expect(verdict.level == .mediocre or verdict.level == .solid);
+    try std.testing.expect(verdict.timestamp > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// PRESCRIPTION TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "pathology — Prescription structure" {
+    const input = VerdictInput{
+        .build_ok = true,
+        .test_passed = 50,
+        .test_total = 100,
+        .files_with_tests = 30,
+        .files_total_zig = 100,
+    };
+    const score = computeScore(input);
+    const explanation = explainScore(score, input);
+    const rx = prescribe(std.testing.allocator, explanation, score);
+
+    try std.testing.expect(rx.action_count > 0);
+    try std.testing.expect(rx.current_score < 100.0);
+    try std.testing.expect(rx.projected_score > rx.current_score);
+}
+
+test "pathology — Prescription projected_score cap" {
+    const input = VerdictInput{
+        .build_ok = true,
+        .test_passed = 100,
+        .test_total = 100,
+        .files_with_tests = 100,
+        .files_total_zig = 100,
+        .todo_count = 0,
+        .fixme_count = 0,
+        .hack_count = 0,
+        .god_files = 0,
+        .stub_fns = 0,
+        .total_pub_fns = 100,
+        .duplicate_groups = 0,
+        .spec_gaps = 0,
+        .spec_total = 100,
+        .scholar_wakes = 10,
+        .scholar_researched = 10,
+        .experience_total = 10,
+        .experience_pass = 10,
+        .token_cost_score = 100,
+    };
+    const score = computeScore(input);
+    const explanation = explainScore(score, input);
+    const rx = prescribe(std.testing.allocator, explanation, score);
+
+    // Perfect score should cap at 100
+    try std.testing.expect(rx.projected_score <= 100.0);
+}
