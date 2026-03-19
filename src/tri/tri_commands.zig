@@ -1940,11 +1940,62 @@ pub fn runStressTestCommand(args: []const []const u8) !void {
                 return error.BrainUnhealthy;
             }
         } else if (std.mem.eql(u8, args[0], "--metrics")) {
-            // Export Prometheus metrics
-            std.debug.print("Metrics export temporarily disabled (API change)\n", .{});
+            // Export Prometheus metrics (Corpus Callosum)
+            const brain = @import("brain");
+            const allocator = std.heap.page_allocator;
+            var coord = try brain.AgentCoordination.init(allocator);
+            const stats = coord.getStats();
+            const health = coord.healthCheck();
+
+            std.debug.print("# HELP s3ai_brain_active_claims Current number of active task claims\n", .{});
+            std.debug.print("# TYPE s3ai_brain_active_claims gauge\n", .{});
+            std.debug.print("s3ai_brain_active_claims {d}\n", .{stats.active_claims});
+
+            std.debug.print("\n# HELP s3ai_brain_events_published Total events published\n", .{});
+            std.debug.print("# TYPE s3ai_brain_events_published counter\n", .{});
+            std.debug.print("s3ai_brain_events_published {d}\n", .{stats.total_events_published});
+
+            std.debug.print("\n# HELP s3ai_brain_events_polled Total event polls\n", .{});
+            std.debug.print("# TYPE s3ai_brain_events_polled counter\n", .{});
+            std.debug.print("s3ai_brain_events_polled {d}\n", .{stats.total_events_polled});
+
+            std.debug.print("\n# HELP s3ai_brain_events_buffered Current buffered events\n", .{});
+            std.debug.print("# TYPE s3ai_brain_events_buffered gauge\n", .{});
+            std.debug.print("s3ai_brain_events_buffered {d}\n", .{stats.buffered_events});
+
+            std.debug.print("\n# HELP s3ai_brain_health_score Brain health score (0-100)\n", .{});
+            std.debug.print("# TYPE s3ai_brain_health_score gauge\n", .{});
+            std.debug.print("s3ai_brain_health_score {d:.1}\n", .{health.score});
+
+            std.debug.print("\n# HELP s3ai_brain_healthy Brain health status (1=healthy, 0=unhealthy)\n", .{});
+            std.debug.print("# TYPE s3ai_brain_healthy gauge\n", .{});
+            std.debug.print("s3ai_brain_healthy {d}\n", .{@intFromBool(health.healthy)});
         } else if (std.mem.eql(u8, args[0], "--dump")) {
             // Dump brain state
-            std.debug.print("Dump temporarily disabled (API change)\n", .{});
+            const brain = @import("brain");
+            const allocator = std.heap.page_allocator;
+            var coord = try brain.AgentCoordination.init(allocator);
+            const stats = coord.getStats();
+            const health = coord.healthCheck();
+
+            std.debug.print("╔═══════════════════════════════════════════════════════════════╗\n", .{});
+            std.debug.print("║  S³AI BRAIN DUMP — {s:>19}                  ║\n", .{"v5.1"});
+            std.debug.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
+            std.debug.print("║  HEALTH SCORE: {d:.1}/100  [{s:>10}]                        ║\n", .{ health.score, if (health.healthy) "HEALTHY" else "UNHEALTHY" });
+            std.debug.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
+            std.debug.print("║  Basal Ganglia (Action Selection)                            ║\n", .{});
+            std.debug.print("║    Active Claims:    {d:>6}                                 ║\n", .{stats.active_claims});
+            std.debug.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
+            std.debug.print("║  Reticular Formation (Broadcast Alerting)                    ║\n", .{});
+            std.debug.print("║    Events Published: {d:>6}                                 ║\n", .{stats.total_events_published});
+            std.debug.print("║    Events Polled:    {d:>6}                                 ║\n", .{stats.total_events_polled});
+            std.debug.print("║    Events Buffered:  {d:>6}                                 ║\n", .{stats.buffered_events});
+            std.debug.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
+            std.debug.print("║  Locus Coeruleus (Arousal Regulation)                        ║\n", .{});
+            std.debug.print("║    Strategy:         {s:>30}        ║\n", .{@tagName(coord.backoff_policy.strategy)});
+            std.debug.print("║    Initial Delay:    {d:>6} ms                             ║\n", .{coord.backoff_policy.initial_ms});
+            std.debug.print("║    Max Delay:        {d:>6} ms                             ║\n", .{coord.backoff_policy.max_ms});
+            std.debug.print("╚═══════════════════════════════════════════════════════════════╝\n", .{});
         } else if (std.mem.eql(u8, args[0], "--scan")) {
             // Visual brain scan
             const brain = @import("brain");
@@ -1962,16 +2013,103 @@ pub fn runStressTestCommand(args: []const []const u8) !void {
             std.debug.print("{s}║  Overall Status:    {s}             ║{s}\n", .{ RESET, scan.overall, RESET });
             std.debug.print("{s}╚═══════════════════════════════════════╝{s}\n", .{ CYAN, RESET });
         } else if (std.mem.eql(u8, args[0], "--telemetry")) {
-            // Show telemetry summary
-            std.debug.print("Telemetry temporarily disabled (API change)\n", .{});
+            // Show telemetry summary (Corpus Callosum)
+            const brain = @import("brain");
+            const allocator = std.heap.page_allocator;
+            var coord = try brain.AgentCoordination.init(allocator);
+
+            // Create telemetry instance
+            var tel = brain.telemetry.BrainTelemetry.init(allocator, 1000);
+            defer tel.deinit();
+
+            // Record current point
+            const stats = coord.getStats();
+            const health = coord.healthCheck();
+            const now = std.time.milliTimestamp();
+
+            try tel.record(.{
+                .timestamp = now,
+                .active_claims = stats.active_claims,
+                .events_published = stats.total_events_published,
+                .events_buffered = stats.buffered_events,
+                .health_score = health.score,
+            });
+
+            // Show summary
+            std.debug.print("{s}╔═══════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+            std.debug.print("{s}║  S³AI TELEMETRY — Corpus Callosum   ║{s}\n", .{ YELLOW, RESET });
+            std.debug.print("{s}╚═══════════════════════════════════════╝{s}\n", .{ CYAN, RESET });
+            std.debug.print("  Avg Health (10):  {d:.1}/100\n", .{tel.avgHealth(10)});
+            const trend = tel.trend(10);
+            const trend_str = switch (trend) {
+                .improving => "📈 Improving",
+                .stable => "➡️ Stable",
+                .declining => "📉 Declining",
+            };
+            std.debug.print("  Trend:             {s}\n", .{trend_str});
         } else if (std.mem.eql(u8, args[0], "--history")) {
             // Show health history (Hippocampus)
-            std.debug.print("Health history temporarily disabled (API change)\n", .{});
+            const brain = @import("brain");
+            const allocator = std.heap.page_allocator;
+            var history = brain.health_history.BrainHealthHistory.init(allocator);
 
-            std.debug.print("Health history temporarily disabled (API change)\n", .{});
+            std.debug.print("{s}╔═══════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+            std.debug.print("{s}║  S³AI HIPPOCAMPUS — Health Memory                ║{s}\n", .{ YELLOW, RESET });
+            std.debug.print("{s}╚═══════════════════════════════════════════════════╝{s}\n", .{ CYAN, RESET });
+
+            const snapshots = history.recent(10) catch |err| {
+                std.debug.print("  Error reading history: {}\n", .{err});
+                std.debug.print("  (Run --record to create first snapshot)\n", .{});
+                return;
+            };
+            defer allocator.free(snapshots);
+
+            if (snapshots.len == 0) {
+                std.debug.print("  No history yet. Use --record to create snapshot.\n", .{});
+            } else {
+                std.debug.print("\n  Recent {d} snapshots:\n", .{snapshots.len});
+                std.debug.print("  ┌────────────┬────────┬───────┬────────┬──────┐\n", .{});
+                std.debug.print("  │ Time       │ Health │ OK    │ Claims │ Event│\n", .{});
+                std.debug.print("  ├────────────┼────────┼───────┼────────┼──────┤\n", .{});
+                for (snapshots) |snap| {
+                    const time_str = if (snap.timestamp > 0)
+                        std.fmt.allocPrint(allocator, "{d}m ago", .{@divTrunc(std.time.milliTimestamp() - snap.timestamp, 60000)}) catch "?"
+                    else
+                        "?";
+                    defer if (!std.mem.eql(u8, time_str, "?")) allocator.free(time_str);
+
+                    std.debug.print("  │ {s:>10} │ {d:6.1} │ {s:>5} │ {d:6} │ {d:4} │\n", .{
+                        time_str, snap.health_score, if (snap.healthy) "✓" else "✗", snap.active_claims, snap.events_published,
+                    });
+                }
+                std.debug.print("  └────────────┴────────┴───────┴────────┴──────┘\n", .{});
+            }
         } else if (std.mem.eql(u8, args[0], "--record")) {
             // Record current health snapshot (Hippocampus consolidation)
-            std.debug.print("Health record temporarily disabled (API change)\n", .{});
+            const brain = @import("brain");
+            const allocator = std.heap.page_allocator;
+            var coord = try brain.AgentCoordination.init(allocator);
+            var history = brain.health_history.BrainHealthHistory.init(allocator);
+
+            const stats = coord.getStats();
+            const health = coord.healthCheck();
+
+            const snapshot = brain.health_history.HealthSnapshot{
+                .timestamp = std.time.milliTimestamp(),
+                .health_score = health.score,
+                .healthy = health.healthy,
+                .active_claims = stats.active_claims,
+                .events_published = stats.total_events_published,
+                .events_buffered = stats.buffered_events,
+                .stress_test_passed = true,
+                .stress_test_score = null,
+            };
+
+            try history.record(snapshot);
+
+            std.debug.print("{s}✓{s} Health snapshot recorded to Hippocampus\n", .{ GREEN, RESET });
+            std.debug.print("  Score: {d:.1}/100\n", .{health.score});
+            std.debug.print("  File: .trinity/brain_health_history.jsonl\n", .{});
         } else {
             // Full stress test
             std.debug.print("Use: zig build test-brain-stress\n", .{});
