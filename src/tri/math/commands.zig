@@ -25,8 +25,8 @@ const prediction_mod = @import("prediction.zig");
 // Proof Graph Engine v1.0 - Evidence-Native Proof Assistant
 // sacred module exports proof commands from proof_builder.zig
 const sacred = @import("sacred");
-// Angular Gyrus: Format introspection for sensation system
-const angular_gyrus = @import("src/hslm/angular_gyrus.zig");
+// TODO: Angular Gyrus: Format introspection for sensation system
+// const angular_gyrus = @import("hslm/angular_gyrus.zig");
 
 // BSD Elliptic Curve Scanner
 const bsd = @import("bsd");
