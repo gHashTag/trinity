@@ -98,9 +98,12 @@ pub const DecisionContext = struct {
     }
 
     /// Get suggested goals from trend analysis
+    /// Goals are generated from predictions in trend_analysis during readSenses phase.
+    /// For now returns empty slice - goals are generated directly in decide() via trend rules.
     pub fn getSuggestedGoals(self: *const DecisionContext) []const SuggestedGoal {
-        _ = self; // TODO: populate from trend_analysis
-        // This would be populated by readSenses phase
+        _ = self;
+        // Goals are dynamically generated in decide() based on trend_analysis
+        // This is a placeholder for future goal caching/pre-computation
         return &.{};
     }
 };
@@ -209,11 +212,14 @@ pub fn getFacultyMetrics(allocator: Allocator) !FacultyMetrics {
     // Collect current snapshot from faculty_board
     const snapshot = try faculty_cortex.collectSnapshot(allocator);
 
-    // For now, delta is all zeros (no previous snapshot comparison)
-    // TODO: Implement history tracking for proper trend analysis
+    // FIXME: Implement history tracking for proper trend analysis
+    // Need to persist FacultyMetrics to disk and compare with previous snapshot
+    // to populate delta fields (compile_rate_delta, dirty_delta, active_delta, etc.)
+    // History storage: ~/.tri-queen/faculty_history.jsonl (append-only, last 100 entries)
+    // Delta calculation requires previous snapshot - without it, all trends are .stable
     return FacultyMetrics{
         .snapshot = snapshot,
-        .delta = .{}, // Empty delta = no change detected
+        .delta = .{}, // Empty delta = no change detected (history not implemented)
         .collected_at = now,
     };
 }
@@ -225,7 +231,10 @@ pub fn analyzeTrends(
     current: FacultyMetrics,
     history: []const FacultyMetrics,
 ) !TrendAnalysis {
-    _ = allocator; // TODO: use for history persistence
+    // FIXME: Use allocator for history persistence to ~/.tri-queen/faculty_history.jsonl
+    // History should be loaded from disk at startup and appended after each readSenses
+    // For now, history is always empty (passed as &.{}) so trends default to .stable
+    _ = allocator;
     var analysis = TrendAnalysis{
         .confidence = if (history.len >= 2) 0.7 else 0.3,
     };
@@ -665,8 +674,24 @@ pub fn decide(ctx: *DecisionContext) !?Decision {
         if (ctx.farm.crashed > 3) {
             _ = locus_coeruleus.triggerAlarm(state, .worker_crashed, "Multiple workers crashed", null) catch {};
         }
-        // Token expired → alarm alert (TODO: check Railway token count)
-        // _ = locus_coeruleus.triggerAlarm(state, .token_expired, "API tokens expired", null) catch {};
+        // Token count check — alarm if fewer than 3 Railway accounts available
+        // FIXME: Full token health check requires Railway API validation (401/403 detection)
+        // For now, just count env vars - this doesn't detect expired tokens, only missing ones
+        {
+            const farm_accounts = @import("farm_accounts.zig");
+            var account_buf: [farm_accounts.MAX_ACCOUNTS]farm_accounts.Account = undefined;
+            const token_count = farm_accounts.discoverAccounts(ctx.allocator, &account_buf);
+            farm_accounts.deinitAccounts(ctx.allocator, &account_buf, token_count);
+
+            if (token_count < 3) {
+                _ = locus_coeruleus.triggerAlarm(
+                    state,
+                    .token_expired,
+                    "Fewer than 3 Railway accounts available",
+                    null,
+                ) catch {};
+            }
+        }
     }
 
     // Rule 1: Build broken → doctor_quick (high urgency)
@@ -1009,11 +1034,15 @@ pub fn speak(ctx: *DecisionContext, decision: ?Decision, result: qt.ActionResult
     try queen_ofc.sendReport(ctx.allocator, mood, report);
 }
 
-/// Format decision report for Telegram
+/// Format decision report for Telegram (currently unused)
+/// Reports are sent via queen_ofc.sendReport() in speak() phase.
+/// This function is a placeholder for custom Telegram formatting if needed.
 fn formatDecisionReport(decision: Decision, result: qt.ActionResult) []const u8 {
     _ = decision;
     _ = result;
-    return ""; // TODO: Implement if needed
+    // FIXME: Implement custom Telegram formatting if needed
+    // For now, reports are formatted in speak() using queen_ofc
+    return "";
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
