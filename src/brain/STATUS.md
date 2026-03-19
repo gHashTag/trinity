@@ -12,7 +12,10 @@
 | Basal Ganglia | `basal_ganglia.zig` | ✅ Complete | ✅ Pass | 100% |
 | Reticular Formation | `reticular_formation.zig` | ✅ Complete | ✅ Pass | 100% |
 | Locus Coeruleus | `locus_coeruleus.zig` | ✅ Complete | ✅ Pass | 100% |
+| Amygdala | `amygdala.zig` | ✅ Complete | ✅ Pass | 100% |
 | Intraparietal Sulcus | `intraparietal_sulcus.zig` | ✅ Complete | ✅ Pass | 100% |
+| Hippocampus (Persistence) | `persistence.zig` | ✅ Complete | ✅ Pass | 100% |
+| Corpus Callosum (Telemetry) | `telemetry.zig` | ✅ Complete | ✅ Pass | 100% |
 | Brain Aggregator | `brain.zig` | ✅ Complete | ✅ Pass | 100% |
 | Stress Test | `stress_test.zig` | ✅ Complete | ✅ Pass | 100% |
 
@@ -61,6 +64,23 @@
 - TF3 (Ternary Float3) encoding
 - φ-quantization
 
+### Amygdala (Emotional Salience)
+- Task salience analysis
+- Error severity detection
+- Urgency scoring
+- Attention prioritization
+
+### Hippocampus (Memory Persistence)
+- JSONL event logging
+- Timestamp tracking
+- Structured event storage
+
+### Corpus Callosum (Telemetry)
+- Time-series metrics
+- Trend detection (improving/stable/declining)
+- Average health calculation
+- JSON export
+
 ## Stress Test Results
 
 **Target:** 1000 tasks × 10 agents
@@ -78,7 +98,20 @@
 # Health check
 tri stress --health
 
+# Brain scan (visual)
+tri stress --scan
+
 # Metrics export (Prometheus)
+tri stress --metrics
+
+# Brain dump (detailed)
+tri stress --dump
+
+# Telemetry summary
+tri stress --telemetry
+
+# Full stress test
+tri stress
 tri stress --metrics
 
 # Brain dump

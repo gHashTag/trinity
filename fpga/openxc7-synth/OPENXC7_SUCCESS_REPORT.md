@@ -382,12 +382,50 @@ From git history (commit 8700cdc44):
 
 ---
 
+## LATEST SYNTHESIS RESULTS (2026-03-15)
+
+### hslm_full_top.bit — Verified on Hardware
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **LUT cells** | 49,363 (77.9%) | 4,608 RAM64M distributed RAMs consume significant LUT |
+| **BRAM36-eq** | 63.0 (46.7%) | 118 BRAM18E1 + 4 BRAM36E1 |
+| **Flip-flops** | 59,013 (46.5%) | |
+| **DSP48E1** | **0** | Zero DSP — all ternary arithmetic is LUT-based |
+| **MMCME2_BASE** | 1 | 81.25 MHz clock from 100 MHz oscillator |
+| **BSCANE2** | 1 | JTAG debug bridge |
+| **Clock** | 81.25 MHz | MMCM locked, verified via STAT register |
+| **Estimated throughput** | ~1,879 tok/s | 4-layer ternary transformer |
+
+### K=16 Wide BRAM Results (Real Weights)
+
+| Metric | Value | Notes |
+|--------|-------|-------|
+| **LUT explicit** | 19,097 | |
+| **RAM64M** | 6,528 | x_buffer distributed RAM (K=16 simultaneous reads) |
+| **LUT effective** | ~45K (71%) | |
+| **BRAM36-eq** | 100.5 (74.4%) | 187 BRAM18 + 7 BRAM36 |
+| **DSP48E1** | **0** | Zero DSP |
+| **Verified fit** | YES | Confirmed synthesis on XC7A100T |
+
+### K=32 Bottleneck Analysis
+
+| Metric | Value | Result |
+|--------|-------|--------|
+| **LUT required** | 72,627 (114%) | Does NOT fit |
+| **Root cause** | 224 partial products + 7 five-stage adder trees | Inherent computation, not BRAM issue |
+
+**Conclusion:** K=32 requires larger FPGA (XC7A200T+). K=16 fits with 74% BRAM, 71% LUT.
+
+---
+
 ## NEXT STEPS
 
-1. **Permanent tools setup:** Store jtag_program, fxload, xvcd in version control
-2. **Automation:** Create `fpga/synth.sh` wrapper script
-3. **Verification:** Run nextpnr with `--timing-report` for detailed analysis
-4. **Expansion:** Synthesize larger designs (VIBEE → Verilog)
+1. **Permanent tools setup:** Store jtag_program, fxload, xvcd in version control [DONE]
+2. **Automation:** Create `fpga/synth.sh` wrapper script [DONE]
+3. **Verification:** Run nextpnr with `--timing-report` for detailed analysis [DONE]
+4. **Expansion:** Synthesize larger designs (VIBEE → Verilog) [IN PROGRESS]
+5. **K=32 migration:** Target XC7A200T or implement time-multiplexed variant
 
 ---
 
