@@ -29,6 +29,8 @@ pub const CELL_SCAN_DIRS = [_][]const u8{
     "src/tri/reticular_aras",
     "src/tri/reticular_raphe",
     "src/tri/reticular_gigantocellular",
+    // Insula — interoception (internal state monitoring)
+    "src/tri/insula",
 };
 
 /// Count of scan directories

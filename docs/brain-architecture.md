@@ -1,227 +1,213 @@
 # Trinity S³AI Brain Architecture
 
-## Overview
+## Module Overview (1:1 Brain Mapping)
 
-Trinity's brain is a modular architecture inspired by biological neural systems. The brain consists of interconnected modules that process sensory input, make decisions, execute actions, and learn from experience.
+| Brain Structure | Trinity Module | Function |
+|----------------|----------------|-----------|
+| Thalamus | `thalamus.zig` | Sensor gateway — filters & routes incoming signals |
+| VLPFC | `queen_vlpfc.zig` | Pattern recognition — familiar situations |
+| DLPFC | `queen_dlpfc.zig` | Decision engine — selects actions |
+| VMPFC | `queen_vmpfc.zig` | Value assessment — weighs options |
+| DMPFC/ACC | `queen_acc.zig` | Conflict monitoring — detects action conflicts |
+| OFC | `queen_ofc.zig` | Mood modulation — adjusts urgency |
+| Motor Cortex | `queen_motor.zig` | Action execution — runs tri commands |
+| Hippocampus | `hippocampus.zig` | Memory — stores/retrieves learning |
+| Amygdala | `amygdala.zig` | Emotional learning — fear/reward |
+| Basal Ganglia | `basal_ganglia.zig` | Action selection — winner-takes-all |
+| **Insula** | `insula.zig` | **Interoception — internal state monitoring** |
+| Locus Coeruleus | `phoenix_locus_coeruleus.zig` | Arousal/alert system |
+| Reticular Formation | `reticular_*.zig` | Sleep/wake, arousal modulation |
+| Phoenix Core | `phoenix_core.zig` | Sleep-wake daemon, issue processing |
+| Cerebellum | `cerebellum.zig` | Timing, error correction |
+ | Thalamus Relays | `thalamus.zig` | 18 sensory channels (farm, build, arena, etc.) |
 
-## Module Hierarchy
-
-```
-                    ┌─────────────────────────────────────────────┐
-                    │              QUEEN (Coordinator)           │
-                    │         (queen_premotor, queen_vlpfc)      │
-                    └───────────────────┬─────────────────────────┘
-                                        │
-        ┌───────────────────────────────┼───────────────────────────────┐
-        │                               │                               │
-        ▼                               ▼                               ▼
-┌───────────────┐             ┌───────────────┐             ┌───────────────┐
-│   SENSES      │             │     ACC      │             │    DLPFC      │
-│ (queen_senses)│             │ (queen_acc)  │             │(queen_dlpfc)  │
-│               │             │              │             │               │
-│ 18 system     │             │ Conflict     │             │ Decision      │
-│ monitors      │             │ Detection    │             │ Loop          │
-└───────┬───────┘             └───────┬───────┘             └───────┬───────┘
-        │                           │                               │
-        │                           │                               │
-        ▼                           ▼                               ▼
-┌───────────────┐             ┌───────────────┐             ┌───────────────┐
-│  HIPPOCAMPUS  │             │  OFC         │             │    MOTOR      │
-│(hippocampus)  │             │(queen_ofc)   │             │(queen_motor)  │
-│               │             │              │             │               │
-│ Memory        │             │ Mood         │             │ Action        │
-│ Storage       │             │ Inference    │             │ Execution     │
-└───────────────┘             └───────────────┘             └───────────────┘
-        │                           │                               │
-        │                           │                               │
-        ▼                           ▼                               ▼
-┌───────────────┐             ┌───────────────┐             ┌───────────────┐
-│ BASAL GANGLIA │             │   TELEGRAM    │             │    POLICY     │
-│(basal_ganglia)│             │(queen_telegram)│             │(queen_policy) │
-│               │             │              │             │               │
-│ Action        │             │ Communication │             │ Rules         │
-│ Selection     │             │ Channel      │             │ Engine        │
-└───────────────┘             └───────────────┘             └───────────────┘
-```
-
-## Module Descriptions
-
-### Core Modules
-
-| Module | File | Purpose |
-|--------|------|---------|
-| **Queen** | `queen_premotor.zig` | Central coordinator, integrates all brain modules |
-| **Senses** | `queen_senses.zig` | Aggregates 18 system monitors (build, tests, farm, etc.) |
-| **ACC** | `queen_acc.zig` | Anterior Cingulate Cortex — conflict monitoring |
-| **DLPFC** | `queen_dlpfc.zig` | Dorsolateral Prefrontal Cortex — decision loop |
-| **OFC** | `queen_ofc.zig` | Orbitofrontal Cortex — mood inference, reward prediction |
-| **Motor** | `queen_motor.zig` | Action execution, Telegram routing |
-
-### Memory & Learning
-
-| Module | File | Purpose |
-|--------|------|---------|
-| **Hippocampus** | `hippocampus.zig` | JSONL memory store, pattern storage/retrieval |
-| **Policy** | `queen_policy.zig` | Rule engine, behavior constraints |
-| **Tamagotchi** | `queen_tamagotchi.zig` | Self-care, health maintenance |
-
-### Communication
-
-| Module | File | Purpose |
-|--------|------|---------|
-| **Telegram** | `queen_telegram.zig` | Telegram bot interface, message formatting |
-| **Cron** | `queen_cron.zig` | Scheduled tasks, heartbeat monitoring |
-
-## Data Flow
-
-### 1. Sensory Input Flow
+## Complete Signal Flow
 
 ```
-External System → Senses (18 monitors)
-                  ↓
-              FacultySnapshot
-                  ↓
-              collectAllSenses()
-                  ↓
-              SenseResult
+External World
+    ↓
+Thalamus (18 senses → filtered signals)
+    ↓
+VLPFC (pattern match: "have I seen this?")
+    ↓
+DLPFC (decide: "what action?")
+    ↓
+VMPFC (value: "is this worth it?")
+    ↓
+DMPFC/ACC (conflict check: "can these run together?")
+    ↓
+OFC (modulate: "how urgent?")
+    ↓
+Basal Ganglia (select winner)
+    ↓
+Motor Cortex (execute → tri command)
+    ↓
+Hippocampus (remember: "what happened?")
+    ↓
+Insula (measure: "how am I doing?") ← NEW
+    ↓
+Locus Coeruleus (alert: "should I wake up?")
 ```
 
-### 2. Decision Loop (DLPFC → ACC → Motor)
+## Insula Module — Interoception
 
-```
-SenseResult → DLPFC (analyze)
-                ↓
-              ACC (check conflicts)
-                ↓
-          Motor (select action)
-                ↓
-            Execute
-```
+### What is Interoception?
 
-### 3. Memory Flow
+In neuroscience, the **insula cortex** monitors internal body states:
+- Pulse (heart rate)
+- Temperature (fever, chills)
+- Fatigue (tiredness)
+- Hunger/satiety
+- Pain/pleasure
 
-```
-Event → Hippocampus.write()
-         ↓
-      JSONL append
-         ↓
-    MemoryRecord (agent, kind, data, tags)
-         ↓
-      hippocampus.read()
-```
+For Trinity, this means monitoring **internal system metrics**:
+- Cycle latency (how fast am I thinking?)
+- Memory usage (how much RAM am I using?)
+- Action rate (how active am I?)
+- Decision quality (am I making good choices?)
 
-### 4. Communication Flow
-
-```
-Event → OFC (mood inference)
-         ↓
-      sendReport() → Telegram
-```
-
-## Inter-Module Communication
-
-### Event-Based Communication
-
-Modules communicate through:
-1. **Direct function calls** — For tightly coupled modules
-2. **JSONL memory** — For persistent event logging
-3. **Telegram messages** — For external notifications
-
-### Key Data Structures
+### Insula Data Structure
 
 ```zig
-// Sense result — 18 system metrics
-SenseResult {
-    build_ok: bool,
-    test_rate: u8,
-    dirty_files: u16,
-    open_issues: u16,
-    agent_count: u8,
-    farm_services: u8,
-    farm_best_ppl: f32,
-    arena_battles: u32,
-    ouroboros_score: f32,
-    // ... 9 more fields
-}
+pub const InternalState = struct {
+    // Timing (microseconds)
+    cycle_latency_us: u64,
+    thalamus_latency_us: u64,
+    dlpfc_decision_us: u64,
 
-// Memory record — persistent storage
-MemoryRecord {
-    id: []const u8,
-    agent: []const u8,
-    kind: MemoryKind,
-    ts: u64,
-    tags: [8][]const u8,
-    data: []const u8,
-    summary: []const u8,
-    ttl: u64,
-}
+    // Memory
+    alloc_bytes: u64,
+    alloc_count: u32,
 
-// Action candidate — decision making
-ActionCandidate {
-    kind: ActionKind,
-    urgency: Urgency,
-    suppressed: bool,
-    confidence: f32,
+    // Activity
+    actions_taken: u32,
+    actions_suppressed: u32,
+
+    // Decision quality
+    action_rate: f32,  // % of cycles with action
+
+    // Timestamp
+    measured_at: i64,
+};
+```
+
+### Insula → Locus Coeruleus Integration
+
+The Locus Coeruleus reads Insula metrics to adjust arousal:
+
+```zig
+pub fn evaluateInteroception(state: insula.InternalState) ArousalLevel {
+    if (state.cycle_latency_us > 300_000) {  // >300ms
+        return .alarm;     // "Too slow!"
+    }
+    if (state.alloc_bytes > 75_000_000) {    // >75MB
+        return .emergency; // "Memory pressure!"
+    }
+    if (state.action_rate < 0.05) {           // <5%
+        return .sleep;     // "Inactive"
+    }
+    return .alert;       // Normal monitoring
 }
 ```
 
-## Testing Guidelines
+### Alert Thresholds
 
-### Unit Test Structure
+| Metric | Threshold | Response |
+|--------|-----------|----------|
+| Cycle latency | >300ms | ALARM — system is sluggish |
+| Memory usage | >75MB | EMERGENCY — leak detected |
+| Action rate | <5% | SLEEP — inactive mode |
+| Decision time | >100ms | ALERT — slowing down |
 
-Each brain module should have tests covering:
-1. **Default values** — Struct initialization
-2. **Edge cases** — Empty, zero, maximum values
-3. **Enum values** — All variants tested
-4. **Format functions** — String serialization
-5. **Integration points** — File I/O, external calls
+## Running Queen
 
-### Test Coverage Targets
-
-| Module | Target Coverage | Current |
-|--------|----------------|---------|
-| hippocampus | 7% | 4.8% |
-| queen_senses | 8% | 10.2% ✅ |
-| queen_acc | 8% | 4.8% |
-| queen_ofc | 8% | 4.8% |
-
-### Running Tests
+### One-Shot Cycle
 
 ```bash
-# Test all brain modules
-zig test src/tri/hippocampus.zig
-zig test src/tri/queen_senses.zig
-zig test src/tri/queen_acc.zig
-zig test src/tri/queen_ofc.zig
-
-# Test all at once
-zig build test
+# Single READ → THINK → ACT → SPEAK cycle
+tri queen once
 ```
 
-## Performance Considerations
+Output:
+```
+👑 Queen NORMAL — Cycle #42
 
-### Hot Paths
+🧬 Farm: 45/108 active, PPL 4.6 (R33)
+🧠 Build: OK | Wake #1524
+🔧 Action: farm status (Routine check)
+  Result: OK (245ms)
+```
 
-1. **DLPFC decision loop** — Called every cycle, optimize for speed
-2. **Hippocampus JSONL parsing** — I/O heavy, batch when possible
-3. **Telegram message handling** — Network bound, use async
+### Daemon Mode (5-min cycles)
 
-### Optimization Targets
+```bash
+# Run continuously, sleeping 5 minutes between cycles
+tri queen start --daemon --interval 300
+```
 
-- Minimize allocations in decision loop
-- Use fixed buffers where size is known
-- Batch memory operations
-- Cache expensive computations (e.g., file reads)
+### Auto-Actions (L2 allowed)
 
-## φ² + 1/φ² = 3 = TRINITY
+```bash
+# Enable autonomous healing (dangerous actions need approval)
+tri queen start --daemon --allow-auto-actions --max-level 2
+```
 
-The brain architecture embodies the Trinity identity through:
-- **3-layer hierarchy** — Senses → Decisions → Actions
-- **3 memory tiers** — Working, episodic, semantic
-- **3 control loops** — Fast (reflex), medium (deliberation), slow (planning)
+### Check Status
+
+```bash
+# Show current Queen state
+tri queen status
+```
+
+## Auto-Healing Scenario
+
+When `--allow-auto-actions` is enabled, Queen can self-heal:
+
+```
+Cycle #1: Build broken → doctor_quick (auto-approved, L1)
+  → Fixed 3 dirty files
+
+Cycle #2: Farm crashed >3 workers → farm_recycle (needs approval, L2)
+  → User approves via /queen approve
+  → Recycled 5 idle workers
+
+Cycle #3: PPL record (4.6 → 4.2) → notify (celebration)
+  → Telegram: 🏆 NEW PPL RECORD: 4.2
+```
+
+## Data Collection (Phase 4)
+
+**Before optimizing**, collect metrics for 1-2 weeks:
+
+```bash
+# Start daemon with Insula monitoring
+tri queen start --daemon --interval 300
+
+# Wait 2 weeks, then analyze:
+cat .trinity/memory/insula/current.jsonl | jq -s '
+  group_by(.measured_at | strftime("%Y-%m-%d")) |
+  map({
+    date: .[0].measured_at,
+    avg_latency: map(.cycle_latency_us) | add / length
+  })
+'
+```
+
+**Only after data collection** can we optimize:
+- Thalamus cache (if sensory latency is high)
+- Hippocampus rotation (if memory is bloating)
+- Decision batching (if action rate is low)
+
+## φ² + 1/φ² = 3 = TRINITY = S³AI
+
+The brain architecture embodies the Trinity identity:
+- **3 input pathways** — Thalamus (18 senses), VLPFC (patterns), Hippocampus (memory)
+- **3 decision layers** — VMPFC (value), ACC (conflict), DLPFC (choice)
+- **3 output channels** — Motor (actions), OFC (mood), LC (arousal)
 
 ## References
 
-- Module files: `src/tri/queen_*.zig`, `src/tri/hippocampus.zig`
+- Module files: `src/tri/queen_*.zig`, `src/tri/insula.zig`, `src/tri/hippocampus.zig`
 - Type definitions: `src/tri/queen_types.zig`, `src/tri/faculty_types.zig`
+- Locus Coeruleus: `src/tri/phoenix_locus_coeruleus.zig`
 - Testing: Each module file has inline tests at the bottom
