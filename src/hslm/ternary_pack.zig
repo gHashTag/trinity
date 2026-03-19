@@ -231,7 +231,7 @@ test "pack ternary 16 pattern" {
 
 test "unpack ternary 16" {
     // Test pattern: -1, 0, 1, -1, 0, 1, ...
-    const packed: u32 = 0x44444444;
+    const encoded: u32 = 0x44444444;
     const unpacked = unpackTernary16(encoded);
 
     const expected = [_]i8{ -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1 };
