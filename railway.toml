@@ -9,4 +9,4 @@ dockerfilePath = "Dockerfile.hslm-train"
 [deploy]
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 5
-startCommand = "/usr/local/bin/hslm-entrypoint"
+# startCommand MUST be null - use Dockerfile ENTRYPOINT instead
