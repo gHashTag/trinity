@@ -802,3 +802,52 @@ test "ofc — CellHealth struct" {
     try std.testing.expectEqual(@as(u32, 0), cell_h.cycle);
     try std.testing.expectEqual(@as(i64, 12345), cell_h.last_check);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL function tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ofc — inferMood returns valid Mood" {
+    const mood = inferMood(true, 75.0, false);
+    _ = mood;
+}
+
+test "ofc — inferMood broken build returns stressed" {
+    const mood = inferMood(false, 50.0, false);
+    try std.testing.expectEqual(Mood.stressed, mood);
+}
+
+test "ofc — inferMood high score returns excited" {
+    const mood = inferMood(true, 85.0, true);
+    try std.testing.expectEqual(Mood.excited, mood);
+}
+
+test "ofc — Mood emoji returns valid" {
+    try std.testing.expectEqualStrings("🟢", Mood.healthy.emoji());
+    try std.testing.expectEqualStrings("🟡", Mood.caution.emoji());
+    try std.testing.expectEqualStrings("🔴", Mood.stressed.emoji());
+}
+
+test "ofc — Mood label returns valid" {
+    try std.testing.expectEqualStrings("healthy", Mood.healthy.label());
+    try std.testing.expectEqualStrings("caution", Mood.caution.label());
+    try std.testing.expectEqualStrings("stressed", Mood.stressed.label());
+}
+
+test "ofc — ChatRoute chatId returns valid" {
+    try std.testing.expectEqualStrings("main", .main.chatId());
+    try std.testing.expectEqualStrings("alerts", .alerts.chatId());
+}
+
+test "ofc — ChatRoute emoji returns valid" {
+    try std.testing.expectEqualStrings("📢", .main.emoji());
+    try std.testing.expectEqualStrings("🚨", .alerts.emoji());
+}
+
+test "ofc — RewardPrediction meanAbsoluteError calculates" {
+    var rp = RewardPrediction.init(50.0);
+    rp.updatePredictionModel(60.0);
+    rp.updatePredictionModel(40.0);
+    const mae = rp.meanAbsoluteError();
+    try std.testing.expect(mae > 0);
+}
