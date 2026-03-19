@@ -2,44 +2,44 @@
 // ESP32 <-> FPGA UART Bridge
 // =============================================================================
 //
-// Подключение:
+// Connection:
 //   ESP32 GPIO4 (TX) -----> FPGA Pin L20 (UART_RX)
 //   ESP32 GPIO5 (RX) <----- FPGA Pin K20 (UART_TX)
-//   ESP32 GND      -----> FPGA GND (ОБЯЗАТЕЛЬНО!)
+//   ESP32 GND      -----> FPGA GND (REQUIRED!)
 //
-// Команды (отправлять через Serial Monitor):
-//   p - PING (FPGA отвечает с 0x83)
+// Commands (send via Serial Monitor):
+//   p - PING (FPGA responds with 0x83)
 //   o - LED ON
 //   f - LED OFF
 //   b - LED BLINK
 //   h - Help
 //
-// Бодрейт: 115200
-// Формат: 8N1 (8 data bits, No parity, 1 stop bit)
+// Baud rate: 115200
+// Format: 8N1 (8 data bits, No parity, 1 stop bit)
 // =============================================================================
 
 #include <Arduino.h>
 
-// Пины
+// Pins
 #define RX_PIN 5
 #define TX_PIN 4
 #define BAUD_RATE 115200
 
-// Команды FPGA
+// FPGA Commands
 const uint8_t CMD_PING      = 0x03;
 const uint8_t CMD_LED_ON    = 0x10;
 const uint8_t CMD_LED_OFF   = 0x11;
 const uint8_t CMD_LED_BLINK = 0x12;
 
-// Ответы FPGA
+// FPGA Responses
 const uint8_t RESP_PONG     = 0x83;
 const uint8_t RESP_OK       = 0xFF;
 const uint8_t RESP_ACK      = 0xAA;
 
-// Вторый Serial для связи с FPGA (UART1)
+// Second Serial for FPGA communication (UART1)
 HardwareSerial SerialFPGA(1);
 
-// Статистика
+// Statistics
 struct {
     unsigned long packets_sent;
     unsigned long packets_received;
@@ -47,37 +47,37 @@ struct {
     unsigned long last_ping_ms;
 } stats = {0, 0, 0, 0};
 
-// Время отклика
+// Response time
 unsigned long last_send_time = 0;
 unsigned long last_response_time = 0;
 
 void setup() {
-    // Инициализация Serial Monitor
+    // Initialize Serial Monitor
     Serial.begin(115200);
     delay(1000);
 
-    // Инициализация UART для FPGA
+    // Initialize UART for FPGA
     SerialFPGA.begin(BAUD_RATE, SERIAL_8N1, RX_PIN, TX_PIN);
 
-    // Приветствие
+    // Greeting
     printBanner();
     printHelp();
 }
 
 void loop() {
-    // Обработка команд из Serial Monitor
+    // Process commands from Serial Monitor
     if (Serial.available()) {
         char cmd = Serial.read();
         processCommand(cmd);
     }
 
-    // Обработка ответов от FPGA
+    // Process responses from FPGA
     if (SerialFPGA.available()) {
         uint8_t resp = SerialFPGA.read();
         handleResponse(resp);
     }
 
-    // Автоматический ping каждые 5 секунд
+    // Automatic ping every 5 seconds
     static unsigned long last_auto_ping = 0;
     if (millis() - last_auto_ping > 5000) {
         last_auto_ping = millis();
@@ -86,11 +86,11 @@ void loop() {
 }
 
 // ============================================================================
-// Обработка команд
+// Command Processing
 // ============================================================================
 
 void processCommand(char cmd) {
-    // Игнорировать пробелы и переносы строк
+    // Ignore spaces and newlines
     if (cmd == ' ' || cmd == '\n' || cmd == '\r') return;
 
     switch (cmd) {
@@ -148,7 +148,7 @@ void sendCommand(uint8_t cmd) {
 }
 
 // ============================================================================
-// Обработка ответов
+// Response Processing
 // ============================================================================
 
 void handleResponse(uint8_t resp) {
@@ -182,7 +182,7 @@ void handleResponse(uint8_t resp) {
 }
 
 // ============================================================================
-// Тестовая последовательность
+// Test Sequence
 // ============================================================================
 
 void runTestSequence() {
@@ -234,7 +234,7 @@ void waitForResponse(unsigned long timeout) {
 }
 
 // ============================================================================
-// Вспомогательные функции
+// Helper Functions
 // ============================================================================
 
 void printBanner() {

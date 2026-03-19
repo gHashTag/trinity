@@ -58,4 +58,4 @@ The violation of classical physics begins with light.
 
 ---
 
-**ФРОНТ 2: ТЕСТ — Финальный автоскрипт**
+**FRONT 2: TEST — Final Auto Script**

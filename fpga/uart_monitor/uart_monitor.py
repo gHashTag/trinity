@@ -2,7 +2,6 @@
 """
 Trinity UART Monitor - Professional Serial Port Analysis Tool
 ============================================================
-
 Features:
 - Real-time UART monitoring with timestamps
 - HEX/ASCII display modes
@@ -56,7 +55,7 @@ class Colors:
 
 @dataclass
 class UARTStats:
-    """Статистика UART коммуникации"""
+    """UART communication statistics"""
     packets_sent: int = 0
     packets_received: int = 0
     bytes_received: int = 0
@@ -84,9 +83,9 @@ class UARTStats:
         return 0
 
 class ProtocolDecoder:
-    """Декодер пользовательских протоколов"""
+    """Custom protocol decoders"""
 
-    # Команды Trinity-FPGA
+    # Trinity-FPGA commands
     COMMANDS = {
         0x03: "PING",
         0x10: "LED_ON",
@@ -103,7 +102,7 @@ class ProtocolDecoder:
 
     @classmethod
     def decode(cls, data: bytes) -> str:
-        """Декодировать байт как команду/ответ"""
+        """Decode bytes as command/response"""
         if len(data) == 1:
             b = data[0]
             if b in cls.COMMANDS:
@@ -113,11 +112,11 @@ class ProtocolDecoder:
         return None
 
 class HexdumpFormatter:
-    """Форматирование данных в hexdump стиле"""
+    """Hexdump-style formatting"""
 
     @staticmethod
     def format(data: bytes, offset: int = 0) -> str:
-        """Форматировать байты как hexdump"""
+        """Format bytes as hexdump"""
         lines = []
         for i in range(0, len(data), 16):
             chunk = data[i:i+16]
@@ -128,7 +127,7 @@ class HexdumpFormatter:
         return '\n'.join(lines)
 
 class UARTMonitor:
-    """Основной класс монитора UART"""
+    """Main UART monitor class"""
 
     def __init__(
         self,
@@ -149,23 +148,22 @@ class UARTMonitor:
         self.show_ascii = show_ascii
         self.decode_protocol = decode_protocol
         self.color = color and HAS_PYGMENTS
-
         self.stats = UARTStats()
         self.rx_buffer = deque(maxlen=4096)
         self.tx_buffer = deque(maxlen=4096)
         self.running = False
 
-        # Файл лога
+        # Log file setup
         self.log_handle = None
         if log_file:
             self.log_handle = open(log_file, 'a', encoding='utf-8')
             self._write_log_header()
 
     def _write_log_header(self):
-        """Записать заголовок лог-файла"""
+        """Write log file header"""
         if self.log_handle:
             self.log_handle.write(
-                f"\n{'='*60}\n"
+                f"{'='*60}\n"
                 f"UART Monitor Session Started\n"
                 f"Port: {self.port}\n"
                 f"Baudrate: {self.baudrate}\n"
@@ -175,7 +173,7 @@ class UARTMonitor:
             self.log_handle.flush()
 
     def _write_log(self, direction: str, data: bytes):
-        """Записать данные в лог-файл"""
+        """Write data to log file"""
         if self.log_handle:
             timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')[:-3]
             self.log_handle.write(
@@ -184,7 +182,7 @@ class UARTMonitor:
             self.log_handle.flush()
 
     def connect(self) -> bool:
-        """Подключиться к последовательному порту"""
+        """Connect to serial port"""
         try:
             self.ser = serial.Serial(
                 port=self.port,
@@ -194,14 +192,14 @@ class UARTMonitor:
                 parity=serial.PARITY_NONE,
                 stopbits=serial.STOPBITS_ONE
             )
-            print(f"{Colors.OKGREEN}✓ Connected to {self.port} @ {self.baudrate} baud{Colors.ENDC}")
+            print(f"{Colors.OKGREEN}Connected to {self.port} @ {self.baudrate} baud{Colors.ENDC}")
             return True
         except serial.SerialException as e:
-            print(f"{Colors.FAIL}✗ Failed to connect: {e}{Colors.ENDC}")
+            print(f"{Colors.FAIL}Failed to connect: {e}{Colors.ENDC}")
             return False
 
     def disconnect(self):
-        """Отключиться от порта"""
+        """Disconnect from port"""
         if hasattr(self, 'ser') and self.ser.is_open:
             self.ser.close()
             print(f"\n{Colors.WARNING}Disconnected from {self.port}{Colors.ENDC}")
@@ -209,29 +207,29 @@ class UARTMonitor:
             self.log_handle.close()
 
     def print_header(self):
-        """Вывести заголовок монитора"""
+        """Print monitor header"""
         print(f"""
-╔════════════════════════════════════════════════════════════════════╗
-║                    Trinity UART Monitor v1.0                       ║
-║                    φ² + 1/φ² = 3 = TRINITY                         ║
-╠════════════════════════════════════════════════════════════════════╣
-║  Port:      {self.port:<50} ║
-║  Baudrate:  {self.baudrate} bps{' '*43} ║
-║  Timeout:   {self.timeout}s{' '*48} ║
-║  Log:       {self.log_file if self.log_file else 'None':<50} ║
-╠════════════════════════════════════════════════════════════════════╣
-║  Commands:                                                        ║
-║    Ctrl+C  - Exit                                                ║
-║    s       - Show statistics                                     ║
-║    h       - Toggle hex display                                  ║
-║    a       - Toggle ASCII display                                ║
-║    c       - Clear screen                                        ║
-║    <data>  - Send data (hex: AA BB CC, or text)                  ║
-╚════════════════════════════════════════════════════════════════════╝
+{Colors.BOLD}══════════════════════════════════════════════════════════════════╗{Colors.ENDC}
+{Colors.BOLD}                    Trinity UART Monitor v1.0                       {Colors.ENDC}
+{Colors.BOLD}                    phi² + 1/phi² = 3 = TRINITY                         {Colors.ENDC}
+{Colors.BOLD}╚══════════════════════════════════════════════════════════════════════╝{Colors.ENDC}
+{Colors.BOLD}  Port:      {self.port:<50} {Colors.ENDC}
+{Colors.BOLD}  Baudrate:  {self.baudrate} bps{' '*43} {Colors.ENDC}
+{Colors.BOLD}  Timeout:   {self.timeout}s{' '*48} {Colors.ENDC}
+{Colors.BOLD}  Log:       {self.log_file if self.log_file else 'None':<50} {Colors.ENDC}
+{Colors.BOLD}╚══════════════════════════════════════════════════════════════════════╝{Colors.ENDC}
+{Colors.BOLD}  Commands:                                                        {Colors.ENDC}
+{Colors.BOLD}    Ctrl+C  - Exit                                                {Colors.ENDC}
+{Colors.BOLD}    s       - Show statistics                                     {Colors.ENDC}
+{Colors.BOLD}    h       - Toggle hex display                                  {Colors.ENDC}
+{Colors.BOLD}    a       - Toggle ASCII display                                {Colors.ENDC}
+{Colors.BOLD}    c       - Clear screen                                        {Colors.ENDC}
+{Colors.BOLD}    <data>  - Send data (hex: AA BB CC, or text)                  {Colors.ENDC}
+{Colors.BOLD}╚══════════════════════════════════════════════════════════════════════════════╝
 """)
 
     def print_statistics(self):
-        """Вывести статистику"""
+        """Print statistics"""
         print(f"""
 {Colors.BOLD}Statistics:{Colors.ENDC}
   Uptime:           {self.stats.uptime:.1f}s
@@ -243,26 +241,25 @@ class UARTMonitor:
 """)
 
     def format_packet(self, data: bytes, direction: str = "RX") -> str:
-        """Форматировать пакет для вывода"""
+        """Format packet for output"""
         timestamp = datetime.now().strftime('%H:%M:%S.%f')[:-3]
         output = []
-
-        # Заголовок пакета
+        # Packet header
         dir_color = Colors.OKGREEN if direction == "RX" else Colors.WARNING
         output.append(f"{dir_color}[{timestamp}] {direction} ({len(data)} bytes){Colors.ENDC}")
 
-        # Декодирование протокола
+        # Protocol decoding
         if self.decode_protocol:
             decoded = ProtocolDecoder.decode(data)
             if decoded:
                 output.append(decoded)
 
-        # HEX вывод
+        # HEX output
         if self.show_hex:
             hex_str = ' '.join(f'{b:02x}' for b in data)
             output.append(f"  HEX:   {hex_str}")
 
-        # ASCII вывод
+        # ASCII output
         if self.show_ascii:
             ascii_str = ''.join(chr(b) if 32 <= b < 127 else '.' for b in data)
             output.append(f"  ASCII: {ascii_str}")
@@ -270,7 +267,7 @@ class UARTMonitor:
         return '\n'.join(output)
 
     def send_data(self, data: bytes):
-        """Отправить данные в порт"""
+        """Send data to port"""
         try:
             self.ser.write(data)
             self.stats.packets_sent += 1
@@ -282,29 +279,27 @@ class UARTMonitor:
             self.stats.errors += 1
 
     def parse_and_send(self, input_str: str):
-        """Распарсить ввод пользователя и отправить"""
-        # Проверка на hex формат (AA BB CC или AABBCC)
+        """Parse user input and send"""
+        # Check for hex format (AA BB CC or AABBCC)
         hex_match = re.match(r'^([0-9A-Fa-f]{2}\s*)+$', input_str)
         if hex_match:
             hex_str = input_str.replace(' ', '')
             data = bytes.fromhex(hex_str)
         else:
-            # Текстовый формат
+            # Text format
             data = input_str.encode('utf-8')
-
         self.send_data(data)
 
     def run(self):
-        """Главный цикл монитора"""
+        """Main monitor loop"""
         import select
-        import tty
         import termios
         import os
 
         self.running = True
         self.print_header()
 
-        # Сохранить настройки терминала
+        # Save terminal settings
         old_settings = None
         try:
             old_settings = termios.tcgetattr(sys.stdin)
@@ -312,10 +307,9 @@ class UARTMonitor:
             pass
 
         last_stats_update = time.time()
-
         try:
             while self.running:
-                # Проверить входящие данные с таймаутом
+                # Check for incoming data with timeout
                 if self.ser.in_waiting > 0:
                     data = self.ser.read(self.ser.in_waiting)
                     if data:
@@ -324,22 +318,17 @@ class UARTMonitor:
                         self.stats.last_packet_time = time.time()
                         self._write_log("RX", data)
                         print(self.format_packet(data))
-                        self.rx_buffer.extend(data)
 
-                # Обновить статистику каждую секунду
+                # Update statistics every second
                 if time.time() - last_stats_update > 1.0:
-                    # Печатать uptime в заголовке (опционально)
+                    # Print uptime in header (optional)
                     last_stats_update = time.time()
 
-                # Небольшая задержка
-                time.sleep(0.01)
-
-                # Проверить ввод пользователя (неблокирующий)
+                # Check for user input (non-blocking)
                 if select.select([sys.stdin], [], [], 0)[0]:
                     cmd = sys.stdin.readline().strip()
                     if not cmd:
                         continue
-
                     if cmd == 's':
                         self.print_statistics()
                     elif cmd == 'h':
@@ -355,7 +344,6 @@ class UARTMonitor:
                         self.running = False
                     else:
                         self.parse_and_send(cmd)
-
         except KeyboardInterrupt:
             print(f"\n{Colors.WARNING}Exiting...{Colors.ENDC}")
         finally:
@@ -364,21 +352,20 @@ class UARTMonitor:
             self.disconnect()
             self.print_statistics()
 
-def list_ports():
-    """Вывести список доступных портов"""
-    print(f"\n{Colors.BOLD}Available Serial Ports:{Colors.ENDC}\n")
-    ports = serial.tools.list_ports.comports()
-
-    if not ports:
-        print(f"{Colors.WARNING}No serial ports found{Colors.ENDC}")
-        return
-
-    for port in ports:
-        print(f"  {Colors.OKCYAN}{port.device}{Colors.ENDC}")
-        print(f"    Manufacturer: {port.manufacturer or 'N/A'}")
-        print(f"    Product:      {port.product or 'N/A'}")
-        print(f"    Serial:       {port.serial_number or 'N/A'}")
-        print()
+    @staticmethod
+    def list_ports():
+        """List available serial ports"""
+        print(f"\n{Colors.BOLD}Available Serial Ports:{Colors.ENDC}\n")
+        ports = serial.tools.list_ports.comports()
+        if not ports:
+            print(f"{Colors.WARNING}No serial ports found{Colors.ENDC}")
+            return
+        for port in ports:
+            print(f"  {Colors.OKCYAN}{port.device}{Colors.ENDC}")
+            print(f"    Manufacturer: {port.manufacturer or 'N/A'}")
+            print(f"    Product:      {port.product or 'N/A'}")
+            print(f"    Serial:       {port.serial_number or 'N/A'}")
+            print()
 
 def main():
     parser = argparse.ArgumentParser(
@@ -388,7 +375,8 @@ def main():
 Examples:
   python uart_monitor.py --list
   python uart_monitor.py /dev/ttyUSB0
-  python uart_monitor.py COM3 --baudrate 921600
+  python uart_monitor.py COM3
+  python uart_monitor.py /dev/cu.usbserial --baudrate 921600
   python uart_monitor.py /dev/cu.usbserial --log uart.log
         """
     )

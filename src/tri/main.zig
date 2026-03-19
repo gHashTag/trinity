@@ -463,13 +463,14 @@ pub fn main() !void {
             return;
         }
         // Token: route `tri token [status|rotate|reset|test]` to token rotator
-        if (std.mem.eql(u8, first_arg, "token")) {
-            const token_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
-            logAgentCommand(args[arg_idx..]);
-            const tri_token = @import("tri_token.zig");
-            try tri_token.runTokenCommand(allocator, token_args);
-            return;
-        }
+        // FIXME: tri_token module disabled due to Zig 0.15.2 std.io changes
+        // if (std.mem.eql(u8, first_arg, "token")) {
+        //     const token_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+        //     logAgentCommand(args[arg_idx..]);
+        //     const tri_token = @import("tri_token.zig");
+        //     try tri_token.runTokenCommand(allocator, token_args);
+        //     return;
+        // }
         // Init: route `tri init [--cell <name>]` to scaffolding
         if (std.mem.eql(u8, first_arg, "init")) {
             const init_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};

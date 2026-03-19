@@ -1,28 +1,28 @@
-# Лучшие инструменты для UART разработки 2026
+# Best UART Development Tools 2026
 
-## Содержание
-1. [Обзор рынка](#обзор-рынка)
-2. [Аппаратные анализаторы](#аппаратные-анализаторы)
-3. [Программные мониторы](#программные-мониторы)
+## Table of Contents
+1. [Market Overview](#market-overview)
+2. [Hardware Analyzers](#hardware-analyzers)
+3. [Software Monitors](#software-monitors)
 4. [Trinity UART Monitor](#trinity-uart-monitor)
-5. [Рекомендации](#рекомендации)
+5. [Recommendations](#recommendations)
 
 ---
 
-## Обзор рынка
+## Market Overview
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                    Инструменты для UART 2026                        │
+│                    UART Tools 2026                              │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
 │  ┌──────────────────┐    ┌──────────────────┐                      │
-│  │   Аппаратные     │    │   Программные    │                      │
-│  │   Анализаторы    │    │   Мониторы       │                      │
+│  │   Hardware       │    │   Software       │                      │
+│  │   Analyzers     │    │   Monitors       │                      │
 │  │                  │    │                  │                      │
 │  │  • Saleae        │    │  • CoolTerm      │                      │
 │  │  • DSLogic       │    │  • RealTerm      │                      │
-│  │  • Total Phase   │    │  • Trinity UART   │  ← наш!              │
+│  │  • Total Phase   │    │  • Trinity UART   │  ← ours!             │
 │  └──────────────────┘    └──────────────────┘                      │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -30,92 +30,92 @@
 
 ---
 
-## Аппаратные анализаторы
+## Hardware Analyzers
 
 ### 1. Saleae Logic Analyzers
 
-| Модель | Каналы | Частота | Цена | Рейтинг |
-|--------|--------|---------|------|--------|
+| Model | Channels | Frequency | Price | Rating |
+|--------|----------|------------|-------|--------|
 | **Logic 8** | 8 | 100 MS/s | ~$150 | ⭐⭐⭐⭐⭐ |
 | **Logic Pro 8** | 8 | 500 MS/s | ~$500 | ⭐⭐⭐⭐⭐ |
 | **Logic Pro 16** | 16 | 500 MS/s | ~$700 | ⭐⭐⭐⭐⭐ |
 
-**Преимущества:**
-- ✅ Лучшее ПО в классе (Logic 2.0)
-- ✅ Автоматическая декодировка 20+ протоколов
-- ✅ Мгновенный захват триггеров
-- ✅ Экспорт в CSV, JSON, binary
-- ✅ Кроссплатформенность (Win/Mac/Linux)
+**Advantages:**
+- ✅ Best software in class (Logic 2.0)
+- ✅ Automatic decoding of 20+ protocols
+- ✅ Instant trigger capture
+- ✅ Export to CSV, JSON, binary
+- ✅ Cross-platform (Win/Mac/Linux)
 
-**Недостатки:**
-- ❌ Дорого
-- ❌ Требует USB 3.0 для полной скорости
+**Disadvantages:**
+- ❌ Expensive
+- ❌ Requires USB 3.0 for full speed
 
-**Вердикт:** Лучший выбор для профессионалов
+**Verdict:** Best choice for professionals
 
 ---
 
 ### 2. DreamSourceLab DSLogic
 
-| Модель | Каналы | Частота | Цена | Рейтинг |
-|--------|--------|---------|------|--------|
+| Model | Channels | Frequency | Price | Rating |
+|--------|----------|------------|-------|--------|
 | **DSLogic U3Pro16** | 16 | 400 MS/s | ~$300 | ⭐⭐⭐⭐ |
 | **DSLogic Plus** | 16 | 100 MS/s | ~$100 | ⭐⭐⭐⭐ |
 
-**Преимущества:**
-- ✅ Open source ПО (DSView)
-- ✅ Хорошее соотношение цена/качество
-- ✅ 16 каналов в базе
-- ✅ Аналоговые каналы (осциллограф)
+**Advantages:**
+- ✅ Open source software (DSView)
+- ✅ Good price/performance ratio
+- ✅ 16 channels in base
+- ✅ Analog channels (oscilloscope)
 
-**Недостатки:**
-- ❌ Менее удобный интерфейс чем Saleae
-- ❌ Меньше протоколов декодировки
+**Disadvantages:**
+- ❌ Less convenient interface than Saleae
+- ❌ Fewer protocol decodings
 
-**Вердикт:** Отличный бюджетный вариант
+**Verdict:** Excellent budget option
 
 ---
 
 ### 3. Total Phase Beagle Analyzers
 
-| Модель | Интерфейсы | Цена | Рейтинг |
-|--------|------------|------|--------|
+| Model | Interfaces | Price | Rating |
+|--------|------------|-------|--------|
 | **Beagle I2C/SPI** | I2C, SPI | ~$400 | ⭐⭐⭐⭐ |
 | **Beagle USB 480** | USB 2.0 | ~$1500 | ⭐⭐⭐⭐⭐ |
 
-**Преимущества:**
-- ✅ Неразрушающий мониторинг
-- ✅ Высокоскоростной анализ
-- ✅ Enterprise функции
+**Advantages:**
+- ✅ Non-invasive monitoring
+- ✅ High-speed analysis
+- ✅ Enterprise features
 
-**Недостатки:**
-- ❌ Очень дорого
-- ❌ Специализированный
+**Disadvantages:**
+- ❌ Very expensive
+- ❌ Specialized
 
-**Вердикт:** Для enterprise/серъёзной разработки
+**Verdict:** For enterprise/serious development
 
 ---
 
-### 4. AliExpress бюджетные анализаторы
+### 4. AliExpress Budget Analyzers
 
-| Модель | Каналы | Цена | Рейтинг |
-|--------|--------|------|--------|
+| Model | Channels | Price | Rating |
+|--------|----------|-------|--------|
 | **Generic LA** | 8-24 | ~$10-30 | ⭐⭐ |
 
-**Преимущества:**
-- ✅ Дёшево
-- ✅ Работает с PulseView / DSView
+**Advantages:**
+- ✅ Cheap
+- ✅ Works with PulseView / DSView
 
-**Недостатки:**
-- ❌ Плохая документация
-- ❌ Ограниченная скорость
-- ❌ Качество захвата
+**Disadvantages:**
+- ❌ Poor documentation
+- ❌ Limited speed
+- ❌ Capture quality
 
-**Вердикт:** Только для обучения/хобби
+**Verdict:** Only for learning/hobby
 
 ---
 
-## Программные мониторы
+## Software Monitors
 
 ### 1. CoolTerm
 
@@ -130,98 +130,98 @@
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Преимущества:**
-- ✅ Бесплатный
-- ✅ Кроссплатформенный (Win/Mac/Linux)
-- ✅ HEX и ASCII режимы
-- ✅ Логирование в файл
-- ✅ Поддержка various baud rates
+**Advantages:**
+- ✅ Free
+- ✅ Cross-platform (Win/Mac/Linux)
+- ✅ HEX and ASCII modes
+- ✅ Logging to file
+- ✅ Supports various baud rates
 
-**Недостатки:**
-- ❌ Нет протокольной декодировки
-- ❌ Устаревший интерфейс
+**Disadvantages:**
+- ❌ No protocol decoding
+- ❌ Outdated interface
 
-**Скачать:** [https://freeware.the-meiers.org/](https://freeware.the-meiers.org/)
+**Download:** [https://freeware.the-meiers.org/](https://freeware.the-meiers.org/)
 
-**Вердикт:** Отличный базовый инструмент
+**Verdict:** Excellent basic tool
 
 ---
 
 ### 2. RealTerm
 
-**Преимущества:**
-- ✅ Мощные функции
-- ✅ HEX/ASCII переключение
-- ✅ Поддержка break signal
+**Advantages:**
+- ✅ Powerful features
+- ✅ HEX/ASCII switching
+- ✅ Break signal support
 
-**Недостатки:**
-- ❌ Только Windows
-- ❌ Устаревший UI
+**Disadvantages:**
+- ❌ Windows only
+- ❌ Outdated UI
 
-**Вердикт:** Хорош для Windows пользователей
+**Verdict:** Good for Windows users
 
 ---
 
 ### 3. Tera Term
 
-**Преимущества:**
-- ✅ Проверенный временем
-- ✅ Макросы
+**Advantages:**
+- ✅ Time-tested
+- ✅ Macros
 - ✅ SSH + Serial
 
-**Недостатки:**
-- ❌ Только Windows
-- ❌ Базовый функционал
+**Disadvantages:**
+- ❌ Windows only
+- ❌ Basic functionality
 
-**Вердикт:** Для простых задач
+**Verdict:** For simple tasks
 
 ---
 
 ### 4. Arduino Serial Monitor
 
-**Преимущества:**
-- ✅ Уже установлен с Arduino IDE
-- ✅ Просто в использовании
+**Advantages:**
+- ✅ Already installed with Arduino IDE
+- ✅ Simple to use
 
-**Недостатки:**
-- ❌ Очень базовый
-- ❌ Нет HEX режима
-- ❌ Нет логирования
+**Disadvantages:**
+- ❌ Very basic
+- ❌ No HEX mode
+- ❌ No logging
 
-**Вердикт:** Только для быстрой отладки
+**Verdict:** Only for quick debugging
 
 ---
 
 ## Trinity UART Monitor
 
-Новый профессиональный инструмент, созданный для вашего проекта!
+New professional tool, created for your project!
 
-### Функции
+### Features
 
 ```python
-# Установка
+# Installation
 pip install -r requirements.txt
 
-# Использование
-python uart_monitor.py --list                    # Найти порты
+# Usage
+python uart_monitor.py --list                    # Find ports
 python uart_monitor.py /dev/ttyUSB0              # Linux
 python uart_monitor.py COM3                      # Windows
-python uart_monitor.py /dev/cu.usbserial --log uart.log  # С логом
+python uart_monitor.py /dev/cu.usbserial --log uart.log  # With logging
 ```
 
-### Особенности
+### Features
 
-| Функция | Описание |
-|---------|----------|
-| **Real-time мониторинг** | Мгновенное отображение данных |
-| **HEX/ASCII** | Одновременный просмотр |
-| **Протокольная декодировка** | Trinity-FPGA команды |
-| **Цветной вывод** | Удобное чтение |
-| **Логирование** | Запись в файл |
-| **Статистика** | PPS, BPS, errors |
-| **Кроссплатформенность** | Win/Mac/Linux |
+| Feature | Description |
+|---------|-------------|
+| **Real-time monitoring** | Instant data display |
+| **HEX/ASCII** | Simultaneous viewing |
+| **Protocol decoding** | Trinity-FPGA commands |
+| **Color output** | Easy reading |
+| **Logging** | Write to file |
+| **Statistics** | PPS, BPS, errors |
+| **Cross-platform** | Win/Mac/Linux |
 
-### Интерфейс
+### Interface
 
 ```
 ╔════════════════════════════════════════════════════════════════════╗
@@ -244,13 +244,13 @@ python uart_monitor.py /dev/cu.usbserial --log uart.log  # С логом
   ASCII: .
 ```
 
-### Использование с ESP32-FPGA
+### Using with ESP32-FPGA
 
 ```bash
-# 1. Запустить монитор
+# 1. Start monitor
 python uart_monitor.py /dev/ttyUSB0
 
-# 2. Отправлять команды прямо из терминала:
+# 2. Send commands directly from terminal:
 03    # PING
 10    # LED ON
 11    # LED OFF
@@ -258,32 +258,32 @@ python uart_monitor.py /dev/ttyUSB0
 
 ---
 
-## Рекомендации по выбору
+## Selection Recommendations
 
-### Для разных задач
+### For different tasks
 
-| Задача | Рекомендация | Почему |
-|--------|--------------|--------|
-| **Отладка UART** | Trinity UART Monitor | Создан для вашего проекта |
-| **Анализ протоколов** | Saleae Logic Pro 8 | Лучшее ПО |
-| **Бюджетный анализ** | DSLogic Plus | Open source, дёшево |
-| **Быстрая проверка** | CoolTerm | Просто работает |
-| **Мульти-протокол** | Saleae Logic 16 | 16 каналов |
+| Task | Recommendation | Why |
+|------|--------------|-----|
+| **UART debugging** | Trinity UART Monitor | Created for your project |
+| **Protocol analysis** | Saleae Logic Pro 8 | Best software |
+| **Budget analysis** | DSLogic Plus | Open source, cheap |
+| **Quick check** | CoolTerm | Just works |
+| **Multi-protocol** | Saleae Logic 16 | 16 channels |
 
-### Для вашего проекта (Trinity FPGA + ESP32)
+### For your project (Trinity FPGA + ESP32)
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
-│                     РЕКОМЕНДАЦИЯ                                   │
+│                     RECOMMENDATION                                 │
 ├─────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  1. Базовый мониторинг:                                            │
-│     ✓ Trinity UART Monitor (бесплатный, создан для вас)           │
+│  1. Basic monitoring:                                              │
+│     ✓ Trinity UART Monitor (free, created for you)                │
 │                                                                     │
-│  2. Профессиональная отладка:                                      │
+│  2. Professional debugging:                                         │
 │     → Saleae Logic Pro 8 (~$500)                                  │
 │                                                                     │
-│  3. Бюджетный анализ:                                              │
+│  3. Budget analysis:                                                │
 │     → DSLogic Plus (~$100)                                         │
 │                                                                     │
 └─────────────────────────────────────────────────────────────────────┘
@@ -296,33 +296,33 @@ python uart_monitor.py /dev/ttyUSB0
 ### Trinity UART Monitor
 
 ```bash
-# Установка
+# Installation
 cd /Users/playra/trinity-w1/fpga/uart_monitor
 pip install -r requirements.txt
 
-# Найти порт
+# Find port
 python uart_monitor.py --list
 
-# Подключиться
+# Connect
 python uart_monitor.py /dev/cu.usbserial-0001
 
-# С логированием
+# With logging
 python uart_monitor.py /dev/cu.usbserial-0001 --log uart.log
 ```
 
-### CoolTerm (альтернатива)
+### CoolTerm (alternative)
 
-1. Скачать с https://freeware.the-meiers.org/
-2. Выбрать порт и baud rate
-3. Нажать Connect
-4. Отправлять данные в HEX или ASCII
+1. Download from https://freeware.the-meiers.org/
+2. Select port and baud rate
+3. Press Connect
+4. Send data in HEX or ASCII
 
 ---
 
-## Сравнительная таблица
+## Comparison Table
 
-| Инструмент | Цена | Платформы | UART | SPI | I2C | Декодировка | Рейтинг |
-|------------|------|-----------|------|-----|-----|-------------|---------|
+| Tool | Price | Platforms | UART | SPI | I2C | Decoding | Rating |
+|------|-------|-----------|------|-----|-----|----------|---------|
 | **Trinity UART** | Free | All | ✅ | ⏳ | ⏳ | Trinity | ⭐⭐⭐⭐ |
 | **CoolTerm** | Free | All | ✅ | ❌ | ❌ | ❌ | ⭐⭐⭐ |
 | **Saleae Logic Pro 8** | $500 | All | ✅ | ✅ | ✅ | 20+ | ⭐⭐⭐⭐⭐ |
@@ -331,12 +331,12 @@ python uart_monitor.py /dev/cu.usbserial-0001 --log uart.log
 
 ---
 
-## Вывод
+## Conclusion
 
-Для **вашего проекта Trinity FPGA + ESP32**:
+For **your project Trinity FPGA + ESP32**:
 
-1. **Начните с Trinity UART Monitor** — уже создан и готов к использованию
-2. **Добавьте Saleae** когда понадобятся сложные протоколы (SPI, I2C)
-3. **CoolTerm** как лёгкий бэкап
+1. **Start with Trinity UART Monitor** — already created and ready to use
+2. **Add Saleae** when complex protocols are needed (SPI, I2C)
+3. **CoolTerm** as a lightweight backup
 
 φ² + 1/φ² = 3 = TRINITY

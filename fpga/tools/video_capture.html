@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -113,40 +113,40 @@
 <body>
     <div class="container">
         <h1>🔬 TRINITY FPGA</h1>
-        <p class="subtitle">Запись видео LED индикатора для анализа</p>
+        <p class="subtitle">LED indicator video capture for analysis</p>
 
         <div class="card">
-            <label>Выбери битстрим:</label>
+            <label>Select bitstream:</label>
             <select id="bitstream">
                 <option value="temporal_heartbeat">temporal_heartbeat.bit (~3 Hz)</option>
                 <option value="d6_blink">d6_blink.bit (~3 Hz)</option>
-                <option value="ternary_dot">ternary_dot.bit (переменный)</option>
-                <option value="vsa_quantum_top">vsa_quantum_top.bit (хаотичный)</option>
-                <option value="trinity_v1" selected>trinity_v1.bit (несколько режимов)</option>
+                <option value="ternary_dot">ternary_dot.bit (permuting)</option>
+                <option value="vsa_quantum_top">vsa_quantum_top.bit (chaotic)</option>
+                <option value="trinity_v1" selected>trinity_v1.bit (multiple modes)</option>
             </select>
 
-            <label>Нажми SW1 для смены режима (если trinity_v1):</label>
+            <label>Press SW1 to change mode (if trinity_v1):</label>
             <select id="mode">
-                <option value="">Без нажатия</option>
-                <option value="1">1 нажатие SW1</option>
-                <option value="2">2 нажатия SW1</option>
-                <option value="3">3 нажатия SW1</option>
-                <option value="4">4 нажатия SW1</option>
+                <option value="">No press</option>
+                <option value="1">1 press SW1</option>
+                <option value="2">2 presses SW1</option>
+                <option value="3">3 presses SW1</option>
+                <option value="4">4 presses SW1</option>
             </select>
 
-            <div id="status" class="status ready">● Готов к записи</div>
+            <div id="status" class="status ready">● Ready to record</div>
 
             <video id="video" autoplay playsinline muted></video>
 
             <div class="timer" id="timer">00:00</div>
 
-            <button id="startBtn" class="btn btn-primary">▶ Начать запись</button>
-            <button id="stopBtn" class="btn btn-danger" disabled>⏹ Остановить</button>
-            <button id="analyzeBtn" class="btn btn-success" disabled>📊 Анализировать</button>
+            <button id="startBtn" class="btn btn-primary">▶ Start Recording</button>
+            <button id="stopBtn" class="btn btn-danger" disabled>⏹ Stop</button>
+            <button id="analyzeBtn" class="btn btn-success" disabled>📊 Analyze</button>
         </div>
 
         <div id="results" class="card" style="display:none;">
-            <h3>📈 Результаты анализа</h3>
+            <h3>📈 Analysis Results</h3>
             <div id="resultsContent"></div>
         </div>
     </div>
@@ -160,7 +160,6 @@
         const timer = document.getElementById('timer');
         const results = document.getElementById('results');
         const resultsContent = document.getElementById('resultsContent');
-
         let stream = null;
         let mediaRecorder = null;
         let chunks = [];
@@ -177,7 +176,7 @@
                 });
                 video.srcObject = stream;
             } catch (err) {
-                status.textContent = '❌ Ошибка камеры: ' + err.message;
+                status.textContent = '❌ Camera error: ' + err.message;
                 status.className = 'status';
             }
         }
@@ -194,16 +193,13 @@
         startBtn.addEventListener('click', () => {
             chunks = [];
             mediaRecorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
-
             mediaRecorder.ondataavailable = (e) => {
                 if (e.data.size > 0) chunks.push(e.data);
             };
-
             mediaRecorder.onstop = () => {
                 recordedBlob = new Blob(chunks, { type: 'video/webm' });
                 analyzeBtn.disabled = false;
             };
-
             mediaRecorder.start();
             startTime = Date.now();
             timerInterval = setInterval(updateTimer, 1000);
@@ -211,7 +207,7 @@
             startBtn.disabled = true;
             stopBtn.disabled = false;
             analyzeBtn.disabled = true;
-            status.textContent = '🔴 Запись...';
+            status.textContent = '🔴 Recording...';
             status.className = 'status recording';
         });
 
@@ -223,13 +219,13 @@
 
             startBtn.disabled = false;
             stopBtn.disabled = true;
-            status.textContent = '✅ Записано: ' + Math.round(recordedBlob.size / 1024) + ' KB';
+            status.textContent = '✅ Recorded: ' + Math.round(recordedBlob.size / 1024) + ' KB';
             status.className = 'status ready';
         });
 
         // Analyze recording
         analyzeBtn.addEventListener('click', async () => {
-            analyzeBtn.textContent = '⏳ Анализ...';
+            analyzeBtn.textContent = '⏳ Analyzing...';
             analyzeBtn.disabled = true;
 
             // Simple brightness analysis (client-side)
@@ -237,12 +233,10 @@
             videoElement.src = URL.createObjectURL(recordedBlob);
             videoElement.muted = true;
             await new Promise(r => videoElement.onloadedmetadata = r);
-
             const canvas = document.createElement('canvas');
             canvas.width = 320;
             canvas.height = 240;
             const ctx = canvas.getContext('2d');
-
             const brightness = [];
             const fps = 30;
 
@@ -274,16 +268,16 @@
             let pattern, desc;
             if (blinks === 0) {
                 pattern = 'SOLID';
-                desc = 'LED горит постоянно';
+                desc = 'LED burns continuously';
             } else if (frequency < 1) {
                 pattern = 'SLOW';
-                desc = `Медленное мигание (~${frequency.toFixed(1)} Гц)`;
+                desc = `Slow blinking (~${frequency.toFixed(1)} Hz)`;
             } else if (frequency < 5) {
                 pattern = 'MEDIUM';
-                desc = `Среднее мигание (~${frequency.toFixed(1)} Гц)`;
+                desc = `Medium blinking (~${frequency.toFixed(1)} Hz)`;
             } else {
                 pattern = 'FAST';
-                desc = `Быстрое мигание (~${frequency.toFixed(1)} Гц)`;
+                desc = `Fast blinking (~${frequency.toFixed(1)} Hz)`;
             }
 
             // Show results
@@ -291,18 +285,18 @@
             const mode = document.getElementById('mode').value;
 
             resultsContent.innerHTML = `
-                <div class="result-item"><span>Битстрим:</span><span>${bitstream}</span></div>
-                <div class="result-item"><span>Режим (SW1):</span><span>${mode || '0'}</span></div>
-                <div class="result-item"><span>Частота:</span><span>${frequency.toFixed(2)} Гц</span></div>
-                <div class="result-item"><span>Миганий:</span><span>${blinks}</span></div>
-                <div class="result-item"><span>Паттерн:</span><span class="pattern-badge pattern-${pattern}">${pattern}</span></div>
-                <div class="result-item"><span>Описание:</span><span>${desc}</span></div>
-                <div class="result-item"><span>Яркость сред:</span><span>${Math.round((max+min)/2)}</span></div>
+                <div class="result-item"><span>Bitstream:</span><span>${bitstream}</span></div>
+                <div class="result-item"><span>Mode (SW1):</span><span>${mode || '0'}</span></div>
+                <div class="result-item"><span>Frequency:</span><span>${frequency.toFixed(2)} Hz</span></div>
+                <div class="result-item"><span>Blinks:</span><span>${blinks}</span></div>
+                <div class="result-item"><span>Pattern:</span><span class="pattern-badge pattern-${pattern}">${pattern}</span></div>
+                <div class="result-item"><span>Description:</span><span>${desc}</span></div>
+                <div class="result-item"><span>Brightness range:</span><span>${Math.round((max+min)/2)}</span></div>
             `;
 
             results.style.display = 'block';
-            analyzeBtn.textContent = '📊 Анализировать';
-            status.textContent = '✅ Ализ завершён';
+            analyzeBtn.textContent = '📊 Analyze';
+            status.textContent = '✅ Analysis complete';
         });
 
         // Initialize

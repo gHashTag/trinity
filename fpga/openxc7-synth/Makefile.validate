@@ -124,7 +124,7 @@ validate-embedding-lookup-512: $(REPORT_DIR)/embedding_lookup_512.log
 $(REPORT_DIR)/embedding_lookup_512.log: embedding_lookup_512.v
 	$(call synth,embedding_lookup_512,embedding_lookup_512,$^)
 
-# ── 11. hslm_full_top — THE LIVE DESIGN (3-block TMU K=16, prошит на XC7A100T)
+# ── 11. hslm_full_top — THE LIVE DESIGN (3-block TMU K=16, flashed on XC7A100T)
 validate-hslm-full-top: $(REPORT_DIR)/hslm_full_top.log
 $(REPORT_DIR)/hslm_full_top.log: $(FULL_DEPS)
 	$(call synth,hslm_full_top,hslm_full_top,$^)

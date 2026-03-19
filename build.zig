@@ -894,6 +894,61 @@ pub fn build(b: *std.Build) void {
     const run_token_staking_tests = b.addRunArtifact(token_staking_tests);
     test_step.dependOn(&run_token_staking_tests.step);
 
+    // Phase 5: Mainnet Deployment tests
+    const mainnet_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/firebird/mainnet.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_mainnet_tests = b.addRunArtifact(mainnet_tests);
+    test_step.dependOn(&run_mainnet_tests.step);
+
+    // Phase 5: Multi-Chain tests
+    const multichain_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/depin/multichain.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_multichain_tests = b.addRunArtifact(multichain_tests);
+    test_step.dependOn(&run_multichain_tests.step);
+
+    // Phase 5: Observability tests
+    const observability_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/depin/observability.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_observability_tests = b.addRunArtifact(observability_tests);
+    test_step.dependOn(&run_observability_tests.step);
+
+    // Phase 5: Production API tests
+    const production_api_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/api/depin_production.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_production_api_tests = b.addRunArtifact(production_api_tests);
+    test_step.dependOn(&run_production_api_tests.step);
+
+    // Phase 5: Governance tests
+    const governance_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/firebird/governance.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_governance_tests = b.addRunArtifact(governance_tests);
+    test_step.dependOn(&run_governance_tests.step);
+
     // Trinity Node - Peer Latency tests (v1.8)
     const peer_latency_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -2014,6 +2069,41 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // Phase 5: Mainnet Deployment
+    const firebird_mainnet_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/mainnet.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Phase 5: Multi-Chain Support
+    const depin_multichain_mod = b.createModule(.{
+        .root_source_file = b.path("src/depin/multichain.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Phase 5: Observability & Monitoring
+    const depin_observability_mod = b.createModule(.{
+        .root_source_file = b.path("src/depin/observability.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Phase 5: Production REST API
+    const depin_production_mod = b.createModule(.{
+        .root_source_file = b.path("src/api/depin_production.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    // Phase 5: Governance Module
+    const firebird_governance_mod = b.createModule(.{
+        .root_source_file = b.path("src/firebird/governance.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const tri = b.addExecutable(.{
         .name = "tri",
         .root_module = b.createModule(.{
@@ -2049,6 +2139,12 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "depin_network", .module = depin_network_mod },
                 .{ .name = "depin_bootstrap", .module = depin_bootstrap_mod },
                 .{ .name = "depin_persistence", .module = depin_persistence_mod },
+                // Phase 5: Mainnet Deployment & Multi-Chain
+                .{ .name = "firebird_mainnet", .module = firebird_mainnet_mod },
+                .{ .name = "depin_multichain", .module = depin_multichain_mod },
+                .{ .name = "depin_observability", .module = depin_observability_mod },
+                .{ .name = "depin_production", .module = depin_production_mod },
+                .{ .name = "firebird_governance", .module = firebird_governance_mod },
             },
         }),
     });
@@ -2088,11 +2184,12 @@ pub fn build(b: *std.Build) void {
                     .optimize = optimize,
                 }) },
                 // P3.11: Token CLI commands
-                .{ .name = "tri_token", .module = b.createModule(.{
-                    .root_source_file = b.path("src/tri/tri_token.zig"),
-                    .target = target,
-                    .optimize = optimize,
-                }) },
+                // FIXME: tri_token module disabled (getStdErr removed in Zig 0.15.2)
+                // .{ .name = "tri_token", .module = b.createModule(.{
+                //     .root_source_file = b.path("src/tri/tri_token.zig"),
+                //     .target = target,
+                //     .optimize = optimize,
+                // }),
             },
         }),
     });
