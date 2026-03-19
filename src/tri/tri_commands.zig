@@ -42,6 +42,11 @@ const GOLDEN = colors.GOLDEN;
 const multi_cluster = @import("commands/multi_cluster.zig");
 const quantum_cosmic = @import("commands/quantum_cosmic.zig");
 
+// S³AI Brain Regions (Neuroanatomy v5.1)
+const basal_ganglia = @import("basal_ganglia");
+const reticular_formation = @import("reticular_formation");
+const locus_coeruleus = @import("locus_coeruleus");
+
 // Re-export multi-cluster types and command
 pub const NodeTier = multi_cluster.NodeTier;
 pub const NodeEntry = multi_cluster.NodeEntry;
@@ -63,6 +68,12 @@ pub const runFpgaDemoCommand = quantum_cosmic.runFpgaDemoCommand;
 pub const runDeckCommand = quantum_cosmic.runDeckCommand;
 pub const runInstallCommand = quantum_cosmic.runInstallCommand;
 pub const runBuildCommand = quantum_cosmic.runBuildCommand;
+
+// Re-export S³AI brain regions
+pub const TaskRegistry = basal_ganglia.Registry;
+pub const TaskClaim = basal_ganglia.TaskClaim;
+pub const EventBus = reticular_formation.EventBus;
+pub const BackoffPolicy = locus_coeruleus.BackoffPolicy;
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // GEN COMMAND - Code Generation
@@ -182,7 +193,12 @@ pub fn runServeCommand(allocator: std.mem.Allocator, args: []const []const u8) !
 
 /// P0.3: Async wrapper - spawns a job for benchmark execution
 pub fn runBenchCommandAsync(allocator: std.mem.Allocator, args: []const []const u8) !void {
-    _ = args;
+    const subcommand = if (args.len > 0) args[0] else "";
+
+    if (std.mem.eql(u8, subcommand, "igla")) {
+        return runIglaBench(allocator, args[1..]);
+    }
+
     const job_system = @import("job_system.zig");
     var job_manager = try job_system.JobManager.init(allocator);
     defer job_manager.deinit();
@@ -232,6 +248,133 @@ pub fn runBenchCommand(allocator: std.mem.Allocator) !void {
     std.debug.print("\n{s}Total time: {d}ms{s}\n", .{ YELLOW, elapsed_ms, RESET });
 
     _ = allocator;
+}
+
+/// IGLA Bench - Ternary Needle In A Haystack Benchmark
+/// Usage: tri bench igla --format GF16 --ctx 243 --needles 1 --depth 50 [--json]
+pub fn runIglaBench(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const igla_bench = @import("bench").igla;
+
+    // Default values
+    var format: igla_bench.WeightFormat = .GF16;
+    var ctx: usize = 243; // 3^5
+    var needles: usize = 1;
+    var depth: f32 = 50.0; // percent
+    var json_output = false;
+
+    // Parse arguments
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--format") or std.mem.eql(u8, args[i], "-f")) {
+            if (i + 1 < args.len) {
+                i += 1;
+                if (std.mem.eql(u8, args[i], "STD") or std.mem.eql(u8, args[i], "f32")) {
+                    format = .STD;
+                } else if (std.mem.eql(u8, args[i], "BF16")) {
+                    format = .BF16;
+                } else if (std.mem.eql(u8, args[i], "GF16")) {
+                    format = .GF16;
+                } else if (std.mem.eql(u8, args[i], "TF3")) {
+                    format = .TF3;
+                } else {
+                    std.debug.print("{s}Error: unknown format '{s}'{s}\n", .{ RED, args[i], RESET });
+                    return error.InvalidFormat;
+                }
+            }
+        } else if (std.mem.eql(u8, args[i], "--ctx") or std.mem.eql(u8, args[i], "-c")) {
+            if (i + 1 < args.len) {
+                i += 1;
+                ctx = std.fmt.parseInt(usize, args[i], 10) catch 243;
+            }
+        } else if (std.mem.eql(u8, args[i], "--needles") or std.mem.eql(u8, args[i], "-n")) {
+            if (i + 1 < args.len) {
+                i += 1;
+                needles = std.fmt.parseInt(usize, args[i], 10) catch 1;
+            }
+        } else if (std.mem.eql(u8, args[i], "--depth") or std.mem.eql(u8, args[i], "-d")) {
+            if (i + 1 < args.len) {
+                i += 1;
+                depth = std.fmt.parseFloat(f32, args[i]) catch 50.0;
+            }
+        } else if (std.mem.eql(u8, args[i], "--json") or std.mem.eql(u8, args[i], "-j")) {
+            json_output = true;
+        } else if (std.mem.eql(u8, args[i], "--help") or std.mem.eql(u8, args[i], "-h")) {
+            printIglaBenchHelp();
+            return;
+        }
+    }
+
+    // Run benchmark
+    const haystack = try igla_bench.generateHaystack(allocator, "igla_run", ctx, needles, depth / 100.0);
+    defer {
+        allocator.free(haystack.content);
+        allocator.free(haystack.needles);
+        allocator.free(haystack.questions);
+    }
+
+    const start = std.time.nanoTimestamp();
+    var correct_count: usize = 0;
+    var total_latency_ms: f32 = 0;
+
+    for (haystack.questions) |q| {
+        const result = try igla_bench.runInference(allocator, haystack, q, format);
+        if (result.correct) correct_count += 1;
+        total_latency_ms += result.latency_ms;
+    }
+
+    const elapsed_ms = @as(f32, @floatFromInt(@divFloor(std.time.nanoTimestamp() - start, 1_000_000)));
+    const accuracy = if (haystack.questions.len > 0)
+        @as(f32, @floatFromInt(correct_count)) / @as(f32, @floatFromInt(haystack.questions.len)) * 100.0
+    else
+        0;
+    const avg_latency = if (haystack.questions.len > 0)
+        total_latency_ms / @as(f32, @floatFromInt(haystack.questions.len))
+    else
+        0;
+    const tok_per_sec = if (elapsed_ms > 0)
+        @as(f32, @floatFromInt(ctx)) / (elapsed_ms / 1000.0)
+    else
+        0;
+
+    if (json_output) {
+        std.debug.print("{{\"format\":\"{s}\",\"ctx\":{d},\"needles\":{d},\"depth\":{d:.1},\"accuracy\":{d:.1},\"latency_ms\":{d:.1},\"tok_per_sec\":{d:.1}}}\n", .{
+            format.displayName(), ctx, needles, depth, accuracy, avg_latency, tok_per_sec,
+        });
+    } else {
+        std.debug.print("\n{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
+        std.debug.print("{s}  IGLA BENCH — Ternary Needle In A Haystack{s}\n", .{ GREEN, RESET });
+        std.debug.print("{s}═══════════════════════════════════════════════════════{s}\n", .{ YELLOW, RESET });
+        std.debug.print("\n", .{});
+        std.debug.print("{s}Configuration:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Format:     {s}\n", .{format.displayName()});
+        std.debug.print("  Context:    {d} tokens\n", .{ctx});
+        std.debug.print("  Needles:    {d}\n", .{needles});
+        std.debug.print("  Depth:      {d:.1}%\n", .{depth});
+        std.debug.print("\n", .{});
+        std.debug.print("{s}Results:{s}\n", .{ CYAN, RESET });
+        std.debug.print("  Accuracy:   {d:.1}% ({d}/{d})\n", .{ accuracy, correct_count, haystack.questions.len });
+        std.debug.print("  Latency:    {d:.1} ms avg\n", .{avg_latency});
+        std.debug.print("  Throughput: {d:.1} tok/s\n", .{tok_per_sec});
+        std.debug.print("\n", .{});
+    }
+}
+
+fn printIglaBenchHelp() void {
+    std.debug.print("\n{s}IGLA BENCH — Ternary Needle In A Haystack{s}\n", .{ YELLOW, RESET });
+    std.debug.print("\n{s}Usage:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  tri bench igla [OPTIONS]\n", .{});
+    std.debug.print("\n{s}Options:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  -f, --format <FMT>  Weight format: STD, BF16, GF16 (default), TF3\n", .{});
+    std.debug.print("  -c, --ctx <N>       Context length in tokens (default: 243)\n", .{});
+    std.debug.print("  -n, --needles <N>   Number of needles (default: 1)\n", .{});
+    std.debug.print("  -d, --depth <PCT>   Needle depth percentage (default: 50.0)\n", .{});
+    std.debug.print("  -j, --json          Output JSON instead of formatted text\n", .{});
+    std.debug.print("  -h, --help          Show this help\n", .{});
+    std.debug.print("\n{s}Examples:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  tri bench igla\n", .{});
+    std.debug.print("  tri bench igla --format TF3 --ctx 81 --needles 3\n", .{});
+    std.debug.print("  tri bench igla --depth 90 --json\n", .{});
+    std.debug.print("\n", .{});
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1623,6 +1766,164 @@ fn uiInspect(allocator: std.mem.Allocator) !void {
     defer audit_file.close();
     const audit_stat = audit_file.stat() catch return;
     std.debug.print("  {s}Audit:{s}      {d} bytes\n\n", .{ GRAY, RESET, audit_stat.size });
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// S³AI BRAIN CIRCUIT COMMANDS (v5.1 - Neuroanatomy)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runTaskClaimCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        printTaskClaimHelp();
+        return;
+    }
+
+    const action = args[0];
+    const reg = try basal_ganglia.getGlobal(allocator);
+
+    if (std.mem.eql(u8, action, "claim")) {
+        if (args.len < 2) {
+            std.debug.print("Usage: tri task claim <task_id> [--agent <id>]\n", .{});
+            return;
+        }
+        const task_id = args[1];
+        const agent_id = if (args.len >= 4 and std.mem.eql(u8, args[2], "--agent")) args[3] else "default";
+        const claimed = try reg.claim(allocator, task_id, agent_id, 300000); // 5 min TTL
+        if (claimed) {
+            std.debug.print("{s}✓{s} Task {s} claimed by {s}\n", .{ GREEN, RESET, task_id, agent_id });
+        } else {
+            std.debug.print("{s}✗{s} Task {s} already claimed\n", .{ RED, RESET, task_id });
+        }
+    } else if (std.mem.eql(u8, action, "release")) {
+        if (args.len < 2) {
+            std.debug.print("Usage: tri task release <task_id> [--agent <id>]\n", .{});
+            return;
+        }
+        const task_id = args[1];
+        const agent_id = if (args.len >= 4 and std.mem.eql(u8, args[2], "--agent")) args[3] else "default";
+        const completed = reg.complete(task_id, agent_id);
+        if (completed) {
+            std.debug.print("{s}✓{s} Task {s} released by {s}\n", .{ GREEN, RESET, task_id, agent_id });
+        } else {
+            std.debug.print("{s}✗{s} Task {s} not claimed by {s}\n", .{ RED, RESET, task_id, agent_id });
+        }
+    } else if (std.mem.eql(u8, action, "list")) {
+        std.debug.print("{s}Active Task Claims:{s}\n", .{ GOLDEN, RESET });
+        var iter = reg.claims.iterator();
+        var count: usize = 0;
+        while (iter.next()) |entry| {
+            const claim = entry.value_ptr.*;
+            if (claim.isValid()) {
+                std.debug.print("  {s}: {s} (agent: {s}, TTL: {d}s)\n", .{
+                    entry.key_ptr.*, claim.task_id, claim.agent_id, claim.ttl_ms / 1000,
+                });
+                count += 1;
+            }
+        }
+        if (count == 0) {
+            std.debug.print("  {s}No active claims{s}\n", .{ GRAY, RESET });
+        }
+    } else if (std.mem.eql(u8, action, "stats")) {
+        std.debug.print("{s}Basal Ganglia Stats:{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("  Total claims: {d}\n", .{reg.claims.count()});
+    } else if (std.mem.eql(u8, action, "heartbeat")) {
+        if (args.len < 2) {
+            std.debug.print("Usage: tri task heartbeat <task_id> [--agent <id>]\n", .{});
+            return;
+        }
+        const task_id = args[1];
+        const agent_id = if (args.len >= 4 and std.mem.eql(u8, args[2], "--agent")) args[3] else "default";
+        const updated = reg.heartbeat(task_id, agent_id);
+        if (updated) {
+            std.debug.print("{s}✓{s} Heartbeat for {s} refreshed\n", .{ GREEN, RESET, task_id });
+        } else {
+            std.debug.print("{s}✗{s} Heartbeat failed for {s}\n", .{ RED, RESET, task_id });
+        }
+    } else if (std.mem.eql(u8, action, "reset")) {
+        reg.reset();
+        std.debug.print("{s}✓{s} Registry reset\n", .{ GREEN, RESET });
+    } else {
+        printTaskClaimHelp();
+    }
+}
+
+pub fn runEventStreamCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len < 1) {
+        printEventStreamHelp();
+        return;
+    }
+
+    const action = args[0];
+    const bus = reticular_formation.EventBus.init();
+
+    if (std.mem.eql(u8, action, "stream")) {
+        var since: i64 = 0;
+        var max_events: usize = 100;
+        var i: usize = 1;
+        while (i < args.len) : (i += 1) {
+            if (std.mem.eql(u8, args[i], "--since") and i + 1 < args.len) {
+                since = try std.fmt.parseInt(i64, args[i + 1], 10);
+                i += 1;
+            } else if (std.mem.eql(u8, args[i], "--max") and i + 1 < args.len) {
+                max_events = try std.fmt.parseInt(usize, args[i + 1], 10);
+                i += 1;
+            }
+        }
+        const events = try bus.poll(since, allocator, max_events);
+        defer allocator.free(events);
+        std.debug.print("{s}Events (since {d}):{s}\n", .{ GOLDEN, since, RESET });
+        for (events, 0..) |evt, idx| {
+            std.debug.print("  [{d}] {s} @ {d}\n", .{ idx, @tagName(evt.event_type), evt.timestamp });
+        }
+    } else if (std.mem.eql(u8, action, "stats")) {
+        const stats = bus.getStats();
+        std.debug.print("{s}Reticular Formation Stats:{s}\n", .{ GOLDEN, RESET });
+        std.debug.print("  Published: {d}\n", .{stats.published});
+        std.debug.print("  Polled: {d}\n", .{stats.polled});
+    } else if (std.mem.eql(u8, action, "clear")) {
+        bus.clear();
+        std.debug.print("{s}✓{s} Event bus cleared\n", .{ GREEN, RESET });
+    } else if (std.mem.eql(u8, action, "trim")) {
+        if (args.len < 2) {
+            std.debug.print("Usage: tri event trim <count>\n", .{});
+            return;
+        }
+        const count = try std.fmt.parseInt(usize, args[1], 10);
+        bus.trim(count);
+        std.debug.print("{s}✓{s} Trimmed {d} events\n", .{ GREEN, RESET, count });
+    } else {
+        printEventStreamHelp();
+    }
+}
+
+fn printTaskClaimHelp() void {
+    std.debug.print("{s}Basal Ganglia Commands (Task Claim Registry):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  tri task claim <task_id> [--agent <id>]     Claim a task\n", .{});
+    std.debug.print("  tri task release <task_id> [--agent <id>]    Release a task\n", .{});
+    std.debug.print("  tri task list [--agent <id>]                 List active claims\n", .{});
+    std.debug.print("  tri task stats                               Show registry stats\n", .{});
+    std.debug.print("  tri task heartbeat <task_id> [--agent <id>]  Refresh claim\n", .{});
+    std.debug.print("  tri task reset                               Clear registry\n", .{});
+}
+
+fn printEventStreamHelp() void {
+    std.debug.print("{s}Reticular Formation Commands (Event Bus):{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("  tri event stream [--since <ts>] [--max <N>]  Poll events\n", .{});
+    std.debug.print("  tri event stats                               Show bus stats\n", .{});
+    std.debug.print("  tri event trim <count>                        Trim old events\n", .{});
+    std.debug.print("  tri event clear                               Clear all events\n", .{});
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STRESS TEST COMMAND — S³AI Brain Load Testing
+// ═══════════════════════════════════════════════════════════════════════════════
+
+pub fn runStressTestCommand(args: []const []const u8) !void {
+    _ = args;
+    std.debug.print("{s}Stress test command temporarily disabled due to compilation errors in stress_test.zig{s}\n", .{ YELLOW, RESET });
+    // TODO: Fix stress_test.zig and re-enable
+    // const brain = @import("brain");
+    // try brain.stress_test.runStressTestCommand(args);
 }
 
 const qt = @import("queen_types.zig");
