@@ -1089,6 +1089,31 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
     }
 
     // ═══════════════════════════════════════════════════════════════════════════════
+    // IGLA BENCHMARK EVALUATION — Trigger every 30K steps if not evaluated recently
+    // ═══════════════════════════════════════════════════════════════════════════════
+    for (0..state.service_count) |i| {
+        const service = &state.services[i];
+
+        if (service.status == .running and
+            service.current_step >= 30000 and
+            service.current_step - service.igla_last_eval_step >= 10000)
+        {
+
+            // Run IGLA benchmark (placeholder for now)
+            // TODO: Integrate with actual IGLA bench runner
+            const dummy_igla_score: f32 = 0.85; // Placeholder
+
+            service.igla_score = dummy_igla_score;
+            service.igla_last_eval_step = service.current_step;
+
+            print("{s}📊 IGLA:{s} {s} step={} score={d:.0}\n", .{
+                YELLOW,                 RESET, service.svcName(), service.current_step,
+                dummy_igla_score * 100,
+            });
+        }
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════════════
     // CIRCUIT BREAKER: Auto-enable night mode if too many kills in short time
     // Prevents evolution from going rogue and killing half the farm
     // ═══════════════════════════════════════════════════════════════════════════════
