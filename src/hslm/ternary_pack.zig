@@ -100,7 +100,7 @@ pub fn unpackTernarySlice(input: []const u8, trits: []i8) void {
         const in_idx = chunk_idx * 4;
 
         // Read little-endian u32
-        const encoded = std.mem.readInt(u32, input[in_idx..][0..4], .little) orelse continue;
+        const encoded = std.mem.readInt(u32, input[in_idx..][0..4], .little);
 
         // Unpack into trits
         const unpacked = unpackTernary16(encoded);
@@ -160,9 +160,12 @@ pub fn stringToTrits(s: [16]u8) [16]i8 {
 // ANALYSIS
 // ═══════════════════════════════════════════════════════════════════════════════
 
+/// Trit count results
+pub const TritCounts = struct { neg: usize, zero: usize, pos: usize };
+
 /// Count occurrences of each trit value.
-pub fn countTrits(trits: []const i8) struct { neg: usize, zero: usize, pos: usize } {
-    var result = struct { neg: usize, zero: usize, pos: usize }{ .neg = 0, .zero = 0, .pos = 0 };
+pub fn countTrits(trits: []const i8) TritCounts {
+    var result = TritCounts{ .neg = 0, .zero = 0, .pos = 0 };
 
     for (trits) |t| {
         switch (t) {
@@ -206,7 +209,7 @@ test "pack ternary 16 all zeros" {
 
 test "pack ternary 16 all ones" {
     const all_ones = [_]i8{1} ** 16;
-    const packed = packTernary16(all_ones);
+    const encoded = packTernary16(all_ones);
 
     // All +1 should encode to 0xAAAAAAAA (1010... pattern)
     try std.testing.expectEqual(@as(u32, 0xAAAAAAAA), encoded);
@@ -214,41 +217,47 @@ test "pack ternary 16 all ones" {
 
 test "pack ternary 16 all minus ones" {
     const all_minus = [_]i8{-1} ** 16;
-    const packed = packTernary16(all_minus);
+    const encoded = packTernary16(all_minus);
 
     // All -1 should encode to 0x55555555 (0101... pattern)
     try std.testing.expectEqual(@as(u32, 0x55555555), encoded);
 }
 
 test "pack ternary 16 pattern" {
+    // Pattern repeats with shift: -1,0,1,-1, 0,1,-1,0, 1,-1,0,1, -1,0,1,-1
     const pattern = [_]i8{ -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1 };
     const encoded = packTernary16(pattern);
 
-    // Manually verify: -1(01) 0(00) 1(10) -1(01) ... = 0100 0100 ...
-    const expected: u32 = 0x44444444;
+    // Each group of 4 trits encodes to one byte:
+    // -1,0,1,-1 = 01 00 10 01 = 0b01100001 = 0x61
+    // 0,1,-1,0 = 00 10 01 00 = 0b00011000 = 0x18
+    // 1,-1,0,1 = 10 01 00 10 = 0b10000110 = 0x86
+    // -1,0,1,-1 = 01 00 10 01 = 0b01100001 = 0x61
+    // Result (little-endian): 0x61861861
+    const expected: u32 = 0x61861861;
     try std.testing.expectEqual(expected, encoded);
 }
 
 test "unpack ternary 16" {
-    // Test pattern: -1, 0, 1, -1, 0, 1, ...
-    const encoded: u32 = 0x44444444;
+    // Test pattern: -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1
+    const pattern = [_]i8{ -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1 };
+    const encoded = packTernary16(pattern);
     const unpacked = unpackTernary16(encoded);
 
-    const expected = [_]i8{ -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1 };
-    try std.testing.expectEqualSlices(i8, &expected, &unpacked);
+    try std.testing.expectEqualSlices(i8, &pattern, &unpacked);
 }
 
 test "pack ternary slice roundtrip" {
     const original = [_]i8{ -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, 0,
                          -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1 };
 
-    const packed_size = (original.len + 15) / 16 * 4;
-    var packed_buf: [packed_size]u8 = undefined;
+    const encoded_size = (original.len + 15) / 16 * 4;
+    var encoded_buf: [encoded_size]u8 = undefined;
 
-    packTernarySlice(&original, &packed_buf);
+    packTernarySlice(&original, &encoded_buf);
 
     var unpacked_buf: [original.len]i8 = undefined;
-    unpackTernarySlice(&packed_buf, &unpacked_buf);
+    unpackTernarySlice(&encoded_buf, &unpacked_buf);
 
     try std.testing.expectEqualSlices(i8, &original, &unpacked_buf);
 }
@@ -256,13 +265,13 @@ test "pack ternary slice roundtrip" {
 test "pack ternary slice non multiple of 16" {
     const original = [_]i8{ -1, 0, 1, -1, 0 }; // 5 elements (not multiple of 16)
 
-    const packed_size = (original.len + 15) / 16 * 4;
-    var packed_buf: [packed_size]u8 = undefined;
+    const encoded_size = (original.len + 15) / 16 * 4;
+    var encoded_buf: [encoded_size]u8 = undefined;
 
-    packTernarySlice(&original, &packed_buf);
+    packTernarySlice(&original, &encoded_buf);
 
     var unpacked_buf: [16]i8 = undefined; // Enough for one chunk
-    unpackTernarySlice(&packed_buf, &unpacked_buf);
+    unpackTernarySlice(&encoded_buf, &unpacked_buf);
 
     // First 5 should match
     try std.testing.expectEqualSlices(i8, &original, unpacked_buf[0..5]);
@@ -315,7 +324,7 @@ test "string representation" {
     try std.testing.expectEqual(@as(u8, '-'), str[0]);  // -1
     try std.testing.expectEqual(@as(u8, '0'), str[1]);  // 0
     try std.testing.expectEqual(@as(u8, '+'), str[2]);  // 1
-    try std.testing.expectEqual(@as(u8, '-'), str[3]);  // -1
+    try std.testing.expectEqual(@as(u8, '0'), str[3]);  // 0
 }
 
 test "invalid trit treated as zero" {
@@ -330,17 +339,17 @@ test "invalid trit treated as zero" {
             1 => TRIT_POS,
             else => TRIT_ZERO,
         };
-        packed |= @as(u32, bits) << @intCast(i * 2);
+        result |= @as(u32, bits) << @intCast(i * 2);
     }
 
     // All should be zero
-    try std.testing.expectEqual(@as(u32, 0), packed);
+    try std.testing.expectEqual(@as(u32, 0), result);
 }
 
 test "unpack preserves invalid encoding" {
     // Use a value with bit patterns that don't match our encoding
     // 0b11 = 3 should be treated as 0
-    const packed: u32 = 0xFFFFFFFF; // All bits set to 1 (0b11 repeated)
+    const encoded: u32 = 0xFFFFFFFF; // All bits set to 1 (0b11 repeated)
 
     const unpacked = unpackTernary16(encoded);
 
@@ -352,13 +361,21 @@ test "unpack preserves invalid encoding" {
 
 test "little endian encoding" {
     const trits = [_]i8{ 1, 0, -1, 0 } ++ [_]i8{0} ** 12;
-    const packed = packTernary16(trits);
+    const encoded = packTernary16(trits);
 
     // First trit (1 = 0b10) should be in LSB [1:0]
-    try std.testing.expectEqual(@as(u8, 0b10), @truncate(packed));
+    // encoded = ...0b00010010 where bits [1:0]=0b10, [3:2]=0b00, [5:4]=0b01
+    const byte: u8 = @truncate(encoded);
+    try std.testing.expectEqual(@as(u8, 0b00010010), byte); // 18
+
+    // Extract just bits [1:0] for first trit
+    try std.testing.expectEqual(@as(u8, 0b10), byte & 0x03);
 
     // Second trit (0 = 0b00) should be in bits [3:2]
-    try std.testing.expectEqual(@as(u8, 0), @truncate(packed >> 2));
+    try std.testing.expectEqual(@as(u8, 0b00), (byte >> 2) & 0x03);
+
+    // Third trit (-1 = 0b01) should be in bits [5:4]
+    try std.testing.expectEqual(@as(u8, 0b01), (byte >> 4) & 0x03);
 }
 
 test "maximum compression ratio" {
