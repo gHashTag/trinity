@@ -597,10 +597,6 @@ pub fn main() !void {
         },
         // Dev Utilities
         .doctor => try commands.runDoctorCommand(allocator, cmd_args),
-        .regen => {
-            const regen_mod = @import("regen.zig");
-            try regen_mod.runRegenCLI(allocator, cmd_args);
-        },
         .clean => try commands.runCleanCommand(allocator),
         .fmt_cmd => try commands.runFmtCommand(allocator),
         .stats_cmd => try commands.runStatsCommand(allocator),
@@ -765,10 +761,6 @@ pub fn main() !void {
         .fpga_demo => commands.runFpgaDemoCommand(allocator, cmd_args),
         .fpga => try tri_register.runFpgaCommand(allocator, cmd_args),
         .train => try tri_train.runTrainCommand(allocator, cmd_args),
-        .infer => {
-            const tri_infer = @import("tri_infer.zig");
-            try tri_infer.runInferCommand(allocator, cmd_args);
-        },
         .zenodo => try tri_zenodo.runZenodoCommand(allocator, cmd_args),
         .cloud => try tri_cloud.runCloudCommand(allocator, cmd_args),
         .farm => try tri_farm.runFarmCommand(allocator, cmd_args),
@@ -839,6 +831,33 @@ pub fn main() !void {
         .context_load => {
             const ctx_loader = @import("context_loader.zig");
             ctx_loader.runContextCommand(allocator, cmd_args);
+        },
+        // Demo/Bench commands (not yet implemented)
+        .tvc_demo, .tvc_stats, .agents_demo, .agents_bench,
+        .context_demo, .context_bench, .rag_demo, .rag_bench,
+        .voice_demo, .voice_bench, .sandbox_demo, .sandbox_bench,
+        .stream_demo, .stream_bench, .vision_demo, .vision_bench,
+        .finetune_demo, .finetune_bench, .batched_demo, .batched_bench,
+        .priority_demo, .priority_bench, .deadline_demo, .deadline_bench,
+        .multimodal_demo, .multimodal_bench, .tooluse_demo, .tooluse_bench,
+        .unified_demo, .unified_bench, .autonomous_demo, .autonomous_bench,
+        .orchestration_demo, .orchestration_bench, .mm_orch_demo, .mm_orch_bench,
+        .memory_demo, .memory_bench, .persist_demo, .persist_bench,
+        .spawn_demo, .spawn_bench, .cluster_demo, .cluster_bench,
+        .worksteal_demo, .worksteal_bench, .plugin_demo, .plugin_bench,
+        .comms_demo, .comms_bench,
+        // More demo/bench commands
+        .observe_demo, .observe_bench, .consensus_demo, .consensus_bench,
+        .specexec_demo, .specexec_bench, .governor_demo, .governor_bench,
+        .fedlearn_demo, .fedlearn_bench, .eventsrc_demo, .eventsrc_bench,
+        .capsec_demo, .capsec_bench, .dtxn_demo, .dtxn_bench,
+        .cache_demo, .cache_bench, .contract_demo, .contract_bench,
+        .workflow_demo, .workflow_bench,
+        // Math commands
+        .math, .constants_cmd, .phi, .fib, .lucas, .spiral, .gematria,
+        .formula_cmd, .sacred, .bio, .cosmos, .neuro, .chem => {
+            std.debug.print("Error: Command '{s}' not yet implemented\n", .{@tagName(cmd)});
+            std.process.exit(1);
         },
     }
 }
@@ -1413,10 +1432,6 @@ fn dispatchCommand(
         .verify => pipeline.runVerifyCommand(allocator),
         .verdict => pipeline.runVerdictCommandEx(allocator, cmd_args),
         .doctor => commands.runDoctorCommand(allocator, cmd_args),
-        .regen => {
-            const regen_mod = @import("regen.zig");
-            try regen_mod.runRegenCLI(allocator, cmd_args);
-        },
         .commands => tri_list.runCommandsList(allocator, cmd_args),
         .mcp => tri_mcp.runMcpCommand(allocator, cmd_args),
         // SWE Agent commands (agent namespace)

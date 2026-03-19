@@ -181,7 +181,7 @@ fn workerFn(
         const seq_len = @min(input.len, CONTEXT_LEN);
 
         // Reset KV cache before each new sequence (mandatory — different sequences!)
-        for (worker.blocks) |*block| {
+        for (&worker.blocks) |*block| {
             block.sacred_attn.resetCache();
         }
 
