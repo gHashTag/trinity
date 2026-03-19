@@ -1999,11 +1999,20 @@ struct ChatScreen: View {
             }
             .padding(.leading, 14)
 
-            TextField(placeholder, text: $input, onCommit: { send() })
-                .textFieldStyle(.plain)
-                .font(.system(size: 15))
-                .foregroundStyle(Color.white)
-                .frame(height: 24)  // FIXED: compact single-line (24pt)
+            MultilineInput(
+                text: $input,
+                placeholder: placeholder,
+                isFocused: $focused,
+                onSubmit: { send() },
+                onImagePaste: { name, path in
+                    attachedFiles.append((name: name, content: "[Image: \(name)]"))
+                },
+                onMentionTrigger: { query in
+                    mentionQuery = query ?? ""
+                    showMentionPopup = query != nil
+                }
+            )
+            .frame(height: 24)  // FIXED: compact single-line (24pt)
             .padding(.horizontal, LayoutConstants.cardPadding)
             .padding(.vertical, 14)
 
@@ -7215,11 +7224,14 @@ struct TruncationGradient: ViewModifier {
     }
 }
 
+// FIXME: temporarily disabled extension
+/*
 extension View {
     func truncationGradient(maxHeight: CGFloat = 200) -> some View {
         modifier(TruncationGradient(maxHeight: maxHeight))
     }
 }
+*/
 
 // MARK: - Save as Template Popover
 

@@ -20,21 +20,26 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const trinity_lang_mod = b.createModule(.{
-        .target = target,
-        .optimize = optimize,
-    });
+    // VIBEEC compiler module — single source of truth from trinity-nexus/lang
+    // FIXME: trinity-nexus submodule missing
+    // const trinity_lang_mod = b.createModule(.{
+    //     .root_source_file = b.path("trinity-nexus/lang/src/root.zig"),
+    //     .target = target,
+    //     .optimize = optimize,
+    // });
 
     // Generated serve module — from .tri spec: specs/integration/full-serve-v1.tri
     // Links libc because full-serve-v1.zig uses std.c.getpid() for daemonize
-//     // const serve_full_mod = b.createModule(.{
-//         .target = target,
-//         .optimize = optimize,
-//         .link_libc = true,
-//     });
-// 
-//     // Library artifact
-//     const lib = b.addLibrary(.{
+    // FIXME: trinity-nexus submodule missing
+    // const serve_full_mod = b.createModule(.{
+    //     .root_source_file = b.path("trinity-nexus/output/lang/zig/full-serve-v1.zig"),
+    //     .target = target,
+    //     .optimize = optimize,
+    //     .link_libc = true,
+    // });
+
+    // Library artifact
+    const lib = b.addLibrary(.{
         .name = "trinity",
         .linkage = .static,
         .root_module = b.createModule(.{
@@ -256,7 +261,8 @@ pub fn build(b: *std.Build) void {
             .target = target,
             .optimize = optimize,
             .imports = &.{
-                .{ .name = "trinity-lang", .module = trinity_lang_mod },
+                // FIXME: trinity-nexus submodule missing
+                // .{ .name = "trinity-lang", .module = trinity_lang_mod },
             },
         }),
     });
@@ -1115,6 +1121,8 @@ pub fn build(b: *std.Build) void {
     const b2t_step = b.step("b2t", "Run B2T CLI");
     b2t_step.dependOn(&run_b2t.step);
 
+    // Ralph CLI is in trinity-nexus/tools - run from there:
+    //   cd trinity-nexus/tools && zig build ralph
 
     // Claude UI Demo
     const claude_ui = b.addExecutable(.{
@@ -1948,7 +1956,8 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{
             .{ .name = "tri_colors", .module = tri_colors_mod },
-            , .module = serve_full_mod },
+            // FIXME: trinity-nexus submodule missing
+            // .{ .name = "serve_full", .module = serve_full_mod },
         },
     });
 
@@ -2026,7 +2035,8 @@ pub fn build(b: *std.Build) void {
                 // Sacred modules (v6.0)
                 .{ .name = "sacred", .module = sacred_mod },
                 // Generated serve module (from .tri spec: specs/integration/full-serve-v1.tri)
-                .{ .name = "serve_full", .module = serve_full_mod },
+                // FIXME: trinity-nexus submodule missing
+                // .{ .name = "serve_full", .module = serve_full_mod },
                 // OS Boot module (Temporal Trinity v1.0 — Order #021)
                 .{ .name = "os", .module = os_mod },
                 // BSD Elliptic Curve Scanner module
@@ -2673,4 +2683,20 @@ pub fn build(b: *std.Build) void {
     }
     const sacred_synth_step = b.step("sacred", "Synthesize Sacred GF16/TF3-9 ALU modules for XC7A100T");
     sacred_synth_step.dependOn(&run_sacred.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    // tri-sacred-synth-report — Parse Yosys JSON synthesis output (Phase 6.4)
+    // ═════════════════════════════════════════════════════════════════════════════
+    const sacred_synth_report = b.addExecutable(.{
+        .name = "tri-sacred-synth-report",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/sacred_synth_report.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    b.installArtifact(sacred_synth_report);
+
+    const sacred_synth_report_step = b.step("sacred-synth-report", "Parse Yosys JSON synthesis output for Sacred ALU");
+    sacred_synth_report_step.dependOn(&sacred_synth_report.step);
 }
