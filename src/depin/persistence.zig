@@ -23,6 +23,30 @@ pub const CLUSTER_BACKUP_FILE = ".tri-cluster.json.bak";
 pub const CLUSTER_BACKUP2_FILE = ".tri-cluster.json.bak2";
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// JSON STRUCTS — For serialization (must be declared before use)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const PeerStateJson = struct {
+    node_id: []const u8,
+    host: []const u8,
+    port: u16,
+    cluster_id: []const u8,
+    quality_score: f64,
+    last_seen: u64,
+    first_seen: u64,
+    role: []const u8,
+    tier: []const u8,
+};
+
+const ClusterStateJson = struct {
+    cluster_id: []const u8,
+    node_id: []const u8,
+    peers: []const PeerStateJson,
+    version: u32,
+    last_updated: u64,
+};
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // PEER STATE — Persisted peer information
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -93,7 +117,7 @@ pub const PeerState = struct {
 
     /// Check if peer is healthy (seen in last hour, quality > 0.3)
     pub fn isHealthy(self: *const PeerState) bool {
-        const now = std.time.timestamp();
+        const now = @as(u64, @intCast(std.time.timestamp()));
         const hours_since_seen: f64 = if (self.last_seen > 0)
             @as(f64, @floatFromInt(now - self.last_seen)) / 3600.0
         else
@@ -104,7 +128,7 @@ pub const PeerState = struct {
 
     /// Update quality score based on interaction
     pub fn updateQuality(self: *PeerState, success: bool, latency_ms: u64) void {
-        const now = std.time.timestamp();
+        const now = @as(u64, @intCast(std.time.timestamp()));
         self.last_seen = now;
 
         if (success) {
@@ -147,7 +171,7 @@ pub const ClusterState = struct {
             .node_id = node_id, // Caller owns memory
             .peers = .{},
             .version = 1,
-            .last_updated = std.time.timestamp(),
+            .last_updated = @as(u64, @intCast(@as(u64, @intCast(std.time.timestamp())))),
         };
     }
 
@@ -204,7 +228,7 @@ pub const ClusterState = struct {
         };
 
         try self.peers.append(allocator, new_peer);
-        self.last_updated = std.time.timestamp();
+        self.last_updated = @as(u64, @intCast(std.time.timestamp()));
     }
 
     /// Remove a peer
@@ -215,7 +239,7 @@ pub const ClusterState = struct {
                 allocator.free(peer.host);
                 allocator.free(peer.cluster_id);
                 _ = self.peers.orderedRemove(i);
-                self.last_updated = std.time.timestamp();
+                self.last_updated = @as(u64, @intCast(std.time.timestamp()));
                 return true;
             }
         }
@@ -234,15 +258,17 @@ pub const ClusterState = struct {
 
     /// Get only healthy peers
     pub fn getHealthyPeers(self: *const ClusterState, allocator: Allocator) ![]const *const PeerState {
-        var healthy = std.ArrayList(*const PeerState).init(allocator);
+        var healthy = std.ArrayListUnmanaged(*const PeerState){};
+        defer healthy.deinit(allocator);
+        try healthy.ensureTotalCapacity(allocator, self.peers.items.len);
 
         for (self.peers.items) |*peer| {
             if (peer.isHealthy()) {
-                try healthy.append(peer);
+                try healthy.append(allocator, peer);
             }
         }
 
-        return healthy.toOwnedSlice();
+        return healthy.toOwnedSlice(allocator);
     }
 
     /// Get cluster statistics
@@ -358,11 +384,11 @@ pub const PersistenceManager = struct {
     /// Save cluster state to .tri-cluster.json (atomic write)
     pub fn save(self: *PersistenceManager, state: *const ClusterState) !void {
         // Convert to JSON
-        var peer_list = std.ArrayList(PeerStateJson).init(self.allocator);
-        defer peer_list.deinit();
+        var peer_list = std.ArrayListUnmanaged(PeerStateJson){};
+        defer peer_list.deinit(self.allocator);
 
         for (state.peers.items) |peer| {
-            try peer_list.append(PeerStateJson{
+            try peer_list.append(self.allocator, PeerStateJson{
                 .node_id = peer.node_id,
                 .host = peer.host,
                 .port = peer.port,
@@ -380,25 +406,14 @@ pub const PersistenceManager = struct {
             .node_id = state.node_id,
             .peers = peer_list.items,
             .version = state.version,
-            .last_updated = std.time.timestamp(),
+            .last_updated = @as(u64, @intCast(std.time.timestamp())),
         };
 
-        const json_string = try std.json.stringifyAlloc(self.allocator, json_obj, .{ .whitespace = .{ .indent = .{ .Space = 2 } } });
-        defer self.allocator.free(json_string);
+        // Write JSON directly to file using std.json.stringifyToWriter
+        const file = try std.fs.cwd().createFile(temp_file, .{ .read = true });
+        defer file.close();
 
-        // Atomic write: write to temp file, then rename
-        const temp_file = CLUSTER_STATE_FILE ++ ".tmp";
-
-        // Rotate backups
-        self.rotateBackups() catch {};
-
-        // Write to temp file
-        {
-            const file = try std.fs.cwd().createFile(temp_file, .{ .read = true });
-            defer file.close();
-
-            try file.writeAll(json_string);
-        }
+        try std.json.stringifyToWriter(json_obj, .{ .whitespace = .{ .indent = .{ .Space = 2 } } }, file.writer());
 
         // Atomic rename
         try std.fs.cwd().rename(temp_file, CLUSTER_STATE_FILE);
@@ -440,30 +455,6 @@ pub const PersistenceManager = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// JSON STRUCTS — For serialization
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const PeerStateJson = struct {
-    node_id: []const u8,
-    host: []const u8,
-    port: u16,
-    cluster_id: []const u8,
-    quality_score: f64,
-    last_seen: u64,
-    first_seen: u64,
-    role: []const u8,
-    tier: []const u8,
-};
-
-const ClusterStateJson = struct {
-    cluster_id: []const u8,
-    node_id: []const u8,
-    peers: []const PeerStateJson,
-    version: u32,
-    last_updated: u64,
-};
-
-// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -472,7 +463,7 @@ test "ClusterState init and add peer" {
     var state = ClusterState.init(allocator, "test-cluster", "test-node");
     defer state.deinit(allocator);
 
-    const now = std.time.timestamp();
+    const now = @as(u64, @intCast(std.time.timestamp()));
     const peer = PeerState{
         .node_id = "peer-1",
         .host = "1.2.3.4",
@@ -496,7 +487,7 @@ test "ClusterState get peer" {
     var state = ClusterState.init(allocator, "test-cluster", "test-node");
     defer state.deinit(allocator);
 
-    const now = std.time.timestamp();
+    const now = @as(u64, @intCast(std.time.timestamp()));
     const peer = PeerState{
         .node_id = "peer-1",
         .host = "1.2.3.4",
@@ -521,7 +512,7 @@ test "ClusterState healthy peers filter" {
     var state = ClusterState.init(allocator, "test-cluster", "test-node");
     defer state.deinit(allocator);
 
-    const now = std.time.timestamp();
+    const now = @as(u64, @intCast(std.time.timestamp()));
     const healthy_peer = PeerState{
         .node_id = "healthy-1",
         .host = "1.2.3.4",
@@ -591,7 +582,7 @@ test "PersistenceManager save and load" {
     var manager = PersistenceManager.init(allocator);
     defer manager.deinit();
 
-    const now = std.time.timestamp();
+    const now = @as(u64, @intCast(std.time.timestamp()));
     var state = ClusterState.init(allocator, "test-cluster", "test-node");
 
     const peer = PeerState{
