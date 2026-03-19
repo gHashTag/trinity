@@ -8,7 +8,7 @@
 //! Run: zig build test-brain-stress
 
 const std = @import("std");
-const brain = @import("../brain/brain.zig");
+const brain = @import("brain");
 const allocator = std.testing.allocator;
 
 const NUM_TASKS: usize = 1000;

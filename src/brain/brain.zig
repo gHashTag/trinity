@@ -77,16 +77,17 @@ pub const BRAIN_ATLAS = [_]BrainRegion{
 pub const AgentCoordination = struct {
     allocator: std.mem.Allocator,
     registry: *basal_ganglia.Registry,
-    event_bus: reticular_formation.EventBus,
+    event_bus: *reticular_formation.EventBus,
     backoff_policy: locus_coeruleus.BackoffPolicy,
 
     /// Initialize agent coordination with all brain regions
     pub fn init(allocator: std.mem.Allocator) !AgentCoordination {
         const registry = try basal_ganglia.getGlobal(allocator);
+        const event_bus = try reticular_formation.getGlobal(allocator);
         return AgentCoordination{
             .allocator = allocator,
             .registry = registry,
-            .event_bus = reticular_formation.EventBus.init(),
+            .event_bus = event_bus,
             .backoff_policy = locus_coeruleus.BackoffPolicy.init(),
         };
     }
@@ -116,7 +117,6 @@ pub const AgentCoordination = struct {
             },
         };
 
-        // Event bus stub — TODO: implement actual publishing
         _ = self.event_bus.publish(.task_completed, event_data);
     }
 
@@ -148,6 +148,7 @@ pub const AgentCoordination = struct {
         active_claims: usize,
         total_events_published: u64,
         total_events_polled: u64,
+        buffered_events: usize,
     };
 
     pub fn getStats(self: *const AgentCoordination) CoordinationStats {
@@ -156,12 +157,104 @@ pub const AgentCoordination = struct {
             .active_claims = self.registry.claims.count(),
             .total_events_published = event_stats.published,
             .total_events_polled = event_stats.polled,
+            .buffered_events = event_stats.buffered,
         };
     }
 
     /// Poll recent events from reticular formation
     pub fn pollEvents(self: *AgentCoordination, since: i64, max_events: usize) ![]reticular_formation.AgentEventRecord {
         return self.event_bus.poll(since, self.allocator, max_events);
+    }
+
+    /// Health check for brain circuit — returns score 0-100
+    /// Score = (claims_ok * 0.4 + events_ok * 0.4 + backoff_ok * 0.2) * 100
+    pub fn healthCheck(self: *const AgentCoordination) struct {
+        score: f32,
+        healthy: bool,
+        details: struct {
+            claims_count: usize,
+            events_published: u64,
+            events_buffered: usize,
+        },
+    } {
+        const stats = self.getStats();
+
+        // Health criteria:
+        // - Claims: should have reasonable count (not overflowing)
+        // - Events: should be publishing and buffering
+        // - Backoff: always healthy (policy is stateless)
+
+        const claims_ok = stats.active_claims < 10_000; // Not overflowing
+        const events_ok = stats.total_events_published > 0 or stats.buffered_events == 0; // Either publishing or empty
+
+        const score = (@as(f32, if (claims_ok) 1 else 0) * 0.4 +
+            @as(f32, if (events_ok) 1 else 0) * 0.4 +
+            1.0 * 0.2) * 100.0; // Backoff always OK
+
+        return .{
+            .score = score,
+            .healthy = score >= 80.0,
+            .details = .{
+                .claims_count = stats.active_claims,
+                .events_published = stats.total_events_published,
+                .events_buffered = stats.buffered_events,
+            },
+        };
+    }
+
+    /// Export metrics in Prometheus format for monitoring
+    pub fn exportMetrics(self: *const AgentCoordination, writer: anytype) !void {
+        const stats = self.getStats();
+        const health = self.healthCheck();
+
+        try writer.print("# HELP s3ai_brain_active_claims Current number of active task claims\n", .{});
+        try writer.print("# TYPE s3ai_brain_active_claims gauge\n", .{});
+        try writer.print("s3ai_brain_active_claims {d}\n", .{stats.active_claims});
+
+        try writer.print("\n# HELP s3ai_brain_events_published Total events published\n", .{});
+        try writer.print("# TYPE s3ai_brain_events_published counter\n", .{});
+        try writer.print("s3ai_brain_events_published {d}\n", .{stats.total_events_published});
+
+        try writer.print("\n# HELP s3ai_brain_events_polled Total event polls\n", .{});
+        try writer.print("# TYPE s3ai_brain_events_polled counter\n", .{});
+        try writer.print("s3ai_brain_events_polled {d}\n", .{stats.total_events_polled});
+
+        try writer.print("\n# HELP s3ai_brain_events_buffered Current buffered events\n", .{});
+        try writer.print("# TYPE s3ai_brain_events_buffered gauge\n", .{});
+        try writer.print("s3ai_brain_events_buffered {d}\n", .{stats.buffered_events});
+
+        try writer.print("\n# HELP s3ai_brain_health_score Brain health score (0-100)\n", .{});
+        try writer.print("# TYPE s3ai_brain_health_score gauge\n", .{});
+        try writer.print("s3ai_brain_health_score {d:.1}\n", .{health.score});
+
+        try writer.print("\n# HELP s3ai_brain_healthy Brain health status (1=healthy, 0=unhealthy)\n", .{});
+        try writer.print("# TYPE s3ai_brain_healthy gauge\n", .{});
+        try writer.print("s3ai_brain_healthy {d}\n", .{@intFromBool(health.healthy)});
+    }
+
+    /// Dump current brain state for debugging
+    pub fn dump(self: *const AgentCoordination, writer: anytype) !void {
+        const stats = self.getStats();
+        const health = self.healthCheck();
+
+        try writer.print("╔═══════════════════════════════════════════════════════════════╗\n", .{});
+        try writer.print("║  S³AI BRAIN DUMP — {s:>19}                  ║\n", .{"v5.1"});
+        try writer.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
+        try writer.print("║  HEALTH SCORE: {d:.1}/100  [{s:>10}]                        ║\n", .{ health.score, if (health.healthy) "HEALTHY" else "UNHEALTHY" });
+        try writer.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
+        try writer.print("║  Basal Ganglia (Action Selection)                            ║\n", .{});
+        try writer.print("║    Active Claims:    {d:>6}                                 ║\n", .{stats.active_claims});
+        try writer.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
+        try writer.print("║  Reticular Formation (Broadcast Alerting)                    ║\n", .{});
+        try writer.print("║    Events Published: {d:>6}                                 ║\n", .{stats.total_events_published});
+        try writer.print("║    Events Polled:    {d:>6}                                 ║\n", .{stats.total_events_polled});
+        try writer.print("║    Events Buffered:  {d:>6}                                 ║\n", .{stats.buffered_events});
+        try writer.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
+        try writer.print("║  Locus Coeruleus (Arousal Regulation)                        ║\n", .{});
+        try writer.print("║    Strategy:         {s:>30}        ║\n", .{@tagName(self.backoff_policy.strategy)});
+        try writer.print("║    Initial Delay:    {d:>6} ms                             ║\n", .{self.backoff_policy.initial_ms});
+        try writer.print("║    Max Delay:        {d:>6} ms                             ║\n", .{self.backoff_policy.max_ms});
+        try writer.print("╚═══════════════════════════════════════════════════════════════╝\n", .{});
     }
 };
 
@@ -198,4 +291,16 @@ test "AgentCoordination claim and complete" {
     // Verify claim is no longer valid
     const claimed_again = try coord.claimTask(task_id, agent_id);
     try std.testing.expect(claimed_again); // Can claim again after completion
+}
+
+test "AgentCoordination health check" {
+    const allocator = std.testing.allocator;
+    var coord = try AgentCoordination.init(allocator);
+    defer {
+        // coord.deinit() would go here when implemented
+    }
+
+    const health = coord.healthCheck();
+    try std.testing.expect(health.healthy);
+    try std.testing.expect(health.score >= 80.0);
 }

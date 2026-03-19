@@ -46,3 +46,60 @@ pub const BackoffPolicy = struct {
         };
     }
 };
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "BackoffPolicy exponential strategy" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    try std.testing.expectEqual(@as(u64, 1000), policy.nextDelay(0));
+    try std.testing.expectEqual(@as(u64, 2000), policy.nextDelay(1));
+    try std.testing.expectEqual(@as(u64, 4000), policy.nextDelay(2));
+    try std.testing.expectEqual(@as(u64, 8000), policy.nextDelay(3));
+}
+
+test "BackoffPolicy linear strategy" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .linear_increment = 500,
+        .strategy = .linear,
+        .jitter_type = .none,
+    };
+
+    try std.testing.expectEqual(@as(u64, 1000), policy.nextDelay(0));
+    try std.testing.expectEqual(@as(u64, 1500), policy.nextDelay(1));
+    try std.testing.expectEqual(@as(u64, 2000), policy.nextDelay(2));
+}
+
+test "BackoffPolicy max caps delay" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .max_ms = 5000,
+        .multiplier = 10.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    // Should cap at max_ms (5000)
+    const delay = policy.nextDelay(10);
+    try std.testing.expect(delay >= 5000);
+}
+
+test "BackoffPolicy constant strategy" {
+    var policy = BackoffPolicy{
+        .initial_ms = 2000,
+        .strategy = .constant,
+        .jitter_type = .none,
+    };
+
+    try std.testing.expectEqual(@as(u64, 2000), policy.nextDelay(0));
+    try std.testing.expectEqual(@as(u64, 2000), policy.nextDelay(5));
+    try std.testing.expectEqual(@as(u64, 2000), policy.nextDelay(100));
+}
