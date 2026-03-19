@@ -245,6 +245,91 @@ pub const RailwayApi = struct {
         return self.query(gql, vars);
     }
 
+    /// Get service ID by name via project services query.
+    /// Returns null if service not found.
+    pub fn getServiceIdByName(self: *Self, project_id: []const u8, service_name: []const u8) RailwayApiError!?[]const u8 {
+        const gql = "query($pid: String!) { project(id: $pid) { services { edges { node { id name } } } } }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"pid\":\"{s}\"}}", .{project_id}) catch return error.OutOfMemory;
+        defer self.allocator.free(vars);
+
+        const resp = try self.query(gql, vars);
+        defer self.allocator.free(resp);
+
+        const parsed = std.json.parseFromSlice(std.json.Value, self.allocator, resp, .{}) catch return error.InvalidJson;
+        defer parsed.deinit();
+
+        if (parsed.value != .object) return null;
+        const project = parsed.value.object.get("project") orelse return null;
+        const services = project.object.get("services") orelse return null;
+        const edges = services.object.get("edges") orelse return null;
+
+        for (edges.array.items) |edge| {
+            const node = edge.object.get("node") orelse continue;
+            const name = node.object.get("name") orelse continue;
+            const id = node.object.get("id") orelse continue;
+
+            if (name == .string and std.mem.eql(u8, service_name, name.string)) {
+                if (id == .string) {
+                    const result = self.allocator.dupe(u8, id.string) catch return error.OutOfMemory;
+                    return result;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /// Get latest deployment ID for a service.
+    /// Returns null if no deployments found.
+    pub fn getLatestDeploymentId(self: *Self, service_id: []const u8) RailwayApiError!?[]const u8 {
+        const gql = "query($sid: String!) { service(id: $sid) { deployments(first: 1, orderBy: {field: CREATED_AT, direction: DESC}) { edges { node { id } } } } }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"sid\":\"{s}\"}}", .{service_id}) catch return error.OutOfMemory;
+        defer self.allocator.free(vars);
+
+        const resp = try self.query(gql, vars);
+        defer self.allocator.free(resp);
+
+        const parsed = std.json.parseFromSlice(std.json.Value, self.allocator, resp, .{}) catch return error.InvalidJson;
+        defer parsed.deinit();
+
+        const service = parsed.value.object.get("service") orelse return null;
+        const deployments = service.object.get("deployments") orelse return null;
+        const edges = deployments.object.get("edges") orelse return null;
+
+        if (edges.array.items.len == 0) return null;
+        const edge = edges.array.items[0];
+        const node = edge.object.get("node") orelse return null;
+        const id = node.object.get("id") orelse return null;
+
+        if (id == .string) {
+            const result = self.allocator.dupe(u8, id.string) catch return error.OutOfMemory;
+            return result;
+        }
+        return null;
+    }
+
+    /// Get deployment status (e.g. "SUCCESS", "BUILDING", "FAILED").
+    /// Returns "UNKNOWN" on error.
+    pub fn getDeploymentStatus(self: *Self, deployment_id: []const u8) RailwayApiError![]const u8 {
+        const gql = "query($did: String!) { deployment(id: $did) { status } }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"did\":\"{s}\"}}", .{deployment_id}) catch return error.OutOfMemory;
+        defer self.allocator.free(vars);
+
+        const resp = try self.query(gql, vars);
+        defer self.allocator.free(resp);
+
+        const parsed = std.json.parseFromSlice(std.json.Value, self.allocator, resp, .{}) catch {
+            return self.allocator.dupe(u8, "UNKNOWN");
+        };
+        defer parsed.deinit();
+
+        const deployment = parsed.value.object.get("deployment") orelse return self.allocator.dupe(u8, "UNKNOWN");
+        const status = deployment.object.get("status") orelse return self.allocator.dupe(u8, "UNKNOWN");
+
+        if (status == .string) return self.allocator.dupe(u8, status.string);
+        return self.allocator.dupe(u8, "UNKNOWN");
+    }
+
     /// Rename a service (serviceUpdate mutation with name field).
     pub fn serviceUpdateName(self: *Self, service_id: []const u8, new_name: []const u8) RailwayApiError!void {
         const gql = "mutation($id: ID!, $name: String!) { serviceUpdate(input: {id: $id, name: $name}) { service { id name } } }";

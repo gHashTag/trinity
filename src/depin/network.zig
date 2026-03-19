@@ -7,6 +7,7 @@
 const std = @import("std");
 const bootstrap = @import("bootstrap");
 const persistence = @import("persistence");
+const metrics_mod = @import("metrics");
 
 // Forward decls for firebird types (will be imported by build.zig)
 pub const NodeStatus = enum {

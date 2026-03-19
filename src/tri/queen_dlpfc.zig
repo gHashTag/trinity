@@ -26,7 +26,7 @@ const insula = @import("insula.zig");
 const locus_coeruleus = @import("phoenix_locus_coeruleus.zig");
 
 // S³AI Brain Module Integration
-const brain = @import("brain.zig");
+const brain = @import("brain/brain.zig");
 const Brain = brain.Brain;
 const WorkerLiveState = brain.WorkerLiveState;
 const SafetyVerdict = brain.SafetyVerdict;

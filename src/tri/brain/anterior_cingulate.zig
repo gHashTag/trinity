@@ -352,15 +352,11 @@ pub const ACC = struct {
 
     /// Verify worker is safe to action upon (before kill/restart)
     pub fn verifySafeToAction(
-        self: *Self,
         allocator: Allocator,
         service_name: []const u8,
         action: Action,
-        hippocampus: *const hippocampus_training.Hippocampus,
         thalamus: *const thalamus_logs.Thalamus,
     ) !VerificationResult {
-        _ = allocator; // Suppress unused warning
-
         var conflicts = std.ArrayList(Conflict).init(allocator);
         defer {
             for (conflicts.items) |c| {
@@ -458,7 +454,7 @@ pub const ACC = struct {
         }
 
         const health_percent: f32 = if (workers.items.len > 0)
-            @floatFromInt(@as(f32, @as(i32, workers.items.len) - @as(i32, stale_count))) * 100.0 / @floatFromInt(@as(f32, @as(i32, workers.items.len)))
+            @as(f32, @floatFromInt(workers.items.len - stale_count)) * 100.0 / @as(f32, @floatFromInt(workers.items.len))
         else
             100.0;
 
@@ -540,23 +536,17 @@ fn logConflict(self: *ACC, conflict: *const Conflict, insula: *insula_system.Ins
 }
 
 test "acc_status_mismatch_detection" {
-    const allocator = std.testing.allocator;
-    var acc = ACC.initDefault(allocator);
-
     // Mock hippocampus with training worker
     // (In real test, would use actual Hippocampus instance)
-    _ = acc;
-    _ = allocator;
+    const allocator = std.testing.allocator;
+    _ = ACC.initDefault(allocator);
 }
 
 test "acc_verify_safe_action" {
-    const allocator = std.testing.allocator;
-    var acc = ACC.initDefault(allocator);
-
     // Mock verification logic
     // (In real test, would use actual Thalamus/Hippocampus instances)
-    _ = acc;
-    _ = allocator;
+    const allocator = std.testing.allocator;
+    _ = ACC.initDefault(allocator);
 }
 
 pub fn copyToFixed(comptime N: usize, dest: *[N]u8, len_ptr: anytype, src: []const u8) void {

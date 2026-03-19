@@ -248,8 +248,7 @@ test "unpack ternary 16" {
 }
 
 test "pack ternary slice roundtrip" {
-    const original = [_]i8{ -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, 0,
-                         -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1 };
+    const original = [_]i8{ -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, 0, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1, 0, 1, -1 };
 
     const encoded_size = (original.len + 15) / 16 * 4;
     var encoded_buf: [encoded_size]u8 = undefined;
@@ -321,10 +320,10 @@ test "string representation" {
     const str = tritsToString(trits);
 
     // Verify encoding
-    try std.testing.expectEqual(@as(u8, '-'), str[0]);  // -1
-    try std.testing.expectEqual(@as(u8, '0'), str[1]);  // 0
-    try std.testing.expectEqual(@as(u8, '+'), str[2]);  // 1
-    try std.testing.expectEqual(@as(u8, '0'), str[3]);  // 0
+    try std.testing.expectEqual(@as(u8, '-'), str[0]); // -1
+    try std.testing.expectEqual(@as(u8, '0'), str[1]); // 0
+    try std.testing.expectEqual(@as(u8, '+'), str[2]); // 1
+    try std.testing.expectEqual(@as(u8, '0'), str[3]); // 0
 }
 
 test "invalid trit treated as zero" {

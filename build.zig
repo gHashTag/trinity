@@ -572,6 +572,32 @@ pub fn build(b: *std.Build) void {
     const run_extension_tests = b.addRunArtifact(extension_tests);
     test_step.dependOn(&run_extension_tests.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // DePIN modules for directed discovery (Phase 1.1)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const depin_bootstrap_mod = b.createModule(.{
+        .root_source_file = b.path("src/depin/bootstrap.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const depin_persistence_mod = b.createModule(.{
+        .root_source_file = b.path("src/depin/persistence.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const depin_network_mod = b.createModule(.{
+        .root_source_file = b.path("src/depin/network.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "bootstrap", .module = depin_bootstrap_mod },
+            .{ .name = "persistence", .module = depin_persistence_mod },
+        },
+    });
+
     // DePIN tests
     const depin_tests = b.addTest(.{
         .root_module = b.createModule(.{
@@ -585,11 +611,7 @@ pub fn build(b: *std.Build) void {
 
     // DePIN Network tests — UDP/TCP/CRDT (Golden Chain #100)
     const depin_network_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/depin/network.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
+        .root_module = depin_network_mod,
     });
     const run_depin_network_tests = b.addRunArtifact(depin_network_tests);
     test_step.dependOn(&run_depin_network_tests.step);
@@ -1948,32 +1970,6 @@ pub fn build(b: *std.Build) void {
         },
     });
 
-    // ═══════════════════════════════════════════════════════════════════════════════
-    // DePIN modules for directed discovery (Phase 1.1)
-    // ═══════════════════════════════════════════════════════════════════════════════
-
-    const depin_bootstrap_mod = b.createModule(.{
-        .root_source_file = b.path("src/depin/bootstrap.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    const depin_persistence_mod = b.createModule(.{
-        .root_source_file = b.path("src/depin/persistence.zig"),
-        .target = target,
-        .optimize = optimize,
-    });
-
-    const depin_network_mod = b.createModule(.{
-        .root_source_file = b.path("src/depin/network.zig"),
-        .target = target,
-        .optimize = optimize,
-        .imports = &.{
-            .{ .name = "bootstrap", .module = depin_bootstrap_mod },
-            .{ .name = "persistence", .module = depin_persistence_mod },
-        },
-    });
-
     // TRI - Unified Trinity CLI
     // Sacred modules (v6.0)
     const sacred_const_mod = b.createModule(.{
@@ -2071,6 +2067,18 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "igla_tvc_chat", .module = igla_tvc_chat_mod },
                 .{ .name = "pas_orchestrator", .module = pas_orchestrator_mod },
                 .{ .name = "api", .module = api_mod },
+                // P3.11: Token rotator for z.ai keys
+                .{ .name = "token_rotator", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/token_rotator.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
+                // P3.11: Token CLI commands
+                .{ .name = "tri_token", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/tri_token.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
             },
         }),
     });
