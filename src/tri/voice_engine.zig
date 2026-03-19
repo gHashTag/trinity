@@ -143,6 +143,7 @@ fn ralphVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta,
             }) catch "Ralph works.";
         },
         .down => std.fmt.bufPrint(buf, "\xd0\x9b\xd0\xb5\xd0\xb6\xd1\x83. \xd0\x9f\xd0\xb5\xd1\x80\xd0\xb5\xd0\xb7\xd0\xb0\xd0\xbf\xd1\x83\xd1\x81\xd1\x82\xd0\xb8\xd1\x82\xd0\xb5.", .{}) catch "Ralph lies down.",
+            }
     };
 }
 
@@ -182,7 +183,7 @@ fn muVoice(agent: AgentState, snapshot: FacultySnapshot, delta: FacultyDelta, bu
     return switch (agent.status) {
         .stub => std.fmt.bufPrint(buf, "\xd0\xa1\xd0\x9f\xd0\x98\xd0\xa2. {d} \xd0\xbf\xd0\xb0\xd1\x82\xd1\x82\xd0\xb5\xd1\x80\xd0\xbd\xd0\xbe\xd0\xb2 \xd0\xb2\xd1\x80\xd1\x83\xd1\x87\xd0\xbd\xd1\x83\xd1\x8e.", .{
             snapshot.mu_patterns,
-        }) catch "TRI sleeps.";
+        }) catch "TRI sleeps.",
         .up => blk: {
             const hb = readMuHeartbeat();
             if (hb.wake > 0) {
