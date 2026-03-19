@@ -6,15 +6,19 @@ on:
       - 'src/hslm/simd_bench.zig'
       - 'src/hslm/f16_utils.zig'
       - 'src/hslm/simd_config.zig'
+      - '.github/workflows/simd-bench.yml'
 
 jobs:
   benchmark:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: ziglang/setup-zig@v1
-        with:
-          zig-version: 0.15.2
+      
+      - name: Install Zig
+        run: |
+          wget https://ziglang.org/download/0.15.2/zig-linux-x86_64-0.15.2.tar.xz
+          tar -xf zig-linux-x86_64-0.15.2.tar.xz
+          echo "$PWD/zig-linux-x86_64-0.15.2" >> $GITHUB_PATH
       
       - name: Run SIMD Benchmarks
         run: |
