@@ -18,9 +18,8 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const thalamus_logs = @import("thalamus_logs.zig");
+const contracts = @import("contracts.zig");
 const LiveStatus = thalamus_logs.LiveStatus;
-const WorkerLiveState = thalamus_logs.WorkerLiveState;
-const WorkerMetrics = thalamus_logs.WorkerMetrics;
 
 // ═════════════════════════════════════════════════════════════════════════════
 // DATA STRUCTURES
@@ -203,6 +202,20 @@ pub const Hippocampus = struct {
     pub fn getCachedStatus(self: *const Self, service_name: []const u8) ?LiveStatus {
         const worker = self.cache.getWorker(service_name) orelse return null;
         return worker.status;
+    }
+
+    /// Get worker view from cache with explicit source and staleness markers (Phase 3)
+    /// ALL returns from Hippocampus have source: .cache and stale calculated from last_updated
+    pub fn getCachedView(self: *const Self, service_name: []const u8) ?contracts.WorkerView {
+        const cached = self.cache.getWorker(service_name) orelse return null;
+
+        return contracts.WorkerView.fromCached(
+            self.allocator,
+            service_name,
+            cached.status,
+            cached.step,
+            cached.last_updated,
+        );
     }
 
     /// Get all cached workers

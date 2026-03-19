@@ -12,6 +12,7 @@ const context = @import("context.zig");
 const claude_md = @import("claude_md.zig");
 const memory_mod = @import("memory.zig");
 const px_bridge = @import("perplexity_bridge.zig");
+const token_rotator = @import("token_rotator");
 
 const default_api_base = "https://api.anthropic.com";
 const api_version = "2023-06-01";
@@ -111,6 +112,13 @@ pub fn main() !void {
     var perms = permissions.loadConfig(allocator);
     defer perms.deinit(allocator);
 
+    // Initialize token rotator for z.ai tokens
+    var rotator = token_rotator.TokenRotator.init(allocator) catch |err| {
+        std.debug.print("[tri-api] Token rotator init failed: {}, using direct API key\n", .{@errorName(err)});
+        error.NoTokensAvailable;
+    };
+    defer rotator.deinit();
+
     // Load MCP servers from settings
     var mcp = mcp_client.McpManager.init(allocator);
     defer mcp.deinit();
@@ -187,7 +195,7 @@ pub fn main() !void {
             try messages.appendSlice(allocator, "\"}");
 
             // Run agentic loop for this prompt
-            const stats = runAgenticLoop(allocator, api_key, api_url, model, system_prompt, &messages, &tool_exec, &mcp, &ui);
+            const stats = runAgenticLoop(allocator, api_url, model, system_prompt, &messages, &tool_exec, &mcp, &ui, &rotator);
             ui.printTokens(stats.input_tokens, stats.output_tokens);
 
             // Save session
@@ -250,7 +258,7 @@ pub fn main() !void {
 
     std.debug.print("[tri-api] permissions: {d} allow, {d} deny rules\n", .{ perms.allow_rules.items.len, perms.deny_rules.items.len });
 
-    const stats = runAgenticLoop(allocator, api_key, api_url, model, system_prompt, &messages, &tool_exec, &mcp, null);
+    const stats = runAgenticLoop(allocator, api_url, model, system_prompt, &messages, &tool_exec, &mcp, null, &rotator);
 
     // Close messages array and save session
     try messages.appendSlice(allocator, "]");
@@ -264,7 +272,6 @@ const LoopStats = struct { input_tokens: u32, output_tokens: u32 };
 /// Run the agentic loop: send messages → parse → execute tools → repeat.
 fn runAgenticLoop(
     allocator: std.mem.Allocator,
-    api_key: []const u8,
     api_url_param: []const u8,
     model: []const u8,
     system_prompt: ?[]const u8,
@@ -272,6 +279,7 @@ fn runAgenticLoop(
     tool_exec: *executor.ToolExecutor,
     mcp: *mcp_client.McpManager,
     ui_opt: ?*tui.Tui,
+    rotator: *token_rotator.TokenRotator,
 ) LoopStats {
     var total_input_tokens: u32 = 0;
     var total_output_tokens: u32 = 0;
@@ -290,7 +298,7 @@ fn runAgenticLoop(
             if (ctx.isNearLimit(messages)) {
                 if (ctx.buildCompactionRequest(messages, model)) |compact_body| {
                     defer allocator.free(compact_body);
-                    if (httpPost(allocator, api_key, api_url_param, compact_body)) |summary_resp| {
+                    if (httpPost(allocator, api_url_param, compact_body, null)) |summary_resp| {
                         defer allocator.free(summary_resp);
                         var parsed_summary = proto.parseResponse(allocator, summary_resp);
                         defer parsed_summary.deinit(allocator);
@@ -342,7 +350,7 @@ fn runAgenticLoop(
             std.debug.print("[tri-api] turn {d}: sending {d} bytes...\n", .{ turn + 1, request_body.items.len });
         }
 
-        const response_body = httpPost(allocator, api_key, api_url_param, request_body.items) catch |err| {
+        const response_body = httpPost(allocator, api_url_param, request_body.items, &rotator) catch |err| {
             if (ui_opt) |ui| {
                 ui.printError(@errorName(err));
             } else {
@@ -481,7 +489,7 @@ fn extractContentArray(body: []const u8) ?[]const u8 {
 }
 
 /// POST JSON to Anthropic Messages API using Zig 0.15 std.http.Client.
-fn httpPost(allocator: std.mem.Allocator, api_key: []const u8, url: []const u8, body: []const u8) ![]const u8 {
+fn httpPost(allocator: std.mem.Allocator, url: []const u8, body: []const u8, rotator_opt: ?*token_rotator.TokenRotator) ![]const u8 {
     var client = std.http.Client{ .allocator = allocator };
     defer client.deinit();
 
@@ -489,6 +497,23 @@ fn httpPost(allocator: std.mem.Allocator, api_key: []const u8, url: []const u8, 
         std.log.err("tri-api: invalid API URL '{s}': {}", .{ url, err });
         return error.InvalidUri;
     };
+
+    // Get API key from rotator or use direct api_key for fallback
+    var api_key_holder: ?[]const u8 = null;
+    const api_key = if (rotator_opt) |r| blk: {
+        const key = try r.getNextToken();
+        api_key_holder = key;
+        break :blk key;
+    } else blk: {
+        // Fallback to direct ANTHROPIC_API_KEY (for --serve mode or no rotator)
+        const key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch {
+            std.debug.print("error: ANTHROPIC_API_KEY not set\n", .{});
+            std.process.exit(1);
+        };
+        api_key_holder = key;
+        break :blk key;
+    };
+    defer if (api_key_holder) |k| allocator.free(k);
 
     var req = client.request(.POST, uri, .{
         .extra_headers = &.{
@@ -510,8 +535,9 @@ fn httpPost(allocator: std.mem.Allocator, api_key: []const u8, url: []const u8, 
     var redirect_buf: [0]u8 = .{};
     var response = req.receiveHead(&redirect_buf) catch return error.ConnectionFailed;
 
-    if (@intFromEnum(response.head.status) >= 400) {
-        std.debug.print("[tri-api] API status: {d}\n", .{@intFromEnum(response.head.status)});
+    const status_code = @intFromEnum(response.head.status);
+    if (status_code >= 400) {
+        std.debug.print("[tri-api] API status: {d}\n", .{status_code});
     }
 
     // Allocate decompression buffer based on content encoding (handles gzip/deflate from proxies like z.ai)
@@ -527,6 +553,18 @@ fn httpPost(allocator: std.mem.Allocator, api_key: []const u8, url: []const u8, 
     var decompress: std.http.Decompress = undefined;
     var reader = response.readerDecompressing(&transfer_buf, &decompress, decompress_buffer);
     const resp_body = reader.allocRemaining(allocator, std.Io.Limit.limited(10 * 1024 * 1024)) catch return error.OutOfMemory;
+
+    // Check for 429 rate limit error (z.ai format)
+    if (rotator_opt) |r| {
+        if (token_rotator.is429Error(resp_body)) {
+            const retry_after = token_rotator.extractRetryAfter(resp_body);
+            r.on429Error(retry_after) catch |err| {
+                std.debug.print("[tri-api] Failed to handle 429: {}\n", .{@errorName(err)});
+            };
+            std.debug.print("[tri-api] Rate limit hit, rotating token...\n", .{});
+            return error.RateLimitExceeded;
+        }
+    }
 
     return resp_body;
 }
