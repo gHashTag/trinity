@@ -16,6 +16,7 @@ const basal_ganglia = brain.basal_ganglia;
 const reticular_formation = brain.reticular_formation;
 const locus_coeruleus = brain.locus_coeruleus;
 const amygdala = brain.amygdala;
+const prefrontal_cortex = brain.prefrontal_cortex;
 
 // Shared orchestrator types — local copy to avoid circular dep on trinity.vibeec
 // Source of truth: src/vibeec/tri_orchestrator.zig
@@ -417,8 +418,87 @@ pub const OrchestratorCoordinator = struct {
 
     /// Assign pending tasks to available nodes
     pub fn assignTasks(self: *OrchestratorCoordinator) !usize {
-        var assigned: usize = 0;
+        // Prefrontal Cortex: executive decision before assigning tasks
+        const decision = try self.makeExecutiveDecision();
+        if (self.config.verbose) {
+            std.debug.print("[PrefrontalCortex] Executive decision: {s} (confidence: {d:.1})\n", .{
+                @tagName(decision.action), decision.confidence,
+            });
+        }
 
+        // Act on executive decision
+        switch (decision.action) {
+            .pause => {
+                // Pause task acceptance - don't assign anything
+                if (self.config.verbose) {
+                    std.debug.print("[PrefrontalCortex] Pausing task acceptance due to: {s}\n", .{decision.reasoning});
+                }
+                return 0;
+            },
+            .throttle => {
+                // Throttle - only assign half the tasks
+                const max_assign = @max(1, self.task_queue.items.len / 2);
+                var assigned: usize = 0;
+                var i: usize = 0;
+                while (i < self.task_queue.items.len and assigned < max_assign) {
+                    const task = &self.task_queue.items[i];
+                    if (try self.assignToNode(task)) {
+                        const task_copy = self.task_queue.orderedRemove(i);
+                        try self.active_tasks.put(task_copy.id, task_copy);
+                        self.metrics.pending_tasks -= 1;
+                        self.metrics.running_tasks += 1;
+                        assigned += 1;
+                    } else {
+                        i += 1;
+                    }
+                }
+                return assigned;
+            },
+            .scale_up => {
+                // Scale up - spawn more agents if possible
+                if (self.nodes.len < self.config.max_nodes) {
+                    if (self.config.verbose) {
+                        std.debug.print("[PrefrontalCortex] Scaling up: adding new agent\n", .{});
+                    }
+                    // Note: actual agent spawning would happen here
+                }
+                // Fall through to normal assignment
+            },
+            .scale_down => {
+                // Scale down - remove idle agents
+                if (self.config.verbose) {
+                    std.debug.print("[PrefrontalCortex] Scaling down: removing idle agents\n", .{});
+                }
+                // Note: actual agent removal would happen here
+            },
+            .proceed => {
+                // Normal operation
+            },
+            .alert => {
+                // Alert - critical condition requiring intervention
+                std.debug.print("[PrefrontalCortex] ALERT: {s}\n", .{decision.reasoning});
+                // Continue with reduced assignment
+                const max_assign = @max(1, self.task_queue.items.len / 4);
+                var assigned: usize = 0;
+                var i: usize = 0;
+                while (i < self.task_queue.items.len and assigned < max_assign) {
+                    const task = &self.task_queue.items[i];
+                    if (try self.assignToNode(task)) {
+                        const task_copy = self.task_queue.orderedRemove(i);
+                        try self.active_tasks.put(task_copy.id, task_copy);
+                        self.metrics.pending_tasks -= 1;
+                        self.metrics.running_tasks += 1;
+                        assigned += 1;
+                    } else {
+                        i += 1;
+                    }
+                }
+                return assigned;
+            },
+        }
+
+        // Normal assignment for proceed/scale_up/scale_down
+        var assigned: usize = 0;
         var i: usize = 0;
         while (i < self.task_queue.items.len) {
             const task = &self.task_queue.items[i];
@@ -777,6 +857,26 @@ pub const OrchestratorCoordinator = struct {
         }
 
         return false;
+    }
+
+    /// Make executive decision using Prefrontal Cortex
+    fn makeExecutiveDecision(self: *OrchestratorCoordinator) !prefrontal_cortex.Decision {
+        const health = self.coordination.healthCheck();
+        const stats = self.coordination.getStats();
+
+        // Build decision context
+        const ctx = prefrontal_cortex.DecisionContext{
+            .task_count = self.metrics.pending_tasks,
+            .active_agents = self.nodes.len,
+            .error_rate = if (self.metrics.total_tasks > 0)
+                @as(f32, @floatFromInt(self.metrics.failed_tasks)) / @as(f32, @floatFromInt(self.metrics.total_tasks))
+            else
+                0.0,
+            .avg_latency_ms = 0, // Would need to track actual latency
+            .memory_usage_pct = 50.0, // Placeholder - would need actual memory tracking
+        };
+
+        return prefrontal_cortex.PrefrontalCortex.decide(ctx);
     }
 };
 
