@@ -19,9 +19,17 @@ const std = @import("std");
 const types = @import("train_types.zig");
 const diag = @import("train_diagnostics.zig");
 const hippocampus = @import("hippocampus.zig");
+const train_live = @import("train_live.zig");
 const CheckpointInfo = types.CheckpointInfo;
 const TrainLogEntry = types.TrainLogEntry;
 const Sacred = types.Sacred;
+
+// S³AI Brain modules
+const brain = @import("brain/brain.zig");
+const Thalamus = brain.Thalamus;
+const WorkerLiveState = brain.WorkerLiveState;
+const LiveStatus = brain.LiveStatus;
+const Conflict = brain.Conflict;
 
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
@@ -741,6 +749,16 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
     print("   Embed: 243 (3⁵) │ Hidden: 729 (3⁶) │ Context: 81 (3⁴)\n", .{});
     print("   Params: ~1,952,991 │ Ternary: ~390 KB │ Bits/param: {s}1.58{s}\n\n", .{ GREEN, RESET });
 
+    // ═══════ SACRED WORKERS LIVE STATUS ═══════
+    // Primary source of truth — NOT evolution_state.json cache!
+    const token_2 = std.posix.getenv("RAILWAY_API_TOKEN_2") orelse "";
+    const project_id_2 = std.posix.getenv("RAILWAY_PROJECT_ID_2") orelse "";
+    if (token_2.len > 0 and project_id_2.len > 0) {
+        train_live.checkSacredWorkersLive(allocator, "_2") catch {};
+    } else {
+        print("{s}⚠️  Sacred workers live check disabled — set RAILWAY_API_TOKEN_2 + RAILWAY_PROJECT_ID_2{s}\n\n", .{ YELLOW, RESET });
+    }
+
     // ═══════ FARM EVOLUTION STATE ═══════
     const state_file = std.fs.cwd().openFile(".trinity/evolution_state.json", .{}) catch {
         print("{s}   ⚠️  No evolution state — run: tri farm evolve init{s}\n\n", .{ YELLOW, RESET });
@@ -1404,12 +1422,71 @@ fn runDashboard(allocator: std.mem.Allocator, quick: bool) !void {
     if (stalled > 0 or diverged > 0 or stuck > 0 or mirage > 0) {
         print("{s}{s}🚨 ALERTS{s}\n", .{ RED, BOLD, RESET });
         var buf: [256]u8 = undefined;
+
+        // Load sacred workers list for live verification
+        var sacred_list = std.ArrayList([]const u8){};
+        defer {
+            for (sacred_list.items) |s| allocator.free(s);
+            sacred_list.deinit(allocator);
+        }
+        try sacred_list.ensureTotalCapacity(allocator, 32);
+
+        // Read sacred_workers.txt
+        if (std.fs.cwd().openFile(".trinity/sacred_workers.txt", .{})) |file| {
+            defer file.close();
+            const content = file.readToEndAlloc(allocator, 8192) catch "";
+            defer allocator.free(content);
+
+            var iter = std.mem.splitScalar(u8, content, '\n');
+            while (iter.next()) |line| {
+                const trimmed = std.mem.trim(u8, line, " \t\r\n");
+                if (trimmed.len > 0 and trimmed[0] != '#') {
+                    sacred_list.append(allocator, allocator.dupe(u8, trimmed) catch continue) catch {};
+                }
+            }
+        } else |_| {}
+
+        // Pre-check sacred workers via live API
+        var sacred_training = std.ArrayList(bool){};
+        defer sacred_training.deinit(allocator);
+        try sacred_training.ensureTotalCapacity(allocator, sacred_list.items.len);
+        for (sacred_list.items) |_| {
+            sacred_training.append(allocator, false) catch {};
+        }
+
+        // Query Railway API for sacred workers (only if tokens available)
+        if (sacred_list.items.len > 0) {
+            if (token_2.len > 0) {
+                for (sacred_list.items, 0..) |sacred_name, i| {
+                    const check = train_live.checkSacredWorker(allocator, sacred_name, "_2");
+                    sacred_training.items[i] = check.is_training or check.is_building;
+                }
+            }
+        }
+
         for (svcs) |s| {
             const status = jsonU32(s, "status");
             const name = getJsonStr(s, "name");
             const step = jsonU32(s, "step");
+
+            // Check if this is a sacred worker that's actually training
+            const is_sacred = for (sacred_list.items) |sacred_name| {
+                if (std.mem.eql(u8, sacred_name, name)) break true;
+            } else false;
+
+            const sacred_idx = for (sacred_list.items, 0..) |sacred_name, i| {
+                if (std.mem.eql(u8, sacred_name, name)) break i;
+            } else null;
+
+            const sacred_actually_training = if (sacred_idx) |idx| sacred_training.items[idx] else false;
+
             if (status == 5) {
-                print("   {s}⏸️  {s}: stalled at step {d}{s}\n", .{ YELLOW, name, step, RESET });
+                // Skip sacred workers that are actually training (live check overrides cache!)
+                if (is_sacred and sacred_actually_training) {
+                    print("   {s}✅ {s}: TRAINING (step {d}) — Source: Live (Thalamus){s}\n", .{ GREEN, name, step, RESET });
+                    continue;
+                }
+                print("   {s}⏸️  {s}: stalled at step {d} — Source: Cache (Hippocampus){s}\n", .{ YELLOW, name, step, RESET });
                 // DUAL-WRITE: stalled alert to hippocampus
                 const stall_msg = std.fmt.bufPrint(&buf, "stalled: {s} at step {d}", .{ name, step });
                 hippocampus.writeError(allocator, "hypothalamus", stall_msg catch "stalled detected", "{}") catch {};
