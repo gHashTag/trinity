@@ -62,6 +62,13 @@ pub const Registry = struct {
             }
         }
 
+        // Remove old claim if exists (to free memory)
+        if (self.claims.fetchRemove(task_id)) |old_entry| {
+            allocator.free(old_entry.key);
+            allocator.free(old_entry.value.task_id);
+            allocator.free(old_entry.value.agent_id);
+        }
+
         // Create new claim
         const new_claim = TaskClaim{
             .task_id = try allocator.dupe(u8, task_id),
@@ -149,6 +156,18 @@ pub fn getGlobal(allocator: std.mem.Allocator) !*Registry {
     reg.* = Registry.init(allocator);
     global_registry = reg;
     return reg;
+}
+
+/// Reset global registry (for testing)
+pub fn resetGlobal(allocator: std.mem.Allocator) void {
+    global_mutex.lock();
+    defer global_mutex.unlock();
+
+    if (global_registry) |reg| {
+        reg.deinit();
+        allocator.destroy(reg);
+        global_registry = null;
+    }
 }
 
 test "TaskClaim - expired claim" {
