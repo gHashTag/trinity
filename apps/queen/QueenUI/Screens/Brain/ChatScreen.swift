@@ -308,21 +308,20 @@ struct ChatScreen: View {
             }
     }
 
-    // MARK: - Body Content (ZStack)
+    // MARK: - Body Content
 
     private var bodyContent: some View {
-        ZStack {
-            HStack(spacing: 0) {
-                if !focusMode { sidebarSection }
-                mainChatArea
-                if !focusMode { commentSidebarSection }
-            }
-            .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: commentingMessage != nil)
-            .animation(reduceMotion ? nil : .easeInOut(duration: 0.3), value: focusMode)
-
+        HStack(spacing: 0) {
+            if !focusMode { sidebarSection }
+            mainChatArea
+            if !focusMode { commentSidebarSection }
+        }
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: commentingMessage != nil)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.3), value: focusMode)
+        .overlay {
             if !focusMode { overlaysLayer }
-
-            // Focus mode exit pill
+        }
+        .overlay(alignment: .topTrailing) {
             if focusMode {
                 VStack {
                     HStack {
@@ -350,8 +349,8 @@ struct ChatScreen: View {
                 }
                 .transition(.opacity)
             }
-
-            // Share copied toast
+        }
+        .overlay(alignment: .bottom) {
             if showShareCopied {
                 VStack {
                     Spacer()
@@ -373,8 +372,8 @@ struct ChatScreen: View {
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
                 .allowsHitTesting(false)
             }
-
-            // Multi-select floating action bar
+        }
+        .overlay(alignment: .bottom) {
             if isSelecting, !selectedMessageIDs.isEmpty {
                 VStack {
                     Spacer()
@@ -1133,7 +1132,11 @@ struct ChatScreen: View {
                 NetworkDashboard(client: client, modelManager: modelManager, store: store)
                     .frame(maxHeight: 220)
             }
-            .frame(width: LayoutConstants.sidebarIdealWidth)
+            .frame(
+                minWidth: LayoutConstants.sidebarMinWidth,
+                idealWidth: LayoutConstants.sidebarIdealWidth,
+                maxWidth: LayoutConstants.sidebarMaxWidth
+            )
             .background(TrinityTheme.bgSidebar)
             .transition(reduceMotion ? .opacity : .move(edge: .leading))
 
