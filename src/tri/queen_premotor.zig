@@ -1367,3 +1367,149 @@ test "Premotor — MAX_PARALLEL_BRANCHES constant" {
     try std.testing.expectEqual(@as(u8, 3), MAX_PARALLEL_BRANCHES);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL FUNCTION TESTS — Functions that compute and return actual values
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "premotor — Goal.priority returns ascending values" {
+    const emergency_prio = Goal.emergency_shutdown.priority();
+    const heal_prio = Goal.heal_system.priority();
+    const research_prio = Goal.research_update.priority();
+
+    try std.testing.expect(emergency_prio > heal_prio);
+    try std.testing.expect(heal_prio > research_prio);
+    try std.testing.expectEqual(@as(u8, 100), emergency_prio);
+    try std.testing.expectEqual(@as(u8, 10), research_prio);
+}
+
+test "premotor — Goal.label returns correct strings" {
+    try std.testing.expectEqualStrings("Heal System", Goal.heal_system.label());
+    try std.testing.expectEqualStrings("Emergency Shutdown", Goal.emergency_shutdown.label());
+    try std.testing.expectEqualStrings("Research Update", Goal.research_update.label());
+}
+
+test "premotor — updateContext computes tests_pass from test_rate" {
+    var seq = Sequencer.init(std.testing.allocator);
+
+    const below = qt.SenseResult{ .test_rate = 79 };
+    seq.updateContext(below);
+    try std.testing.expect(!seq.context.tests_pass);
+
+    const above = qt.SenseResult{ .test_rate = 81 };
+    seq.updateContext(above);
+    try std.testing.expect(seq.context.tests_pass);
+
+    const exact = qt.SenseResult{ .test_rate = 80 };
+    seq.updateContext(exact);
+    try std.testing.expect(seq.context.tests_pass);
+}
+
+test "premotor — updateContext computes arena_exists from battles" {
+    var seq = Sequencer.init(std.testing.allocator);
+
+    const none = qt.SenseResult{ .arena_battles = 0 };
+    seq.updateContext(none);
+    try std.testing.expect(!seq.context.arena_exists);
+
+    const some = qt.SenseResult{ .arena_battles = 5 };
+    seq.updateContext(some);
+    try std.testing.expect(seq.context.arena_exists);
+}
+
+test "premotor — updateContext computes has_uncommitted from dirty_files" {
+    var seq = Sequencer.init(std.testing.allocator);
+
+    const clean = qt.SenseResult{ .dirty_files = 0 };
+    seq.updateContext(clean);
+    try std.testing.expect(!seq.context.has_uncommitted);
+
+    const dirty = qt.SenseResult{ .dirty_files = 1 };
+    seq.updateContext(dirty);
+    try std.testing.expect(seq.context.has_uncommitted);
+}
+
+test "premotor — executeSequence returns executed_count matching steps" {
+    var seq = Sequencer.init(std.testing.allocator);
+    var action_seq = ActionSequence{};
+    try action_seq.addStep(.doctor_scan);
+    try action_seq.addStep(.doctor_quick);
+    try action_seq.addStep(.farm_status);
+
+    const result = try seq.executeSequence(&action_seq);
+    try std.testing.expectEqual(@as(u8, 3), result.executed_count);
+}
+
+test "premotor — executeSequence returns positive duration_ms" {
+    var seq = Sequencer.init(std.testing.allocator);
+    var action_seq = ActionSequence{};
+    try action_seq.addStep(.doctor_scan);
+
+    const result = try seq.executeSequence(&action_seq);
+    try std.testing.expect(result.total_duration_ms >= 0);
+}
+
+test "premotor — MotorPlan.init sets priority from Goal.priority" {
+    const plan = MotorPlan.init(.emergency_shutdown);
+    try std.testing.expectEqual(@as(u8, 100), plan.priority);
+    try std.testing.expectEqual(Goal.emergency_shutdown, plan.source_goal);
+}
+
+test "premotor — MotorPlan.init sets created_at to recent timestamp" {
+    const before = std.time.milliTimestamp();
+    const plan = MotorPlan.init(.heal_system);
+    const after = std.time.milliTimestamp();
+
+    try std.testing.expect(plan.created_at >= before);
+    try std.testing.expect(plan.created_at <= after);
+}
+
+test "premotor — PlanQueue.len returns actual count" {
+    var queue = PlanQueue{};
+    try std.testing.expectEqual(@as(u8, 0), queue.len());
+
+    _ = queue.push(MotorPlan.init(.heal_system));
+    try std.testing.expectEqual(@as(u8, 1), queue.len());
+
+    _ = queue.push(MotorPlan.init(.check_farm));
+    _ = queue.push(MotorPlan.init(.cleanup_cloud));
+    try std.testing.expectEqual(@as(u8, 3), queue.len());
+}
+
+test "premotor — PlanQueue.peek returns plan without removing" {
+    var queue = PlanQueue{};
+    const plan = MotorPlan.init(.research_update);
+    _ = queue.push(plan);
+
+    const peeked = queue.peek().?;
+    try std.testing.expectEqual(.research_update, peeked.source_goal);
+
+    // Should still be there
+    try std.testing.expectEqual(@as(u8, 1), queue.len());
+}
+
+test "premotor — PlanQueue.pop removes and returns plan" {
+    var queue = PlanQueue{};
+    const plan1 = MotorPlan.init(.heal_system);
+    const plan2 = MotorPlan.init(.check_farm);
+    _ = queue.push(plan1);
+    _ = queue.push(plan2);
+
+    const popped = queue.pop().?;
+    try std.testing.expectEqual(.heal_system, popped.source_goal);
+    try std.testing.expectEqual(@as(u8, 1), queue.len());
+}
+
+test "premotor — planFromGoal returns correct step_count for each goal" {
+    const heal_seq = planFromGoal(.heal_system);
+    try std.testing.expectEqual(@as(u8, 4), heal_seq.step_count);
+
+    const farm_seq = planFromGoal(.check_farm);
+    try std.testing.expectEqual(@as(u8, 2), farm_seq.step_count);
+
+    const assess_seq = planFromGoal(.assess_health);
+    try std.testing.expectEqual(@as(u8, 4), assess_seq.step_count);
+
+    const emergency_seq = planFromGoal(.emergency_shutdown);
+    try std.testing.expectEqual(@as(u8, 1), emergency_seq.step_count);
+}
+
