@@ -10,10 +10,10 @@ const std = @import("std");
 const Allocator = std.mem.Allocator;
 
 pub const WeightFormat = enum {
-    STD,  // f32 baseline
+    STD, // f32 baseline
     BF16, // Bfloat16
     GF16, // Gaussian Float 16
-    TF3,  // Ternary Float 3 {-1,0,1}
+    TF3, // Ternary Float 3 {-1,0,1}
 
     pub fn displayName(self: WeightFormat) []const u8 {
         return switch (self) {
@@ -26,16 +26,16 @@ pub const WeightFormat = enum {
 };
 
 pub const NeedleType = enum {
-    ternary,  // Three values {-1,0,1}
-    numeric,  // Numeric facts
-    text,     // Plain text
+    ternary, // Three values {-1,0,1}
+    numeric, // Numeric facts
+    text, // Plain text
 };
 
 pub const QuestionType = enum {
-    retrieve,  // Single needle extraction
-    multi,     // Multi-needle reasoning
-    ternary,  // Ternary fact
-    chain,     // Sequential facts
+    retrieve, // Single needle extraction
+    multi, // Multi-needle reasoning
+    ternary, // Ternary fact
+    chain, // Sequential facts
 };
 
 pub const Needle = struct {
@@ -82,13 +82,7 @@ pub const ConfigResult = struct {
 };
 
 /// Generate haystack with context filler text and inserted needles
-pub fn generateHaystack(
-    allocator: Allocator,
-    id: []const u8,
-    context_length: usize,
-    num_needles: usize,
-    depth_percent: f32
-) !Haystack {
+pub fn generateHaystack(allocator: Allocator, id: []const u8, context_length: usize, num_needles: usize, depth_percent: f32) !Haystack {
     _ = id;
 
     const filler = "Each neuron in the network represents a mathematical abstraction linking concepts through algebraic structure. ";
@@ -108,8 +102,7 @@ pub fn generateHaystack(
 
     for (0..num_needles) |n_idx| {
         const needle_id = try std.fmt.allocPrint(allocator, "needle_{d}", .{n_idx});
-        const needle_content = try std.fmt.allocPrint(allocator,
-            "Special fact #{d}: neuron {d} has value -1", .{n_idx, n_idx * 81});
+        const needle_content = try std.fmt.allocPrint(allocator, "Special fact #{d}: neuron {d} has value -1", .{ n_idx, n_idx * 81 });
         const insert_pos = @min(depth_pos, base_content_len - 20);
 
         const needle_obj = Needle{
@@ -150,11 +143,7 @@ pub fn generateHaystack(
 }
 
 /// Insert needle at specific position in haystack
-pub fn insertNeedle(
-    haystack: *Haystack,
-    needle: Needle,
-    allocator: Allocator
-) !void {
+pub fn insertNeedle(haystack: *Haystack, needle: Needle, allocator: Allocator) !void {
     _ = allocator;
     _ = haystack;
     _ = needle;
@@ -162,10 +151,7 @@ pub fn insertNeedle(
 }
 
 /// Generate ternary-specific questions
-pub fn generateTernaryQuestions(
-    allocator: Allocator,
-    needles: []const Needle
-) ![]Question {
+pub fn generateTernaryQuestions(allocator: Allocator, needles: []const Needle) ![]Question {
     var questions = try std.ArrayList(Question).initCapacity(allocator, needles.len);
 
     for (needles, 0..) |needle, idx| {
@@ -184,12 +170,7 @@ pub fn generateTernaryQuestions(
 }
 
 /// Run inference (mock for now - will connect to HSLM serve)
-pub fn runInference(
-    allocator: Allocator,
-    haystack: Haystack,
-    question: Question,
-    format: WeightFormat
-) !IGLAResult {
+pub fn runInference(allocator: Allocator, haystack: Haystack, question: Question, format: WeightFormat) !IGLAResult {
     _ = allocator;
     _ = format;
 
@@ -216,10 +197,7 @@ pub fn runInference(
 }
 
 /// Score answer by normalizing and comparing
-pub fn scoreAnswer(
-    answer: []const u8,
-    expected: []const u8
-) bool {
+pub fn scoreAnswer(answer: []const u8, expected: []const u8) bool {
     const normalized_answer = std.mem.trim(u8, answer, &std.ascii.whitespace);
     const normalized_expected = std.mem.trim(u8, expected, &std.ascii.whitespace);
 
@@ -231,17 +209,8 @@ pub fn scoreAnswer(
 }
 
 /// Run full benchmark across format matrix
-pub fn runFullBenchmark(
-    allocator: Allocator,
-    formats: []const WeightFormat,
-    context_lengths: []const usize,
-    num_needles_list: []const usize,
-    depths: []const f32
-) ![]ConfigResult {
-    var results = try std.ArrayList(ConfigResult).initCapacity(
-        allocator,
-        formats.len * context_lengths.len * num_needles_list.len * depths.len
-    );
+pub fn runFullBenchmark(allocator: Allocator, formats: []const WeightFormat, context_lengths: []const usize, num_needles_list: []const usize, depths: []const f32) ![]ConfigResult {
+    var results = try std.ArrayList(ConfigResult).initCapacity(allocator, formats.len * context_lengths.len * num_needles_list.len * depths.len);
 
     for (formats) |format| {
         for (context_lengths) |ctx_len| {

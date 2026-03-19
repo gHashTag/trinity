@@ -95,9 +95,7 @@ fn synthesizeModule(allocator: std.mem.Allocator, mod: Module) !void {
     defer allocator.free(msg);
     try stdout.writeAll(msg);
 
-    const yosys_script = try std.fmt.allocPrint(allocator,
-        "read_verilog fpga/openxc7-synth/{s}; synth_xc7 -top {s}; json -o {s}/{s}.json",
-        .{mod.name, mod.top, SYNTH_DIR, mod.name});
+    const yosys_script = try std.fmt.allocPrint(allocator, "read_verilog fpga/openxc7-synth/{s}; synth_xc7 -top {s}; json -o {s}/{s}.json", .{ mod.name, mod.top, SYNTH_DIR, mod.name });
     defer allocator.free(yosys_script);
 
     const yosys_argv = &[_][]const u8{
