@@ -16,9 +16,11 @@ jobs:
       
       - name: Install Zig
         run: |
-          wget https://ziglang.org/download/0.15.2/zig-linux-x86_64-0.15.2.tar.xz
-          tar -xf zig-linux-x86_64-0.15.2.tar.xz
-          echo "$PWD/zig-linux-x86_64-0.15.2" >> $GITHUB_PATH
+          wget https://ziglang.org/download/0.15.2/zig-linux-x86_64-0.15.2.tar.xz || \
+          wget https://ziglang.org/download/0.15.2/zig-0.15.2.tar.xz
+          tar -xf zig-*.tar.xz
+          echo "$PWD/zig-linux-x86_64-0.15.2" >> $GITHUB_PATH || \
+          echo "$PWD/zig-0.15.2" >> $GITHUB_PATH
       
       - name: Run SIMD Benchmarks
         run: |
