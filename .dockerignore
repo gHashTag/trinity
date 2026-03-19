@@ -36,3 +36,4 @@ zig-out/doc/
 *.jsonl
 *.vcd
 !data/tinystories/train_100k.txt
+!data/tinystories/train_100k.txt
