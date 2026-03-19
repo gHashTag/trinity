@@ -415,11 +415,44 @@ pub const PersistenceManager = struct {
         // Rotate backups
         self.rotateBackups() catch {};
 
-        // Write JSON directly to file
+        // Write JSON manually (Zig 0.15 JSON API is complex)
+        var json_buffer = std.ArrayListUnmanaged(u8){};
+        defer json_buffer.deinit(self.allocator);
+
+        // Build JSON manually
+        try json_buffer.appendSlice(self.allocator, "{\n");
+        try json_buffer.writer(self.allocator).print("  \"cluster_id\": \"{s}\",\n", .{json_obj.cluster_id});
+        try json_buffer.writer(self.allocator).print("  \"node_id\": \"{s}\",\n", .{json_obj.node_id});
+        try json_buffer.appendSlice(self.allocator, "  \"peers\": [\n");
+        for (json_obj.peers, 0..) |peer, i| {
+            if (i > 0) try json_buffer.appendSlice(self.allocator, ",\n");
+            try json_buffer.writer(self.allocator).print(
+                \\    {{
+                \\      "node_id": "{s}",
+                \\      "host": "{s}",
+                \\      "port": {d},
+                \\      "cluster_id": "{s}",
+                \\      "quality_score": {d:.5},
+                \\      "last_seen": {d},
+                \\      "first_seen": {d},
+                \\      "role": "{s}",
+                \\      "tier": "{s}"
+                \\    }}
+            , .{ peer.node_id, peer.host, peer.port, peer.cluster_id, peer.quality_score, peer.last_seen, peer.first_seen, peer.role, peer.tier });
+        }
+        try json_buffer.appendSlice(self.allocator, "\n  ],\n");
+        try json_buffer.writer(self.allocator).print("  \"version\": {d},\n", .{json_obj.version});
+        try json_buffer.writer(self.allocator).print("  \"last_updated\": {d}\n", .{json_obj.last_updated});
+        try json_buffer.appendSlice(self.allocator, "}\n");
+
+        const json_string = json_buffer.toOwnedSlice(self.allocator);
+        defer self.allocator.free(json_string);
+
+        // Write to file
         const file = try std.fs.cwd().createFile(temp_file, .{ .read = true });
         defer file.close();
 
-        try std.json.stringifyToWriter(json_obj, .{ .whitespace = .{ .indent = .{ .Space = 2 } } }, file.writer());
+        try file.writeAll(json_string);
 
         // Atomic rename
         try std.fs.cwd().rename(temp_file, CLUSTER_STATE_FILE);
