@@ -15,6 +15,7 @@ const brain = @import("../brain/brain.zig");
 const basal_ganglia = brain.basal_ganglia;
 const reticular_formation = brain.reticular_formation;
 const locus_coeruleus = brain.locus_coeruleus;
+const amygdala = brain.amygdala;
 
 // Shared orchestrator types — local copy to avoid circular dep on trinity.vibeec
 // Source of truth: src/vibeec/tri_orchestrator.zig
@@ -386,7 +387,25 @@ pub const OrchestratorCoordinator = struct {
         const task_id = try std.fmt.allocPrint(self.allocator, "task_{d}", .{self.agent_counter});
 
         const task = CoordinatedTask.init(self.allocator, task_id, description, realm, priority);
-        try self.task_queue.append(task);
+
+        // Amygdala: analyze task salience for prioritization
+        const realm_str = @tagName(realm);
+        const priority_str = @tagName(priority);
+        const salience = amygdala.Amygdala.analyzeTask(task_id, realm_str, priority_str);
+
+        if (self.config.verbose and amygdala.Amygdala.requiresAttention(salience)) {
+            std.debug.print("[Amygdala] {s} task {s}: {s} {s}\n", .{
+                salience.level.emoji(), task_id, @tagName(salience.level), realm_str,
+            });
+        }
+
+        // High-salience tasks go to front of queue
+        if (salience.level == .critical or salience.level == .high) {
+            try self.task_queue.insert(0, task);
+        } else {
+            try self.task_queue.append(task);
+        }
+
         self.metrics.total_tasks += 1;
         self.metrics.pending_tasks += 1;
 
@@ -501,6 +520,15 @@ pub const OrchestratorCoordinator = struct {
             try self.coordination.completeTask(task_id, agent_id, duration_ms);
         } else {
             const err_msg = if (result.err_msg) |err| err else "unknown error";
+
+            // Amygdala: analyze error salience for alerting
+            const err_salience = amygdala.Amygdala.analyzeError(err_msg);
+            if (self.config.verbose and amygdala.Amygdala.requiresAttention(err_salience)) {
+                std.debug.print("[Amygdala] {s} error in {s}: {s} ({d:.1}/100)\n", .{
+                    err_salience.level.emoji(), task_id, @tagName(err_salience.level), err_salience.score,
+                });
+            }
+
             try self.coordination.failTask(task_id, agent_id, err_msg);
         }
 

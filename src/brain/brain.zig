@@ -39,6 +39,10 @@ pub const amygdala = @import("amygdala");
 /// Decision making, planning, and cognitive control
 pub const prefrontal_cortex = @import("prefrontal_cortex");
 
+/// Hippocampus (Health History)
+/// Memory consolidation for brain health snapshots
+pub const health_history = @import("health_history");
+
 /// Thalamus (Sensory Relay)
 /// Railway live logs relay
 pub const thalamus_logs = @import("thalamus_logs");
