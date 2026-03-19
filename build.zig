@@ -2133,7 +2133,7 @@ pub fn build(b: *std.Build) void {
 
     // zig-hslm — Official HSLM Numerical Library
     const hslm_mod = b.createModule(.{
-        .root_source_file = b.path("external/zig-hslm/src/f16_utils.zig"),
+        .root_source_file = b.path("external/zig-hslm/src/root.zig"),
         .target = target,
         .optimize = optimize,
     });
