@@ -1046,6 +1046,56 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
         }
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // CIRCUIT BREAKER: Auto-enable night mode if too many kills in short time
+    // Prevents evolution from going rogue and killing half the farm
+    // ═══════════════════════════════════════════════════════════════════════════════
+    const CIRCUIT_BREAKER_THRESHOLD: usize = 10; // Max kills per hour
+    const circuit_breaker_file = ".trinity/circuit_breaker_tripped";
+
+    if (!diagnose_mode and !dry_run and total_killed > 0) {
+        // Check kills in last hour from event log
+        var recent_kills: usize = 0;
+        const one_hour_ago = std.time.timestamp() - 3600;
+        for (state.events[0..state.event_count]) |*ev| {
+            if (ev.event_type == .kill and ev.timestamp >= one_hour_ago) {
+                recent_kills += 1;
+            }
+        }
+
+        if (recent_kills >= CIRCUIT_BREAKER_THRESHOLD) {
+            print("\n{s}⚠️ CIRCUIT BREAKER TRIPPED!{s}\n", .{ YELLOW, RESET });
+            print("  {s}Recent kills (1h): {d} ≥ threshold {d}{s}\n", .{ DIM, recent_kills, CIRCUIT_BREAKER_THRESHOLD, RESET });
+            print("  {s}Action: Auto-enabling NIGHT MODE to prevent further damage{s}\n", .{ DIM, RESET });
+
+            // Create night_mode flag
+            if (std.fs.cwd().createFile(".trinity/night_mode", .{})) |night_flag| {
+                defer night_flag.close();
+                print("  {s}✅ Created .trinity/night_mode — evolution blocked until manual review{s}\n", .{ GREEN, RESET });
+
+                // Create circuit breaker marker with timestamp
+                if (std.fs.cwd().createFile(circuit_breaker_file, .{})) |cb_file| {
+                    defer cb_file.close();
+                    const timestamp = std.time.timestamp();
+                    const content = std.fmt.allocPrint(allocator, "Circuit breaker tripped at {d}\nRecent kills (1h): {d}\nThreshold: {d}\n", .{ timestamp, recent_kills, CIRCUIT_BREAKER_THRESHOLD }) catch "";
+                    defer allocator.free(content);
+                    cb_file.writeAll(content) catch {};
+                } else |err| {
+                    print("  {s}❌ Failed to create circuit breaker marker: {s}{s}\n", .{ RED, @errorName(err), RESET });
+                }
+            } else |err| {
+                print("  {s}❌ Failed to create night_mode flag: {s}{s}\n", .{ RED, @errorName(err), RESET });
+            }
+
+            // Post alert to GitHub
+            const alert_msg = std.fmt.allocPrint(allocator, "🚨 CIRCUIT BREAKER TRIPPED\n\nRecent kills (1h): {d}\nThreshold: {d}\n\nNight mode auto-enabled. Manual review required.\n\nRun to re-enable:\n```bash\nrm .trinity/night_mode .trinity/circuit_breaker_tripped\n```", .{ recent_kills, CIRCUIT_BREAKER_THRESHOLD }) catch "Circuit breaker tripped";
+            defer allocator.free(alert_msg);
+            postToIssue(allocator, "357", &state, total_killed, total_spawned);
+
+            print("\n{s}🛑 EVOLUTION STOPPED — Night mode active{s}\n\n", .{ RED, RESET });
+        }
+    }
+
     // 3. Update best
     for (state.services[0..state.service_count]) |*svc| {
         if (svc.status == .running and svc.current_ppl < state.best_ppl and svc.current_ppl > 0) {
@@ -3382,6 +3432,17 @@ fn printDashboard(state: *const EvolutionState) void {
     print("\n{s}═══════════════════════════════════════════════════════════{s}\n", .{ BOLD, RESET });
     print("{s}  ASHA+PBT EVOLUTION — Step {d}, Rung {d}/{d}{s}\n", .{ BOLD, state.evolution_step, active_rung + 1, NUM_RUNGS, RESET });
     print("{s}═══════════════════════════════════════════════════════════{s}\n\n", .{ BOLD, RESET });
+
+    // Circuit breaker status
+    const night_mode = isNightModeActive();
+    const cb_tripped = std.fs.cwd().access(".trinity/circuit_breaker_tripped", .{}) catch null != null;
+    if (night_mode) {
+        print("  {s}🛡️ NIGHT MODE ACTIVE{s} — Destructive actions blocked\n", .{ CYAN, RESET });
+        if (cb_tripped) {
+            print("  {s}⚠️ Circuit breaker tripped — manual review required{s}\n", .{ YELLOW, RESET });
+        }
+        print("\n", .{});
+    }
 
     const dash_health = computePopulationHealth(state);
     print("  Configs tested: {d} | Best: PPL={d:.1} ({s}) | Health: {d:.0}/100\n\n", .{
