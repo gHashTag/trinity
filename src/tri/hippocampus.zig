@@ -2247,21 +2247,16 @@ test "MemoryRecord ttl field" {
 
 test "hippocampus — write then read roundtrip" {
     const testing = std.testing;
-    var tmp = testing.tmpDir(.{ .suffix = "-hippocampus" });
+    var tmp = testing.tmpDir(.{});
     defer tmp.cleanup();
 
-    // Override MEMORY_ROOT to tmp dir
-    const test_agent = "test-agent";
-    const test_dir = try std.fmt.allocPrint(testing.allocator, "{s}/{s}", .{ tmp.dir.path.?, test_agent });
-    defer testing.allocator.free(test_dir);
-    try tmp.dir.makePath(test_dir);
-
-    const test_file = try std.fmt.allocPrint(testing.allocator, "{s}/current.jsonl", .{test_dir});
-    defer testing.allocator.free(test_file);
+    // Write test data directly to tmp dir
+    const test_file = "test_current.jsonl";
 
     // Write a record
     var rec = MemoryRecord{};
     const ts: u64 = 1234567890;
+    const test_agent = "test-agent";
     generateId(&rec.id_buf, &rec.id_len, ts, test_agent);
     copyToFixed(32, &rec.agent_buf, &rec.agent_len, test_agent);
     rec.kind = .observation;
@@ -2279,7 +2274,7 @@ test "hippocampus — write then read roundtrip" {
     try file.writeAll("\n");
 
     // Verify file was written
-    const content = try tmp.dir.readFile(test_file, testing.allocator);
+    const content = try tmp.dir.readFileAlloc(testing.allocator, test_file, 8192);
     defer testing.allocator.free(content);
     try testing.expect(content.len > 0);
     try testing.expect(std.mem.indexOf(u8, content, "test observation") != null);

@@ -992,8 +992,8 @@ test "ACC — ErrorMonitor countBySeverity counts" {
     var monitor = try ErrorMonitor.init(std.testing.allocator);
     defer monitor.deinit();
 
-    try monitor.addError(.build_break, "test1");
-    try monitor.addError(.build_break, "test2");
+    monitor.addError(.build_break, "test1");
+    monitor.addError(.build_break, "test2");
 
     const count = monitor.countBySeverity(.err);
     try std.testing.expectEqual(@as(usize, 2), count);
@@ -1003,7 +1003,7 @@ test "ACC — ErrorMonitor thresholdExceeded checks" {
     var monitor = try ErrorMonitor.init(std.testing.allocator);
     defer monitor.deinit();
 
-    try std.testing.expect(!monitor.thresholdExceeded());
+    std.testing.expect(!monitor.thresholdExceeded());
 }
 
 test "ACC — generateControlSignals returns signals" {
@@ -1011,7 +1011,10 @@ test "ACC — generateControlSignals returns signals" {
         .{ .kind = .farm_status, .urgency = .normal, .suppressed = false },
     };
 
-    const signals = try generateControlSignals(std.testing.allocator, &candidates);
+    var monitor = try ErrorMonitor.init(std.testing.allocator);
+    defer monitor.deinit();
+
+    const signals = try generateControlSignals(std.testing.allocator, &candidates, &monitor);
     defer std.testing.allocator.free(signals);
 
     try std.testing.expect(signals.len >= 0);

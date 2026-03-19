@@ -12,8 +12,26 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const hippocampus = @import("hippocampus.zig");
-const ofc = @import("queen_ofc.zig");
 const voice_engine = @import("voice_engine.zig");
+
+// Mood state (temporary - should be unified with OFC)
+pub const Mood = enum {
+    calm,
+    focused,
+    agitated,
+    excited,
+    tired,
+
+    pub fn toString(self: Mood) []const u8 {
+        return switch (self) {
+            .calm => "calm",
+            .focused => "focused",
+            .agitated => "agitated",
+            .excited => "excited",
+            .tired => "tired",
+        };
+    }
+};
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // EMOTION — Basic emotion types
@@ -313,9 +331,9 @@ pub fn extinguish(
 /// Modulate OFC mood based on emotional context
 pub fn modulateMood(
     allocator: Allocator,
-    base_mood: ofc.Mood,
+    base_mood: Mood,
     context: []const u8,
-) !ofc.Mood {
+) !Mood {
     // Check for recent fear associations
     var results = try hippocampus.read(allocator, .{
         .tag_filter = "emo:fear",

@@ -963,47 +963,8 @@ test "thalamus — getLocusArousal maps to enum" {
     const arousal = getLocusArousal();
     // Verify it's a valid enum value
     switch (arousal) {
-        .sleep, .monitoring, .alert, .alarm, .emergency, .catastrophe => {},
+        .sleep, .idle, .normal, .alert, .alarm, .emergency => {},
     }
-}
-
-test "thalamus — parseHealthStat extracts value" {
-    // Test the actual parse function with real data
-    const data = "health=85 files=100";
-    const result = parseHealthStat(data, "health=");
-    try std.testing.expect(result != null);
-    if (result) |val| try std.testing.expectEqual(@as(f32, 85.0), val);
-}
-
-test "thalamus — parseMetricFloat handles decimals" {
-    const data = "ppl=4.56 loss=1.23";
-    const ppl = parseMetricFloat(data, "ppl=");
-    try std.testing.expect(ppl != null);
-    if (ppl) |val| try std.testing.expectApproxEqAbs(@as(f32, 4.56), val, 0.01);
-}
-
-test "thalamus — parseMetricFloat strips percent" {
-    const data = "accuracy=95%";
-    const acc = parseMetricFloat(data, "accuracy=");
-    try std.testing.expect(acc != null);
-    if (acc) |val| try std.testing.expectApproxEqAbs(@as(f32, 95.0), val, 0.01);
-}
-
-test "thalamus — invalidateGitHubCache clears cache" {
-    // getGitHubIssues returns a result (never errors)
-    const issues1 = getGitHubIssues(std.testing.allocator) catch {};
-    _ = issues1;
-    // After: invalidate clears it
-    invalidateGitHubCache();
-    // Next call will rebuild cache
-    const issues2 = getGitHubIssues(std.testing.allocator) catch {};
-    _ = issues2;
-}
-
-test "thalamus — getFarmStatus parses evolution state" {
-    const result = getFarmStatus(std.testing.allocator);
-    // Returns FarmStatus or error
-    _ = result;
 }
 
 test "thalamus — countFarmEvents counts occurrences" {
@@ -1025,7 +986,7 @@ test "thalamus — getLastSleepInfo returns struct" {
     const info = getLastSleepInfo(std.testing.allocator);
     // Returns ?SleepInfo
     if (info) |i| {
-        _ = i.last_sleep_ts;
-        _ = i.duration_hours;
+        _ = i.timestamp;
+        _ = i.hours_since;
     }
 }

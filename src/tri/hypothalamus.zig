@@ -6,10 +6,10 @@ const Allocator = std.mem.Allocator;
 const ArrayList = std.ArrayListUnmanaged;
 
 // Import constants from canonical source (NOT inline - anti-pattern!)
-const sacred_constants = @import("sacred_constants");
+const sacred_constants = @import("./sacred_constants.zig");
 pub const PHI = sacred_constants.SacredConstants.PHI;
 pub const PHI_INV = sacred_constants.SacredConstants.PHI_INVERSE;
-pub const PHI_SQ = sacred_constants.SacredConstants.PHI_SQ;
+pub const PHI_SQ = sacred_constants.SacredConstants.PHI * sacred_constants.SacredConstants.PHI;
 pub const TRINITY = sacred_constants.SacredConstants.TRINITY;
 
 pub const CommandCategory = enum(u8) {
@@ -97,7 +97,7 @@ pub const CommandRegistry = struct {
             self.allocator.free(entry.value_ptr.name);
             self.allocator.free(entry.value_ptr.description);
         }
-        self.commands.deinit(self.allocator);
+        self.commands.deinit();
 
         for (&self.by_category) |*list| {
             list.deinit(self.allocator);
@@ -110,7 +110,7 @@ pub const CommandRegistry = struct {
         while (alias_it.next()) |entry| {
             self.allocator.free(entry.key_ptr.*);
         }
-        self.alias_map.deinit(self.allocator);
+        self.alias_map.deinit();
     }
 
     pub fn registerCommand(self: *CommandRegistry, metadata: CommandMetadata) !void {
@@ -200,7 +200,7 @@ fn noopExecutor(_: Allocator, args: [][]const u8) anyerror!OrchestratorResult {
 
 pub fn registerAllCommands(allocator: Allocator) !CommandRegistry {
     var registry = try CommandRegistry.init(allocator);
-    errdefer registry.deinit(allocator);
+    errdefer registry.deinit();
 
     // Core commands (15)
     const core_names = [_][]const u8{
@@ -423,7 +423,7 @@ pub fn runPipelineCommand(args: [][]const u8) !void {
     std.debug.print("{s}\n", .{"═" ** 70});
 
     var registry = try registerAllCommands(allocator);
-    defer registry.deinit(allocator);
+    defer registry.deinit();
     registry.printStats();
 
     std.debug.print("\n\x1b[33m{s} Golden Chain initiated for: {s} \x1b[0m\n", .{ "✓", task });
@@ -1192,7 +1192,7 @@ test "Trinity Identity" {
 test "Command Registry" {
     const allocator = std.testing.allocator;
     var registry = try CommandRegistry.init(allocator);
-    defer registry.deinit(allocator);
+    defer registry.deinit();
 
     try std.testing.expectEqual(registry.total_count, 0);
 }
@@ -1200,7 +1200,7 @@ test "Command Registry" {
 test "Register All Commands" {
     const allocator = std.testing.allocator;
     var registry = try registerAllCommands(allocator);
-    defer registry.deinit(allocator);
+    defer registry.deinit();
 
     try std.testing.expect(registry.total_count >= 130);
     try std.testing.expect(registry.trinity_verified);
