@@ -1920,12 +1920,9 @@ fn printEventStreamHelp() void {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runStressTestCommand(args: []const []const u8) !void {
-    const brain = @import("brain");
-    const stress_test = @import("brain");
-
     if (args.len > 0) {
         if (std.mem.eql(u8, args[0], "--health")) {
-            // Quick health check
+            const brain = @import("brain");
             const allocator = std.heap.page_allocator;
             var coord = try brain.AgentCoordination.init(allocator);
             const health = coord.healthCheck();
@@ -1950,6 +1947,7 @@ pub fn runStressTestCommand(args: []const []const u8) !void {
             std.debug.print("Dump temporarily disabled (API change)\n", .{});
         } else if (std.mem.eql(u8, args[0], "--scan")) {
             // Visual brain scan
+            const brain = @import("brain");
             const allocator = std.heap.page_allocator;
             var coord = try brain.AgentCoordination.init(allocator);
             const scan = coord.scan();
@@ -1965,18 +1963,22 @@ pub fn runStressTestCommand(args: []const []const u8) !void {
             std.debug.print("{s}╚═══════════════════════════════════════╝{s}\n", .{ CYAN, RESET });
         } else if (std.mem.eql(u8, args[0], "--telemetry")) {
             // Show telemetry summary
-            // FIXME: telemetry module import disabled
-            std.debug.print("Telemetry temporarily disabled\n", .{});
-        } else if (std.mem.eql(u8, args[0], "--telemetry-full")) {
-            // FIXME: telemetry module import disabled
-            std.debug.print("Telemetry full temporarily disabled\n", .{});
+            std.debug.print("Telemetry temporarily disabled (API change)\n", .{});
+        } else if (std.mem.eql(u8, args[0], "--history")) {
+            // Show health history (Hippocampus)
+            std.debug.print("Health history temporarily disabled (API change)\n", .{});
+
+            std.debug.print("Health history temporarily disabled (API change)\n", .{});
+        } else if (std.mem.eql(u8, args[0], "--record")) {
+            // Record current health snapshot (Hippocampus consolidation)
+            std.debug.print("Health record temporarily disabled (API change)\n", .{});
         } else {
             // Full stress test
-            try stress_test.runStressTestCommand(args);
+            std.debug.print("Use: zig build test-brain-stress\n", .{});
         }
     } else {
         // Full stress test (no args)
-        try stress_test.runStressTestCommand(args);
+        std.debug.print("Use: zig build test-brain-stress\n", .{});
     }
 }
 
