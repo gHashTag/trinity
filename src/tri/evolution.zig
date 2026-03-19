@@ -25,6 +25,7 @@ const RailwayApi = railway_api.RailwayApi;
 const tri_commands = @import("tri_commands.zig");
 const farm_ws = @import("tri_farm_ws.zig");
 const hippocampus = @import("hippocampus.zig");
+const bench = @import("bench");
 const print = std.debug.print;
 
 // ANSI colors
@@ -297,6 +298,45 @@ const ServiceEntry = struct {
         }
     }
 };
+
+/// Run IGLA benchmark for a service and update its metrics
+/// Returns accuracy score [0, 1], or 0.0 on failure
+fn runIGLABenchmark(allocator: Allocator, service: *ServiceEntry) !f32 {
+    // Map service format to IGLA WeightFormat
+    const format_str = service.formatStr();
+    const format = bench.igla.parseFormatString(format_str);
+
+    // Use service context length (clamp to reasonable range for benchmark)
+    const ctx_len = @max(27, @min(243, @as(usize, @intCast(service.context))));
+
+    // Run single config benchmark with 1 needle at 50% depth
+    const result = bench.igla.runSingleConfig(allocator, format, ctx_len, 1, 0.5) catch |err| {
+        print("{s}⚠️ IGLA bench failed for {s}: {s}{s}\n", .{ YELLOW, service.svcName(), @errorName(err), RESET });
+        return 0.0;
+    };
+
+    // Update service fields with IGLA metrics
+    service.igla_score = result.accuracy;
+    service.igla_latency_ms = result.latency_ms;
+    service.igla_tok_per_sec = result.tok_per_sec;
+
+    // Update format-specific accuracy (map format enum to array index)
+    const format_idx: u3 = switch (result.format) {
+        .STD => 0,
+        .BF16 => 1,
+        .GF16 => 2,
+        .TF3 => 3,
+    };
+    service.igla_format_accuracy[format_idx] = result.accuracy;
+
+    // For now, use overall accuracy for all question types (single config test)
+    service.igla_retrieve_acc = result.accuracy;
+    service.igla_multi_acc = result.accuracy;
+    service.igla_ternary_acc = result.accuracy;
+    service.igla_chain_acc = result.accuracy;
+
+    return result.accuracy;
+}
 
 const EventType = enum(u8) {
     kill,
@@ -1099,16 +1139,15 @@ fn runStep(allocator: Allocator, args: []const []const u8) !void {
             service.current_step - service.igla_last_eval_step >= 10000)
         {
 
-            // Run IGLA benchmark (placeholder for now)
-            // TODO: Integrate with actual IGLA bench runner
-            const dummy_igla_score: f32 = 0.85; // Placeholder
+            // Run IGLA benchmark via igla_bench module
+            const igla_score = runIGLABenchmark(allocator, service) catch 0.0;
 
-            service.igla_score = dummy_igla_score;
             service.igla_last_eval_step = service.current_step;
 
-            print("{s}📊 IGLA:{s} {s} step={} score={d:.0}\n", .{
-                YELLOW,                 RESET, service.svcName(), service.current_step,
-                dummy_igla_score * 100,
+            const format_display = service.formatStr();
+            print("{s}📊 IGLA:{s} {s} step={} format={s} score={d:.0} latency={d:.1}ms tok/s={d:.0}\n", .{
+                YELLOW,         RESET,            service.svcName(),       service.current_step,
+                format_display, igla_score * 100, service.igla_latency_ms, service.igla_tok_per_sec,
             });
         }
     }
@@ -2749,8 +2788,14 @@ pub fn mutateConfigEx(leader: *const ServiceEntry, prng_seed: u32, allow_ctx_mut
     if (rng_fmt % 10 == 0) {
         // Mutate to next format (cyclic)
         const new_idx = (fmt_idx + 1) % formats.len;
-        const fmt_result = std.fmt.bufPrint(&config.format_str, "{s}", .{formats[new_idx]});
-        config.format_len = @intCast(fmt_result.len);
+        // Try to mutate format, fall back to parent on error
+        if (std.fmt.bufPrint(&config.format_str, "{s}", .{formats[new_idx]})) |fmt_result| {
+            config.format_len = @intCast(fmt_result.len);
+        } else |_| {
+            // Fallback to parent format on error
+            @memcpy(config.format_str[0..parent_format.len], parent_format);
+            config.format_len = @intCast(parent_format.len);
+        }
     } else {
         // Inherit parent format
         @memcpy(config.format_str[0..parent_format.len], parent_format);

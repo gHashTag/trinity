@@ -53,7 +53,7 @@ fn showStatus(allocator: std.mem.Allocator, rotator: *const token_rotator.TokenR
 
     // Время последней ротации
     const time_diff = now - rotator.last_rotation;
-    const time_str = if (time_diff < 60) try std.fmt.allocPrint(allocator, "{}s ago", .{time_diff}) else if (time_diff < 3600) try std.fmt.allocPrint(allocator, "{d:.1}m ago", .{@as(f64, time_diff) / 60.0}) else try std.fmt.allocPrint(allocator, "{d:.1}h ago", .{@as(f64, time_diff) / 3600.0});
+    const time_str = if (time_diff < 60) try std.fmt.allocPrint(allocator, "{}s ago", .{time_diff}) else if (time_diff < 3600) try std.fmt.allocPrint(allocator, "{d:.1}m ago", .{@as(f64, @floatFromInt(time_diff)) / 60.0}) else try std.fmt.allocPrint(allocator, "{d:.1}h ago", .{@as(f64, @floatFromInt(time_diff)) / 3600.0});
     defer allocator.free(time_str);
 
     std.debug.print("\n  📊 Stats:\n", .{});
@@ -91,7 +91,7 @@ fn showStatus(allocator: std.mem.Allocator, rotator: *const token_rotator.TokenR
         if (token.status == .rate_limited) {
             if (token.reset_at) |reset| {
                 const remaining = reset - now;
-                const remaining_str = if (remaining < 60) try std.fmt.allocPrint(allocator, "{}s", .{remaining}) else if (remaining < 3600) try std.fmt.allocPrint(allocator, "{d:.1}m", .{@as(f64, remaining) / 60.0}) else try std.fmt.allocPrint(allocator, "{d:.1}h", .{@as(f64, remaining) / 3600.0});
+                const remaining_str = if (remaining < 60) try std.fmt.allocPrint(allocator, "{}s", .{remaining}) else if (remaining < 3600) try std.fmt.allocPrint(allocator, "{d:.1}m", .{@as(f64, @floatFromInt(remaining)) / 60.0}) else try std.fmt.allocPrint(allocator, "{d:.1}h", .{@as(f64, @floatFromInt(remaining)) / 3600.0});
                 defer allocator.free(remaining_str);
 
                 std.debug.print("→ resets in {s}", .{remaining_str});
