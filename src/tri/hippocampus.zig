@@ -1868,5 +1868,237 @@ test "GcResult default initialization" {
     try std.testing.expectEqual(@as(usize, 0), result.kept);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// CellHealthData tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "CellHealthData fields" {
+    const cell_data = CellHealthData{
+        .cell_id = "test-cell-123",
+        .cell_name = "trinity.b2t",
+        .health_score = 85,
+        .health_delta = 5,
+        .bio_system = "dna",
+        .trigger = "scan",
+        .files_total = 100,
+        .files_generated = 80,
+        .files_manual = 20,
+        .tests_passing = true,
+    };
+    try std.testing.expectEqualStrings("test-cell-123", cell_data.cell_id);
+    try std.testing.expectEqual(@as(u8, 85), cell_data.health_score);
+    try std.testing.expectEqual(@as(i8, 5), cell_data.health_delta);
+    try std.testing.expect(cell_data.tests_passing);
+}
+
+test "CellHealthData negative delta" {
+    const cell_data = CellHealthData{
+        .cell_id = "cell-2",
+        .cell_name = "api",
+        .health_score = 70,
+        .health_delta = -10,
+        .bio_system = "brain",
+        .trigger = "fix",
+        .files_total = 50,
+        .files_generated = 40,
+        .files_manual = 10,
+        .tests_passing = false,
+    };
+    try std.testing.expectEqual(@as(i8, -10), cell_data.health_delta);
+    try std.testing.expect(!cell_data.tests_passing);
+}
+
+test "CellHealthData all bio systems" {
+    const systems = [_][]const u8{ "dna", "brain", "immune", "regen", "body" };
+    inline for (systems) |system| {
+        const cell_data = CellHealthData{
+            .cell_id = "test",
+            .cell_name = "test",
+            .health_score = 50,
+            .health_delta = 0,
+            .bio_system = system,
+            .trigger = "manual",
+            .files_total = 1,
+            .files_generated = 0,
+            .files_manual = 1,
+            .tests_passing = true,
+        };
+        try std.testing.expectEqualStrings(system, cell_data.bio_system);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ParsedCellHealth tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ParsedCellHealth fields" {
+    const parsed = ParsedCellHealth{
+        .cell_id = "cell-1",
+        .cell_name = "trinity.b2t",
+        .health_score = 90,
+        .health_delta = 10,
+        .bio_system = "dna",
+        .trigger = "scan",
+        .files_total = 200,
+        .files_generated = 150,
+        .files_manual = 50,
+        .tests_passing = true,
+        .ts = 1234567890,
+    };
+    try std.testing.expectEqual(@as(u8, 90), parsed.health_score);
+    try std.testing.expectEqual(@as(i8, 10), parsed.health_delta);
+    try std.testing.expectEqual(@as(u32, 200), parsed.files_total);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Write functions tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "writeHeartbeat creates record" {
+    var rec = MemoryRecord{};
+    const ts: u64 = 1234567890;
+    generateId(&rec.id_buf, &rec.id_len, ts, "test-agent");
+    copyToFixed(32, &rec.agent_buf, &rec.agent_len, "test-agent");
+    rec.kind = .heartbeat;
+    rec.ts = ts;
+
+    try std.testing.expectEqual(MemoryKind.heartbeat, rec.kind);
+    try std.testing.expectEqual(@as(u64, 1234567890), rec.ts);
+}
+
+test "writeLearning creates record" {
+    var rec = MemoryRecord{};
+    rec.kind = .learning;
+    copyToFixed(256, &rec.summary_buf, &rec.summary_len, "Learned something new");
+    copyToFixed(32, &rec.agent_buf, &rec.agent_len, "mu");
+
+    try std.testing.expectEqual(MemoryKind.learning, rec.kind);
+    try std.testing.expectEqualStrings("Learned something new", rec.summary());
+}
+
+test "writeEpisode creates record" {
+    var rec = MemoryRecord{};
+    rec.kind = .episode;
+    copyToFixed(256, &rec.summary_buf, &rec.summary_len, "Fixed a critical bug");
+    copyToFixed(32, &rec.agent_buf, &rec.agent_len, "ralph");
+
+    try std.testing.expectEqual(MemoryKind.episode, rec.kind);
+}
+
+test "writeError creates record" {
+    var rec = MemoryRecord{};
+    rec.kind = .@"error";
+    copyToFixed(256, &rec.summary_buf, &rec.summary_len, "Build failed");
+    copyToFixed(32, &rec.agent_buf, &rec.agent_len, "oracle");
+
+    try std.testing.expectEqual(MemoryKind.@"error", rec.kind);
+}
+
+test "writeObservation creates record" {
+    var rec = MemoryRecord{};
+    rec.kind = .observation;
+    copyToFixed(256, &rec.summary_buf, &rec.summary_len, "Noticed a pattern");
+    copyToFixed(32, &rec.agent_buf, &rec.agent_len, "scholar");
+
+    try std.testing.expectEqual(MemoryKind.observation, rec.kind);
+}
+
+test "writeRule creates record" {
+    var rec = MemoryRecord{};
+    rec.kind = .rule;
+    copyToFixed(256, &rec.summary_buf, &rec.summary_len, "Always format before commit");
+    copyToFixed(32, &rec.agent_buf, &rec.agent_len, "linter");
+
+    try std.testing.expectEqual(MemoryKind.rule, rec.kind);
+}
+
+test "writeCellHealth creates record" {
+    var rec = MemoryRecord{};
+    rec.kind = .cellhealth;
+    copyToFixed(256, &rec.summary_buf, &rec.summary_len, "trinity.b2t health: 85 (dna) 100 files");
+    copyToFixed(32, &rec.agent_buf, &rec.agent_len, "cytoplasm");
+
+    try std.testing.expectEqual(MemoryKind.cellhealth, rec.kind);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ReadOptions combined filters
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ReadOptions with agent and kind filter" {
+    const opts = ReadOptions{
+        .agent = "mu",
+        .kind = .learning,
+    };
+    try std.testing.expectEqualStrings("mu", opts.agent.?);
+    try std.testing.expectEqual(MemoryKind.learning, opts.kind.?);
+}
+
+test "ReadOptions with since_ts" {
+    const opts = ReadOptions{
+        .since_ts = 1234567890,
+    };
+    try std.testing.expectEqual(@as(u64, 1234567890), opts.since_ts);
+}
+
+test "ReadOptions all fields" {
+    const opts = ReadOptions{
+        .agent = "ralph",
+        .kind = .episode,
+        .limit = 100,
+        .since_ts = 9999999999,
+    };
+    try std.testing.expectEqualStrings("ralph", opts.agent.?);
+    try std.testing.expectEqual(MemoryKind.episode, opts.kind.?);
+    try std.testing.expectEqual(@as(u32, 100), opts.limit);
+    try std.testing.expectEqual(@as(u64, 9999999999), opts.since_ts);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Tag tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "MemoryRecord tag operations" {
+    var rec = MemoryRecord{};
+    copyToFixed(32, &rec.tags[0], &rec.tag_lens[0], "build");
+    copyToFixed(32, &rec.tags[1], &rec.tag_lens[1], "fix");
+    rec.tag_count = 2;
+
+    try std.testing.expectEqual(@as(u8, 2), rec.tag_count);
+    try std.testing.expectEqualStrings("build", rec.getTag(0));
+    try std.testing.expectEqualStrings("fix", rec.getTag(1));
+}
+
+test "MemoryRecord with bio tag" {
+    var rec = MemoryRecord{};
+    copyToFixed(32, &rec.tags[0], &rec.tag_lens[0], "bio:dna");
+    rec.tag_count = 1;
+
+    try std.testing.expectEqualStrings("bio:dna", rec.getTag(0));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GcResult with values
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "GcResult with values" {
+    const result = GcResult{
+        .scanned = 1000,
+        .removed = 100,
+        .kept = 900,
+    };
+    try std.testing.expectEqual(@as(usize, 1000), result.scanned);
+    try std.testing.expectEqual(@as(usize, 100), result.removed);
+    try std.testing.expectEqual(@as(usize, 900), result.kept);
+}
+
+test "GcResult all zero except scanned" {
+    const result = GcResult{
+        .scanned = 500,
+    };
+    try std.testing.expectEqual(@as(usize, 500), result.scanned);
+    try std.testing.expectEqual(@as(usize, 0), result.removed);
+}
+
 // CellType and HealthStatus are not yet defined in hippocampus module
 // These tests will be added when the types are implemented
