@@ -205,15 +205,28 @@ fn countEnvKeys() KeyCheck {
 }
 
 fn readOuroborosScore() f32 {
+<<<<<<< HEAD
+    // Use queen_ouroboros module for API
+    const queen_ouroboros = @import("queen_ouroboros.zig");
+    const state = queen_ouroboros.fetch();
+    return queen_ouroboros.getScore(state);
+=======
     // Use queen_ouroboros module for API + file fallback
     const queen_ouroboros = @import("queen_ouroboros.zig");
     return queen_ouroboros.getScoreFromFile(".trinity/ouroboros_state.json");
+>>>>>>> origin/main
 }
 
 /// Extended: fetch full Ouroboros state with all 12 dimensions
 pub fn fetchOuroborosState(allocator: Allocator) @import("queen_ouroboros.zig").OuroborosState {
+<<<<<<< HEAD
+    _ = allocator;
+    const queen_ouroboros = @import("queen_ouroboros.zig");
+    return queen_ouroboros.fetch();
+=======
     const queen_ouroboros = @import("queen_ouroboros.zig");
     return queen_ouroboros.fetch(allocator, .{}) catch return .{};
+>>>>>>> origin/main
 }
 
 fn countExperienceEpisodes() u32 {
