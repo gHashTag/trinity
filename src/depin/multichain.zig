@@ -29,7 +29,7 @@ pub const ChainConfig = struct {
 };
 
 pub const SUPPORTED_CHAINS = [_]ChainConfig{
-    .{ 
+    .{
         .id = .ethereum,
         .name = "Ethereum",
         .rpc_url = "https://eth.llamarpc.com",

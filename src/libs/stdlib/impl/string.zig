@@ -54,7 +54,7 @@ pub fn toLower(allocator: std.mem.Allocator, s: []const u8) ![]u8 {
 /// Capitalize first letter
 pub fn capitalize(allocator: std.mem.Allocator, s: []const u8) ![]u8 {
     if (s.len == 0) return try allocator.alloc(u8, 0);
-    
+
     const result = try allocator.alloc(u8, s.len);
     result[0] = ascii.toUpper(s[0]);
     @memcpy(result[1..], s[1..]);
@@ -112,7 +112,7 @@ pub fn endsWith(s: []const u8, suffix: []const u8) bool {
 /// Count occurrences of substring
 pub fn count(haystack: []const u8, needle: []const u8) usize {
     if (needle.len == 0) return 0;
-    
+
     var cnt: usize = 0;
     var i: usize = 0;
     while (i <= haystack.len - needle.len) {
@@ -133,40 +133,40 @@ pub fn count(haystack: []const u8, needle: []const u8) usize {
 /// Split string by delimiter
 pub fn split(allocator: std.mem.Allocator, s: []const u8, delimiter: []const u8) ![][]const u8 {
     var parts = std.ArrayList([]const u8).init(allocator);
-    
+
     var iter = mem.splitSequence(u8, s, delimiter);
     while (iter.next()) |part| {
         try parts.append(part);
     }
-    
+
     return parts.toOwnedSlice();
 }
 
 /// Join strings with separator
 pub fn join(allocator: std.mem.Allocator, parts: []const []const u8, separator: []const u8) ![]u8 {
     if (parts.len == 0) return try allocator.alloc(u8, 0);
-    
+
     // Calculate total length
     var total_len: usize = 0;
     for (parts) |part| {
         total_len += part.len;
     }
     total_len += separator.len * (parts.len - 1);
-    
+
     // Build result
     const result = try allocator.alloc(u8, total_len);
     var pos: usize = 0;
-    
+
     for (parts, 0..) |part, i| {
         @memcpy(result[pos..][0..part.len], part);
         pos += part.len;
-        
+
         if (i < parts.len - 1) {
             @memcpy(result[pos..][0..separator.len], separator);
             pos += separator.len;
         }
     }
-    
+
     return result;
 }
 
@@ -181,20 +181,20 @@ pub fn replace(allocator: std.mem.Allocator, s: []const u8, old: []const u8, new
         @memcpy(result, s);
         return result;
     }
-    
+
     const cnt = count(s, old);
     if (cnt == 0) {
         const result = try allocator.alloc(u8, s.len);
         @memcpy(result, s);
         return result;
     }
-    
+
     const new_len = s.len - (cnt * old.len) + (cnt * new.len);
     const result = try allocator.alloc(u8, new_len);
-    
+
     var src_pos: usize = 0;
     var dst_pos: usize = 0;
-    
+
     while (src_pos < s.len) {
         if (src_pos + old.len <= s.len and mem.eql(u8, s[src_pos..][0..old.len], old)) {
             @memcpy(result[dst_pos..][0..new.len], new);
@@ -206,7 +206,7 @@ pub fn replace(allocator: std.mem.Allocator, s: []const u8, old: []const u8, new
             src_pos += 1;
         }
     }
-    
+
     return result;
 }
 
@@ -221,13 +221,13 @@ pub fn padLeft(allocator: std.mem.Allocator, s: []const u8, target_len: usize, p
         @memcpy(result, s);
         return result;
     }
-    
+
     const result = try allocator.alloc(u8, target_len);
     const pad_len = target_len - s.len;
-    
+
     @memset(result[0..pad_len], pad_char);
     @memcpy(result[pad_len..], s);
-    
+
     return result;
 }
 
@@ -238,11 +238,11 @@ pub fn padRight(allocator: std.mem.Allocator, s: []const u8, target_len: usize, 
         @memcpy(result, s);
         return result;
     }
-    
+
     const result = try allocator.alloc(u8, target_len);
     @memcpy(result[0..s.len], s);
     @memset(result[s.len..], pad_char);
-    
+
     return result;
 }
 
@@ -285,7 +285,7 @@ pub fn reverse(allocator: std.mem.Allocator, s: []const u8) ![]u8 {
 /// Repeat string n times
 pub fn repeat(allocator: std.mem.Allocator, s: []const u8, n: usize) ![]u8 {
     if (n == 0 or s.len == 0) return try allocator.alloc(u8, 0);
-    
+
     const result = try allocator.alloc(u8, s.len * n);
     for (0..n) |i| {
         @memcpy(result[i * s.len ..][0..s.len], s);
@@ -336,7 +336,7 @@ test "case conversion" {
     const upper = try toUpper(std.testing.allocator, "hello");
     defer std.testing.allocator.free(upper);
     try std.testing.expectEqualStrings("HELLO", upper);
-    
+
     const lower = try toLower(std.testing.allocator, "HELLO");
     defer std.testing.allocator.free(lower);
     try std.testing.expectEqualStrings("hello", lower);
@@ -365,7 +365,7 @@ test "split and join" {
     const parts = try split(std.testing.allocator, "a,b,c", ",");
     defer std.testing.allocator.free(parts);
     try std.testing.expectEqual(@as(usize, 3), parts.len);
-    
+
     const joined = try join(std.testing.allocator, &[_][]const u8{ "a", "b", "c" }, "-");
     defer std.testing.allocator.free(joined);
     try std.testing.expectEqualStrings("a-b-c", joined);
@@ -381,7 +381,7 @@ test "padding" {
     const left = try padLeft(std.testing.allocator, "42", 5, '0');
     defer std.testing.allocator.free(left);
     try std.testing.expectEqualStrings("00042", left);
-    
+
     const right = try padRight(std.testing.allocator, "hi", 5, ' ');
     defer std.testing.allocator.free(right);
     try std.testing.expectEqualStrings("hi   ", right);
