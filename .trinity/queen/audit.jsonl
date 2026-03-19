@@ -784,3 +784,7 @@ Your branch is ahead of 'origin/arena-1773850674-gladiator' by "}
 {"ts":1773884345,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
 {"ts":1773884427,"kind":"auto_pending","action":"farm evolve step","verdict":"Level 2: needs /queen approve","success":false,"detail":"queued for approval"}
 {"ts":1773884428,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773885870,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}
+{"ts":1773885908,"kind":"auto_denied","action":"farm evolve step","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773885909,"kind":"auto-denied","action":"farm recycle","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1773885951,"kind":"auto-denied","action":"farm recycle","verdict":"Level 2: needs /queen approve","success":false,"detail":"Level 2: needs /queen approve"}

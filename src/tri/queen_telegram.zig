@@ -216,40 +216,19 @@ pub fn dispatchCommand(ctx: DispatchContext, cmd: TgCommand) void {
     } else if (std.mem.eql(u8, sub, "score")) {
         // v5: Full 12-dimension Ouroboros report via API
         const queen_ouroboros = @import("queen_ouroboros.zig");
-        const ouro = queen_ouroboros.fetch(ctx.allocator, .{}) catch brk: {
-            // Fallback to simple score if API unreachable
-            const msg = std.fmt.bufPrint(&buf, qt.E_CYCLE ++ " Ouroboros Score: {d:.1}\n\n" ++
-                qt.E_CHECK ++ " Build: {s}\n" ++
-                qt.E_GEAR ++ " Tests: {d}%%\n" ++
-                qt.E_DNA ++ " Farm PPL: {d:.1}\n" ++
-                qt.E_SWORDS ++ " Arena: {d}", .{
-                ctx.senses.ouroboros_score,
-                if (ctx.senses.build_ok) "OK" else "FAIL",
-                ctx.senses.test_rate,
-                ctx.senses.farm_best_ppl,
-                ctx.senses.arena_battles,
-            }) catch "";
-            tgSend(ctx.tg, msg);
-            // Return after sending fallback message
-            return;
-        };
+        const ouro = queen_ouroboros.fetch();
 
         // Use large buffer for full 12-dimension report
         var ouro_buf: [4096]u8 = undefined;
-        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, &ouro);
+        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, ouro);
         tgSend(ctx.tg, msg);
     } else if (std.mem.eql(u8, sub, "dimensions")) {
         // v5: Explicit dimensions-only report
         const queen_ouroboros = @import("queen_ouroboros.zig");
-        const ouro = queen_ouroboros.fetch(ctx.allocator, .{}) catch brk: {
-            const msg = std.fmt.bufPrint(&buf, qt.E_SIREN ++ " Ouroboros API unreachable");
-            tgSend(ctx.tg, msg);
-            // Return after sending fallback message
-            return;
-        };
+        const ouro = queen_ouroboros.fetch();
 
         var ouro_buf: [3072]u8 = undefined;
-        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, &ouro);
+        const msg = queen_ouroboros.fmtTelegram(&ouro_buf, ouro);
         tgSend(ctx.tg, msg);
     } else if (std.mem.eql(u8, sub, "farm")) {
         const result = queen_actions.execute(ctx.allocator, .farm_status);
