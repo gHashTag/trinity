@@ -325,7 +325,7 @@ fn loadCacheFromFile(allocator: Allocator, cache: *PopulationCache) !void {
             .tok_per_sec = 0,
             .last_updated = last_ts,
             .cached = true,
-        })) |kv| {
+        })) |_| {
             allocator.free(key);
         }
     }
@@ -350,7 +350,7 @@ test "hippocampus_stale_detection" {
     defer cache.deinit(allocator);
 
     // Simulate old entry (100 seconds ago)
-    const now = std.time.timestamp() - 100;
+    _ = std.time.timestamp() - 100; // Would be used to set last_updated timestamp
     try cache.updateWorker(allocator, "old-worker", .training, 500, 5.0);
 
     // Hack the last_updated timestamp
