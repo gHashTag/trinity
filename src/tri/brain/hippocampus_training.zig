@@ -364,3 +364,243 @@ test "hippocampus_stale_detection" {
     try std.testing.expect(workers.items.len > 0);
     workers.deinit(allocator);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// HIPPOCAMPUS COMPREHENSIVE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "hippocampus_cached_worker_age" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    try cache.updateWorker(allocator, "age-test", .training, 1000, 4.5);
+
+    const worker = cache.getWorker("age-test").?;
+    const age = worker.ageSec();
+
+    // Age should be small (just created)
+    try std.testing.expect(age >= 0);
+    try std.testing.expect(age < 5); // Less than 5 seconds
+}
+
+test "hippocampus_is_stale_boundary" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    try cache.updateWorker(allocator, "fresh-worker", .training, 1000, 4.5);
+
+    const worker = cache.getWorker("fresh-worker").?;
+
+    // Fresh worker should not be stale with 300s threshold
+    try std.testing.expect(!worker.isStale(300));
+
+    // But should be stale with 0s threshold
+    try std.testing.expect(worker.isStale(0));
+}
+
+test "hippocampus_is_stale_edge_cases" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    try cache.updateWorker(allocator, "edge-worker", .training, 1000, 4.5);
+
+    const worker = cache.getWorker("edge-worker").?;
+    const age = worker.ageSec();
+
+    // At exact age boundary
+    try std.testing.expect(!worker.isStale(age + 1)); // Not stale yet
+    try std.testing.expect(worker.isStale(age)); // Exactly stale at threshold
+}
+
+test "hippocampus_multiple_workers" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    // Add multiple workers
+    try cache.updateWorker(allocator, "worker-1", .training, 1000, 4.5);
+    try cache.updateWorker(allocator, "worker-2", .stalled, 2000, 5.0);
+    try cache.updateWorker(allocator, "worker-3", .crashed, 3000, 6.0);
+
+    try std.testing.expect(cache.getWorker("worker-1") != null);
+    try std.testing.expect(cache.getWorker("worker-2") != null);
+    try std.testing.expect(cache.getWorker("worker-3") != null);
+
+    // Non-existent worker
+    try std.testing.expect(cache.getWorker("worker-999") == null);
+}
+
+test "hippocampus_worker_update" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    // Add initial worker
+    try cache.updateWorker(allocator, "update-test", .training, 1000, 4.5);
+    var worker = cache.getWorker("update-test").?;
+    try std.testing.expectEqual(@as(u32, 1000), worker.step);
+
+    // Update worker
+    try cache.updateWorker(allocator, "update-test", .training, 2000, 3.5);
+    worker = cache.getWorker("update-test").?;
+    try std.testing.expectEqual(@as(u32, 2000), worker.step);
+    try std.testing.expectEqual(@as(f32, 3.5), worker.ppl);
+}
+
+test "hippocampus_remove_worker" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    try cache.updateWorker(allocator, "remove-test", .training, 1000, 4.5);
+    try std.testing.expect(cache.getWorker("remove-test") != null);
+
+    cache.removeWorker(allocator, "remove-test");
+    try std.testing.expect(cache.getWorker("remove-test") == null);
+}
+
+test "hippocampus_clear_all" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    try cache.updateWorker(allocator, "worker-1", .training, 1000, 4.5);
+    try cache.updateWorker(allocator, "worker-2", .training, 2000, 5.0);
+
+    const workers_before = cache.listWorkers();
+    try std.testing.expect(workers_before.items.len == 2);
+    workers_before.deinit(allocator);
+
+    cache.clear(allocator);
+
+    const workers_after = cache.listWorkers();
+    try std.testing.expect(workers_after.items.len == 0);
+    workers_after.deinit(allocator);
+}
+
+test "hippocampus_needs_refresh" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    // Fresh cache should need refresh (last_refresh = 0)
+    try std.testing.expect(cache.needsRefresh());
+
+    // Set last_refresh to now
+    cache.last_refresh = std.time.timestamp();
+
+    // Should not need refresh immediately
+    try std.testing.expect(!cache.needsRefresh());
+}
+
+test "hippocampus_all_statuses" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    const statuses = [_]LiveStatus{
+        .training,
+        .stalled,
+        .crashed,
+        .unknown,
+        .succeeded,
+    };
+
+    for (statuses, 0..) |status, i| {
+        const name = try std.fmt.allocPrint(allocator, "status-{d}", .{i});
+        defer allocator.free(name);
+
+        try cache.updateWorker(allocator, name, status, 1000, 4.5);
+
+        const worker = cache.getWorker(name).?;
+        try std.testing.expectEqual(status, worker.status);
+    }
+}
+
+test "hippocampus_cached_flag" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    try cache.updateWorker(allocator, "cached-test", .training, 1000, 4.5);
+
+    const worker = cache.getWorker("cached-test").?;
+    try std.testing.expect(worker.cached); // All cache entries should have cached=true
+}
+
+test "hippocampus_custom_refresh_interval" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    cache.refresh_interval_sec = 60; // 1 minute
+    cache.last_refresh = std.time.timestamp();
+
+    try std.testing.expect(!cache.needsRefresh());
+
+    // Simulate time passing (by setting last_refresh to past)
+    cache.last_refresh = std.time.timestamp() - 61;
+
+    try std.testing.expect(cache.needsRefresh());
+}
+
+test "hippocampus_list_workers_content" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    try cache.updateWorker(allocator, "list-test-1", .training, 1000, 4.5);
+    try cache.updateWorker(allocator, "list-test-2", .training, 2000, 5.0);
+
+    const workers = cache.listWorkers();
+    defer workers.deinit(allocator);
+
+    try std.testing.expectEqual(@as(usize, 2), workers.items.len);
+
+    // Check names are in the list
+    const has_1 = for (workers.items) |w| {
+        if (std.mem.eql(u8, w, "list-test-1")) break true;
+    } else false;
+    try std.testing.expect(has_1);
+
+    const has_2 = for (workers.items) |w| {
+        if (std.mem.eql(u8, w, "list-test-2")) break true;
+    } else false;
+    try std.testing.expect(has_2);
+}
+
+test "hippocampus_init_empty" {
+    const allocator = std.testing.allocator;
+    const cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    try std.testing.expectEqual(@as(i64, 0), cache.last_refresh);
+    try std.testing.expectEqual(@as(i64, 300), cache.refresh_interval_sec);
+    try std.testing.expectEqual(@as(usize, 0), cache.workers.count());
+}
+
+test "hippocampus_step_and_ppl_values" {
+    const allocator = std.testing.allocator;
+    var cache = PopulationCache.init(allocator);
+    defer cache.deinit(allocator);
+
+    // Test various step and PPL values
+    try cache.updateWorker(allocator, "low-values", .training, 0, 1.0);
+    try cache.updateWorker(allocator, "high-values", .training, 100000, 100.0);
+    try cache.updateWorker(allocator, "fractional-ppl", .training, 5000, 4.678);
+
+    const low = cache.getWorker("low-values").?;
+    try std.testing.expectEqual(@as(u32, 0), low.step);
+    try std.testing.expectEqual(@as(f32, 1.0), low.ppl);
+
+    const high = cache.getWorker("high-values").?;
+    try std.testing.expectEqual(@as(u32, 100000), high.step);
+    try std.testing.expectEqual(@as(f32, 100.0), high.ppl);
+
+    const frac = cache.getWorker("fractional-ppl").?;
+    try std.testing.expectEqual(@as(u32, 5000), frac.step);
+    try std.testing.expect(frac.ppl > 4.6 and frac.ppl < 4.7);
+}

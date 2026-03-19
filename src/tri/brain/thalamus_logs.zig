@@ -357,3 +357,158 @@ test "thalamus_has_training_logs" {
     const has_logs = hasTrainingLogs(test_json);
     try std.testing.expect(has_logs);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// THALAMUS COMPREHENSIVE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "thalamus_live_status_enum" {
+    try std.testing.expectEqualStrings("training", LiveStatus.training.toString());
+    try std.testing.expectEqualStrings("stalled", LiveStatus.stalled.toString());
+    try std.testing.expectEqualStrings("crashed", LiveStatus.crashed.toString());
+    try std.testing.expectEqualStrings("unknown", LiveStatus.unknown.toString());
+    try std.testing.expectEqualStrings("succeeded", LiveStatus.succeeded.toString());
+}
+
+test "thalamus_parse_step_no_match" {
+    const test_json = "Some logs without step numbers";
+    const step = parseLatestStep(test_json);
+    try std.testing.expectEqual(@as(u32, 0), step);
+}
+
+test "thalamus_parse_step_single" {
+    const test_json = "Training at step=12345";
+    const step = parseLatestStep(test_json);
+    try std.testing.expectEqual(@as(u32, 12345), step);
+}
+
+test "thalamus_parse_step_large" {
+    const test_json = "Training complete step=999999";
+    const step = parseLatestStep(test_json);
+    try std.testing.expectEqual(@as(u32, 999999), step);
+}
+
+test "thalamus_parse_ppl_no_match" {
+    const test_json = "Training logs without PPL";
+    const ppl = parseLatestPPL(test_json);
+    try std.testing.expect(ppl < 0); // Should return negative for not found
+}
+
+test "thalamus_parse_ppl_low" {
+    const test_json = "Excellent progress PPL=2.15";
+    const ppl = parseLatestPPL(test_json);
+    try std.testing.expect(ppl > 2.0 and ppl < 3.0);
+}
+
+test "thalamus_parse_ppl_high" {
+    const test_json = "Early training PPL=95.3";
+    const ppl = parseLatestPPL(test_json);
+    try std.testing.expect(ppl > 90.0);
+}
+
+test "thalamus_parse_ppl_multiple" {
+    const test_json = "PPL=10.5 then PPL=8.2 finally PPL=5.1";
+    const ppl = parseLatestPPL(test_json);
+    try std.testing.expect(ppl > 5.0 and ppl < 5.2);
+}
+
+test "thalamus_error_detection_multiple" {
+    const error_keywords = [_][]const u8{
+        "panic: out of memory",
+        "error: file not found",
+        "FATAL: cannot continue",
+        "exception: division by zero",
+    };
+
+    for (error_keywords) |err| {
+        try std.testing.expect(hasRealError(err), "Should detect error in: {s}", .{err});
+    }
+}
+
+test "thalamus_error_detection_false_positive" {
+    const safe_logs = [_][]const u8{
+        "Training step 100 completed",
+        "Loss decreased to 0.5",
+        "Checkpoint saved successfully",
+        "Epoch finished",
+    };
+
+    for (safe_logs) |log| {
+        try std.testing.expect(!hasRealError(log), "Should not detect error in: {s}", .{log});
+    }
+}
+
+test "thalamus_training_logs_detection" {
+    const valid_logs = [_][]const u8{
+        "12:34:56 step=100 loss=0.5",
+        "Timestamp with step=500",
+        "step=1000 PPL=4.5",
+    };
+
+    for (valid_logs) |log| {
+        try std.testing.expect(hasTrainingLogs(log), "Should detect training in: {s}", .{log});
+    }
+}
+
+test "thalamus_training_logs_negative" {
+    const invalid_logs = [_][]const u8{
+        "Just some random text",
+        "No step numbers here",
+        "Only colons : without numbers",
+    };
+
+    for (invalid_logs) |log| {
+        try std.testing.expect(!hasTrainingLogs(log), "Should not detect training in: {s}", .{log});
+    }
+}
+
+test "thalamus_worker_metrics_init" {
+    const metrics = WorkerMetrics{
+        .step = 1000,
+        .ppl = 4.5,
+        .tok_per_sec = 1200.0,
+        .loss = 0.3,
+    };
+
+    try std.testing.expectEqual(@as(u32, 1000), metrics.step);
+    try std.testing.expectEqual(@as(f32, 4.5), metrics.ppl);
+    try std.testing.expectEqual(@as(f32, 1200.0), metrics.tok_per_sec);
+}
+
+test "thalamus_worker_live_state_init" {
+    const state = WorkerLiveState{
+        .status = .training,
+        .metrics = .{
+            .step = 500,
+            .ppl = 5.0,
+            .tok_per_sec = 1000.0,
+            .loss = 0.4,
+        },
+        .logs_json = "step=500 loss=0.4",
+    };
+
+    try std.testing.expectEqual(LiveStatus.training, state.status);
+    try std.testing.expectEqual(@as(u32, 500), state.metrics.step);
+}
+
+test "thalamus_all_live_statuses" {
+    const statuses = [_]LiveStatus{
+        .training,
+        .stalled,
+        .crashed,
+        .unknown,
+        .succeeded,
+    };
+
+    for (statuses) |status| {
+        const str = status.toString();
+        try std.testing.expect(str.len > 0);
+    }
+}
+
+test "thalamus_edge_case_empty_logs" {
+    try std.testing.expectEqual(@as(u32, 0), parseLatestStep(""));
+    try std.testing.expect(parseLatestPPL("") < 0);
+    try std.testing.expect(!hasRealError(""));
+    try std.testing.expect(!hasTrainingLogs(""));
+}
