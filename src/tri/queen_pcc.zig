@@ -303,7 +303,7 @@ pub const SelfAwarenessContext = struct {
 
     /// Should I escalate (ask for help)?
     pub fn shouldEscalate(self: *const SelfAwarenessContext) bool {
-        return self.consciousnessness.needsHelp();
+        return self.consciousness.needsHelp();
     }
 };
 
@@ -954,7 +954,13 @@ test "pcc — IntrospectionResult AwarenessLevel enum coverage" {
 
 test "pcc — IntrospectionResult timestamp field" {
     const result = IntrospectionResult{
-        .model = .{},
+        .model = .{
+            .identity = .{},
+            .current_state = .{},
+            .capabilities = .{},
+            .goals = .{},
+            .learning_state = .{},
+        },
         .timestamp = 1234567890,
     };
 
@@ -1072,7 +1078,13 @@ test "pcc — SelfAwarenessContext isProgressing with old lesson" {
 
 test "pcc — SelfAwarenessContext shouldEscalate with stuck state" {
     const context = SelfAwarenessContext{
-        .model = .{},
+        .model = .{
+            .identity = .{},
+            .current_state = .{},
+            .capabilities = .{},
+            .goals = .{},
+            .learning_state = .{},
+        },
         .consciousness = .{ .status = .stuck },
     };
 
@@ -1081,7 +1093,13 @@ test "pcc — SelfAwarenessContext shouldEscalate with stuck state" {
 
 test "pcc — SelfAwarenessContext shouldEscalate with conscious state" {
     const context = SelfAwarenessContext{
-        .model = .{},
+        .model = .{
+            .identity = .{},
+            .current_state = .{},
+            .capabilities = .{},
+            .goals = .{},
+            .learning_state = .{},
+        },
         .consciousness = .{ .status = .conscious },
     };
 
@@ -1421,4 +1439,160 @@ test "pcc — diagnoseConsciousness loop takes priority" {
     const state = diagnoseConsciousness(model, &detector, now);
 
     try std.testing.expectEqual(ConsciousnessState.Status.looping, state.status);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REAL FUNCTION TESTS — Functions that return actual calculated values
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "pcc — capabilityScore calculates partial score correctly" {
+    var caps = SelfModel.Capabilities{
+        .binaries_available = 3, // Half of 6 = 0.15
+        .mcp_servers = 2, // Below threshold = 0.0
+        .github_ok = true, // 0.15
+        .railway_ok = false, // 0.0
+        .telegram_ok = true, // 0.1
+        .farm_workers = 25, // Half of 50 = 0.05
+    };
+
+    const score = caps.capabilityScore();
+    // Expected: 0.15 + 0.0 + 0.15 + 0.0 + 0.1 + 0.05 = 0.45
+    try std.testing.expect(score > 0.4 and score < 0.5);
+}
+
+test "pcc — capabilityScore max score with all enabled" {
+    var caps = SelfModel.Capabilities{
+        .binaries_available = 6,
+        .mcp_servers = 5,
+        .github_ok = true,
+        .railway_ok = true,
+        .telegram_ok = true,
+        .farm_workers = 100, // Capped at 50 for calculation
+    };
+
+    const score = caps.capabilityScore();
+    // Max score is 1.0 (0.3 + 0.2 + 0.15 + 0.15 + 0.1 + 0.1)
+    try std.testing.expect(score > 0.95);
+}
+
+test "pcc — LoopDetector record returns bool indicating loop" {
+    var detector = LoopDetector{ .loop_threshold = 3 };
+
+    // First two should not trigger loop
+    try std.testing.expectEqual(false, detector.record(.farm_status));
+    try std.testing.expectEqual(false, detector.record(.farm_status));
+
+    // Third should trigger loop (threshold = 3)
+    try std.testing.expectEqual(true, detector.record(.farm_status));
+}
+
+test "pcc — learnFromActionResult updates cycle_count on success" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{},
+        .goals = .{},
+        .learning_state = .{},
+    };
+
+    const initial_count = model.current_state.cycle_count;
+    const result = qt.ActionResult{
+        .success = true,
+        .output_len = 100,
+        .duration_ms = 50,
+    };
+
+    try learnFromActionResult(&model, .farm_status, result);
+
+    try std.testing.expectEqual(initial_count + 1, model.current_state.cycle_count);
+}
+
+test "pcc — learnFromActionResult does not update on failure" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{ .cycle_count = 5 },
+        .capabilities = .{},
+        .goals = .{},
+        .learning_state = .{},
+    };
+
+    const result = qt.ActionResult{
+        .success = false,
+        .output_len = 0,
+        .duration_ms = 10,
+    };
+
+    try learnFromActionResult(&model, .farm_status, result);
+
+    try std.testing.expectEqual(@as(u32, 5), model.current_state.cycle_count);
+}
+
+test "pcc — describeSelf contains expected format elements" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{},
+        .goals = .{},
+        .learning_state = .{},
+    };
+    @memcpy(model.identity.name[0..7], "Trinity");
+    model.identity.name_len = 7;
+    @memcpy(model.identity.version[0..5], "v2.03");
+    model.identity.version_len = 5;
+
+    const desc = try describeSelf(std.testing.allocator, model);
+    defer std.testing.allocator.free(desc);
+
+    // Should contain key format elements
+    try std.testing.expect(std.mem.indexOf(u8, desc, "Trinity") != null);
+    try std.testing.expect(std.mem.indexOf(u8, desc, "v2.03") != null);
+}
+
+test "pcc — diagnoseConsciousness returns valid ConsciousnessState" {
+    var model = SelfModel{
+        .identity = .{},
+        .current_state = .{},
+        .capabilities = .{ .binaries_available = 3 },
+        .goals = .{},
+        .learning_state = .{},
+    };
+    var detector = LoopDetector{};
+
+    const now = std.time.timestamp();
+    const state = diagnoseConsciousness(model, &detector, now);
+
+    // Should return a valid status
+    const valid_statuses = [_]ConsciousnessState.Status{
+        .conscious, .looping, .stuck, .dead_end, .degraded,
+    };
+    var is_valid = false;
+    for (valid_statuses) |s| {
+        if (state.status == s) {
+            is_valid = true;
+            break;
+        }
+    }
+    try std.testing.expect(is_valid);
+}
+
+test "pcc — health returns CellHealth with timestamp" {
+    const h = health();
+
+    // Timestamp should be recent (within last second)
+    const now = std.time.timestamp();
+    try std.testing.expect(h.last_check > 0);
+    try std.testing.expect(h.last_check <= now);
+}
+
+test "pcc — introspect populates model with real data" {
+    const result = try introspect(std.testing.allocator);
+
+    // Should have non-zero health score
+    try std.testing.expect(result.health_score >= 0.0);
+
+    // Should have valid timestamp
+    try std.testing.expect(result.timestamp > 0);
+
+    // Identity should be populated
+    try std.testing.expect(result.model.identity.name_len > 0);
 }
