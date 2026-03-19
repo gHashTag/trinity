@@ -1,5 +1,3 @@
-// @origin(spec:sacred_attention.tri) @regen(manual-impl)
-// @origin(manual) @regen(pending)
 // HSLM — Sacred Ternary Multi-Head Attention
 // 3 heads × 81 dim (TRINITY × 3⁴), sacred scale 1/81^φ⁻³ ≈ 0.354
 // Ternary Q,K,V,O projections (add/sub only), float32 attention scores
@@ -10,9 +8,7 @@ const std = @import("std");
 const math = std.math;
 const constants = @import("constants.zig");
 const simd_ops = @import("simd_ops.zig");
-const sparse_ternary = @import("sparse_ternary.zig");
 const ste_mod = @import("ste.zig");
-const ternary_attention = @import("ternary_attention.zig");
 
 const EMBED_DIM = constants.EMBED_DIM; // 243
 const NUM_HEADS = constants.NUM_HEADS; // 3
@@ -67,9 +63,13 @@ pub const SacredAttention = struct {
     cache_rms_scale: []f32, // CONTEXT_LEN (rms values per position)
     seq_len: usize,
 
+    // TWN alpha scale factors (per Q/K/V/O, computed during requantize)
+    alpha_q: f32 = 1.0,
+    alpha_k: f32 = 1.0,
+    alpha_v: f32 = 1.0,
+    alpha_o: f32 = 1.0,
+
     is_worker: bool,
-    /// Use ternary Q×K scoring (quantize Q,K to ternary, use ternaryScore)
-    use_ternary_attn: bool = false,
     allocator: std.mem.Allocator,
 
     const Self = @This();
@@ -271,12 +271,12 @@ pub const SacredAttention = struct {
         quantizeAbsMean(self.shadow_o, self.w_o);
     }
 
-    /// Re-quantize using STE mode (TWN/vanilla/progressive)
-    pub fn requantizeSte(self: *Self, config: ste_mod.SteConfig, step: u32) void {
-        _ = ste_mod.quantizeForMode(self.shadow_q, self.w_q, config, step);
-        _ = ste_mod.quantizeForMode(self.shadow_k, self.w_k, config, step);
-        _ = ste_mod.quantizeForMode(self.shadow_v, self.w_v, config, step);
-        _ = ste_mod.quantizeForMode(self.shadow_o, self.w_o, config, step);
+    /// STE-aware requantize: uses configured mode, stores alpha for TWN
+    pub fn requantizeSte(self: *Self, config: ste_mod.SteConfig, current_step: u32) void {
+        self.alpha_q = ste_mod.quantizeForMode(self.shadow_q, self.w_q, config, current_step);
+        self.alpha_k = ste_mod.quantizeForMode(self.shadow_k, self.w_k, config, current_step);
+        self.alpha_v = ste_mod.quantizeForMode(self.shadow_v, self.w_v, config, current_step);
+        self.alpha_o = ste_mod.quantizeForMode(self.shadow_o, self.w_o, config, current_step);
     }
 
     pub fn resetCache(self: *Self) void {
@@ -311,9 +311,12 @@ pub const SacredAttention = struct {
         var q: [EMBED_DIM]f32 = undefined;
         var k: [EMBED_DIM]f32 = undefined;
         var v: [EMBED_DIM]f32 = undefined;
-        sparse_ternary.branchlessMatvec(&normed, self.w_q, &q, EMBED_DIM, EMBED_DIM);
-        sparse_ternary.branchlessMatvec(&normed, self.w_k, &k, EMBED_DIM, EMBED_DIM);
-        sparse_ternary.branchlessMatvec(&normed, self.w_v, &v, EMBED_DIM, EMBED_DIM);
+        simd_ops.ternaryMatvecSimd(&normed, self.w_q, &q, EMBED_DIM, EMBED_DIM);
+        simd_ops.ternaryMatvecSimd(&normed, self.w_k, &k, EMBED_DIM, EMBED_DIM);
+        simd_ops.ternaryMatvecSimd(&normed, self.w_v, &v, EMBED_DIM, EMBED_DIM);
+        ste_mod.applyAlpha(&q, self.alpha_q); // TWN scaling
+        ste_mod.applyAlpha(&k, self.alpha_k);
+        ste_mod.applyAlpha(&v, self.alpha_v);
 
         // Cache V
         @memcpy(self.cache_v[pos_off .. pos_off + EMBED_DIM], &v);
@@ -342,29 +345,14 @@ pub const SacredAttention = struct {
             const h_end = h_start + HEAD_DIM;
 
             // Compute scores: Q_h · K_h[j] * SACRED_ATTN_SCALE for j=0..pos
-            // Optional: ternary Q×K scoring (quantize Q,K to ternary, add-only)
             var scores: [CONTEXT_LEN]f32 = undefined;
-            if (self.use_ternary_attn) {
-                // Quantize Q and K head slices to ternary, compute score as hamming-like
-                for (0..pos + 1) |j| {
-                    const j_off = j * EMBED_DIM;
-                    var ternary_dot: i32 = 0;
-                    for (h_start..h_end) |d| {
-                        const q_sign: i32 = if (q[d] > 0.1) @as(i32, 1) else if (q[d] < -0.1) @as(i32, -1) else 0;
-                        const k_sign: i32 = if (self.cache_k_rope[j_off + d] > 0.1) @as(i32, 1) else if (self.cache_k_rope[j_off + d] < -0.1) @as(i32, -1) else 0;
-                        ternary_dot += q_sign * k_sign;
-                    }
-                    scores[j] = @as(f32, @floatFromInt(ternary_dot)) * SACRED_ATTN_SCALE;
+            for (0..pos + 1) |j| {
+                const j_off = j * EMBED_DIM;
+                var dot: f32 = 0.0;
+                for (h_start..h_end) |d| {
+                    dot += q[d] * self.cache_k_rope[j_off + d];
                 }
-            } else {
-                for (0..pos + 1) |j| {
-                    const j_off = j * EMBED_DIM;
-                    var dot: f32 = 0.0;
-                    for (h_start..h_end) |d| {
-                        dot += q[d] * self.cache_k_rope[j_off + d];
-                    }
-                    scores[j] = dot * SACRED_ATTN_SCALE;
-                }
+                scores[j] = dot * SACRED_ATTN_SCALE;
             }
 
             // Softmax over [0..pos]
@@ -400,7 +388,8 @@ pub const SacredAttention = struct {
 
         // 6. Output projection + residual
         var projected: [EMBED_DIM]f32 = undefined;
-        sparse_ternary.branchlessMatvec(&concat, self.w_o, &projected, EMBED_DIM, EMBED_DIM);
+        simd_ops.ternaryMatvecSimd(&concat, self.w_o, &projected, EMBED_DIM, EMBED_DIM);
+        ste_mod.applyAlpha(&projected, self.alpha_o); // TWN scaling
         for (0..EMBED_DIM) |i| {
             output[i] = input[i] + projected[i]; // residual around attention+norm
         }
@@ -417,7 +406,7 @@ pub const SacredAttention = struct {
 
         // 2. Output projection backward: grad_concat from grad_projected through W_O
         var grad_concat: [EMBED_DIM]f32 = undefined;
-        sparse_ternary.branchlessVecmat(grad_output, self.w_o, &grad_concat, EMBED_DIM, EMBED_DIM);
+        simd_ops.ternaryVecmatSimd(grad_output, self.w_o, &grad_concat, EMBED_DIM, EMBED_DIM);
         // W_O weight grad: grad_o[i][j] += grad_output[j] * cache_concat[i]
         simd_ops.outerProductAccumSimd(self.grad_o, grad_output, &self.cache_concat, EMBED_DIM, EMBED_DIM);
 
@@ -479,7 +468,7 @@ pub const SacredAttention = struct {
         const last_normed_off = last_pos * EMBED_DIM;
 
         // grad_normed += grad_q_pre_rope @ W_Q^T (ternary STE)
-        sparse_ternary.branchlessVecmatAccum(&grad_q_full, self.w_q, &grad_normed, EMBED_DIM, EMBED_DIM);
+        simd_ops.ternaryVecmatSimdAccum(&grad_q_full, self.w_q, &grad_normed, EMBED_DIM, EMBED_DIM);
         // W_Q weight grad: from last position only
         simd_ops.outerProductAccumSimd(self.grad_q, &grad_q_full, self.cache_normed[last_normed_off .. last_normed_off + EMBED_DIM], EMBED_DIM, EMBED_DIM);
 
@@ -489,7 +478,7 @@ pub const SacredAttention = struct {
             simd_ops.outerProductAccumSimd(self.grad_k, grad_k_all[pos * EMBED_DIM .. pos * EMBED_DIM + EMBED_DIM], self.cache_normed[n_off .. n_off + EMBED_DIM], EMBED_DIM, EMBED_DIM);
         }
         // K: input grad from last position through W_K
-        sparse_ternary.branchlessVecmatAccum(grad_k_all[last_pos * EMBED_DIM .. last_pos * EMBED_DIM + EMBED_DIM], self.w_k, &grad_normed, EMBED_DIM, EMBED_DIM);
+        simd_ops.ternaryVecmatSimdAccum(grad_k_all[last_pos * EMBED_DIM .. last_pos * EMBED_DIM + EMBED_DIM], self.w_k, &grad_normed, EMBED_DIM, EMBED_DIM);
 
         // V: weight grads from ALL positions
         for (0..self.seq_len) |pos| {
@@ -497,7 +486,7 @@ pub const SacredAttention = struct {
             simd_ops.outerProductAccumSimd(self.grad_v, grad_v_all[pos * EMBED_DIM .. pos * EMBED_DIM + EMBED_DIM], self.cache_normed[n_off .. n_off + EMBED_DIM], EMBED_DIM, EMBED_DIM);
         }
         // V: input grad from last position through W_V
-        sparse_ternary.branchlessVecmatAccum(grad_v_all[last_pos * EMBED_DIM .. last_pos * EMBED_DIM + EMBED_DIM], self.w_v, &grad_normed, EMBED_DIM, EMBED_DIM);
+        simd_ops.ternaryVecmatSimdAccum(grad_v_all[last_pos * EMBED_DIM .. last_pos * EMBED_DIM + EMBED_DIM], self.w_v, &grad_normed, EMBED_DIM, EMBED_DIM);
 
         // 9. RMSNorm backward (last position only)
         const last_input = self.cache_rms_input[last_normed_off .. last_normed_off + EMBED_DIM];

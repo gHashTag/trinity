@@ -857,8 +857,8 @@ test "Motor — MotorCommand format with multiple args" {
     cmd.subcommand_len = 4;
     @memcpy(cmd.args[0][0..6], "status");
     cmd.arg_lens[0] = 6;
-    @memcpy(cmd.args[1][0..7], "--json");
-    cmd.arg_lens[1] = 7;
+    @memcpy(cmd.args[1][0..6], "--json");
+    cmd.arg_lens[1] = 6;
     cmd.arg_count = 2;
 
     var buf: [128]u8 = undefined;
@@ -935,7 +935,7 @@ test "Motor — MotorExecutor checkCondition arena_exists" {
 
 test "Motor — MotorExecutor checkCondition custom_check returns false" {
     const allocator = std.testing.allocator;
-    const exec = MotorExecutor.init(allocator);
+    var exec = MotorExecutor.init(allocator);
     try std.testing.expect(!exec.checkCondition(.custom_check));
 }
 
@@ -991,7 +991,12 @@ test "Motor — MotorExecutor checkCondition dirty_exists boundary" {
 // ═══════════════════════════════════════════════════════════════════
 
 test "Motor — ExecutionResult default values" {
-    const result = ExecutionResult{};
+    const result = ExecutionResult{
+        .success = false,
+        .duration_ms = 0,
+        .error_msg = &.{},
+        .has_output = false,
+    };
 
     try std.testing.expect(!result.success);
     try std.testing.expectEqual(@as(u64, 0), result.duration_ms);
@@ -1127,7 +1132,7 @@ test "Motor — MotorCommand fromAction all single word actions" {
     const single_actions = [_]qt.ActionKind{
         .introspection,
         .notify,
-        .status,
+        .farm_status,
     };
 
     for (single_actions) |action| {

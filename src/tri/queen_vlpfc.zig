@@ -414,7 +414,7 @@ test "vlpfc — CellHealth from health() function" {
     try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
 }
 
-test "vlpfc — FilterConfig with suppress list" {
+test "vlpfc — FilterConfig suppress list mutability" {
     const suppress_list = &[_][]const u8{ "unused", "noise" };
 
     var config = FilterConfig{};
@@ -551,4 +551,436 @@ test "vlpfc — filterRelays with zero max_relay_count" {
 
     // Should succeed (returns empty set)
     try std.testing.expectEqual(@as(usize, 0), result.priority_relays.len);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FORMAT HELPER TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — fmtHeartbeat formats correctly" {
+    const result = try fmtHeartbeat(std.testing.allocator, 42, 3600);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "wake=42") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "age=3600s") != null);
+}
+
+test "vlpfc — fmtHeartbeat with zero values" {
+    const result = try fmtHeartbeat(std.testing.allocator, 0, 0);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "wake=0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "age=0s") != null);
+}
+
+test "vlpfc — fmtHeartbeat with negative age" {
+    const result = try fmtHeartbeat(std.testing.allocator, 10, -60);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "wake=10") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "age=-60s") != null);
+}
+
+test "vlpfc — fmtMetabolism formats correctly" {
+    const result = try fmtMetabolism(std.testing.allocator, 3.14, 1000);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "ppl=") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "tok/s=1000") != null);
+}
+
+test "vlpfc — fmtMetabolism with zero PPL" {
+    const result = try fmtMetabolism(std.testing.allocator, 0.0, 500);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "ppl=0.0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "tok/s=500") != null);
+}
+
+test "vlpfc — fmtMetabolism with large values" {
+    const result = try fmtMetabolism(std.testing.allocator, 999.99, 99999);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "ppl=") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "tok/s=99999") != null);
+}
+
+test "vlpfc — fmtCellHealth formats correctly" {
+    const result = try fmtCellHealth(std.testing.allocator, 10, 8);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expectEqualStrings("8/10 healthy", result);
+}
+
+test "vlpfc — fmtCellHealth with zero healthy" {
+    const result = try fmtCellHealth(std.testing.allocator, 5, 0);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expectEqualStrings("0/5 healthy", result);
+}
+
+test "vlpfc — fmtCellHealth with all healthy" {
+    const result = try fmtCellHealth(std.testing.allocator, 7, 7);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expectEqualStrings("7/7 healthy", result);
+}
+
+test "vlpfc — fmtFarmStatus formats correctly" {
+    const result = try fmtFarmStatus(std.testing.allocator, 100, 85, 3.5);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "85/100") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "best=3.5") != null);
+}
+
+test "vlpfc — fmtFarmStatus with zero active" {
+    const result = try fmtFarmStatus(std.testing.allocator, 50, 0, 0.0);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "0/50") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "best=0.0") != null);
+}
+
+test "vlpfc — fmtFarmStatus with all active" {
+    const result = try fmtFarmStatus(std.testing.allocator, 10, 10, 2.5);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "10/10") != null);
+}
+
+test "vlpfc — fmtIssues formats correctly" {
+    const result = try fmtIssues(std.testing.allocator, 15, 3);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "15 open") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "3 spawn") != null);
+}
+
+test "vlpfc — fmtIssues with zero issues" {
+    const result = try fmtIssues(std.testing.allocator, 0, 0);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "0 open") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "0 spawn") != null);
+}
+
+test "vlpfc — fmtIssues with spawn count only" {
+    const result = try fmtIssues(std.testing.allocator, 5, 5);
+    defer std.testing.allocator.free(result);
+
+    try std.testing.expect(std.mem.indexOf(u8, result, "5 open") != null);
+    try std.testing.expect(std.mem.indexOf(u8, result, "5 spawn") != null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CELL HEALTH EXTENDED TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — CellHealth with custom timestamp" {
+    const timestamp: i64 = 1710800000;
+    const h = CellHealth{
+        .status = .healthy,
+        .cycle = 5,
+        .last_check = timestamp,
+    };
+
+    try std.testing.expectEqual(timestamp, h.last_check);
+    try std.testing.expectEqual(@as(u32, 5), h.cycle);
+}
+
+test "vlpfc — CellHealth with max cycle value" {
+    const h = CellHealth{
+        .status = .weak,
+        .cycle = std.math.maxInt(u32),
+    };
+
+    try std.testing.expectEqual(std.math.maxInt(u32), h.cycle);
+}
+
+test "vlpfc — CellHealth Status healthy" {
+    const h = CellHealth{ .status = .healthy };
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status);
+}
+
+test "vlpfc — CellHealth Status weak" {
+    const h = CellHealth{ .status = .weak };
+    try std.testing.expectEqual(CellHealth.Status.weak, h.status);
+}
+
+test "vlpfc — CellHealth Status broken" {
+    const h = CellHealth{ .status = .broken };
+    try std.testing.expectEqual(CellHealth.Status.broken, h.status);
+}
+
+test "vlpfc — CellHealth all fields zero" {
+    const h = CellHealth{};
+    try std.testing.expectEqual(CellHealth.Status.healthy, h.status); // default
+    try std.testing.expectEqual(@as(u32, 0), h.cycle);
+    try std.testing.expectEqual(@as(i64, 0), h.last_check);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PRIORITY RELAY EDGE CASES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — PriorityRelay with minimum score" {
+    const relay = PriorityRelay{
+        .name = "min_score",
+        .value = "value",
+        .score = 0.0,
+    };
+
+    try std.testing.expectEqual(@as(f32, 0.0), relay.score);
+}
+
+test "vlpfc — PriorityRelay with maximum score" {
+    const relay = PriorityRelay{
+        .name = "max_score",
+        .value = "value",
+        .score = 1.0,
+    };
+
+    try std.testing.expectEqual(@as(f32, 1.0), relay.score);
+}
+
+test "vlpfc — PriorityRelay with empty name" {
+    const relay = PriorityRelay{
+        .name = "",
+        .value = "value",
+        .score = 0.5,
+    };
+
+    try std.testing.expectEqual(@as(usize, 0), relay.name.len);
+}
+
+test "vlpfc — PriorityRelay with empty value" {
+    const relay = PriorityRelay{
+        .name = "test",
+        .value = "",
+        .score = 0.5,
+    };
+
+    try std.testing.expectEqual(@as(usize, 0), relay.value.len);
+}
+
+test "vlpfc — PriorityRelay default value_is_owned" {
+    const relay = PriorityRelay{
+        .name = "test",
+        .value = "value",
+        .score = 0.5,
+    };
+
+    try std.testing.expect(!relay.value_is_owned); // default is false
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FILTERED STATE DEINIT WITH MIXED VALUES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — FilteredState deinit with mixed owned/borrowed" {
+    var state = FilteredState{};
+    state.priority_relays_allocated = try std.testing.allocator.alloc(PriorityRelay, 3);
+    state.priority_relays = state.priority_relays_allocated;
+
+    // Mix of owned and borrowed values
+    state.priority_relays[0] = PriorityRelay{
+        .name = "owned1",
+        .value = try std.testing.allocator.dupe(u8, "allocated1"),
+        .score = 0.8,
+        .value_is_owned = true,
+    };
+    state.priority_relays[1] = PriorityRelay{
+        .name = "borrowed",
+        .value = "static_string",
+        .score = 0.5,
+        .value_is_owned = false,
+    };
+    state.priority_relays[2] = PriorityRelay{
+        .name = "owned2",
+        .value = try std.testing.allocator.dupe(u8, "allocated2"),
+        .score = 0.9,
+        .value_is_owned = true,
+    };
+
+    state.deinit(std.testing.allocator);
+    // Should free only owned values
+}
+
+test "vlpfc — FilteredState deinit with all borrowed" {
+    var state = FilteredState{};
+    state.priority_relays_allocated = try std.testing.allocator.alloc(PriorityRelay, 2);
+    state.priority_relays = state.priority_relays_allocated;
+
+    state.priority_relays[0] = PriorityRelay{
+        .name = "borrowed1",
+        .value = "static1",
+        .score = 0.5,
+        .value_is_owned = false,
+    };
+    state.priority_relays[1] = PriorityRelay{
+        .name = "borrowed2",
+        .value = "static2",
+        .score = 0.6,
+        .value_is_owned = false,
+    };
+
+    state.deinit(std.testing.allocator);
+    // Should not crash - no owned values to free
+}
+
+test "vlpfc — FilteredState deinit multiple times" {
+    var state = FilteredState{};
+    state.priority_relays_allocated = try std.testing.allocator.alloc(PriorityRelay, 1);
+    state.priority_relays = state.priority_relays_allocated;
+    state.priority_relays[0] = PriorityRelay{
+        .name = "test",
+        .value = try std.testing.allocator.dupe(u8, "owned"),
+        .score = 0.7,
+        .value_is_owned = true,
+    };
+
+    state.deinit(std.testing.allocator);
+    state.deinit(std.testing.allocator);
+    // Second deinit should be safe (slices are now empty)
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FOCUS AREA RELAY NAME VERIFICATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — filterRelays farm returns farm_status relay" {
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .farm });
+    defer result.deinit(std.testing.allocator);
+
+    if (result.priority_relays.len > 0) {
+        try std.testing.expectEqualStrings("farm_status", result.priority_relays[0].name);
+    }
+}
+
+test "vlpfc — filterRelays training returns ppl_metrics relay" {
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .training });
+    defer result.deinit(std.testing.allocator);
+
+    if (result.priority_relays.len > 0) {
+        try std.testing.expectEqualStrings("ppl_metrics", result.priority_relays[0].name);
+    }
+}
+
+test "vlpfc — filterRelays github returns github_issues relay" {
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .github });
+    defer result.deinit(std.testing.allocator);
+
+    if (result.priority_relays.len > 0) {
+        try std.testing.expectEqualStrings("github_issues", result.priority_relays[0].name);
+    }
+}
+
+test "vlpfc — filterRelays self_check returns queen_heartbeat" {
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .self_check });
+    defer result.deinit(std.testing.allocator);
+
+    if (result.priority_relays.len > 0) {
+        try std.testing.expectEqualStrings("queen_heartbeat", result.priority_relays[0].name);
+    }
+}
+
+test "vlpfc — filterRelays all includes multiple relay types" {
+    var result = try filterRelays(std.testing.allocator, .{ .focus = .all });
+    defer result.deinit(std.testing.allocator);
+
+    // Should have relays from different domains
+    var found_heartbeat = false;
+    var found_metabolism = false;
+    var found_cell_health = false;
+
+    for (result.priority_relays) |relay| {
+        if (std.mem.indexOf(u8, relay.name, "heartbeat") != null) found_heartbeat = true;
+        if (std.mem.indexOf(u8, relay.name, "metabolism") != null) found_metabolism = true;
+        if (std.mem.indexOf(u8, relay.name, "health") != null) found_cell_health = true;
+    }
+
+    // At least one should be found
+    try std.testing.expect(found_heartbeat or found_metabolism or found_cell_health);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FILTER CONFIG VARIATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — FilterConfig with custom focus" {
+    var config = FilterConfig{};
+    config.focus = .training;
+
+    try std.testing.expectEqual(FocusArea.training, config.focus);
+}
+
+test "vlpfc — FilterConfig with suppress list" {
+    const suppress_items = &[_][]const u8{ "noise1", "noise2", "noise3" };
+    const config = FilterConfig{
+        .focus = .all,
+        .suppress = suppress_items,
+        .max_relay_count = 5,
+    };
+
+    try std.testing.expectEqual(@as(usize, 3), config.suppress.len);
+    try std.testing.expectEqual(@as(u8, 5), config.max_relay_count);
+}
+
+test "vlpfc — FilterConfig with max_relay_count variations" {
+    const counts = [_]u8{ 0, 1, 5, 10, 100, 255 };
+
+    for (counts) |count| {
+        const config = FilterConfig{
+            .focus = .all,
+            .max_relay_count = count,
+        };
+        try std.testing.expectEqual(count, config.max_relay_count);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ALERT KIND COVERAGE
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "vlpfc — FilteredState mood build_broken" {
+    var state = FilteredState{};
+    state.mood = qt.AlertKind.build_broken;
+    try std.testing.expectEqual(qt.AlertKind.build_broken, state.mood);
+}
+
+test "vlpfc — FilteredState mood new_ppl_record" {
+    var state = FilteredState{};
+    state.mood = qt.AlertKind.new_ppl_record;
+    try std.testing.expectEqual(qt.AlertKind.new_ppl_record, state.mood);
+}
+
+test "vlpfc — FilteredState mood senior_killed" {
+    var state = FilteredState{};
+    state.mood = qt.AlertKind.senior_killed;
+    try std.testing.expectEqual(qt.AlertKind.senior_killed, state.mood);
+}
+
+test "vlpfc — FilteredState mood arena_upset" {
+    var state = FilteredState{};
+    state.mood = qt.AlertKind.arena_upset;
+    try std.testing.expectEqual(qt.AlertKind.arena_upset, state.mood);
+}
+
+test "vlpfc — FilteredState mood blocked_issue" {
+    var state = FilteredState{};
+    state.mood = qt.AlertKind.blocked_issue;
+    try std.testing.expectEqual(qt.AlertKind.blocked_issue, state.mood);
+}
+
+test "vlpfc — FilteredState mood dirty_overload" {
+    var state = FilteredState{};
+    state.mood = qt.AlertKind.dirty_overload;
+    try std.testing.expectEqual(qt.AlertKind.dirty_overload, state.mood);
+}
+
+test "vlpfc — FilteredState mood key_expired" {
+    var state = FilteredState{};
+    state.mood = qt.AlertKind.key_expired;
+    try std.testing.expectEqual(qt.AlertKind.key_expired, state.mood);
 }

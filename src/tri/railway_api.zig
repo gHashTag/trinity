@@ -245,6 +245,23 @@ pub const RailwayApi = struct {
         return self.query(gql, vars);
     }
 
+    /// Rename a service (serviceUpdate mutation with name field).
+    pub fn serviceUpdateName(self: *Self, service_id: []const u8, new_name: []const u8) RailwayApiError!void {
+        const gql = "mutation($id: ID!, $name: String!) { serviceUpdate(input: {id: $id, name: $name}) { service { id name } } }";
+        const vars = std.fmt.allocPrint(self.allocator, "{{\"id\":\"{s}\",\"name\":\"{s}\"}}", .{
+            service_id, new_name,
+        }) catch return error.OutOfMemory;
+        defer self.allocator.free(vars);
+
+        const resp = try self.query(gql, vars);
+        defer self.allocator.free(resp);
+
+        // Check for errors in response
+        if (std.mem.indexOf(u8, resp, "\"errors\"")) |_| {
+            return error.ApiError;
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════════════════
     // Internal: HTTP transport (follows github_client.zig:283-349 pattern)
     // ═══════════════════════════════════════════════════════════════════════════

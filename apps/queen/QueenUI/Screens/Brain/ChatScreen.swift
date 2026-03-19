@@ -1123,20 +1123,6 @@ struct ChatScreen: View {
                     .fill(Color.white.opacity(0.06))
                     .frame(height: 1)
 
-                // Tri CLI Tools Panel
-                TriToolsChatPanel()
-
-                Rectangle()
-                    .fill(Color.white.opacity(0.06))
-                    .frame(height: 1)
-
-                // MCP Tools Panel
-                MCPToolsPanel()
-
-                Rectangle()
-                    .fill(Color.white.opacity(0.06))
-                    .frame(height: 1)
-
                 ContextInspector()
                     .frame(maxHeight: 200)
 
@@ -1148,6 +1134,7 @@ struct ChatScreen: View {
                     .frame(maxHeight: 220)
             }
             .frame(width: 240)
+            .background(TrinityTheme.bgSidebar)
             .transition(reduceMotion ? .opacity : .move(edge: .leading))
 
             Rectangle()
@@ -1980,7 +1967,6 @@ struct ChatScreen: View {
             if showSystemPrompt {
                 systemPromptEditorView
             }
-            HStack(spacing: 0) {
             HStack(spacing: 4) {
                 ModelPicker(modelManager: modelManager)
                 PersonaPicker(selectedPersona: $selectedPersona, showLibrary: $showPersonaLibrary)

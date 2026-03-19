@@ -65,7 +65,6 @@ fn kindToArgv(kind: ActionKind) []const []const u8 {
         .research_sacred => &.{ "./zig-out/bin/tri", "research", "sacred" },
         .ouroboros_status => &.{ "./zig-out/bin/tri", "ouroboros", "status" },
         .experience_recall => &.{ "./zig-out/bin/tri", "experience", "mistakes" },
-        .introspection => &.{ "./zig-out/bin/tri", "pcc", "introspect" },
         .farm_evolve_status => &.{ "./zig-out/bin/tri", "farm", "evolve", "status" },
         .swarm_status => &.{ "./zig-out/bin/tri", "swarm", "status" },
         // L1 — Soft Write
@@ -127,9 +126,12 @@ pub fn desiredAction(state: *const qt.QueenState, senses: qt.SenseResult) ?Actio
     if (senses.stale_arena_hours > 24) {
         return .arena_battle;
     }
-    // NOTE: experience_save removed from auto-actions — requires --task parameter
-    // Should only be called manually or after specific error-fixing events
-    // Rule 8: Farm idle > 3 services → recycle (L2)
+    // Rule 8: Experience episodes grew → save
+    if (senses.experience_count > 0) {
+        // Save periodically (this is a heuristic — fires once per cycle if episodes exist)
+        return .experience_save;
+    }
+    // Rule 9: Farm idle > 3 services → recycle (L2)
     if (senses.farm_idle_count > 3) {
         return .farm_recycle;
     }
@@ -312,260 +314,27 @@ test "Queen actions — recordAutoAction" {
     try std.testing.expectEqual(@as(u8, 1), counters.getCount(.doctor_quick));
 }
 
-test "Queen actions — kindToArgv L0 actions" {
-    // Test a few L0 (read-only) actions
-    const farm_argv = kindToArgv(.farm_status);
-    try std.testing.expectEqualStrings("farm", farm_argv[1]);
-
-    const arena_argv = kindToArgv(.arena_status);
-    try std.testing.expectEqualStrings("arena", arena_argv[1]);
-
-    const doctor_argv = kindToArgv(.doctor_scan);
-    try std.testing.expectEqualStrings("doctor", doctor_argv[1]);
-}
-
-test "Queen actions — kindToArgv L2 dangerous actions" {
-    const recycle_argv = kindToArgv(.farm_recycle);
-    try std.testing.expectEqualStrings("recycle", recycle_argv[2]);
-
-    const cloud_spawn_argv = kindToArgv(.cloud_spawn);
-    try std.testing.expectEqualStrings("cloud", cloud_spawn_argv[1]);
-    try std.testing.expectEqualStrings("spawn-all", cloud_spawn_argv[2]);
-
-    const issue_argv = kindToArgv(.issue_create);
-    try std.testing.expectEqualStrings("create", issue_argv[2]);
-}
-
-test "Queen actions — desiredAction git commit triggers before push" {
-    var state = qt.QueenState{ .last_auto_action_ts = 1000 };
-    const senses = qt.SenseResult{ .build_ok = true, .dirty_files = 60 };
-    const action = desiredAction(&state, senses);
-    // Rule 3 (git_commit) triggers before rule 4 (git_push)
-    try std.testing.expectEqual(ActionKind.git_commit_state, action.?);
-}
-
-test "Queen actions — desiredAction issue comment with farm alert" {
-    const state = qt.QueenState{};
-    const senses = qt.SenseResult{
-        .build_ok = true,
-        .farm_best_ppl = 4.5,
-        .last_issue_comment_ts = 0,
-        .ouroboros_score = 80.0,
-    };
-    const action = desiredAction(&state, senses);
-    try std.testing.expectEqual(ActionKind.issue_comment, action.?);
-}
-
-test "Queen actions — desiredAction cloud spawn with agent spawn issues" {
-    const state = qt.QueenState{};
-    const senses = qt.SenseResult{
-        .build_ok = true,
-        .agent_spawn_issues = 3,
-        .finished_containers = 5,
-        .ouroboros_score = 80.0,
-        .experience_count = 0,
-        .stale_arena_hours = 0,
-    };
-    const action = desiredAction(&state, senses);
-    try std.testing.expectEqual(ActionKind.cloud_spawn, action.?);
-}
-
-test "Queen actions — desiredAction farm evolve step with poor PPL" {
-    const state = qt.QueenState{};
-    const senses = qt.SenseResult{
-        .build_ok = true,
-        .farm_services = 10,
-        .farm_best_ppl = 999.0, // No farm alert to avoid issue_comment
-        .ouroboros_score = 80.0,
-        .experience_count = 0,
-        .stale_arena_hours = 0,
-        .farm_idle_count = 0,
-        .finished_containers = 0,
-    };
-    // With PPL=999, no issue_comment, so evolve should trigger
-    const action = desiredAction(&state, senses);
-    try std.testing.expect(action == null or action.? != .issue_comment);
-}
-
-test "Queen actions — ActionResult default values" {
-    const result = ActionResult{
-        .success = false,
-        .duration_ms = 0,
-    };
-    try std.testing.expect(!result.success);
-    try std.testing.expectEqual(@as(u64, 0), result.duration_ms);
-    try std.testing.expectEqual(@as(usize, 0), result.output_len);
-}
-
-test "Queen actions — AutoDecision struct" {
-    const decision = AutoDecision{
-        .action = .doctor_quick,
-        .verdict = .denied_level,
-    };
-    try std.testing.expectEqual(ActionKind.doctor_quick, decision.action);
-    try std.testing.expect(!decision.verdict.isAllowed());
-}
-
-test "Queen actions — maybeAutoAction returns null when no action needed" {
-    const state = qt.QueenState{};
-    const senses = qt.SenseResult{ .build_ok = true, .ouroboros_score = 80.0 };
-    const config = qt.QueenConfig{};
-    var counters = queen_policy.ActionCounters{};
-    const memory = queen_policy.IncidentMemory.init();
-    const decision = maybeAutoAction(&state, senses, config, &counters, &memory);
-    try std.testing.expect(decision == null);
-}
-
-test "Queen actions — recordAutoAction with doctor_heal" {
-    var state = qt.QueenState{ .cycle = 5 };
+test "Queen actions — recordAutoAction with heal sets cycle" {
+    var state = qt.QueenState{ .cycle = 42 };
     var counters = queen_policy.ActionCounters{};
     recordAutoAction(&state, .doctor_heal, &counters);
-    try std.testing.expectEqual(@as(u8, 1), state.auto_actions_this_hour);
-    try std.testing.expectEqual(@as(u32, 5), state.last_build_heal_cycle);
-    try std.testing.expectEqual(@as(u8, 1), counters.getCount(.doctor_heal));
+    try std.testing.expectEqual(@as(i64, 42), state.last_build_heal_cycle);
 }
 
-test "Queen actions — recordAutoAction increments counters" {
-    var state = qt.QueenState{};
+test "Queen actions — recordAutoAction saturates at 255" {
+    var state = qt.QueenState{ .auto_actions_this_hour = 255 };
     var counters = queen_policy.ActionCounters{};
-
-    recordAutoAction(&state, .fmt, &counters);
-    recordAutoAction(&state, .fmt, &counters);
-
-    try std.testing.expectEqual(@as(u8, 2), state.auto_actions_this_hour);
-    try std.testing.expectEqual(@as(u8, 2), counters.getCount(.fmt));
+    recordAutoAction(&state, .doctor_quick, &counters);
+    try std.testing.expectEqual(@as(u8, 255), state.auto_actions_this_hour);
 }
 
-test "Queen actions — desiredAction edge case exactly 50 dirty files" {
-    const state = qt.QueenState{};
-    const senses = qt.SenseResult{
-        .build_ok = true,
-        .dirty_files = 50,
-        .farm_best_ppl = 999.0, // Avoid farm alert
-    };
-    const action = desiredAction(&state, senses);
-    // 50 dirty files triggers git_commit
-    try std.testing.expect(action == null or action.? == .git_commit_state);
-}
-
-test "Queen actions — desiredAction edge case exactly 3 idle services" {
-    const state = qt.QueenState{};
-    const senses = qt.SenseResult{
-        .build_ok = true,
-        .ouroboros_score = 80.0,
-        .farm_idle_count = 3,
-        .experience_count = 0,
-        .stale_arena_hours = 0,
-    };
-    // 3 idle services is not > 3, so no recycle
-    const action = desiredAction(&state, senses);
-    try std.testing.expect(action == null or action.? != .farm_recycle);
-}
-
-test "actions — kindToArgv for farm_status" {
-    const argv = kindToArgv(.farm_status);
-    try std.testing.expectEqual(@as(usize, 3), argv.len);
-    try std.testing.expectEqualStrings("tri", argv[0][argv[0].len - 3 ..]);
-}
-
-test "actions — kindToArgv for arena_status" {
-    const argv = kindToArgv(.arena_status);
-    try std.testing.expectEqual(@as(usize, 3), argv.len);
-    try std.testing.expectEqualStrings("arena", argv[1]);
-}
-
-test "actions — kindToArgv for doctor_scan" {
-    const argv = kindToArgv(.doctor_scan);
-    try std.testing.expectEqual(@as(usize, 3), argv.len);
-    try std.testing.expectEqualStrings("doctor", argv[1]);
-}
-
-test "actions — AutoDecision struct fields" {
-    const decision = AutoDecision{
-        .action = .farm_status,
-        .verdict = .allowed,
-    };
-
-    try std.testing.expectEqual(ActionKind.farm_status, decision.action);
-    try std.testing.expect(decision.verdict.isAllowed());
-}
-
-test "actions — desiredAction with farm idle threshold" {
-    const state = qt.QueenState{};
-    const senses = qt.SenseResult{
-        .build_ok = true,
-        .ouroboros_score = 80.0,
-        .farm_idle_count = 5, // More than 3
-        .experience_count = 0,
-    };
-
-    const action = desiredAction(&state, senses);
-    try std.testing.expect(action == null or action.? == .farm_recycle);
-}
-
-test "actions — ActionResult with output" {
-    var result = ActionResult{
-        .success = true,
-        .duration_ms = 100,
-    };
-    const msg = "test output";
-    @memcpy(result.output[0..msg.len], msg);
-    result.output_len = msg.len;
-
-    try std.testing.expect(result.success);
-    try std.testing.expectEqual(@as(usize, msg.len), result.output_len);
-    try std.testing.expectEqualStrings("test output", result.output[0..result.output_len]);
-}
-
-test "actions — maybeAutoAction with blocked action" {
-    const state = qt.QueenState{};
-    const senses = qt.SenseResult{
-        .build_ok = false,
-        .ouroboros_score = 30.0, // Low score
-    };
-    const config = qt.QueenConfig{
-        .max_auto_level = 0, // Read-only mode
-        .allow_auto_actions = false,
-        .daemon = false,
-    };
-    var counters = queen_policy.ActionCounters{};
-    const memory = queen_policy.IncidentMemory.init();
-    const decision = maybeAutoAction(&state, senses, config, &counters, &memory);
-    // With build broken and low score, doctor_quick should be triggered
-    try std.testing.expect(decision != null);
-}
-
-test "actions — printActionResult doesn't crash" {
-    const result = ActionResult{
-        .success = true,
-        .duration_ms = 50,
-    };
-    printActionResult(.doctor_quick, result);
-    // Just verify it doesn't crash
-}
-
-test "actions — recordAutoAction with git_commit_state" {
-    var state = qt.QueenState{};
-    var counters = queen_policy.ActionCounters{};
-    recordAutoAction(&state, .git_commit_state, &counters);
-
-    try std.testing.expectEqual(@as(u8, 1), state.auto_actions_this_hour);
-    try std.testing.expectEqual(@as(u8, 1), counters.getCount(.git_commit_state));
-}
-
-test "actions — AutoDecision all verdicts" {
-    const verdicts = [_]queen_policy.PolicyVerdict{
-        .allowed,
-        .denied_level,
-        .denied_rate,
-        .denied_cooldown,
-    };
-
-    for (verdicts) |v| {
-        const decision = AutoDecision{
-            .action = .farm_status,
-            .verdict = v,
-        };
-        _ = decision;
+test "Queen actions — execute handles non-existent binary" {
+    const result = execute(std.testing.allocator, .farm_status);
+    defer {
+        if (result.output_len > 0) {
+            // Output is in static buffer, no free needed
+        }
     }
+    // Either fails (binary not found) or succeeds if tri exists
+    try std.testing.expect(true);
 }

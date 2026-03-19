@@ -15,7 +15,7 @@ struct ModelProviderTests {
     }
 
     @Test func isImageModel() {
-        let imageModel = AIModel.allModels.first { $0.id == "grok-2-image" }
+        let imageModel = AIModel.allModels.first { $0.id == "grok-imagine-image" }
         #expect(imageModel != nil)
         #expect(imageModel!.isImageModel)
 
