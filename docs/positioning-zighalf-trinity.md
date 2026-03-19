@@ -196,7 +196,24 @@ endmodule
 | TF3 mac | ~100 cycles | ~1 cycle | 100× |
 | Ternary matmul | Software | DSP-free | ~1000× |
 
+**### Sacred GF16/TF3-9 ALU — Trinity FPGA Level 6
+
+Implemented in `fpga/openxc7-synth/`:
+- `gf16_add.v` — GF16 addition with 3-stage pipeline (decode+align, add, normalize+round+pack)
+- `gf16_mul.v` — GF16 multiplication using DSP48E1
+- `gf16_alu.v` — Unified GF16 ALU (ADD + MUL)
+- `tf3_add.v` — TF3-9 ternary addition (trit decode → add → encode)
+- `tf3_dot.v` — TF3-9 dot product with accumulation
+- `sacred_alu.v` — Unified Sacred ALU (GF16 + TF3-9 under one interface
+
+**Formats:**
+- GF16: exp:mant = 6:9 = 0.667, φ-distance = 0.049
+- TF3-9: exp:mant = 3:5 = 0.600, φ-distance = 0.018
+
+**Synthesis:** `tri sacred synth [module...]`
+
 **No GPU vendor offers this.** NVIDIA/AMD don't support GF16/TF3 because they're non-standard formats. Only FPGA allows custom arithmetic in hardware.
+ NVIDIA/AMD don't support GF16/TF3 because they're non-standard formats. Only FPGA allows custom arithmetic in hardware.
 
 ---
 
