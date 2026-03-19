@@ -578,13 +578,12 @@ test "Queen actions — kindToArgv train status" {
 test "Queen actions — kindToArgv all actions return valid argv" {
     // Verify all actions have at least 3 elements (binary + subcommand + args)
     const actions = [_]ActionKind{
-        .farm_status, .arena_status, .doctor_scan, .train_status, .train_diagnose,
-        .experiment_chart, .patent_status, .research_sacred, .ouroboros_status,
-        .experience_recall, .farm_evolve_status, .swarm_status, .introspection,
-        .doctor_quick, .doctor_heal, .ouroboros_cycle, .git_commit_state,
-        .git_push, .issue_comment, .notify, .arena_battle, .experience_save, .fmt,
-        .farm_recycle, .farm_evolve_step, .cloud_spawn, .cloud_kill,
-        .cloud_cleanup, .issue_create, .swarm_decompose,
+        .farm_status,        .arena_status,     .doctor_scan,     .train_status,     .train_diagnose,
+        .experiment_chart,   .patent_status,    .research_sacred, .ouroboros_status, .experience_recall,
+        .farm_evolve_status, .swarm_status,     .introspection,   .doctor_quick,     .doctor_heal,
+        .ouroboros_cycle,    .git_commit_state, .git_push,        .issue_comment,    .notify,
+        .arena_battle,       .experience_save,  .fmt,             .farm_recycle,     .farm_evolve_step,
+        .cloud_spawn,        .cloud_kill,       .cloud_cleanup,   .issue_create,     .swarm_decompose,
     };
 
     for (actions) |action| {
@@ -620,4 +619,155 @@ test "Queen actions — kindToArgv ouroboros status" {
     const argv = kindToArgv(.ouroboros_status);
     try std.testing.expectEqualStrings("ouroboros", argv[1]);
     try std.testing.expectEqualStrings("status", argv[2]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// AutoDecision tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Queen actions — AutoDecision fields" {
+    const decision = AutoDecision{
+        .action = .doctor_quick,
+        .allowed = true,
+        .verdict = .allowed,
+    };
+
+    try std.testing.expectEqual(qt.ActionKind.doctor_quick, decision.action);
+    try std.testing.expect(decision.allowed);
+    try std.testing.expectEqual(queen_policy.PolicyVerdict.allowed, decision.verdict);
+}
+
+test "Queen actions — AutoDecision denied" {
+    const decision = AutoDecision{
+        .action = .farm_recycle,
+        .allowed = false,
+        .verdict = .denied_level,
+    };
+
+    try std.testing.expect(!decision.allowed);
+    try std.testing.expectEqual(queen_policy.PolicyVerdict.denied_level, decision.verdict);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ActionResult tests
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Queen actions — ActionResult ok" {
+    const result = ActionResult.ok;
+    try std.testing.expectEqual(@as(i32, 0), result.code);
+    try std.testing.expectEqualStrings("", result.err);
+}
+
+test "Queen actions — ActionResult err" {
+    const result = ActionResult.err("test error");
+    try std.testing.expect(result.code != 0);
+    try std.testing.expectEqualStrings("test error", result.err);
+}
+
+test "Queen actions — ActionResult isOk" {
+    const ok_result = ActionResult.ok;
+    try std.testing.expect(ok_result.isOk());
+
+    const err_result = ActionResult.err("failed");
+    try std.testing.expect(!err_result.isOk());
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// kindToArgv edge cases
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Queen actions — kindToArgv train diagnose" {
+    const argv = kindToArgv(.train_diagnose);
+    try std.testing.expectEqualStrings("train", argv[1]);
+    try std.testing.expectEqualStrings("diagnose", argv[2]);
+}
+
+test "Queen actions — kindToArgv experiment chart" {
+    const argv = kindToArgv(.experiment_chart);
+    try std.testing.expectEqualStrings("experiment", argv[1]);
+    try std.testing.expectEqualStrings("chart", argv[2]);
+}
+
+test "Queen actions — kindToArgv patent status" {
+    const argv = kindToArgv(.patent_status);
+    try std.testing.expectEqualStrings("patent", argv[1]);
+    try std.testing.expectEqualStrings("status", argv[2]);
+}
+
+test "Queen actions — kindToArgv research sacred" {
+    const argv = kindToArgv(.research_sacred);
+    try std.testing.expectEqualStrings("research", argv[1]);
+    try std.testing.expectEqualStrings("sacred", argv[2]);
+}
+
+test "Queen actions — kindToArgv farm evolve status" {
+    const argv = kindToArgv(.farm_evolve_status);
+    try std.testing.expectEqualStrings("farm", argv[1]);
+    try std.testing.expectEqualStrings("evolve", argv[2]);
+    try std.testing.expectEqualStrings("status", argv[3]);
+}
+
+test "Queen actions — kindToArgv swarm status" {
+    const argv = kindToArgv(.swarm_status);
+    try std.testing.expectEqualStrings("swarm", argv[1]);
+    try std.testing.expectEqualStrings("status", argv[2]);
+}
+
+test "Queen actions — kindToArgv git commit state" {
+    const argv = kindToArgv(.git_commit_state);
+    try std.testing.expectEqualStrings("git", argv[1]);
+    try std.testing.expectEqualStrings("commit", argv[2]);
+    try std.testing.expectEqualStrings("state", argv[3]);
+}
+
+test "Queen actions — kindToArgv experience save" {
+    const argv = kindToArgv(.experience_save);
+    try std.testing.expectEqualStrings("experience", argv[1]);
+    try std.testing.expectEqualStrings("save", argv[2]);
+}
+
+test "Queen actions — kindToArgv cloud kill" {
+    const argv = kindToArgv(.cloud_kill);
+    try std.testing.expectEqualStrings("cloud", argv[1]);
+    try std.testing.expectEqualStrings("kill", argv[2]);
+}
+
+test "Queen actions — kindToArgv cloud cleanup" {
+    const argv = kindToArgv(.cloud_cleanup);
+    try std.testing.expectEqualStrings("cloud", argv[1]);
+    try std.testing.expectEqualStrings("cleanup", argv[2]);
+}
+
+test "Queen actions — kindToArgv issue create" {
+    const argv = kindToArgv(.issue_create);
+    try std.testing.expectEqualStrings("issue", argv[1]);
+    try std.testing.expectEqualStrings("create", argv[2]);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// desiredAction edge cases
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Queen actions — desiredAction no dirty but low score" {
+    var state = qt.QueenState.init();
+    state.score = 40; // Low score
+    state.senses.last_scan_delta = 10000; // Recent scan
+
+    const senses = qt.SenseResult{};
+    const action = desiredAction(&state, senses);
+
+    // Should not trigger doctor_quick for low score alone if scan was recent
+    try std.testing.expect(action == null or action.? != .doctor_quick);
+}
+
+test "Queen actions — desiredAction respects L2 lock" {
+    var state = qt.QueenState.init();
+    state.config.max_auto_level = 1; // L2 locked
+    state.farm.idle_minutes = 30; // Would trigger farm_recycle if L2 open
+
+    const senses = qt.SenseResult{};
+    const action = desiredAction(&state, senses);
+
+    // Should not suggest L2 action when locked
+    try std.testing.expect(action == null or action.? != .farm_recycle);
 }
