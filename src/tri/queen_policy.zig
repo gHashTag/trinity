@@ -788,3 +788,420 @@ test "Policy — ActionCounters window reset" {
     c.record(.doctor_quick);
     try std.testing.expectEqual(@as(u8, 1), c.getCount(.doctor_quick));
 }
+
+test "Policy — SafetyLevel labels" {
+    try std.testing.expectEqualStrings("L0 read-only", SafetyLevel.read_only.label());
+    try std.testing.expectEqualStrings("L1 soft-write", SafetyLevel.soft_write.label());
+    try std.testing.expectEqualStrings("L2 dangerous", SafetyLevel.dangerous.label());
+}
+
+test "Policy — SafetyLevel emoji" {
+    try std.testing.expectEqual(qt.E_CHECK, SafetyLevel.read_only.emoji());
+    try std.testing.expectEqual(qt.E_WRENCH, SafetyLevel.soft_write.emoji());
+    try std.testing.expectEqual(qt.E_SIREN, SafetyLevel.dangerous.emoji());
+}
+
+test "Policy — actionLevel all L0 actions" {
+    const l0_actions = [_]qt.ActionKind{
+        .farm_status, .arena_status, .doctor_scan, .train_status, .train_diagnose,
+        .experiment_chart, .patent_status, .research_sacred, .ouroboros_status,
+        .experience_recall, .introspection, .farm_evolve_status, .swarm_status,
+    };
+    for (l0_actions) |action| {
+        try std.testing.expectEqual(SafetyLevel.read_only, actionLevel(action));
+    }
+}
+
+test "Policy — actionLevel all L1 actions" {
+    const l1_actions = [_]qt.ActionKind{
+        .doctor_quick, .doctor_heal, .ouroboros_cycle, .git_commit_state,
+        .git_push, .issue_comment, .notify, .arena_battle, .experience_save, .fmt,
+    };
+    for (l1_actions) |action| {
+        try std.testing.expectEqual(SafetyLevel.soft_write, actionLevel(action));
+    }
+}
+
+test "Policy — actionLevel all L2 actions" {
+    const l2_actions = [_]qt.ActionKind{
+        .farm_recycle, .farm_evolve_step, .cloud_spawn, .cloud_kill,
+        .cloud_cleanup, .issue_create, .swarm_decompose,
+    };
+    for (l2_actions) |action| {
+        try std.testing.expectEqual(SafetyLevel.dangerous, actionLevel(action));
+    }
+}
+
+test "Policy — checkPolicy needs_approval" {
+    const config = qt.QueenConfig{
+        .max_auto_level = 1,
+        .require_human_approval = true,
+    };
+    var counters = ActionCounters{};
+    const memory = IncidentMemory.init();
+
+    // L2 action with require_human_approval should need approval
+    const v = checkPolicy(.farm_recycle, config, &counters, &memory);
+    try std.testing.expectEqual(PolicyVerdict.needs_approval, v);
+}
+
+test "Policy — checkPolicy denied_level without approval" {
+    const config = qt.QueenConfig{
+        .max_auto_level = 1,
+        .require_human_approval = false,
+    };
+    var counters = ActionCounters{};
+    const memory = IncidentMemory.init();
+
+    // L2 action without require_human_approval should be denied
+    const v = checkPolicy(.farm_recycle, config, &counters, &memory);
+    try std.testing.expectEqual(PolicyVerdict.denied_level, v);
+}
+
+test "Policy — checkPolicy cooldown" {
+    const config = qt.QueenConfig{ .max_auto_level = 1 };
+    var counters = ActionCounters{};
+    counters.last_ts[@intFromEnum(qt.ActionKind.doctor_quick)] = std.time.timestamp();
+    const memory = IncidentMemory.init();
+
+    // doctor_quick has 600s cooldown
+    const v = checkPolicy(.doctor_quick, config, &counters, &memory);
+    try std.testing.expectEqual(PolicyVerdict.denied_cooldown, v);
+}
+
+test "Policy — checkPolicy allowed after cooldown" {
+    const config = qt.QueenConfig{ .max_auto_level = 1 };
+    var counters = ActionCounters{};
+    // Set timestamp 700 seconds ago (more than 600s cooldown)
+    counters.last_ts[@intFromEnum(qt.ActionKind.doctor_quick)] = std.time.timestamp() - 700;
+    const memory = IncidentMemory.init();
+
+    const v = checkPolicy(.doctor_quick, config, &counters, &memory);
+    try std.testing.expectEqual(PolicyVerdict.allowed, v);
+}
+
+test "Policy — ActionCounters saturating add" {
+    var c = ActionCounters{};
+
+    // Record way more than u8 max
+    var i: u16 = 0;
+    while (i < 300) : (i += 1) {
+        c.record(.doctor_quick);
+    }
+
+    // Should saturate at 255, not wrap
+    try std.testing.expectEqual(@as(u8, 255), c.getCount(.doctor_quick));
+}
+
+test "Policy — ActionCounters resetAll" {
+    var c = ActionCounters{};
+    c.record(.doctor_quick);
+    c.record(.farm_status);
+
+    try std.testing.expectEqual(@as(u8, 1), c.getCount(.doctor_quick));
+    try std.testing.expectEqual(@as(u8, 1), c.getCount(.farm_status));
+
+    c.resetAll();
+
+    try std.testing.expectEqual(@as(u8, 0), c.getCount(.doctor_quick));
+    try std.testing.expectEqual(@as(u8, 0), c.getCount(.farm_status));
+    try std.testing.expectEqual(@as(i64, 0), c.getLastTs(.doctor_quick));
+}
+
+test "Policy — ActionCounters getCount for unrecorded action" {
+    const c = ActionCounters{};
+    try std.testing.expectEqual(@as(u8, 0), c.getCount(.farm_recycle));
+}
+
+test "Policy — ActionCounters getLastTs for unrecorded action" {
+    const c = ActionCounters{};
+    try std.testing.expectEqual(@as(i64, 0), c.getLastTs(.farm_recycle));
+}
+
+test "Policy — IncidentMemory detail string" {
+    var m = IncidentMemory.init();
+    m.record(.alert, .doctor_quick, true, "test detail");
+
+    var buf: [MAX_INCIDENTS]Incident = undefined;
+    _ = m.lastN(&buf);
+
+    try std.testing.expectEqualStrings("test detail", buf[0].detailStr());
+}
+
+test "Policy — IncidentMemory recentFailCount only counts failures" {
+    var m = IncidentMemory.init();
+    m.record(.auto_action, .doctor_quick, true, "success");
+    m.record(.auto_action_fail, .doctor_quick, false, "fail");
+
+    // Should only count the failure
+    try std.testing.expectEqual(@as(u8, 1), m.recentFailCount(.doctor_quick));
+}
+
+test "Policy — IncidentMemory recentFailCount time window" {
+    var m = IncidentMemory.init();
+    const old_ts = std.time.timestamp() - 4000; // > 1 hour ago
+
+    m.record(.auto_action_fail, .doctor_quick, false, "old fail");
+    m.ring[0].ts = old_ts;
+
+    // Old failure should not count
+    try std.testing.expectEqual(@as(u8, 0), m.recentFailCount(.doctor_quick));
+}
+
+test "Policy — IncidentMemory recentFailCount different actions" {
+    var m = IncidentMemory.init();
+    m.record(.auto_action_fail, .doctor_quick, false, "fail 1");
+    m.record(.auto_action_fail, .farm_recycle, false, "fail 2");
+
+    try std.testing.expectEqual(@as(u8, 1), m.recentFailCount(.doctor_quick));
+    try std.testing.expectEqual(@as(u8, 1), m.recentFailCount(.farm_recycle));
+}
+
+test "Policy — IncidentMemory daily reset" {
+    var m = IncidentMemory.init();
+    m.record(.alert, .doctor_quick, true, "alert");
+    m.record(.auto_action, .doctor_quick, true, "action");
+
+    try std.testing.expectEqual(@as(u32, 1), m.total_alerts_24h);
+    try std.testing.expectEqual(@as(u32, 1), m.total_auto_actions_24h);
+
+    // Simulate day passed
+    m.day_start_ts = std.time.timestamp() - 90000;
+    m.record(.alert, .doctor_quick, true, "alert2");
+
+    // Should reset
+    try std.testing.expectEqual(@as(u32, 1), m.total_alerts_24h);
+}
+
+test "Policy — PendingQueue full returns null" {
+    var q = PendingQueue.init();
+
+    // Fill to capacity
+    var i: u8 = 0;
+    while (i < MAX_PENDING) : (i += 1) {
+        _ = q.add(.doctor_quick, "test");
+    }
+
+    // Should return null when full
+    const result = q.add(.doctor_quick, "overflow");
+    try std.testing.expect(result == null);
+}
+
+test "Policy — PendingQueue approve non-existent returns null" {
+    var q = PendingQueue.init();
+    const result = q.approve(999);
+    try std.testing.expect(result == null);
+}
+
+test "Policy — PendingQueue deny non-existent returns false" {
+    var q = PendingQueue.init();
+    const result = q.deny(999);
+    try std.testing.expect(!result);
+}
+
+test "Policy — PendingQueue approve removes item" {
+    var q = PendingQueue.init();
+    const id = q.add(.doctor_quick, "test").?;
+
+    const action = q.approve(id).?;
+    try std.testing.expectEqual(qt.ActionKind.doctor_quick, action);
+    try std.testing.expectEqual(@as(u8, 0), q.pendingCount());
+}
+
+test "Policy — PendingQueue deny removes item" {
+    var q = PendingQueue.init();
+    const id = q.add(.doctor_quick, "test").?;
+
+    const result = q.deny(id);
+    try std.testing.expect(result);
+    try std.testing.expectEqual(@as(u8, 0), q.pendingCount());
+}
+
+test "Policy — PendingQueue expireOld partial" {
+    var q = PendingQueue.init();
+    _ = q.add(.doctor_quick, "new");
+    const id = q.add(.ouroboros_cycle, "old").?;
+
+    // Age the second item
+    const now = std.time.timestamp();
+    for (&q.items) |*item| {
+        if (item.id == id) {
+            item.requested_at = now - 2000;
+        }
+    }
+
+    q.expireOld();
+    try std.testing.expectEqual(@as(u8, 1), q.pendingCount());
+}
+
+test "Policy — PendingQueue next_id wraps" {
+    var q = PendingQueue.init();
+    q.next_id = 65535;
+
+    const id1 = q.add(.doctor_quick, "test1").?;
+    try std.testing.expectEqual(@as(u16, 65535), id1);
+
+    const id2 = q.add(.doctor_quick, "test2").?;
+    try std.testing.expectEqual(@as(u16, 1), id2); // Should wrap to 1
+}
+
+test "Policy — PolicyVerdict isAllowed" {
+    try std.testing.expect(PolicyVerdict.allowed.isAllowed());
+    try std.testing.expect(!PolicyVerdict.denied_level.isAllowed());
+    try std.testing.expect(!PolicyVerdict.denied_rate.isAllowed());
+    try std.testing.expect(!PolicyVerdict.denied_cooldown.isAllowed());
+    try std.testing.expect(!PolicyVerdict.denied_escalated.isAllowed());
+    try std.testing.expect(!PolicyVerdict.needs_approval.isAllowed());
+}
+
+test "Policy — fmtHistoryTelegram with incidents" {
+    var m = IncidentMemory.init();
+    m.record(.alert, .doctor_quick, true, "alert1");
+    m.record(.auto_action, .farm_status, true, "action1");
+
+    var buf: [1024]u8 = undefined;
+    const msg = fmtHistoryTelegram(&buf, &m);
+
+    try std.testing.expect(msg.len > 0);
+    try std.testing.expect(std.mem.indexOf(u8, msg, "History") != null);
+}
+
+test "Policy — fmtPolicyTelegram L2 locked" {
+    const config = qt.QueenConfig{ .max_auto_level = 1 };
+    var counters = ActionCounters{};
+    var buf: [2048]u8 = undefined;
+    const msg = fmtPolicyTelegram(&buf, config, &counters);
+
+    try std.testing.expect(std.mem.indexOf(u8, msg, "LOCKED") != null);
+}
+
+test "Policy — fmtPolicyTelegram L2 open" {
+    const config = qt.QueenConfig{ .max_auto_level = 2 };
+    var counters = ActionCounters{};
+    var buf: [2048]u8 = undefined;
+    const msg = fmtPolicyTelegram(&buf, config, &counters);
+
+    try std.testing.expect(std.mem.indexOf(u8, msg, "OPEN") != null);
+}
+
+test "Policy — actionRateLimit all L0 generous" {
+    const limits = actionRateLimit(.farm_status);
+    try std.testing.expectEqual(@as(u8, 12), limits.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 300), limits.cooldown_sec);
+}
+
+test "Policy — actionRateLimit L0 strict" {
+    const limits = actionRateLimit(.doctor_scan);
+    try std.testing.expectEqual(@as(u8, 6), limits.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 600), limits.cooldown_sec);
+}
+
+test "Policy — actionRateLimit L1 doctor_heal strictest" {
+    const limits = actionRateLimit(.doctor_heal);
+    try std.testing.expectEqual(@as(u8, 1), limits.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 3600), limits.cooldown_sec);
+}
+
+test "Policy — actionRateLimit L2 farm_evolve_step" {
+    const limits = actionRateLimit(.farm_evolve_step);
+    try std.testing.expectEqual(@as(u8, 1), limits.max_per_hour);
+    try std.testing.expectEqual(@as(u32, 7200), limits.cooldown_sec); // 2 hours!
+}
+
+test "Policy — IncidentMemory init sets day_start" {
+    const m = IncidentMemory.init();
+    try std.testing.expect(m.day_start_ts > 0);
+}
+
+test "Policy — IncidentMemory init zeroes counters" {
+    const m = IncidentMemory.init();
+    try std.testing.expectEqual(@as(u32, 0), m.total_alerts_24h);
+    try std.testing.expectEqual(@as(u32, 0), m.total_auto_actions_24h);
+    try std.testing.expectEqual(@as(u32, 0), m.total_auto_fails_24h);
+    try std.testing.expectEqual(@as(u8, 0), m.build_breaks_24h);
+    try std.testing.expectEqual(@as(u8, 0), m.heal_cycles_24h);
+}
+
+test "Policy — IncidentMemory record increments count" {
+    var m = IncidentMemory.init();
+    m.record(.alert, .doctor_quick, true, "test");
+
+    try std.testing.expectEqual(@as(u32, 1), m.count);
+}
+
+test "Policy — PendingQueue init zeroes active" {
+    const q = PendingQueue.init();
+    try std.testing.expectEqual(@as(u8, 0), q.pendingCount());
+}
+
+test "Policy — PendingQueue add returns id" {
+    var q = PendingQueue.init();
+    const id = q.add(.doctor_quick, "test").?;
+    try std.testing.expect(id > 0);
+}
+
+test "Policy — PendingQueue items have unique ids" {
+    var q = PendingQueue.init();
+    const id1 = q.add(.doctor_quick, "test1").?;
+    const id2 = q.add(.farm_status, "test2").?;
+    const id3 = q.add(.ouroboros_cycle, "test3").?;
+
+    try std.testing.expect(id1 != id2);
+    try std.testing.expect(id2 != id3);
+    try std.testing.expect(id1 != id3);
+}
+
+test "Policy — PendingQueue stores reason" {
+    var q = PendingQueue.init();
+    const id = q.add(.doctor_quick, "build broken!").?;
+
+    for (q.items) |item| {
+        if (item.id == id and item.active) {
+            try std.testing.expectEqualStrings("build broken!", item.reasonStr());
+            return;
+        }
+    }
+    try std.testing.expect(false); // Should have found it
+}
+
+test "Policy — PendingQueue stores action" {
+    var q = PendingQueue.init();
+    const id = q.add(.farm_recycle, "test").?;
+
+    for (q.items) |item| {
+        if (item.id == id and item.active) {
+            try std.testing.expectEqual(qt.ActionKind.farm_recycle, item.action);
+            return;
+        }
+    }
+    try std.testing.expect(false);
+}
+
+test "Policy — IncidentMemory tracks all incident kinds" {
+    var m = IncidentMemory.init();
+    m.record(.alert, .doctor_quick, true, "a");
+    m.record(.auto_action, .doctor_quick, true, "b");
+    m.record(.auto_action_fail, .doctor_quick, false, "c");
+    m.record(.human_command, .doctor_quick, true, "d");
+    m.record(.approval, .doctor_quick, true, "e");
+    m.record(.denial, .doctor_quick, true, "f");
+    m.record(.escalation, .doctor_quick, true, "g");
+
+    try std.testing.expectEqual(@as(u32, 7), m.count);
+}
+
+test "Policy — Incident setDetail truncates long text" {
+    var inc = Incident{};
+    const long_text = [1]u8{'X'} ** 256;
+    inc.setDetail(&long_text);
+
+    try std.testing.expectEqual(@as(usize, 128), inc.detail_len);
+}
+
+test "Policy — Incident detailStr returns slice" {
+    var inc = Incident{};
+    const text = "test detail";
+    inc.setDetail(text);
+
+    try std.testing.expectEqualStrings(text, inc.detailStr());
+}
