@@ -82,9 +82,9 @@ Each iteration represents 1000 simulated steps per worker.
 
 1. **Quantum scenarios (S16-S20)** - add FPGA constraints
 2. **FPGA-aware BO optimization** - integrate cost model into SEVO algorithm
-3. **CSV export** - add FPGA cost columns to simulation output
-4. **Visualization** - extend `tri-sim-plot` to show FPGA costs
-5. **Test fixes** - All 23 evolution_simulation tests pass
+3. **CSV export** - ✅ DONE: FPGA cost columns (fpga_lut, fpga_bram, fpga_cost_norm)
+4. **Visualization** - ✅ DONE: `tri-sim-plot --view=fpga` mode added
+5. **Test fixes** - ✅ DONE: All 23 evolution_simulation tests pass
 
 ## References
 
