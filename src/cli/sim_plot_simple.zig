@@ -197,7 +197,7 @@ fn getScenarioName(id: []const u8) []const u8 {
     if (std.mem.eql(u8, id, "S4")) return "S4-Mixed";
     if (std.mem.eql(u8, id, "S5")) return "S5-Mixed";
     if (std.mem.eql(u8, id, "S6")) return "JEPA-Heavy";
-    if (std.mem.eql(u8, only, "S7")) return "High-Diversity";
+    if (std.mem.eql(u8, id, "S7")) return "High-Diversity";
     if (std.mem.eql(u8, id, "S8")) return "Low-Crash (Sacred-B)";
     if (std.mem.eql(u8, id, "S9")) return "Byzantine-Heavy";
     if (std.mem.eql(u8, id, "S10")) return "Energy-Optimal (Sacred-C)";
@@ -223,6 +223,7 @@ fn getScenarioCategory(id: []const u8) []const u8 {
         return "Wide";
     }
     return "Mixed";
+    return id;
 }
 
 fn getScenarioColor(category: []const u8) []const u8 {

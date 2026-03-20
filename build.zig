@@ -2223,7 +2223,7 @@ pub fn build(b: *std.Build) void {
     const sim_plot = b.addExecutable(.{
         .name = "tri-sim-plot",
         .root_module = b.createModule(.{
-            .root_source_file = b.path("src/cli/sim_plot_simple.zig"),
+            .root_source_file = b.path("src/cli/sim_plot.zig"),
             .target = target,
             .optimize = optimize,
         }),
