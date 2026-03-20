@@ -119,9 +119,9 @@ pub const SacredWaveFunction = struct {
 
     /// Collapse to single configuration via Born rule sampling
     /// Samples from |ψ|² distribution, returns chosen config index
-    pub fn collapse(self: *const SacredWaveFunction, rng: *std.Random) usize {
+    pub fn collapse(self: *const SacredWaveFunction, rng: anytype) usize {
         // Sample from categorical distribution defined by |ψ|²
-        const u = rng.float(f64);
+        const u = rng.random().float(f64);
         var cumulative: f64 = 0.0;
         for (self.amplitudes, 0..) |amp, i| {
             cumulative += amp * amp; // |ψ|²
@@ -200,7 +200,13 @@ pub const SacredWaveFunction = struct {
         self.beta = @max(0.01, beta);
     }
 
-    /// Get probability for a specific configuration
+    /// Score structure for top configurations
+pub const ConfigScore = struct {
+    idx: usize,
+    prob: f64,
+};
+
+/// Get probability for a specific configuration
     /// P(θᵢ) = |ψᵢ|²
     pub fn probability(self: *const SacredWaveFunction, config_idx: usize) f64 {
         if (config_idx >= self.amplitudes.len) return 0.0;
@@ -209,8 +215,8 @@ pub const SacredWaveFunction = struct {
 
     /// Get top N configurations by probability
     /// Returns array of {idx, probability} tuples
-    pub fn topConfigs(self: *const SacredWaveFunction, allocator: std.mem.Allocator, n: usize) ![]struct { idx: usize, prob: f64 } {
-        var result = try allocator.alloc(struct { idx: usize, prob: f64 }, @min(n, self.amplitudes.len));
+    pub fn topConfigs(self: *const SacredWaveFunction, allocator: std.mem.Allocator, n: usize) ![]ConfigScore {
+        var result = try allocator.alloc(ConfigScore, @min(n, self.amplitudes.len));
 
         for (self.amplitudes, 0..) |amp, i| {
             const prob = amp * amp;
@@ -236,14 +242,14 @@ pub const SacredWaveFunction = struct {
     /// Compute Shannon entropy of current distribution
     /// S = -Σ |ψᵢ|² log₂|ψᵢ|²
     pub fn entropy(self: *const SacredWaveFunction) f64 {
-        var entropy: f64 = 0.0;
+        var s: f64 = 0.0;
         for (self.amplitudes) |amp| {
             const prob = amp * amp;
             if (prob > 1e-10) {
-                entropy -= prob * std.math.log2(prob);
+                s -= prob * std.math.log2(prob);
             }
         }
-        return entropy;
+        return s;
     }
 
     /// Check if wave function is collapsed (entropy near zero)
