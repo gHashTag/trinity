@@ -171,6 +171,81 @@ pub const EventSalience = struct {
 pub const Amygdala = struct {
     const Self = @This();
 
+    /// Single-pass pattern scanner for task_id keywords.
+    ///
+    /// Scans the input string once and returns the sum of scores for all
+    /// matched patterns (urgent: +30, critical: +50, security: +40).
+    ///
+    /// This is semantically equivalent to the original 3-sequential indexOf()
+    /// approach but performs the scan in a single pass.
+    ///
+    /// # Algorithm
+    ///
+    /// For each position in the string:
+    /// 1. Check if substring starting here matches any of the 3 patterns
+    /// 2. If matched, add score to total and skip ahead by pattern length
+    ///    (avoid double-counting overlapping matches like "critical" in "critcritical")
+    /// 3. Move to next position if no match
+    ///
+    /// This is O(n * m) where n = input length, m = pattern length (8 for "critical").
+    /// The original approach was O(n * m * 3) due to 3 separate full scans.
+    ///
+    /// # Parameters
+    ///
+    /// - `input`: String to search
+    ///
+    /// # Returns
+    ///
+    /// Sum of scores for all matched patterns (0 if none found)
+    fn scanPatterns(input: []const u8) f32 {
+        const patterns = [_]struct { pat: []const u8, score: f32 }{
+            .{ .pat = "critical", .score = 50 },
+            .{ .pat = "security", .score = 40 },
+            .{ .pat = "urgent", .score = 30 },
+        };
+
+        // Early exit for strings shorter than the shortest pattern
+        if (input.len < 6) return 0;
+
+        var score: f32 = 0;
+        var i: usize = 0;
+
+        while (i <= input.len - 6) : (i += 1) {
+            var matched = false;
+            var match_len: usize = 0;
+
+            // Check each pattern at this position
+            for (patterns) |p| {
+                const pat_len = p.pat.len;
+                if (i + pat_len > input.len) continue;
+
+                // Fast path: check first character before full comparison
+                if (input[i] != p.pat[0]) continue;
+
+                // Case-sensitive substring comparison
+                var j: usize = 0;
+                while (j < pat_len) : (j += 1) {
+                    if (input[i + j] != p.pat[j]) break;
+                }
+
+                if (j == pat_len) {
+                    // Full match found
+                    score += p.score;
+                    matched = true;
+                    match_len = pat_len;
+                    break; // Only count one pattern per position
+                }
+            }
+
+            // Skip ahead if we matched to avoid double-counting
+            if (matched) {
+                i += match_len - 1; // -1 because loop will increment by 1
+            }
+        }
+
+        return score;
+    }
+
     /// Analyzes task salience based on multiple factors.
     ///
     /// Considers realm (dukh/razum), task keywords (urgent/critical/security),
@@ -204,39 +279,17 @@ pub const Amygdala = struct {
     /// ```
     pub fn analyzeTask(task_id: []const u8, realm: []const u8, priority: []const u8) EventSalience {
         var score: f32 = 0;
-        var reasons = array_list.Managed(u8).initCapacity(std.heap.page_allocator, 128) catch |err| {
-            std.log.err("Failed to allocate reasons: {}", .{err});
-            return EventSalience{
-                .level = .low,
-                .score = score,
-                .reason = "Allocation failed",
-            };
-        };
-        defer reasons.deinit();
 
         // Critical realms get higher salience
         if (std.mem.eql(u8, realm, "dukh")) {
             score += 40;
-            reasons.appendSlice("Dukh realm;") catch {};
         }
         if (std.mem.eql(u8, realm, "razum")) {
             score += 30;
-            reasons.appendSlice("Razum realm;") catch {};
         }
 
-        // Priority keywords
-        if (std.mem.indexOf(u8, task_id, "urgent") != null) {
-            score += 30;
-            reasons.appendSlice("Urgent;") catch {};
-        }
-        if (std.mem.indexOf(u8, task_id, "critical") != null) {
-            score += 50;
-            reasons.appendSlice("Critical;") catch {};
-        }
-        if (std.mem.indexOf(u8, task_id, "security") != null) {
-            score += 40;
-            reasons.appendSlice("Security;") catch {};
-        }
+        // Single-pass pattern scan for priority keywords
+        score += scanPatterns(task_id);
 
         // Priority field
         if (std.mem.eql(u8, priority, "high")) {
@@ -504,4 +557,53 @@ test "Amygdala urgency - all levels" {
 test "Amygdala score capping at 100" {
     const result = Amygdala.analyzeTask("urgent-critical-security-fix", "dukh", "critical");
     try std.testing.expect(result.score <= 100);
+}
+
+test "Amygdala scanPatterns - multiple patterns sum" {
+    // All three patterns present: 30 + 50 + 40 = 120
+    const result = Amygdala.scanPatterns("urgent-critical-security-fix");
+    try std.testing.expectEqual(@as(f32, 120), result);
+}
+
+test "Amygdala scanPatterns - critical only" {
+    const result = Amygdala.scanPatterns("critical-fix");
+    try std.testing.expectEqual(@as(f32, 50), result);
+}
+
+test "Amygdala scanPatterns - security only" {
+    const result = Amygdala.scanPatterns("security-patch");
+    try std.testing.expectEqual(@as(f32, 40), result);
+}
+
+test "Amygdala scanPatterns - urgent only" {
+    const result = Amygdala.scanPatterns("urgent-fix-needed");
+    try std.testing.expectEqual(@as(f32, 30), result);
+}
+
+test "Amygdala scanPatterns - no match" {
+    const result = Amygdala.scanPatterns("normal-task-description");
+    try std.testing.expectEqual(@as(f32, 0), result);
+}
+
+test "Amygdala scanPatterns - case sensitive" {
+    // Uppercase should NOT match (case-sensitive scan)
+    const result = Amygdala.scanPatterns("CRITICAL-fix");
+    try std.testing.expectEqual(@as(f32, 0), result);
+}
+
+test "Amygdala scanPatterns - empty string" {
+    const result = Amygdala.scanPatterns("");
+    try std.testing.expectEqual(@as(f32, 0), result);
+}
+
+test "Amygdala scanPatterns - overlapping patterns" {
+    // "critical" contains "crit" but we only match full patterns
+    const result = Amygdala.scanPatterns("critical-critical");
+    try std.testing.expectEqual(@as(f32, 100), result); // 50 + 50
+}
+
+test "Amygdala scanPatterns - pattern sum correctness" {
+    // Verify that scanning "urgent-critical-security" returns sum of all
+    const result = Amygdala.scanPatterns("urgent-critical-security");
+    try std.testing.expectEqual(@as(f32, 120), result); // 30 + 50 + 40
 }

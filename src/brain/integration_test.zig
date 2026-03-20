@@ -1606,7 +1606,359 @@ test "Integration: Recovery after cascade failure" {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// TEST SUITE 15: ALERT PROPAGATION
+// TEST SUITE 15: CONCURRENT OPERATIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Integration: Concurrent task claims" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    const num_threads = 10;
+
+    var contexts: [num_threads]ConcurrentClaimContext = undefined;
+    var threads: [num_threads]std.Thread = undefined;
+
+    // Create threads - each thread tries to claim a unique task
+    var i: usize = 0;
+    while (i < num_threads) : (i += 1) {
+        contexts[i] = ConcurrentClaimContext{
+            .thread_id = i,
+            .registry = registry,
+            .event_bus = event_bus,
+        };
+
+        // Each thread claims a unique task (no competition expected)
+        threads[i] = try std.Thread.spawn(.{}, ConcurrentClaimContext.run, .{&contexts[i]});
+    }
+
+    // Wait for all threads to complete
+    for (threads) |*t| {
+        t.join();
+    }
+
+    // Verify all threads succeeded
+    var success_count: usize = 0;
+    for (contexts) |ctx| {
+        if (ctx.success) success_count += 1;
+    }
+    try std.testing.expectEqual(@as(usize, num_threads), success_count);
+
+    // Verify all unique tasks were claimed
+    const stats = registry.getStats();
+    try std.testing.expectEqual(@as(usize, num_threads), stats.active_claims);
+    try std.testing.expectEqual(@as(u64, num_threads), stats.claim_success);
+}
+
+// Helper context for claim thread
+const ConcurrentClaimContext = struct {
+    thread_id: usize,
+    registry: *basal_ganglia.Registry,
+    event_bus: *reticular_formation.EventBus,
+    success: bool = false,
+
+    pub fn run(self: *ConcurrentClaimContext) void {
+        const allocator = std.testing.allocator;
+
+        var task_buf: [32]u8 = undefined;
+        var agent_buf: [32]u8 = undefined;
+
+        const task_id = std.fmt.bufPrint(&task_buf, "concurrent-task-{d}", .{self.thread_id}) catch return;
+        const agent_id = std.fmt.bufPrint(&agent_buf, "concurrent-agent-{d}", .{self.thread_id}) catch return;
+
+        // Small delay to increase chance of true concurrent execution
+        std.Thread.sleep(std.time.ns_per_ms);
+
+        // Claim the task
+        const claimed = self.registry.claim(allocator, task_id, agent_id, 60000) catch false;
+
+        if (claimed) {
+            // Publish event for the claim
+            self.event_bus.publish(.task_claimed, .{
+                .task_claimed = .{
+                    .task_id = task_id,
+                    .agent_id = agent_id,
+                },
+            }) catch {};
+            self.success = true;
+        }
+    }
+};
+
+// Helper context for competing claim thread
+const CompetingClaimContext = struct {
+    thread_id: usize,
+    registry: *basal_ganglia.Registry,
+    tasks: []const u8,
+    num_tasks: usize,
+    successful_claims: u32 = 0,
+    failed_claims: u32 = 0,
+
+    pub fn run(self: *CompetingClaimContext) void {
+        const allocator = std.testing.allocator;
+        var agent_buf: [32]u8 = undefined;
+        const agent_id = std.fmt.bufPrint(&agent_buf, "competing-agent-{d}", .{self.thread_id}) catch return;
+
+        // Try to claim all tasks
+        var i: usize = 0;
+        while (i < self.num_tasks) : (i += 1) {
+            const claimed = self.registry.claim(allocator, self.tasks[i], agent_id, 60000) catch false;
+
+            if (claimed) {
+                self.successful_claims += 1;
+            } else {
+                self.failed_claims += 1;
+            }
+        }
+    }
+};
+
+// Helper context for event publisher thread
+const EventPublisherContext = struct {
+    publisher_id: usize,
+    event_bus: *reticular_formation.EventBus,
+    events_published: u32 = 0,
+
+    pub fn run(self: *EventPublisherContext) void {
+        var task_buf: [32]u8 = undefined;
+
+        // Publish multiple events
+        var i: usize = 0;
+        while (i < 10) : (i += 1) {
+            const task_id = std.fmt.bufPrint(&task_buf, "pub-{d}-task-{d}", .{ self.publisher_id, i }) catch continue;
+
+            // Small delay to increase interleaving
+            std.Thread.sleep(std.time.ns_per_ms / 10);
+
+            if (self.event_bus.publish(.task_claimed, .{
+                .task_claimed = .{
+                    .task_id = task_id,
+                    .agent_id = "publisher-agent",
+                },
+            }) == void) {
+                self.events_published += 1;
+            }
+        }
+    }
+};
+
+// Helper context for event poller thread
+const EventPollerContext = struct {
+    poller_id: usize,
+    event_bus: *reticular_formation.EventBus,
+    events_polled: u32 = 0,
+
+    pub fn run(self: *EventPollerContext) void {
+        const allocator = std.testing.allocator;
+
+        // Poll multiple times
+        var i: usize = 0;
+        while (i < 5) : (i += 1) {
+            // Small delay before each poll
+            std.Thread.sleep(std.time.ns_per_ms / 5);
+
+            const events = self.event_bus.poll(0, allocator, 100) catch break;
+            defer allocator.free(events);
+
+            self.events_polled += @as(u32, @intCast(events.len));
+        }
+    }
+};
+
+// Helper context for backoff computation thread
+const BackoffComputeContext = struct {
+    thread_id: usize,
+    policy: *const locus_coeruleus.BackoffPolicy,
+    attempt: u32,
+    delay: u64 = 0,
+
+    pub fn run(self: *BackoffComputeContext) void {
+        // Small delay to allow threads to start simultaneously
+        std.Thread.sleep(std.time.ns_per_ms / 100);
+
+        // All threads call nextDelay() concurrently
+        // This tests thread safety of EXP_TABLE access
+        self.delay = self.policy.nextDelay(self.attempt);
+    }
+};
+
+test "Integration: Concurrent event bus" {
+    const allocator = std.testing.allocator;
+
+    reticular_formation.resetGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
+
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    const num_publishers = 10;
+    const num_pollers = 10;
+    const events_per_publisher = 10;
+
+    var publishers: [num_publishers]EventPublisherContext = undefined;
+    var pollers: [num_pollers]EventPollerContext = undefined;
+
+    // Create publisher threads
+    var publisher_threads: [num_publishers]std.Thread = undefined;
+    var i: usize = 0;
+    while (i < num_publishers) : (i += 1) {
+        publishers[i] = EventPublisherContext{
+            .publisher_id = i,
+            .event_bus = event_bus,
+        };
+        publisher_threads[i] = try std.Thread.spawn(.{}, EventPublisherContext.run, .{&publishers[i]});
+    }
+
+    // Create poller threads
+    var poller_threads: [num_pollers]std.Thread = undefined;
+    i = 0;
+    while (i < num_pollers) : (i += 1) {
+        pollers[i] = EventPollerContext{
+            .poller_id = i,
+            .event_bus = event_bus,
+        };
+        poller_threads[i] = try std.Thread.spawn(.{}, EventPollerContext.run, .{&pollers[i]});
+    }
+
+    // Wait for all threads to complete
+    for (publisher_threads) |*t| t.join();
+    for (poller_threads) |*t| t.join();
+
+    // Count total events published and polled
+    var total_published: u32 = 0;
+    for (publishers) |publisher| {
+        total_published += publisher.events_published;
+    }
+
+    var total_polled: u32 = 0;
+    for (pollers) |poller| {
+        total_polled += poller.events_polled;
+    }
+
+    // Verify all events were published
+    try std.testing.expectEqual(@as(u32, num_publishers * events_per_publisher), total_published);
+
+    // Verify events are in the buffer (may be fewer than polled due to timestamp filter)
+    const stats = event_bus.getStats();
+    try std.testing.expectEqual(@as(u64, num_publishers * events_per_publisher), stats.published);
+
+    // Verify no data races (buffer should have exactly the expected number of events)
+    try std.testing.expectEqual(@as(usize, num_publishers * events_per_publisher), stats.buffered);
+}
+
+test "Integration: Parallel backoff" {
+    var policy = locus_coeruleus.BackoffPolicy{
+        .initial_ms = 1000,
+        .max_ms = 60000,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    const num_threads = 10;
+
+    var contexts: [num_threads]BackoffComputeContext = undefined;
+    var threads: [num_threads]std.Thread = undefined;
+
+    // Create threads - each calls nextDelay() simultaneously
+    var i: usize = 0;
+    while (i < num_threads) : (i += 1) {
+        contexts[i] = BackoffComputeContext{
+            .thread_id = i,
+            .policy = &policy,
+            .attempt = @as(u32, @intCast(i % 5)), // Use different attempt values (0-4)
+        };
+
+        threads[i] = try std.Thread.spawn(.{}, BackoffComputeContext.run, .{&contexts[i]});
+    }
+
+    // Wait for all threads to complete
+    for (threads) |*t| {
+        t.join();
+    }
+
+    // Verify all threads got correct delay values
+    // For exponential backoff with initial=1000, mult=2.0:
+    // attempt 0 -> 1000, 1 -> 2000, 2 -> 4000, 3 -> 8000, 4 -> 16000
+    const expected_delays = [_]u64{ 1000, 2000, 4000, 8000, 16000 };
+
+    var all_correct = true;
+    for (contexts) |ctx| {
+        const attempt_index = ctx.attempt % 5;
+        const expected = expected_delays[attempt_index];
+        if (ctx.delay != expected) {
+            all_correct = false;
+        }
+    }
+
+    try std.testing.expect(all_correct);
+}
+
+test "Integration: Concurrent task claims with competition" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    defer basal_ganglia.resetGlobal(allocator);
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+
+    const num_threads = 10;
+    const num_tasks = 5; // Fewer tasks than threads to cause competition
+
+    var task_ids: [num_tasks][]const u8 = undefined;
+    var i: usize = 0;
+    while (i < num_tasks) : (i += 1) {
+        task_ids[i] = std.fmt.allocPrint(allocator, "competing-task-{d}", .{i}) catch continue;
+    }
+    defer {
+        for (task_ids) |id| allocator.free(id);
+    }
+
+    var contexts: [num_threads]CompetingClaimContext = undefined;
+    var threads: [num_threads]std.Thread = undefined;
+
+    // Create threads - each tries to claim all tasks
+    i = 0;
+    while (i < num_threads) : (i += 1) {
+        contexts[i] = CompetingClaimContext{
+            .thread_id = i,
+            .registry = registry,
+            .tasks = &task_ids,
+            .num_tasks = num_tasks,
+        };
+        threads[i] = try std.Thread.spawn(.{}, CompetingClaimContext.run, .{&contexts[i]});
+    }
+
+    // Wait for all threads to complete
+    for (threads) |*t| {
+        t.join();
+    }
+
+    // Count successful claims
+    var total_success: u32 = 0;
+    var total_failed: u32 = 0;
+    for (contexts) |ctx| {
+        total_success += ctx.successful_claims;
+        total_failed += ctx.failed_claims;
+    }
+
+    // Exactly num_tasks claims should succeed (one per task)
+    try std.testing.expectEqual(@as(u32, num_tasks), total_success);
+
+    // Verify no duplicate claims - each task claimed exactly once
+    const stats = registry.getStats();
+    try std.testing.expectEqual(@as(usize, num_tasks), stats.active_claims);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// TEST SUITE 16: ALERT PROPAGATION
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Integration: Alert propagation across regions" {
