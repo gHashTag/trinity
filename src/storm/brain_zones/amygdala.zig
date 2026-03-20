@@ -1,4 +1,3 @@
-// @origin(spec:storm/brain_zones_amygdala.tri) @regen(vibee)
 // ══════════════════════════════════════════════════════════════════════════
 // AMYGDALA — Страж ошибок (Mistake Guardian)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -81,7 +80,7 @@ pub const Amygdala = struct {
                 amg.allocator.free(entry.key_ptr.*);
             }
             blacklist.deinit();
-        };
+        }
 
         // Increment or create entry
         const count = blacklist.get(task) orelse 0;
@@ -172,7 +171,7 @@ pub const Amygdala = struct {
                 pos += 1;
             }
             first = false;
-            pos += (std.fmt.bufPrint(json_buf[pos..], "\\"{s}\\":{d}", .{
+        pos += (std.fmt.bufPrint(json_buf[pos..], "\\{s}\\\":{d}", .{
                 entry.key_ptr.*,
                 entry.value_ptr.*,
             })).len;

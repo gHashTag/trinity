@@ -14,7 +14,7 @@ const CYAN = "\x1b[36m";
 const PURPLE = "\x1b[38;2;111;66;193m";
 
 pub fn main() !u8 {
-    const gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
@@ -27,7 +27,16 @@ pub fn main() !u8 {
     }
 
     const command = args[1];
-    const command_args = args[2..];
+    var command_args_buf: [10][]const u8 = undefined;
+    var command_args_len: usize = 0;
+    if (args.len >= 3) {
+        const slice = args[2..];
+        command_args_len = slice.len;
+        for (slice, 0..) |arg, i| {
+            command_args_buf[i] = arg;
+        }
+    }
+    const command_args = command_args_buf[0..command_args_len];
 
     const is_help = std.mem.eql(u8, command, "--help") or std.mem.eql(u8, command, "-h");
 
@@ -70,7 +79,7 @@ fn cmdInit(allocator: std.mem.Allocator) !u8 {
     }
 
     var config = try config_mod.StormConfig.load(allocator, ".trinity/storm/config.json");
-    try config.save(allocator);
+    try config.save();
 
     std.debug.print("\nSTORM initialized!\n\n", .{});
     std.debug.print("Next steps:\n", .{});
@@ -125,7 +134,7 @@ fn cmdStatus(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
     std.debug.print("\nSTORM STATUS\n", .{});
 
     const checkpoint_dir = ".trinity/storm/checkpoints";
-    const dir = std.fs.cwd().openDir(checkpoint_dir, .{ .iterate = true }) catch {
+    var dir = std.fs.cwd().openDir(checkpoint_dir, .{ .iterate = true }) catch {
         std.debug.print("No checkpoints found. Run 'storm init' first.\n\n", .{});
         return 0;
     };

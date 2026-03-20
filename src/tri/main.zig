@@ -19,6 +19,7 @@ const tri_zenodo = @import("tri_zenodo.zig");
 const tri_cloud = @import("tri_cloud.zig");
 const tri_farm = @import("tri_farm.zig");
 const tri_dev = @import("tri_dev.zig");
+const tri_zai_proxy = @import("tri_zai_proxy.zig");
 const swe_arena = @import("swe_arena.zig");
 const code_arena = @import("code_arena.zig");
 const spec_template_match = @import("spec_template_match.zig");
@@ -1381,6 +1382,11 @@ fn dispatchNamespacedCommand(
 
     // DEV namespace commands
     if (ns == .dev) {
+        // Z.AI rotating proxy daemon (~/.claude/scripts/zai-rotating-proxy.mjs)
+        if (std.mem.eql(u8, cmd_name, "zai-proxy") or std.mem.eql(u8, cmd_name, "zai_proxy")) {
+            try tri_zai_proxy.runZaiProxyCommand(allocator, cmd_args);
+            return;
+        }
         // SWE Agent Dev Farm commands: status, spawn, kill, recycle, fill, metrics, leaderboard, evolve
         if (std.mem.eql(u8, cmd_name, "status") or std.mem.eql(u8, cmd_name, "spawn") or
             std.mem.eql(u8, cmd_name, "kill") or std.mem.eql(u8, cmd_name, "recycle") or
