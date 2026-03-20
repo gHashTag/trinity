@@ -9,8 +9,7 @@ const sacred_types = @import("sacred_types.zig");
 const sacred_verify = @import("verify.zig");
 
 pub fn main() !void {
-    const stdout = std.io.getStdOut().writer();
-    const stderr = std.io.getStdErr().writer();
+    const stdout = std.fs.File.stdout().deprecatedWriter();
 
     try stdout.print("\n", .{});
     try stdout.print("══════════════════════════════════════════════════════════════════════════\n", .{});
@@ -69,15 +68,16 @@ pub fn main() !void {
     try stdout.print("\n⚡ SIMD CAPABILITIES\n", .{});
     try stdout.print("────────────────────────────────────────────\n", .{});
 
-    const simd_config = @import("src/hslm/simd_config.zig");
+    const simd_config = @import("hslm_simd_config");
+    const caps = simd_config.detectSimdCapabilities();
     try stdout.print("  CPU: {s}-{s}\n", .{
         @tagName(builtin.target.cpu.arch),
         @tagName(builtin.target.os.tag),
     });
-    try stdout.print("  Native SIMD width (i8): {d}\n", .{ simd_config.capabilities.native_width_i8 });
-    try stdout.print("  F16 width: {d}\n", .{ simd_config.capabilities.optimal_f16_width });
-    try stdout.print("  AVX2: {s}\n", .{ if (simd_config.capabilities.has_avx2) "✅" else "❌" });
-    try stdout.print("  NEON: {s}\n", .{ if (simd_config.capabilities.has_neon) "✅" else "❌" });
+    try stdout.print("  Native SIMD width (i8): {d}\n", .{caps.optimal_i8_width});
+    try stdout.print("  F16 width: {d}\n", .{caps.optimal_f16_width});
+    try stdout.print("  AVX2: {s}\n", .{if (caps.has_avx2) "✅" else "❌"});
+    try stdout.print("  NEON: {s}\n", .{if (caps.has_neon) "✅" else "❌"});
 
     // ═════════════════════════════════════════════════════════════════════════════
     // COMPILE-TIME GUARDS
@@ -87,17 +87,17 @@ pub fn main() !void {
     try stdout.print("────────────────────────────────────────────\n", .{});
 
     // Runtime verifier
-    var verifier = sacred_verify.SacredVerifier.init(std.heap.page_allocator);
-    defer verifier.deinit();
+    var verifier = sacred_verify.SacredVerifier.init();
+    defer verifier.deinit(std.heap.page_allocator);
 
-    _ = verifier.verifyTrinity();
-    _ = verifier.verifyTritResonance(81, "context");
-    _ = verifier.verifyTritResonance(243, "embed");
-    _ = verifier.verifyTritResonance(729, "VSA");
+    _ = verifier.verifyTrinity(std.heap.page_allocator);
+    _ = verifier.verifyTritResonance(std.heap.page_allocator, 81, "context");
+    _ = verifier.verifyTritResonance(std.heap.page_allocator, 243, "embed");
+    _ = verifier.verifyTritResonance(std.heap.page_allocator, 729, "VSA");
 
-    const report = verifier.report();
-    try stdout.print("  {s}\n", .{report });
-    verifier.errors.allocator.free(report);
+    const report = verifier.report(std.heap.page_allocator);
+    try stdout.print("  {s}\n", .{report});
+    std.heap.page_allocator.free(report);
 
     // ═════════════════════════════════════════════════════════════════════════════
     // RECOMMENDATIONS
@@ -106,7 +106,7 @@ pub fn main() !void {
     try stdout.print("\n💡 RECOMMENDATIONS\n", .{});
     try stdout.print("────────────────────────────────────────────\n", .{});
 
-    if (simd_config.capabilities.native_width_i8 >= 32) {
+    if (caps.optimal_i8_width >= 32) {
         try stdout.print("  ✅ Use TritVector (32-wide SIMD) for VSA operations\n", .{});
     } else {
         try stdout.print("  ⚠️  SIMD width < 32, consider upgrading CPU\n", .{});

@@ -112,7 +112,7 @@ struct TechTreeScreen: View {
                                 Text(epic.priority ?? "")
                                     .font(.caption2.weight(.bold))
                                     .foregroundStyle(priorityColor(epic.priority))
-                                    .padding(.horizontal, 6)
+                                    .padding(.horizontal, ParietalSpacing.xxxs)
                                     .padding(.vertical, 2)
                                     .background(priorityColor(epic.priority).opacity(V2Depth.bgSidebarHover))
                                     .clipShape(SwiftUI.Capsule())
