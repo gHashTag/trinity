@@ -145,6 +145,15 @@ pub fn main() !void {
             try csv_file.writeAll(line);
             allocator.free(line);
         }
+        for (s5.timeline) |entry| {
+            const line = try std.fmt.allocPrint(allocator, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d},{d}\n", .{
+                entry.step,          "S5",              entry.avg_ppl,         entry.diversity,
+                entry.alive_workers, s5.workers_culled, s5.byzantine_detected, 0,
+                0.15,                0.15,
+            });
+            try csv_file.writeAll(line);
+            allocator.free(line);
+        }
 
         print("{s}CSV written to {s}{s}\n", .{ CYAN, RESET, csv_path });
     }
@@ -164,7 +173,8 @@ fn printHelp() void {
     print("  S2 Current    90% crash rate (current degradation)\n", .{});
     print("  S3 Multi-obj  IGLA seeds injection\n", .{});
     print("  S4 dePIN      Byzantine nodes + Microglia\n", .{});
+    print("  S5 dePIN NoImmunity   Byzantine only (shows effect of disabled immunity)\n", .{});
     print("\n{s}Deterministic Seeds:{s}\n", .{ CYAN, RESET });
-    print("  S1: 42    S2: 137    S3: 1618 (φ)    S4: 2718 (e)\n", .{});
+    print("  S1: 42    S2: 137    S3: 1618 (φ)    S4: 2718 (e)    S5: 3236 (φ²)\n", .{});
     print("\n", .{});
 }
