@@ -1359,7 +1359,7 @@ test "AggregateMetrics all critical regions" {
 
     metrics.regions.clearRetainingCapacity();
 
-    for (0..3) |i| {
+    for (0..3) |_| {
         var region = RegionMetrics.init(allocator, "Critical", "Critical");
         region.status = .critical;
         region.health_score = 10.0;
@@ -1388,7 +1388,7 @@ test "AggregateMetrics all idle regions" {
 
     metrics.regions.clearRetainingCapacity();
 
-    for (0..5) |i| {
+    for (0..5) |_| {
         var region = RegionMetrics.init(allocator, "Idle", "Idle");
         region.status = .idle;
         region.health_score = null; // Idle regions have no score
@@ -1412,7 +1412,7 @@ test "AggregateMetrics mixed health scores with nulls" {
     // Mix of null and non-null scores
     const scores = [_]?f32{ 90.0, null, 80.0, null, 70.0 };
 
-    for (scores, 0..) |score_opt, i| {
+    for (scores) |score_opt| {
         var region = RegionMetrics.init(allocator, "Mixed", "Mixed");
         region.status = if (score_opt == null) .idle else .healthy;
         region.health_score = score_opt;
@@ -1600,7 +1600,7 @@ test "AggregateMetrics critical alerts collection" {
     metrics.regions.clearRetainingCapacity();
 
     // Add 3 regions with alerts
-    for (0..3) |i| {
+    for (0..3) |_| {
         var region = RegionMetrics.init(allocator, "Alert", "Alert Region");
         region.status = .warning;
         region.health_score = 50.0;
@@ -1880,6 +1880,5 @@ test "AggregateMetrics collect uses global brain regions" {
     // collect() should not crash even if brain regions fail
     // It should add regions with appropriate defaults
     // This is more of a smoke test
-    _ = metrics;
     try std.testing.expect(true);
 }
