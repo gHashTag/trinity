@@ -291,43 +291,6 @@ pub fn main() !void {
             try tri_phoenix.runPhoenixCommand(allocator, phoenix_args);
             return;
         }
-        // ═══════════════════════════════════════════════════════════════════════════════
-        // STORM namespace: route `tri storm <subcommand>` to tri_storm
-        // ═══════════════════════════════════════════════════════════════════════════════
-        if (std.mem.eql(u8, first_arg, "storm")) {
-            const storm_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
-            logAgentCommand(args[arg_idx..]);
-            const tri_storm = @import("tri_storm.zig");
-            const exit_code = try tri_storm.runStormCommand(allocator, storm_args);
-            std.process.exit(exit_code);
-        }
-        // ═══════════════════════════════════════════════════════════════════════════════
-        // BRAIN ZONES (P1 Ethical Infrastructure)
-        // ═══════════════════════════════════════════════════════════════════════════════
-        // OFC: route `tri ofc verdict --toxic`
-        if (std.mem.eql(u8, first_arg, "ofc")) {
-            const ofc_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
-            logAgentCommand(args[arg_idx..]);
-            const tri_storm = @import("tri_storm.zig");
-            const exit_code = try tri_storm.runOFCCommand(allocator, ofc_args);
-            std.process.exit(exit_code);
-        }
-        // HABENULA: route `tri habenula unfair_detect`
-        if (std.mem.eql(u8, first_arg, "habenula")) {
-            const habenula_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
-            logAgentCommand(args[arg_idx..]);
-            const tri_storm = @import("tri_storm.zig");
-            const exit_code = try tri_storm.runHabenulaCommand(allocator, habenula_args);
-            std.process.exit(exit_code);
-        }
-        // AMYGDALA: route `tri amygdala check_fear`
-        if (std.mem.eql(u8, first_arg, "amygdala")) {
-            const amygdala_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
-            logAgentCommand(args[arg_idx..]);
-            const tri_storm = @import("tri_storm.zig");
-            const exit_code = try tri_storm.runAmygdalaCommand(allocator, amygdala_args);
-            std.process.exit(exit_code);
-        }
         // Deploy namespace: route `tri deploy <action>` to runDeployCommand
         if (std.mem.eql(u8, first_arg, "deploy")) {
             const deploy_sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "status";
@@ -530,6 +493,39 @@ pub fn main() !void {
             const tri_init = @import("tri_init.zig");
             try tri_init.runInitCommand(allocator, init_args);
             return;
+        }
+        // STORM and Brain Zones (P1 Ethical Infrastructure)
+        // Storm: route `tri storm <run|status|resume|init>` to STORM subcommands
+        if (std.mem.eql(u8, first_arg, "storm")) {
+            const storm_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else ([_][]const u8{})[0..];
+            logAgentCommand(args[arg_idx..]);
+            const tri_storm = @import("tri_storm.zig");
+            const exit_code = try tri_storm.runStormCommand(allocator, storm_args);
+            std.process.exit(exit_code);
+        }
+        // OFC: route `tri ofc verdict --toxic` to Values Chamber
+        if (std.mem.eql(u8, first_arg, "ofc")) {
+            const ofc_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else ([_][]const u8{})[0..];
+            logAgentCommand(args[arg_idx..]);
+            const tri_storm = @import("tri_storm.zig");
+            const exit_code = try tri_storm.runOFCCommand(allocator, ofc_args);
+            std.process.exit(exit_code);
+        }
+        // Habenula: route `tri habenula unfair_detect` to Anti-corruption sensor
+        if (std.mem.eql(u8, first_arg, "habenula")) {
+            const habenula_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else ([_][]const u8{})[0..];
+            logAgentCommand(args[arg_idx..]);
+            const tri_storm = @import("tri_storm.zig");
+            const exit_code = try tri_storm.runHabenulaCommand(allocator, habenula_args);
+            std.process.exit(exit_code);
+        }
+        // Amygdala: route `tri amygdala check_fear` to Error Guardian
+        if (std.mem.eql(u8, first_arg, "amygdala")) {
+            const amygdala_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else ([_][]const u8{})[0..];
+            logAgentCommand(args[arg_idx..]);
+            const tri_storm = @import("tri_storm.zig");
+            const exit_code = try tri_storm.runAmygdalaCommand(allocator, amygdala_args);
+            std.process.exit(exit_code);
         }
         // Version: `tri version`
         if (std.mem.eql(u8, first_arg, "version") or std.mem.eql(u8, first_arg, "--version") or std.mem.eql(u8, first_arg, "-v")) {
