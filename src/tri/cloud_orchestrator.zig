@@ -153,6 +153,7 @@ pub fn spawnAgentOnAccount(allocator: Allocator, issue_number: u32, account_hint
     const service_id = extractId(create_response) orelse
         return error.InvalidResponse;
 
+<<<<<<< HEAD
     // 2. Connect Docker image source (critical — cannot deploy without it)
     api.connectServiceSource(service_id, AGENT_IMAGE) catch |err| {
         std.log.err("cloud_orchestrator: failed to connect service source: {} — aborting spawn", .{err});
@@ -225,6 +226,73 @@ pub fn spawnAgentOnAccount(allocator: Allocator, issue_number: u32, account_hint
         };
         allocator.free(tg_chat);
     }
+=======
+    // 2. Connect Docker image source
+    _ = api.connectServiceSource(service_id, AGENT_IMAGE) catch |err| {
+        std.log.warn("Failed to connect service source: {}", .{err});
+    };
+
+    // 3. Set environment variables
+    const env_id = std.process.getEnvVarOwned(allocator, "RAILWAY_ENVIRONMENT_ID") catch "";
+    if (env_id.len > 0) {
+        const issue_str = std.fmt.allocPrint(allocator, "{d}", .{issue_number}) catch "";
+        if (issue_str.len > 0) {
+            _ = api.upsertVariable(service_id, env_id, "ISSUE_NUMBER", issue_str) catch |err| {
+                std.log.warn("Failed to set ISSUE_NUMBER env var: {}", .{err});
+            };
+            allocator.free(issue_str);
+        }
+
+        // Forward tokens from env (prefer AGENT_GH_TOKEN PAT over ephemeral GITHUB_TOKEN)
+        const gh_token = std.process.getEnvVarOwned(allocator, "AGENT_GH_TOKEN") catch
+            std.process.getEnvVarOwned(allocator, "GITHUB_TOKEN") catch "";
+        if (gh_token.len > 0) {
+            _ = api.upsertVariable(service_id, env_id, "GITHUB_TOKEN", gh_token) catch |err| {
+                std.log.warn("Failed to set GITHUB_TOKEN env var: {}", .{err});
+            };
+            allocator.free(gh_token);
+        }
+
+        const api_key = std.process.getEnvVarOwned(allocator, "ANTHROPIC_API_KEY") catch "";
+        if (api_key.len > 0) {
+            _ = api.upsertVariable(service_id, env_id, "ANTHROPIC_API_KEY", api_key) catch |err| {
+                std.log.warn("Failed to set ANTHROPIC_API_KEY env var: {}", .{err});
+            };
+            allocator.free(api_key);
+        }
+
+        const ws_url = std.process.getEnvVarOwned(allocator, "WS_MONITOR_URL") catch "";
+        if (ws_url.len > 0) {
+            _ = api.upsertVariable(service_id, env_id, "WS_MONITOR_URL", ws_url) catch |err| {
+                std.log.warn("Failed to set WS_MONITOR_URL env var: {}", .{err});
+            };
+            allocator.free(ws_url);
+        }
+
+        const tg_token = std.process.getEnvVarOwned(allocator, "TELEGRAM_BOT_TOKEN") catch "";
+        if (tg_token.len > 0) {
+            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_BOT_TOKEN", tg_token) catch |err| {
+                std.log.warn("Failed to set TELEGRAM_BOT_TOKEN env var: {}", .{err});
+            };
+            allocator.free(tg_token);
+        }
+
+        const tg_chat = std.process.getEnvVarOwned(allocator, "TELEGRAM_CHAT_ID") catch "";
+        if (tg_chat.len > 0) {
+            _ = api.upsertVariable(service_id, env_id, "TELEGRAM_CHAT_ID", tg_chat) catch |err| {
+                std.log.warn("Failed to set TELEGRAM_CHAT_ID env var: {}", .{err});
+            };
+            allocator.free(tg_chat);
+        }
+
+        const mon_token = std.process.getEnvVarOwned(allocator, "MONITOR_TOKEN") catch "";
+        if (mon_token.len > 0) {
+            _ = api.upsertVariable(service_id, env_id, "MONITOR_TOKEN", mon_token) catch |err| {
+                std.log.warn("Failed to set MONITOR_TOKEN env var: {}", .{err});
+            };
+            allocator.free(mon_token);
+        }
+>>>>>>> feat/issue-234
 
     // Enable Telegram log streaming by default
     api.upsertVariable(service_id, env_id, "TELEGRAM_STREAM", "true") catch |err| {
@@ -269,6 +337,7 @@ pub fn killAgent(allocator: Allocator, issue_number: u32) !void {
 
     for (agents[0..agent_count]) |*a| {
         if (a.issue == issue_number and a.active) {
+<<<<<<< HEAD
             // Use account-specific API if available, fallback to primary
             var farm = railway_farm.RailwayFarm.init();
             var api = farm.getApi(allocator, a.account_id) catch
@@ -279,6 +348,10 @@ pub fn killAgent(allocator: Allocator, issue_number: u32) !void {
             _ = api.deleteService(a.getServiceId()) catch |err| {
                 std.log.err("cloud_orchestrator: deleteService failed for issue #{d}: {} — container may still be running on Railway", .{ issue_number, err });
                 return error.ServiceDeleteFailed;
+=======
+            _ = api.deleteService(a.getServiceId()) catch |err| {
+                std.log.warn("Failed to delete service: {}", .{err});
+>>>>>>> feat/issue-234
             };
             a.active = false;
             farm.removeAgent(issue_number);
@@ -301,7 +374,11 @@ pub fn listAgents(buf: []u8) []const u8 {
     for (agents[0..agent_count]) |*a| {
         if (!a.active) continue;
         if (!first) w.writeAll(",") catch |err| {
+<<<<<<< HEAD
             std.log.debug("cloud_orchestrator: JSON write comma failed: {}", .{err});
+=======
+            std.log.debug("JSON format error: {}", .{err});
+>>>>>>> feat/issue-234
         };
         first = false;
         std.fmt.format(w, "{{\"issue\":{d},\"service_id\":\"{s}\",\"account_id\":{d},\"created_at\":{d}}}", .{
@@ -313,14 +390,22 @@ pub fn listAgents(buf: []u8) []const u8 {
     }
 
     w.writeAll("],\"count\":") catch |err| {
+<<<<<<< HEAD
         std.log.debug("cloud_orchestrator: JSON write count key failed: {}", .{err});
+=======
+        std.log.debug("JSON format error: {}", .{err});
+>>>>>>> feat/issue-234
     };
     var active: u32 = 0;
     for (agents[0..agent_count]) |*a| {
         if (a.active) active += 1;
     }
     std.fmt.format(w, "{d},\"max\":{d}}}", .{ active, MAX_CONCURRENT_AGENTS }) catch |err| {
+<<<<<<< HEAD
         std.log.debug("cloud_orchestrator: JSON format count failed: {}", .{err});
+=======
+        std.log.debug("JSON format error: {}", .{err});
+>>>>>>> feat/issue-234
     };
 
     return fbs.getWritten();
@@ -425,7 +510,11 @@ fn saveState() void {
     for (agents[0..agent_count]) |*a| {
         if (!a.active) continue;
         if (!first) w.writeAll(",") catch |err| {
+<<<<<<< HEAD
             std.log.debug("cloud_orchestrator: history JSON comma failed: {}", .{err});
+=======
+            std.log.debug("JSON format error: {}", .{err});
+>>>>>>> feat/issue-234
         };
         first = false;
         std.fmt.format(w, "\n  {{\"issue\":{d},\"service_id\":\"{s}\",\"account_id\":{d},\"created_at\":{d}}}", .{
