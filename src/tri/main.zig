@@ -527,7 +527,16 @@ pub fn main() !void {
             const exit_code = try tri_storm.runAmygdalaCommand(allocator, amygdala_args);
             std.process.exit(exit_code);
         }
-        // Version: `tri version`
+        // Golden Chain: route `tri golden-chain <run|resume|links>` to 28-link pipeline
+        if (std.mem.eql(u8, first_arg, "golden-chain")) {
+            const golden_chain_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else ([_][]const u8{})[0..];
+            logAgentCommand(args[arg_idx..]);
+            const golden_chain = @import("../storm/golden_chain.zig");
+            const exit_code = try golden_chain.runGoldenChainCommand(allocator, golden_chain_args);
+            std.process.exit(exit_code);
+        }
+        // Experience: route `tri experience consult|blacklist|record` to MNL pattern
+        if (std.mem.eql(u8, first_arg, "experience")) {
         if (std.mem.eql(u8, first_arg, "version") or std.mem.eql(u8, first_arg, "--version") or std.mem.eql(u8, first_arg, "-v")) {
             printVersion(allocator);
             return;
