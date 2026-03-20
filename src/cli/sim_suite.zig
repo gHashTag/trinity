@@ -140,16 +140,18 @@ fn writeResult(result: *const @import("brain").evolution_simulation.EvolutionRes
 }
 
 // Helper function to format a CSV row
-fn fmtRow(r: *const @import("brain").evolution_simulation.EvolutionResult, name: []const u8, w: anytype, _: Allocator) !void {
-    _ =; // Suppress unused warning
-    var conv_buf: [32]u8 = undefined;
-    const conv_str = if (r.convergence_step) |s| try std.fmt.bufPrintZ(&conv_buf, "{d}", .{s}) else "never";
+// Helper function to format a CSV row
+fn fmtRow(r: *const @import("brain").evolution_simulation.EvolutionResult, name: []const u8, w: anytype) !void {
+    const conv = if (r.convergence_step) |s| step: {
+        var buf: [32]u8 = undefined;
+        break :step std.fmt.bufPrintZ(&buf, "{d}", .{s}) catch "error";
+    } else "never";
 
-    try w.print("{s},{d:.2},{s},{d:.3},{d},{d},{d}\n", .{
-        name,                r.final_ppl,      conv_str,             r.diversity_index,
+    try w.print("{s},{d:.2},{s},{d:.3},{d},{d}n", .{
+        name,                r.final_ppl,      conv,                 r.diversity_index,
         r.microglia_actions, r.workers_culled, r.byzantine_detected,
-        r.steps,
     });
+}
 }
 
 fn writeComparisonCsv(suite: *const @import("brain").evolution_simulation.SuiteResult, path: []const u8, allocator: Allocator) !void {
