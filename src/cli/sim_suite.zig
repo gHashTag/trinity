@@ -142,10 +142,10 @@ fn writeResult(result: *const @import("brain").evolution_simulation.EvolutionRes
 // Helper function to format a CSV row
 fn fmtRow(r: *const @import("brain").evolution_simulation.EvolutionResult, name: []const u8, w: anytype, _: Allocator) !void {
     var conv_buf: [32]u8 = undefined;
-    const conv = if (r.convergence_step) |s| std.fmt.bufPrintZ(&conv_buf, "{d}", .{s}) else "never";
+    const conv_str = if (r.convergence_step) |s| try std.fmt.bufPrintZ(&conv_buf, "{d}", .{s}) else "never";
 
     try w.print("{s},{d:.2},{s},{d:.3},{d},{d},{d}\n", .{
-        name,                r.final_ppl,      conv,                 r.diversity_index,
+        name,                r.final_ppl,      conv_str,             r.diversity_index,
         r.microglia_actions, r.workers_culled, r.byzantine_detected,
         r.steps,
     });
@@ -160,10 +160,10 @@ fn writeComparisonCsv(suite: *const @import("brain").evolution_simulation.SuiteR
 
     try writer_stream.writer().writeAll("scenario,final_ppl,convergence_step,diversity,microglia_actions,workers_culled,byzantine_detected\n");
 
-    try fmtRow(&suite.s1, "S1_Baseline", writer_stream.writer(), allocator);
-    try fmtRow(&suite.s2, "S2_Current", writer_stream.writer(), allocator);
-    try fmtRow(&suite.s3, "S3_MultiObj", writer_stream.writer(), allocator);
-    try fmtRow(&suite.s4, "S4_dePIN", writer_stream.writer(), allocator);
+    try fmtRow(&suite.s1, "S1_Baseline", writer_stream.writer());
+    try fmtRow(&suite.s2, "S2_Current", writer_stream.writer());
+    try fmtRow(&suite.s3, "S3_MultiObj", writer_stream.writer());
+    try fmtRow(&suite.s4, "S4_dePIN", writer_stream.writer());
 
     try file.writeAll(writer_stream.getWritten());
 }

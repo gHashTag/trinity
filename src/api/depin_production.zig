@@ -270,7 +270,7 @@ test "governance proposal" {
     };
 
     const proposal_id = try server.createProposal(proposal);
-    defer allocator.free(proposal_id);
+    // proposal_id is owned by server, don't free it here
 
     // Add some votes
     var voter1: [20]u8 = undefined;
