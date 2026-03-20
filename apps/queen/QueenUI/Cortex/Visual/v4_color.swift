@@ -385,8 +385,17 @@ extension V4Color {
         Color.white.opacity(opacity)
     }
 
+    /// White at 10% opacity (very subtle highlight)
+    public static var white10: Color { Color.white.opacity(0.1) }
+
+    /// White at 15% opacity (subtle highlight)
+    public static var white15: Color { Color.white.opacity(0.15) }
+
     /// White at 20% opacity (subtle highlight)
-    public static var white20: Color { V2Depth.white20 }
+    public static var white20: Color { Color.white.opacity(0.2) }
+
+    /// White at 35% opacity (medium-strong highlight)
+    public static var white35: Color { Color.white.opacity(0.35) }
 
     /// White at 30% opacity (medium highlight)
     public static var white30: Color { Color.white.opacity(0.3) }
@@ -394,11 +403,38 @@ extension V4Color {
     /// White at 40% opacity (strong highlight)
     public static var white40: Color { Color.white.opacity(0.4) }
 
+    /// White at 50% opacity (very strong highlight)
+    public static var white50: Color { Color.white.opacity(0.5) }
+
+    /// White at 60% opacity (strong highlight)
+    public static var white60: Color { Color.white.opacity(0.6) }
+
+    /// White at 70% opacity (strong highlight)
+    public static var white70: Color { Color.white.opacity(0.7) }
+
+    /// White at 80% opacity (strong highlight)
+    public static var white80: Color { Color.white.opacity(0.8) }
+
     /// Black at 30% opacity (subtle overlay)
     public static var black30: Color { Color.black.opacity(0.3) }
 
     /// Black at 50% opacity (medium overlay)
     public static var black50: Color { Color.black.opacity(0.5) }
+
+    /// Black at 15% opacity (very subtle overlay)
+    public static var black15: Color { Color.black.opacity(0.15) }
+
+    /// Black at 20% opacity (subtle overlay)
+    public static var black20: Color { Color.black.opacity(0.2) }
+
+    /// Black at 25% opacity (medium overlay)
+    public static var black25: Color { Color.black.opacity(0.25) }
+
+    /// Black at 35% opacity (medium overlay)
+    public static var black35: Color { Color.black.opacity(0.35) }
+
+    /// Black at 40% opacity (strong overlay)
+    public static var black40: Color { Color.black.opacity(0.4) }
 
     // MARK: - Common Opacity Values
 
