@@ -644,9 +644,7 @@ pub const StateManager = struct {
                 // NOTE: Sharded Registry doesn't expose internal claims map for restoration
                 // Task claims will be re-established by active agents when they reconnect
                 // For now, we just log the pending claims
-                std.log.info("Pending claim: task={s}, agent={s}, age={d}ms", .{
-                    claim_state.task_id, claim_state.agent_id, age_ms
-                });
+                std.log.info("Pending claim: task={s}, agent={s}, age={d}ms", .{ claim_state.task_id, claim_state.agent_id, age_ms });
             }
         }
 

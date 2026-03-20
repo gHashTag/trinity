@@ -232,7 +232,8 @@ fn getScenarioName(id: []const u8) []const u8 {
 
 fn getScenarioCategory(id: []const u8) []const u8 {
     if (std.mem.eql(u8, id, "S1") or std.mem.eql(u8, id, "S2") or
-        std.mem.eql(u8, id, "S14") or std.mem.eql(u8, id, "S15")) {
+        std.mem.eql(u8, id, "S14") or std.mem.eql(u8, id, "S15"))
+    {
         return "Baseline";
     }
     if (std.mem.eql(u8, id, "S11") or std.mem.eql(u8, id, "S12")) {
@@ -274,8 +275,7 @@ fn printSummary(allocator: Allocator, scenarios: []const ScenarioStats) !void {
 
     print("{s}└──────┴──────────────────┴───────┴───────────┴────────┴────────┘{s}\n\n", .{ BOLD, RESET });
 
-    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n",
-        .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
+    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n", .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
 }
 
 fn plotPPL(allocator: Allocator, scenarios: []const ScenarioStats) !void {
@@ -362,12 +362,11 @@ fn plotPPL(allocator: Allocator, scenarios: []const ScenarioStats) !void {
         while (j < label_pos) : (j += 1) {
             print(" ", .{});
         }
-        print("{d}", .{ i * @as(usize, @intFromFloat(@as(f32, @floatFromInt(max_step)) / 10.0)) / 10 });
+        print("{d}", .{i * @as(usize, @intFromFloat(@as(f32, @floatFromInt(max_step)) / 10.0)) / 10});
     }
     print("\n\n", .{});
 
-    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n",
-        .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
+    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n", .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
 }
 
 fn plotDiversity(allocator: Allocator, scenarios: []const ScenarioStats) !void {
@@ -439,8 +438,7 @@ fn plotDiversity(allocator: Allocator, scenarios: []const ScenarioStats) !void {
     }
     print("\n\n", .{});
 
-    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n",
-        .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
+    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n", .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
 }
 
 fn plotAlive(allocator: Allocator, scenarios: []const ScenarioStats) !void {
@@ -510,8 +508,7 @@ fn plotAlive(allocator: Allocator, scenarios: []const ScenarioStats) !void {
     }
     print("\n\n", .{});
 
-    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n",
-        .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
+    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n", .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
 }
 
 fn printHelp() void {
