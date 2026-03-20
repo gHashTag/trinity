@@ -2068,9 +2068,27 @@ test "AsyncProcessor zero TTL" {
 }
 
 test "AsyncProcessor large TTL" {
-    // TODO: Fix basal_ganglia.getGlobal/reticular_formation.getGlobal integration
-    _ = AsyncProcessor;
-    try std.testing.expect(true);
+    const allocator = std.testing.allocator;
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    var processor = try AsyncProcessor.init(
+        allocator,
+        .{ .worker_count = 0 },
+        registry,
+        event_bus,
+    );
+    defer processor.deinit();
+
+    var channel = ResultChannel.init();
+    defer channel.deinit(allocator);
+
+    // Very large TTL (1 hour in ms) should work
+    const large_ttl: u64 = 60 * 60 * 1000;
+    _ = processor.asyncClaimTask("task-large-ttl", "agent-1", large_ttl, &channel);
+
+    try std.testing.expectEqual(@as(usize, 1), processor.getQueueDepth());
 }
 
 test "TaskType all values" {

@@ -326,13 +326,19 @@ pub const StateManager = struct {
         const env_hostname = std.posix.getenv("HOSTNAME") orelse std.posix.getenv("HOST") orelse "localhost";
         const hostname = try self.allocator.dupe(u8, env_hostname);
 
-        // Get PID (platform-specific) - using 0 as fallback
-        const pid = if (builtin.os.tag == .linux)
-            @as(i32, 0) // TODO: implement for linux
+        // Get PID (platform-specific)
+        const pid: i32 = if (builtin.os.tag == .linux)
+            // Linux: use getpid() from unistd.h
+            @as(i32, @intCast(@import("std").os.linux.getpid()))
         else if (builtin.os.tag == .macos)
-            @as(i32, 0) // TODO: implement for macos
+            // macOS: use getpid() from unistd.h
+            @as(i32, @intCast(@import("std").os.darwin.getpid()))
+        else if (builtin.os.tag == .windows)
+            // Windows: use GetCurrentProcessId()
+            @as(i32, @intCast(@import("std").os.windows.getCurrentProcessId()))
         else
-            @as(i32, 0);
+            // Fallback for other platforms
+            0;
 
         // Dupe the version string to ensure we own the memory
         const tri_version = try self.allocator.dupe(u8, "5.1.0-igla-ready");

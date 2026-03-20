@@ -2,6 +2,8 @@
 //!
 //! Records brain health snapshots over time for trend analysis.
 //! Integrated into CI and stress tests.
+//!
+//! Sacred Formula: φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
 
