@@ -141,7 +141,7 @@ struct PinIndicator: View {
             .offset(x: -4, y: -4)
             .opacity(isVisible ? 1 : 0)
             .scaleEffect(isVisible ? 1 : 0.5)
-            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isVisible)
+            .animation(MTMotion.quickSpring, value: isVisible)
             .onAppear {
                 isVisible = true
             }

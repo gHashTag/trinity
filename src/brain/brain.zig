@@ -351,7 +351,7 @@ pub const AgentCoordination = struct {
 
         // Check Basal Ganglia
         if (self.region_health.getPtr("Basal Ganglia")) |health| {
-            const claim_count = self.registry.claims.count();
+            const claim_count = self.registry.count();
             health.score = if (claim_count < 1000) 100.0 else @max(0.0, 100.0 - @as(f32, @floatFromInt(claim_count - 1000)) / 10.0);
             health.healthy = health.score >= 50.0;
             health.last_check = now;
@@ -378,7 +378,7 @@ pub const AgentCoordination = struct {
             const overall_health = self.getOverallHealthScore();
             try tel.record(.{
                 .timestamp = now,
-                .active_claims = self.registry.claims.count(),
+                .active_claims = self.registry.count(),
                 .events_published = self.event_bus.getStats().published,
                 .events_buffered = self.event_bus.getStats().buffered,
                 .health_score = overall_health,
@@ -389,7 +389,7 @@ pub const AgentCoordination = struct {
         if (self.alert_manager) |mgr| {
             const overall_health = self.getOverallHealthScore();
             const stats = self.event_bus.getStats();
-            try mgr.checkHealth(overall_health, stats.buffered, self.registry.claims.count());
+            try mgr.checkHealth(overall_health, stats.buffered, self.registry.count());
         }
     }
 
@@ -507,7 +507,7 @@ pub const AgentCoordination = struct {
     pub fn getStats(self: *const AgentCoordination) CoordinationStats {
         const event_stats = self.event_bus.getStats();
         return CoordinationStats{
-            .active_claims = self.registry.claims.count(),
+            .active_claims = self.registry.count(),
             .total_events_published = event_stats.published,
             .total_events_polled = event_stats.polled,
             .buffered_events = event_stats.buffered,

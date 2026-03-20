@@ -296,7 +296,7 @@ struct TransitionWrapper<Content: View>: View {
     var body: some View {
         content
             .transition(transition)
-            .animation(.spring(response: 0.35, dampingFraction: 0.8), value: show)
+            .animation(MTMotion.standardSpring, value: show)
     }
 }
 

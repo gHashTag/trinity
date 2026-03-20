@@ -18,12 +18,15 @@ const std = @import("std");
 
 const SHARD_COUNT: usize = 16; // Must be power of 2 for fast hash
 
+/// Status of a task claim
+pub const ClaimStatus = enum { active, completed, abandoned };
+
 pub const TaskClaim = struct {
     task_id: []const u8,
     agent_id: []const u8,
     claimed_at: i64,
     ttl_ms: u64,
-    status: enum { active, completed, abandoned },
+    status: ClaimStatus,
     completed_at: ?i64,
     last_heartbeat: i64,
 
@@ -357,6 +360,59 @@ pub const Registry = struct {
             shard.rwlock.unlockShared();
         }
         return total;
+    }
+
+    /// ClaimInfo - Public information about a claim (read-only)
+    pub const ClaimInfo = struct {
+        task_id: []const u8,
+        agent_id: []const u8,
+        claimed_at: i64,
+        ttl_ms: u64,
+        status: ClaimStatus,
+        is_valid: bool,
+    };
+
+    /// Lists all claims across all shards.
+    /// Caller owns the returned slice and must free it.
+    pub fn listClaims(self: *Registry, allocator: std.mem.Allocator) ![]ClaimInfo {
+        // First pass: count claims to pre-allocate
+        var total_count: usize = 0;
+        for (&self.shards) |*shard| {
+            shard.rwlock.lockShared();
+            total_count += shard.count();
+            shard.rwlock.unlockShared();
+        }
+
+        // Allocate result array
+        var claims = try std.ArrayList(ClaimInfo).initCapacity(allocator, total_count);
+        errdefer claims.deinit(allocator);
+
+        // Second pass: collect claims
+        for (&self.shards) |*shard| {
+            shard.rwlock.lockShared();
+            var iter = shard.claims.iterator();
+            while (iter.next()) |entry| {
+                const task_claim = entry.value_ptr.*;
+                const info = ClaimInfo{
+                    .task_id = entry.key_ptr.*,
+                    .agent_id = task_claim.agent_id,
+                    .claimed_at = task_claim.claimed_at,
+                    .ttl_ms = task_claim.ttl_ms,
+                    .status = task_claim.status,
+                    .is_valid = task_claim.isValid(),
+                };
+                try claims.append(allocator, info);
+            }
+            shard.rwlock.unlockShared();
+        }
+
+        return claims.toOwnedSlice(allocator);
+    }
+
+    /// Frees a list of claims returned by listClaims.
+    pub fn freeClaims(self: *Registry, allocator: std.mem.Allocator, claims: []ClaimInfo) void {
+        _ = self;
+        allocator.free(claims);
     }
 };
 
