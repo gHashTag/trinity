@@ -86,12 +86,20 @@ pub const Config = struct {
 
         // Load global if exists
         loadFromFile(&config, global_config_path) catch |err| {
+<<<<<<< HEAD
             std.log.debug("tri_config: load global config failed: {}", .{err});
+=======
+            std.log.warn("Failed to load global config: {}", .{err});
+>>>>>>> feat/issue-234
         };
 
         // Load local if exists (takes precedence)
         loadFromFile(&config, local_config_path) catch |err| {
+<<<<<<< HEAD
             std.log.debug("tri_config: load local config failed: {}", .{err});
+=======
+            std.log.warn("Failed to load local config: {}", .{err});
+>>>>>>> feat/issue-234
         };
 
         return config;
@@ -123,7 +131,11 @@ pub const Config = struct {
 
             // Apply settings
             applySetting(self, key_trimmed, val_trimmed) catch |err| {
+<<<<<<< HEAD
                 std.log.debug("tri_config: apply setting failed: {}", .{err});
+=======
+                std.log.warn("Failed to apply config setting '{s}': {}", .{ key_trimmed, err });
+>>>>>>> feat/issue-234
             };
         }
     }
