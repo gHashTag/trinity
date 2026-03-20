@@ -508,7 +508,7 @@ extension View {
 struct ProgressIndicators_Previews: PreviewProvider {
     static var previews: some View {
         ScrollView {
-            VStack(spacing: 32) {
+            VStack(spacing: ParietalSpacing.xxl) {
                 // Linear Progress Bar
                 VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("Linear Progress Bar")

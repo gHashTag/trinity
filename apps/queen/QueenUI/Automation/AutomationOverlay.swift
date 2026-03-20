@@ -125,7 +125,7 @@ public struct AutomationOverlay: View {
     private var actionIndicator: some View {
         Group {
             if !currentAction.isEmpty {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.xxs) {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(Color.black.opacity(V1Theme.opacityTextSecondary))
@@ -153,7 +153,7 @@ public struct AutomationOverlay: View {
     private var errorCorrectionView: some View {
         Group {
             if let error = errorCorrection {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.xxs) {
                     Image(systemName: "arrow.uturn.backward")
                         .font(WernickeTypography.mini)
                         .foregroundStyle(.orange)
