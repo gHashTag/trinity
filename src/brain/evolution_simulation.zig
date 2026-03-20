@@ -17,18 +17,23 @@ const Allocator = std.mem.Allocator;
 const SACRED_PHI: f32 = 1.618033988749895;
 const SACRED_E: f32 = 2.718281828459045;
 
-// Fixed seeds for deterministic scenarios
-const SCENARIO_SEEDS = [10]u64{
-    42, // S1 Baseline
-    137, // S2 Current
-    1618, // S3 Multi-obj (φ * 1000)
-    2718, // S4 dePIN (e * 1000)
-    3236, // S5 dePIN NoImmunity (φ^2 * 1000)
-    5242, // S6 JEPA-heavy (e^3 * 1000)
-    8450, // S7 High-Diversity (φ^3 * 1000)
-    13692, // S8 Low-Crash (φ^4 * 1000)
-    22134, // S9 Byzantine-Heavy (φ^5 * 1000)
-    35780, // S10 Energy-Optimal (φ^6 * 1000)
+// Fixed seeds for deterministic scenarios (15 scenarios for Sacred v2 search)
+const SCENARIO_SEEDS = [_]u64{
+    42,       // S1 Baseline
+    137,      // S2 Current
+    1618,     // S3 Multi-obj (φ * 1000)
+    2718,     // S4 dePIN (e * 1000)
+    3236,     // S5 dePIN NoImmunity (φ^2 * 1000)
+    5242,     // S6 JEPA-heavy (e^3 * 1000)
+    8450,     // S7 High-Diversity (φ^3 * 1000)
+    13692,    // S8 Low-Crash (φ^4 * 1000)
+    22134,    // S9 Byzantine-Heavy (φ^5 * 1000)
+    35780,    // S10 Energy-Optimal (φ^6 * 1000)
+    42,       // S11 Sacred-A (baseline for dense heads)
+    137,      // S12 Sacred-B (lower crash, longer training)
+    1618,     // S13 Sacred-C (smaller workers, 162 dims)
+    2718,     // S14 Wide (9 heads, ctx=81)
+    1618,     // S15 Baseline-Extended (φ, 4× steps)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -175,6 +180,7 @@ pub const EvolutionResult = struct {
     steps: u32,
     crash_rate: f32,
     byzantine_rate: f32,
+    energy_cost: f32 = 0.0, // Total energy cost (for Sacred v2 scenarios)
 
     // Policy parameters (for CSV export)
     kill_threshold: f32 = 400.0, // PPL threshold for worker culling
@@ -826,7 +832,107 @@ pub fn runS10EnergyOptimal(allocator: Allocator, steps: u32) !EvolutionResult {
     return sim.run("S10_EnergyOptimal");
 }
 
-/// Run all 10 scenarios in sequence
+/// Run S11 Sacred-A — Many heads (27), small context, dense representation
+pub fn runS11SacredA(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 120,
+        .steps = steps * 2,
+        .crash_rate = 0.03,
+        .byzantine_rate = 0.0,
+        .seed = SCENARIO_SEEDS[10],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.40 },
+            .{ .name = "jepa", .weight = 0.40 },
+            .{ .name = "nca-ntp", .weight = 0.20 },
+        },
+        .microglia_interval = 25,
+    };
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S11_SacredA");
+}
+
+/// Run S12 Sacred-B — Many heads (27), large context (81), balanced
+pub fn runS12SacredB(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 120,
+        .steps = steps * 3,
+        .crash_rate = 0.02,
+        .byzantine_rate = 0.0,
+        .seed = SCENARIO_SEEDS[11],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.35 },
+            .{ .name = "jepa", .weight = 0.50 },
+            .{ .name = "nca-ntp", .weight = 0.15 },
+        },
+        .microglia_interval = 30,
+    };
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S12_SacredB");
+}
+
+/// Run S13 Sacred-C — Compact (162 dims), 27 heads, ctx=81
+pub fn runS13SacredC(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 80,
+        .steps = steps * 3,
+        .crash_rate = 0.02,
+        .byzantine_rate = 0.0,
+        .seed = SCENARIO_SEEDS[12],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.50 },
+            .{ .name = "jepa", .weight = 0.30 },
+            .{ .name = "nca-ntp", .weight = 0.20 },
+        },
+        .microglia_interval = 35,
+    };
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S13_SacredC");
+}
+
+/// Run S14 Wide — Wide context (81), standard heads (9), deep representation
+pub fn runS14Wide(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 100,
+        .steps = steps * 3,
+        .crash_rate = 0.02,
+        .byzantine_rate = 0.0,
+        .seed = SCENARIO_SEEDS[13],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.60 },
+            .{ .name = "jepa", .weight = 0.25 },
+            .{ .name = "nca-ntp", .weight = 0.15 },
+        },
+        .microglia_interval = 30,
+    };
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S14_Wide");
+}
+
+/// Run S15 Baseline-Extended — Current Trinity (ctx=81, heads=3) but with longer training
+pub fn runS15BaselineExtended(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 100,
+        .steps = steps * 4,
+        .crash_rate = 0.02,
+        .byzantine_rate = 0.0,
+        .seed = SCENARIO_SEEDS[14],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.70 },
+            .{ .name = "jepa", .weight = 0.20 },
+            .{ .name = "nca-ntp", .weight = 0.10 },
+        },
+        .microglia_interval = 30,
+    };
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S15_BaselineExtended");
+}
+
+/// Run all 15 scenarios in sequence
 pub const SuiteResult = struct {
     s1: EvolutionResult,
     s2: EvolutionResult,
@@ -838,6 +944,11 @@ pub const SuiteResult = struct {
     s8: EvolutionResult,
     s9: EvolutionResult,
     s10: EvolutionResult,
+    s11: EvolutionResult,
+    s12: EvolutionResult,
+    s13: EvolutionResult,
+    s14: EvolutionResult,
+    s15: EvolutionResult,
 
     pub fn deinit(self: *SuiteResult) void {
         self.s1.deinit();
@@ -850,6 +961,11 @@ pub const SuiteResult = struct {
         self.s8.deinit();
         self.s9.deinit();
         self.s10.deinit();
+        self.s11.deinit();
+        self.s12.deinit();
+        self.s13.deinit();
+        self.s14.deinit();
+        self.s15.deinit();
     }
 
     pub fn printComparison(self: *const SuiteResult, writer: anytype, allocator: Allocator) !void {
@@ -879,6 +995,11 @@ pub const SuiteResult = struct {
         try fmtRow.fmt(&self.s8, writer, allocator);
         try fmtRow.fmt(&self.s9, writer, allocator);
         try fmtRow.fmt(&self.s10, writer, allocator);
+        try fmtRow.fmt(&self.s11, writer, allocator);
+        try fmtRow.fmt(&self.s12, writer, allocator);
+        try fmtRow.fmt(&self.s13, writer, allocator);
+        try fmtRow.fmt(&self.s14, writer, allocator);
+        try fmtRow.fmt(&self.s15, writer, allocator);
 
         try writer.writeAll("└────────────┴──────────┴───────────┴──────────┴───────────┴─────────────┘\n");
     }
@@ -915,6 +1036,21 @@ pub fn runFullSuite(allocator: Allocator, steps: u32) !SuiteResult {
     const s10 = try runS10EnergyOptimal(allocator, steps);
     errdefer s10.deinit();
 
+    const s11 = try runS11SacredA(allocator, steps);
+    errdefer s11.deinit();
+
+    const s12 = try runS12SacredB(allocator, steps);
+    errdefer s12.deinit();
+
+    const s13 = try runS13SacredC(allocator, steps);
+    errdefer s13.deinit();
+
+    const s14 = try runS14Wide(allocator, steps);
+    errdefer s14.deinit();
+
+    const s15 = try runS15BaselineExtended(allocator, steps);
+    errdefer s15.deinit();
+
     return SuiteResult{
         .s1 = s1,
         .s2 = s2,
@@ -926,6 +1062,11 @@ pub fn runFullSuite(allocator: Allocator, steps: u32) !SuiteResult {
         .s8 = s8,
         .s9 = s9,
         .s10 = s10,
+        .s11 = s11,
+        .s12 = s12,
+        .s13 = s13,
+        .s14 = s14,
+        .s15 = s15,
     };
 }
 
@@ -1080,3 +1221,125 @@ test "S4 final_ppl calculation" {
         std.debug.print("  last: avg_ppl={d:.2}, alive={d}\n", .{ last.avg_ppl, last.alive_workers });
     }
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════║═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
+
+test "S1 Baseline: expected results" {
+    const allocator = std.testing.allocator;
+    const result = try runS1Baseline(allocator, 1000);
+    defer result.deinit();
+
+    // S1 has no crashes, no Byzantine faults
+    try std.testing.expectEqual(@as(u32, 0), result.workers_culled);
+    try std.testing.expectEqual(@as(u32, 0), result.byzantine_detected);
+
+    // All workers should survive
+    try std.testing.expectEqual(@as(u32, 25), result.workers_alive);
+
+    // Final PPL should be close to floor (4.6) after 1000K steps
+    try std.testing.expect(result.final_ppl > 4.0 and result.final_ppl < 10.0);
+
+    // Diversity should be 1.0 (single objective NTP)
+    try std.testing.expectEqual(@as(f32, 1.0), result.diversity_index);
+}
+
+test "S2 Current: high crash rate" {
+    const allocator = std.testing.allocator;
+    const result = try runS2Current(allocator, 1000);
+    defer result.deinit();
+
+    // S2 has 90% crash rate
+    // Expected: ~90% of workers culled over 1000 steps
+    const expected_culled = @as(f32, @floatFromInt(result.workers_spawned)) * 0.90;
+    const tolerance = expected_culled * 0.1; // 10% tolerance
+
+    try std.testing.expect(result.workers_culled >= expected_culled - tolerance);
+    try std.testing.expect(result.workers_culled <= expected_culled + tolerance);
+
+    // Final PPL should be higher due to less training
+    try std.testing.expect(result.final_ppl > 10.0);
+}
+
+test "S3 Multi-obj: objective distribution" {
+    const allocator = std.testing.allocator;
+    const result = try runS3MultiObj(allocator, 1000);
+    defer result.deinit();
+
+    // Should have 4 different objectives with data
+    const objectives = [_][]const u8{ "ntp", "jepa", "nca-ntp", "hybrid" };
+    var obj_count: usize = 0;
+
+    var iter = result.objective_ppl.iterator();
+    while (iter.next()) |entry| {
+        for (objectives) |obj| {
+            if (std.mem.eql(u8, entry.key_ptr.*, obj)) {
+                obj_count += 1;
+                break;
+            }
+        }
+    }
+
+    try std.testing.expectEqual(@as(usize, 4), obj_count);
+
+    // Diversity should be > 1.0 with multiple objectives
+    try std.testing.expect(result.diversity_index > 1.0);
+}
+
+test "S4 dePIN: Byzantine detection" {
+    const allocator = std.testing.allocator;
+    const result = try runS4DePIN(allocator, 1000);
+    defer result.deinit();
+
+    // S4 has Byzantine nodes (byzantine_rate > 0)
+    // Should detect some Byzantine nodes (15% detection rate)
+    try std.testing.expect(result.byzantine_detected > 0);
+}
+
+test "Scenario: zero workers" {
+    const allocator = std.testing.allocator;
+    
+    // Edge case: zero workers should not crash
+    const config = EvolutionSimulationConfig{
+        .workers = 0,
+        .steps = 100,
+        .crash_rate = 0.0,
+        .byzantine_rate = 0.0,
+        .seed = 42,
+        .objectives = &.{.{ .name = "ntp", .weight = 1.0 } },
+        .microglia_interval = 30,
+    };
+
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+
+    const result = try sim.run("ZeroWorkers");
+
+    try std.testing.expectEqual(@as(u32, 0), result.workers_alive);
+    try std.testing.expectEqual(@as(f32, std.math.inf(f32)), result.final_ppl); // No workers = infinite PPL
+}
+
+test "Scenario: all workers crash immediately" {
+    const allocator = std.testing.allocator;
+    
+    // 100% crash rate - all workers die in first step
+    const config = EvolutionSimulationConfig{
+        .workers = 10,
+        .steps = 100,
+        .crash_rate = 1.0,
+        .byzantine_rate = 0.0,
+        .seed = 42,
+        .objectives = &.{.{ .name = "ntp", .weight = 1.0 } },
+        .microglia_interval = 30,
+    };
+
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+
+    const result = try sim.run("AllCrash");
+
+    try std.testing.expectEqual(@as(u32, 0), result.workers_alive);
+    try std.testing.expectEqual(@as(u32, 10), result.workers_culled);
+}
+
+// φ² + 1/φ² = 3 | TRINITY
