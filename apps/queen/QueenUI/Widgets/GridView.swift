@@ -52,7 +52,7 @@ struct GridCell: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(14)
+        .padding(ParietalSpacing.sm)
         .background(isSelected ? V4Color.accent.opacity(V2Depth.bgSubtle) : V4Color.surface)
         .cornerRadius(V1Theme.cornerMedium)
         .overlay(

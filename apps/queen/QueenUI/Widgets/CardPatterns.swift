@@ -383,7 +383,7 @@ struct SettingsCard: View {
                 Image(systemName: icon)
                     .font(WernickeTypography.size18)
                     .foregroundStyle(isEnabled ? V4Color.accent : V4Color.textSecondary)
-                    .frame(width: 28)
+                    .frame(width: ParietalSpacing.smallIconFrame)
             }
 
             VStack(alignment: .leading, spacing: 2) {
@@ -403,7 +403,7 @@ struct SettingsCard: View {
             Toggle("", isOn: $isEnabled)
                 .toggleStyle(.switch)
         }
-        .padding(14)
+        .padding(ParietalSpacing.sm)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerMedium)
         .overlay(
@@ -460,7 +460,7 @@ struct CardPatterns_Previews: PreviewProvider {
                     bordered: true
                 )
             }
-            .frame(width: 350)
+            .frame(width: ParietalSpacing.extraWidePanel)
 
             // Media cards
             HStack(spacing: ParietalSpacing.md) {
@@ -477,7 +477,7 @@ struct CardPatterns_Previews: PreviewProvider {
                     iconName: "cpu"
                 )
             }
-            .frame(width: 350)
+            .frame(width: ParietalSpacing.extraWidePanel)
 
             // Metric cards
             HStack(spacing: ParietalSpacing.md) {
@@ -505,7 +505,7 @@ struct CardPatterns_Previews: PreviewProvider {
                     icon: "speedometer"
                 )
             }
-            .frame(width: 600)
+            .frame(width: ParietalSpacing.extraWideSheet)
 
             // Interactive card
             InteractiveCard {
@@ -536,7 +536,7 @@ struct CardPatterns_Previews: PreviewProvider {
                 secondaryAction: .init("Cancel") { },
                 icon: "trash.fill"
             )
-            .frame(width: 320)
+            .frame(width: ParietalSpacing.widePanelWidth)
 
             // Settings card
             VStack(spacing: ParietalSpacing.sm) {

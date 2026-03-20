@@ -295,7 +295,7 @@ struct QuickToolButton: View {
                         .font(WernickeTypography.size11)
                 }
             }
-            .frame(width: 28, height: 28)
+            .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
             .background(isRunning ? V4Color.info : V4Color.border.opacity(V1Theme.opacityTextTertiary))
             .clipShape(RoundedRectangle(cornerRadius: 4))
         }

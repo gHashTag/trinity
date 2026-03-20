@@ -86,7 +86,7 @@ struct ModelComparisonView: View {
 
                 Rectangle()
                     .fill(Color.white.opacity(V2Depth.bgCard))
-                    .frame(width: 1)
+                    .frame(width: ParietalSpacing.hairline)
 
                 modelPicker(selection: $rightModel, label: "RIGHT")
                     .frame(maxWidth: .infinity)
@@ -107,7 +107,7 @@ struct ModelComparisonView: View {
 
                 Rectangle()
                     .fill(Color.white.opacity(V2Depth.bgCard))
-                    .frame(width: 1)
+                    .frame(width: ParietalSpacing.hairline)
 
                 responsePanel(
                     text: rightText,
@@ -139,7 +139,7 @@ struct ModelComparisonView: View {
                 HStack(spacing: ParietalSpacing.xs) {
                     Text(selection.wrappedValue?.displayName ?? "Select...")
                         .font(WernickeTypography.miniMedium)
-                        .foregroundStyle(V2Depth.white70)
+                        .foregroundStyle(V4Color.white70)
                     Image(systemName: "chevron.down")
                         .font(WernickeTypography.size8)
                         .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
@@ -209,7 +209,7 @@ struct ModelComparisonView: View {
     private func statusDot(_ status: String) -> some View {
         Circle()
             .fill(statusColor(status))
-            .frame(width: 6, height: 6)
+            .frame(width: ParietalSpacing.dotSize, height: 6)
     }
 
     private func statusColor(_ status: String) -> Color {

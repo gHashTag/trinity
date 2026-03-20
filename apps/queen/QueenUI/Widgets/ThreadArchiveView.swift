@@ -494,7 +494,7 @@ struct ArchivePanel: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 32)
+        .padding(.vertical, ParietalSpacing.xxl)
         .padding(.horizontal, ParietalSpacing.lg)
     }
 
@@ -622,7 +622,7 @@ struct ArchivePanel: View {
                 .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
+        .padding(.vertical, ParietalSpacing.xl)
     }
 
     private var archiveList: some View {
@@ -819,7 +819,7 @@ private struct ArchiveThreadRow: View {
             // Archive indicator
             RoundedRectangle(cornerRadius: 2)
                 .fill(V4Color.purple.opacity(V1Theme.opacityTextSecondary))
-                .frame(width: 3, height: 40)
+                .frame(width: ParietalSpacing.smallIndicator, height: ParietalSpacing.itemHeight)
 
             VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 // Title row
@@ -1126,7 +1126,7 @@ struct ThreadArchiveView_Previews: PreviewProvider {
                 onRestore: { _ in },
                 onDelete: { _ in }
             )
-            .frame(width: 280)
+            .frame(width: ParietalSpacing.panelWidth)
             .previewDisplayName("Archive Panel")
 
             ArchiveButton(

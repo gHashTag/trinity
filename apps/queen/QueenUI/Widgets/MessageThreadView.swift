@@ -101,7 +101,7 @@ struct ThreadIndicator: View {
                     .font(WernickeTypography.caption2Bold)
                     .foregroundStyle(hasUnread ? V4Color.accent : V4Color.textSecondary)
             }
-            .frame(width: 22, height: 22)
+            .frame(width: ParietalSpacing.smallFrame, height: ParietalSpacing.avatarHeight)
         }
         .buttonStyle(.plain)
         .scaleEffect(isPressed ? 0.9 : 1.0)
@@ -345,7 +345,7 @@ struct ThreadReplyCell: View {
             Image(systemName: icon)
                 .font(WernickeTypography.size12)
                 .foregroundStyle(V4Color.textSecondary)
-                .padding(4)
+                .padding(ParietalSpacing.xxs)
                 .background(V4Color.border.opacity(V2Depth.stateHover))
                 .clipShape(Circle())
         }

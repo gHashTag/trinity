@@ -867,7 +867,7 @@ struct ImageBlockView: View {
                         .font(.caption)
                         .foregroundStyle(V4Color.textSecondary)
                 }
-                .frame(width: 300, height: 200)
+                .frame(width: ParietalSpacing.mediumModalFrame, height: ParietalSpacing.modalFrame)
                 .background(V4Color.surfaceElevated)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
@@ -959,7 +959,7 @@ struct MathBlockView: View {
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, ParietalSpacing.md + ParietalSpacing.md)
-            .padding(.vertical, 16)
+            .padding(.vertical, ParietalSpacing.md)
             Spacer()
         }
         .background(V4Color.background)

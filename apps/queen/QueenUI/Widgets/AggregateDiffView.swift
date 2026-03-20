@@ -45,7 +45,7 @@ struct AggregateDiffView: View {
                                 Image(systemName: expandedFile == diff.id ? "chevron.down" : "chevron.right")
                                     .font(.caption2)
                                     .foregroundStyle(V4Color.textSecondary)
-                                    .frame(width: 10)
+                                    .frame(width: ParietalSpacing.smallBadge)
 
                                 Text(shortPath(diff.file ?? ""))
                                     .font(.caption2.monospaced())
@@ -83,7 +83,7 @@ struct AggregateDiffView: View {
                     }
                 }
             }
-            .padding(10)
+            .padding(ParietalSpacing.xs)
             .background(V4Color.surface)
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
             .overlay(

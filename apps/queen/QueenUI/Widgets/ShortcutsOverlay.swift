@@ -67,8 +67,8 @@ struct ShortcutsOverlay: View {
             shortcutsList
             footerSection
         }
-        .padding(32)
-        .frame(width: 560)
+        .padding(ParietalSpacing.xxl)
+        .frame(width: ParietalSpacing.extraWideModal)
         .background(cardBackground)
     }
 
@@ -141,7 +141,7 @@ struct ShortcutsOverlay: View {
             Text(key)
                 .font(WernickeTypography.microBoldMono)
                 .foregroundStyle(V4Color.golden)
-                .frame(width: 70, alignment: .trailing)
+                .frame(width: ParietalSpacing.badgeFrame, alignment: .trailing)
             Text(desc)
                 .font(WernickeTypography.size13)
                 .foregroundStyle(V4Color.textPrimary)

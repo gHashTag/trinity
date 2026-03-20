@@ -180,6 +180,274 @@ public enum ParietalSpacing {
 
     /// Slider track height - 4pt
     public static let sliderTrack: CGFloat = 4
+
+    // MARK: - Frame Sizes
+
+    /// Frame width extra extra small - 1pt
+    public static let frameWidthXXS: CGFloat = 1
+
+    /// Frame width extra small - 2pt
+    public static let frameWidthXS: CGFloat = 2
+
+    /// Frame width small - 20pt
+    public static let frameWidthSmall: CGFloat = 20
+
+    /// Frame width medium - 40pt
+    public static let frameWidthMedium: CGFloat = 40
+
+    /// Frame width large - 80pt
+    public static let frameWidthLarge: CGFloat = 80
+
+    /// Frame width extra large - 100pt
+    public static let frameWidthXL: CGFloat = 100
+
+    /// Sidebar width - 280pt
+    public static let sidebarWidth: CGFloat = 280
+
+    /// Sidebar min width - 220pt
+    public static let sidebarMinWidth: CGFloat = 220
+
+    /// Sidebar max width - 400pt
+    public static let sidebarMaxWidth: CGFloat = 400
+
+    /// Modal width - 540pt
+    public static let modalWidth: CGFloat = 540
+
+    /// Modal max width - 600pt
+    public static let modalMaxWidth: CGFloat = 600
+
+    /// Cell minimum height - 44pt (touch target)
+    public static let cellMinHeight: CGFloat = 44
+
+    /// Row height - 48pt
+    public static let rowHeight: CGFloat = 48
+
+    /// Toolbar height - 44pt
+    public static let toolbarHeight: CGFloat = 44
+
+    /// Tab bar height - 49pt
+    public static let tabBarHeight: CGFloat = 49
+
+    /// Navigation bar height - 44pt
+    public static let navigationBarHeight: CGFloat = 44
+
+    /// Status bar height - 44pt
+    public static let statusBarHeight: CGFloat = 44
+
+    // MARK: - Component Frame Widths
+
+    /// Icon button frame - 24pt
+    public static let iconButtonFrame: CGFloat = 24
+
+    /// Small icon frame - 28pt
+    public static let smallIconFrame: CGFloat = 28
+
+    /// Touch frame - 32pt
+    public static let touchFrame: CGFloat = 32
+
+    /// Standard frame - 40pt
+    public static let standardFrame: CGFloat = 40
+
+    /// Medium frame - 50pt
+    public static let mediumFrame: CGFloat = 50
+
+    /// Large frame - 60pt
+    public static let largeFrame: CGFloat = 60
+
+    /// Extra large frame - 80pt
+    public static let xLargeFrame: CGFloat = 80
+
+    /// XXL frame - 100pt
+    public static let xxLargeFrame: CGFloat = 100
+
+    /// XXXL frame - 120pt
+    public static let xxxLargeFrame: CGFloat = 120
+
+    /// Panel width - 280pt
+    public static let panelWidth: CGFloat = 280
+
+    /// Wide panel width - 320pt
+    public static let widePanelWidth: CGFloat = 320
+
+    /// Extra wide panel - 350pt
+    public static let extraWidePanel: CGFloat = 350
+
+    /// Sheet width - 400pt
+    public static let sheetWidth: CGFloat = 400
+
+    /// Wide sheet width - 500pt
+    public static let wideSheetWidth: CGFloat = 500
+
+    /// Extra wide sheet - 600pt
+    public static let extraWideSheet: CGFloat = 600
+
+    // MARK: - Small Component Sizes
+
+    /// Divider thickness - 2pt
+    public static let dividerThickness: CGFloat = 2
+
+    /// Hairline width - 1pt
+    public static let hairline: CGFloat = 1
+
+    /// Small indicator - 3pt
+    public static let smallIndicator: CGFloat = 3
+
+    /// Micro indicator - 5pt
+    public static let microIndicator: CGFloat = 5
+
+    /// Dot size - 6pt
+    public static let dotSize: CGFloat = 6
+
+    /// Tiny indicator - 8pt
+    public static let tinyIndicator: CGFloat = 8
+
+    /// Small badge - 10pt
+    public static let smallBadge: CGFloat = 10
+
+    /// Medium badge - 12pt
+    public static let mediumBadge: CGFloat = 12
+
+    // MARK: - Additional Frame Sizes
+
+    /// Extra small frame - 14pt
+    public static let xSmallFrame: CGFloat = 14
+
+    /// Small frame - 22pt
+    public static let smallFrame: CGFloat = 22
+
+    /// Compact frame - 26pt
+    public static let compactFrame: CGFloat = 26
+
+    /// Standard cell frame - 36pt
+    public static let cellFrame: CGFloat = 36
+
+    /// Button frame - 44pt
+    public static let buttonFrame: CGFloat = 44
+
+    /// Badge frame - 70pt
+    public static let badgeFrame: CGFloat = 70
+
+    /// Extra extra large frame - 160pt
+    public static let extraLargeFrame: CGFloat = 160
+
+    /// Modal frame - 200pt
+    public static let modalFrame: CGFloat = 200
+
+    /// Small modal frame - 250pt
+    public static let smallModalFrame: CGFloat = 250
+
+    /// Medium modal frame - 300pt
+    public static let mediumModalFrame: CGFloat = 300
+
+    /// Wide modal frame - 340pt
+    public static let wideModalFrame: CGFloat = 340
+
+    /// XL modal frame - 360pt
+    public static let xlModalFrame: CGFloat = 360
+
+    /// XXL modal frame - 380pt
+    public static let xxlModalFrame: CGFloat = 380
+
+    /// XXXL modal frame - 480pt
+    public static let xxxlModalFrame: CGFloat = 480
+
+    /// Extra wide modal - 560pt
+    public static let extraWideModal: CGFloat = 560
+
+    /// Large screen frame - 900pt
+    public static let largeScreenFrame: CGFloat = 900
+
+    /// Extra large screen frame - 1000pt
+    public static let extraLargeScreenFrame: CGFloat = 1000
+
+    /// Row width - 18pt
+    public static let rowWidth: CGFloat = 18
+
+    /// Chip width - 20pt
+    public static let chipWidth: CGFloat = 20
+
+    /// Avatar medium - 48pt
+    public static let avatarMediumFrame: CGFloat = 48
+
+    /// Compact panel - 180pt
+    public static let compactPanel: CGFloat = 180
+
+    // MARK: - Height Values
+
+    /// Micro height - 4pt
+    public static let microHeight: CGFloat = 4
+
+    /// Small badge height - 9pt
+    public static let smallBadgeHeight: CGFloat = 9
+
+    /// Chip height - 24pt
+    public static let chipHeight: CGFloat = 24
+
+    /// Large modal height - 450pt
+    public static let largeModalHeight: CGFloat = 450
+
+    /// Extra large modal height - 500pt
+    public static let extraLargeModalHeight: CGFloat = 500
+
+    /// Caption height - 10pt
+    public static let captionHeight: CGFloat = 10
+
+    /// Badge height - 12pt
+    public static let badgeHeight: CGFloat = 12
+
+    /// Subtitle height - 14pt
+    public static let subtitleHeight: CGFloat = 14
+
+    /// Icon height - 20pt
+    public static let iconHeight: CGFloat = 20
+
+    /// Small button height - 28pt
+    public static let smallButtonHeight: CGFloat = 28
+
+    /// Item height - 40pt
+    public static let itemHeight: CGFloat = 40
+
+    /// Large button height - 56pt
+    public static let largeButtonHeight: CGFloat = 56
+
+    /// Large icon height - 85pt
+    public static let largeIconHeight: CGFloat = 85
+
+    /// Avatar small height - 88pt
+    public static let avatarSmallHeight: CGFloat = 88
+
+    /// Label height - 90pt
+    public static let labelHeight: CGFloat = 90
+
+    /// Extra label height - 95pt
+    public static let extraLabelHeight: CGFloat = 95
+
+    /// Extra icon height - 110pt
+    public static let extraIconHeight: CGFloat = 110
+
+    /// Small indicator height - 16pt
+    public static let smallIndicatorHeight: CGFloat = 16
+
+    /// Avatar height - 22pt
+    public static let avatarHeight: CGFloat = 22
+
+    /// Compact height - 26pt
+    public static let compactHeight: CGFloat = 26
+
+    /// Avatar large height - 36pt
+    public static let avatarLargeHeight: CGFloat = 36
+
+    /// Chart height - 150pt
+    public static let chartHeight: CGFloat = 150
+
+    /// Overlay height - 200pt
+    public static let overlayHeight: CGFloat = 200
+
+    /// Panel height - 280pt
+    public static let panelHeight: CGFloat = 280
+
+    /// Sheet height - 480pt
+    public static let sheetHeight: CGFloat = 480
 }
 
 // MARK: - Spacing View Extensions

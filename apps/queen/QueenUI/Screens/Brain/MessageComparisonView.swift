@@ -101,8 +101,8 @@ struct MessageComparisonView: View {
                 // Hover effect handled by system
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm)
         .background(V4Color.bgCard)
     }
 
@@ -132,8 +132,8 @@ struct MessageComparisonView: View {
                 }
                 .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
             .background(V4Color.bgCard.opacity(V2Depth.stateDisabled))
 
             Divider()
@@ -146,7 +146,7 @@ struct MessageComparisonView: View {
                         diffLineView(line)
                     }
                 }
-                .padding(12)
+                .padding(ParietalSpacing.sm)
             }
             .background(V4Color.bgWindow)
         }
@@ -213,14 +213,14 @@ struct MessageComparisonView: View {
                 }
             }
             .font(WernickeTypography.size11Mono)
-            .frame(width: 12, alignment: .trailing)
+            .frame(width: ParietalSpacing.mediumBadge, alignment: .trailing)
 
             // Line content with background
             Text(line.text)
                 .font(.system(size: V1Theme.chatFontSize, design: .monospaced))
                 .foregroundStyle(foregroundFor(lineType: line.type))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(backgroundFor(lineType: line.type))
         }
@@ -269,8 +269,8 @@ struct MessageComparisonView: View {
                         .font(WernickeTypography.captionMedium)
                 }
                 .foregroundStyle(V4Color.statusError)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.xs)
                 .background(V4Color.statusError.opacity(V2Depth.bgSubtle))
                 .cornerRadius(V1Theme.cornerMedium)
             }
@@ -290,14 +290,14 @@ struct MessageComparisonView: View {
                         .font(WernickeTypography.captionMedium)
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.xs)
                 .background(V4Color.statusOK)
                 .cornerRadius(V1Theme.cornerMedium)
             }
             .buttonStyle(.plain)
         }
-        .padding(16)
+        .padding(ParietalSpacing.md)
         .background(V4Color.bgCard)
     }
 }
@@ -382,6 +382,6 @@ struct MessageComparisonView_Previews: PreviewProvider {
             originalTitle: "Original",
             newTitle: "Regenerated"
         )
-        .frame(width: 1000, height: 600)
+        .frame(width: ParietalSpacing.extraLargeScreenFrame, height: ParietalSpacing.extraWideSheet)
     }
 }

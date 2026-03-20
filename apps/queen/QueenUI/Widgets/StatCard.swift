@@ -17,7 +17,7 @@ struct StatCard: View, Equatable {
             HStack(spacing: 0) {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(accent)
-                    .frame(width: 3, height: ParietalSpacing.icon)
+                    .frame(width: ParietalSpacing.smallIndicator, height: ParietalSpacing.icon)
                 Text(label)
                     .font(WernickeTypography.caption)
                     .foregroundStyle(V4Color.textSecondary)

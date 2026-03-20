@@ -30,15 +30,15 @@ public struct AutomationOverlay: View {
         ZStack {
             Circle()
                 .fill(Color.red.opacity(V2Depth.stateHover))
-                .frame(width: 24, height: 24)
+                .frame(width: ParietalSpacing.iconButtonFrame, height: ParietalSpacing.chipHeight)
                 .blur(radius: 4)
             Circle()
                 .fill(Color.red)
-                .frame(width: 12, height: 12)
+                .frame(width: ParietalSpacing.mediumBadge, height: ParietalSpacing.badgeHeight)
                 .shadow(color: .red, radius: 6)
             Circle()
                 .fill(Color.white)
-                .frame(width: 4, height: 4)
+                .frame(width: ParietalSpacing.smallIndicator, height: ParietalSpacing.microHeight)
         }
         .position(x: cursorPosition.x, y: cursorPosition.y)
         .allowsHitTesting(false)
@@ -57,10 +57,10 @@ public struct AutomationOverlay: View {
                     Group {
                         Rectangle()
                             .fill(Color.white)
-                            .frame(width: 20, height: 2)
+                            .frame(width: ParietalSpacing.chipWidth, height: 2)
                         Rectangle()
                             .fill(Color.white)
-                            .frame(width: 2, height: 20)
+                            .frame(width: ParietalSpacing.dividerThickness, height: ParietalSpacing.iconHeight)
                     }
                     .opacity(highlightOpacity)
                 }
@@ -80,11 +80,11 @@ public struct AutomationOverlay: View {
                 ZStack {
                     Circle()
                         .fill(Color.cyan.opacity(V2Depth.bgSidebarHover))
-                        .frame(width: 120, height: 120)
+                        .frame(width: ParietalSpacing.xxxLargeFrame, height: ParietalSpacing.xxxLargeFrame)
                         .blur(radius: 20)
                     Circle()
                         .stroke(Color.cyan.opacity(V1Theme.opacityTextSecondary), lineWidth: 1.5)
-                        .frame(width: 80, height: 80)
+                        .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.xLargeFrame)
                     Image(systemName: "eye.fill")
                         .font(WernickeTypography.size14)
                         .foregroundStyle(.cyan.opacity(0.8))
@@ -102,12 +102,12 @@ public struct AutomationOverlay: View {
                     ZStack {
                         Circle()
                             .stroke(Color.orange, lineWidth: 2)
-                            .frame(width: 40, height: 40)
+                            .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
                             .opacity(0.3 + 0.3 * sin(thinkingPhase * 4))
                             .scaleEffect(1.0 + 0.2 * sin(thinkingPhase * 3))
                         Circle()
                             .fill(Color.orange.opacity(0.8))
-                            .frame(width: 24, height: 24)
+                            .frame(width: ParietalSpacing.iconButtonFrame, height: ParietalSpacing.chipHeight)
                         Image(systemName: "brain.head.profile")
                             .font(WernickeTypography.caption)
                             .foregroundStyle(.white)
@@ -125,14 +125,14 @@ public struct AutomationOverlay: View {
     private var actionIndicator: some View {
         Group {
             if !currentAction.isEmpty {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.xxs) {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
                             .fill(Color.black.opacity(V1Theme.opacityTextSecondary))
-                            .frame(width: 80, height: 4)
+                            .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.microHeight)
                         RoundedRectangle(cornerRadius: 2)
                             .fill(Color.green)
-                            .frame(width: 80 * actionProgress, height: 4)
+                            .frame(width: 80 * actionProgress, height: ParietalSpacing.microHeight)
                     }
                     Text(currentAction)
                         .font(WernickeTypography.microSemibold.monospaced())
@@ -153,7 +153,7 @@ public struct AutomationOverlay: View {
     private var errorCorrectionView: some View {
         Group {
             if let error = errorCorrection {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.xxs) {
                     Image(systemName: "arrow.uturn.backward")
                         .font(WernickeTypography.mini)
                         .foregroundStyle(.orange)
@@ -166,8 +166,8 @@ public struct AutomationOverlay: View {
                             .foregroundStyle(.white.opacity(0.8))
                     }
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.orange.opacity(0.2))
@@ -193,7 +193,7 @@ public struct AutomationOverlay: View {
             VStack(spacing: 2) {
                 Circle()
                     .fill(Color.purple)
-                    .frame(width: 8, height: 8)
+                    .frame(width: ParietalSpacing.tinyIndicator, height: 8)
                     .overlay(
                         Circle()
                             .stroke(Color.white, lineWidth: 1)
@@ -213,7 +213,7 @@ public struct AutomationOverlay: View {
             HStack(spacing: ParietalSpacing.sm) {
                 Circle()
                     .fill(server.isRunning ? Color.green : Color.red)
-                    .frame(width: 10, height: 10)
+                    .frame(width: ParietalSpacing.smallBadge, height: ParietalSpacing.captionHeight)
                     .shadow(color: server.isRunning ? .green : .red, radius: 4)
                 Text("🤖 PUPPET MODE")
                     .font(WernickeTypography.captionBold.monospaced())
@@ -221,11 +221,11 @@ public struct AutomationOverlay: View {
                 if server.isRunning {
                     Circle()
                         .fill(Color.green)
-                        .frame(width: 6, height: 6)
+                        .frame(width: ParietalSpacing.dotSize, height: 6)
                         .opacity(0.8 + 0.2 * sin(Date().timeIntervalSince1970 * 5))
                 }
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, ParietalSpacing.sm)
             .padding(.vertical, 6)
             .background(
                 RoundedRectangle(cornerRadius: 6)
@@ -245,8 +245,8 @@ public struct AutomationOverlay: View {
                         .font(WernickeTypography.miniMono)
                 }
                 .foregroundStyle(.white.opacity(0.9))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(V2Depth.black70)
                 .cornerRadius(V1Theme.cornerTiny)
             }
@@ -255,14 +255,14 @@ public struct AutomationOverlay: View {
                 Text(server.lastActivity.uppercased())
                     .font(WernickeTypography.microBold.monospaced())
                     .foregroundStyle(.cyan)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, ParietalSpacing.xs)
                     .padding(.vertical, 2)
                     .background(V2Depth.black70)
                     .cornerRadius(V1Theme.cornerTiny)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(16)
+        .padding(ParietalSpacing.md)
         .allowsHitTesting(false)
     }
 
@@ -275,13 +275,13 @@ public struct AutomationOverlay: View {
                 HStack(spacing: ParietalSpacing.xs) {
                     Circle()
                         .fill(Color.red)
-                        .frame(width: 4, height: 4)
+                        .frame(width: ParietalSpacing.smallIndicator, height: ParietalSpacing.microHeight)
                     Text(action)
                         .font(WernickeTypography.caption2.monospaced())
                         .foregroundStyle(.white)
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.black.opacity(0.75))
@@ -289,7 +289,7 @@ public struct AutomationOverlay: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-        .padding(16)
+        .padding(ParietalSpacing.md)
         .allowsHitTesting(false)
     }
 
@@ -302,12 +302,12 @@ public struct AutomationOverlay: View {
                 }
                 .font(WernickeTypography.miniMono)
                 .foregroundStyle(.white.opacity(0.8))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(V2Depth.black70)
                 .cornerRadius(V1Theme.cornerTiny)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                .padding(16)
+                .padding(ParietalSpacing.md)
                 .allowsHitTesting(false)
             }
         }
