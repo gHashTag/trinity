@@ -378,7 +378,7 @@ public struct ParahippocampalCommandPalette: View {
         }
         .background(V4Color.surfaceElevated)
         .cornerRadius(V1Theme.cornerLarge)
-        .shadow(radius: 20)
+        .shadow(radius: ParietalSpacing.xl)
         .onAppear {
             isFocused = true
         }

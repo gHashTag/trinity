@@ -3,6 +3,8 @@
 //! Event streaming system for Trinity agents.
 //! Brain Region: Reticular Formation (Broadcast Alerting)
 //!
+//! Sacred Formula: φ² + 1/φ² = 3 = TRINITY
+//!
 //! Biological Analogy:
 //! In vertebrate brains, the reticular formation is a diffuse network of neurons
 //! that regulates arousal, consciousness, and attention. It filters sensory input

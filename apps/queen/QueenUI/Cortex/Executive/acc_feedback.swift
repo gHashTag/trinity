@@ -432,7 +432,7 @@ extension ACCFeedback {
                 alignment: .leading
             )
             .cornerRadius(V1Theme.cornerMedium)
-            .shadow(radius: 4)
+            .shadow(radius: ParietalSpacing.xxxs)
         }
     }
 }

@@ -582,7 +582,7 @@ struct TableBlockView: View {
                             ForEach(0..<colCount, id: \.self) { colIdx in
                                 let cell = colIdx < row.count ? row[colIdx] : ""
                                 Text(cell)
-                                    .font(.system(size: 13, weight: rowIdx == 0 ? .bold : .regular, design: .default))
+                                    .font(WernickeTypography.small)
                                     .foregroundStyle(rowIdx == 0 ? V4Color.accent : V4Color.border)
                                     .padding(.horizontal, ParietalSpacing.md)
                                     .padding(.vertical, ParietalSpacing.xs + 2)

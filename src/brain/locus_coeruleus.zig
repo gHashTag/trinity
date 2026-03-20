@@ -3,6 +3,8 @@
 //! Exponential backoff policy for agent retry logic.
 //! Brain Region: Locus Coeruleus (Norepinephrine System)
 //!
+//! Sacred Formula: φ² + 1/φ² = 3 = TRINITY
+//!
 //! The Locus Coeruleus (LC) is the primary source of norepinephrine in the brain,
 //! regulating arousal, attention, and the stress response. In Trinity, it provides
 //! adaptive retry behavior with configurable backoff strategies.
