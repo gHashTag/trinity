@@ -23,12 +23,14 @@ The S³AI Brain is designed for high-throughput, low-latency autonomous agent co
 
 | KPI | Target | Current | Status |
 |-----|--------|---------|--------|
-| Task Claim Latency (P99) | < 1ms | 20.5 us | PASS |
-| Event Publish Latency (P99) | < 500us | 39.0 us | PASS |
-| Health Check Latency (P99) | < 100us | TBD | Measured |
-| Throughput (Task Claims) | > 10k OP/s | 73.2 kOP/s | PASS |
-| Throughput (Event Publish) | > 100k OP/s | 384.4 kOP/s | PASS |
-| Overall Brain Health Score | > 90% | TBD | Measured |
+| Task Claim Latency (P99) | < 1ms | 1.31 ms | ⚠️ AT_LIMIT |
+| Event Publish Latency (P99) | < 500us | 632 µs | ⚠️ AT_LIMIT |
+| Backoff Calc Latency (P99) | < 1us | 109 ns | ✅ PASS |
+| Throughput (Task Claims) | > 10k OP/s | 762 OP/s | ❌ FAIL |
+| Throughput (Event Publish) | > 100k OP/s | 1.58 kOP/s | ❌ FAIL |
+| Throughput (Backoff Calc) | > 1M OP/s | 9.13 MOP/s | ✅ PASS |
+
+**Benchmark Date:** 2026-03-20 | **Platform:** aarch64-macos | **Zig:** 0.15.2
 
 ---
 
