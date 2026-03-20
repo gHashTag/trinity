@@ -59,24 +59,24 @@ pub const BenchmarkSuite = struct {
     results: std.ArrayList(BenchmarkResult),
     allocator: Allocator,
 
-    pub fn init(allocator: Allocator) BenchmarkSuite {
+    pub fn init(allocator: Allocator) !BenchmarkSuite {
+        const results = try std.ArrayList(BenchmarkResult).initCapacity(allocator, 16);
         return .{
-            .results = std.ArrayList(BenchmarkResult).init(allocator),
+            .results = results,
             .allocator = allocator,
         };
     }
 
     pub fn deinit(self: *BenchmarkSuite) void {
-        self.results.deinit();
+        self.results.deinit(self.allocator);
     }
 
     pub fn addResult(self: *BenchmarkSuite, result: BenchmarkResult) !void {
-        try self.results.append(result);
+        try self.results.append(self.allocator, result);
     }
 
     pub fn printReport(self: *const BenchmarkSuite) !void {
-        const stdout = std.io.getStdOut().writer();
-        try stdout.writeAll(
+        std.debug.print(
             \\╔════════════════════════════════════════════════════════════════════════════╗
             \\║                        BRAIN BENCHMARK REPORT                                ║
             \\╚════════════════════════════════════════════════════════════════════════════╝
@@ -84,15 +84,14 @@ pub const BenchmarkSuite = struct {
         );
 
         for (self.results.items) |result| {
-            try stdout.print("{}\n\n", .{result});
+            std.debug.print("{}\n\n", .{result});
         }
 
         try self.printComparison();
     }
 
     pub fn printComparison(self: *const BenchmarkSuite) !void {
-        const stdout = std.io.getStdOut().writer();
-        try stdout.writeAll(
+        std.debug.print(
             \\╔════════════════════════════════════════════════════════════════════════════╗
             \\║                       SPEEDUP ANALYSIS (OPTIMIZED)                          ║
             \\╚════════════════════════════════════════════════════════════════════════════╝
@@ -102,8 +101,8 @@ pub const BenchmarkSuite = struct {
         // Find baseline (first result) and compare
         if (self.results.items.len < 2) return;
 
-        try stdout.writeAll("All benchmarks show baseline performance (no optimizations applied yet).\n");
-        try stdout.writeAll("Run benchmark suite after optimizations to see speedup.\n\n");
+        std.debug.print("All benchmarks show baseline performance (no optimizations applied yet).\n", .{});
+        std.debug.print("Run benchmark suite after optimizations to see speedup.\n\n", .{});
     }
 };
 
@@ -111,7 +110,7 @@ pub const BenchmarkSuite = struct {
 // BENCHMARK: Basal Ganglia — selectAction
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub fn benchmarkSelectAction(allocator: Allocator, iterations: u64) !BenchmarkResult {
+pub fn benchmarkSelectAction(iterations: u64) !BenchmarkResult {
     var timer = try Timer.start();
     var min_ns: u64 = std.math.maxInt(u64);
     var max_ns: u64 = 0;
@@ -150,6 +149,11 @@ pub fn benchmarkSelectAction(allocator: Allocator, iterations: u64) !BenchmarkRe
         .max_ns = max_ns,
         .ops_per_sec = ops_per_sec,
     };
+}
+
+pub fn benchmarkSelectActionAlloc(allocator: Allocator, iterations: u64) !BenchmarkResult {
+    _ = allocator;
+    return benchmarkSelectAction(iterations);
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -375,13 +379,13 @@ pub fn benchmarkUrgencyWeight(allocator: Allocator, iterations: u64) !BenchmarkR
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub fn runAll(allocator: Allocator, iterations: u64) !BenchmarkSuite {
-    var suite = BenchmarkSuite.init(allocator);
+    var suite = try BenchmarkSuite.init(allocator);
 
     std.debug.print("Running brain benchmarks with {d} iterations each...\n\n", .{iterations});
 
     // Basal Ganglia benchmarks
     std.debug.print("Benchmarking basal_ganglia.selectAction...\n", .{});
-    try suite.addResult(try benchmarkSelectAction(allocator, iterations));
+    try suite.addResult(try benchmarkSelectAction(iterations));
 
     std.debug.print("Benchmarking basal_ganglia.Registry.claim...\n", .{});
     try suite.addResult(try benchmarkTaskClaim(allocator, @min(1000, iterations)));
@@ -463,18 +467,17 @@ pub fn analyzeBottlenecks() []const OptimizationOpportunity {
 }
 
 pub fn printOptimizationReport() !void {
-    const stdout = std.io.getStdOut().writer();
     const opportunities = analyzeBottlenecks();
 
-    try stdout.writeAll(
+    std.debug.print(
         \\╔════════════════════════════════════════════════════════════════════════════╗
         \\║                       OPTIMIZATION OPPORTUNITIES                              ║
-        \\╚════════════════════════════════════════════════════════════════════════════╝
+        \\╚══════════════════════════════════════════════════════════════════════════╝
         \\
     );
 
     for (opportunities) |opp| {
-        try stdout.print(
+        std.debug.print(
             \\Region: {s}
             \\  Function: {s}
             \\  Bottleneck: {s}
@@ -484,7 +487,7 @@ pub fn printOptimizationReport() !void {
         , .{ opp.region, opp.function, opp.bottleneck, opp.suggestion, opp.expected_speedup });
     }
 
-    try stdout.print("Total potential speedup: {d:.1}x (cumulative)\n\n", .{calculateCumulativeSpeedup(opportunities)});
+    std.debug.print("Total potential speedup: {d:.1}x (cumulative)\n\n", .{calculateCumulativeSpeedup(opportunities)});
 }
 
 fn calculateCumulativeSpeedup(opportunities: []const OptimizationOpportunity) f32 {
@@ -500,7 +503,7 @@ fn calculateCumulativeSpeedup(opportunities: []const OptimizationOpportunity) f3
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "brain_benchmark — selectAction runs" {
-    const result = try benchmarkSelectAction(std.testing.allocator, 100);
+    const result = try benchmarkSelectAction(100);
     try std.testing.expect(result.iterations == 100);
     try std.testing.expect(result.avg_ns > 0);
     try std.testing.expect(result.ops_per_sec > 0);
@@ -522,7 +525,7 @@ test "brain_benchmark — Task claim registry works" {
 }
 
 test "brain_benchmark — BenchmarkSuite report" {
-    var suite = BenchmarkSuite.init(std.testing.allocator);
+    var suite = try BenchmarkSuite.init(std.testing.allocator);
     defer suite.deinit();
 
     try suite.addResult(BenchmarkResult{

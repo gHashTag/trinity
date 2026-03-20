@@ -76,7 +76,8 @@ pub fn main() !void {
 
     var s2 = try evo_sim.runS2Current(allocator, steps);
     defer s2.deinit();
-    print("  {s}✓{s} S2 Current complete: PPL={d:.2}, Culled={d}\n", .{ GREEN, RESET, s2.final_ppl, s2.workers_culled });
+    const s2_ppl_str = if (s2.final_ppl < 100.0) try std.fmt.allocPrint(allocator, "{d:.2}", .{s2.final_ppl}) else "DEAD";
+    print("  {s}✓{s} S2 Current complete: PPL={s}, Culled={d}\n", .{ GREEN, RESET, s2_ppl_str, s2.workers_culled });
 
     var s3 = try evo_sim.runS3MultiObj(allocator, steps);
     defer s3.deinit();
@@ -84,9 +85,45 @@ pub fn main() !void {
 
     var s4 = try evo_sim.runS4DePIN(allocator, steps);
     defer s4.deinit();
-    print("  {s}✓{s} S4 dePIN complete: PPL={d:.2}, Byzantine detected={d}\n", .{ GREEN, RESET, s4.final_ppl, s4.byzantine_detected });
+    const s4_ppl_str = if (s4.final_ppl < 100.0) try std.fmt.allocPrint(allocator, "{d:.2}", .{s4.final_ppl}) else "DEAD";
+    print("  {s}✓{s} S4 dePIN complete: PPL={s}, Byzantine detected={d}\n", .{ GREEN, RESET, s4_ppl_str, s4.byzantine_detected });
 
     print("\n{s}Simulation complete!{s}\n", .{ GREEN, RESET });
+
+    // Write CSV if output directory specified
+    if (output_dir) |dir| {
+        const csv_path = try std.fmt.allocPrint(allocator, "{s}/simulation_results.csv", .{dir});
+        const csv_file = try std.fs.cwd().createFile(csv_path, .{});
+        defer csv_file.close();
+        defer allocator.free(csv_path);
+
+        // Header
+        try csv_file.writer().writeAll("step,scenario,avg_ppl,alive_workers,diversity\n");
+
+        // Write data from all scenarios
+        for (s1.timeline[0..s1.timeline_count]) |entry| {
+            try csv_file.writer().print("{d},{s},{d:.2},{d},{d:.3}\n", .{
+                entry.step, "S1", entry.avg_ppl, entry.alive_workers, entry.diversity,
+            });
+        }
+        for (s2.timeline[0..s2.timeline_count]) |entry| {
+            try csv_file.writer().print("{d},{s},{d:.2},{d},{d:.3}\n", .{
+                entry.step, "S2", entry.avg_ppl, entry.alive_workers, entry.diversity,
+            });
+        }
+        for (s3.timeline[0..s3.timeline_count]) |entry| {
+            try csv_file.writer().print("{d},{s},{d:.2},{d},{d:.3}\n", .{
+                entry.step, "S3", entry.avg_ppl, entry.alive_workers, entry.diversity,
+            });
+        }
+        for (s4.timeline[0..s4.timeline_count]) |entry| {
+            try csv_file.writer().print("{d},{s},{d:.2},{d},{d:.3}\n", .{
+                entry.step, "S4", entry.avg_ppl, entry.alive_workers, entry.diversity,
+            });
+        }
+
+        print("{s}CSV written to {s}{s}\n", .{ CYAN, RESET, csv_path });
+    }
 }
 
 fn printHelp() void {

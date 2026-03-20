@@ -2,7 +2,7 @@
 
 ## Overview
 
-Trinity's S³AI (Self-Supervised Symbolic AI) Brain consists of 21 neuroanatomically-inspired modules implementing executive function, emotional processing, decision-making, and distributed coordination.
+Trinity's S³AI (Self-Supervised Symbolic AI) Brain consists of 23 neuroanatomically-inspired modules implementing executive function, emotional processing, decision-making, and distributed coordination.
 
 **Sacred Formula**: φ² + 1/φ² = 3 = TRINITY
 
@@ -152,6 +152,8 @@ Trinity's S³AI (Self-Supervised Symbolic AI) Brain consists of 21 neuroanatomic
 | 19 | **Thalamic Async Processor** | Non-blocking Operations — async task claim/release, event publishing, health checks, background telemetry collection | `async_processor` | ~350 | ~20 |
 | 20 | **Federation** | Inter-Hemispheric Communication — distributed multi-instance coordination, leader election, CRDT state sync | `federation` | ~600 | ~25 |
 | 21 | **Visual Cortex** | Spatial Representation — ASCII art brain maps, sparklines, heatmaps, 3D visualization | `visualization` | ~500 | ~20 |
+| 22 | **Evolution Simulation** | Deterministic Evolution — Parallel brain evolution scenarios (baseline/current/multi-obj/dePIN) | `evolution_simulation` | ~500 | ~25 |
+| 23 | **Performance Dashboard** | Performance Monitoring — Real-time tracking, SLA monitoring, comparison reports, sparklines | `perf_dashboard` | ~1000 | ~30 |
 
 ## Module Imports
 
@@ -465,6 +467,28 @@ tri brain async pending
 
 # Show background telemetry
 tri brain async telemetry
+```
+
+### Performance Dashboard
+
+```bash
+# Show performance dashboard
+tri brain perf
+
+# Show performance metrics for all regions
+tri brain perf --all
+
+# Show specific region metrics
+tri brain perf --region <region_name>
+
+# Compare with baseline
+tri brain perf --compare
+
+# Show SLA compliance
+tri brain perf --sla
+
+# Export performance report
+tri brain perf --export --format <json|ascii>
 ```
 
 ### Evolution Simulation
@@ -1620,6 +1644,28 @@ tri brain async pending
 
 # Show background telemetry
 tri brain async telemetry
+```
+
+### Performance Dashboard
+
+```bash
+# Show performance dashboard
+tri brain perf
+
+# Show performance metrics for all regions
+tri brain perf --all
+
+# Show specific region metrics
+tri brain perf --region <region_name>
+
+# Compare with baseline
+tri brain perf --compare
+
+# Show SLA compliance
+tri brain perf --sla
+
+# Export performance report
+tri brain perf --export --format <json|ascii>
 ```
 
 ### Evolution Simulation
