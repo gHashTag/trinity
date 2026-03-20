@@ -68,7 +68,7 @@ pub fn main() !void {
     print("\n{s}╔═══════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
     print("{s}║  DETERMINISTIC BRAIN EVOLUTION SIMULATION SUITE         ║{s}\n", .{ BOLD, RESET });
     print("{s}╚═══════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
-    print("Running {d} scenarios in parallel...\n\n", .{5});
+    print("Running {d} scenarios in parallel...\n\n", .{6});
 
     // Run scenarios (note: Zig doesn't have true parallelism yet, so we run sequentially)
     var s1 = try evo_sim.runS1Baseline(allocator, steps);
@@ -93,6 +93,11 @@ pub fn main() !void {
     defer s5.deinit();
     const s5_status = if (s5.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s5.final_ppl});
     print("  {s}✓{s} S5 dePIN NoImmunity complete: PPL={s}, Alive={d}, Byzantine={d}, NoMicroglia\n", .{ YELLOW, RESET, s5_status, s5.workers_alive, s5.byzantine_detected });
+
+    var s6 = try evo_sim.runS6JEPA_Heavy(allocator, steps);
+    defer s6.deinit();
+    const s6_status = if (s6.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s6.final_ppl});
+    print("  {s}✓{s} S6 JEPA-Heavy complete: PPL={s}, Alive={d}, Diversity={d:.3}, JEPA=35%\n", .{ MAGENTA, RESET, s6_status, s6.workers_alive, s6.diversity_index });
 
     print("\n{s}Simulation complete!{s}\n", .{ GREEN, RESET });
 
@@ -174,7 +179,9 @@ fn printHelp() void {
     print("  S3 Multi-obj  IGLA seeds injection\n", .{});
     print("  S4 dePIN      Byzantine nodes + Microglia\n", .{});
     print("  S5 dePIN NoImmunity   Byzantine only (shows effect of disabled immunity)\n", .{});
+    print("  S6 JEPA-Heavy  60% JEPA objective weight (objective selection impact)\n", .{});
     print("\n{s}Deterministic Seeds:{s}\n", .{ CYAN, RESET });
     print("  S1: 42    S2: 137    S3: 1618 (φ)    S4: 2718 (e)    S5: 3236 (φ²)\n", .{});
+    print("  S6: 5242 (e³)\n", .{});
     print("\n", .{});
 }

@@ -60,7 +60,7 @@ pub fn assertTernaryDim(comptime dim: usize, comptime ctx: []const u8) void {
 pub fn assertSacredDim(comptime dim: usize, comptime ctx: []const u8) void {
     comptime {
         const sacred_dims = [_]usize{ 1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049 };
-        inline for (sacred_dims) |d| {
+        for (sacred_dims) |d| {
             if (d == dim) return;
         }
         @compileError(ctx ++ ": dimension must be Sacred Dimension (3^k)");
@@ -245,22 +245,22 @@ test "RailwayConfigGuard runtime checks" {
     );
 
     // kill_ppl checks
-    try std.testing.expect(guard.assertKillPPLSafe(400) == null);
-    try std.testing.expect(guard.assertKillPPLSafe(500) == null);
-    try std.testing.expectError(error.KillPPLTooLow, guard.assertKillPPLSafe(50));
+    try std.testing.expect(guard.assertKillPPLSafe(guard, 400) == null);
+    try std.testing.expect(guard.assertKillPPLSafe(guard, 500) == null);
+    try std.testing.expectError(error.KillPPLTooLow, guard.assertKillPPLSafe(guard, 50));
 
     // builder checks
-    try std.testing.expect(guard.assertNixpacksBuilder("NIXPACKS") == null);
-    try std.testing.expectError(error.WrongBuilder, guard.assertNixpacksBuilder("RAILPACK"));
+    try std.testing.expect(guard.assertNixpacksBuilder(guard, "NIXPACKS") == null);
+    try std.testing.expectError(error.WrongBuilder, guard.assertNixpacksBuilder(guard, "RAILPACK"));
 }
 
 test "HSLMConfigGuard validates training config" {
     const guard = HSLMConfigGuard{};
 
     // LR schedule checks
-    try std.testing.expect(guard.assertLRSchedule("cosine") == null);
-    try std.testing.expect(guard.assertLRSchedule("sacred") == null);
-    try std.testing.expectError(error.FlatLRSchedule, guard.assertLRSchedule("flat"));
+    try std.testing.expect(guard.assertLRSchedule(guard, "cosine") == null);
+    try std.testing.expect(guard.assertLRSchedule(guard, "sacred") == null);
+    try std.testing.expectError(error.FlatLRSchedule, guard.assertLRSchedule(guard, "flat"));
 
     // Context length checks
     try std.testing.expect(guard.assertContextLength(81) == null);

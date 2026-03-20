@@ -97,10 +97,8 @@ pub const cosmology = sacred_math.cosmology;
 pub const chemistry = sacred_math.chemistry;
 
 // Export commonly-used constants directly
-pub const PHI = sacred_math.math.PHI;
 pub const PI = sacred_math.math.PI;
 pub const E = sacred_math.math.E;
-pub const TRINITY = 3.0;
 
 // Export chemistry types and functions
 pub const Element = sacred_math.Element;
