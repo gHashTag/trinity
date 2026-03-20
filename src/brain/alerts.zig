@@ -1165,15 +1165,21 @@ test "AlertHistory - stats count all levels" {
     // Add mix of alerts
     var i: usize = 0;
     while (i < 5) : (i += 1) {
-        try history.add(.{ .timestamp = @intCast(i * 1000), .level = .info, .condition = .health_low, .message = "Info" });
+        // Safe cast: i * 1000 fits in i64 for i < 5 (max 4000)
+        const timestamp = @as(i64, @intCast(i)) * 1000;
+        try history.add(.{ .timestamp = timestamp, .level = .info, .condition = .health_low, .message = "Info" });
     }
     i = 0;
     while (i < 3) : (i += 1) {
-        try history.add(.{ .timestamp = @intCast((i + 5) * 1000), .level = .warning, .condition = .health_low, .message = "Warn" });
+        // Safe cast: (i + 5) * 1000 fits in i64 for i < 3 (max 8000)
+        const timestamp = @as(i64, @intCast(i + 5)) * 1000;
+        try history.add(.{ .timestamp = timestamp, .level = .warning, .condition = .health_low, .message = "Warn" });
     }
     i = 0;
     while (i < 2) : (i += 1) {
-        try history.add(.{ .timestamp = @intCast((i + 8) * 1000), .level = .critical, .condition = .health_low, .message = "Crit" });
+        // Safe cast: (i + 8) * 1000 fits in i64 for i < 2 (max 10000)
+        const timestamp = @as(i64, @intCast(i + 8)) * 1000;
+        try history.add(.{ .timestamp = timestamp, .level = .critical, .condition = .health_low, .message = "Crit" });
     }
 
     const stats = try history.stats();
