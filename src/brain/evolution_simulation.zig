@@ -693,13 +693,12 @@ pub fn runS4DePIN(allocator: Allocator, steps: u32) !EvolutionResult {
         },
         .microglia_interval = 30,
     };
-
     var sim = try EvolutionSimulator.init(allocator, config);
     defer sim.deinit();
     return sim.run("S4_dePIN");
 }
 
-/// Run S5 dePIN without Microglia — Byzantine nodes only (no immunity)
+/// Run S5 dePIN NoImmunity — Byzantine nodes only (no Microglia)
 pub fn runS5DePIN_NoImmunity(allocator: Allocator, steps: u32) !EvolutionResult {
     const config = EvolutionSimulationConfig{
         .workers = 100,
@@ -708,24 +707,45 @@ pub fn runS5DePIN_NoImmunity(allocator: Allocator, steps: u32) !EvolutionResult 
         .byzantine_rate = 0.05,
         .seed = SCENARIO_SEEDS[4],
         .objectives = &.{
-            .{ .name = "ntp", .weight = 0.75 },
+            .{ .name = "ntp", .weight = 0.50 },
             .{ .name = "jepa", .weight = 0.25 },
+            .{ .name = "nca-ntp", .weight = 0.25 },
         },
-        .microglia_interval = 0, // DISABLED - No immunity patrol
+        .microglia_interval = 0, // No immunity
     };
-
     var sim = try EvolutionSimulator.init(allocator, config);
     defer sim.deinit();
     return sim.run("S5_dePIN_NoImmunity");
 }
 
-/// Run all 5 scenarios in sequence
+/// Run S6 JEPA-heavy — High JEPA objective weight (demonstrates objective impact)
+pub fn runS6JEPA_Heavy(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 100,
+        .steps = steps * 3,
+        .crash_rate = 0.05, // Lower crash than S4/S5
+        .byzantine_rate = 0.05,
+        .seed = SCENARIO_SEEDS[5],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.35 }, // NTP
+            .{ .name = "jepa", .weight = 0.35 }, // HIGH JEPA (35% - balanced)
+            .{ .name = "nca-ntp", .weight = 0.30 }, // NCA-ntp
+        },
+        .microglia_interval = 30,
+    };
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S6_JEPA_Heavy");
+}
+
+/// Run all 6 scenarios in sequence
 pub const SuiteResult = struct {
     s1: EvolutionResult,
     s2: EvolutionResult,
     s3: EvolutionResult,
     s4: EvolutionResult,
     s5: EvolutionResult,
+    s6: EvolutionResult,
 
     pub fn deinit(self: *SuiteResult) void {
         self.s1.deinit();
@@ -733,6 +753,7 @@ pub const SuiteResult = struct {
         self.s3.deinit();
         self.s4.deinit();
         self.s5.deinit();
+        self.s6.deinit();
     }
 
     pub fn printComparison(self: *const SuiteResult, writer: anytype, allocator: Allocator) !void {
@@ -756,6 +777,8 @@ pub const SuiteResult = struct {
         try fmtRow.fmt(&self.s2, writer, allocator);
         try fmtRow.fmt(&self.s3, writer, allocator);
         try fmtRow.fmt(&self.s4, writer, allocator);
+        try fmtRow.fmt(&self.s5, writer, allocator);
+        try fmtRow.fmt(&self.s6, writer, allocator);
 
         try writer.writeAll("└────────────┴──────────┴───────────┴──────────┴───────────┴─────────────┘\n");
     }
@@ -777,12 +800,16 @@ pub fn runFullSuite(allocator: Allocator, steps: u32) !SuiteResult {
     const s5 = try runS5DePIN_NoImmunity(allocator, steps);
     errdefer s5.deinit();
 
+    const s6 = try runS6JEPA_Heavy(allocator, steps);
+    errdefer s6.deinit();
+
     return SuiteResult{
         .s1 = s1,
         .s2 = s2,
         .s3 = s3,
         .s4 = s4,
         .s5 = s5,
+        .s6 = s6,
     };
 }
 

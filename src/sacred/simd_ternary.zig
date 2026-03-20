@@ -398,7 +398,7 @@ test "tritPermuteLeft" {
 
     const shifted = tritPermuteLeft(v, 1);
 
-    inline for (0..SIMD_WIDTH) |i| {
+    for (0..SIMD_WIDTH) |i| {
         const expected = @as(i8, @intCast((i + SIMD_WIDTH - 1) % SIMD_WIDTH));
         try std.testing.expectEqual(expected, shifted[i]);
     }
@@ -415,7 +415,7 @@ test "tritPermuteRight" {
 
     const shifted = tritPermuteRight(v, 1);
 
-    inline for (0..SIMD_WIDTH) |i| {
+    for (0..SIMD_WIDTH) |i| {
         const expected = @as(i8, @intCast((i + 1) % SIMD_WIDTH));
         try std.testing.expectEqual(expected, shifted[i]);
     }

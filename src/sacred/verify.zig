@@ -262,15 +262,17 @@ test "computePhiDistance" {
 }
 
 test "SacredDimensions are 3^k" {
-    try std.testing.expect(isPowerOf3(SacredDimensions.context_len));  // 81 = 3^4
-    try std.testing.expect(isPowerOf3(SacredDimensions.embed_dim));    // 243 = 3^5
-    try std.testing.expect(isPowerOf3(SacredDimensions.vsa_dim));      // 729 = 3^6
-    try std.testing.expect(isPowerOf3(SacredDimensions.seq_max));      // 2187 = 3^7
+    comptime {
+        try std.testing.expect(isPowerOf3(SacredDimensions.context_len));  // 81 = 3^4
+        try std.testing.expect(isPowerOf3(SacredDimensions.embed_dim));    // 243 = 3^5
+        try std.testing.expect(isPowerOf3(SacredDimensions.vsa_dim));      // 729 = 3^6
+        try std.testing.expect(isPowerOf3(SacredDimensions.seq_max));      // 2187 = 3^7
+    }
 }
 
 test "PowersOf3 correctness" {
     var acc: usize = 1;
-    for (PowersOf3, 0..) |p, i| {
+    for (PowersOf3) |p| {
         try std.testing.expectEqual(acc, p);
         acc *= 3;
     }
