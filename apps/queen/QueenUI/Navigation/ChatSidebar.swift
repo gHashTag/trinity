@@ -276,7 +276,7 @@ struct ChatSidebar: View {
                             Text("\(totalUnreadCount)")
                                 .font(WernickeTypography.size7.weight(.bold))
                                 .foregroundStyle(.black)
-                                .frame(width: 12, height: 12)
+                                .frame(width: ParietalSpacing.mediumBadge, height: ParietalSpacing.badgeHeight)
                                 .background(V4Color.golden)
                                 .clipShape(Circle())
                                 .offset(x: 4, y: -4)
@@ -416,7 +416,7 @@ struct ChatSidebar: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 9)
-                    .foregroundStyle(V2Depth.white80)
+                    .foregroundStyle(V4Color.white80)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("New thread")
@@ -597,7 +597,7 @@ struct ChatSidebar: View {
                 HStack(spacing: ParietalSpacing.sm) {
                     Text("\u{1F4E6} \(store.staleThreads.count) thread\(store.staleThreads.count == 1 ? "" : "s") older than 90 days")
                         .font(WernickeTypography.caption2Medium)
-                        .foregroundStyle(V2Depth.white70)
+                        .foregroundStyle(V4Color.white70)
                     Spacer()
                     Button("Archive All") {
                         withAnimation(.easeInOut(duration: 0.2)) {
@@ -801,7 +801,7 @@ struct ChatSidebar: View {
                         .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                     Text("Thread deleted")
                         .font(WernickeTypography.captionMedium)
-                        .foregroundStyle(V2Depth.white70)
+                        .foregroundStyle(V4Color.white70)
                     Spacer()
                     Button("Undo") {
                         withAnimation(.easeInOut(duration: 0.2)) {
@@ -1364,7 +1364,7 @@ struct ExportFormatPicker: View {
                 .buttonStyle(.plain)
         }
         .padding(24)
-        .frame(width: 360)
+        .frame(width: ParietalSpacing.xlModalFrame)
         .background(Color(hex: 0x1A1A1A))
     }
 
@@ -1387,7 +1387,7 @@ struct ExportFormatPicker: View {
                     .font(WernickeTypography.captionMedium)
             }
             .foregroundStyle(V4Color.accent)
-            .frame(width: 80, height: 70)
+            .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.badgeFrame)
             .background(Color.white.opacity(V2Depth.bgCard))
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
         }
@@ -1411,7 +1411,7 @@ struct ProviderDot: View {
             if !isUp && !reduceMotion {
                 Circle()
                     .stroke(V4Color.error.opacity(V1Theme.opacityTextTertiary), lineWidth: 1)
-                    .frame(width: 12, height: 12)
+                    .frame(width: ParietalSpacing.mediumBadge, height: ParietalSpacing.badgeHeight)
                     .scaleEffect(pulse ? 1.8 : 1.0)
                     .opacity(pulse ? 0 : 0.6)
                     .onAppear {
@@ -1422,9 +1422,9 @@ struct ProviderDot: View {
             }
             Circle()
                 .fill(isUp ? V4Color.accent : V4Color.error)
-                .frame(width: 6, height: 6)
+                .frame(width: ParietalSpacing.dotSize, height: 6)
         }
-        .frame(width: 14, height: 14)
+        .frame(width: ParietalSpacing.xSmallFrame, height: ParietalSpacing.subtitleHeight)
         .help(statusHelp(status, isUp))
         .accessibilityLabel("\(provider.rawValue) \(isUp ? "online" : "offline")")
     }
@@ -1570,7 +1570,7 @@ struct NetworkTimelineView: View {
                     .font(WernickeTypography.microMono)
                     .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
             }
-            .frame(width: 70, alignment: .leading)
+            .frame(width: ParietalSpacing.badgeFrame, alignment: .leading)
 
             // Bar chart
             GeometryReader { geo in
@@ -1581,18 +1581,18 @@ struct NetworkTimelineView: View {
                     // Background track
                     RoundedRectangle(cornerRadius: 2)
                         .fill(Color.white.opacity(V2Depth.bgCardLight))
-                        .frame(width: geo.size.width, height: 12)
+                        .frame(width: geo.size.width, height: ParietalSpacing.badgeHeight)
 
                     // Duration bar
                     RoundedRectangle(cornerRadius: 2)
                         .fill(barColor.opacity(V1Theme.opacityTextSecondary))
-                        .frame(width: barWidth, height: 12)
+                        .frame(width: barWidth, height: ParietalSpacing.badgeHeight)
 
                     // TTFB tick mark
                     if entry.ttfbMs > 0 && ttfbX > 2 {
                         Rectangle()
-                            .fill(V2Depth.white80)
-                            .frame(width: 1, height: 12)
+                            .fill(V4Color.white80)
+                            .frame(width: ParietalSpacing.hairline, height: ParietalSpacing.badgeHeight)
                             .offset(x: ttfbX)
                     }
                 }
@@ -1603,7 +1603,7 @@ struct NetworkTimelineView: View {
             Text("\(entry.totalMs)ms")
                 .font(WernickeTypography.microMono)
                 .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
-                .frame(width: 48, alignment: .trailing)
+                .frame(width: ParietalSpacing.avatarMediumFrame, alignment: .trailing)
         }
         .frame(height: 20)
     }
@@ -1698,7 +1698,7 @@ struct ThreadRow: View {
             HStack(spacing: ParietalSpacing.xs) {
                 // Color label dot
                 if let label = thread.colorLabel, let c = Self.labelColors[label] {
-                    Circle().fill(c).frame(width: 6, height: 6)
+                    Circle().fill(c).frame(width: ParietalSpacing.dotSize, height: 6)
                 }
 
                 // Pin indicator
@@ -1810,7 +1810,7 @@ struct ThreadRow: View {
             if isHoveredForPreview && !isActive && !isRenaming, let preview = previewText {
                 Text(preview)
                     .font(WernickeTypography.mini)
-                    .foregroundStyle(V2Depth.white35)
+                    .foregroundStyle(V4Color.white35)
                     .lineLimit(2)
                     .padding(.top, 3)
                     .transition(.opacity)
@@ -1925,7 +1925,7 @@ private struct TokenSparkline: View {
                          with: .color(V4Color.accent.opacity(V1Theme.opacityTextSecondary)))
             }
         }
-        .frame(width: 30, height: 12)
+        .frame(width: ParietalSpacing.touchFrame, height: ParietalSpacing.touchFrame)
         .help("Total: \(totalLabel)")
     }
 }
@@ -2043,7 +2043,7 @@ struct SkeletonThreadRow: View {
                     .scaleEffect(x: subtitleWidth, y: 1, anchor: .leading)
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color.white.opacity(0.03))
-                    .frame(width: 36, height: 9)
+                    .frame(width: ParietalSpacing.cellFrame, height: ParietalSpacing.smallBadgeHeight)
             }
         }
         .padding(.horizontal, 16)
