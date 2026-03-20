@@ -517,5 +517,48 @@
       "counter_bit": 25,
       "board": "QMTech XC7A100T-FGG676"
     }
+  },
+  {
+    "id": "FPGA-021",
+    "date": "2026-03-21",
+    "category": "ESP32",
+    "action": "Research ESP32 Arduino WiFi/bootloader issues for XVC JTAG bridge",
+    "result": "SUCCESS",
+    "symptom": "Need comprehensive documentation for ESP32 WiFi bootloader problems and GPIO JTAG configuration",
+    "root_cause": "ESP32 Arduino core v2.0.2+ has WPA1 auth bug, WiFi state machine restrictions, Arduino IDE caching, bootloader fragility",
+    "lesson": "Use AP mode for reliable ESP32 XVC connection. Zig client already supports AP/STA modes. Build cache: rm -rf ~/Library/Arduino15/packages/esp32/hardware/esp32/*/build.cache/. WiFi init: WiFi.mode(WIFI_OFF)->delay(100)->WiFi.mode(WIFI_STA)->begin.",
+    "tags": [
+      "esp32",
+      "wifi",
+      "bootloader",
+      "jtag",
+      "xvc",
+      "arduino"
+    ],
+    "data": {
+      "gpio_trinity": {
+        "tms": 15,
+        "tdi": 16,
+        "tck": 4,
+        "tdo": 17
+      },
+      "xvc_port": 2542,
+      "jtag_delay_us": 10,
+      "ap_mode_ip": "192.168.4.1",
+      "ap_ssid": "ESP32-XVC-TRINITY",
+      "firmwares": [
+        "xvc-esp32-trinity.ino (production)",
+        "xvc-esp32-trinity-tft.ino (gpio test)",
+        "xvc-esp32-esp32-tft.ino (tft display)"
+      ],
+      "zig_client": "fpga/tools/jtag_flasher_esp32.zig (ready, no modifications needed)",
+      "documentation": [
+        "fpga/esp32-xvc/RECOMMENDATIONS.md",
+        "fpga/esp32-xvc/QUICK_REF.md",
+        "fpga/esp32-xvc/RESEARCH_SUMMARY.md"
+      ],
+      "build_step": "zig build jtag-flasher-esp32",
+      "usage": "jtag_flasher_esp32 --ap phi_blink_top.bit"
+    }
   }
 ]

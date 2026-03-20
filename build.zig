@@ -1591,6 +1591,24 @@ pub fn build(b: *std.Build) void {
     tri_bot_step.dependOn(&run_tri_bot.step);
 
     // ═══════════════════════════════════════════════════════════════════════════
+    // JTAG FLASHER ESP32 — XVC Bridge Client for FPGA programming
+    // ═══════════════════════════════════════════════════════════════════════════
+    const jtag_flasher_esp32 = b.addExecutable(.{
+        .name = "jtag_flasher_esp32",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("fpga/tools/jtag_flasher_esp32.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(jtag_flasher_esp32);
+
+    const run_jtag_flasher_esp32 = b.addRunArtifact(jtag_flasher_esp32);
+    if (b.args) |args| run_jtag_flasher_esp32.addArgs(args);
+    const jtag_flasher_esp32_step = b.step("jtag-flasher-esp32", "Run JTAG FLASHER ESP32 \xe2\x80\x94 XVC Bridge client for FPGA");
+    jtag_flasher_esp32_step.dependOn(&run_jtag_flasher_esp32.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════
     // PHI LOOP — 999 Links of Cosmic Consciousness Gene
     const phi_loop = b.addExecutable(.{
         .name = "phi-loop",
