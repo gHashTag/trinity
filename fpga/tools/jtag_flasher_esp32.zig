@@ -5,7 +5,7 @@ const std = @import("std");
 
 const Config = struct {
     host: []const u8 = "esp32-xvc.local",
-    port: u16 = 80,
+    port: u16 = 2542,  // XVC protocol port
 };
 
 pub fn main() !void {
