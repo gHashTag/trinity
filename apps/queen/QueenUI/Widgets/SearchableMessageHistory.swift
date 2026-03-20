@@ -265,7 +265,7 @@ struct SearchableMessageHistory: View {
                 .foregroundStyle(V4Color.textSecondary.opacity(0.7))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, 40)
+        .padding(.vertical, ParietalSpacing.xxl)
         .accessibilityLabel("No search results found")
     }
 
@@ -284,7 +284,7 @@ struct SearchableMessageHistory: View {
                 .foregroundStyle(V4Color.textSecondary.opacity(0.7))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(.vertical, 40)
+        .padding(.vertical, ParietalSpacing.xxl)
         .accessibilityLabel("Enter search query to find messages")
     }
 

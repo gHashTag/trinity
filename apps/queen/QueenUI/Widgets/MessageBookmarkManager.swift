@@ -281,7 +281,7 @@ private struct CategoryPickerSheet: View {
             .keyboardShortcut(.cancelAction)
         }
         .padding()
-        .frame(width: 320, height: 280)
+        .frame(width: ParietalSpacing.widePanelWidth, height: ParietalSpacing.panelHeight)
         .background(V4Color.surface)
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
@@ -325,7 +325,7 @@ private struct CategoryCard: View {
                     .foregroundStyle(V4Color.textPrimary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
+            .padding(.vertical, ParietalSpacing.lg)
             .background(
                 RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                     .fill(category.color.opacity(isHovered ? 0.15 : 0.08))
@@ -410,7 +410,7 @@ private struct BookmarkNoteEditor: View {
             }
         }
         .padding()
-        .frame(width: 400, height: 300)
+        .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.mediumModalFrame)
         .background(V4Color.surface)
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
@@ -554,7 +554,7 @@ struct BookmarksPanel: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 32)
+        .padding(.vertical, ParietalSpacing.xxl)
         .padding(.horizontal, ParietalSpacing.lg)
     }
 
@@ -646,7 +646,7 @@ struct BookmarksPanel: View {
                 .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
+        .padding(.vertical, ParietalSpacing.xl)
     }
 
     private var bookmarksList: some View {
@@ -810,7 +810,7 @@ private struct BookmarkRow: View {
     private var categoryIndicator: some View {
         RoundedRectangle(cornerRadius: 2)
             .fill(bookmark.category.color)
-            .frame(width: 3, height: 40)
+            .frame(width: ParietalSpacing.smallIndicator, height: ParietalSpacing.itemHeight)
     }
 
     private var header: some View {
@@ -887,7 +887,7 @@ struct MessageBookmarkManager_Previews: PreviewProvider {
                 store: BookmarkStore(),
                 isExpanded: .constant(true)
             )
-            .frame(width: 280)
+            .frame(width: ParietalSpacing.panelWidth)
             .previewDisplayName("Bookmarks Panel")
 
             BookmarkButton(

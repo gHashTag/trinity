@@ -87,8 +87,8 @@ struct FocusModeView: View {
                             .font(.system(size: fontSize))
                     }
                     .frame(maxWidth: 680, alignment: .leading)
-                    .padding(.horizontal, 40)
-                    .padding(.vertical, 40)
+                    .padding(.horizontal, ParietalSpacing.xxl)
+                    .padding(.vertical, ParietalSpacing.xxl)
                 }
                 Spacer()
             }
@@ -139,7 +139,7 @@ struct FocusModeView: View {
                 Text("\(Int(readingProgress * 100))%")
                     .font(WernickeTypography.caption2MediumMono)
                     .foregroundStyle(V4Color.accent)
-                    .frame(width: 36)
+                    .frame(width: ParietalSpacing.cellFrame)
 
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
@@ -149,7 +149,7 @@ struct FocusModeView: View {
 
                         RoundedRectangle(cornerRadius: 2)
                             .fill(V4Color.accent)
-                            .frame(width: geometry.size.width * readingProgress, height: 4)
+                            .frame(width: geometry.size.width * readingProgress, height: ParietalSpacing.microHeight)
                     }
                 }
                 .frame(height: ParietalSpacing.xs)
@@ -181,7 +181,7 @@ struct FocusModeView: View {
                 Image(systemName: "slider.horizontal.3")
                     .font(WernickeTypography.size16)
                     .foregroundStyle(showControls ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
-                    .frame(width: 36, height: 36)
+                    .frame(width: ParietalSpacing.cellFrame, height: ParietalSpacing.avatarLargeHeight)
                     .background(
                         Circle()
                             .fill(Color.black.opacity(V1Theme.opacityTextSecondary))
@@ -278,7 +278,7 @@ struct FocusModeView: View {
                             .onChange(of: autoScrollEnabled) { _, _ in savePreferences() }
                     }
                 }
-                .padding(14)
+                .padding(ParietalSpacing.sm)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.black.opacity(0.8))
@@ -342,7 +342,7 @@ struct FocusModeToggleButton: View {
             Image(systemName: isFocusMode ? "viewfinder.circle.fill" : "viewfinder.circle")
                 .font(WernickeTypography.size15)
                 .foregroundStyle(isFocusMode ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
-                .frame(width: 28, height: 28)
+                .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                 .scaleEffect(isHovered ? 1.05 : 1.0)
         }
         .buttonStyle(.plain)

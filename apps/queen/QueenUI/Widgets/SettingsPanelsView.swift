@@ -115,7 +115,7 @@ struct SettingsToggle: View {
                 ZStack {
                     Circle()
                         .fill(iconColor.opacity(V2Depth.bgSidebarHover))
-                        .frame(width: 28, height: 28)
+                        .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
 
                     Image(systemName: icon)
                         .font(WernickeTypography.caption2Semibold)
@@ -321,7 +321,7 @@ struct SettingsSlider: View {
                 Text(title)
                     .font(.caption)
                     .foregroundStyle(V4Color.textSecondary)
-                    .frame(width: 100, alignment: .leading)
+                    .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
 
                 Slider(value: $value, in: range, step: step)
                     .frame(maxWidth: .infinity)
@@ -410,7 +410,7 @@ struct SettingsTextField: View {
                 Text(title)
                     .font(.caption)
                     .foregroundStyle(V4Color.textSecondary)
-                    .frame(width: 100, alignment: .leading)
+                    .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
 
                 HStack(spacing: ParietalSpacing.sm) {
                     Group {
@@ -446,7 +446,7 @@ struct SettingsTextField: View {
                     Text(title)
                         .font(.caption)
                         .foregroundStyle(.clear)
-                        .frame(width: 100, alignment: .leading)
+                        .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
 
                     Text(message)
                         .font(.caption2)
@@ -636,7 +636,7 @@ struct ColorSwatch: View {
                 if isSelected {
                     Circle()
                         .strokeBorder(V4Color.textPrimary, lineWidth: 2)
-                        .frame(width: 28, height: 28)
+                        .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                         .overlay {
                             Circle()
                                 .fill(V4Color.textPrimary)
@@ -647,7 +647,7 @@ struct ColorSwatch: View {
             .overlay(
                 Circle()
                     .strokeBorder(V4Color.border, lineWidth: 1)
-                    .frame(width: 26, height: 26)
+                    .frame(width: ParietalSpacing.compactFrame, height: ParietalSpacing.compactHeight)
             )
             .scaleEffect(isHovered ? 1.1 : 1.0)
         }
@@ -731,7 +731,7 @@ struct SettingsNavigation<Content: View>: View {
                     if section.hasChanges {
                         Circle()
                             .fill(V4Color.accent)
-                            .frame(width: 6, height: 6)
+                            .frame(width: ParietalSpacing.dotSize, height: 6)
                     }
                 }
                 .padding(.horizontal, ParietalSpacing.md)
@@ -1462,7 +1462,7 @@ struct SettingsPanelsView: View {
 struct SettingsPanelsView_Previews: PreviewProvider {
     static var previews: some View {
         SettingsPanelsView()
-            .frame(width: 900, height: 600)
+            .frame(width: ParietalSpacing.largeScreenFrame, height: ParietalSpacing.extraWideSheet)
     }
 }
 

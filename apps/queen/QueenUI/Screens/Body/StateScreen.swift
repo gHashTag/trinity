@@ -32,7 +32,7 @@ struct StateScreen: View {
                     }
                     Spacer()
                     StatCard(label: "Files", value: "\(stateFiles.count)")
-                        .frame(width: 100)
+                        .frame(width: ParietalSpacing.xxLargeFrame)
                 }
                 .padding()
 
@@ -61,7 +61,7 @@ struct StateScreen: View {
                             .foregroundStyle(V4Color.textSecondary)
                     }
                     .padding(.horizontal)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, ParietalSpacing.xxs)
                 }
             }
             .padding(.bottom)

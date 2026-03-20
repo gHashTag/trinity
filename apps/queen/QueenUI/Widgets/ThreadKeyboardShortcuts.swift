@@ -339,7 +339,7 @@ struct ThreadSelectionIndicator: View {
                 Image(systemName: "pin.fill")
                     .font(WernickeTypography.size8)
                     .foregroundColor(V4Color.golden)
-                    .padding(4)
+                    .padding(ParietalSpacing.xxs)
                     .background(Circle().fill(V4Color.golden.opacity(0.2)))
             }
 
@@ -347,7 +347,7 @@ struct ThreadSelectionIndicator: View {
             if hasUnread {
                 Circle()
                     .fill(V4Color.accent)
-                    .frame(width: 6, height: 6)
+                    .frame(width: ParietalSpacing.dotSize, height: 6)
             }
         }
     }
@@ -479,7 +479,7 @@ struct ThreadKeyboardHelpPanel: View {
                 .padding()
             }
         }
-        .frame(width: 280, height: 320)
+        .frame(width: ParietalSpacing.panelWidth, height: 320)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(V4Color.surface)

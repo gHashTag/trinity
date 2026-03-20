@@ -82,7 +82,7 @@ struct TreeViewRow<Content: View>: View {
         .overlay(
             Rectangle()
                 .fill(isSelected ? V4Color.accent : .clear)
-                .frame(width: 2),
+                .frame(width: ParietalSpacing.dividerThickness),
             alignment: .leading
         )
     }
@@ -321,7 +321,7 @@ struct FileTreeView: View {
                 Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
                     .font(WernickeTypography.miniSemibold)
                     .foregroundStyle(item.children != nil ? V4Color.textSecondary : .clear)
-                    .frame(width: 12)
+                    .frame(width: ParietalSpacing.mediumBadge)
 
                 Image(systemName: iconName)
                     .font(WernickeTypography.size12)
@@ -397,7 +397,7 @@ struct TreeView_Previews: PreviewProvider {
                     )
                 ]
             )
-            .frame(width: 300, height: 400)
+            .frame(width: ParietalSpacing.mediumModalFrame, height: ParietalSpacing.wideSheetWidth)
             .padding()
             .background(V4Color.background)
 
@@ -416,7 +416,7 @@ struct TreeView_Previews: PreviewProvider {
                     ])
                 ]
             )
-            .frame(width: 250, height: 300)
+            .frame(width: ParietalSpacing.smallModalFrame, height: ParietalSpacing.mediumModalFrame)
             .padding()
             .background(V4Color.background)
         }

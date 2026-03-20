@@ -276,7 +276,7 @@ struct ChatSidebar: View {
                             Text("\(totalUnreadCount)")
                                 .font(WernickeTypography.size7.weight(.bold))
                                 .foregroundStyle(.black)
-                                .frame(width: 12, height: 12)
+                                .frame(width: ParietalSpacing.mediumBadge, height: ParietalSpacing.badgeHeight)
                                 .background(V4Color.golden)
                                 .clipShape(Circle())
                                 .offset(x: 4, y: -4)
@@ -287,7 +287,7 @@ struct ChatSidebar: View {
                 .help("Search threads (Cmd+Shift+F)")
                 .accessibilityLabel(isSearching ? "Close search" : "Search threads")
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, ParietalSpacing.md)
             .padding(.top, 16)
             .padding(.bottom, 12)
 
@@ -302,11 +302,11 @@ struct ChatSidebar: View {
                         .font(WernickeTypography.caption)
                         .foregroundStyle(Color.white)
                 }
-                .padding(.horizontal, 10)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.vertical, 6)
                 .background(Color.white.opacity(V2Depth.bgCard))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
-                .padding(.horizontal, 8)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.bottom, 4)
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
 
@@ -317,7 +317,7 @@ struct ChatSidebar: View {
                             quickFilterChip(filter)
                         }
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, ParietalSpacing.sm)
                     .padding(.vertical, 2)
                 }
 
@@ -398,7 +398,7 @@ struct ChatSidebar: View {
                             .buttonStyle(.plain)
                         }
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, ParietalSpacing.sm)
                     .padding(.vertical, 2)
                 }
                 .padding(.bottom, 4)
@@ -414,9 +414,9 @@ struct ChatSidebar: View {
                             .font(WernickeTypography.smallMedium)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, ParietalSpacing.sm)
                     .padding(.vertical, 9)
-                    .foregroundStyle(V2Depth.white80)
+                    .foregroundStyle(V4Color.white80)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("New thread")
@@ -425,7 +425,7 @@ struct ChatSidebar: View {
                     Image(systemName: "square.and.arrow.down")
                         .font(WernickeTypography.caption)
                         .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
-                        .padding(8)
+                        .padding(ParietalSpacing.xs)
                 }
                 .buttonStyle(.plain)
                 .help("Import conversations")
@@ -435,7 +435,7 @@ struct ChatSidebar: View {
                     Image(systemName: "folder.badge.plus")
                         .font(WernickeTypography.caption)
                         .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
-                        .padding(8)
+                        .padding(ParietalSpacing.xs)
                 }
                 .buttonStyle(.plain)
                 .help("New folder")
@@ -449,12 +449,12 @@ struct ChatSidebar: View {
                     Image(systemName: showBookmarks ? "bookmark.fill" : "bookmark")
                         .font(WernickeTypography.caption2)
                         .foregroundStyle(showBookmarks ? V4Color.golden : Color.white.opacity(store.allBookmarks().isEmpty ? 0.2 : 0.4))
-                        .padding(8)
+                        .padding(ParietalSpacing.xs)
                 }
                 .buttonStyle(.plain)
                 .help(store.allBookmarks().isEmpty ? "No bookmarks" : "Bookmarks (\(store.allBookmarks().count))")
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, ParietalSpacing.xs)
             .padding(.bottom, 8)
             .alert("New Folder", isPresented: $showNewFolderAlert) {
                 TextField("Folder name", text: $newFolderName)
@@ -495,8 +495,8 @@ struct ChatSidebar: View {
                     .buttonStyle(.plain)
                     .help("Create tag")
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.xxs)
             }
             .alert("New Tag", isPresented: $showNewTagAlert) {
                 TextField("Tag name", text: $newTagName)
@@ -523,11 +523,11 @@ struct ChatSidebar: View {
                         .foregroundStyle(V4Color.textPrimary)
                     Spacer()
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(V4Color.statusOK.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
-                .padding(.horizontal, 8)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .onAppear {
                     Task { @MainActor in
                         try? await Task.sleep(for: .seconds(3))
@@ -550,8 +550,8 @@ struct ChatSidebar: View {
                     }
                     Spacer()
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.xxs)
             }
 
             // Export toast
@@ -565,11 +565,11 @@ struct ChatSidebar: View {
                         .foregroundStyle(V4Color.textPrimary)
                     Spacer()
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(V4Color.statusOK.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
-                .padding(.horizontal, 8)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .transition(.opacity)
             }
 
@@ -584,11 +584,11 @@ struct ChatSidebar: View {
                         .foregroundStyle(V4Color.textPrimary)
                     Spacer()
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(V4Color.statusOK.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
-                .padding(.horizontal, 8)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .transition(.opacity)
             }
 
@@ -597,7 +597,7 @@ struct ChatSidebar: View {
                 HStack(spacing: ParietalSpacing.sm) {
                     Text("\u{1F4E6} \(store.staleThreads.count) thread\(store.staleThreads.count == 1 ? "" : "s") older than 90 days")
                         .font(WernickeTypography.caption2Medium)
-                        .foregroundStyle(V2Depth.white70)
+                        .foregroundStyle(V4Color.white70)
                     Spacer()
                     Button("Archive All") {
                         withAnimation(.easeInOut(duration: 0.2)) {
@@ -617,11 +617,11 @@ struct ChatSidebar: View {
                     .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     .buttonStyle(.plain)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.xs)
                 .background(V4Color.accent.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
-                .padding(.horizontal, 8)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.bottom, 4)
             }
 
@@ -665,7 +665,7 @@ struct ChatSidebar: View {
 
                     // Empty state: no threads at all (after loading)
                     if store.isLoaded && store.threads.isEmpty {
-                        VStack(spacing: 12) {
+                        VStack(spacing: ParietalSpacing.sm) {
                             Image(systemName: "bubble.left.and.bubble.right")
                                 .font(WernickeTypography.size28)
                                 .foregroundStyle(V4Color.textSecondary)
@@ -720,7 +720,7 @@ struct ChatSidebar: View {
                                     Text("Clear filters")
                                         .font(WernickeTypography.caption2Medium)
                                         .foregroundStyle(V4Color.accent)
-                                        .padding(.horizontal, 12)
+                                        .padding(.horizontal, ParietalSpacing.sm)
                                         .padding(.vertical, 5)
                                         .background(V4Color.accent.opacity(0.12))
                                         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
@@ -759,7 +759,7 @@ struct ChatSidebar: View {
                                     .font(WernickeTypography.micro.monospaced())
                                     .foregroundStyle(V4Color.white20)
                             }
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, ParietalSpacing.md)
                             .padding(.top, 10)
                             .padding(.bottom, 4)
                             .contentShape(Rectangle())
@@ -801,7 +801,7 @@ struct ChatSidebar: View {
                         .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                     Text("Thread deleted")
                         .font(WernickeTypography.captionMedium)
-                        .foregroundStyle(V2Depth.white70)
+                        .foregroundStyle(V4Color.white70)
                     Spacer()
                     Button("Undo") {
                         withAnimation(.easeInOut(duration: 0.2)) {
@@ -814,7 +814,7 @@ struct ChatSidebar: View {
                     .accessibilityLabel("Undo delete")
                     .accessibilityHint("Restores the deleted thread")
                 }
-                .padding(.horizontal, 12)
+                .padding(.horizontal, ParietalSpacing.sm)
                 .padding(.vertical, 10)
                 .background(V4Color.surface)
                 .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
@@ -822,7 +822,7 @@ struct ChatSidebar: View {
                     RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                         .stroke(Color.white.opacity(0.08), lineWidth: 1)
                 )
-                .padding(.horizontal, 8)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.bottom, 4)
                 .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
             }
@@ -845,7 +845,7 @@ struct ChatSidebar: View {
                     .font(WernickeTypography.mini)
                     .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, ParietalSpacing.md)
             .padding(.vertical, 10)
         }
         .background(Color(hex: 0x0A0A0A))
@@ -916,8 +916,8 @@ struct ChatSidebar: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
 
             let groups = groupedBookmarks()
 
@@ -932,7 +932,7 @@ struct ChatSidebar: View {
                         .foregroundStyle(V4Color.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
+                .padding(.vertical, ParietalSpacing.lg)
             } else {
                 ScrollView {
                     LazyVStack(spacing: 0) {
@@ -951,7 +951,7 @@ struct ChatSidebar: View {
                                     .font(WernickeTypography.micro.monospaced())
                                     .foregroundStyle(V4Color.white20)
                             }
-                            .padding(.horizontal, 12)
+                            .padding(.horizontal, ParietalSpacing.sm)
                             .padding(.top, 8)
                             .padding(.bottom, 2)
 
@@ -983,7 +983,7 @@ struct ChatSidebar: View {
                                         }
                                         Spacer()
                                     }
-                                    .padding(.horizontal, 12)
+                                    .padding(.horizontal, ParietalSpacing.sm)
                                     .padding(.vertical, 5)
                                     .contentShape(Rectangle())
                                 }
@@ -1024,7 +1024,7 @@ struct ChatSidebar: View {
                 .font(WernickeTypography.size7.weight(.bold))
         }
         .foregroundStyle(isActive ? .black : V4Color.textSecondary)
-        .padding(.horizontal, 8)
+        .padding(.horizontal, ParietalSpacing.xs)
         .padding(.vertical, 3)
         .background(isActive ? V4Color.accent : Color.white.opacity(V2Depth.bgCard))
         .clipShape(SwiftUI.Capsule())
@@ -1038,7 +1038,7 @@ struct ChatSidebar: View {
             Text(label)
                 .font(isActive ? WernickeTypography.miniBold : WernickeTypography.miniMedium)
                 .foregroundStyle(isActive ? .black : Color.white.opacity(V2Depth.stateDisabled))
-                .padding(.horizontal, 8)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.vertical, 3)
                 .background(isActive ? V4Color.accent : Color.white.opacity(V2Depth.bgCard))
                 .clipShape(SwiftUI.Capsule())
@@ -1077,7 +1077,7 @@ struct ChatSidebar: View {
                 }
             }
             .foregroundStyle(isActive ? .black : V4Color.textSecondary)
-            .padding(.horizontal, 8)
+            .padding(.horizontal, ParietalSpacing.xs)
             .padding(.vertical, 3)
             .background(isActive ? V4Color.accent : Color.white.opacity(V2Depth.bgCard))
             .clipShape(SwiftUI.Capsule())
@@ -1118,7 +1118,7 @@ struct ChatSidebar: View {
                         .font(WernickeTypography.micro.monospaced())
                         .foregroundStyle(V4Color.white20)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, ParietalSpacing.md)
                 .padding(.top, 10)
                 .padding(.bottom, 4)
                 .contextMenu {
@@ -1340,13 +1340,13 @@ struct ExportFormatPicker: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.md) {
             Text("Export: \(thread.title)")
                 .font(.headline)
                 .foregroundStyle(V4Color.textPrimary)
                 .lineLimit(1)
 
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.sm) {
                 exportButton("Markdown", icon: "doc.text", ext: "md") {
                     store.exportAsMarkdown(thread.id)?.data(using: .utf8)
                 }
@@ -1363,8 +1363,8 @@ struct ExportFormatPicker: View {
                 .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 .buttonStyle(.plain)
         }
-        .padding(24)
-        .frame(width: 360)
+        .padding(ParietalSpacing.xl)
+        .frame(width: ParietalSpacing.xlModalFrame)
         .background(Color(hex: 0x1A1A1A))
     }
 
@@ -1387,7 +1387,7 @@ struct ExportFormatPicker: View {
                     .font(WernickeTypography.captionMedium)
             }
             .foregroundStyle(V4Color.accent)
-            .frame(width: 80, height: 70)
+            .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.badgeFrame)
             .background(Color.white.opacity(V2Depth.bgCard))
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
         }
@@ -1411,7 +1411,7 @@ struct ProviderDot: View {
             if !isUp && !reduceMotion {
                 Circle()
                     .stroke(V4Color.error.opacity(V1Theme.opacityTextTertiary), lineWidth: 1)
-                    .frame(width: 12, height: 12)
+                    .frame(width: ParietalSpacing.mediumBadge, height: ParietalSpacing.badgeHeight)
                     .scaleEffect(pulse ? 1.8 : 1.0)
                     .opacity(pulse ? 0 : 0.6)
                     .onAppear {
@@ -1422,9 +1422,9 @@ struct ProviderDot: View {
             }
             Circle()
                 .fill(isUp ? V4Color.accent : V4Color.error)
-                .frame(width: 6, height: 6)
+                .frame(width: ParietalSpacing.dotSize, height: 6)
         }
-        .frame(width: 14, height: 14)
+        .frame(width: ParietalSpacing.xSmallFrame, height: ParietalSpacing.subtitleHeight)
         .help(statusHelp(status, isUp))
         .accessibilityLabel("\(provider.rawValue) \(isUp ? "online" : "offline")")
     }
@@ -1463,7 +1463,7 @@ struct NetworkStatsBar: View {
                         showNetworkTimeline.toggle()
                     }
                 }) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         miniStat("\(today.count)", "reqs")
                         miniStat("\(networkLog.todayTokens / 1000)K", "tok")
                         if networkLog.avgTTFB > 0 {
@@ -1477,7 +1477,7 @@ struct NetworkStatsBar: View {
                             .font(WernickeTypography.size8.weight(.semibold))
                             .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, ParietalSpacing.md)
                     .padding(.vertical, 6)
                     .contentShape(Rectangle())
                 }
@@ -1531,13 +1531,13 @@ struct NetworkTimelineView: View {
             Text(summaryText)
                 .font(WernickeTypography.microMono)
                 .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
-                .padding(.horizontal, 16)
+                .padding(.horizontal, ParietalSpacing.md)
                 .padding(.top, 4)
 
             Rectangle()
                 .fill(Color.white.opacity(V2Depth.bgCardLight))
                 .frame(height: 1)
-                .padding(.horizontal, 12)
+                .padding(.horizontal, ParietalSpacing.sm)
 
             // Timeline rows
             ScrollView(.vertical, showsIndicators: false) {
@@ -1546,7 +1546,7 @@ struct NetworkTimelineView: View {
                         timelineRow(entry)
                     }
                 }
-                .padding(.horizontal, 12)
+                .padding(.horizontal, ParietalSpacing.sm)
             }
             .frame(maxHeight: 260)
             .padding(.bottom, 4)
@@ -1570,7 +1570,7 @@ struct NetworkTimelineView: View {
                     .font(WernickeTypography.microMono)
                     .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
             }
-            .frame(width: 70, alignment: .leading)
+            .frame(width: ParietalSpacing.badgeFrame, alignment: .leading)
 
             // Bar chart
             GeometryReader { geo in
@@ -1581,18 +1581,18 @@ struct NetworkTimelineView: View {
                     // Background track
                     RoundedRectangle(cornerRadius: 2)
                         .fill(Color.white.opacity(V2Depth.bgCardLight))
-                        .frame(width: geo.size.width, height: 12)
+                        .frame(width: geo.size.width, height: ParietalSpacing.badgeHeight)
 
                     // Duration bar
                     RoundedRectangle(cornerRadius: 2)
                         .fill(barColor.opacity(V1Theme.opacityTextSecondary))
-                        .frame(width: barWidth, height: 12)
+                        .frame(width: barWidth, height: ParietalSpacing.badgeHeight)
 
                     // TTFB tick mark
                     if entry.ttfbMs > 0 && ttfbX > 2 {
                         Rectangle()
-                            .fill(V2Depth.white80)
-                            .frame(width: 1, height: 12)
+                            .fill(V4Color.white80)
+                            .frame(width: ParietalSpacing.hairline, height: ParietalSpacing.badgeHeight)
                             .offset(x: ttfbX)
                     }
                 }
@@ -1603,7 +1603,7 @@ struct NetworkTimelineView: View {
             Text("\(entry.totalMs)ms")
                 .font(WernickeTypography.microMono)
                 .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
-                .frame(width: 48, alignment: .trailing)
+                .frame(width: ParietalSpacing.avatarMediumFrame, alignment: .trailing)
         }
         .frame(height: 20)
     }
@@ -1698,7 +1698,7 @@ struct ThreadRow: View {
             HStack(spacing: ParietalSpacing.xs) {
                 // Color label dot
                 if let label = thread.colorLabel, let c = Self.labelColors[label] {
-                    Circle().fill(c).frame(width: 6, height: 6)
+                    Circle().fill(c).frame(width: ParietalSpacing.dotSize, height: 6)
                 }
 
                 // Pin indicator
@@ -1810,14 +1810,14 @@ struct ThreadRow: View {
             if isHoveredForPreview && !isActive && !isRenaming, let preview = previewText {
                 Text(preview)
                     .font(WernickeTypography.mini)
-                    .foregroundStyle(V2Depth.white35)
+                    .foregroundStyle(V4Color.white35)
                     .lineLimit(2)
                     .padding(.top, 3)
                     .transition(.opacity)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xs)
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(
@@ -1825,7 +1825,7 @@ struct ThreadRow: View {
                     isHovered ? Color.white.opacity(V2Depth.bgCardLight) : Color.clear
                 )
         )
-        .padding(.horizontal, 8)
+        .padding(.horizontal, ParietalSpacing.xs)
         .onTapGesture { onSelect() }
         .onHover { isHovered = $0 }
         .contextMenu {
@@ -1925,7 +1925,7 @@ private struct TokenSparkline: View {
                          with: .color(V4Color.accent.opacity(V1Theme.opacityTextSecondary)))
             }
         }
-        .frame(width: 30, height: 12)
+        .frame(width: ParietalSpacing.touchFrame, height: ParietalSpacing.touchFrame)
         .help("Total: \(totalLabel)")
     }
 }
@@ -1978,7 +1978,7 @@ struct RealmHeader: View {
                     .font(WernickeTypography.micro.monospaced())
                     .foregroundStyle(V4Color.white20)
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, ParietalSpacing.md)
             .padding(.top, 12)
             .padding(.bottom, 6)
             .contentShape(Rectangle())
@@ -2008,7 +2008,7 @@ struct RealmDivider: View {
                 )
             )
             .frame(height: 1)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, ParietalSpacing.md)
             .padding(.bottom, 4)
     }
 }
@@ -2043,10 +2043,10 @@ struct SkeletonThreadRow: View {
                     .scaleEffect(x: subtitleWidth, y: 1, anchor: .leading)
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color.white.opacity(0.03))
-                    .frame(width: 36, height: 9)
+                    .frame(width: ParietalSpacing.cellFrame, height: ParietalSpacing.smallBadgeHeight)
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ParietalSpacing.md)
         .padding(.vertical, 10)
         .opacity(shimmer ? 0.7 : 0.3)
         .animation(

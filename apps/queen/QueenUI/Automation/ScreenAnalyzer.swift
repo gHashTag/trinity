@@ -128,7 +128,7 @@ public final class ScreenAnalyzer {
         // Simplified text region detection
         // Real implementation would use Vision framework's text recognition
         return [
-            TextRegion(frame: CGRect(x: 200, y: height(for: image) - 80, width: 400, height: 40),
+            TextRegion(frame: CGRect(x: 200, y: height(for: image) - 80, width: 400, height: ParietalSpacing.itemHeight),
                        confidence: 0.7),
             TextRegion(frame: CGRect(x: 100, y: 50, width: 200, height: 30),
                        confidence: 0.6),

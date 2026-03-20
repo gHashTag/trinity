@@ -104,7 +104,7 @@ public struct ThalamusIconButton: View {
             Image(systemName: icon)
                 .font(WernickeTypography.size14)
                 .foregroundStyle(isDisabled ? V4Color.textTertiary : style.foregroundColor)
-                .frame(width: 32, height: 32)
+                .frame(width: ParietalSpacing.touchFrame, height: 32)
                 .background(style.backgroundColor)
                 .cornerRadius(V1Theme.cornerSmall)
         }

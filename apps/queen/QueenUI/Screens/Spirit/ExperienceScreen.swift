@@ -26,7 +26,7 @@ struct ExperienceScreen: View {
                     }
                     Spacer()
                     StatCard(label: "Episodes", value: "\(episodes.count)")
-                        .frame(width: 100)
+                        .frame(width: ParietalSpacing.xxLargeFrame)
                 }
                 .padding()
 

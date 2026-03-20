@@ -235,12 +235,12 @@ struct RetryAnimationView: View {
             ZStack {
                 Circle()
                     .stroke(V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 4)
-                    .frame(width: 60, height: 60)
+                    .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
 
                 Circle()
                     .trim(from: 0, to: CGFloat(retryCount) / CGFloat(maxRetries))
                     .stroke(V4Color.accent, lineWidth: 4)
-                    .frame(width: 60, height: 60)
+                    .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
                     .rotationEffect(.degrees(isAnimating ? 360 : 0))
             }
 
@@ -297,7 +297,7 @@ struct TokenUsageIndicator: View {
 
                     RoundedRectangle(cornerRadius: 2)
                         .fill(color)
-                        .frame(width: geometry.size.width * percentage, height: 4)
+                        .frame(width: geometry.size.width * percentage, height: ParietalSpacing.microHeight)
                 }
             }
             .frame(height: ParietalSpacing.xs)

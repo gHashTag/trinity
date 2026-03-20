@@ -10,7 +10,7 @@ struct ThinkingDots: View {
             ForEach(0..<3, id: \.self) { i in
                 Circle()
                     .fill(V4Color.accent)
-                    .frame(width: 6, height: 6)
+                    .frame(width: ParietalSpacing.dotSize, height: 6)
                     .opacity(phase == i ? 1.0 : 0.3)
             }
         }
@@ -106,7 +106,7 @@ struct BlinkingCursor: View {
     var body: some View {
         Rectangle()
             .fill(V4Color.accent)
-            .frame(width: 8, height: 16)
+            .frame(width: ParietalSpacing.tinyIndicator, height: ParietalSpacing.smallIndicatorHeight)
             .opacity(visible ? 1 : 0)
             .onAppear {
                 withAnimation(.easeInOut(duration: 0.5).repeatForever()) { visible.toggle() }

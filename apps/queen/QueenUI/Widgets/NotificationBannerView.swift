@@ -374,7 +374,7 @@ struct NotificationBanner_Previews: PreviewProvider {
                 manager: NotificationManager(),
                 position: .top
             )
-            .frame(width: 400, height: 200)
+            .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.modalFrame)
             .padding()
             .background(V4Color.background)
             .onAppear {

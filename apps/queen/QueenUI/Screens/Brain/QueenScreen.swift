@@ -43,7 +43,7 @@ struct QueenScreen: View {
             ZStack {
                 Circle()
                     .stroke(V4Color.bgCard, lineWidth: 8)
-                    .frame(width: 80, height: 80)
+                    .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.xLargeFrame)
                 Circle()
                     .trim(from: 0, to: daemonRunning ? 1.0 : 0.0)
                     .stroke(
@@ -51,7 +51,7 @@ struct QueenScreen: View {
                         style: StrokeStyle(lineWidth: 8, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
-                    .frame(width: 80, height: 80)
+                    .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.xLargeFrame)
                     .animation(.easeInOut(duration: 0.8), value: daemonRunning)
                 Text(daemonRunning ? "ON" : "OFF")
                     .font(.title3.weight(.black))
@@ -210,7 +210,7 @@ struct QueenScreen: View {
                 Text(formatTime(ts))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(V4Color.textSecondary)
-                    .frame(width: 60, alignment: .leading)
+                    .frame(width: ParietalSpacing.largeFrame, alignment: .leading)
             }
 
             // Icon
@@ -236,8 +236,8 @@ struct QueenScreen: View {
                     .clipShape(SwiftUI.Capsule())
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xxs)
         .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .padding(.horizontal)
@@ -288,7 +288,7 @@ struct QueenScreen: View {
                     Text("\(pendingEntries.count) pending")
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(V4Color.golden)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, ParietalSpacing.xs)
                         .padding(.vertical, 2)
                         .background(V4Color.golden.opacity(V2Depth.bgSidebarHover))
                         .clipShape(SwiftUI.Capsule())
@@ -378,7 +378,7 @@ struct QueenScreen: View {
                             .minimumScaleFactor(0.8)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(8)
+                    .padding(ParietalSpacing.xs)
                     .background(V4Color.statusError.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(
@@ -445,7 +445,7 @@ struct QueenScreen: View {
 
     private func legendDot(color: Color, label: String) -> some View {
         HStack(spacing: ParietalSpacing.xs) {
-            Circle().fill(color).frame(width: 8, height: 8)
+            Circle().fill(color).frame(width: ParietalSpacing.tinyIndicator, height: 8)
             Text(label)
                 .font(.caption2)
                 .foregroundStyle(V4Color.textSecondary)

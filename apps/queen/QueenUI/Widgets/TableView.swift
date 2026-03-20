@@ -290,7 +290,7 @@ struct TableView_Previews: PreviewProvider {
         ]
 
         return DataTableView(columns: columns, data: data)
-            .frame(width: 600, height: 400)
+            .frame(width: ParietalSpacing.extraWideSheet, height: ParietalSpacing.wideSheetWidth)
             .padding()
             .background(V4Color.background)
     }

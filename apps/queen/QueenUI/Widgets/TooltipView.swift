@@ -143,7 +143,7 @@ struct RichTooltip: View {
                     }
                 }
             }
-            .padding(10)
+            .padding(ParietalSpacing.xs)
             .background(
                 RoundedRectangle(cornerRadius: 6)
                     .fill(.black.opacity(0.9))
@@ -289,7 +289,7 @@ struct TooltipView_Previews: PreviewProvider {
             Button("Hover me") {}
                 .padding()
                 .tooltip("This is a helpful tooltip")
-                .frame(width: 150)
+                .frame(width: ParietalSpacing.panelWidth)
                 .padding()
 
             ContextualHelpView(

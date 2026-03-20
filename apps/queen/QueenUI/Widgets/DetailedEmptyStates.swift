@@ -73,13 +73,13 @@ struct DetailedEmptyState: View {
         ZStack {
             Circle()
                 .fill(V4Color.border.opacity(V2Depth.stateHover))
-                .frame(width: 100, height: 100)
+                .frame(width: ParietalSpacing.xxLargeFrame, height: ParietalSpacing.xxLargeFrame)
 
             VStack(spacing: ParietalSpacing.xs) {
                 ForEach(0..<3) { _ in
                     Rectangle()
                         .fill(V4Color.border)
-                        .frame(width: 40, height: 3)
+                        .frame(width: ParietalSpacing.standardFrame, height: 3)
                 }
             }
         }
@@ -91,7 +91,7 @@ struct DetailedEmptyState: View {
             // Shadow layer
             Circle()
                 .fill(V4Color.border.opacity(0.2))
-                .frame(width: 88, height: 88)
+                .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.avatarSmallHeight)
                 .offset(y: 4)
 
             // Main circle background with gradient
@@ -106,7 +106,7 @@ struct DetailedEmptyState: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .frame(width: 80, height: 80)
+                .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.xLargeFrame)
 
             // Icon with layered 3D effect
             ZStack {
@@ -197,7 +197,7 @@ struct ListEmptyState: View {
                 .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(40)
+        .padding(ParietalSpacing.xl)
         .background(V4Color.surface)
     }
 }
@@ -220,7 +220,7 @@ struct SearchEmptyState: View {
                 // Shadow circles
                 Circle()
                     .fill(V4Color.border.opacity(V2Depth.bgSidebarHover))
-                    .frame(width: 100, height: 100)
+                    .frame(width: ParietalSpacing.xxLargeFrame, height: ParietalSpacing.xxLargeFrame)
                     .offset(y: 6)
 
                 // Main gradient circle
@@ -236,7 +236,7 @@ struct SearchEmptyState: View {
                             endRadius: 50
                         )
                     )
-                    .frame(width: 88, height: 88)
+                    .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.avatarSmallHeight)
 
                 // Magnifying glass icon with 3D effect
                 ZStack {
@@ -301,7 +301,7 @@ struct SearchEmptyState: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(40)
+        .padding(ParietalSpacing.xl)
         .frame(maxWidth: .infinity)
     }
 }
@@ -381,13 +381,13 @@ struct ErrorEmptyState: View {
                 // Pulsing background
                 Circle()
                     .fill(errorType.color.opacity(V2Depth.bgSubtle))
-                    .frame(width: 100, height: 100)
+                    .frame(width: ParietalSpacing.xxLargeFrame, height: ParietalSpacing.xxLargeFrame)
                     .blur(radius: 10)
 
                 // Shadow
                 Circle()
                     .fill(errorType.color.opacity(0.2))
-                    .frame(width: 90, height: 90)
+                    .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.labelHeight)
                     .offset(y: 4)
 
                 // Main circle
@@ -403,7 +403,7 @@ struct ErrorEmptyState: View {
                             endRadius: 45
                         )
                     )
-                    .frame(width: 80, height: 80)
+                    .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.xLargeFrame)
 
                 // Icon with 3D effect
                 ZStack {
@@ -457,7 +457,7 @@ struct ErrorEmptyState: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(40)
+        .padding(ParietalSpacing.xl)
         .frame(maxWidth: .infinity)
     }
 }
@@ -524,13 +524,13 @@ struct EmptyChatState: View {
                 // Background glow
                 Circle()
                     .fill(V4Color.accent.opacity(V2Depth.bgSubtle))
-                    .frame(width: 110, height: 110)
+                    .frame(width: ParietalSpacing.xxLargeFrame, height: ParietalSpacing.extraIconHeight)
                     .blur(radius: 15)
 
                 // Shadow
                 Circle()
                     .fill(V4Color.border.opacity(0.2))
-                    .frame(width: 95, height: 95)
+                    .frame(width: ParietalSpacing.xxLargeFrame, height: ParietalSpacing.extraLabelHeight)
                     .offset(y: 5)
 
                 // Main gradient circle
@@ -545,7 +545,7 @@ struct EmptyChatState: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 85, height: 85)
+                    .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.largeIconHeight)
 
                 // Chat bubbles with 3D effect
                 ZStack {
@@ -553,12 +553,12 @@ struct EmptyChatState: View {
                     HStack(spacing: -8) {
                         RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                             .fill(V4Color.textSecondary.opacity(V2Depth.stateHover))
-                            .frame(width: 28, height: 20)
+                            .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.iconHeight)
                             .offset(x: 2, y: 2)
 
                         RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                             .fill(V4Color.textSecondary.opacity(V2Depth.stateHover))
-                            .frame(width: 28, height: 20)
+                            .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.iconHeight)
                             .offset(x: 12, y: -4)
                             .rotationEffect(.degrees(-10))
                     }
@@ -576,7 +576,7 @@ struct EmptyChatState: View {
                                     endPoint: .bottom
                                 )
                             )
-                            .frame(width: 28, height: 20)
+                            .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.iconHeight)
 
                         RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                             .fill(
@@ -589,7 +589,7 @@ struct EmptyChatState: View {
                                     endPoint: .bottom
                                 )
                             )
-                            .frame(width: 28, height: 20)
+                            .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.iconHeight)
                             .offset(x: 10, y: -6)
                             .rotationEffect(.degrees(-10))
                     }
@@ -641,7 +641,7 @@ struct EmptyChatState: View {
 
             Spacer()
         }
-        .padding(24)
+        .padding(ParietalSpacing.xl)
     }
 
     private func suggestionChip(_ text: String) -> some View {
@@ -714,7 +714,7 @@ struct LoadingSkeleton: View {
                 HStack(spacing: ParietalSpacing.md) {
                     Circle()
                         .fill(shimmerGradient)
-                        .frame(width: 40, height: 40)
+                        .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
 
                     VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Rectangle()
@@ -743,7 +743,7 @@ struct LoadingSkeleton: View {
             HStack {
                 Rectangle()
                     .fill(shimmerGradient)
-                    .frame(width: 50, height: 50)
+                    .frame(width: ParietalSpacing.mediumFrame, height: ParietalSpacing.mediumFrame)
                     .cornerRadius(V1Theme.cornerSmall)
 
                 VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
@@ -779,7 +779,7 @@ struct LoadingSkeleton: View {
                     .frame(maxWidth: 200)
             }
         }
-        .padding(20)
+        .padding(ParietalSpacing.lg)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerMedium)
     }
@@ -859,7 +859,7 @@ struct FirstRunOnboardingState: View {
     }
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: ParietalSpacing.xxl) {
             Spacer()
 
             // Welcome illustration with 3D Trinity logo effect
@@ -877,7 +877,7 @@ struct FirstRunOnboardingState: View {
                             endRadius: 80
                         )
                     )
-                    .frame(width: 160, height: 160)
+                    .frame(width: ParietalSpacing.extraLargeFrame, height: 160)
                     .blur(radius: 20)
 
                 // Geometric Trinity symbol (triangle)
@@ -885,7 +885,7 @@ struct FirstRunOnboardingState: View {
                     // Shadow layer
                     Triangle()
                         .fill(V4Color.border.opacity(V1Theme.opacityTextTertiary))
-                        .frame(width: 100, height: 87)
+                        .frame(width: ParietalSpacing.xxLargeFrame, height: 87)
                         .offset(y: 6)
 
                     // Main triangle with gradient
@@ -900,7 +900,7 @@ struct FirstRunOnboardingState: View {
                                 endPoint: .bottom
                             )
                         )
-                        .frame(width: 100, height: 87)
+                        .frame(width: ParietalSpacing.xxLargeFrame, height: 87)
 
                     // Inner triangle overlay for depth
                     Triangle()
@@ -915,14 +915,14 @@ struct FirstRunOnboardingState: View {
                             ),
                             lineWidth: 2
                         )
-                        .frame(width: 90, height: 78)
+                        .frame(width: ParietalSpacing.xLargeFrame, height: 78)
                 }
 
                 // Orbiting particles
                 ForEach(0..<3) { index in
                     Circle()
                         .fill(V4Color.accent.opacity(V1Theme.opacityTextSecondary))
-                        .frame(width: 6, height: 6)
+                        .frame(width: ParietalSpacing.dotSize, height: 6)
                         .offset(
                             x: cos(Double(index) * .pi * 2 / 3) * 55,
                             y: sin(Double(index) * .pi * 2 / 3) * 55
@@ -987,7 +987,7 @@ struct FirstRunOnboardingState: View {
 
             Spacer()
         }
-        .padding(32)
+        .padding(ParietalSpacing.xxl)
         .frame(maxWidth: .infinity)
     }
 
@@ -1037,14 +1037,14 @@ struct DetailedEmptyStates_Previews: PreviewProvider {
         Group {
             // 1. Empty Chat State
             EmptyChatState()
-                .frame(width: 400, height: 500)
+                .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.extraLargeModalHeight)
                 .background(V4Color.background)
 
             Divider()
 
             // 2. Search Empty State
             SearchEmptyState(query: "quantum physics") {}
-                .frame(width: 400, height: 400)
+                .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.wideSheetWidth)
                 .background(V4Color.background)
 
             Divider()
@@ -1052,11 +1052,11 @@ struct DetailedEmptyStates_Previews: PreviewProvider {
             // 3. Error States
             HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 ErrorEmptyState(errorType: .network) {}
-                    .frame(width: 280, height: 350)
+                    .frame(width: ParietalSpacing.panelWidth, height: 350)
                 ErrorEmptyState(errorType: .server) {}
-                    .frame(width: 280, height: 350)
+                    .frame(width: ParietalSpacing.panelWidth, height: 350)
                 ErrorEmptyState(errorType: .timeout) {}
-                    .frame(width: 280, height: 350)
+                    .frame(width: ParietalSpacing.panelWidth, height: 350)
             }
             .background(V4Color.background)
 
@@ -1076,7 +1076,7 @@ struct DetailedEmptyStates_Previews: PreviewProvider {
 
             // 5. First Run Onboarding
             FirstRunOnboardingState()
-                .frame(width: 500, height: 600)
+                .frame(width: ParietalSpacing.wideSheetWidth, height: ParietalSpacing.extraWideSheet)
                 .background(V4Color.background)
         }
         .previewLayout(.sizeThatFits)

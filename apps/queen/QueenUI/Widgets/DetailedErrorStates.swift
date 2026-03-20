@@ -66,7 +66,7 @@ struct DetailedErrorState: View {
             ZStack {
                 Circle()
                     .fill(error.color.opacity(V2Depth.bgSidebarHover))
-                    .frame(width: 70, height: 70)
+                    .frame(width: ParietalSpacing.badgeFrame, height: ParietalSpacing.badgeFrame)
 
                 Image(systemName: error.icon)
                     .font(WernickeTypography.size28)
@@ -209,7 +209,7 @@ struct ErrorAlert: View {
                 ZStack {
                     Circle()
                         .fill(V4Color.error.opacity(V2Depth.bgSidebarHover))
-                        .frame(width: 50, height: 50)
+                        .frame(width: ParietalSpacing.mediumFrame, height: ParietalSpacing.mediumFrame)
 
                     Image(systemName: "xmark.octagon.fill")
                         .font(WernickeTypography.h2)
@@ -242,11 +242,11 @@ struct ErrorAlert: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(24)
+            .padding(ParietalSpacing.xl)
             .background(V4Color.surface)
             .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
-            .padding(.horizontal, 40)
+            .padding(.horizontal, ParietalSpacing.xxl)
         }
     }
 }
@@ -316,7 +316,7 @@ struct NetworkErrorView: View {
             ZStack {
                 Circle()
                     .fill(V4Color.warning.opacity(V2Depth.bgSidebarHover))
-                    .frame(width: 80, height: 80)
+                    .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.xLargeFrame)
 
                 Image(systemName: "wifi.exclamationmark")
                     .font(WernickeTypography.size32)
@@ -362,7 +362,7 @@ struct DetailedErrorStates_Previews: PreviewProvider {
                 message: "Unable to connect to the server. Please check your internet connection.",
                 onRetry: {}
             )
-            .frame(width: 400, height: 350)
+            .frame(width: ParietalSpacing.sheetWidth, height: 350)
             .padding()
             .background(V4Color.background)
 
@@ -370,12 +370,12 @@ struct DetailedErrorStates_Previews: PreviewProvider {
                 error: "Failed to load data",
                 onRetry: {}
             )
-            .frame(width: 350)
+            .frame(width: ParietalSpacing.extraWidePanel)
             .padding()
             .background(V4Color.background)
 
             NetworkErrorView(onRetry: {})
-                .frame(width: 350, height: 350)
+                .frame(width: ParietalSpacing.extraWidePanel, height: 350)
                 .padding()
                 .background(V4Color.background)
         }

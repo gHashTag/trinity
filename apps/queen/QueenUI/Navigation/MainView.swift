@@ -34,7 +34,7 @@ public struct MainView: View {
                                     .font(WernickeTypography.captionBold.monospaced())
                             }
                             .foregroundStyle(V4Color.accent)
-                            .padding(8)
+                            .padding(ParietalSpacing.xs)
                         }
                         .buttonStyle(.plain)
                         .keyboardShortcut(.escape, modifiers: [])
@@ -47,10 +47,10 @@ public struct MainView: View {
 
                         Spacer()
                         // Balance spacer
-                        Color.clear.frame(width: 80)
+                        Color.clear.frame(width: ParietalSpacing.xLargeFrame)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, ParietalSpacing.xs)
+                    .padding(.vertical, ParietalSpacing.xxs)
                     .frame(maxHeight: 32)
                     .background(V4Color.surface)
 

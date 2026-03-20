@@ -83,7 +83,7 @@ struct MessageReactionPicker: View {
                 .padding()
             }
         }
-        .frame(width: 280, height: 350)
+        .frame(width: ParietalSpacing.panelWidth, height: 350)
         .background(V4Color.surface)
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
@@ -103,7 +103,7 @@ struct MessageReactionPicker: View {
         } label: {
             Text(emoji)
                 .font(WernickeTypography.size28)
-                .frame(width: 50, height: 50)
+                .frame(width: ParietalSpacing.mediumFrame, height: ParietalSpacing.mediumFrame)
                 .background(
                     Circle()
                         .fill(V4Color.surface.opacity(V2Depth.stateDisabled))
