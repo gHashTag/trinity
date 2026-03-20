@@ -72,13 +72,16 @@ pub fn main() !u8 {
                                 if (std.mem.indexOf(u8, cell_type, "LUT") != null) {
                                     luts += 1;
                                 } else if (std.mem.indexOf(u8, cell_type, "DFF") != null or
-                                           std.mem.eql(u8, cell_type, "$dff")) {
+                                    std.mem.eql(u8, cell_type, "$dff"))
+                                {
                                     dffs += 1;
                                 } else if (std.mem.indexOf(u8, cell_type, "DSP48") != null or
-                                           std.mem.eql(u8, cell_type, "DSP48E1")) {
+                                    std.mem.eql(u8, cell_type, "DSP48E1"))
+                                {
                                     dsp += 1;
                                 } else if (std.mem.indexOf(u8, cell_type, "BRAM") != null or
-                                           std.mem.indexOf(u8, cell_type, "RAMB") != null) {
+                                    std.mem.indexOf(u8, cell_type, "RAMB") != null)
+                                {
                                     bram += 1;
                                 }
                             }
@@ -90,11 +93,11 @@ pub fn main() !u8 {
     }
 
     std.debug.print("\n{s}Resource Usage:{s}\n", .{ GREEN, RESET });
-    std.debug.print("  LUT cells:    {d:6}\n", .{ luts });
-    std.debug.print("  DFF registers: {d:6}\n", .{ dffs });
-    std.debug.print("  DSP48E1:      {d:6}\n", .{ dsp });
-    std.debug.print("  BRAM blocks:   {d:6}\n", .{ bram });
-    std.debug.print("  Total cells:   {d:6}\n\n", .{ cells });
+    std.debug.print("  LUT cells:    {d:6}\n", .{luts});
+    std.debug.print("  DFF registers: {d:6}\n", .{dffs});
+    std.debug.print("  DSP48E1:      {d:6}\n", .{dsp});
+    std.debug.print("  BRAM blocks:   {d:6}\n", .{bram});
+    std.debug.print("  Total cells:   {d:6}\n\n", .{cells});
 
     // XC7A100T limits
     const artix_lut_max: u32 = 63400;

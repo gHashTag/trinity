@@ -727,9 +727,7 @@ pub const BenchmarkSuite = struct {
 
         for (self.results.items, 0..) |result, i| {
             if (i > 0) try json_buffer.appendSlice(",\n");
-            const json_line = try std.fmt.allocPrint(self.allocator,
-                "  {{\"name\":\"{s}\",\"iterations\":{d},\"total_ns\":{d},\"min_ns\":{d},\"max_ns\":{d},\"avg_ns\":{d:.2},\"ops_per_sec\":{d:.2},\"p50_ns\":{d},\"p95_ns\":{d},\"p99_ns\":{d},\"p999_ns\":{d}}}",
-                .{
+            const json_line = try std.fmt.allocPrint(self.allocator, "  {{\"name\":\"{s}\",\"iterations\":{d},\"total_ns\":{d},\"min_ns\":{d},\"max_ns\":{d},\"avg_ns\":{d:.2},\"ops_per_sec\":{d:.2},\"p50_ns\":{d},\"p95_ns\":{d},\"p99_ns\":{d},\"p999_ns\":{d}}}", .{
                 result.name,
                 result.iterations,
                 result.total_ns,
