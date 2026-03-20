@@ -448,6 +448,32 @@ public enum ParietalSpacing {
 
     /// Sheet height - 480pt
     public static let sheetHeight: CGFloat = 480
+
+    // MARK: - Specific Component Heights
+
+    /// Divider line height - 1pt
+    public static let dividerHeight: CGFloat = 1
+
+    /// Cursor/selection line height - 3pt
+    public static let cursorLineHeight: CGFloat = 3
+
+    /// Input bar height - 52pt
+    public static let inputBarHeight: CGFloat = 52
+
+    /// Toolbar minimum height - 30pt
+    public static let toolbarMinHeight: CGFloat = 30
+
+    /// Status indicator height - 6pt
+    public static let statusIndicatorHeight: CGFloat = 6
+
+    /// Chart panel height - 140pt
+    public static let chartPanelHeight: CGFloat = 140
+
+    /// Pipeline card height - 220pt
+    public static let pipelineCardHeight: CGFloat = 220
+
+    /// Alignment frame width - 44pt (for SettingsPanelsView)
+    public static let alignmentFrameWidth: CGFloat = 44
 }
 
 // MARK: - Spacing View Extensions

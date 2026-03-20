@@ -55,7 +55,7 @@ struct CommentSidebar: View {
 
             Rectangle()
                 .fill(Color.white.opacity(V2Depth.bgCard))
-                .frame(height: 1)
+                .frame(height: ParietalSpacing.dividerHeight)
 
             // Comment messages
             ScrollViewReader { proxy in
@@ -77,7 +77,7 @@ struct CommentSidebar: View {
                             .padding(.horizontal, ParietalSpacing.md)
                         }
 
-                        Color.clear.frame(height: 1).id("commentBottom")
+                        Color.clear.frame(height: ParietalSpacing.dividerHeight).id("commentBottom")
                     }
                     .padding(.vertical, ParietalSpacing.sm)
                 }
@@ -93,7 +93,7 @@ struct CommentSidebar: View {
             // Mini input bar
             Rectangle()
                 .fill(Color.white.opacity(V2Depth.bgCard))
-                .frame(height: 1)
+                .frame(height: ParietalSpacing.dividerHeight)
 
             HStack(spacing: ParietalSpacing.sm) {
                 TextField("Add a comment...", text: $commentInput, axis: .vertical)

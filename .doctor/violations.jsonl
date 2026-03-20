@@ -7,3 +7,10 @@
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/storm/golden_chain.zig","action":"generated_file_blocked","blocked":true}
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/storm/main.zig","action":"generated_file_blocked","blocked":true}
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/storm/main.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/storm/golden_chain.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/storm/golden_chain.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/storm/golden_chain.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/storm/brain_zones/amygdala.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/storm/brain_zones/habenula.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/storm/golden_chain.zig","action":"generated_file_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/storm/main.zig","action":"generated_file_blocked","blocked":true}

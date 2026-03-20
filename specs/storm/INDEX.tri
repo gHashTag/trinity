@@ -1,0 +1,113 @@
+# STORM Specification Index
+
+## Purpose
+Master index for all STORM (Self-Organizing Regenerative Task Management) specifications.
+
+## Architecture
+STORM is NOT a separate binary. It is a **subcommand system** of `tri` CLI:
+```bash
+tri storm run        # Execute STORM operation
+tri storm status     # Show checkpoint status
+tri storm resume     # Continue from checkpoint
+tri storm init       # Initialize STORM structure
+```
+
+## Specifications List
+
+| Spec | Module | Description | Status |
+|------|--------|-------------|--------|
+| [tri_storm_integration.tri](../tri_storm_integration.tri) | tri.storm | Main storm integration into tri CLI | ✅ |
+| [storm_main.tri](./storm_main.tri) | tri.storm | Storm subcommand handler | ✅ |
+| [golden_chain.tri](./golden_chain.tri) | storm.golden_chain | 28-link pipeline with neuro mapping | ✅ |
+| [config.tri](./config.tri) | storm.config | Configuration parser | ✅ |
+| [phoenix_bridge.tri](./phoenix_bridge.tri) | storm.phoenix_bridge | Self-healing cell system | ✅ |
+
+## Brain Zones Specifications
+
+| Spec | Module | Russian Name | P1 Priority | Status |
+|------|--------|--------------|------------|--------|
+| [tri_brain_zones_integration.tri](../tri_brain_zones_integration.tri) | tri.brain_zones | Unified brain zone handler | ✅ |
+| [brain_ofc.tri](./brain_ofc.tri) | storm.brain_zones.ofc | Палата ценностей | ✅ P1 |
+| [brain_habenula.tri](./brain_habenula.tri) | storm.brain_zones.habenula | Антикоррупционный датчик | ✅ P1 |
+| [brain_amygdala.tri](./brain_amygdala.tri) | storm.brain_zones.amygdala | Страж ошибок | ✅ P1 |
+| [experience_engine.tri](./experience_engine.tri) | storm.experience_engine | MNL pattern engine | ✅ |
+
+## P1 Ethical Infrastructure
+These are Phase 1 priority implementations (corruption/fairness/toxicity):
+
+1. **OFC (Палата ценностей)** — Toxic verdict
+   - Spec: [brain_ofc.tri](./brain_ofc.tri)
+   - 12D ethical metric system
+   - CLI: `tri ofc verdict --toxic`
+
+2. **HABENULA (Антикоррупционный датчик)** — Unfair reward detection
+   - Spec: [brain_habenula.tri](./brain_habenula.tri)
+   - reward/effort ratio analysis
+   - CLI: `tri habenula unfair_detect`
+
+3. **AMYGDALA (Страж ошибок)** — MNL pattern
+   - Spec: [brain_amygdala.tri](./brain_amygdala.tri)
+   - 3x failed = auto-blacklist
+   - CLI: `tri amygdala check_fear`
+
+## File Structure (After Integration)
+```
+specs/storm/
+├── INDEX.tri                    # This file
+├── tri_storm_integration.tri       # Main tri.storm integration
+├── tri_brain_zones_integration.tri # Unified brain zone handler
+├── storm_main.tri               # Storm subcommand (src/tri/storm.zig)
+├── golden_chain.tri             # 28-link pipeline (src/storm/golden_chain.zig)
+├── config.tri                   # Configuration (src/storm/config.zig)
+├── phoenix_bridge.tri            # Self-healing (src/storm/phoenix_bridge.zig)
+├── experience_engine.tri          # MNL pattern (src/storm/experience_engine.zig)
+├── brain_ofc.tri               # OFC - toxic verdict (src/storm/brain_zones/ofc.zig)
+├── brain_habenula.tri           # Habenula - anti-corruption (src/storm/brain_zones/habenula.zig)
+└── brain_amygdala.tri           # Amygdala - blacklist (src/storm/brain_zones/amygdala.zig)
+```
+
+## Source Structure (Target)
+```
+src/
+├── tri/
+│   ├── main.zig              # UPDATE: Add storm and brain cases
+│   ├── storm.zig             # NEW: storm subcommand handler
+│   └── brain_zones.zig        # NEW: unified brain zone handler
+└── storm/                       # KEEP: All storm modules exist
+    ├── config.zig
+    ├── golden_chain.zig
+    ├── phoenix_bridge.zig
+    ├── main.zig               # DELETE: separate binary entry
+    └── brain_zones/
+        ├── ofc.zig
+        ├── habenula.zig
+        └── amygdala.zig
+```
+
+## Next Steps (VIBEE Codegen)
+Now that .tri specs are complete, run VIBEE to generate .zig implementations:
+
+```bash
+# Generate storm integration
+zig build vibee --gen specs/tri_storm_integration.tri
+
+# Generate brain zones integration
+zig build vibee --gen specs/tri_brain_zones_integration.tri
+
+# Generate storm subcommand handler
+zig build vibee --gen specs/storm_main.tri
+```
+
+## CLI Examples (After Implementation)
+```bash
+# STORM operations
+tri storm run --waves=5 --agents=32
+tri storm status --wave=2
+tri storm resume --checkpoint=link-15
+tri storm init
+
+# Brain zone operations
+tri ofc verdict --toxic "deploy without review"
+tri habenula unfair_detect
+tri amygdala check_fear "flaky test"
+```

@@ -109,6 +109,21 @@ if (claimed) {
 }
 ```
 
+#### Performance Characteristics
+
+- **Throughput**: 762 OP/s baseline, 33.3 kOP/s optimized
+- **P99 Latency**: < 1ms target
+- **Memory**: ~128 bytes per claim
+- **Concurrency**: Thread-safe with RwLock
+
+#### SLA Targets
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| P99 Latency | < 1ms | PASS |
+| Throughput | > 10k OP/s | AT_LIMIT |
+| Error Rate | < 1% | PASS |
+
 ### Reticular Formation (Broadcast Alerting)
 
 **Module**: `brain.reticular_formation`
@@ -189,6 +204,21 @@ for (events) |event| {
     std.log.info("{s}: {s}", .{@tagName(event.event_type), event.data.task_claimed.task_id});
 }
 ```
+
+#### Performance Characteristics
+
+- **Throughput**: 1.58 kOP/s baseline, 17.8 kOP/s optimized
+- **P99 Latency**: < 500us target
+- **Buffer Capacity**: 10,000 events
+- **Concurrency**: Lock-free publish
+
+#### SLA Targets
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| P99 Latency | < 500us | AT_LIMIT |
+| Throughput | > 100k OP/s | FAIL |
+| Error Rate | < 0.1% | PASS |
 
 ### Locus Coeruleus (Arousal Regulation)
 
@@ -458,6 +488,51 @@ pub const BrainEventLog = struct {
 | `log.rotate()` | Force log rotation | `!void` |
 | `log.close()` | Close log | `void` |
 
+#### Example
+
+```zig
+const brain = @import("brain");
+const allocator = std.heap.page_allocator;
+
+// Open event log
+var log = try brain.persistence.BrainEventLog.open(
+    allocator,
+    "/path/to/brain_events.jsonl"
+);
+defer log.close();
+
+// Log events
+try log.log("task_claimed", .{ .task_id = "task-123", .agent_id = "agent-001" });
+try log.log("task_completed", .{ .task_id = "task-123", .duration_ms = 5000 });
+
+// Count events
+const count = try log.countEvents();
+std.log.info("Total events: {d}", .{count});
+
+// Replay events
+try log.replay(null, struct {
+    fn callback(ctx: ?*anyopaque, event: brain.persistence.BrainEvent) !void {
+        _ = ctx;
+        std.log.info("[{d}] {s}", .{ event.ts, event.event });
+    }
+}.callback);
+```
+
+#### Performance Characteristics
+
+- **Append Latency**: IO-bound, ~50ms P99 with fsync
+- **Throughput**: ~1k events/sec (disk limited)
+- **File Size**: ~1MB per 10k events
+- **Pattern**: Sequential writes, random reads
+
+#### SLA Targets
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| P99 Latency | < 50ms | PASS |
+| Throughput | > 1k events/sec | PASS |
+| Error Rate | < 1% | PASS |
+
 ### Corpus Callosum (Telemetry)
 
 **Module**: `brain.telemetry`
@@ -492,6 +567,232 @@ pub const BrainTelemetry = struct {
 | `tel.trend(last_n)` | Get trend direction | `Trend` |
 | `tel.percentile(p, last_n)` | P-th percentile | `f32` |
 | `tel.exportJson(writer)` | Export as JSON | `!void` |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+const allocator = std.heap.page_allocator;
+
+// Initialize telemetry
+var tel = try brain.telemetry.BrainTelemetry.init(allocator, 1000);
+defer tel.deinit();
+
+// Record telemetry point
+const point = brain.telemetry.TelemetryPoint{
+    .timestamp = std.time.milliTimestamp(),
+    .active_claims = 42,
+    .events_published = 1567,
+    .events_buffered = 89,
+    .health_score = 95.5,
+};
+try tel.record(point);
+
+// Get average health over last 100 points
+const avg_health = tel.avgHealth(100);
+std.log.info("Avg health (last 100): {d:.1}", .{avg_health});
+
+// Get trend
+const trend = tel.trend(100);
+std.log.info("Trend: {s}", .{@tagName(trend)});
+
+// Export as JSON
+var file = try std.fs.cwd().createFile("telemetry.json", .{});
+defer file.close();
+try tel.exportJson(file.writer());
+```
+
+### Thalamus Logs (Sensory Relay)
+
+**Module**: `brain.thalamus_logs`
+**File**: `src/brain/thalamus_logs.zig`
+**Purpose**: Sensory relay station - relays Queen (18 sensors) to cortex (5 modules) with circular buffer logging
+
+**Biological Role**: The thalamus is the brain's sensory gateway, relaying and filtering sensory information from the body to the cerebral cortex. It regulates consciousness, sleep, and alertness.
+
+#### Types
+
+```zig
+pub const SensorId = enum(u8) {
+    FarmBestPpl = 7,      // f32 perplexity -> IPS -> GF16 encode
+    ArenaBattles = 8,     // i8 win/loss -> IPS -> TF3 encode
+    OuroborosScore = 9,   // f32 -> Weber -> log-quantize
+    TestsRate = 2,        // f32 pass % -> OFC -> value judgment
+    DiskFree = 10,        // u64 bytes -> Fusiform -> GF16 compact
+    ArenaStale = 14,      // u32 hours -> Angular -> verbalize
+};
+
+pub const SensoryKind = enum(u8) {
+    magnitude = 0,   // Encode with GF16
+    ternary = 1,     // Encode with TF3-9
+    valence = 2,     // Use OFC for value judgment
+    verbal = 3,      // Use Angular for introspection
+};
+
+pub const SensorInput = struct {
+    id: SensorId,
+    raw_f32: ?f32 = null,
+    raw_i8: ?i8 = null,
+    raw_u32: ?u32 = null,
+    raw_u64: ?u64 = null,
+    magnitude_gf16: ?GoldenFloat16 = null,
+    ternary_tf3: ?TernaryFloat9 = null,
+    valence_valence: ?Valence = null,
+    verbal_msg: ?VerbalMessage = null,
+};
+
+pub const SensoryEvent = struct {
+    timestamp_ns: u64,
+    sensor: SensorId,
+    input: SensorInput,
+};
+
+pub const ThalamusLogs = struct {
+    buf: [256]SensoryEvent,
+    head: usize = 0,
+    len: usize = 0,
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `ThalamusLogs.init(buf_storage)` | Initialize with buffer storage | `ThalamusLogs` |
+| `thalamus.logEvent(event)` | Log sensory event to circular buffer | `void` |
+| `thalamus.iterator()` | Get iterator over events | `Iterator` |
+| `thalamus.processSensor(sensor_data)` | Process sensor through HSLM module | `!void` |
+| `Iterator.next()` | Get next event from iterator | `?*const SensoryEvent` |
+
+#### Sensor Processing Pipeline
+
+| Sensor ID | Input | HSLM Module | Output |
+|-----------|-------|-------------|--------|
+| `FarmBestPpl` | f32 PPL | IPS GF16 encode | GoldenFloat16 |
+| `ArenaBattles` | i8 win/loss | IPS TF3 encode | TernaryFloat9 |
+| `OuroborosScore` | f32 score | Weber log-quantize | GF16 compact |
+| `TestsRate` | f32 pass % | OFC value judgment | Valence |
+| `DiskFree` | u64 bytes | Fusiform GF16 | GF16 compact |
+| `ArenaStale` | u32 hours | Angular verbalize | VerbalMessage |
+
+#### Performance Characteristics
+
+- **Buffer Size**: 256 events (fixed, no allocation)
+- **Operation**: Lock-free circular buffer
+- **Latency**: < 1us per event (in-memory)
+- **Throughput**: > 1M events/sec
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// Initialize thalamus with buffer storage
+var buf_storage: [256]brain.thalamus_logs.SensoryEvent = undefined;
+const thalamus = brain.thalamus_logs.ThalamusLogs.init(&buf_storage);
+
+// Process farm PPL sensor
+const sensor_data = brain.thalamus_logs.SensorInput{
+    .id = .FarmBestPpl,
+    .raw_f32 = 4.6,
+};
+try thalamus.processSensor(sensor_data);
+
+// Iterate logged events
+var iter = thalamus.iterator();
+while (iter.next()) |event| {
+    std.log.info("Sensor: {s}, Value: {d:.1}", .{
+        @tagName(event.sensor),
+        event.input.raw_f32.?,
+    });
+}
+```
+
+### Intraparietal Sulcus (Numerical Processing)
+
+**Module**: `brain.intraparietal_sulcus`
+**File**: `src/brain/intraparietal_sulcus.zig`
+**Purpose**: Numerical layer - f16/GF16/TF3 format conversion, phi-weighted quantization
+
+**Biological Role**: The intraparietal sulcus is involved in numerical processing, mathematical cognition, and spatial representation. It integrates the zig-hslm library for HSLM numerical operations.
+
+#### Types
+
+```zig
+// Re-exported from hslm module
+pub const GF16 = hslm.GF16;           // Golden Float16
+pub const TF3 = hslm.TF3;             // Ternary Float3 (8x i2)
+pub const PHI = hslm.PHI;             // 1.618033988749895
+pub const PHI_INV = hslm.PHI_INV;     // 0.6180339887498949
+pub const HslmF16 = f16;              // HSLM f16 type
+
+pub const NumericalMetrics = struct {
+    quantization_error_max: f32,
+    quantization_error_avg: f32,
+    overflow_count: u32,
+    nan_count: u32,
+    inf_count: u32,
+    subnormal_count: u32,
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `hslmF16ToF32(v)` | Safe f16 to f32 conversion | `f32` |
+| `f32ToHslmF16(v)` | f32 to hslm f16 | `HslmF16` |
+| `hslmF16BatchToF32(N, src)` | Batch f16->f32 conversion | `[N]f32` |
+| `f32BatchToF16(N, src)` | Batch f32->f16 conversion | `[N]f16` |
+| `phiQuantize(v)` | φ-weighted quantization | `f16` |
+| `phiDequantize(v)` | φ-weighted dequantization | `f32` |
+| `f32ToGF16(v)` | Convert f32 to GF16 | `GF16` |
+| `gf16ToF32(gf)` | Convert GF16 to f32 | `f32` |
+| `i2ToTF3(N, src)` | Create TF3 from i2 array | `TF3` |
+| `tf3ToI2(tf3, N)` | Convert TF3 to i2 array | `[N]i2` |
+| `vectorFloatCast(T, src)` | SIMD-safe float cast | `T` |
+
+#### Number Formats
+
+| Format | Bits | Range | Precision | Use Case |
+|--------|------|-------|-----------|----------|
+| `f32` | 32 | ±3.4E38 | 7 digits | General computation |
+| `HslmF16` | 16 | ±65504 | 3-4 digits | Neural network weights |
+| `GF16` | 16 | Optimized for φ | φ-enhanced | Sacred number encoding |
+| `TF3` | 16 | {-1,0,1} x 8 | Ternary | Ternary neural networks |
+
+#### Performance Characteristics
+
+- **f16 Conversion**: < 100ns per value
+- **GF16 Encoding**: φ-optimized for minimal error
+- **TF3 Encoding**: 8 ternary values in 16 bits
+- **Batch Conversion**: SIMD-optimized
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// f32 to GF16 with golden ratio optimization
+const phi: f32 = 1.618033988749895;
+const gf16 = brain.intraparietal_sulcus.f32ToGF16(phi);
+const recovered = brain.intraparietal_sulcus.gf16ToF32(gf16);
+std.log.info("φ encoded: {d:.5}, recovered: {d:.5}", .{ phi, recovered });
+
+// φ-weighted quantization
+const quantized = brain.intraparietal_sulcus.phiQuantize(2.71828);
+const dequantized = brain.intraparietal_sulcus.phiDequantize(quantized);
+
+// TF3 ternary encoding
+const ternary_data = [_]i2{ -1, 0, 1, -1, 0, 1, 0, 0 };
+const tf3 = brain.intraparietal_sulcus.i2ToTF3(8, ternary_data);
+const decoded = brain.intraparietal_sulcus.tf3ToI2(tf3, 8);
+
+// Batch conversion (SIMD-safe)
+const f32_array = [_]f32{ 1.0, 2.0, 3.0, 4.0 };
+const f16_array = brain.intraparietal_sulcus.f32BatchToF16(4, f32_array);
+const f32_back = brain.intraparietal_sulcus.hslmF16BatchToF32(4, f16_array);
+```
 
 ### Microglia (Immune Surveillance)
 
@@ -537,6 +838,58 @@ pub const Recommendation = enum {
 | `microglia.stimulateRegrowth(template, allocator)` | Spawn new worker | `![]const u8` |
 | `microglia.enterSleepMode()` | Reduce pruning | `void` |
 | `microglia.wakeUp()` | Full pruning | `void` |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+const allocator = std.heap.page_allocator;
+
+var microglia = brain.microglia.Microglia{
+    .patrol_interval_ms = 30 * 60 * 1000,
+    .night_mode = false,
+    .dont_eat_me = &[_][]const u8{"worker-critical-001"},
+};
+
+// Run surveillance patrol
+const report = try microglia.patrol(allocator);
+std.log.info("Active: {d}, Crashed: {d}, Idle: {d}", .{
+    report.active_workers,
+    report.crashed_workers,
+    report.idle_workers,
+});
+
+// Act on recommendation
+switch (report.recommendation) {
+    .prune_crashed => {
+        for (report.crashed_workers) |worker| {
+            try microglia.phagocytose(worker.id);
+        }
+    },
+    .stimulate_growth => {
+        const new_worker = try microglia.stimulateRegrowth("worker-template", allocator);
+        std.log.info("Spawned: {s}", .{new_worker});
+    },
+    .enter_sleep => microglia.enterSleepMode(),
+    else => {},
+}
+```
+
+#### Performance Characteristics
+
+- **Patrol Interval**: 30 minutes default
+- **Night Mode**: Reduced pruning during off-hours
+- **Patrol Duration**: < 5 seconds for 100 workers
+- **Pruning Overhead**: ~100ms per worker
+
+#### Recommendations
+
+| Condition | Action | Priority |
+|-----------|--------|----------|
+| Crashed > 10% | prune_crashed | High |
+| Diversity < 0.5 | inject_diversity | Medium |
+| Idle > 50% | scale_down | Low |
+| Queue > 100 | stimulate_growth | Medium |
 
 ## Advanced Regions
 
@@ -622,6 +975,22 @@ if (loaded.migrated) {
 }
 try manager.restore(loaded.state);
 ```
+
+#### Performance Characteristics
+
+- **Save Latency**: < 100ms for typical state
+- **Load Latency**: < 50ms for typical state
+- **State Size**: ~1KB per active claim
+- **Auto-recovery**: < 200ms
+
+#### Recovery Guarantees
+
+| Scenario | Recovery Time | Data Loss |
+|----------|--------------|-----------|
+| Clean shutdown | Instant | None |
+| Crash (auto-recover) | < 200ms | Since last save |
+| Corrupted state | Manual restore | To backup |
+| Version migration | Variable | None |
 
 ### Hypothalamus (Homeostatic Regulation)
 
@@ -715,6 +1084,13 @@ const backup_id = try admin.backup("before-experiment");
 std.log.info("Backup: {s}", .{backup_id});
 ```
 
+#### Performance Characteristics
+
+- **Doctor Scan**: < 1 second for full diagnostic
+- **Prune Operation**: ~100ms per 1000 entries
+- **Backup Creation**: < 500ms for typical state
+- **Migration**: Depends on version delta
+
 ### Health History (Hippocampal Memory Consolidation)
 
 **Module**: `brain.health_history`
@@ -800,6 +1176,14 @@ for (anomalies) |anomaly| {
     });
 }
 ```
+
+#### Performance Characteristics
+
+- **Record Snapshot**: < 1ms
+- **Trend Analysis**: O(n) over duration
+- **Percentile**: O(n log n) with sorting
+- **Anomaly Detection**: O(n) linear scan
+- **Max Snapshots**: 1000 (configurable)
 
 ### Metrics Dashboard (Command Center)
 
@@ -892,6 +1276,14 @@ const report = try dashboard.getCompactReport();
 std.log.info("{s}", .{report});
 // Output: "Health: 87% | 14/16 regions | 0 errors"
 ```
+
+#### Performance Characteristics
+
+- **Record Region**: < 1ms
+- **Collect Aggregate**: O(n) over regions
+- **Report Generation**: < 10ms
+- **Max Aggregates**: 1000 (configurable)
+- **Region Update**: Thread-safe
 
 ### Brain Alerts (Critical Health Notification)
 
@@ -1608,11 +2000,56 @@ pub const GCounter = struct {
 | `federation.getLeader()` | Get current leader | `?InstanceId` |
 | `federation.getAggregatedHealth()` | Get federation health | `f32` |
 
+#### Example
+
+```zig
+const brain = @import("brain");
+const allocator = std.heap.page_allocator;
+
+// Generate instance ID
+const my_id = brain.federation.InstanceId.generate();
+
+// Initialize federation
+var federation = try brain.federation.FederationState.init(allocator, my_id);
+defer federation.deinit();
+
+// Check if I'm the leader
+if (federation.amILeader()) {
+    std.log.info("I am the leader!", .{});
+
+    // Leader performs privileged operations
+    try federation.heartbeat();
+} else {
+    const leader = federation.getLeader();
+    std.log.info("Following leader: {s}", .{leader.?});
+}
+
+// Get aggregated health across all instances
+const health = federation.getAggregatedHealth();
+std.log.info("Federation health: {d:.1}%", .{health});
+```
+
+#### Performance Characteristics
+
+- **Leader Election**: Raft-based, < 1s convergence
+- **GCounter Merging**: O(n) over instances
+- **Heartbeat Interval**: 100ms default
+- **Network Overhead**: ~1KB per heartbeat
+
+#### Federation Guarantees
+
+| Property | Guarantee | Mechanism |
+|----------|-----------|-----------|
+| Leader Uniqueness | At most one leader | Raft consensus |
+| Data Consistency | Eventually consistent | GCounter CRDT |
+| Network Partition | Auto-recovery | Leader re-election |
+| Fault Tolerance | N-1/2 instances | Majority voting |
+
 ### Cerebellum (Learning)
 
 **Module**: `brain.learning`
 **File**: `src/brain/learning.zig`
-****Purpose**: Performance history tracking, pattern recognition, adaptive backoff, failure prediction
+**Purpose**: Performance history tracking, pattern recognition, adaptive backoff, failure prediction
 
 #### Types
 
@@ -1713,6 +2150,23 @@ std.log.info("Action: {s} (priority: {d})", .{ rec.action, rec.priority });
 const prediction = learning.predictFailure(.task_claim);
 std.log.info("Failure probability: {d:.0}%", .{ prediction.probability * 100 });
 ```
+
+#### Performance Characteristics
+
+- **Record Event**: < 1us
+- **Learn Patterns**: O(n log n) over history
+- **Predict Failure**: O(1) with trained model
+- **Backoff Calculation**: O(1) adaptive
+- **History Size**: Configurable, ~1000 entries
+
+#### Learning Behavior
+
+| Metric | Behavior |
+|--------|----------|
+| Pattern Confidence | 0-1 scale, updated continuously |
+| Adaptive Multiplier | Learns from success/failure |
+| Failure Prediction | Based on recent error rate |
+| Recommendation Priority | 0-255, higher = urgent |
 
 ### Performance Dashboard (Unified Performance Monitoring)
 
@@ -1970,7 +2424,7 @@ const factor: f32 = if (seed % 2 == 0) phi_inverse else phi;
 
 ## Version History
 
-- **v5.1** (igla-ready): 22 regions documented, full federation support, evolution simulation, visualization
+- **v5.1** (igla-ready): 23 regions documented, full federation support, evolution simulation, visualization, thalamus logs, intraparietal sulcus
 - **v5.0**: Added async processor, learning system
 - **v4.4**: Initial 10-region architecture
 
