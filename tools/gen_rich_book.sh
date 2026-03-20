@@ -113,7 +113,7 @@ generate_chapter() {
 # ═══════════════════════════════════════════════════════════════════════════════
 # Taboutm $((vol_idx + 1)): $vol_name | Knandga $book_num | Glaina $ch_in_book/37
 # Sinyaschenonya Faboutrmatla: V = $n × 3^$k = $sv
-# Author: Dmitrii Vasilev <reactnativeinitru@gmail.com>
+# Author: Dmitrii Vasilev <999aigents@gmail.com>
 # ═══════════════════════════════════════════════════════════════════════════════
 
 name: ⲅⲗⲁⲃⲁ_$(printf '%03d' $ch)
@@ -360,7 +360,7 @@ behaviors:
 
 author:
   name: "Dmitrii Vasilev"
-  email: "reactnativeinitru@gmail.com"
+  email: "999aigents@gmail.com"
 VIBEE
 
     echo "✓ Glaina $ch"

@@ -3,7 +3,7 @@
 ## V = n × 3^k × π^m × φ^p
 
 **Author[CYR:]**: Dmitrii Vasilev  
-**Email**: reactnativeinitru@gmail.com  
+**Email**: 999aigents@gmail.com  
 **[CYR:]toт**: 999 OS / VIBEE  
 **[CYR:]**: Янin[CYR:] 2026
 

@@ -406,7 +406,7 @@ Timeline: 2027-2028
 ---
 
 **Author**: Dmitrii Vasilev
-**Email**: reactnativeinitru@gmail.com
+**Email**: 999aigents@gmail.com
 **Project**: 999 OS / VIBEE
 **Date**: January 2026
 

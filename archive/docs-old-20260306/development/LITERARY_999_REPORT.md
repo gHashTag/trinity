@@ -3,7 +3,7 @@
 ## :]in:]: 999 (OMEGA) ✅
 
 **Author**: Dmitrii Vasilev  
-**Email**: reactnativeinitru@gmail.com  
+**Email**: 999aigents@gmail.com  
 **Date**: January 2026
 
 ---
@@ -213,5 +213,5 @@ specs/*.vibee  →  vibeec gen  →  999/*.999
 ---
 
 **Author**: Dmitrii Vasilev  
-**Email**: reactnativeinitru@gmail.com  
+**Email**: 999aigents@gmail.com  
 **Project**: 999 OS / VIBEE

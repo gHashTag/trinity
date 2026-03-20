@@ -71,19 +71,19 @@ pub fn main() !void {
 
     // Run scenarios (note: Zig doesn't have true parallelism yet, so we run sequentially)
     var s1 = try evo_sim.runS1Baseline(allocator, steps);
-    defer s1.deinit(allocator);
+    defer s1.deinit();
     print("  {s}✓{s} S1 Baseline complete: PPL={d:.2}, Diversity={d:.3}\n", .{ GREEN, RESET, s1.final_ppl, s1.diversity_index });
 
     var s2 = try evo_sim.runS2Current(allocator, steps);
-    defer s2.deinit(allocator);
+    defer s2.deinit();
     print("  {s}✓{s} S2 Current complete: PPL={d:.2}, Culled={d}\n", .{ GREEN, RESET, s2.final_ppl, s2.workers_culled });
 
     var s3 = try evo_sim.runS3MultiObj(allocator, steps);
-    defer s3.deinit(allocator);
+    defer s3.deinit();
     print("  {s}✓{s} S3 MultiObj complete: PPL={d:.2}, Diversity={d:.3}\n", .{ GREEN, RESET, s3.final_ppl, s3.diversity_index });
 
     var s4 = try evo_sim.runS4DePIN(allocator, steps);
-    defer s4.deinit(allocator);
+    defer s4.deinit();
     print("  {s}✓{s} S4 dePIN complete: PPL={d:.2}, Byzantine detected={d}\n", .{ GREEN, RESET, s4.final_ppl, s4.byzantine_detected });
 
     print("\n{s}Simulation complete!{s}\n", .{ GREEN, RESET });

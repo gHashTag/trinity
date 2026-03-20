@@ -10,6 +10,13 @@ const std = @import("std");
 
 const ALERTS_LOG = ".trinity/brain_alerts.jsonl";
 
+/// Alert manager errors
+pub const AlertError = error{
+    HttpFailed,
+    TelegramDisabled,
+    JsonWriteFailed,
+};
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // ALERT LEVELS
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -300,15 +307,25 @@ pub const AlertHistory = struct {
     }
 
     /// Get recent alerts (last N)
+    ///
+    /// Note: The returned alerts contain borrowed pointers to message and region_name.
+    /// Only the returned slice itself should be freed by the caller. The borrowed
+    /// pointers remain valid as long as the AlertHistory is not modified.
     pub fn recent(self: *Self, n: usize, level: ?AlertLevel) ![]const Alert {
         self.mutex.lock();
         defer self.mutex.unlock();
 
         const start = if (n >= self.alerts.items.len) 0 else self.alerts.items.len - n;
-        var filtered: std.ArrayList(Alert) = .empty;
 
         if (level) |lvl| {
-            try filtered.ensureTotalCapacity(self.allocator, self.alerts.items.len - start);
+            // For filtered results, we need to copy the Alert structs
+            // but the pointers (message, region_name) remain borrowed
+            var filtered = std.ArrayList(Alert).initCapacity(self.allocator, self.alerts.items.len - start) catch {
+                std.log.warn("Failed to allocate filtered alerts list", .{});
+                return error.OutOfMemory;
+            };
+            errdefer filtered.deinit(self.allocator);
+
             for (self.alerts.items[start..]) |alert| {
                 if (alert.level == lvl) {
                     try filtered.append(self.allocator, alert);
@@ -317,7 +334,7 @@ pub const AlertHistory = struct {
             return filtered.toOwnedSlice(self.allocator);
         }
 
-        // Return pointers to stored alerts
+        // Return copy of Alert structs with borrowed pointers
         const result = try self.allocator.alloc(Alert, self.alerts.items.len - start);
         @memcpy(result, self.alerts.items[start..]);
         return result;
@@ -544,7 +561,7 @@ pub const AlertManager = struct {
 
     /// Send alert to Telegram
     fn sendTelegram(self: *const Self, alert_param: Alert) !void {
-        if (!self.telegram_enabled) return;
+        if (!self.telegram_enabled) return error.TelegramDisabled;
 
         const message = try alert_param.formatTelegram(self.allocator);
         defer self.allocator.free(message);
@@ -570,9 +587,15 @@ pub const AlertManager = struct {
                 .{ .name = "Content-Type", .value = "application/json" },
             },
             .response_writer = &aw.writer,
-        }) catch return error.HttpFailed;
+        }) catch |err| {
+            std.log.err("Telegram HTTP request failed: {}", .{err});
+            return error.HttpFailed;
+        };
 
-        if (result.status != .ok) return error.HttpFailed;
+        if (result.status != .ok) {
+            std.log.err("Telegram API returned status: {}", .{result.status});
+            return error.HttpFailed;
+        }
     }
 
     /// Get alert statistics
@@ -807,6 +830,7 @@ test "AlertHistory filters by level" {
 test "AlertHistory trim when over limit" {
     const allocator = std.testing.allocator;
     var history = AlertHistory.init(allocator, 3); // Small limit
+    defer history.deinit();
 
     // Add 5 alerts
     var i: u32 = 0;

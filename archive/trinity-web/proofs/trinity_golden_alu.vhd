@@ -5,7 +5,7 @@ use IEEE.NUMERIC_STD.ALL;
 -- TRINITY GOLDEN MODEL: 1-TRIT ALU
 ----------------------------------------------------------------------------------
 -- Company:        VIBEE Trinity Core
--- Engineer:       Antigravity Agent
+-- Engineer:       Dmitrii Vasilev
 -- 
 -- Create Date:    27.01.2026
 -- Design Name:    Trinity Golden ALU

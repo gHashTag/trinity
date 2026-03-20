@@ -2,7 +2,7 @@
 name = "trinity-vsa"
 version = "0.1.0"
 edition = "2021"
-authors = ["Dmitrii Vasilev <gHashTag@gmail.com>"]
+authors = ["Dmitrii Vasilev <999aigents@gmail.com>"]
 description = "High-performance Vector Symbolic Architecture with balanced ternary arithmetic, SIMD acceleration, and FPGA support"
 license = "MIT"
 repository = "https://github.com/gHashTag/trinity"

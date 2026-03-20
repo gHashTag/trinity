@@ -1,3 +1,5 @@
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/fpga/openxc7-synth/synthesize_sacred.sh","action":"shell_script_blocked","blocked":true}
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/src/cli/sacred_synth.zig","action":"generated_file_blocked","blocked":true}
 {"agent":"enforce-check","file":"/Users/playra/trinity-w1/.trinity/farm/token_recovery.sh","action":"shell_script_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/tools/gen_rich_book.sh","action":"shell_script_blocked","blocked":true}
+{"agent":"enforce-check","file":"/Users/playra/trinity-w1/tools/gen_rich_book.sh","action":"shell_script_blocked","blocked":true}

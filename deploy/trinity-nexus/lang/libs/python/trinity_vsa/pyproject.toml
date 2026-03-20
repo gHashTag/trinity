@@ -9,7 +9,7 @@ description = "High-performance Vector Symbolic Architecture with balanced terna
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
-    {name = "Dmitrii Vasilev", email = "gHashTag@gmail.com"}
+    {name = "Dmitrii Vasilev", email = "999aigents@gmail.com"}
 ]
 keywords = ["vsa", "hyperdimensional", "ternary", "machine-learning", "fpga"]
 classifiers = [

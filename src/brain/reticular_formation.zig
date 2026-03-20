@@ -69,9 +69,10 @@ const StoredEvent = struct {
     duration_ms: u64,
 
     fn deinit(self: StoredEvent, allocator: std.mem.Allocator) void {
-        allocator.free(self.task_id);
-        allocator.free(self.agent_id);
-        allocator.free(self.aux_string);
+        // Only free non-empty strings (empty string literals should not be freed)
+        if (self.task_id.len > 0) allocator.free(self.task_id);
+        if (self.agent_id.len > 0) allocator.free(self.agent_id);
+        if (self.aux_string.len > 0) allocator.free(self.aux_string);
     }
 };
 
@@ -128,7 +129,6 @@ pub const EventBus = struct {
     },
 
     pub fn init(allocator: std.mem.Allocator) EventBus {
-        _ = allocator;
         return EventBus{
             .mutex = std.Thread.Mutex{},
             .allocator = allocator,
@@ -714,4 +714,32 @@ test "EventBus trim more than available" {
     // Trim to more events than exist
     bus.trim(100);
     try std.testing.expectEqual(@as(usize, 1), bus.getStats().buffered);
+}
+
+test "EventBus agent_idle empty task_id handling" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // agent_idle and agent_spawned have empty task_id (not allocated)
+    // This tests that StoredEvent.deinit doesn't crash on empty strings
+    try bus.publish(.agent_idle, .{
+        .agent_idle = .{
+            .agent_id = "agent-1",
+            .idle_ms = 30000,
+        },
+    });
+
+    try bus.publish(.agent_spawned, .{
+        .agent_spawned = .{
+            .agent_id = "agent-2",
+        },
+    });
+
+    const stats = bus.getStats();
+    try std.testing.expectEqual(@as(usize, 2), stats.buffered);
+
+    // Deinit should handle empty task_id correctly
+    bus.clear();
+    try std.testing.expectEqual(@as(usize, 0), bus.getStats().buffered);
 }
