@@ -15,9 +15,35 @@
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
+const crypto = std.crypto.random;
 
 const RAILWAY_GQL_HOST = "backboard.railway.com";
 const RAILWAY_GQL_PATH = "/graphql/v2";
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Rate Limiting Constants (Railway Anti-Ban Protection)
+// ═══════════════════════════════════════════════════════════════════════════
+// Industry standard: FoundationDB, AWS, Google Cloud
+
+/// Exponential backoff base delay (milliseconds)
+const BACKOFF_BASE_MS: u64 = 1000; // 1 second
+
+/// Maximum backoff delay (milliseconds)
+const BACKOFF_CAP_MS: u64 = 32_000; // 32 seconds
+
+/// Maximum retry attempts on 429 errors
+const MAX_RETRIES: u32 = 5;
+
+/// Minimum interval between requests to same account (milliseconds)
+const MIN_REQUEST_INTERVAL_MS: u64 = 2000; // 2 seconds (Railway ~10 RPS on Hobby)
+
+/// User-Agent rotation for bot fingerprint protection
+const USER_AGENTS = [_][]const u8{
+    "trinity-cli/1.0",
+    "trinity-agent/1.0",
+    "trinity-farm/1.0",
+    "trinity-evolve/1.0",
+};
 
 const RESET = "\x1b[0m";
 const RED = "\x1b[31m";
@@ -33,6 +59,7 @@ pub const RailwayApiError = error{
     Timeout,
     OutOfMemory,
     InvalidJson,
+    RateLimited, // 429 Too Many Requests
 };
 
 pub const RailwayApi = struct {
@@ -40,6 +67,9 @@ pub const RailwayApi = struct {
     token: []const u8,
     project_id: []const u8,
     environment_id: []const u8,
+    // Rate limiting state
+    last_request_time: std.time.Instant,
+    user_agent_index: u32,
 
     const Self = @This();
 
@@ -68,14 +98,18 @@ pub const RailwayApi = struct {
 
         var env_name: [64]u8 = undefined;
         const env_key = buildEnvKey(&env_name, "RAILWAY_ENVIRONMENT_ID", suffix);
-        const environment_id = std.process.getEnvVarOwned(allocator, env_key) catch
-            allocator.dupe(u8, "") catch return error.OutOfMemory;
+        const environment_id = std.process.getEnvVarOwned(allocator, env_key) catch blk: {
+            const empty = allocator.dupe(u8, "") catch return error.OutOfMemory;
+            break :blk empty;
+        };
 
         return .{
             .allocator = allocator,
             .token = token,
             .project_id = project_id,
             .environment_id = environment_id,
+            .last_request_time = std.time.Instant.now() catch undefined,
+            .user_agent_index = crypto.intRangeLessThan(u32, 0, USER_AGENTS.len),
         };
     }
 
@@ -83,6 +117,36 @@ pub const RailwayApi = struct {
         self.allocator.free(self.token);
         self.allocator.free(self.project_id);
         self.allocator.free(self.environment_id);
+    }
+
+    // ════════════════════════════════════════════════════════════════════════════════════════
+    // Rate Limiting Helpers (Railway Anti-Ban Protection)
+    // ════════════════════════════════════════════════════════════════════════════════════════
+
+    /// Calculate exponential backoff delay with full jitter (0 to delay).
+    /// Industry standard: FoundationDB, AWS, Google Cloud
+    fn calculateDelay(retry_count: u32) u64 {
+        // Exponential: 2^retry_count * base_ms
+        const exp_delay = BACKOFF_BASE_MS * @as(u64, 1) << @min(retry_count, 7);
+        // Cap at max
+        const capped_delay = @min(exp_delay, BACKOFF_CAP_MS);
+        // Full jitter: random from 0 to capped_delay
+        return crypto.intRangeLessThan(u64, 0, capped_delay);
+    }
+
+    /// Check if API request is allowed (rate limiting).
+    /// Returns true if enough time has passed since last request.
+    fn checkRateLimit(self: *Self) bool {
+        const now = std.time.Instant.now() catch undefined;
+        const elapsed = now.since(self.last_request_time);
+        const min_interval_ns = MIN_REQUEST_INTERVAL_MS * 1_000_000;
+        return elapsed >= min_interval_ns;
+    }
+
+    /// Rotate User-Agent for bot fingerprint protection.
+    fn rotateUserAgent(self: *Self) []const u8 {
+        self.user_agent_index = (self.user_agent_index + 1) % USER_AGENTS.len;
+        return USER_AGENTS[self.user_agent_index];
     }
 
     /// Execute a GraphQL query/mutation against Railway API.
@@ -352,6 +416,41 @@ pub const RailwayApi = struct {
     // ═══════════════════════════════════════════════════════════════════════════
 
     fn httpPost(self: *Self, body: []const u8) RailwayApiError![]const u8 {
+        // Retry loop with exponential backoff for 429 errors
+        var retry_count: u32 = 0;
+        while (retry_count < MAX_RETRIES) {
+            // Check rate limiting before request
+            if (retry_count > 0) {
+                // Wait for backoff delay
+                const delay_ms = calculateDelay(retry_count);
+                std.debug.print("Railway API: retry {d}/{d}, waiting {d}ms...\n", .{
+                    retry_count, MAX_RETRIES, delay_ms,
+                });
+                std.Thread.sleep(delay_ms * 1000 * 1000); // Convert ms to ns (1ms = 1,000,000ns)
+            }
+
+            const result = self.httpPostOnce(body);
+            if (result) |response| {
+                // Success - update last request time and return
+                self.last_request_time = std.time.Instant.now() catch std.time.Instant{};
+                return response;
+            } else |err| {
+                // Check if it's a rate limit error (429)
+                if (err == error.RateLimited) {
+                    retry_count += 1;
+                    // Continue to retry loop
+                    continue;
+                }
+                // Other errors are not retryable
+                return err;
+            }
+        }
+        // Max retries exceeded
+        return error.RateLimited;
+    }
+
+    /// Single HTTP POST attempt (no retry logic)
+    fn httpPostOnce(self: *Self, body: []const u8) RailwayApiError![]const u8 {
         // HTTP client with 5-second connection timeout for graceful degradation
         var client = std.http.Client{
             .allocator = self.allocator,
@@ -369,7 +468,7 @@ pub const RailwayApi = struct {
             return error.OutOfMemory;
 
         const extra_headers = [_]std.http.Header{
-            .{ .name = "User-Agent", .value = "trinity-cli/1.0" },
+            .{ .name = "User-Agent", .value = USER_AGENTS[self.user_agent_index] },
             .{ .name = "Content-Type", .value = "application/json" },
             .{ .name = "Authorization", .value = auth_val },
             .{ .name = "Accept-Encoding", .value = "identity" },
@@ -392,6 +491,11 @@ pub const RailwayApi = struct {
 
         const status_code = @intFromEnum(response.head.status);
         if (status_code != 200) {
+            // Check for rate limiting specifically (429 Too Many Requests)
+            if (status_code == 429) {
+                std.debug.print("{s}Railway API: rate limited (429), will retry...{s}\n", .{ RED, RESET });
+                return error.RateLimited;
+            }
             // Check for auth errors specifically (401 Unauthorized, 403 Forbidden)
             if (status_code == 401 or status_code == 403) {
                 return error.NotAuthorized;

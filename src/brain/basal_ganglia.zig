@@ -5,18 +5,127 @@
 //!
 //! Sacred Formula: φ² + 1/φ² = 3 = TRINITY
 //! Brain Region: Basal Ganglia (Action Selection)
+//!
+//! # Overview
+//!
+//! The Basal Ganglia module implements a task claim registry that prevents
+//! duplicate task execution across multiple agents. It uses a CRDT-inspired
+//! approach with:
+//!
+//! - Atomic first-come-first-served task claiming
+//! - Time-to-live (TTL) for automatic claim expiration
+//! - Heartbeat mechanism for liveness detection
+//! - Thread-safe operations using mutexes
+//!
+//! # Biological Inspiration
+//!
+//! The basal ganglia in the brain selects which actions to execute and
+//! inhibits competing actions. This module mirrors that behavior by ensuring
+//! only one agent works on a task at a time.
+//!
+//! # Usage
+//!
+//! ```zig
+//! const brain = @import("brain");
+//! const allocator = std.heap.page_allocator;
+//!
+//! // Get global registry
+//! const registry = try brain.basal_ganglia.getGlobal(allocator);
+//!
+//! // Claim a task (5 minute TTL)
+//! const claimed = try registry.claim(allocator, "task-123", "agent-001", 300000);
+//! if (claimed) {
+//!     // Task claimed successfully, start working
+//!     // Refresh heartbeat every 30s
+//!     _ = registry.heartbeat("task-123", "agent-001");
+//!
+//!     // Complete when done
+//!     _ = registry.complete("task-123", "agent-001");
+//! }
+//! ```
+//!
+//! # Thread Safety
+//!
+//! All operations are thread-safe via `std.Thread.Mutex`. The global
+//! registry can be safely accessed from multiple threads.
 
 const std = @import("std");
 
+/// Represents a single task claim by an agent.
+///
+/// A claim includes the task ID, claiming agent ID, timestamps,
+/// TTL for expiration, and status tracking.
+///
+/// # Fields
+///
+/// - `task_id`: Unique identifier for the task (owned string)
+/// - `agent_id`: Unique identifier for the claiming agent (owned string)
+/// - `claimed_at`: Unix timestamp in milliseconds when claim was made
+/// - `ttl_ms`: Time-to-live in milliseconds before claim expires
+/// - `status`: Current status of the claim (active/completed/abandoned)
+/// - `completed_at`: Unix timestamp when task was completed (null if not completed)
+/// - `last_heartbeat`: Unix timestamp of last heartbeat
+///
+/// # Example
+///
+/// ```zig
+/// var claim = TaskClaim{
+///     .task_id = "task-123",
+///     .agent_id = "agent-001",
+///     .claimed_at = std.time.timestamp() * 1000,
+///     .ttl_ms = 300000, // 5 minutes
+///     .status = .active,
+///     .completed_at = null,
+///     .last_heartbeat = std.time.timestamp() * 1000,
+/// };
+///
+/// if (claim.isValid()) {
+///     // Task claim is still valid
+/// }
+/// ```
 pub const TaskClaim = struct {
+    /// Unique identifier for the task
     task_id: []const u8,
+    /// Unique identifier for the claiming agent
     agent_id: []const u8,
+    /// Unix timestamp (ms) when claim was created
     claimed_at: i64,
+    /// Time-to-live in milliseconds (after which claim expires)
     ttl_ms: u64,
+    /// Current status of the claim
     status: enum { active, completed, abandoned },
+    /// Unix timestamp (ms) when task was completed
     completed_at: ?i64,
+    /// Unix timestamp (ms) of last heartbeat
     last_heartbeat: i64,
 
+    /// Checks if the task claim is still valid.
+    ///
+    /// A claim is valid if:
+    /// 1. Status is `.active`
+    /// 2. Claim has not expired (current time - claimed_at < ttl_ms)
+    /// 3. Heartbeat was received within last 30 seconds
+    ///
+    /// # Returns
+    ///
+    /// `true` if the claim is valid, `false` otherwise
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// const now_ms = std.time.timestamp() * 1000;
+    /// var claim = TaskClaim{
+    ///     .task_id = "task-123",
+    ///     .agent_id = "agent-001",
+    ///     .claimed_at = now_ms - 10000, // 10 seconds ago
+    ///     .ttl_ms = 60000, // 60 seconds TTL
+    ///     .status = .active,
+    ///     .completed_at = null,
+    ///     .last_heartbeat = now_ms - 5000, // 5 seconds ago
+    /// };
+    ///
+    /// try std.testing.expect(claim.isValid()); // true
+    /// ```
     pub fn isValid(self: *const TaskClaim) bool {
         if (self.status != .active) return false;
         const now_ms = std.time.timestamp() * 1000;
@@ -28,17 +137,93 @@ pub const TaskClaim = struct {
     }
 };
 
+/// Thread-safe task claim registry.
+///
+/// Manages task claims across multiple agents with automatic expiration
+/// and heartbeat-based liveness detection.
+///
+/// # Thread Safety
+///
+/// All operations are protected by a mutex, making this struct safe to
+/// share between threads.
+///
+/// # Example
+///
+/// ```zig
+/// const allocator = std.heap.page_allocator;
+/// var registry = Registry.init(allocator);
+/// defer registry.deinit();
+///
+/// // Claim a task
+/// const claimed = try registry.claim(allocator, "task-123", "agent-001", 300000);
+/// if (claimed) {
+///     // Send heartbeat every 30s while working
+///     _ = registry.heartbeat("task-123", "agent-001");
+///
+///     // Complete task when done
+///     _ = registry.complete("task-123", "agent-001");
+/// }
+/// ```
 pub const Registry = struct {
+    /// Map of task_id -> TaskClaim (owned strings)
     claims: std.StringHashMap(TaskClaim),
+    /// Mutex protecting the claims map
     mutex: std.Thread.Mutex,
+    /// Performance counters for monitoring
+    stats: struct {
+        claim_attempts: u64,
+        claim_success: u64,
+        claim_conflicts: u64,
+        heartbeat_calls: u64,
+        heartbeat_success: u64,
+        complete_calls: u64,
+        complete_success: u64,
+        abandon_calls: u64,
+        abandon_success: u64,
+    },
 
+    /// Creates a new task claim registry.
+    ///
+    /// # Parameters
+    ///
+    /// - `allocator`: Allocator to use for internal storage
+    ///
+    /// # Returns
+    ///
+    /// A new `Registry` instance ready to use
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// const registry = Registry.init(std.heap.page_allocator);
+    /// defer registry.deinit();
+    /// ```
     pub fn init(allocator: std.mem.Allocator) Registry {
         return Registry{
             .claims = std.StringHashMap(TaskClaim).init(allocator),
             .mutex = std.Thread.Mutex{},
+            .stats = .{
+                .claim_attempts = 0,
+                .claim_success = 0,
+                .claim_conflicts = 0,
+                .heartbeat_calls = 0,
+                .heartbeat_success = 0,
+                .complete_calls = 0,
+                .complete_success = 0,
+                .abandon_calls = 0,
+                .abandon_success = 0,
+            },
         };
     }
 
+    /// Frees all resources used by the registry.
+    ///
+    /// Releases all owned strings (task_id, agent_id) and deallocates
+    /// the internal HashMap.
+    ///
+    /// # Note
+    ///
+    /// After calling `deinit()`, the registry cannot be used.
     pub fn deinit(self: *Registry) void {
         var iter = self.claims.iterator();
         while (iter.next()) |entry| {
@@ -49,15 +234,49 @@ pub const Registry = struct {
         self.claims.deinit();
     }
 
+    /// Atomically claims a task for an agent.
+    ///
+    /// First-come-first-served: the first agent to call `claim()` wins.
+    /// If the task is already claimed and still valid, returns `false`.
+    ///
+    /// # Parameters
+    ///
+    /// - `allocator`: Allocator for storing claimed task IDs and agent IDs
+    /// - `task_id`: Unique identifier for the task to claim
+    /// - `agent_id`: Unique identifier for the claiming agent
+    /// - `ttl_ms`: Time-to-live in milliseconds (recommend 300000 = 5 min)
+    ///
+    /// # Returns
+    ///
+    /// - `true` if task was successfully claimed by this agent
+    /// - `false` if task is already claimed by another agent
+    ///
+    /// # Errors
+    ///
+    /// Returns `error.OutOfMemory` if allocation fails
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// const claimed = try registry.claim(allocator, "task-123", "agent-001", 300000);
+    /// if (claimed) {
+    ///     // We have the task, start working
+    /// } else {
+    ///     // Someone else has it, wait and retry
+    /// }
+    /// ```
     pub fn claim(self: *Registry, allocator: std.mem.Allocator, task_id: []const u8, agent_id: []const u8, ttl_ms: u64) !bool {
         self.mutex.lock();
         defer self.mutex.unlock();
+
+        self.stats.claim_attempts += 1;
 
         const now_ms = std.time.timestamp() * 1000;
 
         // Check if already claimed and valid
         if (self.claims.get(task_id)) |existing| {
             if (existing.isValid()) {
+                self.stats.claim_conflicts += 1;
                 return false; // Already claimed by someone else
             }
         }
@@ -81,9 +300,38 @@ pub const Registry = struct {
         };
 
         try self.claims.put(try allocator.dupe(u8, task_id), new_claim);
+        self.stats.claim_success += 1;
         return true;
     }
 
+    /// Refreshes the heartbeat timestamp for a claimed task.
+    ///
+    /// Call this periodically (every 30 seconds recommended) while working
+    /// on a task to prevent the claim from expiring.
+    ///
+    /// # Parameters
+    ///
+    /// - `task_id`: Task to refresh heartbeat for
+    /// - `agent_id`: Agent making the heartbeat request
+    ///
+    /// # Returns
+    ///
+    /// - `true` if heartbeat was accepted (valid claim from matching agent)
+    /// - `false` if task not claimed, agent mismatch, or claim invalid
+    ///
+    /// # Thread Safety
+    ///
+    /// Thread-safe; may be called from any thread
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// // While working on task, send heartbeat every 30s
+    /// while (working) {
+    ///     _ = registry.heartbeat("task-123", "agent-001");
+    ///     std.time.sleep(30_000_000_000); // 30 seconds
+    /// }
+    /// ```
     pub fn heartbeat(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
         self.mutex.lock();
         defer self.mutex.unlock();
@@ -98,6 +346,28 @@ pub const Registry = struct {
         return false;
     }
 
+    /// Marks a task as completed.
+    ///
+    /// Only the agent that claimed the task can complete it.
+    ///
+    /// # Parameters
+    ///
+    /// - `task_id`: Task to complete
+    /// - `agent_id`: Agent completing the task
+    ///
+    /// # Returns
+    ///
+    /// - `true` if task was marked complete
+    /// - `false` if task not claimed, agent mismatch, or already completed
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// // Task completed successfully
+    /// if (registry.complete("task-123", "agent-001")) {
+    ///     std.log.info("Task completed", .{});
+    /// }
+    /// ```
     pub fn complete(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
         self.mutex.lock();
         defer self.mutex.unlock();
@@ -113,6 +383,30 @@ pub const Registry = struct {
         return false;
     }
 
+    /// Abandons a claimed task.
+    ///
+    /// Use this when the agent cannot complete the task (e.g., crashed,
+    /// timeout, or unrecoverable error). The task becomes available for
+    /// other agents to claim.
+    ///
+    /// # Parameters
+    ///
+    /// - `task_id`: Task to abandon
+    /// - `agent_id`: Agent abandoning the task
+    ///
+    /// # Returns
+    ///
+    /// - `true` if task was abandoned
+    /// - `false` if task not claimed, agent mismatch, or already abandoned
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// // Task failed, abandon it
+    /// if (registry.abandon("task-123", "agent-001")) {
+    ///     std.log.err("Task abandoned due to error", .{});
+    /// }
+    /// ```
     pub fn abandon(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
         self.mutex.lock();
         defer self.mutex.unlock();
@@ -128,6 +422,21 @@ pub const Registry = struct {
         return false;
     }
 
+    /// Clears all task claims from the registry.
+    ///
+    /// Releases all memory associated with stored claims.
+    /// Useful for testing or full reset scenarios.
+    ///
+    /// # Thread Safety
+    ///
+    /// Thread-safe; locks the mutex during operation
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// // Reset registry state
+    /// registry.reset();
+    /// ```
     pub fn reset(self: *Registry) void {
         self.mutex.lock();
         defer self.mutex.unlock();
@@ -140,13 +449,103 @@ pub const Registry = struct {
         }
         self.claims.clearRetainingCapacity();
     }
+
+    /// Gets current statistics for the registry.
+    ///
+    /// Returns performance counters tracking operation counts and success rates.
+    ///
+    /// # Thread Safety
+    ///
+    /// Thread-safe; locks the mutex during read
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// const stats = registry.getStats();
+    /// std.log.info("Claim success rate: {d:.2}%", .{
+    ///     @as(f64, @floatFromInt(stats.claim_success)) /
+    ///     @as(f64, @floatFromInt(stats.claim_attempts)) * 100.0
+    /// });
+    /// ```
+    pub fn getStats(self: *Registry) struct {
+        claim_attempts: u64,
+        claim_success: u64,
+        claim_conflicts: u64,
+        heartbeat_calls: u64,
+        heartbeat_success: u64,
+        complete_calls: u64,
+        complete_success: u64,
+        abandon_calls: u64,
+        abandon_success: u64,
+        active_claims: usize,
+    } {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        return .{
+            .claim_attempts = self.stats.claim_attempts,
+            .claim_success = self.stats.claim_success,
+            .claim_conflicts = self.stats.claim_conflicts,
+            .heartbeat_calls = self.stats.heartbeat_calls,
+            .heartbeat_success = self.stats.heartbeat_success,
+            .complete_calls = self.stats.complete_calls,
+            .complete_success = self.stats.complete_success,
+            .abandon_calls = self.stats.abandon_calls,
+            .abandon_success = self.stats.abandon_success,
+            .active_claims = self.claims.count(),
+        };
+    }
 };
 
-// Global singleton
+// ═══════════════════════════════════════════════════════════════════════════════
+// GLOBAL REGISTRY SINGLETON
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Global singleton registry instance.
+///
+/// Provides process-wide access to a shared task claim registry.
+/// Thread-safe; initialized on first call to `getGlobal()`.
+///
+/// # Usage
+///
+/// ```zig
+/// const registry = try brain.basal_ganglia.getGlobal(allocator);
+/// _ = try registry.claim(allocator, "task-123", "agent-001", 300000);
+/// ```
 var global_registry: ?*Registry = null;
+/// Allocator used for global registry
 var global_allocator: ?std.mem.Allocator = null;
+/// Mutex protecting global registry initialization
 var global_mutex = std.Thread.Mutex{};
 
+/// Gets or creates the global task claim registry.
+///
+/// Thread-safe singleton pattern: first call creates registry,
+/// subsequent calls return the same instance.
+///
+/// # Parameters
+///
+/// - `allocator`: Allocator for registry initialization (only used on first call)
+///
+/// # Returns
+///
+/// Pointer to global registry instance
+///
+/// # Errors
+///
+/// - `error.OutOfMemory`: If registry initialization fails
+///
+/// # Thread Safety
+///
+/// Thread-safe; locks mutex during initialization
+///
+/// # Example
+///
+/// ```zig
+/// const allocator = std.heap.page_allocator;
+/// const registry = try brain.basal_ganglia.getGlobal(allocator);
+/// _ = try registry.claim(allocator, "task-123", "agent-001", 300000);
+/// ```
 pub fn getGlobal(allocator: std.mem.Allocator) !*Registry {
     global_mutex.lock();
     defer global_mutex.unlock();
@@ -160,7 +559,25 @@ pub fn getGlobal(allocator: std.mem.Allocator) !*Registry {
     return reg;
 }
 
-/// Reset global registry (for testing)
+/// Resets the global registry.
+///
+/// Used primarily for testing to clean up between test cases.
+/// Frees all memory associated with the global registry.
+///
+/// # Parameters
+///
+/// - `allocator`: Ignored; uses stored allocator from initialization
+///
+/// # Thread Safety
+///
+/// Thread-safe; locks mutex during reset
+///
+/// # Example
+///
+/// ```zig
+/// // In test teardown
+/// brain.basal_ganglia.resetGlobal(allocator);
+/// ```
 pub fn resetGlobal(allocator: std.mem.Allocator) void {
     _ = allocator; // Use stored allocator instead
     global_mutex.lock();

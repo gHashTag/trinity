@@ -2482,6 +2482,54 @@ const qt = @import("queen_types.zig");
 
 const builtin = @import("builtin");
 
+pub fn runSimCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    if (args.len == 0 or std.mem.eql(u8, args[0], "help") or std.mem.eql(u8, args[0], "--help") or std.mem.eql(u8, args[0], "-h")) {
+        printSimHelp();
+        return;
+    }
+
+    if (std.mem.eql(u8, args[0], "suite")) {
+        return runSimSuite(allocator);
+    }
+
+    std.debug.print("{s}Unknown sim command: {s}{s}\n", .{ RED, args[0], RESET });
+    printSimHelp();
+    return error.UnknownCommand;
+}
+
+fn printSimHelp() void {
+    std.debug.print("{s}Simulation Commands:{s}\n", .{ CYAN, RESET });
+    std.debug.print("  tri sim suite              Run brain evolution simulation suite\n", .{});
+}
+
+fn runSimSuite(allocator: std.mem.Allocator) !void {
+    const brain = @import("brain");
+    const evo_sim = brain.evolution_simulation;
+
+    std.debug.print("{s}╔══════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+    std.debug.print("{s}║  DETERMINISTIC BRAIN EVOLUTION SIMULATION SUITE         ║{s}\n", .{ GOLDEN, RESET });
+    std.debug.print("{s}╚═══════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+    std.debug.print("Running {d} scenarios in parallel...\n\n", .{4});
+
+    var s1 = try evo_sim.runS1Baseline(allocator, 100);
+    defer s1.deinit(allocator);
+    std.debug.print("  {s}✓{s} S1 Baseline complete: PPL={d:.2}, Diversity={d:.3}\n", .{ GREEN, RESET, s1.final_ppl, s1.diversity_index });
+
+    var s2 = try evo_sim.runS2Current(allocator, 100);
+    defer s2.deinit(allocator);
+    std.debug.print("  {s}✓{s} S2 Current complete: PPL={d:.2}, Culled={d}\n", .{ GREEN, RESET, s2.final_ppl, s2.workers_culled });
+
+    var s3 = try evo_sim.runS3MultiObj(allocator, 100);
+    defer s3.deinit(allocator);
+    std.debug.print("  {s}✓{s} S3 MultiObj complete: PPL={d:.2}, Diversity={d:.3}\n", .{ GREEN, RESET, s3.final_ppl, s3.diversity_index });
+
+    var s4 = try evo_sim.runS4DePIN(allocator, 100);
+    defer s4.deinit(allocator);
+    std.debug.print("  {s}✓{s} S4 dePIN complete: PPL={d:.2}, Byzantine detected={d}\n", .{ GREEN, RESET, s4.final_ppl, s4.byzantine_detected });
+
+    std.debug.print("\n{s}SIMULATION COMPLETE!{s}\n", .{ GREEN, RESET });
+}
+
 test "tri_commands_depin_reward_constants" {
     // Verify DePIN reward constants are sane
     try std.testing.expect(depin.REWARD_EVOLUTION_GEN > 0);
