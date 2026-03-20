@@ -218,15 +218,11 @@ pub const EventBus = struct {
             _ = self.stats.trim_count.fetchAdd(1, .monotonic);
         } else {
             // Track peak buffer size only when growing (lock-free max)
-            const current_peak = self.stats.peak_buffered.load(.monotonic);
             const new_count = self.count + 1;
+            const current_peak = self.stats.peak_buffered.load(.monotonic);
             if (new_count > current_peak) {
-                _ = self.stats.peak_buffered.tryCompareAndSwap(
-                    current_peak,
-                    new_count,
-                    .monotonic,
-                    .monotonic,
-                ) catch |*addr| addr.*;
+                // Since we hold mutex, simple max is safe
+                _ = self.stats.peak_buffered.fetchMax(new_count, .monotonic);
             }
         }
 
