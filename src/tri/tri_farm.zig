@@ -425,10 +425,11 @@ pub fn runFarmRecycle(allocator: Allocator, args: []const []const u8) !void {
             const set_vars_json = std.fmt.allocPrint(allocator,
                 \\{{"input":{{"projectId":"{s}","serviceId":"{s}","environmentId":"{s}","variables":{{"HSLM_LR":"{s}","HSLM_BATCH":"{s}","HSLM_CONTEXT":"{s}","HSLM_SEED":"{s}","HSLM_STEPS":"{s}","HSLM_OPTIMIZER":"{s}","HSLM_FRESH":"{s}","HSLM_WARMUP":"{s}","HSLM_WD":"{s}","HSLM_CHECKPOINT_EVERY":"10000","HSLM_GRAD_ACCUM":"1","HSLM_DROPOUT":"0","HSLM_ADAPTIVE_SPARSITY":"0","HSLM_FULL_TERNARY":"0","HSLM_STE":"0","HSLM_TERNARY_SCHEDULE":"0","HSLM_TERNARY_GRADS":"0","HSLM_LABEL_SMOOTHING":"0","HSLM_GRAD_CLIP":"{s}","RAILWAY_DOCKERFILE_PATH":"Dockerfile.hslm-train"}}}}}}
             , .{
-                acct.project_id, svc_id,    acct.env_id,
-                lr,              batch,     ctx,
-                seed_str,        steps,     optimizer,
-                fresh_val,       warmup,    wd,        grad_clip,
+                acct.project_id, svc_id, acct.env_id,
+                lr,              batch,  ctx,
+                seed_str,        steps,  optimizer,
+                fresh_val,       warmup, wd,
+                grad_clip,
             }) catch continue;
             defer allocator.free(set_vars_json);
 

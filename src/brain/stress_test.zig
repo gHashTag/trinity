@@ -724,7 +724,7 @@ test "Stress: Integration - concurrent agent simulation" {
 
         var task_idx: usize = 0;
         while (task_idx < tasks_per_agent) : (task_idx += 1) {
-            const task_id = try std.fmt.allocPrint(allocator, "task-{d}-{d}", .{agent_idx, task_idx});
+            const task_id = try std.fmt.allocPrint(allocator, "task-{d}-{d}", .{ agent_idx, task_idx });
             defer allocator.free(task_id);
 
             // Try to claim (first agent wins)
@@ -1014,7 +1014,7 @@ test "Stress: Memory - event buffer memory pressure" {
     while (cycle < 5) : (cycle += 1) {
         var i: usize = 0;
         while (i < 15_000) : (i += 1) {
-            const task_id = try std.fmt.allocPrint(allocator, "mem-pressure-{d}-{d}", .{cycle, i});
+            const task_id = try std.fmt.allocPrint(allocator, "mem-pressure-{d}-{d}", .{ cycle, i });
             defer allocator.free(task_id);
 
             try bus.publish(.task_claimed, .{

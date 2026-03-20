@@ -1041,7 +1041,7 @@ test "Integration: Multi-agent concurrent task claims" {
 
         var task_idx: usize = 0;
         while (task_idx < tasks_per_agent) : (task_idx += 1) {
-            const task_id = try std.fmt.allocPrint(allocator, "concurrent-task-{d}-{d}", .{agent_idx, task_idx});
+            const task_id = try std.fmt.allocPrint(allocator, "concurrent-task-{d}-{d}", .{ agent_idx, task_idx });
             defer allocator.free(task_id);
 
             const claimed = try registry.claim(allocator, task_id, agent_id, 60000);
