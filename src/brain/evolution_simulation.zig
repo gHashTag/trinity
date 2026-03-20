@@ -392,7 +392,7 @@ pub const EvolutionSimulator = struct {
             }
 
             // Microglia patrol
-            if (step % self.config.microglia_interval == 0 and step > 0) {
+            if (self.config.microglia_interval > 0 and step % self.config.microglia_interval == 0 and step > 0) {
                 const pruned = self.microgliaPatrol();
                 microglia_actions += pruned;
                 workers_culled += pruned;
