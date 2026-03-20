@@ -1297,65 +1297,65 @@ pub const SuiteResult = struct {
 };
 
 pub fn runFullSuite(allocator: Allocator, steps: u32) !SuiteResult {
-    const s1 = try runS1Baseline(allocator, steps);
+    var s1 = try runS1Baseline(allocator, steps);
     errdefer s1.deinit();
 
-    const s2 = try runS2Current(allocator, steps);
+    var s2 = try runS2Current(allocator, steps);
     errdefer s2.deinit();
 
-    const s3 = try runS3MultiObj(allocator, steps);
+    var s3 = try runS3MultiObj(allocator, steps);
     errdefer s3.deinit();
 
-    const s4 = try runS4DePIN(allocator, steps);
+    var s4 = try runS4DePIN(allocator, steps);
     errdefer s4.deinit();
 
-    const s5 = try runS5DePIN_NoImmunity(allocator, steps);
+    var s5 = try runS5DePIN_NoImmunity(allocator, steps);
     errdefer s5.deinit();
 
-    const s6 = try runS6JEPA_Heavy(allocator, steps);
+    var s6 = try runS6JEPA_Heavy(allocator, steps);
     errdefer s6.deinit();
 
-    const s7 = try runS7HighDiversity(allocator, steps);
+    var s7 = try runS7HighDiversity(allocator, steps);
     errdefer s7.deinit();
 
-    const s8 = try runS8LowCrash(allocator, steps);
+    var s8 = try runS8LowCrash(allocator, steps);
     errdefer s8.deinit();
 
-    const s9 = try runS9ByzantineHeavy(allocator, steps);
+    var s9 = try runS9ByzantineHeavy(allocator, steps);
     errdefer s9.deinit();
 
-    const s10 = try runS10EnergyOptimal(allocator, steps);
+    var s10 = try runS10EnergyOptimal(allocator, steps);
     errdefer s10.deinit();
 
-    const s11 = try runS11SacredA(allocator, steps);
+    var s11 = try runS11SacredA(allocator, steps);
     errdefer s11.deinit();
 
-    const s12 = try runS12SacredB(allocator, steps);
+    var s12 = try runS12SacredB(allocator, steps);
     errdefer s12.deinit();
 
-    const s13 = try runS13SacredC(allocator, steps);
+    var s13 = try runS13SacredC(allocator, steps);
     errdefer s13.deinit();
 
-    const s14 = try runS14Wide(allocator, steps);
+    var s14 = try runS14Wide(allocator, steps);
     errdefer s14.deinit();
 
-    const s15 = try runS15BaselineExtended(allocator, steps);
+    var s15 = try runS15BaselineExtended(allocator, steps);
     errdefer s15.deinit();
 
     // Quantum-inspired scenarios (S16-S20)
-    const s16 = try runS16Superposition(allocator, steps);
+    var s16 = try runS16Superposition(allocator, steps);
     errdefer s16.deinit();
 
-    const s17 = try runS17Coherence(allocator, steps);
+    var s17 = try runS17Coherence(allocator, steps);
     errdefer s17.deinit();
 
-    const s18 = try runS18Interference(allocator, steps);
+    var s18 = try runS18Interference(allocator, steps);
     errdefer s18.deinit();
 
-    const s19 = try runS19Collapse(allocator, steps);
+    var s19 = try runS19Collapse(allocator, steps);
     errdefer s19.deinit();
 
-    const s20 = try runS20QuantumZeno(allocator, steps);
+    var s20 = try runS20QuantumZeno(allocator, steps);
     errdefer s20.deinit();
 
     return SuiteResult{
@@ -1434,8 +1434,8 @@ test "EvolutionSimulator init" {
 }
 
 test "EvolutionSimulator run S1 baseline" {
-    const result = try runS1Baseline(std.testing.allocator, 50);
-    defer result.deinit(std.testing.allocator);
+    var result = try runS1Baseline(std.testing.allocator, 50);
+    defer result.deinit();
 
     try std.testing.expectEqualStrings("S1_Baseline", result.scenario_name);
     try std.testing.expect(result.final_ppl > 0);
@@ -1443,8 +1443,8 @@ test "EvolutionSimulator run S1 baseline" {
 }
 
 test "EvolutionSimulator run S2 current" {
-    const result = try runS2Current(std.testing.allocator, 50);
-    defer result.deinit(std.testing.allocator);
+    var result = try runS2Current(std.testing.allocator, 50);
+    defer result.deinit();
 
     try std.testing.expectEqualStrings("S2_Current", result.scenario_name);
     // High crash rate should cause worse PPL
@@ -1452,16 +1452,16 @@ test "EvolutionSimulator run S2 current" {
 }
 
 test "EvolutionSimulator diversity calculation" {
-    const result = try runS3MultiObj(std.testing.allocator, 50);
-    defer result.deinit(std.testing.allocator);
+    var result = try runS3MultiObj(std.testing.allocator, 50);
+    defer result.deinit();
 
     // Multi-objective should have non-zero diversity
     try std.testing.expect(result.diversity_index > 0);
 }
 
 test "EvolutionSimulator byzantine detection" {
-    const result = try runS4DePIN(std.testing.allocator, 50);
-    defer result.deinit(std.testing.allocator);
+    var result = try runS4DePIN(std.testing.allocator, 50);
+    defer result.deinit();
 
     try std.testing.expectEqualStrings("S4_dePIN", result.scenario_name);
     // Should detect some byzantine nodes
@@ -1469,7 +1469,7 @@ test "EvolutionSimulator byzantine detection" {
 }
 
 test "EvolutionSimulator full suite" {
-    const suite = try runFullSuite(std.testing.allocator, 50);
+    var suite = try runFullSuite(std.testing.allocator, 50);
     defer suite.deinit();
 
     try std.testing.expectEqualStrings("S1_Baseline", suite.s1.scenario_name);
@@ -1512,12 +1512,12 @@ test "QuantumMetrics std deviation" {
 }
 
 test "EvolutionResult toJson" {
-    const result = try runS1Baseline(std.testing.allocator, 50);
-    defer result.deinit(std.testing.allocator);
+    var result = try runS1Baseline(std.testing.allocator, 50);
+    defer result.deinit();
 
     var buffer: [4096]u8 = undefined;
     var fbs = std.io.fixedBufferStream(&buffer);
-    try result.toJson(fbs.writer());
+    try result.toJson(fbs.writer(), std.testing.allocator);
     const output = fbs.getWritten();
 
     try std.testing.expect(std.mem.startsWith(u8, output, "{"));
@@ -1526,8 +1526,8 @@ test "EvolutionResult toJson" {
 }
 
 test "EvolutionResult toCsv" {
-    const result = try runS1Baseline(std.testing.allocator, 50);
-    defer result.deinit(std.testing.allocator);
+    var result = try runS1Baseline(std.testing.allocator, 50);
+    defer result.deinit();
 
     var buffer: [4096]u8 = undefined;
     var fbs = std.io.fixedBufferStream(&buffer);
@@ -1544,7 +1544,7 @@ test "Sacred seeds constant" {
 }
 
 test "S4 final_ppl calculation" {
-    const result = try runS4DePIN(std.testing.allocator, 20);
+    var result = try runS4DePIN(std.testing.allocator, 20);
     defer result.deinit();
 
     // Debug output
@@ -1572,7 +1572,7 @@ test "S4 final_ppl calculation" {
 
 test "S1 Baseline: expected results" {
     const allocator = std.testing.allocator;
-    const result = try runS1Baseline(allocator, 1000);
+    var result = try runS1Baseline(allocator, 1000);
     defer result.deinit();
 
     // S1 has no crashes, no Byzantine faults
@@ -1591,7 +1591,7 @@ test "S1 Baseline: expected results" {
 
 test "S2 Current: high crash rate" {
     const allocator = std.testing.allocator;
-    const result = try runS2Current(allocator, 1000);
+    var result = try runS2Current(allocator, 1000);
     defer result.deinit();
 
     // S2 has 90% crash rate
@@ -1599,8 +1599,9 @@ test "S2 Current: high crash rate" {
     const expected_culled = @as(f32, @floatFromInt(result.workers_spawned)) * 0.90;
     const tolerance = expected_culled * 0.1; // 10% tolerance
 
-    try std.testing.expect(result.workers_culled >= expected_culled - tolerance);
-    try std.testing.expect(result.workers_culled <= expected_culled + tolerance);
+    const workers_culled_f32 = @as(f32, @floatFromInt(result.workers_culled));
+    try std.testing.expect(workers_culled_f32 >= expected_culled - tolerance);
+    try std.testing.expect(workers_culled_f32 <= expected_culled + tolerance);
 
     // Final PPL should be higher due to less training
     try std.testing.expect(result.final_ppl > 10.0);
@@ -1608,7 +1609,7 @@ test "S2 Current: high crash rate" {
 
 test "S3 Multi-obj: objective distribution" {
     const allocator = std.testing.allocator;
-    const result = try runS3MultiObj(allocator, 1000);
+    var result = try runS3MultiObj(allocator, 1000);
     defer result.deinit();
 
     // Should have 4 different objectives with data
@@ -1633,7 +1634,7 @@ test "S3 Multi-obj: objective distribution" {
 
 test "S4 dePIN: Byzantine detection" {
     const allocator = std.testing.allocator;
-    const result = try runS4DePIN(allocator, 1000);
+    var result = try runS4DePIN(allocator, 1000);
     defer result.deinit();
 
     // S4 has Byzantine nodes (byzantine_rate > 0)

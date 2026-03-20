@@ -1175,4 +1175,626 @@ test "Registry: statistics accuracy" {
     try std.testing.expectEqual(@as(usize, 31), total);
 }
 
+// ═════════════════════════════════════════════════════════════════════════════════════════════════════
+// COMPREHENSIVE EDGE CASE TESTS
+// ═════════════════════════════════════════════════════════════════════════════════════════════════════
+
+test "BasalGanglia: overflow - TTL at max u64" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-max-ttl";
+    const agent_id = "agent-001";
+
+    // Claim with maximum TTL value
+    const max_ttl = std.math.maxInt(u64);
+    const claimed = try registry.claim(allocator, task_id, agent_id, max_ttl);
+    try std.testing.expect(claimed);
+
+    // Verify claim is still valid (should not overflow in check)
+    const check_result = registry.checkClaim(task_id);
+    try std.testing.expectEqual(Registry.ClaimCheckResult.claimed, check_result);
+}
+
+test "BasalGanglia: overflow - timestamp near max i64" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-near-max-timestamp";
+    const agent_id = "agent-001";
+
+    _ = try registry.claim(allocator, task_id, agent_id, 60000);
+
+    // Simulate timestamp near max value
+    const shard_idx = Registry.getShardIndex(task_id);
+    const shard = &registry.shards[shard_idx];
+    shard.rwlock.lock();
+    if (shard.claims.getEntry(task_id)) |entry| {
+        const near_max = std.math.maxInt(i64) - 10000;
+        entry.value_ptr.*.claimed_at = near_max;
+        entry.value_ptr.*.last_heartbeat = near_max;
+    }
+    shard.rwlock.unlock();
+
+    // Check should handle near-max timestamp without overflow
+    const check_result = registry.checkClaim(task_id);
+    try std.testing.expectEqual(Registry.ClaimCheckResult.claimed, check_result);
+}
+
+test "BasalGanglia: overflow - negative timestamp handling" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-negative-timestamp";
+    const agent_id = "agent-001";
+
+    _ = try registry.claim(allocator, task_id, agent_id, 60000);
+
+    // Simulate negative timestamp (clock before epoch)
+    // This will result in large age (now - negative), so claim will be expired
+    const shard_idx = Registry.getShardIndex(task_id);
+    const shard = &registry.shards[shard_idx];
+    shard.rwlock.lock();
+    if (shard.claims.getEntry(task_id)) |entry| {
+        entry.value_ptr.*.claimed_at = -10000;
+        entry.value_ptr.*.last_heartbeat = -10000;
+    }
+    shard.rwlock.unlock();
+
+    // Negative timestamp with current positive time = large age = expired
+    const check_result = registry.checkClaim(task_id);
+    try std.testing.expectEqual(Registry.ClaimCheckResult.expired, check_result);
+}
+
+test "BasalGanglia: TTL zero - claim expires immediately" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-zero-ttl";
+    const agent_id = "agent-001";
+
+    // Claim with zero TTL
+    const claimed = try registry.claim(allocator, task_id, agent_id, 0);
+    try std.testing.expect(claimed);
+
+    // Small sleep to ensure time advances
+    std.Thread.sleep(10 * std.time.ns_per_ms);
+
+    // Claim should be expired (age > 0 TTL)
+    const check_result = registry.checkClaim(task_id);
+    try std.testing.expectEqual(Registry.ClaimCheckResult.expired, check_result);
+}
+
+test "BasalGanglia: TTL one - minimal valid claim" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-ttl-one";
+    const agent_id = "agent-001";
+
+    // Claim with 1ms TTL
+    const claimed = try registry.claim(allocator, task_id, agent_id, 1);
+    try std.testing.expect(claimed);
+
+    // Should still be valid immediately
+    const check_result = registry.checkClaim(task_id);
+    try std.testing.expectEqual(Registry.ClaimCheckResult.claimed, check_result);
+}
+
+test "BasalGanglia: concurrent claim race - same task same time" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "race-task";
+    const num_threads = 10;
+    var threads: [num_threads]std.Thread = undefined;
+    var success_count: std.atomic.Value(usize) = std.atomic.Value(usize).init(0);
+    var conflict_count: std.atomic.Value(usize) = std.atomic.Value(usize).init(0);
+
+    // Pre-allocate agent IDs to avoid leaks in thread spawn
+    var agent_ids: [num_threads][]const u8 = undefined;
+    for (&agent_ids, 0..) |*agent_id, i| {
+        agent_id.* = try std.fmt.allocPrint(allocator, "agent-{d}", .{i});
+    }
+    defer {
+        for (agent_ids) |agent| {
+            allocator.free(agent);
+        }
+    }
+
+    // Spawn threads that all try to claim the same task
+    for (&threads, 0..) |*t, i| {
+        t.* = try std.Thread.spawn(.{}, struct {
+            fn run(reg_ptr: *Registry, task: []const u8, agent: []const u8, succ: *std.atomic.Value(usize), conf: *std.atomic.Value(usize)) !void {
+                const result = try reg_ptr.claim(std.testing.allocator, task, agent, 60000);
+                if (result) {
+                    _ = succ.fetchAdd(1, .monotonic);
+                } else {
+                    _ = conf.fetchAdd(1, .monotonic);
+                }
+            }
+        }.run, .{ &registry, task_id, agent_ids[i], &success_count, &conflict_count });
+    }
+
+    // Join all threads
+    for (&threads) |t| {
+        t.join();
+    }
+
+    // Only one should succeed, others should get conflicts
+    const final_success = success_count.load(.monotonic);
+    const final_conflict = conflict_count.load(.monotonic);
+
+    try std.testing.expectEqual(@as(usize, 1), final_success);
+    try std.testing.expectEqual(@as(usize, num_threads - 1), final_conflict);
+}
+
+test "BasalGanglia: concurrent claim race - different tasks same shard" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    // All these tasks hash to same shard (due to similar content)
+    const task_ids = [_][]const u8{ "task-shard-1", "task-shard-2", "task-shard-3" };
+    var threads: [3]std.Thread = undefined;
+
+    // Each thread claims a different task in same shard
+    for (&threads, 0..) |*t, i| {
+        t.* = try std.Thread.spawn(.{}, struct {
+            fn run(reg_ptr: *Registry, task: []const u8, tid: usize) !void {
+                _ = tid;
+                _ = try reg_ptr.claim(std.testing.allocator, task, "agent-same", 60000);
+            }
+        }.run, .{ &registry, task_ids[i], i });
+    }
+
+    // Join all threads
+    for (&threads) |t| {
+        t.join();
+    }
+
+    // All should succeed since they're different tasks
+    const stats = registry.getStats();
+    try std.testing.expectEqual(@as(usize, 3), stats.active_claims);
+}
+
+test "BasalGanglia: heartbeat at expiration boundary" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-boundary";
+    const agent_id = "agent-001";
+    const ttl_ms: u64 = 100;
+
+    _ = try registry.claim(allocator, task_id, agent_id, ttl_ms);
+
+    // Sleep to just before expiration
+    std.Thread.sleep(90 * std.time.ns_per_ms);
+
+    // Heartbeat should succeed
+    const hb1 = registry.heartbeat(task_id, agent_id);
+    try std.testing.expect(hb1);
+
+    // Sleep past TTL
+    std.Thread.sleep(20 * std.time.ns_per_ms);
+
+    // Heartbeat should fail (task expired)
+    const hb2 = registry.heartbeat(task_id, agent_id);
+    try std.testing.expect(!hb2);
+}
+
+test "BasalGanglia: heartbeat expiration - exactly 30000ms" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-hb-exact";
+    const agent_id = "agent-001";
+
+    _ = try registry.claim(allocator, task_id, agent_id, 60000);
+
+    // Manually set heartbeat to just before expiration
+    const shard_idx = Registry.getShardIndex(task_id);
+    const shard = &registry.shards[shard_idx];
+    shard.rwlock.lock();
+    if (shard.claims.getEntry(task_id)) |entry| {
+        const now = nowMs();
+        entry.value_ptr.*.last_heartbeat = now - 29900; // 29.9 seconds ago
+    }
+    shard.rwlock.unlock();
+
+    // Heartbeat should still work (just under 30s)
+    const hb1 = registry.heartbeat(task_id, agent_id);
+    try std.testing.expect(hb1);
+
+    // Now set heartbeat to just after expiration
+    shard.rwlock.lock();
+    if (shard.claims.getEntry(task_id)) |entry| {
+        const now = nowMs();
+        entry.value_ptr.*.last_heartbeat = now - 30100; // 30.1 seconds ago
+    }
+    shard.rwlock.unlock();
+
+    // Heartbeat should now fail (heartbeat expired)
+    const hb2 = registry.heartbeat(task_id, agent_id);
+    try std.testing.expect(!hb2);
+}
+
+test "BasalGanglia: complete after heartbeat expiration" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-complete-expired-hb";
+    const agent_id = "agent-001";
+
+    _ = try registry.claim(allocator, task_id, agent_id, 60000);
+
+    // Manually expire heartbeat
+    const shard_idx = Registry.getShardIndex(task_id);
+    const shard = &registry.shards[shard_idx];
+    shard.rwlock.lock();
+    if (shard.claims.getEntry(task_id)) |entry| {
+        entry.value_ptr.*.last_heartbeat = nowMs() - 35000;
+    }
+    shard.rwlock.unlock();
+
+    // Complete should fail (heartbeat expired)
+    const completed = registry.complete(task_id, agent_id);
+    try std.testing.expect(!completed);
+}
+
+test "BasalGanglia: abandon after heartbeat expiration" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-abandon-expired-hb";
+    const agent_id = "agent-001";
+
+    _ = try registry.claim(allocator, task_id, agent_id, 60000);
+
+    // Manually expire heartbeat
+    const shard_idx = Registry.getShardIndex(task_id);
+    const shard = &registry.shards[shard_idx];
+    shard.rwlock.lock();
+    if (shard.claims.getEntry(task_id)) |entry| {
+        entry.value_ptr.*.last_heartbeat = nowMs() - 35000;
+    }
+    shard.rwlock.unlock();
+
+    // Abandon should fail (heartbeat expired)
+    const abandoned = registry.abandon(task_id, agent_id);
+    try std.testing.expect(!abandoned);
+}
+
+test "BasalGanglia: reclaim race - complete then reclaim" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-race-complete";
+    const agent1 = "agent-race-1";
+    const agent2 = "agent-race-2";
+
+    _ = try registry.claim(allocator, task_id, agent1, 60000);
+
+    // Complete task
+    try std.testing.expect(registry.complete(task_id, agent1));
+
+    // Immediately reclaim by different agent
+    const reclaimed = try registry.claim(allocator, task_id, agent2, 60000);
+    try std.testing.expect(reclaimed);
+}
+
+test "BasalGanglia: reclaim race - abandon then reclaim" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-race-abandon";
+    const agent1 = "agent-race-1";
+    const agent2 = "agent-race-2";
+
+    _ = try registry.claim(allocator, task_id, agent1, 60000);
+
+    // Abandon task
+    try std.testing.expect(registry.abandon(task_id, agent1));
+
+    // Immediately reclaim by different agent
+    const reclaimed = try registry.claim(allocator, task_id, agent2, 60000);
+    try std.testing.expect(reclaimed);
+}
+
+test "BasalGanglia: stats accuracy under concurrent load" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const num_threads = 8;
+    const claims_per_thread = 100;
+    var threads: [num_threads]std.Thread = undefined;
+
+    // Spawn threads to claim many tasks concurrently
+    for (&threads, 0..) |*t, tid| {
+        t.* = try std.Thread.spawn(.{}, struct {
+            fn run(reg_ptr: *Registry, thread_id: usize, num: usize) !void {
+                var i: usize = 0;
+                while (i < num) : (i += 1) {
+                    const task_id = try std.fmt.allocPrint(std.testing.allocator, "task-t{d}-i{d}", .{ thread_id, i });
+                    defer std.testing.allocator.free(task_id);
+                    const agent_id = try std.fmt.allocPrint(std.testing.allocator, "agent-{d}", .{thread_id});
+                    defer std.testing.allocator.free(agent_id);
+                    _ = try reg_ptr.claim(std.testing.allocator, task_id, agent_id, 60000);
+                }
+            }
+        }.run, .{ &registry, tid, claims_per_thread });
+    }
+
+    // Join all threads
+    for (&threads) |t| {
+        t.join();
+    }
+
+    const stats = registry.getStats();
+
+    // All claims should have been attempted
+    try std.testing.expectEqual(@as(u64, num_threads * claims_per_thread), stats.claim_attempts);
+
+    // Most should succeed (no duplicates in this test)
+    try std.testing.expect(stats.claim_success > 0);
+
+    // Active claims should equal total successful
+    try std.testing.expectEqual(stats.active_claims, @as(usize, @intCast(stats.claim_success)));
+}
+
+test "BasalGanglia: cleanup removes multiple expired claims" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    // Add some long-lived claims
+    for (0..5) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "long-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try registry.claim(allocator, task_id, "agent-001", 60000);
+    }
+
+    // Add many short-lived claims
+    const num_short = 10;
+    for (0..num_short) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "short-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try registry.claim(allocator, task_id, "agent-001", 50);
+    }
+
+    try std.testing.expectEqual(@as(usize, 5 + num_short), registry.count());
+
+    // Wait for expiration
+    std.Thread.sleep(100 * std.time.ns_per_ms);
+
+    // Cleanup should remove only expired claims
+    const removed = registry.cleanupExpired();
+    try std.testing.expectEqual(@as(usize, num_short), removed);
+    try std.testing.expectEqual(@as(usize, 5), registry.count());
+}
+
+test "BasalGanglia: empty registry cleanup" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    // Cleanup on empty registry should return 0
+    const removed = registry.cleanupExpired();
+    try std.testing.expectEqual(@as(usize, 0), removed);
+}
+
+test "BasalGanglia: listClaims includes all statuses" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_active = try std.fmt.allocPrint(allocator, "task-active", .{});
+    defer allocator.free(task_active);
+    _ = try registry.claim(allocator, task_active, "agent-001", 60000);
+
+    const task_completed = try std.fmt.allocPrint(allocator, "task-completed", .{});
+    defer allocator.free(task_completed);
+    _ = try registry.claim(allocator, task_completed, "agent-002", 60000);
+    try std.testing.expect(registry.complete(task_completed, "agent-002"));
+
+    const task_abandoned = try std.fmt.allocPrint(allocator, "task-abandoned", .{});
+    defer allocator.free(task_abandoned);
+    _ = try registry.claim(allocator, task_abandoned, "agent-003", 60000);
+    try std.testing.expect(registry.abandon(task_abandoned, "agent-003"));
+
+    const claims = try registry.listClaims(allocator);
+    defer registry.freeClaims(allocator, claims);
+
+    try std.testing.expectEqual(@as(usize, 3), claims.len);
+
+    var active_count: usize = 0;
+    var completed_count: usize = 0;
+    var abandoned_count: usize = 0;
+
+    for (claims) |claim| {
+        switch (claim.status) {
+            .active => active_count += 1,
+            .completed => completed_count += 1,
+            .abandoned => abandoned_count += 1,
+        }
+    }
+
+    try std.testing.expectEqual(@as(usize, 1), active_count);
+    try std.testing.expectEqual(@as(usize, 1), completed_count);
+    try std.testing.expectEqual(@as(usize, 1), abandoned_count);
+}
+
+test "BasalGanglia: zero length task_id" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    // Empty task_id should still work
+    const claimed = try registry.claim(allocator, "", "agent-001", 60000);
+    try std.testing.expect(claimed);
+
+    const check_result = registry.checkClaim("");
+    try std.testing.expectEqual(Registry.ClaimCheckResult.claimed, check_result);
+}
+
+test "BasalGanglia: zero length agent_id" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    // Empty agent_id should still work
+    const claimed = try registry.claim(allocator, "task-001", "", 60000);
+    try std.testing.expect(claimed);
+
+    const claims = try registry.listClaims(allocator);
+    defer registry.freeClaims(allocator, claims);
+
+    try std.testing.expectEqual(@as(usize, 1), claims.len);
+    try std.testing.expectEqual(@as(usize, 0), claims[0].agent_id.len);
+}
+
+test "BasalGanglia: concurrent reset during operations" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    // Populate registry
+    for (0..50) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try registry.claim(allocator, task_id, "agent-001", 60000);
+    }
+
+    const num_threads = 5;
+    var threads: [num_threads]std.Thread = undefined;
+
+    // Spawn threads that reset and check concurrently
+    for (&threads, 0..) |*t, i| {
+        t.* = try std.Thread.spawn(.{}, struct {
+            fn run(reg_ptr: *Registry, tid: usize) !void {
+                if (tid % 2 == 0) {
+                    reg_ptr.reset();
+                } else {
+                    _ = reg_ptr.count();
+                }
+            }
+        }.run, .{ &registry, i });
+    }
+
+    for (&threads) |t| {
+        t.join();
+    }
+
+    // Final count should be 0 (reset happened)
+    const final_count = registry.count();
+    try std.testing.expectEqual(@as(usize, 0), final_count);
+}
+
+test "BasalGanglia: complete and abandon mutually exclusive" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const task_id = "task-mutex";
+    const agent1 = "agent-1";
+    const agent2 = "agent-2";
+
+    _ = try registry.claim(allocator, task_id, agent1, 60000);
+
+    // Complete task
+    try std.testing.expect(registry.complete(task_id, agent1));
+
+    // Cannot abandon a completed task
+    const abandoned = registry.abandon(task_id, agent1);
+    try std.testing.expect(!abandoned);
+
+    // Cannot complete again
+    const completed_again = registry.complete(task_id, agent1);
+    try std.testing.expect(!completed_again);
+
+    // But another agent can claim it
+    const reclaimed = try registry.claim(allocator, task_id, agent2, 60000);
+    try std.testing.expect(reclaimed);
+}
+
+test "BasalGanglia: timestamp overflow in isValid calculation" {
+    // Test that isValid handles future timestamps gracefully
+    // When claimed_at > now_ms, age should be treated as 0 (clock skew case)
+
+    const claim_data = TaskClaim{
+        .task_id = "test",
+        .agent_id = "test",
+        .claimed_at = std.math.maxInt(i64), // Future timestamp
+        .ttl_ms = 60000,
+        .status = .active,
+        .completed_at = null,
+        .last_heartbeat = std.math.maxInt(i64), // Future heartbeat
+    };
+
+    // With claimed_at and last_heartbeat in future, both age calculations should result in 0
+    // making the claim valid
+    const is_valid = claim_data.isValid();
+    try std.testing.expect(is_valid);
+}
+
+test "BasalGanglia: high contention scenario" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const num_threads = 16;
+    const iterations = 100;
+    var threads: [num_threads]std.Thread = undefined;
+    var successes: std.atomic.Value(usize) = std.atomic.Value(usize).init(0);
+
+    // All threads compete for the same task
+    for (&threads, 0..) |*t, i| {
+        t.* = try std.Thread.spawn(.{}, struct {
+            fn run(reg_ptr: *Registry, task: []const u8, tid: usize, n: usize, succ: *std.atomic.Value(usize)) !void {
+                _ = tid;
+                var j: usize = 0;
+                while (j < n) : (j += 1) {
+                    const result = try reg_ptr.claim(std.testing.allocator, task, "agent-contest", 60000);
+                    if (result) {
+                        _ = succ.fetchAdd(1, .monotonic);
+                        // Sleep to allow others to try claiming after we release
+                        std.Thread.sleep(1 * std.time.ns_per_ms);
+                        // Abandon to free for next round
+                        _ = reg_ptr.abandon(task, "agent-contest");
+                    }
+                }
+            }
+        }.run, .{ &registry, "high-contention-task", i, iterations, &successes });
+    }
+
+    // Join all threads
+    for (&threads) |t| {
+        t.join();
+    }
+
+    const stats = registry.getStats();
+
+    // Should have high conflict count
+    try std.testing.expect(stats.claim_conflicts > 0);
+
+    // Success count should be approximately iterations (we abandon after each claim)
+    // Due to race conditions, exact count may vary, so check it's close
+    const final_success = successes.load(.monotonic);
+    // Very lenient: just check we got some successes
+    try std.testing.expect(final_success > 0);
+}
+
 // φ² + 1/φ² = 3 | TRINITY

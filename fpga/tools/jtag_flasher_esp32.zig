@@ -6,6 +6,7 @@ const std = @import("std");
 const Config = struct {
     host: []const u8 = "esp32-xvc.local",
     port: u16 = 2542,  // XVC protocol port
+    ap_mode: bool = false,      // AP mode: connect directly to ESP32
 };
 
 pub fn main() !void {
@@ -15,13 +16,18 @@ pub fn main() !void {
 
     if (args.len < 2) {
         std.debug.print(
-            \\Usage: jtag_flasher_esp32 <bitstream.bit> [--host=HOST] [--phi]
+            \\Usage: jtag_flasher_esp32 <bitstream.bit> [--host=HOST] [--ap] [--phi]
             \\
             \\Flash bitstream to FPGA via ESP32 XVC Bridge.
             \\
             \\Options:
-            \\  --host=HOST    ESP32 hostname (default: esp32-xvc.local)
+            \\  --host=HOST    ESP32 hostname/IP (default: esp32-xvc.local)
+            \\  --ap           AP mode: connect to 192.168.4.1 (ESP32 direct)
             \\  --phi          Use phi-blink preset (~24 Hz)
+            \\
+            \\AP Mode (recommended):
+            \\  1. Connect Mac to WiFi: ESP32-XVC-TRINITY (pass: trinity123)
+            \\  2. Run: jtag_flasher_esp32 --ap phi_blink_top.bit
             \\
         , .{});
         std.process.exit(1);
@@ -35,9 +41,16 @@ pub fn main() !void {
     for (args[2..]) |arg| {
         if (std.mem.startsWith(u8, arg, "--host=")) {
             config.host = arg["--host=".len..];
+        } else if (std.mem.eql(u8, arg, "--ap")) {
+            config.ap_mode = true;
+            config.host = "192.168.4.1";  // ESP32 AP default IP
         } else if (std.mem.eql(u8, arg, "--phi")) {
             use_phi = true;
         }
+    }
+
+    if (config.ap_mode) {
+        std.debug.print("[AP MODE] Connecting to ESP32 direct AP...\n", .{});
     }
 
     std.debug.print("═════════════════════════════════════\n", .{});
