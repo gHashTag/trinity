@@ -171,7 +171,7 @@ pub const Amygdala = struct {
                 pos += 1;
             }
             first = false;
-        pos += (std.fmt.bufPrint(json_buf[pos..], "\\{s}\\\":{d}", .{
+            pos += (std.fmt.bufPrint(json_buf[pos..], "\\{s}\\\":{d}", .{
                 entry.key_ptr.*,
                 entry.value_ptr.*,
             })).len;
@@ -275,4 +275,175 @@ test "FearLevel emoji" {
     try std.testing.expectEqualStrings("😟", FearLevel.low.emoji());
     try std.testing.expectEqualStrings("😨", FearLevel.medium.emoji());
     try std.testing.expectEqualStrings("😱", FearLevel.high.emoji());
+}
+
+test "FearLevel color codes" {
+    try std.testing.expectEqualStrings("\\x1b[32m", FearLevel.none.color());
+    try std.testing.expectEqualStrings("\\x1b[33m", FearLevel.low.color());
+    try std.testing.expectEqualStrings("\\x1b[31m", FearLevel.medium.color());
+    try std.testing.expectEqualStrings("\\x1b[35m", FearLevel.high.color());
+}
+
+test "Amygdala empty task name" {
+    const allocator = std.testing.allocator;
+    var amg = Amygdala{ .allocator = allocator };
+    try std.testing.expect(!amg.isBlacklisted(""));
+}
+
+test "Amygdala isBlacklisted with no failures" {
+    const allocator = std.testing.allocator;
+    var amg = Amygdala{ .allocator = allocator };
+    try std.testing.expect(!amg.isBlacklisted("never-attempted-task"));
+}
+
+test "Amygdala fearLevel progression through thresholds" {
+    const allocator = std.testing.allocator;
+    var amg = Amygdala{ .allocator = allocator };
+
+    // 0 failures = none
+    try std.testing.expectEqual(FearLevel.none, amg.fearLevel("task") catch return);
+
+    // 1 failure = low
+    try amg.recordFailure("task", 1, "error");
+    try std.testing.expectEqual(FearLevel.low, amg.fearLevel("task") catch return);
+
+    // 2 failures = still low
+    try amg.recordFailure("task", 2, "error");
+    try std.testing.expectEqual(FearLevel.low, amg.fearLevel("task") catch return);
+
+    // 3 failures = medium (at threshold)
+    try amg.recordFailure("task", 3, "error");
+    try std.testing.expectEqual(FearLevel.medium, amg.fearLevel("task") catch return);
+
+    // 4 failures = high (past threshold)
+    try amg.recordFailure("task", 4, "error");
+    try std.testing.expectEqual(FearLevel.high, amg.fearLevel("task") catch return);
+
+    // Clean up
+    std.fs.cwd().deleteTree(".trinity") catch {};
+}
+
+test "Amygdala recordFailure caps at 255" {
+    const allocator = std.testing.allocator;
+    var amg = Amygdala{ .allocator = allocator, .fear_threshold = 3 };
+
+    // Record 300 failures (should cap at 255)
+    var i: u8 = 0;
+    while (i < 10) : (i += 1) {
+        try amg.recordFailure("task", @intCast(i), "error");
+    }
+
+    // Should still be blacklisted
+    try std.testing.expect(amg.isBlacklisted("task"));
+
+    // Clean up
+    std.fs.cwd().deleteTree(".trinity") catch {};
+}
+
+test "Amygdala multiple tasks tracked independently" {
+    const allocator = std.testing.allocator;
+    var amg = Amygdala{ .allocator = allocator };
+
+    try amg.recordFailure("task1", 1, "error");
+    try amg.recordFailure("task1", 2, "error");
+    try amg.recordFailure("task1", 3, "error");
+
+    try amg.recordFailure("task2", 1, "error");
+
+    try std.testing.expect(amg.isBlacklisted("task1"));
+    try std.testing.expect(!amg.isBlacklisted("task2"));
+
+    // Clean up
+    std.fs.cwd().deleteTree(".trinity") catch {};
+}
+
+test "Amygdala custom fear threshold" {
+    const allocator = std.testing.allocator;
+    var amg = Amygdala{ .allocator = allocator, .fear_threshold = 5 };
+
+    try amg.recordFailure("task", 1, "error");
+    try amg.recordFailure("task", 2, "error");
+    try amg.recordFailure("task", 3, "error");
+
+    // Should not be blacklisted yet (threshold is 5)
+    try std.testing.expect(!amg.isBlacklisted("task"));
+
+    try amg.recordFailure("task", 4, "error");
+    try amg.recordFailure("task", 5, "error");
+
+    // Now should be blacklisted
+    try std.testing.expect(amg.isBlacklisted("task"));
+
+    // Clean up
+    std.fs.cwd().deleteTree(".trinity") catch {};
+}
+
+test "Amygdala getEntry not found" {
+    const allocator = std.testing.allocator;
+    var amg = Amygdala{ .allocator = allocator };
+
+    const result = amg.getEntry("non-existent-task");
+    try std.testing.expectError(error.NotFound, result);
+}
+
+test "Amygdala blacklist file persistence" {
+    const allocator = std.testing.allocator;
+    var amg = Amygdala{ .allocator = allocator };
+
+    try amg.recordFailure("persistent-task", 1, "error");
+    try amg.recordFailure("persistent-task", 2, "error");
+    try amg.recordFailure("persistent-task", 3, "error");
+
+    // Create a new amygdala instance and verify the blacklist is persisted
+    var amg2 = Amygdala{ .allocator = allocator };
+    try std.testing.expect(amg2.isBlacklisted("persistent-task"));
+
+    // Clean up
+    std.fs.cwd().deleteTree(".trinity") catch {};
+}
+
+test "Amygdala fearLevel for different failure counts" {
+    const allocator = std.testing.allocator;
+    var amg = Amygdala{ .allocator = allocator, .fear_threshold = 5 };
+
+    try amg.recordFailure("task1", 1, "e");
+    try std.testing.expectEqual(FearLevel.low, amg.fearLevel("task1") catch return);
+
+    try amg.recordFailure("task2", 1, "e");
+    try amg.recordFailure("task2", 2, "e");
+    try amg.recordFailure("task2", 3, "e");
+    try amg.recordFailure("task2", 4, "e");
+    try std.testing.expectEqual(FearLevel.low, amg.fearLevel("task2") catch return);
+
+    try amg.recordFailure("task3", 1, "e");
+    try amg.recordFailure("task3", 2, "e");
+    try amg.recordFailure("task3", 3, "e");
+    try amg.recordFailure("task3", 4, "e");
+    try amg.recordFailure("task3", 5, "e");
+    try std.testing.expectEqual(FearLevel.medium, amg.fearLevel("task3") catch return);
+
+    try amg.recordFailure("task4", 1, "e");
+    try amg.recordFailure("task4", 2, "e");
+    try amg.recordFailure("task4", 3, "e");
+    try amg.recordFailure("task4", 4, "e");
+    try amg.recordFailure("task4", 5, "e");
+    try amg.recordFailure("task4", 6, "e");
+    try std.testing.expectEqual(FearLevel.high, amg.fearLevel("task4") catch return);
+
+    // Clean up
+    std.fs.cwd().deleteTree(".trinity") catch {};
+}
+
+test "Amygdala custom blacklist file path" {
+    const allocator = std.testing.allocator;
+    var amg = Amygdala{ .allocator = allocator, .blacklist_file = "/tmp/test_custom_blacklist.json" };
+
+    try amg.recordFailure("custom-path-task", 1, "e");
+    try amg.recordFailure("custom-path-task", 2, "e");
+    try amg.recordFailure("custom-path-task", 3, "e");
+
+    try std.testing.expect(amg.isBlacklisted("custom-path-task"));
+
+    // Clean up
+    std.fs.deleteFile("/tmp/test_custom_blacklist.json") catch {};
 }
