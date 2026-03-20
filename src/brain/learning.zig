@@ -181,9 +181,20 @@ pub const LearningSystem = struct {
     }
 
     /// Deinitialize and save state
+    /// Frees all owned memory including pattern strings
     pub fn deinit(self: *Self) void {
+        // Clear history
         self.history.clearAndFree(self.allocator);
+
+        // Clear patterns and free their owned strings
+        for (self.patterns.items) |pattern| {
+            self.allocator.free(pattern.name);
+            self.allocator.free(pattern.description);
+            self.allocator.free(pattern.recommendation);
+        }
         self.patterns.clearAndFree(self.allocator);
+
+        // Clear failure models
         self.failure_models.clearAndFree(self.allocator);
     }
 
@@ -733,15 +744,7 @@ test "LearningSystem stats tracking" {
 test "LearningSystem pattern detection" {
     const allocator = std.testing.allocator;
     var learning = try LearningSystem.init(allocator);
-    defer {
-        // Clean up any patterns created during the test
-        for (learning.patterns.items) |pattern| {
-            allocator.free(pattern.name);
-            allocator.free(pattern.description);
-            allocator.free(pattern.recommendation);
-        }
-        learning.deinit();
-    }
+    defer learning.deinit();
 
     const now = std.time.milliTimestamp();
 

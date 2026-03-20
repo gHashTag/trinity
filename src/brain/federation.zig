@@ -1632,4 +1632,535 @@ test "FederationState task and event counters" {
     try std.testing.expectEqual(@as(u64, 30), state.event_counter.value());
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONFLICT RESOLVER TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "ConflictResolver resolveDuplicateClaim determinism" {
+    const allocator = std.testing.allocator;
+
+    const my_id = InstanceId{ .bytes = [_]u8{1} ++ [_]u8{0} ** 15 };
+    var state = try FederationState.init(allocator, my_id);
+    defer state.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    defer basal_ganglia.resetGlobal(allocator);
+
+    var resolver = ConflictResolver.init(allocator, &state, registry);
+
+    const claimant1 = InstanceId{ .bytes = [_]u8{5} ++ [_]u8{0} ** 15 };
+    const claimant2 = InstanceId{ .bytes = [_]u8{10} ++ [_]u8{0} ** 15 };
+
+    const winner = try resolver.resolveDuplicateClaim("task-1", claimant1, claimant2);
+
+    // Lower ID should win deterministically
+    try std.testing.expectEqual(@as(u8, 5), winner.bytes[0]);
+}
+
+test "ConflictResolver resolveHeartbeatTimeout" {
+    const allocator = std.testing.allocator;
+
+    const my_id = InstanceId{ .bytes = [_]u8{1} ++ [_]u8{0} ** 15 };
+    var state = try FederationState.init(allocator, my_id);
+    defer state.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    defer basal_ganglia.resetGlobal(allocator);
+
+    var resolver = ConflictResolver.init(allocator, &state, registry);
+
+    const other_owner = InstanceId{ .bytes = [_]u8{2} ++ [_]u8{0} ** 15 };
+
+    // If I'm not the owner, I can claim
+    const can_claim = try resolver.resolveHeartbeatTimeout("task-timeout", other_owner);
+    try std.testing.expect(can_claim);
+}
+
+test "ConflictResolver resolveCompletionInconsistency majority" {
+    const allocator = std.testing.allocator;
+
+    const my_id = InstanceId{ .bytes = [_]u8{1} ++ [_]u8{0} ** 15 };
+    var state = try FederationState.init(allocator, my_id);
+    defer state.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    defer basal_ganglia.resetGlobal(allocator);
+
+    var resolver = ConflictResolver.init(allocator, &state, registry);
+
+    // 3 out of 5 instances say completed (majority is 3)
+    const result = try resolver.resolveCompletionInconsistency("task-majority", 3, 5);
+    try std.testing.expect(result); // Should mark as completed
+}
+
+test "ConflictResolver resolveCompletionInconsistency no majority" {
+    const allocator = std.testing.allocator;
+
+    const my_id = InstanceId{ .bytes = [_]u8{1} ++ [_]u8{0} ** 15 };
+    var state = try FederationState.init(allocator, my_id);
+    defer state.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    defer basal_ganglia.resetGlobal(allocator);
+
+    var resolver = ConflictResolver.init(allocator, &state, registry);
+
+    // 2 out of 5 instances say completed (need 3 for majority)
+    const result = try resolver.resolveCompletionInconsistency("task-no-majority", 2, 5);
+    try std.testing.expect(!result); // Should not mark as completed
+}
+
+test "ConflictResolver resolveCompletionInconsistency exact majority" {
+    const allocator = std.testing.allocator;
+
+    const my_id = InstanceId{ .bytes = [_]u8{1} ++ [_]u8{0} ** 15 };
+    var state = try FederationState.init(allocator, my_id);
+    defer state.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    defer basal_ganglia.resetGlobal(allocator);
+
+    var resolver = ConflictResolver.init(allocator, &state, registry);
+
+    // Exactly majority threshold (5/2 + 1 = 3)
+    const result = try resolver.resolveCompletionInconsistency("task-exact", 3, 5);
+    try std.testing.expect(result);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// DISTRIBUTED TASK CLAIM TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "DistributedTaskClaim claim success" {
+    const allocator = std.testing.allocator;
+
+    const my_id = InstanceId.generate();
+    var state = try FederationState.init(allocator, my_id);
+    defer state.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    defer basal_ganglia.resetGlobal(allocator);
+
+    const event_bus = try reticular_formation.getGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
+
+    var distributed = DistributedTaskClaim{
+        .allocator = allocator,
+        .federation = &state,
+        .registry = registry,
+        .event_bus = event_bus,
+    };
+
+    const claimed = try distributed.claim("dist-task-1", "dist-agent-1", 5000);
+    try std.testing.expect(claimed);
+}
+
+test "DistributedTaskClaim claim when already claimed" {
+    const allocator = std.testing.allocator;
+
+    const my_id = InstanceId.generate();
+    var state = try FederationState.init(allocator, my_id);
+    defer state.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    defer basal_ganglia.resetGlobal(allocator);
+
+    const event_bus = try reticular_formation.getGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
+
+    // First claim
+    _ = try registry.claim(allocator, "dist-task-2", "agent-a", 5000);
+
+    var distributed = DistributedTaskClaim{
+        .allocator = allocator,
+        .federation = &state,
+        .registry = registry,
+        .event_bus = event_bus,
+    };
+
+    // Second claim should fail
+    const claimed = try distributed.claim("dist-task-2", "agent-b", 5000);
+    try std.testing.expect(!claimed);
+}
+
+test "DistributedTaskClaim complete" {
+    const allocator = std.testing.allocator;
+
+    const my_id = InstanceId.generate();
+    var state = try FederationState.init(allocator, my_id);
+    defer state.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    defer basal_ganglia.resetGlobal(allocator);
+
+    const event_bus = try reticular_formation.getGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
+
+    // First claim the task
+    _ = try registry.claim(allocator, "dist-task-3", "dist-agent-3", 5000);
+
+    var distributed = DistributedTaskClaim{
+        .allocator = allocator,
+        .federation = &state,
+        .registry = registry,
+        .event_bus = event_bus,
+    };
+
+    // Complete should not error
+    try distributed.complete("dist-task-3", "dist-agent-3", 1000);
+}
+
+test "DistributedTaskClaim abandon" {
+    const allocator = std.testing.allocator;
+
+    const my_id = InstanceId.generate();
+    var state = try FederationState.init(allocator, my_id);
+    defer state.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    defer basal_ganglia.resetGlobal(allocator);
+
+    const event_bus = try reticular_formation.getGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
+
+    // First claim the task
+    _ = try registry.claim(allocator, "dist-task-4", "dist-agent-4", 5000);
+
+    var distributed = DistributedTaskClaim{
+        .allocator = allocator,
+        .federation = &state,
+        .registry = registry,
+        .event_bus = event_bus,
+    };
+
+    // Abandon should not error
+    try distributed.abandon("dist-task-4", "dist-agent-4");
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INSTANCE ID EDGE CASE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "InstanceId parse invalid format" {
+    // Missing hyphens
+    const result1 = InstanceId.parse("550e8400e29b41d4a716446655440000");
+    try std.testing.expectError(error.InvalidUuid, result1);
+
+    // Invalid hex characters
+    const result2 = InstanceId.parse("550e8400-e29b-41d4-a716-44665544000g");
+    try std.testing.expectError(error.InvalidUuid, result2);
+
+    // Too short
+    const result3 = InstanceId.parse("550e8400-e29b");
+    try std.testing.expectError(error.InvalidUuid, result3);
+
+    // Empty string
+    const result4 = InstanceId.parse("");
+    try std.testing.expectError(error.InvalidUuid, result4);
+}
+
+test "InstanceId parse lowercase" {
+    const allocator = std.testing.allocator;
+    const uuid_str = "550e8400-e29b-41d4-a716-446655440000";
+
+    const id = try InstanceId.parse(uuid_str);
+    const formatted = try id.format(allocator);
+    defer allocator.free(formatted);
+
+    // Should preserve format
+    try std.testing.expectEqualStrings(uuid_str, formatted);
+}
+
+test "InstanceId parse uppercase" {
+    const allocator = std.testing.allocator;
+    const uuid_str = "550E8400-E29B-41D4-A716-446655440000";
+
+    const id = try InstanceId.parse(uuid_str);
+    const formatted = try id.format(allocator);
+    defer allocator.free(formatted);
+
+    // Output should be lowercase
+    try std.testing.expect(formatted[0] >= 'a' and formatted[0] <= 'f');
+}
+
+test "InstanceId compareTo total ordering" {
+    const id1 = InstanceId{ .bytes = [_]u8{0} ** 16 };
+    const id2 = InstanceId{ .bytes = [_]u8{0xFF} ** 16 };
+    const id3 = InstanceId{ .bytes = [_]u8{0x80} ++ [_]u8{0} ** 15 };
+
+    // id1 < id3 < id2
+    try std.testing.expectEqual(std.math.Order.lt, id1.compareTo(&id3));
+    try std.testing.expectEqual(std.math.Order.lt, id3.compareTo(&id2));
+    try std.testing.expectEqual(std.math.Order.gt, id2.compareTo(&id1));
+}
+
+test "InstanceId generate unique" {
+    const ids_to_generate = 100;
+    var ids: [100]InstanceId = undefined;
+
+    for (0..ids_to_generate) |i| {
+        ids[i] = InstanceId.generate();
+    }
+
+    // All should be unique (extremely high probability)
+    var duplicates: usize = 0;
+    for (0..ids_to_generate) |i| {
+        for (i + 1..ids_to_generate) |j| {
+            if (mem.eql(u8, &ids[i].bytes, &ids[j].bytes)) {
+                duplicates += 1;
+            }
+        }
+    }
+
+    try std.testing.expectEqual(@as(usize, 0), duplicates);
+}
+
+test "InstanceId generate sets version_bits" {
+    const id = InstanceId.generate();
+
+    // Check version bits (byte 6 should have version 4 in high nibble)
+    try std.testing.expectEqual(@as(u8, 0x40), id.bytes[6] & 0xF0);
+
+    // Check variant bits (byte 8 should have variant 1 in high two bits)
+    try std.testing.expectEqual(@as(u8, 0x80), id.bytes[8] & 0xC0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// FEDERATION MESSAGE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "FederationMessage deinit cleanup" {
+    const allocator = std.testing.allocator;
+
+    // Test claim_request cleanup
+    {
+        var msg = FederationMessage{
+            .msg_type = .claim_request,
+            .from = InstanceId.generate(),
+            .to = InstanceId.generate(),
+            .term = 1,
+            .timestamp = 1000,
+            .data = .{ .claim_request = .{
+                .task_id = try allocator.dupe(u8, "task-1"),
+                .agent_id = try allocator.dupe(u8, "agent-1"),
+                .ttl_ms = 5000,
+            } },
+        };
+        msg.deinit(allocator);
+    }
+
+    // Test claim_response cleanup
+    {
+        var msg = FederationMessage{
+            .msg_type = .claim_response,
+            .from = InstanceId.generate(),
+            .to = InstanceId.generate(),
+            .term = 1,
+            .timestamp = 1000,
+            .data = .{ .claim_response = .{
+                .task_id = try allocator.dupe(u8, "task-2"),
+                .granted = true,
+                .winner = InstanceId.generate(),
+            } },
+        };
+        msg.deinit(allocator);
+    }
+
+    // Test conflict_resolve cleanup
+    {
+        var msg = FederationMessage{
+            .msg_type = .conflict_resolve,
+            .from = InstanceId.generate(),
+            .to = InstanceId.generate(),
+            .term = 1,
+            .timestamp = 1000,
+            .data = .{ .conflict_resolve = .{
+                .task_id = try allocator.dupe(u8, "task-3"),
+                .conflict_type = .duplicate_claim,
+                .resolving_instance = try allocator.dupe(u8, "instance-1"),
+            } },
+        };
+        msg.deinit(allocator);
+    }
+
+    // If we got here without crashes, cleanup works
+    try std.testing.expect(true);
+}
+
+test "FederationMessage all message types" {
+    const allocator = std.testing.allocator;
+
+    const from_id = InstanceId.generate();
+    const to_id = InstanceId.generate();
+
+    const msg_types = [_]MessageType{
+        .heartbeat,
+        .claim_request,
+        .claim_response,
+        .task_complete,
+        .vote_request,
+        .vote_response,
+        .append_entries,
+        .health_query,
+        .health_response,
+        .conflict_resolve,
+    };
+
+    for (msg_types) |msg_type| {
+        const data: MessageData = switch (msg_type) {
+            .heartbeat => .{ .heartbeat = .{ .sequence = 1 } },
+            .health_query => .health_query,
+            else => continue, // Skip complex ones for this test
+        };
+
+        var msg = FederationMessage{
+            .msg_type = msg_type,
+            .from = from_id,
+            .to = to_id,
+            .term = 1,
+            .timestamp = 1000,
+            .data = data,
+        };
+        defer msg.deinit(allocator);
+
+        try std.testing.expectEqual(msg_type, msg.msg_type);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INSTANCE INFO TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "InstanceInfo deinit cleanup" {
+    const allocator = std.testing.allocator;
+
+    var info = InstanceInfo{
+        .id = InstanceId.generate(),
+        .address = try allocator.dupe(u8, "localhost:8080"),
+        .status = .online,
+        .last_heartbeat = 1000,
+        .term = 1,
+        .voted_for = null,
+        .claim_count = 5,
+        .event_count = 10,
+        .health_score = 95.0,
+    };
+
+    info.deinit(allocator);
+
+    // If we got here without crash, cleanup works
+    try std.testing.expect(true);
+}
+
+test "InstanceInfo with voted_for" {
+    const allocator = std.testing.allocator;
+
+    const voted_id = InstanceId.generate();
+
+    var info = InstanceInfo{
+        .id = InstanceId.generate(),
+        .address = try allocator.dupe(u8, "remote:9000"),
+        .status = .follower,
+        .last_heartbeat = 1000,
+        .term = 5,
+        .voted_for = voted_id,
+        .claim_count = 0,
+        .event_count = 0,
+        .health_score = 100.0,
+    };
+
+    try std.testing.expect(info.voted_for != null);
+    try std.testing.expect(mem.eql(u8, &info.voted_for.?.bytes, &voted_id.bytes));
+
+    info.deinit(allocator);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// GLOBAL SINGLETON TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "getGlobal returns same instance" {
+    const allocator = std.testing.allocator;
+
+    // Reset first
+    resetGlobal(allocator);
+
+    const state1 = try getGlobal(allocator);
+    const state2 = try getGlobal(allocator);
+
+    try std.testing.expectEqual(state1, state2);
+
+    resetGlobal(allocator);
+}
+
+test "resetGlobal cleans up" {
+    const allocator = std.testing.allocator;
+
+    // First call
+    const state1 = try getGlobal(allocator);
+    try std.testing.expect(state1 != null);
+
+    // Reset
+    resetGlobal(allocator);
+
+    // Second call should create new instance
+    const state2 = try getGlobal(allocator);
+    try std.testing.expect(state2 != null);
+
+    // Should be different pointer
+    try std.testing.expect(state1 != state2);
+
+    resetGlobal(allocator);
+}
+
+test "ConflictType all values" {
+    const conflict_types = [_]ConflictType{
+        .duplicate_claim,
+        .heartbeat_timeout,
+        .completion_inconsistent,
+    };
+
+    for (conflict_types) |ct| {
+        _ = ct; // Just verify they exist
+    }
+
+    try std.testing.expectEqual(@as(u8, 0), @intFromEnum(ConflictType.duplicate_claim));
+    try std.testing.expectEqual(@as(u8, 1), @intFromEnum(ConflictType.heartbeat_timeout));
+    try std.testing.expectEqual(@as(u8, 2), @intFromEnum(ConflictType.completion_inconsistent));
+}
+
+test "MessageType all values" {
+    const msg_types = [_]MessageType{
+        .heartbeat,
+        .claim_request,
+        .claim_response,
+        .task_complete,
+        .vote_request,
+        .vote_response,
+        .append_entries,
+        .health_query,
+        .health_response,
+        .conflict_resolve,
+    };
+
+    for (msg_types, 0..) |mt, i| {
+        try std.testing.expectEqual(@as(u8, i), @intFromEnum(mt));
+    }
+}
+
+test "InstanceStatus all values" {
+    const statuses = [_]InstanceStatus{
+        .online,
+        .degraded,
+        .offline,
+        .leader,
+        .follower,
+        .candidate,
+    };
+
+    for (statuses, 0..) |st, i| {
+        try std.testing.expectEqual(@as(u8, i), @intFromEnum(st));
+    }
+}
+
 // φ² + 1/φ² = 3 | TRINITY
