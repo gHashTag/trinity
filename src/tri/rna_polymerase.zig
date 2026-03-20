@@ -392,7 +392,6 @@ pub const PipelineExecutor = struct {
             .status = status,
             .timestamp = std.time.timestamp(),
         };
-<<<<<<< HEAD:src/tri/rna_polymerase.zig
         // Populate per-link results from pipeline state
         for (self.state.results, 0..) |result, i| {
             if (result.status == .completed) {
@@ -437,10 +436,6 @@ pub const PipelineExecutor = struct {
 
         tri_state.savePipelineCheckpoint(self.allocator, checkpoint) catch |err| {
             std.log.debug("pipeline_executor: save per-link checkpoint failed: {}", .{err});
-=======
-        tri_state.savePipelineCheckpoint(self.allocator, checkpoint) catch |err| {
-            std.log.warn("Failed to save pipeline checkpoint: {}", .{err});
->>>>>>> feat/issue-234:src/tri/pipeline_executor.zig
         };
     }
 
@@ -1121,11 +1116,7 @@ pub const PipelineExecutor = struct {
                 var mu = mu_mod.MuAgent.init(self.allocator, ".trinity/mu/patterns.jsonl");
                 defer mu.deinit();
                 mu.load() catch |err| {
-<<<<<<< HEAD:src/tri/rna_polymerase.zig
                     std.log.debug("pipeline_executor: mu.load failed: {}", .{err});
-=======
-                    std.log.warn("MU agent failed to load patterns: {}", .{err});
->>>>>>> feat/issue-234:src/tri/pipeline_executor.zig
                 };
                 const detect_result = mu.detect(result.stderr, self.state.task_description) catch null;
                 if (detect_result) |dr| {
@@ -1136,11 +1127,7 @@ pub const PipelineExecutor = struct {
                     }
                     if (dr.new_count > 0 or dr.updated_count > 0) {
                         mu.save() catch |err| {
-<<<<<<< HEAD:src/tri/rna_polymerase.zig
                             std.log.debug("pipeline_executor: mu.save failed: {}", .{err});
-=======
-                            std.log.warn("MU agent failed to save patterns: {}", .{err});
->>>>>>> feat/issue-234:src/tri/pipeline_executor.zig
                         };
                     }
                 }
