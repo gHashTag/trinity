@@ -2057,6 +2057,22 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    // STORM P1 Brain Zones (Ethical Infrastructure)
+    const storm_ofc_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/brain_zones/ofc.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const storm_habenula_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/brain_zones/habenula.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const storm_amygdala_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/brain_zones/amygdala.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     const microglia_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/microglia.zig"),
         .target = target,
@@ -2256,6 +2272,10 @@ pub fn build(b: *std.Build) void {
             .{ .name = "tri_colors", .module = tri_colors_mod },
             .{ .name = "brain", .module = brain_mod },
             .{ .name = "simulation", .module = simulation_mod },
+            // STORM P1 Brain Zones (Ethical Infrastructure)
+            .{ .name = "storm_ofc", .module = storm_ofc_mod },
+            .{ .name = "storm_habenula", .module = storm_habenula_mod },
+            .{ .name = "storm_amygdala", .module = storm_amygdala_mod },
             // FIXME: trinity-nexus submodule missing
             // .{ .name = "serve_full", .module = serve_full_mod },
         },
@@ -2424,6 +2444,10 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "brain", .module = brain_mod },
                 // Brain simulation module
                 .{ .name = "simulation", .module = simulation_mod },
+                // STORM P1 Brain Zones (Ethical Infrastructure)
+                .{ .name = "storm_ofc", .module = storm_ofc_mod },
+                .{ .name = "storm_habenula", .module = storm_habenula_mod },
+                .{ .name = "storm_amygdala", .module = storm_amygdala_mod },
                 // TRI Commands module (for brain commands)
                 .{ .name = "tri_commands", .module = tri_commands_mod },
                 // Bench module — IGLA benchmark
