@@ -101,7 +101,7 @@ struct ThreadIndicator: View {
                     .font(WernickeTypography.caption2Bold)
                     .foregroundStyle(hasUnread ? V4Color.accent : V4Color.textSecondary)
             }
-            .frame(width: ParietalSpacing.smallFrame, height: ParietalSpacing.avatarHeight)
+            .frame(width: ParietalSpacing.iconButtonFrame, height: ParietalSpacing.buttonFrame)
         }
         .buttonStyle(.plain)
         .scaleEffect(isPressed ? 0.9 : 1.0)
