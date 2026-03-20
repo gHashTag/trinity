@@ -79,14 +79,16 @@ Show alert statistics and summary information.
 
 **Output Format:**
 ```
-Alert Statistics:
-  Total alerts: 127
-  By level:
-    INFO: 85
-    WARN: 32
-    CRITICAL: 10
-  Active: 5
-  Resolved: 122
+╔═══════════════════════════════════════════════════════════════╗
+║  BRAIN ALERTS SUMMARY                                           ║
+╠═══════════════════════════════════════════════════════════════╣
+║  Total Alerts:    ...                                          ║
+║  Info:            ...                                          ║
+║  Warnings:        ...                                          ║
+║  Critical:        ...                                          ║
+║  Unresolved:      ...                                          ║
+║  Last 24h:        ...                                          ║
+╚═══════════════════════════════════════════════════════════════╝
 ```
 
 **Examples:**

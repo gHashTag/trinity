@@ -116,7 +116,12 @@ fn countCellTypes(allocator: std.mem.Allocator, modules: std.json.Value) !Synthe
 }
 
 /// Parse Yosys JSON file and return synthesis statistics
-fn parseYosysJson(allocator: std.mem.Allocator, json_path: []const u8) !SynthesisStats {
+fn parseYosysJson(gpa: std.mem.Allocator, json_path: []const u8) !SynthesisStats {
+    var arena = std.heap.ArenaAllocator.init(gpa);
+    defer arena.deinit();
+
+    const allocator = arena.allocator();
+
     const file = try std.fs.cwd().openFile(json_path, .{});
     defer file.close();
 
@@ -124,17 +129,16 @@ fn parseYosysJson(allocator: std.mem.Allocator, json_path: []const u8) !Synthesi
     const buffer = try allocator.alloc(u8, @intCast(stat.size));
 
     _ = try file.readAll(buffer);
-    defer allocator.free(buffer);
 
-    const parsed = try std.json.parseFromSlice(std.json.Value, allocator, buffer, .{});
+    const parsed = try std.json.parseFromSliceLeaky(std.json.Value, allocator, buffer, .{});
 
     // Yosys JSON: { "modules": { "sacred_alu": { "cells": [...] } } }
-    const modules = parsed.value.object.get("modules");
-
-    parsed.deinit();
+    const modules = parsed.object.get("modules");
 
     if (modules) |mod| {
-        return try countCellTypes(allocator, mod);
+        // Copy stats to return value (they're just numbers, no allocations)
+        const stats = try countCellTypes(allocator, mod);
+        return stats;
     } else {
         return error.NoModulesKey;
     }
@@ -145,7 +149,7 @@ fn parseYosysJson(allocator: std.mem.Allocator, json_path: []const u8) !Synthesi
 // =============================================================================
 
 /// Parse Yosys synthesis JSON and output resource statistics
-pub fn runSacredSynthReportCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+pub fn runSacredSynthReportCommand(args: []const []const u8) !void {
     // Parse arguments
     var json_path: []const u8 = "fpga/openxc7-synth/sacred_alu.json";
     var output_format: []const u8 = "human"; // human | csv | json
@@ -172,7 +176,7 @@ pub fn runSacredSynthReportCommand(allocator: std.mem.Allocator, args: []const [
     std.debug.print("{s}Output:{s} {s}\n\n", .{ CYAN, RESET, output_format });
 
     // Parse Yosys JSON
-    const stats = parseYosysJson(allocator, json_path) catch |err| {
+    const stats = parseYosysJson(std.heap.page_allocator, json_path) catch |err| {
         std.debug.print("{s}Error:{s} Failed to parse Yosys JSON: {s}\n", .{ RED, RESET, @errorName(err) });
         std.debug.print("{s}Hint:{s} Run synthesis first: tri fpga synth ... --top sacred_alu\n\n", .{ CYAN, RESET });
         return;
@@ -276,7 +280,7 @@ pub fn main() !u8 {
 
     // Skip binary name
     if (args.len > 1) {
-        try runSacredSynthReportCommand(allocator, args[1..]);
+        try runSacredSynthReportCommand(args[1..]);
         return 0;
     }
 

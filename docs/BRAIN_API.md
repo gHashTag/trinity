@@ -1,6 +1,6 @@
 # S³AI Brain API Reference
 
-Complete API documentation for all 22 brain regions in Trinity's S³AI Brain v5.1.
+Complete API documentation for all 23 brain regions in Trinity's S³AI Brain v5.1.
 
 ## Table of Contents
 
