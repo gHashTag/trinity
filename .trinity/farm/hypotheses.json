@@ -1,0 +1,4 @@
+[
+  {"id":"H1","name":"Sacred early convergence","criterion":"sacred avg PPL@10K < random by ≥1.0"},
+  {"id":"H2","name":"Sacred reduces spikes","criterion":"sacred avg spikes < random avg spikes"}
+]

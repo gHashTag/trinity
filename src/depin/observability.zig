@@ -42,6 +42,8 @@ pub const Comparison = enum {
     equal_to,
 };
 
+pub const Label = struct { key: []const u8, value: []const u8 };
+
 pub const AlertThreshold = struct {
     metric_name: []const u8,
     warning_threshold: f64,
@@ -98,7 +100,7 @@ pub const ObservabilityManager = struct {
         name: []const u8,
         mtype: MetricType,
         value: MetricValue,
-        labels: []const struct { key: []const u8, value: []const u8 },
+        labels: []const Label,
     ) !void {
         var label_map = std.StringHashMapUnmanaged([]const u8){};
         for (labels) |label| {
@@ -273,4 +275,184 @@ test "get metrics by type" {
     defer allocator.free(uptime_metrics);
 
     try std.testing.expectEqual(@as(usize, 1), uptime_metrics.len);
+}
+
+test "record metric with empty labels" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.recordMetricWithLabels("test", .counter, .{ .counter = 100 }, &[_]Label{});
+    try std.testing.expectEqual(@as(usize, 1), manager.metrics.items.len);
+}
+
+test "record metric with labels" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.recordMetricWithLabels("request_count", .counter, .{ .counter = 42 }, &[_]Label{
+        .{ .key = "method", .value = "GET" },
+        .{ .key = "endpoint", .value = "/api" },
+    });
+
+    try std.testing.expectEqual(@as(usize, 1), manager.metrics.items.len);
+    const metric = manager.metrics.items[0];
+    try std.testing.expectEqualStrings("request_count", metric.name);
+    try std.testing.expectEqual(@as(usize, 2), metric.labels.count());
+}
+
+test "threshold comparison operators" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.addThreshold("metric1", 5.0, 10.0, .greater_than, true);
+    try manager.addThreshold("metric2", 20.0, 10.0, .less_than, true);
+    try manager.addThreshold("metric3", 5.0, 10.0, .equal_to, true);
+
+    // greater_than: 15 > 10 should trigger
+    try manager.recordMetric("metric1", .uptime, .{ .gauge = 15.0 });
+    try std.testing.expectEqual(@as(u64, 1), manager.getAlertCount());
+
+    manager.resetAlerts();
+
+    // less_than: 5 < 10 should trigger
+    try manager.recordMetric("metric2", .uptime, .{ .gauge = 5.0 });
+    try std.testing.expectEqual(@as(u64, 1), manager.getAlertCount());
+
+    manager.resetAlerts();
+
+    // equal_to: 10 == 10 should trigger
+    try manager.recordMetric("metric3", .uptime, .{ .gauge = 10.0 });
+    try std.testing.expectEqual(@as(u64, 1), manager.getAlertCount());
+}
+
+test "threshold disabled does not trigger" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.addThreshold("metric", 5.0, 10.0, .greater_than, false); // Disabled
+
+    try manager.recordMetric("metric", .uptime, .{ .gauge = 15.0 });
+    try std.testing.expectEqual(@as(u64, 0), manager.getAlertCount());
+}
+
+test "threshold with counter metric" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.addThreshold("counter_metric", 5.0, 10.0, .greater_than, true);
+
+    try manager.recordMetric("counter_metric", .counter, .{ .counter = 15 });
+    try std.testing.expectEqual(@as(u64, 1), manager.getAlertCount());
+}
+
+test "threshold histogram not checked" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.addThreshold("hist_metric", 5.0, 10.0, .greater_than, true);
+
+    const histogram_data = [_]u64{ 1, 2, 3 };
+    try manager.recordMetric("hist_metric", .counter, .{ .histogram = &histogram_data });
+
+    // Histograms are skipped, no alert should trigger
+    try std.testing.expectEqual(@as(u64, 0), manager.getAlertCount());
+}
+
+test "get metrics by type empty result" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.recordMetric("metric1", .uptime, .{ .gauge = 99.0 });
+
+    const result = try manager.getMetricsByType(.latency, allocator);
+    defer allocator.free(result);
+
+    try std.testing.expectEqual(@as(usize, 0), result.len);
+}
+
+test "reset alerts" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.addThreshold("metric", 5.0, 10.0, .greater_than, true);
+    try manager.recordMetric("metric", .uptime, .{ .gauge = 15.0 });
+
+    try std.testing.expectEqual(@as(u64, 1), manager.getAlertCount());
+
+    manager.resetAlerts();
+    try std.testing.expectEqual(@as(u64, 0), manager.getAlertCount());
+}
+
+test "export prometheus with multiple metrics" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.recordMetric("metric1", .uptime, .{ .gauge = 99.5 });
+    try manager.recordMetric("metric2", .latency, .{ .gauge = 45.2 });
+    try manager.recordMetric("metric3", .counter, .{ .counter = 12345 });
+
+    const export_ = try manager.exportPrometheus(allocator);
+    defer allocator.free(export_);
+
+    try std.testing.expect(std.mem.indexOf(u8, export_, "depin_metric1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, export_, "depin_metric2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, export_, "depin_metric3") != null);
+    try std.testing.expect(std.mem.indexOf(u8, export_, "99.5") != null);
+    try std.testing.expect(std.mem.indexOf(u8, export_, "45.2") != null);
+    try std.testing.expect(std.mem.indexOf(u8, export_, "12345") != null);
+}
+
+test "multiple thresholds for same metric" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.addThreshold("metric", 5.0, 10.0, .greater_than, true);
+    try manager.addThreshold("metric", 20.0, 30.0, .greater_than, true);
+
+    try manager.recordMetric("metric", .uptime, .{ .gauge = 35.0 });
+    // Both thresholds should trigger (35 > 10 and 35 > 30)
+    try std.testing.expectEqual(@as(u64, 2), manager.getAlertCount());
+}
+
+test "init and deinit cleanup" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+
+    try manager.recordMetricWithLabels("test", .counter, .{ .counter = 100 }, &[_]Label{
+        .{ .key = "label1", .value = "value1" },
+    });
+
+    manager.deinit();
+    // If deinit works correctly, this test will pass without memory leaks
+}
+
+test "metric timestamp increases" {
+    const allocator = std.testing.allocator;
+    var manager = ObservabilityManager.init(allocator);
+    defer manager.deinit();
+
+    try manager.recordMetric("metric1", .uptime, .{ .gauge = 99.0 });
+
+    // Small busy wait to ensure timestamp increases
+    var i: usize = 0;
+    while (i < 100000) : (i += 1) {
+        @atomicStore(usize, &i, i, .monotonic);
+    }
+
+    try manager.recordMetric("metric2", .uptime, .{ .gauge = 98.0 });
+
+    const ts1 = manager.metrics.items[0].timestamp;
+    const ts2 = manager.metrics.items[1].timestamp;
+
+    try std.testing.expect(ts2 >= ts1);
 }

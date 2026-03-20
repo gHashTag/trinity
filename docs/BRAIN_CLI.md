@@ -25,6 +25,15 @@ tri brain simulate smoke
 
 # View brain visualization dashboard
 tri brain --viz preset
+
+# Claim a task (Basal Ganglia)
+tri task claim issue-123 --agent agent-5
+
+# Poll events (Reticular Formation)
+tri event stream
+
+# Health check
+tri stress --health
 ```
 
 ---
@@ -480,6 +489,477 @@ tri brain --viz
 
 # Explicit preset
 tri brain --viz preset
+```
+
+---
+
+### `tri task [claim|release|list|stats|heartbeat|reset] [--agent <id>]`
+
+Basal Ganglia commands for task claim registry (action selection).
+
+#### Subcommands
+
+##### `tri task claim <task_id> [--agent <id>]`
+
+Claim a task for an agent (default 5 minute TTL).
+
+**Parameters:**
+- `task_id` - Unique task identifier
+- `--agent <id>` - Agent ID (default: "default")
+
+**Output Format:**
+```
+✓ Task issue-123 claimed by agent-5
+```
+
+**Examples:**
+```bash
+# Claim a task with default agent
+tri task claim issue-123
+
+# Claim a task for a specific agent
+tri task claim issue-123 --agent agent-5
+```
+
+---
+
+##### `tri task release <task_id> [--agent <id>]`
+
+Release a claimed task back to the pool.
+
+**Parameters:**
+- `task_id` - Unique task identifier
+- `--agent <id>` - Agent ID (default: "default")
+
+**Output Format:**
+```
+✓ Task issue-123 released by agent-5
+```
+
+**Examples:**
+```bash
+tri task release issue-123
+tri task release issue-123 --agent agent-5
+```
+
+---
+
+##### `tri task list [--agent <id>]`
+
+List all active task claims, optionally filtered by agent.
+
+**Parameters:**
+- `--agent <id>` - Filter by specific agent ID
+
+**Output Format:**
+```
+Active Task Claims:
+  1. issue-123 @ agent-5 (expires in 4m 23s)
+  2. issue-124 @ agent-3 (expires in 3m 15s)
+  3. issue-125 @ default (expires in 4m 59s)
+Total: 3 active claims
+```
+
+**Examples:**
+```bash
+# List all claims
+tri task list
+
+# List claims for specific agent
+tri task list --agent agent-5
+```
+
+---
+
+##### `tri task stats`
+
+Show registry statistics including claim counts and rates.
+
+**Output Format:**
+```
+Basal Ganglia Registry Stats:
+  Total Claims:    1,234
+  Active Claims:   42
+  Released Claims: 1,192
+  Denied Claims:   23
+  Claim Rate:      15.2/min
+  Release Rate:    14.8/min
+```
+
+**Examples:**
+```bash
+tri task stats
+```
+
+---
+
+##### `tri task heartbeat <task_id> [--agent <id>]`
+
+Refresh a task claim TTL to prevent expiration.
+
+**Parameters:**
+- `task_id` - Unique task identifier
+- `--agent <id>` - Agent ID (default: "default")
+
+**Output Format:**
+```
+✓ Task issue-123 heartbeat refreshed (TTL: 5m)
+```
+
+**Examples:**
+```bash
+tri task heartbeat issue-123
+tri task heartbeat issue-123 --agent agent-5
+```
+
+---
+
+##### `tri task reset`
+
+Clear all task claims from the registry.
+
+**Warning:** This will release all claimed tasks and cannot be undone.
+
+**Output Format:**
+```
+✓ Registry reset
+```
+
+**Examples:**
+```bash
+tri task reset
+```
+
+---
+
+### `tri event [stream|stats|clear|trim]`
+
+Reticular Formation commands for event bus (broadcast alerting).
+
+#### Subcommands
+
+##### `tri event stream [--since <ts>] [--max <N>]`
+
+Poll events from the event bus.
+
+**Parameters:**
+- `--since <ts>` - Timestamp (milliseconds since epoch) to start polling from
+- `--max <N>` - Maximum number of events to return (default: 100)
+
+**Output Format:**
+```
+Events (since 1710892800000):
+  [0] task_claimed @ 1710892801000
+  [1] task_released @ 1710892802000
+  [2] alert_triggered @ 1710892803000
+```
+
+**Examples:**
+```bash
+# Get last 100 events
+tri event stream
+
+# Get events since specific timestamp
+tri event stream --since 1710892800000
+
+# Get last 50 events
+tri event stream --max 50
+
+# Combine filters
+tri event stream --since 1710892800000 --max 20
+```
+
+---
+
+##### `tri event stats`
+
+Show event bus statistics including publish and poll counts.
+
+**Output Format:**
+```
+Reticular Formation Stats:
+  Published:  5,432
+  Polled:     5,380
+  Buffered:   52
+```
+
+**Examples:**
+```bash
+tri event stats
+```
+
+---
+
+##### `tri event clear`
+
+Clear all events from the event bus.
+
+**Warning:** This will delete all buffered events and cannot be undone.
+
+**Output Format:**
+```
+✓ Event bus cleared
+```
+
+**Examples:**
+```bash
+tri event clear
+```
+
+---
+
+##### `tri event trim <count>`
+
+Trim the event bus to keep only the most recent N events.
+
+**Parameters:**
+- `count` - Number of recent events to keep
+
+**Output Format:**
+```
+✓ Trimmed to 100 events
+```
+
+**Examples:**
+```bash
+# Keep only last 100 events
+tri event trim 100
+
+# Keep only last 1000 events
+tri event trim 1000
+```
+
+---
+
+### `tri stress [--health|--metrics|--dump|--scan|--telemetry|--history|--record]`
+
+Stress test and diagnostic commands for S³AI brain health monitoring.
+
+#### Subcommands
+
+##### `tri stress --health`
+
+Perform a health check on the brain and return detailed metrics.
+
+**Output Format:**
+```
+╔═══════════════════════════════════════╗
+║  S³AI BRAIN HEALTH CHECK            ║
+╚═══════════════════════════════════════╝
+
+  Score: 88.5/100
+  Status: HEALTHY
+
+  Active Claims: 42
+  Events Published: 1,234
+  Events Buffered: 56
+```
+
+**Exit Code:** Returns error `BrainUnhealthy` if score is below threshold.
+
+**Examples:**
+```bash
+tri stress --health
+```
+
+---
+
+##### `tri stress --metrics`
+
+Export Prometheus metrics (Corpus Callosum) for monitoring systems.
+
+**Output Format:**
+```
+# HELP s3ai_brain_active_claims Current number of active task claims
+# TYPE s3ai_brain_active_claims gauge
+s3ai_brain_active_claims 42
+
+# HELP s3ai_brain_events_published Total events published
+# TYPE s3ai_brain_events_published counter
+s3ai_brain_events_published 1234
+
+# HELP s3ai_brain_events_polled Total event polls
+# TYPE s3ai_brain_events_polled counter
+s3ai_brain_events_polled 1180
+
+# HELP s3ai_brain_events_buffered Current buffered events
+# TYPE s3ai_brain_events_buffered gauge
+s3ai_brain_events_buffered 56
+
+# HELP s3ai_brain_health_score Brain health score (0-100)
+# TYPE s3ai_brain_health_score gauge
+s3ai_brain_health_score 88.5
+
+# HELP s3ai_brain_healthy Brain health status (1=healthy, 0=unhealthy)
+# TYPE s3ai_brain_healthy gauge
+s3ai_brain_healthy 1
+```
+
+**Examples:**
+```bash
+tri stress --metrics
+```
+
+---
+
+##### `tri stress --dump`
+
+Dump complete brain state including all regions and metrics.
+
+**Output Format:**
+```
+╔═══════════════════════════════════════════════════════════════╗
+║  S³AI BRAIN DUMP — v5.1                                      ║
+╠═══════════════════════════════════════════════════════════════╣
+║  HEALTH SCORE: 88.5/100  [    HEALTHY                        ║
+╠═══════════════════════════════════════════════════════════════╣
+║  Basal Ganglia (Action Selection)                            ║
+║    Active Claims:       42                                   ║
+╠═══════════════════════════════════════════════════════════════╣
+║  Reticular Formation (Broadcast Alerting)                    ║
+║    Events Published:   1,234                                ║
+║    Events Polled:       1,180                                ║
+║    Events Buffered:     56                                   ║
+╠═══════════════════════════════════════════════════════════════╣
+║  Locus Coeruleus (Arousal Regulation)                        ║
+║    Strategy:            exponential_backoff                   ║
+║    Initial Delay:       100 ms                               ║
+║    Max Delay:           5000 ms                              ║
+╚═══════════════════════════════════════════════════════════════╝
+```
+
+**Examples:**
+```bash
+tri stress --dump
+```
+
+---
+
+##### `tri stress --scan`
+
+Perform a visual brain scan showing status of each region.
+
+**Output Format:**
+```
+╔═══════════════════════════════════════╗
+║  S³AI BRAIN SCAN — v5.1               ║
+╠═══════════════════════════════════════╣
+║  Basal Ganglia:     88.5%  Action     ║
+║  Reticular Form.:   92.3%  Alert      ║
+║  Locus Coeruleus:   90.0%  Arousal    ║
+╠═══════════════════════════════════════╣
+║  Overall Status:    90.3%             ║
+╚═══════════════════════════════════════╝
+```
+
+**Examples:**
+```bash
+tri stress --scan
+```
+
+---
+
+##### `tri stress --telemetry`
+
+Show telemetry summary (Corpus Callosum) including health trends.
+
+**Output Format:**
+```
+╔═══════════════════════════════════════╗
+║  S³AI TELEMETRY — Corpus Callosum   ║
+╚═══════════════════════════════════════╝
+  Avg Health (10):  87.2/100
+  Trend:            📈 Improving
+```
+
+**Trend Indicators:**
+- `📈 Improving` - Health score is trending up
+- `➡️ Stable` - Health score is stable
+- `📉 Declining` - Health score is trending down
+
+**Examples:**
+```bash
+tri stress --telemetry
+```
+
+---
+
+##### `tri stress --history`
+
+Show health history (Hippocampus) with recent snapshots.
+
+**Output Format:**
+```
+╔═══════════════════════════════════════════════════╗
+║  S³AI HIPPOCAMPUS — Health Memory                ║
+╚═══════════════════════════════════════════════════╝
+
+  Recent 10 snapshots:
+  ┌────────────┬────────┬───────┬────────┬──────┐
+  │ Time       │ Health │ OK    │ Claims │ Event│
+  ├────────────┼────────┼───────┼────────┼──────┤
+  │ 5m ago     │  88.5  │  ✓   │     42 │ 1234 │
+  │ 10m ago    │  87.2  │  ✓   │     45 │ 1190 │
+  │ 15m ago    │  86.8  │  ✓   │     48 │ 1150 │
+  ...
+  └────────────┴────────┴───────┴────────┴──────┘
+```
+
+**Note:** Run `tri stress --record` first if no history exists.
+
+**Examples:**
+```bash
+tri stress --history
+```
+
+---
+
+##### `tri stress --record`
+
+Record current health snapshot to Hippocampus (persistent memory).
+
+**Output Format:**
+```
+✓ Health snapshot recorded to Hippocampus
+  Score: 88.5/100
+  File: .trinity/brain_health_history.jsonl
+```
+
+**Examples:**
+```bash
+tri stress --record
+```
+
+**Storage:** Snapshots are stored in `.trinity/brain_health_history.jsonl` (JSONL format).
+
+---
+
+### `tri sim suite`
+
+Run deterministic brain evolution simulation suite.
+
+**Output Format:**
+```
+╔══════════════════════════════════════════╗
+║  DETERMINISTIC BRAIN EVOLUTION         ║
+║  SIMULATION SUITE                       ║
+╚════════════════════════════════════════╝
+
+Running evolution scenarios...
+  ✓ Scenario 1: Neural plasticity adaptation
+  ✓ Scenario 2: Synaptic pruning optimization
+  ✓ Scenario 3: Neurogenesis pattern matching
+  ✓ Scenario 4: Myelination efficiency boost
+  ✓ Scenario 5: Neurotransmitter balance tuning
+
+All scenarios complete
+  Total steps: 1250
+  Evolution score: 94.2/100
+```
+
+**Examples:**
+```bash
+tri sim suite
 ```
 
 ---
