@@ -3244,19 +3244,4 @@ pub fn build(b: *std.Build) void {
     const sacred_synth_report_step = b.step("sacred-synth-report", "Parse Yosys JSON synthesis output for Sacred ALU");
     sacred_synth_report_step.dependOn(&sacred_synth_report.step);
 
-    // ═══════════════════════════════════════════════════════════════════════════
-    // storm — STORM: 32-agent, 5-wave autonomous operation
-    // ═══════════════════════════════════════════════════════════════════════════
-    const storm = b.addExecutable(.{
-        .name = "storm",
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/storm/main.zig"),
-            .target = target,
-            .optimize = optimize,
-        }),
-    });
-    b.installArtifact(storm);
-
-    const storm_step = b.step("storm", "STORM: 32-agent, 5-wave autonomous operation");
-    storm_step.dependOn(&storm.step);
 }
