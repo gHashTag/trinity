@@ -36,6 +36,13 @@ comptime {
     }
 }
 
+/// Gets current time in milliseconds
+///
+/// Uses std.time.milliTimestamp() for better precision than timestamp() * 1000
+inline fn nowMs() i64 {
+    return std.time.milliTimestamp();
+}
+
 /// Status of a task claim
 pub const ClaimStatus = enum(u8) { active = 0, completed = 1, abandoned = 2 };
 
@@ -58,22 +65,31 @@ pub const TaskClaim = struct {
     completed_at: ?i64,
     last_heartbeat: i64,
 
+    /// Checks if this claim is still valid
+    ///
+    /// A claim is valid if:
+    /// 1. Status is `.active`
+    /// 2. Age (now_ms - claimed_at) <= ttl_ms
+    /// 3. Heartbeat age (now_ms - last_heartbeat) <= 30000ms
+    ///
+    /// # Thread Safety
+    /// Safe to call from any thread
     pub fn isValid(self: *const TaskClaim) bool {
         if (self.status != .active) return false;
-        const now_ms = std.time.timestamp() * 1000;
+        const now_ms = nowMs();
 
         // Handle clock skew: if claimed_at is in future, treat as valid
-        const age_ms = if (self.claimed_at > now_ms)
-            @as(u64, 0)
+        const age_ms: u64 = if (self.claimed_at > now_ms)
+            0
         else
-            @as(u64, @intCast(now_ms - self.claimed_at));
+            @intCast(now_ms - self.claimed_at);
 
         if (age_ms > self.ttl_ms) return false;
 
-        const heartbeat_age_ms = if (self.last_heartbeat > now_ms)
-            @as(u64, 0)
+        const heartbeat_age_ms: u64 = if (self.last_heartbeat > now_ms)
+            0
         else
-            @as(u64, @intCast(now_ms - self.last_heartbeat));
+            @intCast(now_ms - self.last_heartbeat);
 
         if (heartbeat_age_ms > 30000) return false;
         return true;
@@ -254,7 +270,7 @@ pub const Registry = struct {
         shard.rwlock.lock();
         defer shard.rwlock.unlock();
 
-        const now_ms = std.time.timestamp() * 1000;
+        const now_ms = nowMs();
 
         // Check if already claimed and valid
         if (shard.claims.get(task_id)) |existing| {
@@ -309,7 +325,7 @@ pub const Registry = struct {
         if (shard.claims.getEntry(task_id)) |entry| {
             const entry_claim = &entry.value_ptr.*;
             if (std.mem.eql(u8, entry_claim.agent_id, agent_id) and entry_claim.isValid()) {
-                entry_claim.last_heartbeat = std.time.timestamp() * 1000;
+                entry_claim.last_heartbeat = nowMs();
                 _ = self.stats.heartbeat_success.fetchAdd(1, .monotonic);
                 return true;
             }
@@ -331,7 +347,7 @@ pub const Registry = struct {
             const entry_claim = &entry.value_ptr.*;
             if (std.mem.eql(u8, entry_claim.agent_id, agent_id) and entry_claim.isValid()) {
                 entry_claim.status = .completed;
-                entry_claim.completed_at = std.time.timestamp() * 1000;
+                entry_claim.completed_at = nowMs();
                 _ = self.stats.complete_success.fetchAdd(1, .monotonic);
                 return true;
             }
@@ -353,7 +369,7 @@ pub const Registry = struct {
             const entry_claim = &entry.value_ptr.*;
             if (std.mem.eql(u8, entry_claim.agent_id, agent_id) and entry_claim.isValid()) {
                 entry_claim.status = .abandoned;
-                entry_claim.completed_at = std.time.timestamp() * 1000;
+                entry_claim.completed_at = nowMs();
                 _ = self.stats.abandon_success.fetchAdd(1, .monotonic);
                 return true;
             }
@@ -514,8 +530,8 @@ pub const Registry = struct {
         shard.rwlock.lockShared();
         defer shard.rwlock.unlockShared();
 
-        if (shard.claims.get(task_id)) |existing_claim| {
-            return if (existing_claim.isValid()) .claimed else .expired;
+        if (shard.claims.get(task_id)) |task_claim| {
+            return if (task_claim.isValid()) .claimed else .expired;
         }
         return .not_found;
     }
@@ -839,10 +855,14 @@ test "LockFree: claim expiration by TTL" {
     defer registry.deinit();
 
     const task_id = "task-expire";
-    _ = try registry.claim(allocator, task_id, "agent-001", 1); // 1ms TTL
+    _ = try registry.claim(allocator, task_id, "agent-001", 50); // 50ms TTL
 
     // Wait for expiration
-    std.Thread.sleep(5 * std.time.ns_per_ms);
+    std.Thread.sleep(100 * std.time.ns_per_ms);
+
+    // Old claim should now be expired
+    const check = registry.checkClaim(task_id);
+    try std.testing.expectEqual(Registry.ClaimCheckResult.expired, check);
 
     // Claim should be available again (old one expired)
     const reclaimed = try registry.claim(allocator, task_id, "agent-002", 60000);
@@ -859,16 +879,17 @@ test "LockFree: claim expiration by heartbeat" {
 
     _ = try registry.claim(allocator, task_id, agent_id, 60000);
 
-    // Manually set heartbeat to past (31 seconds ago)
-    const shard = registry.getShard(task_id);
+    // Manually set heartbeat to past (31 seconds ago) using direct access
+    const shard_idx = Registry.getShardIndex(task_id);
+    const shard = &registry.shards[shard_idx];
     shard.rwlock.lock();
-    defer shard.rwlock.unlock();
     if (shard.claims.getEntry(task_id)) |entry| {
-        const now = std.time.timestamp();
-        entry.value_ptr.*.last_heartbeat = (now - 31) * 1000;
+        const now = nowMs();
+        entry.value_ptr.*.last_heartbeat = now - 31000; // 31 seconds ago
     }
+    shard.rwlock.unlock();
 
-    // Task should now be invalid
+    // Task should now be invalid (use checkClaim which takes shared lock)
     const check_result = registry.checkClaim(task_id);
     try std.testing.expectEqual(Registry.ClaimCheckResult.expired, check_result);
 }
@@ -879,10 +900,10 @@ test "LockFree: re-claim after expiration" {
     defer registry.deinit();
 
     const task_id = "task-reclaim-expire";
-    _ = try registry.claim(allocator, task_id, "agent-001", 1); // 1ms TTL
+    _ = try registry.claim(allocator, task_id, "agent-001", 50); // 50ms TTL
 
     // Wait for expiration
-    std.Thread.sleep(5 * std.time.ns_per_ms);
+    std.Thread.sleep(100 * std.time.ns_per_ms);
 
     // Should be claimable by different agent
     const claimed = try registry.claim(allocator, task_id, "agent-002", 60000);
@@ -898,14 +919,15 @@ test "LockFree: clock skew handling" {
     _ = try registry.claim(allocator, task_id, "agent-001", 60000);
 
     // Simulate clock skew: set claimed_at to future
-    const shard = registry.getShard(task_id);
+    const shard_idx = Registry.getShardIndex(task_id);
+    const shard = &registry.shards[shard_idx];
     shard.rwlock.lock();
-    defer shard.rwlock.unlock();
     if (shard.claims.getEntry(task_id)) |entry| {
-        const future = std.time.timestamp() + 3600; // 1 hour in future
-        entry.value_ptr.*.claimed_at = future * 1000;
-        entry.value_ptr.*.last_heartbeat = future * 1000;
+        const future = nowMs() + 3600000; // 1 hour in future (ms)
+        entry.value_ptr.*.claimed_at = future;
+        entry.value_ptr.*.last_heartbeat = future;
     }
+    shard.rwlock.unlock();
 
     // Task should still be valid despite clock skew
     const check_result = registry.checkClaim(task_id);
@@ -925,11 +947,11 @@ test "LockFree: cleanup removes expired claims" {
     }
 
     // Add one short-lived task
-    _ = try registry.claim(allocator, "short-lived", "agent-001", 1);
+    _ = try registry.claim(allocator, "short-lived", "agent-001", 50);
     try std.testing.expectEqual(@as(usize, 6), registry.count());
 
     // Wait for expiration
-    std.Thread.sleep(5 * std.time.ns_per_ms);
+    std.Thread.sleep(100 * std.time.ns_per_ms);
 
     // Cleanup should remove expired claim
     const removed = registry.cleanupExpired();
@@ -1080,14 +1102,10 @@ test "LockFree: out of memory handling" {
     // This test checks error propagation when string duplication fails
 
     // Since we can't easily inject a failing allocator without
-    // implementing the full vtable, we verify the error path exists
+    // implementing the full Allocator vtable, we verify the error path exists
     const allocator = std.testing.allocator;
     var registry = Registry.init(allocator);
     defer registry.deinit();
-
-    // This test validates that the claim function has proper error handling
-    // for allocation failures. In practice, OOM is rare on modern systems.
-    // The important thing is that error.OutOfMemory is in the error set.
 
     // Verify claim returns an error union
     const result = registry.claim(allocator, "task-oom", "agent-001", 60000);
