@@ -124,7 +124,7 @@ pub const EventBus = struct {
     },
 
     pub fn init(allocator: std.mem.Allocator) EventBus {
-        return EventBus{
+        var bus = EventBus{
             .mutex = std.Thread.Mutex{},
             .allocator = allocator,
             .events = std.ArrayList(StoredEvent).initCapacity(allocator, 256) catch |err| {
@@ -133,6 +133,12 @@ pub const EventBus = struct {
             },
             .stats = .{ .published = 0, .polled = 0, .trim_count = 0, .peak_buffered = 0 },
         };
+        // Pre-allocate for MAX_EVENTS to avoid frequent reallocations
+        bus.events.ensureTotalCapacityPrecise(allocator, MAX_EVENTS) catch |err| {
+            std.log.warn("Failed to pre-allocate MAX_EVENTS: {}", .{err});
+            // Continue with initial capacity, will grow as needed
+        };
+        return bus;
     }
 
     pub fn deinit(self: *EventBus) void {
