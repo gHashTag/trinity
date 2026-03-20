@@ -1024,7 +1024,8 @@ fn printHelp() void {
     print("  {s}tri dev fill{s}         Spawn agents for all agent:dev issues\n", .{ CYAN, RESET });
     print("  {s}tri dev metrics{s}      Show aggregate fitness metrics\n", .{ CYAN, RESET });
     print("  {s}tri dev leaderboard{s}  Rank agents by fitness score\n", .{ CYAN, RESET });
-    print("  {s}tri dev evolve{s}       ASHA+PBT evolution commands\n\n", .{ CYAN, RESET });
+    print("  {s}tri dev evolve{s}       ASHA+PBT evolution commands\n", .{ CYAN, RESET });
+    print("  {s}tri dev zai-proxy{s}    Z.AI rotating proxy: start|stop|status|run|install\n\n", .{ CYAN, RESET });
     print("  Options for spawn:\n", .{});
     print("    {s}--role{s} <planner|coder|reviewer|tester|integrator>\n", .{ DIM, RESET });
     print("    {s}--model{s} <model-id>   (default: claude-sonnet-4-20250514)\n", .{ DIM, RESET });

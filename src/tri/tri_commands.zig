@@ -2032,13 +2032,13 @@ pub fn runTaskClaimCommand(allocator: std.mem.Allocator, args: []const []const u
         }
     } else if (std.mem.eql(u8, action, "list")) {
         std.debug.print("{s}Active Task Claims:{s}\n", .{ GOLDEN, RESET });
-        var iter = reg.claims.iterator();
+        const claims = try reg.listClaims(allocator);
+        defer reg.freeClaims(allocator, claims);
         var count: usize = 0;
-        while (iter.next()) |entry| {
-            const claim = entry.value_ptr.*;
-            if (claim.isValid()) {
-                std.debug.print("  {s}: {s} (agent: {s}, TTL: {d}s)\n", .{
-                    entry.key_ptr.*, claim.task_id, claim.agent_id, claim.ttl_ms / 1000,
+        for (claims) |info| {
+            if (info.is_valid) {
+                std.debug.print("  {s}: agent={s}, TTL={d}s, status={any}\n", .{
+                    info.task_id, info.agent_id, info.ttl_ms / 1000, info.status,
                 });
                 count += 1;
             }

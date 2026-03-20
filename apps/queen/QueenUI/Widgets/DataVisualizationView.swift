@@ -137,7 +137,7 @@ struct DataBarChart: View {
                     RoundedRectangle(cornerRadius: 4)
                         .fill(color)
                         .frame(height: maxBarHeight * (animatedValues.isEmpty ? value : animatedValues[index]))
-                        .animation(.spring(response: 0.6, dampingFraction: 0.7), value: animatedValues[index])
+                        .animation(MTMotion.gentleSpring, value: animatedValues[index])
 
                     if index < labels.count {
                         Text(labels[index])

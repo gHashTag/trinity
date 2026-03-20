@@ -1,4 +1,3 @@
-// @origin(spec:storm/brain_zones_ofc.tri) @regen(vibee)
 // ═══════════════════════════════════════════════════════════════════════════════
 // OFC — Orbitofrontal Cortex (Палата ценностей - Value Chamber)
 // ═══════════════════════════════════════════════════════════════════════════════════
@@ -111,7 +110,6 @@ pub const OFC = struct {
     /// Toxic verdict: оценка действий по этическим метрикам
     pub fn verdict(ofc: *OFC, ctx: Context, action: Action) !Verdict {
         _ = ctx;
-        _ = ofc;
 
         // Calculate average score
         var sum: f32 = 0;

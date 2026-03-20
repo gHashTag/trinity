@@ -392,7 +392,7 @@ struct ChatScreen: View {
                     .padding(.bottom, 90)
                     .transition(.scale.combined(with: .opacity))
                 }
-                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: selectedMessageIDs.count)
+                .animation(MTMotion.quickSpring, value: selectedMessageIDs.count)
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
             }
         }
@@ -3642,7 +3642,7 @@ struct MessageRow: View {
                         .foregroundStyle(isSelected ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
                         .scaleEffect(isSelected ? 1.1 : 1.0)
                 }
-                .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
+                .animation(MTMotion.bouncySpring, value: isSelected)
             }
             .buttonStyle(.plain)
             .padding(.trailing, 10)
@@ -7614,7 +7614,7 @@ struct MultiSelectActionBar: View {
             y: 4
         )
         .scaleEffect(isHovering ? 1.02 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: isHovering)
+        .animation(MTMotion.quickSpring, value: isHovering)
         .onHover { hovering in
             isHovering = hovering
         }

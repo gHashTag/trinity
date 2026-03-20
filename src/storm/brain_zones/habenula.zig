@@ -1,4 +1,3 @@
-// @origin(spec:storm/brain_zones_habenula.tri) @regen(vibee)
 // ═══════════════════════════════════════════════════════════════════════════════
 // HABENULA — Антикоррупционный датчик (Anti-Corruption Sensor)
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -63,7 +62,6 @@ pub const Habenula = struct {
 
     /// Detect unfair reward distribution
     pub fn unfairDetect(hb: *Habenula, reward: Reward, effort: Effort) !Fairness {
-        _ = hb;
 
         // Calculate effort score
         const effort_score = effort.hours * effort.complexity;
@@ -82,7 +80,6 @@ pub const Habenula = struct {
 
     /// CLI: tri habenula unfair-detect
     pub fn cmdUnfairDetect(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
-        _ = allocator;
         _ = args;
 
         const print = std.debug.print;

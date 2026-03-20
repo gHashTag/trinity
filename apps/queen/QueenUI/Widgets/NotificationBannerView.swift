@@ -90,7 +90,7 @@ struct NotificationBanner: View {
             alignment: .leading
         )
         .offset(y: isVisible ? 0 : -80)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isVisible)
+        .animation(MTMotion.gentleSpring, value: isVisible)
         .onAppear {
             withAnimation {
                 isVisible = true
@@ -287,7 +287,7 @@ struct InAppNotification: View {
         }
         .opacity(isVisible ? 1 : 0)
         .scaleEffect(isVisible ? 1 : 0.95)
-        .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isVisible)
+        .animation(MTMotion.gentleSpring, value: isVisible)
     }
 
     private func dismiss() {
@@ -360,7 +360,7 @@ struct ToastNotification: View {
         )
         .scaleEffect(isPresented ? 1 : 0.8)
         .opacity(isPresented ? 1 : 0)
-        .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isPresented)
+        .animation(MTMotion.gentleSpring, value: isPresented)
     }
 }
 
