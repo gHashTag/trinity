@@ -2,7 +2,7 @@
 // MNL (Mistake Never Again) Pattern + Experience System
 const std = @import("std");
 
-const Allocator = std.mem.Allocator;
+const MemAllocator = std.mem.Allocator;
 
 pub const ExperienceEngine = struct {
     allocator: Allocator,
