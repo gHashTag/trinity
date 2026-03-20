@@ -99,6 +99,10 @@ pub const visualization = @import("visualization");
 /// Parallel evolution scenarios: baseline, current, multi-objective, dePIN
 pub const evolution_simulation = @import("evolution_simulation");
 
+/// Performance Dashboard (Unified Performance Monitoring)
+/// Real-time performance tracking, SLA monitoring, comparison reports, sparklines
+pub const perf_dashboard = @import("perf_dashboard");
+
 // Note: benchmarks is NOT imported here to avoid build system complexity.
 // Use @import("benchmarks") directly in benchmark code.
 
@@ -227,6 +231,11 @@ pub const BRAIN_ATLAS = [_]BrainRegion{
         .name = "Evolution Simulation",
         .biological_function = "Deterministic Evolution — Parallel brain evolution scenarios (baseline/current/multi-obj/dePIN)",
         .file = "evolution_simulation.zig",
+    },
+    .{
+        .name = "Performance Dashboard",
+        .biological_function = "Performance Monitoring — Real-time tracking, SLA monitoring, comparison reports, sparklines",
+        .file = "perf_dashboard.zig",
     },
 };
 
@@ -639,7 +648,7 @@ pub const AgentCoordination = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Brain atlas completeness" {
-    try std.testing.expectEqual(@as(usize, 22), BRAIN_ATLAS.len);
+    try std.testing.expectEqual(@as(usize, 23), BRAIN_ATLAS.len);
     try std.testing.expect(std.mem.eql(u8, "Basal Ganglia", BRAIN_ATLAS[1].name));
     try std.testing.expect(std.mem.eql(u8, "Microglia", BRAIN_ATLAS[9].name));
     try std.testing.expect(std.mem.eql(u8, "State Recovery", BRAIN_ATLAS[10].name));
@@ -654,6 +663,7 @@ test "Brain atlas completeness" {
     try std.testing.expect(std.mem.eql(u8, "Corpus Callosum (Federation)", BRAIN_ATLAS[19].name));
     try std.testing.expect(std.mem.eql(u8, "Visual Cortex", BRAIN_ATLAS[20].name));
     try std.testing.expect(std.mem.eql(u8, "Evolution Simulation", BRAIN_ATLAS[21].name));
+    try std.testing.expect(std.mem.eql(u8, "Performance Dashboard", BRAIN_ATLAS[22].name));
 }
 
 test "Metrics dashboard collects all regions" {

@@ -1,6 +1,6 @@
 # S³AI Brain API Reference
 
-Complete API documentation for all 21 brain regions in Trinity's S³AI Brain v5.1.
+Complete API documentation for all 22 brain regions in Trinity's S³AI Brain v5.1.
 
 ## Table of Contents
 
@@ -540,6 +540,1030 @@ pub const Recommendation = enum {
 
 ## Advanced Regions
 
+### State Recovery (Hippocampus - Long-term Memory)
+
+**Module**: `brain.state_recovery`
+**File**: `src/brain/state_recovery.zig`
+**Purpose**: Hippocampus (Long-term Memory Consolidation) - State persistence, versioning, and crash recovery
+
+#### Types
+
+```zig
+pub const StateManager = struct {
+    allocator: mem.Allocator,
+    state_path: []const u8,
+    mutex: std.Thread.Mutex,
+    current_version: u32,
+    state: BrainState,
+};
+
+pub const BrainState = struct {
+    version: u32,
+    timestamp: i64,
+    claims: []TaskClaimState,
+    metrics: MetricsState,
+    config: ConfigState,
+};
+
+pub const LoadedState = struct {
+    state: BrainState,
+    migrated: bool,
+    backup_created: bool,
+};
+
+pub const TaskClaimState = struct {
+    task_id: []const u8,
+    agent_id: []const u8,
+    claimed_at: i64,
+    ttl_ms: u64,
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `StateManager.init(allocator, state_path)` | Create state manager | `!StateManager` |
+| `manager.save()` | Save current state to disk | `!void` |
+| `manager.load()` | Load state from disk | `!LoadedState` |
+| `manager.restore(loaded_state)` | Restore brain to saved state | `!void` |
+| `manager.autoRecover()` | Auto-recover from crash | `!bool` |
+| `manager.createBackup()` | Create state backup | `!void` |
+| `manager.restoreBackup(backup_id)` | Restore from backup | `!void` |
+| `manager.migrate(from_version)` | Migrate state to current version | `!void` |
+| `manager.getCurrentVersion()` | Get state version | `u32` |
+| `manager.getStateSize()` | Get state size in bytes | `!usize` |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+const allocator = std.heap.page_allocator;
+
+// Initialize state manager
+const manager = try brain.state_recovery.StateManager.init(
+    allocator,
+    "/path/to/brain_state.json"
+);
+
+// Auto-recover from crash (if any)
+const recovered = try manager.autoRecover();
+if (recovered) {
+    std.log.info("Recovered from crash", .{});
+}
+
+// Save state periodically
+try manager.save();
+
+// Load and restore
+const loaded = try manager.load();
+if (loaded.migrated) {
+    std.log.info("State migrated from older version", .{});
+}
+try manager.restore(loaded.state);
+```
+
+### Hypothalamus (Homeostatic Regulation)
+
+**Module**: `brain.admin`
+**File**: `src/brain/admin.zig`
+**Purpose**: Hypothalamus (Homeostatic Regulation) - Administrative commands and system health maintenance
+
+#### Types
+
+```zig
+pub const AdminManager = struct {
+    allocator: mem.Allocator,
+    state_manager: *state_recovery.StateManager,
+    registry: *basal_ganglia.Registry,
+    event_bus: *reticular_formation.EventBus,
+};
+
+pub const DiagnosticReport = struct {
+    timestamp: i64,
+    overall_health: f32,
+    active_claims: usize,
+    buffered_events: usize,
+    memory_usage: usize,
+    issues: []Issue,
+};
+
+pub const Issue = struct {
+    severity: enum { warning, error, critical },
+    region: []const u8,
+    message: []const u8,
+};
+
+pub const PruneStats = struct {
+    claims_removed: usize,
+    events_trimmed: usize,
+    memory_freed: usize,
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `AdminManager.init(allocator, state_mgr, registry, event_bus)` | Create admin manager | `AdminManager` |
+| `admin.runCommand(cmd, allocator)` | Execute admin command | `![]const u8` |
+| `admin.reset(confirm)` | Reset all brain state | `!void` |
+| `admin.doctor()` | Run diagnostic | `!DiagnosticReport` |
+| `admin.prune(before_timestamp)` | Prune old data | `!PruneStats` |
+| `admin.migrate(target_version)` | Migrate state version | `!void` |
+| `admin.backup(label)` | Create state backup | `![]const u8` |
+| `admin.restore(backup_id, confirm)` | Restore from backup | `!void` |
+| `admin.stats()` | Get system statistics | `!SystemStats` |
+
+#### Commands
+
+| Command | Description | Requires Confirmation |
+|---------|-------------|----------------------|
+| `reset` | Reset all brain state | Yes |
+| `doctor` | Run health diagnostics | No |
+| `prune` | Remove old claims/events | No |
+| `migrate` | Migrate to new state version | Yes |
+| `backup` | Create state backup | No |
+| `restore` | Restore from backup | Yes |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// Initialize admin manager
+const admin = try brain.admin.AdminManager.init(
+    allocator,
+    &state_mgr,
+    &registry,
+    &event_bus
+);
+
+// Run diagnostics
+const report = try admin.doctor();
+std.log.info("Health: {d:.1}%", .{report.overall_health});
+
+// Prune old data
+const stats = try admin.prune(std.time.milliTimestamp() - 86400000);
+std.log.info("Pruned {d} claims, {d} events", .{
+    stats.claims_removed,
+    stats.events_trimmed
+});
+
+// Create backup
+const backup_id = try admin.backup("before-experiment");
+std.log.info("Backup: {s}", .{backup_id});
+```
+
+### Health History (Hippocampal Memory Consolidation)
+
+**Module**: `brain.health_history`
+**File**: `src/brain/health_history.zig`
+**Purpose**: Hippocampal Memory Consolidation - Records brain health snapshots over time for trend analysis
+
+#### Types
+
+```zig
+pub const HealthSnapshot = struct {
+    timestamp: i64,
+    overall_health: f32,
+    region_health: std.StringHashMap(f32),
+    active_claims: usize,
+    buffered_events: usize,
+    memory_usage: usize,
+};
+
+pub const HealthTrend = enum {
+    improving,    // Health increasing
+    stable,       // No significant change
+    declining,    // Health decreasing
+    volatile,     // Large fluctuations
+};
+
+pub const BrainHealthHistory = struct {
+    snapshots: std.ArrayList(HealthSnapshot),
+    max_snapshots: usize = 1000,
+    mutex: std.Thread.Mutex,
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `BrainHealthHistory.init(allocator, max_snapshots)` | Create history | `BrainHealthHistory` |
+| `history.recordSnapshot(snapshot)` | Record health snapshot | `!void` |
+| `history.getLatest()` | Get most recent snapshot | `?HealthSnapshot` |
+| `history.getTrend(duration_ms)` | Analyze health trend | `HealthTrend` |
+| `history.getAverageHealth(duration_ms)` | Average health over period | `f32` |
+| `history.getPercentile(p, duration_ms)` | P-th percentile health | `f32` |
+| `history.findAnomalies(threshold)` | Find anomalous snapshots | `![]HealthSnapshot` |
+| `history.exportJson(writer)` | Export as JSON | `!void` |
+| `history.trim(keep_count)` | Keep only N recent snapshots | `void` |
+| `history.clear()` | Remove all snapshots | `void` |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// Initialize health history
+const history = brain.health_history.BrainHealthHistory.init(
+    allocator,
+    1000  // Keep last 1000 snapshots
+);
+
+// Record current state
+const snapshot = brain.health_history.HealthSnapshot{
+    .timestamp = std.time.milliTimestamp(),
+    .overall_health = 87.5,
+    .region_health = region_health_map,
+    .active_claims = 42,
+    .buffered_events = 156,
+    .memory_usage = 1024 * 1024,
+};
+try history.recordSnapshot(snapshot);
+
+// Analyze trend over last hour
+const trend = history.getTrend(3600 * 1000);
+if (trend == .declining) {
+    std.log.warn("Brain health declining!", .{});
+}
+
+// Find anomalies (snapshots with health < 50)
+const anomalies = try history.findAnomalies(50.0);
+defer allocator.free(anomalies);
+for (anomalies) |anomaly| {
+    std.log.warn("Anomaly at {d}: health={d:.1}", .{
+        anomaly.timestamp,
+        anomaly.overall_health
+    });
+}
+```
+
+### Metrics Dashboard (Command Center)
+
+**Module**: `brain.metrics_dashboard`
+**File**: `src/brain/metrics_dashboard.zig`
+**Purpose**: Command center view of brain health - Aggregates metrics from all brain regions
+
+#### Types
+
+```zig
+pub const RegionMetrics = struct {
+    region_name: []const u8,
+    health: f32,
+    active_count: usize,
+    error_count: usize,
+    avg_latency_ms: u64,
+    last_activity: i64,
+};
+
+pub const AggregateMetrics = struct {
+    timestamp: i64,
+    overall_health: f32,
+    total_regions: usize,
+    healthy_regions: usize,
+    degraded_regions: usize,
+    failed_regions: usize,
+    total_operations: u64,
+    total_errors: u64,
+    avg_latency_ms: u64,
+};
+
+pub const RegionStatus = enum {
+    healthy,     // Health >= 80
+    degraded,    // 50 <= Health < 80
+    failed,      // Health < 50
+    unknown,     // No data
+};
+
+pub const MetricsDashboard = struct {
+    regions: std.StringHashMap(RegionMetrics),
+    aggregates: std.ArrayList(AggregateMetrics),
+    max_aggregates: usize = 1000,
+    mutex: std.Thread.Mutex,
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `MetricsDashboard.init(allocator, max_aggregates)` | Create dashboard | `MetricsDashboard` |
+| `dashboard.recordRegion(name, metrics)` | Record region metrics | `!void` |
+| `dashboard.collectAggregate()` | Collect aggregate metrics | `!AggregateMetrics` |
+| `dashboard.getRegionStatus(name)` | Get region status | `RegionStatus` |
+| `dashboard.getOverallHealth()` | Get overall health score | `f32` |
+| `dashboard.getReport()` | Generate full report | `![]const u8` |
+| `dashboard.getCompactReport()` | Generate one-line report | `![]const u8` |
+| `dashboard.exportJson(writer)` | Export as JSON | `!void` |
+| `dashboard.resetRegion(name)` | Reset region metrics | `void` |
+| `dashboard.getHistory(duration_ms)` | Get aggregate history | `![]AggregateMetrics` |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// Initialize dashboard
+const dashboard = brain.metrics_dashboard.MetricsDashboard.init(
+    allocator,
+    1000
+);
+
+// Record metrics for a region
+const region_metrics = brain.metrics_dashboard.RegionMetrics{
+    .region_name = "Basal Ganglia",
+    .health = 95.0,
+    .active_count = 42,
+    .error_count = 0,
+    .avg_latency_ms = 12,
+    .last_activity = std.time.milliTimestamp(),
+};
+try dashboard.recordRegion("basal_ganglia", region_metrics);
+
+// Collect and report
+const aggregate = try dashboard.collectAggregate();
+std.log.info("Overall health: {d:.1}%", .{aggregate.overall_health});
+
+// Get human-readable report
+const report = try dashboard.getCompactReport();
+std.log.info("{s}", .{report});
+// Output: "Health: 87% | 14/16 regions | 0 errors"
+```
+
+### Brain Alerts (Critical Health Notification)
+
+**Module**: `brain.alerts`
+**File**: `src/brain/alerts.zig`
+**Purpose**: Critical health state notification - Sends alerts when brain regions fail or health degrades
+
+#### Types
+
+```zig
+pub const Alert = struct {
+    id: []const u8,
+    timestamp: i64,
+    severity: enum { info, warning, error, critical },
+    region: []const u8,
+    message: []const u8,
+    resolved: bool,
+    resolved_at: ?i64,
+};
+
+pub const AlertManager = struct {
+    alerts: std.ArrayList(Alert),
+    suppression: SuppressionState,
+    telegram_config: ?TelegramConfig,
+    mutex: std.Thread.Mutex,
+};
+
+pub const AlertHistory = struct {
+    alerts: []Alert,
+    total_count: usize,
+    by_severity: std.EnumField(enum { info, warning, error, critical }, usize),
+};
+
+pub const SuppressionState = struct {
+    suppressed_patterns: std.StringHashMap(i64),  // pattern -> expiry
+    cooldown_ms: u64 = 300000,  // 5 minutes default
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `AlertManager.init(allocator, telegram_config)` | Create alert manager | `AlertManager` |
+| `manager.emit(severity, region, message)` | Emit alert | `!void` |
+| `manager.resolve(alert_id)` | Mark alert as resolved | `!bool` |
+| `manager.getActive()` | Get active (unresolved) alerts | `![]Alert` |
+| `manager.getHistory(duration_ms)` | Get alert history | `!AlertHistory` |
+| `manager.suppress(pattern, duration_ms)` | Suppress alert pattern | `!void` |
+| `manager.isSuppressed(pattern)` | Check if pattern suppressed | `bool` |
+| `manager.clearSuppression()` | Clear all suppressions | `void` |
+| `manager.sendTelegram(alert)` | Send via Telegram | `!bool` |
+| `manager.getReport()` | Generate alert report | `![]const u8` |
+
+#### Alert Thresholds
+
+| Severity | Health | Condition |
+|----------|--------|-----------|
+| `info` | - | Normal operations |
+| `warning` | < 80 | Region degraded |
+| `error` | < 50 | Region failed |
+| `critical` | < 25 | Multiple regions failed |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// Initialize with Telegram (optional)
+const telegram_config = brain.alerts.TelegramConfig{
+    .bot_token = "your_bot_token",
+    .chat_id = "your_chat_id",
+};
+const manager = try brain.alerts.AlertManager.init(
+    allocator,
+    &telegram_config
+);
+
+// Emit critical alert
+try manager.emit(.critical, "Basal Ganglia", "Task claim registry full");
+
+// Suppress noisy pattern for 10 minutes
+try manager.suppress("high_latency", 10 * 60 * 1000);
+
+// Get active alerts
+const active = try manager.getActive();
+defer allocator.free(active);
+for (active) |alert| {
+    std.log.warn("{s}: {s}", .{@tagName(alert.severity), alert.message});
+}
+
+// Resolve an alert
+_ = try manager.resolve(alert.id);
+```
+
+### Simulation Environment (Synthetic Workload Generator)
+
+**Module**: `brain.simulation`
+**File**: `src/brain/simulation.zig`
+**Purpose**: Simulation Environment - Generates synthetic workloads for testing brain resilience
+
+#### Types
+
+```zig
+pub const SimulationConfig = struct {
+    duration_ms: u64 = 60000,  // 1 minute default
+    agent_count: usize = 10,
+    task_rate: f64 = 10.0,  // tasks per second
+    failure_rate: f32 = 0.05,  // 5% failure rate
+    network_partition: bool = false,
+    high_load: bool = false,
+};
+
+pub const SimulationResult = struct {
+    config: SimulationConfig,
+    start_time: i64,
+    end_time: i64,
+    total_tasks: usize,
+    completed_tasks: usize,
+    failed_tasks: usize,
+    avg_latency_ms: u64,
+    p99_latency_ms: u64,
+    final_health: f32,
+};
+
+pub const SimulationEngine = struct {
+    config: SimulationConfig,
+    registry: *basal_ganglia.Registry,
+    event_bus: *reticular_formation.EventBus,
+    agents: []Agent,
+    rng: std.Random.Default,
+};
+
+pub const Scenario = enum {
+    smoke_test,       // Light load, no failures
+    agent_competition,// Many agents, few tasks
+    event_storm,      // High event rate
+    network_partition,// Simulate partition
+    chaos,            // Random failures
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `SimulationEngine.init(config, registry, event_bus)` | Create engine | `SimulationEngine` |
+| `engine.run(allocator)` | Run simulation | `!SimulationResult` |
+| `engine.runScenario(scenario, allocator)` | Run preset scenario | `!SimulationResult` |
+| `engine.getReport(result)` | Generate report | `![]const u8` |
+| `Scenario.fromName(name)` | Parse scenario from string | `?Scenario` |
+| `runBenchmark(config, allocator)` | Quick benchmark | `!SimulationResult` |
+
+#### Scenarios
+
+| Scenario | Description | Duration |
+|----------|-------------|----------|
+| `smoke_test` | Light load, verify basic functionality | 10s |
+| `agent_competition` | Test claim contention | 30s |
+| `event_storm` | High event throughput | 60s |
+| `network_partition` | Simulate network failure | 30s |
+| `chaos` | Random failures | 60s |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// Configure simulation
+const config = brain.simulation.SimulationConfig{
+    .duration_ms = 30000,
+    .agent_count = 20,
+    .task_rate = 50.0,  // 50 tasks/sec
+    .failure_rate = 0.1,  // 10% failure
+    .network_partition = true,
+};
+
+// Run simulation
+const engine = try brain.simulation.SimulationEngine.init(
+    config,
+    &registry,
+    &event_bus
+);
+const result = try engine.run(allocator);
+
+// Check results
+std.log.info("Completed {d}/{d} tasks", .{
+    result.completed_tasks,
+    result.total_tasks
+});
+std.log.info("Final health: {d:.1}%", .{result.final_health});
+
+// Generate report
+const report = try engine.getReport(result);
+std.log.info("{s}", .{report});
+```
+
+### Observability Export (External Telemetry)
+
+**Module**: `brain.observability_export`
+**File**: `src/brain/observability_export.zig`
+**Purpose**: Export telemetry for external monitoring - Prometheus, OpenTelemetry, InfluxDB, StatsD
+
+#### Types
+
+```zig
+pub const ObservabilityExporter = struct {
+    exporter_type: ExporterType,
+    config: ExporterConfig,
+    mutex: std.Thread.Mutex,
+};
+
+pub const ExporterType = enum {
+    prometheus,     // Prometheus text format
+    otlp,           // OpenTelemetry Protocol
+    json,           // JSON lines
+    influxdb,       // InfluxDB line protocol
+    statsd,         // StatsD protocol
+};
+
+pub const ExporterConfig = struct {
+    endpoint: ?[]const u8 = null,  // HTTP endpoint for OTLP/InfluxDB
+    format: ExporterType = .json,
+    include_timestamp: bool = true,
+    batch_size: usize = 100,
+};
+
+pub const MetricsStreamer = struct {
+    exporter: *ObservabilityExporter,
+    buffer: std.ArrayList(Metric),
+    buffer_mutex: std.Thread.Mutex,
+};
+
+pub const MetricsServer = struct {
+    address: []const u8 = "127.0.0.1",
+    port: u16 = 9090,
+    exporter: *ObservabilityExporter,
+};
+
+pub const Metric = struct {
+    name: []const u8,
+    value: f64,
+    labels: std.StringHashMap([]const u8),
+    timestamp: i64,
+    metric_type: enum { gauge, counter, histogram } = .gauge,
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `ObservabilityExporter.init(config)` | Create exporter | `ObservabilityExporter` |
+| `exporter.exportMetric(metric)` | Export single metric | `!void` |
+| `exporter.exportBatch(metrics)` | Export metrics batch | `!void` |
+| `exporter.formatPrometheus(writer)` | Format as Prometheus | `!void` |
+| `exporter.formatOtlp()` | Format as OTLP | `![]const u8` |
+| `exporter.formatJson(writer)` | Format as JSON | `!void` |
+| `MetricsStreamer.init(exporter)` | Create streamer | `MetricsStreamer` |
+| `streamer.record(name, value, labels)` | Record metric | `!void` |
+| `streamer.flush()` | Flush buffer | `!void` |
+| `MetricsServer.init(exporter, port)` | Create HTTP server | `MetricsServer` |
+| `server.start()` | Start HTTP server | `!void` |
+| `server.stop()` | Stop HTTP server | `void` |
+
+#### Export Formats
+
+| Format | Protocol | Usage |
+|--------|----------|-------|
+| `prometheus` | HTTP text | Prometheus scraping |
+| `otlp` | HTTP/protobuf | OpenTelemetry collectors |
+| `json` | JSON lines | Log aggregators |
+| `influxdb` | Line protocol | InfluxDB database |
+| `statsd` | UDP | StatsD daemon |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// Configure exporter
+const config = brain.observability_export.ExporterConfig{
+    .format = .prometheus,
+    .include_timestamp = true,
+};
+const exporter = brain.observability_export.ObservabilityExporter.init(config);
+
+// Export metrics
+const metric = brain.observability_export.Metric{
+    .name = "brain_health",
+    .value = 87.5,
+    .labels = label_map,  // { "region": "basal_ganglia" }
+    .timestamp = std.time.milliTimestamp(),
+    .metric_type = .gauge,
+};
+try exporter.exportMetric(metric);
+
+// Start Prometheus endpoint
+var server = brain.observability_export.MetricsServer.init(
+    &exporter,
+    9090
+);
+try server.start();
+// Now scrape at http://localhost:9090/metrics
+```
+
+### Thalamus (Async Relay & Processing)
+
+**Module**: `brain.async_processor`
+**File**: `src/brain/async_processor.zig`
+**Purpose**: Thalamus (Async Relay & Processing) - Worker pool for async task processing
+
+#### Types
+
+```zig
+pub const AsyncProcessor = struct {
+    allocator: mem.Allocator,
+    workers: []Worker,
+    task_queue: TaskQueue,
+    result_channels: std.StringHashMap(*ResultChannel),
+    config: ProcessorConfig,
+    running: std.atomic.Value(bool),
+};
+
+pub const AsyncTask = struct {
+    id: []const u8,
+    task_type: TaskType,
+    payload: []const u8,
+    timeout_ms: u64,
+    created_at: i64,
+    callback: ?Callback,
+};
+
+pub const TaskType = enum {
+    compute,         // CPU-bound task
+    io,              // I/O-bound task
+    network,         // Network request
+    query,           // Database query
+    custom,          // User-defined
+};
+
+pub const ResultChannel = struct {
+    results: std.ArrayList(TaskResult),
+    mutex: std.Thread.Mutex,
+    cond: std.Thread.Condition,
+};
+
+pub const TaskResult = struct {
+    task_id: []const u8,
+    success: bool,
+    data: []const u8,
+    error: ?[]const u8,
+    duration_ms: u64,
+};
+
+pub const ProcessorConfig = struct {
+    worker_count: usize = 4,
+    queue_size: usize = 1000,
+    idle_timeout_ms: u64 = 30000,
+    max_retries: usize = 3,
+};
+
+pub const BackgroundCollector = struct {
+    processor: *AsyncProcessor,
+    interval_ms: u64,
+    thread: ?std.Thread,
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `AsyncProcessor.init(allocator, config)` | Create processor | `!AsyncProcessor` |
+| `processor.start()` | Start worker pool | `!void` |
+| `processor.stop()` | Stop worker pool | `!void` |
+| `processor.submit(task)` | Submit async task | `![]const u8` |
+| `processor.awaitResult(task_id, timeout_ms)` | Wait for result | `!TaskResult` |
+| `processor.registerChannel(name)` | Register result channel | `!*ResultChannel` |
+| `processor.getChannel(name)` | Get result channel | `?*ResultChannel` |
+| `processor.getStats()` | Get processor stats | `ProcessorStats` |
+| `processor.resizeWorkers(new_count)` | Resize worker pool | `!void` |
+| `BackgroundCollector.init(processor, interval_ms)` | Create collector | `BackgroundCollector` |
+| `collector.start()` | Start background collection | `!void` |
+| `collector.stop()` | Stop background collection | `void` |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// Configure processor
+const config = brain.async_processor.ProcessorConfig{
+    .worker_count = 8,
+    .queue_size = 10000,
+    .idle_timeout_ms = 60000,
+};
+const processor = try brain.async_processor.AsyncProcessor.init(
+    allocator,
+    config
+);
+try processor.start();
+
+// Submit task
+const task = brain.async_processor.AsyncTask{
+    .id = "task-123",
+    .task_type = .compute,
+    .payload = "{\"data\": \"...\"}",
+    .timeout_ms = 5000,
+    .created_at = std.time.milliTimestamp(),
+    .callback = null,
+};
+const task_id = try processor.submit(task);
+
+// Wait for result
+const result = try processor.awaitResult(task_id, 5000);
+if (result.success) {
+    std.log.info("Result: {s}", .{result.data});
+} else {
+    std.log.err("Error: {s}", .{result.error.?});
+}
+
+// Register channel for streaming results
+const channel = try processor.registerChannel("results");
+```
+
+### Evolution Simulation (Deterministic Brain Evolution)
+
+**Module**: `brain.evolution_simulation`
+**File**: `src/brain/evolution_simulation.zig`
+**Purpose**: Deterministic brain evolution - Simulates PPL curves for SEVO (Sacred EVolutionary Objective) optimization
+
+#### Types
+
+```zig
+pub const PplModel = struct {
+    ppl_start: f32,
+    ppl_target: f32,
+    asymptote: f32,
+    decay_rate: f32,
+    noise_level: f32,
+};
+
+pub const EvolutionSimulator = struct {
+    config: EvolutionConfig,
+    models: std.StringHashMap(PplModel),
+    rng: std.Random.Default,
+    step: u64 = 0,
+};
+
+pub const EvolutionConfig = struct {
+    max_steps: u64 = 100000,
+    checkpoint_interval: u64 = 1000,
+    models: []ModelConfig,
+    scenarios: []ScenarioConfig,
+};
+
+pub const EvolutionResult = struct {
+    model_name: []const u8,
+    scenario: Scenario,
+    steps: []const u64,
+    ppl_values: []const f32,
+    final_ppl: f32,
+    converged: bool,
+    convergence_step: ?u64,
+};
+
+pub const Scenario = enum {
+    baseline,      // S1: Baseline comparison
+    current,       // S2: Current implementation
+    multi_objective, // S3: Multi-objective optimization
+    depin,         // S4: dePIN network simulation
+};
+
+pub const ModelConfig = struct {
+    name: []const u8,
+    ppl_model: PplModel,
+    optimizer: enum { adam, lion, sacred_adam },
+    learning_rate: f32,
+    batch_size: usize,
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `EvolutionSimulator.init(config)` | Create simulator | `EvolutionSimulator` |
+| `simulator.run(model_name, scenario, allocator)` | Run simulation | `!EvolutionResult` |
+| `simulator.runAll(allocator)` | Run all simulations | `![]EvolutionResult` |
+| `simulator.step()` | Advance one step | `!void` |
+| `simulator.reset()` | Reset to initial state | `void` |
+| `simulator.getPPL(model_name, step)` | Get PPL at step | `!f32` |
+| `simulator.addModel(name, model)` | Add evolution model | `!void` |
+| `simulator.compare(model_a, model_b)` | Compare two models | `!ComparisonResult` |
+| `Scenario.fromName(name)` | Parse scenario | `?Scenario` |
+| `generatePPLCurve(model, steps)` | Generate PPL curve | `![]f32` |
+
+#### Scenarios
+
+| Scenario | Description | Models |
+|----------|-------------|--------|
+| `baseline` | S1: Baseline comparison | Reference implementations |
+| `current` | S2: Current implementation | Production models |
+| `multi_objective` | S3: Multi-objective | Pareto frontier |
+| `depin` | S4: dePIN simulation | Federated learning |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// Configure evolution
+const ppl_model = brain.evolution_simulation.PplModel{
+    .ppl_start = 100.0,
+    .ppl_target = 4.5,
+    .asymptote = 4.0,
+    .decay_rate = 0.0001,
+    .noise_level = 0.05,
+};
+
+const config = brain.evolution_simulation.EvolutionConfig{
+    .max_steps = 100000,
+    .checkpoint_interval = 1000,
+    .models = &[_]brain.evolution_simulation.ModelConfig{
+        .{ .name = "hslm-r33", .ppl_model = ppl_model, .optimizer = .adam, .learning_rate = 0.001, .batch_size = 66 },
+    },
+    .scenarios = &[_]brain.evolution_simulation.ScenarioConfig{.{ .scenario = .current }},
+};
+
+// Run simulation
+const simulator = brain.evolution_simulation.EvolutionSimulator.init(config);
+const result = try simulator.run("hslm-r33", .current, allocator);
+
+std.log.info("Final PPL: {d:.2}", .{result.final_ppl});
+if (result.converged) {
+    std.log.info("Converged at step {d}", .{result.convergence_step.?});
+}
+```
+
+### Visual Cortex (Spatial Representation)
+
+**Module**: `brain.visualization`
+**File**: `src/brain/visualization.zig`
+**Purpose**: Visual Cortex - ASCII art brain maps, sparklines, heatmaps, and 3D visualizations
+
+#### Types
+
+```zig
+pub const VizMode = enum {
+    map,         // ASCII brain regions
+    sparkline,   // Health trends
+    connections, // Region dependency graph
+    heatmap,     // Activity heatmap
+    @"3d",       // Text-based 3D view
+    preset,      // Predefined visualization
+};
+
+pub const BrainRegionViz = struct {
+    name: []const u8,
+    health: f32,          // 0-100
+    activity: f32,        // 0-1
+    color: []const u8,
+    position: struct { x: usize, y: usize },
+};
+
+pub const BrainState = struct {
+    regions: []const BrainRegionViz,
+    timestamp: i64,
+    overall_health: f32,
+};
+
+pub const SparklineOptions = struct {
+    width: usize = 40,
+    height: usize = 1,
+    show_min_max: bool = true,
+    color: bool = true,
+};
+
+pub const BrainMapOptions = struct {
+    show_labels: bool = true,
+    show_connections: bool = true,
+    compact: bool = false,
+    color: bool = true,
+};
+
+pub const HeatmapOptions = struct {
+    width: usize = 32,
+    height: usize = 16,
+    color: bool = true,
+    show_scale: bool = true,
+};
+
+pub const Brain3DOptions = struct {
+    rotation_x: f32 = 0.3,
+    rotation_y: f32 = 0.5,
+    zoom: f32 = 1.0,
+    color: bool = true,
+    width: usize = 60,
+    height: usize = 30,
+};
+
+pub const Preset = enum {
+    dashboard,  // Full dashboard
+    minimal,    // Single-line status
+    detailed,   // Detailed brain map
+    scan,       // Scan animation
+    monitor,    // Real-time monitoring
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `sparkline(allocator, data, opts)` | Generate sparkline | `![]const u8` |
+| `brainMap(allocator, state, opts)` | Generate ASCII brain map | `![]const u8` |
+| `connectionDiagram(allocator, connections, opts)` | Generate connection diagram | `![]const u8` |
+| `activityHeatmap(allocator, data, opts)` | Generate activity heatmap | `![]const u8` |
+| `brain3D(allocator, opts)` | Generate 3D visualization | `![]const u8` |
+| `preset(allocator, preset_type, opts)` | Generate preset visualization | `![]const u8` |
+
+#### Visualization Modes
+
+| Mode | Output | Use Case |
+|------|--------|----------|
+| `map` | ASCII brain outline | Regional health overview |
+| `sparkline` | Trend line | Health history |
+| `connections` | Flow diagram | Region dependencies |
+| `heatmap` | Density grid | Activity patterns |
+| `3d` | Rotating brain | Spatial awareness |
+| `preset` | Pre-built layouts | Quick dashboards |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+
+// Health data for sparkline
+const health_data = [_]f32{ 85.0, 87.0, 86.0, 88.0, 90.0, 89.0, 87.0 };
+
+// Generate sparkline
+const spark = try brain.visualization.sparkline(
+    allocator,
+    &health_data,
+    .{ .width = 30, .color = true }
+);
+std.log.info("Health: {s}", .{spark});
+// Output: "Health: ▃▄▅▆█▇▅ [85.0-90.0]"
+
+// Generate brain map
+const regions = [_]brain.visualization.BrainRegionViz{
+    .{ .name = "Basal Ganglia", .health = 95.0, .activity = 0.8, .color = "\x1b[32m", .position = .{ .x = 5, .y = 10 } },
+    // ... more regions
+};
+const state = brain.visualization.BrainState{
+    .regions = &regions,
+    .timestamp = std.time.milliTimestamp(),
+    .overall_health = 87.0,
+};
+const map = try brain.visualization.brainMap(allocator, state, .{});
+std.log.info("{s}", .{map});
+
+// Generate preset dashboard
+const dashboard = try brain.visualization.preset(
+    allocator,
+    .dashboard,
+    .{ .health_data = &health_data }
+);
+std.log.info("{s}", .{dashboard});
+```
+
 ### Federation (Corpus Callosum - Distributed)
 
 **Module**: `brain.federation`
@@ -739,7 +1763,7 @@ const factor: f32 = if (seed % 2 == 0) phi_inverse else phi;
 
 ## Version History
 
-- **v5.1** (igla-ready): 22 regions, full federation support
+- **v5.1** (igla-ready): 22 regions documented, full federation support, evolution simulation, visualization
 - **v5.0**: Added async processor, learning system
 - **v4.4**: Initial 10-region architecture
 

@@ -1,1 +1,1 @@
-{"ts":1773997676807,"level":"critical","condition":"health_low","message":"Critical health: 30.0/100","health":30.0}
+{"ts":1774003025506,"level":"critical","condition":"events_buffered_high","message":"Event buffer critical: 6000 events","health":0.0}
