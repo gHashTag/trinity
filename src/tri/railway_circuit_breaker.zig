@@ -39,8 +39,8 @@ pub const AccountCircuit = struct {
     state: CircuitState = .closed,
     failure_count: u32 = 0,
     last_failure: i64 = 0,
-    cooldown_sec: i64 = 60,  // 1 minute cooldown after opening
-    threshold: u32 = 3,      // 3 failures triggers OPEN
+    cooldown_sec: i64 = 60, // 1 minute cooldown after opening
+    threshold: u32 = 3, // 3 failures triggers OPEN
 
     /// Check if account can accept requests
     pub fn canUse(self: *AccountCircuit, now: i64) bool {
@@ -87,7 +87,7 @@ pub const AccountCircuit = struct {
 /// Request budget tracker for Railway API rate limits
 /// Railway: 1000 req/hour per account (we use 900 for safety margin)
 pub const RequestBudget = struct {
-    hourly_limit: u32 = 900,     // 90% of 1000, leave buffer
+    hourly_limit: u32 = 900, // 90% of 1000, leave buffer
     hourly_used: u32 = 0,
     hour_start: i64 = 0,
 
@@ -157,9 +157,7 @@ pub const AccountHealth = struct {
     /// Recalculate health score from components
     fn recalcScore(self: *AccountHealth) void {
         // Latency factor: penalize high latency
-        const latency_factor: f32 = if (self.avg_latency_ms > 2000) 0.6
-            else if (self.avg_latency_ms > 1000) 0.8
-            else 1.0;
+        const latency_factor: f32 = if (self.avg_latency_ms > 2000) 0.6 else if (self.avg_latency_ms > 1000) 0.8 else 1.0;
 
         // Budget factor: prefer accounts with more remaining budget
         const budget_f = @as(f32, @floatFromInt(self.budget.remaining())) / 900.0;
