@@ -1,0 +1,73 @@
+# OFC — Orbitofrontal Cortex (Палата ценностей)
+
+## Module
+storm.brain_zones.ofc
+
+## Description
+Ethical evaluation chamber. Implements "toxic verdict" — 12D ethical metric assessment for actions and decisions.
+
+## Neuroanatomy
+Cortex orbitofrontalis — responsible for value judgment, reward expectation, ethical decision-making.
+
+## P1 Priority
+✅ CORE: Toxic verdict is primary ethical filter in STORM.
+
+## Dependencies
+- std
+- storm.experience_engine (for context)
+
+## Structs
+### Verdict
+enum { SAFE, WARN, TOXIC }
+
+### Metric (12D)
+- corruption: f32 (0-1)  // Hidden influence, lying
+- cruelty: f32 (0-1)      // Harm inflicted
+- promise_break: f32 (0-1) // Violated commitments
+- fairness: f32 (0-1)     // Distribution justice
+- transparency: f32 (0-1)  // Openness of process
+- accountability: f32 (0-1) // Responsibility taken
+- empathy: f32 (0-1)       // Consideration for others
+- respect: f32 (0-1)       // Human dignity
+- integrity: f32 (0-1)     // Consistency of values
+- harm_prevention: f32 (0-1)
+- consent: f32 (0-1)       // Voluntary agreement
+- proportionality: f32 (0-1) // Means vs ends balance
+
+### Context
+- agent_id: []const u8
+- action_type: []const u8
+- timestamp: i64
+- trace_id: []const u8
+
+## Functions
+### verdict(ctx, action) !Verdict
+Evaluate action against 12D metrics.
+
+Algorithm:
+1. Extract features from action
+2. Score each metric (0-1)
+3. Weighted sum with φ-weights:
+   - corruption, cruelty, promise_break: weight = φ² ≈ 2.618
+   - fairness, transparency, accountability: weight = 1.0
+   - others: weight = 1/φ² ≈ 0.382
+4. Thresholds:
+   - TOXIC: score > 0.7 OR any critical metric > 0.9
+   - WARN: score > 0.5
+   - SAFE: score ≤ 0.5
+
+### cmdVerdict(allocator, args) !u8
+CLI entry: `tri ofc verdict --toxic`
+Parse action, run verdict, print result.
+
+## Thresholds
+const TOXIC_THRESHOLD: f32 = 0.7;
+const WARN_THRESHOLD: f32 = 0.5;
+const CRITICAL_THRESHOLD: f32 = 0.9;  // Any metric above this = TOXIC
+
+## Critical Metrics (weight = φ²)
+- corruption: Hidden deals, lying
+- cruelty: Active harm
+- promise_break: Broken commitments
+
+These trigger TOXIC even if overall score is low.

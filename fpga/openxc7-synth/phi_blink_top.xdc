@@ -1,12 +1,10 @@
 # Phi-Rhythm LED Blink Constraints
-# Target: XC7A100T-FTG256 (Artix-7 on DLC10 clone)
+# Target: XC7A100T-FGG676 (Artix-7)
 
-# Clock: 50 MHz oscillator
-set_property -dict {PACKAGE_PIN U22 IOSTANDARD LVCMOS33} [get_ports clk]
+# Clock: 50 MHz oscillator on U22
+set_property LOC U22 [get_ports clk]
+set_property IOSTANDARD LVCMOS33 [get_ports clk]
 
-# LED: Active-low LED
-set_property -dict {PACKAGE_PIN T23 IOSTANDARD LVCMOS33} [get_ports led]
-
-# Bitstream configuration
-set_property CFGBVS VCCO [current_design]
-set_property CONFIG_VOLTAGE 3.3 [current_design]
+# LED: T23 (active-low LED on board)
+set_property LOC T23 [get_ports led]
+set_property IOSTANDARD LVCMOS33 [get_ports led]

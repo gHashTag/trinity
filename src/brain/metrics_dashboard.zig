@@ -204,7 +204,9 @@ pub const AggregateMetrics = struct {
             const claim_count = registry.claims.count();
             try bg_metrics.setMetricOwned(self.allocator, "active_claims", try std.fmt.allocPrint(self.allocator, "{d}", .{claim_count}));
             // Health based on claim count (0-1000 is healthy range)
-            const bg_health = if (claim_count < 1000) 100.0 else @max(0.0, 100.0 - @as(f32, @floatFromInt(claim_count - 1000)) / 10.0);
+            // For claim_count > 2000, health drops to 0, clamped at minimum
+            const excess = if (claim_count > 1000) claim_count - 1000 else 0;
+            const bg_health = if (claim_count < 1000) 100.0 else @max(0.0, 100.0 - @as(f32, @floatFromInt(excess)) / 10.0);
             bg_metrics.health_score = bg_health;
             bg_metrics.trend = .stable;
             if (claim_count > 5000) {
@@ -224,7 +226,9 @@ pub const AggregateMetrics = struct {
             try rf_metrics.setMetricOwned(self.allocator, "published", try std.fmt.allocPrint(self.allocator, "{d}", .{stats.published}));
             try rf_metrics.setMetricOwned(self.allocator, "buffered", try std.fmt.allocPrint(self.allocator, "{d}", .{stats.buffered}));
             // Health based on buffer utilization
-            const buffer_pct = @as(f32, @floatFromInt(stats.buffered)) / 10000.0 * 100.0;
+            // stats.buffered is at most 10000 (capacity), clamped to valid range
+            const buffered_clamped = @min(stats.buffered, 10000);
+            const buffer_pct = @as(f32, @floatFromInt(buffered_clamped)) / 10000.0 * 100.0;
             rf_metrics.health_score = 100.0 - buffer_pct;
             rf_metrics.status = if (buffer_pct < 50) .healthy else if (buffer_pct < 80) .warning else .critical;
             rf_metrics.trend = if (stats.published > 0) .stable else .unknown;
@@ -1604,7 +1608,7 @@ test "AggregateMetrics critical alerts collection" {
         var region = RegionMetrics.init(allocator, "Alert", "Alert Region");
         region.status = .warning;
         region.health_score = 50.0;
-        region.alert = try allocator.dupe(allocator, "Alert message {d}");
+        region.alert = try allocator.dupe(u8, "Alert message {d}");
         try metrics.regions.append(allocator, region);
     }
 
