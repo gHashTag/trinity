@@ -91,17 +91,17 @@ pub const ProductionApiServer = struct {
     }
 
     /// Get proposal status
-    pub fn getProposalStatus(self: *const ProductionApiServer, proposal_id: []const u8) ?ProposalStatus {
+    pub fn getProposalStatus(self: *const ProductionApiServer, proposal_id: []const u8) ?ProposalStatusResponse {
         return if (self.governance.get(proposal_id)) |proposal| {
-            const support_count: usize = 0;
-            const against_count: usize = 0;
+            var support_count: usize = 0;
+            var against_count: usize = 0;
 
             for (proposal.votes.items) |v| {
                 if (v.support) support_count += 1 else against_count += 1;
             }
 
             const total_votes = support_count + against_count;
-            return ProposalStatus{
+            return ProposalStatusResponse{
                 .proposal_id = proposal_id,
                 .title = proposal.title,
                 .status = proposal.status,
