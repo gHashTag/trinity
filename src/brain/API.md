@@ -746,9 +746,14 @@ std.debug.print("Health trend: {s}\n", .{@tagName(trend)});
 ### Purpose
 Relays sensory input from Queen (18 sensors) to cortex (5 HSLM modules). Provides circular buffer logging with direct HSLM module calls.
 
+### Neuroanatomical Context
+The thalamus is the brain's sensory gateway - all touch, vision, hearing, and other sensory signals pass through it before reaching cortex. In Trinity, Railway logs are "touch" (external sensory data) that flows through Thalamus to HSLM cortex modules (IPS, Weber, OFC, Angular, Fusiform).
+
 ### Types
 
 ```zig
+pub const CAPACITY: usize = 256;  // Circular buffer capacity
+
 pub const SensorId = enum(u8) {
     FarmBestPpl = 7,    // f32 perplexity -> IPS -> GF16 encode
     ArenaBattles = 8,   // i8 win/loss -> IPS -> TF3 ternary encode
@@ -792,11 +797,26 @@ pub const ThalamusLogs = struct {
 
 ### API Functions
 
-#### `ThalamusLogs.init(buf_storage: *[256]SensoryEvent) Self`
+#### `ThalamusLogs.init(buf_storage: *[CAPACITY]SensoryEvent) Self`
 Initializes thalamus with pre-allocated buffer storage.
 
 #### `ThalamusLogs.logEvent(self: *Self, event: SensoryEvent) void`
 Logs a sensory event to circular buffer.
+
+#### `ThalamusLogs.clear(self: *Self) void`
+Clears all events from the buffer.
+
+#### `ThalamusLogs.reset(self: *Self) void`
+Alias for clear() - resets buffer to initial state.
+
+#### `ThalamusLogs.count(self: *const Self) usize`
+Returns current event count.
+
+#### `ThalamusLogs.isEmpty(self: *const Self) bool`
+Returns true if buffer is empty.
+
+#### `ThalamusLogs.isFull(self: *const Self) bool`
+Returns true if buffer is at capacity.
 
 #### `ThalamusLogs.iterator(self: *const Self) Iterator`
 Returns iterator over all events (head to tail).
@@ -824,12 +844,21 @@ try logs.processSensor(.{
     .raw_i8 = 1, // win
 });
 
+// Check buffer state
+std.debug.print("Events: {d}/{}\n", .{logs.count(), thalamus.ThalamusLogs.CAPACITY});
+
 // Iterate events
 var iter = logs.iterator();
 while (iter.next()) |ev| {
     std.debug.print("Sensor {d}: {?}\n", .{@intFromEnum(ev.sensor), ev.input.raw_f32});
 }
+
+// Clear when done
+logs.clear();
 ```
+
+### Version
+v5.2.0 - Bugfix: iterator modulus, added clear/reset/count/isEmpty/isFull, improved tests
 
 ---
 
@@ -1180,6 +1209,7 @@ The stress test simulates 1000 tasks across 10 competing agents to validate:
 
 ## Version History
 
+- **v5.2** - Thalamus Logs bugfix (iterator modulus), added clear/reset/count/isEmpty/isFull, 40 tests
 - **v5.1** - S³AI Brain with Intraparietal Sulcus, Thalamus Logs, Microglia
 - **v5.0** - AgentCoordination high-level API
 - **v1.0** - Initial brain regions (Basal Ganglia, Reticular Formation, Locus Coeruleus)

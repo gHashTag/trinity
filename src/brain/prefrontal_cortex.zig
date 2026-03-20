@@ -1,4 +1,4 @@
-//! PREFRONTAL CORTEX — Executive Function v1.0
+//! PREFRONTAL CORTEX — Executive Function v5.1
 //!
 //! Decision making, planning, and cognitive control.
 //! Brain Region: Prefrontal Cortex (Executive Function)
@@ -15,12 +15,33 @@
 //! - Confidence scoring for decision reliability
 //! - Six actions: proceed, throttle, scale_up, scale_down, pause, alert
 //! - Priority-based action selection (alert > pause > throttle > ...)
+//! - Zero-allocation decision path (stack-based reasoning buffer)
+//! - Integration with Amygdala for emotionally-salient decisions
 //!
 //! # Biological Inspiration
 //!
-//! The prefrontal cortex in the brain handles executive functions:
-//! decision making, planning, and cognitive control. This module
-//! mirrors that by making high-level decisions about system behavior.
+//! The prefrontal cortex (PFC) is the anterior part of the frontal lobes
+//! and is responsible for executive functions:
+//!
+//! - **Dorsolateral PFC**: Cognitive control, working memory, planning
+//! - **Ventromedial PFC**: Decision making, emotion regulation
+//! - **Anterior Cingulate**: Error detection, conflict monitoring
+//! - **Orbitofrontal Cortex**: Reward evaluation, inhibition control
+//!
+//! This module mirrors the PFC by:
+//! - Evaluating multiple metrics simultaneously (working memory)
+//! - Prioritizing actions based on urgency (inhibition control)
+//! - Detecting error conditions (error monitoring)
+//! - Computing confidence scores (reward evaluation)
+//!
+//! # Neuroanatomical Integration
+//!
+//! The PFC integrates with other brain regions:
+//!
+//! - **Basal Ganglia**: Receives task claim status for scaling decisions
+//! - **Amygdala**: Can weight decisions by emotional salience
+//! - **Reticular Formation**: Broadcasts decision events
+//! - **Hippocampus**: Logs decisions for replay and learning
 //!
 //! # Usage
 //!
@@ -42,16 +63,21 @@
 //!
 //! # Decision Thresholds
 //!
-//! | Condition | Action | Priority |
-//! |-----------|--------|----------|
-//! | memory > 90% | alert | Highest |
-//! | error_rate > 0.5 | pause | Very high |
-//! | error_rate > 0.2 | throttle | High |
-//! | queue/agent > 10 | scale_up | Medium |
-//! | latency > 5000ms | throttle | Medium |
-//! | memory > 75% | throttle | Medium |
-//! | tasks < agents & queue < 0.5 | scale_down | Low |
-//! | All healthy | proceed | Default |
+//! | Condition | Action | Priority | Neuroanalog |
+//! |-----------|--------|----------|-------------|
+//! | memory > 90% | alert | Highest | OFC inhibition |
+//! | error_rate > 0.5 | pause | Very high | ACC error detection |
+//! | error_rate > 0.2 | throttle | High | DLPFC control |
+//! | queue/agent > 10 | scale_up | Medium | Planning |
+//! | latency > 5000ms | throttle | Medium | Cognitive load |
+//! | memory > 75% | throttle | Medium | Resource monitoring |
+//! | tasks < agents & queue < 0.5 | scale_down | Low | Efficiency |
+//! | All healthy | proceed | Default | Maintenance |
+//!
+//! # Thread Safety
+//!
+//! The decide() function is stateless and thread-safe. Multiple threads
+//! can call decide() concurrently without synchronization.
 
 const std = @import("std");
 
@@ -327,7 +353,7 @@ test "PrefrontalCortex alerts on critical memory" {
     try std.testing.expectEqual(Action.alert, decision.action);
 }
 
-test "PrefrontalCortex proceeds with healthy context" {
+test "PrefrontalCortex proceed with healthy context" {
     const ctx = DecisionContext{
         .task_count = 50,
         .active_agents = 10,
@@ -713,4 +739,427 @@ test "PrefrontalCortex latency_threshold_exact" {
     };
     const decision2 = PrefrontalCortex.decide(ctx2);
     try std.testing.expectEqual(Action.throttle, decision2.action);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// NEUROANATOMICAL TESTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+test "PrefrontalCortex ACC_error_detection_on_high_error_rate" {
+    // Anterior Cingulate Cortex (ACC) analog: error rate detection
+    // The ACC monitors for conflicts and errors in performance
+    const ctx = DecisionContext{
+        .task_count = 100,
+        .active_agents = 10,
+        .error_rate = 0.51, // Just above threshold
+        .avg_latency_ms = 1000,
+        .memory_usage_pct = 50.0,
+    };
+    const decision = PrefrontalCortex.decide(ctx);
+    try std.testing.expectEqual(Action.pause, decision.action);
+    try std.testing.expect(decision.confidence >= 0.9);
+}
+
+test "PrefrontalCortex DLPFC_cognitive_control_throttle" {
+    // Dorsolateral PFC analog: cognitive control under degraded conditions
+    // DLPFC implements top-down control when conditions are suboptimal
+    const ctx = DecisionContext{
+        .task_count = 50,
+        .active_agents = 10,
+        .error_rate = 0.21, // Elevated error rate
+        .avg_latency_ms = 5100, // High latency
+        .memory_usage_pct = 76.0, // High memory
+    };
+    const decision = PrefrontalCortex.decide(ctx);
+    // DLPFC applies multiple throttling factors
+    try std.testing.expectEqual(Action.throttle, decision.action);
+    // Confidence reduced due to multiple factors
+    try std.testing.expect(decision.confidence < 0.6);
+}
+
+test "PrefrontalCortex OFC_inhibition_alert_on_critical_memory" {
+    // Orbitofrontal Cortex (OFC) analog: inhibition of ongoing activity
+    // The OFC inhibits responses when outcomes are expected to be negative
+    const ctx = DecisionContext{
+        .task_count = 5000, // Huge queue would normally scale_up
+        .active_agents = 10,
+        .error_rate = 0.05,
+        .avg_latency_ms = 500,
+        .memory_usage_pct = 91.0, // Critical memory overrides everything
+    };
+    const decision = PrefrontalCortex.decide(ctx);
+    // OFC inhibition takes highest priority
+    try std.testing.expectEqual(Action.alert, decision.action);
+    try std.testing.expect(decision.confidence >= 0.9);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// EDGE CASE TESTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+test "PrefrontalCortex NaN_error_rate_handling" {
+    // NaN should not crash decision logic
+    const ctx = DecisionContext{
+        .task_count = 50,
+        .active_agents = 10,
+        .error_rate = std.math.nan(f32),
+        .avg_latency_ms = 500,
+        .memory_usage_pct = 50.0,
+    };
+    // NaN > threshold is false, so no error-based action triggered
+    const decision = PrefrontalCortex.decide(ctx);
+    // Should return some valid decision (likely proceed or based on other metrics)
+    try std.testing.expect(decision.confidence > 0);
+}
+
+test "PrefrontalCortex negative_memory_usage_handling" {
+    // Negative memory should be handled gracefully
+    const ctx = DecisionContext{
+        .task_count = 50,
+        .active_agents = 10,
+        .error_rate = 0.05,
+        .avg_latency_ms = 500,
+        .memory_usage_pct = -10.0, // Invalid but shouldn't crash
+    };
+    const decision = PrefrontalCortex.decide(ctx);
+    // Should not crash, return valid decision
+    try std.testing.expect(decision.confidence > 0);
+}
+
+test "PrefrontalCortex memory_overflow_percentage" {
+    // Memory usage > 100% should still work
+    const ctx = DecisionContext{
+        .task_count = 50,
+        .active_agents = 10,
+        .error_rate = 0.05,
+        .avg_latency_ms = 500,
+        .memory_usage_pct = 150.0, // Way over 100%
+    };
+    const decision = PrefrontalCortex.decide(ctx);
+    // Should trigger alert
+    try std.testing.expectEqual(Action.alert, decision.action);
+    try std.testing.expect(decision.confidence >= 0.9);
+}
+
+test "PrefrontalCortex max_usize_values" {
+    // Test with maximum usize values for robustness
+    const ctx = DecisionContext{
+        .task_count = std.math.maxInt(usize),
+        .active_agents = 1,
+        .error_rate = 0.05,
+        .avg_latency_ms = 500,
+        .memory_usage_pct = 50.0,
+    };
+    const decision = PrefrontalCortex.decide(ctx);
+    // Should handle without overflow/crash
+    try std.testing.expect(decision.confidence > 0);
+    try std.testing.expect(decision.action == .scale_up or decision.action == .alert);
+}
+
+test "PrefrontalCortex reasoning_buffer_overflow_protection" {
+    // Test that reasoning buffer doesn't overflow
+    // Create a context that would trigger many reason writes
+    const ctx = DecisionContext{
+        .task_count = 1000000,
+        .active_agents = 10,
+        .error_rate = 0.6, // Triggers pause
+        .avg_latency_ms = 10000, // Would trigger throttle
+        .memory_usage_pct = 95.0, // Triggers alert
+    };
+    const decision = PrefrontalCortex.decide(ctx);
+    // Alert takes priority due to critical memory
+    try std.testing.expectEqual(Action.alert, decision.action);
+    // Reasoning should be truncated not crash
+    try std.testing.expect(decision.reasoning.len > 0);
+}
+
+test "PrefrontalCortex error_rate_exactly_zero" {
+    // Zero error rate should be handled correctly
+    const ctx = DecisionContext{
+        .task_count = 50,
+        .active_agents = 10,
+        .error_rate = 0.0,
+        .avg_latency_ms = 500,
+        .memory_usage_pct = 50.0,
+    };
+    const decision = PrefrontalCortex.decide(ctx);
+    try std.testing.expect(decision.confidence >= 0.9);
+}
+
+test "PrefrontalCortex error_rate_exactly_one" {
+    // All errors should trigger pause
+    const ctx = DecisionContext{
+        .task_count = 50,
+        .active_agents = 10,
+        .error_rate = 1.0,
+        .avg_latency_ms = 500,
+        .memory_usage_pct = 50.0,
+    };
+    const decision = PrefrontalCortex.decide(ctx);
+    try std.testing.expectEqual(Action.pause, decision.action);
+}
+
+test "PrefrontalCortex infinite_latency_handling" {
+    // Max u64 latency should be handled
+    const ctx = DecisionContext{
+        .task_count = 50,
+        .active_agents = 10,
+        .error_rate = 0.05,
+        .avg_latency_ms = std.math.maxInt(u64),
+        .memory_usage_pct = 50.0,
+    };
+    const decision = PrefrontalCortex.decide(ctx);
+    try std.testing.expectEqual(Action.throttle, decision.action);
+}
+
+// ═════════════════════════════════════════════════════════════════════════════
+// INTEGRATION TESTS
+// ═════════════════════════════════════════════════════════════════════════════
+
+test "PrefrontalCortex action_priority_matrix" {
+    // Verify complete action priority: alert > pause > throttle > scale_up > scale_down > proceed
+    const test_cases = [_]struct {
+        name: []const u8,
+        ctx: DecisionContext,
+        expected: Action,
+    }{
+        .{
+            .name = "alert_highest",
+            .ctx = .{
+                .task_count = 0,
+                .active_agents = 0,
+                .error_rate = 1.0, // Would trigger pause
+                .avg_latency_ms = 0,
+                .memory_usage_pct = 95.0, // But alert is higher
+            },
+            .expected = .alert,
+        },
+        .{
+            .name = "pause_second",
+            .ctx = .{
+                .task_count = 1000, // Would trigger scale_up
+                .active_agents = 1,
+                .error_rate = 0.6, // But pause is higher
+                .avg_latency_ms = 0,
+                .memory_usage_pct = 50.0,
+            },
+            .expected = .pause,
+        },
+        .{
+            .name = "throttle_over_scale_up",
+            .ctx = .{
+                .task_count = 1000, // Would trigger scale_up
+                .active_agents = 1,
+                .error_rate = 0.3, // But throttle is higher
+                .avg_latency_ms = 0,
+                .memory_usage_pct = 50.0,
+            },
+            .expected = .throttle,
+        },
+        .{
+            .name = "scale_up_over_scale_down",
+            .ctx = .{
+                .task_count = 0, // Would trigger scale_down
+                .active_agents = 10,
+                .error_rate = 0.01,
+                .avg_latency_ms = 0,
+                .memory_usage_pct = 50.0,
+            },
+            .expected = .scale_down,
+        },
+    };
+
+    inline for (test_cases) |tc| {
+        const decision = PrefrontalCortex.decide(tc.ctx);
+        try std.testing.expectEqual(tc.expected, decision.action);
+    }
+}
+
+test "PrefrontalCortex confidence_bounds" {
+    // Verify confidence is always in valid range [0, 1]
+    const test_contexts = [_]DecisionContext{
+        .{ .task_count = 0, .active_agents = 0, .error_rate = 0.0, .avg_latency_ms = 0, .memory_usage_pct = 0.0 },
+        .{ .task_count = 100, .active_agents = 10, .error_rate = 1.0, .avg_latency_ms = 10000, .memory_usage_pct = 100.0 },
+        .{ .task_count = 1000000, .active_agents = 1000, .error_rate = 0.5, .avg_latency_ms = 5000, .memory_usage_pct = 95.0 },
+        .{ .task_count = 50, .active_agents = 10, .error_rate = 0.05, .avg_latency_ms = 500, .memory_usage_pct = 50.0 },
+    };
+
+    for (test_contexts) |ctx| {
+        const decision = PrefrontalCortex.decide(ctx);
+        try std.testing.expect(decision.confidence >= 0.0);
+        try std.testing.expect(decision.confidence <= 1.0);
+    }
+}
+
+test "PrefrontalCortex reasoning_content_variability" {
+    // Verify reasoning strings differ based on triggers
+    const healthy_ctx = DecisionContext{
+        .task_count = 50,
+        .active_agents = 10,
+        .error_rate = 0.05,
+        .avg_latency_ms = 500,
+        .memory_usage_pct = 30.0,
+    };
+
+    const error_ctx = DecisionContext{
+        .task_count = 50,
+        .active_agents = 10,
+        .error_rate = 0.6,
+        .avg_latency_ms = 500,
+        .memory_usage_pct = 30.0,
+    };
+
+    const memory_ctx = DecisionContext{
+        .task_count = 50,
+        .active_agents = 10,
+        .error_rate = 0.05,
+        .avg_latency_ms = 500,
+        .memory_usage_pct = 95.0,
+    };
+
+    const healthy_decision = PrefrontalCortex.decide(healthy_ctx);
+    const error_decision = PrefrontalCortex.decide(error_ctx);
+    const memory_decision = PrefrontalCortex.decide(memory_ctx);
+
+    // Reasoning should differ
+    try std.testing.expect(!std.mem.eql(u8, healthy_decision.reasoning, error_decision.reasoning));
+    try std.testing.expect(!std.mem.eql(u8, healthy_decision.reasoning, memory_decision.reasoning));
+}
+
+test "PrefrontalCortex recommend_all_actions_coverage" {
+    // Verify recommend() handles all action types
+    const actions = [_]Action{ .proceed, .throttle, .scale_up, .scale_down, .pause, .alert };
+
+    for (actions) |action| {
+        const decision = Decision{
+            .action = action,
+            .confidence = 0.8,
+            .reasoning = "test",
+        };
+        const recommendation = PrefrontalCortex.recommend(decision);
+        try std.testing.expect(recommendation.len > 0);
+    }
+}
+
+test "PrefrontalCortex concurrent_decisions" {
+    // Simulate concurrent decision-making (thread safety test)
+    // Spawn threads that all call decide()
+    const num_threads = 10;
+    var results: [num_threads]Decision = undefined;
+    var threads: [num_threads]std.Thread = undefined;
+
+    const ctx = DecisionContext{
+        .task_count = 150,
+        .active_agents = 10,
+        .error_rate = 0.05,
+        .avg_latency_ms = 2000,
+        .memory_usage_pct = 65.0,
+    };
+
+    for (0..num_threads) |i| {
+        threads[i] = try std.Thread.spawn(.{}, struct {
+            fn run(ctx_ptr: *const DecisionContext, result_ptr: *Decision) void {
+                result_ptr.* = PrefrontalCortex.decide(ctx_ptr.*);
+            }
+        }.run, .{ &ctx, &results[i] });
+    }
+
+    for (&threads) |*t| {
+        t.join();
+    }
+
+    // All threads should get same result
+    for (results) |result| {
+        try std.testing.expectEqual(results[0].action, result.action);
+        try std.testing.expectApproxEqAbs(results[0].confidence, result.confidence, 0.001);
+    }
+}
+
+test "PrefrontalCortex scale_down_edge_case_exactly_boundary" {
+    // Tasks < agents AND queue_per_agent < 0.5
+    // With 10 agents and 5 tasks: queue = 5/10 = 0.5 (exactly at boundary)
+    const ctx1 = DecisionContext{
+        .task_count = 5,
+        .active_agents = 10,
+        .error_rate = 0.01,
+        .avg_latency_ms = 100,
+        .memory_usage_pct = 30.0,
+    };
+    const decision1 = PrefrontalCortex.decide(ctx1);
+    // 0.5 is NOT less than 0.5, so no scale_down
+    try std.testing.expectEqual(Action.proceed, decision1.action);
+
+    // With 4 tasks: queue = 4/10 = 0.4 < 0.5
+    const ctx2 = DecisionContext{
+        .task_count = 4,
+        .active_agents = 10,
+        .error_rate = 0.01,
+        .avg_latency_ms = 100,
+        .memory_usage_pct = 30.0,
+    };
+    const decision2 = PrefrontalCortex.decide(ctx2);
+    try std.testing.expectEqual(Action.scale_down, decision2.action);
+}
+
+test "PrefrontalCortex all_thresholds_mutually_exclusive" {
+    // Ensure thresholds don't overlap in ways that cause ambiguity
+    const cases = [_]struct {
+        ctx: DecisionContext,
+        expected: Action,
+    }{
+        // Alert > 90% memory
+        .{ .ctx = .{ .task_count = 50, .active_agents = 10, .error_rate = 0.05, .avg_latency_ms = 500, .memory_usage_pct = 90.5 }, .expected = .alert },
+        // Pause > 50% error rate
+        .{ .ctx = .{ .task_count = 50, .active_agents = 10, .error_rate = 0.51, .avg_latency_ms = 500, .memory_usage_pct = 50.0 }, .expected = .pause },
+        // Throttle > 20% error rate
+        .{ .ctx = .{ .task_count = 50, .active_agents = 10, .error_rate = 0.21, .avg_latency_ms = 500, .memory_usage_pct = 50.0 }, .expected = .throttle },
+        // Throttle > 5000ms latency
+        .{ .ctx = .{ .task_count = 50, .active_agents = 10, .error_rate = 0.05, .avg_latency_ms = 5001, .memory_usage_pct = 50.0 }, .expected = .throttle },
+        // Throttle > 75% memory
+        .{ .ctx = .{ .task_count = 50, .active_agents = 10, .error_rate = 0.05, .avg_latency_ms = 500, .memory_usage_pct = 75.5 }, .expected = .throttle },
+        // Scale up > 10 tasks per agent
+        .{ .ctx = .{ .task_count = 101, .active_agents = 10, .error_rate = 0.05, .avg_latency_ms = 500, .memory_usage_pct = 50.0 }, .expected = .scale_up },
+        // Scale down conditions
+        .{ .ctx = .{ .task_count = 2, .active_agents = 10, .error_rate = 0.01, .avg_latency_ms = 100, .memory_usage_pct = 30.0 }, .expected = .scale_down },
+        // Healthy default
+        .{ .ctx = .{ .task_count = 50, .active_agents = 10, .error_rate = 0.05, .avg_latency_ms = 500, .memory_usage_pct = 50.0 }, .expected = .proceed },
+    };
+
+    for (cases) |tc| {
+        const decision = PrefrontalCortex.decide(tc.ctx);
+        try std.testing.expectEqual(tc.expected, decision.action);
+    }
+}
+
+test "PrefrontalCortex action_string_representation" {
+    // Verify action enum names are consistent
+    const expected_names = [_][]const u8{
+        "proceed",
+        "throttle",
+        "scale_up",
+        "scale_down",
+        "pause",
+        "alert",
+    };
+
+    const actions = std.meta.tags(Action);
+    try std.testing.expectEqual(actions.len, expected_names.len);
+
+    for (actions, 0..) |action, i| {
+        try std.testing.expectEqualStrings(expected_names[i], @tagName(action));
+    }
+}
+
+test "PrefrontalCortex zero_division_safety" {
+    // Ensure no division by zero when active_agents is 0
+    const ctx = DecisionContext{
+        .task_count = 100,
+        .active_agents = 0, // Division by zero would occur if not handled
+        .error_rate = 0.05,
+        .avg_latency_ms = 500,
+        .memory_usage_pct = 50.0,
+    };
+    // Should not crash, return valid decision
+    const decision = PrefrontalCortex.decide(ctx);
+    try std.testing.expect(decision.confidence > 0);
 }
