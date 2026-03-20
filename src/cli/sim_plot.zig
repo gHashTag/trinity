@@ -1,11 +1,10 @@
 //! SIMULATION PLOTTER — ASCII Visualization
 //!
 //! Reads simulation_results.csv and displays:
+//!   --view summary   Final metrics ranking table
 //!   --view ppl       PPL evolution curves
 //!   --view diversity Diversity index trends
 //!   --view alive     Worker survival curves
-//!   --view summary   Final metrics ranking table
-//!
 //! Usage: tri-sim-plot --view MODE --input PATH
 //!
 //! φ² + 1/phi² = 3 = TRINITY
@@ -26,6 +25,27 @@ const CYAN = "\x1b[36m";
 const MAGENTA = "\x1b[35m";
 const WHITE = "\x1b[37m";
 
+const DataPoint = struct {
+    step: usize,
+    scenario_id: []const u8,
+    ppl: f32,
+    diversity: f32,
+    alive: usize,
+    energy: f32,
+};
+
+const ScenarioStats = struct {
+    id: []const u8,
+    name: []const u8,
+    final_ppl: f32,
+    final_diversity: f32,
+    final_alive: usize,
+    total_energy: f32,
+    converged: bool,
+    category: []const u8,
+    points: []const DataPoint,
+};
+
 pub fn main() !void {
     const allocator = std.heap.page_allocator;
 
@@ -37,7 +57,7 @@ pub fn main() !void {
         return;
     }
 
-    var view_mode: ?enum { ppl, diversity, alive, summary, wave, coherence, phase, probability } = null;
+    var view_mode: ?enum { ppl, diversity, alive, summary } = null;
     var input_path: []const u8 = "output/simulation_results.csv";
 
     var i: usize = 1;
@@ -52,443 +72,462 @@ pub fn main() !void {
                 view_mode = .alive;
             } else if (std.mem.eql(u8, mode_str, "summary")) {
                 view_mode = .summary;
-            } else if (std.mem.eql(u8, mode_str, "wave")) {
-                view_mode = .wave;
-            } else if (std.mem.eql(u8, mode_str, "coherence")) {
-                view_mode = .coherence;
-            } else if (std.mem.eql(u8, mode_str, "phase")) {
-                view_mode = .phase;
-            } else if (std.mem.eql(u8, mode_str, "probability")) {
-                view_mode = .probability;
             } else {
                 print("{s}Error: unknown view mode '{s}'{s}\n", .{ RED, mode_str, RESET });
                 return error.InvalidViewMode;
             }
         } else if (std.mem.startsWith(u8, args[i], "--input=")) {
             input_path = args[i]["--input=".len..];
-        } else if (std.mem.eql(u8, args[i], "--version")) {
-            print("tri-sim-plot v2.0 — Quantum-Enhanced Visualization for Brain Evolution\n", .{});
-            return;
         }
     }
 
     if (view_mode == null) {
-        print("{s}Error: --view mode required (ppl|diversity|alive|summary|wave|coherence|phase|probability){s}\n", .{ RED, RESET });
+        print("{s}Error: --view mode required (summary|ppl|diversity|alive){s}\n", .{ RED, RESET });
         printHelp();
         return error.ViewModeRequired;
     }
 
+    const scenarios = try loadCSV(allocator, input_path);
+    defer {
+        for (scenarios) |s| {
+            allocator.free(s.id);
+            allocator.free(s.points);
+        }
+        allocator.free(scenarios);
+    }
+
     switch (view_mode.?) {
-        .ppl => print("{s}Error: not implemented yet{S}\n", .{ RED, RESET }),
-        .diversity => print("{s}Error: not implemented yet{S}\n", .{ RED, RESET }),
-        .alive => print("{s}Error: not implemented yet{S}\n", .{ RED, RESET }),
-        .wave => try plotWaveFunction(allocator, input_path),
-        .coherence => try plotCoherence(allocator, input_path),
-        .phase => try plotPhaseSpace(allocator, input_path),
-        .probability => try plotProbability(allocator, input_path),
-        .summary => try printSummary(allocator, input_path),
+        .ppl => try plotPPL(allocator, scenarios),
+        .diversity => try plotDiversity(allocator, scenarios),
+        .alive => try plotAlive(allocator, scenarios),
+        .summary => try printSummary(allocator, scenarios),
     }
 }
 
-fn printSummary(allocator: Allocator, csv_path: []const u8) !void {
+fn loadCSV(allocator: Allocator, csv_path: []const u8) ![]ScenarioStats {
     const file = std.fs.cwd().openFile(csv_path, .{}) catch |err| {
         print("{s}Error: cannot open '{s}': {}{s}\n", .{ RED, csv_path, err, RESET });
         return err;
     };
     defer file.close();
 
-    const contents = try file.readToEndAlloc(allocator, 10000 * 1024);
+    const contents = try file.readToEndAlloc(allocator, 10 * 1024 * 1024);
     defer allocator.free(contents);
 
-    print("{s}╔════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
-    print("{s}║  SIMULATION SUMMARY                                    ║{s}\n", .{ BOLD, RESET });
-    print("{s}╚════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+    const ScenarioData = struct {
+        points: std.ArrayList(DataPoint),
+        final_ppl: f32,
+        final_diversity: f32,
+        final_alive: usize,
+        total_energy: f32,
+    };
 
-    print("  Run simulation suite first: {s}zig build sim-suite --output /tmp/sim{s}\n", .{ YELLOW, RESET });
+    var scenario_map = std.StringHashMap(ScenarioData).init(allocator);
+    defer {
+        var iter = scenario_map.iterator();
+        while (iter.next()) |entry| {
+            allocator.free(entry.key_ptr.*);
+            entry.value_ptr.points.deinit(allocator);
+        }
+        scenario_map.deinit();
+    }
+
+    var lines = std.mem.tokenizeScalar(u8, contents, '\n');
+
+    // Skip header
+    _ = lines.next();
+
+    while (lines.next()) |line| {
+        if (line.len == 0) continue;
+
+        var fields = std.mem.tokenizeScalar(u8, line, ',');
+        var step_idx: usize = 0;
+        var step: usize = 0;
+        var scenario_id: []const u8 = "";
+        var ppl: f32 = 0.0;
+        var diversity: f32 = 0.0;
+        var alive: usize = 0;
+        var energy: f32 = 0.0;
+
+        while (fields.next()) |field| {
+            const field_str = std.mem.trim(u8, field, " \r\n");
+            switch (step_idx) {
+                0 => step = std.fmt.parseInt(usize, field_str, 10) catch 0,
+                1 => scenario_id = field_str,
+                2 => ppl = std.fmt.parseFloat(f32, field_str) catch 0.0,
+                3 => diversity = std.fmt.parseFloat(f32, field_str) catch 0.0,
+                4 => alive = std.fmt.parseInt(usize, field_str, 10) catch 0,
+                8 => energy = std.fmt.parseFloat(f32, field_str) catch 0.0,
+                else => {},
+            }
+            step_idx += 1;
+        }
+
+        const entry = try scenario_map.getOrPut(scenario_id);
+        if (!entry.found_existing) {
+            entry.key_ptr.* = try allocator.dupe(u8, scenario_id);
+            entry.value_ptr.* = ScenarioData{
+                .points = std.ArrayList(DataPoint).initCapacity(allocator, 32) catch |err| return err,
+                .final_ppl = ppl,
+                .final_diversity = diversity,
+                .final_alive = alive,
+                .total_energy = energy,
+            };
+        }
+
+        try entry.value_ptr.points.append(allocator, DataPoint{
+            .step = step,
+            .scenario_id = entry.key_ptr.*,
+            .ppl = ppl,
+            .diversity = diversity,
+            .alive = alive,
+            .energy = energy,
+        });
+
+        entry.value_ptr.final_ppl = ppl;
+        entry.value_ptr.final_diversity = diversity;
+        entry.value_ptr.final_alive = alive;
+        entry.value_ptr.total_energy = energy;
+    }
+
+    var result = std.ArrayList(ScenarioStats).initCapacity(allocator, 16) catch |err| return err;
+    var iter = scenario_map.iterator();
+    while (iter.next()) |entry| {
+        const points_slice = try entry.value_ptr.points.toOwnedSlice(allocator);
+        const stats = ScenarioStats{
+            .id = try allocator.dupe(u8, entry.key_ptr.*),
+            .name = getScenarioName(entry.key_ptr.*),
+            .final_ppl = entry.value_ptr.final_ppl,
+            .final_diversity = entry.value_ptr.final_diversity,
+            .final_alive = entry.value_ptr.final_alive,
+            .total_energy = entry.value_ptr.total_energy,
+            .converged = entry.value_ptr.final_alive > 0,
+            .category = getScenarioCategory(entry.key_ptr.*),
+            .points = points_slice,
+        };
+        try result.append(allocator, stats);
+    }
+
+    return result.toOwnedSlice(allocator);
+}
+
+fn getScenarioName(id: []const u8) []const u8 {
+    if (std.mem.eql(u8, id, "S1")) return "Baseline-1";
+    if (std.mem.eql(u8, id, "S2")) return "Baseline-2";
+    if (std.mem.eql(u8, id, "S3")) return "S3-Mixed";
+    if (std.mem.eql(u8, id, "S4")) return "S4-Mixed";
+    if (std.mem.eql(u8, id, "S5")) return "S5-Mixed";
+    if (std.mem.eql(u8, id, "S6")) return "JEPA-Heavy";
+    if (std.mem.eql(u8, id, "S7")) return "High-Div";
+    if (std.mem.eql(u8, id, "S8")) return "Low-Crash";
+    if (std.mem.eql(u8, id, "S9")) return "Byzantine";
+    if (std.mem.eql(u8, id, "S10")) return "Energy-Opt";
+    if (std.mem.eql(u8, id, "S11")) return "Sacred-A";
+    if (std.mem.eql(u8, id, "S12")) return "Sacred-B";
+    if (std.mem.eql(u8, id, "S13")) return "Wide";
+    if (std.mem.eql(u8, id, "S14")) return "Base-Ext";
+    if (std.mem.eql(u8, id, "S15")) return "Base-Ext2";
+    return id;
+}
+
+fn getScenarioCategory(id: []const u8) []const u8 {
+    if (std.mem.eql(u8, id, "S1") or std.mem.eql(u8, id, "S2") or
+        std.mem.eql(u8, id, "S14") or std.mem.eql(u8, id, "S15")) {
+        return "Baseline";
+    }
+    if (std.mem.eql(u8, id, "S11") or std.mem.eql(u8, id, "S12")) {
+        return "Sacred";
+    }
+    if (std.mem.eql(u8, id, "S7")) {
+        return "dePIN";
+    }
+    if (std.mem.eql(u8, id, "S13")) {
+        return "Wide";
+    }
+    return "Mixed";
+}
+
+fn getScenarioColor(category: []const u8) []const u8 {
+    if (std.mem.eql(u8, category, "Baseline")) return GREEN;
+    if (std.mem.eql(u8, category, "Sacred")) return MAGENTA;
+    if (std.mem.eql(u8, category, "dePIN")) return YELLOW;
+    if (std.mem.eql(u8, category, "Wide")) return CYAN;
+    return BLUE;
+}
+
+fn printSummary(allocator: Allocator, scenarios: []const ScenarioStats) !void {
+    _ = allocator;
+    print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+    print("{s}║  SIMULATION SUMMARY                                     ║{s}\n", .{ BOLD, RESET });
+    print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+
+    print("{s}┌──────┬──────────────────┬───────┬───────────┬────────┬────────┐{s}\n", .{ BOLD, RESET });
+    print("{s}│ Rank │ Scenario         │  PPL  │ Diversity │ Alive  │ Energy │{s}\n", .{ BOLD, RESET });
+    print("{s}├──────┼──────────────────┼───────┼───────────┼────────┼────────┤{s}\n", .{ BOLD, RESET });
+
+    for (scenarios, 0..) |s, i| {
+        const color = getScenarioColor(s.category);
+        print("{s}│ {d:>4} │ {s:<16} │ {} │    {} │ {d:>6} │ {}K │{s}\n", .{
+            color, i + 1, s.name, s.final_ppl, s.final_diversity, s.final_alive, s.total_energy / 1000.0, RESET,
+        });
+    }
+
+    print("{s}└──────┴──────────────────┴───────┴───────────┴────────┴────────┘{s}\n\n", .{ BOLD, RESET });
+
+    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n",
+        .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
+}
+
+fn plotPPL(allocator: Allocator, scenarios: []const ScenarioStats) !void {
+    const graph_width = 60;
+    const graph_height = 20;
+
+    // Find min/max PPL values
+    var min_ppl: f32 = std.math.floatMax(f32);
+    var max_ppl: f32 = 0.0;
+    var max_step: usize = 0;
+
+    for (scenarios) |s| {
+        for (s.points) |pt| {
+            if (pt.ppl < min_ppl) min_ppl = pt.ppl;
+            if (pt.ppl > max_ppl) max_ppl = pt.ppl;
+            if (pt.step > max_step) max_step = pt.step;
+        }
+    }
+
+    if (max_ppl == 0.0) {
+        print("{s}No data to plot{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const ppl_range = max_ppl - min_ppl;
+    const step_scale = @as(f32, @floatFromInt(graph_width)) / @as(f32, @floatFromInt(max_step));
+
+    print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+    print("{s}║  PPL EVOLUTION ({d:0>2} steps)                           ║{s}\n", .{ BOLD, max_step, RESET });
+    print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+
+    // Plot from top to bottom
+    var y_idx: usize = 0;
+    while (y_idx < graph_height) : (y_idx += 1) {
+        const y_val = max_ppl - (@as(f32, @floatFromInt(y_idx)) * ppl_range / @as(f32, @floatFromInt(graph_height - 1)));
+
+        // Y-axis label
+        if (y_idx % 5 == 0) {
+            const y_str = try std.fmt.allocPrint(allocator, "{d:>5.1}", .{y_val});
+            defer allocator.free(y_str);
+            print("{s} │", .{y_str});
+        } else {
+            print("      │", .{});
+        }
+
+        // Plot each column
+        var x_idx: usize = 0;
+        while (x_idx < graph_width) : (x_idx += 1) {
+            const step_val = @as(usize, @intFromFloat(@as(f32, @floatFromInt(x_idx)) / step_scale));
+            var plotted = false;
+
+            for (scenarios) |s| {
+                for (s.points) |pt| {
+                    if (pt.step == step_val and @abs(pt.ppl - y_val) < ppl_range / @as(f32, @floatFromInt(graph_height))) {
+                        const color = getScenarioColor(s.category);
+                        print("{s}●{s}", .{ color, RESET });
+                        plotted = true;
+                        break;
+                    }
+                }
+                if (plotted) break;
+            }
+
+            if (!plotted) {
+                print(" ", .{});
+            }
+        }
+        print("\n", .{});
+    }
+
+    // X-axis
+    print("      └", .{});
+    var i: usize = 0;
+    while (i < graph_width) : (i += 1) {
+        print("─", .{});
+    }
+    print("\n      ", .{});
+
+    // X-axis labels
+    i = 0;
+    while (i <= 10) : (i += 1) {
+        const label_pos = @as(usize, @intFromFloat(@as(f32, @floatFromInt(i)) * @as(f32, @floatFromInt(graph_width)) / 10.0));
+        var j: usize = 0;
+        while (j < label_pos) : (j += 1) {
+            print(" ", .{});
+        }
+        print("{d}", .{ i * @as(usize, @intFromFloat(@as(f32, @floatFromInt(max_step)) / 10.0)) / 10 });
+    }
+    print("\n\n", .{});
+
+    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n",
+        .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
+}
+
+fn plotDiversity(allocator: Allocator, scenarios: []const ScenarioStats) !void {
+    const graph_width = 60;
+    const graph_height = 15;
+
+    var min_div: f32 = std.math.floatMax(f32);
+    var max_div: f32 = 0.0;
+    var max_step: usize = 0;
+
+    for (scenarios) |s| {
+        for (s.points) |pt| {
+            if (pt.diversity < min_div) min_div = pt.diversity;
+            if (pt.diversity > max_div) max_div = pt.diversity;
+            if (pt.step > max_step) max_step = pt.step;
+        }
+    }
+
+    if (max_div == 0.0) {
+        print("{s}No data to plot{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const div_range = max_div - min_div;
+    const step_scale = @as(f32, @floatFromInt(graph_width)) / @as(f32, @floatFromInt(max_step));
+
+    print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+    print("{s}║  DIVERSITY INDEX TRENDS ({d:0>2} steps)                  ║{s}\n", .{ BOLD, max_step, RESET });
+    print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+
+    var y_idx: usize = 0;
+    while (y_idx < graph_height) : (y_idx += 1) {
+        const y_val = max_div - (@as(f32, @floatFromInt(y_idx)) * div_range / @as(f32, @floatFromInt(graph_height - 1)));
+
+        if (y_idx % 3 == 0) {
+            const y_str = try std.fmt.allocPrint(allocator, "{d:>6.2}", .{y_val});
+            defer allocator.free(y_str);
+            print("{s} │", .{y_str});
+        } else {
+            print("      │", .{});
+        }
+
+        var x_idx: usize = 0;
+        while (x_idx < graph_width) : (x_idx += 1) {
+            const step_val = @as(usize, @intFromFloat(@as(f32, @floatFromInt(x_idx)) / step_scale));
+            var plotted = false;
+
+            for (scenarios) |s| {
+                for (s.points) |pt| {
+                    if (pt.step == step_val and @abs(pt.diversity - y_val) < div_range / @as(f32, @floatFromInt(graph_height))) {
+                        const color = getScenarioColor(s.category);
+                        print("{s}●{s}", .{ color, RESET });
+                        plotted = true;
+                        break;
+                    }
+                }
+                if (plotted) break;
+            }
+
+            if (!plotted) print(" ", .{});
+        }
+        print("\n", .{});
+    }
+
+    print("      └", .{});
+    var i: usize = 0;
+    while (i < graph_width) : (i += 1) {
+        print("─", .{});
+    }
+    print("\n\n", .{});
+
+    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n",
+        .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
+}
+
+fn plotAlive(allocator: Allocator, scenarios: []const ScenarioStats) !void {
+    _ = allocator;
+    const graph_width = 60;
+    _ = 12;
+
+    var max_alive: usize = 0;
+    var max_step: usize = 0;
+
+    for (scenarios) |s| {
+        for (s.points) |pt| {
+            if (pt.alive > max_alive) max_alive = pt.alive;
+            if (pt.step > max_step) max_step = pt.step;
+        }
+    }
+
+    if (max_alive == 0) {
+        print("{s}No data to plot{s}\n", .{ RED, RESET });
+        return;
+    }
+
+    const step_scale = @as(f32, @floatFromInt(graph_width)) / @as(f32, @floatFromInt(max_step));
+
+    print("\n{s}╔══════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+    print("{s}║  WORKER SURVIVAL CURVES ({d:0>2} steps)                    ║{s}\n", .{ BOLD, max_step, RESET });
+    print("{s}╚══════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+
+    var y_idx: isize = @intCast(max_alive);
+    while (y_idx >= 0) : (y_idx -= 1) {
+        const y_val: usize = @intCast(y_idx);
+        const alive_f: f32 = @floatFromInt(y_val);
+
+        if (@as(usize, @intCast(y_idx)) % 20 == 0) {
+            print("{d:>4} │", .{y_val});
+        } else {
+            print("      │", .{});
+        }
+
+        var x_idx: usize = 0;
+        while (x_idx < graph_width) : (x_idx += 1) {
+            const step_val = @as(usize, @intFromFloat(@as(f32, @floatFromInt(x_idx)) / step_scale));
+            var plotted = false;
+
+            for (scenarios) |s| {
+                for (s.points) |pt| {
+                    const pt_alive_f: f32 = @floatFromInt(pt.alive);
+                    if (pt.step == step_val and @abs(pt_alive_f - alive_f) < 1.0) {
+                        const color = getScenarioColor(s.category);
+                        print("{s}●{s}", .{ color, RESET });
+                        plotted = true;
+                        break;
+                    }
+                }
+                if (plotted) break;
+            }
+
+            if (!plotted) print(" ", .{});
+        }
+        print("\n", .{});
+    }
+
+    print("      └", .{});
+    var i: usize = 0;
+    while (i < graph_width) : (i += 1) {
+        print("─", .{});
+    }
+    print("\n\n", .{});
+
+    print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n",
+        .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
 }
 
 fn printHelp() void {
     print("\n{s}SIMULATION PLOTTER — Terminal Visualization{s}\n", .{ BOLD, RESET });
     print("\n{s}Usage:{s}\n", .{ CYAN, RESET });
-    print("  tri-sim-plot --view=MODE --input=PATH\n", .{});
+    print("  tri-sim-plot --view=MODE [--input=PATH]\n", .{});
+    print("\n{s}View Modes:{s}\n", .{ CYAN, RESET });
+    print("  summary   — Final metrics ranking table\n", .{});
+    print("  ppl       — PPL evolution curves\n", .{});
+    print("  diversity — Diversity index trends\n", .{});
+    print("  alive     — Worker survival curves\n", .{});
     print("\n{s}Options:{s}\n", .{ CYAN, RESET });
-    print("  --view=MODE   View mode (required)\n", .{});
-    print("                ppl       — PPL evolution curves\n", .{});
-    print("                diversity — Diversity index trends\n", .{});
-    print("                alive     — Worker survival curves\n", .{});
-    print("                summary   — Final metrics ranking table\n", .{});
-    print("  {s}Quantum Modes:{s}\n", .{ MAGENTA, RESET });
-    print("                wave      — Wave function ψ(θ) evolution\n", .{});
-    print("                coherence — Phase coherence over time\n", .{});
-    print("                phase     — Phase space trajectory (PPL vs diversity)\n", .{});
-    print("                probability — Probability density clouds\n", .{});
     print("  --input=PATH  CSV file path (default: output/simulation_results.csv)\n", .{});
     print("  --help, -h    Show this help\n", .{});
-    print("  --version     Show version\n", .{});
     print("\n{s}Examples:{s}\n", .{ CYAN, RESET });
-    print("  tri-sim-plot --view=wave\n", .{});
-    print("  tri-sim-plot --view=coherence --input=/tmp/results/simulation_results.csv\n", .{});
+    print("  tri-sim-plot --view=summary\n", .{});
+    print("  tri-sim-plot --view=ppl --input=/tmp/sim/simulation_results.csv\n", .{});
     print("\n", .{});
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// QUANTUM PLOTTING FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-/// Plot wave function evolution ψ(θ) over time
-/// Uses ASCII art to show amplitude and phase
-fn plotWaveFunction(allocator: Allocator, csv_path: []const u8) !void {
-    print("\n{s}╔════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
-    print("{s}║  WAVE FUNCTION ψ(θ) EVOLUTION                         ║{s}\n", .{ BOLD, RESET });
-    print("{s}╚════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
-
-    const data = try parseCsvData(allocator, csv_path);
-    defer allocator.free(data.steps);
-    defer allocator.free(data.avg_ppl);
-    defer allocator.free(data.alive_workers);
-    defer allocator.free(data.diversity);
-
-    if (data.steps.len == 0) {
-        print("{s}No data to plot{s}\n", .{ YELLOW, RESET });
-        return;
-    }
-
-    // Print wave function header
-    print("{s}Step │ ψ(θ) Amplitude │ Phase │ Probability |{s}\n", .{ BOLD, RESET });
-    print("{s}─────┼────────────────┼───────┼──────────────{s}\n", .{ CYAN, RESET });
-
-    const display_count = @min(20, data.steps.len);
-    const step_stride = @max(1, data.steps.len / display_count);
-
-    for (0..display_count) |i| {
-        const idx = i * step_stride;
-        if (idx >= data.steps.len) break;
-
-        const step = data.steps[idx];
-        const ppl = data.avg_ppl[idx];
-        const diversity = data.diversity[idx];
-        const alive = data.alive_workers[idx];
-
-        // Wave function amplitude: normalized PPL (lower = higher amplitude)
-        const amplitude = if (ppl > 0) @exp(-ppl / 50.0) else 1.0;
-        // Phase: based on diversity (0-2π)
-        const phase = diversity * 2.0 * std.math.pi;
-        // Probability: |ψ|²
-        const probability = amplitude * amplitude;
-
-        // ASCII wave representation
-        const wave_chars = "▁▂▃▄▅▆▇█";
-        const wave_idx = @min(7, @as(usize, @intFromFloat(amplitude * 7.99)));
-        const wave_char = wave_chars[wave_idx];
-
-        // Phase emoji representation
-        const phase_emoji = getPhaseEmoji(phase);
-
-        print("{d:4} │ {s}{c}{s} x{d:.2} │ {s} │ {d:.3}      │\n", .{
-            step, GREEN, wave_char, RESET, amplitude, phase_emoji, probability,
-        });
-    }
-
-    print("\n{s}φ² + 1/φ² = 3 | Wave function shows quantum state evolution{s}\n", .{ MAGENTA, RESET });
-}
-
-/// Plot coherence over time
-/// Shows how synchronized the learning is across workers
-fn plotCoherence(allocator: Allocator, csv_path: []const u8) !void {
-    print("\n{s}╔════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
-    print("{s}║  PHASE COHERENCE TRACKING                               ║{s}\n", .{ BOLD, RESET });
-    print("{s}╚════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
-
-    const data = try parseCsvData(allocator, csv_path);
-    defer allocator.free(data.steps);
-    defer allocator.free(data.avg_ppl);
-    defer allocator.free(data.alive_workers);
-    defer allocator.free(data.diversity);
-
-    if (data.steps.len < 2) {
-        print("{s}Insufficient data for coherence plot{s}\n", .{ YELLOW, RESET });
-        return;
-    }
-
-    // Calculate coherence as correlation between consecutive PPL values
-    var coherence_values = try allocator.alloc(f32, data.steps.len - 1);
-    defer allocator.free(coherence_values);
-
-    for (0..data.steps.len - 1) |i| {
-        // Simple coherence: change rate (smaller = more coherent)
-        const delta = @abs(data.avg_ppl[i + 1] - data.avg_ppl[i]);
-        coherence_values[i] = @exp(-delta / 10.0); // Normalize to [0, 1]
-    }
-
-    print("{s}Step │ Coherence │ Visual │ Interpretation{ s}\n", .{ BOLD, RESET });
-    print("{s}─────┼──────────┼────────┼─────────────────{s}\n", .{ CYAN, RESET });
-
-    const display_count = @min(15, coherence_values.len);
-    const step_stride = @max(1, coherence_values.len / display_count);
-
-    for (0..display_count) |i| {
-        const idx = i * step_stride;
-        if (idx >= coherence_values.len) break;
-
-        const coherence = coherence_values[idx];
-        const step = data.steps[idx];
-
-        // Visual bar
-        const bar_len = @min(20, @as(usize, @intFromFloat(coherence * 20.0)));
-        const bar_str = [_]u8{'█'} ** 20;
-        const visual = bar_str[0..bar_len];
-
-        const interpretation = if (coherence > 0.8) "{GREEN}High coherence{s}" else if (coherence > 0.5) "{YELLOW}Moderate{s}" else "{RED}Low coherence{s}";
-
-        print("{d:4} │   {d:.2}   │ ", .{ step, coherence });
-        for (0..20) |j| {
-            if (j < bar_len) print("{s}█{s}", .{ GREEN, RESET }) else print("░");
-        }
-        print(" │ ", .{});
-        print(interpretation ++ "\n", .{ GREEN, YELLOW, RED, RESET });
-    }
-
-    // Average coherence
-    var avg_coherence: f32 = 0.0;
-    for (coherence_values) |c| avg_coherence += c;
-    avg_coherence /= @as(f32, @floatFromInt(coherence_values.len));
-
-    print("\n{s}Average Coherence: {d:.3}{s}\n", .{ BOLD, avg_coherence, RESET });
-    print("{s}φ-coherence: Learning follows golden frequency relationships{s}\n", .{ MAGENTA, RESET });
-}
-
-/// Plot phase space trajectory (PPL vs Diversity)
-/// Shows the system's evolution through state space
-fn plotPhaseSpace(allocator: Allocator, csv_path: []const u8) !void {
-    print("\n{s}╔════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
-    print("{s}║  PHASE SPACE TRAJECTORY (PPL vs Diversity)              ║{s}\n", .{ BOLD, RESET });
-    print("{s}╚════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
-
-    const data = try parseCsvData(allocator, csv_path);
-    defer allocator.free(data.steps);
-    defer allocator.free(data.avg_ppl);
-    defer allocator.free(data.alive_workers);
-    defer allocator.free(data.diversity);
-
-    if (data.steps.len == 0) {
-        print("{s}No data to plot{s}\n", .{ YELLOW, RESET });
-        return;
-    }
-
-    // Find min/max for scaling
-    var min_ppl: f32 = std.math.inf(f32);
-    var max_ppl: f32 = 0.0;
-    var min_div: f32 = std.math.inf(f32);
-    var max_div: f32 = 0.0;
-
-    for (data.avg_ppl) |ppl| {
-        if (std.math.isFinite(ppl)) {
-            min_ppl = @min(min_ppl, ppl);
-            max_ppl = @max(max_ppl, ppl);
-        }
-    }
-    for (data.diversity) |div| {
-        if (std.math.isFinite(div)) {
-            min_div = @min(min_div, div);
-            max_div = @max(max_div, div);
-        }
-    }
-
-    // Create 2D ASCII plot
-    const height = 20;
-    const width = 40;
-    var grid = [_]u8{'.'} ** (height * width);
-
-    // Plot trajectory points
-    for (data.avg_ppl, data.diversity, 0..) |ppl, div, i| {
-        if (!std.math.isFinite(ppl) or !std.math.isFinite(div)) continue;
-
-        // Normalize to grid coordinates
-        const norm_ppl = if (max_ppl > min_ppl)
-            (ppl - min_ppl) / (max_ppl - min_ppl)
-        else
-            0.5;
-        const norm_div = if (max_div > min_div)
-            (div - min_div) / (max_div - min_div)
-        else
-            0.5;
-
-        const x = @min(width - 1, @as(usize, @intFromFloat(norm_ppl * @as(f32, @floatFromInt(width - 1)))));
-        const y = @min(height - 1, @as(usize, @intFromFloat((1.0 - norm_div) * @as(f32, @floatFromInt(height - 1)))));
-
-        const idx = y * width + x;
-        // Use different characters for start/middle/end
-        if (i == 0) {
-            grid[idx] = 'S'; // Start
-        } else if (i == data.avg_ppl.len - 1) {
-            grid[idx] = 'E'; // End
-        } else {
-            grid[idx] = '*';
-        }
-    }
-
-    // Print grid with axis labels
-    print("{s}PPL →{s}\n", .{ BOLD, RESET });
-    print("{s}    {s:0>40}{s}\n", .{ CYAN, "", RESET });
-
-    for (0..height) |y| {
-        const div_val = min_div + (max_div - min_div) * @as(f32, @floatFromInt(height - 1 - y)) / @as(f32, @floatFromInt(height - 1));
-        print("{s}{d:4.2}│{s}", .{ CYAN, div_val, RESET });
-        for (0..width) |x| {
-            const char = grid[y * width + x];
-            const color = if (char == 'S') RED else if (char == 'E') GREEN else WHITE;
-            print("{s}{c}{s}", .{ color, char, RESET });
-        }
-        print(" │\n", .{});
-    }
-
-    print("{s}    └", .{ CYAN });
-    for (0..width) |_| print("─");
-    print("┘{s}\n", .{ RESET });
-    print("      0.00                                        ", .{});
-    print("{s}← Diversity{s}\n\n", .{ BOLD, RESET });
-
-    print("{s}Legend: {s}S{RED}=Start{WHITE} *{WHITE}=Path {s}E{GREEN}=End{WHITE}{s}\n", .{ BOLD, RESET, RESET, GREEN, RESET });
-    print("{s}φ² + 1/φ² = 3 | Phase space shows system evolution trajectory{s}\n", .{ MAGENTA, RESET });
-}
-
-/// Plot probability density clouds
-/// Shows distribution of system states
-fn plotProbability(allocator: Allocator, csv_path: []const u8) !void {
-    print("\n{s}╔════════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
-    print("{s}║  PROBABILITY DENSITY CLOUDS |ψ|²                       ║{s}\n", .{ BOLD, RESET });
-    print("{s}╚════════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
-
-    const data = try parseCsvData(allocator, csv_path);
-    defer allocator.free(data.steps);
-    defer allocator.free(data.avg_ppl);
-    defer allocator.free(data.alive_workers);
-    defer allocator.free(data.diversity);
-
-    if (data.steps.len == 0) {
-        print("{s}No data to plot{s}\n", .{ YELLOW, RESET });
-        return;
-    }
-
-    // Bin the data into a histogram
-    const num_bins = 20;
-    var bins = [_]usize{0} ** num_bins;
-    var min_val: f32 = std.math.inf(f32);
-    var max_val: f32 = 0.0;
-
-    for (data.avg_ppl) |ppl| {
-        if (std.math.isFinite(ppl)) {
-            min_val = @min(min_val, ppl);
-            max_val = @max(max_val, ppl);
-        }
-    }
-
-    const range = max_val - min_val;
-    const bin_size = if (range > 0) range / @as(f32, @floatFromInt(num_bins)) else 1.0;
-
-    for (data.avg_ppl) |ppl| {
-        if (!std.math.isFinite(ppl)) continue;
-        const bin_idx = @min(num_bins - 1, @as(usize, @intFromFloat((ppl - min_val) / bin_size)));
-        bins[bin_idx] += 1;
-    }
-
-    // Find max bin for scaling
-    var max_count: usize = 0;
-    for (bins) |count| max_count = @max(max_count, count);
-
-    // Print histogram
-    print("{s}PPL Range  │ Count │ Probability Density │{s}\n", .{ BOLD, RESET });
-    print("{s}───────────┼───────┼──────────────────────{s}\n", .{ CYAN, RESET });
-
-    const density_chars = " ░▒▓█";
-
-    for (bins, 0..) |count, i| {
-        const bin_start = min_val + @as(f32, @floatFromInt(i)) * bin_size;
-        const bin_end = bin_start + bin_size;
-        const probability = @as(f32, @floatFromInt(count)) / @as(f32, @floatFromInt(data.steps.len));
-        const density_level = if (max_count > 0)
-            @min(4, @as(usize, @intFromFloat(@as(f32, @floatFromInt(count)) * 5.0 / @as(f32, @floatFromInt(max_count)))))
-        else
-            0;
-
-        print("{d:6.1}-{d:.1f} │ {d:4} │ ", .{ bin_start, bin_end, count });
-        for (0..20) |j| {
-            if (j < @as(usize, @intFromFloat(probability * 1000.0))) {
-                print("{s}{c}{s}", .{ GREEN, density_chars[density_level], RESET });
-            } else {
-                print(" ");
-            }
-        }
-        print(" {d:.3}\n", .{probability});
-    }
-
-    print("\n{s}φ² + 1/φ² = 3 | Born rule: P = |ψ|²{s}\n", .{ MAGENTA, RESET });
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// HELPER FUNCTIONS
-// ═══════════════════════════════════════════════════════════════════════════════
-
-const CsvData = struct {
-    steps: []u32,
-    avg_ppl: []f32,
-    alive_workers: []u32,
-    diversity: []f32,
-};
-
-/// Parse CSV data into structured format
-fn parseCsvData(allocator: Allocator, csv_path: []const u8) !CsvData {
-    const file = std.fs.cwd().openFile(csv_path, .{}) catch |err| {
-        print("{s}Error: cannot open '{s}': {}{s}\n", .{ RED, csv_path, err, RESET });
-        return err;
-    };
-    defer file.close();
-
-    const contents = try file.readToEndAlloc(allocator, 10000 * 1024);
-    defer allocator.free(contents);
-
-    var steps = std.ArrayList(u32).init(allocator);
-    var avg_ppl = std.ArrayList(f32).init(allocator);
-    var alive_workers = std.ArrayList(u32).init(allocator);
-    var diversity = std.ArrayList(f32).init(allocator);
-
-    // Skip header line
-    var lines = std.mem.splitScalar(u8, contents, '\n');
-    _ = lines.first(); // Skip header
-
-    while (lines.next()) |line| {
-        if (line.len == 0) continue;
-
-        var fields = std.mem.splitScalar(u8, line, ',');
-        _ = fields.first(); // step field
-        _ = fields.next(); // scenario field
-
-        const step_str = fields.first(); // Actually this is wrong - need to parse properly
-        _ = fields.next(); // avg_ppl
-
-        // Simplified parsing for demo
-        // In production, proper CSV parsing needed
-    }
-
-    return .{
-        .steps = try steps.toOwnedSlice(),
-        .avg_ppl = try avg_ppl.toOwnedSlice(),
-        .alive_workers = try alive_workers.toOwnedSlice(),
-        .diversity = try diversity.toOwnedSlice(),
-    };
-}
-
-/// Get phase emoji based on phase angle
-fn getPhaseEmoji(phase: f32) []const u8 {
-    const phase_normalized = @rem(phase, 2.0 * std.math.pi);
-    const phase_deg = phase_normalized * 180.0 / std.math.pi;
-
-    return if (phase_deg < 45) "🌑" // New moon
-    else if (phase_deg < 90) "🌒"
-    else if (phase_deg < 135) "🌓"
-    else if (phase_deg < 180) "🌔" // Full moon
-    else if (phase_deg < 225) "🌕"
-    else if (phase_deg < 270) "🌖"
-    else if (phase_deg < 315) "🌗"
-    else "🌘";
 }
