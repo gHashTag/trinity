@@ -88,7 +88,7 @@ struct PipelineScreen: View {
                     Text(state.status ?? "idle")
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(statusColor(state.status))
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, ParietalSpacing.xxxs)
                         .padding(.vertical, 2)
                         .background(statusColor(state.status).opacity(V2Depth.bgSidebarHover))
                         .clipShape(SwiftUI.Capsule())

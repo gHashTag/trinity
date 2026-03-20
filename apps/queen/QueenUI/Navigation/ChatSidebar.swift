@@ -392,7 +392,7 @@ struct ChatSidebar: View {
                                         .font(WernickeTypography.miniMedium)
                                 }
                                 .foregroundStyle(V4Color.accent)
-                                .padding(.horizontal, 6)
+                                .padding(.horizontal, ParietalSpacing.xxxs)
                                 .padding(.vertical, 3)
                             }
                             .buttonStyle(.plain)
@@ -1754,7 +1754,7 @@ struct ThreadRow: View {
                                 Text("#\(tag)")
                                     .font(WernickeTypography.size8.weight(.medium))
                                     .foregroundStyle(V4Color.purple)
-                                    .padding(.horizontal, 3)
+                                    .padding(.horizontal, ParietalSpacing.xxxs)
                                     .padding(.vertical, 1)
                                     .background(V4Color.purple.opacity(V2Depth.bgSubtle))
                                     .clipShape(SwiftUI.Capsule())

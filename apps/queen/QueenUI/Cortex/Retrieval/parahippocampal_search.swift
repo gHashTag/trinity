@@ -418,7 +418,7 @@ public struct ParahippocampalCommandPalette: View {
                 Text(shortcut)
                     .font(WernickeTypography.caption)
                     .foregroundStyle(V4Color.textTertiary)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, ParietalSpacing.xxxs)
                     .padding(.vertical, 2)
                     .background(V4Color.border)
                     .cornerRadius(V1Theme.cornerTiny)
