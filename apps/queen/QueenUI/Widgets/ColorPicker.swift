@@ -49,9 +49,9 @@ struct ColorPickerView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             // Presets
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 40))], spacing: 10) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 40))], spacing: ParietalSpacing.sm + 2) {
                 ForEach(presets) { preset in
                     ColorSwatchView(
                         color: preset.color,
@@ -68,27 +68,27 @@ struct ColorPickerView: View {
             // Custom picker
             if allowCustom {
                 Divider()
-                    .background(TrinityTheme.bgCardBorder)
+                    .background(V4Color.border)
 
                 Button {
                     showCustomPicker = true
                 } label: {
-                    HStack(spacing: 10) {
+                    HStack(spacing: ParietalSpacing.sm + 2) {
                         Rectangle()
                             .fill(Color(customColor))
-                            .frame(width: 24, height: 24)
-                            .cornerRadius(4)
+                            .frame(width: ParietalSpacing.lg, height: ParietalSpacing.lg)
+                            .cornerRadius(V1Theme.cornerTiny)
 
                         Text("Custom Color...")
-                            .font(.system(size: 13))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .font(WernickeTypography.size13)
+                            .foregroundStyle(V4Color.textPrimary)
 
                         Spacer()
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(TrinityTheme.bgWindow.opacity(0.5))
-                    .cornerRadius(6)
+                    .padding(.horizontal, ParietalSpacing.md)
+                    .padding(.vertical, ParietalSpacing.sm)
+                    .background(V4Color.background.opacity(V2Depth.stateDisabled))
+                    .cornerRadius(V1Theme.cornerSmall)
                 }
                 .buttonStyle(.plain)
                 .sheet(isPresented: $showCustomPicker) {
@@ -101,12 +101,12 @@ struct ColorPickerView: View {
                 }
             }
         }
-        .padding(12)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.md)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -129,14 +129,14 @@ struct ColorSwatchView: View {
                     .frame(width: 40, height: 40)
                     .overlay(
                         RoundedRectangle(cornerRadius: 6)
-                            .stroke(.white.opacity(0.3), lineWidth: 1)
+                            .stroke(.white.opacity(V2Depth.stateHover), lineWidth: 1)
                     )
 
                 if isSelected {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(WernickeTypography.body14Medium)
                         .foregroundStyle(.white)
-                        .shadow(color: .black.opacity(0.3), radius: 2)
+                        .shadow(color: .black.opacity(V2Depth.stateHover), radius: 2)
                 }
             }
         }
@@ -160,54 +160,54 @@ struct CustomColorSheet: View {
                     .frame(height: 280)
 
                 // Brightness slider
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Brightness")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
-                    HStack(spacing: 12) {
+                    HStack(spacing: ParietalSpacing.md) {
                         Image(systemName: "sun.min")
-                            .font(.system(size: 12))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size12)
+                            .foregroundStyle(V4Color.textSecondary)
 
                         Slider(value: .constant(color.brightnessComponent), in: 0...1)
 
                         Image(systemName: "sun.max")
-                            .font(.system(size: 12))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size12)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
 
                 // Preview
-                HStack(spacing: 20) {
-                    VStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
+                    VStack(spacing: ParietalSpacing.xs) {
                         Text("Selected")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
 
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Color(color))
                             .frame(width: 60, height: 60)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
-                                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                                    .stroke(V4Color.border, lineWidth: 1)
                             )
                     }
 
                     Spacer()
 
-                    VStack(spacing: 4) {
+                    VStack(spacing: ParietalSpacing.xs) {
                         Text("Hex Code")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
 
                         Text(hexCode)
-                            .font(.system(size: 13, weight: .medium, design: .monospaced))
-                            .foregroundStyle(TrinityTheme.textPrimary)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(TrinityTheme.bgWindow.opacity(0.5))
-                            .cornerRadius(6)
+                            .font(WernickeTypography.smallSemiboldMono)
+                            .foregroundStyle(V4Color.textPrimary)
+                            .padding(.horizontal, ParietalSpacing.sm + 2)
+                            .padding(.vertical, ParietalSpacing.xs + 2)
+                            .background(V4Color.background.opacity(V2Depth.stateDisabled))
+                            .cornerRadius(V1Theme.cornerSmall)
                     }
                 }
 
@@ -272,7 +272,7 @@ struct ColorWheelRepresentation: View {
             // Center indicator
             Circle()
                 .fill(Color(color))
-                .frame(width: 20, height: 20)
+                .frame(width: ParietalSpacing.icon + 4, height: ParietalSpacing.icon + 4)
                 .overlay(
                     Circle()
                         .stroke(.white, lineWidth: 2)
@@ -289,12 +289,12 @@ struct ThemeColorPicker: View {
     @Binding var selectedColor: Color
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm + 2) {
             Text("Color")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 ForEach(TrinityThemeColors.allCases, id: \.self) { themeColor in
                     ColorSwatchView(
                         color: themeColor.color,
@@ -329,13 +329,13 @@ enum TrinityThemeColors: CaseIterable {
 
     var color: Color {
         switch self {
-        case .accent: return TrinityTheme.accent
-        case .statusOK: return TrinityTheme.statusOK
-        case .statusWarn: return TrinityTheme.statusWarn
-        case .statusError: return TrinityTheme.statusError
-        case .primary: return TrinityTheme.textPrimary
-        case .muted: return TrinityTheme.textMuted
-        case .bgCard: return TrinityTheme.bgCard
+        case .accent: return V4Color.accent
+        case .statusOK: return V4Color.success
+        case .statusWarn: return V4Color.warning
+        case .statusError: return V4Color.error
+        case .primary: return V4Color.textPrimary
+        case .muted: return V4Color.textSecondary
+        case .bgCard: return V4Color.surface
         }
     }
 
@@ -383,12 +383,12 @@ struct GradientPicker: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm + 2) {
             Text("Gradient")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))], spacing: 10) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 60))], spacing: ParietalSpacing.sm + 2) {
                 ForEach(gradients) { gradient in
                     GradientSwatchView(
                         colors: gradient.colors,
@@ -442,16 +442,16 @@ struct ColorPicker_Previews: PreviewProvider {
             ColorPickerView(
                 selectedColor: .constant(.blue)
             )
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             ThemeColorPicker(
-                selectedColor: .constant(TrinityTheme.accent)
+                selectedColor: .constant(V4Color.accent)
             )
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
         }
     }
 }

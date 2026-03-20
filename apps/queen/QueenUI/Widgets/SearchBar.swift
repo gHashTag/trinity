@@ -34,10 +34,10 @@ struct SearchBar: View {
     var body: some View {
         VStack(spacing: 0) {
             // Search input
-            HStack(spacing: 10) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 TextField(placeholder, text: $text)
                     .focused($focus)
@@ -62,19 +62,19 @@ struct SearchBar: View {
                         onClear()
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size14)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerMedium)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerMedium)
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .stroke(isFocused ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .stroke(isFocused ? V4Color.accent : V4Color.border, lineWidth: 1)
             )
 
             // Suggestions dropdown
@@ -92,41 +92,41 @@ struct SearchBar: View {
                     showSuggestions = false
                     onSearch()
                 } label: {
-                    HStack(spacing: 10) {
+                    HStack(spacing: ParietalSpacing.sm + 2) {
                         Image(systemName: "magnifyingglass")
-                            .font(.system(size: 12))
-                            .foregroundStyle(TrinityTheme.textMuted)
-                            .frame(width: 16)
+                            .font(WernickeTypography.size12)
+                            .foregroundStyle(V4Color.textSecondary)
+                            .frame(width: ParietalSpacing.icon)
 
                         Text(suggestion)
-                            .font(.system(size: 13))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .font(WernickeTypography.size13)
+                            .foregroundStyle(V4Color.textPrimary)
 
                         Spacer()
 
                         Image(systemName: "arrow.turn.down.left")
-                            .font(.system(size: 10))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size10)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, ParietalSpacing.md)
+                    .padding(.vertical, ParietalSpacing.sm)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
 
                 if suggestion != filteredSuggestions.last {
                     Divider()
-                        .background(TrinityTheme.bgCardBorder)
+                        .background(V4Color.border)
                 }
             }
         }
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border, lineWidth: 1)
         )
-        .shadow(color: .black.opacity(0.1), radius: 8, y: 4)
+        .shadow(color: .black.opacity(V2Depth.bgSubtle), radius: 8, y: 4)
         .padding(.top, 4)
     }
 
@@ -147,7 +147,7 @@ struct SearchFieldWithFilter: View {
     @Binding var selectedFilter: String
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             // Filter dropdown
             Menu {
                 ForEach(filterOptions, id: \.self) { option in
@@ -163,45 +163,45 @@ struct SearchFieldWithFilter: View {
                     }
                 }
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Text(selectedFilter)
-                        .font(.system(size: 13))
+                        .font(WernickeTypography.size13)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(WernickeTypography.miniSemibold)
                 }
-                .foregroundStyle(TrinityTheme.textPrimary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 6)
-                .background(TrinityTheme.bgCardBorder)
-                .cornerRadius(6)
+                .foregroundStyle(V4Color.textPrimary)
+                .padding(.horizontal, ParietalSpacing.sm + 2)
+                .padding(.vertical, ParietalSpacing.xs + 2)
+                .background(V4Color.border)
+                .cornerRadius(V1Theme.cornerSmall)
             }
             .menuStyle(.borderlessButton)
 
             // Search input
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 13))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 TextField(placeholder, text: $text)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 13))
+                    .font(WernickeTypography.size13)
 
                 if !text.isEmpty {
                     Button {
                         text = ""
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 12))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size12)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(6)
+            .padding(.horizontal, ParietalSpacing.sm + 2)
+            .padding(.vertical, ParietalSpacing.xs + 2)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerSmall)
         }
     }
 }
@@ -224,30 +224,30 @@ struct InlineSearch: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 11))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size11)
+                .foregroundStyle(V4Color.textSecondary)
 
             TextField(placeholder, text: $text)
                 .textFieldStyle(.plain)
-                .font(.system(size: 11))
+                .font(WernickeTypography.size11)
 
             if !text.isEmpty {
                 Button {
                     text = ""
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.tiny8Bold)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
-        .background(TrinityTheme.bgCardBorder.opacity(0.5))
-        .cornerRadius(4)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xs)
+        .background(V4Color.border.opacity(V2Depth.stateDisabled))
+        .cornerRadius(V1Theme.cornerTiny)
     }
 }
 
@@ -259,11 +259,11 @@ struct SearchHistory: View {
     let onClear: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack {
                 Text("Recent Searches")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.miniSemibold)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 Spacer()
 
@@ -271,31 +271,31 @@ struct SearchHistory: View {
                     onClear()
                 } label: {
                     Text("Clear")
-                        .font(.system(size: 10))
+                        .font(WernickeTypography.size10)
                 }
                 .buttonStyle(.plain)
             }
 
-            SearchFlowLayout(spacing: 6) {
+            SearchFlowLayout(spacing: ParietalSpacing.sm - 2) {
                 ForEach(history, id: \.self) { item in
                     Button {
                         onSelect(item)
                     } label: {
                         Text(item)
-                            .font(.system(size: 11))
-                            .foregroundStyle(TrinityTheme.textPrimary)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(TrinityTheme.bgCardBorder)
-                            .cornerRadius(4)
+                            .font(WernickeTypography.size11)
+                            .foregroundStyle(V4Color.textPrimary)
+                            .padding(.horizontal, ParietalSpacing.sm)
+                            .padding(.vertical, ParietalSpacing.xs)
+                            .background(V4Color.border)
+                            .cornerRadius(V1Theme.cornerTiny)
                     }
                     .buttonStyle(.plain)
                 }
             }
         }
-        .padding(12)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.md)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
     }
 }
 
@@ -379,9 +379,9 @@ struct SearchBar_Previews: PreviewProvider {
                 showsSuggestions: true,
                 suggestions: ["Recent item 1", "Recent item 2", "Recent item 3", "Suggestion 4"]
             )
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             SearchFieldWithFilter(
                 text: .constant(""),
@@ -389,9 +389,9 @@ struct SearchBar_Previews: PreviewProvider {
                 filterOptions: ["All", "Title", "Content", "Author"],
                 selectedFilter: .constant("All")
             )
-            .frame(width: 400)
+            .frame(width: ParietalSpacing.xl * 16)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
         }
     }
 }

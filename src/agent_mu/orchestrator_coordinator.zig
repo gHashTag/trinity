@@ -26,6 +26,20 @@ pub const SACRED_THRESHOLD = 0.95;
 pub const MAX_SUB_AGENTS = 200;
 pub const CIRCUIT_BREAK_THRESHOLD = 10;
 
+/// Calculate φ-weighted consensus (local copy to avoid circular dependency)
+pub fn phiWeightedConsensus(alpha_vote: f64, beta_vote: f64, gamma_vote: f64) f64 {
+    // Alpha gets φ weight, Beta is neutral, Gamma gets 1/φ
+    return (alpha_vote * PHI) + beta_vote + (gamma_vote / PHI);
+}
+
+/// Verify Trinity identity: φ² + 1/φ² = 3 (local copy to avoid circular dependency)
+pub fn verifyTrinityIdentity() bool {
+    const phi_sq = PHI * PHI;
+    const inv_phi_sq = 1.0 / phi_sq;
+    const result = phi_sq + inv_phi_sq;
+    return @abs(result - 3.0) < 0.0001;
+}
+
 pub const Realm = enum {
     razum,
     materiya,
@@ -752,14 +766,14 @@ pub const OrchestratorCoordinator = struct {
         return ConsensusResult{
             .final_decision = final_decision,
             .consensus_score = agreement,
-            .phi_weighted_score = tri_orchestrator.TriOrchestrator.phiWeightedConsensus(
+            .phi_weighted_score = phiWeightedConsensus(
                 if (total_weight > 0) proceed_weight else 0,
                 0,
                 if (total_weight > 0) total_weight - proceed_weight else 0,
             ),
             .participant_count = @intCast(votes.len),
             .agreement_level = agreement,
-            .trinity_verified = tri_orchestrator.TriOrchestrator.verifyTrinityIdentity(),
+            .trinity_verified = verifyTrinityIdentity(),
             .timestamp = std.time.timestamp(),
         };
     }

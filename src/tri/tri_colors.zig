@@ -16,6 +16,7 @@ pub const RED = "\x1b[38;2;239;68;68m";
 pub const CYAN = "\x1b[38;2;0;255;255m";
 pub const PURPLE = "\x1b[38;2;170;102;255m";
 pub const YELLOW = "\x1b[38;2;255;255;0m";
+pub const DIM = "\x1b[2m";
 pub const RESET = "\x1b[0m";
 
 pub const VERSION = "1.0.1";

@@ -21,10 +21,10 @@ struct WorkflowDAG: View {
 
             var color: Color {
                 switch self {
-                case .pending: return TrinityTheme.textMuted
-                case .running: return TrinityTheme.golden
-                case .done: return TrinityTheme.statusOK
-                case .failed: return TrinityTheme.statusError
+                case .pending: return V4Color.textSecondary
+                case .running: return V4Color.golden
+                case .done: return V4Color.success
+                case .failed: return V4Color.error
                 }
             }
         }
@@ -94,7 +94,7 @@ struct WorkflowDAG: View {
         let capsule = Path(roundedRect: rect, cornerRadius: nodeHeight / 2)
 
         // Fill
-        let fillColor = isHovered ? step.status.color.opacity(0.3) : step.status.color.opacity(0.12)
+        let fillColor = isHovered ? step.status.color.opacity(V2Depth.stateHover) : step.status.color.opacity(0.12)
         ctx.fill(capsule, with: .color(fillColor))
 
         // Stroke
@@ -104,13 +104,13 @@ struct WorkflowDAG: View {
         if step.status == .running {
             let outerRect = rect.insetBy(dx: -3, dy: -3)
             let outerCapsule = Path(roundedRect: outerRect, cornerRadius: (nodeHeight + 6) / 2)
-            ctx.stroke(outerCapsule, with: .color(step.status.color.opacity(0.4)), lineWidth: 1)
+            ctx.stroke(outerCapsule, with: .color(step.status.color.opacity(V1Theme.opacityTextTertiary)), lineWidth: 1)
         }
 
         // Label text
         ctx.draw(
             Text(step.label)
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .font(WernickeTypography.miniBoldMono)
                 .foregroundStyle(step.status.color),
             at: center
         )
@@ -139,7 +139,7 @@ struct WorkflowDAG: View {
 
         ctx.stroke(
             path,
-            with: .color(color.opacity(0.5)),
+            with: .color(color.opacity(V2Depth.stateDisabled)),
             style: StrokeStyle(lineWidth: 1.5, lineCap: .round)
         )
     }

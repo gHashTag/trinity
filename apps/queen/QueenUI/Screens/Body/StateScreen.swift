@@ -18,17 +18,17 @@ struct StateScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 HStack {
                     Text("📊")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("STATE")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text(".trinity/ Directory Listing")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                     StatCard(label: "Files", value: "\(stateFiles.count)")
@@ -37,28 +37,28 @@ struct StateScreen: View {
                 .padding()
 
                 let totalSize = stateFiles.reduce(0) { $0 + $1.size }
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                    StatCard(label: "Total Files", value: "\(stateFiles.count)", accent: TrinityTheme.accent)
-                    StatCard(label: "Total Size", value: formatSize(totalSize), accent: TrinityTheme.golden)
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
+                    StatCard(label: "Total Files", value: "\(stateFiles.count)", accent: V4Color.accent)
+                    StatCard(label: "Total Size", value: formatSize(totalSize), accent: V4Color.golden)
                 }
                 .padding(.horizontal)
 
                 // File list
                 ForEach(stateFiles.sorted(by: { $0.modified > $1.modified })) { file in
-                    HStack(spacing: 12) {
+                    HStack(spacing: ParietalSpacing.md) {
                         Text(fileIcon(file.name))
                         VStack(alignment: .leading, spacing: 2) {
                             Text(file.name)
                                 .font(.body.monospaced())
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text(formatDate(file.modified))
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                         Spacer()
                         Text(file.sizeFormatted)
                             .font(.caption.monospacedDigit())
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 4)
@@ -66,7 +66,7 @@ struct StateScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { scanState() }
     }
 

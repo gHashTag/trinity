@@ -12,14 +12,14 @@ struct ToolCallRow: View {
             Button {
                 if event.output != nil { withAnimation(.easeInOut(duration: 0.15)) { expanded.toggle() } }
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text(event.resolvedKind == "cli" ? "\u{25B6}" : "\u{25CF}")
                         .font(.caption.monospaced())
                         .foregroundStyle(iconColor)
 
                     Text(commandText)
                         .font(.caption.monospaced())
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                         .lineLimit(1)
 
                     Spacer(minLength: 4)
@@ -27,7 +27,7 @@ struct ToolCallRow: View {
                     if event.isCompleted {
                         Text(durationText)
                             .font(.caption2.monospaced())
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                         Text(statusIcon)
                             .font(.caption)
                     } else {
@@ -38,7 +38,7 @@ struct ToolCallRow: View {
                     if event.output != nil {
                         Image(systemName: expanded ? "chevron.down" : "chevron.right")
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
             }
@@ -53,22 +53,22 @@ struct ToolCallRow: View {
                     ForEach(Array(visibleLines.enumerated()), id: \.offset) { _, line in
                         Text(line)
                             .font(.caption2.monospaced())
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .lineLimit(1)
                     }
                     if lines.count > maxCollapsedLines {
                         Text("... \(lines.count - maxCollapsedLines) more lines")
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.accent.opacity(0.7))
+                            .foregroundStyle(V4Color.accent.opacity(0.7))
                     }
                 }
                 .padding(.top, 4)
                 .padding(.leading, 20)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(TrinityTheme.bgCard)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.xs + 2)
+        .background(V4Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }
 
@@ -96,9 +96,9 @@ struct ToolCallRow: View {
     }
 
     private var iconColor: Color {
-        if !event.isCompleted { return TrinityTheme.accent }
-        if let exit = event.exit { return exit == 0 ? TrinityTheme.statusOK : TrinityTheme.statusError }
-        if let result = event.result { return result == "OK" ? TrinityTheme.statusOK : TrinityTheme.statusError }
-        return TrinityTheme.textMuted
+        if !event.isCompleted { return V4Color.accent }
+        if let exit = event.exit { return exit == 0 ? V4Color.success : V4Color.error }
+        if let result = event.result { return result == "OK" ? V4Color.success : V4Color.error }
+        return V4Color.textSecondary
     }
 }

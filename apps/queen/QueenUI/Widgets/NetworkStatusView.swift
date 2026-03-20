@@ -7,7 +7,7 @@ struct NetworkStatusIndicator: View {
     @State private var showDetails = false
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             statusIndicator
 
             if showDetails {
@@ -23,8 +23,8 @@ struct NetworkStatusIndicator: View {
 
     private var statusIndicator: some View {
         Circle()
-            .fill(monitor.isConnected ? .green : TrinityTheme.statusError)
-            .frame(width: 8, height: 8)
+            .fill(monitor.isConnected ? .green : V4Color.error)
+            .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
             .overlay(
                 Circle()
                     .stroke(monitor.isConnected ? Color.white : Color.clear, lineWidth: 1)
@@ -32,22 +32,22 @@ struct NetworkStatusIndicator: View {
     }
 
     private var statusDetails: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             Text(monitor.isConnected ? "Connected" : "Offline")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
 
             if monitor.isConnected {
                 Text(monitor.providerName)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xs)
         .background(
             SwiftUI.Capsule()
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
     }
 }
@@ -104,7 +104,7 @@ struct ConnectionQualityBadge: View {
             case .excellent: return .green
             case .good: return .blue
             case .fair: return .orange
-            case .poor: return TrinityTheme.statusError
+            case .poor: return V4Color.error
             }
         }
 
@@ -128,18 +128,18 @@ struct ConnectionQualityBadge: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Image(systemName: quality.icon)
                 .font(.caption2)
             Text("\(Int(latency * 1000))ms")
                 .font(.caption2)
         }
         .foregroundStyle(quality.color)
-        .padding(.horizontal, 6)
+        .padding(.horizontal, ParietalSpacing.xs + 2)
         .padding(.vertical, 3)
         .background(
             SwiftUI.Capsule()
-                .fill(quality.color.opacity(0.15))
+                .fill(quality.color.opacity(V2Depth.bgSidebarHover))
         )
     }
 }
@@ -154,20 +154,20 @@ struct NetworkErrorToast: View {
     @State private var isVisible = false
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 16))
-                .foregroundStyle(TrinityTheme.statusError)
+                .font(WernickeTypography.size16)
+                .foregroundStyle(V4Color.error)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(error.title)
                     .font(.caption)
                     .fontWeight(.semibold)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text(error.message)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             Spacer()
@@ -179,13 +179,13 @@ struct NetworkErrorToast: View {
             .font(.caption)
             .buttonStyle(.bordered)
         }
-        .padding(12)
-        .background(TrinityTheme.bgCard)
+        .padding(ParietalSpacing.md)
+        .background(V4Color.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                .stroke(TrinityTheme.statusError.opacity(0.5), lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                .stroke(V4Color.error.opacity(V2Depth.stateDisabled), lineWidth: 1)
         )
-        .cornerRadius(TrinityTheme.cornerSmall)
+        .cornerRadius(V1Theme.cornerSmall)
         .shadow(color: .black.opacity(0.2), radius: 10)
         .opacity(isVisible ? 1 : 0)
         .offset(y: isVisible ? 0 : -20)
@@ -231,22 +231,22 @@ struct RetryAnimationView: View {
     let maxRetries: Int
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             ZStack {
                 Circle()
-                    .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 4)
+                    .stroke(V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 4)
                     .frame(width: 60, height: 60)
 
                 Circle()
                     .trim(from: 0, to: CGFloat(retryCount) / CGFloat(maxRetries))
-                    .stroke(TrinityTheme.accent, lineWidth: 4)
+                    .stroke(V4Color.accent, lineWidth: 4)
                     .frame(width: 60, height: 60)
                     .rotationEffect(.degrees(isAnimating ? 360 : 0))
             }
 
             Text("Retrying... (\(retryCount)/\(maxRetries))")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .onAppear {
             withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
@@ -269,38 +269,38 @@ struct TokenUsageIndicator: View {
 
     private var color: Color {
         switch percentage {
-        case 0..<0.5: return TrinityTheme.accent
+        case 0..<0.5: return V4Color.accent
         case 0.5..<0.8: return .orange
-        default: return TrinityTheme.statusError
+        default: return V4Color.error
         }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             HStack {
                 Text("Tokens")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 Spacer()
 
                 Text("\(used)/\(limit)")
                     .font(.caption2)
-                    .foregroundStyle(percentage > 0.8 ? TrinityTheme.statusError : TrinityTheme.textMuted)
+                    .foregroundStyle(percentage > 0.8 ? V4Color.error : V4Color.textSecondary)
             }
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(TrinityTheme.bgCardBorder)
-                        .frame(height: 4)
+                        .fill(V4Color.border)
+                        .frame(height: ParietalSpacing.xs)
 
                     RoundedRectangle(cornerRadius: 2)
                         .fill(color)
                         .frame(width: geometry.size.width * percentage, height: 4)
                 }
             }
-            .frame(height: 4)
+            .frame(height: ParietalSpacing.xs)
         }
     }
 }
@@ -312,22 +312,22 @@ struct StreamingProgressIndicator: View {
     @State private var isAnimating = true
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             ZStack {
                 Circle()
-                    .stroke(TrinityTheme.textMuted.opacity(0.2), lineWidth: 2)
-                    .frame(width: 16, height: 16)
+                    .stroke(V4Color.textSecondary.opacity(0.2), lineWidth: 2)
+                    .frame(width: ParietalSpacing.icon, height: ParietalSpacing.icon)
 
                 Circle()
                     .trim(from: 0, to: progress)
-                    .stroke(TrinityTheme.accent, lineWidth: 2)
-                    .frame(width: 16, height: 16)
+                    .stroke(V4Color.accent, lineWidth: 2)
+                    .frame(width: ParietalSpacing.icon, height: ParietalSpacing.icon)
                     .rotationEffect(.degrees(-90))
             }
 
             Text("Streaming...")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .onAppear {
             withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
@@ -359,19 +359,19 @@ struct ModelProviderSwitcher: View {
                 }
             }
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 providerIcon(selectedProvider)
                 Text(selectedProvider.name)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                 Image(systemName: "chevron.down")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerSmall)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs + 2)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerSmall)
         }
         .menuStyle(.borderlessButton)
     }
@@ -386,7 +386,7 @@ struct ModelProviderSwitcher: View {
                     .font(.caption)
             }
         }
-        .foregroundStyle(provider.color ?? TrinityTheme.accent)
+        .foregroundStyle(provider.color ?? V4Color.accent)
     }
 }
 
@@ -412,10 +412,10 @@ struct ModelProvider: Identifiable, Equatable {
 
 struct NetworkStatusView_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             NetworkStatusIndicator()
 
-            HStack(spacing: 10) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 ConnectionQualityBadge(latency: 0.3)
                 ConnectionQualityBadge(latency: 0.8)
                 ConnectionQualityBadge(latency: 1.5)
@@ -433,6 +433,6 @@ struct NetworkStatusView_Previews: PreviewProvider {
             StreamingProgressIndicator()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

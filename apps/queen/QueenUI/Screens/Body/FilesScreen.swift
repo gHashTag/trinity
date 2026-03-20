@@ -13,50 +13,50 @@ struct FilesScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 HStack {
                     Text("📁")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("FILES")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("Project Structure")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                 }
                 .padding()
 
                 ForEach(topDirs) { dir in
-                    HStack(spacing: 12) {
+                    HStack(spacing: ParietalSpacing.md) {
                         Text(dirIcon(dir.name))
                             .font(.title2)
                         VStack(alignment: .leading, spacing: 2) {
                             Text(dir.name + "/")
                                 .font(.headline.monospaced())
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text(dir.description)
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                         Spacer()
                         if dir.fileCount > 0 {
                             Text("\(dir.fileCount)")
                                 .font(.caption.monospacedDigit())
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
                     .padding()
-                    .background(TrinityTheme.bgCard)
-                    .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                    .background(V4Color.bgCard)
+                    .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                     .padding(.horizontal)
                 }
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { scanProject() }
     }
 

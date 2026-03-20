@@ -12,17 +12,17 @@ struct ExperienceScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 HStack {
                     Text("💎")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("EXPERIENCE")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.purple)
+                            .foregroundStyle(V4Color.purple)
                         Text("Agent Experience Episodes — FPGA & Operations")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                     StatCard(label: "Episodes", value: "\(episodes.count)")
@@ -31,10 +31,10 @@ struct ExperienceScreen: View {
                 .padding()
 
                 // Protocol
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("EXPERIENCE-FIRST PROTOCOL")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.golden)
+                        .foregroundStyle(V4Color.golden)
 
                     ForEach([
                         ("1", "Read hardware_state.json — check blockers"),
@@ -44,27 +44,27 @@ struct ExperienceScreen: View {
                         ("5", "After every operation → append episode"),
                         ("6", "Max 3 attempts on new failures"),
                     ], id: \.0) { step, desc in
-                        HStack(spacing: 8) {
+                        HStack(spacing: ParietalSpacing.sm) {
                             Text(step)
                                 .font(.caption.weight(.bold).monospacedDigit())
-                                .foregroundStyle(TrinityTheme.accent)
-                                .frame(width: 20)
+                                .foregroundStyle(V4Color.accent)
+                                .frame(width: ParietalSpacing.buttonSmallWidth)
                             Text(desc)
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                         }
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Known anti-patterns
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("KNOWN ANTI-PATTERNS")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .foregroundStyle(V4Color.statusError)
 
                     ForEach([
                         "openFPGALoader --cable xpc → ALWAYS FAILS",
@@ -73,25 +73,25 @@ struct ExperienceScreen: View {
                         "UART without soldered headers → NO ECHO",
                         "CPLD 0xFFFE → normal for DLC10 clones",
                     ], id: \.self) { pattern in
-                        HStack(spacing: 8) {
+                        HStack(spacing: ParietalSpacing.sm) {
                             Text("🚫")
                             Text(pattern)
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                         }
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Episode list
                 if !episodes.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Text("EPISODES")
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                             .padding(.horizontal)
 
                         ForEach(episodes) { ep in
@@ -99,11 +99,11 @@ struct ExperienceScreen: View {
                                 Text("💎")
                                 Text(ep.name)
                                     .font(.caption.monospaced())
-                                    .foregroundStyle(TrinityTheme.textPrimary)
+                                    .foregroundStyle(V4Color.textPrimary)
                                 Spacer()
                                 Text(formatDate(ep.modified))
                                     .font(.caption2)
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .foregroundStyle(V4Color.textSecondary)
                             }
                             .padding(.horizontal)
                         }
@@ -111,13 +111,13 @@ struct ExperienceScreen: View {
                 } else {
                     Text("No episodes recorded yet")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                         .padding()
                 }
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { loadEpisodes() }
     }
 

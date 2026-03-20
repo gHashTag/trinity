@@ -33,7 +33,7 @@ struct PulseRingIndicator: View {
     }
 
     private var primaryColor: Color {
-        isConnecting ? TrinityTheme.statusWarn : TrinityTheme.accent
+        isConnecting ? V4Color.warning : V4Color.accent
     }
 
     private var statusText: String {
@@ -46,14 +46,14 @@ struct PulseRingIndicator: View {
     }
 
     var body: some View {
-        HStack(spacing: 14) {
+        HStack(spacing: ParietalSpacing.md + 2) {
             // Pulse Ring Indicator
             ZStack {
                 // Outer glow ring (expands outward)
                 Circle()
                     .stroke(
                         LinearGradient(
-                            colors: [primaryColor.opacity(0), primaryColor.opacity(0.5)],
+                            colors: [primaryColor.opacity(0), primaryColor.opacity(V2Depth.stateDisabled)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
@@ -73,7 +73,7 @@ struct PulseRingIndicator: View {
                     )
                     .frame(width: 28, height: 28)
                     .rotationEffect(.degrees(reduceMotion ? 0 : rotation))
-                    .shadow(color: primaryColor.opacity(0.6), radius: 3)
+                    .shadow(color: primaryColor.opacity(V1Theme.opacityTextSecondary), radius: 3)
 
                 // Core dot
                 Circle()
@@ -81,7 +81,7 @@ struct PulseRingIndicator: View {
                     .frame(width: 10, height: 10)
                     .scaleEffect(corePulse)
             }
-            .frame(width: 44, height: 44)
+            .frame(width: ParietalSpacing.avatarMedium - 4, height: ParietalSpacing.avatarMedium - 4)
             .task(id: isActive) {
                 guard isActive, !reduceMotion else {
                     pulseScale = 1.0
@@ -109,7 +109,7 @@ struct PulseRingIndicator: View {
             // Status and metrics
             VStack(alignment: .leading, spacing: 3) {
                 Text(statusText)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(WernickeTypography.miniSemibold)
                     .foregroundStyle(primaryColor)
 
                 // Progress bar for long operations
@@ -121,7 +121,7 @@ struct PulseRingIndicator: View {
                             SwiftUI.Capsule()
                                 .fill(
                                     LinearGradient(
-                                        colors: [primaryColor, primaryColor.opacity(0.6)],
+                                        colors: [primaryColor, primaryColor.opacity(V1Theme.opacityTextSecondary)],
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )
@@ -129,31 +129,31 @@ struct PulseRingIndicator: View {
                                 .frame(width: geo.size.width * progressPercent)
                         }
                     }
-                    .frame(height: 3)
+                    .frame(height: ParietalSpacing.xxxs)
                 }
 
                 // Metrics row
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     if ttfb > 0 {
                         Text("TTFB: \(ttfb)ms")
-                            .font(.system(size: 9, design: .monospaced))
+                            .font(WernickeTypography.size9Mono)
                             .foregroundStyle(ttfbColor(ttfb))
                     }
 
                     if tokensPerSec > 0 {
                         HStack(spacing: 3) {
                             Image(systemName: "bolt.fill")
-                                .font(.system(size: 7))
+                                .font(WernickeTypography.size7)
                             Text(String(format: "%.0f/s", tokensPerSec))
-                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .font(WernickeTypography.microBoldMono)
                         }
                         .foregroundStyle(speedColor(tokensPerSec))
                     }
 
                     if outputTokens > 0 {
                         Text("\(outputTokens) tok")
-                            .font(.system(size: 9, design: .monospaced))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size9Mono)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
             }
@@ -166,24 +166,24 @@ struct PulseRingIndicator: View {
             } label: {
                 HStack(spacing: 5) {
                     Image(systemName: "stop.circle.fill")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(WernickeTypography.caption2Semibold)
                     Text("Stop")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(WernickeTypography.captionBold)
                 }
                 .foregroundStyle(.black)
-                .padding(.horizontal, 14)
+                .padding(.horizontal, ParietalSpacing.md + 2)
                 .padding(.vertical, 7)
-                .background(TrinityTheme.statusError)
+                .background(V4Color.error)
                 .clipShape(SwiftUI.Capsule())
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Stop generating")
             .accessibilityHint("Press Escape to stop")
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, ParietalSpacing.md + 2)
+        .padding(.vertical, ParietalSpacing.sm + 2)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                 .fill(
                     LinearGradient(
                         colors: [
@@ -196,23 +196,23 @@ struct PulseRingIndicator: View {
                 )
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(primaryColor.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(primaryColor.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 
     // MARK: - Helper Functions
 
     private func ttfbColor(_ ms: Int) -> Color {
-        if ms < 2000 { return TrinityTheme.textMuted }
-        if ms < 5000 { return TrinityTheme.statusWarn }
-        return TrinityTheme.statusError
+        if ms < 2000 { return V4Color.textSecondary }
+        if ms < 5000 { return V4Color.warning }
+        return V4Color.error
     }
 
     private func speedColor(_ tps: Double) -> Color {
-        if tps < 20 { return TrinityTheme.statusError }
-        if tps < 50 { return TrinityTheme.statusWarn }
-        return TrinityTheme.statusOK
+        if tps < 20 { return V4Color.error }
+        if tps < 50 { return V4Color.warning }
+        return V4Color.success
     }
 }
 
@@ -236,9 +236,9 @@ struct CompactPulseRing: View {
 
     private var primaryColor: Color {
         switch state {
-        case .connecting: return TrinityTheme.statusWarn
-        case .streaming: return TrinityTheme.accent
-        default: return TrinityTheme.textMuted
+        case .connecting: return V4Color.warning
+        case .streaming: return V4Color.accent
+        default: return V4Color.textSecondary
         }
     }
 
@@ -246,8 +246,8 @@ struct CompactPulseRing: View {
         ZStack {
             // Outer glow
             Circle()
-                .stroke(primaryColor.opacity(0.4), lineWidth: 1.5)
-                .frame(width: 20, height: 20)
+                .stroke(primaryColor.opacity(V1Theme.opacityTextTertiary), lineWidth: 1.5)
+                .frame(width: ParietalSpacing.icon + 4, height: ParietalSpacing.icon + 4)
                 .scaleEffect(reduceMotion ? 1 : pulseScale)
                 .opacity(reduceMotion ? 0.6 : (2 - pulseScale) * 0.5)
 
@@ -258,7 +258,7 @@ struct CompactPulseRing: View {
                     primaryColor,
                     style: StrokeStyle(lineWidth: 1.5, lineCap: .round)
                 )
-                .frame(width: 16, height: 16)
+                .frame(width: ParietalSpacing.icon, height: ParietalSpacing.icon)
                 .rotationEffect(.degrees(reduceMotion ? 0 : rotation))
 
             // Core

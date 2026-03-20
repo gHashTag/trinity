@@ -16,12 +16,12 @@ struct MCPToolsPanel: View {
     ]
 
     private let categories: [(name: String, icon: String, color: Color)] = [
-        ("Sacred", "sparkles", TrinityTheme.accent),
-        ("Math", "function", Color(hex: 0xA78BFA)),
-        ("Git", "arrow.triangle.branch", Color(hex: 0xF05033)),
-        ("Code", "chevron.left.square", Color(hex: 0x38BDF8)),
-        ("Docs", "doc.text", Color(hex: 0x4ADE80)),
-        ("File", "doc", Color(hex: 0xFBBF24)),
+        ("Sacred", "sparkles", V4Color.accent),
+        ("Math", "function", V4Color.purple),
+        ("Git", "arrow.triangle.branch", V4Color.error),
+        ("Code", "chevron.left.square", V4Color.info),
+        ("Docs", "doc.text", V4Color.success),
+        ("File", "doc", V4Color.warning),
     ]
 
     var body: some View {
@@ -57,34 +57,34 @@ struct MCPToolsPanel: View {
 
     private var header: some View {
         Button(action: {
-            withAnimation(TrinityTheme.quickSpring()) {
+            withAnimation(MTMotion.quickSpring) {
                 isExpanded.toggle()
             }
         }) {
             HStack {
                 Image(systemName: "cube.fill")
-                    .font(.system(size: 11))
-                    .foregroundColor(Color(hex: 0x38BDF8))
+                    .font(WernickeTypography.size11)
+                    .foregroundColor(V4Color.info)
 
                 Text("MCP Tools")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.caption2Semibold)
+                    .foregroundColor(V4Color.textPrimary)
 
                 Spacer()
 
                 if isRunning {
                     ProgressView()
                         .scaleEffect(0.6)
-                        .tint(TrinityTheme.accent)
+                        .tint(V4Color.accent)
                 }
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.miniSemibold)
+                    .foregroundColor(V4Color.textSecondary)
                     .rotationEffect(.degrees(isExpanded ? 90 : 0))
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .padding(.horizontal, ParietalSpacing.sm + 2)
+            .padding(.vertical, ParietalSpacing.xs + 2)
         }
         .buttonStyle(.plain)
     }
@@ -92,22 +92,22 @@ struct MCPToolsPanel: View {
     // MARK: - Quick Tools Row
 
     private var quickToolsRow: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             ForEach(quickTools, id: \.name) { tool in
                 QuickToolButton(icon: tool.icon, isRunning: isRunning) {
                     executeTool(tool.tool)
                 }
             }
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ParietalSpacing.xs + 2)
+        .padding(.vertical, ParietalSpacing.xs)
     }
 
     // MARK: - Category Filter
 
     private var categoryFilter: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 ForEach(categories, id: \.name) { category in
                     CategoryButton(
                         name: category.name,
@@ -121,9 +121,9 @@ struct MCPToolsPanel: View {
                     }
                 }
             }
-            .padding(.horizontal, 6)
+            .padding(.horizontal, ParietalSpacing.xs + 2)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, ParietalSpacing.xs)
     }
 
     // MARK: - Tools List
@@ -150,8 +150,8 @@ struct MCPToolsPanel: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Output")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.miniMedium)
+                    .foregroundColor(V4Color.textSecondary)
 
                 Spacer()
 
@@ -161,24 +161,24 @@ struct MCPToolsPanel: View {
                     }
                 }) {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 9))
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size9)
+                        .foregroundColor(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(TrinityTheme.bgCardBorder.opacity(0.3))
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
+            .background(V4Color.border.opacity(V2Depth.stateHover))
 
             ScrollView {
                 Text(toolOutput)
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundColor(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size10Mono)
+                    .foregroundColor(V4Color.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(8)
+                    .padding(ParietalSpacing.sm)
             }
             .frame(maxHeight: 120)
-            .background(TrinityTheme.bgCard.opacity(0.5))
+            .background(V4Color.surface.opacity(V2Depth.stateDisabled))
         }
     }
 
@@ -292,11 +292,11 @@ struct QuickToolButton: View {
                         .tint(.white)
                 } else {
                     Image(systemName: icon)
-                        .font(.system(size: 11))
+                        .font(WernickeTypography.size11)
                 }
             }
             .frame(width: 28, height: 28)
-            .background(isRunning ? Color(hex: 0x38BDF8) : TrinityTheme.bgCardBorder.opacity(0.4))
+            .background(isRunning ? V4Color.info : V4Color.border.opacity(V1Theme.opacityTextTertiary))
             .clipShape(RoundedRectangle(cornerRadius: 4))
         }
         .buttonStyle(.plain)
@@ -313,19 +313,19 @@ struct ToolButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 7))
-                    .foregroundColor(TrinityTheme.textMuted.opacity(0.5))
+                    .font(WernickeTypography.size7)
+                    .foregroundColor(V4Color.textSecondary.opacity(V2Depth.stateDisabled))
 
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.xxxxs) {
                     Text(name)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.miniMedium)
+                        .foregroundColor(V4Color.textPrimary)
 
                     Text(desc)
-                        .font(.system(size: 8))
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size8)
+                        .foregroundColor(V4Color.textSecondary)
                         .lineLimit(1)
                 }
 
@@ -334,12 +334,12 @@ struct ToolButton: View {
                 if isRunning {
                     ProgressView()
                         .scaleEffect(0.5)
-                        .tint(Color(hex: 0x38BDF8))
+                        .tint(V4Color.info)
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(TrinityTheme.bgCardBorder.opacity(0.2))
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
+            .background(V4Color.border.opacity(0.2))
             .clipShape(RoundedRectangle(cornerRadius: 4))
         }
         .buttonStyle(.plain)

@@ -138,14 +138,14 @@ struct ChatScreen: View {
             return "\(h / 24) days"
         }()
         let tokenStr = tokens >= 1000 ? String(format: "%.1fK", Double(tokens) / 1000.0) : "\(tokens)"
-        return HStack(spacing: 4) {
+        return HStack(spacing: ParietalSpacing.xs) {
             Spacer()
             Text("\u{1F4AC} \(count) msgs")
             if !duration.isEmpty { Text("\u{00B7}"); Text(duration) }
             if tokens > 0 { Text("\u{00B7}"); Text("\(tokenStr) tokens") }
         }
-        .font(.system(size: 10))
-        .foregroundStyle(TrinityTheme.textMuted.opacity(0.4))
+        .font(WernickeTypography.size10)
+        .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextTertiary))
         .padding(.horizontal, LayoutConstants.standardPadding)
         .padding(.vertical, 3)
     }
@@ -329,13 +329,13 @@ struct ChatScreen: View {
                         Button {
                             withAnimation(.easeInOut(duration: 0.3)) { focusMode = false }
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: "arrow.up.left.and.arrow.down.right")
-                                    .font(.system(size: 10, weight: .semibold))
+                                    .font(WernickeTypography.miniSemibold)
                                 Text("Exit Focus")
-                                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                    .font(WernickeTypography.caption2MediumMono)
                             }
-                            .foregroundStyle(.white.opacity(0.6))
+                            .foregroundStyle(.white.opacity(V1Theme.opacityTextSecondary))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(.white.opacity(0.08))
@@ -354,19 +354,19 @@ struct ChatScreen: View {
             if showShareCopied {
                 VStack {
                     Spacer()
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 13))
-                            .foregroundStyle(TrinityTheme.statusOK)
+                            .font(WernickeTypography.size13)
+                            .foregroundStyle(V4Color.statusOK)
                         Text("Conversation copied to clipboard")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(WernickeTypography.captionMedium)
                             .foregroundStyle(.white)
                     }
                     .padding(.horizontal, LayoutConstants.standardPadding)
                     .padding(.vertical, 10)
-                    .background(TrinityTheme.bgCard)
+                    .background(V4Color.bgCard)
                     .clipShape(SwiftUI.Capsule())
-                    .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
+                    .shadow(color: .black.opacity(V2Depth.stateHover), radius: 8, y: 4)
                     .padding(.bottom, 80)
                 }
                 .transition(.opacity.combined(with: .move(edge: .bottom)))
@@ -489,14 +489,14 @@ struct ChatScreen: View {
         .overlay {
             if isDropTargeted {
                 ZStack {
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                        .fill(TrinityTheme.accent.opacity(0.05))
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                        .fill(V4Color.accent.opacity(0.05))
+                    RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                         .strokeBorder(style: StrokeStyle(lineWidth: 2, dash: [8, 4]))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                     Text("Drop files here")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.body16Medium)
+                        .foregroundStyle(V4Color.accent)
                 }
                 .allowsHitTesting(false)
             }
@@ -579,7 +579,7 @@ struct ChatScreen: View {
         LazyVStack(alignment: .leading, spacing: 0) {
             // Thread-switching loading skeleton for large threads
             if isLoadingThread {
-                VStack(spacing: 16) {
+                VStack(spacing: ParietalSpacing.lg) {
                     ForEach(0..<4, id: \.self) { i in
                         ThreadLoadingSkeleton(isUser: i % 2 == 0)
                     }
@@ -598,18 +598,18 @@ struct ChatScreen: View {
             }
             // MARK: Thread Stats Card
             if !focusMode, let t = thread, t.messages.count >= 4 {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     ThreadStatsCard(thread: t, isExpanded: $showThreadStats)
                     Button(action: shareConversation) {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: a11y.scaledFontSize(11)))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .padding(6)
-                            .background(TrinityTheme.bgCard)
-                            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                            .background(V4Color.bgCard)
+                            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                             .overlay(
-                                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                                    .stroke(a11y.highContrast ? TrinityTheme.HighContrast.borderDark : TrinityTheme.bgCardBorder, lineWidth: 0.5)
+                                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                                    .stroke(a11y.highContrast ? V1Theme.HighContrast.borderDark : V4Color.bgCardBorder, lineWidth: 0.5)
                             )
                     }
                     .buttonStyle(.plain)
@@ -629,13 +629,13 @@ struct ChatScreen: View {
                     } label: {
                         Image(systemName: isSelecting ? "checkmark.circle.fill" : "checkmark.circle")
                             .font(.system(size: a11y.scaledFontSize(11)))
-                            .foregroundStyle(isSelecting ? (a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent) : TrinityTheme.textMuted)
+                            .foregroundStyle(isSelecting ? (a11y.highContrast ? V4Color.HighContrast.accent : V4Color.accent) : V4Color.textSecondary)
                             .padding(6)
-                            .background(TrinityTheme.bgCard)
-                            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                            .background(V4Color.bgCard)
+                            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                             .overlay(
-                                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                                    .stroke(isSelecting ? (a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent).opacity(0.5) : TrinityTheme.bgCardBorder, lineWidth: 0.5)
+                                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                                    .stroke(isSelecting ? (a11y.highContrast ? V4Color.HighContrast.accent : V4Color.accent).opacity(V2Depth.stateDisabled) : V4Color.bgCardBorder, lineWidth: 0.5)
                             )
                     }
                     .buttonStyle(.plain)
@@ -738,7 +738,7 @@ struct ChatScreen: View {
                     mode: chatMode
                 )
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Text("\u{21AA}")
                         .font(.system(size: a11y.scaledFontSize(13), weight: .bold))
                     Text("Continue")
@@ -747,7 +747,7 @@ struct ChatScreen: View {
                 .foregroundStyle(.black)
                 .padding(.horizontal, 14)
                 .padding(.vertical, LayoutConstants.compactPadding)
-                .background(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
+                .background(a11y.highContrast ? V4Color.HighContrast.accent : V4Color.accent)
                 .clipShape(SwiftUI.Capsule())
             }
             .buttonStyle(.plain)
@@ -769,7 +769,7 @@ struct ChatScreen: View {
                     proxy.scrollTo("bottom", anchor: .bottom)
                 }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "arrow.down")
                         .font(.system(size: a11y.scaledFontSize(13), weight: .semibold))
                     Text("New messages")
@@ -778,9 +778,9 @@ struct ChatScreen: View {
                 .foregroundStyle(.black)
                 .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, LayoutConstants.standardPadding)
-                .background(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
+                .background(a11y.highContrast ? V4Color.HighContrast.accent : V4Color.accent)
                 .clipShape(SwiftUI.Capsule())
-                .shadow(color: .black.opacity(0.4), radius: TrinityTheme.shadowMediumRadius, y: 4)
+                .shadow(color: .black.opacity(V1Theme.opacityTextTertiary), radius: V1Theme.shadowMediumRadius, y: 4)
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Scroll to bottom, new messages")
@@ -850,13 +850,13 @@ struct ChatScreen: View {
                 content
             } else {
                 content
-                    .scaleEffect(isAnimating ? 1.0 : TrinityTheme.messageEntranceScale)
+                    .scaleEffect(isAnimating ? 1.0 : MTMotion.entranceScale)
                     .opacity(isAnimating ? 1.0 : 0.0)
                     .offset(y: isAnimating ? 0 : (isUser ? 12 : -12))
                     .animation(staggeredSpringAnimation, value: isAnimating)
                     .onAppear {
                         // Stagger animation based on position from base
-                        let stagger = Double(messageIndex - baseIndex) * TrinityTheme.messageStaggerDelay
+                        let stagger = Double(messageIndex - baseIndex) * MTMotion.messageStaggerDelay
                         let delay = max(0, stagger)
                         withAnimation(staggeredSpringAnimation.delay(delay)) {
                             isAnimating = true
@@ -867,7 +867,7 @@ struct ChatScreen: View {
 
         /// Staggered spring animation for cascade effect
         private var staggeredSpringAnimation: Animation {
-            TrinityTheme.springAnimation()
+            MTMotion.adaptiveStandardSpring()
         }
 
         @State private var isAnimating: Bool = false
@@ -912,7 +912,7 @@ struct ChatScreen: View {
         let edge: Edge = msg.role == .user ? .trailing : .leading
         return .asymmetric(
             insertion: .move(edge: edge).combined(with: .opacity).combined(with: .scale(scale: 0.95)),
-            removal: .move(edge: edge).combined(with: .opacity).combined(with: .scale(scale: TrinityTheme.messageExitScale))
+            removal: .move(edge: edge).combined(with: .opacity).combined(with: .scale(scale: MTMotion.exitScale))
         )
     }
 
@@ -1119,14 +1119,14 @@ struct ChatScreen: View {
                 ChatSidebar(store: store, modelManager: modelManager)
 
                 Rectangle()
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.white.opacity(V2Depth.bgCard))
                     .frame(height: 1)
 
                 ContextInspector()
                     .frame(maxHeight: 200)
 
                 Rectangle()
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.white.opacity(V2Depth.bgCard))
                     .frame(height: 1)
 
                 NetworkDashboard(client: client, modelManager: modelManager, store: store)
@@ -1137,11 +1137,11 @@ struct ChatScreen: View {
                 idealWidth: LayoutConstants.sidebarIdealWidth,
                 maxWidth: LayoutConstants.sidebarMaxWidth
             )
-            .background(TrinityTheme.bgSidebar)
+            .background(V4Color.sidebar)
             .transition(reduceMotion ? .opacity : .move(edge: .leading))
 
             Rectangle()
-                .fill(Color.white.opacity(0.06))
+                .fill(Color.white.opacity(V2Depth.bgCard))
                 .frame(width: 1)
         }
     }
@@ -1152,7 +1152,7 @@ struct ChatScreen: View {
     private var commentSidebarSection: some View {
         if let msg = commentingMessage {
             Rectangle()
-                .fill(Color.white.opacity(0.06))
+                .fill(Color.white.opacity(V2Depth.bgCard))
                 .frame(width: 1)
 
             CommentSidebar(
@@ -1221,7 +1221,7 @@ struct ChatScreen: View {
     @ViewBuilder
     private var streamingIndicatorView: some View {
         if client.isStreaming {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                 streamingMetricsRow
                 slowResponseWarning
             }
@@ -1234,7 +1234,7 @@ struct ChatScreen: View {
     }
 
     private var streamingMetricsRow: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // Compact pulse ring indicator
             CompactPulseRing(state: client.streamingState)
                 .accessibilityHidden(true)
@@ -1242,15 +1242,15 @@ struct ChatScreen: View {
             if !client.streamingThinkingText.isEmpty && client.streamingText.isEmpty {
                 Image(systemName: "brain.head.profile")
                     .font(.system(size: a11y.scaledFontSize(14)))
-                    .foregroundStyle(TrinityTheme.purple)
+                    .foregroundStyle(V4Color.purple)
                     .symbolEffect(.pulse, options: .repeating)
                 Text("Reasoning...")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.purple)
+                    .foregroundStyle(V4Color.purple)
                 StreamingElapsedTimer()
                 Text("\(client.streamingThinkingText.count) chars")
                     .font(.system(size: a11y.scaledFontSize(9), design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .accessibilityLabel("\(client.streamingThinkingText.count) characters of reasoning")
             } else if thread?.messages.last?.text.isEmpty ?? false {
                 QueenThinkingIndicator()
@@ -1268,14 +1268,14 @@ struct ChatScreen: View {
             if client.streamingOutputTokens > 0 {
                 Text("\(client.streamingOutputTokens) tok")
                     .font(.system(size: a11y.scaledFontSize(10), design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .accessibilityLabel("\(client.streamingOutputTokens) tokens generated")
             }
             if client.streamingMaxTokens > 0, client.streamingOutputTokens > 0 {
                 let pct = min(Double(client.streamingOutputTokens) / Double(client.streamingMaxTokens) * 100, 100)
                 Text(String(format: "~%.0f%%", pct))
                     .font(.system(size: a11y.scaledFontSize(10), weight: .medium, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .accessibilityLabel("\(Int(pct)) percent of maximum tokens")
             }
         }
@@ -1284,11 +1284,11 @@ struct ChatScreen: View {
     @ViewBuilder
     private var slowResponseWarning: some View {
         if client.isSlowResponse {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: "tortoise.fill")
-                    .font(.system(size: 10))
+                    .font(WernickeTypography.size10)
                 Text("Slow response")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(WernickeTypography.miniMedium)
                 Button {
                     client.stop()
                     if let threadID = store.activeThreadID {
@@ -1297,11 +1297,11 @@ struct ChatScreen: View {
                     }
                 } label: {
                     Text("Cancel")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(WernickeTypography.miniBold)
                         .foregroundStyle(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(TrinityTheme.statusError)
+                        .background(V4Color.statusError)
                         .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
@@ -1316,17 +1316,17 @@ struct ChatScreen: View {
                         }
                     } label: {
                         Text("Try \(fallback.displayName)")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(WernickeTypography.miniBold)
                             .foregroundStyle(.black)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(TrinityTheme.statusWarn)
+                            .background(V4Color.statusWarn)
                             .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .foregroundStyle(TrinityTheme.statusWarn)
+            .foregroundStyle(V4Color.statusWarn)
             .transition(.opacity)
         }
     }
@@ -1340,30 +1340,30 @@ struct ChatScreen: View {
            last.role == .assistant,
            last.hasError,
            let errKind = last.errorKind {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Image(systemName: errKind.icon)
-                        .font(.system(size: 16))
+                        .font(WernickeTypography.size16)
                         .foregroundStyle(errKind.color)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(errKind.label)
-                            .font(.system(size: 13, weight: .bold))
+                            .font(WernickeTypography.smallBold)
                             .foregroundStyle(errKind.color)
                         if let detail = client.lastError?.userMessage {
                             Text(detail)
-                                .font(.system(size: 11))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .font(WernickeTypography.size11)
+                                .foregroundStyle(V4Color.textSecondary)
                                 .lineLimit(2)
                         }
                     }
                     Spacer()
                 }
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Button {
                         guard let threadID = store.activeThreadID else { return }
                         client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
                     } label: {
-                        HStack(spacing: 4) {
+                        HStack(spacing: ParietalSpacing.xs) {
                             Image(systemName: "arrow.clockwise")
                                 .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                             Text("Retry")
@@ -1387,16 +1387,16 @@ struct ChatScreen: View {
                         guard let threadID = store.activeThreadID else { return }
                         store.removeLastAssistantMessage(in: threadID)
                     } label: {
-                        HStack(spacing: 4) {
+                        HStack(spacing: ParietalSpacing.xs) {
                             Image(systemName: "pencil")
                                 .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                             Text("Edit & Retry")
                                 .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                         }
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .foregroundStyle(V2Depth.white70)
                         .padding(.horizontal, 14)
                         .padding(.vertical, LayoutConstants.compactPadding)
-                        .background(Color.white.opacity(0.1))
+                        .background(Color.white.opacity(V2Depth.bgSubtle))
                         .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
@@ -1411,7 +1411,7 @@ struct ChatScreen: View {
                             guard let threadID = store.activeThreadID else { return }
                             client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: "arrow.triangle.2.circlepath")
                                     .font(.system(size: a11y.scaledFontSize(12), weight: .bold))
                                 Text("Try \(fallback.displayName)")
@@ -1420,7 +1420,7 @@ struct ChatScreen: View {
                             .foregroundStyle(.black)
                             .padding(.horizontal, 14)
                             .padding(.vertical, LayoutConstants.compactPadding)
-                            .background(TrinityTheme.accent)
+                            .background(V4Color.accent)
                             .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
@@ -1431,7 +1431,7 @@ struct ChatScreen: View {
                 }
             }
             .padding(LayoutConstants.cardPadding)
-            .background(errKind.color.opacity(0.06))
+            .background(errKind.color.opacity(V2Depth.bgCard))
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .padding(.vertical, LayoutConstants.standardPadding)
             .transition(.opacity)
@@ -1442,24 +1442,24 @@ struct ChatScreen: View {
            last.role == .assistant,
            !last.hasError,
            last.text.hasPrefix("[") && last.text.contains("Error") {
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.statusError)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.statusError)
                 Text(String(last.text.prefix(200)))
-                    .font(.system(size: 13))
-                    .foregroundStyle(TrinityTheme.statusError)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(V4Color.statusError)
                     .lineLimit(2)
                 Button {
                     guard let threadID = store.activeThreadID else { return }
                     client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
                 } label: {
                     Text("Retry")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(WernickeTypography.captionBold)
                         .foregroundStyle(.black)
                         .padding(.horizontal, 14)
                         .padding(.vertical, LayoutConstants.compactPadding)
-                        .background(TrinityTheme.statusError)
+                        .background(V4Color.statusError)
                         .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
@@ -1492,11 +1492,11 @@ struct ChatScreen: View {
     private var offlineQueueBadge: some View {
         Group {
             if client.offlineQueueCount > 0 {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "envelope.badge")
-                        .font(.system(size: 11))
+                        .font(WernickeTypography.size11)
                     Text("\(client.offlineQueueCount) queued")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(WernickeTypography.captionMedium)
                 }
                 .foregroundStyle(Color.orange)
                 .padding(.horizontal, 10)
@@ -1505,16 +1505,16 @@ struct ChatScreen: View {
                 .clipShape(SwiftUI.Capsule())
                 .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             } else if showQueueDrained {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 11))
+                        .font(WernickeTypography.size11)
                     Text("\(queueDrainedMessageCount) queued messages sent")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(WernickeTypography.captionMedium)
                 }
-                .foregroundStyle(TrinityTheme.statusOK)
+                .foregroundStyle(V4Color.statusOK)
                 .padding(.horizontal, 10)
                 .padding(.vertical, 5)
-                .background(TrinityTheme.statusOK.opacity(0.12))
+                .background(V4Color.statusOK.opacity(0.12))
                 .clipShape(SwiftUI.Capsule())
                 .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             }
@@ -1537,19 +1537,19 @@ struct ChatScreen: View {
     @ViewBuilder
     private var replyPreviewBar: some View {
         if let msg = replyingTo {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 RoundedRectangle(cornerRadius: 1)
-                    .fill(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
+                    .fill(a11y.highContrast ? V4Color.HighContrast.accent : V4Color.accent)
                     .frame(width: 2)
                     .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(msg.role == .user ? "You" : "Queen")
                         .font(.system(size: a11y.scaledFontSize(10), weight: .semibold))
-                        .foregroundStyle(a11y.highContrast ? TrinityTheme.HighContrast.accent : TrinityTheme.accent)
+                        .foregroundStyle(a11y.highContrast ? V4Color.HighContrast.accent : V4Color.accent)
                     Text(String(msg.text.prefix(80)) + (msg.text.count > 80 ? "..." : ""))
                         .font(.system(size: a11y.scaledFontSize(11)))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                         .lineLimit(2)
                 }
 
@@ -1560,7 +1560,7 @@ struct ChatScreen: View {
                 } label: {
                     Image(systemName: "xmark")
                         .font(.system(size: a11y.scaledFontSize(10), weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.4))
+                        .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Cancel reply")
@@ -1569,7 +1569,7 @@ struct ChatScreen: View {
             }
             .padding(.horizontal, LayoutConstants.cardPadding)
             .padding(.vertical, LayoutConstants.standardPadding)
-            .background(Color.white.opacity(0.04))
+            .background(Color.white.opacity(V2Depth.bgCardLight))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .accessibilityElement(children: .combine)
@@ -1585,26 +1585,26 @@ struct ChatScreen: View {
 
         // Slash command result banner
         if let result = slashCommandResult {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: "terminal")
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.accent)
                 Text(result)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.captionMedium)
+                    .foregroundStyle(V4Color.textPrimary)
                 Spacer()
                 Button {
                     slashCommandResult = nil
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 9))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, LayoutConstants.cardPadding)
             .padding(.vertical, LayoutConstants.compactPadding)
-            .background(TrinityTheme.accent.opacity(0.08))
+            .background(V4Color.accent.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
@@ -1615,21 +1615,21 @@ struct ChatScreen: View {
             let query = input.lowercased()
             let matches = SlashCommand.allCases.filter { $0.rawValue.hasPrefix(query) }
             if !matches.isEmpty {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     ForEach(matches, id: \.rawValue) { cmd in
                         Button {
                             input = cmd.rawValue + " "
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: cmd.icon)
-                                    .font(.system(size: 10))
+                                    .font(WernickeTypography.size10)
                                 Text(cmd.rawValue)
-                                    .font(.system(size: 11, weight: .medium))
+                                    .font(WernickeTypography.caption2Medium)
                             }
-                            .foregroundStyle(Color.white.opacity(0.7))
+                            .foregroundStyle(V2Depth.white70)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
-                            .background(Color.white.opacity(0.06))
+                            .background(Color.white.opacity(V2Depth.bgCard))
                             .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
@@ -1673,13 +1673,13 @@ struct ChatScreen: View {
 
         // Provider recovery notification
         if let recovered = NetworkLog.shared.recoveredProviders.first {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.statusOK)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.statusOK)
                 Text("\(recovered) is back online")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(TrinityTheme.statusOK)
+                    .font(WernickeTypography.captionMedium)
+                    .foregroundStyle(V4Color.statusOK)
                 Spacer()
                 if modelManager.selectedModel.provider.rawValue != recovered {
                     Button {
@@ -1689,11 +1689,11 @@ struct ChatScreen: View {
                         }
                     } label: {
                         Text("Switch back")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(WernickeTypography.miniBold)
                             .foregroundStyle(.black)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 3)
-                            .background(TrinityTheme.statusOK)
+                            .background(V4Color.statusOK)
                             .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
@@ -1702,14 +1702,14 @@ struct ChatScreen: View {
                     NetworkLog.shared.recoveredProviders.removeAll { $0 == recovered }
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 9))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, LayoutConstants.cardPadding)
             .padding(.vertical, LayoutConstants.compactPadding)
-            .background(TrinityTheme.statusOK.opacity(0.08))
+            .background(V4Color.statusOK.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
@@ -1788,7 +1788,7 @@ struct ChatScreen: View {
 
         // @Mention chips (parsed from input — click to remove)
         if !parsedMentionChips.isEmpty {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 ForEach(parsedMentionChips, id: \.value) { chip in
                     Button {
                         // Remove this mention from input
@@ -1799,8 +1799,8 @@ struct ChatScreen: View {
                         HStack(spacing: 2) {
                             MentionChip(type: chip.type, value: chip.value)
                             Image(systemName: "xmark")
-                                .font(.system(size: 7))
-                                .foregroundStyle(Color.white.opacity(0.3))
+                                .font(WernickeTypography.size7)
+                                .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                         }
                     }
                     .buttonStyle(.plain)
@@ -1813,21 +1813,21 @@ struct ChatScreen: View {
 
         // Attached files chips
         if !attachedFiles.isEmpty {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 ForEach(attachedFiles.indices, id: \.self) { idx in
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Image(systemName: attachedFiles[idx].name.hasSuffix(".png") || attachedFiles[idx].name.hasSuffix(".jpg") ? "photo" : "paperclip")
                             .font(.caption2)
                         Text(attachedFiles[idx].name)
                             .font(.caption2)
-                            .foregroundStyle(attachedFiles[idx].name.contains("clipboard") ? TrinityTheme.purple : TrinityTheme.accent)
+                            .foregroundStyle(attachedFiles[idx].name.contains("clipboard") ? V4Color.purple : V4Color.accent)
                             .lineLimit(1)
                         Button {
                             attachedFiles.remove(at: idx)
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                         .buttonStyle(.plain)
                     }
@@ -1859,51 +1859,51 @@ struct ChatScreen: View {
 
             if let remaining = remaining, remaining <= 0, !rateLimitDismissed {
                 // Rate limited — error style
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text("\u{1F6AB} Rate limited \u{2014} switching provider...")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .font(WernickeTypography.captionMedium)
+                        .foregroundStyle(V4Color.statusError)
                     Spacer()
                     Button {
                         rateLimitDismissed = true
                     } label: {
                         Text("\u{00D7}")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(TrinityTheme.statusError.opacity(0.7))
+                            .font(WernickeTypography.title3Bold)
+                            .foregroundStyle(V4Color.statusError.opacity(0.7))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss rate limit warning")
                 }
                 .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, LayoutConstants.compactPadding)
-                .background(TrinityTheme.statusError.opacity(0.15))
+                .background(V4Color.statusError.opacity(V2Depth.bgSidebarHover))
                 .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             } else if let remaining = remaining, remaining < 50, !rateLimitDismissed {
                 // Low quota — warning style
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     if let eta = eta {
                         Text("\u{26A0} \(remaining) requests remaining (~\(eta) min)")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(TrinityTheme.golden)
+                            .font(WernickeTypography.captionMedium)
+                            .foregroundStyle(V4Color.golden)
                     } else {
                         Text("\u{26A0} \(remaining) requests remaining")
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(TrinityTheme.golden)
+                            .font(WernickeTypography.captionMedium)
+                            .foregroundStyle(V4Color.golden)
                     }
                     Spacer()
                     Button {
                         rateLimitDismissed = true
                     } label: {
                         Text("\u{00D7}")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(TrinityTheme.golden.opacity(0.7))
+                            .font(WernickeTypography.title3Bold)
+                            .foregroundStyle(V4Color.golden.opacity(0.7))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss rate limit warning")
                 }
                 .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, LayoutConstants.compactPadding)
-                .background(TrinityTheme.golden.opacity(0.15))
+                .background(V4Color.golden.opacity(V2Depth.bgSidebarHover))
                 .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             }
         }
@@ -1922,51 +1922,51 @@ struct ChatScreen: View {
             let pct = Int((cost / budget) * 100)
 
             if networkLog.isBudgetExceeded && !budgetWarningDismissed {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text("\u{1F6AB} Daily budget exceeded: $\(String(format: "%.2f", cost)) / $\(String(format: "%.2f", budget)) \u{2014} consider switching to cheaper model")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .font(WernickeTypography.captionMedium)
+                        .foregroundStyle(V4Color.statusError)
                     Spacer()
                     Button {
                         budgetWarningDismissed = true
                     } label: {
                         Text("\u{00D7}")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(TrinityTheme.statusError.opacity(0.7))
+                            .font(WernickeTypography.title3Bold)
+                            .foregroundStyle(V4Color.statusError.opacity(0.7))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss cost warning")
                 }
                 .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, LayoutConstants.compactPadding)
-                .background(TrinityTheme.statusError.opacity(0.15))
+                .background(V4Color.statusError.opacity(V2Depth.bgSidebarHover))
                 .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             } else if networkLog.isBudgetWarning && !budgetWarningDismissed {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text("\u{26A0}\u{FE0F} Daily spend: $\(String(format: "%.2f", cost)) / $\(String(format: "%.2f", budget)) (\(pct)%)")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(TrinityTheme.golden)
+                        .font(WernickeTypography.captionMedium)
+                        .foregroundStyle(V4Color.golden)
                     Spacer()
                     Button {
                         budgetWarningDismissed = true
                     } label: {
                         Text("\u{00D7}")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundStyle(TrinityTheme.golden.opacity(0.7))
+                            .font(WernickeTypography.title3Bold)
+                            .foregroundStyle(V4Color.golden.opacity(0.7))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss cost warning")
                 }
                 .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, LayoutConstants.compactPadding)
-                .background(TrinityTheme.golden.opacity(0.15))
+                .background(V4Color.golden.opacity(V2Depth.bgSidebarHover))
                 .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             }
         }
     }
 
     private var inputBarView: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             MultilineInput(
                 text: $input,
                 placeholder: placeholder,
@@ -1986,8 +1986,8 @@ struct ChatScreen: View {
                 send()
             } label: {
                 Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 24))
-                    .foregroundStyle(input.isEmpty ? TrinityTheme.accent.opacity(0.3) : TrinityTheme.accent)
+                    .font(WernickeTypography.size24)
+                    .foregroundStyle(input.isEmpty ? V4Color.accent.opacity(V2Depth.stateHover) : V4Color.accent)
             }
             .buttonStyle(.plain)
             .help("Send message (⌘+)")
@@ -1999,10 +1999,10 @@ struct ChatScreen: View {
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 24)
-                .fill(Color(hex: 0x1A1A1A))
+                .fill(V4Color.surface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 24)
-                        .stroke(isDropTargeted ? TrinityTheme.accent : Color.white.opacity(0.08), lineWidth: isDropTargeted ? 2 : 1)
+                        .stroke(isDropTargeted ? V4Color.accent : Color.white.opacity(0.08), lineWidth: isDropTargeted ? 2 : 1)
                 )
         )
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
@@ -2013,18 +2013,18 @@ struct ChatScreen: View {
     // MARK: - System Prompt Editor
 
     private var systemPromptEditorView: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
             HStack {
                 Image(systemName: "terminal")
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.accent)
                 Text("Custom System Prompt")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.caption2Semibold)
+                    .foregroundStyle(V4Color.textSecondary)
                 Spacer()
                 Text("\(systemPromptDraft.count) chars")
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.miniMono)
+                    .foregroundStyle(V4Color.textSecondary)
                 Button {
                     systemPromptDraft = ""
                     if let tid = store.activeThreadID,
@@ -2035,8 +2035,8 @@ struct ChatScreen: View {
                     }
                 } label: {
                     Text("Reset")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(TrinityTheme.statusWarn)
+                        .font(WernickeTypography.miniMedium)
+                        .foregroundStyle(V4Color.statusWarn)
                 }
                 .buttonStyle(.plain)
                 .help("Clear custom prompt, revert to default")
@@ -2051,24 +2051,24 @@ struct ChatScreen: View {
                     showSystemPrompt = false
                 } label: {
                     Text("Save")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.miniSemibold)
+                        .foregroundStyle(V4Color.accent)
                 }
                 .buttonStyle(.plain)
                 .help("Save custom system prompt for this thread")
             }
             TextEditor(text: $systemPromptDraft)
-                .font(.system(size: 12, design: .monospaced))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size12Mono)
+                .foregroundStyle(V4Color.textPrimary)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 60, maxHeight: 120)
                 .padding(LayoutConstants.compactPadding)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color(hex: 0x111111))
+                        .fill(V4Color.surfaceElevated)
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                                .stroke(Color.white.opacity(V2Depth.bgCard), lineWidth: 1)
                         )
                 )
         }
@@ -2076,7 +2076,7 @@ struct ChatScreen: View {
         .padding(.vertical, LayoutConstants.standardPadding)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(hex: 0x1A1A1A))
+                .fill(V4Color.surface)
         )
         .padding(.bottom, 4)
     }
@@ -2084,20 +2084,20 @@ struct ChatScreen: View {
     @ViewBuilder
     private var modelSuggestionView: some View {
         if let suggestion = suggestedModel, suggestion.model != modelManager.selectedModel {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Button {
                     modelManager.selectedModel = suggestion.model
                     modelManager.persistSelection()
                     modelSuggestionDismissed = true
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Text("\u{1F4A1} Try \(suggestion.model.displayName)")
                             .fontWeight(.medium)
                         Text("\u{2014} \(suggestion.reason)")
                     }
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
-                    .opacity(0.6)
+                    .foregroundStyle(V4Color.textSecondary)
+                    .opacity(V1Theme.opacityTextSecondary)
                 }
                 .buttonStyle(.plain)
                 Spacer()
@@ -2105,8 +2105,8 @@ struct ChatScreen: View {
                     modelSuggestionDismissed = true
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 8))
-                        .foregroundStyle(Color.white.opacity(0.2))
+                        .font(WernickeTypography.size8)
+                        .foregroundStyle(V4Color.white20)
                 }
                 .buttonStyle(.plain)
             }
@@ -2122,7 +2122,7 @@ struct ChatScreen: View {
                 Button(action: { client.stop() }) {
                     Image(systemName: "stop.circle.fill")
                         .font(.system(size: a11y.scaledFontSize(24)))
-                        .foregroundStyle(a11y.highContrast ? TrinityTheme.HighContrast.error : TrinityTheme.accent)
+                        .foregroundStyle(a11y.highContrast ? V4Color.HighContrast.error : V4Color.accent)
                 }
                 .accessibilityLabel("Stop generation")
                 .accessibilityHint("Double tap to stop the current response generation")
@@ -2131,11 +2131,11 @@ struct ChatScreen: View {
                 Button(action: { send() }) {
                     ZStack {
                         Circle()
-                            .fill(input.isEmpty ? Color.white.opacity(0.1) : modeColor(chatMode))
+                            .fill(input.isEmpty ? Color.white.opacity(V2Depth.bgSubtle) : modeColor(chatMode))
                             .frame(width: 32, height: 32)
                         Image(systemName: chatMode == .image ? "photo" : "arrow.up")
                             .font(.system(size: a11y.scaledFontSize(14), weight: .semibold))
-                            .foregroundStyle(input.isEmpty ? Color.white.opacity(0.3) : .black)
+                            .foregroundStyle(input.isEmpty ? Color.white.opacity(V2Depth.stateHover) : .black)
                     }
                 }
                 .disabled(input.isEmpty)
@@ -2148,10 +2148,10 @@ struct ChatScreen: View {
                     }
                 }
                 .popover(isPresented: $showModelPopover) {
-                    VStack(spacing: 4) {
+                    VStack(spacing: ParietalSpacing.xs) {
                         Text("Send with model")
                             .font(.system(size: a11y.scaledFontSize(11), weight: .bold))
-                            .foregroundStyle(Color.white.opacity(0.6))
+                            .foregroundStyle(Color.white.opacity(V1Theme.opacityTextSecondary))
                             .padding(.top, 8)
                             .accessibilityAddTraits(.isHeader)
                         ForEach(modelManager.availableModels.filter { modelManager.providerHasKey($0.provider) }) { model in
@@ -2164,7 +2164,7 @@ struct ChatScreen: View {
                                         .font(.system(size: a11y.scaledFontSize(12)))
                                     if model == modelManager.selectedModel {
                                         Image(systemName: "checkmark")
-                                            .font(.system(size: 10))
+                                            .font(WernickeTypography.size10)
                                             .accessibilityLabel("Currently selected")
                                     }
                                 }
@@ -2179,7 +2179,7 @@ struct ChatScreen: View {
                     }
                     .padding(.bottom, 8)
                     .frame(minWidth: 180)
-                    .background(Color(hex: 0x1A1A1A))
+                    .background(V4Color.surface)
                 }
                 .onLongPressGesture(minimumDuration: 0.5) {
                     if !input.isEmpty {
@@ -2210,14 +2210,14 @@ struct ChatScreen: View {
         let model = modelManager.selectedModel
         let cost = AIModel.estimateCost(provider: model.provider.rawValue, inputTokens: totalTokens, outputTokens: outputBudget)
         let costStr = cost < 0.001 ? "<$0.01" : String(format: "~$%.2f", cost)
-        return VStack(alignment: .leading, spacing: 8) {
+        return VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack {
-                Image(systemName: "eye").font(.system(size: 11)).foregroundStyle(TrinityTheme.accent)
-                Text("Context Preview").font(.system(size: 12, weight: .bold)).foregroundStyle(TrinityTheme.textPrimary)
+                Image(systemName: "eye").font(WernickeTypography.size11).foregroundStyle(V4Color.accent)
+                Text("Context Preview").font(WernickeTypography.captionBold).foregroundStyle(V4Color.textPrimary)
                 Spacer()
-                Text(model.displayName).font(.system(size: 10, weight: .medium, design: .monospaced)).foregroundStyle(TrinityTheme.accent)
+                Text(model.displayName).font(WernickeTypography.miniMono).foregroundStyle(V4Color.accent)
             }
-            Divider().background(Color.white.opacity(0.1))
+            Divider().background(Color.white.opacity(V2Depth.bgSubtle))
             contextPreviewRow(icon: "terminal", label: "System prompt", detail: "\(sysLen) chars", preview: sysPreview)
             if let name = personaName { contextPreviewRow(icon: "person.fill", label: "Persona", detail: name, preview: nil) }
             if let cp = customPreview {
@@ -2233,34 +2233,34 @@ struct ChatScreen: View {
             if !input.isEmpty {
                 contextPreviewRow(icon: "pencil", label: "Your message", detail: "~\(formatTokenCount(inputTokens))", preview: input.count > 50 ? String(input.prefix(50)) + "..." : input)
             }
-            Divider().background(Color.white.opacity(0.1))
+            Divider().background(Color.white.opacity(V2Depth.bgSubtle))
             HStack {
-                Text("Total estimated").font(.system(size: 11, weight: .semibold)).foregroundStyle(TrinityTheme.textPrimary)
+                Text("Total estimated").font(WernickeTypography.caption2Semibold).foregroundStyle(V4Color.textPrimary)
                 Spacer()
-                Text("~\(formatTokenCount(totalTokens)) tokens  \(costStr)").font(.system(size: 11, weight: .bold, design: .monospaced)).foregroundStyle(TrinityTheme.accent)
+                Text("~\(formatTokenCount(totalTokens)) tokens  \(costStr)").font(WernickeTypography.caption2BoldMono).foregroundStyle(V4Color.accent)
             }
             HStack {
-                Text("Output budget").font(.system(size: 10)).foregroundStyle(TrinityTheme.textMuted)
+                Text("Output budget").font(WernickeTypography.size10).foregroundStyle(V4Color.textSecondary)
                 Spacer()
-                Text("\(formatTokenCount(outputBudget)) (\(effortLevel.rawValue))").font(.system(size: 10, design: .monospaced)).foregroundStyle(TrinityTheme.textMuted)
+                Text("\(formatTokenCount(outputBudget)) (\(effortLevel.rawValue))").font(WernickeTypography.size10Mono).foregroundStyle(V4Color.textSecondary)
             }
         }
         .padding(LayoutConstants.cardPadding)
             .frame(maxWidth: 340)
             .frame(minWidth: 280)
-            .background(Color(hex: 0x141414))
+            .background(V4Color.surface)
     }
 
     private func contextPreviewRow(icon: String, label: String, detail: String, preview: String?) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 6) {
-                Image(systemName: icon).font(.system(size: 10)).foregroundStyle(TrinityTheme.textMuted).frame(width: 14)
-                Text(label).font(.system(size: 11, weight: .medium)).foregroundStyle(TrinityTheme.textPrimary)
+            HStack(spacing: ParietalSpacing.sm - 2) {
+                Image(systemName: icon).font(WernickeTypography.size10).foregroundStyle(V4Color.textSecondary).frame(width: 14)
+                Text(label).font(WernickeTypography.caption2Medium).foregroundStyle(V4Color.textPrimary)
                 Spacer()
-                Text(detail).font(.system(size: 10, weight: .medium, design: .monospaced)).foregroundStyle(TrinityTheme.textMuted)
+                Text(detail).font(WernickeTypography.miniMono).foregroundStyle(V4Color.textSecondary)
             }
             if let preview = preview {
-                Text(preview).font(.system(size: 10, design: .monospaced)).foregroundStyle(Color.white.opacity(0.35)).lineLimit(2).padding(.leading, 20)
+                Text(preview).font(WernickeTypography.size10Mono).foregroundStyle(V2Depth.white35).lineLimit(2).padding(.leading, 20)
             }
         }
     }
@@ -2270,19 +2270,19 @@ struct ChatScreen: View {
 
     @ViewBuilder
     private var modeBarView: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             ForEach(ChatMode.allCases, id: \.rawValue) { mode in
                 Button { chatMode = mode } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Image(systemName: mode.icon)
                             .font(.system(size: a11y.scaledFontSize(12)))
                         Text(mode.rawValue)
                             .font(.system(size: a11y.scaledFontSize(12), weight: .medium))
                     }
-                    .foregroundStyle(chatMode == mode ? .black : Color.white.opacity(0.5))
+                    .foregroundStyle(chatMode == mode ? .black : Color.white.opacity(V2Depth.stateDisabled))
                     .padding(.horizontal, LayoutConstants.cardPadding)
                     .padding(.vertical, LayoutConstants.compactPadding)
-                    .background(chatMode == mode ? modeColor(mode) : Color.white.opacity(0.06))
+                    .background(chatMode == mode ? modeColor(mode) : Color.white.opacity(V2Depth.bgCard))
                     .clipShape(SwiftUI.Capsule())
                     .overlay(
                         SwiftUI.Capsule()
@@ -2358,10 +2358,10 @@ struct ChatScreen: View {
                     Text(stylePreset.rawValue)
                         .font(.system(size: a11y.scaledFontSize(10), weight: .medium))
                 }
-                .foregroundStyle(Color.white.opacity(0.5))
+                .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .background(Color.white.opacity(0.06))
+                .background(Color.white.opacity(V2Depth.bgCard))
                 .clipShape(SwiftUI.Capsule())
             }
             .menuStyle(.borderlessButton)
@@ -2470,17 +2470,17 @@ struct ChatScreen: View {
     }
 
     private func ttfbColor(_ ms: Int) -> Color {
-        if ms < 1000 { return TrinityTheme.accent }
-        if ms < 3000 { return TrinityTheme.textMuted }
-        if ms < 5000 { return TrinityTheme.statusWarn }
-        return TrinityTheme.statusError
+        if ms < 1000 { return V4Color.accent }
+        if ms < 3000 { return V4Color.textSecondary }
+        if ms < 5000 { return V4Color.statusWarn }
+        return V4Color.statusError
     }
 
     private func modeColor(_ mode: ChatMode) -> Color {
         switch mode {
-        case .search: return TrinityTheme.accent
-        case .trinity: return TrinityTheme.golden
-        case .reason: return TrinityTheme.purple
+        case .search: return V4Color.accent
+        case .trinity: return V4Color.golden
+        case .reason: return V4Color.purple
         case .compare: return Color(hex: 0x8BE9FD)  // cyan
         case .image: return Color(hex: 0xFF6B6B)
         }
@@ -2723,10 +2723,10 @@ struct ChatScreen: View {
         Task {
             while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(60))
-                await NetworkLog.shared.checkAllProviders()
+                NetworkLog.shared.checkAllProviders()
                 // Check for provider recovery after health check
                 try? await Task.sleep(for: .seconds(3))
-                await NetworkLog.shared.checkRecovery()
+                NetworkLog.shared.checkRecovery()
             }
         }
     }
@@ -2866,7 +2866,7 @@ private struct NotificationReceiversModifier: ViewModifier {
             }
             .onReceive(NotificationCenter.default.publisher(for: .clearChat)) { _ in
                 // TODO: Implement clear thread functionality
-                guard let threadID = store.activeThreadID else { return }
+                if store.activeThreadID == nil { return }
                 input = ""
             }
             .onReceive(NotificationCenter.default.publisher(for: .focusInput)) { _ in
@@ -3017,61 +3017,61 @@ struct ConnectionStatusBar: View {
         VStack(spacing: 0) {
             // Device network offline (WiFi/Ethernet down)
             if !networkMonitor.isConnected {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "wifi.slash")
                         .font(.caption2)
                     Text("No network connection")
                         .font(.caption2)
                     Spacer()
                     Text(networkMonitor.connectionType.rawValue)
-                        .font(.system(size: 9, design: .monospaced))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size9Mono)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
-                .foregroundStyle(TrinityTheme.statusError)
+                .foregroundStyle(V4Color.statusError)
                 .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, 5)
-                .background(TrinityTheme.statusError.opacity(0.12))
+                .background(V4Color.statusError.opacity(0.12))
                 .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
 
             // Reconnected toast
             if networkMonitor.wasDisconnected {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "wifi")
                         .font(.caption2)
                     Text("Reconnected")
                         .font(.caption2)
                     Spacer()
                 }
-                .foregroundStyle(TrinityTheme.statusOK)
+                .foregroundStyle(V4Color.statusOK)
                 .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, 4)
-                .background(TrinityTheme.statusOK.opacity(0.08))
+                .background(V4Color.statusOK.opacity(0.08))
                 .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
 
             // Failover chain notification
             if let event = client.failoverEvent, showFailover {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "arrow.triangle.2.circlepath")
                         .font(.caption2)
                     Text(event.from)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .font(WernickeTypography.miniMedium)
+                        .foregroundStyle(V4Color.statusError)
                         .strikethrough()
                     Image(systemName: "arrow.right")
-                        .font(.system(size: 8))
+                        .font(WernickeTypography.size8)
                     Text(event.to)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(TrinityTheme.statusOK)
+                        .font(WernickeTypography.miniMedium)
+                        .foregroundStyle(V4Color.statusOK)
                     if let notice = modelManager.cloudFallbackNotice {
                         Text(notice)
-                            .font(.system(size: 9))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .font(WernickeTypography.size9)
+                            .foregroundStyle(V4Color.accent)
                     } else {
                         Text("timed out \u{2192} switched")
-                            .font(.system(size: 9))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size9)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                     // Undo: switch back to original
@@ -3083,34 +3083,34 @@ struct ConnectionStatusBar: View {
                         withAnimation { showFailover = false }
                     } label: {
                         Text("Undo")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .font(WernickeTypography.microBold)
+                            .foregroundStyle(V4Color.accent)
                     }
                     .buttonStyle(.plain)
                     Button {
                         withAnimation { showFailover = false }
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 9))
-                            .foregroundStyle(Color.white.opacity(0.3))
+                            .font(WernickeTypography.size9)
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                     }
                     .buttonStyle(.plain)
                 }
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
                 .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, 5)
-                .background(TrinityTheme.accent.opacity(0.08))
+                .background(V4Color.accent.opacity(0.08))
                 .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
 
             // Checking connection spinner
             if isOnline == nil {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     ProgressView()
                         .controlSize(.mini)
                     Text("Checking connection...")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                     Spacer()
                 }
                 .padding(.horizontal, LayoutConstants.standardPadding)
@@ -3120,7 +3120,7 @@ struct ConnectionStatusBar: View {
 
             // Offline warning for selected provider
             if let online = isOnline, !online {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "wifi.exclamationmark")
                         .font(.caption2)
                     Text("No API connection — check keys in .env")
@@ -3134,32 +3134,32 @@ struct ConnectionStatusBar: View {
                     .foregroundStyle(.black)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
-                    .background(TrinityTheme.statusError)
+                    .background(V4Color.statusError)
                     .clipShape(SwiftUI.Capsule())
                     .buttonStyle(.plain)
                     .accessibilityLabel("Retry connection")
                 }
-                .foregroundStyle(TrinityTheme.statusError)
+                .foregroundStyle(V4Color.statusError)
                 .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, LayoutConstants.compactPadding)
-                .background(TrinityTheme.statusError.opacity(0.1))
+                .background(V4Color.statusError.opacity(V2Depth.bgSubtle))
             }
 
             // Provider status dots bar (show if any provider is down)
             if networkLog.providerHealth.values.contains(where: { !$0.isUp }) {
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     ForEach(Array(networkLog.providerHealth.values).sorted(by: { $0.name < $1.name }), id: \.name) { status in
-                        HStack(spacing: 4) {
+                        HStack(spacing: ParietalSpacing.xs) {
                             Circle()
-                                .fill(status.isUp ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                                .fill(status.isUp ? V4Color.statusOK : V4Color.statusError)
                                 .frame(width: 5, height: 5)
                             Text(status.name)
-                                .font(.system(size: 9))
-                                .foregroundStyle(status.isUp ? TrinityTheme.textMuted : TrinityTheme.statusError)
+                                .font(WernickeTypography.size9)
+                                .foregroundStyle(status.isUp ? V4Color.textSecondary : V4Color.statusError)
                             if let remaining = status.remainingRequests {
                                 Text("(\(remaining))")
-                                    .font(.system(size: 8, design: .monospaced))
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .font(WernickeTypography.size8Mono)
+                                    .foregroundStyle(V4Color.textSecondary)
                             }
                         }
                     }
@@ -3174,7 +3174,7 @@ struct ConnectionStatusBar: View {
             RateLimitWarning(modelManager: modelManager)
 
             // MCP server status + Branch pill
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 MCPStatusView()
                     .onAppear {
                         // Will load from .mcp.json
@@ -3234,19 +3234,19 @@ struct ContextMeter: View {
     private var percent: Int { Int(ratio * 100) }
 
     private var meterColor: Color {
-        if ratio < 0.70 { return TrinityTheme.accent }
-        if ratio < 0.85 { return TrinityTheme.golden }
-        return TrinityTheme.statusError
+        if ratio < 0.70 { return V4Color.accent }
+        if ratio < 0.85 { return V4Color.golden }
+        return V4Color.statusError
     }
 
     var body: some View {
         let cost = networkLog.todayCostEstimate()
 
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     SwiftUI.Capsule()
-                        .fill(Color.white.opacity(0.06))
+                        .fill(Color.white.opacity(V2Depth.bgCard))
                     SwiftUI.Capsule()
                         .fill(meterColor)
                         .frame(width: geo.size.width * ratio)
@@ -3256,14 +3256,14 @@ struct ContextMeter: View {
             .frame(width: 60, height: 3)
 
             Text("\(percent)% (\(tokens / 1000)K)")
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .font(WernickeTypography.microMono)
                 .foregroundStyle(meterColor)
                 .animation(.easeInOut(duration: 0.4), value: meterColor)
 
             if cost > 0.001 {
                 Text(String(format: "$%.2f", cost))
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundStyle(cost > 1.0 ? TrinityTheme.golden : TrinityTheme.textMuted)
+                    .font(WernickeTypography.microMono)
+                    .foregroundStyle(cost > 1.0 ? V4Color.golden : V4Color.textSecondary)
             }
         }
         .help("\(tokens) tokens / \(maxTokens / 1000)K context | Session: $\(String(format: "%.3f", cost))")
@@ -3282,20 +3282,20 @@ struct ContextBar: View {
     private var percent: Int { Int(ratio * 100) }
 
     private var color: Color {
-        if ratio < 0.70 { return TrinityTheme.accent }
-        if ratio < 0.85 { return TrinityTheme.golden }
-        return TrinityTheme.statusError
+        if ratio < 0.70 { return V4Color.accent }
+        if ratio < 0.85 { return V4Color.golden }
+        return V4Color.statusError
     }
 
     var body: some View {
         if tokens > 1000 {
             VStack(spacing: 2) {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     // Progress bar
                     GeometryReader { geo in
                         ZStack(alignment: .leading) {
                             SwiftUI.Capsule()
-                                .fill(Color.white.opacity(0.06))
+                                .fill(Color.white.opacity(V2Depth.bgCard))
                             SwiftUI.Capsule()
                                 .fill(color)
                                 .frame(width: geo.size.width * ratio)
@@ -3305,13 +3305,13 @@ struct ContextBar: View {
                     .frame(height: 3)
 
                     Text("\(tokens / 1000)K / \(maxTokens / 1000)K")
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .font(WernickeTypography.microMono)
                         .foregroundStyle(color)
                         .fixedSize()
                         .animation(.easeInOut(duration: 0.4), value: color)
 
                     Text("\(percent)%")
-                        .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        .font(WernickeTypography.microBoldMono)
                         .foregroundStyle(color)
                         .fixedSize()
                         .animation(.easeInOut(duration: 0.4), value: color)
@@ -3319,14 +3319,14 @@ struct ContextBar: View {
 
                 // CTA when context is filling up (>85%)
                 if ratio > 0.85, let onCompact = onCompact {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Text("Context filling up —")
-                            .font(.system(size: 9))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size9)
+                            .foregroundStyle(V4Color.textSecondary)
                         Button(action: onCompact) {
                             Text("Clear old messages")
-                                .font(.system(size: 9, weight: .semibold))
-                                .foregroundStyle(TrinityTheme.accent)
+                                .font(WernickeTypography.microSemibold)
+                                .foregroundStyle(V4Color.accent)
                         }
                         .buttonStyle(.plain)
                     }
@@ -3335,7 +3335,7 @@ struct ContextBar: View {
             }
             .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .padding(.vertical, 4)
-            .background(ratio >= 0.7 ? color.opacity(0.04) : Color.clear)
+            .background(ratio >= 0.7 ? color.opacity(V2Depth.bgCardLight) : Color.clear)
             .animation(.easeInOut(duration: 0.3), value: ratio > 0.85)
         }
     }
@@ -3348,7 +3348,7 @@ struct TTFBSparkline: View {
     let values: [Int]
     var width: CGFloat = 25
     var height: CGFloat = 8
-    var color: Color = TrinityTheme.accent
+    var color: Color = V4Color.accent
 
     var body: some View {
         if values.count >= 2 {
@@ -3399,16 +3399,16 @@ struct ModelPicker: View {
     private func latencyBadge(for model: AIModel) -> some View {
         if model.provider == .ollama {
             Text("Local")
-                .font(.system(size: 9, weight: .semibold))
-                .foregroundStyle(TrinityTheme.accent)
+                .font(WernickeTypography.microSemibold)
+                .foregroundStyle(V4Color.accent)
                 .padding(.horizontal, 4)
                 .padding(.vertical, 1)
-                .background(TrinityTheme.accent.opacity(0.15))
-                .cornerRadius(3)
+                .background(V4Color.accent.opacity(V2Depth.bgSidebarHover))
+                .cornerRadius(V1Theme.cornerMicro)
         } else if isCircuitOpen(for: model.provider) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 9))
-                .foregroundStyle(TrinityTheme.statusError)
+                .font(WernickeTypography.size9)
+                .foregroundStyle(V4Color.statusError)
                 .help("Circuit breaker open \u{2014} provider temporarily unavailable")
         } else {
             let points = ttfbPoints(for: model.id)
@@ -3416,17 +3416,17 @@ struct ModelPicker: View {
                 TTFBSparkline(values: points)
                 if let avg = avgTTFB(for: model.id) {
                     Text("~\(avg)ms")
-                        .font(.system(size: 9, design: .monospaced))
-                        .foregroundStyle(Color.white.opacity(0.5))
+                        .font(WernickeTypography.size9Mono)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                 }
             } else if let avg = avgTTFB(for: model.id) {
                 Text("~\(avg)ms")
-                    .font(.system(size: 9, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.5))
+                    .font(WernickeTypography.size9Mono)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
             } else {
                 Text("\u{2014}")
-                    .font(.system(size: 9))
-                    .foregroundStyle(Color.white.opacity(0.3))
+                    .font(WernickeTypography.size9)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
             }
         }
     }
@@ -3443,7 +3443,7 @@ struct ModelPicker: View {
                             }) {
                                 HStack {
                                     Circle()
-                                        .fill(providerIsUp(model.provider) ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                                        .fill(providerIsUp(model.provider) ? V4Color.statusOK : V4Color.statusError)
                                         .frame(width: 6, height: 6)
                                     Text(model.displayName)
                                     latencyBadge(for: model)
@@ -3457,43 +3457,43 @@ struct ModelPicker: View {
                 }
             }
         } label: {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Circle()
-                    .fill(providerIsUp(modelManager.selectedModel.provider) ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                    .fill(providerIsUp(modelManager.selectedModel.provider) ? V4Color.statusOK : V4Color.statusError)
                     .frame(width: 6, height: 6)
                 Text(modelManager.selectedModel.displayName)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.7))
+                    .font(WernickeTypography.smallMedium)
+                    .foregroundStyle(V2Depth.white70)
                 // Inline Path sparkline on picker label
                 let points = ttfbPoints(for: modelManager.selectedModel.id)
                 if points.count >= 2 {
-                    TTFBSparkline(values: points, color: TrinityTheme.accent.opacity(0.7))
+                    TTFBSparkline(values: points, color: V4Color.accent.opacity(0.7))
                 }
                 if isCircuitOpen(for: modelManager.selectedModel.provider) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 9))
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(V4Color.statusError)
                 }
                 Image(systemName: "chevron.down")
-                    .font(.system(size: 9, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .font(WernickeTypography.microMedium)
+                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
 
                 // Rate limit warning badge
                 if let remaining = networkLog.providerHealth[modelManager.selectedModel.provider.rawValue]?.remainingRequests,
                    remaining < 20 {
                     Text("\(remaining)")
-                        .font(.system(size: 8, weight: .bold, design: .monospaced))
+                        .font(WernickeTypography.tiny8BoldMono)
                         .foregroundStyle(.black)
                         .padding(.horizontal, 4)
                         .padding(.vertical, 1)
-                        .background(remaining < 5 ? TrinityTheme.statusError : TrinityTheme.statusWarn)
+                        .background(remaining < 5 ? V4Color.statusError : V4Color.statusWarn)
                         .clipShape(SwiftUI.Capsule())
                         .help("\(remaining) requests remaining")
                 }
             }
             .padding(.horizontal, 8)
             .padding(.vertical, LayoutConstants.compactPadding)
-            .background(Color.white.opacity(0.06))
+            .background(Color.white.opacity(V2Depth.bgCard))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .menuStyle(.borderlessButton)
@@ -3538,7 +3538,7 @@ struct MessageRow: View {
         while let range = lowerText.range(of: lowerQuery, range: searchRange) {
             let attributedRange = result.range(of: String(text[range]), options: .caseInsensitive)
             if let attributedRange = attributedRange {
-                result[attributedRange].backgroundColor = TrinityTheme.golden.opacity(0.3)
+                result[attributedRange].backgroundColor = V4Color.golden.opacity(V2Depth.stateHover)
             }
             searchRange = range.upperBound..<lowerText.endIndex
         }
@@ -3587,10 +3587,10 @@ struct MessageRow: View {
     }
 
     private var tokenBadgeColor: Color {
-        if estimatedTokens < 500 { return TrinityTheme.textMuted }
-        if estimatedTokens < 2000 { return TrinityTheme.accent }
-        if estimatedTokens < 5000 { return TrinityTheme.golden }
-        return TrinityTheme.statusError
+        if estimatedTokens < 500 { return V4Color.textSecondary }
+        if estimatedTokens < 2000 { return V4Color.accent }
+        if estimatedTokens < 5000 { return V4Color.golden }
+        return V4Color.statusError
     }
 
     private var tokenBadgeText: String {
@@ -3631,15 +3631,15 @@ struct MessageRow: View {
                 ZStack {
                     if isSelected {
                         Circle()
-                            .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 2)
+                            .stroke(V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 2)
                             .frame(width: 24, height: 24)
                             .scaleEffect(isSelected ? 1.2 : 1.0)
                             .opacity(isSelected ? 0.5 : 0)
                     }
 
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 18))
-                        .foregroundStyle(isSelected ? TrinityTheme.accent : Color.white.opacity(0.4))
+                        .font(WernickeTypography.size18)
+                        .foregroundStyle(isSelected ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
                         .scaleEffect(isSelected ? 1.1 : 1.0)
                 }
                 .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isSelected)
@@ -3657,7 +3657,7 @@ struct MessageRow: View {
     private var rowBackground: some View {
         if searchHighlight != .none {
             RoundedRectangle(cornerRadius: 8)
-                .fill(searchHighlight == .currentMatch ? TrinityTheme.golden.opacity(0.15) : Color.white.opacity(0.03))
+                .fill(searchHighlight == .currentMatch ? V4Color.golden.opacity(V2Depth.bgSidebarHover) : Color.white.opacity(0.03))
         }
     }
 
@@ -3682,14 +3682,14 @@ struct MessageRow: View {
     /// Edit mode UI for user messages with diff preview and action buttons
     @ViewBuilder
     private func userMessageEditModeView() -> some View {
-        VStack(alignment: .trailing, spacing: 6) {
+        VStack(alignment: .trailing, spacing: ParietalSpacing.sm - 2) {
             TextField("Edit message...", text: $editText, axis: .vertical)
                 .textFieldStyle(.plain)
                 .font(.system(size: CGFloat(chatFontSize), weight: .semibold))
                 .foregroundStyle(Color.white)
                 .lineLimit(1...10)
                 .padding(LayoutConstants.compactPadding)
-                .background(Color.white.opacity(0.06))
+                .background(Color.white.opacity(V2Depth.bgCard))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .onSubmit { submitEdit() }
 
@@ -3699,43 +3699,43 @@ struct MessageRow: View {
                 HStack(spacing: 0) {
                     Spacer(minLength: 0)
                     (Text(diff.removed).foregroundColor(.red.opacity(0.8)).strikethrough()
-                     + Text(" → ").foregroundColor(.white.opacity(0.3))
+                     + Text(" → ").foregroundColor(.white.opacity(V2Depth.stateHover))
                      + Text(diff.added).foregroundColor(.green.opacity(0.8)))
-                        .font(.system(size: 11))
+                        .font(WernickeTypography.size11)
                         .lineLimit(2)
                         .truncationMode(.middle)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.04))
+                        .background(Color.white.opacity(V2Depth.bgCardLight))
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
             } else if !editText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 HStack(spacing: 0) {
                     Spacer(minLength: 0)
                     Text("No changes")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
             }
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Button("Cancel") {
                     isEditing = false
                     showDiffConfirm = false
                 }
-                .font(.system(size: 12))
-                .foregroundStyle(Color.white.opacity(0.4))
+                .font(WernickeTypography.size12)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 .buttonStyle(.plain)
 
                 Button("Send") { submitEdit() }
-                    .font(.system(size: 12, weight: .bold))
+                    .font(WernickeTypography.captionBold)
                     .foregroundStyle(.black)
                     .padding(.horizontal, LayoutConstants.cardPadding)
                     .padding(.vertical, 4)
                     .background(
                         editText.trimmingCharacters(in: .whitespacesAndNewlines) != message.text.trimmingCharacters(in: .whitespacesAndNewlines)
-                        ? TrinityTheme.accent
-                        : Color.gray.opacity(0.3)
+                        ? V4Color.accent
+                        : Color.gray.opacity(V2Depth.stateHover)
                     )
                     .clipShape(SwiftUI.Capsule())
                     .buttonStyle(.plain)
@@ -3747,7 +3747,7 @@ struct MessageRow: View {
     /// Display mode UI for user messages with highlight text and action buttons
     @ViewBuilder
     private func userMessageDisplayModeView() -> some View {
-        VStack(alignment: .trailing, spacing: 4) {
+        VStack(alignment: .trailing, spacing: ParietalSpacing.xs) {
             HighlightText(message.text)
                 .font(.system(size: CGFloat(chatFontSize), weight: .semibold))
                 .foregroundStyle(Color.white)
@@ -3767,14 +3767,14 @@ struct MessageRow: View {
 
             // Action buttons on hover
             if isHovering && !isEditing {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Button {
                         editText = message.text
                         isEditing = true
                     } label: {
                         Image(systemName: "pencil")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color.white.opacity(0.4))
+                            .font(WernickeTypography.size10)
+                            .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     }
                     .buttonStyle(.plain)
                     .help("Edit & resend")
@@ -3785,8 +3785,8 @@ struct MessageRow: View {
                         SoundCueManager.shared.playCopy()
                     } label: {
                         Image(systemName: "doc.on.doc")
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color.white.opacity(0.4))
+                            .font(WernickeTypography.size10)
+                            .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     }
                     .buttonStyle(.plain)
                     .help("Copy")
@@ -3796,8 +3796,8 @@ struct MessageRow: View {
                         store.toggleBookmark(message.id, in: threadID)
                     } label: {
                         Image(systemName: message.isBookmarked == true ? "pin.fill" : "pin")
-                            .font(.system(size: 10))
-                            .foregroundStyle(message.isBookmarked == true ? TrinityTheme.accent : Color.white.opacity(0.4))
+                            .font(WernickeTypography.size10)
+                            .foregroundStyle(message.isBookmarked == true ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
                     }
                     .buttonStyle(.plain)
                     .help("Pin message")
@@ -3813,7 +3813,7 @@ struct MessageRow: View {
             // User message — bold, slightly larger
             HStack(alignment: .top, spacing: 0) {
                 Spacer(minLength: 0)
-                VStack(alignment: .trailing, spacing: 4) {
+                VStack(alignment: .trailing, spacing: ParietalSpacing.xs) {
                     if isEditing {
                         userMessageEditModeView()
                     } else {
@@ -3849,18 +3849,18 @@ struct MessageRow: View {
                 switch searchHighlight {
                 case .currentMatch:
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(TrinityTheme.accent.opacity(0.18))
+                        .fill(V4Color.accent.opacity(0.18))
                         .overlay(
                             RoundedRectangle(cornerRadius: 8)
-                                .strokeBorder(TrinityTheme.accent.opacity(0.5), lineWidth: 1.5)
+                                .strokeBorder(V4Color.accent.opacity(V2Depth.stateDisabled), lineWidth: 1.5)
                         )
                 case .match:
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(TrinityTheme.accent.opacity(0.08))
+                        .fill(V4Color.accent.opacity(0.08))
                 case .none:
                     if isSelected {
                         RoundedRectangle(cornerRadius: 8)
-                            .fill(TrinityTheme.accent.opacity(0.05))
+                            .fill(V4Color.accent.opacity(0.05))
                     } else {
                         Color.clear
                     }
@@ -4040,11 +4040,11 @@ struct MessageRow: View {
                     modelManager: modelManager
                 )
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(WernickeTypography.captionBold)
                     Text("Retry")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(WernickeTypography.captionBold)
                 }
                 .foregroundStyle(errKind.color)
                 .padding(.horizontal, 14)
@@ -4069,13 +4069,13 @@ struct MessageRow: View {
     @ViewBuilder
     private func readingTimeView() -> some View {
         if message.role == .assistant, !client.isStreaming, wordCount > 200 {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Image(systemName: "text.alignleft")
                 Text("\(wordCount) words · \(readingTimeMinutes) min read")
             }
             .font(.caption2)
-            .foregroundStyle(TrinityTheme.textMuted)
-            .opacity(0.5)
+            .foregroundStyle(V4Color.textSecondary)
+            .opacity(V2Depth.stateDisabled)
         }
     }
 
@@ -4106,11 +4106,11 @@ struct MessageRow: View {
                 // Token count badge
                 if estimatedTokens > 0 {
                     Text("\(tokenBadgeText) tok")
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .font(WernickeTypography.microMono)
                         .foregroundStyle(tokenBadgeColor)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(tokenBadgeColor.opacity(0.1))
+                        .background(tokenBadgeColor.opacity(V2Depth.bgSubtle))
                         .clipShape(SwiftUI.Capsule())
                         .help(message.outputTokens != nil ? "Actual tokens" : "Estimated tokens")
                 }
@@ -4126,9 +4126,9 @@ struct MessageRow: View {
         if isHovering && !message.text.isEmpty {
             GeometryReader { geo in
                 let barHeight = max(geo.size.height * min(tokenShare * 50, 1.0), 4)
-                let color: Color = tokenShare < 0.02 ? TrinityTheme.accent.opacity(0.3)
-                    : tokenShare < 0.05 ? TrinityTheme.golden.opacity(0.5)
-                    : TrinityTheme.statusError.opacity(0.5)
+                let color: Color = tokenShare < 0.02 ? V4Color.accent.opacity(V2Depth.stateHover)
+                    : tokenShare < 0.05 ? V4Color.golden.opacity(V2Depth.stateDisabled)
+                    : V4Color.statusError.opacity(V2Depth.stateDisabled)
                 VStack {
                     Spacer()
                     RoundedRectangle(cornerRadius: 1)
@@ -4145,10 +4145,10 @@ struct MessageRow: View {
     @ViewBuilder
     private func assistantMessageBody() -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 messageBodyContent
                     .font(.system(size: CGFloat(chatFontSize), weight: .regular))
-                    .foregroundStyle(Color(hex: 0xD1D1D1))
+                    .foregroundStyle(V4Color.textSecondary)
                     .textSelection(.enabled)
                     .lineSpacing(4)
                     .padding(.top, 16)
@@ -4161,7 +4161,7 @@ struct MessageRow: View {
 
             // Thin separator between messages
             Rectangle()
-                .fill(Color.white.opacity(0.04))
+                .fill(Color.white.opacity(V2Depth.bgCardLight))
                 .frame(height: 1)
         }
     }
@@ -4196,18 +4196,18 @@ struct MessageRow: View {
         switch searchHighlight {
         case .currentMatch:
             RoundedRectangle(cornerRadius: 8)
-                .fill(TrinityTheme.accent.opacity(0.18))
+                .fill(V4Color.accent.opacity(0.18))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .strokeBorder(TrinityTheme.accent.opacity(0.5), lineWidth: 1.5)
+                        .strokeBorder(V4Color.accent.opacity(V2Depth.stateDisabled), lineWidth: 1.5)
                 )
         case .match:
             RoundedRectangle(cornerRadius: 8)
-                .fill(TrinityTheme.accent.opacity(0.08))
+                .fill(V4Color.accent.opacity(0.08))
         case .none:
             if isSelected {
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(TrinityTheme.accent.opacity(0.05))
+                    .fill(V4Color.accent.opacity(0.05))
             } else {
                 Color.clear
             }
@@ -4505,7 +4505,7 @@ struct MessageRow: View {
     private var metadataLine: some View {
         HStack(spacing: 0) {
             Text(relativeTimestamp)
-                .foregroundStyle(timestampCopied ? Color.accentColor : TrinityTheme.textMuted)
+                .foregroundStyle(timestampCopied ? Color.accentColor : V4Color.textSecondary)
                 .help(fullTimestamp)
                 .onTapGesture {
                     NSPasteboard.general.clearContents()
@@ -4518,18 +4518,18 @@ struct MessageRow: View {
                 Text(Self.truncateModelID(modelID))
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)
-                    .background(TrinityTheme.textMuted.opacity(0.15))
+                    .background(V4Color.textSecondary.opacity(V2Depth.bgSidebarHover))
                     .clipShape(SwiftUI.Capsule())
             }
         }
-        .font(.system(size: 10))
-        .foregroundStyle(TrinityTheme.textMuted)
-        .opacity(0.5)
+        .font(WernickeTypography.size10)
+        .foregroundStyle(V4Color.textSecondary)
+        .opacity(V2Depth.stateDisabled)
     }
 
     @ViewBuilder
     private var messageBodyContent: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             // Thinking/reasoning block (collapsible)
             if let thinking = message.thinkingText, !thinking.isEmpty {
                 ThinkingBlockView(text: thinking)
@@ -4670,13 +4670,13 @@ struct MessageActionBar: View {
     var body: some View {
         HStack(spacing: 0) {
             // Left: action buttons
-            HStack(spacing: 16) {
+            HStack(spacing: ParietalSpacing.lg) {
                 // Regenerate — always visible, long-press for model picker
                 actionButton(
                     "arrow.clockwise",
                     tooltip: "Regenerate (long-press for model picker)",
                     active: hasError,
-                    tint: hasError ? TrinityTheme.statusError : nil
+                    tint: hasError ? V4Color.statusError : nil
                 ) {
                     guard let threadID = store.activeThreadID else { return }
                     client.regenerateFrom(
@@ -4687,10 +4687,10 @@ struct MessageActionBar: View {
                     )
                 }
                 .popover(isPresented: $showRegenModelPicker) {
-                    VStack(spacing: 4) {
+                    VStack(spacing: ParietalSpacing.xs) {
                         Text("Regenerate with")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(Color.white.opacity(0.6))
+                            .font(WernickeTypography.caption2Bold)
+                            .foregroundStyle(Color.white.opacity(V1Theme.opacityTextSecondary))
                             .padding(.top, 8)
                         ForEach(modelManager.availableModels.filter { !$0.isImageModel }) { model in
                             Button {
@@ -4707,12 +4707,12 @@ struct MessageActionBar: View {
                                 HStack {
                                     ProviderDot(provider: model.provider)
                                     Text(model.displayName)
-                                        .font(.system(size: 12))
+                                        .font(WernickeTypography.size12)
                                     Spacer()
                                     if model.id == message.modelID {
                                         Text("current")
-                                            .font(.system(size: 9))
-                                            .foregroundStyle(Color.white.opacity(0.3))
+                                            .font(WernickeTypography.size9)
+                                            .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                                     }
                                 }
                                 .foregroundStyle(Color.white)
@@ -4724,7 +4724,7 @@ struct MessageActionBar: View {
                     }
                     .padding(.bottom, 8)
                     .frame(minWidth: 200)
-                    .background(Color(hex: 0x1A1A1A))
+                    .background(V4Color.surface)
                 }
                 .onLongPressGesture(minimumDuration: 0.5) {
                     showRegenModelPicker = true
@@ -4817,13 +4817,13 @@ struct MessageActionBar: View {
 
             // Persisted metrics badge + cost
             if let ttfb = message.ttfbMs, let tps = message.tokPerSec, let tok = message.outputTokens {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Text("\(ttfb)ms")
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text(String(format: "%.0f tok/s", tps))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                     Text("\(tok) tok")
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                     // Cost estimate
                     if let modelID = message.modelID {
                         let provider = modelID.contains("claude") || modelID.contains("sonnet") || modelID.contains("opus") || modelID.contains("haiku") ? "Anthropic"
@@ -4834,11 +4834,11 @@ struct MessageActionBar: View {
                         let cost = AIModel.estimateCost(provider: provider, inputTokens: tok, outputTokens: tok)
                         if cost > 0.0001 {
                             Text(String(format: "$%.3f", cost))
-                                .foregroundStyle(TrinityTheme.golden)
+                                .foregroundStyle(V4Color.golden)
                         }
                     }
                 }
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
+                .font(WernickeTypography.microMono)
                 .padding(.trailing, 8)
             }
 
@@ -4855,8 +4855,8 @@ struct MessageActionBar: View {
     private func actionButton(_ icon: String, tooltip: String, active: Bool = false, tint: Color? = nil, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 13))
-                .foregroundStyle(tint ?? (active ? TrinityTheme.accent : Color.white.opacity(0.4)))
+                .font(WernickeTypography.size13)
+                .foregroundStyle(tint ?? (active ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary)))
         }
         .buttonStyle(ActionIconStyle())
         .help(tooltip)
@@ -4868,14 +4868,14 @@ struct MessageActionBar: View {
         let name = modelDisplayName(modelID)
         HStack(spacing: 5) {
             Image(systemName: "cpu")
-                .font(.system(size: 10))
+                .font(WernickeTypography.size10)
             Text(name)
-                .font(.system(size: 11, weight: .medium))
+                .font(WernickeTypography.caption2Medium)
         }
-        .foregroundStyle(Color.white.opacity(0.5))
+        .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
-        .background(Color.white.opacity(0.06))
+        .background(Color.white.opacity(V2Depth.bgCard))
         .clipShape(SwiftUI.Capsule())
     }
 
@@ -4967,37 +4967,37 @@ struct EmptyThreadView: View {
     ]
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             Spacer(minLength: 60)
 
             // Logo
             Text("\u{1F451}")
-                .font(.system(size: 56))
+                .font(WernickeTypography.size56)
 
             Text("Queen")
-                .font(.system(size: 28, weight: .semibold))
+                .font(WernickeTypography.h2Semibold)
                 .foregroundStyle(Color.white)
             Text("Start a conversation")
-                .font(.system(size: 15))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size15)
+                .foregroundStyle(V4Color.textSecondary)
 
             // Quick action chips
-            HStack(spacing: 10) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 ForEach(quickActions, id: \.label) { action in
                     Button {
                         onQuickInsert?(action.label)
                     } label: {
                         HStack(spacing: 5) {
                             Image(systemName: action.icon)
-                                .font(.system(size: 11))
-                                .foregroundStyle(TrinityTheme.accent)
+                                .font(WernickeTypography.size11)
+                                .foregroundStyle(V4Color.accent)
                             Text(action.label)
-                                .font(.system(size: 12))
-                                .foregroundStyle(Color.white.opacity(0.7))
+                                .font(WernickeTypography.size12)
+                                .foregroundStyle(V2Depth.white70)
                         }
                         .padding(.horizontal, LayoutConstants.cardPadding)
                         .padding(.vertical, LayoutConstants.standardPadding)
-                        .background(Color.white.opacity(0.04))
+                        .background(Color.white.opacity(V2Depth.bgCardLight))
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                         .overlay(
                             RoundedRectangle(cornerRadius: 10)
@@ -5009,13 +5009,13 @@ struct EmptyThreadView: View {
             }
 
             // Contextual suggestion chips grid
-            VStack(spacing: 10) {
-                HStack(spacing: 10) {
+            VStack(spacing: ParietalSpacing.sm + 2) {
+                HStack(spacing: ParietalSpacing.sm + 2) {
                     ForEach(0..<3) { i in
                         suggestionChip(suggestions[i])
                     }
                 }
-                HStack(spacing: 10) {
+                HStack(spacing: ParietalSpacing.sm + 2) {
                     ForEach(3..<6) { i in
                         suggestionChip(suggestions[i])
                     }
@@ -5035,17 +5035,17 @@ struct EmptyThreadView: View {
             chatMode = mode
             onSuggestion?(text)
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Text(emoji)
-                    .font(.system(size: 13))
+                    .font(WernickeTypography.size13)
                 Text(text)
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color.white.opacity(0.7))
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V2Depth.white70)
                     .lineLimit(1)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 10)
-            .background(Color.white.opacity(0.04))
+            .background(Color.white.opacity(V2Depth.bgCardLight))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
@@ -5390,23 +5390,23 @@ struct MentionPopup: View {
                         onSelect(item.value)
                         isPresented = false
                     } label: {
-                        HStack(spacing: 8) {
+                        HStack(spacing: ParietalSpacing.sm) {
                             Image(systemName: item.icon)
-                                .font(.system(size: 11))
-                                .foregroundStyle(TrinityTheme.accent)
-                                .frame(width: 16)
+                                .font(WernickeTypography.size11)
+                                .foregroundStyle(V4Color.accent)
+                                .frame(width: ParietalSpacing.icon)
                             Text(item.label)
-                                .font(.system(size: 12))
-                                .foregroundStyle(Color.white.opacity(0.8))
+                                .font(WernickeTypography.size12)
+                                .foregroundStyle(V2Depth.white80)
                                 .lineLimit(1)
                             Spacer()
                             if let badge = item.badge {
                                 Text(badge)
-                                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(badge == "FAIL" ? Color.red : TrinityTheme.accent)
+                                    .font(WernickeTypography.miniMono)
+                                    .foregroundStyle(badge == "FAIL" ? Color.red : V4Color.accent)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
-                                    .background(Color.white.opacity(0.06))
+                                    .background(Color.white.opacity(V2Depth.bgCard))
                                     .clipShape(SwiftUI.Capsule())
                             }
                         }
@@ -5420,13 +5420,13 @@ struct MentionPopup: View {
             }
             .frame(maxWidth: 340)
                 .frame(minWidth: 280)
-                .background(Color(hex: 0x1A1A1A))
+                .background(V4Color.surface)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    .stroke(Color.white.opacity(V2Depth.bgSubtle), lineWidth: 1)
             )
-            .shadow(color: .black.opacity(0.4), radius: 12)
+            .shadow(color: .black.opacity(V1Theme.opacityTextTertiary), radius: 12)
             .onKeyPress(.upArrow) {
                 selectedIndex = max(0, selectedIndex - 1)
                 return .handled
@@ -5464,39 +5464,39 @@ struct SourcesPanel: View {
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "link")
-                        .font(.system(size: 11))
+                        .font(WernickeTypography.size11)
                     Text("Sources (\(citations.count))")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(WernickeTypography.captionMedium)
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 9))
+                        .font(WernickeTypography.size9)
                     Spacer()
                 }
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
                 .padding(.horizontal, LayoutConstants.cardPadding)
                 .padding(.vertical, LayoutConstants.standardPadding)
             }
             .buttonStyle(.plain)
 
             if isExpanded {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                     ForEach(Array(citations.prefix(6).enumerated()), id: \.element.id) { idx, citation in
-                        HStack(spacing: 8) {
+                        HStack(spacing: ParietalSpacing.sm) {
                             Text("\(idx + 1)")
-                                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                .foregroundStyle(TrinityTheme.accent)
-                                .frame(width: 16)
+                                .font(WernickeTypography.miniBoldMono)
+                                .foregroundStyle(V4Color.accent)
+                                .frame(width: ParietalSpacing.icon)
 
-                            VStack(alignment: .leading, spacing: 1) {
+                            VStack(alignment: .leading, spacing: ParietalSpacing.xxxxs) {
                                 if let domain = citation.domain {
                                     Text(domain)
-                                        .font(.system(size: 11, weight: .medium))
-                                        .foregroundStyle(Color.white.opacity(0.7))
+                                        .font(WernickeTypography.caption2Medium)
+                                        .foregroundStyle(V2Depth.white70)
                                 }
                                 Text(citation.url)
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(Color.white.opacity(0.3))
+                                    .font(WernickeTypography.size10)
+                                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                                     .lineLimit(1)
                                     .truncationMode(.middle)
                             }
@@ -5509,8 +5509,8 @@ struct SourcesPanel: View {
                                 }
                             } label: {
                                 Image(systemName: "arrow.up.right.square")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(Color.white.opacity(0.3))
+                                    .font(WernickeTypography.size10)
+                                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                             }
                             .buttonStyle(.plain)
                         }
@@ -5521,11 +5521,11 @@ struct SourcesPanel: View {
                 .padding(.bottom, 8)
             }
         }
-        .background(TrinityTheme.accent.opacity(0.05))
+        .background(V4Color.accent.opacity(0.05))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(TrinityTheme.accent.opacity(0.15), lineWidth: 1)
+                .stroke(V4Color.accent.opacity(V2Depth.bgSidebarHover), lineWidth: 1)
         )
     }
 }
@@ -5547,14 +5547,14 @@ struct BranchNavigator: View {
 
     var body: some View {
         if message.branchID != nil && branchCount > 1 {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Button {
                     let prev = max(currentIndex - 1, 0)
                     store.switchBranch(message.id, toIndex: prev, in: threadID)
                 } label: {
                     Image(systemName: "chevron.left")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundStyle(currentIndex > 0 ? Color.white.opacity(0.6) : Color.white.opacity(0.2))
+                        .font(WernickeTypography.microBold)
+                        .foregroundStyle(currentIndex > 0 ? Color.white.opacity(V1Theme.opacityTextSecondary) : V4Color.white20)
                 }
                 .buttonStyle(.plain)
                 .disabled(currentIndex <= 0)
@@ -5562,16 +5562,16 @@ struct BranchNavigator: View {
                 .accessibilityHint("Shows the previous response branch")
 
                 Text("\(currentIndex + 1)/\(branchCount)")
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.5))
+                    .font(WernickeTypography.miniMono)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
 
                 Button {
                     let next = min(currentIndex + 1, branchCount - 1)
                     store.switchBranch(message.id, toIndex: next, in: threadID)
                 } label: {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundStyle(currentIndex < branchCount - 1 ? Color.white.opacity(0.6) : Color.white.opacity(0.2))
+                        .font(WernickeTypography.microBold)
+                        .foregroundStyle(currentIndex < branchCount - 1 ? Color.white.opacity(V1Theme.opacityTextSecondary) : V4Color.white20)
                 }
                 .buttonStyle(.plain)
                 .disabled(currentIndex >= branchCount - 1)
@@ -5580,7 +5580,7 @@ struct BranchNavigator: View {
             }
             .padding(.horizontal, 6)
             .padding(.vertical, 3)
-            .background(Color.white.opacity(0.06))
+            .background(Color.white.opacity(V2Depth.bgCard))
             .clipShape(SwiftUI.Capsule())
         }
     }
@@ -5601,16 +5601,16 @@ struct ThinkingBlockView: View {
                     isExpanded.toggle()
                 }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.miniSemibold)
+                        .foregroundStyle(V4Color.accent)
                     Text("\u{1F4AD} Thinking")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.captionMedium)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text("(\(text.count) chars)")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
                     Spacer()
                 }
                 .padding(.horizontal, 10)
@@ -5625,8 +5625,8 @@ struct ThinkingBlockView: View {
             if isExpanded {
                 ScrollView {
                     Text(text)
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundStyle(TrinityTheme.textPrimary.opacity(0.7))
+                        .font(WernickeTypography.size12Mono)
+                        .foregroundStyle(V4Color.textPrimary.opacity(0.7))
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, LayoutConstants.cardPadding)
@@ -5636,20 +5636,20 @@ struct ThinkingBlockView: View {
                 .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
         .overlay(
             // Left accent border (blockquote style)
             HStack(spacing: 0) {
                 RoundedRectangle(cornerRadius: 1)
-                    .fill(TrinityTheme.accent.opacity(0.6))
+                    .fill(V4Color.accent.opacity(V1Theme.opacityTextSecondary))
                     .frame(width: 2)
                 Spacer()
             }
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                .stroke(V4Color.bgCardBorder, lineWidth: 1)
         )
     }
 }
@@ -5671,27 +5671,27 @@ struct StaleBadge: View {
 
     var body: some View {
         if isStale {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: "clock.badge.exclamationmark")
-                    .font(.system(size: 10))
+                    .font(WernickeTypography.size10)
                 Text("Stale data")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(WernickeTypography.miniMedium)
 
                 Button {
                     guard let threadID = store.activeThreadID else { return }
                     client.regenerate(threadID: threadID, store: store, modelManager: modelManager)
                 } label: {
                     Text("Re-ask")
-                        .font(.system(size: 10, weight: .bold))
+                        .font(WernickeTypography.miniBold)
                         .foregroundStyle(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(TrinityTheme.statusWarn)
+                        .background(V4Color.statusWarn)
                         .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
-            .foregroundStyle(TrinityTheme.statusWarn)
+            .foregroundStyle(V4Color.statusWarn)
             .padding(.top, 4)
         }
     }
@@ -5705,19 +5705,19 @@ struct BuildErrorBanner: View {
 
     var body: some View {
         if ctx.buildOK == false {
-            HStack(spacing: 10) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 Image(systemName: "xmark.octagon.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.statusError)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.statusError)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Build is broken")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .font(WernickeTypography.captionBold)
+                        .foregroundStyle(V4Color.statusError)
                     if let summary = ctx.buildErrorSummary() {
                         Text(String(summary.prefix(100)))
-                            .font(.system(size: 10, design: .monospaced))
-                            .foregroundStyle(Color.white.opacity(0.5))
+                            .font(WernickeTypography.size10Mono)
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                             .lineLimit(2)
                     }
                 }
@@ -5729,26 +5729,26 @@ struct BuildErrorBanner: View {
                     let prompt = "The build is broken. Fix this error:\n\n```\n\(error)\n```"
                     onFix(prompt)
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Image(systemName: "wrench.fill")
-                            .font(.system(size: 10))
+                            .font(WernickeTypography.size10)
                         Text("Fix this?")
-                            .font(.system(size: 11, weight: .bold))
+                            .font(WernickeTypography.caption2Bold)
                     }
                     .foregroundStyle(.black)
                     .padding(.horizontal, LayoutConstants.cardPadding)
                     .padding(.vertical, LayoutConstants.compactPadding)
-                    .background(TrinityTheme.statusError)
+                    .background(V4Color.statusError)
                     .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
             .padding(LayoutConstants.cardPadding)
-            .background(TrinityTheme.statusError.opacity(0.08))
+            .background(V4Color.statusError.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(TrinityTheme.statusError.opacity(0.3), lineWidth: 1)
+                    .stroke(V4Color.statusError.opacity(V2Depth.stateHover), lineWidth: 1)
             )
             .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .padding(.bottom, 8)
@@ -5765,20 +5765,20 @@ struct MemoryProposalCard: View {
     var onDismiss: (MemoryEntry) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: "brain.head.profile")
-                    .font(.system(size: 11))
+                    .font(WernickeTypography.size11)
                 Text("Remember this?")
-                    .font(.system(size: 11, weight: .bold))
+                    .font(WernickeTypography.caption2Bold)
             }
-            .foregroundStyle(TrinityTheme.purple)
+            .foregroundStyle(V4Color.purple)
 
             ForEach(memories) { entry in
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text(String(entry.text.prefix(80)))
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(V2Depth.white70)
                         .lineLimit(2)
 
                     Spacer()
@@ -5787,8 +5787,8 @@ struct MemoryProposalCard: View {
                         onAccept(entry)
                     } label: {
                         Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(TrinityTheme.statusOK)
+                            .font(WernickeTypography.size14)
+                            .foregroundStyle(V4Color.statusOK)
                     }
                     .buttonStyle(.plain)
 
@@ -5796,8 +5796,8 @@ struct MemoryProposalCard: View {
                         onDismiss(entry)
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(Color.white.opacity(0.3))
+                            .font(WernickeTypography.size14)
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                     }
                     .buttonStyle(.plain)
                 }
@@ -5805,11 +5805,11 @@ struct MemoryProposalCard: View {
             }
         }
         .padding(LayoutConstants.compactPadding)
-        .background(TrinityTheme.purple.opacity(0.06))
+        .background(V4Color.purple.opacity(V2Depth.bgCard))
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(TrinityTheme.purple.opacity(0.2), lineWidth: 1)
+                .stroke(V4Color.purple.opacity(0.2), lineWidth: 1)
         )
         .transition(reduceMotion ? .opacity : .opacity.combined(with: .move(edge: .bottom)))
     }
@@ -5822,8 +5822,8 @@ struct StreamingElapsedTimer: View {
 
     var body: some View {
         Text("\(elapsed)s")
-            .font(.system(size: 10, weight: .medium, design: .monospaced))
-            .foregroundStyle(elapsed > 10 ? TrinityTheme.statusWarn : TrinityTheme.textMuted)
+            .font(WernickeTypography.miniMono)
+            .foregroundStyle(elapsed > 10 ? V4Color.statusWarn : V4Color.textSecondary)
             .task {
                 while !Task.isCancelled {
                     try? await Task.sleep(for: .seconds(1))
@@ -5843,30 +5843,30 @@ struct InThreadSearchBar: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 12))
-                .foregroundStyle(Color.white.opacity(0.4))
+                .font(WernickeTypography.size12)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
 
             TextField("Find in thread...", text: $query)
                 .textFieldStyle(.plain)
-                .font(.system(size: 13))
+                .font(WernickeTypography.size13)
                 .foregroundStyle(Color.white)
                 .focused($isFocused)
                 .onSubmit { if currentIndex < totalMatches - 1 { currentIndex += 1 } }
 
             if !query.isEmpty {
                 Text(totalMatches > 0 ? "\(currentIndex + 1) of \(totalMatches)" : "No matches")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundStyle(totalMatches > 0 ? TrinityTheme.accent : TrinityTheme.statusError)
+                    .font(WernickeTypography.caption2MediumMono)
+                    .foregroundStyle(totalMatches > 0 ? V4Color.accent : V4Color.statusError)
                     .fixedSize()
 
                 Button {
                     if currentIndex > 0 { currentIndex -= 1 }
                 } label: {
                     Image(systemName: "chevron.up")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(currentIndex > 0 ? Color.white : Color.white.opacity(0.2))
+                        .font(WernickeTypography.caption2Bold)
+                        .foregroundStyle(currentIndex > 0 ? Color.white : V4Color.white20)
                 }
                 .buttonStyle(.plain)
                 .disabled(currentIndex <= 0)
@@ -5875,8 +5875,8 @@ struct InThreadSearchBar: View {
                     if currentIndex < totalMatches - 1 { currentIndex += 1 }
                 } label: {
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(currentIndex < totalMatches - 1 ? Color.white : Color.white.opacity(0.2))
+                        .font(WernickeTypography.caption2Bold)
+                        .foregroundStyle(currentIndex < totalMatches - 1 ? Color.white : V4Color.white20)
                 }
                 .buttonStyle(.plain)
                 .disabled(currentIndex >= totalMatches - 1)
@@ -5886,14 +5886,14 @@ struct InThreadSearchBar: View {
                 onDismiss()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
             }
             .buttonStyle(.plain)
         }
         .padding(.horizontal, LayoutConstants.cardPadding)
         .padding(.vertical, LayoutConstants.compactPadding)
-        .background(Color(hex: 0x1A1A1A))
+        .background(V4Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
         .padding(.vertical, 4)
@@ -5913,9 +5913,9 @@ struct LiveTTFBCounter: View {
     @State private var elapsedMs: Int = 0
 
     private var color: Color {
-        if elapsedMs < 2000 { return TrinityTheme.textMuted }
-        if elapsedMs < 5000 { return TrinityTheme.statusWarn }
-        return TrinityTheme.statusError
+        if elapsedMs < 2000 { return V4Color.textSecondary }
+        if elapsedMs < 5000 { return V4Color.statusWarn }
+        return V4Color.statusError
     }
 
     var body: some View {
@@ -5925,7 +5925,7 @@ struct LiveTTFBCounter: View {
                     .fill(color)
                     .frame(width: 5, height: 5)
                 Text(elapsedMs < 1000 ? "\(elapsedMs)ms" : String(format: "%.1fs", Double(elapsedMs) / 1000.0))
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
+                    .font(WernickeTypography.miniMono)
                     .foregroundStyle(color)
             }
             .task {
@@ -5945,18 +5945,18 @@ struct LiveSpeedIndicator: View {
     let tokPerSec: Double
 
     private var speedColor: Color {
-        if tokPerSec < 20 { return TrinityTheme.statusError }
-        if tokPerSec < 50 { return TrinityTheme.statusWarn }
-        return TrinityTheme.statusOK
+        if tokPerSec < 20 { return V4Color.statusError }
+        if tokPerSec < 50 { return V4Color.statusWarn }
+        return V4Color.statusOK
     }
 
     var body: some View {
         HStack(spacing: 3) {
             Image(systemName: "bolt.fill")
-                .font(.system(size: 8))
+                .font(WernickeTypography.size8)
                 .foregroundStyle(speedColor)
             Text(String(format: "%.0f tok/s", tokPerSec))
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .font(WernickeTypography.miniBoldMono)
                 .foregroundStyle(speedColor)
         }
         .contentTransition(.numericText(countsDown: false))
@@ -5979,16 +5979,16 @@ struct NetworkDashboard: View {
             Button {
                 withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "network")
-                        .font(.system(size: 10))
+                        .font(WernickeTypography.size10)
                     Text("Network")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(WernickeTypography.caption2Bold)
                     Spacer()
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 8))
+                        .font(WernickeTypography.size8)
                 }
-                .foregroundStyle(Color.white.opacity(0.6))
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextSecondary))
                 .padding(.horizontal, LayoutConstants.cardPadding)
                 .padding(.vertical, LayoutConstants.standardPadding)
             }
@@ -5996,7 +5996,7 @@ struct NetworkDashboard: View {
 
             if isExpanded {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         providerRows
                         failoverHistory
                         offlineQueueSection
@@ -6014,18 +6014,18 @@ struct NetworkDashboard: View {
         ForEach(Array(networkLog.providerHealth.values).sorted(by: { $0.name < $1.name }), id: \.name) { status in
             let stats = networkLog.providerStats(status.name)
             VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Circle()
-                        .fill(status.isUp ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                        .fill(status.isUp ? V4Color.statusOK : V4Color.statusError)
                         .frame(width: 5, height: 5)
                     Text(status.name)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .font(WernickeTypography.miniMedium)
+                        .foregroundStyle(V2Depth.white70)
                     Spacer()
                     if let remaining = status.remainingRequests {
                         Text("\(remaining) left")
-                            .font(.system(size: 8, design: .monospaced))
-                            .foregroundStyle(remaining < 10 ? TrinityTheme.statusError : TrinityTheme.textMuted)
+                            .font(WernickeTypography.size8Mono)
+                            .foregroundStyle(remaining < 10 ? V4Color.statusError : V4Color.textSecondary)
                     }
                     // Quick switch button if not current provider
                     if status.isUp && modelManager.selectedModel.provider.rawValue != status.name {
@@ -6036,41 +6036,41 @@ struct NetworkDashboard: View {
                             }
                         } label: {
                             Text("Use")
-                                .font(.system(size: 8, weight: .bold))
+                                .font(WernickeTypography.tiny8Bold)
                                 .foregroundStyle(.black)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(TrinityTheme.accent)
+                                .background(V4Color.accent)
                                 .clipShape(SwiftUI.Capsule())
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text("\(stats.requests) req")
-                        .font(.system(size: 8, design: .monospaced))
+                        .font(WernickeTypography.size8Mono)
                     if stats.errors > 0 {
                         Text("\(stats.errors) err")
-                            .font(.system(size: 8, design: .monospaced))
-                            .foregroundStyle(TrinityTheme.statusError)
+                            .font(WernickeTypography.size8Mono)
+                            .foregroundStyle(V4Color.statusError)
                     }
                     if stats.avgTTFB > 0 {
                         Text("\(stats.avgTTFB)ms")
-                            .font(.system(size: 8, design: .monospaced))
+                            .font(WernickeTypography.size8Mono)
                     }
                     if stats.avgTPS > 0 {
                         Text(String(format: "%.0f t/s", stats.avgTPS))
-                            .font(.system(size: 8, design: .monospaced))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .font(WernickeTypography.size8Mono)
+                            .foregroundStyle(V4Color.accent)
                     }
                 }
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
                 // TTFB sparkline
                 let ttfbs = networkLog.recentTTFBForProvider(status.name, count: 10)
                 if ttfbs.count >= 2 {
                     TTFBSparkline(values: ttfbs)
-                        .frame(height: 16)
+                        .frame(height: ParietalSpacing.icon)
                 }
             }
             .padding(.vertical, 4)
@@ -6082,21 +6082,21 @@ struct NetworkDashboard: View {
         if !client.failoverLog.isEmpty {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Failover Log")
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .font(WernickeTypography.microBold)
+                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 ForEach(Array(client.failoverLog.suffix(5).reversed().enumerated()), id: \.offset) { _, event in
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Text(event.from)
-                            .foregroundStyle(TrinityTheme.statusError)
+                            .foregroundStyle(V4Color.statusError)
                         Image(systemName: "arrow.right")
-                            .font(.system(size: 6))
+                            .font(WernickeTypography.size6)
                         Text(event.to)
-                            .foregroundStyle(TrinityTheme.statusOK)
+                            .foregroundStyle(V4Color.statusOK)
                         Spacer()
                         Text(event.timestamp, style: .time)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
-                    .font(.system(size: 8, design: .monospaced))
+                    .font(WernickeTypography.size8Mono)
                 }
             }
             .padding(.top, 4)
@@ -6106,23 +6106,23 @@ struct NetworkDashboard: View {
     @ViewBuilder
     private var offlineQueueSection: some View {
         if !client.offlineQueue.isEmpty {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("Offline Queue (\(client.offlineQueue.count))")
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(TrinityTheme.statusWarn)
+                    .font(WernickeTypography.microBold)
+                    .foregroundStyle(V4Color.statusWarn)
                 ForEach(client.offlineQueue) { queued in
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Text(String(queued.text.prefix(30)))
-                            .font(.system(size: 8))
-                            .foregroundStyle(Color.white.opacity(0.5))
+                            .font(WernickeTypography.size8)
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                             .lineLimit(1)
                         Spacer()
                         Button {
                             client.cancelQueued(queued.id)
                         } label: {
                             Image(systemName: "xmark.circle")
-                                .font(.system(size: 9))
-                                .foregroundStyle(TrinityTheme.statusError)
+                                .font(WernickeTypography.size9)
+                                .foregroundStyle(V4Color.statusError)
                         }
                         .buttonStyle(.plain)
                     }
@@ -6134,8 +6134,8 @@ struct NetworkDashboard: View {
                         store.newThread()
                     } label: {
                         Text("New thread")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .font(WernickeTypography.miniBold)
+                            .foregroundStyle(V4Color.accent)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(Color.white.opacity(0.08))
@@ -6145,11 +6145,11 @@ struct NetworkDashboard: View {
                 }
             }
             .padding(LayoutConstants.compactPadding)
-            .background(TrinityTheme.golden.opacity(0.08))
+            .background(V4Color.golden.opacity(0.08))
             .clipShape(RoundedRectangle(cornerRadius: 10))
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
-                    .stroke(TrinityTheme.golden.opacity(0.3), lineWidth: 1)
+                    .stroke(V4Color.golden.opacity(V2Depth.stateHover), lineWidth: 1)
             )
             .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
             .padding(.bottom, 6)
@@ -6172,16 +6172,16 @@ struct RateLimitWarning: View {
 
     var body: some View {
         if let w = warning {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: "gauge.with.needle.fill")
-                    .font(.system(size: 10))
+                    .font(WernickeTypography.size10)
                 Text("\(w.provider): \(w.remaining) requests left")
-                    .font(.system(size: 10, weight: .medium))
+                    .font(WernickeTypography.miniMedium)
 
                 if let eta = networkLog.rateLimitETA(w.provider) {
                     Text("(~\(eta) min)")
-                        .font(.system(size: 9, design: .monospaced))
-                        .foregroundStyle(eta < 5 ? TrinityTheme.statusError : TrinityTheme.statusWarn)
+                        .font(WernickeTypography.size9Mono)
+                        .foregroundStyle(eta < 5 ? V4Color.statusError : V4Color.statusWarn)
                 }
 
                 if let fallback = modelManager.failoverModel() {
@@ -6191,14 +6191,14 @@ struct RateLimitWarning: View {
                     } label: {
                         HStack(spacing: 3) {
                             Image(systemName: "arrow.triangle.2.circlepath")
-                                .font(.system(size: 8))
+                                .font(WernickeTypography.size8)
                             Text("Switch to \(fallback.displayName)")
-                                .font(.system(size: 9, weight: .bold))
+                                .font(WernickeTypography.microBold)
                         }
                         .foregroundStyle(.black)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(TrinityTheme.statusWarn)
+                        .background(V4Color.statusWarn)
                         .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
@@ -6206,10 +6206,10 @@ struct RateLimitWarning: View {
 
                 Spacer()
             }
-            .foregroundStyle(TrinityTheme.statusWarn)
+            .foregroundStyle(V4Color.statusWarn)
             .padding(.horizontal, LayoutConstants.standardPadding)
             .padding(.vertical, 4)
-            .background(TrinityTheme.statusWarn.opacity(0.06))
+            .background(V4Color.statusWarn.opacity(V2Depth.bgCard))
         }
     }
 }
@@ -6222,16 +6222,16 @@ struct BranchPill: View {
     var body: some View {
         Group {
             if !branch.isEmpty && branch != "main" {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Image(systemName: "arrow.triangle.branch")
-                        .font(.system(size: 8))
+                        .font(WernickeTypography.size8)
                     Text(branch)
-                        .font(.system(size: 9, weight: .medium, design: .monospaced))
+                        .font(WernickeTypography.microMono)
                 }
-                .foregroundStyle(TrinityTheme.purple)
+                .foregroundStyle(V4Color.purple)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(TrinityTheme.purple.opacity(0.1))
+                .background(V4Color.purple.opacity(V2Depth.bgSubtle))
                 .clipShape(SwiftUI.Capsule())
                 .padding(.horizontal, LayoutConstants.standardPadding)
                 .padding(.vertical, 2)
@@ -6254,21 +6254,21 @@ struct FollowUpSuggestions: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 ForEach(suggestions, id: \.self) { suggestion in
                     Button {
                         onSelect(suggestion)
                     } label: {
-                        HStack(spacing: 4) {
+                        HStack(spacing: ParietalSpacing.xs) {
                             Image(systemName: "arrow.turn.down.right")
-                                .font(.system(size: 9))
+                                .font(WernickeTypography.size9)
                             Text(suggestion)
-                                .font(.system(size: 11, weight: .medium))
+                                .font(WernickeTypography.caption2Medium)
                         }
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .foregroundStyle(V2Depth.white70)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .background(Color.white.opacity(0.06))
+                        .background(Color.white.opacity(V2Depth.bgCard))
                         .clipShape(SwiftUI.Capsule())
                         .overlay(
                             SwiftUI.Capsule()
@@ -6292,30 +6292,30 @@ struct RejectionFeedbackView: View {
     var onDismiss: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack {
                 Image(systemName: "hand.thumbsdown.fill")
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.statusError)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.statusError)
                 Text("Tell Queen what to do instead:")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.captionMedium)
+                    .foregroundStyle(V4Color.textPrimary)
                 Spacer()
                 Button { onDismiss() } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
                 .buttonStyle(.plain)
             }
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 TextField("e.g. Be more concise, use code examples...", text: $feedback)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 13))
+                    .font(WernickeTypography.size13)
                     .foregroundStyle(Color.white)
                     .padding(LayoutConstants.compactPadding)
-                    .background(Color.white.opacity(0.06))
+                    .background(Color.white.opacity(V2Depth.bgCard))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .focused($isFocused)
                     .onSubmit {
@@ -6328,18 +6328,18 @@ struct RejectionFeedbackView: View {
                     onSubmit(feedback)
                 } label: {
                     Text("Resend")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(WernickeTypography.captionBold)
                         .foregroundStyle(.black)
                         .padding(.horizontal, LayoutConstants.cardPadding)
                         .padding(.vertical, LayoutConstants.compactPadding)
-                        .background(TrinityTheme.statusError)
+                        .background(V4Color.statusError)
                         .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(LayoutConstants.cardPadding)
-        .background(TrinityTheme.statusError.opacity(0.06))
+        .background(V4Color.statusError.opacity(V2Depth.bgCard))
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
         .onAppear { isFocused = true }
@@ -6354,22 +6354,22 @@ struct PinnedMessagesStrip: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: "pin.fill")
-                    .font(.system(size: 10))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size10)
+                    .foregroundStyle(V4Color.accent)
 
                 ForEach(messages) { msg in
                     Button {
                         onScrollTo(msg.id)
                     } label: {
                         Text(String(msg.text.prefix(50)).replacingOccurrences(of: "\n", with: " "))
-                            .font(.system(size: 11))
-                            .foregroundStyle(Color.white.opacity(0.8))
+                            .font(WernickeTypography.size11)
+                            .foregroundStyle(V2Depth.white80)
                             .lineLimit(1)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 4)
-                            .background(TrinityTheme.accent.opacity(0.12))
+                            .background(V4Color.accent.opacity(0.12))
                             .clipShape(SwiftUI.Capsule())
                     }
                     .buttonStyle(.plain)
@@ -6378,7 +6378,7 @@ struct PinnedMessagesStrip: View {
             .padding(.horizontal, LayoutConstants.standardPadding)
             .padding(.vertical, LayoutConstants.compactPadding)
         }
-        .background(Color(hex: 0x0A0A0A).opacity(0.9))
+        .background(V4Color.background.opacity(0.9))
     }
 }
 
@@ -6397,10 +6397,10 @@ struct DislikeCategoryPopover: View {
     ]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             Text("What went wrong?")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(Color.white.opacity(0.6))
+                .font(WernickeTypography.caption2Bold)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextSecondary))
                 .padding(.horizontal, LayoutConstants.cardPadding)
                 .padding(.top, 8)
 
@@ -6408,12 +6408,12 @@ struct DislikeCategoryPopover: View {
                 Button {
                     onSelect(category)
                 } label: {
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         Image(systemName: icon)
-                            .font(.system(size: 11))
-                            .frame(width: 16)
+                            .font(WernickeTypography.size11)
+                            .frame(width: ParietalSpacing.icon)
                         Text(category)
-                            .font(.system(size: 12))
+                            .font(WernickeTypography.size12)
                     }
                     .foregroundStyle(Color.white)
                     .padding(.horizontal, LayoutConstants.cardPadding)
@@ -6426,15 +6426,15 @@ struct DislikeCategoryPopover: View {
             }
 
             Divider()
-                .background(Color.white.opacity(0.1))
+                .background(Color.white.opacity(V2Depth.bgSubtle))
                 .padding(.horizontal, 8)
 
             Button {
                 onDismiss()
             } label: {
                 Text("Cancel")
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     .padding(.horizontal, LayoutConstants.cardPadding)
                     .padding(.vertical, 4)
             }
@@ -6442,7 +6442,7 @@ struct DislikeCategoryPopover: View {
         }
         .padding(.bottom, 8)
         .frame(minWidth: 180)
-        .background(Color(hex: 0x1A1A1A))
+        .background(V4Color.surface)
     }
 }
 
@@ -6479,12 +6479,12 @@ struct QueenThinkingIndicator: View {
     @State private var opacity: Double = 0.3
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Text("\u{25CF}\u{25CF}\u{25CF}")
-                .foregroundColor(TrinityTheme.accent)
+                .foregroundColor(V4Color.accent)
                 .opacity(reduceMotion ? 0.7 : opacity)
             Text("Queen is thinking...")
-                .foregroundColor(TrinityTheme.textMuted)
+                .foregroundColor(V4Color.textSecondary)
                 .italic()
                 .font(.caption)
         }
@@ -6503,9 +6503,9 @@ struct ToolTimeline: View {
     let steps: [ChatClient.ToolCallStep]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             ForEach(steps) { step in
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     // Status icon
                     Group {
                         switch step.status {
@@ -6515,25 +6515,25 @@ struct ToolTimeline: View {
                                 .frame(width: 12, height: 12)
                         case .success:
                             Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 11))
-                                .foregroundStyle(TrinityTheme.statusOK)
+                                .font(WernickeTypography.size11)
+                                .foregroundStyle(V4Color.statusOK)
                         case .error:
                             Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 11))
-                                .foregroundStyle(TrinityTheme.statusError)
+                                .font(WernickeTypography.size11)
+                                .foregroundStyle(V4Color.statusError)
                         }
                     }
                     .frame(width: 14)
 
                     // Tool name
                     Text(step.name)
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.miniBoldMono)
+                        .foregroundStyle(V4Color.accent)
 
                     // Args
                     Text(step.args)
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size10Mono)
+                        .foregroundStyle(V4Color.textSecondary)
                         .lineLimit(1)
 
                     Spacer()
@@ -6542,14 +6542,14 @@ struct ToolTimeline: View {
                     let elapsed = Date().timeIntervalSince(step.startTime)
                     if elapsed > 0.5 {
                         Text(String(format: "%.1fs", elapsed))
-                            .font(.system(size: 9, design: .monospaced))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size9Mono)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
             }
         }
         .padding(LayoutConstants.compactPadding)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .padding(.vertical, 4)
     }
@@ -6565,25 +6565,25 @@ struct OfflineQueueBanner: View {
     @State private var isExpanded = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: "wifi.slash")
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.statusWarn)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.statusWarn)
                 Text("\(count) message\(count == 1 ? "" : "s") queued")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(TrinityTheme.statusWarn)
+                    .font(WernickeTypography.captionMedium)
+                    .foregroundStyle(V4Color.statusWarn)
                 Text("Retrying every 15s...")
-                    .font(.system(size: 10))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size10)
+                    .foregroundStyle(V4Color.textSecondary)
                 Spacer()
                 if count > 1 {
                     Button {
                         withAnimation { isExpanded.toggle() }
                     } label: {
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 9))
-                            .foregroundStyle(Color.white.opacity(0.3))
+                            .font(WernickeTypography.size9)
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                     }
                     .buttonStyle(.plain)
                 }
@@ -6591,11 +6591,11 @@ struct OfflineQueueBanner: View {
                     onCancelAll()
                 } label: {
                     Text("Cancel All")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .font(WernickeTypography.miniBold)
+                        .foregroundStyle(V4Color.statusError)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(TrinityTheme.statusError.opacity(0.12))
+                        .background(V4Color.statusError.opacity(0.12))
                         .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
@@ -6604,21 +6604,21 @@ struct OfflineQueueBanner: View {
             // Per-message queue detail
             if isExpanded {
                 ForEach(queue) { msg in
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Image(systemName: "clock")
-                            .font(.system(size: 9))
-                            .foregroundStyle(TrinityTheme.statusWarn)
+                            .font(WernickeTypography.size9)
+                            .foregroundStyle(V4Color.statusWarn)
                         Text(String(msg.text.prefix(60)))
-                            .font(.system(size: 10))
-                            .foregroundStyle(Color.white.opacity(0.6))
+                            .font(WernickeTypography.size10)
+                            .foregroundStyle(Color.white.opacity(V1Theme.opacityTextSecondary))
                             .lineLimit(1)
                         Spacer()
                         Button {
                             onCancelOne?(msg.id)
                         } label: {
                             Image(systemName: "xmark.circle")
-                                .font(.system(size: 10))
-                                .foregroundStyle(TrinityTheme.statusError.opacity(0.6))
+                                .font(WernickeTypography.size10)
+                                .foregroundStyle(V4Color.statusError.opacity(V1Theme.opacityTextSecondary))
                         }
                         .buttonStyle(.plain)
                     }
@@ -6627,7 +6627,7 @@ struct OfflineQueueBanner: View {
         }
         .padding(.horizontal, LayoutConstants.cardPadding)
         .padding(.vertical, LayoutConstants.compactPadding)
-        .background(TrinityTheme.statusWarn.opacity(0.06))
+        .background(V4Color.statusWarn.opacity(V2Depth.bgCard))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
     }
@@ -6641,31 +6641,31 @@ struct ElicitationCard: View {
     var onSelect: (String) -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm + 2) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: "questionmark.circle.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.purple)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.purple)
                 Text(question)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.smallMedium)
+                    .foregroundStyle(V4Color.textPrimary)
             }
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 ForEach(options, id: \.self) { option in
                     Button {
                         onSelect(option)
                     } label: {
                         Text(option)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(Color.white.opacity(0.8))
+                            .font(WernickeTypography.captionMedium)
+                            .foregroundStyle(V2Depth.white80)
                             .padding(.horizontal, LayoutConstants.cardPadding)
                             .padding(.vertical, LayoutConstants.compactPadding)
-                            .background(TrinityTheme.purple.opacity(0.15))
+                            .background(V4Color.purple.opacity(V2Depth.bgSidebarHover))
                             .clipShape(SwiftUI.Capsule())
                             .overlay(
                                 SwiftUI.Capsule()
-                                    .stroke(TrinityTheme.purple.opacity(0.3), lineWidth: 1)
+                                    .stroke(V4Color.purple.opacity(V2Depth.stateHover), lineWidth: 1)
                             )
                     }
                     .buttonStyle(.plain)
@@ -6673,7 +6673,7 @@ struct ElicitationCard: View {
             }
         }
         .padding(LayoutConstants.cardPadding)
-        .background(TrinityTheme.purple.opacity(0.06))
+        .background(V4Color.purple.opacity(V2Depth.bgCard))
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
@@ -6698,11 +6698,11 @@ struct ThinkingTranscriptSheet: View {
         VStack(spacing: 0) {
             HStack {
                 Image(systemName: "brain")
-                    .font(.system(size: 16))
-                    .foregroundStyle(TrinityTheme.purple)
+                    .font(WernickeTypography.size16)
+                    .foregroundStyle(V4Color.purple)
                 Text("Thinking Transcript")
                     .font(.headline)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                 Spacer()
                 Button {
                     // Copy all thinking to clipboard
@@ -6711,57 +6711,57 @@ struct ThinkingTranscriptSheet: View {
                     NSPasteboard.general.setString(all, forType: NSPasteboard.PasteboardType.string)
                     SoundCueManager.shared.playCopy()
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Image(systemName: "doc.on.doc")
                         Text("Copy All")
                     }
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.accent)
                 }
                 .buttonStyle(.plain)
                 Button { dismiss() } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size16)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
                 .buttonStyle(.plain)
             }
             .padding()
 
             if thinkingEntries.isEmpty {
-                VStack(spacing: 12) {
+                VStack(spacing: ParietalSpacing.md) {
                     Image(systemName: "brain.head.profile")
-                        .font(.system(size: 32))
-                        .foregroundStyle(Color.white.opacity(0.2))
+                        .font(WernickeTypography.size32)
+                        .foregroundStyle(V4Color.white20)
                     Text("No thinking data in this thread")
-                        .font(.system(size: 14))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size14)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text("Use Reason mode or High/Max effort to enable extended thinking")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size12)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 16) {
+                    LazyVStack(alignment: .leading, spacing: ParietalSpacing.lg) {
                         ForEach(Array(thinkingEntries.enumerated()), id: \.offset) { idx, entry in
-                            VStack(alignment: .leading, spacing: 6) {
+                            VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                                 HStack {
                                     Text("Turn \(idx + 1)")
-                                        .font(.system(size: 11, weight: .bold))
-                                        .foregroundStyle(TrinityTheme.purple)
+                                        .font(WernickeTypography.caption2Bold)
+                                        .foregroundStyle(V4Color.purple)
                                     Text(entry.model)
-                                        .font(.system(size: 10, design: .monospaced))
-                                        .foregroundStyle(TrinityTheme.textMuted)
+                                        .font(WernickeTypography.size10Mono)
+                                        .foregroundStyle(V4Color.textSecondary)
                                     Spacer()
                                     Text("\(entry.thinking.count) chars")
-                                        .font(.system(size: 9, design: .monospaced))
-                                        .foregroundStyle(Color.white.opacity(0.3))
+                                        .font(WernickeTypography.size9Mono)
+                                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                                 }
 
                                 Text(entry.thinking)
-                                    .font(.system(size: 12, design: .monospaced))
-                                    .foregroundStyle(Color.white.opacity(0.7))
+                                    .font(WernickeTypography.size12Mono)
+                                    .foregroundStyle(V2Depth.white70)
                                     .textSelection(.enabled)
                                     .padding(LayoutConstants.compactPadding)
                                     .background(Color.white.opacity(0.03))
@@ -6769,8 +6769,8 @@ struct ThinkingTranscriptSheet: View {
 
                                 // Response preview
                                 Text(entry.response + (entry.response.count >= 200 ? "..." : ""))
-                                    .font(.system(size: 11))
-                                    .foregroundStyle(Color.white.opacity(0.4))
+                                    .font(WernickeTypography.size11)
+                                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                                     .lineLimit(2)
                             }
                         }
@@ -6780,7 +6780,7 @@ struct ThinkingTranscriptSheet: View {
             }
         }
         .frame(minWidth: 600, minHeight: 400)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
     }
 }
 
@@ -6802,14 +6802,14 @@ struct OnboardingWalkthrough: View {
     ]
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             Spacer()
 
             // Step indicator
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 ForEach(0..<steps.count, id: \.self) { i in
                     Circle()
-                        .fill(i == step ? TrinityTheme.accent : Color.white.opacity(0.15))
+                        .fill(i == step ? V4Color.accent : Color.white.opacity(V2Depth.bgSidebarHover))
                         .frame(width: 8, height: 8)
                 }
             }
@@ -6817,30 +6817,30 @@ struct OnboardingWalkthrough: View {
             // Content
             let current = steps[step]
             Image(systemName: current.icon)
-                .font(.system(size: 48))
-                .foregroundStyle(step == 0 ? TrinityTheme.golden : TrinityTheme.accent)
+                .font(WernickeTypography.size48)
+                .foregroundStyle(step == 0 ? V4Color.golden : V4Color.accent)
 
             Text(current.title)
-                .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h3Bold)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(current.body)
-                .font(.system(size: 15))
-                .foregroundStyle(Color.white.opacity(0.6))
+                .font(WernickeTypography.size15)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextSecondary))
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 400)
 
             Spacer()
 
             // Navigation
-            HStack(spacing: 16) {
+            HStack(spacing: ParietalSpacing.lg) {
                 if step > 0 {
                     Button {
                         withAnimation { step -= 1 }
                     } label: {
                         Text("Back")
-                            .font(.system(size: 14))
-                            .foregroundStyle(Color.white.opacity(0.5))
+                            .font(WernickeTypography.size14)
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                     }
                     .buttonStyle(.plain)
                 }
@@ -6856,11 +6856,11 @@ struct OnboardingWalkthrough: View {
                     }
                 } label: {
                     Text(step < steps.count - 1 ? "Next" : "Get Started")
-                        .font(.system(size: 14, weight: .bold))
+                        .font(WernickeTypography.title3Bold)
                         .foregroundStyle(.black)
                         .padding(.horizontal, 20)
                         .padding(.vertical, 10)
-                        .background(TrinityTheme.accent)
+                        .background(V4Color.accent)
                         .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
@@ -6874,14 +6874,14 @@ struct OnboardingWalkthrough: View {
                 isPresented = false
             } label: {
                 Text("Skip")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color.white.opacity(0.3))
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
             }
             .buttonStyle(.plain)
             .padding(.bottom, 16)
         }
         .frame(minWidth: 500, minHeight: 400)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
     }
 }
 
@@ -6897,43 +6897,43 @@ struct TaskTrackerView: View {
     @Binding var tasks: [TaskItem]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             HStack {
                 Image(systemName: "checklist")
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.accent)
                 Text("Tasks")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.caption2Bold)
+                    .foregroundStyle(V4Color.accent)
                 let done = tasks.filter(\.isDone).count
                 Text("\(done)/\(tasks.count)")
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size10Mono)
+                    .foregroundStyle(V4Color.textSecondary)
                 Spacer()
                 Button {
                     tasks.removeAll()
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 9))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
                 .buttonStyle(.plain)
             }
 
             ForEach(tasks.indices, id: \.self) { idx in
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Button {
                         tasks[idx].isDone.toggle()
                     } label: {
                         Image(systemName: tasks[idx].isDone ? "checkmark.circle.fill" : "circle")
-                            .font(.system(size: 12))
-                            .foregroundStyle(tasks[idx].isDone ? TrinityTheme.statusOK : Color.white.opacity(0.3))
+                            .font(WernickeTypography.size12)
+                            .foregroundStyle(tasks[idx].isDone ? V4Color.statusOK : Color.white.opacity(V2Depth.stateHover))
                     }
                     .buttonStyle(.plain)
 
                     Text(tasks[idx].title)
-                        .font(.system(size: 11))
-                        .foregroundStyle(tasks[idx].isDone ? TrinityTheme.textMuted : TrinityTheme.textPrimary)
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(tasks[idx].isDone ? V4Color.textSecondary : V4Color.textPrimary)
                         .strikethrough(tasks[idx].isDone)
                 }
             }
@@ -6943,9 +6943,9 @@ struct TaskTrackerView: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     SwiftUI.Capsule()
-                        .fill(Color.white.opacity(0.06))
+                        .fill(Color.white.opacity(V2Depth.bgCard))
                     SwiftUI.Capsule()
-                        .fill(progress >= 1.0 ? TrinityTheme.statusOK : TrinityTheme.accent)
+                        .fill(progress >= 1.0 ? V4Color.statusOK : V4Color.accent)
                         .frame(width: geo.size.width * progress)
                 }
             }
@@ -6953,7 +6953,7 @@ struct TaskTrackerView: View {
             .padding(.top, 4)
         }
         .padding(LayoutConstants.compactPadding)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
@@ -6978,20 +6978,20 @@ struct MentionChip: View {
 
     private var color: Color {
         switch type {
-        case "file": return TrinityTheme.accent
-        case "grep": return TrinityTheme.purple
-        case "build": return TrinityTheme.statusError
-        case "farm": return TrinityTheme.golden
-        default: return TrinityTheme.accent
+        case "file": return V4Color.accent
+        case "grep": return V4Color.purple
+        case "build": return V4Color.statusError
+        case "farm": return V4Color.golden
+        default: return V4Color.accent
         }
     }
 
     var body: some View {
         HStack(spacing: 3) {
             Image(systemName: icon)
-                .font(.system(size: 9))
+                .font(WernickeTypography.size9)
             Text(value)
-                .font(.system(size: 10, weight: .medium))
+                .font(WernickeTypography.miniMedium)
                 .lineLimit(1)
         }
         .foregroundStyle(color)
@@ -7022,24 +7022,24 @@ struct AgentStatusIndicator: View {
 
     private var color: Color {
         switch state {
-        case .active: return TrinityTheme.accent
-        case .done: return TrinityTheme.statusOK
-        case .pending: return TrinityTheme.textMuted
+        case .active: return V4Color.accent
+        case .done: return V4Color.statusOK
+        case .pending: return V4Color.textSecondary
         }
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Image(systemName: icon)
-                .font(.system(size: 8))
+                .font(WernickeTypography.size8)
                 .foregroundStyle(color)
             Text(name)
-                .font(.system(size: 10, weight: .medium))
+                .font(WernickeTypography.miniMedium)
                 .foregroundStyle(color)
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 3)
-        .background(color.opacity(0.1))
+        .background(color.opacity(V2Depth.bgSubtle))
         .clipShape(SwiftUI.Capsule())
     }
 }
@@ -7052,15 +7052,15 @@ struct MCPStatusView: View {
     var body: some View {
         Group {
             if !servers.isEmpty {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     ForEach(servers, id: \.name) { server in
                         HStack(spacing: 3) {
                             Circle()
-                                .fill(server.connected ? TrinityTheme.statusOK : Color.white.opacity(0.2))
+                                .fill(server.connected ? V4Color.statusOK : V4Color.white20)
                                 .frame(width: 5, height: 5)
                             Text(server.name)
-                                .font(.system(size: 9))
-                                .foregroundStyle(server.connected ? TrinityTheme.textMuted : Color.white.opacity(0.2))
+                                .font(WernickeTypography.size9)
+                                .foregroundStyle(server.connected ? V4Color.textSecondary : V4Color.white20)
                         }
                     }
                 }
@@ -7129,14 +7129,14 @@ struct SaveAsTemplatePopover: View {
     private let categories = ["Code", "Debug", "Design", "Docs", "Git", "Other"]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             Text("Save as Template")
-                .font(.system(size: 14, weight: .bold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.title3Bold)
+                .foregroundStyle(V4Color.textPrimary)
 
             TextField("Template name", text: $name)
                 .textFieldStyle(.roundedBorder)
-                .font(.system(size: 12))
+                .font(WernickeTypography.size12)
 
             Picker("Category", selection: $category) {
                 ForEach(categories, id: \.self) { Text($0) }
@@ -7145,19 +7145,19 @@ struct SaveAsTemplatePopover: View {
             .controlSize(.small)
 
             Text(String(messageText.prefix(120)) + (messageText.count > 120 ? "..." : ""))
-                .font(.system(size: 10, design: .monospaced))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size10Mono)
+                .foregroundStyle(V4Color.textSecondary)
                 .lineLimit(3)
                 .padding(LayoutConstants.compactPadding)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.white.opacity(0.04))
+                .background(Color.white.opacity(V2Depth.bgCardLight))
                 .clipShape(RoundedRectangle(cornerRadius: 6))
 
             HStack {
                 Button("Cancel") {
                     isPresented = false
                 }
-                .foregroundStyle(Color.white.opacity(0.4))
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 .buttonStyle(.plain)
                 Spacer()
                 Button("Save") {
@@ -7174,11 +7174,11 @@ struct SaveAsTemplatePopover: View {
                         confirmed = false
                     }
                 }
-                .font(.system(size: 12, weight: .bold))
+                .font(WernickeTypography.captionBold)
                 .foregroundStyle(.black)
                 .padding(.horizontal, 14)
                 .padding(.vertical, LayoutConstants.compactPadding)
-                .background(TrinityTheme.purple)
+                .background(V4Color.purple)
                 .clipShape(SwiftUI.Capsule())
                 .buttonStyle(.plain)
                 .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
@@ -7187,7 +7187,7 @@ struct SaveAsTemplatePopover: View {
         .padding(LayoutConstants.inputAreaPadding)
             .frame(maxWidth: 300)
             .frame(minWidth: 260)
-            .background(Color(hex: 0x1A1A1A))
+            .background(V4Color.surface)
     }
 
     private func iconForCategory(_ cat: String) -> String {
@@ -7213,29 +7213,29 @@ struct TemplatePicker: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Image(systemName: "doc.on.clipboard")
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.purple)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.purple)
                 Text("Templates")
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.captionBold)
+                    .foregroundStyle(V4Color.textPrimary)
                 Spacer()
                 Button { onDismiss() } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
                 .buttonStyle(.plain)
             }
             .padding(.horizontal, LayoutConstants.cardPadding)
             .padding(.vertical, LayoutConstants.standardPadding)
 
-            Divider().background(Color.white.opacity(0.1))
+            Divider().background(Color.white.opacity(V2Depth.bgSubtle))
 
             ScrollView {
                 LazyVStack(alignment: .leading, spacing: 2) {
                     Text("BUILT-IN")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.microBold)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                         .padding(.horizontal, LayoutConstants.cardPadding)
                         .padding(.top, 6)
 
@@ -7246,8 +7246,8 @@ struct TemplatePicker: View {
                     let custom = store.loadCustomTemplates()
                     if !custom.isEmpty {
                         Text("CUSTOM")
-                            .font(.system(size: 9, weight: .bold))
-                            .foregroundStyle(Color.white.opacity(0.3))
+                            .font(WernickeTypography.microBold)
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                             .padding(.horizontal, LayoutConstants.cardPadding)
                             .padding(.top, 8)
 
@@ -7267,9 +7267,9 @@ struct TemplatePicker: View {
         }
         .frame(maxWidth: 320)
             .frame(minWidth: 280)
-            .background(Color(hex: 0x0A0A0A))
+            .background(V4Color.background)
             .clipShape(RoundedRectangle(cornerRadius: 10))
-        .shadow(color: .black.opacity(0.5), radius: 12)
+        .shadow(color: .black.opacity(V2Depth.stateDisabled), radius: 12)
     }
 
     @ViewBuilder
@@ -7277,18 +7277,18 @@ struct TemplatePicker: View {
         Button {
             onSelect(template.body)
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: template.icon)
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.purple)
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.purple)
                     .frame(width: 18)
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.xxxxs) {
                     Text(template.title)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(WernickeTypography.captionMedium)
                         .foregroundStyle(Color.white)
                     Text(String(template.body.prefix(50)))
-                        .font(.system(size: 9))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                         .lineLimit(1)
                 }
                 Spacer()
@@ -7356,22 +7356,22 @@ private struct ThreadStatsCard: View {
         VStack(alignment: .leading, spacing: 0) {
             // Collapsed: single-line summary
             Button(action: { withAnimation(.easeInOut(duration: 0.2)) { isExpanded.toggle() } }) {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Image(systemName: "info.circle")
-                        .font(.system(size: 11))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text("\(messageCount) messages")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.caption2Medium)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text("·")
-                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
+                        .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateDisabled))
                     Text("Created \(threadAge)")
-                        .font(.system(size: 11))
-                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(V4Color.textSecondary.opacity(0.7))
                     Spacer()
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 9))
-                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateDisabled))
                 }
                 .padding(.horizontal, LayoutConstants.cardPadding)
                 .padding(.vertical, LayoutConstants.standardPadding)
@@ -7382,9 +7382,9 @@ private struct ThreadStatsCard: View {
             // Expanded: stat grid
             if isExpanded {
                 LazyVGrid(columns: [
-                    GridItem(.flexible(), spacing: 10),
-                    GridItem(.flexible(), spacing: 10),
-                ], spacing: 10) {
+                    GridItem(.flexible(), spacing: ParietalSpacing.sm + 2),
+                    GridItem(.flexible(), spacing: ParietalSpacing.sm + 2),
+                ], spacing: ParietalSpacing.sm + 2) {
                     statCell(label: "Messages", value: "\(messageCount)", icon: "bubble.left.and.bubble.right")
                     statCell(label: "Total Tokens", value: totalTokens > 0 ? formatTokens(totalTokens) : "--", icon: "number")
                     statCell(label: "Total Time", value: totalMs > 0 ? formatDuration(totalMs) : "--", icon: "clock")
@@ -7397,17 +7397,17 @@ private struct ThreadStatsCard: View {
 
                 // Models pills
                 if !uniqueModels.isEmpty {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Text("Models:")
-                            .font(.system(size: 10))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size10)
+                            .foregroundStyle(V4Color.textSecondary)
                         ForEach(uniqueModels, id: \.self) { model in
                             Text(shortModelName(model))
-                                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                                .foregroundStyle(TrinityTheme.accent)
+                                .font(WernickeTypography.microMono)
+                                .foregroundStyle(V4Color.accent)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(TrinityTheme.accent.opacity(0.1))
+                                .background(V4Color.accent.opacity(V2Depth.bgSubtle))
                                 .clipShape(SwiftUI.Capsule())
                         }
                     }
@@ -7416,36 +7416,36 @@ private struct ThreadStatsCard: View {
                 }
             }
         }
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 0.5)
+            RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                .stroke(V4Color.bgCardBorder, lineWidth: 0.5)
         )
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
     }
 
     private func statCell(label: String, value: String, icon: String) -> some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Image(systemName: icon)
-                .font(.system(size: 10))
-                .foregroundStyle(TrinityTheme.accent.opacity(0.7))
+                .font(WernickeTypography.size10)
+                .foregroundStyle(V4Color.accent.opacity(0.7))
                 .frame(width: 14)
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xxxxs) {
                 Text(value)
-                    .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.captionSemiboldMono)
+                    .foregroundStyle(V4Color.textPrimary)
                 Text(label)
-                    .font(.system(size: 9))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size9)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             Spacer()
         }
         .padding(.horizontal, 8)
         .padding(.vertical, LayoutConstants.compactPadding)
-        .background(TrinityTheme.bgCard.opacity(0.5))
+        .background(V4Color.bgCard.opacity(V2Depth.stateDisabled))
         .overlay(
             RoundedRectangle(cornerRadius: 4)
-                .stroke(TrinityTheme.bgCardBorder.opacity(0.5), lineWidth: 0.5)
+                .stroke(V4Color.bgCardBorder.opacity(V2Depth.stateDisabled), lineWidth: 0.5)
         )
         .clipShape(RoundedRectangle(cornerRadius: 4))
     }
@@ -7483,12 +7483,12 @@ struct MultiSelectActionBar: View {
     @State private var isHovering = false
 
     private var countBadge: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Circle()
-                .fill(TrinityTheme.accent)
+                .fill(V4Color.accent)
                 .frame(width: 6, height: 6)
             Text("\(selectedCount)")
-                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .font(WernickeTypography.smallSemiboldMono)
                 .foregroundStyle(.white)
         }
     }
@@ -7501,12 +7501,12 @@ struct MultiSelectActionBar: View {
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: 14, weight: .medium))
+                .font(WernickeTypography.body14Medium)
                 .foregroundStyle(color)
                 .frame(width: 32, height: 32)
                 .background(
                     Circle()
-                        .fill(color.opacity(0.1))
+                        .fill(color.opacity(V2Depth.bgSubtle))
                         .overlay(
                             Circle()
                                 .stroke(color.opacity(0.2), lineWidth: 0.5)
@@ -7519,27 +7519,27 @@ struct MultiSelectActionBar: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // Left: count badge
             countBadge
                 .padding(.leading, 4)
 
             Divider()
                 .frame(height: 20)
-                .background(Color.white.opacity(0.15))
+                .background(Color.white.opacity(V2Depth.bgSidebarHover))
 
             // Middle: action buttons
-            HStack(spacing: 6) {
-                actionButton("doc.on.doc", tooltip: "Copy All (Cmd+C)", color: TrinityTheme.accent, action: onCopyAll)
+            HStack(spacing: ParietalSpacing.sm - 2) {
+                actionButton("doc.on.doc", tooltip: "Copy All (Cmd+C)", color: V4Color.accent, action: onCopyAll)
 
-                actionButton("bubble.left.and.text.bubble.right", tooltip: "Quote Selected", color: TrinityTheme.golden, action: onQuoteSelected)
+                actionButton("bubble.left.and.text.bubble.right", tooltip: "Quote Selected", color: V4Color.golden, action: onQuoteSelected)
 
                 if canDelete {
-                    actionButton("trash", tooltip: "Delete Selected", color: TrinityTheme.statusError, action: onDeleteSelected)
+                    actionButton("trash", tooltip: "Delete Selected", color: V4Color.statusError, action: onDeleteSelected)
                 }
 
                 if canCompareModels {
-                    actionButton("scale.3d", tooltip: "Compare Models", color: TrinityTheme.purple, action: onCompareModels)
+                    actionButton("scale.3d", tooltip: "Compare Models", color: V4Color.purple, action: onCompareModels)
                 }
 
                 // Select/Deselect all
@@ -7547,23 +7547,23 @@ struct MultiSelectActionBar: View {
                     .keyboardShortcut("a", modifiers: .command)
 
                 if selectedCount > 1 {
-                    actionButton("xmark.circle", tooltip: "Deselect All (Cmd+Shift+A)", color: .white.opacity(0.6), action: onDeselectAll)
+                    actionButton("xmark.circle", tooltip: "Deselect All (Cmd+Shift+A)", color: .white.opacity(V1Theme.opacityTextSecondary), action: onDeselectAll)
                 }
             }
 
             Divider()
                 .frame(height: 20)
-                .background(Color.white.opacity(0.15))
+                .background(Color.white.opacity(V2Depth.bgSidebarHover))
 
             // Right: cancel
             Button(action: onCancel) {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(WernickeTypography.caption2Bold)
                     Text("Done")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(WernickeTypography.captionMedium)
                 }
-                .foregroundStyle(Color.white.opacity(0.5))
+                .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                 .padding(.horizontal, 8)
                 .padding(.vertical, LayoutConstants.compactPadding)
                 .background(Color.white.opacity(0.05))
@@ -7580,8 +7580,8 @@ struct MultiSelectActionBar: View {
                 // Gradient background
                 LinearGradient(
                     colors: [
-                        TrinityTheme.accent.opacity(0.15),
-                        TrinityTheme.purple.opacity(0.1)
+                        V4Color.accent.opacity(V2Depth.bgSidebarHover),
+                        V4Color.purple.opacity(V2Depth.bgSubtle)
                     ],
                     startPoint: .leading,
                     endPoint: .trailing
@@ -7597,8 +7597,8 @@ struct MultiSelectActionBar: View {
                 .stroke(
                     LinearGradient(
                         colors: [
-                            TrinityTheme.accent.opacity(isHovering ? 0.5 : 0.2),
-                            TrinityTheme.purple.opacity(isHovering ? 0.3 : 0.1)
+                            V4Color.accent.opacity(isHovering ? 0.5 : 0.2),
+                            V4Color.purple.opacity(isHovering ? 0.3 : 0.1)
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
@@ -7607,7 +7607,7 @@ struct MultiSelectActionBar: View {
                 )
         )
         .shadow(
-            color: TrinityTheme.accent.opacity(isHovering ? 0.3 : 0.15),
+            color: V4Color.accent.opacity(isHovering ? 0.3 : 0.15),
             radius: isHovering ? 16 : 8,
             y: 4
         )
@@ -7628,10 +7628,10 @@ struct ThreadLoadingSkeleton: View {
     var body: some View {
         HStack {
             if isUser { Spacer(minLength: 60) }
-            VStack(alignment: isUser ? .trailing : .leading, spacing: 6) {
+            VStack(alignment: isUser ? .trailing : .leading, spacing: ParietalSpacing.sm - 2) {
                 if !isUser {
                     RoundedRectangle(cornerRadius: 3)
-                        .fill(Color.white.opacity(0.04))
+                        .fill(Color.white.opacity(V2Depth.bgCardLight))
                         .frame(width: 50, height: 10)
                 }
                 RoundedRectangle(cornerRadius: 8)

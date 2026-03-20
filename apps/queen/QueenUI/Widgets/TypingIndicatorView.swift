@@ -38,16 +38,16 @@ struct TypingIndicatorView: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: ParietalSpacing.md) {
             // Avatar with pulse effect
             avatarView
 
             // Content column
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                 // Label text
                 Text("Trinity is typing...")
-                    .font(.system(size: TrinityTheme.captionSize(dynamicTypeSize), weight: .medium))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(.system(size: WernickeTypography.captionSize(dynamicTypeSize), weight: .medium))
+                    .foregroundStyle(V4Color.textSecondary)
 
                 // Bouncing dots
                 bouncingDotsView
@@ -58,35 +58,35 @@ struct TypingIndicatorView: View {
                         .transition(.opacity.combined(with: .move(edge: .top)))
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, ParietalSpacing.xs)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, ParietalSpacing.lg)
+        .padding(.vertical, ParietalSpacing.md)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .fill(TrinityTheme.bgCard)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .fill(V4Color.surface)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border, lineWidth: 1)
         )
         .scaleEffect(scale)
         .opacity(opacity)
         .onAppear {
-            withAnimation(TrinityTheme.springAnimation()) {
+            withAnimation(MTMotion.standardSpring) {
                 scale = 1
                 opacity = 1
             }
         }
         .onChange(of: isVisible) { _, newValue in
             if newValue {
-                withAnimation(TrinityTheme.springAnimation()) {
+                withAnimation(MTMotion.standardSpring) {
                     scale = 1
                     opacity = 1
                 }
             } else {
-                withAnimation(TrinityTheme.fadeAnimation) {
-                    scale = TrinityTheme.messageExitScale
+                withAnimation(V1Theme.fadeAnimation) {
+                    scale = MTMotion.exitScale
                     opacity = 0
                 }
             }
@@ -101,7 +101,7 @@ struct TypingIndicatorView: View {
     private var avatarView: some View {
         ZStack {
             Circle()
-                .fill(TrinityTheme.accent.opacity(0.15))
+                .fill(V4Color.accent.opacity(V2Depth.bgSidebarHover))
                 .frame(width: 28, height: 28)
 
             // Simple triangle path
@@ -112,13 +112,13 @@ struct TypingIndicatorView: View {
                 path.addLine(to: CGPoint(x: 2, y: size - 2))
                 path.closeSubpath()
             }
-            .fill(TrinityTheme.accent)
+            .fill(V4Color.accent)
             .frame(width: 14, height: 14)
 
             if !reduceMotion {
                 Circle()
-                    .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 1.5)
-                    .frame(width: 32, height: 32)
+                    .stroke(V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 1.5)
+                    .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
                     .scaleEffect(pulseScale)
                     .opacity(2 - pulseScale)
             }
@@ -131,11 +131,11 @@ struct TypingIndicatorView: View {
     // MARK: - Bouncing Dots View
 
     private var bouncingDotsView: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             ForEach(0..<3, id: \.self) { index in
                 Circle()
-                    .fill(TrinityTheme.accent)
-                    .frame(width: 8, height: 8)
+                    .fill(V4Color.accent)
+                    .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
                     .scaleEffect(reduceMotion ? 1 : dotScales[index])
                     .opacity(reduceMotion ? 0.6 : dotOpacities[index])
             }
@@ -188,15 +188,15 @@ struct TypingIndicatorView: View {
     // MARK: - Skeleton Preview
 
     private var skeletonPreview: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             ForEach(0..<2) { _ in
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(TrinityTheme.textMuted.opacity(0.15))
+                    .fill(V4Color.textSecondary.opacity(V2Depth.bgSidebarHover))
                     .frame(height: 10)
                     .frame(maxWidth: CGFloat.random(in: 120...180))
             }
             RoundedRectangle(cornerRadius: 4)
-                .fill(TrinityTheme.textMuted.opacity(0.15))
+                .fill(V4Color.textSecondary.opacity(V2Depth.bgSidebarHover))
                 .frame(height: 10)
                 .frame(maxWidth: 80)
         }
@@ -208,7 +208,7 @@ struct TypingIndicatorView: View {
                         LinearGradient(
                             colors: [
                                 .clear,
-                                TrinityTheme.accent.opacity(0.1),
+                                V4Color.accent.opacity(V2Depth.bgSubtle),
                                 .clear
                             ],
                             startPoint: .leading,
@@ -238,10 +238,10 @@ struct CompactTypingIndicator: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             ForEach(0..<3, id: \.self) { index in
                 Circle()
-                    .fill(TrinityTheme.accent)
+                    .fill(V4Color.accent)
                     .frame(width: 6, height: 6)
                     .scaleEffect(reduceMotion ? 1 : scales[index])
                     .opacity(reduceMotion ? 0.6 : opacities[index])
@@ -281,7 +281,7 @@ struct CompactTypingIndicator: View {
 
 struct TypingIndicatorView_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             // Full indicator with skeleton
             TypingIndicatorView(
                 isVisible: true,
@@ -299,15 +299,15 @@ struct TypingIndicatorView_Previews: PreviewProvider {
             // Compact version
             HStack {
                 Text("Response incoming")
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                 CompactTypingIndicator()
             }
             .padding()
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerMedium)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerMedium)
         }
         .padding()
         .frame(maxWidth: 400)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

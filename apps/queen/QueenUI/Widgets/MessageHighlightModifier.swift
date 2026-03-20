@@ -16,8 +16,8 @@ struct MessageHighlightModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .fill(TrinityTheme.accent.opacity(opacity))
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .fill(V4Color.accent.opacity(opacity))
                     .animation(reduceMotion ? nil : animation, value: opacity)
             )
             .scaleEffect(scale)

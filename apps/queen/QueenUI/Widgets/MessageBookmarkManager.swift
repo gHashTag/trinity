@@ -22,10 +22,10 @@ enum BookmarkCategory: String, CaseIterable, Identifiable, Codable {
 
     var color: Color {
         switch self {
-        case .important: return TrinityTheme.golden
-        case .code: return TrinityTheme.purple
-        case .reference: return TrinityTheme.accent
-        case .todo: return TrinityTheme.statusWarn
+        case .important: return V4Color.golden
+        case .code: return V4Color.purple
+        case .reference: return V4Color.accent
+        case .todo: return V4Color.warning
         }
     }
 
@@ -214,8 +214,8 @@ struct BookmarkButton: View {
             }
         } label: {
             Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                .font(.system(size: 13))
-                .foregroundColor(isBookmarked ? TrinityTheme.golden : TrinityTheme.textMuted)
+                .font(WernickeTypography.size13)
+                .foregroundColor(isBookmarked ? V4Color.golden : V4Color.textSecondary)
         }
         .buttonStyle(.plain)
         .help(isBookmarked ? "Remove bookmark" : "Bookmark message")
@@ -250,21 +250,21 @@ private struct CategoryPickerSheet: View {
     @Binding var showNoteEditor: Bool
 
     var body: some View {
-        VStack(spacing: TrinityTheme.spacing) {
+        VStack(spacing: ParietalSpacing.md) {
             Text("Bookmark Message")
                 .font(.headline)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text("Choose a category for this bookmark")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             Divider()
 
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible())
-            ], spacing: 12) {
+            ], spacing: ParietalSpacing.md) {
                 ForEach(BookmarkCategory.allCases) { category in
                     CategoryCard(category: category) {
                         addBookmark(category: category)
@@ -282,12 +282,12 @@ private struct CategoryPickerSheet: View {
         }
         .padding()
         .frame(width: 320, height: 280)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.border, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge))
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
     }
 
     private func addBookmark(category: BookmarkCategory) {
@@ -315,23 +315,23 @@ private struct CategoryCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 12) {
+            VStack(spacing: ParietalSpacing.md) {
                 Image(systemName: category.icon)
-                    .font(.system(size: 28))
+                    .font(WernickeTypography.size28)
                     .foregroundStyle(category.color)
 
                 Text(category.rawValue)
                     .font(.caption.weight(.medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 20)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                     .fill(category.color.opacity(isHovered ? 0.15 : 0.08))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                     .stroke(category.color.opacity(isHovered ? 1 : 0.3), lineWidth: 1)
             )
         }
@@ -359,14 +359,14 @@ private struct BookmarkNoteEditor: View {
     }
 
     var body: some View {
-        VStack(spacing: TrinityTheme.spacing) {
+        VStack(spacing: ParietalSpacing.md) {
             HStack {
                 Image(systemName: bookmark.category.icon)
                     .foregroundStyle(bookmark.category.color)
 
                 Text("Add Note")
                     .font(.headline)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Spacer()
 
@@ -380,17 +380,17 @@ private struct BookmarkNoteEditor: View {
 
             Text("Add an optional note to this bookmark")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             TextEditor(text: $noteText)
                 .font(.body)
-                .foregroundStyle(TrinityTheme.textPrimary)
-                .background(TrinityTheme.bgCard)
+                .foregroundStyle(V4Color.textPrimary)
+                .background(V4Color.surface)
                 .scrollContentBackground(.hidden)
                 .frame(minHeight: 100)
                 .overlay(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                        .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                        .stroke(V4Color.border, lineWidth: 1)
                 )
 
             Divider()
@@ -411,12 +411,12 @@ private struct BookmarkNoteEditor: View {
         }
         .padding()
         .frame(width: 400, height: 300)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.border, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge))
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
     }
 
     private func saveAndClose() {
@@ -463,7 +463,7 @@ struct BookmarksPanel: View {
 
             if isExpanded {
                 Divider()
-                    .background(TrinityTheme.bgCardBorder)
+                    .background(V4Color.border)
 
                 if store.bookmarks.isEmpty {
                     emptyState
@@ -472,33 +472,33 @@ struct BookmarksPanel: View {
                 }
             }
         }
-        .background(TrinityTheme.bgSidebar)
+        .background(V4Color.sidebar)
     }
 
     private var header: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Button {
                 withAnimation {
                     isExpanded.toggle()
                 }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: isExpanded ? "bookmark.fill" : "bookmark")
-                        .font(.system(size: 11))
-                        .foregroundStyle(TrinityTheme.golden)
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(V4Color.golden)
 
                     Text("Bookmarks")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(WernickeTypography.caption2Semibold)
 
                     if !store.bookmarks.isEmpty {
                         Text("\(store.bookmarks.count)")
-                            .font(.system(size: 10, weight: .medium, design: .monospaced))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size10Mono.weight(.medium))
+                            .foregroundStyle(V4Color.textSecondary)
                     }
 
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 9))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
             .buttonStyle(.plain)
@@ -518,14 +518,14 @@ struct BookmarksPanel: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .menuStyle(.borderlessButton)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm)
         .contentShape(Rectangle())
         .alert("Clear All Bookmarks", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
@@ -539,23 +539,23 @@ struct BookmarksPanel: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             Image(systemName: "bookmark")
-                .font(.system(size: 28))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.3))
+                .font(WernickeTypography.size28)
+                .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateHover))
 
             Text("No bookmarks yet")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             Text("Click the bookmark icon on any message to save it")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                .foregroundStyle(V4Color.textSecondary.opacity(0.7))
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ParietalSpacing.lg)
     }
 
     private var bookmarksContent: some View {
@@ -567,7 +567,7 @@ struct BookmarksPanel: View {
             }
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             if filteredBookmarks.isEmpty {
                 noResultsView
@@ -579,7 +579,7 @@ struct BookmarksPanel: View {
 
     private var categoryFilter: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 CategoryChip(
                     category: nil,
                     isSelected: selectedCategory == nil
@@ -600,21 +600,21 @@ struct BookmarksPanel: View {
                     }
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
         }
     }
 
     private var filterReset: some View {
         HStack {
             Image(systemName: "line.3.horizontal.decrease.circle")
-                .font(.system(size: 10))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size10)
+                .foregroundStyle(V4Color.textSecondary)
 
             TextField("Search bookmarks...", text: $searchText)
                 .textFieldStyle(.plain)
-                .font(.system(size: 11))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size11)
+                .foregroundStyle(V4Color.textPrimary)
 
             if !searchText.isEmpty {
                 Button {
@@ -624,26 +624,26 @@ struct BookmarksPanel: View {
                     }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(TrinityTheme.bgCard.opacity(0.5))
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.xs + 2)
+        .background(V4Color.surface.opacity(V2Depth.stateDisabled))
     }
 
     private var noResultsView: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 20))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.3))
+                .font(WernickeTypography.size20)
+                .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateHover))
 
             Text("No bookmarks match")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
@@ -677,7 +677,7 @@ struct BookmarksPanel: View {
                     }
 
                     Divider()
-                        .background(TrinityTheme.bgCardBorder)
+                        .background(V4Color.border)
                         .padding(.leading, 44)
                 }
             }
@@ -737,25 +737,25 @@ private struct CategoryChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 if let category = category {
                     Image(systemName: category.icon)
-                        .font(.system(size: 8))
+                        .font(WernickeTypography.size8)
                 }
 
                 Text(category?.rawValue ?? "All")
-                    .font(.system(size: 10, weight: isSelected ? .semibold : .regular))
+                    .font(isSelected ? WernickeTypography.miniSemibold : WernickeTypography.size10)
             }
-            .foregroundStyle(isSelected ? category?.color ?? TrinityTheme.textPrimary : TrinityTheme.textMuted)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+            .foregroundStyle(isSelected ? category?.color ?? V4Color.textPrimary : V4Color.textSecondary)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .fill((category?.color ?? TrinityTheme.accent).opacity(isSelected ? 0.2 : 0))
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .fill((category?.color ?? V4Color.accent).opacity(isSelected ? 0.2 : 0))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .stroke((category?.color ?? TrinityTheme.bgCardBorder).opacity(isSelected ? 1 : 0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .stroke((category?.color ?? V4Color.border).opacity(isSelected ? 1 : 0.3), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -782,10 +782,10 @@ private struct BookmarkRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .top, spacing: ParietalSpacing.sm) {
             categoryIndicator
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 header
 
                 if !bookmark.note.isEmpty {
@@ -797,8 +797,8 @@ private struct BookmarkRow: View {
 
             Spacer()
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm)
         .contentShape(Rectangle())
         .onTapGesture {
             withAnimation(.easeInOut(duration: 0.2)) {
@@ -814,27 +814,27 @@ private struct BookmarkRow: View {
     }
 
     private var header: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Image(systemName: bookmark.messageRole == .user ? "person.circle.fill" : "cpu")
-                .font(.system(size: 9))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size9)
+                .foregroundStyle(V4Color.textSecondary)
 
             Text(bookmark.messageRole == .user ? "You" : (bookmark.messageModelID ?? "Assistant"))
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.miniMedium)
+                .foregroundStyle(V4Color.textPrimary)
 
             Spacer()
 
             Text(relativeDate)
-                .font(.system(size: 9))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
+                .font(WernickeTypography.size9)
+                .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
 
             Button {
                 onEdit()
             } label: {
                 Image(systemName: "pencil.circle")
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .buttonStyle(.plain)
             .help("Edit note")
@@ -843,8 +843,8 @@ private struct BookmarkRow: View {
                 onDelete()
             } label: {
                 Image(systemName: "trash")
-                    .font(.system(size: 9))
-                    .foregroundStyle(TrinityTheme.statusError)
+                    .font(WernickeTypography.size9)
+                    .foregroundStyle(V4Color.error)
             }
             .buttonStyle(.plain)
             .help("Delete bookmark")
@@ -852,22 +852,22 @@ private struct BookmarkRow: View {
     }
 
     private var noteView: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Image(systemName: "note.text")
-                .font(.system(size: 8))
+                .font(WernickeTypography.size8)
                 .foregroundStyle(bookmark.category.color)
 
             Text(bookmark.note)
-                .font(.system(size: 10))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size10)
+                .foregroundStyle(V4Color.textPrimary)
                 .lineLimit(2)
         }
     }
 
     private var messagePreview: some View {
         Text(previewText + (previewText.count >= 80 && !isExpanded ? "..." : ""))
-            .font(.system(size: 11))
-            .foregroundStyle(TrinityTheme.textMuted)
+            .font(WernickeTypography.size11)
+            .foregroundStyle(V4Color.textSecondary)
             .lineLimit(isExpanded ? nil : 2)
     }
 

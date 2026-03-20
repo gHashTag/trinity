@@ -21,15 +21,15 @@ struct MessageQuickActions: View {
 
     private var messageContent: some View {
         Text(message.text)
-            .padding(12)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerMedium)
+            .padding(ParietalSpacing.md)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerMedium)
     }
 
     private var actionBar: some View {
         Group {
             if showActions {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     ForEach(QuickAction.allCases, id: \.self) { action in
                         actionButton(action)
                     }
@@ -46,16 +46,16 @@ struct MessageQuickActions: View {
             onAction(action)
         } label: {
             Image(systemName: action.icon)
-                .font(.system(size: 11))
-                .foregroundStyle(TrinityTheme.textMuted)
-                .frame(width: 24, height: 24)
+                .font(WernickeTypography.size11)
+                .foregroundStyle(V4Color.textSecondary)
+                .frame(width: ParietalSpacing.lg, height: ParietalSpacing.lg)
                 .background(
                     Circle()
-                        .fill(TrinityTheme.bgCard)
+                        .fill(V4Color.surface)
                 )
                 .overlay(
                     Circle()
-                        .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                        .stroke(V4Color.border, lineWidth: 1)
                 )
         }
         .buttonStyle(.plain)
@@ -105,21 +105,21 @@ struct QuickActionBar: View {
 
     var body: some View {
         if isVisible {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 ForEach(QuickAction.allCases, id: \.self) { action in
                     quickActionButton(action)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .fill(TrinityTheme.bgCard)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .fill(V4Color.surface)
                     .shadow(color: .black.opacity(0.2), radius: 10, y: 4)
             )
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .stroke(V4Color.border, lineWidth: 1)
             )
             .transition(.scale.combined(with: .opacity))
         }
@@ -129,18 +129,18 @@ struct QuickActionBar: View {
         Button {
             onAction(action)
         } label: {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Image(systemName: action.icon)
-                    .font(.system(size: 12))
+                    .font(WernickeTypography.size12)
                 Text(action.label)
                     .font(.caption)
             }
-            .foregroundStyle(TrinityTheme.textPrimary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 6)
+            .foregroundStyle(V4Color.textPrimary)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs + 2)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .fill(TrinityTheme.bgWindow)
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .fill(V4Color.background)
             )
         }
         .buttonStyle(.plain)
@@ -174,7 +174,7 @@ struct MessageContextMenu: View {
             }
         } label: {
             Image(systemName: "ellipsis.circle")
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .menuStyle(.borderlessButton)
     }
@@ -189,40 +189,40 @@ struct ActionConfirmationDialog: View {
     let onCancel: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.lg) {
             // Action icon
             Image(systemName: action.icon)
-                .font(.system(size: 32))
-                .foregroundStyle(TrinityTheme.accent)
+                .font(WernickeTypography.size32)
+                .foregroundStyle(V4Color.accent)
                 .frame(width: 60, height: 60)
                 .background(
                     Circle()
-                        .fill(TrinityTheme.accent.opacity(0.2))
+                        .fill(V4Color.accent.opacity(0.2))
                 )
 
             // Title and description
-            VStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
                 Text("Confirm \(action.label)")
                     .font(.headline)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text(actionDescription)
                     .font(.body)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .multilineTextAlignment(.center)
             }
 
             // Message preview
             Text(message.text)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(TrinityTheme.bgCard.opacity(0.5))
-                .cornerRadius(TrinityTheme.cornerSmall)
+                .background(V4Color.surface.opacity(V2Depth.stateDisabled))
+                .cornerRadius(V1Theme.cornerSmall)
 
             // Buttons
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 Button("Cancel", action: onCancel)
                     .keyboardShortcut(.cancelAction)
                     .controlSize(.large)
@@ -235,13 +235,13 @@ struct ActionConfirmationDialog: View {
         }
         .padding(24)
         .frame(width: 320)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.border, lineWidth: 1)
         )
-        .cornerRadius(TrinityTheme.cornerLarge)
-        .shadow(color: .black.opacity(0.3), radius: 30)
+        .cornerRadius(V1Theme.cornerLarge)
+        .shadow(color: .black.opacity(V2Depth.stateHover), radius: 30)
     }
 
     private var actionDescription: String {
@@ -272,24 +272,24 @@ struct ActionResultToast: View {
     @State private var isVisible = false
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: ParietalSpacing.sm + 2) {
             Image(systemName: isSuccess ? "checkmark.circle.fill" : "xmark.circle.fill")
-                .font(.system(size: 16))
-                .foregroundStyle(isSuccess ? .green : TrinityTheme.statusError)
+                .font(WernickeTypography.size16)
+                .foregroundStyle(isSuccess ? .green : V4Color.error)
 
             Text(actionDescription)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 10)
+        .padding(.horizontal, ParietalSpacing.md + 2)
+        .padding(.vertical, ParietalSpacing.sm + 2)
         .background(
             SwiftUI.Capsule()
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             SwiftUI.Capsule()
-                .stroke(isSuccess ? .green.opacity(0.5) : TrinityTheme.statusError.opacity(0.5), lineWidth: 1)
+                .stroke(isSuccess ? .green.opacity(V2Depth.stateDisabled) : V4Color.error.opacity(V2Depth.stateDisabled), lineWidth: 1)
         )
         .shadow(color: .black.opacity(0.2), radius: 10, y: 4)
         .opacity(isVisible ? 1 : 0)
@@ -339,7 +339,7 @@ struct MessageQuickActions_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 30) {
             MessageQuickActions(message: sampleMessage) { _ in }
-                .frame(width: 300)
+                .frame(width: ParietalSpacing.xl * 12)
 
             QuickActionBar(
                 message: sampleMessage,
@@ -361,7 +361,7 @@ struct MessageQuickActions_Previews: PreviewProvider {
             )
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }
 

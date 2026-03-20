@@ -23,14 +23,14 @@ struct DetailedLoadingState: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             Spacer()
 
             loadingIndicator
 
             Text(message)
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textSecondary)
 
             Spacer()
         }
@@ -42,7 +42,7 @@ struct DetailedLoadingState: View {
         case .spinner:
             ProgressView()
                 .scaleEffect(1.2)
-                .tint(TrinityTheme.accent)
+                .tint(V4Color.accent)
 
         case .dots:
             LoadingDots()
@@ -62,10 +62,10 @@ struct LoadingDots: View {
     @State private var isAnimating = false
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             ForEach(0..<3) { index in
                 Circle()
-                    .fill(TrinityTheme.accent)
+                    .fill(V4Color.accent)
                     .frame(width: 10, height: 10)
                     .scaleEffect(isAnimating ? pulseScale(for: index) : 1)
                     .animation(
@@ -92,10 +92,10 @@ struct LoadingBars: View {
     @State private var isAnimating = false
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             ForEach(0..<4) { index in
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(TrinityTheme.accent)
+                    .fill(V4Color.accent)
                     .frame(width: 4, height: 20)
                     .scaleEffect(y: isAnimating ? barScale(for: index) : 0.3)
                     .animation(
@@ -128,13 +128,13 @@ struct PulsingCircle: View {
     var body: some View {
         ZStack {
             Circle()
-                .fill(TrinityTheme.accent.opacity(0.3))
+                .fill(V4Color.accent.opacity(V2Depth.stateHover))
                 .frame(width: 60, height: 60)
                 .scaleEffect(scale)
                 .opacity(2 - scale)
 
             Circle()
-                .fill(TrinityTheme.accent)
+                .fill(V4Color.accent)
                 .frame(width: 40, height: 40)
         }
         .onAppear {
@@ -156,14 +156,14 @@ struct InlineLoadingIndicator: View {
     }
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: ParietalSpacing.sm + 2) {
             ProgressView()
                 .scaleEffect(0.8)
-                .tint(TrinityTheme.accent)
+                .tint(V4Color.accent)
 
             Text(message)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
                 .opacity(isAnimating ? 1 : 0)
         }
         .onAppear {
@@ -186,7 +186,7 @@ struct ShimmerModifier: ViewModifier {
                     LinearGradient(
                         gradient: Gradient(colors: [
                             .clear,
-                            .white.opacity(0.3),
+                            .white.opacity(V2Depth.stateHover),
                             .clear
                         ]),
                         startPoint: .leading,
@@ -220,12 +220,12 @@ struct SkeletonLoading: View {
 
     var body: some View {
         if show {
-            VStack(spacing: 12) {
-                HStack(spacing: 12) {
+            VStack(spacing: ParietalSpacing.md) {
+                HStack(spacing: ParietalSpacing.md) {
                     SkeletonAvatar()
-                        .frame(width: 48, height: 48)
+                        .frame(width: ParietalSpacing.avatarMedium, height: ParietalSpacing.avatarMedium)
 
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         SkeletonTextLine(widthPercent: 0.4, height: 12)
                         SkeletonTextLine(widthPercent: 0.7, height: 10)
                     }
@@ -249,7 +249,7 @@ struct SkeletonTextLine: View {
     var body: some View {
         GeometryReader { geometry in
             RoundedRectangle(cornerRadius: 4)
-                .fill(TrinityTheme.bgCardBorder)
+                .fill(V4Color.border)
                 .frame(width: geometry.size.width * widthPercent, height: height)
                 .shimmer()
         }
@@ -259,12 +259,12 @@ struct SkeletonTextLine: View {
 
 struct SkeletonTextBlock: View {
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             SkeletonTextLine(widthPercent: 0.9, height: 10)
             SkeletonTextLine(widthPercent: 0.7, height: 10)
             SkeletonTextLine(widthPercent: 0.5, height: 10)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, ParietalSpacing.xs)
     }
 }
 
@@ -273,14 +273,14 @@ struct SkeletonImagePlaceholder: View {
 
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 12)
-                .fill(TrinityTheme.bgCardBorder)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .fill(V4Color.border)
                 .frame(width: size, height: size)
                 .shimmer()
 
             Image(systemName: "photo")
                 .font(.system(size: size * 0.3))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.4))
+                .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextTertiary))
         }
     }
 }
@@ -292,51 +292,51 @@ struct UploadProgressIndicator: View {
     let filename: String
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             ZStack {
                 Circle()
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 2)
+                    .stroke(V4Color.border, lineWidth: 2)
 
                 Circle()
                     .trim(from: 0, to: progress)
                     .stroke(
-                        TrinityTheme.accent,
+                        V4Color.accent,
                         style: StrokeStyle(lineWidth: 2, lineCap: .round)
                     )
                     .rotationEffect(.degrees(-90))
                     .animation(.easeInOut(duration: 0.3), value: progress)
 
                 Text("\(Int(progress * 100))%")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.miniMedium)
+                    .foregroundStyle(V4Color.textPrimary)
             }
-            .frame(width: 44, height: 44)
+            .frame(width: ParietalSpacing.avatarMedium - 4, height: ParietalSpacing.avatarMedium - 4)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(filename)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.captionMedium)
+                    .foregroundStyle(V4Color.textPrimary)
                     .lineLimit(1)
 
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(TrinityTheme.bgCardBorder)
-                            .frame(height: 4)
+                            .fill(V4Color.border)
+                            .frame(height: ParietalSpacing.xs)
 
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(TrinityTheme.accent)
+                            .fill(V4Color.accent)
                             .frame(width: geometry.size.width * progress, height: 4)
                             .shimmer()
                     }
                 }
-                .frame(height: 4)
+                .frame(height: ParietalSpacing.xs)
             }
         }
         .padding()
         .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(TrinityTheme.bgCard)
+            RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                .fill(V4Color.surface)
         )
     }
 }
@@ -345,10 +345,10 @@ struct UploadProgressIndicator: View {
 
 struct CardSkeleton: View {
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             SkeletonImagePlaceholder(size: 60)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 SkeletonTextLine(widthPercent: 0.5, height: 12)
                 SkeletonTextLine(widthPercent: 0.9, height: 10)
                 SkeletonTextLine(widthPercent: 0.7, height: 10)
@@ -358,8 +358,8 @@ struct CardSkeleton: View {
         }
         .padding()
         .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(TrinityTheme.bgCard)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .fill(V4Color.surface)
         )
     }
 }
@@ -374,7 +374,7 @@ struct ListSkeleton: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             ForEach(0..<itemCount, id: \.self) { _ in
                 CardSkeleton()
             }
@@ -401,27 +401,27 @@ struct FullScreenLoading: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.3)
+            Color.black.opacity(V2Depth.stateHover)
                 .ignoresSafeArea()
 
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 ProgressView()
                     .scaleEffect(1.5)
                     .tint(.white)
 
                 Text(message)
-                    .font(.system(size: 14))
+                    .font(WernickeTypography.size14)
                     .foregroundStyle(.white)
 
                 if showProgress {
                     Text("\(Int(progress * 100))%")
-                        .font(.system(size: 24, weight: .bold))
+                        .font(WernickeTypography.h3Bold)
                         .foregroundStyle(.white)
                 }
             }
             .padding(32)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
+                RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                     .fill(.black.opacity(0.8))
             )
         }
@@ -451,21 +451,21 @@ struct LoadingButton: View {
                 action()
             }
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 if isLoading {
                     ProgressView()
                         .scaleEffect(0.8)
                         .tint(.white)
                 } else {
                     Text(title)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(WernickeTypography.body14Medium)
                 }
             }
             .frame(minWidth: 100)
-            .padding(.horizontal, 20)
-            .padding(.vertical, 10)
-            .background(isLoading ? TrinityTheme.accent.opacity(0.6) : TrinityTheme.accent)
-            .cornerRadius(8)
+            .padding(.horizontal, ParietalSpacing.md + ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm + 2)
+            .background(isLoading ? V4Color.accent.opacity(V1Theme.opacityTextSecondary) : V4Color.accent)
+            .cornerRadius(V1Theme.cornerSmall)
         }
         .buttonStyle(.plain)
         .disabled(isLoading)
@@ -478,15 +478,15 @@ struct PageLoadingIndicator: View {
     let isLoading: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             ProgressView()
                 .scaleEffect(0.6)
-                .tint(TrinityTheme.accent)
+                .tint(V4Color.accent)
                 .opacity(isLoading ? 1 : 0)
 
             Text("Loading...")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
                 .opacity(isLoading ? 1 : 0)
         }
         .frame(height: 20)
@@ -497,51 +497,51 @@ struct PageLoadingIndicator: View {
 
 struct DetailedLoadingStates_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             DetailedLoadingState(style: .dots)
                 .frame(width: 300, height: 200)
                 .padding()
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
 
             DetailedLoadingState(message: "Fetching data...", style: .bars)
                 .frame(width: 300, height: 200)
                 .padding()
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
 
             InlineLoadingIndicator(message: "Loading messages...")
-                .frame(width: 200)
+                .frame(width: ParietalSpacing.xl * 8)
                 .padding()
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
 
             LoadingButton(isLoading: true, title: "Load More") {}
-                .frame(width: 200)
+                .frame(width: ParietalSpacing.xl * 8)
                 .padding()
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
 
             // Skeleton previews
             SkeletonLoading(show: true)
-                .frame(width: 300)
+                .frame(width: ParietalSpacing.xl * 12)
                 .padding()
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
 
             ListSkeleton(itemCount: 3)
                 .frame(width: 350)
                 .padding()
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
 
             UploadProgressIndicator(progress: 0.65, filename: "upload.jpg")
-                .frame(width: 300)
+                .frame(width: ParietalSpacing.xl * 12)
                 .padding()
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
 
-            HStack(spacing: 20) {
+            HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 CircularProgressIndicator(value: 0.25)
                 CircularProgressIndicator(value: 0.5)
                 CircularProgressIndicator(value: 0.75)
                 CircularProgressIndicator(value: 1.0)
             }
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
         }
     }
 }

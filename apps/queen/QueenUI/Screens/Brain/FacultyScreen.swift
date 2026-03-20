@@ -5,57 +5,57 @@ struct FacultyScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 // Header
                 HStack {
                     Text("🎓")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("FACULTY BOARD")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("Agent Status Dashboard")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
 
                     VStack(alignment: .trailing) {
                         Text("\(watcher.heartbeats.filter(\.isUp).count)/\(watcher.heartbeats.count)")
                             .font(.title.weight(.bold).monospacedDigit())
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("agents online")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
                 .padding()
 
                 // Summary stats
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
                     StatCard(
                         label: "Total Agents",
                         value: "\(watcher.heartbeats.count)",
-                        accent: TrinityTheme.accent
+                        accent: V4Color.accent
                     )
                     StatCard(
                         label: "Online",
                         value: "\(watcher.heartbeats.filter(\.isUp).count)",
-                        accent: TrinityTheme.statusOK
+                        accent: V4Color.statusOK
                     )
                     StatCard(
                         label: "Offline",
                         value: "\(watcher.heartbeats.filter { !$0.isUp }.count)",
-                        accent: TrinityTheme.statusError
+                        accent: V4Color.statusError
                     )
                 }
                 .padding(.horizontal)
 
                 // Agent list
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("AGENT HEARTBEATS")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                         .padding(.horizontal)
 
                     ForEach(watcher.heartbeats) { beat in
@@ -69,13 +69,13 @@ struct FacultyScreen: View {
                     }
 
                     if watcher.heartbeats.isEmpty {
-                        VStack(spacing: 12) {
+                        VStack(spacing: ParietalSpacing.md) {
                             Text("No agents detected")
                                 .font(.headline)
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Text("Heartbeat files not found in .trinity/")
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(32)
@@ -84,10 +84,10 @@ struct FacultyScreen: View {
 
                 // Farm events
                 if !watcher.farmEvents.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Text("RECENT FARM EVENTS")
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(TrinityTheme.golden)
+                            .foregroundStyle(V4Color.golden)
                             .padding(.horizontal)
 
                         ForEach(watcher.farmEvents.suffix(10)) { event in
@@ -96,23 +96,23 @@ struct FacultyScreen: View {
                                 VStack(alignment: .leading) {
                                     Text(event.type ?? "event")
                                         .font(.caption.weight(.medium))
-                                        .foregroundStyle(TrinityTheme.textPrimary)
+                                        .foregroundStyle(V4Color.textPrimary)
                                     if let svc = event.service {
                                         Text(svc)
                                             .font(.caption2)
-                                            .foregroundStyle(TrinityTheme.textMuted)
+                                            .foregroundStyle(V4Color.textSecondary)
                                     }
                                 }
                                 Spacer()
                                 if let ppl = event.ppl {
                                     Text(String(format: "PPL %.2f", ppl))
                                         .font(.caption.monospacedDigit())
-                                        .foregroundStyle(TrinityTheme.golden)
+                                        .foregroundStyle(V4Color.golden)
                                 }
                                 if let step = event.step {
                                     Text("step \(step)")
                                         .font(.caption2.monospacedDigit())
-                                        .foregroundStyle(TrinityTheme.textMuted)
+                                        .foregroundStyle(V4Color.textSecondary)
                                 }
                             }
                             .padding(.horizontal)
@@ -123,7 +123,7 @@ struct FacultyScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { watcher.reload() }
     }
 

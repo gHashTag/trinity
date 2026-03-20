@@ -4,31 +4,31 @@ struct MetricGauge: View {
     let label: String
     let value: Double
     let maxValue: Double
-    var accent: Color = TrinityTheme.accent
+    var accent: Color = V4Color.accent
 
     private var fraction: Double { min(max(value / maxValue, 0), 1) }
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             ZStack {
                 Circle()
-                    .stroke(TrinityTheme.bgCard, lineWidth: 6)
+                    .stroke(V4Color.bgCard, lineWidth: 6)
 
                 Circle()
                     .trim(from: 0, to: fraction)
                     .stroke(accent, style: StrokeStyle(lineWidth: 6, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                    .animation(.easeInOut(duration: 0.5), value: fraction)
+                    .animation(MTMotion.slow, value: fraction)
 
                 Text(String(format: "%.0f", value))
                     .font(.title3.weight(.bold).monospacedDigit())
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
             }
-            .frame(width: 64, height: 64)
+            .frame(width: ParietalSpacing.avatarMedium * 1.33, height: ParietalSpacing.avatarMedium * 1.33)
 
             Text(label)
-                .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.caption)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel(label)

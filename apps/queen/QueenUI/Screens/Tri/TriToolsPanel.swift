@@ -10,7 +10,7 @@ public struct TriToolsPanel: View {
 
     public var body: some View {
         if isExpanded {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("Tri Tools")
                     .font(.caption.weight(.bold))
                 Text("Coming soon")

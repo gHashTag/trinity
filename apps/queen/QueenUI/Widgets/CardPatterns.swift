@@ -28,23 +28,23 @@ struct ContentCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 20))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.size20)
+                        .foregroundStyle(V4Color.accent)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.bodyEmphasized)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     if let subtitle = subtitle {
                         Text(subtitle)
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
 
@@ -53,14 +53,14 @@ struct ContentCard: View {
 
             if let content = content {
                 Text(content)
-                    .font(.system(size: 13))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(V4Color.textSecondary)
                     .lineLimit(3)
             }
         }
-        .padding(16)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.lg)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .cardModifier(elevated: elevated, bordered: bordered)
     }
 }
@@ -92,49 +92,49 @@ struct MediaCard: View {
         VStack(alignment: .leading, spacing: 0) {
             // Media area
             ZStack {
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .fill(TrinityTheme.bgCardBorder.opacity(0.3))
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .fill(V4Color.border.opacity(V2Depth.stateHover))
                     .frame(height: 120)
 
                 if let iconName = iconName {
                     Image(systemName: iconName)
-                        .font(.system(size: 40))
-                        .foregroundStyle(TrinityTheme.accent.opacity(0.5))
+                        .font(WernickeTypography.size40)
+                        .foregroundStyle(V4Color.accent.opacity(V2Depth.stateDisabled))
                 }
 
                 if let overlayText = overlayText {
                     Text(overlayText)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(WernickeTypography.captionMedium)
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, ParietalSpacing.sm)
+                        .padding(.vertical, ParietalSpacing.xs)
                         .background(
                             SwiftUI.Capsule()
-                                .fill(.black.opacity(0.6))
+                                .fill(.black.opacity(V1Theme.opacityTextSecondary))
                         )
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
 
             // Text area
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(title)
-                    .font(.system(size: 14, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body14Semibold)
+                    .foregroundStyle(V4Color.textPrimary)
                     .lineLimit(1)
 
                 if let subtitle = subtitle {
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                         .lineLimit(2)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm + 2)
         }
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .cardModifier(elevated: elevated, bordered: false)
     }
 }
@@ -163,17 +163,17 @@ struct InteractiveCard<Content: View>: View {
 struct InteractiveCardButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .padding(16)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerMedium)
+            .padding(ParietalSpacing.lg)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerMedium)
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .stroke(configuration.isPressed ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .stroke(configuration.isPressed ? V4Color.accent : V4Color.border, lineWidth: 1)
             )
             .scaleEffect(configuration.isPressed ? 0.98 : 1.0)
             .opacity(configuration.isPressed ? 0.9 : 1.0)
             .animation(.easeInOut(duration: 0.1), value: configuration.isPressed)
-            .shadow(color: .black.opacity(0.1), radius: configuration.isPressed ? 2 : 4, y: configuration.isPressed ? 1 : 2)
+            .shadow(color: .black.opacity(V2Depth.bgSubtle), radius: configuration.isPressed ? 2 : 4, y: configuration.isPressed ? 1 : 2)
     }
 }
 
@@ -193,9 +193,9 @@ struct MetricCard: View {
 
         var color: Color {
             switch self {
-            case .positive: return TrinityTheme.statusOK
-            case .negative: return TrinityTheme.statusError
-            case .neutral: return TrinityTheme.textMuted
+            case .positive: return V4Color.success
+            case .negative: return V4Color.error
+            case .neutral: return V4Color.textSecondary
             }
         }
 
@@ -223,30 +223,30 @@ struct MetricCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             HStack {
                 Text(title)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .textCase(.uppercase)
 
                 Spacer()
 
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 14))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.size14)
+                        .foregroundStyle(V4Color.accent)
                 }
             }
 
             Text(value)
-                .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h3Bold)
+                .foregroundStyle(V4Color.textPrimary)
 
             if let change = change, let changeType = changeType {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Image(systemName: changeType.icon)
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(WernickeTypography.miniSemibold)
 
                     Text(change)
                         .font(.caption)
@@ -254,10 +254,10 @@ struct MetricCard: View {
                 .foregroundStyle(changeType.color)
             }
         }
-        .padding(16)
+        .padding(ParietalSpacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .shadow(color: .black.opacity(0.05), radius: 4, y: 2)
     }
 }
@@ -298,33 +298,33 @@ struct ActionCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 20))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.size20)
+                        .foregroundStyle(V4Color.accent)
                 }
 
                 Text(title)
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.bodyEmphasized)
+                    .foregroundStyle(V4Color.textPrimary)
             }
 
             Text(message)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textSecondary)
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Button(action: primaryAction.action) {
                     Text(primaryAction.title)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(primaryAction.isDestructive ? .white : TrinityTheme.accent)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .font(WernickeTypography.smallMedium)
+                        .foregroundStyle(primaryAction.isDestructive ? .white : V4Color.accent)
+                        .padding(.horizontal, ParietalSpacing.md)
+                        .padding(.vertical, ParietalSpacing.xs + 2)
                         .background(
                             RoundedRectangle(cornerRadius: 6)
-                                .fill(primaryAction.isDestructive ? TrinityTheme.statusError : TrinityTheme.accent.opacity(0.1))
+                                .fill(primaryAction.isDestructive ? V4Color.error : V4Color.accent.opacity(V2Depth.bgSubtle))
                         )
                 }
                 .buttonStyle(.plain)
@@ -332,13 +332,13 @@ struct ActionCard: View {
                 if let secondaryAction = secondaryAction {
                     Button(action: secondaryAction.action) {
                         Text(secondaryAction.title)
-                            .font(.system(size: 13))
-                            .foregroundStyle(TrinityTheme.textMuted)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
+                            .font(WernickeTypography.size13)
+                            .foregroundStyle(V4Color.textSecondary)
+                            .padding(.horizontal, ParietalSpacing.md)
+                            .padding(.vertical, ParietalSpacing.xs + 2)
                             .background(
                                 RoundedRectangle(cornerRadius: 6)
-                                    .fill(TrinityTheme.bgCardBorder)
+                                    .fill(V4Color.border)
                             )
                     }
                     .buttonStyle(.plain)
@@ -347,12 +347,12 @@ struct ActionCard: View {
                 Spacer()
             }
         }
-        .padding(16)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.lg)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -378,23 +378,23 @@ struct SettingsCard: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             if let icon = icon {
                 Image(systemName: icon)
-                    .font(.system(size: 18))
-                    .foregroundStyle(isEnabled ? TrinityTheme.accent : TrinityTheme.textMuted)
+                    .font(WernickeTypography.size18)
+                    .foregroundStyle(isEnabled ? V4Color.accent : V4Color.textSecondary)
                     .frame(width: 28)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(isEnabled ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                    .font(WernickeTypography.body14Medium)
+                    .foregroundStyle(isEnabled ? V4Color.textPrimary : V4Color.textSecondary)
 
                 if let subtitle = subtitle {
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
 
@@ -404,11 +404,11 @@ struct SettingsCard: View {
                 .toggleStyle(.switch)
         }
         .padding(14)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(isEnabled ? TrinityTheme.accent.opacity(0.3) : TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(isEnabled ? V4Color.accent.opacity(V2Depth.stateHover) : V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -422,8 +422,8 @@ private struct CardModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: bordered ? 1 : 0)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .stroke(V4Color.border, lineWidth: bordered ? 1 : 0)
             )
             .shadow(
                 color: .black.opacity(elevated ? 0.1 : 0),
@@ -445,7 +445,7 @@ struct CardPatterns_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             // Content cards
-            VStack(spacing: 12) {
+            VStack(spacing: ParietalSpacing.md) {
                 ContentCard(
                     title: "Welcome to Trinity",
                     subtitle: "Getting Started",
@@ -463,7 +463,7 @@ struct CardPatterns_Previews: PreviewProvider {
             .frame(width: 350)
 
             // Media cards
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 MediaCard(
                     title: "Neural Networks",
                     subtitle: "Deep Learning",
@@ -480,7 +480,7 @@ struct CardPatterns_Previews: PreviewProvider {
             .frame(width: 350)
 
             // Metric cards
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 MetricCard(
                     title: "Total Requests",
                     value: "24,589",
@@ -510,23 +510,23 @@ struct CardPatterns_Previews: PreviewProvider {
             // Interactive card
             InteractiveCard {
                 HStack {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                         Text("Click Me!")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .font(WernickeTypography.body14Semibold)
+                            .foregroundStyle(V4Color.textPrimary)
                         Text("Interactive card example")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size12)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             } action: {
                 // Action
             }
-            .frame(width: 250)
+            .frame(width: ParietalSpacing.xl * 10)
 
             // Action card
             ActionCard(
@@ -539,7 +539,7 @@ struct CardPatterns_Previews: PreviewProvider {
             .frame(width: 320)
 
             // Settings card
-            VStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
                 SettingsCard(
                     title: "Auto-save",
                     subtitle: "Automatically save drafts",
@@ -554,9 +554,9 @@ struct CardPatterns_Previews: PreviewProvider {
                     icon: "bell.fill"
                 )
             }
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

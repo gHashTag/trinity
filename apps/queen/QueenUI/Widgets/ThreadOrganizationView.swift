@@ -11,15 +11,15 @@ struct ThreadTagsManager: View {
     @State private var showTagEditor = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             // Current tags
             if !thread.tags.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Current Tags")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
-                    FlowLayout(spacing: 8) {
+                    FlowLayout(spacing: ParietalSpacing.sm) {
                         ForEach(thread.tags, id: \.self) { tag in
                             tagChip(tag, isSelected: true)
                         }
@@ -31,12 +31,12 @@ struct ThreadTagsManager: View {
             Button {
                 showTagEditor = true
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "plus.circle.fill")
                     Text("Add Tag")
                 }
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
             }
             .buttonStyle(.plain)
         }
@@ -54,7 +54,7 @@ struct ThreadTagsManager: View {
                 onTagsUpdated(thread.tags.filter { $0 != tag })
             }
         } label: {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Text("#\(tag)")
                     .font(.caption)
                 if isSelected {
@@ -62,11 +62,11 @@ struct ThreadTagsManager: View {
                         .font(.caption2)
                 }
             }
-            .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textMuted)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .foregroundStyle(isSelected ? V4Color.accent : V4Color.textSecondary)
+            .padding(.horizontal, ParietalSpacing.sm + 2)
+            .padding(.vertical, ParietalSpacing.xs + 2)
             .background(
-                RoundedRectangle(cornerRadius: 12).fill(isSelected ? TrinityTheme.accent.opacity(0.15) : TrinityTheme.bgCard)
+                RoundedRectangle(cornerRadius: 12).fill(isSelected ? V4Color.accent.opacity(V2Depth.bgSidebarHover) : V4Color.surface)
             )
         }
         .buttonStyle(.plain)
@@ -74,7 +74,7 @@ struct ThreadTagsManager: View {
 
     private var tagEditorSheet: some View {
         NavigationStack {
-            VStack(spacing: 16) {
+            VStack(spacing: ParietalSpacing.lg) {
                 // New tag input
                 HStack {
                     TextField("New tag name", text: $newTagText)
@@ -91,7 +91,7 @@ struct ThreadTagsManager: View {
 
                 // Available tags
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         ForEach(availableTags, id: \.self) { tag in
                             availableTagRow(tag)
                         }
@@ -123,16 +123,16 @@ struct ThreadTagsManager: View {
         } label: {
             HStack {
                 Text("#\(tag)")
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                    .foregroundStyle(isSelected ? V4Color.accent : V4Color.textPrimary)
 
                 Spacer()
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                 }
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, ParietalSpacing.sm)
         }
         .buttonStyle(.plain)
     }
@@ -232,7 +232,7 @@ struct ThreadColorLabelPicker: View {
     ]
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             ForEach(colors, id: \.name) { color in
                 colorButton(color)
             }
@@ -251,10 +251,10 @@ struct ThreadColorLabelPicker: View {
         } label: {
             Circle()
                 .fill(color.color)
-                .frame(width: 24, height: 24)
+                .frame(width: ParietalSpacing.lg, height: ParietalSpacing.lg)
                 .overlay(
                     Circle()
-                        .stroke(selectedColor == color.name ? TrinityTheme.accent : Color.white.opacity(0.3), lineWidth: 2)
+                        .stroke(selectedColor == color.name ? V4Color.accent : Color.white.opacity(V2Depth.stateHover), lineWidth: 2)
                 )
                 .scaleEffect(selectedColor == color.name ? 1.1 : 1.0)
         }
@@ -271,11 +271,11 @@ struct ThreadFolderView: View {
     @Binding var selectedFolder: ThreadFolder?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("Folders")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
-                .padding(.horizontal, 12)
+                .foregroundStyle(V4Color.textSecondary)
+                .padding(.horizontal, ParietalSpacing.md)
 
             // All threads
             folderButton(name: "All Threads", icon: "tray.full", count: nil) {
@@ -284,8 +284,8 @@ struct ThreadFolderView: View {
             }
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
-                .padding(.horizontal, 12)
+                .background(V4Color.border)
+                .padding(.horizontal, ParietalSpacing.md)
 
             // Custom folders
             ForEach(folders) { folder in
@@ -299,15 +299,15 @@ struct ThreadFolderView: View {
             Button {
                 createNewFolder()
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Image(systemName: "plus.circle")
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text("New Folder")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm)
             }
             .buttonStyle(.plain)
         }
@@ -315,27 +315,27 @@ struct ThreadFolderView: View {
 
     private func folderButton(name: String, icon: String, count: Int?, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 10) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 Image(systemName: icon)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
-                    .frame(width: 20)
+                    .foregroundStyle(V4Color.textSecondary)
+                    .frame(width: ParietalSpacing.buttonSmallWidth)
 
                 Text(name)
                     .font(.caption)
-                    .foregroundStyle(selectedFolder?.name == name ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                    .foregroundStyle(selectedFolder?.name == name ? V4Color.accent : V4Color.textPrimary)
 
                 Spacer()
 
                 if let count = count {
                     Text("\(count)")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(selectedFolder?.name == name ? TrinityTheme.accent.opacity(0.15) : Color.clear)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
+            .background(selectedFolder?.name == name ? V4Color.accent.opacity(V2Depth.bgSidebarHover) : Color.clear)
         }
         .buttonStyle(.plain)
     }
@@ -356,10 +356,10 @@ struct ThreadPriorityBadge: View {
 
         var color: Color {
             switch self {
-            case .low: return TrinityTheme.textMuted
+            case .low: return V4Color.textSecondary
             case .medium: return .blue
             case .high: return .orange
-            case .urgent: return TrinityTheme.statusError
+            case .urgent: return V4Color.error
             }
         }
 
@@ -376,17 +376,17 @@ struct ThreadPriorityBadge: View {
     let priority: Priority
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Image(systemName: priority.icon)
                 .font(.caption2)
             Text(priority.rawValue.uppercased())
                 .font(.caption2)
         }
         .foregroundStyle(priority.color)
-        .padding(.horizontal, 6)
+        .padding(.horizontal, ParietalSpacing.xs + 2)
         .padding(.vertical, 3)
         .background(
-            priority.color.opacity(0.15),
+            priority.color.opacity(V2Depth.bgSidebarHover),
             in: SwiftUI.Capsule()
         )
     }
@@ -405,8 +405,8 @@ struct ThreadStatusIndicator: View {
             switch self {
             case .active: return .green
             case .waiting: return .yellow
-            case .completed: return TrinityTheme.accent
-            case .blocked: return TrinityTheme.statusError
+            case .completed: return V4Color.accent
+            case .blocked: return V4Color.error
             }
         }
 
@@ -423,14 +423,14 @@ struct ThreadStatusIndicator: View {
     let status: Status
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Circle()
                 .fill(status.color)
-                .frame(width: 8, height: 8)
+                .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
 
             Text(status.label)
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
     }
 }
@@ -439,7 +439,7 @@ struct ThreadStatusIndicator: View {
 
 struct ThreadOrganizationView_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             ThreadTagsManager(
                 thread: ChatThread(title: "Sample Thread"),
                 onTagsUpdated: { _ in }
@@ -452,6 +452,6 @@ struct ThreadOrganizationView_Previews: PreviewProvider {
             ThreadStatusIndicator(status: .active)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

@@ -9,29 +9,29 @@ struct VSAScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 HStack {
                     Text("🔷")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("VSA")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.purple)
+                            .foregroundStyle(V4Color.purple)
                         Text("Vector Symbolic Architecture — Hyperdimensional Computing")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                 }
                 .padding()
 
                 // Core operations
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("CORE OPERATIONS")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
 
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
                         opCard("bind(a,b)", "Associate", "a⊗b")
                         opCard("unbind(a,b)", "Retrieve", "a⊘b")
                         opCard("bundle(a,b)", "Merge", "a⊕b")
@@ -43,46 +43,46 @@ struct VSAScreen: View {
                 .padding(.horizontal)
 
                 // Live demo
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("LIVE DEMO (dim=\(dimA))")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.golden)
+                        .foregroundStyle(V4Color.golden)
 
-                    HStack(spacing: 16) {
+                    HStack(spacing: ParietalSpacing.lg) {
                         Button("Generate") { generateVectors() }
                             .buttonStyle(.bordered)
-                            .tint(TrinityTheme.accent)
+                            .tint(V4Color.accent)
 
                         Button("Bind") { computeBind() }
                             .buttonStyle(.bordered)
-                            .tint(TrinityTheme.purple)
+                            .tint(V4Color.purple)
 
                         Spacer()
 
                         Text(String(format: "cos = %.4f", similarity))
                             .font(.title3.weight(.bold).monospacedDigit())
-                            .foregroundStyle(TrinityTheme.golden)
+                            .foregroundStyle(V4Color.golden)
                     }
 
                     if !vecA.isEmpty {
-                        HStack(spacing: 16) {
+                        HStack(spacing: ParietalSpacing.lg) {
                             VStack {
                                 Text("Vector A")
                                     .font(.caption2)
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .foregroundStyle(V4Color.textSecondary)
                                 TritVisualizer(values: vecA, cellSize: 2)
                             }
                             VStack {
                                 Text("Vector B")
                                     .font(.caption2)
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .foregroundStyle(V4Color.textSecondary)
                                 TritVisualizer(values: vecB, cellSize: 2)
                             }
                             if !bound.isEmpty {
                                 VStack {
                                     Text("A ⊗ B")
                                         .font(.caption2)
-                                        .foregroundStyle(TrinityTheme.textMuted)
+                                        .foregroundStyle(V4Color.textSecondary)
                                     TritVisualizer(values: bound, cellSize: 2)
                                 }
                             }
@@ -90,15 +90,15 @@ struct VSAScreen: View {
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Math foundation
-                VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                     Text("MATHEMATICAL FOUNDATION")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
 
                     ForEach([
                         ("Encoding", "Ternary {-1, 0, +1} = 1.58 bits/trit"),
@@ -111,25 +111,25 @@ struct VSAScreen: View {
                         HStack {
                             Text(label)
                                 .font(.caption.weight(.medium))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                                 .frame(width: 100, alignment: .leading)
                             Text(value)
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                             Spacer()
                         }
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
 
                 // Libraries
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("LIBRARIES")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.purple)
+                        .foregroundStyle(V4Color.purple)
 
                     ForEach([
                         ("src/vsa.zig", "Core SIMD-accelerated VSA"),
@@ -139,39 +139,39 @@ struct VSAScreen: View {
                         HStack {
                             Text(path)
                                 .font(.caption.monospaced())
-                                .foregroundStyle(TrinityTheme.accent)
+                                .foregroundStyle(V4Color.accent)
                             Spacer()
                             Text(desc)
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .padding(.horizontal)
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
     }
 
     private func opCard(_ name: String, _ desc: String, _ symbol: String) -> some View {
-        VStack(spacing: 6) {
+        VStack(spacing: ParietalSpacing.sm - 2) {
             Text(symbol)
                 .font(.title3.weight(.bold).monospaced())
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
             Text(name)
                 .font(.caption2.weight(.bold).monospaced())
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
             Text(desc)
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .padding(10)
         .frame(maxWidth: .infinity)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 

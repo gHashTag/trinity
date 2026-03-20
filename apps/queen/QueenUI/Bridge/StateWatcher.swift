@@ -18,7 +18,9 @@ public final class StateWatcher: ObservableObject {
 
     private var sources: [String: DispatchSourceFileSystemObject] = [:]
     private var fileDescriptors: [String: Int32] = [:]
-    private let trinityPath: String
+    private let _trinityPath: String
+    /// Public accessor to the trinity path for screens that need direct file access
+    public var trinityPath: String { _trinityPath }
     private let queue = DispatchQueue(label: "trinity.state.watcher")
     private var eventLogOffset: UInt64 = 0
     private var pendingEvents: [AgentEvent] = []
@@ -31,7 +33,7 @@ public final class StateWatcher: ObservableObject {
     private var eventFlushCancellable: AnyCancellable?
 
     public init(trinityPath: String? = nil) {
-        self.trinityPath = trinityPath ?? Self.findTrinityPath()
+        self._trinityPath = trinityPath ?? Self.findTrinityPath()
 
         // 250ms debounce: Queen daemon writes 3-5 files per cycle in ~200ms
         debounceCancellable = changeSubject

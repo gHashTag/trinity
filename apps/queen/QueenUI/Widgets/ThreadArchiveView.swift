@@ -375,7 +375,7 @@ struct ArchivePanel: View {
 
             if isExpanded {
                 Divider()
-                    .background(TrinityTheme.bgCardBorder)
+                    .background(V4Color.border)
 
                 if store.archivedThreads.isEmpty {
                     emptyState
@@ -384,33 +384,33 @@ struct ArchivePanel: View {
                 }
             }
         }
-        .background(TrinityTheme.bgSidebar)
+        .background(V4Color.sidebar)
     }
 
     private var header: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Button {
                 withAnimation {
                     isExpanded.toggle()
                 }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: isExpanded ? "archivebox.fill" : "archivebox")
-                        .font(.system(size: 11))
-                        .foregroundStyle(TrinityTheme.purple)
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(V4Color.purple)
 
                     Text("Archive")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(WernickeTypography.caption2Semibold)
 
                     if !store.archivedThreads.isEmpty {
                         Text("\(store.archivedThreads.count)")
-                            .font(.system(size: 10, weight: .medium, design: .monospaced))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size10Mono.weight(.medium))
+                            .foregroundStyle(V4Color.textSecondary)
                     }
 
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 9))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
             .buttonStyle(.plain)
@@ -456,14 +456,14 @@ struct ArchivePanel: View {
                     }
                 } label: {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .menuStyle(.borderlessButton)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm)
         .contentShape(Rectangle())
         .alert("Clear All Archives", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) {
@@ -479,23 +479,23 @@ struct ArchivePanel: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             Image(systemName: "archivebox")
-                .font(.system(size: 28))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.3))
+                .font(WernickeTypography.size28)
+                .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateHover))
 
             Text("No archived threads")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             Text("Archive threads to keep your main list clean")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                .foregroundStyle(V4Color.textSecondary.opacity(0.7))
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 32)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ParietalSpacing.lg)
     }
 
     private var archiveContent: some View {
@@ -507,12 +507,12 @@ struct ArchivePanel: View {
             }
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             if !uniqueTags.isEmpty {
                 tagFilter
                 Divider()
-                    .background(TrinityTheme.bgCardBorder)
+                    .background(V4Color.border)
             }
 
             if filteredThreads.isEmpty {
@@ -526,17 +526,17 @@ struct ArchivePanel: View {
     private var searchBar: some View {
         HStack {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 10))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size10)
+                .foregroundStyle(V4Color.textSecondary)
 
             TextField("Search archive...", text: $searchText)
                 .textFieldStyle(.plain)
-                .font(.system(size: 11))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size11)
+                .foregroundStyle(V4Color.textPrimary)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(TrinityTheme.bgCard.opacity(0.5))
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.xs + 2)
+        .background(V4Color.surface.opacity(V2Depth.stateDisabled))
     }
 
     private var filterReset: some View {
@@ -544,7 +544,7 @@ struct ArchivePanel: View {
             if !selectedThreads.isEmpty {
                 Text("\(selectedThreads.count) selected")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
 
                 Button("Clear") {
                     withAnimation {
@@ -558,7 +558,7 @@ struct ArchivePanel: View {
             } else {
                 Text("Filtered: \(filteredThreads.count)")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 Spacer()
 
@@ -568,24 +568,24 @@ struct ArchivePanel: View {
                         selectedTag = nil
                     }
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 8))
+                            .font(WernickeTypography.size8)
                         Text("Clear")
                             .font(.caption2)
                     }
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.xs)
     }
 
     private var tagFilter: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 ArchiveTagChip(
                     tag: nil,
                     isSelected: selectedTag == nil
@@ -606,20 +606,20 @@ struct ArchivePanel: View {
                     }
                 }
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.xs + 2)
         }
     }
 
     private var noResultsView: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 20))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.3))
+                .font(WernickeTypography.size20)
+                .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateHover))
 
             Text("No archives match")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
@@ -663,7 +663,7 @@ struct ArchivePanel: View {
                     }
 
                     Divider()
-                        .background(TrinityTheme.bgCardBorder)
+                        .background(V4Color.border)
                         .padding(.leading, 44)
                 }
             }
@@ -760,24 +760,24 @@ private struct ArchiveTagChip: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 if tag != nil {
                     Image(systemName: "tag.fill")
-                        .font(.system(size: 7))
+                        .font(WernickeTypography.size7)
                 }
                 Text(tag ?? "All")
-                    .font(.system(size: 9, weight: isSelected ? .semibold : .regular))
+                    .font(isSelected ? WernickeTypography.microSemibold : WernickeTypography.micro)
             }
-            .foregroundStyle(isSelected ? TrinityTheme.purple : TrinityTheme.textMuted)
-            .padding(.horizontal, 6)
+            .foregroundStyle(isSelected ? V4Color.purple : V4Color.textSecondary)
+            .padding(.horizontal, ParietalSpacing.xs + 2)
             .padding(.vertical, 3)
             .background(
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(TrinityTheme.purple.opacity(isSelected ? 0.2 : 0))
+                    .fill(V4Color.purple.opacity(isSelected ? 0.2 : 0))
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 3)
-                    .stroke(TrinityTheme.purple.opacity(isSelected ? 1 : 0.3), lineWidth: 1)
+                    .stroke(V4Color.purple.opacity(isSelected ? 1 : 0.3), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -803,14 +803,14 @@ private struct ArchiveThreadRow: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: ParietalSpacing.sm + 2) {
             // Selection checkbox
             Button {
                 onSelect()
             } label: {
                 Image(systemName: isSelected ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 12))
-                    .foregroundColor(isSelected ? TrinityTheme.accent : TrinityTheme.textMuted)
+                    .font(WernickeTypography.size12)
+                    .foregroundColor(isSelected ? V4Color.accent : V4Color.textSecondary)
             }
             .buttonStyle(.plain)
             .help(isSelected ? "Deselect" : "Select")
@@ -818,42 +818,42 @@ private struct ArchiveThreadRow: View {
 
             // Archive indicator
             RoundedRectangle(cornerRadius: 2)
-                .fill(TrinityTheme.purple.opacity(0.6))
+                .fill(V4Color.purple.opacity(V1Theme.opacityTextSecondary))
                 .frame(width: 3, height: 40)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 // Title row
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Text(thread.title)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.captionMedium)
+                        .foregroundStyle(V4Color.textPrimary)
                         .lineLimit(2)
 
                     Spacer()
 
                     Text(archiveDate)
-                        .font(.system(size: 9))
-                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(V4Color.textSecondary.opacity(0.7))
                 }
 
                 // Metadata row
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "bubble.left.fill")
-                        .font(.system(size: 7))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size7)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     Text("\(thread.messageCount)")
-                        .font(.system(size: 9))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     if !thread.tags.isEmpty {
                         Image(systemName: "tag.fill")
-                            .font(.system(size: 7))
-                            .foregroundStyle(TrinityTheme.purple.opacity(0.7))
+                            .font(WernickeTypography.size7)
+                            .foregroundStyle(V4Color.purple.opacity(0.7))
 
                         Text(thread.tags.prefix(2).joined(separator: ", "))
-                            .font(.system(size: 9))
-                            .foregroundStyle(TrinityTheme.purple.opacity(0.8))
+                            .font(WernickeTypography.size9)
+                            .foregroundStyle(V4Color.purple.opacity(0.8))
                             .lineLimit(1)
                     }
 
@@ -861,13 +861,13 @@ private struct ArchiveThreadRow: View {
 
                     // Action buttons (show on hover)
                     if isHovered {
-                        HStack(spacing: 4) {
+                        HStack(spacing: ParietalSpacing.xs) {
                             Button {
                                 onRestore()
                             } label: {
                                 Image(systemName: "arrow.uturn.backward")
-                                    .font(.system(size: 9))
-                                    .foregroundStyle(TrinityTheme.accent)
+                                    .font(WernickeTypography.size9)
+                                    .foregroundStyle(V4Color.accent)
                             }
                             .buttonStyle(.plain)
                             .help("Restore thread")
@@ -877,8 +877,8 @@ private struct ArchiveThreadRow: View {
                                 onDelete()
                             } label: {
                                 Image(systemName: "trash")
-                                    .font(.system(size: 8))
-                                    .foregroundStyle(TrinityTheme.statusError)
+                                    .font(WernickeTypography.size8)
+                                    .foregroundStyle(V4Color.error)
                             }
                             .buttonStyle(.plain)
                             .help("Permanently delete")
@@ -891,20 +891,20 @@ private struct ArchiveThreadRow: View {
                 // Summary preview if available
                 if let summary = thread.summary, !summary.isEmpty {
                     Text(summary)
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.8))
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V4Color.textSecondary.opacity(0.8))
                         .lineLimit(1)
                 }
             }
 
             Spacer()
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(isSelected ? TrinityTheme.accent.opacity(0.1) : (isHovered ? TrinityTheme.bgCard.opacity(0.5) : Color.clear))
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm)
+        .background(isSelected ? V4Color.accent.opacity(V2Depth.bgSubtle) : (isHovered ? V4Color.surface.opacity(V2Depth.stateDisabled) : Color.clear))
         .contentShape(Rectangle())
         .onHover { isHovered in
-            withAnimation(reduceMotion ? .none : TrinityTheme.quickSpring()) {
+            withAnimation(reduceMotion ? .none : MTMotion.quickSpring) {
                 self.isHovered = isHovered
             }
         }
@@ -928,11 +928,11 @@ struct BulkArchiveActions: View {
     @State private var showingConfirm = false
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             if !selectedThreads.isEmpty {
                 Text("\(selectedThreads.count) selected")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 Button {
                     showingConfirm = true
@@ -1006,8 +1006,8 @@ struct ArchiveStatusIndicator: View {
     var body: some View {
         if isArchived {
             Image(systemName: "archivebox.fill")
-                .font(.system(size: 8))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                .font(WernickeTypography.size8)
+                .foregroundStyle(V4Color.textSecondary.opacity(0.7))
                 .help("This thread is archived")
         }
     }
@@ -1019,60 +1019,60 @@ struct ArchiveStatisticsView: View {
     @ObservedObject var store: ArchiveStore
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             Text("Archive Statistics")
                 .font(.headline)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
 
-            HStack(spacing: 20) {
+            HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 StatItem(
                     label: "Total Threads",
                     value: "\(store.totalCount)",
                     icon: "archivebox.fill",
-                    color: TrinityTheme.purple
+                    color: V4Color.purple
                 )
 
                 StatItem(
                     label: "Total Messages",
                     value: "\(store.totalMessages)",
                     icon: "bubble.left.fill",
-                    color: TrinityTheme.accent
+                    color: V4Color.accent
                 )
             }
 
             if !store.archivedThreads.isEmpty {
                 Divider()
-                    .background(TrinityTheme.bgCardBorder)
+                    .background(V4Color.border)
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Top Tags")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     let topTags = store.topTags(limit: 5)
                     ForEach(topTags, id: \.tag) { item in
                         HStack {
                             Text(item.tag)
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.purple)
+                                .foregroundStyle(V4Color.purple)
 
                             Spacer()
 
                             Text("\(item.count)")
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
                 }
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.border, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge))
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
     }
 }
 
@@ -1083,18 +1083,18 @@ private struct StatItem: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 4) {
+        VStack(spacing: ParietalSpacing.xs) {
             Image(systemName: icon)
-                .font(.system(size: 20))
+                .font(WernickeTypography.size20)
                 .foregroundStyle(color)
 
             Text(value)
-                .font(.system(size: 18, weight: .bold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size18Medium)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(label)
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity)
     }
@@ -1152,7 +1152,7 @@ struct ThreadArchiveView_Previews: PreviewProvider {
                 ]
                 return store
             }())
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
             .padding()
             .previewDisplayName("Statistics")
         }

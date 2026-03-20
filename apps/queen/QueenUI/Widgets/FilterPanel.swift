@@ -59,12 +59,12 @@ struct FilterPanel: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             // Header
             HStack {
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.smallSemibold)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Spacer()
 
@@ -73,7 +73,7 @@ struct FilterPanel: View {
                         onClearAll()
                     } label: {
                         Text("Clear All")
-                            .font(.system(size: 11))
+                            .font(WernickeTypography.caption2)
                     }
                     .buttonStyle(.plain)
                 }
@@ -83,21 +83,21 @@ struct FilterPanel: View {
             VStack(spacing: 0) {
                 ForEach(filters.indices, id: \.self) { index in
                     FilterRow(filter: $filters[index])
-                        .padding(.vertical, 6)
+                        .padding(.vertical, ParietalSpacing.xs)
 
                     if index < filters.count - 1 {
                         Divider()
-                            .background(TrinityTheme.bgCardBorder)
+                            .background(V4Color.border)
                     }
                 }
             }
         }
-        .padding(12)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.md)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 
@@ -112,19 +112,19 @@ struct FilterRow: View {
     @Binding var filter: FilterOption
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: ParietalSpacing.sm + 2) {
             // Icon
             if let icon = filter.icon {
                 Image(systemName: icon)
-                    .font(.system(size: 13))
-                    .foregroundStyle(filter.isSelected ? TrinityTheme.accent : TrinityTheme.textMuted)
-                    .frame(width: 20)
+                    .font(WernickeTypography.small)
+                    .foregroundStyle(filter.isSelected ? V4Color.accent : V4Color.textSecondary)
+                    .frame(width: ParietalSpacing.buttonSmallWidth)
             }
 
             // Title
             Text(filter.title)
-                .font(.system(size: 13))
-                .foregroundStyle(filter.isSelected ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                .font(WernickeTypography.small)
+                .foregroundStyle(filter.isSelected ? V4Color.accent : V4Color.textPrimary)
 
             Spacer()
 
@@ -143,8 +143,8 @@ struct FilterRow: View {
                 }
             } label: {
                 Image(systemName: filter.isSelected ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 16))
-                    .foregroundStyle(filter.isSelected ? TrinityTheme.accent : TrinityTheme.textMuted)
+                    .font(WernickeTypography.size16)
+                    .foregroundStyle(filter.isSelected ? V4Color.accent : V4Color.textSecondary)
             }
             .buttonStyle(.plain)
 
@@ -166,17 +166,17 @@ struct FilterRow: View {
                 }
             } label: {
                 Circle()
-                    .fill(filter.isSelected ? TrinityTheme.accent : .clear)
-                    .frame(width: 16, height: 16)
+                    .fill(filter.isSelected ? V4Color.accent : .clear)
+                    .frame(width: ParietalSpacing.icon, height: ParietalSpacing.icon)
                     .overlay(
                         Circle()
-                            .stroke(TrinityTheme.textMuted, lineWidth: 2)
+                            .stroke(V4Color.textSecondary, lineWidth: 2)
                             .opacity(filter.isSelected ? 0 : 1)
                     )
                     .overlay(
                         Circle()
                             .fill(.white)
-                            .frame(width: 8, height: 8)
+                            .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
                             .opacity(filter.isSelected ? 1 : 0)
                     )
             }
@@ -185,12 +185,12 @@ struct FilterRow: View {
         case .range(let min, let max):
             Text("\(Int(min)) - \(Int(max))")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
         case .date:
             Image(systemName: "calendar")
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.small)
+                .foregroundStyle(V4Color.textSecondary)
 
         case .select(let options):
             Menu {
@@ -200,13 +200,13 @@ struct FilterRow: View {
                     }
                 }
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Text("Select")
                         .font(.caption)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 9))
+                        .font(WernickeTypography.size9)
                 }
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
             }
         }
     }
@@ -220,7 +220,7 @@ struct QuickFilterChips: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 ForEach(options, id: \.self) { option in
                     FilterChip(
                         title: option,
@@ -249,12 +249,12 @@ struct FilterChip: View {
             onTap()
         } label: {
             Text(title)
-                .font(.system(size: 12, weight: isSelected ? .medium : .regular))
-                .foregroundStyle(isSelected ? .white : TrinityTheme.textPrimary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(isSelected ? TrinityTheme.accent : TrinityTheme.bgCardBorder)
-                .cornerRadius(16)
+                .font(isSelected ? WernickeTypography.captionMedium : WernickeTypography.caption)
+                .foregroundStyle(isSelected ? .white : V4Color.textPrimary)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.xs)
+                .background(isSelected ? V4Color.accent : V4Color.border)
+                .cornerRadius(V1Theme.cornerXLarge)
         }
         .buttonStyle(.plain)
     }
@@ -268,12 +268,12 @@ struct MultiSelectFilter: View {
     @Binding var selected: Set<String>
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text(title)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
-            FilterFlowLayout(spacing: 6) {
+            FilterFlowLayout(spacing: ParietalSpacing.sm - 2) {
                 ForEach(options, id: \.self) { option in
                     FilterChip(
                         title: option,
@@ -299,36 +299,36 @@ struct RangeSliderFilter: View {
     let bounds: ClosedRange<Double>
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack {
                 Text(title)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 Spacer()
 
                 Text("\(Int(range.lowerBound)) - \(Int(range.upperBound))")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
             }
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     // Track
                     Rectangle()
-                        .fill(TrinityTheme.bgCardBorder)
-                        .frame(height: 4)
+                        .fill(V4Color.border)
+                        .frame(height: ParietalSpacing.xs)
 
                     // Fill
                     Rectangle()
-                        .fill(TrinityTheme.accent)
+                        .fill(V4Color.accent)
                         .frame(width: width(for: range, in: geometry.size.width), height: 4)
 
                     // Lower thumb
                     Circle()
                         .fill(.white)
-                        .frame(width: 16, height: 16)
-                        .shadow(color: .black.opacity(0.1), radius: 2)
+                        .frame(width: ParietalSpacing.icon, height: ParietalSpacing.icon)
+                        .shadow(color: .black.opacity(V2Depth.bgSubtle), radius: 2)
                         .offset(x: offset(for: range.lowerBound, in: geometry.size.width) - 8)
                         .gesture(
                             DragGesture()
@@ -340,8 +340,8 @@ struct RangeSliderFilter: View {
                     // Upper thumb
                     Circle()
                         .fill(.white)
-                        .frame(width: 16, height: 16)
-                        .shadow(color: .black.opacity(0.1), radius: 2)
+                        .frame(width: ParietalSpacing.icon, height: ParietalSpacing.icon)
+                        .shadow(color: .black.opacity(V2Depth.bgSubtle), radius: 2)
                         .offset(x: offset(for: range.upperBound, in: geometry.size.width) - 8)
                         .gesture(
                             DragGesture()
@@ -461,17 +461,17 @@ struct FilterPanel_Previews: PreviewProvider {
                     FilterOption(id: "4", title: "Date Range", icon: "calendar", type: .date)
                 ])
             )
-            .frame(width: 250)
+            .frame(width: ParietalSpacing.xl * 10)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             QuickFilterChips(
                 options: ["All", "Active", "Completed", "Pending", "Cancelled"],
                 selected: .constant("Active")
             )
-            .frame(width: 400)
+            .frame(width: ParietalSpacing.xl * 16)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
         }
     }
 }

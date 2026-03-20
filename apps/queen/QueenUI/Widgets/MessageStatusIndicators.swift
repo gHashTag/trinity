@@ -31,7 +31,7 @@ struct MessageStatusIndicators: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             // TTFB indicator
             if effectiveTTFB > 0 {
                 TTFBIndicator(ttfbMs: effectiveTTFB)
@@ -53,7 +53,7 @@ struct MessageStatusIndicators: View {
             }
         }
         .font(.system(size: a11y.scaledFontSize(10)))
-        .foregroundStyle(TrinityTheme.textMuted)
+        .foregroundStyle(V4Color.textSecondary)
     }
 }
 
@@ -75,18 +75,18 @@ struct TTFBIndicator: View {
     private var ttfbColor: Color {
         switch ttfbMs {
         case 0..<500:
-            return TrinityTheme.statusOK
+            return V4Color.success
         case 500..<1500:
-            return TrinityTheme.statusWarn
+            return V4Color.warning
         default:
-            return TrinityTheme.statusError
+            return V4Color.error
         }
     }
 
     var body: some View {
         HStack(spacing: 2) {
             Image(systemName: "bolt.fill")
-                .foregroundStyle(a11y.highContrast ? TrinityTheme.HighContrast.accent : ttfbColor)
+                .foregroundStyle(a11y.highContrast ? V4Color.HighContrast.accent : ttfbColor)
             Text(formattedTTFB)
         }
         .accessibilityLabel("Time to first token: \(formattedTTFB)")
@@ -112,18 +112,18 @@ struct ThroughputIndicator: View {
     private var throughputColor: Color {
         switch tokensPerSec {
         case 50...:
-            return TrinityTheme.statusOK
+            return V4Color.success
         case 20..<50:
-            return TrinityTheme.statusWarn
+            return V4Color.warning
         default:
-            return TrinityTheme.statusError
+            return V4Color.error
         }
     }
 
     var body: some View {
         HStack(spacing: 2) {
             Image(systemName: "speedometer")
-                .foregroundStyle(a11y.highContrast ? TrinityTheme.HighContrast.accent : throughputColor)
+                .foregroundStyle(a11y.highContrast ? V4Color.HighContrast.accent : throughputColor)
             Text(formattedThroughput)
         }
         .accessibilityLabel("Token throughput: \(formattedThroughput)")
@@ -149,7 +149,7 @@ struct TokenCountIndicator: View {
     var body: some View {
         HStack(spacing: 2) {
             Image(systemName: "text.word.count")
-                .foregroundStyle(a11y.highContrast ? TrinityTheme.HighContrast.textMuted : TrinityTheme.textMuted)
+                .foregroundStyle(a11y.highContrast ? V4Color.HighContrast.textSecondary : V4Color.textSecondary)
             Text("\(formattedCount)t")
         }
         .accessibilityLabel("Output tokens: \(formattedCount)")
@@ -162,10 +162,10 @@ struct StreamingIndicator: View {
     @State private var isAnimating = true
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Image(systemName: "waveform")
                 .symbolEffect(.pulse, options: .repeating, isActive: isAnimating)
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
             Text("Streaming")
         }
         .accessibilityLabel("Streaming response")
@@ -204,26 +204,26 @@ struct CompactStatusPill: View {
     }
 
     private var streamingPill: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Image(systemName: "waveform")
                 .symbolEffect(.pulse, options: .repeating, isActive: true)
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
                 .font(.system(size: a11y.scaledFontSize(9)))
             Text("Generating...")
                 .font(.system(size: a11y.scaledFontSize(10)))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, ParietalSpacing.sm)
         .padding(.vertical, 3)
         .background(
-            TrinityTheme.accent.opacity(0.1),
+            V4Color.accent.opacity(V2Depth.bgSubtle),
             in: SwiftUI.Capsule()
         )
         .accessibilityLabel("Generating response")
     }
 
     private var metricsPill: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             if let ttfb = message.ttfbMs, ttfb > 0 {
                 indicator(icon: "bolt.fill", value: ttfb < 1000 ? "\(ttfb)ms" : String(format: "%.1fs", Double(ttfb) / 1000.0), color: ttfbColor(ttfb))
             }
@@ -231,13 +231,13 @@ struct CompactStatusPill: View {
                 indicator(icon: "speedometer", value: tps >= 1000 ? String(format: "%.1ft/s", tps / 1000.0) : String(format: "%.0ft/s", tps), color: throughputColor(tps))
             }
             if let tokens = message.outputTokens, tokens > 0 {
-                indicator(icon: "text.word.count", value: tokens >= 1000 ? String(format: "%.1fKt", Double(tokens) / 1000.0) : "\(tokens)t", color: TrinityTheme.textMuted)
+                indicator(icon: "text.word.count", value: tokens >= 1000 ? String(format: "%.1fKt", Double(tokens) / 1000.0) : "\(tokens)t", color: V4Color.textSecondary)
             }
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, ParietalSpacing.sm)
         .padding(.vertical, 3)
         .background(
-            TrinityTheme.bgCardBorder.opacity(0.5),
+            V4Color.border.opacity(V2Depth.stateDisabled),
             in: SwiftUI.Capsule()
         )
     }
@@ -245,7 +245,7 @@ struct CompactStatusPill: View {
     private func indicator(icon: String, value: String, color: Color) -> some View {
         HStack(spacing: 2) {
             Image(systemName: icon)
-                .foregroundStyle(a11y.highContrast ? TrinityTheme.HighContrast.accent : color)
+                .foregroundStyle(a11y.highContrast ? V4Color.HighContrast.accent : color)
                 .font(.system(size: a11y.scaledFontSize(8)))
             Text(value)
                 .font(.system(size: a11y.scaledFontSize(9)))
@@ -254,17 +254,17 @@ struct CompactStatusPill: View {
 
     private func ttfbColor(_ ms: Int) -> Color {
         switch ms {
-        case 0..<500: return TrinityTheme.statusOK
-        case 500..<1500: return TrinityTheme.statusWarn
-        default: return TrinityTheme.statusError
+        case 0..<500: return V4Color.success
+        case 500..<1500: return V4Color.warning
+        default: return V4Color.error
         }
     }
 
     private func throughputColor(_ tps: Double) -> Color {
         switch tps {
-        case 50...: return TrinityTheme.statusOK
-        case 20..<50: return TrinityTheme.statusWarn
-        default: return TrinityTheme.statusError
+        case 50...: return V4Color.success
+        case 20..<50: return V4Color.warning
+        default: return V4Color.error
         }
     }
 }
@@ -283,7 +283,7 @@ struct MessageStatusIndicators_Previews: PreviewProvider {
                 streamingOutputTokens: 42
             )
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .environmentObject(AccessibilityManager.shared)
             .previewDisplayName("Streaming")
 
@@ -296,7 +296,7 @@ struct MessageStatusIndicators_Previews: PreviewProvider {
                 streamingOutputTokens: 0
             )
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .environmentObject(AccessibilityManager.shared)
             .previewDisplayName("Fast Response")
 
@@ -310,7 +310,7 @@ struct MessageStatusIndicators_Previews: PreviewProvider {
                 streamingOutputTokens: 0
             )
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .environmentObject(AccessibilityManager.shared)
             .previewDisplayName("With Metrics")
 
@@ -324,7 +324,7 @@ struct MessageStatusIndicators_Previews: PreviewProvider {
                 streamingOutputTokens: 0
             )
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .environmentObject(AccessibilityManager.shared)
             .previewDisplayName("Slow Response")
         }
@@ -350,7 +350,7 @@ struct CompactStatusPill_Previews: PreviewProvider {
                 streamingTokensPerSec: 85
             )
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .environmentObject(AccessibilityManager.shared)
             .previewDisplayName("Streaming")
 
@@ -363,7 +363,7 @@ struct CompactStatusPill_Previews: PreviewProvider {
                 streamingTokensPerSec: 0
             )
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .environmentObject(AccessibilityManager.shared)
             .previewDisplayName("Fast Metrics")
 
@@ -376,7 +376,7 @@ struct CompactStatusPill_Previews: PreviewProvider {
                 streamingTokensPerSec: 0
             )
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
             .environmentObject(AccessibilityManager.shared)
             .previewDisplayName("Slow Metrics")
         }
@@ -393,7 +393,7 @@ struct CompactStatusPill_Previews: PreviewProvider {
 
 struct IndividualIndicators_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             TTFBIndicator(ttfbMs: 320)
             TTFBIndicator(ttfbMs: 850)
             TTFBIndicator(ttfbMs: 2100)
@@ -406,7 +406,7 @@ struct IndividualIndicators_Previews: PreviewProvider {
             TokenCountIndicator(count: 24300)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
         .environmentObject(AccessibilityManager.shared)
         .previewDisplayName("Individual Indicators")
     }

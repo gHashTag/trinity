@@ -220,14 +220,21 @@ struct ChatSidebar: View {
     }
 
     var body: some View {
+        // Cortex: Entorhinal Sidebar — Responsive 220-400px
+        EntorhinalSidebar {
+            sidebarContent
+        }
+    }
+
+    private var sidebarContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             // Logo / brand
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: "crown.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.body16)
+                    .foregroundStyle(V4Color.accent)
                 Text("Queen")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(WernickeTypography.body16.weight(.semibold))
                     .foregroundStyle(Color.white)
                 Spacer()
                 Menu {
@@ -242,11 +249,11 @@ struct ChatSidebar: View {
                     }
                 } label: {
                     Image(systemName: "arrow.up.arrow.down")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.white.opacity(0.4))
+                        .font(WernickeTypography.caption2)
+                        .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 }
                 .menuStyle(.borderlessButton)
-                .frame(width: 20)
+                .frame(width: ParietalSpacing.buttonSmallWidth)
                 .help("Sort threads")
                 .accessibilityLabel("Sort threads, currently by \(sortOrder)")
 
@@ -263,14 +270,14 @@ struct ChatSidebar: View {
                 } label: {
                     ZStack(alignment: .topTrailing) {
                         Image(systemName: isSearching ? "xmark" : "magnifyingglass")
-                            .font(.system(size: 12))
-                            .foregroundStyle(Color.white.opacity(0.4))
+                            .font(WernickeTypography.caption)
+                            .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                         if !isSearching && totalUnreadCount > 0 {
                             Text("\(totalUnreadCount)")
-                                .font(.system(size: 7, weight: .bold))
+                                .font(WernickeTypography.size7.weight(.bold))
                                 .foregroundStyle(.black)
                                 .frame(width: 12, height: 12)
-                                .background(TrinityTheme.golden)
+                                .background(V4Color.golden)
                                 .clipShape(Circle())
                                 .offset(x: 4, y: -4)
                         }
@@ -286,18 +293,18 @@ struct ChatSidebar: View {
 
             // Search field
             if isSearching {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.caption2)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                     TextField("Search threads...", text: $searchQuery)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 12))
+                        .font(WernickeTypography.caption)
                         .foregroundStyle(Color.white)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(Color.white.opacity(0.06))
+                .background(Color.white.opacity(V2Depth.bgCard))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .padding(.horizontal, 8)
                 .padding(.bottom, 4)
@@ -305,7 +312,7 @@ struct ChatSidebar: View {
 
                 // Quick filter chips
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         ForEach(QuickFilter.allCases, id: \.self) { filter in
                             quickFilterChip(filter)
                         }
@@ -316,7 +323,7 @@ struct ChatSidebar: View {
 
                 // Metadata filter chips
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         // Date filter
                         Menu {
                             ForEach(DateFilter.allCases, id: \.self) { df in
@@ -380,11 +387,11 @@ struct ChatSidebar: View {
                             } label: {
                                 HStack(spacing: 2) {
                                     Image(systemName: "xmark.circle.fill")
-                                        .font(.system(size: 9))
+                                        .font(WernickeTypography.micro)
                                     Text("Clear")
-                                        .font(.system(size: 10, weight: .medium))
+                                        .font(WernickeTypography.miniMedium)
                                 }
-                                .foregroundStyle(TrinityTheme.accent)
+                                .foregroundStyle(V4Color.accent)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 3)
                             }
@@ -398,26 +405,26 @@ struct ChatSidebar: View {
             }
 
             // New Thread + Import buttons
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Button(action: { store.newThread() }) {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Image(systemName: "square.and.pencil")
-                            .font(.system(size: 13))
+                            .font(WernickeTypography.small)
                         Text("New Thread")
-                            .font(.system(size: 13, weight: .medium))
+                            .font(WernickeTypography.smallMedium)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 12)
                     .padding(.vertical, 9)
-                    .foregroundStyle(Color.white.opacity(0.8))
+                    .foregroundStyle(V2Depth.white80)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("New thread")
 
                 Button { showImportPicker = true } label: {
                     Image(systemName: "square.and.arrow.down")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.4))
+                        .font(WernickeTypography.caption)
+                        .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                         .padding(8)
                 }
                 .buttonStyle(.plain)
@@ -426,8 +433,8 @@ struct ChatSidebar: View {
 
                 Button { showNewFolderAlert = true } label: {
                     Image(systemName: "folder.badge.plus")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.4))
+                        .font(WernickeTypography.caption)
+                        .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                         .padding(8)
                 }
                 .buttonStyle(.plain)
@@ -440,8 +447,8 @@ struct ChatSidebar: View {
                     }
                 } label: {
                     Image(systemName: showBookmarks ? "bookmark.fill" : "bookmark")
-                        .font(.system(size: 11))
-                        .foregroundStyle(showBookmarks ? TrinityTheme.golden : Color.white.opacity(store.allBookmarks().isEmpty ? 0.2 : 0.4))
+                        .font(WernickeTypography.caption2)
+                        .foregroundStyle(showBookmarks ? V4Color.golden : Color.white.opacity(store.allBookmarks().isEmpty ? 0.2 : 0.4))
                         .padding(8)
                 }
                 .buttonStyle(.plain)
@@ -463,7 +470,7 @@ struct ChatSidebar: View {
             }
 
             Rectangle()
-                .fill(Color.white.opacity(0.06))
+                .fill(Color.white.opacity(V2Depth.bgCard))
                 .frame(height: 1)
 
             // Bookmarks panel
@@ -473,7 +480,7 @@ struct ChatSidebar: View {
 
             // Tag filter chips + create
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     tagChip(nil, label: "All")
                     ForEach(store.allTags, id: \.self) { tag in
                         tagChip(tag, label: "#\(tag)")
@@ -482,8 +489,8 @@ struct ChatSidebar: View {
                         showNewTagAlert = true
                     } label: {
                         Image(systemName: "plus.circle")
-                            .font(.system(size: 11))
-                            .foregroundStyle(TrinityTheme.accent.opacity(0.5))
+                            .font(WernickeTypography.caption2)
+                            .foregroundStyle(V4Color.accent.opacity(V2Depth.stateDisabled))
                     }
                     .buttonStyle(.plain)
                     .help("Create tag")
@@ -507,19 +514,19 @@ struct ChatSidebar: View {
 
             // Import result banner
             if !importResult.isEmpty {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.statusOK)
+                        .font(WernickeTypography.mini)
+                        .foregroundStyle(V4Color.statusOK)
                     Text(importResult)
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.mini)
+                        .foregroundStyle(V4Color.textPrimary)
                     Spacer()
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
-                .background(TrinityTheme.statusOK.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .background(V4Color.statusOK.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                 .padding(.horizontal, 8)
                 .onAppear {
                     Task { @MainActor in
@@ -534,12 +541,12 @@ struct ChatSidebar: View {
                 let total = filteredThreads.count
                 HStack {
                     Text("\(total) result\(total == 1 ? "" : "s")")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.miniBold)
+                        .foregroundStyle(V4Color.accent)
                     if activeFilterCount > 0 {
                         Text("(\(activeFilterCount) filter\(activeFilterCount == 1 ? "" : "s"))")
-                            .font(.system(size: 10))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.mini)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                 }
@@ -549,56 +556,56 @@ struct ChatSidebar: View {
 
             // Export toast
             if !exportToast.isEmpty {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.statusOK)
+                        .font(WernickeTypography.mini)
+                        .foregroundStyle(V4Color.statusOK)
                     Text(exportToast)
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.mini)
+                        .foregroundStyle(V4Color.textPrimary)
                     Spacer()
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
-                .background(TrinityTheme.statusOK.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .background(V4Color.statusOK.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                 .padding(.horizontal, 8)
                 .transition(.opacity)
             }
 
             // Share toast
             if !shareToast.isEmpty {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.statusOK)
+                        .font(WernickeTypography.mini)
+                        .foregroundStyle(V4Color.statusOK)
                     Text(shareToast)
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.mini)
+                        .foregroundStyle(V4Color.textPrimary)
                     Spacer()
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 4)
-                .background(TrinityTheme.statusOK.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .background(V4Color.statusOK.opacity(0.08))
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                 .padding(.horizontal, 8)
                 .transition(.opacity)
             }
 
             // Archive suggestion banner
             if store.showArchiveSuggestion {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text("\u{1F4E6} \(store.staleThreads.count) thread\(store.staleThreads.count == 1 ? "" : "s") older than 90 days")
-                        .font(.system(size: 11, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .font(WernickeTypography.caption2Medium)
+                        .foregroundStyle(V2Depth.white70)
                     Spacer()
                     Button("Archive All") {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             store.archiveAllStale()
                         }
                     }
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.caption2Bold)
+                    .foregroundStyle(V4Color.accent)
                     .buttonStyle(.plain)
                     .accessibilityLabel("Archive all stale threads")
                     Button("Dismiss") {
@@ -606,13 +613,13 @@ struct ChatSidebar: View {
                             store.showArchiveSuggestion = false
                         }
                     }
-                    .font(.system(size: 11))
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .font(WernickeTypography.caption2)
+                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     .buttonStyle(.plain)
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
-                .background(TrinityTheme.accent.opacity(0.08))
+                .background(V4Color.accent.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
                 .padding(.horizontal, 8)
                 .padding(.bottom, 4)
@@ -660,24 +667,24 @@ struct ChatSidebar: View {
                     if store.isLoaded && store.threads.isEmpty {
                         VStack(spacing: 12) {
                             Image(systemName: "bubble.left.and.bubble.right")
-                                .font(.system(size: 28))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .font(WernickeTypography.size28)
+                                .foregroundStyle(V4Color.textSecondary)
                             Text("No conversations yet")
-                                .font(.system(size: 13))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .font(WernickeTypography.small)
+                                .foregroundStyle(V4Color.textSecondary)
                             Button {
                                 store.newThread()
                             } label: {
-                                HStack(spacing: 4) {
+                                HStack(spacing: ParietalSpacing.xs) {
                                     Image(systemName: "plus")
-                                        .font(.system(size: 11, weight: .semibold))
+                                        .font(WernickeTypography.caption2Semibold)
                                     Text("New Thread")
-                                        .font(.system(size: 12, weight: .medium))
+                                        .font(WernickeTypography.captionMedium)
                                 }
-                                .foregroundStyle(TrinityTheme.accent)
+                                .foregroundStyle(V4Color.accent)
                                 .padding(.horizontal, 14)
                                 .padding(.vertical, 7)
-                                .background(TrinityTheme.accent.opacity(0.12))
+                                .background(V4Color.accent.opacity(0.12))
                                 .clipShape(RoundedRectangle(cornerRadius: 8))
                             }
                             .buttonStyle(.plain)
@@ -689,34 +696,34 @@ struct ChatSidebar: View {
 
                     // Empty state: search / filters returned no results
                     if store.isLoaded && !store.threads.isEmpty && filteredThreads.isEmpty {
-                        VStack(spacing: 10) {
+                        VStack(spacing: ParietalSpacing.sm + 2) {
                             Image(systemName: "magnifyingglass")
-                                .font(.system(size: 24))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .font(WernickeTypography.size24)
+                                .foregroundStyle(V4Color.textSecondary)
                             if !debouncedQuery.isEmpty {
                                 Text("No matches for '\(debouncedQuery)'")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .font(WernickeTypography.caption)
+                                    .foregroundStyle(V4Color.textSecondary)
                                     .multilineTextAlignment(.center)
                                 Text("Try broader terms")
                                     .font(.caption2)
-                                    .foregroundStyle(Color.white.opacity(0.25))
+                                    .foregroundStyle(V2Depth.white(0.25))
                             } else if activeFilterCount > 0 {
                                 Text("No matches with current filters")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .font(WernickeTypography.caption)
+                                    .foregroundStyle(V4Color.textSecondary)
                                 Button {
                                     quickFilter = .all
                                     filterDateRange = .all
                                     filterModel = nil
                                 } label: {
                                     Text("Clear filters")
-                                        .font(.system(size: 11, weight: .medium))
-                                        .foregroundStyle(TrinityTheme.accent)
+                                        .font(WernickeTypography.caption2Medium)
+                                        .foregroundStyle(V4Color.accent)
                                         .padding(.horizontal, 12)
                                         .padding(.vertical, 5)
-                                        .background(TrinityTheme.accent.opacity(0.12))
-                                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                                        .background(V4Color.accent.opacity(0.12))
+                                        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -729,28 +736,28 @@ struct ChatSidebar: View {
                     // Archive section (collapsed by default)
                     if !store.archivedThreads.isEmpty {
                         VStack(spacing: 0) {
-                            HStack(spacing: 6) {
+                            HStack(spacing: ParietalSpacing.sm - 2) {
                                 Button {
                                     withAnimation(.easeInOut(duration: 0.15)) {
                                         showArchiveSection.toggle()
                                     }
                                 } label: {
                                     Image(systemName: showArchiveSection ? "chevron.down" : "chevron.right")
-                                        .font(.system(size: 8, weight: .bold))
-                                        .foregroundStyle(Color.white.opacity(0.3))
+                                        .font(WernickeTypography.size8.weight(.bold))
+                                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                                 }
                                 .buttonStyle(.plain)
 
                                 Image(systemName: "archivebox")
-                                    .font(.system(size: 10))
-                                    .foregroundStyle(Color.white.opacity(0.3))
+                                    .font(WernickeTypography.mini)
+                                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                                 Text("Archive")
-                                    .font(.system(size: 10, weight: .semibold))
-                                    .foregroundStyle(Color.white.opacity(0.3))
+                                    .font(WernickeTypography.miniSemibold)
+                                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                                 Spacer()
                                 Text("\(store.archivedThreads.count)")
-                                    .font(.system(size: 9, design: .monospaced))
-                                    .foregroundStyle(Color.white.opacity(0.2))
+                                    .font(WernickeTypography.micro.monospaced())
+                                    .foregroundStyle(V4Color.white20)
                             }
                             .padding(.horizontal, 16)
                             .padding(.top, 10)
@@ -788,31 +795,31 @@ struct ChatSidebar: View {
 
             // Undo delete toast
             if store.showUndoToast {
-                HStack(spacing: 10) {
+                HStack(spacing: ParietalSpacing.sm + 2) {
                     Image(systemName: "trash")
-                        .font(.system(size: 11))
-                        .foregroundStyle(Color.white.opacity(0.5))
+                        .font(WernickeTypography.caption2)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                     Text("Thread deleted")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.7))
+                        .font(WernickeTypography.captionMedium)
+                        .foregroundStyle(V2Depth.white70)
                     Spacer()
                     Button("Undo") {
                         withAnimation(.easeInOut(duration: 0.2)) {
                             store.undoDelete()
                         }
                     }
-                    .font(.system(size: 12, weight: .bold))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.captionBold)
+                    .foregroundStyle(V4Color.accent)
                     .buttonStyle(.plain)
                     .accessibilityLabel("Undo delete")
                     .accessibilityHint("Restores the deleted thread")
                 }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 10)
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+                .background(V4Color.surface)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 10)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                         .stroke(Color.white.opacity(0.08), lineWidth: 1)
                 )
                 .padding(.horizontal, 8)
@@ -825,18 +832,18 @@ struct ChatSidebar: View {
 
             // Model badge at bottom
             Rectangle()
-                .fill(Color.white.opacity(0.06))
+                .fill(Color.white.opacity(V2Depth.bgCard))
                 .frame(height: 1)
 
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 ProviderDot(provider: modelManager.selectedModel.provider)
                 Text(modelManager.selectedModel.displayName)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(Color.white.opacity(0.5))
+                    .font(WernickeTypography.caption2Medium)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                 Spacer()
                 Text(modelManager.selectedModel.provider.rawValue)
-                    .font(.system(size: 10))
-                    .foregroundStyle(Color.white.opacity(0.3))
+                    .font(WernickeTypography.mini)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
@@ -887,25 +894,25 @@ struct ChatSidebar: View {
     private var bookmarksPanel: some View {
         VStack(spacing: 0) {
             // Panel header
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: "bookmark.fill")
-                    .font(.system(size: 10))
-                    .foregroundStyle(TrinityTheme.golden)
+                    .font(WernickeTypography.mini)
+                    .foregroundStyle(V4Color.golden)
                 Text("Bookmarks")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.caption2Semibold)
+                    .foregroundStyle(V4Color.textPrimary)
                 Spacer()
                 Text("\(store.allBookmarks().count)")
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.miniMono)
+                    .foregroundStyle(V4Color.textSecondary)
                 Button {
                     withAnimation(.easeInOut(duration: 0.15)) {
                         showBookmarks = false
                     }
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.microBold)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
                 .buttonStyle(.plain)
             }
@@ -916,13 +923,13 @@ struct ChatSidebar: View {
 
             if groups.isEmpty {
                 // Empty state
-                VStack(spacing: 8) {
+                VStack(spacing: ParietalSpacing.sm) {
                     Image(systemName: "bookmark.slash")
-                        .font(.system(size: 20))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size20)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text("No bookmarked messages yet")
-                        .font(.system(size: 11))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.caption2)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
@@ -931,18 +938,18 @@ struct ChatSidebar: View {
                     LazyVStack(spacing: 0) {
                         ForEach(groups, id: \.thread.id) { group in
                             // Thread header
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: "bubble.left")
-                                    .font(.system(size: 8))
-                                    .foregroundStyle(Color.white.opacity(0.3))
+                                    .font(WernickeTypography.size8)
+                                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                                 Text(group.thread.title)
-                                    .font(.system(size: 10, weight: .semibold))
-                                    .foregroundStyle(Color.white.opacity(0.4))
+                                    .font(WernickeTypography.miniSemibold)
+                                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                                     .lineLimit(1)
                                 Spacer()
                                 Text("\(group.messages.count)")
-                                    .font(.system(size: 9, design: .monospaced))
-                                    .foregroundStyle(Color.white.opacity(0.2))
+                                    .font(WernickeTypography.micro.monospaced())
+                                    .foregroundStyle(V4Color.white20)
                             }
                             .padding(.horizontal, 12)
                             .padding(.top, 8)
@@ -959,20 +966,20 @@ struct ChatSidebar: View {
                                         userInfo: ["messageID": msg.id]
                                     )
                                 } label: {
-                                    HStack(alignment: .top, spacing: 6) {
+                                    HStack(alignment: .top, spacing: ParietalSpacing.sm - 2) {
                                         Image(systemName: "bookmark.fill")
-                                            .font(.system(size: 8))
-                                            .foregroundStyle(TrinityTheme.golden.opacity(0.6))
+                                            .font(WernickeTypography.size8)
+                                            .foregroundStyle(V4Color.golden.opacity(V1Theme.opacityTextSecondary))
                                             .padding(.top, 2)
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(String(msg.text.prefix(80)))
-                                                .font(.system(size: 11))
-                                                .foregroundStyle(TrinityTheme.textPrimary)
+                                                .font(WernickeTypography.caption2)
+                                                .foregroundStyle(V4Color.textPrimary)
                                                 .lineLimit(2)
                                                 .multilineTextAlignment(.leading)
                                             Text(msg.timestamp, style: .relative)
-                                                .font(.system(size: 9))
-                                                .foregroundStyle(TrinityTheme.textMuted)
+                                                .font(WernickeTypography.micro)
+                                                .foregroundStyle(V4Color.textSecondary)
                                         }
                                         Spacer()
                                     }
@@ -1001,25 +1008,25 @@ struct ChatSidebar: View {
             }
 
             Rectangle()
-                .fill(Color.white.opacity(0.06))
+                .fill(Color.white.opacity(V2Depth.bgCard))
                 .frame(height: 1)
         }
-        .background(TrinityTheme.bgCard.opacity(0.5))
+        .background(V4Color.surface.opacity(V2Depth.stateDisabled))
         .transition(.opacity.combined(with: .move(edge: .top)))
     }
 
     private func filterPill(label: String, isActive: Bool) -> some View {
         HStack(spacing: 3) {
             Text(label)
-                .font(.system(size: 10, weight: isActive ? .bold : .medium))
+                .font(isActive ? WernickeTypography.miniBold : WernickeTypography.miniMedium)
                 .lineLimit(1)
             Image(systemName: "chevron.down")
-                .font(.system(size: 7, weight: .bold))
+                .font(WernickeTypography.size7.weight(.bold))
         }
-        .foregroundStyle(isActive ? .black : TrinityTheme.textMuted)
+        .foregroundStyle(isActive ? .black : V4Color.textSecondary)
         .padding(.horizontal, 8)
         .padding(.vertical, 3)
-        .background(isActive ? TrinityTheme.accent : Color.white.opacity(0.06))
+        .background(isActive ? V4Color.accent : Color.white.opacity(V2Depth.bgCard))
         .clipShape(SwiftUI.Capsule())
     }
 
@@ -1029,11 +1036,11 @@ struct ChatSidebar: View {
             selectedTag = tag
         } label: {
             Text(label)
-                .font(.system(size: 10, weight: isActive ? .bold : .medium))
-                .foregroundStyle(isActive ? .black : Color.white.opacity(0.5))
+                .font(isActive ? WernickeTypography.miniBold : WernickeTypography.miniMedium)
+                .foregroundStyle(isActive ? .black : Color.white.opacity(V2Depth.stateDisabled))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 3)
-                .background(isActive ? TrinityTheme.accent : Color.white.opacity(0.06))
+                .background(isActive ? V4Color.accent : Color.white.opacity(V2Depth.bgCard))
                 .clipShape(SwiftUI.Capsule())
         }
         .buttonStyle(.plain)
@@ -1060,19 +1067,19 @@ struct ChatSidebar: View {
         } label: {
             HStack(spacing: 3) {
                 Image(systemName: filter.icon)
-                    .font(.system(size: 7, weight: .bold))
+                    .font(WernickeTypography.size7.weight(.bold))
                 Text(filter.rawValue)
-                    .font(.system(size: 10, weight: isActive ? .bold : .medium))
+                    .font(isActive ? WernickeTypography.miniBold : WernickeTypography.miniMedium)
                 if count > 0 {
                     Text("\(count)")
-                        .font(.system(size: 8, weight: .bold))
-                        .foregroundStyle(isActive ? .black.opacity(0.6) : Color.white.opacity(0.4))
+                        .font(WernickeTypography.size8.weight(.bold))
+                        .foregroundStyle(isActive ? .black.opacity(V1Theme.opacityTextSecondary) : Color.white.opacity(V1Theme.opacityTextTertiary))
                 }
             }
-            .foregroundStyle(isActive ? .black : TrinityTheme.textMuted)
+            .foregroundStyle(isActive ? .black : V4Color.textSecondary)
             .padding(.horizontal, 8)
             .padding(.vertical, 3)
-            .background(isActive ? TrinityTheme.accent : Color.white.opacity(0.06))
+            .background(isActive ? V4Color.accent : Color.white.opacity(V2Depth.bgCard))
             .clipShape(SwiftUI.Capsule())
         }
         .buttonStyle(.plain)
@@ -1090,26 +1097,26 @@ struct ChatSidebar: View {
         if !folderThreads.isEmpty || searchQuery.isEmpty {
             VStack(spacing: 0) {
                 // Folder header
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Button {
                         store.toggleFolderCollapse(folder.id)
                     } label: {
                         Image(systemName: folder.isCollapsed ? "chevron.right" : "chevron.down")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundStyle(Color.white.opacity(0.3))
+                            .font(WernickeTypography.size8.weight(.bold))
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                     }
                     .buttonStyle(.plain)
 
                     Image(systemName: "folder.fill")
-                        .font(.system(size: 10))
+                        .font(WernickeTypography.mini)
                         .foregroundStyle(folder.swiftColor)
                     Text(folder.name)
-                        .font(.system(size: 10, weight: .semibold))
+                        .font(WernickeTypography.miniSemibold)
                         .foregroundStyle(folder.swiftColor)
                     Spacer()
                     Text("\(folderThreads.count)")
-                        .font(.system(size: 9, design: .monospaced))
-                        .foregroundStyle(Color.white.opacity(0.2))
+                        .font(WernickeTypography.micro.monospaced())
+                        .foregroundStyle(V4Color.white20)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 10)
@@ -1336,7 +1343,7 @@ struct ExportFormatPicker: View {
         VStack(spacing: 16) {
             Text("Export: \(thread.title)")
                 .font(.headline)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
                 .lineLimit(1)
 
             HStack(spacing: 12) {
@@ -1352,8 +1359,8 @@ struct ExportFormatPicker: View {
             }
 
             Button("Cancel") { onDismiss() }
-                .font(.system(size: 12))
-                .foregroundStyle(Color.white.opacity(0.4))
+                .font(WernickeTypography.caption)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 .buttonStyle(.plain)
         }
         .padding(24)
@@ -1373,16 +1380,16 @@ struct ExportFormatPicker: View {
             }
             onDismiss()
         } label: {
-            VStack(spacing: 6) {
+            VStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(WernickeTypography.size20)
                 Text(label)
-                    .font(.system(size: 12, weight: .medium))
+                    .font(WernickeTypography.captionMedium)
             }
-            .foregroundStyle(TrinityTheme.accent)
+            .foregroundStyle(V4Color.accent)
             .frame(width: 80, height: 70)
-            .background(Color.white.opacity(0.06))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .background(Color.white.opacity(V2Depth.bgCard))
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
         }
         .buttonStyle(.plain)
     }
@@ -1403,7 +1410,7 @@ struct ProviderDot: View {
         ZStack {
             if !isUp && !reduceMotion {
                 Circle()
-                    .stroke(TrinityTheme.statusError.opacity(0.4), lineWidth: 1)
+                    .stroke(V4Color.error.opacity(V1Theme.opacityTextTertiary), lineWidth: 1)
                     .frame(width: 12, height: 12)
                     .scaleEffect(pulse ? 1.8 : 1.0)
                     .opacity(pulse ? 0 : 0.6)
@@ -1414,7 +1421,7 @@ struct ProviderDot: View {
                     }
             }
             Circle()
-                .fill(isUp ? TrinityTheme.accent : TrinityTheme.statusError)
+                .fill(isUp ? V4Color.accent : V4Color.error)
                 .frame(width: 6, height: 6)
         }
         .frame(width: 14, height: 14)
@@ -1447,7 +1454,7 @@ struct NetworkStatsBar: View {
         return AnyView(
             VStack(spacing: 0) {
                 Rectangle()
-                    .fill(Color.white.opacity(0.06))
+                    .fill(Color.white.opacity(V2Depth.bgCard))
                     .frame(height: 1)
 
                 // Clickable stats row
@@ -1467,8 +1474,8 @@ struct NetworkStatsBar: View {
                         }
                         Spacer()
                         Image(systemName: showNetworkTimeline ? "chevron.down" : "chevron.right")
-                            .font(.system(size: 8, weight: .semibold))
-                            .foregroundStyle(Color.white.opacity(0.3))
+                            .font(WernickeTypography.size8.weight(.semibold))
+                            .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 6)
@@ -1486,13 +1493,13 @@ struct NetworkStatsBar: View {
     }
 
     private func miniStat(_ value: String, _ label: String) -> some View {
-        VStack(spacing: 1) {
+        VStack(spacing: ParietalSpacing.xxxxs) {
             Text(value)
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.5))
+                .font(WernickeTypography.mini.monospaced())
+                .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
             Text(label)
-                .font(.system(size: 8))
-                .foregroundStyle(Color.white.opacity(0.25))
+                .font(WernickeTypography.size8)
+                .foregroundStyle(V2Depth.white(0.25))
         }
     }
 }
@@ -1519,16 +1526,16 @@ struct NetworkTimelineView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             // Summary line
             Text(summaryText)
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.4))
+                .font(WernickeTypography.microMono)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 .padding(.horizontal, 16)
                 .padding(.top, 4)
 
             Rectangle()
-                .fill(Color.white.opacity(0.04))
+                .fill(Color.white.opacity(V2Depth.bgCardLight))
                 .frame(height: 1)
                 .padding(.horizontal, 12)
 
@@ -1544,7 +1551,7 @@ struct NetworkTimelineView: View {
             .frame(maxHeight: 260)
             .padding(.bottom, 4)
         }
-        .background(TrinityTheme.bgCard.opacity(0.5))
+        .background(V4Color.surface.opacity(V2Depth.stateDisabled))
     }
 
     private func timelineRow(_ entry: NetworkLog.Entry) -> some View {
@@ -1554,14 +1561,14 @@ struct NetworkTimelineView: View {
         let modelShort = shortModelName(entry.model)
         let providerIcon = providerSymbol(entry.provider)
 
-        return HStack(spacing: 4) {
+        return HStack(spacing: ParietalSpacing.xs) {
             // Left label: provider icon + model
             HStack(spacing: 2) {
                 Text(providerIcon)
-                    .font(.system(size: 8))
+                    .font(WernickeTypography.size8)
                 Text(modelShort)
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.5))
+                    .font(WernickeTypography.microMono)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
             }
             .frame(width: 70, alignment: .leading)
 
@@ -1573,18 +1580,18 @@ struct NetworkTimelineView: View {
                 ZStack(alignment: .leading) {
                     // Background track
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.white.opacity(0.04))
+                        .fill(Color.white.opacity(V2Depth.bgCardLight))
                         .frame(width: geo.size.width, height: 12)
 
                     // Duration bar
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(barColor.opacity(0.6))
+                        .fill(barColor.opacity(V1Theme.opacityTextSecondary))
                         .frame(width: barWidth, height: 12)
 
                     // TTFB tick mark
                     if entry.ttfbMs > 0 && ttfbX > 2 {
                         Rectangle()
-                            .fill(Color.white.opacity(0.8))
+                            .fill(V2Depth.white80)
                             .frame(width: 1, height: 12)
                             .offset(x: ttfbX)
                     }
@@ -1594,8 +1601,8 @@ struct NetworkTimelineView: View {
 
             // Right label: duration
             Text("\(entry.totalMs)ms")
-                .font(.system(size: 9, weight: .medium, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.4))
+                .font(WernickeTypography.microMono)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 .frame(width: 48, alignment: .trailing)
         }
         .frame(height: 20)
@@ -1603,10 +1610,10 @@ struct NetworkTimelineView: View {
 
     private func statusColor(_ status: String) -> Color {
         switch status {
-        case "ok": return TrinityTheme.statusOK
-        case "timeout": return TrinityTheme.statusWarn
-        case "error": return TrinityTheme.statusError
-        default: return Color.white.opacity(0.3)
+        case "ok": return V4Color.statusOK
+        case "timeout": return V4Color.warning
+        case "error": return V4Color.error
+        default: return Color.white.opacity(V2Depth.stateHover)
         }
     }
 
@@ -1688,7 +1695,7 @@ struct ThreadRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 // Color label dot
                 if let label = thread.colorLabel, let c = Self.labelColors[label] {
                     Circle().fill(c).frame(width: 6, height: 6)
@@ -1697,8 +1704,8 @@ struct ThreadRow: View {
                 // Pin indicator
                 if thread.isPinned {
                     Image(systemName: "pin.fill")
-                        .font(.system(size: 8))
-                        .foregroundStyle(TrinityTheme.golden)
+                        .font(WernickeTypography.size8)
+                        .foregroundStyle(V4Color.golden)
                         .rotationEffect(.degrees(45))
                         .accessibilityLabel("Pinned thread")
                 }
@@ -1706,7 +1713,7 @@ struct ThreadRow: View {
                 if isRenaming {
                     TextField("Thread name", text: $renameText)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 13))
+                        .font(WernickeTypography.small)
                         .foregroundStyle(.white)
                         .onSubmit {
                             onRename(renameText)
@@ -1720,14 +1727,14 @@ struct ThreadRow: View {
                             let before = String(thread.title[thread.title.startIndex..<range.lowerBound])
                             let match = String(thread.title[range])
                             let after = String(thread.title[range.upperBound...])
-                            (Text(before) + Text(match).foregroundColor(TrinityTheme.accent).bold() + Text(after))
-                                .font(.system(size: 13))
-                                .foregroundStyle(isActive ? Color.white : Color.white.opacity(0.6))
+                            (Text(before) + Text(match).foregroundColor(V4Color.accent).bold() + Text(after))
+                                .font(WernickeTypography.small)
+                                .foregroundStyle(isActive ? Color.white : Color.white.opacity(V1Theme.opacityTextSecondary))
                                 .lineLimit(1)
                         } else {
                             Text(thread.title)
-                                .font(.system(size: 13))
-                                .foregroundStyle(isActive ? Color.white : Color.white.opacity(0.6))
+                                .font(WernickeTypography.small)
+                                .foregroundStyle(isActive ? Color.white : Color.white.opacity(V1Theme.opacityTextSecondary))
                                 .lineLimit(1)
                         }
 
@@ -1735,37 +1742,37 @@ struct ThreadRow: View {
                         if searchQuery.isEmpty, let summary = thread.summary {
                             Text(summary)
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
-                                .opacity(0.6)
+                                .foregroundStyle(V4Color.textSecondary)
+                                .opacity(V1Theme.opacityTextSecondary)
                                 .lineLimit(1)
                                 .truncationMode(.tail)
                                 .help(summary)
                         }
 
-                        HStack(spacing: 4) {
+                        HStack(spacing: ParietalSpacing.xs) {
                             ForEach(thread.tags.prefix(2), id: \.self) { tag in
                                 Text("#\(tag)")
-                                    .font(.system(size: 8, weight: .medium))
-                                    .foregroundStyle(TrinityTheme.purple)
+                                    .font(WernickeTypography.size8.weight(.medium))
+                                    .foregroundStyle(V4Color.purple)
                                     .padding(.horizontal, 3)
                                     .padding(.vertical, 1)
-                                    .background(TrinityTheme.purple.opacity(0.1))
+                                    .background(V4Color.purple.opacity(V2Depth.bgSubtle))
                                     .clipShape(SwiftUI.Capsule())
                             }
                             if !searchQuery.isEmpty && matchCount > 0 {
                                 Text("\(matchCount) match\(matchCount == 1 ? "" : "es")")
-                                    .font(.system(size: 8, weight: .bold))
-                                    .foregroundStyle(TrinityTheme.accent)
+                                    .font(WernickeTypography.size8.weight(.bold))
+                                    .foregroundStyle(V4Color.accent)
                             }
                             if tokenData.count >= 4 {
                                 TokenSparkline(data: tokenData)
                             }
                             Text("\(thread.messages.count) msgs")
-                                .font(.system(size: 9))
-                                .foregroundStyle(Color.white.opacity(0.25))
+                                .font(WernickeTypography.micro)
+                                .foregroundStyle(V2Depth.white(0.25))
                             Text(relativeDate(thread.updatedAt))
-                                .font(.system(size: 9))
-                                .foregroundStyle(Color.white.opacity(0.2))
+                                .font(WernickeTypography.micro)
+                                .foregroundStyle(V4Color.white20)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -1774,27 +1781,27 @@ struct ThreadRow: View {
                 if isHovered && !isRenaming {
                     Button(action: { isRenaming = true }) {
                         Image(systemName: "pencil")
-                            .font(.system(size: 10))
+                            .font(WernickeTypography.mini)
                     }
                     .buttonStyle(.plain)
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     .accessibilityLabel("Rename thread")
 
                     Button(action: onExport) {
                         Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 10))
+                            .font(WernickeTypography.mini)
                     }
                     .buttonStyle(.plain)
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     .help("Export as Markdown")
                     .accessibilityLabel("Export thread")
 
                     Button(action: onDelete) {
                         Image(systemName: "trash")
-                            .font(.system(size: 10))
+                            .font(WernickeTypography.mini)
                     }
                     .buttonStyle(.plain)
-                    .foregroundStyle(TrinityTheme.statusError.opacity(0.6))
+                    .foregroundStyle(V4Color.error.opacity(V1Theme.opacityTextSecondary))
                     .accessibilityLabel("Delete thread")
                 }
             }
@@ -1802,8 +1809,8 @@ struct ThreadRow: View {
             // Thread preview on hover (first message snippet)
             if isHoveredForPreview && !isActive && !isRenaming, let preview = previewText {
                 Text(preview)
-                    .font(.system(size: 10))
-                    .foregroundStyle(Color.white.opacity(0.35))
+                    .font(WernickeTypography.mini)
+                    .foregroundStyle(V2Depth.white35)
                     .lineLimit(2)
                     .padding(.top, 3)
                     .transition(.opacity)
@@ -1814,8 +1821,8 @@ struct ThreadRow: View {
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(
-                    isActive ? TrinityTheme.accent.opacity(0.1) :
-                    isHovered ? Color.white.opacity(0.04) : Color.clear
+                    isActive ? V4Color.accent.opacity(V2Depth.bgSubtle) :
+                    isHovered ? Color.white.opacity(V2Depth.bgCardLight) : Color.clear
                 )
         )
         .padding(.horizontal, 8)
@@ -1915,7 +1922,7 @@ private struct TokenSparkline: View {
                 let x = offsetX + CGFloat(i) * (barW + gap)
                 let rect = CGRect(x: x, y: size.height - h, width: barW, height: max(1, h))
                 ctx.fill(Path(roundedRect: rect, cornerRadius: 0.5),
-                         with: .color(TrinityTheme.accent.opacity(0.6)))
+                         with: .color(V4Color.accent.opacity(V1Theme.opacityTextSecondary)))
             }
         }
         .frame(width: 30, height: 12)
@@ -1933,9 +1940,9 @@ struct RealmHeader: View {
 
     private var realmColor: Color {
         switch realm {
-        case .brain: return TrinityTheme.purple
-        case .body: return TrinityTheme.accent
-        case .spirit: return TrinityTheme.golden
+        case .brain: return V4Color.purple
+        case .body: return V4Color.accent
+        case .spirit: return V4Color.golden
         }
     }
 
@@ -1953,23 +1960,23 @@ struct RealmHeader: View {
                 isExpanded.toggle()
             }
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .font(.system(size: 8, weight: .bold))
-                    .foregroundStyle(Color.white.opacity(0.3))
+                    .font(WernickeTypography.size8.weight(.bold))
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
 
                 Text(realm.icon)
-                    .font(.system(size: 11))
+                    .font(WernickeTypography.caption2)
 
                 Text("\(realm.rawValue.uppercased())")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(WernickeTypography.title3Bold)
                     .foregroundStyle(realmColor)
 
                 Spacer()
 
                 Text("\(count)")
-                    .font(.system(size: 9, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.2))
+                    .font(WernickeTypography.micro.monospaced())
+                    .foregroundStyle(V4Color.white20)
             }
             .padding(.horizontal, 16)
             .padding(.top, 12)
@@ -1993,7 +2000,7 @@ struct RealmDivider: View {
                 LinearGradient(
                     gradient: Gradient(colors: [
                         color.opacity(0),
-                        color.opacity(0.3),
+                        color.opacity(V2Depth.stateHover),
                         color.opacity(0)
                     ]),
                     startPoint: .leading,
@@ -2022,15 +2029,15 @@ struct SkeletonThreadRow: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
             RoundedRectangle(cornerRadius: 4)
-                .fill(Color.white.opacity(0.06))
+                .fill(Color.white.opacity(V2Depth.bgCard))
                 .frame(height: 12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .scaleEffect(x: titleWidth, y: 1, anchor: .leading)
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(Color.white.opacity(0.04))
+                    .fill(Color.white.opacity(V2Depth.bgCardLight))
                     .frame(height: 9)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .scaleEffect(x: subtitleWidth, y: 1, anchor: .leading)

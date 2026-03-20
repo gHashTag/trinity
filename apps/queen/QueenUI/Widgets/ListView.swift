@@ -34,7 +34,7 @@ struct ListItem<Content: View, Leading: View, Trailing: View>: View, Identifiabl
         Button {
             onTap()
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 leading()
 
                 content()
@@ -43,8 +43,8 @@ struct ListItem<Content: View, Leading: View, Trailing: View>: View, Identifiabl
 
                 trailing()
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, ParietalSpacing.lg)
+            .padding(.vertical, ParietalSpacing.md)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -86,25 +86,25 @@ struct SimpleListItem: View, Identifiable {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // Icon
             if let icon = icon {
                 Image(systemName: icon)
-                    .font(.system(size: 18))
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textMuted)
+                    .font(WernickeTypography.size18)
+                    .foregroundStyle(isSelected ? V4Color.accent : V4Color.textSecondary)
                     .frame(width: 28)
             }
 
             // Title and subtitle
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.system(size: 14, weight: isSelected ? .medium : .regular))
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                    .font(isSelected ? WernickeTypography.body14Medium : WernickeTypography.size14)
+                    .foregroundStyle(isSelected ? V4Color.accent : V4Color.textPrimary)
 
                 if let subtitle = subtitle {
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
 
@@ -113,23 +113,23 @@ struct SimpleListItem: View, Identifiable {
             // Badge
             if let badge = badge {
                 Text(badge)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(WernickeTypography.miniSemibold)
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, ParietalSpacing.xs + 2)
                     .padding(.vertical, 2)
-                    .background(TrinityTheme.accent)
-                    .cornerRadius(4)
+                    .background(V4Color.accent)
+                    .cornerRadius(V1Theme.cornerTiny)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, ParietalSpacing.lg)
+        .padding(.vertical, ParietalSpacing.sm + 2)
         .background(
-            isSelected ? TrinityTheme.accent.opacity(0.1) : TrinityTheme.bgCard
+            isSelected ? V4Color.accent.opacity(V2Depth.bgSubtle) : V4Color.surface
         )
         .overlay(
             Rectangle()
-                .fill(isSelected ? TrinityTheme.accent : .clear)
-                .frame(width: 3),
+                .fill(isSelected ? V4Color.accent : .clear)
+                .frame(width: ParietalSpacing.xxxs),
             alignment: .leading
         )
         .contentShape(Rectangle())
@@ -258,9 +258,9 @@ struct SwipeableListItem<Content: View>: View, Identifiable {
             action.action()
             onTap()
         } label: {
-            VStack(spacing: 4) {
+            VStack(spacing: ParietalSpacing.xs) {
                 Image(systemName: action.icon)
-                    .font(.system(size: 16))
+                    .font(WernickeTypography.size16)
                 Text(action.title)
                     .font(.caption2)
             }
@@ -302,13 +302,13 @@ struct ReorderableListView<Item: Identifiable & Equatable, Content: View>: View 
                 content(item)
                     .listRowSeparator(.hidden)
                     .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
-                    .listRowBackground(TrinityTheme.bgCard)
+                    .listRowBackground(V4Color.surface)
             }
             .onMove(perform: onMove)
             .onDelete(perform: onDelete)
         }
         .listStyle(.plain)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
         .onChange(of: items) { _, newItems in
             itemsState = newItems
         }
@@ -330,7 +330,7 @@ struct ListView_Previews: PreviewProvider {
                     badge: "New"
                 )
 
-                Divider().background(TrinityTheme.bgCardBorder)
+                Divider().background(V4Color.border)
 
                 SimpleListItem(
                     id: "2",
@@ -339,7 +339,7 @@ struct ListView_Previews: PreviewProvider {
                     icon: "cpu"
                 )
 
-                Divider().background(TrinityTheme.bgCardBorder)
+                Divider().background(V4Color.border)
 
                 SimpleListItem(
                     id: "3",
@@ -350,17 +350,17 @@ struct ListView_Previews: PreviewProvider {
             }
             .frame(width: 350)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             // Swipeable list item
             SwipeableListItem(
                 id: "swipe1",
                 leftActions: [
-                    .init(title: "Archive", icon: "archivebox", color: TrinityTheme.accent) {},
-                    .init(title: "Flag", icon: "flag", color: TrinityTheme.statusWarn) {}
+                    .init(title: "Archive", icon: "archivebox", color: V4Color.accent) {},
+                    .init(title: "Flag", icon: "flag", color: V4Color.warning) {}
                 ],
                 rightActions: [
-                    .init(title: "Delete", icon: "trash", color: TrinityTheme.statusError) {}
+                    .init(title: "Delete", icon: "trash", color: V4Color.error) {}
                 ]
             ) {
                 SimpleListItem(
@@ -372,7 +372,7 @@ struct ListView_Previews: PreviewProvider {
             }
             .frame(width: 350)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
         }
     }
 }

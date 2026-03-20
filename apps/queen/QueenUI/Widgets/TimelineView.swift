@@ -23,10 +23,10 @@ struct TimelineView<Content: View>: View {
             // Timeline line
             VStack(spacing: 0) {
                 Rectangle()
-                    .fill(TrinityTheme.bgCardBorder)
+                    .fill(V4Color.border)
                     .frame(width: 2)
             }
-            .padding(.vertical, 8)
+            .padding(.vertical, ParietalSpacing.sm)
 
             content
         }
@@ -48,7 +48,7 @@ struct TimelineItem: View {
         subtitle: String? = nil,
         time: Date,
         icon: String? = nil,
-        iconColor: Color = TrinityTheme.accent,
+        iconColor: Color = V4Color.accent,
         isLast: Bool = false
     ) {
         self.title = title
@@ -60,7 +60,7 @@ struct TimelineItem: View {
     }
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: ParietalSpacing.md) {
             // Timeline marker
             ZStack {
                 Circle()
@@ -69,7 +69,7 @@ struct TimelineItem: View {
 
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 12))
+                        .font(WernickeTypography.size12)
                         .foregroundStyle(iconColor)
                 } else {
                     Circle()
@@ -79,24 +79,24 @@ struct TimelineItem: View {
             }
             .overlay(
                 Circle()
-                    .stroke(TrinityTheme.bgCard, lineWidth: 3)
+                    .stroke(V4Color.surface, lineWidth: 3)
             )
 
             // Content
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(title)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body14Medium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 if let subtitle = subtitle {
                     Text(subtitle)
-                        .font(.system(size: 12))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size12)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
 
                 Text(timeString)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                    .foregroundStyle(V4Color.textSecondary.opacity(0.7))
             }
             .padding(.top, 2)
 
@@ -104,14 +104,14 @@ struct TimelineItem: View {
 
             if !isLast {
                 Rectangle()
-                    .fill(TrinityTheme.bgCardBorder)
+                    .fill(V4Color.border)
                     .frame(width: 2)
                     .padding(.leading, 13)
                     .frame(maxHeight: .infinity)
                     .offset(x: -16)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, ParietalSpacing.xs)
     }
 
     private var timeString: String {
@@ -166,45 +166,45 @@ struct ActivityRow: View {
     let activity: ActivityFeed.Activity
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // User avatar or icon
             ZStack {
                 Circle()
-                    .fill(activity.color.opacity(0.15))
+                    .fill(activity.color.opacity(V2Depth.bgSidebarHover))
                     .frame(width: 36, height: 36)
 
                 Image(systemName: activity.icon)
-                    .font(.system(size: 14))
+                    .font(WernickeTypography.size14)
                     .foregroundStyle(activity.color)
             }
 
             // Content
             VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Text(activity.user)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.smallMedium)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     Text(activity.action)
-                        .font(.system(size: 13))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size13)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     if let target = activity.target {
                         Text(target)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .font(WernickeTypography.smallMedium)
+                            .foregroundStyle(V4Color.accent)
                     }
                 }
 
                 Text(relativeTime)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                    .foregroundStyle(V4Color.textSecondary.opacity(0.7))
             }
 
             Spacer()
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
+        .padding(.vertical, ParietalSpacing.sm)
+        .padding(.horizontal, ParietalSpacing.md)
     }
 
     private var relativeTime: String {
@@ -220,37 +220,37 @@ struct ActivityCard: View {
     let activity: ActivityFeed.Activity
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: ParietalSpacing.md) {
             ZStack {
                 Circle()
-                    .fill(activity.color.opacity(0.15))
+                    .fill(activity.color.opacity(V2Depth.bgSidebarHover))
                     .frame(width: 40, height: 40)
 
                 Image(systemName: activity.icon)
-                    .font(.system(size: 16))
+                    .font(WernickeTypography.size16)
                     .foregroundStyle(activity.color)
             }
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Text(activity.user)
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.smallSemibold)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     Text(activity.action)
-                        .font(.system(size: 13))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size13)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     if let target = activity.target {
                         Text(target)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .font(WernickeTypography.smallMedium)
+                            .foregroundStyle(V4Color.accent)
                     }
                 }
 
                 Text(relativeTime)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .padding(.top, 4)
 
@@ -259,13 +259,13 @@ struct ActivityCard: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
-        .padding(.horizontal, 4)
+        .padding(.horizontal, ParietalSpacing.xs)
     }
 
     private var relativeTime: String {
@@ -312,8 +312,8 @@ struct MilestoneTimeline: View {
     private func milestoneConnector(for current: Milestone, and next: Milestone) -> some View {
         VStack(spacing: 0) {
             Rectangle()
-                .fill((current.isCompleted && next.isCompleted) ? TrinityTheme.accent : TrinityTheme.bgCardBorder)
-                .frame(height: 24)
+                .fill((current.isCompleted && next.isCompleted) ? V4Color.accent : V4Color.border)
+                .frame(height: ParietalSpacing.iconLarge)
         }
         .frame(width: 2)
         .padding(.leading, 15)
@@ -328,47 +328,47 @@ struct MilestoneRow: View {
     let onTap: () -> Void
 
     var body: some View {
-        HStack(alignment: .top, spacing: 16) {
+        HStack(alignment: .top, spacing: ParietalSpacing.lg) {
             // Milestone marker
             ZStack {
                 Circle()
-                    .fill(milestone.isCompleted ? TrinityTheme.accent.opacity(0.2) : TrinityTheme.bgCardBorder.opacity(0.5))
-                    .frame(width: 32, height: 32)
+                    .fill(milestone.isCompleted ? V4Color.accent.opacity(0.2) : V4Color.border.opacity(V2Depth.stateDisabled))
+                    .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
 
                 if milestone.isCompleted {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.captionBold)
+                        .foregroundStyle(V4Color.accent)
                 } else if milestone.isCurrent {
                     Circle()
-                        .fill(TrinityTheme.accent)
-                        .frame(width: 12, height: 12)
+                        .fill(V4Color.accent)
+                        .frame(width: ParietalSpacing.sm, height: ParietalSpacing.sm)
                 } else {
                     Circle()
-                        .fill(TrinityTheme.bgCardBorder)
+                        .fill(V4Color.border)
                         .frame(width: 10, height: 10)
                 }
             }
             .overlay(
                 Circle()
-                    .stroke(TrinityTheme.bgCard, lineWidth: 3)
+                    .stroke(V4Color.surface, lineWidth: 3)
             )
 
             // Content
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(milestone.title)
-                    .font(.system(size: 14, weight: milestone.isCurrent ? .semibold : .regular))
-                    .foregroundStyle(milestone.isCurrent ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                    .font(milestone.isCurrent ? WernickeTypography.body14Semibold : WernickeTypography.size14)
+                    .foregroundStyle(milestone.isCurrent ? V4Color.textPrimary : V4Color.textSecondary)
 
                 if let description = milestone.description, isSelected {
                     Text(description)
-                        .font(.system(size: 12))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size12)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
 
                 Text(dateString)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                    .foregroundStyle(V4Color.textSecondary.opacity(0.7))
             }
             .padding(.top, 4)
 
@@ -401,7 +401,7 @@ struct ProgressTimeline: View {
     }
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.lg) {
             ForEach(Array(phases.enumerated()), id: \.element.id) { index, phase in
                 PhaseRow(phase: phase, isLast: index == phases.count - 1)
 
@@ -420,15 +420,15 @@ struct PhaseRow: View {
     let isLast: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             phaseIndicator
                 .overlay(
                     Circle()
-                        .stroke(TrinityTheme.bgCard, lineWidth: 3)
+                        .stroke(V4Color.surface, lineWidth: 3)
                 )
 
             Text(phase.title)
-                .font(.system(size: 14))
+                .font(WernickeTypography.size14)
                 .foregroundStyle(textColor)
 
             Spacer()
@@ -444,7 +444,7 @@ struct PhaseRow: View {
             switch phase.status {
             case .completed:
                 Image(systemName: "checkmark")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(WernickeTypography.captionBold)
                     .foregroundStyle(.white)
             case .inProgress:
                 ProgressView()
@@ -458,17 +458,17 @@ struct PhaseRow: View {
 
     private var backgroundColor: Color {
         switch phase.status {
-        case .completed: return TrinityTheme.accent
-        case .inProgress: return TrinityTheme.accent
-        case .pending: return TrinityTheme.bgCardBorder
+        case .completed: return V4Color.accent
+        case .inProgress: return V4Color.accent
+        case .pending: return V4Color.border
         }
     }
 
     private var textColor: Color {
         switch phase.status {
-        case .completed: return TrinityTheme.textPrimary
-        case .inProgress: return TrinityTheme.textPrimary
-        case .pending: return TrinityTheme.textMuted
+        case .completed: return V4Color.textPrimary
+        case .inProgress: return V4Color.textPrimary
+        case .pending: return V4Color.textSecondary
         }
     }
 }
@@ -485,9 +485,9 @@ struct PhaseConnector: View {
 
         let color: Color = {
             if currentPhase.status == .completed && nextPhase.status != .pending {
-                return TrinityTheme.accent
+                return V4Color.accent
             }
-            return TrinityTheme.bgCardBorder
+            return V4Color.border
         }()
 
         return Rectangle()
@@ -530,7 +530,7 @@ struct TimelineView_Previews: PreviewProvider {
                 .padding(.leading, 16)
             }
             .padding()
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
 
             MilestoneTimeline(
                 milestones: [
@@ -543,6 +543,6 @@ struct TimelineView_Previews: PreviewProvider {
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

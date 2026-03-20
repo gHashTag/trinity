@@ -31,21 +31,21 @@ struct PipelineScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 // Header
                 HStack {
                     Text("\u{26D3}")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("PIPELINE")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("Workflow DAG Visualizer")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
-                    ActionButton(icon: "\u{25B6}", label: "Run", color: TrinityTheme.accent,
+                    ActionButton(icon: "\u{25B6}", label: "Run", color: V4Color.accent,
                                  action: "pipeline_run", params: ["pipeline": selectedPipeline])
                 }
                 .padding()
@@ -68,29 +68,29 @@ struct PipelineScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { loadData() }
     }
 
     // MARK: - DAG Canvas
 
     private var dagSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack {
                 Text("GOLDEN CHAIN DAG")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(TrinityTheme.golden)
+                    .foregroundStyle(V4Color.golden)
                 Spacer()
                 if let state = pipelineState {
                     Text("\(state.last_link ?? 0)/\(state.total_links ?? 28)")
                         .font(.caption.weight(.bold).monospacedDigit())
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                     Text(state.status ?? "idle")
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(statusColor(state.status))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(statusColor(state.status).opacity(0.15))
+                        .background(statusColor(state.status).opacity(V2Depth.bgSidebarHover))
                         .clipShape(SwiftUI.Capsule())
                 }
             }
@@ -103,38 +103,38 @@ struct PipelineScreen: View {
             }
             .frame(height: 220)
             .padding(.horizontal)
-            .background(TrinityTheme.bgCard)
-            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+            .background(V4Color.bgCard)
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                    .stroke(V4Color.bgCardBorder, lineWidth: 1)
             )
             .padding(.horizontal)
         }
     }
 
     private func stepDetailCard(_ step: WorkflowDAG.DAGStep) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             Circle()
                 .fill(step.status.color)
                 .frame(width: 12, height: 12)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(step.label)
                     .font(.headline)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                 Text("Phase: \(step.phase)")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                 if let dur = step.duration {
                     Text("Duration: \(dur)")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                 }
                 if let err = step.error {
                     Text("Error: \(err)")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .foregroundStyle(V4Color.statusError)
                 }
             }
 
@@ -144,26 +144,26 @@ struct PipelineScreen: View {
                 withAnimation { selectedStep = nil }
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .buttonStyle(.plain)
         }
         .padding()
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.bgCardBorder, lineWidth: 1)
         )
     }
 
     // MARK: - Pipeline List
 
     private var pipelineListSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("AVAILABLE PIPELINES")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.purple)
+                .foregroundStyle(V4Color.purple)
                 .padding(.horizontal)
 
             ForEach(pipelines, id: \.0) { id, name, desc in
@@ -172,32 +172,32 @@ struct PipelineScreen: View {
                 Button {
                     selectedPipeline = id
                 } label: {
-                    HStack(spacing: 12) {
+                    HStack(spacing: ParietalSpacing.md) {
                         Circle()
-                            .fill(isSelected ? TrinityTheme.accent : TrinityTheme.bgCardBorder)
+                            .fill(isSelected ? V4Color.accent : V4Color.bgCardBorder)
                             .frame(width: 8, height: 8)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(name)
                                 .font(.headline)
-                                .foregroundStyle(isSelected ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                                .foregroundStyle(isSelected ? V4Color.textPrimary : V4Color.textSecondary)
                             Text(desc)
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                         Spacer()
 
                         if isSelected {
-                            ActionButton(icon: "\u{25B6}", label: "Run", color: TrinityTheme.accent,
+                            ActionButton(icon: "\u{25B6}", label: "Run", color: V4Color.accent,
                                          action: "pipeline_run", params: ["pipeline": id])
                         }
                     }
                     .padding()
-                    .background(isSelected ? TrinityTheme.accent.opacity(0.05) : TrinityTheme.bgCard)
-                    .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                    .background(isSelected ? V4Color.accent.opacity(0.05) : V4Color.bgCard)
+                    .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                     .overlay(
-                        RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                            .stroke(isSelected ? TrinityTheme.accent.opacity(0.3) : TrinityTheme.bgCardBorder, lineWidth: 1)
+                        RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                            .stroke(isSelected ? V4Color.accent.opacity(V2Depth.stateHover) : V4Color.bgCardBorder, lineWidth: 1)
                     )
                 }
                 .buttonStyle(.plain)
@@ -209,27 +209,27 @@ struct PipelineScreen: View {
     // MARK: - Metrics
 
     private var metricsSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("PIPELINE METRICS")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
                 .padding(.horizontal)
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.sm) {
                 StatCard(
                     label: "Total Runs",
                     value: "\(eventMetrics.totalRuns)",
-                    accent: TrinityTheme.accent
+                    accent: V4Color.accent
                 )
                 StatCard(
                     label: "Avg Duration",
                     value: eventMetrics.avgDurationSec > 0 ? "\(eventMetrics.avgDurationSec)s" : "N/A",
-                    accent: TrinityTheme.golden
+                    accent: V4Color.golden
                 )
                 StatCard(
                     label: "Success Rate",
                     value: eventMetrics.totalRuns > 0 ? "\(eventMetrics.successRate)%" : "N/A",
-                    accent: TrinityTheme.statusOK
+                    accent: V4Color.statusOK
                 )
             }
             .padding(.horizontal)
@@ -324,10 +324,10 @@ struct PipelineScreen: View {
 
     private func statusColor(_ status: String?) -> Color {
         switch status {
-        case "running": return TrinityTheme.golden
-        case "done": return TrinityTheme.statusOK
-        case "failed": return TrinityTheme.statusError
-        default: return TrinityTheme.textMuted
+        case "running": return V4Color.golden
+        case "done": return V4Color.statusOK
+        case "failed": return V4Color.statusError
+        default: return V4Color.textSecondary
         }
     }
 }

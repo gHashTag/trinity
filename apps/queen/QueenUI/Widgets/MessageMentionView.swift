@@ -32,8 +32,8 @@ struct MentionHighlighter: View {
                 let mentionString = String(text[mentionRange])
 
                 if let attributedRange = attributed.range(of: mentionString) {
-                    attributed[attributedRange].foregroundColor = TrinityTheme.golden
-                    attributed[attributedRange].backgroundColor = TrinityTheme.golden.opacity(0.15)
+                    attributed[attributedRange].foregroundColor = V4Color.golden
+                    attributed[attributedRange].backgroundColor = V4Color.golden.opacity(V2Depth.bgSidebarHover)
                     attributed[attributedRange].font = .system(size: 14, weight: .semibold)
                 }
             } else {
@@ -42,8 +42,8 @@ struct MentionHighlighter: View {
                 let mentionString = String(text[mentionRange])
 
                 if let attributedRange = attributed.range(of: mentionString) {
-                    attributed[attributedRange].foregroundColor = TrinityTheme.golden
-                    attributed[attributedRange].backgroundColor = TrinityTheme.golden.opacity(0.15)
+                    attributed[attributedRange].foregroundColor = V4Color.golden
+                    attributed[attributedRange].backgroundColor = V4Color.golden.opacity(V2Depth.bgSidebarHover)
                     attributed[attributedRange].font = .system(size: 14, weight: .semibold)
                 }
             }
@@ -72,7 +72,7 @@ struct MentionAutocomplete: View {
             TextEditor(text: $text)
                 .focused($isFocused)
                 .scrollContentBackground(.hidden)
-                .background(TrinityTheme.bgCard)
+                .background(V4Color.surface)
                 .onChange(of: text) { _, newValue in
                     handleTextChange(newValue)
                 }
@@ -161,13 +161,13 @@ struct MentionSuggestionsPopup: View {
             }
         }
         .frame(maxWidth: 250, maxHeight: 200)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border, lineWidth: 1)
         )
-        .cornerRadius(TrinityTheme.cornerMedium)
-        .shadow(color: .black.opacity(0.3), radius: 15)
+        .cornerRadius(V1Theme.cornerMedium)
+        .shadow(color: .black.opacity(V2Depth.stateHover), radius: 15)
     }
 }
 
@@ -178,26 +178,26 @@ struct MentionSuggestionRow: View {
     let isSelected: Bool
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: ParietalSpacing.sm + 2) {
             // Avatar
             Circle()
                 .fill(avatarColor)
-                .frame(width: 32, height: 32)
+                .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
                 .overlay(
                     Text(String(user.displayName.prefix(1)).uppercased())
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(WernickeTypography.body14Semibold)
                         .foregroundStyle(.white)
                 )
 
             // Name and username
             VStack(alignment: .leading, spacing: 2) {
                 Text(user.displayName)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.smallMedium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text("@\(user.username)")
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             Spacer()
@@ -205,11 +205,11 @@ struct MentionSuggestionRow: View {
             // Status indicator
             Circle()
                 .fill(statusColor)
-                .frame(width: 8, height: 8)
+                .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(isSelected ? TrinityTheme.accent.opacity(0.2) : Color.clear)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm)
+        .background(isSelected ? V4Color.accent.opacity(0.2) : Color.clear)
     }
 
     private var avatarColor: Color {
@@ -222,7 +222,7 @@ struct MentionSuggestionRow: View {
         switch user.onlineStatus {
         case .online: return .green
         case .away: return .yellow
-        case .offline: return TrinityTheme.textMuted
+        case .offline: return V4Color.textSecondary
         }
     }
 }
@@ -292,17 +292,17 @@ class MentionStore: ObservableObject {
 
 struct MessageMentionView_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
             // Mention highlighter
             MentionHighlighter(
                 text: "Hey @trinity, can you help with this? Also cc @assistant",
                 onMentionTap: { print("Tapped: \($0)") }
             )
             .padding()
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
 
             // Suggestion rows
-            VStack(spacing: 4) {
+            VStack(spacing: ParietalSpacing.xs) {
                 MentionSuggestionRow(
                     user: MentionUser(
                         id: UUID(),
@@ -323,9 +323,9 @@ struct MessageMentionView_Previews: PreviewProvider {
                 )
             }
             .padding()
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

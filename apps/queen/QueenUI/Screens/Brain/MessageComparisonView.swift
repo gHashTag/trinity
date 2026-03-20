@@ -36,7 +36,7 @@ struct MessageComparisonView: View {
 
             // Divider
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.bgCardBorder)
 
             // Comparison panes
             HStack(spacing: 0) {
@@ -49,7 +49,7 @@ struct MessageComparisonView: View {
 
                 // Center divider
                 Divider()
-                    .background(TrinityTheme.bgCardBorder)
+                    .background(V4Color.bgCardBorder)
 
                 // Right: New version
                 messagePane(
@@ -61,12 +61,12 @@ struct MessageComparisonView: View {
 
             // Divider
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.bgCardBorder)
 
             // Action buttons
             actionButtons
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .frame(minWidth: 800, minHeight: 500)
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
@@ -75,26 +75,26 @@ struct MessageComparisonView: View {
 
     private var titleBar: some View {
         HStack {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: "doc.on.doc")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.body14Medium)
+                    .foregroundStyle(V4Color.accent)
 
                 Text("Compare Versions")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.smallSemibold)
+                    .foregroundStyle(V4Color.textPrimary)
             }
 
             Spacer()
 
             Button {
-                withAnimation(TrinityTheme.springAnimation()) {
+                withAnimation(MTMotion.adaptiveStandardSpring()) {
                     isPresented = false
                 }
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 16))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size16)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .buttonStyle(.plain)
             .onHover { isHovering in
@@ -103,7 +103,7 @@ struct MessageComparisonView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
     }
 
     // MARK: - Message Pane
@@ -118,26 +118,26 @@ struct MessageComparisonView: View {
             // Pane header
             HStack {
                 Text(title)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.caption2Semibold)
+                    .foregroundStyle(V4Color.textSecondary)
                     .textCase(.uppercase)
 
                 Spacer()
 
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Image(systemName: "text.alignleft")
-                        .font(.system(size: 9))
+                        .font(WernickeTypography.size9)
                     Text("\(text.components(separatedBy: .newlines).count) lines")
-                        .font(.system(size: 10))
+                        .font(WernickeTypography.size10)
                 }
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
+                .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(TrinityTheme.bgCard.opacity(0.5))
+            .background(V4Color.bgCard.opacity(V2Depth.stateDisabled))
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.bgCardBorder)
 
             // Scrollable content with diff highlighting
             ScrollViewWithOffset(offset: $scrollOffset) {
@@ -148,7 +148,7 @@ struct MessageComparisonView: View {
                 }
                 .padding(12)
             }
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.bgWindow)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -198,7 +198,7 @@ struct MessageComparisonView: View {
     }
 
     private func diffLineView(_ line: DiffLine) -> some View {
-        HStack(alignment: .top, spacing: 8) {
+        HStack(alignment: .top, spacing: ParietalSpacing.sm) {
             // Line indicator
             Group {
                 switch line.type {
@@ -206,18 +206,18 @@ struct MessageComparisonView: View {
                     Text(" ")
                 case .added:
                     Text("+")
-                        .foregroundStyle(TrinityTheme.statusOK)
+                        .foregroundStyle(V4Color.statusOK)
                 case .removed:
                     Text("-")
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .foregroundStyle(V4Color.statusError)
                 }
             }
-            .font(.system(size: 11, design: .monospaced))
+            .font(WernickeTypography.size11Mono)
             .frame(width: 12, alignment: .trailing)
 
             // Line content with background
             Text(line.text)
-                .font(.system(size: TrinityTheme.chatFontSize, design: .monospaced))
+                .font(.system(size: V1Theme.chatFontSize, design: .monospaced))
                 .foregroundStyle(foregroundFor(lineType: line.type))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
@@ -230,7 +230,7 @@ struct MessageComparisonView: View {
     private func foregroundFor(lineType: DiffLine.LineType) -> Color {
         switch lineType {
         case .unchanged:
-            return TrinityTheme.textPrimary
+            return V4Color.textPrimary
         case .added:
             return Color(hex: 0x00C853) // Slightly darker green for text
         case .removed:
@@ -243,62 +243,62 @@ struct MessageComparisonView: View {
         case .unchanged:
             return Color.clear
         case .added:
-            return Color(hex: 0x00FF88).opacity(0.15)
+            return Color(hex: 0x00FF88).opacity(V2Depth.bgSidebarHover)
         case .removed:
-            return Color(hex: 0xEF4444).opacity(0.15)
+            return Color(hex: 0xEF4444).opacity(V2Depth.bgSidebarHover)
         }
     }
 
     // MARK: - Action Buttons
 
     private var actionButtons: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             Spacer()
 
             // Reject button
             Button {
-                withAnimation(TrinityTheme.springAnimation()) {
+                withAnimation(MTMotion.adaptiveStandardSpring()) {
                     onAccept = false
                     isPresented = false
                 }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(WernickeTypography.caption2Semibold)
                     Text("Reject")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(WernickeTypography.captionMedium)
                 }
-                .foregroundStyle(TrinityTheme.statusError)
+                .foregroundStyle(V4Color.statusError)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(TrinityTheme.statusError.opacity(0.1))
-                .cornerRadius(TrinityTheme.cornerMedium)
+                .background(V4Color.statusError.opacity(V2Depth.bgSubtle))
+                .cornerRadius(V1Theme.cornerMedium)
             }
             .buttonStyle(.plain)
 
             // Accept button
             Button {
-                withAnimation(TrinityTheme.springAnimation()) {
+                withAnimation(MTMotion.adaptiveStandardSpring()) {
                     onAccept = true
                     isPresented = false
                 }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(WernickeTypography.caption2Semibold)
                     Text("Accept")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(WernickeTypography.captionMedium)
                 }
                 .foregroundStyle(.white)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 8)
-                .background(TrinityTheme.statusOK)
-                .cornerRadius(TrinityTheme.cornerMedium)
+                .background(V4Color.statusOK)
+                .cornerRadius(V1Theme.cornerMedium)
             }
             .buttonStyle(.plain)
         }
         .padding(16)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
     }
 }
 

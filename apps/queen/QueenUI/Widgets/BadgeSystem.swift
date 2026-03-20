@@ -39,7 +39,7 @@ struct CountBadge: View {
         }
     }
 
-    init(_ count: Int, size: BadgeSize = .medium, color: Color = TrinityTheme.statusError, hideWhenZero: Bool = true) {
+    init(_ count: Int, size: BadgeSize = .medium, color: Color = V4Color.error, hideWhenZero: Bool = true) {
         self.count = count
         self.size = size
         self.color = color
@@ -83,12 +83,12 @@ struct StatusIndicator: View {
 
         var color: Color {
             switch self {
-            case .success: return TrinityTheme.statusOK
-            case .warning: return TrinityTheme.statusWarn
-            case .error: return TrinityTheme.statusError
-            case .info: return TrinityTheme.accent
-            case .processing: return TrinityTheme.accent
-            case .disabled: return TrinityTheme.textMuted
+            case .success: return V4Color.success
+            case .warning: return V4Color.warning
+            case .error: return V4Color.error
+            case .info: return V4Color.accent
+            case .processing: return V4Color.accent
+            case .disabled: return V4Color.textSecondary
             }
         }
 
@@ -140,7 +140,7 @@ struct StatusIndicator: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Image(systemName: status.icon)
                 .font(.system(size: size.iconSize))
 
@@ -152,7 +152,7 @@ struct StatusIndicator: View {
         .padding(.vertical, size.padding.vertical)
         .background(
             SwiftUI.Capsule()
-                .fill(status.color.opacity(0.15))
+                .fill(status.color.opacity(V2Depth.bgSidebarHover))
         )
         .accessibilityLabel("Status")
         .accessibilityValue(labelText)
@@ -199,7 +199,7 @@ struct PillBadge: View {
         }
     }
 
-    init(_ text: String, color: Color = TrinityTheme.accent, size: PillSize = .medium) {
+    init(_ text: String, color: Color = V4Color.accent, size: PillSize = .medium) {
         self.text = text
         self.color = color
         self.size = size
@@ -213,7 +213,7 @@ struct PillBadge: View {
             .padding(.vertical, size.padding.vertical)
             .background(
                 SwiftUI.Capsule()
-                    .fill(color.opacity(0.15))
+                    .fill(color.opacity(V2Depth.bgSidebarHover))
             )
             .accessibilityLabel("Badge")
             .accessibilityValue(text)
@@ -227,7 +227,7 @@ struct DotBadge: View {
     let size: CGFloat
     let isAnimated: Bool
 
-    init(color: Color = TrinityTheme.statusError, size: CGFloat = 8, isAnimated: Bool = false) {
+    init(color: Color = V4Color.error, size: CGFloat = 8, isAnimated: Bool = false) {
         self.color = color
         self.size = size
         self.isAnimated = isAnimated
@@ -261,7 +261,7 @@ struct IconBadge: View {
     let count: Int?
     let color: Color
 
-    init(icon: String, count: Int? = nil, color: Color = TrinityTheme.statusError) {
+    init(icon: String, count: Int? = nil, color: Color = V4Color.error) {
         self.icon = icon
         self.count = count
         self.color = color
@@ -270,12 +270,12 @@ struct IconBadge: View {
     var body: some View {
         ZStack(alignment: .topTrailing) {
             Image(systemName: icon)
-                .font(.system(size: 20))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size20)
+                .foregroundStyle(V4Color.textSecondary)
 
             if let count = count, count > 0 {
                 Text(count > 99 ? "99+" : "\(count)")
-                    .font(.system(size: 8, weight: .bold))
+                    .font(WernickeTypography.tiny8Bold)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 3)
                     .padding(.vertical, 1)
@@ -307,7 +307,7 @@ extension View {
         }
     }
 
-    func dotBadge(color: Color = TrinityTheme.statusError, isAnimated: Bool = false) -> some View {
+    func dotBadge(color: Color = V4Color.error, isAnimated: Bool = false) -> some View {
         overlay(alignment: .topTrailing) {
             DotBadge(color: color, isAnimated: isAnimated)
                 .offset(x: 6, y: -6)
@@ -321,7 +321,7 @@ struct BadgeSystem_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             // Count badges
-            HStack(spacing: 16) {
+            HStack(spacing: ParietalSpacing.lg) {
                 CountBadge(0)
                 CountBadge(1)
                 CountBadge(5)
@@ -333,8 +333,8 @@ struct BadgeSystem_Previews: PreviewProvider {
             .padding()
 
             // Status indicators
-            VStack(spacing: 8) {
-                HStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
+                HStack(spacing: ParietalSpacing.sm) {
                     StatusIndicator(.success)
                     StatusIndicator(.warning)
                     StatusIndicator(.error)
@@ -346,32 +346,32 @@ struct BadgeSystem_Previews: PreviewProvider {
             .padding()
 
             // Pill badges
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 PillBadge("New")
-                PillBadge("Updated", color: TrinityTheme.accent)
-                PillBadge("Beta", color: TrinityTheme.statusWarn)
-                PillBadge("Deprecated", color: TrinityTheme.statusError)
+                PillBadge("Updated", color: V4Color.accent)
+                PillBadge("Beta", color: V4Color.warning)
+                PillBadge("Deprecated", color: V4Color.error)
             }
             .padding()
 
             // Dot badges
-            HStack(spacing: 16) {
+            HStack(spacing: ParietalSpacing.lg) {
                 DotBadge()
-                DotBadge(color: TrinityTheme.statusOK)
-                DotBadge(color: TrinityTheme.accent)
+                DotBadge(color: V4Color.success)
+                DotBadge(color: V4Color.accent)
                 DotBadge(isAnimated: true)
             }
             .padding()
 
             // Icon badges
-            HStack(spacing: 24) {
+            HStack(spacing: ParietalSpacing.xl) {
                 IconBadge(icon: "bell.fill")
                 IconBadge(icon: "bell.fill", count: 1)
                 IconBadge(icon: "bell.fill", count: 5)
-                IconBadge(icon: "envelope.fill", count: 99, color: TrinityTheme.accent)
+                IconBadge(icon: "envelope.fill", count: 99, color: V4Color.accent)
             }
             .padding()
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

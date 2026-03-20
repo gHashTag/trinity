@@ -84,10 +84,10 @@ struct DateRangePicker: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             // Presets
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     ForEach(presets) { preset in
                         PresetChip(
                             title: preset.title,
@@ -100,23 +100,23 @@ struct DateRangePicker: View {
             }
 
             // Custom range
-            HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: ParietalSpacing.md) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                     Text("Start")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     DatePickerButton(date: $startDate)
                 }
 
                 Image(systemName: "arrow.right")
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.textSecondary)
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                     Text("End")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     DatePickerButton(date: $endDate)
                 }
@@ -132,12 +132,12 @@ struct DateRangePicker: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(12)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.md)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 
@@ -166,12 +166,12 @@ struct PresetChip: View {
             onTap()
         } label: {
             Text(title)
-                .font(.system(size: 12, weight: isSelected ? .medium : .regular))
-                .foregroundStyle(isSelected ? .white : TrinityTheme.textPrimary)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(isSelected ? TrinityTheme.accent : TrinityTheme.bgCardBorder)
-                .cornerRadius(16)
+                .font(isSelected ? WernickeTypography.captionMedium : WernickeTypography.caption)
+                .foregroundStyle(isSelected ? .white : V4Color.textPrimary)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.xs + 2)
+                .background(isSelected ? V4Color.accent : V4Color.border)
+                .cornerRadius(V1Theme.cornerXLarge)
         }
         .buttonStyle(.plain)
     }
@@ -187,19 +187,19 @@ struct DatePickerButton: View {
         Button {
             showPicker = true
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Text(dateString)
-                    .font(.system(size: 13))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Image(systemName: "calendar")
-                    .font(.system(size: 12))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.textSecondary)
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(TrinityTheme.bgWindow.opacity(0.5))
-            .cornerRadius(6)
+            .padding(.horizontal, ParietalSpacing.sm + 2)
+            .padding(.vertical, ParietalSpacing.xs + 2)
+            .background(V4Color.background.opacity(V2Depth.stateDisabled))
+            .cornerRadius(V1Theme.cornerSmall)
         }
         .buttonStyle(.plain)
         .sheet(isPresented: $showPicker) {
@@ -222,7 +222,7 @@ struct DatePickerSheet: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 DatePicker(
                     "Select Date",
                     selection: $date,
@@ -256,10 +256,10 @@ struct RelativeDatePicker: View {
     let label: String
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             Menu {
                 Button("Today") {
@@ -289,11 +289,11 @@ struct RelativeDatePicker: View {
                     // Show date picker
                 }
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Text(relativeDescription)
-                        .font(.system(size: 13))
+                        .font(WernickeTypography.size13)
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 10))
+                        .font(WernickeTypography.size10)
                 }
             }
         }
@@ -325,17 +325,17 @@ struct DatePicker_Previews: PreviewProvider {
                 startDate: .constant(Date()),
                 endDate: .constant(Date().addingTimeInterval(7 * 24 * 3600))
             )
-            .frame(width: 400)
+            .frame(width: ParietalSpacing.xl * 16)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             RelativeDatePicker(
                 date: .constant(Date().addingTimeInterval(3 * 24 * 3600)),
                 label: "Due Date"
             )
-            .frame(width: 250)
+            .frame(width: ParietalSpacing.xl * 10)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
         }
     }
 }

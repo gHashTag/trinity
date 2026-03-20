@@ -13,9 +13,9 @@ struct AgentRow: View {
 
         var color: Color {
             switch self {
-            case .up: return TrinityTheme.statusOK
-            case .down: return TrinityTheme.statusError
-            case .stub: return TrinityTheme.textMuted
+            case .up: return V4Color.statusOK
+            case .down: return V4Color.statusError
+            case .stub: return V4Color.textSecondary
             }
         }
 
@@ -29,18 +29,18 @@ struct AgentRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.sm) {
             Text(agentEmoji)
-                .font(.title2)
+                .font(WernickeTypography.h2)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xxxs) {
                 Text(name.uppercased())
-                    .font(.headline)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.h5)
+                    .foregroundStyle(V4Color.textPrimary)
                 if let detail {
                     Text(detail)
-                        .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.caption)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
 
@@ -48,8 +48,8 @@ struct AgentRow: View {
 
             if let wakeCount {
                 Text("Wake #\(wakeCount)")
-                    .font(.caption.monospacedDigit())
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.captionMono)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             // Pulsing status dot
@@ -58,15 +58,15 @@ struct AgentRow: View {
             StatusBadge(status: status)
         }
         .padding()
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.bgCardBorder, lineWidth: 1)
         )
-        .scaleEffect(isHovered ? 1.01 : 1.0)
+        .scaleEffect(isHovered ? MTMotion.hoverScale : 1.0)
         .onHover { isHovered = $0 }
-        .animation(.easeInOut(duration: 0.12), value: isHovered)
+        .animation(MTMotion.quick, value: isHovered)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(name) agent")
         .accessibilityValue("\(status.label), wake \(wakeCount ?? 0)")
@@ -95,18 +95,18 @@ struct AgentStatusDot: View {
             // Outer pulse ring (only for non-UP states)
             if status != .up {
                 Circle()
-                    .stroke(dotColor.opacity(0.3), lineWidth: 1)
-                    .frame(width: 18, height: 18)
+                    .stroke(dotColor.opacity(V4Color.opacity30), lineWidth: 1)
+                    .frame(width: ParietalSpacing.avatarSmall - 14, height: ParietalSpacing.avatarSmall - 14)
                     .scaleEffect(pulse ? 1.6 : 1.0)
-                    .opacity(pulse ? 0 : 0.7)
+                    .opacity(pulse ? 0 : V4Color.opacity70)
             }
 
             // Inner solid dot
             Circle()
                 .fill(dotColor)
-                .frame(width: 8, height: 8)
+                .frame(width: ParietalSpacing.statusDot, height: ParietalSpacing.statusDot)
         }
-        .frame(width: 20, height: 20)
+        .frame(width: ParietalSpacing.icon + 4, height: ParietalSpacing.icon + 4)
         .onAppear {
             if status != .up {
                 withAnimation(pulseAnimation) {
@@ -125,9 +125,9 @@ struct AgentStatusDot: View {
         case .up:
             return .default
         case .stub:
-            return .easeInOut(duration: 2.0).repeatForever(autoreverses: true)
+            return Animation.easeInOut(duration: MTMotion.durationExtraSlow).repeatForever(autoreverses: true)
         case .down:
-            return .easeInOut(duration: 0.7).repeatForever(autoreverses: true)
+            return Animation.easeInOut(duration: MTMotion.durationSlow).repeatForever(autoreverses: true)
         }
     }
 }

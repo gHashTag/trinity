@@ -24,13 +24,13 @@ struct CommentSidebar: View {
             // Header
             HStack {
                 Text("Comments")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(WernickeTypography.body14Semibold)
                     .foregroundStyle(Color.white)
                 Spacer()
                 Button(action: onClose) {
                     Image(systemName: "xmark")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(Color.white.opacity(0.5))
+                        .font(WernickeTypography.captionMedium)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close comments")
@@ -40,39 +40,39 @@ struct CommentSidebar: View {
 
             // Quoted original message
             Text(message.text)
-                .font(.system(size: 12))
-                .foregroundStyle(Color.white.opacity(0.4))
+                .font(WernickeTypography.size12)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 .lineLimit(3)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 12)
                 .overlay(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 1.5)
-                        .fill(TrinityTheme.accent.opacity(0.5))
+                        .fill(V4Color.accent.opacity(V2Depth.stateDisabled))
                         .frame(width: 3)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
 
             Rectangle()
-                .fill(Color.white.opacity(0.06))
+                .fill(Color.white.opacity(V2Depth.bgCard))
                 .frame(height: 1)
 
             // Comment messages
             ScrollViewReader { proxy in
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 12) {
+                    LazyVStack(alignment: .leading, spacing: ParietalSpacing.md) {
                         ForEach(comments) { comment in
                             CommentRow(comment: comment)
                         }
 
                         if client.isStreaming {
-                            HStack(spacing: 6) {
+                            HStack(spacing: ParietalSpacing.sm - 2) {
                                 ProgressView()
                                     .controlSize(.small)
-                                    .tint(TrinityTheme.accent)
+                                    .tint(V4Color.accent)
                                 Text("Thinking...")
-                                    .font(.system(size: 12))
-                                    .foregroundStyle(Color.white.opacity(0.3))
+                                    .font(WernickeTypography.size12)
+                                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                             }
                             .padding(.horizontal, 16)
                         }
@@ -92,13 +92,13 @@ struct CommentSidebar: View {
 
             // Mini input bar
             Rectangle()
-                .fill(Color.white.opacity(0.06))
+                .fill(Color.white.opacity(V2Depth.bgCard))
                 .frame(height: 1)
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 TextField("Add a comment...", text: $commentInput, axis: .vertical)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 13))
+                    .font(WernickeTypography.size13)
                     .foregroundStyle(Color.white)
                     .focused($commentFocused)
                     .lineLimit(1...4)
@@ -106,8 +106,8 @@ struct CommentSidebar: View {
 
                 Button(action: sendComment) {
                     Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundStyle(commentInput.isEmpty ? Color.white.opacity(0.15) : TrinityTheme.accent)
+                        .font(WernickeTypography.size20)
+                        .foregroundStyle(commentInput.isEmpty ? Color.white.opacity(V2Depth.bgSidebarHover) : V4Color.accent)
                 }
                 .buttonStyle(.plain)
                 .disabled(commentInput.isEmpty || client.isStreaming)
@@ -115,14 +115,14 @@ struct CommentSidebar: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(Color(hex: 0x111111))
+            .background(V4Color.surfaceElevated)
         }
         .frame(
             minWidth: LayoutConstants.commentSidebarMinWidth,
             idealWidth: LayoutConstants.commentSidebarIdealWidth,
             maxWidth: LayoutConstants.commentSidebarMaxWidth
         )
-        .background(Color(hex: 0x0A0A0A))
+        .background(V4Color.background)
         .transition(.move(edge: .trailing).combined(with: .opacity))
         .onAppear { commentFocused = true }
     }
@@ -148,33 +148,33 @@ struct CommentRow: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Circle()
-                    .fill(comment.role == .user ? Color.white.opacity(0.3) :
-                          hasError ? TrinityTheme.statusError.opacity(0.5) :
-                          TrinityTheme.accent.opacity(0.5))
+                    .fill(comment.role == .user ? Color.white.opacity(V2Depth.stateHover) :
+                          hasError ? V4Color.statusError.opacity(V2Depth.stateDisabled) :
+                          V4Color.accent.opacity(V2Depth.stateDisabled))
                     .frame(width: 6, height: 6)
                 Text(comment.role == .user ? "You" : "Queen")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(comment.role == .user ? Color.white.opacity(0.5) :
-                                    hasError ? TrinityTheme.statusError :
-                                    TrinityTheme.accent)
+                    .font(WernickeTypography.caption2Semibold)
+                    .foregroundStyle(comment.role == .user ? Color.white.opacity(V2Depth.stateDisabled) :
+                                    hasError ? V4Color.statusError :
+                                    V4Color.accent)
             }
 
             if comment.text.isEmpty {
                 Text(" ")
-                    .font(.system(size: 13))
+                    .font(WernickeTypography.size13)
             } else if let attributed = try? AttributedString(markdown: comment.text) {
                 Text(attributed)
-                    .font(.system(size: 13))
-                    .foregroundStyle(hasError ? TrinityTheme.statusError : Color(hex: 0xD1D1D1))
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(hasError ? V4Color.statusError : V4Color.textSecondary)
                     .textSelection(.enabled)
                     .lineSpacing(2)
             } else {
                 Text(comment.text)
-                    .font(.system(size: 13))
-                    .foregroundStyle(hasError ? TrinityTheme.statusError : Color(hex: 0xD1D1D1))
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(hasError ? V4Color.statusError : V4Color.textSecondary)
                     .textSelection(.enabled)
                     .lineSpacing(2)
             }
@@ -184,13 +184,13 @@ struct CommentRow: View {
                 Button {
                     retry()
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 9))
+                            .font(WernickeTypography.size9)
                         Text("Retry")
-                            .font(.system(size: 10, weight: .bold))
+                            .font(WernickeTypography.miniBold)
                     }
-                    .foregroundStyle(TrinityTheme.statusError)
+                    .foregroundStyle(V4Color.statusError)
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 2)

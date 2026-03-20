@@ -36,17 +36,17 @@ struct PersonaLibrary: View {
             // Header
             HStack {
                 Text("Presets")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body16Bold)
+                    .foregroundStyle(V4Color.textPrimary)
                 Spacer()
                 Button { isPresented = false } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.white.opacity(0.4))
+                        .font(WernickeTypography.size12)
+                        .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 }
                 .buttonStyle(.plain)
             }
-            .padding(16)
+            .padding(ParietalSpacing.lg)
 
             // Tab picker
             HStack(spacing: 0) {
@@ -55,17 +55,17 @@ struct PersonaLibrary: View {
                         tab = t
                     } label: {
                         Text(t.rawValue)
-                            .font(.system(size: 12, weight: tab == t ? .bold : .medium))
-                            .foregroundStyle(tab == t ? .black : Color.white.opacity(0.5))
+                            .font(tab == t ? WernickeTypography.captionBold : WernickeTypography.captionMedium)
+                            .foregroundStyle(tab == t ? .black : Color.white.opacity(V2Depth.stateDisabled))
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, 8)
-                            .background(tab == t ? TrinityTheme.accent : Color.white.opacity(0.06))
+                            .padding(.vertical, ParietalSpacing.sm)
+                            .background(tab == t ? V4Color.accent : Color.white.opacity(V2Depth.bgCard))
                     }
                     .buttonStyle(.plain)
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 8))
-            .padding(.horizontal, 16)
+            .padding(.horizontal, ParietalSpacing.lg)
             .padding(.bottom, 12)
 
             // Content
@@ -79,7 +79,7 @@ struct PersonaLibrary: View {
             }
         }
         .frame(width: 380, height: 500)
-        .background(Color(hex: 0x0A0A0A))
+        .background(V4Color.background)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .onAppear {
             loadPersonas()
@@ -118,36 +118,36 @@ struct PersonaLibrary: View {
 
     @ViewBuilder
     private var personasContent: some View {
-        LazyVStack(spacing: 8) {
+        LazyVStack(spacing: ParietalSpacing.sm) {
             // Active persona indicator
             if let active = selectedPersona {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Image(systemName: active.icon)
-                        .font(.system(size: 14))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.size14)
+                        .foregroundStyle(V4Color.accent)
                     Text("Active: \(active.name)")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.captionBold)
+                        .foregroundStyle(V4Color.accent)
                     Spacer()
                     Button("Clear") {
                         selectedPersona = nil
                     }
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(TrinityTheme.statusError)
+                    .font(WernickeTypography.miniBold)
+                    .foregroundStyle(V4Color.error)
                     .buttonStyle(.plain)
                 }
                 .padding(10)
-                .background(TrinityTheme.accent.opacity(0.08))
+                .background(V4Color.accent.opacity(0.08))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
-                .padding(.horizontal, 16)
+                .padding(.horizontal, ParietalSpacing.lg)
             }
 
             // Built-in personas
             Text("BUILT-IN")
-                .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(Color.white.opacity(0.3))
+                .font(WernickeTypography.microBold)
+                .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, ParietalSpacing.lg)
                 .padding(.top, 8)
 
             ForEach(Persona.builtIn) { persona in
@@ -157,10 +157,10 @@ struct PersonaLibrary: View {
             // Custom personas
             if !personas.isEmpty {
                 Text("CUSTOM")
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(Color.white.opacity(0.3))
+                    .font(WernickeTypography.microBold)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, ParietalSpacing.lg)
                     .padding(.top, 8)
 
                 ForEach(personas) { persona in
@@ -173,18 +173,18 @@ struct PersonaLibrary: View {
                 editingPersona = nil
                 showAddPersona = true
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "plus.circle")
-                        .font(.system(size: 12))
+                        .font(WernickeTypography.size12)
                     Text("Create Persona")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(WernickeTypography.captionMedium)
                 }
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.vertical, 10)
+                .padding(.vertical, ParietalSpacing.sm + 2)
             }
             .buttonStyle(.plain)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, ParietalSpacing.lg)
         }
         .padding(.bottom, 16)
     }
@@ -195,33 +195,33 @@ struct PersonaLibrary: View {
         Button {
             selectedPersona = isActive ? nil : persona
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 Image(systemName: persona.icon)
-                    .font(.system(size: 16))
-                    .foregroundStyle(isActive ? TrinityTheme.accent : Color.white.opacity(0.5))
-                    .frame(width: 24)
+                    .font(WernickeTypography.size16)
+                    .foregroundStyle(isActive ? V4Color.accent : Color.white.opacity(V2Depth.stateDisabled))
+                    .frame(width: ParietalSpacing.iconLarge)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(persona.name)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(isActive ? TrinityTheme.accent : Color.white)
+                        .font(WernickeTypography.smallMedium)
+                        .foregroundStyle(isActive ? V4Color.accent : Color.white)
                     Text(String(persona.systemPrompt.prefix(60)))
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color.white.opacity(0.35))
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V2Depth.white35)
                         .lineLimit(1)
                 }
                 Spacer()
                 if isActive {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 14))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.size14)
+                        .foregroundStyle(V4Color.accent)
                 }
             }
             .padding(10)
-            .background(isActive ? TrinityTheme.accent.opacity(0.08) : Color.white.opacity(0.04))
+            .background(isActive ? V4Color.accent.opacity(0.08) : Color.white.opacity(V2Depth.bgCardLight))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ParietalSpacing.lg)
         .contextMenu {
             if !isBuiltIn {
                 Button("Edit") {
@@ -241,15 +241,15 @@ struct PersonaLibrary: View {
 
     @ViewBuilder
     private var templatesContent: some View {
-        LazyVStack(spacing: 8) {
+        LazyVStack(spacing: ParietalSpacing.sm) {
             // Built-in templates by category
             let categories = Dictionary(grouping: PromptTemplate.builtIn, by: { $0.category })
             ForEach(Array(categories.keys).sorted(), id: \.self) { category in
                 Text(category.uppercased())
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(Color.white.opacity(0.3))
+                    .font(WernickeTypography.microBold)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, ParietalSpacing.lg)
                     .padding(.top, 8)
 
                 ForEach(categories[category] ?? []) { template in
@@ -260,10 +260,10 @@ struct PersonaLibrary: View {
             // Custom templates
             if !templates.isEmpty {
                 Text("CUSTOM")
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(Color.white.opacity(0.3))
+                    .font(WernickeTypography.microBold)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, ParietalSpacing.lg)
                     .padding(.top, 8)
 
                 ForEach(templates) { template in
@@ -281,18 +281,18 @@ struct PersonaLibrary: View {
             Button {
                 showAddTemplate = true
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "plus.circle")
-                        .font(.system(size: 12))
+                        .font(WernickeTypography.size12)
                     Text("Create Template")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(WernickeTypography.captionMedium)
                 }
-                .foregroundStyle(TrinityTheme.purple)
+                .foregroundStyle(V4Color.purple)
                 .frame(maxWidth: .infinity, alignment: .center)
-                .padding(.vertical, 10)
+                .padding(.vertical, ParietalSpacing.sm + 2)
             }
             .buttonStyle(.plain)
-            .padding(.horizontal, 16)
+            .padding(.horizontal, ParietalSpacing.lg)
         }
         .padding(.bottom, 16)
     }
@@ -310,44 +310,48 @@ struct PersonaLibrary: View {
                 isPresented = false
             }
         } label: {
-            HStack(spacing: 10) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 Image(systemName: template.icon)
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.purple)
-                    .frame(width: 24)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.purple)
+                    .frame(width: ParietalSpacing.iconLarge)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(template.title)
-                        .font(.system(size: 13, weight: .medium))
+                        .font(WernickeTypography.smallMedium)
                         .foregroundStyle(Color.white)
                     Text(String(template.body.prefix(60)))
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color.white.opacity(0.35))
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V2Depth.white35)
                         .lineLimit(1)
                     if !template.variables.isEmpty {
-                        HStack(spacing: 4) {
+                        HStack(spacing: ParietalSpacing.xs) {
                             ForEach(template.variables, id: \.self) { v in
-                                Text("{{\(v)}}")
-                                    .font(.system(size: 8, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(TrinityTheme.golden)
-                                    .padding(.horizontal, 4)
-                                    .padding(.vertical, 1)
-                                    .background(TrinityTheme.golden.opacity(0.1))
-                                    .clipShape(SwiftUI.Capsule())
+                                varTextView(name: v)
                             }
                         }
                     }
                 }
                 Spacer()
                 Image(systemName: "arrow.right.circle")
-                    .font(.system(size: 12))
-                    .foregroundStyle(Color.white.opacity(0.2))
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(V4Color.white20)
             }
             .padding(10)
-            .background(Color.white.opacity(0.04))
+            .background(Color.white.opacity(V2Depth.bgCardLight))
             .clipShape(RoundedRectangle(cornerRadius: 8))
         }
         .buttonStyle(.plain)
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ParietalSpacing.lg)
+    }
+
+    private func varTextView(name: String) -> some View {
+        Text("{{\(name)}}")
+            .font(WernickeTypography.size9Mono.weight(.medium))
+            .foregroundStyle(V4Color.golden)
+            .padding(.horizontal, ParietalSpacing.xs)
+            .padding(.vertical, 1)
+            .background(V4Color.golden.opacity(V2Depth.bgSubtle))
+            .clipShape(SwiftUI.Capsule())
     }
 
     // MARK: - Persistence
@@ -395,25 +399,25 @@ struct PersonaEditor: View {
                          "paintbrush", "chart.bar", "terminal", "globe"]
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.lg) {
             Text(persona == nil ? "New Persona" : "Edit Persona")
                 .font(.headline)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
 
             TextField("Name", text: $name)
                 .textFieldStyle(.roundedBorder)
 
             // Icon picker
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: 8) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 6), spacing: ParietalSpacing.sm) {
                 ForEach(icons, id: \.self) { ic in
                     Button {
                         icon = ic
                     } label: {
                         Image(systemName: ic)
-                            .font(.system(size: 18))
-                            .foregroundStyle(icon == ic ? TrinityTheme.accent : Color.white.opacity(0.4))
+                            .font(WernickeTypography.size18)
+                            .foregroundStyle(icon == ic ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
                             .frame(width: 36, height: 36)
-                            .background(icon == ic ? TrinityTheme.accent.opacity(0.15) : Color.white.opacity(0.06))
+                            .background(icon == ic ? V4Color.accent.opacity(V2Depth.bgSidebarHover) : Color.white.opacity(V2Depth.bgCard))
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
                     .buttonStyle(.plain)
@@ -422,18 +426,18 @@ struct PersonaEditor: View {
 
             Text("System Prompt")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             TextEditor(text: $systemPrompt)
-                .font(.system(size: 12, design: .monospaced))
+                .font(WernickeTypography.size12Mono)
                 .frame(height: 120)
                 .scrollContentBackground(.hidden)
-                .background(Color.white.opacity(0.06))
+                .background(Color.white.opacity(V2Depth.bgCard))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
 
             HStack {
                 Button("Cancel") { onDismiss() }
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     .buttonStyle(.plain)
                 Spacer()
                 Button("Save") {
@@ -444,11 +448,11 @@ struct PersonaEditor: View {
                     onSave(p)
                     onDismiss()
                 }
-                .font(.system(size: 13, weight: .bold))
+                .font(WernickeTypography.smallBold)
                 .foregroundStyle(.black)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(TrinityTheme.accent)
+                .padding(.horizontal, ParietalSpacing.lg)
+                .padding(.vertical, ParietalSpacing.sm)
+                .background(V4Color.accent)
                 .clipShape(SwiftUI.Capsule())
                 .buttonStyle(.plain)
                 .disabled(name.isEmpty || systemPrompt.isEmpty)
@@ -456,7 +460,7 @@ struct PersonaEditor: View {
         }
         .padding(24)
         .frame(width: 360)
-        .background(Color(hex: 0x1A1A1A))
+        .background(V4Color.surfaceElevated)
         .onAppear {
             if let p = persona {
                 name = p.name
@@ -481,10 +485,10 @@ struct TemplateEditor: View {
     private let categories = ["Code", "Debug", "Design", "Docs", "Git", "Other"]
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.lg) {
             Text("New Template")
                 .font(.headline)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
 
             TextField("Title", text: $title)
                 .textFieldStyle(.roundedBorder)
@@ -496,18 +500,18 @@ struct TemplateEditor: View {
 
             Text("Body (use {{variable}} for placeholders)")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             TextEditor(text: $templateBody)
-                .font(.system(size: 12, design: .monospaced))
+                .font(WernickeTypography.size12Mono)
                 .frame(height: 120)
                 .scrollContentBackground(.hidden)
-                .background(Color.white.opacity(0.06))
+                .background(Color.white.opacity(V2Depth.bgCard))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
 
             HStack {
                 Button("Cancel") { onDismiss() }
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     .buttonStyle(.plain)
                 Spacer()
                 Button("Save") {
@@ -515,11 +519,11 @@ struct TemplateEditor: View {
                     onSave(template)
                     onDismiss()
                 }
-                .font(.system(size: 13, weight: .bold))
+                .font(WernickeTypography.smallBold)
                 .foregroundStyle(.black)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(TrinityTheme.purple)
+                .padding(.horizontal, ParietalSpacing.lg)
+                .padding(.vertical, ParietalSpacing.sm)
+                .background(V4Color.purple)
                 .clipShape(SwiftUI.Capsule())
                 .buttonStyle(.plain)
                 .disabled(title.isEmpty || templateBody.isEmpty)
@@ -527,7 +531,7 @@ struct TemplateEditor: View {
         }
         .padding(24)
         .frame(width: 360)
-        .background(Color(hex: 0x1A1A1A))
+        .background(V4Color.surfaceElevated)
     }
 }
 
@@ -575,17 +579,17 @@ struct PersonaPicker: View {
         } label: {
             HStack(spacing: 3) {
                 Image(systemName: selectedPersona?.icon ?? "crown.fill")
-                    .font(.system(size: 11))
+                    .font(WernickeTypography.size11)
                 if let name = selectedPersona?.name {
                     Text(name)
-                        .font(.system(size: 10, weight: .medium))
+                        .font(WernickeTypography.miniMedium)
                         .lineLimit(1)
                 }
             }
-            .foregroundStyle(selectedPersona != nil ? TrinityTheme.accent : Color.white.opacity(0.5))
-            .padding(.horizontal, 8)
+            .foregroundStyle(selectedPersona != nil ? V4Color.accent : Color.white.opacity(V2Depth.stateDisabled))
+            .padding(.horizontal, ParietalSpacing.sm)
             .padding(.vertical, 5)
-            .background(selectedPersona != nil ? TrinityTheme.accent.opacity(0.12) : Color.white.opacity(0.06))
+            .background(selectedPersona != nil ? V4Color.accent.opacity(0.12) : Color.white.opacity(V2Depth.bgCard))
             .clipShape(SwiftUI.Capsule())
         }
         .menuStyle(.borderlessButton)

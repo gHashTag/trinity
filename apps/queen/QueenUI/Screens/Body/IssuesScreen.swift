@@ -23,20 +23,20 @@ struct IssuesScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 HStack {
                     Text("📋")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("ISSUES")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("GitHub Issue Queue")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
-                    ActionButton(icon: "🔄", label: "Refresh", color: TrinityTheme.accent,
+                    ActionButton(icon: "🔄", label: "Refresh", color: V4Color.accent,
                                  action: "issues_refresh")
                     StatCard(label: "Open", value: "\(issues.count)")
                         .frame(width: 100)
@@ -46,20 +46,20 @@ struct IssuesScreen: View {
                 // Label summary
                 let labelCounts = countLabels()
                 if !labelCounts.isEmpty {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: 8) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 3), spacing: ParietalSpacing.sm) {
                         ForEach(labelCounts.sorted(by: { $0.value > $1.value }).prefix(6), id: \.key) { label, count in
                             HStack {
                                 Text(label)
                                     .font(.caption2)
-                                    .foregroundStyle(TrinityTheme.textPrimary)
+                                    .foregroundStyle(V4Color.textPrimary)
                                     .lineLimit(1)
                                 Spacer()
                                 Text("\(count)")
                                     .font(.caption.weight(.bold).monospacedDigit())
-                                    .foregroundStyle(TrinityTheme.accent)
+                                    .foregroundStyle(V4Color.accent)
                             }
                             .padding(8)
-                            .background(TrinityTheme.bgCard)
+                            .background(V4Color.bgCard)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                         }
                     }
@@ -68,27 +68,27 @@ struct IssuesScreen: View {
 
                 // Issue list
                 ForEach(issues) { issue in
-                    HStack(spacing: 12) {
+                    HStack(spacing: ParietalSpacing.md) {
                         Text("#\(issue.number)")
                             .font(.caption.weight(.bold).monospacedDigit())
-                            .foregroundStyle(TrinityTheme.purple)
+                            .foregroundStyle(V4Color.purple)
                             .frame(width: 50, alignment: .leading)
 
-                        VStack(alignment: .leading, spacing: 4) {
+                        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                             Text(issue.title ?? "Untitled")
                                 .font(.body)
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                                 .lineLimit(2)
 
                             if let labels = issue.labels, !labels.isEmpty {
-                                HStack(spacing: 4) {
+                                HStack(spacing: ParietalSpacing.xs) {
                                     ForEach(labels.prefix(3), id: \.name) { label in
                                         Text(label.name ?? "")
                                             .font(.caption2)
-                                            .foregroundStyle(TrinityTheme.textMuted)
+                                            .foregroundStyle(V4Color.textSecondary)
                                             .padding(.horizontal, 4)
                                             .padding(.vertical, 1)
-                                            .background(TrinityTheme.bgSidebar)
+                                            .background(V4Color.sidebar)
                                             .clipShape(SwiftUI.Capsule())
                                     }
                                 }
@@ -97,14 +97,14 @@ struct IssuesScreen: View {
                         Spacer()
                     }
                     .padding()
-                    .background(TrinityTheme.bgCard)
-                    .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                    .background(V4Color.bgCard)
+                    .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                     .padding(.horizontal)
                 }
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { loadIssues() }
     }
 

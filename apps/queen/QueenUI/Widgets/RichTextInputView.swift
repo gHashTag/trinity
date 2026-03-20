@@ -46,7 +46,7 @@ struct RichTextInputView: View {
                 formatToolbar
             }
             
-            Divider().background(TrinityTheme.bgCardBorder)
+            Divider().background(V4Color.border)
             
             // Text editor or preview
             if showPreview {
@@ -58,11 +58,11 @@ struct RichTextInputView: View {
             // Footer
             footer
         }
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(isFocused ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(isFocused ? V4Color.accent : V4Color.border, lineWidth: 1)
         )
         .onAppear {
             loadDraft()
@@ -83,21 +83,21 @@ struct RichTextInputView: View {
         )
         .focused($focus)
         .frame(minHeight: 120)
-        .padding(12)
+        .padding(ParietalSpacing.md)
     }
     
     private var markdownPreview: some View {
         ScrollView {
             MarkdownTextView(text: text)
-                .padding(16)
+                .padding(ParietalSpacing.lg)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .frame(minHeight: 120)
-        .background(TrinityTheme.bgWindow.opacity(0.5))
+        .background(V4Color.background.opacity(V2Depth.stateDisabled))
     }
     
     private var formatToolbar: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             formatButton("bold", icon: "bold") {
                 insertFormat("**", "**")
             }
@@ -136,8 +136,8 @@ struct RichTextInputView: View {
                 showEmojiPicker.toggle()
             } label: {
                 Image(systemName: "face.smiling")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
                     .frame(width: 28, height: 24)
             }
             .buttonStyle(.plain)
@@ -154,15 +154,15 @@ struct RichTextInputView: View {
                     }
                 } label: {
                     Image(systemName: "eye")
-                        .font(.system(size: 13))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size13)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
-        .background(TrinityTheme.bgCard)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xs + 2)
+        .background(V4Color.surface)
     }
     
     private var footer: some View {
@@ -170,57 +170,57 @@ struct RichTextInputView: View {
             // Character count
             Text("\(characterCount)\(maxLength > 0 ? "/\(maxLength)" : "")")
                 .font(.caption2)
-                .foregroundStyle(isNearLimit ? TrinityTheme.statusError : TrinityTheme.textMuted)
+                .foregroundStyle(isNearLimit ? V4Color.error : V4Color.textSecondary)
             
             // Word count
             if wordCount > 0 {
                 Text("• \(wordCount) words")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             
             Spacer()
             
             // Draft saved indicator
             if hasDraft {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.caption2)
                     Text("Draft")
                         .font(.caption2)
                 }
-                .foregroundStyle(TrinityTheme.accent.opacity(0.7))
+                .foregroundStyle(V4Color.accent.opacity(0.7))
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(TrinityTheme.bgWindow.opacity(0.5))
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.xs + 2)
+        .background(V4Color.background.opacity(V2Depth.stateDisabled))
     }
     
     private var emojiPicker: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             // Recent emojis
             if !recentEmojis.isEmpty {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     ForEach(recentEmojis, id: \.self) { emoji in
                         Button {
                             insertText(emoji)
                             showEmojiPicker = false
                         } label: {
                             Text(emoji)
-                                .font(.system(size: 20))
+                                .font(WernickeTypography.size20)
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(8)
+                .padding(ParietalSpacing.sm)
                 
                 Divider()
             }
             
             // Common categories
             ScrollView([.horizontal]) {
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     emojiCategory("😀", ["😀", "😃", "😄", "😁", "😅", "😂", "🤣", "😊", "😇", "🙂", "😉", "😌"])
                     emojiCategory("❤️", ["❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❣️", "💕"])
                     emojiCategory("👍", ["👍", "👎", "👏", "🙌", "🤝", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉"])
@@ -229,29 +229,29 @@ struct RichTextInputView: View {
                 }
             }
         }
-        .padding(12)
-        .frame(width: 300)
+        .padding(ParietalSpacing.md)
+        .frame(width: ParietalSpacing.xl * 12)
     }
     
     private func emojiCategory(_ icon: String, _ emojis: [String]) -> some View {
-        VStack(spacing: 4) {
+        VStack(spacing: ParietalSpacing.xs) {
             Button {
                 insertText(icon)
                 showEmojiPicker = false
             } label: {
                 Text(icon)
-                    .font(.system(size: 24))
+                    .font(WernickeTypography.size24)
             }
             .buttonStyle(.plain)
             
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 24))], spacing: 4) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 24))], spacing: ParietalSpacing.xs) {
                 ForEach(emojis, id: \.self) { emoji in
                     Button {
                         insertText(emoji)
                         showEmojiPicker = false
                     } label: {
                         Text(emoji)
-                            .font(.system(size: 18))
+                            .font(WernickeTypography.size18)
                     }
                     .buttonStyle(.plain)
                 }
@@ -262,8 +262,8 @@ struct RichTextInputView: View {
     private func formatButton(_ name: String, icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: icon)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.smallMedium)
+                .foregroundStyle(V4Color.textSecondary)
                 .frame(width: 28, height: 24)
         }
         .buttonStyle(.plain)
@@ -321,7 +321,7 @@ struct NSTextViewWrapper: NSViewRepresentable {
 
         textView.delegate = context.coordinator
         textView.font = font
-        textView.textColor = NSColor(TrinityTheme.textPrimary)
+        textView.textColor = NSColor(V4Color.textPrimary)
         textView.backgroundColor = .clear
         textView.isEditable = true
         textView.isSelectable = true
@@ -434,10 +434,10 @@ struct ValidatedInputField: View {
     }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             Text(title)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
             
             if isSecure {
                 SecureField(title, text: $text)
@@ -454,13 +454,13 @@ struct ValidatedInputField: View {
             }
             
             if let error = error, showError {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.caption2)
                     Text(error)
                         .font(.caption)
                 }
-                .foregroundStyle(TrinityTheme.statusError)
+                .foregroundStyle(V4Color.error)
                 .transition(.opacity)
             }
         }
@@ -495,6 +495,6 @@ struct RichTextInputView_Previews: PreviewProvider {
             .previewDisplayName("With Markdown")
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

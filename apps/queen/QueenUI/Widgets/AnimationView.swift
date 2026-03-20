@@ -224,7 +224,7 @@ struct Shimmer<Content: View>: View {
             .overlay(
                 GeometryReader { geometry in
                     LinearGradient(
-                        colors: [.clear, .white.opacity(0.3), .clear],
+                        colors: [.clear, .white.opacity(V2Depth.stateHover), .clear],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
@@ -255,8 +255,8 @@ struct Typewriter: View {
 
     var body: some View {
         Text(currentText)
-            .font(.system(size: 14, design: .monospaced))
-            .foregroundStyle(TrinityTheme.textPrimary)
+            .font(WernickeTypography.size14.weight(.regular))
+            .foregroundStyle(V4Color.textPrimary)
             .onAppear {
                 startTyping()
             }
@@ -421,7 +421,7 @@ private struct ScaleInModifier: ViewModifier {
 struct AnimationView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 FadeIn(duration: 0.5) {
                     Text("Fade In")
                         .font(.title)
@@ -434,13 +434,13 @@ struct AnimationView_Previews: PreviewProvider {
 
                 AnimatedPulse(duration: 1.5, maxScale: 1.2) {
                     Circle()
-                        .fill(TrinityTheme.accent)
+                        .fill(V4Color.accent)
                         .frame(width: 40, height: 40)
                 }
             }
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

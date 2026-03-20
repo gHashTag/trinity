@@ -20,29 +20,29 @@ struct DropZone: View {
     }
     
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.lg) {
             Image(systemName: icon)
-                .font(.system(size: 40))
-                .foregroundStyle(isDragging ? TrinityTheme.accent : TrinityTheme.textMuted)
+                .font(WernickeTypography.size40)
+                .foregroundStyle(isDragging ? V4Color.accent : V4Color.textSecondary)
             
             Text(title)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.body16Medium)
+                .foregroundStyle(V4Color.textPrimary)
             
             if let subtitle = subtitle {
                 Text(subtitle)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         .frame(maxWidth: .infinity)
         .padding(32)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                .stroke(isDragging ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: 2)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(isDragging ? V4Color.accent : V4Color.border, lineWidth: 2)
                 .background(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                        .fill((isDragging || isDragging) ? TrinityTheme.accent.opacity(0.05) : Color.clear)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                        .fill((isDragging || isDragging) ? V4Color.accent.opacity(0.05) : Color.clear)
                 )
         )
         .onDrop(of: [.fileURL], isTargeted: .constant(false)) { _ in
@@ -78,25 +78,25 @@ struct FileDropZone: View {
     @State private var showSuccess = false
     
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.lg) {
             ZStack {
                 if showSuccess {
                     Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.display)
                         .foregroundStyle(.green)
                 } else {
-                    VStack(spacing: 8) {
+                    VStack(spacing: ParietalSpacing.sm) {
                         Image(systemName: isDragging ? "arrow.down.doc.fill" : "doc")
-                            .font(.system(size: 40))
-                            .foregroundStyle(isDragging ? TrinityTheme.accent : TrinityTheme.textMuted)
+                            .font(WernickeTypography.size40)
+                            .foregroundStyle(isDragging ? V4Color.accent : V4Color.textSecondary)
                         
                         Text(isDragging ? "Drop to upload" : "Drag files here")
-                            .font(.system(size: 14))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .font(WernickeTypography.size14)
+                            .foregroundStyle(V4Color.textPrimary)
                         
                         Text(extensions.joined(separator: ", ").uppercased())
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
             }
@@ -135,17 +135,17 @@ struct DragOverlay: View {
     
     var body: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .fill(TrinityTheme.accent.opacity(0.1))
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .fill(V4Color.accent.opacity(V2Depth.bgSubtle))
             
-            VStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: "arrow.down.circle.fill")
-                    .font(.system(size: 32))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size32)
+                    .foregroundStyle(V4Color.accent)
                 
                 Text(message)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body14Medium)
+                    .foregroundStyle(V4Color.textPrimary)
             }
         }
         .opacity(isVisible ? 1 : 0)
@@ -165,6 +165,6 @@ struct DragDropPatternsView_Previews: PreviewProvider {
                 .frame(width: 400, height: 200)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

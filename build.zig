@@ -2050,6 +2050,79 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    const metrics_dashboard_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/metrics_dashboard.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+            .{ .name = "telemetry", .module = telemetry_mod },
+            .{ .name = "health_history", .module = health_history_mod },
+        },
+    });
+    const state_recovery_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/state_recovery.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "telemetry", .module = telemetry_mod },
+            .{ .name = "health_history", .module = health_history_mod },
+        },
+    });
+    const alerts_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/alerts.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "telemetry", .module = telemetry_mod },
+            .{ .name = "health_history", .module = health_history_mod },
+        },
+    });
+    const simulation_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/simulation.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+        },
+    });
+    const observability_export_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/observability_export.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+            .{ .name = "metrics_dashboard", .module = metrics_dashboard_mod },
+        },
+    });
+    const admin_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/admin.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "state_recovery", .module = state_recovery_mod },
+            .{ .name = "persistence", .module = persistence_mod },
+            .{ .name = "telemetry", .module = telemetry_mod },
+        },
+    });
+    const visualization_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/visualization.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{},
+    });
     const brain_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/brain.zig"),
         .target = target,
@@ -2065,6 +2138,13 @@ pub fn build(b: *std.Build) void {
             .{ .name = "prefrontal_cortex", .module = prefrontal_cortex_mod },
             .{ .name = "health_history", .module = health_history_mod },
             .{ .name = "microglia", .module = microglia_mod },
+            .{ .name = "metrics_dashboard", .module = metrics_dashboard_mod },
+            .{ .name = "state_recovery", .module = state_recovery_mod },
+            .{ .name = "admin", .module = admin_mod },
+            .{ .name = "alerts", .module = alerts_mod },
+            .{ .name = "simulation", .module = simulation_mod },
+            .{ .name = "observability_export", .module = observability_export_mod },
+            .{ .name = "visualization", .module = visualization_mod },
         },
     });
     // ═══════════════════════════════════════════════════════════════════════════════
@@ -2085,6 +2165,7 @@ pub fn build(b: *std.Build) void {
         .imports = &.{
             .{ .name = "tri_colors", .module = tri_colors_mod },
             .{ .name = "brain", .module = brain_mod },
+            .{ .name = "simulation", .module = simulation_mod },
             // FIXME: trinity-nexus submodule missing
             // .{ .name = "serve_full", .module = serve_full_mod },
         },
@@ -2251,6 +2332,10 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "persistence", .module = persistence_mod },
                 .{ .name = "telemetry", .module = telemetry_mod },
                 .{ .name = "brain", .module = brain_mod },
+                // Brain simulation module
+                .{ .name = "simulation", .module = simulation_mod },
+                // TRI Commands module (for brain commands)
+                .{ .name = "tri_commands", .module = tri_commands_mod },
                 // Bench module — IGLA benchmark
                 .{ .name = "bench", .module = bench_mod },
                 // zig-hslm — Official HSLM Numerical Library
@@ -2466,6 +2551,38 @@ pub fn build(b: *std.Build) void {
     const run_stress_tests = b.addRunArtifact(stress_tests);
     const stress_tests_step = b.step("test-brain-stress", "Run S³AI Brain Stress Test");
     stress_tests_step.dependOn(&run_stress_tests.step);
+
+    // S³AI Brain Simulation — Realistic workload testing
+    const simulation_tests = b.addTest(.{
+        .root_module = simulation_mod,
+    });
+    const run_simulation_tests = b.addRunArtifact(simulation_tests);
+    const simulation_tests_step = b.step("test-brain-simulation", "Run S³AI Brain Simulation Tests");
+    simulation_tests_step.dependOn(&run_simulation_tests.step);
+
+    // S³AI Brain Integration Tests — Cross-region coordination
+    const brain_integration_test_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/integration_test.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+            .{ .name = "amygdala", .module = amygdala_mod },
+            .{ .name = "prefrontal_cortex", .module = prefrontal_cortex_mod },
+            .{ .name = "telemetry", .module = telemetry_mod },
+            .{ .name = "health_history", .module = health_history_mod },
+            .{ .name = "alerts", .module = alerts_mod },
+            .{ .name = "state_recovery", .module = state_recovery_mod },
+        },
+    });
+    const brain_integration_tests = b.addTest(.{
+        .root_module = brain_integration_test_mod,
+    });
+    const run_brain_integration_tests = b.addRunArtifact(brain_integration_tests);
+    const brain_integration_tests_step = b.step("test-brain-integration", "Run S³AI Brain Integration Tests");
+    brain_integration_tests_step.dependOn(&run_brain_integration_tests.step);
 
     // Trinity Hybrid Local Coder (IGLA + Ollama)
     const hybrid_local = b.addExecutable(.{

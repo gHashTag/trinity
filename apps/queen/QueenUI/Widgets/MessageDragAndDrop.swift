@@ -44,8 +44,8 @@ struct MessageDragAndDrop<Content: View>: View {
                         )
                 }
             )
-            .animation(TrinityTheme.springAnimation(), value: isDragging)
-            .animation(TrinityTheme.springAnimation(), value: dropTarget)
+            .animation(MTMotion.standardSpring, value: isDragging)
+            .animation(MTMotion.standardSpring, value: dropTarget)
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Message \(message.role.rawValue)")
             .accessibilityHint("Drag to reorder")
@@ -58,8 +58,8 @@ struct MessageDragAndDrop<Content: View>: View {
     private func dropIndicator(for position: DropTarget.Position) -> some View {
         if dropTarget?.messageID == message.id && dropTarget?.position == position {
             Rectangle()
-                .fill(TrinityTheme.accent)
-                .frame(height: 3)
+                .fill(V4Color.accent)
+                .frame(height: ParietalSpacing.xxxs)
                 .frame(maxWidth: .infinity)
                 .transition(.asymmetric(
                     insertion: .scale(scale: 0).combined(with: .opacity),

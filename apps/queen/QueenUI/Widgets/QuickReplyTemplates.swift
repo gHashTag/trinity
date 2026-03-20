@@ -178,7 +178,7 @@ struct QuickReplyTemplatesBar: View {
         VStack(spacing: 0) {
             // Template bar
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     // Template count badge
                     templateCountBadge
 
@@ -193,12 +193,12 @@ struct QuickReplyTemplatesBar: View {
                     // Edit templates button
                     editTemplatesButton
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
+                .padding(.horizontal, ParietalSpacing.lg)
+                .padding(.vertical, ParietalSpacing.sm + 2)
             }
             .background(
-                TrinityTheme.bgCard
-                    .opacity(0.6)
+                V4Color.surface
+                    .opacity(V1Theme.opacityTextSecondary)
                     .overlay(
                         Rectangle()
                             .fill(Color.white.opacity(0.05))
@@ -243,15 +243,15 @@ struct QuickReplyTemplatesBar: View {
     private var templateCountBadge: some View {
         HStack(spacing: 3) {
             Image(systemName: "text.bubble")
-                .font(.system(size: 9))
+                .font(WernickeTypography.size9)
             Text("\(manager.templateCount)")
-                .font(.system(size: 10, weight: .medium))
+                .font(WernickeTypography.miniMedium)
         }
-        .foregroundStyle(TrinityTheme.textMuted)
-        .padding(.horizontal, 8)
-        .padding(.vertical, 4)
+        .foregroundStyle(V4Color.textSecondary)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xs)
         .background(
-            TrinityTheme.textMuted.opacity(0.1)
+            V4Color.textSecondary.opacity(V2Depth.bgSubtle)
         )
         .clipShape(SwiftUI.Capsule())
         .accessibilityLabel("Template count")
@@ -266,22 +266,22 @@ struct QuickReplyTemplatesBar: View {
             insertTemplate(template.text)
         } label: {
             Text(template.text)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(template.category == .builtin ? TrinityTheme.textPrimary : TrinityTheme.accent)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
+                .font(WernickeTypography.captionMedium)
+                .foregroundStyle(template.category == .builtin ? V4Color.textPrimary : V4Color.accent)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.xs + 2)
                 .background(
                     template.category == .builtin
-                        ? TrinityTheme.bgCardBorder.opacity(0.5)
-                        : TrinityTheme.accent.opacity(0.1)
+                        ? V4Color.border.opacity(V2Depth.stateDisabled)
+                        : V4Color.accent.opacity(V2Depth.bgSubtle)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                 .overlay(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
                         .stroke(
                             template.category == .builtin
-                                ? TrinityTheme.bgCardBorder.opacity(0.8)
-                                : TrinityTheme.accent.opacity(0.3),
+                                ? V4Color.border.opacity(0.8)
+                                : V4Color.accent.opacity(V2Depth.stateHover),
                             lineWidth: 1
                         )
                 )
@@ -305,12 +305,12 @@ struct QuickReplyTemplatesBar: View {
             showAddSheet = true
         } label: {
             Image(systemName: "plus")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.miniMedium)
+                .foregroundStyle(V4Color.textSecondary)
                 .padding(7)
                 .background(
                     Circle()
-                        .fill(TrinityTheme.textMuted.opacity(0.1))
+                        .fill(V4Color.textSecondary.opacity(V2Depth.bgSubtle))
                 )
         }
         .buttonStyle(.plain)
@@ -325,12 +325,12 @@ struct QuickReplyTemplatesBar: View {
             showEditSheet = true
         } label: {
             Image(systemName: "pencil")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.miniMedium)
+                .foregroundStyle(V4Color.textSecondary)
                 .padding(7)
                 .background(
                     Circle()
-                        .fill(TrinityTheme.textMuted.opacity(0.1))
+                        .fill(V4Color.textSecondary.opacity(V2Depth.bgSubtle))
                 )
         }
         .buttonStyle(.plain)
@@ -368,24 +368,24 @@ struct TemplateEditSheet: View {
             // Header
             HStack {
                 Text("Quick Reply Templates")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size18Medium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Spacer()
 
                 Button { isPresented = false } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size16)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close")
             }
             .padding(20)
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             // Template list
             ScrollView {
@@ -396,45 +396,45 @@ struct TemplateEditSheet: View {
                     }
                 }
             }
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             // Footer actions
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 Button {
                     manager.resetToDefaults()
                     templates = manager.allTemplates
                 } label: {
                     Text("Reset to Defaults")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(TrinityTheme.statusWarn)
+                        .font(WernickeTypography.smallMedium)
+                        .foregroundStyle(V4Color.warning)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(TrinityTheme.statusWarn.opacity(0.15))
-                        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+                        .padding(.vertical, ParietalSpacing.md)
+                        .background(V4Color.warning.opacity(V2Depth.bgSidebarHover))
+                        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Reset all templates to defaults")
 
                 Button { isPresented = false } label: {
                     Text("Done")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(WernickeTypography.smallSemibold)
                         .foregroundStyle(.black)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(TrinityTheme.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+                        .padding(.vertical, ParietalSpacing.md)
+                        .background(V4Color.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Done")
             }
             .padding(20)
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
         }
         .frame(width: 480, height: 500)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
         .onAppear {
             templates = manager.allTemplates
         }
@@ -452,34 +452,34 @@ struct TemplateEditSheet: View {
     // MARK: - Template Row
 
     private func templateRow(for template: QuickReplyTemplate) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // Category indicator
             Circle()
-                .fill(template.category == .builtin ? TrinityTheme.textMuted : TrinityTheme.accent)
+                .fill(template.category == .builtin ? V4Color.textSecondary : V4Color.accent)
                 .frame(width: 6, height: 6)
 
             // Template text
             Text(template.text)
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textPrimary)
                 .lineLimit(2)
 
             Spacer()
 
             // Category badge
             Text(template.category.displayName)
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(template.category == .builtin ? TrinityTheme.textMuted : TrinityTheme.accent)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .font(WernickeTypography.miniMedium)
+                .foregroundStyle(template.category == .builtin ? V4Color.textSecondary : V4Color.accent)
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.xs)
                 .background(
-                    (template.category == .builtin ? TrinityTheme.textMuted : TrinityTheme.accent)
-                        .opacity(0.15)
+                    (template.category == .builtin ? V4Color.textSecondary : V4Color.accent)
+                        .opacity(V2Depth.bgSidebarHover)
                 )
                 .clipShape(SwiftUI.Capsule())
 
             // Actions
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 if template.category == .custom {
                     Button {
                         editingTemplate = template
@@ -487,8 +487,8 @@ struct TemplateEditSheet: View {
                         showEditAlert = true
                     } label: {
                         Image(systemName: "pencil")
-                            .font(.system(size: 11))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size11)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Edit template")
@@ -500,20 +500,20 @@ struct TemplateEditSheet: View {
                         }
                     } label: {
                         Image(systemName: "trash")
-                            .font(.system(size: 11))
-                            .foregroundStyle(TrinityTheme.statusError)
+                            .font(WernickeTypography.size11)
+                            .foregroundStyle(V4Color.error)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Delete template")
                 }
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
-        .padding(.horizontal, 16)
-        .padding(.vertical, 6)
+        .padding(.horizontal, ParietalSpacing.lg)
+        .padding(.vertical, ParietalSpacing.md)
+        .background(V4Color.surface)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
+        .padding(.horizontal, ParietalSpacing.lg)
+        .padding(.vertical, ParietalSpacing.xs + 2)
     }
 
     // MARK: - Save Edited Template
@@ -545,43 +545,43 @@ struct AddTemplateSheet: View {
             // Header
             HStack {
                 Text("Add Custom Template")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size18Medium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Spacer()
 
                 Button { isPresented = false } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size16)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close")
             }
             .padding(20)
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             // Content
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 // Input field
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Template Text")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.smallMedium)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     TextField("e.g., 'Show me an example'", text: $templateText)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 14))
-                        .foregroundStyle(TrinityTheme.textPrimary)
-                        .padding(12)
-                        .background(TrinityTheme.bgCardBorder.opacity(0.3))
-                        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+                        .font(WernickeTypography.size14)
+                        .foregroundStyle(V4Color.textPrimary)
+                        .padding(ParietalSpacing.md)
+                        .background(V4Color.border.opacity(V2Depth.stateHover))
+                        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
                         .overlay(
-                            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                                .stroke(V4Color.border, lineWidth: 1)
                         )
                         .focused($focused)
                         .accessibilityLabel("Template text")
@@ -589,50 +589,50 @@ struct AddTemplateSheet: View {
 
                     if showError {
                         Text(errorMessage)
-                            .font(.system(size: 11))
-                            .foregroundStyle(TrinityTheme.statusError)
+                            .font(WernickeTypography.size11)
+                            .foregroundStyle(V4Color.error)
                     }
                 }
 
                 // Preview
                 if !templateText.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Text("Preview")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.smallMedium)
+                            .foregroundStyle(V4Color.textSecondary)
 
                         Text(templateText)
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundStyle(TrinityTheme.accent)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(TrinityTheme.accent.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                            .font(WernickeTypography.captionMedium)
+                            .foregroundStyle(V4Color.accent)
+                            .padding(.horizontal, ParietalSpacing.md)
+                            .padding(.vertical, ParietalSpacing.xs + 2)
+                            .background(V4Color.accent.opacity(V2Depth.bgSubtle))
+                            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                             .overlay(
-                                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                                    .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 1)
+                                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                                    .stroke(V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 1)
                             )
                     }
                 }
             }
             .padding(20)
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             Spacer()
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             // Actions
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 Button { isPresented = false } label: {
                     Text("Cancel")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.smallMedium)
+                        .foregroundStyle(V4Color.textSecondary)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(TrinityTheme.bgCardBorder.opacity(0.3))
-                        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+                        .padding(.vertical, ParietalSpacing.md)
+                        .background(V4Color.border.opacity(V2Depth.stateHover))
+                        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Cancel")
@@ -641,12 +641,12 @@ struct AddTemplateSheet: View {
                     addTemplate()
                 } label: {
                     Text("Add Template")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(WernickeTypography.smallSemibold)
                         .foregroundStyle(.black)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(TrinityTheme.accent)
-                        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+                        .padding(.vertical, ParietalSpacing.md)
+                        .background(V4Color.accent)
+                        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
                 }
                 .buttonStyle(.plain)
                 .disabled(templateText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -654,10 +654,10 @@ struct AddTemplateSheet: View {
                 .accessibilityHint(templateText.isEmpty ? "Enter template text first" : "")
             }
             .padding(20)
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
         }
         .frame(width: 400, height: 300)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
         .onAppear {
             focused = true
         }
@@ -727,7 +727,7 @@ struct CompactQuickReplyBar: View {
     @State private var showAll = false
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             ForEach(manager.allTemplates.prefix(5)) { template in
                 compactButton(for: template)
             }
@@ -737,12 +737,12 @@ struct CompactQuickReplyBar: View {
                     showAll = true
                 } label: {
                     Image(systemName: "ellipsis")
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.miniMedium)
+                        .foregroundStyle(V4Color.textSecondary)
                         .padding(5)
                         .background(
                             Circle()
-                                .fill(TrinityTheme.textMuted.opacity(0.1))
+                                .fill(V4Color.textSecondary.opacity(V2Depth.bgSubtle))
                         )
                 }
                 .buttonStyle(.plain)
@@ -764,8 +764,8 @@ struct CompactQuickReplyBar: View {
             }
         } label: {
             Text(template.text)
-                .font(.system(size: 10, weight: .medium))
-                .foregroundStyle(template.category == .builtin ? TrinityTheme.textPrimary : TrinityTheme.accent)
+                .font(WernickeTypography.miniMedium)
+                .foregroundStyle(template.category == .builtin ? V4Color.textPrimary : V4Color.accent)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(template.text)
@@ -785,23 +785,23 @@ struct AllTemplatesSheet: View {
             // Header
             HStack {
                 Text("All Quick Replies")
-                    .font(.system(size: 18, weight: .bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size18Medium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Spacer()
 
                 Button { isPresented = false } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size16)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
             .padding(20)
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.surface)
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             // Templates grid
             ScrollView {
@@ -809,17 +809,17 @@ struct AllTemplatesSheet: View {
                     GridItem(.flexible()),
                     GridItem(.flexible()),
                     GridItem(.flexible())
-                ], spacing: 10) {
+                ], spacing: ParietalSpacing.sm + 2) {
                     ForEach(manager.allTemplates) { template in
                         templateGridItem(for: template)
                     }
                 }
-                .padding(16)
+                .padding(ParietalSpacing.lg)
             }
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
         }
         .frame(width: 500, height: 400)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 
     private func templateGridItem(for template: QuickReplyTemplate) -> some View {
@@ -832,23 +832,23 @@ struct AllTemplatesSheet: View {
             isPresented = false
         } label: {
             Text(template.text)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(template.category == .builtin ? TrinityTheme.textPrimary : TrinityTheme.accent)
+                .font(WernickeTypography.captionMedium)
+                .foregroundStyle(template.category == .builtin ? V4Color.textPrimary : V4Color.accent)
                 .multilineTextAlignment(.center)
                 .padding(10)
                 .frame(maxWidth: .infinity)
                 .background(
                     template.category == .builtin
-                        ? TrinityTheme.bgCardBorder.opacity(0.5)
-                        : TrinityTheme.accent.opacity(0.1)
+                        ? V4Color.border.opacity(V2Depth.stateDisabled)
+                        : V4Color.accent.opacity(V2Depth.bgSubtle)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                 .overlay(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
                         .stroke(
                             template.category == .builtin
-                                ? TrinityTheme.bgCardBorder.opacity(0.8)
-                                : TrinityTheme.accent.opacity(0.3),
+                                ? V4Color.border.opacity(0.8)
+                                : V4Color.accent.opacity(V2Depth.stateHover),
                             lineWidth: 1
                         )
                 )
@@ -864,17 +864,17 @@ struct AllTemplatesSheet: View {
 #if DEBUG
 struct QuickReplyTemplates_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             // Full bar
             QuickReplyTemplatesBar(inputText: .constant(""))
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             // Compact bar
             HStack {
                 Text("Compact:")
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                 CompactQuickReplyBar(inputText: .constant(""))
             }
             .padding()
@@ -886,7 +886,7 @@ struct QuickReplyTemplates_Previews: PreviewProvider {
             .buttonStyle(.borderedProminent)
         }
         .frame(width: 600, height: 300)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }
 #endif

@@ -79,33 +79,33 @@ struct SimpleWebView: View {
             if isLoading {
                 ProgressView()
                     .scaleEffect(1.2)
-                    .tint(TrinityTheme.accent)
+                    .tint(V4Color.accent)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let loadError = error {
-                VStack(spacing: 12) {
+                VStack(spacing: ParietalSpacing.md) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 32))
-                        .foregroundStyle(TrinityTheme.statusWarn)
+                        .font(WernickeTypography.size32)
+                        .foregroundStyle(V4Color.warning)
 
                     Text("Failed to load page")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.body14Medium)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     Text(loadError.localizedDescription)
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     Button {
                         isLoading = true
                         error = nil
                     } label: {
                         Text("Retry")
-                            .font(.system(size: 13))
+                            .font(WernickeTypography.size13)
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 6)
-                            .background(TrinityTheme.accent)
-                            .cornerRadius(6)
+                            .padding(.horizontal, ParietalSpacing.lg)
+                            .padding(.vertical, ParietalSpacing.xs + 2)
+                            .background(V4Color.accent)
+                            .cornerRadius(V1Theme.cornerSmall)
                     }
                     .buttonStyle(.plain)
                 }

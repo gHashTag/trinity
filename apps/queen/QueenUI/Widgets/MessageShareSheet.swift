@@ -106,11 +106,11 @@ struct MessageShareSheet: View {
         } label: {
             ZStack {
                 Image(systemName: "square.and.arrow.up")
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .foregroundColor(V4Color.textSecondary)
                     .opacity(flashOpacity > 0 ? 0 : 1)
 
                 Image(systemName: "checkmark.circle.fill")
-                    .foregroundColor(TrinityTheme.statusOK)
+                    .foregroundColor(V4Color.success)
                     .opacity(flashOpacity)
             }
             .frame(width: 28, height: 28)
@@ -193,14 +193,14 @@ private struct ShareSheetContentView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: TrinityTheme.spacing) {
+        VStack(spacing: ParietalSpacing.md) {
             Text("Share Message")
                 .font(.headline)
-                .foregroundColor(TrinityTheme.textPrimary)
+                .foregroundColor(V4Color.textPrimary)
 
             Divider()
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
                 ShareOptionButton(option: .text, message: message) {
                     performShare(.text)
                 }
@@ -236,7 +236,7 @@ private struct ShareSheetContentView: View {
         }
         .padding()
         .frame(width: 400, height: 280)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
     }
 
     private func performShare(_ option: ShareOption) {
@@ -263,22 +263,22 @@ private struct ShareOptionButton: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: option.icon)
-                    .font(.system(size: 24))
-                    .foregroundColor(isEnabled ? TrinityTheme.accent : TrinityTheme.textMuted)
+                    .font(WernickeTypography.size24)
+                    .foregroundColor(isEnabled ? V4Color.accent : V4Color.textSecondary)
 
                 Text(option.rawValue)
                     .font(.caption)
-                    .foregroundColor(TrinityTheme.textPrimary)
+                    .foregroundColor(V4Color.textPrimary)
                     .lineLimit(2)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
             .padding()
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                    .fill(TrinityTheme.bgCardBorder.opacity(0.5))
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                    .fill(V4Color.border.opacity(V2Depth.stateDisabled))
             )
         }
         .disabled(!isEnabled)

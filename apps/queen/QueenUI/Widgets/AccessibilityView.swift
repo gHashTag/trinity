@@ -8,17 +8,17 @@ struct A11yLabel: View {
     let icon: String?
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             if let icon = icon {
                 Image(systemName: icon)
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.accent)
                     .accessibility(hidden: true)
             }
 
             Text(text)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textPrimary)
                 .accessibilityLabel(text)
         }
         .accessibilityElement(children: .combine)
@@ -49,14 +49,14 @@ struct A11yButton: View {
         Button {
             action()
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 14))
+                        .font(WernickeTypography.size14)
                 }
 
                 Text(title)
-                    .font(.system(size: 14))
+                    .font(WernickeTypography.size14)
             }
         }
         .buttonStyle(.plain)
@@ -90,10 +90,10 @@ struct A11yGroup: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
                 .accessibilityAddTraits(.isHeader)
 
             content()
@@ -127,7 +127,7 @@ struct A11yHeading: View {
     var body: some View {
         Text(title)
             .font(.system(size: level.fontSize, weight: .semibold))
-            .foregroundStyle(TrinityTheme.textPrimary)
+            .foregroundStyle(V4Color.textPrimary)
             .accessibilityAddTraits(.isHeader)
             #if os(iOS)
             .accessibilityHeading(level.accessibilityLevel)
@@ -160,8 +160,8 @@ struct A11yLiveRegion: View {
 
     var body: some View {
         Text(message)
-            .font(.system(size: 13))
-            .foregroundStyle(TrinityTheme.textPrimary)
+            .font(WernickeTypography.size13)
+            .foregroundStyle(V4Color.textPrimary)
             #if os(iOS)
             .accessibilityLiveRegion(priority == .assertive ? .assertive : .polite)
             #endif
@@ -182,16 +182,16 @@ struct A11yValueIndicator: View {
     let maxValue: String?
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             Spacer()
 
             Text(value)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textPrimary)
                 .accessibilityLabel("\(label), \(value)")
                 .accessibilityValue(accessibilityValueText)
         }
@@ -220,12 +220,12 @@ struct SkipLink: View {
             action()
         } label: {
             Text(label)
-                .font(.system(size: 14))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(TrinityTheme.accent)
+                .font(WernickeTypography.size14)
+                .padding(.horizontal, ParietalSpacing.lg)
+                .padding(.vertical, ParietalSpacing.sm)
+                .background(V4Color.accent)
                 .foregroundStyle(.white)
-                .cornerRadius(6)
+                .cornerRadius(V1Theme.cornerSmall)
         }
         .buttonStyle(.plain)
         .accessibilityLabel("Skip to main content")
@@ -284,11 +284,11 @@ struct A11yProgress: View {
 struct AccessibilityView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
                 A11yHeading(title: "Accessibility Components", level: .h1)
 
                 A11yGroup(label: "Buttons") {
-                    VStack(spacing: 8) {
+                    VStack(spacing: ParietalSpacing.sm) {
                         A11yButton(title: "Save", icon: "checkmark", a11yHint: "Save your changes") {}
                         A11yButton(title: "Cancel", icon: "xmark", a11yHint: "Discard changes") {}
                     }
@@ -304,6 +304,6 @@ struct AccessibilityView_Previews: PreviewProvider {
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

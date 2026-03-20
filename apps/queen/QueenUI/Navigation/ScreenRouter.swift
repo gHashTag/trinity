@@ -71,20 +71,20 @@ struct ComingSoonScreen: View {
     let screen: Screen
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             Text(screen.icon)
-                .font(.system(size: 64))
+                .font(WernickeTypography.display48)
             Text(screen.rawValue)
                 .font(.title.weight(.bold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
             Text("Coming Soon")
                 .font(.title3)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
             Text("Kingdom: \(screen.kingdom.rawValue)")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

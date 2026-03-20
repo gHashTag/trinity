@@ -18,7 +18,7 @@ public struct MainView: View {
 
     public var body: some View {
         ZStack(alignment: .trailing) {
-            TrinityTheme.bgWindow.ignoresSafeArea()
+            V4Color.background.ignoresSafeArea()
 
             if let screen = selectedScreen {
                 // Screen content with back button
@@ -28,12 +28,12 @@ public struct MainView: View {
                         Button {
                             selectedScreen = nil
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: "chevron.left")
                                 Text("TRINITY")
-                                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                                    .font(WernickeTypography.captionBold.monospaced())
                             }
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                             .padding(8)
                         }
                         .buttonStyle(.plain)
@@ -42,7 +42,7 @@ public struct MainView: View {
                         Spacer()
 
                         Text("\(screen.icon) \(screen.rawValue)")
-                            .font(.system(size: 13, weight: .bold, design: .monospaced))
+                            .font(WernickeTypography.smallBold.monospaced())
                             .foregroundStyle(.white)
 
                         Spacer()
@@ -52,7 +52,7 @@ public struct MainView: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .frame(maxHeight: 32)
-                    .background(TrinityTheme.bgCard)
+                    .background(V4Color.surface)
 
                     ScreenRouter(screen: screen)
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -72,7 +72,7 @@ public struct MainView: View {
                         maxWidth: LayoutConstants.agentStreamMaxWidth
                     )
                     .frame(maxWidth: .infinity, alignment: .trailing)
-                    .background(TrinityTheme.bgSidebar.opacity(0.95))
+                    .background(V4Color.sidebar.opacity(0.95))
                     .transition(.move(edge: .trailing))
             }
 

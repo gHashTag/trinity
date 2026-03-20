@@ -77,6 +77,7 @@ const StoredEvent = struct {
 
 /// Global event bus singleton
 var global_event_bus: ?*EventBus = null;
+var global_allocator: ?std.mem.Allocator = null;
 var global_mutex = std.Thread.Mutex{};
 
 /// Get or create global event bus
@@ -91,18 +92,23 @@ pub fn getGlobal(allocator: std.mem.Allocator) !*EventBus {
     const bus = try allocator.create(EventBus);
     bus.* = EventBus.init(allocator);
     global_event_bus = bus;
+    global_allocator = allocator;
     return bus;
 }
 
 /// Reset global event bus (for testing)
 pub fn resetGlobal(allocator: std.mem.Allocator) void {
+    _ = allocator; // Use stored allocator instead
     global_mutex.lock();
     defer global_mutex.unlock();
 
     if (global_event_bus) |bus| {
         bus.deinit();
-        allocator.destroy(bus);
+        if (global_allocator) |alloc| {
+            alloc.destroy(bus);
+        }
         global_event_bus = null;
+        global_allocator = null;
     }
 }
 
@@ -364,4 +370,292 @@ test "EventBus trim and clear" {
     bus.clear();
     stats = bus.getStats();
     try std.testing.expectEqual(@as(usize, 0), stats.buffered);
+}
+
+test "EventBus all event types" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Test task_claimed
+    try bus.publish(.task_claimed, .{
+        .task_claimed = .{
+            .task_id = "task-1",
+            .agent_id = "agent-1",
+        },
+    });
+
+    // Test task_completed
+    try bus.publish(.task_completed, .{
+        .task_completed = .{
+            .task_id = "task-2",
+            .agent_id = "agent-2",
+            .duration_ms = 5000,
+        },
+    });
+
+    // Test task_failed
+    try bus.publish(.task_failed, .{
+        .task_failed = .{
+            .task_id = "task-3",
+            .agent_id = "agent-3",
+            .err_msg = "Something went wrong",
+        },
+    });
+
+    // Test task_abandoned
+    try bus.publish(.task_abandoned, .{
+        .task_abandoned = .{
+            .task_id = "task-4",
+            .agent_id = "agent-4",
+            .reason = "Timeout",
+        },
+    });
+
+    // Test agent_idle
+    try bus.publish(.agent_idle, .{
+        .agent_idle = .{
+            .agent_id = "agent-5",
+            .idle_ms = 30000,
+        },
+    });
+
+    // Test agent_spawned
+    try bus.publish(.agent_spawned, .{
+        .agent_spawned = .{
+            .agent_id = "agent-6",
+        },
+    });
+
+    const stats = bus.getStats();
+    try std.testing.expectEqual(@as(u64, 6), stats.published);
+    try std.testing.expectEqual(@as(usize, 6), stats.buffered);
+}
+
+test "EventBus poll with timestamp filter" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Publish first event
+    try bus.publish(.task_claimed, .{
+        .task_claimed = .{
+            .task_id = "task-1",
+            .agent_id = "agent-1",
+        },
+    });
+
+    // Get current time
+    const mid_time = std.time.milliTimestamp();
+
+    // Publish second event
+    try bus.publish(.task_claimed, .{
+        .task_claimed = .{
+            .task_id = "task-2",
+            .agent_id = "agent-2",
+        },
+    });
+
+    // Poll since mid_time should only return second event
+    const events = try bus.poll(mid_time, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 1), events.len);
+    try std.testing.expectEqual(@as(usize, 6), events[0].data.task_claimed.task_id.len); // "task-2"
+}
+
+test "EventBus poll with max_events limit" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Publish 5 events
+    for (0..5) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-1",
+            },
+        });
+    }
+
+    // Poll with max_events=2
+    const events = try bus.poll(0, allocator, 2);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 2), events.len);
+}
+
+test "EventBus poll returns empty when no events" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    const events = try bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 0), events.len);
+}
+
+test "EventBus auto-trim at MAX_EVENTS" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Publish more than MAX_EVENTS events
+    for (0..10050) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-1",
+            },
+        });
+    }
+
+    const stats = bus.getStats();
+    try std.testing.expect(stats.buffered <= 10000); // Should be trimmed
+}
+
+test "EventBus multiple polls increment counter" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    try bus.publish(.task_claimed, .{
+        .task_claimed = .{
+            .task_id = "task-1",
+            .agent_id = "agent-1",
+        },
+    });
+
+    _ = try bus.poll(0, allocator, 100);
+    allocator.free(try bus.poll(0, allocator, 100));
+    allocator.free(try bus.poll(0, allocator, 100));
+
+    const stats = bus.getStats();
+    try std.testing.expectEqual(@as(u64, 3), stats.polled);
+}
+
+test "EventBus task_failed includes error message" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    const err_msg = "Connection timeout after 30 seconds";
+    try bus.publish(.task_failed, .{
+        .task_failed = .{
+            .task_id = "task-1",
+            .agent_id = "agent-1",
+            .err_msg = err_msg,
+        },
+    });
+
+    const events = try bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 1), events.len);
+    try std.testing.expectEqual(.task_failed, events[0].event_type);
+    try std.testing.expectEqualStrings(err_msg, events[0].data.task_failed.err_msg);
+}
+
+test "EventBus task_abandoned includes reason" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    const reason = "Agent crash detected";
+    try bus.publish(.task_abandoned, .{
+        .task_abandoned = .{
+            .task_id = "task-1",
+            .agent_id = "agent-1",
+            .reason = reason,
+        },
+    });
+
+    const events = try bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 1), events.len);
+    try std.testing.expectEqual(.task_abandoned, events[0].event_type);
+    try std.testing.expectEqualStrings(reason, events[0].data.task_abandoned.reason);
+}
+
+test "EventBus task_completed includes duration" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    const duration_ms: u64 = 12345;
+    try bus.publish(.task_completed, .{
+        .task_completed = .{
+            .task_id = "task-1",
+            .agent_id = "agent-1",
+            .duration_ms = duration_ms,
+        },
+    });
+
+    const events = try bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 1), events.len);
+    try std.testing.expectEqual(.task_completed, events[0].event_type);
+    try std.testing.expectEqual(duration_ms, events[0].data.task_completed.duration_ms);
+}
+
+test "EventBus agent_idle includes idle time" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    const idle_ms: u64 = 60000;
+    try bus.publish(.agent_idle, .{
+        .agent_idle = .{
+            .agent_id = "agent-1",
+            .idle_ms = idle_ms,
+        },
+    });
+
+    const events = try bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 1), events.len);
+    try std.testing.expectEqual(.agent_idle, events[0].event_type);
+    try std.testing.expectEqual(idle_ms, events[0].data.agent_idle.idle_ms);
+}
+
+test "EventBus trim to zero" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    try bus.publish(.task_claimed, .{
+        .task_claimed = .{
+            .task_id = "task-1",
+            .agent_id = "agent-1",
+        },
+    });
+
+    try std.testing.expectEqual(@as(usize, 1), bus.getStats().buffered);
+
+    bus.trim(0);
+    try std.testing.expectEqual(@as(usize, 0), bus.getStats().buffered);
+}
+
+test "EventBus trim more than available" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    try bus.publish(.task_claimed, .{
+        .task_claimed = .{
+            .task_id = "task-1",
+            .agent_id = "agent-1",
+        },
+    });
+
+    // Trim to more events than exist
+    bus.trim(100);
+    try std.testing.expectEqual(@as(usize, 1), bus.getStats().buffered);
 }

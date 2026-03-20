@@ -68,16 +68,16 @@ struct TableRow<Content: View>: View, Identifiable {
 
     var body: some View {
         content()
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm + 2)
             .background(
-                isSelected ? TrinityTheme.accent.opacity(0.15) :
-                    isHighlighted ? TrinityTheme.bgCardBorder.opacity(0.5) :
-                        TrinityTheme.bgCard
+                isSelected ? V4Color.accent.opacity(V2Depth.bgSidebarHover) :
+                    isHighlighted ? V4Color.border.opacity(V2Depth.stateDisabled) :
+                        V4Color.surface
             )
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .stroke(isSelected ? TrinityTheme.accent : .clear, lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .stroke(isSelected ? V4Color.accent : .clear, lineWidth: 1)
             )
             .contentShape(Rectangle())
             .onTapGesture(perform: onTap)
@@ -100,31 +100,31 @@ struct TableHeader: View {
                     guard column.sortable else { return }
                     onSort(column.id)
                 } label: {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Text(column.title)
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .font(WernickeTypography.caption2Semibold)
+                            .foregroundStyle(V4Color.textPrimary)
 
                         if sortColumn == column.id {
                             Image(systemName: sortAscending ? "chevron.up" : "chevron.down")
-                                .font(.system(size: 9))
-                                .foregroundStyle(TrinityTheme.accent)
+                                .font(WernickeTypography.size9)
+                                .foregroundStyle(V4Color.accent)
                         }
 
                         Spacer()
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, ParietalSpacing.md)
+                    .padding(.vertical, ParietalSpacing.sm)
                     .frame(width: column.width, alignment: .leading)
-                    .background(column.sortable ? TrinityTheme.bgWindow.opacity(0.5) : .clear)
+                    .background(column.sortable ? V4Color.background.opacity(V2Depth.stateDisabled) : .clear)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
         .overlay(
             Rectangle()
-                .fill(TrinityTheme.bgCardBorder)
+                .fill(V4Color.border)
                 .frame(height: 1),
             alignment: .bottom
         )
@@ -163,7 +163,7 @@ struct DataTableView: View {
             if searchable {
                 HStack {
                     Image(systemName: "magnifyingglass")
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     TextField("Search...", text: $searchText)
                         .textFieldStyle(.plain)
@@ -173,17 +173,17 @@ struct DataTableView: View {
                             searchText = ""
                         } label: {
                             Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(TrinityTheme.bgCard)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm)
+                .background(V4Color.surface)
                 .overlay(
                     Rectangle()
-                        .fill(TrinityTheme.bgCardBorder)
+                        .fill(V4Color.border)
                         .frame(height: 1),
                     alignment: .bottom
                 )
@@ -209,8 +209,8 @@ struct DataTableView: View {
                             HStack(spacing: 0) {
                                 ForEach(columns) { column in
                                     Text(row.values[column.valueKey] ?? "")
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(TrinityTheme.textPrimary)
+                                        .font(WernickeTypography.size13)
+                                        .foregroundStyle(V4Color.textPrimary)
                                         .frame(width: column.width, alignment: .leading)
                                         .lineLimit(1)
                                 }
@@ -226,17 +226,17 @@ struct DataTableView: View {
 
                         if row.id != filteredData.last?.id {
                             Divider()
-                                .background(TrinityTheme.bgCardBorder)
+                                .background(V4Color.border)
                         }
                     }
                 }
             }
         }
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 
@@ -292,6 +292,6 @@ struct TableView_Previews: PreviewProvider {
         return DataTableView(columns: columns, data: data)
             .frame(width: 600, height: 400)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
     }
 }

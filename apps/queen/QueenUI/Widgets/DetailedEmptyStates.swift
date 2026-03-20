@@ -25,7 +25,7 @@ struct DetailedEmptyState: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             Spacer()
 
             // Icon or illustration
@@ -37,14 +37,14 @@ struct DetailedEmptyState: View {
             }
 
             // Title and message
-            VStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
                 Text(title)
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.h4Semibold)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text(message)
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 300)
             }
@@ -55,12 +55,12 @@ struct DetailedEmptyState: View {
                     action()
                 } label: {
                     Text(actionTitle)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(WernickeTypography.body14Medium)
                         .foregroundStyle(.white)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 10)
-                        .background(TrinityTheme.accent)
-                        .cornerRadius(8)
+                        .padding(.horizontal, ParietalSpacing.md + ParietalSpacing.md)
+                        .padding(.vertical, ParietalSpacing.sm + 2)
+                        .background(V4Color.accent)
+                        .cornerRadius(V1Theme.cornerSmall)
                 }
                 .buttonStyle(.plain)
             }
@@ -72,13 +72,13 @@ struct DetailedEmptyState: View {
     private var emptyIllustration: some View {
         ZStack {
             Circle()
-                .fill(TrinityTheme.bgCardBorder.opacity(0.3))
+                .fill(V4Color.border.opacity(V2Depth.stateHover))
                 .frame(width: 100, height: 100)
 
-            VStack(spacing: 4) {
+            VStack(spacing: ParietalSpacing.xs) {
                 ForEach(0..<3) { _ in
                     Rectangle()
-                        .fill(TrinityTheme.bgCardBorder)
+                        .fill(V4Color.border)
                         .frame(width: 40, height: 3)
                 }
             }
@@ -90,7 +90,7 @@ struct DetailedEmptyState: View {
         ZStack {
             // Shadow layer
             Circle()
-                .fill(TrinityTheme.bgCardBorder.opacity(0.2))
+                .fill(V4Color.border.opacity(0.2))
                 .frame(width: 88, height: 88)
                 .offset(y: 4)
 
@@ -99,8 +99,8 @@ struct DetailedEmptyState: View {
                 .fill(
                     LinearGradient(
                         colors: [
-                            TrinityTheme.bgCardBorder.opacity(0.4),
-                            TrinityTheme.bgCardBorder.opacity(0.2)
+                            V4Color.border.opacity(V1Theme.opacityTextTertiary),
+                            V4Color.border.opacity(0.2)
                         ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
@@ -112,18 +112,18 @@ struct DetailedEmptyState: View {
             ZStack {
                 // Shadow icon
                 Image(systemName: iconName)
-                    .font(.system(size: 32, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
+                    .font(WernickeTypography.size32Medium)
+                    .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateDisabled))
                     .offset(x: 2, y: 2)
 
                 // Main icon
                 Image(systemName: iconName)
-                    .font(.system(size: 32, weight: .medium))
+                    .font(WernickeTypography.size32Medium)
                     .foregroundStyle(
                         LinearGradient(
                             colors: [
-                                TrinityTheme.textMuted,
-                                TrinityTheme.textMuted.opacity(0.8)
+                                V4Color.textSecondary,
+                                V4Color.textSecondary.opacity(0.8)
                             ],
                             startPoint: .top,
                             endPoint: .bottom
@@ -142,26 +142,26 @@ struct CompactEmptyState: View {
     let message: String
 
     var body: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: ParietalSpacing.lg) {
             Image(systemName: icon)
-                .font(.system(size: 28))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size28)
+                .foregroundStyle(V4Color.textSecondary)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(title)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body14Medium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text(message)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             Spacer()
         }
-        .padding(16)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.lg)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
     }
 }
 
@@ -183,22 +183,22 @@ struct ListEmptyState: View {
     }
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             Image(systemName: icon ?? "tray")
-                .font(.system(size: 40))
-                .foregroundStyle(TrinityTheme.bgCardBorder)
+                .font(WernickeTypography.size40)
+                .foregroundStyle(V4Color.border)
 
             Text(title)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.bodyMedium)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(message)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(40)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
     }
 }
 
@@ -214,12 +214,12 @@ struct SearchEmptyState: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             // 3D Magnifying glass illustration with layered effect
             ZStack {
                 // Shadow circles
                 Circle()
-                    .fill(TrinityTheme.bgCardBorder.opacity(0.15))
+                    .fill(V4Color.border.opacity(V2Depth.bgSidebarHover))
                     .frame(width: 100, height: 100)
                     .offset(y: 6)
 
@@ -228,8 +228,8 @@ struct SearchEmptyState: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                TrinityTheme.bgCardBorder.opacity(0.4),
-                                TrinityTheme.bgCardBorder.opacity(0.15)
+                                V4Color.border.opacity(V1Theme.opacityTextTertiary),
+                                V4Color.border.opacity(V2Depth.bgSidebarHover)
                             ],
                             center: .topLeading,
                             startRadius: 0,
@@ -241,17 +241,17 @@ struct SearchEmptyState: View {
                 // Magnifying glass icon with 3D effect
                 ZStack {
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 36, weight: .light))
-                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.4))
+                        .font(WernickeTypography.size36Light)
+                        .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextTertiary))
                         .offset(x: 3, y: 3)
 
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 36, weight: .light))
+                        .font(WernickeTypography.size36Light)
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [
-                                    TrinityTheme.textMuted.opacity(0.9),
-                                    TrinityTheme.textMuted.opacity(0.6)
+                                    V4Color.textSecondary.opacity(0.9),
+                                    V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -260,34 +260,34 @@ struct SearchEmptyState: View {
                 }
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
                 Text("No results for \"\(query)\"")
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size17)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text("Try adjusting your search terms or browse categories")
-                    .font(.system(size: 13))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(V4Color.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 280)
             }
 
             // Action buttons
-            VStack(spacing: 12) {
+            VStack(spacing: ParietalSpacing.md) {
                 Button {
                     onRetrySearch()
                 } label: {
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         Image(systemName: "arrow.clockwise.circle.fill")
-                            .font(.system(size: 16))
+                            .font(WernickeTypography.size16)
                         Text("Try Different Search")
-                            .font(.system(size: 14, weight: .medium))
+                            .font(WernickeTypography.body14Medium)
                     }
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .background(TrinityTheme.accent)
-                    .cornerRadius(TrinityTheme.cornerMedium)
+                    .padding(.horizontal, ParietalSpacing.md + ParietalSpacing.md)
+                    .padding(.vertical, ParietalSpacing.md)
+                    .background(V4Color.accent)
+                    .cornerRadius(V1Theme.cornerMedium)
                 }
                 .buttonStyle(.plain)
 
@@ -295,8 +295,8 @@ struct SearchEmptyState: View {
                     onRetrySearch()
                 } label: {
                     Text("Clear Search")
-                        .font(.system(size: 13))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.size13)
+                        .foregroundStyle(V4Color.accent)
                 }
                 .buttonStyle(.plain)
             }
@@ -353,11 +353,11 @@ struct ErrorEmptyState: View {
 
         var color: Color {
             switch self {
-            case .network: return TrinityTheme.statusWarn
-            case .server: return TrinityTheme.statusError
-            case .permission: return TrinityTheme.purple
-            case .timeout: return TrinityTheme.golden
-            case .unknown: return TrinityTheme.statusError
+            case .network: return V4Color.warning
+            case .server: return V4Color.error
+            case .permission: return V4Color.purple
+            case .timeout: return V4Color.golden
+            case .unknown: return V4Color.error
             }
         }
     }
@@ -375,12 +375,12 @@ struct ErrorEmptyState: View {
     }
 
     var body: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: ParietalSpacing.xl) {
             // 3D Error illustration with gradient
             ZStack {
                 // Pulsing background
                 Circle()
-                    .fill(errorType.color.opacity(0.1))
+                    .fill(errorType.color.opacity(V2Depth.bgSubtle))
                     .frame(width: 100, height: 100)
                     .blur(radius: 10)
 
@@ -395,8 +395,8 @@ struct ErrorEmptyState: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                errorType.color.opacity(0.3),
-                                errorType.color.opacity(0.1)
+                                errorType.color.opacity(V2Depth.stateHover),
+                                errorType.color.opacity(V2Depth.bgSubtle)
                             ],
                             center: .center,
                             startRadius: 0,
@@ -408,12 +408,12 @@ struct ErrorEmptyState: View {
                 // Icon with 3D effect
                 ZStack {
                     Image(systemName: errorType.icon)
-                        .font(.system(size: 34, weight: .medium))
-                        .foregroundStyle(errorType.color.opacity(0.5))
+                        .font(WernickeTypography.size34Medium)
+                        .foregroundStyle(errorType.color.opacity(V2Depth.stateDisabled))
                         .offset(x: 2, y: 2)
 
                     Image(systemName: errorType.icon)
-                        .font(.system(size: 34, weight: .medium))
+                        .font(WernickeTypography.size34Medium)
                         .foregroundStyle(
                             LinearGradient(
                                 colors: [
@@ -427,14 +427,14 @@ struct ErrorEmptyState: View {
                 }
             }
 
-            VStack(spacing: 10) {
+            VStack(spacing: ParietalSpacing.sm + 2) {
                 Text(title)
-                    .font(.system(size: 17, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size17)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text(message)
-                    .font(.system(size: 13))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(V4Color.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 300)
             }
@@ -443,17 +443,17 @@ struct ErrorEmptyState: View {
             Button {
                 retry()
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Image(systemName: "arrow.clockwise.circle.fill")
-                        .font(.system(size: 16))
+                        .font(WernickeTypography.size16)
                     Text("Retry")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(WernickeTypography.body14Medium)
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
+                .padding(.horizontal, ParietalSpacing.xl)
+                .padding(.vertical, ParietalSpacing.md)
                 .background(errorType.color)
-                .cornerRadius(TrinityTheme.cornerMedium)
+                .cornerRadius(V1Theme.cornerMedium)
             }
             .buttonStyle(.plain)
         }
@@ -516,20 +516,20 @@ struct EmptyChatState: View {
     }
 
     var body: some View {
-        VStack(spacing: 28) {
+        VStack(spacing: ParietalSpacing.xl + 4) {
             Spacer()
 
             // 3D Chat bubble illustration
             ZStack {
                 // Background glow
                 Circle()
-                    .fill(TrinityTheme.accent.opacity(0.1))
+                    .fill(V4Color.accent.opacity(V2Depth.bgSubtle))
                     .frame(width: 110, height: 110)
                     .blur(radius: 15)
 
                 // Shadow
                 Circle()
-                    .fill(TrinityTheme.bgCardBorder.opacity(0.2))
+                    .fill(V4Color.border.opacity(0.2))
                     .frame(width: 95, height: 95)
                     .offset(y: 5)
 
@@ -538,8 +538,8 @@ struct EmptyChatState: View {
                     .fill(
                         LinearGradient(
                             colors: [
-                                TrinityTheme.accent.opacity(0.3),
-                                TrinityTheme.accent.opacity(0.1)
+                                V4Color.accent.opacity(V2Depth.stateHover),
+                                V4Color.accent.opacity(V2Depth.bgSubtle)
                             ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
@@ -551,13 +551,13 @@ struct EmptyChatState: View {
                 ZStack {
                     // Shadow bubbles
                     HStack(spacing: -8) {
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(TrinityTheme.textMuted.opacity(0.3))
+                        RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                            .fill(V4Color.textSecondary.opacity(V2Depth.stateHover))
                             .frame(width: 28, height: 20)
                             .offset(x: 2, y: 2)
 
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(TrinityTheme.textMuted.opacity(0.3))
+                        RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                            .fill(V4Color.textSecondary.opacity(V2Depth.stateHover))
                             .frame(width: 28, height: 20)
                             .offset(x: 12, y: -4)
                             .rotationEffect(.degrees(-10))
@@ -565,12 +565,12 @@ struct EmptyChatState: View {
 
                     // Main bubbles
                     HStack(spacing: -8) {
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                             .fill(
                                 LinearGradient(
                                     colors: [
-                                        TrinityTheme.textMuted.opacity(0.8),
-                                        TrinityTheme.textMuted.opacity(0.5)
+                                        V4Color.textSecondary.opacity(0.8),
+                                        V4Color.textSecondary.opacity(V2Depth.stateDisabled)
                                     ],
                                     startPoint: .top,
                                     endPoint: .bottom
@@ -578,12 +578,12 @@ struct EmptyChatState: View {
                             )
                             .frame(width: 28, height: 20)
 
-                        RoundedRectangle(cornerRadius: 12)
+                        RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                             .fill(
                                 LinearGradient(
                                     colors: [
-                                        TrinityTheme.accent.opacity(0.9),
-                                        TrinityTheme.accent.opacity(0.6)
+                                        V4Color.accent.opacity(0.9),
+                                        V4Color.accent.opacity(V1Theme.opacityTextSecondary)
                                     ],
                                     startPoint: .top,
                                     endPoint: .bottom
@@ -596,14 +596,14 @@ struct EmptyChatState: View {
                 }
             }
 
-            VStack(spacing: 10) {
+            VStack(spacing: ParietalSpacing.sm + 2) {
                 Text("Start a Conversation")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.h4Semibold)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text("Begin chatting with Trinity AI. Ask questions, get help,\nor just have a conversation.")
-                    .font(.system(size: 13))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(V4Color.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 280)
             }
@@ -612,27 +612,27 @@ struct EmptyChatState: View {
             Button {
                 onNewChat()
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Image(systemName: "plus.circle.fill")
-                        .font(.system(size: 16))
+                        .font(WernickeTypography.size16)
                     Text("New Chat")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(WernickeTypography.body14Medium)
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
-                .background(TrinityTheme.accent)
-                .cornerRadius(TrinityTheme.cornerMedium)
+                .padding(.horizontal, ParietalSpacing.xl)
+                .padding(.vertical, ParietalSpacing.md)
+                .background(V4Color.accent)
+                .cornerRadius(V1Theme.cornerMedium)
             }
             .buttonStyle(.plain)
 
             // Quick suggestions
-            VStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
                 Text("Try asking:")
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.miniMedium)
+                    .foregroundStyle(V4Color.textSecondary)
 
-                FlowLayout(spacing: 8) {
+                FlowLayout(spacing: ParietalSpacing.sm) {
                     suggestionChip("Help me write code")
                     suggestionChip("Explain a concept")
                     suggestionChip("Solve a problem")
@@ -646,12 +646,12 @@ struct EmptyChatState: View {
 
     private func suggestionChip(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 12))
-            .foregroundStyle(TrinityTheme.textMuted)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(TrinityTheme.bgCardBorder.opacity(0.5))
-            .cornerRadius(TrinityTheme.cornerSmall)
+            .font(WernickeTypography.size12)
+            .foregroundStyle(V4Color.textSecondary)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.xs + 2)
+            .background(V4Color.border.opacity(V2Depth.stateDisabled))
+            .cornerRadius(V1Theme.cornerSmall)
     }
 }
 
@@ -709,14 +709,14 @@ struct LoadingSkeleton: View {
     }
 
     private func listSkeleton(rows: Int) -> some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             ForEach(0..<rows, id: \.self) { _ in
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     Circle()
                         .fill(shimmerGradient)
                         .frame(width: 40, height: 40)
 
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Rectangle()
                             .fill(shimmerGradient)
                             .frame(height: 12)
@@ -728,25 +728,25 @@ struct LoadingSkeleton: View {
                             .frame(maxWidth: 200)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(TrinityTheme.cornerMedium)
+                .padding(.horizontal, ParietalSpacing.lg)
+                .padding(.vertical, ParietalSpacing.sm)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerMedium)
             }
         }
-        .padding(16)
+        .padding(ParietalSpacing.lg)
     }
 
     private func cardSkeleton() -> some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.lg) {
             // Header skeleton
             HStack {
                 Rectangle()
                     .fill(shimmerGradient)
                     .frame(width: 50, height: 50)
-                    .cornerRadius(8)
+                    .cornerRadius(V1Theme.cornerSmall)
 
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Rectangle()
                         .fill(shimmerGradient)
                         .frame(height: 14)
@@ -762,7 +762,7 @@ struct LoadingSkeleton: View {
             }
 
             // Content skeleton
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Rectangle()
                     .fill(shimmerGradient)
                     .frame(height: 10)
@@ -780,17 +780,17 @@ struct LoadingSkeleton: View {
             }
         }
         .padding(20)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
     }
 
     private func messageSkeleton() -> some View {
-        HStack(alignment: .top, spacing: 12) {
+        HStack(alignment: .top, spacing: ParietalSpacing.md) {
             Circle()
                 .fill(shimmerGradient)
-                .frame(width: 32, height: 32)
+                .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Rectangle()
                     .fill(shimmerGradient)
                     .frame(height: 12)
@@ -809,13 +809,13 @@ struct LoadingSkeleton: View {
 
             Spacer()
         }
-        .padding(16)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.lg)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
     }
 
     private func textSkeleton(lines: Int) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             ForEach(0..<lines, id: \.self) { index in
                 Rectangle()
                     .fill(shimmerGradient)
@@ -823,7 +823,7 @@ struct LoadingSkeleton: View {
                     .frame(maxWidth: index == lines - 1 ? 150 : .infinity)
             }
         }
-        .padding(16)
+        .padding(ParietalSpacing.lg)
     }
 
     private func customSkeleton(height: CGFloat, width: CGFloat) -> some View {
@@ -831,7 +831,7 @@ struct LoadingSkeleton: View {
             .fill(shimmerGradient)
             .frame(height: height)
             .frame(maxWidth: width)
-            .cornerRadius(TrinityTheme.cornerSmall)
+            .cornerRadius(V1Theme.cornerSmall)
     }
 
     private var shimmerGradient: LinearGradient {
@@ -839,9 +839,9 @@ struct LoadingSkeleton: View {
 
         return LinearGradient(
             colors: [
-                TrinityTheme.bgCardBorder.opacity(0.3),
-                TrinityTheme.bgCardBorder.opacity(0.6),
-                TrinityTheme.bgCardBorder.opacity(0.3)
+                V4Color.border.opacity(V2Depth.stateHover),
+                V4Color.border.opacity(V1Theme.opacityTextSecondary),
+                V4Color.border.opacity(V2Depth.stateHover)
             ],
             startPoint: UnitPoint(x: animationOffset - 0.5, y: 0.5),
             endPoint: UnitPoint(x: animationOffset + 0.5, y: 0.5)
@@ -869,8 +869,8 @@ struct FirstRunOnboardingState: View {
                     .fill(
                         RadialGradient(
                             colors: [
-                                TrinityTheme.accent.opacity(0.15),
-                                TrinityTheme.accent.opacity(0.02)
+                                V4Color.accent.opacity(V2Depth.bgSidebarHover),
+                                V4Color.accent.opacity(0.02)
                             ],
                             center: .center,
                             startRadius: 0,
@@ -884,7 +884,7 @@ struct FirstRunOnboardingState: View {
                 ZStack {
                     // Shadow layer
                     Triangle()
-                        .fill(TrinityTheme.bgCardBorder.opacity(0.4))
+                        .fill(V4Color.border.opacity(V1Theme.opacityTextTertiary))
                         .frame(width: 100, height: 87)
                         .offset(y: 6)
 
@@ -893,8 +893,8 @@ struct FirstRunOnboardingState: View {
                         .fill(
                             LinearGradient(
                                 colors: [
-                                    TrinityTheme.accent.opacity(0.8),
-                                    TrinityTheme.purple.opacity(0.6)
+                                    V4Color.accent.opacity(0.8),
+                                    V4Color.purple.opacity(V1Theme.opacityTextSecondary)
                                 ],
                                 startPoint: .top,
                                 endPoint: .bottom
@@ -907,8 +907,8 @@ struct FirstRunOnboardingState: View {
                         .stroke(
                             LinearGradient(
                                 colors: [
-                                    .white.opacity(0.3),
-                                    .white.opacity(0.1)
+                                    .white.opacity(V2Depth.stateHover),
+                                    .white.opacity(V2Depth.bgSubtle)
                                 ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
@@ -921,7 +921,7 @@ struct FirstRunOnboardingState: View {
                 // Orbiting particles
                 ForEach(0..<3) { index in
                     Circle()
-                        .fill(TrinityTheme.accent.opacity(0.6))
+                        .fill(V4Color.accent.opacity(V1Theme.opacityTextSecondary))
                         .frame(width: 6, height: 6)
                         .offset(
                             x: cos(Double(index) * .pi * 2 / 3) * 55,
@@ -930,14 +930,14 @@ struct FirstRunOnboardingState: View {
                 }
             }
 
-            VStack(spacing: 12) {
+            VStack(spacing: ParietalSpacing.md) {
                 Text("Welcome to Trinity")
-                    .font(.system(size: 24, weight: .bold))
+                    .font(WernickeTypography.h3Bold)
                     .foregroundStyle(
                         LinearGradient(
                             colors: [
-                                TrinityTheme.accent,
-                                TrinityTheme.purple
+                                V4Color.accent,
+                                V4Color.purple
                             ],
                             startPoint: .leading,
                             endPoint: .trailing
@@ -945,13 +945,13 @@ struct FirstRunOnboardingState: View {
                     )
 
                 Text("Your autonomous AI assistant powered by\nternary computing. Fast, efficient, intelligent.")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
                     .multilineTextAlignment(.center)
             }
 
             // Feature highlights
-            HStack(spacing: 24) {
+            HStack(spacing: ParietalSpacing.xl) {
                 featureItem(icon: "bolt.fill", title: "Fast", subtitle: "Ternary compute")
                 featureItem(icon: "brain.head.profile", title: "Smart", subtitle: "AI powered")
                 featureItem(icon: "shield.checkered", title: "Safe", subtitle: "Local first")
@@ -961,27 +961,27 @@ struct FirstRunOnboardingState: View {
             Button {
                 onGetStarted()
             } label: {
-                HStack(spacing: 10) {
+                HStack(spacing: ParietalSpacing.sm + 2) {
                     Image(systemName: "star.fill")
-                        .font(.system(size: 16))
+                        .font(WernickeTypography.size16)
                     Text("Get Started")
-                        .font(.system(size: 15, weight: .semibold))
+                        .font(WernickeTypography.bodyEmphasized)
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 32)
-                .padding(.vertical, 14)
+                .padding(.horizontal, ParietalSpacing.xl + ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.md + 2)
                 .background(
                     LinearGradient(
                         colors: [
-                            TrinityTheme.accent,
-                            TrinityTheme.purple
+                            V4Color.accent,
+                            V4Color.purple
                         ],
                         startPoint: .leading,
                         endPoint: .trailing
                     )
                 )
-                .cornerRadius(TrinityTheme.cornerXL)
-                .shadow(color: TrinityTheme.accent.opacity(0.4), radius: 8, y: 4)
+                .cornerRadius(V1Theme.cornerLarge)
+                .shadow(color: V4Color.accent.opacity(V1Theme.opacityTextTertiary), radius: V1Theme.shadowMediumRadius, y: 4)
             }
             .buttonStyle(.plain)
 
@@ -992,24 +992,24 @@ struct FirstRunOnboardingState: View {
     }
 
     private func featureItem(icon: String, title: String, subtitle: String) -> some View {
-        VStack(spacing: 6) {
+        VStack(spacing: ParietalSpacing.sm - 2) {
             ZStack {
                 Circle()
-                    .fill(TrinityTheme.bgCardBorder.opacity(0.3))
-                    .frame(width: 44, height: 44)
+                    .fill(V4Color.border.opacity(V2Depth.stateHover))
+                    .frame(width: ParietalSpacing.avatarMedium - 4, height: ParietalSpacing.avatarMedium - 4)
 
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .medium))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size18Medium)
+                    .foregroundStyle(V4Color.accent)
             }
 
             Text(title)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size11Semibold)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(subtitle)
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
     }
 }
@@ -1038,19 +1038,19 @@ struct DetailedEmptyStates_Previews: PreviewProvider {
             // 1. Empty Chat State
             EmptyChatState()
                 .frame(width: 400, height: 500)
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
 
             Divider()
 
             // 2. Search Empty State
             SearchEmptyState(query: "quantum physics") {}
                 .frame(width: 400, height: 400)
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
 
             Divider()
 
             // 3. Error States
-            HStack(spacing: 20) {
+            HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 ErrorEmptyState(errorType: .network) {}
                     .frame(width: 280, height: 350)
                 ErrorEmptyState(errorType: .server) {}
@@ -1058,26 +1058,26 @@ struct DetailedEmptyStates_Previews: PreviewProvider {
                 ErrorEmptyState(errorType: .timeout) {}
                     .frame(width: 280, height: 350)
             }
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             Divider()
 
             // 4. Loading Skeletons
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 LoadingSkeleton(style: .list(rows: 3))
                 LoadingSkeleton(style: .card)
                 LoadingSkeleton(style: .message)
             }
-            .frame(width: 400)
+            .frame(width: ParietalSpacing.xl * 16)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             Divider()
 
             // 5. First Run Onboarding
             FirstRunOnboardingState()
                 .frame(width: 500, height: 600)
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
         }
         .previewLayout(.sizeThatFits)
     }

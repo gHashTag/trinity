@@ -264,10 +264,16 @@ pub fn runBrainDashboardCommand(allocator: std.mem.Allocator, args: []const []co
             return runBrainSimulateCommand(allocator, args[1..]);
         }
 
+        if (std.mem.eql(u8, args[0], "--viz") or std.mem.eql(u8, args[0], "viz")) {
+            // Route to visualization command
+            return runBrainVizCommand(allocator, args[1..]);
+        }
+
         if (std.mem.eql(u8, args[0], "--help") or std.mem.eql(u8, args[0], "-h")) {
             std.debug.print("{s}Brain Commands:{s}\n", .{ CYAN, RESET });
             std.debug.print("  tri brain --alerts [list|stats|check|test]  Brain alerts system\n", .{});
             std.debug.print("  tri brain simulate [smoke|competition|storm|partition|crash] [--json]  Brain simulation\n", .{});
+            std.debug.print("  tri brain --viz [map|sparkline|connections|heatmap|3d|preset]  Brain visualizations\n", .{});
             return;
         }
     }
@@ -2404,6 +2410,69 @@ fn printSimulationHelp() void {
     std.debug.print("  tri brain simulate competition\n", .{});
     std.debug.print("  tri brain simulate storm --json\n", .{});
     std.debug.print("\n", .{});
+}
+
+/// Brain Visualization Command
+/// Usage: tri brain --viz [map|sparkline|connections|heatmap|3d|preset]
+pub fn runBrainVizCommand(allocator: std.mem.Allocator, args: []const []const u8) !void {
+    const viz = @import("brain").visualization;
+
+    if (args.len == 0) {
+        const output = try viz.preset(allocator, .dashboard, .{});
+        defer allocator.free(output);
+        std.debug.print("{s}\n", .{output});
+        return;
+    }
+
+    const mode = args[0];
+
+    if (std.mem.eql(u8, mode, "map")) {
+        const regions = [_]viz.BrainRegionViz{
+            .{ .name = "Thalamus", .health = 95.0, .activity = 0.8, .color = viz.Ansi.GREEN, .position = .{ .x = 10, .y = 5 } },
+            .{ .name = "Basal Ganglia", .health = 88.0, .activity = 0.7, .color = viz.Ansi.GREEN, .position = .{ .x = 8, .y = 8 } },
+            .{ .name = "Reticular Formation", .health = 92.0, .activity = 0.9, .color = viz.Ansi.GREEN, .position = .{ .x = 12, .y = 8 } },
+        };
+
+        const state = viz.BrainState{
+            .regions = &regions,
+            .timestamp = std.time.milliTimestamp(),
+            .overall_health = 88.0,
+        };
+
+        const output = try viz.brainMap(allocator, state, .{});
+        defer allocator.free(output);
+        std.debug.print("{s}\n", .{output});
+    } else if (std.mem.eql(u8, mode, "sparkline")) {
+        const health_data = [_]f32{ 82.0, 84.0, 83.0, 86.0, 88.0, 87.0, 89.0, 91.0, 90.0, 88.0 };
+        const output = try viz.sparkline(allocator, &health_data, .{ .width = 40, .color = true });
+        defer allocator.free(output);
+        std.debug.print("{s}\n", .{output});
+    } else if (std.mem.eql(u8, mode, "3d")) {
+        const output = try viz.brain3D(allocator, .{});
+        defer allocator.free(output);
+        std.debug.print("{s}\n", .{output});
+    } else if (std.mem.eql(u8, mode, "preset")) {
+        const output = try viz.preset(allocator, .dashboard, .{});
+        defer allocator.free(output);
+        std.debug.print("{s}\n", .{output});
+    } else if (std.mem.eql(u8, mode, "connections")) {
+        const connections = [_]viz.Connection{
+            .{ .from = "Thalamus", .to = "Prefrontal Cortex", .strength = 0.9, .active = true },
+            .{ .from = "Basal Ganglia", .to = "Thalamus", .strength = 0.8, .active = true },
+            .{ .from = "Reticular Formation", .to = "Thalamus", .strength = 0.7, .active = true },
+        };
+        const output = try viz.connectionDiagram(allocator, &connections, .{});
+        defer allocator.free(output);
+        std.debug.print("{s}\n", .{output});
+    } else if (std.mem.eql(u8, mode, "heatmap")) {
+        // TODO: Add actual data parameter
+        const dummy_data = [_]f32{0.1, 0.2, 0.3, 0.4, 0.5};
+        const output = try viz.activityHeatmap(allocator, &dummy_data, .{ .width = 40, .height = 15 });
+        defer allocator.free(output);
+        std.debug.print("{s}\n", .{output});
+    } else {
+        std.debug.print("{s}Use --help for visualization options{s}\n", .{ CYAN, RESET });
+    }
 }
 
 const qt = @import("queen_types.zig");

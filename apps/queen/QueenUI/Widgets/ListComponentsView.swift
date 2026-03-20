@@ -41,11 +41,11 @@ struct SwipeableRow<Content: View>: View {
                                 offset = 0
                             }
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: action.icon)
                                 Text(action.title)
                             }
-                            .font(.system(size: 13))
+                            .font(WernickeTypography.size13)
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 80)
@@ -60,7 +60,7 @@ struct SwipeableRow<Content: View>: View {
 
             // Content
             content
-                .background(TrinityTheme.bgCard)
+                .background(V4Color.surface)
                 .offset(x: offset)
                 .gesture(
                     DragGesture()
@@ -96,11 +96,11 @@ struct SwipeableRow<Content: View>: View {
                                 offset = 0
                             }
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: action.icon)
                                 Text(action.title)
                             }
-                            .font(.system(size: 13))
+                            .font(WernickeTypography.size13)
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 80)
@@ -144,43 +144,43 @@ struct ExpandableRow<Content: View>: View {
                 }
             } label: {
                 HStack {
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                         Text(title)
-                            .font(.system(size: 14))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .font(WernickeTypography.size14)
+                            .foregroundStyle(V4Color.textPrimary)
 
                         if let subtitle = subtitle {
                             Text(subtitle)
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
 
                     Spacer()
 
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size12)
+                        .foregroundStyle(V4Color.textSecondary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.horizontal, ParietalSpacing.lg)
+                .padding(.vertical, ParietalSpacing.md)
             }
             .buttonStyle(.plain)
 
             if isExpanded {
                 content
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(TrinityTheme.bgWindow)
+                    .padding(.horizontal, ParietalSpacing.lg)
+                    .padding(.vertical, ParietalSpacing.md)
+                    .background(V4Color.background)
                     .transition(.opacity)
             }
         }
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(8)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerBase)
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -198,32 +198,32 @@ struct CheckableRow: View {
                 isChecked.toggle()
             }
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 // Custom checkbox
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(isChecked ? TrinityTheme.accent : TrinityTheme.bgCardBorder)
-                    .frame(width: 20, height: 20)
+                    .fill(isChecked ? V4Color.accent : V4Color.border)
+                    .frame(width: ParietalSpacing.icon + 4, height: ParietalSpacing.icon + 4)
                     .overlay(
                         RoundedRectangle(cornerRadius: 4)
-                            .stroke(TrinityTheme.bgCardBorder, lineWidth: 2)
+                            .stroke(V4Color.border, lineWidth: 2)
                     )
                     .overlay {
                         if isChecked {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 12, weight: .bold))
+                                .font(WernickeTypography.captionBold)
                                 .foregroundStyle(.white)
                         }
                     }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 14))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.size14)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     if let subtitle = subtitle {
                         Text(subtitle)
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
 
@@ -249,28 +249,28 @@ struct SelectableRow: View {
                 isSelected.toggle()
             }
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 // Selection indicator
                 Circle()
-                    .stroke(isSelected ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: 2)
-                    .frame(width: 20, height: 20)
+                    .stroke(isSelected ? V4Color.accent : V4Color.border, lineWidth: 2)
+                    .frame(width: ParietalSpacing.icon + 4, height: ParietalSpacing.icon + 4)
                     .overlay {
                         if isSelected {
                             Circle()
-                                .fill(TrinityTheme.accent)
-                                .frame(width: 12, height: 12)
+                                .fill(V4Color.accent)
+                                .frame(width: ParietalSpacing.sm, height: ParietalSpacing.sm)
                         }
                     }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 14))
-                        .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                        .font(WernickeTypography.size14)
+                        .foregroundStyle(isSelected ? V4Color.accent : V4Color.textPrimary)
 
                     if let subtitle = subtitle {
                         Text(subtitle)
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
 
@@ -301,25 +301,25 @@ struct DNDListRow<Content: View>: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             Image(systemName: "line.3.horizontal")
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.textMuted)
-                .opacity(0.6)
+                .font(WernickeTypography.size12)
+                .foregroundStyle(V4Color.textSecondary)
+                .opacity(V1Theme.opacityTextSecondary)
 
             content
 
             Spacer()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, ParietalSpacing.lg)
+        .padding(.vertical, ParietalSpacing.md)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(isDragging ? TrinityTheme.accent.opacity(0.1) : TrinityTheme.bgCard)
+                .fill(isDragging ? V4Color.accent.opacity(V2Depth.bgSubtle) : V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(isDragging ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: isDragging ? 2 : 1)
+                .stroke(isDragging ? V4Color.accent : V4Color.border, lineWidth: isDragging ? 2 : 1)
         )
         .scaleEffect(isDragging ? 1.02 : 1)
         .gesture(
@@ -383,18 +383,18 @@ struct SectionedList: View {
                     } label: {
                         HStack {
                             Text(section.title.uppercased())
-                                .font(.system(size: 12, weight: .semibold))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .font(WernickeTypography.caption2Semibold)
+                                .foregroundStyle(V4Color.textSecondary)
 
                             Spacer()
 
                             Image(systemName: "chevron.right")
-                                .font(.system(size: 10))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .font(WernickeTypography.size10)
+                                .foregroundStyle(V4Color.textSecondary)
                                 .rotationEffect(.degrees(section.isExpanded ? 90 : 0))
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, ParietalSpacing.lg)
+                        .padding(.vertical, ParietalSpacing.sm)
                     }
                     .buttonStyle(.plain)
 
@@ -408,29 +408,29 @@ struct SectionedList: View {
                                     HStack {
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(item.title)
-                                                .font(.system(size: 14))
-                                                .foregroundStyle(TrinityTheme.textPrimary)
+                                                .font(WernickeTypography.size14)
+                                                .foregroundStyle(V4Color.textPrimary)
 
                                             if let subtitle = item.subtitle {
                                                 Text(subtitle)
                                                     .font(.caption)
-                                                    .foregroundStyle(TrinityTheme.textMuted)
+                                                    .foregroundStyle(V4Color.textSecondary)
                                             }
                                         }
 
                                         Spacer()
                                     }
-                                    .padding(.horizontal, 16)
-                                    .padding(.vertical, 12)
+                                    .padding(.horizontal, ParietalSpacing.lg)
+                                    .padding(.vertical, ParietalSpacing.md)
                                 }
                                 .buttonStyle(.plain)
                             }
                         }
                     }
                 }
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(8)
-                .padding(.vertical, 4)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerBase)
+                .padding(.vertical, ParietalSpacing.xs)
             }
         }
     }
@@ -441,7 +441,7 @@ struct SectionedList: View {
 struct ListComponentsView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 CheckableRow(
                     title: "Enable notifications",
                     subtitle: "Receive push notifications",
@@ -477,6 +477,6 @@ struct ListComponentsView_Previews: PreviewProvider {
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

@@ -26,7 +26,7 @@ struct SettingsSection<Content: View>: View {
     init(
         _ title: String,
         icon: String? = nil,
-        color: Color = TrinityTheme.accent,
+        color: Color = V4Color.accent,
         @ViewBuilder content: () -> Content
     ) {
         self.title = title
@@ -39,14 +39,14 @@ struct SettingsSection<Content: View>: View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
             Button {
-                withAnimation(TrinityTheme.springAnimation()) {
+                withAnimation(MTMotion.standardSpring) {
                     isExpanded.toggle()
                 }
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     if let icon {
                         Image(systemName: icon)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(WernickeTypography.miniSemibold)
                             .foregroundStyle(color)
                     }
                     Text(title.uppercased())
@@ -54,30 +54,30 @@ struct SettingsSection<Content: View>: View {
                         .foregroundStyle(color)
                     Spacer()
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 10, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.miniSemibold)
+                        .foregroundStyle(V4Color.textSecondary)
                         .rotationEffect(.degrees(isExpanded ? 0 : -90))
                 }
-                .padding(.horizontal, TrinityTheme.spacing)
-                .padding(.vertical, 10)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm + 2)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
 
             // Content with animation
             if isExpanded {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm + 2) {
                     content
                 }
-                .padding(TrinityTheme.spacing)
+                .padding(ParietalSpacing.md)
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.surface)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -99,7 +99,7 @@ struct SettingsToggle: View {
         isOn: Binding<Bool>,
         description: String? = nil,
         icon: String? = nil,
-        iconColor: Color = TrinityTheme.accent
+        iconColor: Color = V4Color.accent
     ) {
         self.title = title
         self._isOn = isOn
@@ -109,16 +109,16 @@ struct SettingsToggle: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // Optional icon
             if let icon {
                 ZStack {
                     Circle()
-                        .fill(iconColor.opacity(0.15))
+                        .fill(iconColor.opacity(V2Depth.bgSidebarHover))
                         .frame(width: 28, height: 28)
 
                     Image(systemName: icon)
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(WernickeTypography.caption2Semibold)
                         .foregroundStyle(iconColor)
                 }
             }
@@ -127,12 +127,12 @@ struct SettingsToggle: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.body.weight(.medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 if let description {
                     Text(description)
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
 
@@ -142,9 +142,9 @@ struct SettingsToggle: View {
             Toggle("", isOn: $isOn)
                 .toggleStyle(.switch)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, ParietalSpacing.xs)
         .contentShape(Rectangle())
-        .background(isHovered ? TrinityTheme.textPrimary.opacity(0.03) : Color.clear)
+        .background(isHovered ? V4Color.textPrimary.opacity(0.03) : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .onHover { isHovered = $0 }
     }
@@ -185,27 +185,27 @@ struct SettingsPicker<T: Hashable & CaseIterable>: View where T.AllCases: Random
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack {
                 Text(title)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 if let description {
                     Spacer()
                     Text(description)
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 ForEach(options) { option in
                     OptionCard(
                         option: option,
                         isSelected: selection == option.value
                     ) {
-                        withAnimation(TrinityTheme.springAnimation()) {
+                        withAnimation(MTMotion.standardSpring) {
                             selection = option.value
                         }
                     }
@@ -225,33 +225,33 @@ struct SettingsPicker<T: Hashable & CaseIterable>: View where T.AllCases: Random
 
         var body: some View {
             Button(action: action) {
-                VStack(spacing: 6) {
+                VStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: option.icon)
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textMuted)
+                        .font(WernickeTypography.size18Medium)
+                        .foregroundStyle(isSelected ? V4Color.accent : V4Color.textSecondary)
 
                     Text(option.label)
                         .font(.caption2.weight(.medium))
-                        .foregroundStyle(isSelected ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                        .foregroundStyle(isSelected ? V4Color.textPrimary : V4Color.textSecondary)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 10)
+                .padding(.vertical, ParietalSpacing.sm + 2)
                 .background(
                     Group {
                         if isSelected {
-                            TrinityTheme.accent.opacity(0.15)
+                            V4Color.accent.opacity(V2Depth.bgSidebarHover)
                         } else if isHovered {
-                            TrinityTheme.textPrimary.opacity(0.05)
+                            V4Color.textPrimary.opacity(0.05)
                         } else {
                             Color.clear
                         }
                     }
                 )
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                 .overlay(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
                         .stroke(
-                            isSelected ? TrinityTheme.accent : TrinityTheme.bgCardBorder,
+                            isSelected ? V4Color.accent : V4Color.border,
                             lineWidth: isSelected ? 1.5 : 1
                         )
                 )
@@ -316,11 +316,11 @@ struct SettingsSlider: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack {
                 Text(title)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .frame(width: 100, alignment: .leading)
 
                 Slider(value: $value, in: range, step: step)
@@ -330,13 +330,13 @@ struct SettingsSlider: View {
                 HStack(spacing: 2) {
                     Text(previewText?(value) ?? formattedValue)
                         .font(.body.monospacedDigit())
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                         .frame(width: 44, alignment: .trailing)
 
                     if let unit {
                         Text(unit)
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
             }
@@ -346,18 +346,18 @@ struct SettingsSlider: View {
                 ZStack(alignment: .leading) {
                     // Track
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(TrinityTheme.bgCardBorder)
-                        .frame(height: 4)
+                        .fill(V4Color.border)
+                        .frame(height: ParietalSpacing.xs)
 
                     // Fill
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(TrinityTheme.accent)
+                        .fill(V4Color.accent)
                         .frame(width: geometry.size.width * CGFloat((value - range.lowerBound) / (range.upperBound - range.lowerBound)))
-                        .frame(height: 4)
-                        .animation(isDragging ? nil : TrinityTheme.springAnimation(), value: value)
+                        .frame(height: ParietalSpacing.xs)
+                        .animation(isDragging ? nil : MTMotion.standardSpring, value: value)
                 }
             }
-            .frame(height: 4)
+            .frame(height: ParietalSpacing.xs)
         }
     }
 
@@ -405,14 +405,14 @@ struct SettingsTextField: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
             HStack {
                 Text(title)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .frame(width: 100, alignment: .leading)
 
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Group {
                         if isSecure {
                             SecureField(placeholder, text: $text)
@@ -422,19 +422,19 @@ struct SettingsTextField: View {
                     }
                     .textFieldStyle(.plain)
                     .font(.body.monospaced())
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 6)
-                    .background(TrinityTheme.bgCard)
-                    .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                    .padding(.horizontal, ParietalSpacing.sm + 2)
+                    .padding(.vertical, ParietalSpacing.xs + 2)
+                    .background(V4Color.surface)
+                    .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                     .overlay(
-                        RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
+                        RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
                             .stroke(validationColor, lineWidth: 1)
                     )
 
                     // Validation icon
                     if validation != nil {
                         Image(systemName: validationIcon)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(WernickeTypography.miniSemibold)
                             .foregroundStyle(validationColor)
                     }
                 }
@@ -463,11 +463,11 @@ struct SettingsTextField: View {
     private var validationColor: Color {
         switch validationState {
         case .valid, .none:
-            return TrinityTheme.bgCardBorder
+            return V4Color.border
         case .invalid:
-            return TrinityTheme.statusError
+            return V4Color.error
         case .warning:
-            return TrinityTheme.statusWarn
+            return V4Color.warning
         }
     }
 
@@ -523,18 +523,18 @@ struct SettingsColorPicker: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text(title)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 ForEach(ColorOption.allCases) { option in
                     ColorSwatch(
                         option: option,
                         isSelected: selection == option
                     ) {
-                        withAnimation(TrinityTheme.springAnimation()) {
+                        withAnimation(MTMotion.standardSpring) {
                             selection = option
                         }
                     }
@@ -583,12 +583,12 @@ enum ColorOption: String, CaseIterable, Identifiable {
 
     var color: Color {
         switch self {
-        case .green: return TrinityTheme.accent
-        case .blue: return Color(hex: 0x00D9FF)
-        case .purple: return TrinityTheme.purple
-        case .gold: return TrinityTheme.golden
-        case .red: return TrinityTheme.statusError
-        case .custom: return TrinityTheme.accent
+        case .green: return V4Color.accent
+        case .blue: return V4Color.info
+        case .purple: return V4Color.purple
+        case .gold: return V4Color.golden
+        case .red: return V4Color.error
+        case .custom: return V4Color.accent
         }
     }
 
@@ -631,22 +631,22 @@ struct ColorSwatch: View {
             ZStack {
                 Circle()
                     .fill(customColor ?? option.color)
-                    .frame(width: 24, height: 24)
+                    .frame(width: ParietalSpacing.lg, height: ParietalSpacing.lg)
 
                 if isSelected {
                     Circle()
-                        .strokeBorder(TrinityTheme.textPrimary, lineWidth: 2)
+                        .strokeBorder(V4Color.textPrimary, lineWidth: 2)
                         .frame(width: 28, height: 28)
                         .overlay {
                             Circle()
-                                .fill(TrinityTheme.textPrimary)
-                                .frame(width: 8, height: 8)
+                                .fill(V4Color.textPrimary)
+                                .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
                         }
                 }
             }
             .overlay(
                 Circle()
-                    .strokeBorder(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    .strokeBorder(V4Color.border, lineWidth: 1)
                     .frame(width: 26, height: 26)
             )
             .scaleEffect(isHovered ? 1.1 : 1.0)
@@ -685,7 +685,7 @@ struct SettingsNavigation<Content: View>: View {
                         section: section,
                         isSelected: selectedSection == section.id
                     ) {
-                        withAnimation(TrinityTheme.springAnimation()) {
+                        withAnimation(MTMotion.standardSpring) {
                             selectedSection = section.id
                         }
                     }
@@ -694,14 +694,14 @@ struct SettingsNavigation<Content: View>: View {
             }
             .frame(minWidth: 180, maxWidth: 220)
             .padding(.top, 8)
-            .background(TrinityTheme.bgSidebar)
+            .background(V4Color.sidebar)
 
             // Content
             ScrollView {
                 content()
-                    .padding(TrinityTheme.spacing * 1.5)
+                    .padding(ParietalSpacing.md * 1.5)
             }
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
         }
     }
 
@@ -716,30 +716,30 @@ struct SettingsNavigation<Content: View>: View {
 
         var body: some View {
             Button(action: action) {
-                HStack(spacing: 10) {
+                HStack(spacing: ParietalSpacing.sm + 2) {
                     Image(systemName: section.icon)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textMuted)
-                        .frame(width: 20)
+                        .font(WernickeTypography.smallMedium)
+                        .foregroundStyle(isSelected ? V4Color.accent : V4Color.textSecondary)
+                        .frame(width: ParietalSpacing.buttonSmallWidth)
 
                     Text(section.name)
                         .font(.body.weight(isSelected ? .semibold : .regular))
-                        .foregroundStyle(isSelected ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                        .foregroundStyle(isSelected ? V4Color.textPrimary : V4Color.textSecondary)
 
                     Spacer()
 
                     if section.hasChanges {
                         Circle()
-                            .fill(TrinityTheme.accent)
+                            .fill(V4Color.accent)
                             .frame(width: 6, height: 6)
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm)
                 .background(
                     isSelected
-                        ? TrinityTheme.accent.opacity(0.12)
-                        : (isHovered ? TrinityTheme.textPrimary.opacity(0.05) : Color.clear)
+                        ? V4Color.accent.opacity(0.12)
+                        : (isHovered ? V4Color.textPrimary.opacity(0.05) : Color.clear)
                 )
                 .contentShape(Rectangle())
             }
@@ -768,10 +768,10 @@ struct SettingsSearch: View {
     @State private var isFocused = false
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(searchText.isEmpty ? TrinityTheme.textMuted : TrinityTheme.accent)
+                .font(WernickeTypography.smallMedium)
+                .foregroundStyle(searchText.isEmpty ? V4Color.textSecondary : V4Color.accent)
 
             TextField("Search settings", text: $searchText)
                 .textFieldStyle(.plain)
@@ -783,19 +783,19 @@ struct SettingsSearch: View {
                     searchText = ""
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 13))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size13)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm)
+        .background(V4Color.surface)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(isFocused ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: isFocused ? 1.5 : 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(isFocused ? V4Color.accent : V4Color.border, lineWidth: isFocused ? 1.5 : 1)
         )
     }
 }
@@ -830,17 +830,17 @@ struct SettingsResetButton: View {
         Button {
             showingConfirmation = true
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: "arrow.counterclockwise")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(WernickeTypography.miniSemibold)
                 Text(title)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(WernickeTypography.smallMedium)
             }
-            .foregroundStyle(TrinityTheme.statusError)
-            .padding(.horizontal, 14)
+            .foregroundStyle(V4Color.error)
+            .padding(.horizontal, ParietalSpacing.md + 2)
             .padding(.vertical, 7)
-            .background(TrinityTheme.statusError.opacity(0.12))
-            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+            .background(V4Color.error.opacity(0.12))
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
         }
         .buttonStyle(.plain)
         .confirmationDialog(
@@ -866,17 +866,17 @@ struct ModifiedIndicator: View {
 
     var body: some View {
         if isModified {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Circle()
-                    .fill(TrinityTheme.accent)
-                    .frame(width: 4, height: 4)
+                    .fill(V4Color.accent)
+                    .frame(width: ParietalSpacing.xxxs, height: ParietalSpacing.xxxs)
                 Text("Modified")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, ParietalSpacing.sm)
             .padding(.vertical, 3)
-            .background(TrinityTheme.accent.opacity(0.12))
+            .background(V4Color.accent.opacity(0.12))
             .clipShape(SwiftUI.Capsule())
         }
     }
@@ -915,9 +915,9 @@ struct AppearanceSettingsContent: View {
     @AppStorage("accentColor") private var accentColorRaw: String = ColorOption.green.rawValue
 
     var body: some View {
-        VStack(alignment: .leading, spacing: TrinityTheme.spacing) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             // Font size
-            SettingsSection("Display", icon: "textformat", color: TrinityTheme.accent) {
+            SettingsSection("Display", icon: "textformat", color: V4Color.accent) {
                 SettingsSlider(
                     "Font Size",
                     value: Binding(
@@ -930,15 +930,15 @@ struct AppearanceSettingsContent: View {
 
                 Text("The quick brown fox jumps over the lazy dog")
                     .font(.system(size: CGFloat(chatFontSize)))
-                    .foregroundStyle(TrinityTheme.textPrimary)
-                    .padding(8)
-                    .background(Color.white.opacity(0.04))
+                    .foregroundStyle(V4Color.textPrimary)
+                    .padding(ParietalSpacing.sm)
+                    .background(Color.white.opacity(V2Depth.bgCardLight))
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                     .padding(.top, 4)
             }
 
             // Animations
-            SettingsSection("Animations", icon: "sparkles", color: TrinityTheme.purple) {
+            SettingsSection("Animations", icon: "sparkles", color: V4Color.purple) {
                 SettingsToggle(
                     "Enable Animations",
                     isOn: $animationsEnabled,
@@ -953,7 +953,7 @@ struct AppearanceSettingsContent: View {
             }
 
             // Layout
-            SettingsSection("Layout", icon: "rectangle.split.3x3", color: TrinityTheme.golden) {
+            SettingsSection("Layout", icon: "rectangle.split.3x3", color: V4Color.golden) {
                 SettingsSlider(
                     "Sidebar Width",
                     value: $sidebarWidth,
@@ -963,13 +963,13 @@ struct AppearanceSettingsContent: View {
             }
 
             // Color theme
-            SettingsSection("Colors", icon: "paintpalette.fill", color: TrinityTheme.accent) {
-                VStack(alignment: .leading, spacing: 8) {
+            SettingsSection("Colors", icon: "paintpalette.fill", color: V4Color.accent) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Accent Color")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         ForEach(ColorOption.allCases.filter({ $0 != .custom })) { option in
                             ColorSwatch(option: option, isSelected: accentColorRaw == option.rawValue) {
                                 accentColorRaw = option.rawValue
@@ -992,9 +992,9 @@ struct BehaviorSettingsContent: View {
     @AppStorage("keyboardShortcutsEnabled") private var keyboardShortcutsEnabled = true
 
     var body: some View {
-        VStack(alignment: .leading, spacing: TrinityTheme.spacing) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             // Auto-save
-            SettingsSection("Auto-Save", icon: "square.and.arrow.down", color: TrinityTheme.accent) {
+            SettingsSection("Auto-Save", icon: "square.and.arrow.down", color: V4Color.accent) {
                 SettingsToggle(
                     "Enable Auto-Save",
                     isOn: $autoSaveEnabled,
@@ -1014,7 +1014,7 @@ struct BehaviorSettingsContent: View {
             }
 
             // Notifications
-            SettingsSection("Notifications", icon: "bell.fill", color: TrinityTheme.purple) {
+            SettingsSection("Notifications", icon: "bell.fill", color: V4Color.purple) {
                 SettingsToggle(
                     "Enable Notifications",
                     isOn: $notificationsEnabled,
@@ -1029,7 +1029,7 @@ struct BehaviorSettingsContent: View {
             }
 
             // Shortcuts
-            SettingsSection("Keyboard", icon: "command", color: TrinityTheme.golden) {
+            SettingsSection("Keyboard", icon: "command", color: V4Color.golden) {
                 SettingsToggle(
                     "Enable Shortcuts",
                     isOn: $keyboardShortcutsEnabled,
@@ -1039,26 +1039,26 @@ struct BehaviorSettingsContent: View {
                 HStack {
                     Text("Cmd+S")
                         .font(.caption.monospaced())
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, ParietalSpacing.xs + 2)
                         .padding(.vertical, 3)
-                        .background(TrinityTheme.bgCardBorder)
+                        .background(V4Color.border)
                         .clipShape(RoundedRectangle(cornerRadius: 4))
                     Text("Save current work")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .padding(.top, 4)
 
                 HStack {
                     Text("Cmd+K")
                         .font(.caption.monospaced())
-                        .padding(.horizontal, 6)
+                        .padding(.horizontal, ParietalSpacing.xs + 2)
                         .padding(.vertical, 3)
-                        .background(TrinityTheme.bgCardBorder)
+                        .background(V4Color.border)
                         .clipShape(RoundedRectangle(cornerRadius: 4))
                     Text("Open command palette")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
         }
@@ -1073,37 +1073,37 @@ struct PrivacySettingsContent: View {
     @AppStorage("telemetryLevel") private var telemetryLevelRaw: String = TelemetryLevel.basic.rawValue
 
     var body: some View {
-        VStack(alignment: .leading, spacing: TrinityTheme.spacing) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             // Analytics
-            SettingsSection("Analytics", icon: "chart.bar", color: TrinityTheme.accent) {
+            SettingsSection("Analytics", icon: "chart.bar", color: V4Color.accent) {
                 SettingsToggle(
                     "Share Anonymous Analytics",
                     isOn: $analyticsEnabled,
                     description: "Help improve Queen UI with usage data",
                     icon: "chart.bar.fill",
-                    iconColor: TrinityTheme.purple
+                    iconColor: V4Color.purple
                 )
             }
 
             // Crash reports
-            SettingsSection("Crash Reports", icon: "exclamationmark.triangle.fill", color: TrinityTheme.statusWarn) {
+            SettingsSection("Crash Reports", icon: "exclamationmark.triangle.fill", color: V4Color.warning) {
                 SettingsToggle(
                     "Send Crash Reports",
                     isOn: $crashReportsEnabled,
                     description: "Automatically send reports on crashes",
                     icon: "arrow.up.doc",
-                    iconColor: TrinityTheme.statusWarn
+                    iconColor: V4Color.warning
                 )
             }
 
             // Telemetry level
-            SettingsSection("Data Collection", icon: "hand.raised.fill", color: TrinityTheme.golden) {
-                VStack(alignment: .leading, spacing: 8) {
+            SettingsSection("Data Collection", icon: "hand.raised.fill", color: V4Color.golden) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Telemetry Level")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         ForEach(TelemetryLevel.allCases) { level in
                             TelemetryLevelCard(
                                 level: level,
@@ -1117,7 +1117,7 @@ struct PrivacySettingsContent: View {
 
                 Text("None = no data | Basic = minimal stats | Full = detailed metrics")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .padding(.top, 4)
             }
         }
@@ -1169,26 +1169,26 @@ struct TelemetryLevelCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 6) {
+            VStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: level.icon)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textMuted)
+                    .font(WernickeTypography.body14Medium)
+                    .foregroundStyle(isSelected ? V4Color.accent : V4Color.textSecondary)
 
                 Text(level.name)
                     .font(.caption2.weight(.medium))
-                    .foregroundStyle(isSelected ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                    .foregroundStyle(isSelected ? V4Color.textPrimary : V4Color.textSecondary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
+            .padding(.vertical, ParietalSpacing.sm + 2)
             .background(
                 isSelected
-                    ? TrinityTheme.accent.opacity(0.15)
-                    : (isHovered ? TrinityTheme.textPrimary.opacity(0.05) : Color.clear)
+                    ? V4Color.accent.opacity(V2Depth.bgSidebarHover)
+                    : (isHovered ? V4Color.textPrimary.opacity(0.05) : Color.clear)
             )
-            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .stroke(isSelected ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .stroke(isSelected ? V4Color.accent : V4Color.border, lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -1208,15 +1208,15 @@ struct AdvancedSettingsContent: View {
     @State private var showingCacheClear = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: TrinityTheme.spacing) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             // Debug
-            SettingsSection("Debug", icon: "ladybug.fill", color: TrinityTheme.statusWarn) {
+            SettingsSection("Debug", icon: "ladybug.fill", color: V4Color.warning) {
                 SettingsToggle(
                     "Debug Mode",
                     isOn: $debugMode,
                     description: "Show additional debugging information",
                     icon: "ladybug",
-                    iconColor: TrinityTheme.statusWarn
+                    iconColor: V4Color.warning
                 )
 
                 SettingsToggle(
@@ -1224,18 +1224,18 @@ struct AdvancedSettingsContent: View {
                     isOn: $verboseLogging,
                     description: "Enable detailed log output",
                     icon: "doc.text.fill",
-                    iconColor: TrinityTheme.purple
+                    iconColor: V4Color.purple
                 )
             }
 
             // Logs
-            SettingsSection("Logging", icon: "doc.text.fill", color: TrinityTheme.purple) {
-                VStack(alignment: .leading, spacing: 8) {
+            SettingsSection("Logging", icon: "doc.text.fill", color: V4Color.purple) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Log Level")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         ForEach(LogLevel.allCases) { level in
                             LogLevelBadge(
                                 level: level,
@@ -1249,7 +1249,7 @@ struct AdvancedSettingsContent: View {
             }
 
             // Cache
-            SettingsSection("Cache", icon: "externaldrive.fill", color: TrinityTheme.accent) {
+            SettingsSection("Cache", icon: "externaldrive.fill", color: V4Color.accent) {
                 SettingsSlider(
                     "Cache Size",
                     value: $cacheSizeMB,
@@ -1258,27 +1258,27 @@ struct AdvancedSettingsContent: View {
                     unit: "MB"
                 )
 
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     Button {
                         showingCacheClear = true
                     } label: {
-                        HStack(spacing: 4) {
+                        HStack(spacing: ParietalSpacing.xs) {
                             Image(systemName: "trash")
-                                .font(.system(size: 11))
+                                .font(WernickeTypography.size11)
                             Text("Clear Cache")
-                                .font(.system(size: 12, weight: .medium))
+                                .font(WernickeTypography.captionMedium)
                         }
-                        .foregroundStyle(TrinityTheme.statusError)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(TrinityTheme.statusError.opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                        .foregroundStyle(V4Color.error)
+                        .padding(.horizontal, ParietalSpacing.md)
+                        .padding(.vertical, ParietalSpacing.xs + 2)
+                        .background(V4Color.error.opacity(0.12))
+                        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                     }
                     .buttonStyle(.plain)
 
                     Text("Frees ~\(Int(cacheSizeMB)) MB")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .padding(.top, 4)
                 .alert("Clear Cache", isPresented: $showingCacheClear) {
@@ -1292,24 +1292,24 @@ struct AdvancedSettingsContent: View {
             }
 
             // Developer
-            SettingsSection("Developer", icon: "hammer.fill", color: TrinityTheme.golden) {
+            SettingsSection("Developer", icon: "hammer.fill", color: V4Color.golden) {
                 SettingsToggle(
                     "Developer Mode",
                     isOn: $developerMode,
                     description: "Unlock experimental features and tools",
                     icon: "wrench.and.screwdriver",
-                    iconColor: TrinityTheme.golden
+                    iconColor: V4Color.golden
                 )
 
                 if developerMode {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                         Text("Experimental Features")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
 
                         Text("Advanced UI controls, API testing, performance profiling")
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .padding(.leading, 4)
                     }
                     .transition(.opacity)
@@ -1340,10 +1340,10 @@ enum LogLevel: String, CaseIterable, Identifiable {
 
     var color: Color {
         switch self {
-        case .error: return TrinityTheme.statusError
-        case .warning: return TrinityTheme.statusWarn
-        case .info: return TrinityTheme.accent
-        case .debug: return TrinityTheme.purple
+        case .error: return V4Color.error
+        case .warning: return V4Color.warning
+        case .info: return V4Color.accent
+        case .debug: return V4Color.purple
         }
     }
 }
@@ -1359,13 +1359,13 @@ struct LogLevelBadge: View {
         Button(action: action) {
             Text(level.name)
                 .font(.caption2.weight(.medium))
-                .foregroundStyle(isSelected ? TrinityTheme.textPrimary : level.color)
-                .padding(.horizontal, 10)
+                .foregroundStyle(isSelected ? V4Color.textPrimary : level.color)
+                .padding(.horizontal, ParietalSpacing.sm + 2)
                 .padding(.vertical, 5)
                 .background(
                     isSelected
                         ? level.color.opacity(0.2)
-                        : level.color.opacity(0.1)
+                        : level.color.opacity(V2Depth.bgSubtle)
                 )
                 .clipShape(RoundedRectangle(cornerRadius: 4))
                 .overlay(
@@ -1393,12 +1393,12 @@ struct SettingsPanelsView: View {
 
     var body: some View {
         SettingsNavigation(sections: sections, selectedSection: $selectedSection) {
-            VStack(alignment: .leading, spacing: TrinityTheme.spacing) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                 // Header
                 HStack {
                     Text(settingsTitle)
                         .font(.title2.weight(.bold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     Spacer()
 
@@ -1408,7 +1408,7 @@ struct SettingsPanelsView: View {
 
                 // Search
                 SettingsSearch(searchText: $searchText, availableSections: sections.map { $0.id })
-                    .padding(.bottom, TrinityTheme.spacing)
+                    .padding(.bottom, ParietalSpacing.md)
 
                 // Content based on selection
                 Group {

@@ -38,10 +38,10 @@ struct DetailedErrorState: View {
 
         var color: Color {
             switch self {
-            case .network, .server: return TrinityTheme.statusWarn
-            case .notFound: return TrinityTheme.textMuted
-            case .permission: return TrinityTheme.statusError
-            case .custom: return TrinityTheme.statusError
+            case .network, .server: return V4Color.warning
+            case .notFound: return V4Color.textSecondary
+            case .permission: return V4Color.error
+            case .custom: return V4Color.error
             }
         }
     }
@@ -59,30 +59,30 @@ struct DetailedErrorState: View {
     }
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             Spacer()
 
             // Icon
             ZStack {
                 Circle()
-                    .fill(error.color.opacity(0.15))
+                    .fill(error.color.opacity(V2Depth.bgSidebarHover))
                     .frame(width: 70, height: 70)
 
                 Image(systemName: error.icon)
-                    .font(.system(size: 28))
+                    .font(WernickeTypography.size28)
                     .foregroundStyle(error.color)
             }
 
             // Title
             Text(error.title)
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h4Semibold)
+                .foregroundStyle(V4Color.textPrimary)
 
             // Message
             if let message = message {
                 Text(message)
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
                     .multilineTextAlignment(.center)
                     .frame(maxWidth: 300)
             }
@@ -91,18 +91,18 @@ struct DetailedErrorState: View {
             Button {
                 onRetry()
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(WernickeTypography.smallSemibold)
 
                     Text(retryTitle)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(WernickeTypography.body14Medium)
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
+                .padding(.horizontal, ParietalSpacing.md + ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm + 2)
                 .background(error.color)
-                .cornerRadius(8)
+                .cornerRadius(V1Theme.cornerBase)
             }
             .buttonStyle(.plain)
 
@@ -118,19 +118,19 @@ struct CompactErrorState: View {
     let onRetry: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 20))
-                .foregroundStyle(TrinityTheme.statusWarn)
+                .font(WernickeTypography.size20)
+                .foregroundStyle(V4Color.warning)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Error")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.smallMedium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text(error)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             Spacer()
@@ -139,17 +139,17 @@ struct CompactErrorState: View {
                 onRetry()
             } label: {
                 Image(systemName: "arrow.clockwise")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.accent)
             }
             .buttonStyle(.plain)
         }
-        .padding(12)
-        .background(TrinityTheme.statusWarn.opacity(0.1))
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .padding(ParietalSpacing.md)
+        .background(V4Color.warning.opacity(V2Depth.bgSubtle))
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.statusWarn.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.warning.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 }
@@ -161,14 +161,14 @@ struct InlineError: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Image(systemName: "xmark.circle.fill")
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.statusError)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.error)
 
             Text(message)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
 
             Spacer()
 
@@ -176,15 +176,15 @@ struct InlineError: View {
                 onDismiss()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size10)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(TrinityTheme.statusError.opacity(0.1))
-        .cornerRadius(6)
+        .padding(.horizontal, ParietalSpacing.sm + 2)
+        .padding(.vertical, ParietalSpacing.sm)
+        .background(V4Color.error.opacity(V2Depth.bgSubtle))
+        .cornerRadius(V1Theme.cornerSmall)
     }
 }
 
@@ -198,33 +198,33 @@ struct ErrorAlert: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.4)
+            Color.black.opacity(V1Theme.opacityTextTertiary)
                 .ignoresSafeArea()
                 .onTapGesture {
                     isPresented.wrappedValue = false
                 }
 
-            VStack(spacing: 16) {
+            VStack(spacing: ParietalSpacing.lg) {
                 // Icon
                 ZStack {
                     Circle()
-                        .fill(TrinityTheme.statusError.opacity(0.15))
+                        .fill(V4Color.error.opacity(V2Depth.bgSidebarHover))
                         .frame(width: 50, height: 50)
 
                     Image(systemName: "xmark.octagon.fill")
-                        .font(.system(size: 22))
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .font(WernickeTypography.h2)
+                        .foregroundStyle(V4Color.error)
                 }
 
                 // Title and message
-                VStack(spacing: 8) {
+                VStack(spacing: ParietalSpacing.sm) {
                     Text(title)
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.body16Medium)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     Text(message)
-                        .font(.system(size: 13))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size13)
+                        .foregroundStyle(V4Color.textSecondary)
                         .multilineTextAlignment(.center)
                 }
 
@@ -233,18 +233,18 @@ struct ErrorAlert: View {
                     isPresented.wrappedValue = false
                 } label: {
                     Text(dismissTitle)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(WernickeTypography.body14Medium)
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(TrinityTheme.statusError)
-                        .cornerRadius(8)
+                        .padding(.vertical, ParietalSpacing.sm + 2)
+                        .background(V4Color.error)
+                        .cornerRadius(V1Theme.cornerBase)
                 }
                 .buttonStyle(.plain)
             }
             .padding(24)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerLarge)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
             .padding(.horizontal, 40)
         }
@@ -260,14 +260,14 @@ struct ErrorBannerTop: View {
     @State private var isVisible = false
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: ParietalSpacing.sm + 2) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.statusError)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.error)
 
             Text(message)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textPrimary)
 
             Spacer()
 
@@ -280,19 +280,19 @@ struct ErrorBannerTop: View {
                 }
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size10)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .buttonStyle(.plain)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 10)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm + 2)
         .background(
-            TrinityTheme.statusError.opacity(0.1)
+            V4Color.error.opacity(V2Depth.bgSubtle)
         )
         .overlay(
             Rectangle()
-                .fill(TrinityTheme.statusError)
+                .fill(V4Color.error)
                 .frame(height: 2),
             alignment: .top
         )
@@ -312,40 +312,40 @@ struct NetworkErrorView: View {
     let onRetry: () -> Void
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             ZStack {
                 Circle()
-                    .fill(TrinityTheme.statusWarn.opacity(0.15))
+                    .fill(V4Color.warning.opacity(V2Depth.bgSidebarHover))
                     .frame(width: 80, height: 80)
 
                 Image(systemName: "wifi.exclamationmark")
-                    .font(.system(size: 32))
-                    .foregroundStyle(TrinityTheme.statusWarn)
+                    .font(WernickeTypography.size32)
+                    .foregroundStyle(V4Color.warning)
             }
 
             Text("Connection Lost")
-                .font(.system(size: 18, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h4Semibold)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text("Please check your internet connection and try again.")
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 280)
 
             Button {
                 onRetry()
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(WernickeTypography.smallSemibold)
                     Text("Retry")
                 }
                 .foregroundStyle(.white)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
-                .background(TrinityTheme.statusWarn)
-                .cornerRadius(8)
+                .padding(.horizontal, ParietalSpacing.md + ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm + 2)
+                .background(V4Color.warning)
+                .cornerRadius(V1Theme.cornerBase)
             }
             .buttonStyle(.plain)
         }
@@ -364,7 +364,7 @@ struct DetailedErrorStates_Previews: PreviewProvider {
             )
             .frame(width: 400, height: 350)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             CompactErrorState(
                 error: "Failed to load data",
@@ -372,12 +372,12 @@ struct DetailedErrorStates_Previews: PreviewProvider {
             )
             .frame(width: 350)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             NetworkErrorView(onRetry: {})
                 .frame(width: 350, height: 350)
                 .padding()
-                .background(TrinityTheme.bgWindow)
+                .background(V4Color.background)
         }
     }
 }
