@@ -1,0 +1,91 @@
+# AMYGDALA — Mistake Memory & Fear Conditioning
+
+## Module
+storm.brain_zones.amygdala
+
+## Description
+Corpus amygdaloideum — fear conditioning, emotional memory. In STORM: mistake tracker, blacklist enforcer (MNL pattern).
+
+## Neuroanatomy
+Amygdala — encodes aversive stimuli, triggers fear response. Critical for avoidance learning.
+
+## P1 Priority
+✅ CORE: 3x failed → blacklist (MNL: Mistake Never Again).
+
+## Dependencies
+- std
+- storm.experience_engine
+
+## Structs
+### BlacklistEntry
+- task_hash: [32]u8  // SHA-256 of task description
+- task_name: []const u8
+- failure_count: u3  // 0-7, capped at 3 for blacklist
+- first_failed_at: i64
+- last_failed_at: i64
+- error_pattern: []const u8
+
+### FailureRecord
+- task: []const u8
+- error: []const u8
+- timestamp: i64
+- context: ?[]const u8
+
+### Blacklist
+- entries: []BlacklistEntry
+- version: u32  // Increment on update
+
+## Functions
+### isBlacklisted(ctx, task) bool
+Check if task is in blacklist (3x failed).
+
+Algorithm:
+1. Hash task description with SHA-256
+2. Lookup in blacklist entries
+3. If found AND failure_count >= 3 → return true
+4. Also check fuzzy match (task_name contains pattern)
+
+### recordFailure(ctx, task, error) !void
+Record failure, update blacklist.
+
+Algorithm:
+1. Hash task, lookup existing entry
+2. If not found: create entry with failure_count = 1
+3. If found: increment failure_count
+4. If failure_count == 3: add to blacklist
+5. Persist to .trinity/mistakes/blacklist.json
+
+### getFailureCount(ctx, task) u3
+Return current failure count (0-7).
+
+### shouldSkip(ctx, task) bool
+Convenience: return failure_count >= 3
+
+### cmdCheckFear(allocator, args) !u8
+CLI entry: `tri amygdala check-fear`
+Check if task is blacklisted.
+
+### cmdBlacklist(allocator, args) !u8
+CLI entry: `tri amygdala blacklist`
+Display all blacklisted tasks.
+
+## Storage
+- Path: .trinity/mistakes/blacklist.json
+- Format: JSON array of BlacklistEntry
+- Atomic write: temp file + rename
+
+## Integration Points
+- Link 2 (check_experience_blacklist): AMYGDALA.isBlacklisted()
+- Link 27 (experience_save): AMYGDALA.recordFailure() on error
+
+## MNL Pattern
+```zig
+// Before any action:
+if (amygdala.isBlacklisted(task)) {
+    log.warn("Task blacklisted (3x failed), skipping", .{});
+    return error.Skip;
+}
+
+// After failure:
+amygdala.recordFailure(task, error) catch log.err("Failed to record", .{});
+```

@@ -487,5 +487,35 @@
     "result": "FAILED",
     "reason": "Container CRASHED after 2.5h (15:33→18:01 UTC)",
     "lesson": "Railway container OOM or timeout. Need pipeline v6 with RAM monitoring + K=8 smaller design."
+  },
+  {
+    "id": "FPGA-020",
+    "date": "2026-03-20",
+    "category": "JTAG",
+    "action": "Flash phi_blink_top.bit — φ-rhythm LED blink on XC7A100T",
+    "result": "SUCCESS",
+    "symptom": "LED blinking at ~1.49 Hz (φ ≈ 1.618 Hz), 2× slower than previous 0.74 Hz pattern",
+    "root_cause": "27-bit counter with counter[25] output gives 2^26/50MHz = 0.671s period ≈ 1.49 Hz",
+    "lesson": "Phi-blink pattern verified on hardware. Synthesis: 28 LUT, 27 FF, 245 MHz max frequency. Minimal resource design.",
+    "tags": [
+      "jtag",
+      "phi-blink",
+      "led",
+      "synthesis",
+      "verified"
+    ],
+    "data": {
+      "bitstream": "phi_blink_top.bit",
+      "size_mb": 3.8,
+      "blink_frequency_hz": 1.49,
+      "phi_target": 1.618,
+      "lut": 28,
+      "ff": 27,
+      "max_freq_mhz": 245.4,
+      "target_freq_mhz": 50,
+      "counter_bits": 27,
+      "counter_bit": 25,
+      "board": "QMTech XC7A100T-FGG676"
+    }
   }
 ]
