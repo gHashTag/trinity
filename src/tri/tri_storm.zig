@@ -1,10 +1,42 @@
 // @origin(spec:tri_storm_integration.tri) @regen(manual-impl)
 const std = @import("std");
 
-// P1: Import real brain zone implementations via module names
-const ofc_module = @import("storm_ofc");
-const habenula_module = @import("storm_habenula");
-const amygdala_module = @import("storm_amygdala");
+// TODO: P1: Import real brain zone implementations via module names
+// These modules will be implemented as separate files in the future
+// const ofc_module = @import("storm_ofc");
+// const habenula_module = @import("storm_habenula");
+// const amygdala_module = @import("storm_amygdala");
+
+// Temporary stub implementations until storm modules are created
+
+const OFCStub = struct {
+    pub fn cmdVerdict(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
+        _ = allocator;
+        _ = args;
+        std.debug.print("🧠 OFC Verdict: toxic verdict analysis (STUB)\n", .{});
+        return 0;
+    }
+};
+
+const HabenulaStub = struct {
+    pub fn cmdUnfairDetect(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
+        _ = allocator;
+        _ = args;
+        std.debug.print("🧠 Habenula: unfair detection (STUB)\n", .{});
+        return 0;
+    }
+};
+
+const AmygdalaStub = struct {
+    pub const Amygdala = struct {
+        allocator: std.mem.Allocator,
+    };
+
+    pub fn cmdCheckFear(amygdala: *const AmygdalaStub.Amygdala, task: []const u8) !void {
+        _ = amygdala;
+        std.debug.print("🧠 Amygdala: checking fear level for '{s}' (STUB)\n", .{task});
+    }
+};
 
 pub const StormCommand = enum {
     run,
@@ -47,7 +79,7 @@ pub fn runOFCCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8
     }
     const subcommand = args[0];
     if (std.mem.eql(u8, subcommand, "verdict")) {
-        return try ofc_module.cmdVerdict(allocator, args[1..]);
+        return try OFCStub.cmdVerdict(allocator, args[1..]);
     }
     std.debug.print("Unknown OFC subcommand: {s}\n", .{subcommand});
     return 1;
@@ -60,7 +92,7 @@ pub fn runHabenulaCommand(allocator: std.mem.Allocator, args: []const []const u8
     }
     const subcommand = args[0];
     if (std.mem.eql(u8, subcommand, "unfair-detect")) {
-        return try habenula_module.cmdUnfairDetect(allocator, args[1..]);
+        return try HabenulaStub.cmdUnfairDetect(allocator, args[1..]);
     }
     std.debug.print("Unknown HABENULA subcommand: {s}\n", .{subcommand});
     return 1;
@@ -77,8 +109,8 @@ pub fn runAmygdalaCommand(allocator: std.mem.Allocator, args: []const []const u8
             std.debug.print("Error: check-fear requires a task name\n", .{});
             return 1;
         }
-        var amg = amygdala_module.Amygdala{ .allocator = allocator };
-        try amygdala_module.cmdCheckFear(&amg, args[1]);
+        var amg = AmygdalaStub.Amygdala{ .allocator = allocator };
+        try AmygdalaStub.cmdCheckFear(&amg, args[1]);
         return 0;
     }
     std.debug.print("Unknown AMYGDALA subcommand: {s}\n", .{subcommand});
