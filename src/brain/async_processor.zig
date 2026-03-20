@@ -2040,7 +2040,7 @@ test "AsyncProcessor empty string task IDs" {
     defer channel.deinit(allocator);
 
     // Empty task ID should work
-    const result = processor.asyncClaimTask("", "agent-1", 5000, &channel);
+    _ = processor.asyncClaimTask("", "agent-1", 5000, &channel);
 
     try std.testing.expectEqual(@as(usize, 1), processor.getQueueDepth());
 }
@@ -2062,7 +2062,7 @@ test "AsyncProcessor zero TTL" {
     var channel = ResultChannel.init();
     defer channel.deinit(allocator);
 
-    const result = processor.asyncClaimTask("task-zero-ttl", "agent-1", 0, &channel);
+    _ = processor.asyncClaimTask("task-zero-ttl", "agent-1", 0, &channel);
 
     try std.testing.expectEqual(@as(usize, 1), processor.getQueueDepth());
 }
@@ -2119,15 +2119,6 @@ test "AsyncTaskResult all variant types" {
     const custom_success = AsyncTaskResult{ .custom_success = true };
     const error_msg = AsyncTaskResult{ .error_msg = try allocator.dupe(u8, "error") };
     defer allocator.free(error_msg.error_msg);
-
-    // All variants should be valid
-    _ = claim_success;
-    _ = release_success;
-    _ = publish_success;
-    _ = health_report;
-    _ = telemetry;
-    _ = custom_success;
-    _ = error_msg;
 
     try std.testing.expect(true);
 }
@@ -2226,7 +2217,7 @@ test "Telemetry getTotalTasks" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 1 },
+        .{ .worker_count = 1 },
         registry,
         event_bus,
     );
@@ -2246,7 +2237,7 @@ test "BackgroundCollector zero interval" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 1 },
+        .{ .worker_count = 1 },
         registry,
         event_bus,
     );
@@ -2270,7 +2261,7 @@ test "AsyncProcessor multiple stop calls" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 1 },
+        .{ .worker_count = 1 },
         registry,
         event_bus,
     );
@@ -2292,7 +2283,7 @@ test "AsyncProcessor deinit without stop" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 0 },
+        .{ .worker_count = 0 },
         registry,
         event_bus,
     );
@@ -2336,7 +2327,7 @@ test "AsyncProcessor getQueueDepth concurrent" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 0 },
+        .{ .worker_count = 0 },
         registry,
         event_bus,
     );
@@ -2388,7 +2379,7 @@ test "BackgroundCollector start stop cycle" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 1 },
+        .{ .worker_count = 1 },
         registry,
         event_bus,
     );
@@ -2419,7 +2410,7 @@ test "AsyncProcessor worker ID assignment" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 4 },
+        .{ .worker_count = 4 },
         registry,
         event_bus,
     );
@@ -2453,7 +2444,7 @@ test "TaskData union all variants valid" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 0 },
+        .{ .worker_count = 0 },
         registry,
         event_bus,
     );
@@ -2480,7 +2471,7 @@ test "Telemetry max points configuration" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 1 },
+        .{ .worker_count = 1 },
         registry,
         event_bus,
     );
@@ -2499,7 +2490,7 @@ test "AsyncProcessor running atomic operations" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 1 },
+        .{ .worker_count = 1 },
         registry,
         event_bus,
     );
@@ -2556,7 +2547,7 @@ test "AsyncProcessor health check interval configuration" {
 
     const processor = try AsyncProcessor.init(
         allocator,
-        { .health_check_interval_ms = 5000 },
+        .{ .health_check_interval_ms = 5000 },
         registry,
         event_bus,
     );
@@ -2573,7 +2564,7 @@ test "BackgroundCollector init with processor" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 1 },
+        .{ .worker_count = 1 },
         registry,
         event_bus,
     );
@@ -2596,13 +2587,11 @@ test "Telemetry recordTaskCompletion" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 1 },
+        .{ .worker_count = 1 },
         registry,
         event_bus,
     );
     defer processor.deinit();
-
-    const tel = processor.getTelemetry();
 
     // Call recordTaskCompletion for all task types
     const task_types = [_]TaskType{
@@ -2615,7 +2604,7 @@ test "Telemetry recordTaskCompletion" {
     };
 
     for (task_types) |tt| {
-        tel.recordTaskCompletion(tt);
+        processor.recordTaskCompletion(tt);
     }
 
     // Verify no crashes
@@ -2648,7 +2637,7 @@ test "AsyncProcessor getActiveWorkerCount zero workers" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 0 },
+        .{ .worker_count = 0 },
         registry,
         event_bus,
     );
@@ -2668,7 +2657,7 @@ test "AsyncProcessor next_task_id atomic increment" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 1 },
+        .{ .worker_count = 1 },
         registry,
         event_bus,
     );
@@ -2696,7 +2685,7 @@ test "AsyncProcessor task_queue capacity" {
 
     var processor = try AsyncProcessor.init(
         allocator,
-        { .worker_count = 0 },
+        .{ .worker_count = 0 },
         registry,
         event_bus,
     );
