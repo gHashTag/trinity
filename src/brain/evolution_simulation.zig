@@ -116,14 +116,16 @@ pub const SimulatedWorker = struct {
     alive: bool = true,
     is_byzantine: bool = false,
     generation: u32 = 0,
+    seed: u64, // Unique seed for this worker's RNG
 
-    pub fn init(id: []const u8, objective: []const u8) SimulatedWorker {
+    pub fn init(id: []const u8, objective: []const u8, seed: u64) SimulatedWorker {
         return SimulatedWorker{
             .id = id,
             .objective = objective,
             .ppl = 500.0,
             .reported_ppl = 500.0,
             .alive = true,
+            .seed = seed,
         };
     }
 };
@@ -267,7 +269,10 @@ pub const EvolutionSimulator = struct {
             var i: u32 = 0;
             while (i < count) : (i += 1) {
                 const worker_id = try std.fmt.allocPrint(allocator, "sim-worker-{d:0>4}", .{worker_idx});
-                workers[worker_count] = SimulatedWorker.init(worker_id, obj.name);
+                // Use 32-bit golden ratio for mixing (reduced to fit u32)
+                const mix_value = (@as(u64, worker_idx) *% 0x9E3779B) & 0xFFFFFFFF;
+                const worker_seed = config.seed ^ mix_value;
+                workers[worker_count] = SimulatedWorker.init(worker_id, obj.name, worker_seed);
                 worker_count += 1;
                 worker_idx += 1;
             }
@@ -276,7 +281,10 @@ pub const EvolutionSimulator = struct {
         // Fill remaining with NTP
         while (worker_idx < config.workers) : (worker_idx += 1) {
             const worker_id = try std.fmt.allocPrint(allocator, "sim-worker-{d:0>4}", .{worker_idx});
-            workers[worker_count] = SimulatedWorker.init(worker_id, "ntp");
+            // Use 32-bit golden ratio for mixing
+            const mix_value = (@as(u64, worker_idx) *% 0x9E3779B9) & 0xFFFFFFFF;
+            const worker_seed = config.seed ^ mix_value;
+            workers[worker_count] = SimulatedWorker.init(worker_id, "ntp", worker_seed);
             worker_count += 1;
         }
 
@@ -366,9 +374,20 @@ pub const EvolutionSimulator = struct {
                 self.timeline_count += 1;
             }
 
-            // Check convergence (PPL < 15 for 3 consecutive steps)
-            if (converged_step == null and avg_ppl < 15.0 and step >= 10) {
-                converged_step = step;
+            // Check convergence (5% variation over last 10 steps)
+            if (self.timeline_count >= 10 and converged_step == null) {
+                // Calculate variance over last 10 entries
+                const last_10 = self.timeline[self.timeline_count - 10 .. self.timeline_count];
+                var min_ppl: f32 = last_10[0].avg_ppl;
+                var max_ppl: f32 = min_ppl;
+                for (last_10[1..]) |entry| {
+                    min_ppl = @min(min_ppl, entry.avg_ppl);
+                    max_ppl = @max(max_ppl, entry.avg_ppl);
+                }
+                // Converge if variance < 5%
+                if (max_ppl > 0 and (max_ppl - min_ppl) / max_ppl < 0.05) {
+                    converged_step = step - 9;
+                }
             }
 
             // Microglia patrol
@@ -508,7 +527,8 @@ pub const EvolutionSimulator = struct {
         var i: usize = 0;
         while (i < count and spawned < count and self.worker_count < self.workers.len) : (i += 1) {
             const new_id = try std.fmt.allocPrint(self.allocator, "sim-worker-born-{d:0>4}", .{self.worker_count});
-            const new_worker = SimulatedWorker.init(new_id, template.objective);
+            const new_worker_seed = self.config.seed ^ (@as(u64, self.worker_count) *% 0x9E3779B97F4A7C15);
+            const new_worker = SimulatedWorker.init(new_id, template.objective, new_worker_seed);
             self.workers[self.worker_count] = new_worker;
             self.worker_count += 1;
             spawned += 1;
