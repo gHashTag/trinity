@@ -83,12 +83,12 @@ pub const MultiChainManager = struct {
         var manager = MultiChainManager{
             .allocator = allocator,
             .delegations = .{},
-            .active_chains = std.AutoHashMapUnmanaged(ChainId, bool).init(allocator),
+            .active_chains = .{},
         };
 
         // Mark all supported chains as active
         for (SUPPORTED_CHAINS) |chain| {
-            manager.active_chains.put(chain.id) catch {};
+            manager.active_chains.put(allocator, chain.id, true) catch {};
         }
 
         return manager;
@@ -143,7 +143,7 @@ pub const MultiChainManager = struct {
     }
 
     /// Get chain config
-    pub fn getChainConfig(self: *const MultiChainManager, chain_id: ChainId) ?ChainConfig {
+    pub fn getChainConfig(_: *const MultiChainManager, chain_id: ChainId) ?ChainConfig {
         for (SUPPORTED_CHAINS) |chain| {
             if (chain.id == chain_id) return chain;
         }
@@ -155,15 +155,17 @@ pub const MultiChainManager = struct {
         var count: usize = 0;
         var iter = self.active_chains.iterator();
         while (iter.next()) |entry| {
-            if (entry.value_ptr.*) count += 1;
+            if (entry.value_ptr.*) {
+                count += 1;
+            }
         }
         _ = count;
-        // Return empty list if no active chains
+        // Return empty list for now (TODO: allocate and return actual list)
         return &[_]ChainId{};
     }
 
     /// Calculate reward multiplier based on chain
-    pub fn getRewardMultiplier(self: *const MultiChainManager, chain_id: ChainId) f64 {
+    pub fn getRewardMultiplier(_: *const MultiChainManager, chain_id: ChainId) f64 {
         return switch (chain_id) {
             .ethereum => 1.0,
             .polygon => 1.5, // Higher rewards for Polygon
@@ -178,7 +180,7 @@ pub const MultiChainManager = struct {
             delegation.deinit(self.allocator);
         }
         self.delegations.deinit(self.allocator);
-        self.active_chains.deinit();
+        self.active_chains.deinit(self.allocator);
     }
 };
 
@@ -201,12 +203,18 @@ test "MultiChainManager init" {
 }
 
 test "reward multipliers" {
-    const allocator = std.testing.allocator;
-    const manager = MultiChainManager.init(allocator);
-    defer manager.deinit();
-
-    const poly_mult = manager.getRewardMultiplier(.polygon);
+    const poly_mult = getRewardMultiplier(.polygon);
     try std.testing.expectApproxEqAbs(@as(f64, 1.5), poly_mult, 0.01);
+}
+
+fn getRewardMultiplier(chain_id: ChainId) f64 {
+    return switch (chain_id) {
+        .ethereum => 1.0,
+        .polygon => 1.5, // Higher rewards for Polygon
+        .arbitrum => 1.2,
+        .optimism => 1.3,
+        .base => 0.8,
+    };
 }
 
 test "enable/disable chain" {

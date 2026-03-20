@@ -119,6 +119,8 @@ pub const EventBus = struct {
     stats: struct {
         published: u64,
         polled: u64,
+        trim_count: u64, // Number of times buffer was trimmed
+        peak_buffered: usize, // Peak events buffered
     },
 
     pub fn init(allocator: std.mem.Allocator) EventBus {
@@ -129,7 +131,7 @@ pub const EventBus = struct {
                 std.log.err("Failed to allocate EventBus: {}", .{err});
                 @panic("EventBus init failed");
             },
-            .stats = .{ .published = 0, .polled = 0 },
+            .stats = .{ .published = 0, .polled = 0, .trim_count = 0, .peak_buffered = 0 },
         };
     }
 
@@ -196,10 +198,16 @@ pub const EventBus = struct {
 
         // Add to buffer, trim if necessary
         try self.events.append(self.allocator, stored);
-        if (self.events.items.len > MAX_EVENTS) {
+        const buffered = self.events.items.len;
+        if (buffered > MAX_EVENTS) {
             // Remove oldest event
             const removed = self.events.orderedRemove(0);
             removed.deinit(self.allocator);
+            self.stats.trim_count += 1;
+        }
+        // Track peak buffer size
+        if (buffered > self.stats.peak_buffered) {
+            self.stats.peak_buffered = buffered;
         }
 
         self.stats.published += 1;
@@ -213,6 +221,7 @@ pub const EventBus = struct {
         var results = std.ArrayList(AgentEventRecord).initCapacity(allocator, 16) catch |err| {
             return err;
         };
+        defer results.deinit(allocator);
 
         for (self.events.items) |stored| {
             if (stored.timestamp > since) {
@@ -260,7 +269,7 @@ pub const EventBus = struct {
     }
 
     /// Get current statistics
-    pub fn getStats(self: *EventBus) struct { published: u64, polled: u64, buffered: usize } {
+    pub fn getStats(self: *EventBus) struct { published: u64, polled: u64, buffered: usize, trim_count: u64, peak_buffered: usize } {
         self.mutex.lock();
         defer self.mutex.unlock();
 
@@ -268,6 +277,8 @@ pub const EventBus = struct {
             .published = self.stats.published,
             .polled = self.stats.polled,
             .buffered = self.events.items.len,
+            .trim_count = self.stats.trim_count,
+            .peak_buffered = self.stats.peak_buffered,
         };
     }
 
@@ -334,7 +345,7 @@ test "EventBus statistics" {
     };
 
     try bus.publish(.task_completed, event_data);
-    _ = try bus.poll(0, allocator, 100);
+    allocator.free(try bus.poll(0, allocator, 100));
     allocator.free(try bus.poll(0, allocator, 100));
 
     const stats = bus.getStats();
@@ -349,9 +360,11 @@ test "EventBus trim and clear" {
 
     // Add multiple events
     for (0..10) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
         const event_data = EventData{
             .task_claimed = .{
-                .task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i}),
+                .task_id = task_id,
                 .agent_id = "agent-001",
             },
         };
@@ -445,8 +458,14 @@ test "EventBus poll with timestamp filter" {
         },
     });
 
-    // Get current time
+    // Sleep to ensure timestamp advances (milliseconds may not be enough for time resolution)
+    std.Thread.sleep(10 * std.time.ns_per_ms);
+
+    // Get current time before second event
     const mid_time = std.time.milliTimestamp();
+
+    // Small sleep to ensure next event has strictly greater timestamp
+    std.Thread.sleep(5 * std.time.ns_per_ms);
 
     // Publish second event
     try bus.publish(.task_claimed, .{
@@ -472,6 +491,7 @@ test "EventBus poll with max_events limit" {
     // Publish 5 events
     for (0..5) |i| {
         const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
         try bus.publish(.task_claimed, .{
             .task_claimed = .{
                 .task_id = task_id,
@@ -506,6 +526,7 @@ test "EventBus auto-trim at MAX_EVENTS" {
     // Publish more than MAX_EVENTS events
     for (0..10050) |i| {
         const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
         try bus.publish(.task_claimed, .{
             .task_claimed = .{
                 .task_id = task_id,
@@ -530,7 +551,7 @@ test "EventBus multiple polls increment counter" {
         },
     });
 
-    _ = try bus.poll(0, allocator, 100);
+    allocator.free(try bus.poll(0, allocator, 100));
     allocator.free(try bus.poll(0, allocator, 100));
     allocator.free(try bus.poll(0, allocator, 100));
 

@@ -2,36 +2,195 @@
 //!
 //! Decision making, planning, and cognitive control.
 //! Brain Region: Prefrontal Cortex (Executive Function)
+//!
+//! # Overview
+//!
+//! The Prefrontal Cortex module provides executive decision-making
+//! based on system state. It evaluates metrics and recommends
+//! actions like proceeding, throttling, scaling, or pausing.
+//!
+//! # Features
+//!
+//! - Multi-factor decision making (error rate, latency, memory, queue depth)
+//! - Confidence scoring for decision reliability
+//! - Six actions: proceed, throttle, scale_up, scale_down, pause, alert
+//! - Priority-based action selection (alert > pause > throttle > ...)
+//!
+//! # Biological Inspiration
+//!
+//! The prefrontal cortex in the brain handles executive functions:
+//! decision making, planning, and cognitive control. This module
+//! mirrors that by making high-level decisions about system behavior.
+//!
+//! # Usage
+//!
+//! ```zig
+//! const ctx = brain.prefrontal_cortex.DecisionContext{
+//!     .task_count = 150,
+//!     .active_agents = 10,
+//!     .error_rate = 0.05,
+//!     .avg_latency_ms = 2000,
+//!     .memory_usage_pct = 65.0,
+//! };
+//!
+//! const decision = brain.prefrontal_cortex.PrefrontalCortex.decide(ctx);
+//! std.log.info("Decision: {s} (confidence: {d:.2})", .{
+//!     @tagName(decision.action),
+//!     decision.confidence
+//! });
+//! ```
+//!
+//! # Decision Thresholds
+//!
+//! | Condition | Action | Priority |
+//! |-----------|--------|----------|
+//! | memory > 90% | alert | Highest |
+//! | error_rate > 0.5 | pause | Very high |
+//! | error_rate > 0.2 | throttle | High |
+//! | queue/agent > 10 | scale_up | Medium |
+//! | latency > 5000ms | throttle | Medium |
+//! | memory > 75% | throttle | Medium |
+//! | tasks < agents & queue < 0.5 | scale_down | Low |
+//! | All healthy | proceed | Default |
 
 const std = @import("std");
 
+/// Context for executive decision-making.
+///
+/// Contains metrics about current system state that inform
+/// the decision-making process.
+///
+/// # Fields
+///
+/// - `task_count`: Number of tasks pending
+/// - `active_agents`: Number of active agents
+/// - `error_rate`: Fraction of failed operations (0.0 to 1.0)
+/// - `avg_latency_ms`: Average operation latency in milliseconds
+/// - `memory_usage_pct`: Memory usage as percentage (0.0 to 100.0)
+///
+/// # Example
+///
+/// ```zig
+/// const ctx = DecisionContext{
+///     .task_count = 150,
+///     .active_agents = 10,
+///     .error_rate = 0.05,
+///     .avg_latency_ms = 2000,
+///     .memory_usage_pct = 65.0,
+/// };
+/// ```
 pub const DecisionContext = struct {
+    /// Number of tasks currently pending
     task_count: usize,
+    /// Number of active agents
     active_agents: usize,
+    /// Error rate (0.0 = no errors, 1.0 = all errors)
     error_rate: f32,
+    /// Average operation latency in milliseconds
     avg_latency_ms: u64,
+    /// Memory usage percentage
     memory_usage_pct: f32,
 };
 
+/// Executive decision result.
+///
+/// Contains the recommended action, confidence score,
+/// and reasoning.
+///
+/// # Fields
+///
+/// - `action`: Recommended action to take
+/// - `confidence`: Confidence in decision (0.0 to 1.0)
+/// - `reasoning`: Human-readable explanation
 pub const Decision = struct {
+    /// Recommended action
     action: Action,
+    /// Confidence score (higher = more certain)
     confidence: f32,
+    /// Explanation for this decision
     reasoning: []const u8,
 };
 
+/// Executive actions for system control.
+///
+/// Represents possible actions the brain can take based on
+/// system state evaluation.
+///
+/// # Actions
+///
+/// - `proceed`: Continue normal operations (healthy state)
+/// - `throttle`: Reduce task acceptance rate (degraded state)
+/// - `scale_up`: Spawn more agents (overwhelmed state)
+/// - `scale_down`: Reduce agent count (underutilized state)
+/// - `pause`: Stop accepting new tasks (severe degradation)
+/// - `alert`: Immediate intervention required (critical state)
+///
+/// # Priority
+///
+/// When multiple conditions are true, higher priority actions win:
+/// alert > pause > throttle > scale_up > scale_down > proceed
 pub const Action = enum {
+    /// Continue normal operations
     proceed,
+    /// Reduce task acceptance rate
     throttle,
+    /// Spawn more agents
     scale_up,
+    /// Reduce agent count
     scale_down,
+    /// Stop accepting new tasks
     pause,
+    /// Immediate intervention required
     alert,
 };
 
+/// Prefrontal Cortex executive decision engine.
+///
+/// Evaluates system state and recommends executive actions.
 pub const PrefrontalCortex = struct {
     const Self = @This();
 
-    /// Make executive decision based on context
+    /// Makes executive decision based on system context.
+    ///
+    /// Evaluates multiple metrics and returns the most appropriate
+    /// action with a confidence score.
+    ///
+    /// # Parameters
+    ///
+    /// - `ctx`: System state context to evaluate
+    ///
+    /// # Returns
+    ///
+    /// `Decision` with action, confidence, and reasoning
+    ///
+    /// # Decision Logic
+    ///
+    /// 1. **Alert**: memory > 90% (highest priority)
+    /// 2. **Pause**: error_rate > 0.5
+    /// 3. **Throttle**: error_rate > 0.2 OR latency > 5000 OR memory > 75%
+    /// 4. **Scale Up**: queue_per_agent > 10
+    /// 5. **Scale Down**: tasks < agents AND queue_per_agent < 0.5
+    /// 6. **Proceed**: All systems healthy (default)
+    ///
+    /// # Confidence
+    ///
+    /// - Starts at 1.0 (confident)
+    /// - Reduced by 0.1-0.2 for each degradation factor
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// const ctx = DecisionContext{
+    ///     .task_count = 200,
+    ///     .active_agents = 10,
+    ///     .error_rate = 0.05,
+    ///     .avg_latency_ms = 500,
+    ///     .memory_usage_pct = 40.0,
+    /// };
+    ///
+    /// const decision = PrefrontalCortex.decide(ctx);
+    /// // decision.action == .scale_up (queue per agent = 20 > 10)
+    /// ```
     pub fn decide(ctx: DecisionContext) Decision {
         var confidence: f32 = 1.0;
         var action: Action = .proceed;

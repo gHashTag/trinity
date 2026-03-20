@@ -30,13 +30,12 @@ pub const ProductionApiServer = struct {
 
     /// Get all stakes
     pub fn getAllStakes(self: *const ProductionApiServer) ![]const StakeInfo {
-        const keys = self.stakes.keys();
-        var result = try self.allocator.alloc(StakeInfo, keys.len);
-        for (keys, 0..) |key, i| {
-            const stake = self.stakes.get(key).?;
-            result[i] = stake;
+        var result = std.ArrayList(StakeInfo).initCapacity(self.allocator, @intCast(self.stakes.count()));
+        var iter = self.stakes.iterator();
+        while (iter.next()) |entry| {
+            try result.append(entry.value_ptr.*);
         }
-        return result;
+        return result.toOwnedSlice();
     }
 
     /// Add stake record
@@ -47,7 +46,7 @@ pub const ProductionApiServer = struct {
 
     /// Get pending rewards
     pub fn getPendingRewards(self: *const ProductionApiServer, address: [20]u8) ![]const RewardInfo {
-        var result = std.ArrayList(RewardInfo).init(self.allocator);
+        var result = std.ArrayList(RewardInfo).initCapacity(self.allocator, @intCast(self.pending_rewards.count()));
         var iter = self.pending_rewards.iterator();
         while (iter.next()) |entry| {
             if (std.mem.eql(u8, entry.value_ptr.recipient, &address)) {
@@ -81,13 +80,13 @@ pub const ProductionApiServer = struct {
 
     /// Vote on proposal
     pub fn vote(self: *ProductionApiServer, proposal_id: []const u8, voter: [20]u8, support: bool) !void {
-        if (self.governance.get(proposal_id)) |*proposal| {
+        if (self.governance.getEntry(proposal_id)) |entry| {
             const vote_record = VoteRecord{
                 .voter = voter,
                 .support = support,
                 .timestamp = std.time.timestamp(),
             };
-            try proposal.votes.append(self.allocator, vote_record);
+            try entry.value_ptr.votes.append(self.allocator, vote_record);
         }
     }
 
@@ -121,23 +120,27 @@ pub const ProductionApiServer = struct {
         }
         self.stakes.deinit(self.allocator);
 
-        iter = self.pending_rewards.iterator();
-        while (iter.next()) |entry| {
-            self.allocator.free(entry.key_ptr.*);
-            self.allocator.free(entry.value_ptr.recipient);
+        {
+            var iter2 = self.pending_rewards.iterator();
+            while (iter2.next()) |entry| {
+                self.allocator.free(entry.key_ptr.*);
+                self.allocator.free(entry.value_ptr.recipient);
+            }
         }
         self.pending_rewards.deinit(self.allocator);
 
-        iter = self.governance.iterator();
-        while (iter.next()) |entry| {
-            const proposal = entry.value_ptr;
-            self.allocator.free(entry.key_ptr.*);
-            self.allocator.free(proposal.title);
-            self.allocator.free(proposal.description);
-            for (proposal.votes.items) |*v| {
-                self.allocator.free(v.voter);
+        {
+            var iter2 = self.governance.iterator();
+            while (iter2.next()) |entry| {
+                const proposal = entry.value_ptr;
+                self.allocator.free(entry.key_ptr.*);
+                self.allocator.free(proposal.title);
+                self.allocator.free(proposal.description);
+                for (proposal.votes.items) |*v| {
+                    self.allocator.free(v.voter);
+                }
+                proposal.votes.deinit(self.allocator);
             }
-            proposal.votes.deinit(self.allocator);
         }
         self.governance.deinit(self.allocator);
     }

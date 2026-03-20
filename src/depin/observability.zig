@@ -19,6 +19,7 @@ pub const MetricType = enum {
     total_staked,
     slashing_events,
     delegation_count,
+    counter,
 };
 
 pub const MetricValue = union(enum) {
@@ -35,15 +36,17 @@ pub const Metric = struct {
     labels: std.StringHashMapUnmanaged([]const u8),
 };
 
+pub const Comparison = enum {
+    greater_than,
+    less_than,
+    equal_to,
+};
+
 pub const AlertThreshold = struct {
     metric_name: []const u8,
     warning_threshold: f64,
     critical_threshold: f64,
-    comparison: enum {
-        greater_than,
-        less_than,
-        equal_to,
-    },
+    comparison: Comparison,
     enabled: bool,
 };
 
@@ -90,7 +93,7 @@ pub const ObservabilityManager = struct {
             .timestamp = std.time.timestamp(),
             .labels = .{},
         };
-        try self.metrics.append(self.allocator, metric);
+        try self.metrics.append(allocator, metric);
 
         // Check alert thresholds
         self.checkThresholds(metric);
@@ -127,7 +130,7 @@ pub const ObservabilityManager = struct {
         metric_name: []const u8,
         warning: f64,
         critical: f64,
-        comparison: AlertThreshold.Comparison,
+        comparison: Comparison,
         enabled: bool,
     ) !void {
         const threshold = AlertThreshold{
@@ -170,12 +173,13 @@ pub const ObservabilityManager = struct {
     /// Get metrics by type
     pub fn getMetricsByType(self: *const ObservabilityManager, mtype: MetricType, allocator: Allocator) ![]Metric {
         var result = std.ArrayList(Metric).init(allocator);
+        defer result.deinit();
         for (self.metrics.items) |metric| {
             if (metric.mtype == mtype) {
                 try result.append(metric);
             }
         }
-        return result.toOwnedSlice();
+        return result.toOwnedSlice(allocator);
     }
 
     /// Get alert count
@@ -230,7 +234,7 @@ test "record metric" {
     var manager = ObservabilityManager.init(allocator);
     defer manager.deinit();
 
-    try manager.recordMetric("test_counter", .counter, .{ .counter = 42 });
+    try manager.recordMetric("test_counter", .uptime, .{ .counter = 42 });
     try manager.recordMetric("test_gauge", .uptime, .{ .gauge = 99.9 });
 
     try std.testing.expectEqual(@as(usize, 2), manager.metrics.items.len);

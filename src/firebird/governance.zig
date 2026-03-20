@@ -12,7 +12,7 @@ const Allocator = std.mem.Allocator;
 // ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
 pub const SlashAppeal = struct {
-    appeal_id: []const u8,
+    // Note: appeal_id is stored as HashMap key, not duplicated here
     slashed_node: [20]u8,
     original_violation: []const u8,
     appeal_reason: []const u8,
@@ -35,7 +35,7 @@ pub const AppealStatus = enum {
 };
 
 pub const ParameterChangeProposal = struct {
-    proposal_id: []const u8,
+    // Note: proposal_id is stored as HashMap key, not duplicated here
     parameter_name: []const u8,
     old_value: []const u8,
     new_value: []const u8,
@@ -102,7 +102,7 @@ pub const GovernanceManager = struct {
             .allocator = allocator,
             .appeals = .{},
             .proposals = .{},
-            .votes = std.StringHashMapUnmanaged(std.ArrayListUnmanaged(Vote)).init(allocator),
+            .votes = .{},
             .governance_token = undefined, // Set in production
         };
     }
@@ -120,14 +120,13 @@ pub const GovernanceManager = struct {
             std.time.timestamp(), std.math.maxInt(u64),
         });
 
-        var evidence_list = std.ArrayListUnmanaged([]const u8).init(self.allocator);
+        var evidence_list = try std.ArrayListUnmanaged([]const u8).initCapacity(self.allocator, evidence_urls.len);
         for (evidence_urls) |url| {
             const duped = try self.allocator.dupe(u8, url);
             try evidence_list.append(self.allocator, duped);
         }
 
         const appeal = SlashAppeal{
-            .appeal_id = appeal_id,
             .slashed_node = slashed_node,
             .original_violation = original_violation,
             .appeal_reason = appeal_reason,
@@ -176,21 +175,20 @@ pub const GovernanceManager = struct {
         };
 
         // Add vote to proposal
-        if (self.votes.get(appeal_id)) |*vote_list| {
-            try vote_list.append(self.allocator, vote);
+        if (self.votes.getEntry(appeal_id)) |entry| {
+            try entry.value_ptr.append(self.allocator, vote);
         } else {
-            var list = std.ArrayListUnmanaged(Vote).init(self.allocator);
+            var list = try std.ArrayListUnmanaged(Vote).initCapacity(self.allocator, 1);
             try list.append(self.allocator, vote);
             try self.votes.put(self.allocator, appeal_id, list);
         }
 
         // Update appeal vote counts
-        if (self.appeals.getEntry(appeal_id)) |entry| {
-            if (support) {
-                entry.value_ptr.votes_for += 1;
-            } else {
-                entry.value_ptr.votes_against += 1;
-            }
+        const entry = self.appeals.getEntry(appeal_id) orelse return error.AppealNotFound;
+        if (support) {
+            entry.value_ptr.votes_for += 1;
+        } else {
+            entry.value_ptr.votes_against += 1;
         }
 
         // Check if quorum reached
@@ -223,7 +221,6 @@ pub const GovernanceManager = struct {
         });
 
         const proposal = ParameterChangeProposal{
-            .proposal_id = proposal_id,
             .parameter_name = parameter_name,
             .old_value = old_value,
             .new_value = new_value,
@@ -276,13 +273,28 @@ pub const GovernanceManager = struct {
     }
 
     pub fn deinit(self: *GovernanceManager) void {
+        // CRITICAL: vote HashMap keys reference appeal/proposal keys
+        // We must free keys only once, from the "owning" HashMaps
+
+        // First, clear votes HashMap WITHOUT freeing keys (they're shared)
+        {
+            var vote_iter = self.votes.iterator();
+            while (vote_iter.next()) |entry| {
+                // Don't free key - it's owned by appeals/proposals HashMap
+                const vote_list = entry.value_ptr;
+                vote_list.deinit(self.allocator);
+            }
+        }
+        self.votes.deinit(self.allocator);
+
+        // Now free keys from appeals HashMap (these own the appeal_id strings)
         var iter = self.appeals.iterator();
         while (iter.next()) |entry| {
-            const appeal = entry.value_ptr;
+            // Free key (appeal_id string)
             self.allocator.free(entry.key_ptr.*);
-            self.allocator.free(appeal.appeal_id);
-            self.allocator.free(appeal.original_violation);
-            self.allocator.free(appeal.appeal_reason);
+
+            const appeal = entry.value_ptr;
+            // Free owned evidence URLs
             for (appeal.evidence_urls.items) |*url| {
                 self.allocator.free(url.*);
             }
@@ -290,28 +302,17 @@ pub const GovernanceManager = struct {
         }
         self.appeals.deinit(self.allocator);
 
-        iter = self.proposals.iterator();
-        while (iter.next()) |entry| {
-            const proposal = entry.value_ptr;
-            self.allocator.free(entry.key_ptr.*);
-            self.allocator.free(proposal.parameter_name);
-            self.allocator.free(proposal.old_value);
-            self.allocator.free(proposal.new_value);
-            self.allocator.free(proposal.reason);
-            self.allocator.free(proposal.proposal_id);
+        // Free keys from proposals HashMap (these own the proposal_id strings)
+        {
+            var prop_iter = self.proposals.iterator();
+            while (prop_iter.next()) |entry| {
+                // Free key (proposal_id string)
+                self.allocator.free(entry.key_ptr.*);
+                _ = entry.value_ptr;
+                // parameter_name, old_value, new_value, reason are string references
+            }
         }
         self.proposals.deinit(self.allocator);
-
-        iter = self.votes.iterator();
-        while (iter.next()) |entry| {
-            self.allocator.free(entry.key_ptr.*);
-            const vote_list = entry.value_ptr;
-            for (vote_list.items) |*vote| {
-                self.allocator.free(vote.voter);
-            }
-            vote_list.deinit(self.allocator);
-        }
-        self.votes.deinit();
     }
 };
 
@@ -331,7 +332,6 @@ test "submit appeal" {
         node,
         "downtime",
         "False positive - node was online",
-        "Node was online during downtime window",
         &[_][]const u8{},
         node,
     );
@@ -350,7 +350,6 @@ test "vote on appeal" {
     const appeal_id = try gov.submitAppeal(
         node,
         "downtime",
-        "False positive",
         "False positive",
         &[_][]const u8{},
         node,

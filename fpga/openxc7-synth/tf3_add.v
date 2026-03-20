@@ -141,7 +141,7 @@ module tf3_add (
     // ====================================================================
     wire [4:0] exp_diff = exp_a - exp_b;  // signed difference
     wire [3:0] shift_a = 4'd0;  // if exp_a >= exp_b, don't shift A
-    wire [3:0] shift_b = (exp_diff[4]) ? 4'dF : exp_diff[3:0];  // Max shift = 15
+    wire [3:0] shift_b = (exp_diff[4]) ? 4'd15 : exp_diff[3:0];  // Max shift = 15
 
     // Shift mantissa B right by exp difference (simple integer shift)
     wire signed [4:0] mant_b_shifted =
@@ -155,12 +155,12 @@ module tf3_add (
         (shift_b == 4'd7) ? mant_b >> 4'sd7 :
         (shift_b == 4'd8) ? mant_b >> 4'sd8 :
         (shift_b == 4'd9) ? mant_b >> 4'sd9 :
-        (shift_b == 4'dA) ? mant_b >> 4'sd10 :
-        (shift_b == 4'dB) ? mant_b >> 4'sd11 :
-        (shift_b == 4'dC) ? mant_b >> 4'sd12 :
-        (shift_b == 4'dD) ? mant_b >> 4'sd13 :
-        (shift_b == 4'dE) ? mant_b >> 4'sd14 :
-        (shift_b == 4'dF) ? 5'sd0 :  // Shift to zero (underflow)
+        (shift_b == 4'd10) ? mant_b >> 4'sd10 :
+        (shift_b == 4'd11) ? mant_b >> 4'sd11 :
+        (shift_b == 4'd12) ? mant_b >> 4'sd12 :
+        (shift_b == 4'd13) ? mant_b >> 4'sd13 :
+        (shift_b == 4'd14) ? mant_b >> 4'sd14 :
+        (shift_b == 4'd15) ? 5'sd0 :  // Shift to zero (underflow)
         5'sd0;  // Should not happen
 
     // ====================================================================

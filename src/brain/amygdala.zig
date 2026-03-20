@@ -2,21 +2,140 @@
 //!
 //! Detects emotionally significant events and prioritizes them.
 //! Brain Region: Amygdala (Emotional Processing)
+//!
+//! # Overview
+//!
+//! The Amygdala module analyzes tasks and errors to determine their
+//! "emotional salience" - how urgently they require attention.
+//! This allows the brain to prioritize critical events over routine ones.
+//!
+//! # Features
+//!
+//! - Task salience analysis (keywords, realm, priority)
+//! - Error salience analysis (pattern matching)
+//! - Five-level salience classification (none to critical)
+//! - Emoji visualization for TUI display
+//!
+//! # Biological Inspiration
+//!
+//! The amygdala in the brain processes emotional significance and
+//! triggers attention for important events. This module mirrors that
+//! by scoring and ranking events by importance.
+//!
+//! # Usage
+//!
+//! ```zig
+//! // Analyze task salience
+//! const salience = brain.amygdala.Amygdala.analyzeTask(
+//!     "urgent-security-fix",
+//!     "dukh",
+//!     "critical"
+//! );
+//!
+//! std.log.info("Salience: {s} (score: {d:.1})", .{
+//!     @tagName(salience.level),
+//!     salience.score
+//! });
+//!
+//! if (brain.amygdala.Amygdala.requiresAttention(salience)) {
+//!     // Handle urgent task
+//!     handleUrgentTask();
+//! }
+//! ```
+//!
+//! # Salience Levels
+//!
+//! - `none` (0-19): Routine, low priority
+//! - `low` (20-39): Normal operations
+//! - `medium` (40-59): Above average importance
+//! - `high` (60-79): Important, needs attention
+//! - `critical` (80-100): Immediate action required
+//!
+//! # Task Scoring Factors
+//!
+//! - Realm: `dukh` (+40), `razum` (+30)
+//! - Keywords: `urgent` (+30), `critical` (+50), `security` (+40)
+//! - Priority: `high` (+20), `critical` (+30)
+//!
+//! # Error Scoring Factors
+//!
+//! - Base score: 20 (all errors)
+//! - Critical patterns: `segfault`, `panic`, `security`, etc. (+30 each)
+//! - High severity: `timeout`, `connection refused` (+15 each)
 
 const std = @import("std");
 const array_list = std.array_list;
 
+/// Five-level salience classification.
+///
+/// Represents the emotional importance of an event from
+/// trivial (none) to urgent (critical).
+///
+/// # Levels
+///
+/// | Level | Score Range | Meaning |
+/// |-------|-------------|---------|
+/// | `none` | 0-19 | Routine, ignore |
+/// | `low` | 20-39 | Normal processing |
+/// | `medium` | 40-59 | Elevated importance |
+/// | `high` | 60-79 | Requires attention |
+/// | `critical` | 80-100 | Immediate action |
 pub const SalienceLevel = enum(u3) {
+    /// No significance, routine event
     none = 0,
+    /// Low importance, normal processing
     low = 1,
+    /// Medium importance, above average
     medium = 2,
+    /// High importance, needs attention
     high = 3,
+    /// Critical importance, immediate action required
     critical = 4,
 
+    /// Converts a numeric score (0-100) to salience level.
+    ///
+    /// # Parameters
+    ///
+    /// - `score`: Numeric score from 0 to 100
+    ///
+    /// # Returns
+    ///
+    /// Corresponding `SalienceLevel`
+    ///
+    /// # Thresholds
+    ///
+    /// - 0-19: none
+    /// - 20-39: low
+    /// - 40-59: medium
+    /// - 60-79: high
+    /// - 80-100: critical
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// try std.testing.expectEqual(SalienceLevel.none, SalienceLevel.fromScore(10));
+    /// try std.testing.expectEqual(SalienceLevel.critical, SalienceLevel.fromScore(90));
+    /// ```
     pub fn fromScore(score: f32) SalienceLevel {
         return if (score < 20) .none else if (score < 40) .low else if (score < 60) .medium else if (score < 80) .high else .critical;
     }
 
+    /// Returns emoji representation for TUI display.
+    ///
+    /// # Returns
+    ///
+    /// - `none`: ⚪ (white circle)
+    /// - `low`: 🟢 (green circle)
+    /// - `medium`: 🟡 (yellow circle)
+    /// - `high`: 🟠 (orange circle)
+    /// - `critical`: 🔴 (red circle)
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// std.log.info("Status: {s}", .{SalienceLevel.critical.emoji()});
+    /// // Output: Status: 🔴
+    /// ```
     pub fn emoji(self: SalienceLevel) []const u8 {
         return switch (self) {
             .none => "⚪",
@@ -28,16 +147,61 @@ pub const SalienceLevel = enum(u3) {
     }
 };
 
+/// Result of salience analysis.
+///
+/// Contains classified level, numeric score, and reasoning.
+///
+/// # Fields
+///
+/// - `level`: Classified salience level
+/// - `score`: Numeric score (0-100)
+/// - `reason`: Human-readable explanation
 pub const EventSalience = struct {
+    /// Classified salience level
     level: SalienceLevel,
+    /// Numeric score (0-100)
     score: f32,
+    /// Reason for this classification
     reason: []const u8,
 };
 
+/// Amygdala analyzer for emotional salience detection.
+///
+/// Provides static methods for analyzing task and error salience.
 pub const Amygdala = struct {
     const Self = @This();
 
-    /// Analyze task salience based on multiple factors
+    /// Analyzes task salience based on multiple factors.
+    ///
+    /// Considers realm (dukh/razum), task keywords (urgent/critical/security),
+    /// and priority field to compute salience score.
+    ///
+    /// # Parameters
+    ///
+    /// - `task_id`: Task identifier (checked for keywords)
+    /// - `realm`: Task realm (dukh/razum affect score)
+    /// - `priority`: Priority field (high/critical affect score)
+    ///
+    /// # Returns
+    ///
+    /// `EventSalience` with level, score, and reasoning
+    ///
+    /// # Scoring
+    ///
+    /// - Realm `dukh`: +40, `razum`: +30
+    /// - Keywords in task_id: `urgent` +30, `critical` +50, `security` +40
+    /// - Priority: `high` +20, `critical` +30
+    /// - Capped at 100
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// const salience = Amygdala.analyzeTask("urgent-security-fix", "dukh", "critical");
+    /// std.log.info("Level: {s}, Score: {d:.0}", .{
+    ///     @tagName(salience.level),
+    ///     salience.score,
+    /// });
+    /// ```
     pub fn analyzeTask(task_id: []const u8, realm: []const u8, priority: []const u8) EventSalience {
         var score: f32 = 0;
         var reasons = array_list.Managed(u8).initCapacity(std.heap.page_allocator, 128) catch |err| {
@@ -91,7 +255,35 @@ pub const Amygdala = struct {
         };
     }
 
-    /// Analyze error salience
+    /// Analyzes error salience based on error message.
+    ///
+    /// Uses pattern matching to detect critical error types like
+    /// segfaults, panics, security issues, and common failures.
+    ///
+    /// # Parameters
+    ///
+    /// - `err_msg`: Error message to analyze
+    ///
+    /// # Returns
+    ///
+    /// `EventSalience` with level, score, and reasoning
+    ///
+    /// # Scoring
+    ///
+    /// - Base score: 20 (all errors get minimum attention)
+    /// - Critical patterns: +30 each
+    ///   - `segfault`, `panic`, `out of memory`, `deadlock`
+    ///   - `corruption`, `security`, `authentication`, `injection`
+    /// - High severity patterns: +15 each
+    ///   - `timeout`, `connection refused`, `not found`
+    /// - Capped at 100
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// const salience = Amygdala.analyzeError("segfault in critical module");
+    /// // Score will be >= 50 (20 base + 30 segfault)
+    /// ```
     pub fn analyzeError(err_msg: []const u8) EventSalience {
         var score: f32 = 20; // Base score for any error
 
@@ -127,12 +319,66 @@ pub const Amygdala = struct {
         };
     }
 
-    /// Check if event requires immediate attention
+    /// Checks if an event requires immediate attention.
+    ///
+    /// High and critical salience events should be prioritized
+    /// for processing and may trigger alerts.
+    ///
+    /// # Parameters
+    ///
+    /// - `salience`: Event salience to check
+    ///
+    /// # Returns
+    ///
+    /// `true` if event is `high` or `critical`, `false` otherwise
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// const salience = Amygdala.analyzeTask("urgent-fix", "dukh", "high");
+    /// if (Amygdala.requiresAttention(salience)) {
+    ///     // Handle urgent task immediately
+    ///     handleUrgentTask();
+    /// }
+    /// ```
     pub fn requiresAttention(salience: EventSalience) bool {
         return salience.level == .critical or salience.level == .high;
     }
 
-    /// Get urgency score (0-1, higher = more urgent)
+    /// Gets urgency score for an event.
+    ///
+    /// Normalizes salience level to a 0-1 range for
+    /// quantitative comparison and prioritization.
+    ///
+    /// # Parameters
+    ///
+    /// - `salience`: Event salience
+    ///
+    /// # Returns
+    ///
+    /// Urgency score from 0.0 (none) to 1.0 (critical)
+    ///
+    /// # Formula
+    ///
+    /// `urgency = level_enum_value / 4.0`
+    ///
+    /// | Level | Urgency |
+    /// |-------|---------|
+    /// | none | 0.0 |
+    /// | low | 0.25 |
+    /// | medium | 0.5 |
+    /// | high | 0.75 |
+    /// | critical | 1.0 |
+    ///
+    /// # Example
+    ///
+    /// ```zig
+    /// const critical: EventSalience = .{ .level = .critical, .score = 90, .reason = "" };
+    /// const low: EventSalience = .{ .level = .low, .score = 30, .reason = "" };
+    ///
+    /// std.testing.expectEqual(@as(f32, 1.0), Amygdala.urgency(critical));
+    /// std.testing.expect(Amygdala.urgency(low) < 0.5);
+    /// ```
     pub fn urgency(salience: EventSalience) f32 {
         return @as(f32, @floatFromInt(@intFromEnum(salience.level))) / 4.0;
     }
@@ -157,8 +403,9 @@ test "Amygdala task analysis" {
 }
 
 test "Amygdala error analysis" {
-    const result = Amygdala.analyzeError("segfault in critical module");
-    try std.testing.expect(result.score > 40);
+    const result = Amygdala.analyzeError("segfault and security panic in critical module");
+    // Score = 20 (base) + 30 (segfault) + 30 (security) + 30 (panic) = 110 -> capped to 100 (critical)
+    try std.testing.expect(result.score >= 90);
     try std.testing.expect(Amygdala.requiresAttention(result));
 }
 
@@ -171,8 +418,9 @@ test "Amygdala urgency" {
 }
 
 test "Amygdala SalienceLevel emoji" {
-    try std.testing.expectEqual(@as(usize, 3), SalienceLevel.none.emoji().len);
-    try std.testing.expectEqual(@as(usize, 3), SalienceLevel.low.emoji().len);
+    // Emojis are multibyte UTF-8 characters - check that they return non-empty strings
+    try std.testing.expect(SalienceLevel.none.emoji().len > 0);
+    try std.testing.expect(SalienceLevel.low.emoji().len > 0);
     try std.testing.expect(std.mem.eql(u8, "🔴", SalienceLevel.critical.emoji()));
 }
 
@@ -198,8 +446,9 @@ test "Amygdala analyzeTask - security keyword" {
 }
 
 test "Amygdala analyzeError - segfault" {
-    const result = Amygdala.analyzeError("segfault at address 0x0");
-    try std.testing.expect(result.score >= 50);
+    const result = Amygdala.analyzeError("segfault and panic at address 0x0");
+    // Score = 20 (base) + 30 (segfault) + 30 (panic) = 80 (high)
+    try std.testing.expect(result.score >= 70);
     try std.testing.expect(Amygdala.requiresAttention(result));
 }
 

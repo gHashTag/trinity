@@ -1,1 +1,1 @@
-{"ts":1773982688771,"level":"critical","condition":"claims_overflow","message":"Claims overflow: 10001 active","health":0.0}
+{"ts":1773997676807,"level":"critical","condition":"health_low","message":"Critical health: 30.0/100","health":30.0}
