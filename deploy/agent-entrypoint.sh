@@ -361,6 +361,7 @@ emit_pr() {
     emit_event "pr" "{\"url\":\"${url}\",\"commits\":${commits}}"
 }
 
+<<<<<<< HEAD
 # P0.4: Structured file_edit and test_run event types
 emit_file_edit() {
     local path="$1"
@@ -375,6 +376,8 @@ emit_test_run() {
     emit_event "test_run" "{\"passed\":${passed},\"total\":${total},\"duration_s\":${duration_s}}"
 }
 
+=======
+>>>>>>> feat/issue-126
 # ═══════════════════════════════════════════════════════════════════════════════
 # HEARTBEAT LOOP (P0.6) — background process sends status every 30s
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1019,8 +1022,12 @@ ${TEST_GATE_OUTPUT:-no output captured}
         fi
 
         if [ -n "${PR_URL}" ]; then
+<<<<<<< HEAD
             stream_to_telegram "PR created: ${PR_URL}"
             emit_event "pr" "{\"url\":\"${PR_URL}\",\"commits\":${COMMIT_COUNT}}"
+=======
+            emit_pr "${PR_URL}" "${COMMIT_COUNT}"
+>>>>>>> feat/issue-126
             report_status "PR_CREATED" "PR: ${PR_URL}"
             # Send metrics to monitor
             report_metrics

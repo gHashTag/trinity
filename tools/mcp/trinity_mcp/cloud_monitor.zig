@@ -7,7 +7,10 @@
 //! ACI Protocol (Agent-Computer Interface):
 //!   POST /api/event — structured events with type, issue, payload, ts
 //!   Types: status, log, metric, error, pr, command
+<<<<<<< HEAD
 // @origin(manual) @regen(pending)
+=======
+>>>>>>> feat/issue-126
 
 const std = @import("std");
 const Allocator = std.mem.Allocator;
@@ -18,6 +21,7 @@ const MAX_AGENTS = 50;
 const MAX_CLIENTS = 20;
 const EVENTS_FILE = ".trinity/cloud_events.jsonl";
 
+<<<<<<< HEAD
 /// Three-surface taxonomy for event classification (P1.4)
 const Surface = enum {
     operational, // AWAKENING, DONE, FAILED, KILLED, heartbeats
@@ -32,6 +36,8 @@ const Surface = enum {
     }
 };
 
+=======
+>>>>>>> feat/issue-126
 /// ACI Event types (Agent-Computer Interface)
 const EventType = enum {
     status,
@@ -40,8 +46,11 @@ const EventType = enum {
     err, // renamed from 'error' to avoid keyword conflict
     pr,
     command,
+<<<<<<< HEAD
     file_edit, // P0.4: file modification events
     test_run, // P0.4: test execution events
+=======
+>>>>>>> feat/issue-126
     unknown,
 
     pub fn fromString(s: []const u8) EventType {
@@ -51,13 +60,20 @@ const EventType = enum {
         if (std.mem.eql(u8, s, "error")) return .err;
         if (std.mem.eql(u8, s, "pr")) return .pr;
         if (std.mem.eql(u8, s, "command")) return .command;
+<<<<<<< HEAD
         if (std.mem.eql(u8, s, "file_edit")) return .file_edit;
         if (std.mem.eql(u8, s, "test_run")) return .test_run;
+=======
+>>>>>>> feat/issue-126
         return .unknown;
     }
 };
 
+<<<<<<< HEAD
 // Auth token for status POST (set via MONITOR_TOKEN env, rejects all if unset)
+=======
+// P0.5: Auth token for status POST (set via MONITOR_TOKEN env, default "trinity")
+>>>>>>> feat/issue-126
 var auth_token: [128]u8 = undefined;
 var auth_token_len: usize = 0;
 var auth_initialized: bool = false;
@@ -420,7 +436,10 @@ fn appendEvent(issue: u32, status_str: []const u8, detail: []const u8) void {
     // Format JSON line to buffer, then write
     var buf: [512]u8 = undefined;
     const ts = std.time.timestamp();
+<<<<<<< HEAD
     const detail_trunc = if (detail.len > 200) detail[0..200] else detail;
+=======
+>>>>>>> feat/issue-126
     const line = std.fmt.bufPrint(&buf, "{{\"type\":\"status\",\"ts\":{d},\"issue\":{d},\"status\":\"{s}\",\"detail\":\"{s}\"}}\n", .{
         ts,
         issue,
@@ -476,6 +495,20 @@ fn getTriBinaryPath() []const u8 {
         std.heap.page_allocator.free(path);
     }
     return tri_path_buf[0..tri_path_len];
+}
+
+/// Append a typed ACI event to the JSONL log.
+/// The event_json should be the complete JSON object including type, issue, payload, ts.
+fn appendTypedEvent(event_json: []const u8) void {
+    std.fs.cwd().makePath(".trinity") catch return;
+
+    const file = std.fs.cwd().createFile(EVENTS_FILE, .{ .truncate = false }) catch return;
+    defer file.close();
+
+    // Seek to end for append
+    file.seekFromEnd(0) catch return;
+    _ = file.writeAll(event_json) catch return;
+    _ = file.writeAll("\n") catch return;
 }
 
 fn sendTriNotify(issue: u32, status_str: []const u8, detail: []const u8) void {
@@ -726,6 +759,97 @@ fn handleEventPost(stream: net.Stream, request: []const u8) !void {
     try sendHttpResponse(stream, "200 OK", "application/json", "{\"ok\":true}");
 }
 
+/// Handle POST /api/event — structured ACI events
+fn handleEventPost(stream: net.Stream, request: []const u8) !void {
+    // P0.5: Check Bearer token auth
+    const expected_token = getAuthToken();
+    const auth_needle = "Authorization: Bearer ";
+    if (std.mem.indexOf(u8, request, auth_needle)) |auth_idx| {
+        const token_start = auth_idx + auth_needle.len;
+        const token_end = std.mem.indexOfPos(u8, request, token_start, "\r\n") orelse request.len;
+        const provided = request[token_start..token_end];
+        if (!std.mem.eql(u8, provided, expected_token)) {
+            try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"invalid token\"}");
+            return;
+        }
+    } else {
+        try sendHttpResponse(stream, "401 Unauthorized", "application/json", "{\"error\":\"missing Authorization header\"}");
+        return;
+    }
+
+    // Find body (after \r\n\r\n)
+    const body_start = std.mem.indexOf(u8, request, "\r\n\r\n") orelse return;
+    const body = request[body_start + 4 ..];
+
+    // Parse issue number
+    const issue_needle = "\"issue\":";
+    const issue_idx = std.mem.indexOf(u8, body, issue_needle) orelse return;
+    const istart = issue_idx + issue_needle.len;
+    var iend = istart;
+    while (iend < body.len and body[iend] >= '0' and body[iend] <= '9') : (iend += 1) {}
+    const issue = std.fmt.parseInt(u32, body[istart..iend], 10) catch return;
+
+    // Parse event type
+    const event_type_str = extractJsonString(body, "type") orelse "unknown";
+    const event_type = EventType.fromString(event_type_str);
+
+    // Persist to JSONL with full structured format
+    appendTypedEvent(body);
+
+    // Route based on event type
+    switch (event_type) {
+        .status => {
+            const status = extractJsonString(body, "status") orelse "unknown";
+            // Extract detail from payload if present, otherwise from root
+            const detail = extractPayloadString(body, "detail") orelse
+                extractJsonString(body, "detail") orelse "";
+            updateStatus(issue, status, detail);
+        },
+        .metric => {
+            // Update metrics in agent status
+            for (agent_statuses[0..status_count]) |*a| {
+                if (a.issue == issue) {
+                    a.tests_passed = parsePayloadU32(body, "tests_passed");
+                    a.tests_total = parsePayloadU32(body, "tests_total");
+                    a.files_changed = parsePayloadU32(body, "files_changed");
+                    a.lines_added = parsePayloadU32(body, "lines_added");
+                    a.commits = parsePayloadU32(body, "commits");
+                    break;
+                }
+            }
+        },
+        .err => {
+            const msg = extractPayloadString(body, "message") orelse "unknown error";
+            std.log.warn("ACI ERROR: Agent #{d} - {s}", .{ issue, msg });
+            // Also update status to ERROR
+            updateStatus(issue, "ERROR", msg);
+        },
+        .pr => {
+            const url = extractPayloadString(body, "url") orelse "";
+            std.log.info("ACI PR: Agent #{d} created PR: {s}", .{ issue, url });
+        },
+        .log => {
+            const level = extractPayloadString(body, "level") orelse "info";
+            const msg = extractPayloadString(body, "message") orelse "";
+            if (std.mem.eql(u8, level, "error") or std.mem.eql(u8, level, "warn")) {
+                std.log.warn("ACI LOG [{s}]: Agent #{d} - {s}", .{ level, issue, msg });
+            } else {
+                std.log.info("ACI LOG [{s}]: Agent #{d} - {s}", .{ level, issue, msg });
+            }
+        },
+        .command => {
+            const cmd = extractPayloadString(body, "cmd") orelse "";
+            const exit_code = parsePayloadU32(body, "exit_code");
+            std.log.info("ACI COMMAND: Agent #{d} ran '{s}' (exit: {d})", .{ issue, cmd, exit_code });
+        },
+        .unknown => {
+            std.log.debug("ACI UNKNOWN: Agent #{d} type={s}", .{ issue, event_type_str });
+        },
+    }
+
+    try sendHttpResponse(stream, "200 OK", "application/json", "{\"ok\":true}");
+}
+
 fn parseJsonU32(json: []const u8, key: []const u8) u32 {
     var needle_buf: [64]u8 = undefined;
     const needle = std.fmt.bufPrint(&needle_buf, "\"{s}\":", .{key}) catch return 0;
@@ -826,6 +950,7 @@ test "EventType.fromString" {
     try std.testing.expectEqual(EventType.pr, EventType.fromString("pr"));
     try std.testing.expectEqual(EventType.log, EventType.fromString("log"));
     try std.testing.expectEqual(EventType.command, EventType.fromString("command"));
+<<<<<<< HEAD
     try std.testing.expectEqual(EventType.file_edit, EventType.fromString("file_edit"));
     try std.testing.expectEqual(EventType.test_run, EventType.fromString("test_run"));
     try std.testing.expectEqual(EventType.unknown, EventType.fromString("invalid"));
@@ -838,6 +963,11 @@ test "Surface.fromString" {
     try std.testing.expectEqual(Surface.operational, Surface.fromString("unknown"));
 }
 
+=======
+    try std.testing.expectEqual(EventType.unknown, EventType.fromString("invalid"));
+}
+
+>>>>>>> feat/issue-126
 test "extractPayloadString" {
     const json = "{\"type\":\"metric\",\"issue\":42,\"payload\":{\"tests_passed\":5,\"tests_total\":8},\"ts\":\"2024-01-01T00:00:00Z\"}";
     // Note: payload contains numeric values, not strings, so this test demonstrates structure
