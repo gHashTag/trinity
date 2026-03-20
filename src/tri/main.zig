@@ -977,6 +977,10 @@ pub fn main() !void {
         // Math commands
         .math,
         .constants_cmd,
+        => {
+            std.debug.print("Error: Command '{s}' not yet implemented\n", .{@tagName(cmd)});
+            std.process.exit(1);
+        },
         // S³AI Brain Circuit Commands (v5.1) - dispatch to tri_commands
         .task_claim => {
             const tri_commands_mod = @import("tri_commands.zig");
