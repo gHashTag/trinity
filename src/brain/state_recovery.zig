@@ -322,7 +322,9 @@ pub const StateManager = struct {
         });
 
         // Get hostname (use environment or fallback)
-        const hostname = std.posix.getenv("HOSTNAME") orelse std.posix.getenv("HOST") orelse "localhost";
+        // NOTE: We dupe the hostname to ensure we own the memory
+        const env_hostname = std.posix.getenv("HOSTNAME") orelse std.posix.getenv("HOST") orelse "localhost";
+        const hostname = try self.allocator.dupe(u8, env_hostname);
 
         // Get PID (platform-specific) - using 0 as fallback
         const pid = if (builtin.os.tag == .linux)
@@ -331,6 +333,9 @@ pub const StateManager = struct {
             @as(i32, 0) // TODO: implement for macos
         else
             @as(i32, 0);
+
+        // Dupe the version string to ensure we own the memory
+        const tri_version = try self.allocator.dupe(u8, "5.1.0-igla-ready");
 
         return BrainState{
             .version = CURRENT_VERSION,
@@ -341,13 +346,16 @@ pub const StateManager = struct {
             .metadata = .{
                 .hostname = hostname,
                 .pid = pid,
-                .tri_version = "5.1.0-igla-ready",
+                .tri_version = tri_version,
             },
         };
     }
 
     /// Free state resources
+    /// NOTE: This only frees resources owned by the allocator.
+    /// String literals and getenv() pointers are NOT freed.
     fn freeState(self: *Self, state: BrainState) void {
+        // Free task claims (all owned by allocator)
         for (state.task_claims) |claim| {
             self.allocator.free(claim.task_id);
             self.allocator.free(claim.agent_id);
@@ -355,6 +363,7 @@ pub const StateManager = struct {
         }
         self.allocator.free(state.task_claims);
 
+        // Free events (all owned by allocator)
         for (state.events) |ev| {
             self.allocator.free(ev.event_type);
             self.allocator.free(ev.task_id);
@@ -363,6 +372,7 @@ pub const StateManager = struct {
         }
         self.allocator.free(state.events);
 
+        // Free metrics (all owned by allocator)
         for (state.metrics) |m| {
             self.allocator.free(m.name);
             for (m.tags) |tag| {
@@ -371,6 +381,12 @@ pub const StateManager = struct {
             self.allocator.free(m.tags);
         }
         self.allocator.free(state.metrics);
+
+        // Do NOT free metadata.hostname or metadata.tri_version:
+        // - They may be string literals or from getenv()
+        // - They are not owned by our allocator
+        _ = state.metadata.hostname;
+        _ = state.metadata.tri_version;
     }
 
     /// Validate and migrate state if needed
@@ -387,6 +403,7 @@ pub const StateManager = struct {
     }
 
     /// Deep copy state into a new allocator
+    /// All strings are duplicated to ensure the copy owns its memory
     fn deepcopyState(allocator: mem.Allocator, source: BrainState) !BrainState {
         // Copy task claims
         const task_claims = try allocator.alloc(TaskClaimState, source.task_claims.len);
@@ -432,7 +449,9 @@ pub const StateManager = struct {
             };
         }
 
-        // Copy metadata
+        // Copy metadata - always dupe to ensure we own the memory
+        // Even if source.metadata.hostname was a literal/getenv pointer,
+        // the copy will own its own duplicate
         const hostname = try allocator.dupe(u8, source.metadata.hostname);
         const tri_version = try allocator.dupe(u8, source.metadata.tri_version);
 
@@ -597,9 +616,14 @@ pub const StateManager = struct {
             if (age_ms < claim_state.ttl_ms) {
                 // Restore claim
                 const task_id_copy = try self.allocator.dupe(u8, claim_state.task_id);
+                errdefer self.allocator.free(task_id_copy); // Free on error
+
+                const agent_id_copy = try self.allocator.dupe(u8, claim_state.agent_id);
+                errdefer self.allocator.free(agent_id_copy); // Free on error
+
                 const new_claim = basal_ganglia.TaskClaim{
                     .task_id = task_id_copy,
-                    .agent_id = try self.allocator.dupe(u8, claim_state.agent_id),
+                    .agent_id = agent_id_copy,
                     .claimed_at = claim_state.claimed_at,
                     .ttl_ms = claim_state.ttl_ms,
                     .status = .active,

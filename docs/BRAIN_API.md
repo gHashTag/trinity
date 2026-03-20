@@ -1612,7 +1612,7 @@ pub const GCounter = struct {
 
 **Module**: `brain.learning`
 **File**: `src/brain/learning.zig`
-**Purpose**: Performance history tracking and adaptive behavior
+****Purpose**: Performance history tracking, pattern recognition, adaptive backoff, failure prediction
 
 #### Types
 
@@ -1622,6 +1622,7 @@ pub const LearningSystem = struct {
     patterns: std.ArrayList(Pattern),
     backoff_config: AdaptiveBackoffConfig,
     failure_models: std.ArrayList(FailureModel),
+    stats: SystemStats,
 };
 
 pub const PerformanceRecord = struct {
@@ -1631,6 +1632,37 @@ pub const PerformanceRecord = struct {
     success: bool,
     metadata: Metadata,
 };
+
+pub const Pattern = struct {
+    name: []const u8,
+    confidence: f32,
+    description: []const u8,
+    recommendation: []const u8,
+    pattern_type: PatternType,
+};
+
+pub const AdaptiveBackoffConfig = struct {
+    initial_ms: u64,
+    max_ms: u64,
+    multiplier: f32,
+    strategy: BackoffStrategy,
+    learned_multiplier: f32,
+    confidence: f32,
+};
+
+pub const FailurePrediction = struct {
+    probability: f32,
+    reason: []const u8,
+    suggested_action: []const u8,
+    time_until_failure_ms: u64,
+};
+
+pub const Recommendation = struct {
+    action: []const u8,
+    priority: u8,
+    confidence: f32,
+    reasoning: []const u8,
+};
 ```
 
 #### Functions
@@ -1638,11 +1670,186 @@ pub const PerformanceRecord = struct {
 | Function | Description | Returns |
 |----------|-------------|---------|
 | `LearningSystem.init(allocator)` | Initialize | `!LearningSystem` |
-| `learning.recordEvent(event)` | Record event | `!void` |
-| `learning.learnPatterns()` | Learn patterns | `!void` |
-| `learning.getBackoffDelay(attempt)` | Get adaptive backoff | `u64` |
-| `learning.predictFailure(operation)` | Predict probability | `Prediction` |
-| `learning.getRecommendation()` | Get action | `Recommendation` |
+| `learning.deinit()` | Free resources | `void` |
+| `learning.recordEvent(event)` | Record performance event | `!void` |
+| `learning.learnPatterns()` | Analyze history for patterns | `!void` |
+| `learning.getBackoffDelay(attempt)` | Get adaptive backoff delay | `u64` |
+| `learning.predictFailure(operation)` | Predict failure probability | `FailurePrediction` |
+| `learning.getRecommendation()` | Get actionable recommendation | `Recommendation` |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+const allocator = std.heap.page_allocator;
+
+var learning = try brain.learning.LearningSystem.init(allocator);
+defer learning.deinit();
+
+// Record events
+try learning.recordEvent(.{
+    .timestamp = std.time.milliTimestamp(),
+    .operation = .task_claim,
+    .duration_ms = 100,
+    .success = true,
+    .metadata = .{
+        .task_id = "task-123",
+        .agent_id = "agent-001",
+        .attempt = 0,
+        .backoff_ms = 0,
+        .error_msg = "",
+        .health_score = 100.0,
+    },
+});
+
+// Learn patterns from history
+try learning.learnPatterns();
+
+// Get recommendation
+const rec = learning.getRecommendation();
+std.log.info("Action: {s} (priority: {d})", .{ rec.action, rec.priority });
+
+// Predict failure
+const prediction = learning.predictFailure(.task_claim);
+std.log.info("Failure probability: {d:.0}%", .{ prediction.probability * 100 });
+```
+
+### Performance Dashboard (Unified Performance Monitoring)
+
+**Module**: `brain.perf_dashboard`
+**File**: `src/brain/perf_dashboard.zig`
+**Purpose**: Real-time performance tracking, SLA monitoring, comparison reports, sparklines
+
+#### Types
+
+```zig
+pub const PerformanceDashboard = struct {
+    allocator: std.mem.Allocator,
+    histories: std.StringHashMap(PerformanceHistory),
+    current_stats: std.StringHashMap(PerformanceStats),
+    baseline_stats: std.StringHashMap(PerformanceStats),
+    slas: std.StringHashMap(SLATarget),
+    start_time: i64,
+    last_update: i64,
+};
+
+pub const PerformanceSnapshot = struct {
+    timestamp: i64,
+    operation: []const u8,
+    region: []const u8,
+    latency_ns: u64,
+    memory_bytes: ?u64,
+    success: bool,
+    metadata: std.StringHashMap([]const u8),
+};
+
+pub const PerformanceStats = struct {
+    name: []const u8,
+    region: []const u8,
+    total_ops: u64,
+    success_count: u64,
+    failure_count: u64,
+    total_latency_ns: u64,
+    min_latency_ns: u64,
+    max_latency_ns: u64,
+    p50_ns: u64,
+    p95_ns: u64,
+    p99_ns: u64,
+    throughput_ops_per_sec: f64,
+    error_rate: f32,
+};
+
+pub const PerformanceHistory = struct {
+    allocator: std.mem.Allocator,
+    name: []const u8,
+    region: []const u8,
+    latencies: std.array_list.Managed(u64),
+    timestamps: std.array_list.Managed(i64),
+    max_size: usize,
+    current_idx: usize,
+    sla: SLATarget,
+};
+
+pub const SLATarget = struct {
+    max_latency_ns: ?u64 = null,
+    min_throughput_ops_per_sec: ?f64 = null,
+    max_error_rate: ?f32 = null,
+    description: []const u8 = "",
+};
+
+pub const SLA_PRESETS = struct {
+    pub const TASK_CLAIM: SLATarget;
+    pub const EVENT_PUBLISH: SLATarget;
+    pub const HEALTH_CHECK: SLATarget;
+    pub const TELEMETRY_RECORD: SLATarget;
+};
+```
+
+#### Functions
+
+| Function | Description | Returns |
+|----------|-------------|---------|
+| `PerformanceDashboard.init(allocator)` | Create dashboard | `PerformanceDashboard` |
+| `dashboard.deinit()` | Free all resources | `void` |
+| `dashboard.registerMetric(region, operation, history_size)` | Register metric for tracking | `!void` |
+| `dashboard.setSLA(metric_name, sla)` | Set SLA target | `!void` |
+| `dashboard.record(region, operation, latency_ns)` | Record measurement | `!void` |
+| `dashboard.getStats(region, operation)` | Get current stats | `!PerformanceStats` |
+| `dashboard.collectFromBrain()` | Collect from all brain regions | `!void` |
+| `dashboard.saveBaseline()` | Save current as baseline | `!void` |
+| `dashboard.compareWithBaseline(allocator)` | Compare with baseline | `![]ComparisonResult` |
+| `dashboard.formatAscii(writer)` | Format as ASCII table | `!void` |
+| `dashboard.formatComparison(writer)` | Format comparison report | `!void` |
+| `dashboard.formatSparklines(writer)` | Format all sparklines | `!void` |
+| `dashboard.exportJson(writer)` | Export as JSON | `!void` |
+
+#### Example
+
+```zig
+const brain = @import("brain");
+const allocator = std.heap.page_allocator;
+
+var dashboard = brain.perf_dashboard.PerformanceDashboard.init(allocator);
+defer dashboard.deinit();
+
+// Register metrics
+try dashboard.registerMetric("Basal Ganglia", "task_claim", 1000);
+
+// Set SLA
+const sla = brain.perf_dashboard.SLATarget.init()
+    .withLatency(1_000_000)  // 1ms P99
+    .withThroughput(10_000)  // 10k OP/s
+    .withErrorRate(0.01);    // 1% max error rate
+try dashboard.setSLA("task_claim", sla);
+
+// Record measurements
+try dashboard.record("Basal Ganglia", "task_claim", 500_000); // 500us
+try dashboard.record("Basal Ganglia", "task_claim", 600_000);
+try dashboard.record("Basal Ganglia", "task_claim", 400_000);
+
+// Get stats
+const stats = try dashboard.getStats("Basal Ganglia", "task_claim");
+std.log.info("P99: {d}ns, Throughput: {d:.2} OP/s", .{
+    stats.p99_ns,
+    stats.throughput_ops_per_sec
+});
+
+// Check SLA compliance
+const meets_sla = stats.meetsSLA(sla);
+std.log.info("SLA met: {}", .{meets_sla});
+
+// Save and compare
+try dashboard.saveBaseline();
+// ... perform optimization ...
+const results = try dashboard.compareWithBaseline(allocator);
+defer {
+    for (results) |r| {
+        allocator.free(r.metric_name);
+        allocator.free(r.region);
+    }
+    allocator.free(results);
+}
+```
 
 ## Inter-Region Communication
 

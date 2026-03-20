@@ -646,3 +646,6 @@ Changes not staged for commit:
 {"ts":1774008808,"kind":"auto_denied","action":"issue comment","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
 {"ts":1774009262,"kind":"phase2","action":"doctor quick","verdict":"incident escalated, human required","success":false,"detail":""}
 {"ts":1774009265,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1774009897,"kind":"auto_denied","action":"issue comment","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
+{"ts":1774010071,"kind":"phase2","action":"doctor quick","verdict":"incident escalated, human required","success":false,"detail":""}
+{"ts":1774010075,"kind":"auto-denied","action":"notify","verdict":"per-action rate limit","success":false,"detail":"per-action rate limit"}
