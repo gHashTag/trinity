@@ -151,9 +151,12 @@ pub const BrainTelemetry = struct {
         }
 
         // Linear interpolation for percentile
+        // p is in [0, 100], so idx_f is in [0, scores.len - 1]
         const idx_f = @as(f32, @floatFromInt(scores.len - 1)) * (p / 100.0);
-        const idx = @as(usize, @intFromFloat(idx_f));
-        const frac = idx_f - @as(f32, @floatFromInt(idx));
+        // Clamp to valid range [0, scores.len - 1] to handle floating point errors
+        const clamped_idx_f = @max(0.0, @min(idx_f, @as(f32, @floatFromInt(scores.len - 1))));
+        const idx = @as(usize, @intFromFloat(clamped_idx_f));
+        const frac = clamped_idx_f - @as(f32, @floatFromInt(idx));
 
         if (idx + 1 >= scores.len) return scores[scores.len - 1];
         return scores[idx] * (1.0 - frac) + scores[idx + 1] * frac;
@@ -349,9 +352,9 @@ test "BrainTelemetry max_points trimming" {
         try tel.record(.{
             .timestamp = now + @as(i64, @intCast(i)),
             .active_claims = i,
-            .events_published = @as(u64, @intCast(i * 10)),
+            .events_published = @as(u64, @intCast(i)) * 10,
             .events_buffered = i,
-            .health_score = @as(f32, @floatFromInt(i * 10)),
+            .health_score = @as(f32, @floatFromInt(i)) * 10.0,
         });
     }
 
