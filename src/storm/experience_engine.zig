@@ -2,10 +2,10 @@
 // MNL (Mistake Never Again) Pattern + Experience System
 const std = @import("std");
 
-const Allocator = std.mem.Allocator;
+const MemAllocator = std.mem.MemAllocator;
 
 pub const ExperienceEngine = struct {
-    allocator: Allocator,
+    allocator: MemAllocator,
     experience_dir: []const u8 = ".trinity/experience/",
     blacklist_file: []const u8 = ".trinity/mistakes/blacklist.json",
     similar_tasks_file: []const u8 = ".trinity/experience/similar_tasks.json",
@@ -23,7 +23,7 @@ pub const ExperienceEngine = struct {
         entries: []FailureRecord,
         last_updated: i64,
 
-        pub fn deinit(bl: *Blacklist, allocator: Allocator) void {
+        pub fn deinit(bl: *Blacklist, allocator: MemAllocator) void {
             for (bl.entries) |entry| {
                 allocator.free(entry.task);
                 if (entry.last_error.len > 0) allocator.free(entry.last_error);
@@ -47,7 +47,7 @@ pub const ExperienceEngine = struct {
         is_blacklisted: bool,
         recommendation: []const u8,
 
-        pub fn deinit(ctx: *TaskContext, allocator: Allocator) void {
+        pub fn deinit(ctx: *TaskContext, allocator: MemAllocator) void {
             for (ctx.similar_tasks) |st| {
                 allocator.free(st.task);
             }
@@ -67,7 +67,7 @@ pub const ExperienceEngine = struct {
     };
 
     /// Create new experience engine
-    pub fn init(allocator: Allocator) ExperienceEngine {
+    pub fn init(allocator: MemAllocator) ExperienceEngine {
         return .{
             .allocator = allocator,
         };
@@ -243,7 +243,7 @@ pub const ExperienceEngine = struct {
 };
 
 // CLI wrapper for experience commands
-pub fn runExperienceCommand(allocator: Allocator, args: []const []const u8) !u8 {
+pub fn runExperienceCommand(allocator: MemAllocator, args: []const []const u8) !u8 {
     if (args.len < 1) {
         printExperienceHelp();
         return 1;
@@ -291,7 +291,7 @@ fn printExperienceHelp() void {
     std.debug.print("    3× failure → {s}BLACKLISTED{s} (auto-skip)\n\n", .{ "\x1b[31m", RESET });
 }
 
-fn cmdConsult(allocator: Allocator, task: []const u8) !u8 {
+fn cmdConsult(allocator: MemAllocator, task: []const u8) !u8 {
     var ee = ExperienceEngine.init(allocator);
     const ctx = try ee.consult(task);
     defer ctx.deinit(allocator);
@@ -315,7 +315,7 @@ fn cmdConsult(allocator: Allocator, task: []const u8) !u8 {
     return 0;
 }
 
-fn cmdBlacklist(allocator: Allocator) !u8 {
+fn cmdBlacklist(allocator: MemAllocator) !u8 {
     var ee = ExperienceEngine.init(allocator);
     _ = ee; // autofix
 
@@ -333,7 +333,7 @@ fn cmdBlacklist(allocator: Allocator) !u8 {
     return 0;
 }
 
-fn cmdRecord(allocator: Allocator, task: []const u8) !u8 {
+fn cmdRecord(allocator: MemAllocator, task: []const u8) !u8 {
     var ee = ExperienceEngine.init(allocator);
 
     const RESET = "\x1b[0m";
