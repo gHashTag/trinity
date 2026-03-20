@@ -121,11 +121,12 @@ pub const EventBus = struct {
     head_idx: usize, // Index of oldest event
     tail_idx: usize, // Index where next event will be written
     count: usize, // Number of events currently stored
+    // Lock-free atomic stats for high-performance monitoring
     stats: struct {
-        published: u64,
-        polled: u64,
-        trim_count: u64, // Number of times buffer was trimmed
-        peak_buffered: usize, // Peak events buffered
+        published: std.atomic.Value(u64),
+        polled: std.atomic.Value(u64),
+        trim_count: std.atomic.Value(u64), // Number of times buffer was trimmed
+        peak_buffered: std.atomic.Value(usize), // Peak events buffered
     },
 
     pub fn init(allocator: std.mem.Allocator) EventBus {
@@ -136,7 +137,12 @@ pub const EventBus = struct {
             .head_idx = 0,
             .tail_idx = 0,
             .count = 0,
-            .stats = .{ .published = 0, .polled = 0, .trim_count = 0, .peak_buffered = 0 },
+            .stats = .{
+                .published = std.atomic.Value(u64).init(0),
+                .polled = std.atomic.Value(u64).init(0),
+                .trim_count = std.atomic.Value(u64).init(0),
+                .peak_buffered = std.atomic.Value(usize).init(0),
+            },
         };
     }
 
@@ -209,11 +215,18 @@ pub const EventBus = struct {
             self.buffer[self.head_idx].deinit(self.allocator);
             // Advance head (circular)
             self.head_idx = (self.head_idx + 1) % MAX_EVENTS;
-            self.stats.trim_count += 1;
+            _ = self.stats.trim_count.fetchAdd(1, .monotonic);
         } else {
-            // Track peak buffer size only when growing
-            if (self.count + 1 > self.stats.peak_buffered) {
-                self.stats.peak_buffered = self.count + 1;
+            // Track peak buffer size only when growing (lock-free max)
+            const current_peak = self.stats.peak_buffered.load(.monotonic);
+            const new_count = self.count + 1;
+            if (new_count > current_peak) {
+                _ = self.stats.peak_buffered.tryCompareAndSwap(
+                    current_peak,
+                    new_count,
+                    .monotonic,
+                    .monotonic,
+                ) catch |*addr| addr.*;
             }
         }
 
@@ -224,7 +237,7 @@ pub const EventBus = struct {
             self.count += 1;
         }
 
-        self.stats.published += 1;
+        _ = self.stats.published.fetchAdd(1, .monotonic);
     }
 
     /// Poll events since given timestamp
@@ -283,21 +296,21 @@ pub const EventBus = struct {
             }
         }
 
-        self.stats.polled += 1;
+        _ = self.stats.polled.fetchAdd(1, .monotonic);
         return results.toOwnedSlice(allocator);
     }
 
-    /// Get current statistics
+    /// Get current statistics (lock-free for published/polled/trim/peak, mutex for count)
     pub fn getStats(self: *EventBus) struct { published: u64, polled: u64, buffered: usize, trim_count: u64, peak_buffered: usize } {
         self.mutex.lock();
         defer self.mutex.unlock();
 
         return .{
-            .published = self.stats.published,
-            .polled = self.stats.polled,
+            .published = self.stats.published.load(.monotonic),
+            .polled = self.stats.polled.load(.monotonic),
             .buffered = self.count,
-            .trim_count = self.stats.trim_count,
-            .peak_buffered = self.stats.peak_buffered,
+            .trim_count = self.stats.trim_count.load(.monotonic),
+            .peak_buffered = self.stats.peak_buffered.load(.monotonic),
         };
     }
 
