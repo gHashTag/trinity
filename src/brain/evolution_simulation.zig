@@ -205,11 +205,13 @@ pub const EvolutionResult = struct {
         }
     }
 
-    pub fn toJson(self: *const EvolutionResult, writer: anytype) !void {
+    pub fn toJson(self: *const EvolutionResult, writer: anytype, allocator: Allocator) !void {
         try writer.writeAll("{");
         try writer.print("\"scenario\":\"{s}\"", .{self.scenario_name});
         try writer.print(",\"final_ppl\":{d:.2}", .{self.final_ppl});
-        try writer.print(",\"convergence_step\":{s}", .{if (self.convergence_step) |s| try std.fmt.allocPrint(writer.allocator, "{d}", .{s}) else "null"});
+        const conv_str = if (self.convergence_step) |s| try std.fmt.allocPrint(allocator, "{d}", .{s}) else "null";
+        defer if (self.convergence_step != null) allocator.free(conv_str);
+        try writer.print(",\"convergence_step\":{s}", .{conv_str});
         try writer.print(",\"diversity_index\":{d:.3}", .{self.diversity_index});
         try writer.print(",\"microglia_actions\":{d}", .{self.microglia_actions});
         try writer.print(",\"workers_culled\":{d}", .{self.workers_culled});
