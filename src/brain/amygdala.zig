@@ -1,4 +1,4 @@
-//! AMYGDALA — Emotional Salience Detection v1.0
+//! AMYGDALA — Emotional Salience Detection v1.1
 //!
 //! Detects emotionally significant events and prioritizes them.
 //! Brain Region: Amygdala (Emotional Processing)
@@ -15,12 +15,21 @@
 //! - Error salience analysis (pattern matching)
 //! - Five-level salience classification (none to critical)
 //! - Emoji visualization for TUI display
+//! - Single-pass optimized pattern scanning
+//! - Zero-allocation salience computation
 //!
 //! # Biological Inspiration
 //!
 //! The amygdala in the brain processes emotional significance and
 //! triggers attention for important events. This module mirrors that
 //! by scoring and ranking events by importance.
+//!
+//! # Performance
+//!
+//! - O(n * m) pattern matching where n = input length, m = pattern length
+//! - Single-pass scan for multiple keywords (urgent, critical, security)
+//! - No heap allocations during salience analysis
+//! - Early exit for short strings (< 6 chars)
 //!
 //! # Usage
 //!
@@ -62,6 +71,10 @@
 //! - Base score: 20 (all errors)
 //! - Critical patterns: `segfault`, `panic`, `security`, etc. (+30 each)
 //! - High severity: `timeout`, `connection refused` (+15 each)
+//!
+//! # Thread Safety
+//!
+//! All methods are stateless and thread-safe. No internal mutable state.
 
 const std = @import("std");
 const array_list = std.array_list;
@@ -606,4 +619,189 @@ test "Amygdala scanPatterns - pattern sum correctness" {
     // Verify that scanning "urgent-critical-security" returns sum of all
     const result = Amygdala.scanPatterns("urgent-critical-security");
     try std.testing.expectEqual(@as(f32, 120), result); // 30 + 50 + 40
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// EDGE CASE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Amygdala analyzeTask - all null inputs" {
+    // Should handle empty/invalid inputs gracefully
+    const result = Amygdala.analyzeTask("", "", "");
+    try std.testing.expect(result.score >= 0);
+    try std.testing.expect(result.level == .none);
+}
+
+test "Amygdala analyzeTask - unicode in task_id" {
+    // Should handle unicode characters correctly
+    const result = Amygdala.analyzeTask("urgent-тест-fix", "dukh", "high");
+    try std.testing.expect(result.score >= 40); // dukh realm + urgent keyword
+}
+
+test "Amygdala analyzeError - empty error message" {
+    // Empty error should still get base score
+    const result = Amygdala.analyzeError("");
+    try std.testing.expectEqual(@as(f32, 20), result.score);
+    try std.testing.expectEqual(SalienceLevel.low, result.level);
+}
+
+test "Amygdala analyzeError - very long error message" {
+    // Should handle long error messages
+    var long_msg: [1000]u8 = undefined;
+    @memset(&long_msg, ' ');
+    @memcpy(long_msg[0..8], "segfault");
+    const result = Amygdala.analyzeError(&long_msg);
+    try std.testing.expect(result.score >= 50);
+}
+
+test "Amygdala scanPatterns - partial matches not counted" {
+    // Only full pattern matches should count
+    const result = Amygdala.scanPatterns("crit urg secur");
+    try std.testing.expectEqual(@as(f32, 0), result); // No full matches
+}
+
+test "Amygdala scanPatterns - word boundary behavior" {
+    // Patterns in middle of word should still match (substring search)
+    const result = Amygdala.scanPatterns("supercriticalurgentsecurity");
+    try std.testing.expectEqual(@as(f32, 120), result); // All patterns found as substrings
+}
+
+test "Amygdala score boundary values" {
+    // Test exact boundary values
+    // none/low boundary at 20
+    const low_threshold = Amygdala.analyzeTask("", "sattva", "normal");
+    try std.testing.expect(low_threshold.score < 20);
+
+    // Add high priority (+20) to cross into low
+    const crossed_low = Amygdala.analyzeTask("", "sattva", "high");
+    try std.testing.expect(crossed_low.score >= 20);
+    try std.testing.expect(crossed_low.level == .low);
+
+    // medium/high boundary at 60
+    const medium_result = Amygdala.analyzeTask("urgent", "dukh", "high");
+    // dukh=40 + urgent=30 + high=20 = 90, capped at 100 = critical
+    try std.testing.expect(medium_result.level == .critical);
+}
+
+test "Amygdala scanPatterns - repeated pattern multiple times" {
+    // Same pattern appearing multiple times should be counted each time
+    const result = Amygdala.scanPatterns("critical-critical-critical");
+    try std.testing.expectEqual(@as(f32, 150), result); // 50 * 3
+}
+
+test "Amygdala scanPatterns - keyword at start/middle/end" {
+    // Pattern positions shouldn't affect matching
+    const start = Amygdala.scanPatterns("critical-fix");
+    const middle = Amygdala.scanPatterns("fix-critical-end");
+    const end = Amygdala.scanPatterns("fix-end-critical");
+
+    try std.testing.expectEqual(start, middle);
+    try std.testing.expectEqual(middle, end);
+}
+
+test "Amygdala analyzeTask - negative realm priority combo" {
+    // Test realm + priority scoring correctly
+    const dukh_normal = Amygdala.analyzeTask("task", "dukh", "normal");
+    const razum_critical = Amygdala.analyzeTask("task", "razum", "critical");
+
+    // dukh(40) > razum(30) + critical(30) = 60 vs 40
+    try std.testing.expect(dukh_normal.score < razum_critical.score);
+}
+
+test "Amygdala analyzeError - multi-pattern with same substring" {
+    // Patterns sharing substrings should all be detected
+    const result = Amygdala.analyzeError("authentication security panic");
+    // base 20 + authentication(30) + security(30) + panic(30) = 110 -> capped at 100
+    try std.testing.expectEqual(@as(f32, 100), result.score);
+}
+
+test "Amygdala urgency - exact level mapping" {
+    // Verify urgency maps linearly from 0 to 1
+    const none: EventSalience = .{ .level = .none, .score = 0, .reason = "" };
+    const low: EventSalience = .{ .level = .low, .score = 20, .reason = "" };
+    const medium: EventSalience = .{ .level = .medium, .score = 40, .reason = "" };
+    const high: EventSalience = .{ .level = .high, .score = 60, .reason = "" };
+    const critical: EventSalience = .{ .level = .critical, .score = 80, .reason = "" };
+
+    try std.testing.expectEqual(@as(f32, 0.0), Amygdala.urgency(none));
+    try std.testing.expectEqual(@as(f32, 0.25), Amygdala.urgency(low));
+    try std.testing.expectEqual(@as(f32, 0.5), Amygdala.urgency(medium));
+    try std.testing.expectEqual(@as(f32, 0.75), Amygdala.urgency(high));
+    try std.testing.expectEqual(@as(f32, 1.0), Amygdala.urgency(critical));
+}
+
+test "Amygdala requiresAttention - exact thresholds" {
+    // Verify attention threshold is exactly at high level (>=60)
+    const high_edge: EventSalience = .{ .level = .high, .score = 60, .reason = "" };
+    const medium_edge: EventSalience = .{ .level = .medium, .score = 59, .reason = "" };
+
+    try std.testing.expect(Amygdala.requiresAttention(high_edge));
+    try std.testing.expect(!Amygdala.requiresAttention(medium_edge));
+}
+
+test "Amygdala scanPatterns - pattern longer than input" {
+    // Should handle patterns longer than input gracefully
+    const result = Amygdala.scanPatterns("ab");
+    try std.testing.expectEqual(@as(f32, 0), result);
+}
+
+test "Amygdala scanPatterns - single character input" {
+    const result = Amygdala.scanPatterns("a");
+    try std.testing.expectEqual(@as(f32, 0), result);
+}
+
+test "Amygdala analyzeError - mixed case patterns" {
+    // Pattern matching is case-sensitive
+    const lower = Amygdala.analyzeError("segfault occurred");
+    const upper = Amygdala.analyzeError("SEGFAULT occurred");
+    const mixed = Amygdala.analyzeError("SeGfAuLt occurred");
+
+    try std.testing.expect(lower.score > 20); // matches
+    try std.testing.expect(upper.score == 20); // no match
+    try std.testing.expect(mixed.score == 20); // no match
+}
+
+test "Amygdala analyzeTask - realm case sensitivity" {
+    // Realm matching is case-sensitive
+    const lower = Amygdala.analyzeTask("task", "dukh", "normal");
+    const upper = Amygdala.analyzeTask("task", "DUKH", "normal");
+    const mixed = Amygdala.analyzeTask("task", "Dukh", "normal");
+
+    try std.testing.expect(lower.score == 40);
+    try std.testing.expect(upper.score == 0);
+    try std.testing.expect(mixed.score == 0);
+}
+
+test "Amygdala analyzeTask - priority case sensitivity" {
+    // Priority matching is case-sensitive
+    const high_lower = Amygdala.analyzeTask("task", "sattva", "high");
+    const high_upper = Amygdala.analyzeTask("task", "sattva", "HIGH");
+
+    try std.testing.expect(high_lower.score == 20);
+    try std.testing.expect(high_upper.score == 0);
+}
+
+test "Amygdala maximum score cap" {
+    // Even with maximum scoring factors, should cap at 100
+    // critical(50) + urgent(30) + security(40) + dukh(40) + critical priority(30) = 190
+    const result = Amygdala.analyzeTask("critical-urgent-security", "dukh", "critical");
+    try std.testing.expect(result.score <= 100);
+    try std.testing.expectEqual(SalienceLevel.critical, result.level);
+}
+
+test "Amygdala error with all critical patterns" {
+    // Error with all critical patterns should cap at 100
+    // base(20) + segfault(30) + panic(30) + deadlock(30) + corruption(30) + security(30) + authentication(30) + injection(30) = 230
+    const result = Amygdala.analyzeError("segfault panic deadlock corruption security authentication injection");
+    try std.testing.expectEqual(@as(f32, 100), result.score);
+}
+
+test "Amygdala scanPatterns - pattern interleaving" {
+    // Test patterns appearing in different orders
+    const order1 = Amygdala.scanPatterns("urgent-critical-security");
+    const order2 = Amygdala.scanPatterns("security-urgent-critical");
+    const order3 = Amygdala.scanPatterns("critical-security-urgent");
+
+    try std.testing.expectEqual(order1, order2);
+    try std.testing.expectEqual(order2, order3);
 }

@@ -209,7 +209,7 @@ pub const Registry = struct {
     /// - Deterministic: same task_id always maps to same shard
     /// - Uniform distribution: good hash function spreads keys evenly
     /// - No collisions modulo: bitmask is safe due to power-of-2 constraint
-    pub inline fn getShardIndex(task_id: []const u8) usize {
+    inline fn getShardIndex(task_id: []const u8) usize {
         const hash = std.hash.Wyhash.hash(0, task_id);
         return hash & (SHARD_COUNT - 1);
     }
@@ -403,14 +403,19 @@ pub const Registry = struct {
             shard.rwlock.lock();
             defer shard.rwlock.unlock();
 
-            var to_remove = std.ArrayList([]const u8).initCapacity(self.allocator, 16) catch return total_removed;
-            defer to_remove.deinit(self.allocator);
+            var to_remove = std.ArrayList([]const u8).init(self.allocator);
+            defer {
+                for (to_remove.items) |key| {
+                    self.allocator.free(key);
+                }
+                to_remove.deinit();
+            };
 
             // First pass: identify expired claims
             var iter = shard.claims.iterator();
             while (iter.next()) |entry| {
                 if (!entry.value_ptr.isValid()) {
-                    to_remove.append(self.allocator, entry.key_ptr.*) catch continue;
+                    to_remove.append(entry.key_ptr.*) catch continue;
                 }
             }
 
@@ -514,8 +519,8 @@ pub const Registry = struct {
         shard.rwlock.lockShared();
         defer shard.rwlock.unlockShared();
 
-        if (shard.claims.get(task_id)) |existing_claim| {
-            return if (existing_claim.isValid()) .claimed else .expired;
+        if (shard.claims.get(task_id)) |claim| {
+            return if (claim.isValid()) .claimed else .expired;
         }
         return .not_found;
     }
@@ -842,7 +847,7 @@ test "LockFree: claim expiration by TTL" {
     _ = try registry.claim(allocator, task_id, "agent-001", 1); // 1ms TTL
 
     // Wait for expiration
-    std.Thread.sleep(5 * std.time.ns_per_ms);
+    std.time.sleep(5 * std.time.ns_per_ms);
 
     // Claim should be available again (old one expired)
     const reclaimed = try registry.claim(allocator, task_id, "agent-002", 60000);
@@ -870,7 +875,7 @@ test "LockFree: claim expiration by heartbeat" {
 
     // Task should now be invalid
     const check_result = registry.checkClaim(task_id);
-    try std.testing.expectEqual(Registry.ClaimCheckResult.expired, check_result);
+    try std.testing.expectEqual(ClaimCheckResult.expired, check_result);
 }
 
 test "LockFree: re-claim after expiration" {
@@ -882,7 +887,7 @@ test "LockFree: re-claim after expiration" {
     _ = try registry.claim(allocator, task_id, "agent-001", 1); // 1ms TTL
 
     // Wait for expiration
-    std.Thread.sleep(5 * std.time.ns_per_ms);
+    std.time.sleep(5 * std.time.ns_per_ms);
 
     // Should be claimable by different agent
     const claimed = try registry.claim(allocator, task_id, "agent-002", 60000);
@@ -909,7 +914,7 @@ test "LockFree: clock skew handling" {
 
     // Task should still be valid despite clock skew
     const check_result = registry.checkClaim(task_id);
-    try std.testing.expectEqual(Registry.ClaimCheckResult.claimed, check_result);
+    try std.testing.expectEqual(ClaimCheckResult.claimed, check_result);
 }
 
 test "LockFree: cleanup removes expired claims" {
@@ -929,7 +934,7 @@ test "LockFree: cleanup removes expired claims" {
     try std.testing.expectEqual(@as(usize, 6), registry.count());
 
     // Wait for expiration
-    std.Thread.sleep(5 * std.time.ns_per_ms);
+    std.time.sleep(5 * std.time.ns_per_ms);
 
     // Cleanup should remove expired claim
     const removed = registry.cleanupExpired();
@@ -945,20 +950,20 @@ test "LockFree: checkClaim status" {
     const task_id = "task-check";
 
     // Not found initially
-    try std.testing.expectEqual(Registry.ClaimCheckResult.not_found, registry.checkClaim(task_id));
+    try std.testing.expectEqual(ClaimCheckResult.not_found, registry.checkClaim(task_id));
 
     // Claimed after registration
     _ = try registry.claim(allocator, task_id, "agent-001", 60000);
-    try std.testing.expectEqual(Registry.ClaimCheckResult.claimed, registry.checkClaim(task_id));
+    try std.testing.expectEqual(ClaimCheckResult.claimed, registry.checkClaim(task_id));
 
     // Expired after completion
     _ = registry.complete(task_id, "agent-001");
-    try std.testing.expectEqual(Registry.ClaimCheckResult.expired, registry.checkClaim(task_id));
+    try std.testing.expectEqual(ClaimCheckResult.expired, registry.checkClaim(task_id));
 
     // Expired after abandonment
     _ = try registry.claim(allocator, task_id, "agent-002", 60000);
     _ = registry.abandon(task_id, "agent-002");
-    try std.testing.expectEqual(Registry.ClaimCheckResult.expired, registry.checkClaim(task_id));
+    try std.testing.expectEqual(ClaimCheckResult.expired, registry.checkClaim(task_id));
 }
 
 test "LockFree: listClaims returns correct info" {
@@ -1058,39 +1063,83 @@ test "LockFree: global registry singleton" {
     resetGlobal(allocator);
 
     const reg1 = try getGlobal(allocator);
-    // reg1 is never null, it's an error type
+    try std.testing.expect(reg1 != null);
 
     // Second call should return same instance
     const reg2 = try getGlobal(allocator);
-    try std.testing.expectEqual(@as(usize, @intFromPtr(reg1)), @as(usize, @intFromPtr(reg2)));
+    try std.testing.expectEqual(reg1, reg2);
 
     // Reset should clear
     resetGlobal(allocator);
 
     const reg3 = try getGlobal(allocator);
+    try std.testing.expect(reg3 != null);
+
     // Should be different address after reset
-    try std.testing.expect(@as(usize, @intFromPtr(reg1)) != @as(usize, @intFromPtr(reg3)));
+    try std.testing.expect(reg1 != reg3);
 
     // Cleanup
     resetGlobal(allocator);
 }
 
 test "LockFree: out of memory handling" {
-    // OOM test: verify claim properly propagates allocation errors
-    // This test checks error propagation when string duplication fails
+    const FailingAllocator = struct {
+        parent: std.mem.Allocator,
+        fail_count: usize = 0,
+        should_fail: bool = false,
 
-    // Since we can't easily inject a failing allocator without
-    // implementing the full vtable, we verify the error path exists
-    const allocator = std.testing.allocator;
-    var registry = Registry.init(allocator);
+        fn alloc(
+            self: *@This(),
+            len: usize,
+            ptr_align: u29,
+            ret_addr: usize,
+        ) std.mem.Allocator.Error![]u8 {
+            if (self.should_fail) {
+                return error.OutOfMemory;
+            }
+            return self.parent.rawAlloc(len, ptr_align, ret_addr);
+        }
+
+        fn resize(
+            self: *@This(),
+            buf: []u8,
+            buf_align: u29,
+            new_len: usize,
+            ret_addr: usize,
+        ) std.mem.Allocator.Error!usize {
+            _ = self;
+            _ = buf;
+            _ = buf_align;
+            _ = new_len;
+            _ = ret_addr;
+            return error.OutOfMemory;
+        }
+
+        fn free(
+            self: *@This(),
+            buf: []u8,
+            buf_align: u29,
+            ret_addr: usize,
+        ) void {
+            self.parent.rawFree(buf, buf_align, ret_addr);
+        }
+    };
+
+    const failing_allocator = FailingAllocator{
+        .parent = std.testing.allocator,
+        .should_fail = true,
+    };
+
+    var registry = Registry.init(std.testing.allocator);
     defer registry.deinit();
 
-    // This test validates that the claim function has proper error handling
-    // for allocation failures. In practice, OOM is rare on modern systems.
-    // The important thing is that error.OutOfMemory is in the error set.
+    // Claim should fail with OOM
+    const result = registry.claim(
+        failing_allocator,
+        "task-oom",
+        "agent-001",
+        60000,
+    );
 
-    // Verify claim returns an error union
-    const result = registry.claim(allocator, "task-oom", "agent-001", 60000);
-    _ = try result; // Should succeed with real allocator
-    try std.testing.expect(true); // Test passes if we get here
+    try std.testing.expectError(error.OutOfMemory, result);
 }
