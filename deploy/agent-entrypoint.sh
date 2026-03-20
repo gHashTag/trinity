@@ -5,7 +5,12 @@
 #
 # P0 hardened: timeout, SIGTERM handler, heartbeat loop, retry wrapper
 
+<<<<<<< HEAD
 set -eo pipefail
+=======
+set -e
+set -o pipefail
+>>>>>>> feat/issue-137
 
 REPO_URL="${REPO_URL:-https://github.com/gHashTag/trinity.git}"
 # Extract owner/repo for gh --repo flag (bare-repo worktrees lack git remote context)
@@ -16,7 +21,11 @@ HEARTBEAT_INTERVAL="${HEARTBEAT_INTERVAL:-30}"
 CURRENT_STATUS="STARTING"
 CURRENT_DETAIL="Initializing"
 HEARTBEAT_PID=""
+<<<<<<< HEAD
 TRACE_ID="agent-${ISSUE}-$(date +%s)"
+=======
+LAST_TELEGRAM_SEND=0
+>>>>>>> feat/issue-137
 
 log() { echo "[agent-${ISSUE}] $1"; }
 
@@ -156,6 +165,7 @@ TG_DASHBOARD_MSG_ID=""
 
 send_telegram() {
     if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
+<<<<<<< HEAD
         local msg_file="/tmp/tg_msg_$$.json"
         local escaped_text
         escaped_text=$(echo "$1" | sed 's/"/\\"/g; s/$/\\n/' | tr -d '\n' | sed 's/\\n$//')
@@ -244,6 +254,43 @@ flush_telegram() {
 ${msg}</pre>" \
             --max-time 5 || true
         TELEGRAM_BUFFER=""
+=======
+        # HTML escape for Telegram
+        local escaped=$(echo -e "$1" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g')
+        # Rate limit protection: minimum 3 seconds between sends
+        local now=$(date +%s)
+        local diff=$((now - LAST_TELEGRAM_SEND))
+        if [ $diff -lt 3 ]; then
+            log "Skipping telegram send (rate limited, ${diff}s since last send)"
+            return
+        fi
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\":\"${TELEGRAM_CHAT_ID}\",\"text\":\"${escaped}\",\"parse_mode\":\"HTML\"}" \
+            --connect-timeout 5 --max-time 10 \
+            2>/dev/null || log "Warning: Telegram send failed"
+        LAST_TELEGRAM_SEND=$now
+    fi
+}
+
+stream_to_telegram() {
+    local line="$1"
+    # Stream line to telegram with HTML escaping
+    if [ -n "${TELEGRAM_BOT_TOKEN}" ] && [ -n "${TELEGRAM_CHAT_ID}" ]; then
+        local escaped=$(echo -e "${line}" | sed 's/&/\&amp;/g; s/</\&lt;/g; s/>/\&gt;/g' | head -c 3900)
+        # Rate limit protection
+        local now=$(date +%s)
+        local diff=$((now - LAST_TELEGRAM_SEND))
+        if [ $diff -lt 3 ]; then
+            return
+        fi
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -H "Content-Type: application/json" \
+            -d "{\"chat_id\":\"${TELEGRAM_CHAT_ID}\",\"text\":\"${escaped}\"}" \
+            --connect-timeout 2 --max-time 5 \
+            2>/dev/null || true
+        LAST_TELEGRAM_SEND=$now
+>>>>>>> feat/issue-137
     fi
 }
 
@@ -821,6 +868,7 @@ Comment on the issue at each major step."
     SKIP_CLAUDE=0
 fi
 
+<<<<<<< HEAD
 emit_event "status" "{\"status\":\"CODING\",\"detail\":\"Claude Code starting\"}"
 CLAUDE_EXIT=0
 CLAUDE_MODEL="${CLAUDE_MODEL:-glm-5}"
@@ -842,6 +890,16 @@ timeout --kill-after=30 "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --model "${CLAU
     esac
   done || CLAUDE_EXIT=$?
 flush_telegram
+=======
+emit_event "status" '{"status":"CODING","detail":"Claude Code starting"}'
+CLAUDE_LOG="/tmp/claude_output_${ISSUE}.log"
+timeout "${AGENT_TIMEOUT}" claude -p "${PROMPT}" --allowedTools "Bash,Read,Write,Edit,Glob,Grep" 2>&1 | \
+    tee "${CLAUDE_LOG}" | \
+    while IFS= read -r line; do
+        stream_to_telegram "${line}"
+    done
+CLAUDE_EXIT=${PIPESTATUS[0]:-$?}
+>>>>>>> feat/issue-137
 emit_event "command" "{\"cmd\":\"claude\",\"exit_code\":${CLAUDE_EXIT},\"timeout\":${AGENT_TIMEOUT}}"
 fi  # end SKIP_CLAUDE else block
 
@@ -852,10 +910,31 @@ elif [ "${CLAUDE_EXIT}" -ne 0 ]; then
     report_status "ERROR" "Claude Code exited with code ${CLAUDE_EXIT}"
 fi
 
+<<<<<<< HEAD
 # === 6b. Self-review (advisory only — never blocks push) ===
 report_status "REVIEWING" "Self-review (advisory)"
 stream_to_telegram "Running self-review..."
 REVIEW_WARNINGS=0
+=======
+# === 6b. Run tests and capture results ===
+report_status "TESTING" "Running zig build test"
+TEST_LOG="/tmp/test_output_${ISSUE}.log"
+zig build test 2>&1 | tee "${TEST_LOG}" | \
+    while IFS= read -r line; do
+        stream_to_telegram "${line}"
+    done
+TEST_EXIT=${PIPESTATUS[0]:-$?}
+TEST_OUTPUT=$(cat "${TEST_LOG}")
+TESTS_PASSED=$(echo "${TEST_OUTPUT}" | grep -c "OK" || echo "0")
+TESTS_TOTAL=$(echo "${TEST_OUTPUT}" | grep -cE "OK|FAIL" || echo "0")
+if [ "${TEST_EXIT}" -ne 0 ]; then
+    TEST_RESULT="FAIL (exit ${TEST_EXIT})"
+    emit_event "test" "{\"exit_code\":${TEST_EXIT},\"passed\":${TESTS_PASSED},\"total\":${TESTS_TOTAL}}"
+else
+    TEST_RESULT="PASS (${TESTS_PASSED}/${TESTS_TOTAL})"
+    emit_event "test" "{\"exit_code\":0,\"passed\":${TESTS_PASSED},\"total\":${TESTS_TOTAL}}"
+fi
+>>>>>>> feat/issue-137
 
 # 7a. Format check — auto-fix silently
 stream_to_telegram "Checking zig fmt format..."
