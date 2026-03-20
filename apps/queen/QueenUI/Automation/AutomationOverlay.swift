@@ -199,7 +199,7 @@ public struct AutomationOverlay: View {
                             .stroke(Color.white, lineWidth: 1)
                     )
                 Text(point.label)
-                    .font(.system(size: 6, weight: .bold, design: .monospaced))
+                    .font(WernickeTypography.microMedium)
                     .foregroundStyle(.purple.opacity(0.9))
             }
             .position(point.position)

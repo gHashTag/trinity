@@ -664,7 +664,7 @@ struct SmartSuggestionPopup: View {
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(Color.white.opacity(V2Depth.bgSubtle), lineWidth: 1)
             )
-            .shadow(radius: 10)
+            .shadow(radius: ParietalSpacing.md)
         }
     }
 
