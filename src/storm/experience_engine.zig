@@ -198,9 +198,9 @@ pub const ExperienceEngine = struct {
         const file = try std.fs.cwd().createFile(file_path, .{});
         defer file.close();
 
-        // TODO: Write episode as JSON
-        _ = episode;
-        _ = file;
+        // TODO: Write episode as JSON to file
+        // For now: use episode to avoid unused warning
+        _ = episode.task.len;
     }
 
     /// Load blacklist from JSON
@@ -220,8 +220,9 @@ pub const ExperienceEngine = struct {
         const content = try file.readToEndAlloc(ee.allocator, 1024 * 1024);
         defer ee.allocator.free(content);
 
-        // TODO: Parse JSON
-        _ = content;
+        // TODO: Parse JSON from content
+        // Use content to avoid unused warning
+        _ = content.len;
 
         return Blacklist{
             .entries = &[_]FailureRecord{},
@@ -230,7 +231,7 @@ pub const ExperienceEngine = struct {
     }
 
     /// Save blacklist to JSON
-    fn saveBlacklist(ee: *ExperienceEngine, blacklist: *const Blacklist) !void {
+    fn saveBlacklist(ee: *ExperienceEngine, _: *const Blacklist) !void {
         // Ensure directory exists
         std.fs.cwd().makePath(".trinity/mistakes") catch {};
 
@@ -238,7 +239,6 @@ pub const ExperienceEngine = struct {
         defer file.close();
 
         // TODO: Write JSON
-        _ = blacklist;
     }
 };
 
