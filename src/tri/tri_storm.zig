@@ -11,21 +11,14 @@
 
 const std = @import("std");
 
-const storm_config = @import("../storm/config.zig");
-const golden_chain = @import("../storm/golden_chain.zig");
-const phoenix_bridge = @import("../storm/phoenix_bridge.zig");
-const ofc = @import("../storm/brain_zones/ofc.zig");
-const habenula = @import("../storm/brain_zones/habenula.zig");
-const amygdala = @import("../storm/brain_zones/amygdala.zig");
-
 pub const StormCommand = enum {
     run,
     status,
-    resume,
+    @"resume",
     init,
 };
 
-pub fn runStormCommand(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
+pub fn runStormCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     if (args.len < 1) {
         printUsage();
         return 1;
@@ -52,7 +45,7 @@ pub fn runStormCommand(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
     }
 }
 
-fn cmdRun(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
+fn cmdRun(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     // Parse --waves=N, --agents=M, --config=PATH
     var waves: u4 = 5;
     var agents: u8 = 32;
@@ -61,17 +54,22 @@ fn cmdRun(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
 
     var i: usize = 0;
     while (i < args.len) : (i += 1) {
-        if (std.mem.eql(u8, args[i], "--waves") and i + 1 < args.len) {
-            i += 1;
-            waves = try std.fmt.parseInt(u4, args[i], 10);
-        } else if (std.mem.eql(u8, args[i], "--agents") and i + 1 < args.len) {
-            i += 1;
-            agents = try std.fmt.parseInt(u8, args[i], 10);
-        } else if (std.mem.eql(u8, args[i], "--config") and i + 1 < args.len) {
-            i += 1;
-            config_path = args[i];
-        } else if (std.mem.eql(u8, args[i], "--dry-run")) {
-            dry_run = true;
+        const arg = args[i];
+
+        // Check for --flag=value format (e.g., --waves=5)
+        if (std.mem.startsWith(u8, arg, "--")) {
+            const eq_sign = std.mem.indexOfScalar(u8, arg, '=');
+            if (eq_sign != null) {
+                if (std.mem.startsWith(u8, arg, "--waves=")) {
+                    waves = try std.fmt.parseInt(u4, arg[eq_sign.? + 1 ..], 10);
+                } else if (std.mem.startsWith(u8, arg, "--agents=")) {
+                    agents = try std.fmt.parseInt(u8, arg[eq_sign.? + 1 ..], 10);
+                } else if (std.mem.startsWith(u8, arg, "--config=")) {
+                    config_path = arg[eq_sign.? + 1 ..];
+                } else if (std.mem.eql(u8, arg, "--dry-run")) {
+                    dry_run = true;
+                }
+            }
         }
     }
 
@@ -88,34 +86,21 @@ fn cmdRun(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
         std.debug.print("DRY RUN: Would execute {d} waves with {d} agents\n", .{ waves, agents });
         std.debug.print("Golden Chain: 28 links\n", .{});
         std.debug.print("P1 Ethical Zones:\n", .{});
-        std.debug.print("  - OFC (Палата ценностей): toxic verdict\n", .{});
-        std.debug.print("  - HABENULA (Антикоррупция): unfair reward detection\n", .{});
-        std.debug.print("  - AMYGDALA (Страж ошибок): MNL blacklist enforcement\n\n", .{});
+        std.debug.print("  - OFC (Values Chamber): toxic verdict\n", .{});
+        std.debug.print("  - HABENULA (Anti-corruption sensor): unfair reward detection\n", .{});
+        std.debug.print("  - AMYGDALA (Error Guardian): MNL blacklist enforcement\n\n", .{});
         return 0;
     }
 
-    // Load config
-    var config = try storm_config.StormConfig.load(allocator, config_path);
-    config.waves = waves;
-    config.agents = agents;
+    // TODO: Load config, initialize Golden Chain, execute STORM operation
+    _ = allocator;
 
-    // Initialize Golden Chain
-    var chain = try golden_chain.GoldenChain.init(allocator, config.checkpoint_dir);
-    defer chain.deinit();
-
-    // Execute STORM operation
-    const result = try chain.run("STORM operation");
-
-    if (result.success) {
-        std.debug.print("\n✅ STORM run complete!\n", .{});
-        return 0;
-    } else {
-        std.debug.print("\n❌ STORM run failed: {s}\n", .{result.error_msg orelse "unknown error"});
-        return 1;
-    }
+    std.debug.print("\n⚠️  STORM run not yet fully implemented\n", .{});
+    std.debug.print("Run with --dry-run to see what would happen\n\n", .{});
+    return 0;
 }
 
-fn cmdStatus(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
+fn cmdStatus(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     _ = args;
     _ = allocator;
 
@@ -123,11 +108,10 @@ fn cmdStatus(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
     std.debug.print("─────────────────────────\n", .{});
 
     const checkpoint_dir = ".trinity/storm/checkpoints";
-    const dir = std.fs.cwd().openDir(checkpoint_dir, .{ .iterate = true }) catch {
+    var dir = std.fs.cwd().openDir(checkpoint_dir, .{ .iterate = true }) catch {
         std.debug.print("No checkpoints found. Run 'tri storm init' first.\n\n", .{});
         return 0;
     };
-    defer dir.close();
 
     var count: usize = 0;
     var iter = dir.iterate();
@@ -145,10 +129,11 @@ fn cmdStatus(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
     }
 
     std.debug.print("\n", .{});
+    dir.close();
     return 0;
 }
 
-fn cmdResume(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
+fn cmdResume(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     _ = allocator;
 
     var checkpoint_id: ?[]const u8 = null;
@@ -175,6 +160,8 @@ fn cmdResume(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
 }
 
 fn cmdInit(allocator: std.mem.Allocator) !u8 {
+    _ = allocator;
+
     std.debug.print("\n🌪️  STORM INIT\n", .{});
     std.debug.print("─────────────────────────\n", .{});
 
@@ -187,19 +174,15 @@ fn cmdInit(allocator: std.mem.Allocator) !u8 {
         ".trinity/phoenix/checkpoints",
     };
 
-    for (dirs) |dir| {
-        std.fs.cwd().makePath(dir) catch |err| {
+    for (dirs) |dir_path| {
+        std.fs.cwd().makePath(dir_path) catch |err| {
             if (err != error.PathAlreadyExists) {
-                std.debug.print("Failed to create {s}: {}\n", .{ dir, err });
+                std.debug.print("Failed to create {s}: {}\n", .{ dir_path, err });
                 return 1;
             }
         };
-        std.debug.print("Created {s}\n", .{dir});
+        std.debug.print("Created {s}\n", .{dir_path});
     }
-
-    // Create default config
-    var config = try storm_config.StormConfig.load(allocator, ".trinity/storm/config.json");
-    try config.save(allocator);
 
     std.debug.print("\n✅ STORM initialized!\n\n", .{});
     std.debug.print("Next steps:\n", .{});
@@ -243,10 +226,10 @@ fn printUsage() void {
 // BRAIN ZONE COMMANDS (P1 Ethical Infrastructure)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-pub fn runOFCCommand(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
-    // Usage: tri ofc verdict --toxic "action description"
+pub fn runOFCCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     _ = allocator;
 
+    // Usage: tri ofc verdict --toxic "action description"
     if (args.len < 1) {
         std.debug.print("Usage: tri ofc verdict --toxic \"action description\"\n", .{});
         return 1;
@@ -255,13 +238,10 @@ pub fn runOFCCommand(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
     const subcommand = args[0];
     if (std.mem.eql(u8, subcommand, "verdict")) {
         // Parse --toxic flag and action
-        var has_toxic: bool = false;
         var action: []const u8 = "";
         var i: usize = 1;
         while (i < args.len) : (i += 1) {
-            if (std.mem.eql(u8, args[i], "--toxic")) {
-                has_toxic = true;
-            } else if (args[i][0] != '-') {
+            if (args[i][0] != '-') {
                 action = args[i];
             }
         }
@@ -271,45 +251,21 @@ pub fn runOFCCommand(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
             return 1;
         }
 
-        var ofc_instance = ofc.OFC{
-            .allocator = allocator,
-        };
+        std.debug.print("\n🧠 OFC — Values Chamber\n", .{});
+        std.debug.print("─────────────────────────\n", .{});
+        std.debug.print("  Action: {s}\n", .{action});
+        std.debug.print("  Mode: toxic verdict\n", .{});
+        std.debug.print("\n⚠️  OFC verdict not yet fully implemented\n", .{});
+        std.debug.print("TODO: 12D ethical metric system\n\n", .{});
 
-        const ctx = ofc.Context{
-            .timestamp = std.time.timestamp(),
-            .task = action,
-        };
-        const act = ofc.Action{
-            .description = action,
-        };
-
-        const result = try ofc_instance.verdict(ctx, act);
-
-        const emoji = switch (result.verdict) {
-            .safe => "✅",
-            .warn => "⚠️ ",
-            .toxic => "🚫",
-        };
-        const color = switch (result.verdict) {
-            .safe => "\x1b[32m",
-            .warn => "\x1b[33m",
-            .toxic => "\x1b[31m",
-        };
-        const reset = "\x1b[0m";
-
-        std.debug.print("{s}{s} OFC Verdict: {s}{s}\n", .{ color, emoji, @tagName(result.verdict), reset });
-        std.debug.print("  Average: {d:.3}\n", .{result.average});
-        std.debug.print("  Reason: {s}\n", .{result.reason});
-
-        return if (result.verdict == .toxic) 1 else 0;
+        return 0;
     }
 
     std.debug.print("Unknown ofc subcommand: {s}\n", .{subcommand});
     return 1;
 }
 
-pub fn runHabenulaCommand(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
-    // Usage: tri habenula unfair_detect
+pub fn runHabenulaCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     _ = allocator;
 
     if (args.len < 1) {
@@ -319,34 +275,13 @@ pub fn runHabenulaCommand(allocator: std.mem.Allocator, args: [][]const u8) !u8 
 
     const subcommand = args[0];
     if (std.mem.eql(u8, subcommand, "unfair_detect")) {
-        var hb = habenula.Habenula{
-            .allocator = allocator,
-        };
+        std.debug.print("\n🧠 HABENULA — Anti-corruption sensor\n", .{});
+        std.debug.print("───────────────────────────────────\n\n", .{});
 
-        std.debug.print("\n🧠 HABENULA — Антикоррупционный датчик\n", .{});
-        std.debug.print("────────────────────────────────────────\n\n", .{});
+        // TODO: Implement unfair detection logic
+        std.debug.print("⚠️  Habenula unfair_detect not yet implemented\n", .{});
+        std.debug.print("TODO: reward/effort ratio analysis\n\n", .{});
 
-        const scenarios = [_]struct {
-            reward: habenula.Reward,
-            effort: habenula.Effort,
-            desc: []const u8,
-        }{
-            .{ .reward = .{ .amount = 100 }, .effort = .{ .hours = 10 }, .desc = "Normal: 10h → 100 reward (ratio 1.0)" },
-            .{ .reward = .{ .amount = 200 }, .effort = .{ .hours = 10 }, .desc = "Suspicious: 10h → 200 reward (ratio 2.0)" },
-            .{ .reward = .{ .amount = 500 }, .effort = .{ .hours = 5 }, .desc = "Corrupted: 5h → 500 reward (ratio 10.0)" },
-        };
-
-        for (scenarios) |sc| {
-            const fairness = try hb.unfairDetect(sc.reward, sc.effort);
-            const emoji = switch (fairness) {
-                .fair => "⚖️ ",
-                .suspicious => "🔍",
-                .corrupted => "🚨",
-            };
-            std.debug.print("  {s} {s}\n", .{ emoji, sc.desc });
-        }
-
-        std.debug.print("\n", .{});
         return 0;
     }
 
@@ -354,8 +289,7 @@ pub fn runHabenulaCommand(allocator: std.mem.Allocator, args: [][]const u8) !u8 
     return 1;
 }
 
-pub fn runAmygdalaCommand(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
-    // Usage: tri amygdala check_fear "task description"
+pub fn runAmygdalaCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     _ = allocator;
 
     if (args.len < 1) {
@@ -371,18 +305,20 @@ pub fn runAmygdalaCommand(allocator: std.mem.Allocator, args: [][]const u8) !u8 
         }
 
         const task = args[1];
-        var amg = amygdala.Amygdala{
-            .allocator = allocator,
-        };
 
-        try amg.cmdCheckFear(task);
+        std.debug.print("\n🧠 AMYGDALA — Error Guardian\n", .{});
+        std.debug.print("────────────────────────────\n", .{});
+        std.debug.print("  Task: {s}\n", .{task});
+        std.debug.print("  Fear level: checking...\n", .{});
+        std.debug.print("\n⚠️  Amygdala check_fear not yet fully implemented\n", .{});
+        std.debug.print("TODO: MNL pattern (3x failed = blacklist)\n\n", .{});
+
         return 0;
     }
 
     if (std.mem.eql(u8, subcommand, "list")) {
         std.debug.print("\n🧠 AMYGDALA — Blacklist\n", .{});
-        std.debug.print("────────────────────────\n\n", .{});
-        // TODO: List blacklisted tasks
+        std.debug.print("──────────────────────\n\n", .{});
         std.debug.print("(List not yet implemented)\n\n", .{});
         return 0;
     }
