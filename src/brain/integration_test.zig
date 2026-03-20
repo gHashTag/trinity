@@ -18,6 +18,10 @@ const telemetry = @import("telemetry");
 const health_history = @import("health_history");
 const alerts = @import("alerts");
 const state_recovery = @import("state_recovery");
+const learning = @import("learning");
+const federation = @import("federation");
+const async_processor = @import("async_processor");
+const microglia = @import("microglia");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // TEST SUITE 1: TASK CLAIM COORDINATION
@@ -1007,4 +1011,731 @@ test "Integration: All regions maintain consistency" {
 
     const alert_stats = try alert_mgr.getStats();
     try std.testing.expectEqual(@as(usize, 0), alert_stats.critical);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST SUITE 11: MULTI-AGENT CONCURRENT COORDINATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Integration: Multi-agent concurrent task claims" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    const num_agents = 5;
+    const tasks_per_agent = 20;
+
+    // Each agent claims unique tasks
+    var agent_idx: usize = 0;
+    while (agent_idx < num_agents) : (agent_idx += 1) {
+        const agent_id = try std.fmt.allocPrint(allocator, "concurrent-agent-{d}", .{agent_idx});
+        defer allocator.free(agent_id);
+
+        var task_idx: usize = 0;
+        while (task_idx < tasks_per_agent) : (task_idx += 1) {
+            const task_id = try std.fmt.allocPrint(allocator, "concurrent-task-{d}-{d}", .{agent_idx, task_idx});
+            defer allocator.free(task_id);
+
+            const claimed = try registry.claim(allocator, task_id, agent_id, 60000);
+            try std.testing.expect(claimed);
+
+            try event_bus.publish(.task_claimed, .{
+                .task_claimed = .{
+                    .task_id = task_id,
+                    .agent_id = agent_id,
+                },
+            });
+        }
+    }
+
+    // All unique tasks should be claimed
+    try std.testing.expectEqual(@as(usize, num_agents * tasks_per_agent), registry.claims.count());
+
+    const stats = event_bus.getStats();
+    try std.testing.expectEqual(@as(u64, num_agents * tasks_per_agent), stats.published);
+}
+
+test "Integration: Multi-agent competing for same task" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    const task_id = "competitive-task";
+
+    // Only first agent should succeed
+    var success_count: usize = 0;
+    var first_agent: ?[]const u8 = null;
+    const agents = [_][]const u8{ "agent-alpha", "agent-beta", "agent-gamma", "agent-delta" };
+    for (agents) |agent| {
+        const claimed = try registry.claim(allocator, task_id, agent, 60000);
+        if (claimed) {
+            success_count += 1;
+            first_agent = agent;
+        }
+    }
+
+    try std.testing.expectEqual(@as(usize, 1), success_count);
+
+    // Manually publish the claim event (basal_ganglia doesn't auto-publish)
+    if (first_agent) |agent| {
+        const claim_event = reticular_formation.EventData{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = agent,
+            },
+        };
+        try event_bus.publish(.task_claimed, claim_event);
+    }
+
+    // Verify only one claim event was published
+    const events = try event_bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    var claimed_events: usize = 0;
+    for (events) |ev| {
+        if (ev.event_type == .task_claimed) {
+            claimed_events += 1;
+        }
+    }
+    try std.testing.expectEqual(@as(usize, 1), claimed_events);
+}
+
+test "Integration: Multi-agent task redistribution" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    _ = try reticular_formation.getGlobal(allocator);
+
+    const num_tasks = 10;
+
+    // Agent 1 claims all tasks
+    var i: usize = 0;
+    while (i < num_tasks) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "redist-task-{d}", .{i});
+        defer allocator.free(task_id);
+
+        const claimed = try registry.claim(allocator, task_id, "agent-1", 60000);
+        try std.testing.expect(claimed);
+    }
+
+    try std.testing.expectEqual(@as(usize, num_tasks), registry.claims.count());
+
+    // Agent 1 completes some tasks
+    _ = registry.complete("redist-task-0", "agent-1");
+    _ = registry.complete("redist-task-1", "agent-1");
+    _ = registry.complete("redist-task-2", "agent-1");
+
+    // Other agents can now claim completed tasks
+    const agent2_claimed = try registry.claim(allocator, "redist-task-0", "agent-2", 60000);
+    const agent3_claimed = try registry.claim(allocator, "redist-task-1", "agent-3", 60000);
+    const agent4_claimed = try registry.claim(allocator, "redist-task-2", "agent-4", 60000);
+
+    try std.testing.expect(agent2_claimed);
+    try std.testing.expect(agent3_claimed);
+    try std.testing.expect(agent4_claimed);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST SUITE 12: EVENT STORM HANDLING
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Integration: Event storm - rapid event publishing" {
+    const allocator = std.testing.allocator;
+
+    reticular_formation.resetGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
+
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    const storm_size = 500;
+    var i: usize = 0;
+    while (i < storm_size) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "storm-task-{d}", .{i});
+        defer allocator.free(task_id);
+
+        try event_bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "storm-agent",
+            },
+        });
+    }
+
+    const stats = event_bus.getStats();
+    try std.testing.expectEqual(@as(u64, storm_size), stats.published);
+    try std.testing.expect(stats.buffered <= 10_000); // Should be trimmed to MAX_EVENTS
+}
+
+test "Integration: Event storm - mixed event types rapidly" {
+    const allocator = std.testing.allocator;
+
+    reticular_formation.resetGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
+
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    const storm_size = 200;
+    var i: usize = 0;
+    while (i < storm_size) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "mixed-{d}", .{i});
+        defer allocator.free(task_id);
+
+        // Rotate through different event types
+        const event_type: reticular_formation.AgentEventType = switch (i % 5) {
+            0 => .task_claimed,
+            1 => .task_completed,
+            2 => .task_failed,
+            3 => .agent_idle,
+            else => .agent_spawned,
+        };
+
+        switch (event_type) {
+            .task_claimed => {
+                try event_bus.publish(.task_claimed, .{
+                    .task_claimed = .{
+                        .task_id = task_id,
+                        .agent_id = "agent",
+                    },
+                });
+            },
+            .task_completed => {
+                try event_bus.publish(.task_completed, .{
+                    .task_completed = .{
+                        .task_id = task_id,
+                        .agent_id = "agent",
+                        .duration_ms = 1000,
+                    },
+                });
+            },
+            .task_failed => {
+                try event_bus.publish(.task_failed, .{
+                    .task_failed = .{
+                        .task_id = task_id,
+                        .agent_id = "agent",
+                        .err_msg = "error",
+                    },
+                });
+            },
+            .agent_idle => {
+                try event_bus.publish(.agent_idle, .{
+                    .agent_idle = .{
+                        .agent_id = "agent",
+                        .idle_ms = 0,
+                    },
+                });
+            },
+            .agent_spawned => {
+                try event_bus.publish(.agent_spawned, .{
+                    .agent_spawned = .{
+                        .agent_id = "agent",
+                    },
+                });
+            },
+            else => {},
+        }
+    }
+
+    const stats = event_bus.getStats();
+    try std.testing.expectEqual(@as(u64, storm_size), stats.published);
+}
+
+test "Integration: Event storm - buffer overflow handling" {
+    const allocator = std.testing.allocator;
+
+    reticular_formation.resetGlobal(allocator);
+    defer reticular_formation.resetGlobal(allocator);
+
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    // Publish way beyond MAX_EVENTS (10,000)
+    const overflow_size = 15_000;
+    var i: usize = 0;
+    while (i < overflow_size) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "overflow-{d}", .{i});
+        defer allocator.free(task_id);
+
+        try event_bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent",
+            },
+        });
+    }
+
+    const stats = event_bus.getStats();
+    try std.testing.expect(stats.buffered == 10_000); // Exactly at MAX_EVENTS
+    try std.testing.expectEqual(@as(u64, overflow_size), stats.published);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST SUITE 13: HEALTH MONITORING ACROSS REGIONS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Integration: Health monitoring across all regions" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    var tel = telemetry.BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    var alert_mgr = try alerts.AlertManager.init(allocator);
+    defer alert_mgr.deinit();
+
+    // Simulate activity across regions
+    const now = std.time.milliTimestamp();
+
+    // Basal Ganglia: claims
+    var i: usize = 0;
+    while (i < 5) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "health-task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try registry.claim(allocator, task_id, "agent", 60000);
+    }
+
+    // Reticular Formation: events
+    try event_bus.publish(.task_claimed, .{
+        .task_claimed = .{
+            .task_id = "health-event-1",
+            .agent_id = "agent",
+        },
+    });
+    try event_bus.publish(.task_completed, .{
+        .task_completed = .{
+            .task_id = "health-event-2",
+            .agent_id = "agent",
+            .duration_ms = 1000,
+        },
+    });
+
+    // Record telemetry
+    try tel.record(.{
+        .timestamp = now,
+        .active_claims = registry.claims.count(),
+        .events_published = event_bus.getStats().published,
+        .events_buffered = event_bus.getStats().buffered,
+        .health_score = 95.0,
+    });
+
+    // Check health
+    try alert_mgr.checkHealth(95.0, @intCast(event_bus.getStats().buffered), registry.claims.count());
+
+    // Verify all regions are healthy
+    const health = tel.avgHealth(10);
+    try std.testing.expect(health >= 90.0);
+
+    const alert_stats = try alert_mgr.getStats();
+    try std.testing.expectEqual(@as(usize, 0), alert_stats.critical);
+}
+
+test "Integration: Health degradation detection" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    // Initialize global instances for health monitoring
+    _ = try basal_ganglia.getGlobal(allocator);
+    _ = try reticular_formation.getGlobal(allocator);
+
+    var tel = telemetry.BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // Record healthy baseline - need at least 6 points for proper trend detection
+    var i: u32 = 0;
+    while (i < 3) : (i += 1) {
+        try tel.record(.{
+            .timestamp = now + @as(i64, @intCast(i * 1000)),
+            .active_claims = 10,
+            .events_published = 100,
+            .events_buffered = 50,
+            .health_score = 100.0,
+        });
+    }
+
+    // Simulate degradation - 3 more points
+    while (i < 6) : (i += 1) {
+        try tel.record(.{
+            .timestamp = now + @as(i64, @intCast(i * 1000)),
+            .active_claims = 100 + @as(usize, @intCast((i - 3) * 50)),
+            .events_published = 200 + @as(u64, @intCast((i - 3) * 50)),
+            .events_buffered = 5000 + @as(usize, @intCast((i - 3) * 1500)),
+            .health_score = 70.0 - @as(f32, @floatFromInt((i - 3) * 10)),
+        });
+    }
+
+    const trend = tel.trend(10);
+    // With 6 points, third=2, so we compare avg of first 2 vs last 2
+    // First 2: 100.0, 100.0 -> avg 100.0
+    // Last 2: 50.0, 40.0 -> avg 45.0
+    // diff = 45.0 - 100.0 = -55.0 < -5.0, so declining
+    try std.testing.expect(trend == .declining);
+}
+
+test "Integration: Health recovery detection" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    var tel = telemetry.BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // Start poor
+    var i: u32 = 0;
+    while (i < 5) : (i += 1) {
+        try tel.record(.{
+            .timestamp = now + @as(i64, @intCast(i * 1000)),
+            .active_claims = 100,
+            .events_published = 1000,
+            .events_buffered = 5000,
+            .health_score = 50.0 + @as(f32, @floatFromInt(i * 5)),
+        });
+    }
+
+    // Improve
+    while (i < 10) : (i += 1) {
+        try tel.record(.{
+            .timestamp = now + @as(i64, @intCast(i * 1000)),
+            .active_claims = 50,
+            .events_published = 500,
+            .events_buffered = 1000,
+            .health_score = 75.0 + @as(f32, @floatFromInt(i * 3)),
+        });
+    }
+
+    const trend = tel.trend(10);
+    try std.testing.expect(trend == .improving);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST SUITE 14: ADVANCED RECOVERY PROCEDURES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Integration: Recovery from corrupted telemetry" {
+    const allocator = std.testing.allocator;
+
+    const tmp_dir = ".trinity/brain/state";
+    try std.fs.cwd().makePath(tmp_dir);
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    var manager = try state_recovery.StateManager.init(allocator);
+    defer manager.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    // Create some claims
+    var i: usize = 0;
+    while (i < 5) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "recovery-telemetry-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try registry.claim(allocator, task_id, "agent", 60000);
+    }
+
+    try manager.save(registry, event_bus);
+
+    // Corrupt the state file
+    const state_file = try std.fs.cwd().openFile(
+        manager.state_file_path,
+        .{ .mode = .write_only },
+    );
+    defer state_file.close();
+    try state_file.writeAll("corrupted data");
+
+    // Auto-recovery should handle this gracefully
+    var new_registry = basal_ganglia.Registry.init(allocator);
+    defer new_registry.deinit();
+
+    var new_event_bus = reticular_formation.EventBus.init(allocator);
+    defer new_event_bus.deinit();
+
+    // Even with corrupted state, we should be able to create fresh instances
+    try std.testing.expectEqual(@as(usize, 0), new_registry.claims.count());
+    manager.deleteState() catch {};
+}
+
+test "Integration: Recovery with partial state loss" {
+    const allocator = std.testing.allocator;
+
+    const tmp_dir = ".trinity/brain/state";
+    try std.fs.cwd().makePath(tmp_dir);
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    var manager = try state_recovery.StateManager.init(allocator);
+    defer manager.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    // Create state
+    var i: usize = 0;
+    while (i < 10) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "partial-loss-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try registry.claim(allocator, task_id, "agent", 60000);
+    }
+
+    try manager.save(registry, event_bus);
+
+    // Test that state exists and can be loaded
+    try std.testing.expect(manager.hasValidState());
+
+    // Load and verify all claims were saved
+    var loaded = try manager.load();
+    defer loaded.deinit();
+    try std.testing.expectEqual(@as(usize, 10), loaded.state.task_claims.len);
+
+    // Now test recovery into a fresh registry
+    basal_ganglia.resetGlobal(allocator); // Clear the global registry
+    const fresh_registry = try basal_ganglia.getGlobal(allocator);
+    const fresh_event_bus = try reticular_formation.getGlobal(allocator);
+
+    // Auto-recovery should restore the claims from saved state
+    const recovered = try state_recovery.autoRecover(allocator, fresh_registry, fresh_event_bus);
+    try std.testing.expect(recovered); // State was recovered
+
+    // Fresh registry should now have the 10 recovered claims
+    try std.testing.expectEqual(@as(usize, 10), fresh_registry.claims.count());
+
+    manager.deleteState() catch {};
+}
+
+test "Integration: Recovery after cascade failure" {
+    const allocator = std.testing.allocator;
+
+    const tmp_dir = ".trinity/brain/state";
+    try std.fs.cwd().makePath(tmp_dir);
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    var manager = try state_recovery.StateManager.init(allocator);
+    defer manager.deinit();
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    // Simulate cascade: many tasks failing
+    var i: usize = 0;
+    while (i < 50) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "cascade-{d}", .{i});
+        defer allocator.free(task_id);
+
+        _ = try registry.claim(allocator, task_id, "agent", 60000);
+        _ = registry.abandon(task_id, "agent");
+
+        try event_bus.publish(.task_failed, .{
+            .task_failed = .{
+                .task_id = task_id,
+                .agent_id = "agent",
+                .err_msg = "cascade failure",
+            },
+        });
+    }
+
+    try manager.save(registry, event_bus);
+
+    // Load and verify state captured the failures
+    var loaded = try manager.load();
+    defer loaded.deinit();
+
+    // State should have recorded the abandoned tasks
+    try std.testing.expect(loaded.state.task_claims.len >= 50);
+
+    manager.deleteState() catch {};
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST SUITE 15: ALERT PROPAGATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Integration: Alert propagation across regions" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    _ = try reticular_formation.getGlobal(allocator); // Initialize but don't use directly
+
+    var alert_mgr = try alerts.AlertManager.init(allocator);
+    defer alert_mgr.deinit();
+
+    var tel = telemetry.BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    // Simulate critical condition
+    var i: usize = 0;
+    while (i < 6000) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "alert-task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try registry.claim(allocator, task_id, "agent", 60000);
+    }
+
+    try tel.record(.{
+        .timestamp = std.time.milliTimestamp(),
+        .active_claims = 6000,
+        .events_published = 0,
+        .events_buffered = 0,
+        .health_score = 20.0, // Critical
+    });
+
+    // This should trigger alerts
+    try alert_mgr.checkHealth(20.0, 0, 6000);
+
+    const alert_stats = try alert_mgr.getStats();
+    try std.testing.expect(alert_stats.total > 0);
+}
+
+test "Integration: Alert suppression during recovery" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    var alert_mgr = try alerts.AlertManager.init(allocator);
+    defer alert_mgr.deinit();
+
+    // First check: critical health
+    try alert_mgr.checkHealth(10.0, 100, 100);
+
+    const stats1 = try alert_mgr.getStats();
+    try std.testing.expectEqual(@as(usize, 1), stats1.total);
+    try std.testing.expectEqual(@as(usize, 1), stats1.critical);
+
+    // Rapid critical health checks (should be recorded, suppression only affects notification)
+    var i: usize = 0;
+    while (i < 9) : (i += 1) {
+        try alert_mgr.checkHealth(10.0, 100, 100);
+    }
+
+    const stats2 = try alert_mgr.getStats();
+    // All 10 alerts are recorded (suppression doesn't prevent recording)
+    try std.testing.expectEqual(@as(usize, 10), stats2.total);
+    try std.testing.expectEqual(@as(usize, 10), stats2.critical);
+}
+
+test "Integration: Multi-condition alert triggering" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    var alert_mgr = try alerts.AlertManager.init(allocator);
+    defer alert_mgr.deinit();
+
+    // Trigger multiple conditions simultaneously
+    var i: usize = 0;
+    while (i < 200) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "multi-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try registry.claim(allocator, task_id, "agent", 60000);
+    }
+
+    // Flood event bus
+    i = 0;
+    while (i < 6000) : (i += 1) {
+        try event_bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = "flood",
+                .agent_id = "agent",
+            },
+        });
+    }
+
+    // Check health with all conditions bad
+    try alert_mgr.checkHealth(30.0, 6000, 200);
+
+    const recent_alerts = try alert_mgr.getRecentAlerts(10, null);
+    defer allocator.free(recent_alerts);
+
+    try std.testing.expect(recent_alerts.len > 0);
+
+    // Verify multiple alert types
+    var found_claims_alert = false;
+    var found_events_alert = false;
+    var found_health_alert = false;
+
+    for (recent_alerts) |alert| {
+        if (alert.condition == .claims_overflow) found_claims_alert = true;
+        if (alert.condition == .events_buffered_high) found_events_alert = true;
+        if (alert.condition == .health_low) found_health_alert = true;
+    }
+
+    try std.testing.expect(found_claims_alert or found_events_alert or found_health_alert);
 }

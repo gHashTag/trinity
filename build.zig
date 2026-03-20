@@ -2133,6 +2133,30 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
         .imports = &.{},
     });
+    const learning_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/learning.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{},
+    });
+    const federation_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/federation.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+        },
+    });
+    const async_processor_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/async_processor.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+        },
+    });
     const brain_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/brain.zig"),
         .target = target,
@@ -2156,6 +2180,9 @@ pub fn build(b: *std.Build) void {
             .{ .name = "evolution_simulation", .module = evolution_simulation_mod },
             .{ .name = "observability_export", .module = observability_export_mod },
             .{ .name = "visualization", .module = visualization_mod },
+            .{ .name = "learning", .module = learning_mod },
+            .{ .name = "federation", .module = federation_mod },
+            .{ .name = "async_processor", .module = async_processor_mod },
         },
     });
 
@@ -2608,6 +2635,9 @@ pub fn build(b: *std.Build) void {
             .{ .name = "health_history", .module = health_history_mod },
             .{ .name = "alerts", .module = alerts_mod },
             .{ .name = "state_recovery", .module = state_recovery_mod },
+            .{ .name = "learning", .module = learning_mod },
+            .{ .name = "federation", .module = federation_mod },
+            .{ .name = "async_processor", .module = async_processor_mod },
         },
     });
     const brain_integration_tests = b.addTest(.{

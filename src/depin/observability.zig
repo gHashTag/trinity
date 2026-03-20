@@ -69,19 +69,12 @@ pub const ObservabilityManager = struct {
     const SUCCESS_RATE_CRITICAL: f64 = 0.90; // 90%
 
     pub fn init(allocator: Allocator) ObservabilityManager {
-        var manager = ObservabilityManager{
+        return ObservabilityManager{
             .allocator = allocator,
             .metrics = .{},
             .alert_thresholds = .{},
             .alerts_triggered = 0,
         };
-
-        // Add default thresholds (ignore errors - these are hardcoded valid values)
-        try manager.addThreshold("uptime_pct", UPTIME_WARNING, UPTIME_CRITICAL, .less_than, true);
-        try manager.addThreshold("latency_avg_ms", LATENCY_WARNING, LATENCY_CRITICAL, .greater_than, true);
-        try manager.addThreshold("success_rate", SUCCESS_RATE_WARNING, SUCCESS_RATE_CRITICAL, .less_than, true);
-
-        return manager;
     }
 
     /// Record a metric
@@ -105,9 +98,9 @@ pub const ObservabilityManager = struct {
         name: []const u8,
         mtype: MetricType,
         value: MetricValue,
-        labels: []const struct { []const u8, []const u8 },
+        labels: []const struct { key: []const u8, value: []const u8 },
     ) !void {
-        var label_map = std.StringHashMapUnmanaged([]const u8).init(self.allocator);
+        var label_map = std.StringHashMapUnmanaged([]const u8){};
         for (labels) |label| {
             try label_map.put(self.allocator, label.key, label.value);
         }
@@ -203,14 +196,15 @@ pub const ObservabilityManager = struct {
                 .gauge => try std.fmt.allocPrint(allocator, "{d:.2}", .{metric.value.gauge}),
                 .histogram => continue, // Skip histograms for now
             };
+            defer allocator.free(value_str);
 
-            try buffer.writer().print(
-                "{s}_{d} {s}\n",
+            try buffer.writer(allocator).print(
+                "{s}_{s} {s}\n",
                 .{ "depin", metric.name, value_str },
             );
         }
 
-        return buffer.toOwnedSlice();
+        return buffer.toOwnedSlice(allocator);
     }
 
     pub fn deinit(self: *ObservabilityManager) void {
@@ -219,9 +213,7 @@ pub const ObservabilityManager = struct {
         }
         self.metrics.deinit(self.allocator);
 
-        for (self.alert_thresholds.items) |*threshold| {
-            self.allocator.free(threshold.metric_name);
-        }
+        // Note: alert_thresholds.metric_name are slices, not owned strings
         self.alert_thresholds.deinit(self.allocator);
     }
 };
