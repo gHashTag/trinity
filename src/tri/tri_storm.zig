@@ -66,9 +66,9 @@ fn cmdRun(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
                     agents = try std.fmt.parseInt(u8, arg[eq_sign.? + 1 ..], 10);
                 } else if (std.mem.startsWith(u8, arg, "--config=")) {
                     config_path = arg[eq_sign.? + 1 ..];
-                } else if (std.mem.eql(u8, arg, "--dry-run")) {
-                    dry_run = true;
                 }
+            } else if (std.mem.eql(u8, arg, "--dry-run")) {
+                dry_run = true;
             }
         }
     }
@@ -79,10 +79,7 @@ fn cmdRun(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     std.debug.print("  Config: {s}\n", .{config_path});
     if (dry_run) {
         std.debug.print("  Mode: DRY RUN\n", .{});
-    }
-    std.debug.print("\n", .{});
-
-    if (dry_run) {
+        std.debug.print("\n", .{});
         std.debug.print("DRY RUN: Would execute {d} waves with {d} agents\n", .{ waves, agents });
         std.debug.print("Golden Chain: 28 links\n", .{});
         std.debug.print("P1 Ethical Zones:\n", .{});
