@@ -172,11 +172,11 @@ pub const ObservabilityManager = struct {
 
     /// Get metrics by type
     pub fn getMetricsByType(self: *const ObservabilityManager, mtype: MetricType, allocator: Allocator) ![]Metric {
-        var result = std.ArrayList(Metric).init(allocator);
-        defer result.deinit();
+        var result = std.ArrayList(Metric).empty;
+        defer result.deinit(allocator);
         for (self.metrics.items) |metric| {
             if (metric.mtype == mtype) {
-                try result.append(metric);
+                try result.append(allocator, metric);
             }
         }
         return result.toOwnedSlice(allocator);

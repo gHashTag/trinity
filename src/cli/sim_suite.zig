@@ -97,7 +97,10 @@ pub fn main() !void {
     // Print comparison table
     print("\n{s}COMPARISON TABLE{s}\n", .{ BOLD, RESET });
     print("\n", .{});
-    try suite.printComparison(std.io.std_out.writer(), allocator);
+    var stdout_buf: [8192]u8 = undefined;
+    var stdout_stream = std.io.fixedBufferStream(&stdout_buf);
+    try suite.printComparison(stdout_stream.writer(), allocator);
+    print("{s}", .{stdout_stream.getWritten()});
 
     // Write results to files if output directory specified
     if (output_dir) |dir| {
@@ -126,35 +129,43 @@ fn writeResult(result: *const @import("brain").evolution_simulation.EvolutionRes
     const path = try std.fmt.allocPrint(allocator, "{s}_{s}", .{ base_path, filename });
     defer allocator.free(path);
 
+    var json_buf: [8192]u8 = undefined;
+    var json_stream = std.io.fixedBufferStream(&json_buf);
+    try result.toJson(json_stream.writer(), allocator);
+
     const file = try std.fs.cwd().createFile(path, .{});
     defer file.close();
 
-    try result.toJson(file.writer());
+    try file.writeAll(json_stream.getWritten());
 }
 
 // Helper function to format a CSV row
-fn fmtRow(r: *const @import("brain").evolution_simulation.EvolutionResult, name: []const u8, w: anytype) !void {
-    const conv = if (r.convergence_step) |s| try std.fmt.allocPrint(w.allocator, "{d}", .{s}) else "never";
-    defer if (!std.mem.eql(u8, conv, "never")) w.allocator.free(conv);
+fn fmtRow(r: *const @import("brain").evolution_simulation.EvolutionResult, name: []const u8, w: anytype, _: Allocator) !void {
+    var conv_buf: [32]u8 = undefined;
+    const conv = if (r.convergence_step) |s| std.fmt.bufPrintZ(&conv_buf, "{d}", .{s}) else "never";
 
     try w.print("{s},{d:.2},{s},{d:.3},{d},{d},{d}\n", .{
         name,                r.final_ppl,      conv,                 r.diversity_index,
         r.microglia_actions, r.workers_culled, r.byzantine_detected,
+        r.steps,
     });
 }
 
-fn writeComparisonCsv(suite: *const @import("brain").evolution_simulation.SuiteResult, path: []const u8, _: Allocator) !void {
+fn writeComparisonCsv(suite: *const @import("brain").evolution_simulation.SuiteResult, path: []const u8, allocator: Allocator) !void {
     const file = try std.fs.cwd().createFile(path, .{});
     defer file.close();
 
-    const writer = file.writer();
+    var write_buf: [4096]u8 = undefined;
+    var writer_stream = std.io.fixedBufferStream(&write_buf);
 
-    try writer.writeAll("scenario,final_ppl,convergence_step,diversity,microglia_actions,workers_culled,byzantine_detected\n");
+    try writer_stream.writer().writeAll("scenario,final_ppl,convergence_step,diversity,microglia_actions,workers_culled,byzantine_detected\n");
 
-    try fmtRow(&suite.s1, "S1_Baseline", writer);
-    try fmtRow(&suite.s2, "S2_Current", writer);
-    try fmtRow(&suite.s3, "S3_MultiObj", writer);
-    try fmtRow(&suite.s4, "S4_dePIN", writer);
+    try fmtRow(&suite.s1, "S1_Baseline", writer_stream.writer(), allocator);
+    try fmtRow(&suite.s2, "S2_Current", writer_stream.writer(), allocator);
+    try fmtRow(&suite.s3, "S3_MultiObj", writer_stream.writer(), allocator);
+    try fmtRow(&suite.s4, "S4_dePIN", writer_stream.writer(), allocator);
+
+    try file.writeAll(writer_stream.getWritten());
 }
 
 fn printHelp() void {

@@ -30,12 +30,12 @@ pub const ProductionApiServer = struct {
 
     /// Get all stakes
     pub fn getAllStakes(self: *const ProductionApiServer) ![]const StakeInfo {
-        var result = std.ArrayList(StakeInfo).initCapacity(self.allocator, @intCast(self.stakes.count()));
+        var result = std.ArrayList(StakeInfo).empty;
         var iter = self.stakes.iterator();
         while (iter.next()) |entry| {
-            try result.append(entry.value_ptr.*);
+            try result.append(self.allocator, entry.value_ptr.*);
         }
-        return result.toOwnedSlice();
+        return result.toOwnedSlice(self.allocator);
     }
 
     /// Add stake record
@@ -46,14 +46,14 @@ pub const ProductionApiServer = struct {
 
     /// Get pending rewards
     pub fn getPendingRewards(self: *const ProductionApiServer, address: [20]u8) ![]const RewardInfo {
-        var result = std.ArrayList(RewardInfo).initCapacity(self.allocator, @intCast(self.pending_rewards.count()));
+        var result = std.ArrayList(RewardInfo).empty;
         var iter = self.pending_rewards.iterator();
         while (iter.next()) |entry| {
             if (std.mem.eql(u8, entry.value_ptr.recipient, &address)) {
-                try result.append(entry.value_ptr.*);
+                try result.append(self.allocator, entry.value_ptr.*);
             }
         }
-        return result.toOwnedSlice();
+        return result.toOwnedSlice(self.allocator);
     }
 
     /// Claim rewards
@@ -124,7 +124,8 @@ pub const ProductionApiServer = struct {
             var iter2 = self.pending_rewards.iterator();
             while (iter2.next()) |entry| {
                 self.allocator.free(entry.key_ptr.*);
-                self.allocator.free(entry.value_ptr.recipient);
+                // recipient is [20]u8 array (not a pointer), don't free it
+                _ = entry.value_ptr.recipient;
             }
         }
         self.pending_rewards.deinit(self.allocator);
@@ -134,10 +135,12 @@ pub const ProductionApiServer = struct {
             while (iter2.next()) |entry| {
                 const proposal = entry.value_ptr;
                 self.allocator.free(entry.key_ptr.*);
+                // title and description are owned strings (allocated by caller)
                 self.allocator.free(proposal.title);
                 self.allocator.free(proposal.description);
+                // voter is [20]u8 array (not a pointer), don't free it
                 for (proposal.votes.items) |*v| {
-                    self.allocator.free(v.voter);
+                    _ = v.voter; // suppress unused warning
                 }
                 proposal.votes.deinit(self.allocator);
             }
@@ -251,10 +254,13 @@ test "governance proposal" {
     var proposer: [20]u8 = undefined;
     @memset(&proposer, 0);
 
+    const title = try allocator.dupe(u8, "Test Proposal");
+    const description = try allocator.dupe(u8, "Test description");
+
     const proposal = GovernanceProposal{
         .proposal_id = "test_proposal",
-        .title = "Test Proposal",
-        .description = "Test description",
+        .title = title,
+        .description = description,
         .proposal_type = .parameter_change,
         .proposer = proposer,
         .start_time = std.time.timestamp(),
