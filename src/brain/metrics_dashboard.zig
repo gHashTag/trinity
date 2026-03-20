@@ -210,7 +210,7 @@ pub const AggregateMetrics = struct {
         var metrics = RegionMetrics.init(self.allocator, "Basal Ganglia", "Action Selection");
         if (basal_ganglia.getGlobal(self.allocator)) |registry| {
             metrics.status = .healthy;
-            const claim_count = registry.claims.count();
+            const claim_count = registry.count();
             try metrics.setMetricOwned(self.allocator, "active_claims", try std.fmt.allocPrint(self.allocator, "{d}", .{claim_count}));
             const excess = if (claim_count > 1000) claim_count - 1000 else 0;
             const bg_health = if (claim_count < 1000) 100.0 else @max(0.0, 100.0 - @as(f32, @floatFromInt(excess)) / 10.0);

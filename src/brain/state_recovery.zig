@@ -235,36 +235,30 @@ pub const StateManager = struct {
     /// Capture current state from live brain components
     fn captureState(self: *Self, registry: *basal_ganglia.Registry, event_bus: *reticular_formation.EventBus) !BrainState {
         // Capture task claims
-        var claims = std.ArrayList(TaskClaimState).initCapacity(self.allocator, 64) catch |err| {
+        // NOTE: New sharded Registry doesn't expose internal claims map
+        // We capture stats-based summary instead of individual claims
+        var claims = std.ArrayList(TaskClaimState).initCapacity(self.allocator, 1) catch |err| {
             std.log.err("Failed to allocate claims: {}", .{err});
             return error.OutOfMemory;
         };
         defer claims.deinit(self.allocator);
 
-        {
-            registry.mutex.lock();
-            defer registry.mutex.unlock();
-
-            var iter = registry.claims.iterator();
-            while (iter.next()) |entry| {
-                const claim = &entry.value_ptr.*;
-                const status_str = switch (claim.status) {
-                    .active => "active",
-                    .completed => "completed",
-                    .abandoned => "abandoned",
-                };
-
-                try claims.append(self.allocator, TaskClaimState{
-                    .task_id = try self.allocator.dupe(u8, claim.task_id),
-                    .agent_id = try self.allocator.dupe(u8, claim.agent_id),
-                    .claimed_at = claim.claimed_at,
-                    .ttl_ms = claim.ttl_ms,
-                    .status = try self.allocator.dupe(u8, status_str),
-                    .completed_at = claim.completed_at,
-                    .last_heartbeat = claim.last_heartbeat,
-                });
-            }
-        }
+        // Add summary claim entry with stats
+        const stats = registry.getStats();
+        const summary_str = try std.fmt.allocPrint(self.allocator, "active:{d},completed:{d},abandoned:{d}", .{
+            stats.active_claims,
+            stats.complete_success,
+            stats.abandon_success,
+        });
+        try claims.append(self.allocator, TaskClaimState{
+            .task_id = try self.allocator.dupe(u8, "_summary"),
+            .agent_id = try self.allocator.dupe(u8, "_registry"),
+            .claimed_at = 0,
+            .ttl_ms = 0,
+            .status = summary_str,
+            .completed_at = 0,
+            .last_heartbeat = 0,
+        });
 
         // Capture events from reticular formation
         var events = std.ArrayList(EventState).initCapacity(self.allocator, 256) catch |err| {
@@ -273,29 +267,63 @@ pub const StateManager = struct {
         };
         defer events.deinit(self.allocator);
 
-        {
-            event_bus.mutex.lock();
-            defer event_bus.mutex.unlock();
+        // Capture events from reticular formation via poll
+        // Poll all events (since=0 for all available, up to 10_000)
+        const polled_events = try event_bus.poll(0, self.allocator, 10_000);
+        defer {
+            // polled_events contains AgentEventRecord which has:
+            // - event_type: AgentEventType (enum, not heap allocated)
+            // - data: EventData (union with inline strings, not heap allocated)
+            // Only the polled_events slice itself needs to be freed
+            self.allocator.free(polled_events);
+        }
 
-            for (event_bus.events.items) |ev| {
-                const event_type_str = switch (ev.event_type) {
-                    .task_claimed => "task_claimed",
-                    .task_completed => "task_completed",
-                    .task_failed => "task_failed",
-                    .task_abandoned => "task_abandoned",
-                    .agent_idle => "agent_idle",
-                    .agent_spawned => "agent_spawned",
-                };
+        for (polled_events) |ev| {
+            // Convert enum to string and extract fields from union
+            // Note: event_type is an enum, convert to string manually
+            const event_type_str = try self.allocator.dupe(u8, switch (ev.event_type) {
+                .task_claimed => "task_claimed",
+                .task_completed => "task_completed",
+                .task_failed => "task_failed",
+                .task_abandoned => "task_abandoned",
+                .agent_idle => "agent_idle",
+                .agent_spawned => "agent_spawned",
+            });
 
-                try events.append(self.allocator, EventState{
-                    .event_type = try self.allocator.dupe(u8, event_type_str),
-                    .timestamp = ev.timestamp,
-                    .task_id = try self.allocator.dupe(u8, ev.task_id),
-                    .agent_id = try self.allocator.dupe(u8, ev.agent_id),
-                    .aux_string = try self.allocator.dupe(u8, ev.aux_string),
-                    .duration_ms = ev.duration_ms,
-                });
-            }
+            // Extract fields from union based on event type
+            const task_id: []const u8 = switch (ev.data) {
+                .task_claimed => |d| d.task_id,
+                .task_completed => |d| d.task_id,
+                .task_failed => |d| d.task_id,
+                .task_abandoned => |d| d.task_id,
+                else => "",
+            };
+
+            const agent_id: []const u8 = switch (ev.data) {
+                .task_claimed => |d| d.agent_id,
+                .task_completed => |d| d.agent_id,
+                .task_failed => |d| d.agent_id,
+                .task_abandoned => |d| d.agent_id,
+                .agent_idle => |d| d.agent_id,
+                .agent_spawned => |d| d.agent_id,
+            };
+
+            try events.append(self.allocator, EventState{
+                .event_type = event_type_str,
+                .timestamp = ev.timestamp,
+                .task_id = try self.allocator.dupe(u8, task_id),
+                .agent_id = try self.allocator.dupe(u8, agent_id),
+                .aux_string = try self.allocator.dupe(u8, switch (ev.data) {
+                    .task_failed => |d| d.err_msg,
+                    .task_abandoned => |d| d.reason,
+                    else => "",
+                }),
+                .duration_ms = switch (ev.data) {
+                    .task_completed => |d| d.duration_ms,
+                    .agent_idle => |d| d.idle_ms,
+                    else => 0,
+                },
+            });
         }
 
         // Capture metrics (simplified - just a snapshot)
@@ -327,18 +355,12 @@ pub const StateManager = struct {
         const hostname = try self.allocator.dupe(u8, env_hostname);
 
         // Get PID (platform-specific)
-        const pid: i32 = if (builtin.os.tag == .linux)
-            // Linux: use getpid() from unistd.h
-            @as(i32, @intCast(@import("std").os.linux.getpid()))
-        else if (builtin.os.tag == .macos)
-            // macOS: use getpid() from unistd.h
-            @as(i32, @intCast(@import("std").os.darwin.getpid()))
-        else if (builtin.os.tag == .windows)
+        const pid: i32 = if (builtin.os.tag == .windows)
             // Windows: use GetCurrentProcessId()
             @as(i32, @intCast(@import("std").os.windows.getCurrentProcessId()))
         else
-            // Fallback for other platforms
-            0;
+            // POSIX: use getpid() from C
+            @as(i32, @intCast(std.c.getpid()));
 
         // Dupe the version string to ensure we own the memory
         const tri_version = try self.allocator.dupe(u8, "5.1.0-igla-ready");
@@ -351,7 +373,7 @@ pub const StateManager = struct {
             .metrics = try metrics.toOwnedSlice(self.allocator),
             .metadata = .{
                 .hostname = hostname,
-                .pid = pid,
+                .pid = @as(u32, @bitCast(pid)),
                 .tri_version = tri_version,
             },
         };
@@ -584,7 +606,9 @@ pub const StateManager = struct {
 
     /// Restore state to live brain components
     pub fn restore(self: *Self, loaded: *const LoadedState, registry: *basal_ganglia.Registry, _event_bus: *reticular_formation.EventBus) !void {
-        _ = _event_bus;
+        _ = self; // Not used in current stub implementation
+        _ = registry; // Not used in current stub implementation
+        _ = _event_bus; // Event bus restoration not yet implemented
         const state = loaded.state;
 
         // Restore task claims
@@ -620,26 +644,12 @@ pub const StateManager = struct {
             const age_ms = @as(u64, @intCast(now_ms - claim_state.claimed_at));
 
             if (age_ms < claim_state.ttl_ms) {
-                // Restore claim
-                const task_id_copy = try self.allocator.dupe(u8, claim_state.task_id);
-                errdefer self.allocator.free(task_id_copy); // Free on error
-
-                const agent_id_copy = try self.allocator.dupe(u8, claim_state.agent_id);
-                errdefer self.allocator.free(agent_id_copy); // Free on error
-
-                const new_claim = basal_ganglia.TaskClaim{
-                    .task_id = task_id_copy,
-                    .agent_id = agent_id_copy,
-                    .claimed_at = claim_state.claimed_at,
-                    .ttl_ms = claim_state.ttl_ms,
-                    .status = .active,
-                    .completed_at = null,
-                    .last_heartbeat = claim_state.last_heartbeat,
-                };
-
-                registry.mutex.lock();
-                try registry.claims.put(task_id_copy, new_claim);
-                registry.mutex.unlock();
+                // NOTE: Sharded Registry doesn't expose internal claims map for restoration
+                // Task claims will be re-established by active agents when they reconnect
+                // For now, we just log the pending claims
+                std.log.info("Pending claim: task={s}, agent={s}, age={d}ms", .{
+                    claim_state.task_id, claim_state.agent_id, age_ms
+                });
             }
         }
 
