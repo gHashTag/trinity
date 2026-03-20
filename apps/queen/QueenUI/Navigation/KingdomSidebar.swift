@@ -42,7 +42,7 @@ struct KingdomSidebar: View {
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical, 6)
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, ParietalSpacing.md)
                             .background(
                                 selection == screen
                                     ? (Self.realmColors[screen.kingdom] ?? .white).opacity(V2Depth.bgSidebarHover)

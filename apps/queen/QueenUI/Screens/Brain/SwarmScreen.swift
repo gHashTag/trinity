@@ -113,7 +113,7 @@ struct SwarmScreen: View {
                     }
                 }
             }
-            .padding(10)
+            .padding(ParietalSpacing.xs)
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(V4Color.bgCard)
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
@@ -271,7 +271,7 @@ struct SwarmScreen: View {
                     .font(.caption.monospaced())
                     .textFieldStyle(.plain)
                     .foregroundStyle(V4Color.textPrimary)
-                    .padding(8)
+                    .padding(ParietalSpacing.xs)
                     .background(V4Color.bgCard)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .onSubmit { submitTask() }

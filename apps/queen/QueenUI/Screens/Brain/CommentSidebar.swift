@@ -35,8 +35,8 @@ struct CommentSidebar: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close comments")
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
 
             // Quoted original message
             Text(message.text)
@@ -50,7 +50,7 @@ struct CommentSidebar: View {
                         .fill(V4Color.accent.opacity(V2Depth.stateDisabled))
                         .frame(width: ParietalSpacing.smallIndicator)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, ParietalSpacing.md)
                 .padding(.bottom, 12)
 
             Rectangle()
@@ -74,12 +74,12 @@ struct CommentSidebar: View {
                                     .font(WernickeTypography.size12)
                                     .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                             }
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, ParietalSpacing.md)
                         }
 
                         Color.clear.frame(height: 1).id("commentBottom")
                     }
-                    .padding(.vertical, 12)
+                    .padding(.vertical, ParietalSpacing.sm)
                 }
                 .onChange(of: comments.count) {
                     withAnimation(.easeOut(duration: 0.15)) {
@@ -113,7 +113,7 @@ struct CommentSidebar: View {
                 .disabled(commentInput.isEmpty || client.isStreaming)
                 .accessibilityLabel("Send comment")
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, ParietalSpacing.sm)
             .padding(.vertical, 10)
             .background(V4Color.surfaceElevated)
         }
@@ -196,6 +196,6 @@ struct CommentRow: View {
                 .padding(.top, 2)
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ParietalSpacing.md)
     }
 }

@@ -139,7 +139,7 @@ struct ArenaLLMScreen: View {
                                 }
                             }
                             .padding(.horizontal)
-                            .padding(.vertical, 4)
+                            .padding(.vertical, ParietalSpacing.xxs)
                         }
                     }
                 }
@@ -154,7 +154,7 @@ struct ArenaLLMScreen: View {
                             .foregroundStyle(V4Color.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(32)
+                    .padding(ParietalSpacing.xxl)
                 }
             }
             .padding(.bottom)

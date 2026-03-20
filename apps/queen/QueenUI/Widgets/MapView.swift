@@ -147,7 +147,7 @@ struct CoordinateDisplay: View {
                     .foregroundStyle(V4Color.textPrimary)
             }
         }
-        .padding(10)
+        .padding(ParietalSpacing.xs)
         .background(
             RoundedRectangle(cornerRadius: 8)
                 .fill(V4Color.surface)

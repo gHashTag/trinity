@@ -191,7 +191,7 @@ struct ContextOverflowBanner: View {
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
                             .font(WernickeTypography.miniSemibold)
                             .foregroundStyle(V4Color.textSecondary)
-                            .padding(4)
+                            .padding(ParietalSpacing.xxs)
                             .background(Circle().fill(Color.white.opacity(0.05)))
                     }
                     .buttonStyle(.plain)

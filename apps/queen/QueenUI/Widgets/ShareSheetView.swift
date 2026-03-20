@@ -45,7 +45,7 @@ struct ShareSheet: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(24)
+                .padding(ParietalSpacing.xl)
                 .background(
                     RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                         .fill(V4Color.surface)
@@ -55,7 +55,7 @@ struct ShareSheet: View {
                         .stroke(V4Color.border, lineWidth: 1)
                 )
                 .shadow(color: .black.opacity(0.2), radius: 20)
-                .padding(.horizontal, 40)
+                .padding(.horizontal, ParietalSpacing.xxl)
             }
         }
     }
@@ -313,7 +313,7 @@ struct SharePreview: View {
 
                 Spacer()
             }
-            .padding(10)
+            .padding(ParietalSpacing.xs)
             .background(
                 RoundedRectangle(cornerRadius: 8)
                     .fill(V4Color.surface)

@@ -494,7 +494,7 @@ struct ArchivePanel: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 32)
+        .padding(.vertical, ParietalSpacing.xxl)
         .padding(.horizontal, ParietalSpacing.lg)
     }
 
@@ -622,7 +622,7 @@ struct ArchivePanel: View {
                 .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
+        .padding(.vertical, ParietalSpacing.xl)
     }
 
     private var archiveList: some View {

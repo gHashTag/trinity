@@ -336,7 +336,7 @@ struct ChatScreen: View {
                                     .font(WernickeTypography.caption2MediumMono)
                             }
                             .foregroundStyle(.white.opacity(V1Theme.opacityTextSecondary))
-                            .padding(.horizontal, 10)
+                            .padding(.horizontal, ParietalSpacing.xs)
                             .padding(.vertical, 5)
                             .background(.white.opacity(0.08))
                             .clipShape(SwiftUI.Capsule())
@@ -584,7 +584,7 @@ struct ChatScreen: View {
                         ThreadLoadingSkeleton(isUser: i % 2 == 0)
                     }
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, ParietalSpacing.lg)
                 .padding(.top, 20)
             }
 
@@ -604,7 +604,7 @@ struct ChatScreen: View {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: a11y.scaledFontSize(11)))
                             .foregroundStyle(V4Color.textSecondary)
-                            .padding(6)
+                            .padding(ParietalSpacing.xxs)
                             .background(V4Color.bgCard)
                             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                             .overlay(
@@ -630,7 +630,7 @@ struct ChatScreen: View {
                         Image(systemName: isSelecting ? "checkmark.circle.fill" : "checkmark.circle")
                             .font(.system(size: a11y.scaledFontSize(11)))
                             .foregroundStyle(isSelecting ? (a11y.highContrast ? V4Color.HighContrast.accent : V4Color.accent) : V4Color.textSecondary)
-                            .padding(6)
+                            .padding(ParietalSpacing.xxs)
                             .background(V4Color.bgCard)
                             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                             .overlay(
@@ -1299,7 +1299,7 @@ struct ChatScreen: View {
                     Text("Cancel")
                         .font(WernickeTypography.miniBold)
                         .foregroundStyle(.black)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, ParietalSpacing.xs)
                         .padding(.vertical, 3)
                         .background(V4Color.statusError)
                         .clipShape(SwiftUI.Capsule())
@@ -1318,7 +1318,7 @@ struct ChatScreen: View {
                         Text("Try \(fallback.displayName)")
                             .font(WernickeTypography.miniBold)
                             .foregroundStyle(.black)
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, ParietalSpacing.xs)
                             .padding(.vertical, 3)
                             .background(V4Color.statusWarn)
                             .clipShape(SwiftUI.Capsule())
@@ -1499,7 +1499,7 @@ struct ChatScreen: View {
                         .font(WernickeTypography.captionMedium)
                 }
                 .foregroundStyle(Color.orange)
-                .padding(.horizontal, 10)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.vertical, 5)
                 .background(Color.orange.opacity(0.12))
                 .clipShape(SwiftUI.Capsule())
@@ -1512,7 +1512,7 @@ struct ChatScreen: View {
                         .font(WernickeTypography.captionMedium)
                 }
                 .foregroundStyle(V4Color.statusOK)
-                .padding(.horizontal, 10)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.vertical, 5)
                 .background(V4Color.statusOK.opacity(0.12))
                 .clipShape(SwiftUI.Capsule())
@@ -1627,8 +1627,8 @@ struct ChatScreen: View {
                                     .font(WernickeTypography.caption2Medium)
                             }
                             .foregroundStyle(V4Color.white70)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .padding(.horizontal, ParietalSpacing.xs)
+                            .padding(.vertical, ParietalSpacing.xxs)
                             .background(Color.white.opacity(V2Depth.bgCard))
                             .clipShape(SwiftUI.Capsule())
                         }
@@ -1691,7 +1691,7 @@ struct ChatScreen: View {
                         Text("Switch back")
                             .font(WernickeTypography.miniBold)
                             .foregroundStyle(.black)
-                            .padding(.horizontal, 8)
+                            .padding(.horizontal, ParietalSpacing.xs)
                             .padding(.vertical, 3)
                             .background(V4Color.statusOK)
                             .clipShape(SwiftUI.Capsule())
@@ -1831,8 +1831,8 @@ struct ChatScreen: View {
                         }
                         .buttonStyle(.plain)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, ParietalSpacing.xs)
+                    .padding(.vertical, ParietalSpacing.xxs)
                     .background(Color.white.opacity(0.08))
                     .clipShape(SwiftUI.Capsule())
                 }
@@ -1995,7 +1995,7 @@ struct ChatScreen: View {
             .accessibilityHint("Double tap to send your message")
             .disabled(input.isEmpty)
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ParietalSpacing.md)
         .padding(.vertical, 14)
         .background(
             RoundedRectangle(cornerRadius: 24)
@@ -2322,8 +2322,8 @@ struct ChatScreen: View {
                         .font(.system(size: a11y.scaledFontSize(10), weight: .medium))
                 }
                 .foregroundStyle(effortLevel.color)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(effortLevel.color.opacity(0.12))
                 .clipShape(SwiftUI.Capsule())
             }
@@ -2359,8 +2359,8 @@ struct ChatScreen: View {
                         .font(.system(size: a11y.scaledFontSize(10), weight: .medium))
                 }
                 .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(Color.white.opacity(V2Depth.bgCard))
                 .clipShape(SwiftUI.Capsule())
             }
@@ -3045,7 +3045,7 @@ struct ConnectionStatusBar: View {
                 }
                 .foregroundStyle(V4Color.statusOK)
                 .padding(.horizontal, LayoutConstants.standardPadding)
-                .padding(.vertical, 4)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(V4Color.statusOK.opacity(0.08))
                 .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
@@ -3114,7 +3114,7 @@ struct ConnectionStatusBar: View {
                     Spacer()
                 }
                 .padding(.horizontal, LayoutConstants.standardPadding)
-                .padding(.vertical, 4)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .transition(reduceMotion ? .opacity : .move(edge: .top).combined(with: .opacity))
             }
 
@@ -3132,7 +3132,7 @@ struct ConnectionStatusBar: View {
                     }
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.black)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, ParietalSpacing.xs)
                     .padding(.vertical, 2)
                     .background(V4Color.statusError)
                     .clipShape(SwiftUI.Capsule())
@@ -3166,7 +3166,7 @@ struct ConnectionStatusBar: View {
                     Spacer()
                 }
                 .padding(.horizontal, LayoutConstants.standardPadding)
-                .padding(.vertical, 4)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(Color.white.opacity(0.02))
             }
 
@@ -3334,7 +3334,7 @@ struct ContextBar: View {
                 }
             }
             .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
-            .padding(.vertical, 4)
+            .padding(.vertical, ParietalSpacing.xxs)
             .background(ratio >= 0.7 ? color.opacity(V2Depth.bgCardLight) : Color.clear)
             .animation(.easeInOut(duration: 0.3), value: ratio > 0.85)
         }
@@ -3491,7 +3491,7 @@ struct ModelPicker: View {
                         .help("\(remaining) requests remaining")
                 }
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, ParietalSpacing.xs)
             .padding(.vertical, LayoutConstants.compactPadding)
             .background(Color.white.opacity(V2Depth.bgCard))
             .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -3704,8 +3704,8 @@ struct MessageRow: View {
                         .font(WernickeTypography.size11)
                         .lineLimit(2)
                         .truncationMode(.middle)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .padding(.horizontal, ParietalSpacing.xs)
+                        .padding(.vertical, ParietalSpacing.xxs)
                         .background(Color.white.opacity(V2Depth.bgCardLight))
                         .clipShape(RoundedRectangle(cornerRadius: 6))
                 }
@@ -3731,7 +3731,7 @@ struct MessageRow: View {
                     .font(WernickeTypography.captionBold)
                     .foregroundStyle(.black)
                     .padding(.horizontal, LayoutConstants.cardPadding)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, ParietalSpacing.xxs)
                     .background(
                         editText.trimmingCharacters(in: .whitespacesAndNewlines) != message.text.trimmingCharacters(in: .whitespacesAndNewlines)
                         ? V4Color.accent
@@ -3820,7 +3820,7 @@ struct MessageRow: View {
                         userMessageDisplayModeView()
                     }
                 }
-                .padding(.vertical, 16)
+                .padding(.vertical, ParietalSpacing.md)
             }
         }
         .onHover { hovering in
@@ -4873,8 +4873,8 @@ struct MessageActionBar: View {
                 .font(WernickeTypography.caption2Medium)
         }
         .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ParietalSpacing.xs)
+        .padding(.vertical, ParietalSpacing.xxs)
         .background(Color.white.opacity(V2Depth.bgCard))
         .clipShape(SwiftUI.Capsule())
     }
@@ -5412,7 +5412,7 @@ struct MentionPopup: View {
                                     .clipShape(SwiftUI.Capsule())
                             }
                         }
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, ParietalSpacing.xs)
                         .padding(.vertical, LayoutConstants.compactPadding)
                         .contentShape(Rectangle())
                         .background(idx == selectedIndex ? Color.white.opacity(0.08) : Color.clear)
@@ -5517,7 +5517,7 @@ struct SourcesPanel: View {
                             .buttonStyle(.plain)
                         }
                         .padding(.horizontal, LayoutConstants.cardPadding)
-                        .padding(.vertical, 4)
+                        .padding(.vertical, ParietalSpacing.xxs)
                     }
                 }
                 .padding(.bottom, 8)
@@ -5615,7 +5615,7 @@ struct ThinkingBlockView: View {
                         .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
                     Spacer()
                 }
-                .padding(.horizontal, 10)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.vertical, LayoutConstants.standardPadding)
                 .contentShape(Rectangle())
             }
@@ -5686,7 +5686,7 @@ struct StaleBadge: View {
                     Text("Re-ask")
                         .font(WernickeTypography.miniBold)
                         .foregroundStyle(.black)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, ParietalSpacing.xs)
                         .padding(.vertical, 3)
                         .background(V4Color.statusWarn)
                         .clipShape(SwiftUI.Capsule())
@@ -5803,7 +5803,7 @@ struct MemoryProposalCard: View {
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, ParietalSpacing.xxs)
             }
         }
         .padding(LayoutConstants.compactPadding)
@@ -5898,7 +5898,7 @@ struct InThreadSearchBar: View {
         .background(V4Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
-        .padding(.vertical, 4)
+        .padding(.vertical, ParietalSpacing.xxs)
         .onAppear { isFocused = true }
         .onChange(of: query) { _, _ in currentIndex = 0 }
         .onKeyPress(.escape) {
@@ -6075,7 +6075,7 @@ struct NetworkDashboard: View {
                         .frame(height: ParietalSpacing.icon)
                 }
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, ParietalSpacing.xxs)
         }
     }
 
@@ -6138,8 +6138,8 @@ struct NetworkDashboard: View {
                         Text("New thread")
                             .font(WernickeTypography.miniBold)
                             .foregroundStyle(V4Color.accent)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .padding(.horizontal, ParietalSpacing.xs)
+                            .padding(.vertical, ParietalSpacing.xxs)
                             .background(Color.white.opacity(0.08))
                             .clipShape(SwiftUI.Capsule())
                     }
@@ -6198,7 +6198,7 @@ struct RateLimitWarning: View {
                                 .font(WernickeTypography.microBold)
                         }
                         .foregroundStyle(.black)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, ParietalSpacing.xs)
                         .padding(.vertical, 3)
                         .background(V4Color.statusWarn)
                         .clipShape(SwiftUI.Capsule())
@@ -6210,7 +6210,7 @@ struct RateLimitWarning: View {
             }
             .foregroundStyle(V4Color.statusWarn)
             .padding(.horizontal, LayoutConstants.standardPadding)
-            .padding(.vertical, 4)
+            .padding(.vertical, ParietalSpacing.xxs)
             .background(V4Color.statusWarn.opacity(V2Depth.bgCard))
         }
     }
@@ -6231,7 +6231,7 @@ struct BranchPill: View {
                         .font(WernickeTypography.microMono)
                 }
                 .foregroundStyle(V4Color.purple)
-                .padding(.horizontal, 8)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.vertical, 3)
                 .background(V4Color.purple.opacity(V2Depth.bgSubtle))
                 .clipShape(SwiftUI.Capsule())
@@ -6268,7 +6268,7 @@ struct FollowUpSuggestions: View {
                                 .font(WernickeTypography.caption2Medium)
                         }
                         .foregroundStyle(V4Color.white70)
-                        .padding(.horizontal, 10)
+                        .padding(.horizontal, ParietalSpacing.xs)
                         .padding(.vertical, 5)
                         .background(Color.white.opacity(V2Depth.bgCard))
                         .clipShape(SwiftUI.Capsule())
@@ -6281,7 +6281,7 @@ struct FollowUpSuggestions: View {
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, ParietalSpacing.xxs)
     }
 }
 
@@ -6369,8 +6369,8 @@ struct PinnedMessagesStrip: View {
                             .font(WernickeTypography.size11)
                             .foregroundStyle(V4Color.white80)
                             .lineLimit(1)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
+                            .padding(.horizontal, ParietalSpacing.xs)
+                            .padding(.vertical, ParietalSpacing.xxs)
                             .background(V4Color.accent.opacity(0.12))
                             .clipShape(SwiftUI.Capsule())
                     }
@@ -6429,7 +6429,7 @@ struct DislikeCategoryPopover: View {
 
             Divider()
                 .background(Color.white.opacity(V2Depth.bgSubtle))
-                .padding(.horizontal, 8)
+                .padding(.horizontal, ParietalSpacing.xs)
 
             Button {
                 onDismiss()
@@ -6438,7 +6438,7 @@ struct DislikeCategoryPopover: View {
                     .font(WernickeTypography.size11)
                     .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     .padding(.horizontal, LayoutConstants.cardPadding)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, ParietalSpacing.xxs)
             }
             .buttonStyle(.plain)
         }
@@ -6553,7 +6553,7 @@ struct ToolTimeline: View {
         .padding(LayoutConstants.compactPadding)
         .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 6))
-        .padding(.vertical, 4)
+        .padding(.vertical, ParietalSpacing.xxs)
     }
 }
 
@@ -6595,7 +6595,7 @@ struct OfflineQueueBanner: View {
                     Text("Cancel All")
                         .font(WernickeTypography.miniBold)
                         .foregroundStyle(V4Color.statusError)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, ParietalSpacing.xs)
                         .padding(.vertical, 3)
                         .background(V4Color.statusError.opacity(0.12))
                         .clipShape(SwiftUI.Capsule())
@@ -6860,14 +6860,14 @@ struct OnboardingWalkthrough: View {
                     Text(step < steps.count - 1 ? "Next" : "Get Started")
                         .font(WernickeTypography.title3Bold)
                         .foregroundStyle(.black)
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, ParietalSpacing.lg)
                         .padding(.vertical, 10)
                         .background(V4Color.accent)
                         .clipShape(SwiftUI.Capsule())
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 40)
+            .padding(.horizontal, ParietalSpacing.xxl)
             .padding(.bottom, 30)
 
             // Skip
@@ -7039,7 +7039,7 @@ struct AgentStatusIndicator: View {
                 .font(WernickeTypography.miniMedium)
                 .foregroundStyle(color)
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, ParietalSpacing.xs)
         .padding(.vertical, 3)
         .background(color.opacity(V2Depth.bgSubtle))
         .clipShape(SwiftUI.Capsule())
@@ -7442,7 +7442,7 @@ private struct ThreadStatsCard: View {
             }
             Spacer()
         }
-        .padding(.horizontal, 8)
+        .padding(.horizontal, ParietalSpacing.xs)
         .padding(.vertical, LayoutConstants.compactPadding)
         .background(V4Color.bgCard.opacity(V2Depth.stateDisabled))
         .overlay(
@@ -7566,7 +7566,7 @@ struct MultiSelectActionBar: View {
                         .font(WernickeTypography.captionMedium)
                 }
                 .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
-                .padding(.horizontal, 8)
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.vertical, LayoutConstants.compactPadding)
                 .background(Color.white.opacity(0.05))
                 .clipShape(RoundedRectangle(cornerRadius: 6))

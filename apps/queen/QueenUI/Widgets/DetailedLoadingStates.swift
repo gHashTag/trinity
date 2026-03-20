@@ -419,7 +419,7 @@ struct FullScreenLoading: View {
                         .foregroundStyle(.white)
                 }
             }
-            .padding(32)
+            .padding(ParietalSpacing.xxl)
             .background(
                 RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                     .fill(.black.opacity(0.8))

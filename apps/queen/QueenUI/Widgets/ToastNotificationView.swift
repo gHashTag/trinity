@@ -531,7 +531,7 @@ private struct ToastDemoView: View {
 
                 Spacer()
             }
-            .padding(24)
+            .padding(ParietalSpacing.xl)
             .frame(maxWidth: 500)
         }
         .overlay(alignment: .topTrailing) {

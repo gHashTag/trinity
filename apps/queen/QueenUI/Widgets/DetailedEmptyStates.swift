@@ -197,7 +197,7 @@ struct ListEmptyState: View {
                 .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .padding(40)
+        .padding(ParietalSpacing.xl)
         .background(V4Color.surface)
     }
 }
@@ -301,7 +301,7 @@ struct SearchEmptyState: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(40)
+        .padding(ParietalSpacing.xl)
         .frame(maxWidth: .infinity)
     }
 }
@@ -457,7 +457,7 @@ struct ErrorEmptyState: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(40)
+        .padding(ParietalSpacing.xl)
         .frame(maxWidth: .infinity)
     }
 }
@@ -641,7 +641,7 @@ struct EmptyChatState: View {
 
             Spacer()
         }
-        .padding(24)
+        .padding(ParietalSpacing.xl)
     }
 
     private func suggestionChip(_ text: String) -> some View {
@@ -779,7 +779,7 @@ struct LoadingSkeleton: View {
                     .frame(maxWidth: 200)
             }
         }
-        .padding(20)
+        .padding(ParietalSpacing.lg)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerMedium)
     }
@@ -987,7 +987,7 @@ struct FirstRunOnboardingState: View {
 
             Spacer()
         }
-        .padding(32)
+        .padding(ParietalSpacing.xxl)
         .frame(maxWidth: .infinity)
     }
 

@@ -61,7 +61,7 @@ struct StateScreen: View {
                             .foregroundStyle(V4Color.textSecondary)
                     }
                     .padding(.horizontal)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, ParietalSpacing.xxs)
                 }
             }
             .padding(.bottom)

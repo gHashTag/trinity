@@ -730,7 +730,7 @@ struct InputComponentsView_Previews: PreviewProvider {
             )
         }
     }
-    .padding(24)
+    .padding(ParietalSpacing.xl)
     .frame(width: ParietalSpacing.wideSheetWidth, height: ParietalSpacing.largeScreenFrame)
     .background(V4Color.background)
         }

@@ -256,7 +256,7 @@ struct ActivityCard: View {
 
             Spacer()
         }
-        .padding(14)
+        .padding(ParietalSpacing.sm)
         .background(
             RoundedRectangle(cornerRadius: 10)
                 .fill(V4Color.surface)

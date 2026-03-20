@@ -49,7 +49,7 @@ struct AudioPlayerView: View {
             // Controls
             playbackControls
         }
-        .padding(20)
+        .padding(ParietalSpacing.lg)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(V4Color.surface)
@@ -211,7 +211,7 @@ struct MiniAudioPlayer: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(10)
+        .padding(ParietalSpacing.xs)
         .background(
             RoundedRectangle(cornerRadius: 10)
                 .fill(V4Color.surface)
@@ -275,7 +275,7 @@ struct VoiceRecordingView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(32)
+        .padding(ParietalSpacing.xxl)
     }
 
     private var waveform: some View {

@@ -233,7 +233,7 @@ struct ActionConfirmationDialog: View {
                     .buttonStyle(.borderedProminent)
             }
         }
-        .padding(24)
+        .padding(ParietalSpacing.xl)
         .frame(width: ParietalSpacing.widePanelWidth)
         .background(V4Color.background)
         .overlay(

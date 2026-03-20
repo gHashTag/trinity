@@ -413,7 +413,7 @@ struct ActionSheet: View {
                     RoundedRectangle(cornerRadius: 14)
                         .stroke(V4Color.border, lineWidth: 1)
                 )
-                .padding(.horizontal, 40)
+                .padding(.horizontal, ParietalSpacing.xxl)
             }
         }
     }

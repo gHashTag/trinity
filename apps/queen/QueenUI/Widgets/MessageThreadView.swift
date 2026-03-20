@@ -345,7 +345,7 @@ struct ThreadReplyCell: View {
             Image(systemName: icon)
                 .font(WernickeTypography.size12)
                 .foregroundStyle(V4Color.textSecondary)
-                .padding(4)
+                .padding(ParietalSpacing.xxs)
                 .background(V4Color.border.opacity(V2Depth.stateHover))
                 .clipShape(Circle())
         }

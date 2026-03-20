@@ -259,7 +259,7 @@ struct BridgeScreen: View {
                     .clipShape(SwiftUI.Capsule())
             }
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, ParietalSpacing.sm)
         .padding(.vertical, 3)
         .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
