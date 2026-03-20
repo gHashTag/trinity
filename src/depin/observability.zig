@@ -76,10 +76,10 @@ pub const ObservabilityManager = struct {
             .alerts_triggered = 0,
         };
 
-        // Add default thresholds
-        manager.addThreshold("uptime_pct", UPTIME_WARNING, UPTIME_CRITICAL, .less_than, true);
-        manager.addThreshold("latency_avg_ms", LATENCY_WARNING, LATENCY_CRITICAL, .greater_than, true);
-        manager.addThreshold("success_rate", SUCCESS_RATE_WARNING, SUCCESS_RATE_CRITICAL, .less_than, true);
+        // Add default thresholds (ignore errors - these are hardcoded valid values)
+        _ = manager.addThreshold("uptime_pct", UPTIME_WARNING, UPTIME_CRITICAL, .less_than, true);
+        _ = manager.addThreshold("latency_avg_ms", LATENCY_WARNING, LATENCY_CRITICAL, .greater_than, true);
+        _ = manager.addThreshold("success_rate", SUCCESS_RATE_WARNING, SUCCESS_RATE_CRITICAL, .less_than, true);
 
         return manager;
     }
@@ -93,7 +93,7 @@ pub const ObservabilityManager = struct {
             .timestamp = std.time.timestamp(),
             .labels = .{},
         };
-        try self.metrics.append(allocator, metric);
+        try self.metrics.append(self.allocator, metric);
 
         // Check alert thresholds
         self.checkThresholds(metric);
