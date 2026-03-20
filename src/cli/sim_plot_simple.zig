@@ -83,9 +83,9 @@ pub fn main() !void {
     }
 
     switch (view_mode.?) {
-        .ppl => print("{s}Error: not implemented yet{S}\n", .{ RED, RESET }),
-        .diversity => print("{s}Error: not implemented yet{S}\n", .{ RED, RESET }),
-        .alive => print("{s}Error: not implemented yet{S}\n", .{ RED, RESET }),
+        .ppl => print("{s}Error: not implemented yet{s}\n", .{ RED, RESET }),
+        .diversity => print("{s}Error: not implemented yet{s}\n", .{ RED, RESET }),
+        .alive => print("{s}Error: not implemented yet{s}\n", .{ RED, RESET }),
         .summary => try printSummary(allocator, scenarios),
     }
 }
@@ -223,7 +223,6 @@ fn getScenarioCategory(id: []const u8) []const u8 {
         return "Wide";
     }
     return "Mixed";
-    return id;
 }
 
 fn getScenarioColor(category: []const u8) []const u8 {

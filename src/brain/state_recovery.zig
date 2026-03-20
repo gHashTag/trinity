@@ -605,10 +605,7 @@ pub const StateManager = struct {
     }
 
     /// Restore state to live brain components
-    pub fn restore(self: *Self, loaded: *const LoadedState, registry: *basal_ganglia.Registry, _event_bus: *reticular_formation.EventBus) !void {
-        _ = self; // Not used in current stub implementation
-        _ = registry; // Not used in current stub implementation
-        _ = _event_bus; // Event bus restoration not yet implemented
+    pub fn restore(_: *Self, loaded: *const LoadedState, _: *basal_ganglia.Registry, _: *reticular_formation.EventBus) !void {
         const state = loaded.state;
 
         // Restore task claims
