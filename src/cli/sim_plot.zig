@@ -32,6 +32,9 @@ const DataPoint = struct {
     diversity: f32,
     alive: usize,
     energy: f32,
+    fpga_lut: u32,
+    fpga_bram: u32,
+    fpga_cost_norm: f32,
 };
 
 const ScenarioStats = struct {
@@ -41,6 +44,9 @@ const ScenarioStats = struct {
     final_diversity: f32,
     final_alive: usize,
     total_energy: f32,
+    fpga_lut: u32,
+    fpga_bram: u32,
+    fpga_cost_norm: f32,
     converged: bool,
     category: []const u8,
     points: []const DataPoint,
@@ -57,7 +63,7 @@ pub fn main() !void {
         return;
     }
 
-    var view_mode: ?enum { ppl, diversity, alive, summary, wave, coherence, phase, probability } = null;
+    var view_mode: ?enum { ppl, diversity, alive, summary, wave, coherence, phase, probability, fpga } = null;
     var input_path: []const u8 = "output/simulation_results.csv";
 
     var i: usize = 1;
@@ -80,6 +86,8 @@ pub fn main() !void {
                 view_mode = .phase;
             } else if (std.mem.eql(u8, mode_str, "probability")) {
                 view_mode = .probability;
+            } else if (std.mem.eql(u8, mode_str, "fpga")) {
+                view_mode = .fpga;
             } else {
                 print("{s}Error: unknown view mode '{s}'{s}\n", .{ RED, mode_str, RESET });
                 return error.InvalidViewMode;
@@ -90,7 +98,7 @@ pub fn main() !void {
     }
 
     if (view_mode == null) {
-        print("{s}Error: --view mode required (summary|ppl|diversity|alive|wave|coherence|phase|probability){s}\n", .{ RED, RESET });
+        print("{s}Error: --view mode required (summary|ppl|diversity|alive|wave|coherence|phase|probability|fpga){s}\n", .{ RED, RESET });
         printHelp();
         return error.ViewModeRequired;
     }
@@ -113,6 +121,7 @@ pub fn main() !void {
         .coherence => try plotCoherence(allocator, scenarios),
         .phase => try plotPhaseSpace(allocator, scenarios),
         .probability => try plotProbability(allocator, scenarios),
+        .fpga => try plotFpgaCost(allocator, scenarios),
     }
 }
 
@@ -132,6 +141,9 @@ fn loadCSV(allocator: Allocator, csv_path: []const u8) ![]ScenarioStats {
         final_diversity: f32,
         final_alive: usize,
         total_energy: f32,
+        fpga_lut: u32,
+        fpga_bram: u32,
+        fpga_cost_norm: f32,
     };
 
     var scenario_map = std.StringHashMap(ScenarioData).init(allocator);
@@ -160,6 +172,9 @@ fn loadCSV(allocator: Allocator, csv_path: []const u8) ![]ScenarioStats {
         var diversity: f32 = 0.0;
         var alive: usize = 0;
         var energy: f32 = 0.0;
+        var fpga_lut: u32 = 0;
+        var fpga_bram: u32 = 0;
+        var fpga_cost_norm: f32 = 0.0;
 
         while (fields.next()) |field| {
             const field_str = std.mem.trim(u8, field, " \r\n");
@@ -170,6 +185,9 @@ fn loadCSV(allocator: Allocator, csv_path: []const u8) ![]ScenarioStats {
                 3 => diversity = std.fmt.parseFloat(f32, field_str) catch 0.0,
                 4 => alive = std.fmt.parseInt(usize, field_str, 10) catch 0,
                 8 => energy = std.fmt.parseFloat(f32, field_str) catch 0.0,
+                9 => fpga_lut = std.fmt.parseInt(u32, field_str, 10) catch 0,
+                10 => fpga_bram = std.fmt.parseInt(u32, field_str, 10) catch 0,
+                11 => fpga_cost_norm = std.fmt.parseFloat(f32, field_str) catch 0.0,
                 else => {},
             }
             step_idx += 1;
@@ -184,6 +202,9 @@ fn loadCSV(allocator: Allocator, csv_path: []const u8) ![]ScenarioStats {
                 .final_diversity = diversity,
                 .final_alive = alive,
                 .total_energy = energy,
+                .fpga_lut = fpga_lut,
+                .fpga_bram = fpga_bram,
+                .fpga_cost_norm = fpga_cost_norm,
             };
         }
 
@@ -194,12 +215,18 @@ fn loadCSV(allocator: Allocator, csv_path: []const u8) ![]ScenarioStats {
             .diversity = diversity,
             .alive = alive,
             .energy = energy,
+            .fpga_lut = fpga_lut,
+            .fpga_bram = fpga_bram,
+            .fpga_cost_norm = fpga_cost_norm,
         });
 
         entry.value_ptr.final_ppl = ppl;
         entry.value_ptr.final_diversity = diversity;
         entry.value_ptr.final_alive = alive;
         entry.value_ptr.total_energy = energy;
+        entry.value_ptr.fpga_lut = fpga_lut;
+        entry.value_ptr.fpga_bram = fpga_bram;
+        entry.value_ptr.fpga_cost_norm = fpga_cost_norm;
     }
 
     var result = std.ArrayList(ScenarioStats).initCapacity(allocator, 16) catch |err| return err;
@@ -213,6 +240,9 @@ fn loadCSV(allocator: Allocator, csv_path: []const u8) ![]ScenarioStats {
             .final_diversity = entry.value_ptr.final_diversity,
             .final_alive = entry.value_ptr.final_alive,
             .total_energy = entry.value_ptr.total_energy,
+            .fpga_lut = entry.value_ptr.fpga_lut,
+            .fpga_bram = entry.value_ptr.fpga_bram,
+            .fpga_cost_norm = entry.value_ptr.fpga_cost_norm,
             .converged = entry.value_ptr.final_alive > 0,
             .category = getScenarioCategory(entry.key_ptr.*),
             .points = points_slice,
@@ -301,6 +331,35 @@ fn printSummary(allocator: Allocator, scenarios: []const ScenarioStats) !void {
     print("{s}└──────┴──────────────────┴───────┴───────────┴────────┴────────┘{s}\n\n", .{ BOLD, RESET });
 
     print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n", .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
+}
+
+fn plotFpgaCost(allocator: Allocator, scenarios: []const ScenarioStats) !void {
+    _ = allocator;
+    print("\n{s}╔════════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
+    print("{s}║  FPGA COST ANALYSIS                                    ║{s}\n", .{ BOLD, RESET });
+    print("{s}╚════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
+
+    print("{s}┌──────────────────┬────────┬────────┬──────────┬──────────┬───────────┬──────────┐{s}\n", .{ BOLD, RESET });
+    print("{s}│ Scenario         │ LUT(K) │  BRAM  │ LUT%     │ BRAM%    │  Cost%   │{s}\n", .{ BOLD, RESET });
+    print("{s}├──────────────────┼────────┼────────┼──────────┼──────────┼───────────┼──────────┤{s}\n", .{ BOLD, RESET });
+
+    for (scenarios) |s| {
+        const color = getScenarioColor(s.category);
+        const lut_pct: u32 = @intFromFloat(@as(f32, @floatFromInt(s.fpga_lut)) / 50000.0 * 100.0);
+        const bram_pct: u32 = @intFromFloat(@as(f32, @floatFromInt(s.fpga_bram)) / 200.0 * 100.0);
+        const cost_pct: u32 = @intFromFloat(s.fpga_cost_norm * 100.0);
+
+        const cost_color = if (cost_pct < 40) GREEN else if (cost_pct < 70) YELLOW else RED;
+
+        print("{s}│ {s:<16} │ {d:>6} │ {d:>6} │ {d:>7}% │ {d:>7}% │{s} {d:>6}% │{s}\n", .{
+            color, s.name, s.fpga_lut / 1000, s.fpga_bram, lut_pct, bram_pct, cost_color, cost_pct, RESET,
+        });
+    }
+
+    print("{s}└──────────────────┴────────┴────────┴──────────┴──────────┴───────────┴──────────┘{s}\n\n", .{ BOLD, RESET });
+
+    print("{s}Budget: Artix-7 K=16 — LUT: 50K, BRAM36: 100 (74%){s}\n", .{ CYAN, RESET });
+    print("{s}Cost formula: fpga_cost_norm = (lut_ratio * 0.7 + bram_ratio * 0.3){s}\n\n", .{ CYAN, RESET });
 }
 
 fn plotPPL(allocator: Allocator, scenarios: []const ScenarioStats) !void {
@@ -680,6 +739,7 @@ fn printHelp() void {
     print("  coherence   — Phase coherence matrix\n", .{});
     print("  phase       — Phase space trajectory (PPL vs diversity)\n", .{});
     print("  probability — Born rule probability distribution\n", .{});
+    print("  fpga        — FPGA cost analysis table\n", .{});
     print("\n{s}Options:{s}\n", .{ CYAN, RESET });
     print("  --input=PATH  CSV file path (default: output/simulation_results.csv)\n", .{});
     print("  --help, -h    Show this help\n", .{});
