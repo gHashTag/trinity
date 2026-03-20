@@ -432,7 +432,7 @@ pub const RailwayApi = struct {
             const result = self.httpPostOnce(body);
             if (result) |response| {
                 // Success - update last request time and return
-                self.last_request_time = std.time.Instant.now() catch std.time.Instant{};
+                self.last_request_time = std.time.Instant.now() catch undefined;
                 return response;
             } else |err| {
                 // Check if it's a rate limit error (429)
