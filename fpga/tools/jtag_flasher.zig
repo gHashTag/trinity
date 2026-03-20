@@ -22,51 +22,65 @@ pub fn main() !void {
 
     const bitstream = args[1];
 
-    // Flash via jtag_program
-    std.debug.print("═══════════════════════════════════════════════\n", .{});
+    std.debug.print("═══════════════════════════════════════════\n", .{});
     std.debug.print(" JTAG FLASHER — Pure Zig\n", .{});
     std.debug.print(" Bitstream: {s}\n", .{bitstream});
-    std.debug.print("═══════════════════════════════════════════════\n\n", .{});
-
-    // Check if jtag_program exists
-    const jtag_prog = "/Users/playra/trinity-w1/fpga/tools/jtag_program";
+    std.debug.print("═════════════════════════════════════════════\n\n", .{});
 
     // Run fxload first (PID 0x0013 -> 0x0008)
     std.debug.print("[1/2] fxload: switching cable to JTAG mode...\n", .{});
-    const fxload_result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &[_][]const u8{
+
+    var fxload_child = std.process.Child.init(
+        &[_][]const u8{
             "/Users/playra/trinity-w1/fpga/tools/fxload",
-            "-t", "xilinx",
+            "-t", "fx2",
             "-d", "03fd:0013",
             "-i", "/Users/playra/trinity-w1/fpga/tools/xusb_xp2.hex",
         },
-    }).wait;
+        allocator,
+    );
 
-    if (fxload_result.term != .Exited) {
+    const fxload_term = try fxload_child.spawnAndWait();
+
+    const fxload_ok = switch (fxload_term) {
+        .Exited => |code| code == 0,
+        else => false,
+    };
+
+    if (!fxload_ok) {
         std.debug.print("✗ fxload failed\n", .{});
         return error.FxloadFailed;
     }
 
     // Wait for cable to stabilize
-    std.time.sleep(5 * std.time.ns_per_s);
+    std.Thread.sleep(5 * std.time.ns_per_s);
 
     // Flash bitstream
     std.debug.print("[2/2] Flashing bitstream...\n", .{});
-    const flash_result = std.process.Child.run(.{
-        .allocator = allocator,
-        .argv = &[_][]const u8{ jtag_prog, bitstream },
-    }).wait;
 
-    const success = (flash_result.term == .Exited) and (flash_result.exit_code == 0);
+    var flash_child = std.process.Child.init(
+        &[_][]const u8{ "/Users/playra/trinity-w1/fpga/tools/jtag_program", bitstream },
+        allocator,
+    );
 
-    std.debug.print("\n═══════════════════════════════════════════════\n", .{});
-    if (success) {
+    const flash_term = try flash_child.spawnAndWait();
+
+    const flash_ok = switch (flash_term) {
+        .Exited => |code| code == 0,
+        else => false,
+    };
+
+    std.debug.print("\n═════════════════════════════════════════\n", .{});
+    if (flash_ok) {
         std.debug.print(" ✅ FLASH COMPLETE\n", .{});
-        std.debug.print("═══════════════════════════════════════════════\n", .{});
+        std.debug.print("═════════════════════════════════════════════\n", .{});
     } else {
-        std.debug.print(" ✗ FLASH FAILED (exit code {d})\n", .{flash_result.exit_code});
-        std.debug.print("═══════════════════════════════════════════════\n", .{});
+        const exit_code = switch (flash_term) {
+            .Exited => |code| code,
+            else => 255,
+        };
+        std.debug.print(" ✗ FLASH FAILED (exit code {d})\n", .{exit_code});
+        std.debug.print("═════════════════════════════════════════════\n", .{});
         return error.FlashFailed;
     }
 }
