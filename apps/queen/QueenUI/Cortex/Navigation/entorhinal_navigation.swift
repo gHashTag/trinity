@@ -80,7 +80,7 @@ public struct EntorhinalNavItem: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.vertical, 6)
+            .padding(.vertical, ParietalSpacing.xxxs)
             .padding(.horizontal, ParietalSpacing.md)
             .background(isSelected ? V4Color.selected : Color.clear)
             .foregroundStyle(isSelected ? V4Color.textPrimary : V4Color.textSecondary)
