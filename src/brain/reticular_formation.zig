@@ -1346,40 +1346,29 @@ test "EventBus global singleton functionality" {
 // ADDITIONAL TESTS
 // ═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-test "Event: broadcast throughput under load" {
-test "Event: broadcast throughput under load" {
+test "Event: publish throughput" {
     const allocator = std.testing.allocator;
-    var bus = EventBus.init(allocator, 100);
+    var bus = EventBus.init(allocator);
     defer bus.deinit();
 
-    // Broadcast 1000 events
+    // Use static strings to avoid allocation
+    const task_id = "test-task";
+    const agent_id = "test-agent";
+
+    // Publish 1000 events
     var i: u32 = 0;
     while (i < 1000) : (i += 1) {
-        const ev = TestEvent{ .timestamp = std.time.milliTimestamp() };
-        _ = try bus.broadcast(&ev);
+        const data = EventData{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = agent_id,
+            },
+        };
+        _ = try bus.publish(.task_claimed, data);
     }
 
     const stats = bus.getStats();
-    try std.testing.expect(stats.events_broadcast >= 950);
+    try std.testing.expect(stats.published >= 1000);
 }
-
-test "Event: subscription count" {
-    const allocator = std.testing.allocator;
-    var bus = EventBus.init(allocator, 100);
-    defer bus.deinit();
-
-    // Subscribe multiple times
-    var count: usize = 0;
-    for (0..10) |_| {
-        _ = try bus.subscribe(allocator, "test-sub");
-        count += 1;
-    }
-
-    try std.testing.expectEqual(@as(usize, 10), count);
-}
-
-const TestEvent = struct {
-    timestamp: i64,
-};
 
 // φ² + 1/φ² = 3 | TRINITY
