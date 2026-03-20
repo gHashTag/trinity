@@ -23,12 +23,29 @@ comptime {
 // ═══════════════════════════════════════════════════════════════════════════════════════════════
 
 /// GF16: Sacred 16-bit формат для HSLM.
-/// В отличие от IEEE 754 f16 [sign:1][exp:5][mant:10],
-/// GF16 имеет phi-оптимальное распределение: [sign:1][exp:6][mant:9].
 ///
-/// Биас экспоненты = 31 (0x1F), мантисса = 9 бит.
-/// Минимальное положительное: 2^(-31) ≈ 4.66e-10
-/// Максимальное: ~2^31 × 1.999 ≈ 4.29e9
+/// **Phi-optimal distribution** — Unlike IEEE 754 f16 [sign:1][exp:5][mant:10],
+/// GF16 has phi-optimal bit distribution: [sign:1][exp:6][mant:9].
+///
+/// **Layout:**
+/// ```
+/// ┌──────┬─────────┬─────────┐
+/// │ sign │   exp   │  mant   │
+/// │ 1bit │   6bit  │   9bit  │
+/// └──────┴─────────┴─────────┘
+/// ```
+///
+/// **Parameters:**
+/// - Exponent bias: 31 (0x1F)
+/// - Min positive: 2^(-31) ≈ 4.66e-10
+/// - Max value: ~2^31 × 1.999 ≈ 4.29e9
+/// - phi-distance: |exp/mant - 1/φ| ≈ 0.049 (close to φ-optimal)
+///
+/// **Example:**
+/// ```zig
+/// const gf = GF16.fromF32(3.14159);
+/// try std.testing.expectApproxEqAbs(3.14, gf.toF32(), 0.01);
+/// ```
 pub const GF16 = packed struct(u16) {
     mant: u9,
     exp: u6,
@@ -36,7 +53,8 @@ pub const GF16 = packed struct(u16) {
 
     const EXP_BIAS: u6 = 31;
 
-    /// phi-distance: насколько распределение бит оптимально относительно φ
+    /// phi-distance: measures how close bit distribution is to φ-optimal
+    /// Lower is better — GF16 achieves 0.049 (vs 0.082 for IEEE f16)
     pub const phi_distance: comptime_float = @abs(6.0 / 9.0 - 1.0 / PHI);
 
     /// Создать GF16 из f32

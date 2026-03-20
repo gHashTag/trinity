@@ -247,7 +247,7 @@ public struct ParahippocampalInlineSearch: View {
             }
         }
         .padding(.horizontal, ParietalSpacing.xs)
-        .padding(.vertical, 6)
+        .padding(.vertical, ParietalSpacing.xxxs)
         .background(V4Color.input)
         .cornerRadius(V1Theme.cornerSmall)
     }

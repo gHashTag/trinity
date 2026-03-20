@@ -41,7 +41,7 @@ struct KingdomSidebar: View {
                                     .font(WernickeTypography.small.monospaced())
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
-                            .padding(.vertical, 6)
+                            .padding(.vertical, ParietalSpacing.xxxs)
                             .padding(.horizontal, ParietalSpacing.md)
                             .background(
                                 selection == screen
