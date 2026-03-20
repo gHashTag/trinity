@@ -524,7 +524,11 @@ fn sendTriNotify(issue: u32, status_str: []const u8, detail: []const u8) void {
     child.stderr_behavior = .Ignore;
     child.spawn() catch return;
     _ = child.wait() catch |err| {
+<<<<<<< HEAD
         std.log.debug("child wait: {s}", .{@errorName(err)});
+=======
+        std.log.debug("cloud_monitor: child.wait failed: {}", .{err});
+>>>>>>> feat/issue-209
     };
 }
 
