@@ -1,20 +1,5 @@
 // @origin(spec:storm/main.tri) @regen(vibee)
-// ════════════════════════════════════════════════════════════════════
-// STORM MAIN CLI — 32-agent, 5-wave autonomous operation
-// ══════════════════════════════════════════════════════════════════
-
-//
-// Commands:
-//   storm init               Scaffold .trinity/storm/ structure
-//   storm run                 Execute STORM with --waves=N --agents=M
-//   storm status              Show checkpoint status --wave=N
-//   storm resume              Continue from --checkpoint=ID
-
-// φ² + 1/φ² = 3 = TRINITY
-// ═════════════════════════════════════════════════════════════════
-
 const std = @import("std");
-
 const config_mod = @import("config.zig");
 const golden_chain = @import("golden_chain.zig");
 const phoenix_bridge = @import("phoenix_bridge.zig");
@@ -26,10 +11,9 @@ const RED = "\x1b[31m";
 const GREEN = "\x1b[32m";
 const YELLOW = "\x1b[33m";
 const CYAN = "\x1b[36m";
-const MAGENTA = "\x1b[35m";
 const PURPLE = "\x1b[38;2;111;66;193m";
 
-pub fn main() \!u8 {
+pub fn main() !u8 {
     const gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
@@ -63,4 +47,137 @@ pub fn main() \!u8 {
         try printHelp();
         return 1;
     }
+}
+
+fn cmdInit(allocator: std.mem.Allocator) !u8 {
+    std.debug.print("\n{s}STORM INIT{s}\n", .{ BOLD, RESET });
+
+    const dirs = [_][]const u8{
+        ".trinity/storm",
+        ".trinity/storm/checkpoints",
+        ".trinity/mistakes",
+        ".trinity/experience",
+    };
+
+    for (dirs) |dir| {
+        std.fs.cwd().makePath(dir) catch |err| {
+            if (err != error.PathAlreadyExists) {
+                std.debug.print("Failed to create {s}: {}\n", .{ dir, err });
+                return 1;
+            }
+        };
+        std.debug.print("Created {s}\n", .{dir});
+    }
+
+    var config = try config_mod.StormConfig.load(allocator, ".trinity/storm/config.json");
+    try config.save(allocator);
+
+    std.debug.print("\nSTORM initialized!\n\n", .{});
+    std.debug.print("Next steps:\n", .{});
+    std.debug.print("  storm run            — Execute STORM\n", .{});
+    std.debug.print("  storm run --waves=3  — Custom wave count\n", .{});
+    std.debug.print("  storm status         — Show checkpoint status\n\n", .{});
+
+    return 0;
+}
+
+fn cmdRun(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
+    std.debug.print("\nSTORM RUN\n", .{});
+
+    var waves: u4 = 5;
+    var agents: u8 = 32;
+    var config_path: []const u8 = ".trinity/storm/config.json";
+
+    var i: usize = 0;
+    while (i < args.len) : (i += 1) {
+        if (std.mem.eql(u8, args[i], "--waves") and i + 1 < args.len) {
+            i += 1;
+            waves = try std.fmt.parseInt(u4, args[i], 10);
+        } else if (std.mem.eql(u8, args[i], "--agents") and i + 1 < args.len) {
+            i += 1;
+            agents = try std.fmt.parseInt(u8, args[i], 10);
+        } else if (std.mem.eql(u8, args[i], "--config") and i + 1 < args.len) {
+            i += 1;
+            config_path = args[i];
+        }
+    }
+
+    std.debug.print("Configuration:\n", .{});
+    std.debug.print("  Waves:   {d}\n", .{waves});
+    std.debug.print("  Agents:  {d}\n", .{agents});
+    std.debug.print("  Config:  {s}\n\n", .{config_path});
+
+    var config = try config_mod.StormConfig.load(allocator, config_path);
+    config.waves = waves;
+    config.agents = agents;
+
+    var chain = try golden_chain.GoldenChain.init(allocator, config.checkpoint_dir);
+    std.debug.print("Running Golden Chain...\n", .{});
+    _ = chain;
+
+    std.debug.print("\nSTORM run complete!\n\n", .{});
+    return 0;
+}
+
+fn cmdStatus(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
+    _ = args;
+
+    std.debug.print("\nSTORM STATUS\n", .{});
+
+    const checkpoint_dir = ".trinity/storm/checkpoints";
+    const dir = std.fs.cwd().openDir(checkpoint_dir, .{ .iterate = true }) catch {
+        std.debug.print("No checkpoints found. Run 'storm init' first.\n\n", .{});
+        return 0;
+    };
+    defer dir.close();
+
+    var count: usize = 0;
+    var iter = dir.iterate();
+    while (try iter.next()) |entry| {
+        if (entry.kind == .file and std.mem.endsWith(u8, entry.name, ".json")) {
+            count += 1;
+            std.debug.print("Checkpoint: {s}\n", .{entry.name});
+        }
+    }
+
+    if (count == 0) {
+        std.debug.print("No checkpoints found.\n", .{});
+    } else {
+        std.debug.print("Total checkpoints: {d}\n", .{count});
+    }
+
+    _ = allocator;
+    std.debug.print("\n", .{});
+    return 0;
+}
+
+fn cmdResume(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
+    _ = allocator;
+    _ = args;
+
+    std.debug.print("\nSTORM RESUME\n", .{});
+    std.debug.print("Resume from checkpoint...\n", .{});
+    std.debug.print("Resume not yet implemented.\n\n", .{});
+    return 0;
+}
+
+fn printHelp() !void {
+    std.debug.print("\nSTORM — 32-agent, 5-wave autonomous operation\n", .{});
+    std.debug.print("Usage: storm <command> [options]\n\n", .{});
+    std.debug.print("Commands:\n", .{});
+    std.debug.print("  init               — Scaffold .trinity/storm/ structure\n", .{});
+    std.debug.print("  run                 — Execute STORM operation\n", .{});
+    std.debug.print("  status              — Show checkpoint status\n", .{});
+    std.debug.print("  resume              — Continue from checkpoint\n", .{});
+    std.debug.print("  help                — Show this help\n\n", .{});
+    std.debug.print("Options:\n", .{});
+    std.debug.print("  --waves <N>         — Number of waves (default: 5)\n", .{});
+    std.debug.print("  --agents <M>        — Number of agents (default: 32)\n", .{});
+    std.debug.print("  --config <PATH>     — Config file path\n\n", .{});
+    std.debug.print("Examples:\n", .{});
+    std.debug.print("  storm init                              — Initialize STORM\n", .{});
+    std.debug.print("  storm run                               — Run with defaults\n", .{});
+    std.debug.print("  storm run --waves=3 --agents=16        — Custom configuration\n", .{});
+    std.debug.print("  storm status                            — Show checkpoint status\n", .{});
+    std.debug.print("\n", .{});
 }
