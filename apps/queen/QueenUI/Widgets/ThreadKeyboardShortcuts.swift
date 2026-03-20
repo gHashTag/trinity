@@ -347,7 +347,7 @@ struct ThreadSelectionIndicator: View {
             if hasUnread {
                 Circle()
                     .fill(V4Color.accent)
-                    .frame(width: 6, height: 6)
+                    .frame(width: ParietalSpacing.dotSize, height: 6)
             }
         }
     }
@@ -479,7 +479,7 @@ struct ThreadKeyboardHelpPanel: View {
                 .padding()
             }
         }
-        .frame(width: 280, height: 320)
+        .frame(width: ParietalSpacing.panelWidth, height: 320)
         .background(
             RoundedRectangle(cornerRadius: 12)
                 .fill(V4Color.surface)

@@ -277,7 +277,7 @@ struct GalleryView: View {
                         image.image
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 60, height: 60)
+                            .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
                             .cornerRadius(V1Theme.cornerSmall)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 6)
@@ -316,7 +316,7 @@ struct GalleryView: View {
             images[selectedIndex].image
                 .resizable()
                 .aspectRatio(contentMode: .fit)
-                .frame(width: 600, height: 600)
+                .frame(width: ParietalSpacing.extraWideSheet, height: ParietalSpacing.extraWideSheet)
                 .background(.black)
                 .onTapGesture {
                     showFullscreen = false

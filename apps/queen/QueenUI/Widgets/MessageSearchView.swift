@@ -173,7 +173,7 @@ struct MessageSearchView: View {
             // Avatar
             Circle()
                 .fill(result.message.role == .assistant ? V4Color.accent : V4Color.purple)
-                .frame(width: 28, height: 28)
+                .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                 .overlay(
                     Image(systemName: result.message.role == .assistant ? "triangle.fill" : "person.fill")
                         .font(WernickeTypography.size10)

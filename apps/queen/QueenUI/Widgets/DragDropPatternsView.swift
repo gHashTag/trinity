@@ -159,10 +159,10 @@ struct DragDropPatternsView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             DropZone(title: "Drop Files Here", subtitle: "Supported: PNG, JPG, PDF", onDrop: { true })
-                .frame(width: 400, height: 200)
+                .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.modalFrame)
 
             FileDropZone(extensions: ["png", "jpg"]) { _ in }
-                .frame(width: 400, height: 200)
+                .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.modalFrame)
         }
         .padding()
         .background(V4Color.background)

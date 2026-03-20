@@ -69,7 +69,7 @@ struct MessageAttachmentPicker: View {
                     .font(.caption2)
                     .foregroundStyle(V4Color.textSecondary)
             }
-            .frame(width: 60, height: 50)
+            .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.mediumFrame)
             .background(
                 RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
                     .fill(V4Color.surface)
@@ -88,7 +88,7 @@ struct MessageAttachmentPicker: View {
                 .font(.caption2)
                 .foregroundStyle(V4Color.textSecondary)
         }
-        .frame(width: 80, height: 50)
+        .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.mediumFrame)
         .background(
             RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
                 .fill(draggedURLs.isEmpty ? V4Color.surface : V4Color.accent.opacity(0.2))
@@ -234,7 +234,7 @@ struct AttachmentPreviewRow: View {
                     .foregroundStyle(V4Color.textSecondary)
             }
         }
-        .frame(width: 60, height: 60)
+        .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerSmall)
     }

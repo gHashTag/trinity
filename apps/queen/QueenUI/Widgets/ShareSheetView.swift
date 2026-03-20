@@ -129,7 +129,7 @@ struct ShareSheetOption: View {
                 Image(systemName: icon)
                     .font(WernickeTypography.size20)
                     .foregroundStyle(V4Color.accent)
-                    .frame(width: 50, height: 50)
+                    .frame(width: ParietalSpacing.mediumFrame, height: ParietalSpacing.mediumFrame)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(V4Color.accent.opacity(V2Depth.bgSubtle))
@@ -289,7 +289,7 @@ struct SharePreview: View {
                         Rectangle()
                             .fill(V4Color.border)
                     }
-                    .frame(width: 60, height: 60)
+                    .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
                     .cornerRadius(V1Theme.cornerSmall)
                 }
 

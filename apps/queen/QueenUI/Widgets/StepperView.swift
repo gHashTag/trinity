@@ -282,7 +282,7 @@ struct CounterStepper: View {
             Text(title)
                 .font(WernickeTypography.body14Medium)
                 .foregroundStyle(V4Color.accent)
-                .frame(width: 28, height: 28)
+                .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
         }
         .buttonStyle(.plain)
     }

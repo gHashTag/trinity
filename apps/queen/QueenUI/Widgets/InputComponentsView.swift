@@ -137,7 +137,7 @@ public struct SecurePasswordField: View {
                     Image(systemName: isVisible ? "eye.slash.fill" : "eye.fill")
                         .font(WernickeTypography.size14)
                         .foregroundColor(V4Color.textSecondary)
-                        .frame(width: 28, height: 28)
+                        .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(isVisible ? "Hide password" : "Show password")
@@ -171,7 +171,7 @@ public struct SecurePasswordField: View {
     private func strengthBar(for level: PasswordStrength) -> some View {
         RoundedRectangle(cornerRadius: 2)
             .fill(passwordStrength >= level ? passwordStrength.color : Color.gray.opacity(V2Depth.stateHover))
-            .frame(width: 32, height: 4)
+            .frame(width: ParietalSpacing.touchFrame, height: ParietalSpacing.microHeight)
     }
 
     enum PasswordStrength: Comparable {
@@ -731,7 +731,7 @@ struct InputComponentsView_Previews: PreviewProvider {
         }
     }
     .padding(24)
-    .frame(width: 500, height: 900)
+    .frame(width: ParietalSpacing.wideSheetWidth, height: ParietalSpacing.largeScreenFrame)
     .background(V4Color.background)
         }
     }

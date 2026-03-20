@@ -63,7 +63,7 @@ struct OracleScreen: View {
             let running = daemonState?.isRunning ?? false
             Circle()
                 .fill(running ? V4Color.statusOK : V4Color.statusError)
-                .frame(width: 12, height: 12)
+                .frame(width: ParietalSpacing.mediumBadge, height: ParietalSpacing.badgeHeight)
             Text(running ? "DAEMON RUNNING" : "DAEMON STOPPED")
                 .font(.caption.weight(.bold))
                 .foregroundStyle(running ? V4Color.statusOK : V4Color.statusError)

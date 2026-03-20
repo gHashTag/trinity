@@ -179,7 +179,7 @@ public struct CerebellumComponentCatalog: View {
                 ForEach(colors, id: \.0) { name, color in
                     HStack {
                         Color.swatch(color)
-                            .frame(width: 40, height: 40)
+                            .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
                             .cornerRadius(V1Theme.cornerSmall)
 
                         Text(name)

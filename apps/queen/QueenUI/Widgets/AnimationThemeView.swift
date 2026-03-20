@@ -243,12 +243,12 @@ struct AnimatedToggle: View {
             Text(isOn ? "On" : "Off")
                 .font(.caption)
                 .foregroundStyle(isOn ? V4Color.textPrimary : V4Color.textSecondary)
-                .frame(width: 30)
+                .frame(width: ParietalSpacing.touchFrame)
 
             ZStack(alignment: isOn ? .trailing : .leading) {
                 RoundedRectangle(cornerRadius: 12)
                     .fill(isOn ? V4Color.accent : V4Color.border)
-                    .frame(width: 44, height: 24)
+                    .frame(width: ParietalSpacing.buttonFrame, height: ParietalSpacing.chipHeight)
 
                 Circle()
                     .fill(.white)
@@ -327,7 +327,7 @@ struct MorphingShape: View {
     var body: some View {
         RoundedRectangle(cornerRadius: isExpanded ? 20 : 10)
             .fill(V4Color.accent)
-            .frame(width: 40, height: 40)
+            .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
             .animation(.spring(response: 0.5, dampingFraction: 0.6), value: isExpanded)
             .onTapGesture {
                 isExpanded.toggle()

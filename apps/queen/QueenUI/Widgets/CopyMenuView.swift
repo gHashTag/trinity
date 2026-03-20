@@ -79,7 +79,7 @@ struct CopyMenuView: View {
                 .foregroundColor(didCopy ? V4Color.success : V4Color.textSecondary)
         }
         .menuStyle(.borderlessButton)
-        .frame(width: 28, height: 28)
+        .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
         .help("Copy options")
         .onChange(of: isShowing) { _, newValue in
             if !newValue {

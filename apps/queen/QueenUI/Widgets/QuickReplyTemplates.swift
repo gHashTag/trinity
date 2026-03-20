@@ -433,7 +433,7 @@ struct TemplateEditSheet: View {
             .padding(20)
             .background(V4Color.surface)
         }
-        .frame(width: 480, height: 500)
+        .frame(width: ParietalSpacing.xxxlModalFrame, height: ParietalSpacing.extraLargeModalHeight)
         .background(V4Color.background)
         .onAppear {
             templates = manager.allTemplates
@@ -456,7 +456,7 @@ struct TemplateEditSheet: View {
             // Category indicator
             Circle()
                 .fill(template.category == .builtin ? V4Color.textSecondary : V4Color.accent)
-                .frame(width: 6, height: 6)
+                .frame(width: ParietalSpacing.dotSize, height: 6)
 
             // Template text
             Text(template.text)
@@ -656,7 +656,7 @@ struct AddTemplateSheet: View {
             .padding(20)
             .background(V4Color.surface)
         }
-        .frame(width: 400, height: 300)
+        .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.mediumModalFrame)
         .background(V4Color.background)
         .onAppear {
             focused = true
@@ -818,7 +818,7 @@ struct AllTemplatesSheet: View {
             }
             .background(V4Color.background)
         }
-        .frame(width: 500, height: 400)
+        .frame(width: ParietalSpacing.wideSheetWidth, height: ParietalSpacing.wideSheetWidth)
         .background(V4Color.background)
     }
 
@@ -885,7 +885,7 @@ struct QuickReplyTemplates_Previews: PreviewProvider {
             }
             .buttonStyle(.borderedProminent)
         }
-        .frame(width: 600, height: 300)
+        .frame(width: ParietalSpacing.extraWideSheet, height: ParietalSpacing.mediumModalFrame)
         .background(V4Color.background)
     }
 }

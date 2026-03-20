@@ -22,7 +22,7 @@ struct BridgeScreen: View {
                     }
                     Spacer()
                     StatCard(label: "Channels", value: "5")
-                        .frame(width: 80)
+                        .frame(width: ParietalSpacing.xLargeFrame)
                 }
                 .padding()
 
@@ -137,7 +137,7 @@ struct BridgeScreen: View {
                     Text(label)
                         .font(.caption2)
                         .foregroundStyle(V4Color.textSecondary)
-                        .frame(width: 60, alignment: .leading)
+                        .frame(width: ParietalSpacing.largeFrame, alignment: .leading)
                     Text(value)
                         .font(.caption.monospaced())
                         .foregroundStyle(V4Color.textPrimary)
@@ -227,7 +227,7 @@ struct BridgeScreen: View {
                 Text(formatTime(ts))
                     .font(.caption2.monospacedDigit())
                     .foregroundStyle(V4Color.textSecondary)
-                    .frame(width: 60, alignment: .leading)
+                    .frame(width: ParietalSpacing.largeFrame, alignment: .leading)
             }
 
             // Source icon
@@ -238,7 +238,7 @@ struct BridgeScreen: View {
             Text(event.resolvedKind)
                 .font(.caption2.weight(.medium).monospaced())
                 .foregroundStyle(V4Color.accent)
-                .frame(width: 60, alignment: .leading)
+                .frame(width: ParietalSpacing.largeFrame, alignment: .leading)
 
             // Text
             Text(event.text ?? event.action ?? event.detail ?? "—")
@@ -309,7 +309,7 @@ struct BridgeScreen: View {
             Text(label)
                 .font(.caption)
                 .foregroundStyle(V4Color.textSecondary)
-                .frame(width: 50, alignment: .leading)
+                .frame(width: ParietalSpacing.mediumFrame, alignment: .leading)
             Text(value)
                 .font(.caption.monospaced())
                 .foregroundStyle(V4Color.textPrimary)

@@ -48,7 +48,7 @@ struct CommentSidebar: View {
                 .overlay(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 1.5)
                         .fill(V4Color.accent.opacity(V2Depth.stateDisabled))
-                        .frame(width: 3)
+                        .frame(width: ParietalSpacing.smallIndicator)
                 }
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
@@ -154,7 +154,7 @@ struct CommentRow: View {
                     .fill(comment.role == .user ? Color.white.opacity(V2Depth.stateHover) :
                           hasError ? V4Color.statusError.opacity(V2Depth.stateDisabled) :
                           V4Color.accent.opacity(V2Depth.stateDisabled))
-                    .frame(width: 6, height: 6)
+                    .frame(width: ParietalSpacing.dotSize, height: 6)
                 Text(comment.role == .user ? "You" : "Queen")
                     .font(WernickeTypography.caption2Semibold)
                     .foregroundStyle(comment.role == .user ? Color.white.opacity(V2Depth.stateDisabled) :

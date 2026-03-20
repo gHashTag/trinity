@@ -89,7 +89,7 @@ struct LinearProgressBar: View {
                 ForEach(0..<20) { i in
                     Rectangle()
                         .fill(color.opacity(V2Depth.stateHover))
-                        .frame(width: 8, height: height * 2)
+                        .frame(width: ParietalSpacing.tinyIndicator, height: height * 2)
                         .offset(x: CGFloat(i) * 20 - stripeOffset)
                 }
             }
@@ -291,7 +291,7 @@ struct DeterminateProgress: View {
                                 endPoint: .trailing
                             )
                         )
-                        .frame(width: max(0, geo.size.width * max(0, min(1, value))), height: 12)
+                        .frame(width: max(0, geo.size.width * max(0, min(1, value))), height: ParietalSpacing.badgeHeight)
                         .shadow(color: color.opacity(V2Depth.stateDisabled), radius: 3)
                         .animation(.easeOut(duration: 0.3), value: value)
                 }
@@ -402,7 +402,7 @@ struct ProgressWithLabel: View {
                 if let value = value {
                     switch style {
                     case .linear:
-                        LinearProgressBar(value: value, color: color, height: 4)
+                        LinearProgressBar(value: value, color: color, height: ParietalSpacing.microHeight)
                     case .circular:
                         CircularProgressIndicator(value: value, color: color, size: 32)
                     case .compact:
@@ -518,7 +518,7 @@ struct ProgressIndicators_Previews: PreviewProvider {
                     LinearProgressBar(value: 0.65)
                     LinearProgressBar(value: 0.3, color: .blue, showsPercentage: true)
                     LinearProgressBar(value: 0.85, color: .blue, striped: true)
-                    LinearProgressBar(value: 0.45, color: .purple, height: 10)
+                    LinearProgressBar(value: 0.45, color: .purple, height: ParietalSpacing.captionHeight)
                 }
                 .padding()
                 .background(V4Color.surface)
