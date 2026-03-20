@@ -164,7 +164,7 @@ struct SacredMathScreen: View {
                 Text("PENDING")
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(V4Color.statusWarn)
-                    .padding(.horizontal, 6)
+                    .padding(.horizontal, ParietalSpacing.xxxs)
                     .padding(.vertical, 2)
                     .background(V4Color.statusWarn.opacity(V2Depth.bgSidebarHover))
                     .clipShape(SwiftUI.Capsule())

@@ -3305,12 +3305,22 @@ pub fn build(b: *std.Build) void {
     // CAPABILITIES REPORT — System capabilities (SIMD, Sacred Dimensions)
     // ═══════════════════════════════════════════════════════════════════════════════
 
+    // SIMD config module for caps-report
+    const hslm_simd_config_mod = b.createModule(.{
+        .root_source_file = b.path("src/hslm/simd_config.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
     const caps_report = b.addExecutable(.{
         .name = "caps-report",
         .root_module = b.createModule(.{
             .root_source_file = b.path("src/sacred/caps_report.zig"),
             .target = target,
             .optimize = optimize,
+            .imports = &.{
+                .{ .name = "hslm_simd_config", .module = hslm_simd_config_mod },
+            },
         }),
     });
     b.installArtifact(caps_report);

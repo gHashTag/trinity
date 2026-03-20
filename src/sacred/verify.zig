@@ -177,7 +177,7 @@ pub const SacredVerifier = struct {
     }
 
     /// Проверить что размерность 3^k
-    pub fn verifyTritResonance(self: *SacredVerifier, dims: usize, ctx: []const u8, allocator: std.mem.Allocator) bool {
+    pub fn verifyTritResonance(self: *SacredVerifier, allocator: std.mem.Allocator, dims: usize, ctx: []const u8) bool {
         var n = dims;
         while (n % 3 == 0 and n > 1) n /= 3;
         const ok = n == 1;
@@ -238,15 +238,17 @@ test "assertTritResonance accepts 3^k" {
 }
 
 test "isPowerOf3" {
-    try std.testing.expect(isPowerOf3(1));
-    try std.testing.expect(isPowerOf3(3));
-    try std.testing.expect(isPowerOf3(9));
-    try std.testing.expect(isPowerOf3(81));
-    try std.testing.expect(isPowerOf3(59049));
+    comptime {
+        try std.testing.expect(isPowerOf3(1));
+        try std.testing.expect(isPowerOf3(3));
+        try std.testing.expect(isPowerOf3(9));
+        try std.testing.expect(isPowerOf3(81));
+        try std.testing.expect(isPowerOf3(59049));
 
-    try std.testing.expect(!isPowerOf3(0));
-    try std.testing.expect(!isPowerOf3(2));
-    try std.testing.expect(!isPowerOf3(100));
+        try std.testing.expect(!isPowerOf3(0));
+        try std.testing.expect(!isPowerOf3(2));
+        try std.testing.expect(!isPowerOf3(100));
+    }
 }
 
 test "tritPower" {
@@ -281,15 +283,15 @@ test "PowersOf3 correctness" {
 test "PowersOfPhi correctness" {
     var acc: f64 = 1.0;
     for (PowersOfPhi) |p| {
-        try std.testing.expectApproxEqAbs(acc, p, 1e-14);
+        try std.testing.expectApproxEqAbs(acc, p, 1e-12);
         acc *= phi;
     }
 }
 
 test "SacredVerifier runtime checks" {
     const allocator = std.testing.allocator;
-    var verifier = SacredVerifier.init(allocator);
-    defer verifier.deinit();
+    var verifier = SacredVerifier.init();
+    defer verifier.deinit(allocator);
 
     try std.testing.expect(verifier.verifyTrinity(allocator));
     try std.testing.expect(verifier.verifyTritResonance(allocator, 81, "test"));

@@ -236,7 +236,7 @@ test "RailwayConfigGuard runtime checks" {
     const guard = RailwayConfigGuard{};
 
     // startCommand null should pass
-    try std.testing.expect(guard.assertNoStartCommand(null, "test") == null);
+    try guard.assertNoStartCommand(null, "test");
 
     // startCommand non-null should fail
     try std.testing.expectError(
@@ -245,31 +245,31 @@ test "RailwayConfigGuard runtime checks" {
     );
 
     // kill_ppl checks
-    try std.testing.expect(guard.assertKillPPLSafe(guard, 400) == null);
-    try std.testing.expect(guard.assertKillPPLSafe(guard, 500) == null);
-    try std.testing.expectError(error.KillPPLTooLow, guard.assertKillPPLSafe(guard, 50));
+    try guard.assertKillPPLSafe(400);
+    try guard.assertKillPPLSafe(500);
+    try std.testing.expectError(error.KillPPLTooLow, guard.assertKillPPLSafe(50));
 
     // builder checks
-    try std.testing.expect(guard.assertNixpacksBuilder(guard, "NIXPACKS") == null);
-    try std.testing.expectError(error.WrongBuilder, guard.assertNixpacksBuilder(guard, "RAILPACK"));
+    try guard.assertNixpacksBuilder("NIXPACKS");
+    try std.testing.expectError(error.WrongBuilder, guard.assertNixpacksBuilder("RAILPACK"));
 }
 
 test "HSLMConfigGuard validates training config" {
     const guard = HSLMConfigGuard{};
 
     // LR schedule checks
-    try std.testing.expect(guard.assertLRSchedule(guard, "cosine") == null);
-    try std.testing.expect(guard.assertLRSchedule(guard, "sacred") == null);
-    try std.testing.expectError(error.FlatLRSchedule, guard.assertLRSchedule(guard, "flat"));
+    try guard.assertLRSchedule("cosine");
+    try guard.assertLRSchedule("sacred");
+    try std.testing.expectError(error.FlatLRSchedule, guard.assertLRSchedule("flat"));
 
     // Context length checks
-    try std.testing.expect(guard.assertContextLength(81) == null);
-    try std.testing.expect(guard.assertContextLength(243) == null);
+    try guard.assertContextLength(81);
+    try guard.assertContextLength(243);
     try std.testing.expectError(error.ContextNotTritResonance, guard.assertContextLength(100));
 
     // Batch size checks
-    try std.testing.expect(guard.assertBatchSize(66) == null);  // 66 = 3 * 22
-    try std.testing.expect(guard.assertBatchSize(99) == null);  // 99 = 3 * 33
+    try guard.assertBatchSize(66);  // 66 = 3 * 22
+    try guard.assertBatchSize(99);  // 99 = 3 * 33
     try std.testing.expectError(error.BatchSizeNotMultiple, guard.assertBatchSize(64));
 }
 

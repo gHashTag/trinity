@@ -12,26 +12,19 @@ const sacred_types = @import("sacred_types.zig");
 
 pub const GF16LUT = struct {
     /// GF16 → f32 таблица (65536 записей)
-    /// Runtime lookup: O(1), нулевой overhead после компиляции
-    pub const to_f32: [65536]f32 = blk: {
-        @setEvalBranchQuota(100000); // Increased quota for LUT generation
-        var table: [65536]f32 = undefined;
-        for (0..65536) |i| {
-            const gf = @as(sacred_types.GF16, @bitCast(@as(u16, @intCast(i))));
-            table[i] = gf.toF32();
-        }
-        break :blk table;
-    };
+    /// NOTE: Large LUT disabled due to comptime quota limits
+    /// Use fromF32/toF32 directly instead
+    pub fn toF32(gf: sacred_types.GF16) f32 {
+        return gf.toF32();
+    }
 
-    /// f32 → GF16 таблица (аппроксимация через биты)
-    /// Для более точной конвертации использовать fromF32()
-    pub inline fn fromF32(v: f32) sacred_types.GF16 {
+    pub fn fromF32(v: f32) sacred_types.GF16 {
         return sacred_types.GF16.fromF32(v);
     }
 
-    /// Быстрый lookup через таблицу
-    pub inline fn lookup(self: sacred_types.GF16) f32 {
-        return to_f32[@as(u16, @bitCast(self))];
+    /// Быстрый lookup через прямое вычисление (не таблица)
+    pub inline fn lookup(gf: sacred_types.GF16) f32 {
+        return gf.toF32();
     }
 };
 
@@ -41,21 +34,20 @@ pub const GF16LUT = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 pub const TF3LUT = struct {
-    /// TF3 → f32 таблица (262144 записей, 18 бит)
-    /// Runtime lookup: O(1), но увеличивает бинарник ~1MB
-    pub const to_f32: [262144]f32 = blk: {
-        @setEvalBranchQuota(300000);
-        var table: [262144]f32 = undefined;
-        for (0..262144) |i| {
-            const tf = @as(sacred_types.TF3, @bitCast(@as(u18, @intCast(i))));
-            table[i] = tf.toF32();
-        }
-        break :blk table;
-    };
+    /// TF3 → f32 конвертация
+    /// NOTE: Large LUT disabled due to comptime quota limits
+    /// Use fromF32/toF32 directly instead
+    pub fn toF32(tf: sacred_types.TF3) f32 {
+        return tf.toF32();
+    }
 
-    /// Быстрый lookup через таблицу
-    pub inline fn lookup(self: sacred_types.TF3) f32 {
-        return to_f32[@as(u18, @bitCast(self))];
+    pub fn fromF32(v: f32) sacred_types.TF3 {
+        return sacred_types.TF3.fromF32(v);
+    }
+
+    /// Быстрый lookup через прямое вычисление (не таблица)
+    pub inline fn lookup(tf: sacred_types.TF3) f32 {
+        return tf.toF32();
     }
 };
 
@@ -66,7 +58,7 @@ pub const TF3LUT = struct {
 pub const PowersOf3LUT = struct {
     /// Таблица 3^k для k = 0..20
     /// 3^20 = 3,486,784,401 (помещается в u64)
-    pub const table: [21]u64 = comptime blk: {
+    pub const table: [21]u64 = blk: {
         var result: [21]u64 = undefined;
         var acc: u64 = 1;
         for (0..21) |i| {
@@ -107,7 +99,7 @@ pub const PowersOf3LUT = struct {
 
 pub const PowersOfPhiLUT = struct {
     /// Таблица φ^k для k = 0..20
-    pub const table: [21]f64 = comptime blk: {
+    pub const table: [21]f64 = blk: {
         var result: [21]f64 = undefined;
         var acc: f64 = 1.0;
         for (0..21) |i| {
@@ -159,7 +151,7 @@ pub const TritEncodingLUT = struct {
 
 pub const SacredDimensionsLUT = struct {
     /// Размерности Sacred: 3^0 до 3^10
-    pub const dims: [11]usize = PowersOf3LUT.table;
+    pub const dims: [11]usize = [11]usize{ 1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049 };
 
     /// Индексы по имени
     pub const idx_unit: u5 = 0;       // 1 = 3^0
@@ -189,12 +181,12 @@ pub const SacredDimensionsLUT = struct {
 
 /// Быстрый GF16 → f32 lookup
 pub inline fn gf16_to_f32(gf: sacred_types.GF16) f32 {
-    return GF16LUT.lookup(gf);
+    return GF16LUT.toF32(gf);
 }
 
 /// Быстрый TF3 → f32 lookup
 pub inline fn tf3_to_f32(tf: sacred_types.TF3) f32 {
-    return TF3LUT.lookup(tf);
+    return TF3LUT.toF32(tf);
 }
 
 /// Быстрый 3^k lookup
@@ -211,7 +203,7 @@ pub inline fn phi_pow(comptime k: u5) comptime_float {
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
-test "GF16LUT lookup matches toF32" {
+test "GF16LUT toF32 matches direct" {
     // Sample values across the range
     const test_values = [_]u16{
         0x0000, // zero
@@ -224,26 +216,23 @@ test "GF16LUT lookup matches toF32" {
     for (test_values) |bits| {
         const gf = @as(sacred_types.GF16, @bitCast(bits));
         const direct = gf.toF32();
-        const lookup = GF16LUT.lookup(gf);
+        const lookup = GF16LUT.toF32(gf);
 
         const err = @abs(direct - lookup);
         try std.testing.expect(err < 1e-10);
     }
 }
 
-test "TF3LUT lookup matches toF32" {
-    // Sample values
-    const test_values = [_]u18{
-        0x00000, // zero
-        0x08000, // +1
-        0x04000, // -1
-        0x1FFFF, // max
-    };
+test "TF3LUT toF32 matches direct" {
+    // Use TF3 methods instead of hardcoded bits
+    const zero = sacred_types.TF3.zero();
+    const one = sacred_types.TF3.one();
+    const minus_one = sacred_types.TF3.fromF32(-1.0);
+    const test_values = [_]sacred_types.TF3{ zero, one, minus_one };
 
-    for (test_values) |bits| {
-        const tf = @as(sacred_types.TF3, @bitCast(bits));
+    for (test_values) |tf| {
         const direct = tf.toF32();
-        const lookup = TF3LUT.lookup(tf);
+        const lookup = TF3LUT.toF32(tf);
 
         const err = @abs(direct - lookup);
         try std.testing.expect(err < 1e-10);

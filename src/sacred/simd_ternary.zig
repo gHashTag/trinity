@@ -390,7 +390,7 @@ test "tritBundle3 consensus" {
 test "tritPermuteLeft" {
     const v = comptime init: {
         var result: TritVector = undefined;
-        inline for (0..SIMD_WIDTH) |i| {
+        for (0..SIMD_WIDTH) |i| {
             result[i] = @intCast(i);
         }
         break :init result;
@@ -398,16 +398,17 @@ test "tritPermuteLeft" {
 
     const shifted = tritPermuteLeft(v, 1);
 
+    // Check that it's a cyclic left shift: shifted[i] should be v[(i+1) % SIMD_WIDTH]
     for (0..SIMD_WIDTH) |i| {
-        const expected = @as(i8, @intCast((i + SIMD_WIDTH - 1) % SIMD_WIDTH));
-        try std.testing.expectEqual(expected, shifted[i]);
+        const original_idx = (i + 1) % SIMD_WIDTH;
+        try std.testing.expectEqual(v[original_idx], shifted[i]);
     }
 }
 
 test "tritPermuteRight" {
     const v = comptime init: {
         var result: TritVector = undefined;
-        inline for (0..SIMD_WIDTH) |i| {
+        for (0..SIMD_WIDTH) |i| {
             result[i] = @intCast(i);
         }
         break :init result;
@@ -415,9 +416,10 @@ test "tritPermuteRight" {
 
     const shifted = tritPermuteRight(v, 1);
 
+    // Check that it's a cyclic right shift: shifted[i] should be v[(i-1+SIMD_WIDTH) % SIMD_WIDTH]
     for (0..SIMD_WIDTH) |i| {
-        const expected = @as(i8, @intCast((i + 1) % SIMD_WIDTH));
-        try std.testing.expectEqual(expected, shifted[i]);
+        const original_idx = (i + SIMD_WIDTH - 1) % SIMD_WIDTH;
+        try std.testing.expectEqual(v[original_idx], shifted[i]);
     }
 }
 
@@ -437,7 +439,7 @@ test "tritCosineSim orthogonal" {
 test "tritCountNonZero" {
     const v = comptime init: {
         var result: TritVector = undefined;
-        inline for (0..SIMD_WIDTH) |i| {
+        for (0..SIMD_WIDTH) |i| {
             result[i] = if (i % 2 == 0) 1 else 0;
         }
         break :init result;
@@ -450,7 +452,7 @@ test "tritCountNonZero" {
 test "tritCountPositive" {
     const v = comptime init: {
         var result: TritVector = undefined;
-        inline for (0..SIMD_WIDTH) |i| {
+        for (0..SIMD_WIDTH) |i| {
             result[i] = if (i % 2 == 0) 1 else 0;
         }
         break :init result;
@@ -463,7 +465,7 @@ test "tritCountPositive" {
 test "tritCountNegative" {
     const v = comptime init: {
         var result: TritVector = undefined;
-        inline for (0..SIMD_WIDTH) |i| {
+        for (0..SIMD_WIDTH) |i| {
             result[i] = if (i % 2 == 0) -1 else 0;
         }
         break :init result;

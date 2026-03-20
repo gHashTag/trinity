@@ -738,7 +738,88 @@ pub fn runS6JEPA_Heavy(allocator: Allocator, steps: u32) !EvolutionResult {
     return sim.run("S6_JEPA_Heavy");
 }
 
-/// Run all 6 scenarios in sequence
+/// Run S7 High-Diversity — Many objective types for maximum exploration
+pub fn runS7HighDiversity(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 150,
+        .steps = steps * 2,
+        .crash_rate = 0.03, // Very low crash
+        .byzantine_rate = 0.0, // No Byzantine
+        .seed = SCENARIO_SEEDS[6],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.25 },
+            .{ .name = "jepa", .weight = 0.25 },
+            .{ .name = "nca-ntp", .weight = 0.25 },
+            .{ .name = "hybrid", .weight = 0.15 },
+            .{ .name = "sparse", .weight = 0.10 },
+        },
+        .microglia_interval = 20, // More frequent pruning for diversity
+    };
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S7_HighDiversity");
+}
+
+/// Run S8 Low-Crash — Minimal crash rate for resilience demonstration
+pub fn runS8LowCrash(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 80,
+        .steps = steps * 4, // Longer steps to show resilience
+        .crash_rate = 0.01, // 1% crash (very low)
+        .byzantine_rate = 0.03, // Some Byzantine but low
+        .seed = SCENARIO_SEEDS[7],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.70 },
+            .{ .name = "jepa", .weight = 0.20 },
+            .{ .name = "nca-ntp", .weight = 0.10 },
+        },
+        .microglia_interval = 40, // Less frequent, let evolution run
+    };
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S8_LowCrash");
+}
+
+/// Run S9 Byzantine-Heavy — Stress test with high Byzantine rate
+pub fn runS9ByzantineHeavy(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 120,
+        .steps = steps * 2,
+        .crash_rate = 0.05,
+        .byzantine_rate = 0.20, // 20% Byzantine (HIGH)
+        .seed = SCENARIO_SEEDS[8],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.50 },
+            .{ .name = "jepa", .weight = 0.30 },
+            .{ .name = "nca-ntp", .weight = 0.20 },
+        },
+        .microglia_interval = 15, // Aggressive pruning to counter Byzantine
+    };
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S9_ByzantineHeavy");
+}
+
+/// Run S10 Energy-Optimal — Configuration for minimal cumulative energy cost
+pub fn runS10EnergyOptimal(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 60, // Fewer workers = lower energy
+        .steps = steps,
+        .crash_rate = 0.02, // Low crash = less wasted energy
+        .byzantine_rate = 0.0, // No Byzantine = no detection overhead
+        .seed = SCENARIO_SEEDS[9],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.80 }, // Focused on primary objective
+            .{ .name = "hybrid", .weight = 0.20 },
+        },
+        .microglia_interval = 50, // Minimal patrol = low energy
+    };
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S10_EnergyOptimal");
+}
+
+/// Run all 10 scenarios in sequence
 pub const SuiteResult = struct {
     s1: EvolutionResult,
     s2: EvolutionResult,
@@ -746,6 +827,10 @@ pub const SuiteResult = struct {
     s4: EvolutionResult,
     s5: EvolutionResult,
     s6: EvolutionResult,
+    s7: EvolutionResult,
+    s8: EvolutionResult,
+    s9: EvolutionResult,
+    s10: EvolutionResult,
 
     pub fn deinit(self: *SuiteResult) void {
         self.s1.deinit();
@@ -754,6 +839,10 @@ pub const SuiteResult = struct {
         self.s4.deinit();
         self.s5.deinit();
         self.s6.deinit();
+        self.s7.deinit();
+        self.s8.deinit();
+        self.s9.deinit();
+        self.s10.deinit();
     }
 
     pub fn printComparison(self: *const SuiteResult, writer: anytype, allocator: Allocator) !void {
@@ -779,6 +868,10 @@ pub const SuiteResult = struct {
         try fmtRow.fmt(&self.s4, writer, allocator);
         try fmtRow.fmt(&self.s5, writer, allocator);
         try fmtRow.fmt(&self.s6, writer, allocator);
+        try fmtRow.fmt(&self.s7, writer, allocator);
+        try fmtRow.fmt(&self.s8, writer, allocator);
+        try fmtRow.fmt(&self.s9, writer, allocator);
+        try fmtRow.fmt(&self.s10, writer, allocator);
 
         try writer.writeAll("└────────────┴──────────┴───────────┴──────────┴───────────┴─────────────┘\n");
     }
@@ -803,6 +896,18 @@ pub fn runFullSuite(allocator: Allocator, steps: u32) !SuiteResult {
     const s6 = try runS6JEPA_Heavy(allocator, steps);
     errdefer s6.deinit();
 
+    const s7 = try runS7HighDiversity(allocator, steps);
+    errdefer s7.deinit();
+
+    const s8 = try runS8LowCrash(allocator, steps);
+    errdefer s8.deinit();
+
+    const s9 = try runS9ByzantineHeavy(allocator, steps);
+    errdefer s9.deinit();
+
+    const s10 = try runS10EnergyOptimal(allocator, steps);
+    errdefer s10.deinit();
+
     return SuiteResult{
         .s1 = s1,
         .s2 = s2,
@@ -810,6 +915,10 @@ pub fn runFullSuite(allocator: Allocator, steps: u32) !SuiteResult {
         .s4 = s4,
         .s5 = s5,
         .s6 = s6,
+        .s7 = s7,
+        .s8 = s8,
+        .s9 = s9,
+        .s10 = s10,
     };
 }
 

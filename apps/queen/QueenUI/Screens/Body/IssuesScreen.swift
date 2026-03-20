@@ -86,7 +86,7 @@ struct IssuesScreen: View {
                                         Text(label.name ?? "")
                                             .font(.caption2)
                                             .foregroundStyle(V4Color.textSecondary)
-                                            .padding(.horizontal, 4)
+                                            .padding(.horizontal, ParietalSpacing.xxs)
                                             .padding(.vertical, 1)
                                             .background(V4Color.sidebar)
                                             .clipShape(SwiftUI.Capsule())
