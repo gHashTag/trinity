@@ -665,7 +665,7 @@ struct ChatSidebar: View {
 
                     // Empty state: no threads at all (after loading)
                     if store.isLoaded && store.threads.isEmpty {
-                        VStack(spacing: 12) {
+                        VStack(spacing: ParietalSpacing.sm) {
                             Image(systemName: "bubble.left.and.bubble.right")
                                 .font(WernickeTypography.size28)
                                 .foregroundStyle(V4Color.textSecondary)
@@ -1340,13 +1340,13 @@ struct ExportFormatPicker: View {
     let onDismiss: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.md) {
             Text("Export: \(thread.title)")
                 .font(.headline)
                 .foregroundStyle(V4Color.textPrimary)
                 .lineLimit(1)
 
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.sm) {
                 exportButton("Markdown", icon: "doc.text", ext: "md") {
                     store.exportAsMarkdown(thread.id)?.data(using: .utf8)
                 }
@@ -1463,7 +1463,7 @@ struct NetworkStatsBar: View {
                         showNetworkTimeline.toggle()
                     }
                 }) {
-                    HStack(spacing: 12) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         miniStat("\(today.count)", "reqs")
                         miniStat("\(networkLog.todayTokens / 1000)K", "tok")
                         if networkLog.avgTTFB > 0 {

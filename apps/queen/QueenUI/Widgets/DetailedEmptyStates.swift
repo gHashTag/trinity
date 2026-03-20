@@ -859,7 +859,7 @@ struct FirstRunOnboardingState: View {
     }
 
     var body: some View {
-        VStack(spacing: 32) {
+        VStack(spacing: ParietalSpacing.xxl) {
             Spacer()
 
             // Welcome illustration with 3D Trinity logo effect
