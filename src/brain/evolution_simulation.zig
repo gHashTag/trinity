@@ -358,7 +358,7 @@ pub const EvolutionSimulator = struct {
 
             // Record timeline
             const diversity = try self.calculateDiversity();
-            const avg_ppl = if (alive_count > 0) total_ppl / @as(f32, @floatFromInt(alive_count)) else 0.0;
+            const avg_ppl = if (alive_count > 0) total_ppl / @as(f32, @floatFromInt(alive_count)) else std.math.inf(f32);
             if (self.timeline_count < self.timeline.len) {
                 self.timeline[self.timeline_count] = .{
                     .step = step,
