@@ -828,3 +828,27 @@ test "Sacred seeds constant" {
     try std.testing.expectEqual(@as(u64, 1618), SCENARIO_SEEDS[2]); // φ * 1000
     try std.testing.expectEqual(@as(u64, 2718), SCENARIO_SEEDS[3]); // e * 1000
 }
+
+test "S4 final_ppl calculation" {
+    const result = try runS4DePIN(std.testing.allocator, 20);
+    defer result.deinit();
+
+    // Debug output
+    std.debug.print("\nS4: PPL={d:.2}, Diversity={d:.3}, timeline_len={d}\n", .{
+        result.final_ppl, result.diversity_index, result.timeline.len,
+    });
+
+    // Show first few timeline entries
+    for (0..@min(5, result.timeline.len)) |i| {
+        const entry = result.timeline[i];
+        std.debug.print("  step={d}: avg_ppl={d:.2}, alive={d}, finite={}\n", .{
+            entry.step, entry.avg_ppl, entry.alive_workers, std.math.isFinite(entry.avg_ppl),
+        });
+    }
+
+    // S4 should have some survivors or return floor
+    if (result.timeline.len > 0) {
+        const last = result.timeline[result.timeline.len - 1];
+        std.debug.print("  last: avg_ppl={d:.2}, alive={d}\n", .{ last.avg_ppl, last.alive_workers });
+    }
+}

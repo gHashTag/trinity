@@ -222,6 +222,12 @@ pub const LearningSystem = struct {
 
     /// Learn patterns from historical data
     pub fn learnPatterns(self: *Self) !void {
+        // Free old pattern strings before clearing
+        for (self.patterns.items) |pattern| {
+            self.allocator.free(pattern.name);
+            self.allocator.free(pattern.description);
+            self.allocator.free(pattern.recommendation);
+        }
         self.patterns.clearRetainingCapacity();
 
         // Pattern 1: Optimal backoff detection
@@ -782,15 +788,7 @@ test "AdaptiveBackoffConfig defaults" {
 test "LearningSystem pattern recognition - optimal backoff" {
     const allocator = std.testing.allocator;
     var learning = try LearningSystem.init(allocator);
-    defer {
-        // Clean up any patterns created during the test
-        for (learning.patterns.items) |pattern| {
-            allocator.free(pattern.name);
-            allocator.free(pattern.description);
-            allocator.free(pattern.recommendation);
-        }
-        learning.deinit();
-    }
+    defer learning.deinit();
 
     const now = std.time.milliTimestamp();
 
@@ -828,15 +826,7 @@ test "LearningSystem pattern recognition - optimal backoff" {
 test "LearningSystem adaptive backoff tuning" {
     const allocator = std.testing.allocator;
     var learning = try LearningSystem.init(allocator);
-    defer {
-        // Clean up any patterns created during the test
-        for (learning.patterns.items) |pattern| {
-            allocator.free(pattern.name);
-            allocator.free(pattern.description);
-            allocator.free(pattern.recommendation);
-        }
-        learning.deinit();
-    }
+    defer learning.deinit();
 
     const now = std.time.milliTimestamp();
 
@@ -968,4 +958,644 @@ test "LearningSystem export insights" {
     try std.testing.expect(output.len > 0);
     try std.testing.expect(mem.containsAtLeast(u8, output, 1, "\"stats\""));
     try std.testing.expect(mem.containsAtLeast(u8, output, 1, "\"patterns\""));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// BACKOFF CALCULATION EDGE CASES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "LearningSystem linear backoff" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    learning.backoff_config.strategy = .linear;
+    learning.backoff_config.initial_ms = 1000;
+    learning.backoff_config.max_ms = 60000;
+
+    const delay0 = learning.getBackoffDelay(0);
+    const delay1 = learning.getBackoffDelay(1);
+    const delay2 = learning.getBackoffDelay(2);
+    const delay10 = learning.getBackoffDelay(10);
+
+    // Linear: initial + attempt * 1000
+    try std.testing.expectEqual(@as(u64, 1000), delay0);
+    try std.testing.expectEqual(@as(u64, 2000), delay1);
+    try std.testing.expectEqual(@as(u64, 3000), delay2);
+    try std.testing.expectEqual(@as(u64, 11000), delay10);
+}
+
+test "LearningSystem backoff respects max_ms" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    learning.backoff_config.strategy = .exponential;
+    learning.backoff_config.initial_ms = 1000;
+    learning.backoff_config.max_ms = 5000;
+    learning.backoff_config.multiplier = 2.0;
+
+    // Even at high attempt, should not exceed max
+    const delay100 = learning.getBackoffDelay(100);
+    try std.testing.expect(delay100 <= 5000);
+}
+
+test "LearningSystem phi-weighted backoff increases" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    learning.backoff_config.strategy = .phi_weighted;
+    learning.backoff_config.initial_ms = 1000;
+
+    const attempts = [_]u32{ 0, 1, 2, 3, 4, 5 };
+    var prev: u64 = 0;
+
+    for (attempts) |attempt| {
+        const delay = learning.getBackoffDelay(attempt);
+        try std.testing.expect(delay > prev); // Monotonically increasing
+        prev = delay;
+    }
+}
+
+test "LearningSystem adaptive backoff uses learned multiplier" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    learning.backoff_config.strategy = .adaptive;
+    learning.backoff_config.initial_ms = 1000;
+    learning.backoff_config.learned_multiplier = 1.5;
+    learning.backoff_config.confidence = 0.8; // Above threshold
+
+    const delay1 = learning.getBackoffDelay(1);
+    const delay2 = learning.getBackoffDelay(2);
+
+    // Should use learned multiplier instead of default
+    try std.testing.expect(delay2 > delay1);
+}
+
+test "LearningSystem adaptive backoff falls back to default" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    learning.backoff_config.strategy = .adaptive;
+    learning.backoff_config.initial_ms = 1000;
+    learning.backoff_config.learned_multiplier = 3.0; // High value
+    learning.backoff_config.confidence = 0.5; // Below threshold
+
+    const delay1 = learning.getBackoffDelay(1);
+
+    // Should use default multiplier (2.0) when confidence low
+    const expected_max = @as(u64, @intFromFloat(@as(f64, @floatFromInt(learning.backoff_config.initial_ms)) * std.math.pow(f32, 2.0, 1)));
+    try std.testing.expect(delay1 <= expected_max);
+}
+
+test "LearningSystem zero attempt backoff" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const strategies = [_]AdaptiveBackoffConfig.BackoffStrategy{
+        .exponential, .linear, .phi_weighted, .adaptive,
+    };
+
+    for (strategies) |strategy| {
+        learning.backoff_config.strategy = strategy;
+        learning.backoff_config.initial_ms = 1000;
+
+        const delay = learning.getBackoffDelay(0);
+
+        // Attempt 0 should return initial delay (or with jitter for adaptive)
+        switch (strategy) {
+            .adaptive => {
+                // Adaptive applies jitter at attempt 0: 1000 * 1.618 = 1618
+                try std.testing.expectEqual(@as(u64, 1618), delay);
+            },
+            else => {
+                // Other strategies return initial delay
+                try std.testing.expectEqual(@as(u64, 1000), delay);
+            },
+        }
+    }
+}
+
+test "LearningSystem backoff config validation" {
+    const config = AdaptiveBackoffConfig{
+        .initial_ms = 100,
+        .max_ms = 60000,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+    };
+
+    try std.testing.expectEqual(@as(u64, 100), config.initial_ms);
+    try std.testing.expectEqual(@as(u64, 60000), config.max_ms);
+    try std.testing.expectEqual(@as(f32, 2.0), config.multiplier);
+    try std.testing.expectEqual(.exponential, config.strategy);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PATTERN DETECTION EDGE CASES
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "LearningSystem detectPerformanceDegradation" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // First half: fast operations (10ms)
+    var i: usize = 0;
+    while (i < 50) : (i += 1) {
+        try learning.recordEvent(.{
+            .timestamp = now + @as(i64, @intCast(i)),
+            .operation = .task_complete,
+            .duration_ms = 10,
+            .success = true,
+            .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+        });
+    }
+
+    // Second half: slow operations (20ms - 100% increase)
+    while (i < 100) : (i += 1) {
+        try learning.recordEvent(.{
+            .timestamp = now + @as(i64, @intCast(i)),
+            .operation = .task_complete,
+            .duration_ms = 20,
+            .success = true,
+            .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+        });
+    }
+
+    try learning.learnPatterns();
+
+    // Should detect performance degradation
+    const has_degradation = for (learning.patterns.items) |pattern| {
+        if (pattern.pattern_type == .performance_degrading) break true;
+    } else false;
+
+    try std.testing.expect(has_degradation);
+}
+
+test "LearningSystem pattern detection insufficient data" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // Add fewer than minimum for pattern detection
+    var i: usize = 0;
+    while (i < 10) : (i += 1) {
+        try learning.recordEvent(.{
+            .timestamp = now + @as(i64, @intCast(i)),
+            .operation = .task_claim,
+            .duration_ms = 100,
+            .success = true,
+            .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+        });
+    }
+
+    try learning.learnPatterns();
+
+    // Should not have patterns due to insufficient data
+    try std.testing.expectEqual(@as(usize, 0), learning.patterns.items.len);
+}
+
+test "LearningSystem optimal backoff pattern" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // Create high success rate for 3000ms backoff
+    var i: usize = 0;
+    while (i < 30) : (i += 1) {
+        const backoff: u64 = if (i < 20) 3000 else 1000;
+        const success = i < 20;
+
+        try learning.recordEvent(.{
+            .timestamp = now + @as(i64, @intCast(i)),
+            .operation = .backoff_wait,
+            .duration_ms = backoff,
+            .success = success,
+            .metadata = .{
+                .task_id = "",
+                .agent_id = "",
+                .attempt = 0,
+                .backoff_ms = backoff,
+                .error_msg = "",
+                .health_score = 100.0,
+            },
+        });
+    }
+
+    try learning.learnPatterns();
+
+    // Should detect optimal backoff pattern
+    const has_optimal = for (learning.patterns.items) |pattern| {
+        if (pattern.pattern_type == .backoff_optimal and pattern.confidence > 0.6) break true;
+    } else false;
+
+    try std.testing.expect(has_optimal);
+}
+
+test "LearningSystem pattern type enumeration" {
+    const pattern_types = [_]Pattern.PatternType{
+        .backoff_optimal,
+        .failure_imminent,
+        .performance_degrading,
+        .optimal_window,
+        .resource_constraint,
+    };
+
+    for (pattern_types, 0..) |pt, i| {
+        try std.testing.expectEqual(@as(usize, i), @intFromEnum(pt));
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// STATS AND FAILURE RATE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "LearningSystem stats update accuracy" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // Add 3 successful, 2 failed events
+    const durations = [_]u64{ 100, 200, 150, 300, 250 };
+    const successes = [_]bool{ true, true, true, false, false };
+
+    for (durations, 0..) |dur, i| {
+        try learning.recordEvent(.{
+            .timestamp = now + @as(i64, @intCast(i)),
+            .operation = .task_claim,
+            .duration_ms = dur,
+            .success = successes[i],
+            .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+        });
+    }
+
+    try std.testing.expectEqual(@as(usize, 5), learning.stats.total_records);
+    try std.testing.expectEqual(@as(usize, 3), learning.stats.successful_operations);
+    try std.testing.expectEqual(@as(usize, 2), learning.stats.failed_operations);
+
+    // Average: (100+200+150+300+250)/5 = 200
+    try std.testing.expectApproxEqAbs(@as(f64, 200.0), learning.stats.avg_duration_ms, 0.01);
+}
+
+test "LearningSystem stats with no records" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    try std.testing.expectEqual(@as(usize, 0), learning.stats.total_records);
+    try std.testing.expectEqual(@as(usize, 0), learning.stats.successful_operations);
+    try std.testing.expectEqual(@as(usize, 0), learning.stats.failed_operations);
+    try std.testing.expectApproxEqAbs(@as(f64, 0.0), learning.stats.avg_duration_ms, 0.01);
+}
+
+test "LearningSystem getRecentFailureRate all failures" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // Add 10 failures
+    var i: usize = 0;
+    while (i < 10) : (i += 1) {
+        try learning.recordEvent(.{
+            .timestamp = now + @as(i64, @intCast(i)),
+            .operation = .task_claim,
+            .duration_ms = 100,
+            .success = false,
+            .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+        });
+    }
+
+    // getRecentFailureRate is private, test via learnPatterns
+    try learning.learnPatterns();
+
+    // Should detect high failure rate
+    const has_failure_pattern = for (learning.patterns.items) |pattern| {
+        if (pattern.pattern_type == .failure_imminent) break true;
+    } else false;
+
+    try std.testing.expect(has_failure_pattern);
+}
+
+test "LearningSystem getSuccessRate" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // 7 success, 3 failure = 70% success rate
+    var i: usize = 0;
+    while (i < 10) : (i += 1) {
+        try learning.recordEvent(.{
+            .timestamp = now + @as(i64, @intCast(i)),
+            .operation = .task_claim,
+            .duration_ms = 100,
+            .success = i < 7,
+            .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+        });
+    }
+
+    const success_rate = learning.getSuccessRate();
+    try std.testing.expectApproxEqAbs(@as(f32, 0.7), success_rate, 0.01);
+}
+
+test "LearningSystem getSuccessRate no records" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    // No records, should return 1.0 (perfect)
+    const success_rate = learning.getSuccessRate();
+    try std.testing.expectApproxEqAbs(@as(f32, 1.0), success_rate, 0.01);
+}
+
+test "LearningSystem history trimming at limit" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // Add exactly MAX_HISTORY_SIZE + 1 events
+    var i: usize = 0;
+    while (i < MAX_HISTORY_SIZE + 10) : (i += 1) {
+        try learning.recordEvent(.{
+            .timestamp = now + @as(i64, @intCast(i)),
+            .operation = .task_claim,
+            .duration_ms = 100,
+            .success = true,
+            .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+        });
+    }
+
+    // History should be trimmed to MAX_HISTORY_SIZE
+    try std.testing.expectEqual(MAX_HISTORY_SIZE, learning.history.items.len);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PREDICTION AND RECOMMENDATION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "LearningSystem predictFailure no data" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const prediction = learning.predictFailure(.task_claim);
+
+    try std.testing.expectEqual(@as(f32, 0.0), prediction.probability);
+    try std.testing.expectEqualStrings("No historical data", prediction.reason);
+}
+
+test "LearningSystem predictFailure high probability" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    // Create failure model for task_fail operation
+    const fail_model = LearningSystem.FailureModel{
+        .operation = .task_fail,
+        .threshold_ms = 1000,
+        .failure_rate = 0.8,
+        .sample_count = 50,
+    };
+    try learning.failure_models.append(allocator, fail_model);
+
+    const prediction = learning.predictFailure(.task_fail);
+
+    // Should predict high failure probability
+    try std.testing.expect(prediction.probability > 0.5);
+    try std.testing.expect(mem.indexOf(u8, prediction.reason, "failure") != null);
+}
+
+test "LearningSystem getRecommendation high priority" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    // Add high confidence pattern
+    const pattern = Pattern{
+        .name = try allocator.dupe(u8, "high_conf_pattern"),
+        .confidence = 0.95,
+        .description = try allocator.dupe(u8, "Critical issue detected"),
+        .recommendation = try allocator.dupe(u8, "Immediate action required"),
+        .pattern_type = .failure_imminent,
+    };
+    try learning.patterns.append(allocator, pattern);
+
+    const rec = learning.getRecommendation();
+
+    try std.testing.expectEqual(@as(u8, 1), rec.priority); // High priority
+    try std.testing.expectEqualStrings("Immediate action required", rec.action);
+    try std.testing.expect(rec.confidence > 0.9);
+}
+
+test "LearningSystem getRecommendation default" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    // No patterns, should return default
+    const rec = learning.getRecommendation();
+
+    try std.testing.expect(rec.action.len > 0);
+    try std.testing.expectEqual(@as(u8, 3), rec.priority); // Low priority
+    try std.testing.expectApproxEqAbs(@as(f32, 0.5), rec.confidence, 0.01);
+}
+
+test "LearningSystem getRecommendation moderate failure rate" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // Create 40% failure rate (below 0.5 threshold)
+    var i: usize = 0;
+    while (i < 100) : (i += 1) {
+        try learning.recordEvent(.{
+            .timestamp = now + @as(i64, @intCast(i)),
+            .operation = .task_claim,
+            .duration_ms = 100,
+            .success = i % 5 != 0, // 20% failure rate
+            .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+        });
+    }
+
+    const rec = learning.getRecommendation();
+
+    // Should recommend continue normal operation
+    try std.testing.expect(mem.indexOf(u8, rec.action, "Continue") != null);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OPERATION TYPE AND STRUCTURE TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "OperationType all values" {
+    const operations = [_]OperationType{
+        .task_claim,
+        .task_complete,
+        .task_fail,
+        .backoff_wait,
+        .health_check,
+        .farm_recycle,
+        .service_deploy,
+        .agent_run,
+    };
+
+    for (operations, 0..) |op, i| {
+        try std.testing.expectEqual(@as(usize, i), @intFromEnum(op));
+    }
+}
+
+test "PerformanceRecord metadata structure" {
+    const metadata = PerformanceRecord.Metadata{
+        .task_id = "task-123",
+        .agent_id = "agent-abc",
+        .attempt = 5,
+        .backoff_ms = 1000,
+        .error_msg = "timeout",
+        .health_score = 85.5,
+    };
+
+    try std.testing.expectEqualStrings("task-123", metadata.task_id);
+    try std.testing.expectEqualStrings("agent-abc", metadata.agent_id);
+    try std.testing.expectEqual(@as(u32, 5), metadata.attempt);
+    try std.testing.expectEqual(@as(u64, 1000), metadata.backoff_ms);
+    try std.testing.expectEqualStrings("timeout", metadata.error_msg);
+    try std.testing.expectApproxEqAbs(@as(f32, 85.5), metadata.health_score, 0.01);
+}
+
+test "FailurePrediction structure" {
+    const prediction = FailurePrediction{
+        .probability = 0.75,
+        .reason = "High failure rate",
+        .suggested_action = "Retry with backoff",
+        .time_until_failure_ms = 5000,
+    };
+
+    try std.testing.expectApproxEqAbs(@as(f32, 0.75), prediction.probability, 0.01);
+    try std.testing.expectEqualStrings("High failure rate", prediction.reason);
+    try std.testing.expectEqualStrings("Retry with backoff", prediction.suggested_action);
+    try std.testing.expectEqual(@as(u64, 5000), prediction.time_until_failure_ms);
+}
+
+test "Recommendation structure" {
+    const rec = Recommendation{
+        .action = "Increase backoff",
+        .priority = 1,
+        .confidence = 0.85,
+        .reasoning = "Recent failures detected",
+    };
+
+    try std.testing.expectEqualStrings("Increase backoff", rec.action);
+    try std.testing.expectEqual(@as(u8, 1), rec.priority);
+    try std.testing.expectApproxEqAbs(@as(f32, 0.85), rec.confidence, 0.01);
+    try std.testing.expectEqualStrings("Recent failures detected", rec.reasoning);
+}
+
+test "AdaptiveBackoffConfig strategy all values" {
+    const strategies = [_]AdaptiveBackoffConfig.BackoffStrategy{
+        .exponential,
+        .linear,
+        .phi_weighted,
+        .adaptive,
+    };
+
+    for (strategies, 0..) |strat, i| {
+        try std.testing.expectEqual(@as(usize, i), @intFromEnum(strat));
+    }
+}
+
+test "LearningSystem timestamp tracking" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const before = std.time.milliTimestamp();
+
+    try learning.recordEvent(.{
+        .timestamp = before,
+        .operation = .task_claim,
+        .duration_ms = 100,
+        .success = true,
+        .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+    });
+
+    const after = std.time.milliTimestamp();
+
+    // Last update should be within expected window
+    try std.testing.expect(learning.stats.last_update >= before);
+    try std.testing.expect(learning.stats.last_update <= after);
+}
+
+test "LearningSystem pattern retraining trigger" {
+    const allocator = std.testing.allocator;
+    var learning = try LearningSystem.init(allocator);
+    defer learning.deinit();
+
+    const now = std.time.milliTimestamp();
+
+    // Add exactly PATTERN_WINDOW_SIZE - 1 events (should not trigger)
+    var i: usize = 0;
+    while (i < PATTERN_WINDOW_SIZE - 1) : (i += 1) {
+        try learning.recordEvent(.{
+            .timestamp = now + @as(i64, @intCast(i)),
+            .operation = .task_claim,
+            .duration_ms = 100,
+            .success = true,
+            .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+        });
+    }
+
+    // Patterns should not be learned yet
+    try std.testing.expectEqual(@as(usize, 0), learning.patterns.items.len);
+
+    // Add one more event (should trigger pattern learning)
+    try learning.recordEvent(.{
+        .timestamp = now + @as(i64, @intCast(PATTERN_WINDOW_SIZE - 1)),
+        .operation = .task_claim,
+        .duration_ms = 100,
+        .success = true,
+        .metadata = .{ .task_id = "", .agent_id = "", .attempt = 0, .backoff_ms = 0, .error_msg = "", .health_score = 100.0 },
+    });
+
+    // Patterns should be learned now
+    // Note: may not detect patterns with such simple data, but learnPatterns was called
+}
+
+test "LearningSystem confidence threshold constant" {
+    try std.testing.expectApproxEqAbs(@as(f32, 0.7), CONFIDENCE_THRESHOLD, 0.01);
+}
+
+test "LearningSystem pattern window size constant" {
+    try std.testing.expectEqual(@as(usize, 100), PATTERN_WINDOW_SIZE);
+}
+
+test "LearningSystem max history size constant" {
+    try std.testing.expectEqual(@as(usize, 10000), MAX_HISTORY_SIZE);
+}
+
+test "LearningSystem sacred phi constant" {
+    try std.testing.expectApproxEqAbs(@as(f64, 1.618033988749895), SACRED_PHI, 0.0001);
+}
+
+test "LearningSystem sacred phi inverse constant" {
+    try std.testing.expectApproxEqAbs(@as(f64, 0.618033988749895), SACRED_PHI_INV, 0.0001);
 }

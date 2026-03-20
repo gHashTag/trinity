@@ -219,6 +219,18 @@ pub fn build(b: *std.Build) void {
     const bench_test_step = b.step("bench-test", "Run benchmark tests");
     bench_test_step.dependOn(&run_bench_tests.step);
 
+    // Brain benchmarks
+    const brain_bench = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/tri/brain_benchmark.zig"),
+            .target = target,
+            .optimize = .ReleaseFast,
+        }),
+    });
+    const run_brain_bench = b.addRunArtifact(brain_bench);
+    const brain_bench_step = b.step("bench-brain", "Run brain performance benchmarks");
+    brain_bench_step.dependOn(&run_brain_bench.step);
+
     // VM tests
     const vm_tests = b.addTest(.{
         .root_module = b.createModule(.{

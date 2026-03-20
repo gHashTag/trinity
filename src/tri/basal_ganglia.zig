@@ -134,12 +134,14 @@ pub const CellHealth = struct {
 // Prevents duplicate task execution across parallel agents.
 // First agent wins — atomic claim with TTL + heartbeat.
 
+pub const TaskClaimStatus = enum { active, completed, abandoned };
+
 pub const TaskClaim = struct {
     task_id: []const u8,
     agent_id: []const u8,
     claimed_at: i64,
     ttl_ms: u64,
-    status: enum { active, completed, abandoned },
+    status: TaskClaimStatus,
     completed_at: ?i64,
     last_heartbeat: i64,
 
@@ -301,8 +303,8 @@ pub const Registry = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        var list = std.ArrayList(ClaimInfo).init(allocator);
-        errdefer list.deinit();
+        var list = try std.ArrayList(ClaimInfo).initCapacity(allocator, 100);
+        errdefer list.deinit(allocator);
 
         var iter = self.claims.iterator();
         while (iter.next()) |entry| {
@@ -320,10 +322,10 @@ pub const Registry = struct {
                 .ttl_ms = stored_claim.ttl_ms,
                 .is_valid = stored_claim.isValid(),
             };
-            try list.append(info);
+            try list.append(allocator, info);
         }
 
-        return list.toOwnedSlice();
+        return list.toOwnedSlice(allocator);
     }
 };
 
@@ -337,7 +339,7 @@ pub const Stats = struct {
 pub const ClaimInfo = struct {
     task_id: []const u8,
     agent_id: []const u8,
-    status: TaskClaim.Status,
+    status: TaskClaimStatus,
     claimed_at: i64,
     ttl_ms: u64,
     is_valid: bool,
@@ -827,7 +829,7 @@ test "basal_ganglia — Registry complete marks task done" {
     try std.testing.expect(completed);
 
     const task_claim = registry.claims.get("task-1").?;
-    try std.testing.expectEqual(TaskClaim.Status.completed, task_claim.status);
+    try std.testing.expectEqual(TaskClaimStatus.completed, task_claim.status);
 }
 
 test "basal_ganglia — Registry complete wrong agent denied" {
@@ -852,7 +854,7 @@ test "basal_ganglia — Registry abandon releases task" {
     try std.testing.expect(abandoned);
 
     const claim = registry.claims.get("task-1").?;
-    try std.testing.expectEqual(TaskClaim.Status.abandoned, claim.status);
+    try std.testing.expectEqual(TaskClaimStatus.abandoned, claim.status);
 }
 
 test "basal_ganglia — Registry reclaim after abandon" {
