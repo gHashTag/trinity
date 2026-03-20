@@ -328,7 +328,7 @@ struct MorphingShape: View {
         RoundedRectangle(cornerRadius: isExpanded ? 20 : 10)
             .fill(V4Color.accent)
             .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
-            .animation(.spring(response: 0.5, dampingFraction: 0.6), value: isExpanded)
+            .animation(MTMotion.slowBouncySpring, value: isExpanded)
             .onTapGesture {
                 isExpanded.toggle()
             }

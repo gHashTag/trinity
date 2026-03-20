@@ -2006,8 +2006,7 @@ struct ChatScreen: View {
                 )
         )
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
-        .frame(height: ParietalSpacing.inputBarHeight)
-        .fixedSize(horizontal: false, vertical: true)
+        .frame(minHeight: ParietalSpacing.inputBarHeight)
     }
 
     // MARK: - System Prompt Editor
@@ -5079,29 +5078,29 @@ struct MultilineInput: NSViewRepresentable {
         textView.textColor = .white
         textView.backgroundColor = .clear
         textView.drawsBackground = false
-        // FIXED: disable vertical resizing for compact single-line input
-        textView.isVerticallyResizable = false
+        // FIXED: enable vertical resizing for multiline input
+        textView.isVerticallyResizable = true
         textView.isHorizontallyResizable = false
         // FIXED: compression resistance for horizontal
         textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
-        // FIXED: fixed container size - no expansion
-        textView.textContainer?.containerSize = NSSize(width: 400, height: ParietalSpacing.inputHeight)
+        // FIXED: allow proper text container sizing
+        textView.textContainer?.containerSize = NSSize(width: 400, height: 1000)
         textView.textContainer?.heightTracksTextView = true
         textView.textContainer?.widthTracksTextView = true
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.insertionPointColor = .white
-        // FIXED: allow proper text container sizing
-        textView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputHeight))
+        // FIXED: allow proper text expansion
+        textView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputBarHeight))
 
         scrollView.documentView = textView
-        scrollView.hasVerticalScroller = false
+        scrollView.hasVerticalScroller = true
         scrollView.hasHorizontalScroller = false
         scrollView.drawsBackground = false
         scrollView.borderType = .noBorder
-        // FIXED: proper scrollview frame for input
-        scrollView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputHeight))
+        // FIXED: allow proper scrollview sizing
+        scrollView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputBarHeight))
 
         context.coordinator.textView = textView
         return scrollView

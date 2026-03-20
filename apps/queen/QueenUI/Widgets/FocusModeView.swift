@@ -293,7 +293,7 @@ struct FocusModeView: View {
                 ))
             }
         }
-        .animation(.spring(response: 0.3, dampingFraction: 0.8), value: showControls)
+        .animation(MTMotion.quickGentleSpring, value: showControls)
     }
 
     private func colorButton(_ hex: String, name: String) -> some View {

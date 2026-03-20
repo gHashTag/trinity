@@ -721,7 +721,7 @@ struct BannerView: View {
         )
         .shadow(color: .black.opacity(0.2), radius: 8)
         .offset(y: isVisible ? 0 : -80)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isVisible)
+        .animation(MTMotion.modal, value: isVisible)
         .onAppear {
             withAnimation {
                 isVisible = true
