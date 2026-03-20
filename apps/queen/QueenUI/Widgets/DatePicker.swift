@@ -245,7 +245,7 @@ struct DatePickerSheet: View {
                 }
             }
         }
-        .frame(width: 400, height: 450)
+        .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.largeModalHeight)
     }
 }
 

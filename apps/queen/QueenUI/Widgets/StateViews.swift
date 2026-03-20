@@ -286,7 +286,7 @@ struct FeatureDiscoveryView: View {
                 Image(systemName: feature.icon)
                     .font(WernickeTypography.size24)
                     .foregroundStyle(selectedFeature?.id == feature.id ? V4Color.accent : V4Color.textSecondary)
-                    .frame(width: 40, height: 40)
+                    .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
                     .background(
                         Circle()
                             .fill(selectedFeature?.id == feature.id ? V4Color.accent.opacity(V2Depth.bgSidebarHover) : Color.clear)
@@ -337,7 +337,7 @@ struct SuccessStateView: View {
             ZStack {
                 Circle()
                     .fill(.green.opacity(V2Depth.bgSidebarHover))
-                    .frame(width: 80, height: 80)
+                    .frame(width: ParietalSpacing.xLargeFrame, height: ParietalSpacing.xLargeFrame)
 
                 Image(systemName: "checkmark.circle.fill")
                     .font(WernickeTypography.display)

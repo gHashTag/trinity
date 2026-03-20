@@ -62,7 +62,7 @@ struct SettingsScreen: View {
                         Text("Mode")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         Picker("", selection: $appearanceModeRaw) {
                             ForEach(AppearanceMode.allCases, id: \.rawValue) { mode in
                                 Text(mode.label).tag(mode.rawValue)
@@ -98,7 +98,7 @@ struct SettingsScreen: View {
                         Text("Host")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         TextField("localhost", text: $arenaHost)
                             .textFieldStyle(.roundedBorder)
                             .font(.body.monospaced())
@@ -108,7 +108,7 @@ struct SettingsScreen: View {
                         Text("Port")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         TextField("8080", value: $arenaPort, format: .number)
                             .textFieldStyle(.roundedBorder)
                             .font(.body.monospaced())
@@ -140,7 +140,7 @@ struct SettingsScreen: View {
                         Text("Sound Mode")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         Picker("", selection: $soundMode) {
                             Text("Full").tag("full")
                             Text("Notifications Only").tag("notifications")
@@ -179,7 +179,7 @@ struct SettingsScreen: View {
                         Text("Font Size")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         Slider(value: Binding(
                             get: { Double(chatFontSize) },
                             set: { chatFontSize = Int($0) }
@@ -223,7 +223,7 @@ struct SettingsScreen: View {
                         Text("URL")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         TextField("http://localhost:11434", text: $ollamaURL)
                             .textFieldStyle(.roundedBorder)
                             .font(.body.monospaced())
@@ -287,14 +287,14 @@ struct SettingsScreen: View {
                         Text("Daily Limit")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         Text("$")
                             .font(.body)
                             .foregroundStyle(V4Color.textSecondary)
                         TextField("5.00", value: $dailyCostBudget, format: .number.precision(.fractionLength(2)))
                             .textFieldStyle(.roundedBorder)
                             .font(.body.monospacedDigit())
-                            .frame(width: 100)
+                            .frame(width: ParietalSpacing.xxLargeFrame)
                         Spacer()
                     }
 
@@ -328,7 +328,7 @@ struct SettingsScreen: View {
                         Text("Auto-Archive")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 120, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxxLargeFrame, alignment: .leading)
                         Stepper(value: $autoArchiveDays, in: 7...365, step: 7) {
                             Text("\(autoArchiveDays) days")
                                 .font(.caption.monospacedDigit())
@@ -362,7 +362,7 @@ struct SettingsScreen: View {
                         Text("Sort Order")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 120, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxxLargeFrame, alignment: .leading)
                         Picker("", selection: $threadSortOrder) {
                             Text("Date").tag("date")
                             Text("Name").tag("name")
@@ -390,7 +390,7 @@ struct SettingsScreen: View {
                         Text("Chat Mode")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         Picker("", selection: $defaultChatModeRaw) {
                             ForEach(ChatMode.allCases, id: \.rawValue) { mode in
                                 Text(mode.rawValue).tag(mode.rawValue)
@@ -403,7 +403,7 @@ struct SettingsScreen: View {
                         Text("Effort Level")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         Picker("", selection: $effortLevelRaw) {
                             ForEach(EffortLevel.allCases, id: \.rawValue) { level in
                                 Text(level.rawValue).tag(level.rawValue)
@@ -416,7 +416,7 @@ struct SettingsScreen: View {
                         Text("Style Preset")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         Picker("", selection: $stylePresetRaw) {
                             ForEach(StylePreset.allCases, id: \.rawValue) { preset in
                                 Text(preset.rawValue).tag(preset.rawValue)
@@ -457,7 +457,7 @@ struct SettingsScreen: View {
                         Text("Session Cleanup")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 120, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxxLargeFrame, alignment: .leading)
                         Stepper(value: $sessionCleanupDays, in: 7...365, step: 7) {
                             Text("\(sessionCleanupDays) days")
                                 .font(.caption.monospacedDigit())
@@ -483,7 +483,7 @@ struct SettingsScreen: View {
                         Text("Interval")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         Slider(value: $refreshInterval, in: 1...30, step: 1)
                         Text("\(Int(refreshInterval))s")
                             .font(.body.monospacedDigit())
@@ -506,7 +506,7 @@ struct SettingsScreen: View {
                         Text("Path")
                             .font(.caption)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 100, alignment: .leading)
+                            .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                         Text(trinityPath.isEmpty ? FileManager.default.currentDirectoryPath : trinityPath)
                             .font(.caption.monospaced())
                             .foregroundStyle(V4Color.textPrimary)
@@ -689,7 +689,7 @@ struct SettingsScreen: View {
                 Text("Max Auto Level")
                     .font(.caption)
                     .foregroundStyle(V4Color.textSecondary)
-                    .frame(width: 120, alignment: .leading)
+                    .frame(width: ParietalSpacing.xxxLargeFrame, alignment: .leading)
                 Picker("", selection: $maxAutoLevel) {
                     Text("L0 (read-only)").tag(0)
                     Text("L1 (soft-write)").tag(1)
@@ -710,7 +710,7 @@ struct SettingsScreen: View {
                 Text("Interval")
                     .font(.caption)
                     .foregroundStyle(V4Color.textSecondary)
-                    .frame(width: 120, alignment: .leading)
+                    .frame(width: ParietalSpacing.xxxLargeFrame, alignment: .leading)
                 Stepper(value: $intervalSec, in: 60...3600, step: 60) {
                     Text("\(intervalSec)s (\(intervalSec / 60)m)")
                         .font(.caption.monospacedDigit())

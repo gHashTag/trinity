@@ -95,7 +95,7 @@ struct BrainHealthScreen: View {
                     HStack(spacing: ParietalSpacing.xs) {
                         Circle()
                             .fill(V4Color.statusOK)
-                            .frame(width: 8, height: 8)
+                            .frame(width: ParietalSpacing.tinyIndicator, height: 8)
                             .opacity(pulseValue ? 0.5 : 1)
                         Text("LIVE")
                             .font(.caption2.weight(.bold))
@@ -995,7 +995,7 @@ struct BrainEventRow: View {
             // Severity indicator
             Circle()
                 .fill(event.severity.color)
-                .frame(width: 8, height: 8)
+                .frame(width: ParietalSpacing.tinyIndicator, height: 8)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack {
@@ -1096,7 +1096,7 @@ struct BrainAlertCard: View {
             ZStack {
                 Circle()
                     .fill(alert.severity.color.opacity(V2Depth.bgSidebarHover))
-                    .frame(width: 40, height: 40)
+                    .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
 
                 Image(systemName: alert.severity.icon)
                     .font(.title3)
@@ -1188,7 +1188,7 @@ struct EventStatsFooter: View {
             let errorCount = events.filter { $0.severity == .error }.count
             if errorCount > 0 {
                 HStack(spacing: 2) {
-                    Circle().fill(V4Color.statusError).frame(width: 6, height: 6)
+                    Circle().fill(V4Color.statusError).frame(width: ParietalSpacing.dotSize, height: 6)
                     Text("\(errorCount) errors")
                         .font(.caption2)
                         .foregroundStyle(V4Color.textSecondary)
@@ -1691,7 +1691,7 @@ struct HealthScoreCard: View {
                         HStack(spacing: ParietalSpacing.xxs) {
                             Circle()
                                 .fill(V4Color.statusOK)
-                                .frame(width: 6, height: 6)
+                                .frame(width: ParietalSpacing.dotSize, height: 6)
                                 .opacity(pulse ? 0.3 : 1)
                             Text("LIVE")
                                 .font(.caption2.weight(.bold))

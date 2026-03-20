@@ -867,7 +867,7 @@ struct ImageBlockView: View {
                         .font(.caption)
                         .foregroundStyle(V4Color.textSecondary)
                 }
-                .frame(width: 300, height: 200)
+                .frame(width: ParietalSpacing.mediumModalFrame, height: ParietalSpacing.modalFrame)
                 .background(V4Color.surfaceElevated)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {

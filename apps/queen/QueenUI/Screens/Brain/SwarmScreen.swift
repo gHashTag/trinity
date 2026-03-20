@@ -23,7 +23,7 @@ struct SwarmScreen: View {
                     }
                     Spacer()
                     StatCard(label: "Cells", value: "\(cells.count)")
-                        .frame(width: 80)
+                        .frame(width: ParietalSpacing.xLargeFrame)
                     ActionButton(icon: "+", label: "New Cell", color: V4Color.accent,
                                  action: "cell_create")
                 }

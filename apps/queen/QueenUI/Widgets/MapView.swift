@@ -260,7 +260,7 @@ struct MapView_Previews: PreviewProvider {
             CoordinateDisplay(
                 coordinate: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
             )
-            .frame(width: 350)
+            .frame(width: ParietalSpacing.extraWidePanel)
         }
         .padding()
         .background(V4Color.background)

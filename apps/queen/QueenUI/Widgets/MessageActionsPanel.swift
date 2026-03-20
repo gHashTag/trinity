@@ -173,7 +173,7 @@ struct MessageActionsPanel: View {
                 Image(systemName: action.icon)
                     .font(WernickeTypography.smallMedium)
                     .foregroundColor(buttonColor)
-                    .frame(width: 28, height: 28)
+                    .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                     .background(buttonBackground)
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                     .scaleEffect(isPressed ? 0.9 : 1.0)

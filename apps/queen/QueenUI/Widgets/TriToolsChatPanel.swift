@@ -79,7 +79,7 @@ struct TriToolsChatPanel: View {
                 if !lastCommand.isEmpty {
                     Circle()
                         .fill(isRunning ? V4Color.accent : V4Color.success)
-                        .frame(width: 6, height: 6)
+                        .frame(width: ParietalSpacing.dotSize, height: 6)
                 }
 
                 Image(systemName: "chevron.right")
@@ -348,7 +348,7 @@ struct QuickActionButton: View {
                         .font(WernickeTypography.size11)
                 }
             }
-            .frame(width: 28, height: 28)
+            .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
             .background(isRunning ? V4Color.accent : V4Color.border.opacity(V1Theme.opacityTextTertiary))
             .clipShape(RoundedRectangle(cornerRadius: 4))
         }

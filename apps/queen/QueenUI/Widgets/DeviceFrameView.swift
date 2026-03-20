@@ -16,7 +16,7 @@ struct DeviceFrame: View {
             case .iPhone14: return CGSize(width: 390, height: 844)
             case .iPhone14Pro: return CGSize(width: 393, height: 852)
             case .iPadPro: return CGSize(width: 1024, height: 1366)
-            case .macBook: return CGSize(width: 1440, height: 900)
+            case .macBook: return CGSize(width: 1440, height: ParietalSpacing.largeScreenFrame)
             }
         }
 
@@ -176,15 +176,15 @@ struct WindowFrame: View {
                 HStack(spacing: ParietalSpacing.sm) {
                     Circle()
                         .fill(V4Color.error)
-                        .frame(width: 10, height: 10)
+                        .frame(width: ParietalSpacing.smallBadge, height: ParietalSpacing.captionHeight)
 
                     Circle()
                         .fill(V4Color.warning)
-                        .frame(width: 10, height: 10)
+                        .frame(width: ParietalSpacing.smallBadge, height: ParietalSpacing.captionHeight)
 
                     Circle()
                         .fill(V4Color.success)
-                        .frame(width: 10, height: 10)
+                        .frame(width: ParietalSpacing.smallBadge, height: ParietalSpacing.captionHeight)
                 }
             }
             .padding(.horizontal, ParietalSpacing.md)
@@ -285,7 +285,7 @@ struct SplitViewFrame: View {
 
             Rectangle()
                 .fill(V4Color.border)
-                .frame(width: 1)
+                .frame(width: ParietalSpacing.hairline)
 
             trailingContent()
                 .frame(maxWidth: .infinity)

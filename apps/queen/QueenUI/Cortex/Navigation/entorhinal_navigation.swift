@@ -124,7 +124,7 @@ public struct EntorhinalCompactSidebar<Content: View>: View {
 
     public var body: some View {
         content
-            .frame(width: 180)
+            .frame(width: ParietalSpacing.compactPanel)
             .background(V4Color.sidebar)
     }
 }
@@ -165,7 +165,7 @@ public struct EntorhinalResponsiveSidebar<Sidebar: View, Main: View>: View {
                 // Divider
                 Rectangle()
                     .fill(V4Color.border)
-                    .frame(width: 1)
+                    .frame(width: ParietalSpacing.hairline)
 
                 // Main content
                 main

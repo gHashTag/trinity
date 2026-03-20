@@ -13,7 +13,7 @@ struct TranslateButton: View {
             Image(systemName: "globe")
                 .font(WernickeTypography.size12)
                 .foregroundStyle(V4Color.textSecondary)
-                .frame(width: 28, height: 28)
+                .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
         }
         .accessibilityLabel("Translate message")
     }
@@ -58,7 +58,7 @@ struct TranslationOverlay: View {
             // Footer
             footer
         }
-        .frame(width: 600, height: 500)
+        .frame(width: ParietalSpacing.extraWideSheet, height: ParietalSpacing.extraLargeModalHeight)
         .background(V4Color.background)
         .onAppear {
             detectLanguage()
@@ -431,7 +431,7 @@ struct LanguagePicker: View {
             .padding(ParietalSpacing.md)
             .background(V4Color.sidebar)
         }
-        .frame(width: 350, height: 400)
+        .frame(width: ParietalSpacing.extraWidePanel, height: ParietalSpacing.wideSheetWidth)
         .background(V4Color.background)
     }
 

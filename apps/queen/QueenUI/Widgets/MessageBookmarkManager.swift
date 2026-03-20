@@ -281,7 +281,7 @@ private struct CategoryPickerSheet: View {
             .keyboardShortcut(.cancelAction)
         }
         .padding()
-        .frame(width: 320, height: 280)
+        .frame(width: ParietalSpacing.widePanelWidth, height: ParietalSpacing.panelHeight)
         .background(V4Color.surface)
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
@@ -410,7 +410,7 @@ private struct BookmarkNoteEditor: View {
             }
         }
         .padding()
-        .frame(width: 400, height: 300)
+        .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.mediumModalFrame)
         .background(V4Color.surface)
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
@@ -810,7 +810,7 @@ private struct BookmarkRow: View {
     private var categoryIndicator: some View {
         RoundedRectangle(cornerRadius: 2)
             .fill(bookmark.category.color)
-            .frame(width: 3, height: 40)
+            .frame(width: ParietalSpacing.smallIndicator, height: ParietalSpacing.itemHeight)
     }
 
     private var header: some View {
@@ -887,7 +887,7 @@ struct MessageBookmarkManager_Previews: PreviewProvider {
                 store: BookmarkStore(),
                 isExpanded: .constant(true)
             )
-            .frame(width: 280)
+            .frame(width: ParietalSpacing.panelWidth)
             .previewDisplayName("Bookmarks Panel")
 
             BookmarkButton(

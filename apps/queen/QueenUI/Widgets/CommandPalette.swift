@@ -230,7 +230,7 @@ struct CommandPalette: View {
             VStack(alignment: .leading, spacing: ParietalSpacing.xxxxs) {
                 Text(item.title)
                     .font(isSelected ? WernickeTypography.smallSemibold : WernickeTypography.small)
-                    .foregroundStyle(isSelected ? Color.white : V2Depth.white70)
+                    .foregroundStyle(isSelected ? Color.white : V4Color.white70)
                     .lineLimit(1)
                 Text(item.subtitle)
                     .font(WernickeTypography.size10)

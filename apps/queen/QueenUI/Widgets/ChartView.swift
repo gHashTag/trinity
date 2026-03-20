@@ -77,7 +77,7 @@ struct LineChart: View {
 
                     Circle()
                         .fill(color)
-                        .frame(width: 6, height: 6)
+                        .frame(width: ParietalSpacing.dotSize, height: 6)
                         .position(x: x, y: y)
                 }
             }
@@ -318,7 +318,7 @@ struct GaugeChart: View {
                     .foregroundStyle(V4Color.textPrimary)
                     .offset(y: 10)
             }
-            .frame(width: 120, height: 80)
+            .frame(width: ParietalSpacing.xxxLargeFrame, height: ParietalSpacing.xLargeFrame)
 
             Text(label)
                 .font(.caption)
@@ -363,7 +363,7 @@ struct ChartView_Previews: PreviewProvider {
                     PieChart.PieData(label: "C", value: 20, color: .orange)
                 ]
             )
-            .frame(width: 150)
+            .frame(width: ParietalSpacing.panelWidth)
         }
         .padding()
         .background(V4Color.background)

@@ -208,7 +208,7 @@ struct OverlayPatternsView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             SimpleTooltip(text: "Helpful info", isVisible: true)
-                .frame(width: 200, height: 100)
+                .frame(width: ParietalSpacing.modalFrame, height: ParietalSpacing.xxLargeFrame)
             
             OverlayErrorBanner(error: "Something went wrong") {}
                 .frame(width: ParietalSpacing.xl * 16)
