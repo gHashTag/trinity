@@ -27,16 +27,9 @@ pub const FpgCost = struct {
     /// DSP cost factor (per multiplication)
     dsp_cost: f32 = 5.0,
 
-    /// Calculate energy cost based on workers, steps, and FPGA resources
-    pub fn energyCost(workers: u32, steps: u32, lut_usage: f32, bram_usage: f32) f32 {
-        const worker_ops = @as(f32, @floatFromInt(workers)) * @as(f32, @floatFromInt(steps));
-        const lut_energy = worker_ops * lut_usage * self.lut_cost;
-        const bram_energy = worker_ops * (bram_usage / 72.0) * self.bram_cost; // Normalize to BRAM36
-        return lut_energy + bram_energy;
-    }
-
     /// Calculate normalized FPGA cost (0-1, where 1 = cheapest)
     pub fn normalizedCost(lut: u32, bram: u32, dsp: u32) f32 {
+        _ = dsp; // Reserved for future DSP-aware cost model
         // Budget from K=16 wide BRAM synthesis: 19K LUT + 100.5 BRAM36-eq (74%)
         const max_lut: f32 = 50000; // Conservative max LUT budget
         const max_bram: f32 = 200;  // Conservative max BRAM36-eq
@@ -196,6 +189,11 @@ pub const EvolutionSimulationConfig = struct {
         .weight = 1.0,
     }},
     microglia_interval: u32 = 30,
+
+    // FPGA resource tracking for hardware-aware BO
+    fpga_lut: u32 = 0,     // LUT usage (normalized to 50000 max)
+    fpga_bram: u32 = 0,    // BRAM36-eq usage (normalized to 200 max)
+    fpga_dsp: u32 = 0,     // DSP usage (normalized to 100 max)
 
     pub const ObjectiveConfig = struct {
         name: []const u8,
@@ -371,7 +369,13 @@ pub const EvolutionResult = struct {
     steps: u32,
     crash_rate: f32,
     byzantine_rate: f32,
-    energy_cost: f32 = 0.0, // Total energy cost (for Sacred v2 scenarios)
+    energy_cost: f32 = 0.0, // Total energy cost (workers_alive × steps)
+
+    // FPGA resource costs
+    fpga_lut: u32 = 0,     // LUT usage for this scenario
+    fpga_bram: u32 = 0,    // BRAM36-eq usage
+    fpga_dsp: u32 = 0,     // DSP usage
+    fpga_cost_norm: f32 = 0.0, // Normalized FPGA cost (0-1, 1=cheapest)
 
     // Policy parameters (for CSV export)
     kill_threshold: f32 = 400.0, // PPL threshold for worker culling
@@ -394,6 +398,7 @@ pub const EvolutionResult = struct {
         // Keys in objective_ppl are dupe'd strings, timeline is internal slice
         // Both cleanup via deinit() - no manual free needed
         self.objective_ppl.deinit();
+        // Note: timeline is internal slice, no need to free explicitly
     }
 
     pub fn format(self: *const EvolutionResult, writer: anytype) !void {
@@ -674,6 +679,22 @@ pub const EvolutionSimulator = struct {
         // Move timeline to result
         const timeline = try self.allocator.dupe(EvolutionResult.TimelineEntry, self.timeline[0..self.timeline_count]);
 
+        // Calculate energy cost: cumulative alive workers × step
+        // This represents total "worker-steps" expended
+        var total_energy: f32 = 0.0;
+        for (self.timeline[0..self.timeline_count]) |entry| {
+            total_energy += @as(f32, @floatFromInt(entry.alive_workers));
+        }
+        // Scale by step factor (each timeline entry = 1 step unit)
+        const energy_cost = total_energy * 1000.0; // 1000 simulated steps per iteration
+
+        // Calculate normalized FPGA cost (0-1, where 1=cheapest)
+        const fpga_cost_norm = FpgCost.normalizedCost(
+            self.config.fpga_lut,
+            self.config.fpga_bram,
+            self.config.fpga_dsp,
+        );
+
         return EvolutionResult{
             .scenario_name = scenario_name,
             .final_ppl = final_ppl,
@@ -687,6 +708,11 @@ pub const EvolutionSimulator = struct {
             .steps = self.config.steps,
             .crash_rate = self.config.crash_rate,
             .byzantine_rate = self.config.byzantine_rate,
+            .energy_cost = energy_cost,
+            .fpga_lut = self.config.fpga_lut,
+            .fpga_bram = self.config.fpga_bram,
+            .fpga_dsp = self.config.fpga_dsp,
+            .fpga_cost_norm = fpga_cost_norm,
             .kill_threshold = 400.0, // Standard kill threshold
             .microglia_interval = self.config.microglia_interval,
             .objective_ppl = objective_ppl,
@@ -833,6 +859,10 @@ pub fn runS1Baseline(allocator: Allocator, steps: u32) !EvolutionResult {
             .weight = 1.0,
         }},
         .microglia_interval = 30,
+        // FPGA: Minimal baseline architecture
+        .fpga_lut = 8000,   // 16% of 50K budget
+        .fpga_bram = 30,     // 15% of BRAM36-eq
+        .fpga_dsp = 5,      // 5% of DSP
     };
 
     var sim = try EvolutionSimulator.init(allocator, config);
@@ -853,6 +883,10 @@ pub fn runS2Current(allocator: Allocator, steps: u32) !EvolutionResult {
             .weight = 1.0,
         }},
         .microglia_interval = 30,
+        // FPGA: Current architecture (matches production)
+        .fpga_lut = 19000,  // K=16 wide BRAM synthesis result
+        .fpga_bram = 100,    // 100.5 BRAM36-eq from synthesis
+        .fpga_dsp = 0,       // Ternary MAC uses zero DSP
     };
 
     var sim = try EvolutionSimulator.init(allocator, config);
@@ -875,6 +909,10 @@ pub fn runS3MultiObj(allocator: Allocator, steps: u32) !EvolutionResult {
             .{ .name = "hybrid", .weight = 0.10 },
         },
         .microglia_interval = 30,
+        // FPGA: Multi-objective requires more LUT for different objectives
+        .fpga_lut = 14000,  // 28% of 50K budget
+        .fpga_bram = 60,     // 30% of BRAM36-eq
+        .fpga_dsp = 15,      // 15% of DSP
     };
 
     var sim = try EvolutionSimulator.init(allocator, config);
@@ -998,6 +1036,10 @@ pub fn runS9ByzantineHeavy(allocator: Allocator, steps: u32) !EvolutionResult {
             .{ .name = "nca-ntp", .weight = 0.20 },
         },
         .microglia_interval = 15, // Aggressive pruning to counter Byzantine
+        // FPGA: High Byzantine rate requires monitoring overhead
+        .fpga_lut = 16000,  // 32% of 50K budget
+        .fpga_bram = 85,      // 42.5% of BRAM36-eq (needs extra for monitoring)
+        .fpga_dsp = 25,      // 25% of DSP
     };
     var sim = try EvolutionSimulator.init(allocator, config);
     defer sim.deinit();
@@ -1017,6 +1059,10 @@ pub fn runS10EnergyOptimal(allocator: Allocator, steps: u32) !EvolutionResult {
             .{ .name = "hybrid", .weight = 0.20 },
         },
         .microglia_interval = 50, // Minimal patrol = low energy
+        // FPGA: Compact architecture, minimal resources
+        .fpga_lut = 12000,  // 24% of 50K budget
+        .fpga_bram = 50,     // 25% of 200 BRAM36-eq budget
+        .fpga_dsp = 10,      // 10% of 100 DSP budget
     };
     var sim = try EvolutionSimulator.init(allocator, config);
     defer sim.deinit();
@@ -1037,6 +1083,10 @@ pub fn runS11SacredA(allocator: Allocator, steps: u32) !EvolutionResult {
             .{ .name = "nca-ntp", .weight = 0.20 },
         },
         .microglia_interval = 25,
+        // FPGA: 27 heads = high LUT for attention heads
+        .fpga_lut = 25000,  // 50% of 50K budget (many heads)
+        .fpga_bram = 80,     // 40% of BRAM36-eq
+        .fpga_dsp = 40,      // 40% of DSP (matmul intensive)
     };
     var sim = try EvolutionSimulator.init(allocator, config);
     defer sim.deinit();
@@ -1057,6 +1107,10 @@ pub fn runS12SacredB(allocator: Allocator, steps: u32) !EvolutionResult {
             .{ .name = "nca-ntp", .weight = 0.15 },
         },
         .microglia_interval = 30,
+        // FPGA: 27 heads + ctx=81 = highest LUT + BRAM
+        .fpga_lut = 35000,  // 70% of 50K budget (worst case)
+        .fpga_bram = 120,    // 60% of BRAM36-eq (wide context needs more cache)
+        .fpga_dsp = 60,      // 60% of DSP
     };
     var sim = try EvolutionSimulator.init(allocator, config);
     defer sim.deinit();
@@ -1077,6 +1131,10 @@ pub fn runS13SacredC(allocator: Allocator, steps: u32) !EvolutionResult {
             .{ .name = "nca-ntp", .weight = 0.20 },
         },
         .microglia_interval = 35,
+        // FPGA: 162 dims = compact (φ^4 = ~6.85, 162 = 3^4+3^3)
+        .fpga_lut = 15000,  // 30% of 50K budget (compact)
+        .fpga_bram = 90,     // 45% of BRAM36-eq (still needs cache for ctx=81)
+        .fpga_dsp = 25,      // 25% of DSP
     };
     var sim = try EvolutionSimulator.init(allocator, config);
     defer sim.deinit();
@@ -1097,6 +1155,10 @@ pub fn runS14Wide(allocator: Allocator, steps: u32) !EvolutionResult {
             .{ .name = "nca-ntp", .weight = 0.15 },
         },
         .microglia_interval = 30,
+        // FPGA: ctx=81 with 9 heads = balanced LUT, high BRAM
+        .fpga_lut = 18000,  // 36% of 50K budget
+        .fpga_bram = 100,    // 50% of BRAM36-eq (wide context needs KV cache)
+        .fpga_dsp = 30,      // 30% of DSP
     };
     var sim = try EvolutionSimulator.init(allocator, config);
     defer sim.deinit();
