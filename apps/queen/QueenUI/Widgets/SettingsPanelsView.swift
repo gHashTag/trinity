@@ -647,7 +647,7 @@ struct ColorSwatch: View {
             .overlay(
                 Circle()
                     .strokeBorder(V4Color.border, lineWidth: 1)
-                    .frame(width: ParietalSpacing.compactFrame, height: ParietalSpacing.compactHeight)
+                    .frame(width: ParietalSpacing.cellFrame, height: ParietalSpacing.itemHeight)
             )
             .scaleEffect(isHovered ? 1.1 : 1.0)
         }
