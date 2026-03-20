@@ -15,9 +15,9 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-// Direct imports that work in both contexts
-const basal_ganglia_mod = @import("basal_ganglia");
-const reticular_formation_mod = @import("reticular_formation");
+// Direct imports - these work when file is in src/brain/ directory
+const basal_ganglia_mod = @import("basal_ganglia.zig");
+const reticular_formation_mod = @import("reticular_formation.zig");
 
 const basal_ganglia = struct {
     pub const Registry = basal_ganglia_mod.Registry;
