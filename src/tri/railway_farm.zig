@@ -14,6 +14,7 @@
 const std = @import("std");
 const Allocator = std.mem.Allocator;
 const railway_api = @import("railway_api.zig");
+const circuit_breaker = @import("railway_circuit_breaker.zig");
 
 const FARM_STATE_FILE = ".trinity/railway_farm.json";
 pub const MAX_ACCOUNTS: usize = 8;
@@ -30,6 +31,9 @@ pub const RailwayAccount = struct {
     active_services: u16,
     max_concurrent: u16, // 10 per account
     max_daily_creates: u16, // 25 per account
+
+    // Circuit Breaker health tracking (optional, for smart routing)
+    health: ?circuit_breaker.AccountHealth = null,
 
     pub fn canSpawn(self: *const RailwayAccount) bool {
         const now_day = @divTrunc(std.time.timestamp(), 86400) * 86400;
@@ -162,6 +166,72 @@ pub const RailwayFarm = struct {
             }
         }
         return best;
+    }
+
+    /// Select best account using Circuit Breaker health scoring.
+    /// Returns account with highest health score that can spawn.
+    /// Falls back to selectAccount() if health tracking not initialized.
+    pub fn selectHealthyAccount(self: *Self) ?*RailwayAccount {
+        const now = std.time.timestamp();
+
+        // Build AccountHealth array for selectBest()
+        var health_accounts: [MAX_ACCOUNTS]circuit_breaker.AccountHealth = undefined;
+        var health_count: usize = 0;
+
+        for (self.accounts[0..self.account_count]) |*acct| {
+            if (acct.health) |*h| {
+                // Update circuit state based on current time
+                _ = h.circuit.canUse(now);
+                health_accounts[health_count] = h.*;
+                health_count += 1;
+            }
+        }
+
+        if (health_count == 0) {
+            // No health tracking initialized, fallback to simple selection
+            return self.selectAccount();
+        }
+
+        // Use circuit breaker to select best
+        const best_health = circuit_breaker.selectBest(health_accounts[0..health_count], now) orelse {
+            // All accounts exhausted, fallback to simple selection
+            return self.selectAccount();
+        };
+
+        // Find corresponding RailwayAccount
+        for (self.accounts[0..self.account_count]) |*acct| {
+            if (acct.health) |*h| {
+                if (std.mem.eql(u8, h.name, best_health.name)) {
+                    return acct;
+                }
+            }
+        }
+
+        return self.selectAccount();
+    }
+
+    /// Initialize Circuit Breaker health tracking for all accounts.
+    /// Call once during farm initialization.
+    pub fn initHealthTracking(self: *Self) void {
+        for (self.accounts[0..self.account_count]) |*acct| {
+            acct.health = circuit_breaker.AccountHealth{
+                .name = acct.getAlias(),
+            };
+        }
+    }
+
+    /// Record API call result in Circuit Breaker health tracking.
+    /// Call after each Railway API request.
+    pub fn recordApiResult(self: *Self, account_id: u8, latency_ms: u32, success: bool) void {
+        const now = std.time.timestamp();
+        for (self.accounts[0..self.account_count]) |*acct| {
+            if (acct.id == account_id) {
+                if (acct.health) |*h| {
+                    h.record(latency_ms, success, now);
+                }
+                break;
+            }
+        }
     }
 
     /// Get a RailwayApi client for the given account ID.
