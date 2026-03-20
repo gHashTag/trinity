@@ -72,76 +72,76 @@ pub fn main() !void {
 
     // Run scenarios (note: Zig doesn't have true parallelism yet, so we run sequentially)
     var s1 = try evo_sim.runS1Baseline(allocator, steps);
-    defer s1.deinit();
+    defer s1.deinit(allocator);
     print("  {s}✓{s} S1 Baseline complete: PPL={d:.2}, Diversity={d:.3}, Alive={d}\n", .{ GREEN, RESET, s1.final_ppl, s1.diversity_index, s1.workers_alive });
 
     var s2 = try evo_sim.runS2Current(allocator, steps);
-    defer s2.deinit();
+    defer s2.deinit(allocator);
     const s2_status = if (s2.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s2.final_ppl});
     print("  {s}✓{s} S2 Current complete: PPL={s}, Alive={d}, Culled={d}\n", .{ GREEN, RESET, s2_status, s2.workers_alive, s2.workers_culled });
 
     var s3 = try evo_sim.runS3MultiObj(allocator, steps);
-    defer s3.deinit();
+    defer s3.deinit(allocator);
     print("  {s}✓{s} S3 MultiObj complete: PPL={d:.2}, Diversity={d:.3}\n", .{ GREEN, RESET, s3.final_ppl, s3.diversity_index });
 
     var s4 = try evo_sim.runS4DePIN(allocator, steps);
-    defer s4.deinit();
+    defer s4.deinit(allocator);
     const s4_status = if (s4.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s4.final_ppl});
     print("  {s}✓{s} S4 dePIN complete: PPL={s}, Alive={d}, Byzantine={d}\n", .{ GREEN, RESET, s4_status, s4.workers_alive, s4.byzantine_detected });
 
     var s5 = try evo_sim.runS5DePIN_NoImmunity(allocator, steps);
-    defer s5.deinit();
+    defer s5.deinit(allocator);
     const s5_status = if (s5.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s5.final_ppl});
     print("  {s}✓{s} S5 dePIN NoImmunity complete: PPL={s}, Alive={d}, Byzantine={d}, NoMicroglia\n", .{ YELLOW, RESET, s5_status, s5.workers_alive, s5.byzantine_detected });
 
     var s6 = try evo_sim.runS6JEPA_Heavy(allocator, steps);
-    defer s6.deinit();
+    defer s6.deinit(allocator);
     const s6_status = if (s6.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s6.final_ppl});
     print("  {s}✓{s} S6 JEPA-Heavy complete: PPL={s}, Alive={d}, Diversity={d:.3}, JEPA=35%\n", .{ MAGENTA, RESET, s6_status, s6.workers_alive, s6.diversity_index });
 
     // Sacred v2 search scenarios (S7-S15)
     var s7 = try evo_sim.runS7HighDiversity(allocator, steps);
-    defer s7.deinit();
+    defer s7.deinit(allocator);
     const s7_status = if (s7.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s7.final_ppl});
     print("  {s}✓{s} S7 High-Diversity complete: PPL={s}, Alive={d}, Diversity={d:.3}\n", .{ GREEN, RESET, s7_status, s7.workers_alive, s7.diversity_index });
 
     var s8 = try evo_sim.runS8LowCrash(allocator, steps);
-    defer s8.deinit();
+    defer s8.deinit(allocator);
     const s8_status = if (s8.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s8.final_ppl});
     print("  {s}✓{s} S8 Low-Crash complete: PPL={s}, Alive={d}, Diversity={d:.3}\n", .{ GREEN, RESET, s8_status, s8.workers_alive, s8.diversity_index });
 
     var s9 = try evo_sim.runS9ByzantineHeavy(allocator, steps);
-    defer s9.deinit();
+    defer s9.deinit(allocator);
     const s9_status = if (s9.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s9.final_ppl});
     print("  {s}✓{s} S9 Byzantine-Heavy complete: PPL={s}, Alive={d}, Diversity={d:.3}\n", .{ YELLOW, RESET, s9_status, s9.workers_alive, s9.diversity_index });
 
     var s10 = try evo_sim.runS10EnergyOptimal(allocator, steps);
-    defer s10.deinit();
+    defer s10.deinit(allocator);
     const s10_status = if (s10.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s10.final_ppl});
     print("  {s}✓{s} S10 Energy-Optimal complete: PPL={s}, Alive={d}, Diversity={d:.3}\n", .{ GREEN, RESET, s10_status, s10.workers_alive, s10.diversity_index });
 
     var s11 = try evo_sim.runS11SacredA(allocator, steps);
-    defer s11.deinit();
+    defer s11.deinit(allocator);
     const s11_status = if (s11.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s11.final_ppl});
     print("  {s}✓{s} S11 Sacred-A complete: PPL={s}, Alive={d}, Diversity={d:.3}\n", .{ GREEN, RESET, s11_status, s11.workers_alive, s11.diversity_index });
 
     var s12 = try evo_sim.runS12SacredB(allocator, steps);
-    defer s12.deinit();
+    defer s12.deinit(allocator);
     const s12_status = if (s12.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s12.final_ppl});
     print("  {s}✓{s} S12 Sacred-B complete: PPL={s}, Alive={d}, Diversity={d:.3}\n", .{ GREEN, RESET, s12_status, s12.workers_alive, s12.diversity_index });
 
     var s13 = try evo_sim.runS13SacredC(allocator, steps);
-    defer s13.deinit();
+    defer s13.deinit(allocator);
     const s13_status = if (s13.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s13.final_ppl});
     print("  {s}✓{s} S13 Sacred-C complete: PPL={s}, Alive={d}, Diversity={d:.3}\n", .{ GREEN, RESET, s13_status, s13.workers_alive, s13.diversity_index });
 
     var s14 = try evo_sim.runS14Wide(allocator, steps);
-    defer s14.deinit();
+    defer s14.deinit(allocator);
     const s14_status = if (s14.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s14.final_ppl});
     print("  {s}✓{s} S14 Wide complete: PPL={s}, Alive={d}, Diversity={d:.3}\n", .{ GREEN, RESET, s14_status, s14.workers_alive, s14.diversity_index });
 
     var s15 = try evo_sim.runS15BaselineExtended(allocator, steps);
-    defer s15.deinit();
+    defer s15.deinit(allocator);
     const s15_status = if (s15.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s15.final_ppl});
     print("  {s}✓{s} S15 Baseline-Extended complete: PPL={s}, Alive={d}, Diversity={d:.3}\n", .{ GREEN, RESET, s15_status, s15.workers_alive, s15.diversity_index });
 
@@ -154,20 +154,22 @@ pub fn main() !void {
         defer csv_file.close();
         defer allocator.free(csv_path);
 
-        // Enhanced CSV format for visualization and analysis (15 columns)
+        // Enhanced CSV format for visualization and analysis (18 columns)
         // energy_cost calculated as: cumulative alive workers × step
-        try csv_file.writeAll("step,scenario_id,ppl,diversity,alive,culled,byzantine,converged,energy_cost,seed_rate,kill_rate,ntp_weight,jepa_weight,nca_weight\n");
+        // fpga_cost_norm = (lut_ratio * 0.7 + bram_ratio * 0.3)
+        try csv_file.writeAll("step,scenario_id,ppl,diversity,alive,culled,byzantine,converged,energy_cost,fpga_lut,fpga_bram,fpga_cost_norm,seed_rate,kill_rate,ntp_weight,jepa_weight,nca_weight\n");
 
         // Helper to write timeline with energy cost and policy params
         const writeTimeline = struct {
-            fn write(timeline: []const evo_sim.EvolutionResult.TimelineEntry, scenario: []const u8, alloc: Allocator, csv_out: std.fs.File, converged: u8, energy_cost: f32, seed_rate: f32, kill_rate: f32, ntp_weight: f32, jepa_weight: f32, nca_weight: f32) !void {
+            fn write(timeline: []const evo_sim.EvolutionResult.TimelineEntry, scenario: []const u8, alloc: Allocator, csv_out: std.fs.File, converged: u8, energy_cost: f32, fpga_lut: u16, fpga_bram: u8, fpga_cost: f32, seed_rate: f32, kill_rate: f32, ntp_weight: f32, jepa_weight: f32, nca_weight: f32) !void {
                 for (timeline) |entry| {
                     // Calculate cumulative energy cost up to this step
                     const cum_energy = energy_cost * @as(f32, @floatFromInt(entry.step + 1));
-                    const line = try std.fmt.allocPrint(alloc, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d:.2},{d:.3},{d:.1},{d:.2},{d:.2},{d:.2}\n", .{
+                    const line = try std.fmt.allocPrint(alloc, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d:.2},{d},{d},{d:.3},{d:.3},{d:.1},{d:.2},{d:.2},{d:.2}\n", .{
                         entry.step,       scenario,       entry.avg_ppl, entry.diversity,
                         entry.alive_workers, 0,               0,             converged,
-                        cum_energy,       seed_rate,      kill_rate,      ntp_weight,
+                        cum_energy,       fpga_lut,        fpga_bram,       fpga_cost,
+                        seed_rate,        kill_rate,      ntp_weight,
                         jepa_weight,      nca_weight,
                     });
                     try csv_out.writeAll(line);
@@ -177,60 +179,62 @@ pub fn main() !void {
         }.write;
 
         // Write data from all scenarios (S1-S15)
+        // FPGA costs from docs/fpga_cost.md
         const s1_converged: u8 = if (s1.convergence_step != null) 1 else 0;
-        try writeTimeline(s1.timeline, "S1", allocator, csv_file, s1_converged, 25.0 * 100.0, 0.0, s1.kill_threshold, 1.0, 0.0, 0.0);
+        try writeTimeline(s1.timeline, "S1", allocator, csv_file, s1_converged, 25.0 * 100.0, 8000, 30, 0.22, 0.0, s1.kill_threshold, 1.0, 0.0, 0.0);
 
         // S2 uses special manual CSV because it has very high crash rate and culled workers
         for (s2.timeline) |entry| {
             const cum_energy = 102.0 * @as(f32, @floatFromInt(entry.step + 1));
-            const line = try std.fmt.allocPrint(allocator, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d:.2},{d:.3},{d:.1},{d:.2},{d:.2},{d:.2}\n", .{
+            const line = try std.fmt.allocPrint(allocator, "{d},{s},{d:.3},{d:.3},{d},{d},{d},{d},{d:.2},{d},{d},{d:.3},{d:.3},{d:.1},{d:.2},{d:.2},{d:.2}\n", .{
                 entry.step,       "S2",              entry.avg_ppl, entry.diversity,
                 entry.alive_workers, s2.workers_culled, 0,             0,
-                cum_energy,       s2.crash_rate,     s2.kill_threshold, 1.0,
-                0.0,                 0.0,
+                cum_energy,       19000,            100,            0.40,
+                s2.crash_rate,    s2.kill_threshold, 1.0,
+                0.0,              0.0,
             });
             try csv_file.writeAll(line);
             allocator.free(line);
         }
 
         const s3_converged: u8 = if (s3.convergence_step != null) 1 else 0;
-        try writeTimeline(s3.timeline, "S3", allocator, csv_file, s3_converged, 50.0 * 200.0, 0.05, s3.kill_threshold, 0.60, 0.15, 0.15);
+        try writeTimeline(s3.timeline, "S3", allocator, csv_file, s3_converged, 50.0 * 200.0, 14000, 50, 0.42, 0.05, s3.kill_threshold, 0.60, 0.15, 0.15);
 
         const s4_converged: u8 = if (s4.convergence_step != null) 1 else 0;
-        try writeTimeline(s4.timeline, "S4", allocator, csv_file, s4_converged, 100.0 * 300.0, s4.crash_rate, s4.kill_threshold, 0.50, 0.25, 0.25);
+        try writeTimeline(s4.timeline, "S4", allocator, csv_file, s4_converged, 100.0 * 300.0, 25000, 110, 0.50, s4.crash_rate, s4.kill_threshold, 0.50, 0.25, 0.25);
 
         const s5_converged: u8 = if (s5.convergence_step != null) 1 else 0;
-        try writeTimeline(s5.timeline, "S5", allocator, csv_file, s5_converged, 100.0 * 300.0, s5.crash_rate, s5.kill_threshold, 0.50, 0.25, 0.25);
+        try writeTimeline(s5.timeline, "S5", allocator, csv_file, s5_converged, 100.0 * 300.0, 25000, 110, 0.50, s5.crash_rate, s5.kill_threshold, 0.50, 0.25, 0.25);
 
         const s6_converged: u8 = if (s6.convergence_step != null) 1 else 0;
-        try writeTimeline(s6.timeline, "S6", allocator, csv_file, s6_converged, 100.0 * 300.0, s6.crash_rate, s6.kill_threshold, 0.35, 0.35, 0.30);
+        try writeTimeline(s6.timeline, "S6", allocator, csv_file, s6_converged, 100.0 * 300.0, 16000, 85, 0.46, s6.crash_rate, s6.kill_threshold, 0.35, 0.35, 0.30);
 
         const s7_converged: u8 = if (s7.convergence_step != null) 1 else 0;
-        try writeTimeline(s7.timeline, "S7", allocator, csv_file, s7_converged, 150.0 * 200.0, 0.03, s7.kill_threshold, 0.25, 0.25, 0.25);
+        try writeTimeline(s7.timeline, "S7", allocator, csv_file, s7_converged, 150.0 * 200.0, 15000, 60, 0.27, 0.03, s7.kill_threshold, 0.25, 0.25, 0.25);
 
         const s8_converged: u8 = if (s8.convergence_step != null) 1 else 0;
-        try writeTimeline(s8.timeline, "S8", allocator, csv_file, s8_converged, 80.0 * 400.0, 0.01, s8.kill_threshold, 0.70, 0.20, 0.10);
+        try writeTimeline(s8.timeline, "S8", allocator, csv_file, s8_converged, 80.0 * 400.0, 13000, 75, 0.20, 0.01, s8.kill_threshold, 0.70, 0.20, 0.10);
 
         const s9_converged: u8 = if (s9.convergence_step != null) 1 else 0;
-        try writeTimeline(s9.timeline, "S9", allocator, csv_file, s9_converged, 120.0 * 200.0, s9.crash_rate, s9.kill_threshold, 0.50, 0.30, 0.20);
+        try writeTimeline(s9.timeline, "S9", allocator, csv_file, s9_converged, 120.0 * 200.0, 16000, 85, 0.46, s9.crash_rate, s9.kill_threshold, 0.50, 0.30, 0.20);
 
         const s10_converged: u8 = if (s10.convergence_step != null) 1 else 0;
-        try writeTimeline(s10.timeline, "S10", allocator, csv_file, s10_converged, 60.0 * 100.0, 0.02, s10.kill_threshold, 0.80, 0.0, 0.0);
+        try writeTimeline(s10.timeline, "S10", allocator, csv_file, s10_converged, 60.0 * 100.0, 12000, 50, 0.15, 0.02, s10.kill_threshold, 0.80, 0.0, 0.0);
 
         const s11_converged: u8 = if (s11.convergence_step != null) 1 else 0;
-        try writeTimeline(s11.timeline, "S11", allocator, csv_file, s11_converged, 120.0 * 200.0, 0.03, s11.kill_threshold, 0.40, 0.40, 0.20);
+        try writeTimeline(s11.timeline, "S11", allocator, csv_file, s11_converged, 120.0 * 200.0, 25000, 80, 0.40, 0.03, s11.kill_threshold, 0.40, 0.40, 0.20);
 
         const s12_converged: u8 = if (s12.convergence_step != null) 1 else 0;
-        try writeTimeline(s12.timeline, "S12", allocator, csv_file, s12_converged, 120.0 * 300.0, 0.02, s12.kill_threshold, 0.35, 0.50, 0.15);
+        try writeTimeline(s12.timeline, "S12", allocator, csv_file, s12_converged, 120.0 * 300.0, 35000, 120, 0.50, 0.02, s12.kill_threshold, 0.35, 0.50, 0.15);
 
         const s13_converged: u8 = if (s13.convergence_step != null) 1 else 0;
-        try writeTimeline(s13.timeline, "S13", allocator, csv_file, s13_converged, 80.0 * 300.0, 0.02, s13.kill_threshold, 0.50, 0.30, 0.20);
+        try writeTimeline(s13.timeline, "S13", allocator, csv_file, s13_converged, 80.0 * 300.0, 15000, 90, 0.25, 0.02, s13.kill_threshold, 0.50, 0.30, 0.20);
 
         const s14_converged: u8 = if (s14.convergence_step != null) 1 else 0;
-        try writeTimeline(s14.timeline, "S14", allocator, csv_file, s14_converged, 100.0 * 300.0, 0.02, s14.kill_threshold, 0.60, 0.25, 0.15);
+        try writeTimeline(s14.timeline, "S14", allocator, csv_file, s14_converged, 100.0 * 300.0, 18000, 100, 0.30, 0.02, s14.kill_threshold, 0.60, 0.25, 0.15);
 
         const s15_converged: u8 = if (s15.convergence_step != null) 1 else 0;
-        try writeTimeline(s15.timeline, "S15", allocator, csv_file, s15_converged, 100.0 * 400.0, 0.02, s15.kill_threshold, 0.70, 0.20, 0.10);
+        try writeTimeline(s15.timeline, "S15", allocator, csv_file, s15_converged, 100.0 * 400.0, 18000, 100, 0.30, 0.02, s15.kill_threshold, 0.70, 0.20, 0.10);
 
         print("{s}CSV written to {s}{s}\n", .{ CYAN, RESET, csv_path });
     }
