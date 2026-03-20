@@ -56,7 +56,7 @@ struct CarouselView<Content: View>: View {
                 Circle()
                     .fill(currentIndex == index ? V4Color.accent : V4Color.textSecondary.opacity(V1Theme.opacityTextTertiary))
                     .frame(width: currentIndex == index ? 7 : 5, height: currentIndex == index ? 7 : 5)
-                    .animation(.spring(response: 0.3), value: currentIndex)
+                    .animation(MTMotion.quickSpring, value: currentIndex)
             }
         }
         .padding(.top, 8)
@@ -338,7 +338,7 @@ struct CustomPageControl: View {
                 RoundedRectangle(cornerRadius: 2)
                     .fill(currentPage == page ? V4Color.accent : V4Color.textSecondary.opacity(V1Theme.opacityTextTertiary))
                     .frame(width: currentPage == page ? 20 : 6, height: 6)
-                    .animation(.spring(response: 0.3), value: currentPage)
+                    .animation(MTMotion.quickSpring, value: currentPage)
                     .onTapGesture {
                         withAnimation {
                             currentPage = page
