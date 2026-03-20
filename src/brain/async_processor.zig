@@ -2101,22 +2101,23 @@ test "Config all field defaults" {
 test "AsyncTaskResult all variant types" {
     const allocator = std.testing.allocator;
 
-    const claim_success = AsyncTaskResult{ .claim_success = .{ .claimed = true } };
-    const release_success = AsyncTaskResult{ .release_success = .{ .released = true } };
-    const publish_success = AsyncTaskResult{ .publish_success = .{ .published = true } };
+    // Verify all variant types compile and initialize correctly
+    _ = AsyncTaskResult{ .claim_success = .{ .claimed = true } };
+    _ = AsyncTaskResult{ .release_success = .{ .released = true } };
+    _ = AsyncTaskResult{ .publish_success = .{ .published = true } };
     const health_report = AsyncTaskResult{ .health_report = .{
         .healthy = true,
         .score = 100.0,
         .details = try allocator.dupe(u8, "details"),
     } };
     defer allocator.free(health_report.health_report.details);
-    const telemetry = AsyncTaskResult{ .telemetry = .{
+    _ = AsyncTaskResult{ .telemetry = .{
         .active_claims = 10,
         .events_published = 100,
         .events_buffered = 5,
         .timestamp = 1000,
     } };
-    const custom_success = AsyncTaskResult{ .custom_success = true };
+    _ = AsyncTaskResult{ .custom_success = true };
     const error_msg = AsyncTaskResult{ .error_msg = try allocator.dupe(u8, "error") };
     defer allocator.free(error_msg.error_msg);
 
@@ -2570,7 +2571,7 @@ test "BackgroundCollector init with processor" {
     );
     defer processor.deinit();
 
-    var collector = BackgroundCollector.init(&processor, 1000);
+    const collector = BackgroundCollector.init(&processor, 1000);
 
     // Verify processor reference is stored
     _ = collector.processor;
