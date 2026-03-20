@@ -194,7 +194,8 @@ pub const ObservabilityManager = struct {
 
     /// Export metrics in Prometheus format
     pub fn exportPrometheus(self: *const ObservabilityManager, allocator: Allocator) ![]const u8 {
-        var buffer = std.ArrayList(u8).init(allocator);
+        var buffer = std.ArrayList(u8).empty;
+        try buffer.ensureTotalCapacityPrecise(allocator, self.metrics.items.len * 32);
 
         for (self.metrics.items) |metric| {
             const value_str = switch (metric.value) {
