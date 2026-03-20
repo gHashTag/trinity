@@ -415,3 +415,224 @@ test "xxhash64 produces consistent results" {
 
     try std.testing.expectEqualSlices(u8, hash1.bytes[0..8], hash2.bytes[0..8]);
 }
+
+test "xxhash64 different inputs produce different hashes" {
+    const hash1 = hashBytes("hello", .xxhash64);
+    const hash2 = hashBytes("world", .xxhash64);
+    try std.testing.expect(!std.mem.eql(u8, hash1.bytes[0..8], hash2.bytes[0..8]));
+}
+
+test "xxhash64 empty input" {
+    const hash = hashBytes("", .xxhash64);
+    _ = hash; // Just verify it doesn't panic
+}
+
+test "ArtifactHash init" {
+    const hash_sha256 = ArtifactHash.init(.sha256);
+    try std.testing.expectEqual(@as(usize, 32), hash_sha256.len);
+
+    const hash_sha512 = ArtifactHash.init(.sha512);
+    try std.testing.expectEqual(@as(usize, 64), hash_sha512.len);
+
+    const hash_blake3 = ArtifactHash.init(.blake3);
+    try std.testing.expectEqual(@as(usize, 32), hash_blake3.len);
+
+    const hash_xxhash64 = ArtifactHash.init(.xxhash64);
+    try std.testing.expectEqual(@as(usize, 8), hash_xxhash64.len);
+}
+
+test "ArtifactHash fromBytes" {
+    const test_bytes = [_]u8{ 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08 };
+    const hash = ArtifactHash.fromBytes(.xxhash64, &test_bytes);
+
+    try std.testing.expectEqual(@as(usize, 8), hash.len);
+    try std.testing.expectEqual(@as(u8, 0x01), hash.bytes[0]);
+    try std.testing.expectEqual(@as(u8, 0x08), hash.bytes[7]);
+}
+
+test "ArtifactHash formatTo" {
+    var hash = ArtifactHash.init(.xxhash64);
+    hash.bytes[0] = 0xAB;
+    hash.bytes[1] = 0xCD;
+
+    var buffer: [16]u8 = undefined;
+    var stream = std.io.fixedBufferStream(&buffer);
+    try hash.formatTo(stream.writer());
+
+    try std.testing.expectEqualStrings("abcd", stream.getWritten());
+}
+
+test "OperationContext init and deinit" {
+    var ctx = try OperationContext.init(
+        std.testing.allocator,
+        "test_command",
+        &[_][]const u8{ "arg1", "arg2" },
+    );
+    ctx.deinit();
+}
+
+test "OperationContext complete" {
+    var ctx = try OperationContext.init(
+        std.testing.allocator,
+        "test_command",
+        &[_][]const u8{},
+    );
+    defer ctx.deinit();
+
+    try ctx.complete(.success);
+    try std.testing.expectEqual(ExitCode.success, ctx.exit_code);
+
+    try ctx.complete(.err);
+    try std.testing.expectEqual(ExitCode.err, ctx.exit_code);
+}
+
+test "OperationContext addArtifactHash" {
+    var ctx = try OperationContext.init(
+        std.testing.allocator,
+        "test_command",
+        &[_][]const u8{},
+    );
+    defer ctx.deinit();
+
+    var hash = ArtifactHash.init(.xxhash64);
+    hash.bytes[0] = 0xFF;
+    try ctx.addArtifactHash("test.txt", hash);
+
+    const artifact = ctx.artifacts.get("test.txt");
+    try std.testing.expect(artifact != null);
+    try std.testing.expectEqual(@as(u8, 0xFF), artifact.?.bytes[0]);
+}
+
+test "OperationContext setMetadata" {
+    var ctx = try OperationContext.init(
+        std.testing.allocator,
+        "test_command",
+        &[_][]const u8{},
+    );
+    defer ctx.deinit();
+
+    try ctx.setMetadata("key1", "value1");
+    try ctx.setMetadata("key2", "value2");
+
+    const value1 = ctx.metadata.get("key1");
+    try std.testing.expect(value1 != null);
+    try std.testing.expectEqualStrings("value1", value1.?);
+}
+
+test "OperationContext metadata overwrite" {
+    var ctx = try OperationContext.init(
+        std.testing.allocator,
+        "test_command",
+        &[_][]const u8{},
+    );
+    defer ctx.deinit();
+
+    try ctx.setMetadata("key", "original");
+    try ctx.setMetadata("key", "updated");
+
+    const value = ctx.metadata.get("key");
+    try std.testing.expectEqualStrings("updated", value.?);
+}
+
+test "OperationContext toStructured" {
+    var ctx = try OperationContext.init(
+        std.testing.allocator,
+        "test_command",
+        &[_][]const u8{"arg1"},
+    );
+    defer ctx.deinit();
+
+    try ctx.complete(.success);
+
+    const structured = try ctx.toStructured();
+    try std.testing.expectEqualStrings("test_command", structured.command);
+    try std.testing.expectEqual(@as(u8, 0), structured.exit_code);
+    try std.testing.expectEqual(@as(usize, 1), structured.args.len);
+}
+
+test "Duration elapsed conversions" {
+    var dur = try Duration.start();
+    try dur.stop();
+
+    const elapsed = dur.elapsed();
+    const elapsed_ms = dur.elapsedMs();
+    const elapsed_s = dur.elapsedSeconds();
+
+    try std.testing.expect(elapsed_ms >= 0);
+    try std.testing.expect(elapsed_s >= 0);
+
+    // Verify conversions
+    const computed_ms = elapsed / 1_000_000;
+    try std.testing.expectEqual(computed_ms, elapsed_ms);
+}
+
+test "Duration stop multiple times" {
+    var dur = try Duration.start();
+    try dur.stop();
+
+    const elapsed1 = dur.elapsed();
+
+    // Calling stop again should not panic
+    dur.stop() catch {};
+    const elapsed2 = dur.elapsed();
+
+    try std.testing.expect(elapsed2 >= elapsed1);
+}
+
+test "RequestId uniqueness in batch" {
+    const count = 100;
+    var ids: [100]RequestId = undefined;
+
+    var i: usize = 0;
+    while (i < count) : (i += 1) {
+        ids[i] = RequestId.init();
+    }
+
+    // All IDs should be unique
+    var all_unique = true;
+    for (0..count) |a| {
+        for (a + 1..count) |b| {
+            if (std.mem.eql(u8, &ids[a].value, &ids[b].value)) {
+                all_unique = false;
+                break;
+            }
+        }
+        if (!all_unique) break;
+    }
+
+    try std.testing.expect(all_unique);
+}
+
+test "ExitCode all values" {
+    try std.testing.expectEqual(@as(u8, 0), ExitCode.success.toInt());
+    try std.testing.expectEqual(@as(u8, 1), ExitCode.err.toInt());
+    try std.testing.expectEqual(@as(u8, 64), ExitCode.usage.toInt());
+    try std.testing.expectEqual(@as(u8, 65), ExitCode.data_error.toInt());
+    try std.testing.expectEqual(@as(u8, 66), ExitCode.no_input.toInt());
+    try std.testing.expectEqual(@as(u8, 67), ExitCode.no_user.toInt());
+    try std.testing.expectEqual(@as(u8, 68), ExitCode.no_host.toInt());
+    try std.testing.expectEqual(@as(u8, 69), ExitCode.unavailable.toInt());
+    try std.testing.expectEqual(@as(u8, 70), ExitCode.software.toInt());
+    try std.testing.expectEqual(@as(u8, 71), ExitCode.os_err.toInt());
+    try std.testing.expectEqual(@as(u8, 72), ExitCode.os_file.toInt());
+    try std.testing.expectEqual(@as(u8, 73), ExitCode.cant_create.toInt());
+    try std.testing.expectEqual(@as(u8, 74), ExitCode.io_error.toInt());
+    try std.testing.expectEqual(@as(u8, 75), ExitCode.temp_fail.toInt());
+    try std.testing.expectEqual(@as(u8, 76), ExitCode.protocol.toInt());
+    try std.testing.expectEqual(@as(u8, 77), ExitCode.no_perm.toInt());
+    try std.testing.expectEqual(@as(u8, 78), ExitCode.config.toInt());
+}
+
+test "ExitCode fromCode edge cases" {
+    try std.testing.expectEqual(ExitCode.success, ExitCode.fromCode(0));
+    try std.testing.expectEqual(ExitCode.err, ExitCode.fromCode(1));
+    try std.testing.expectEqual(ExitCode.err, ExitCode.fromCode(2)); // Unknown codes default to err
+    try std.testing.expectEqual(ExitCode.err, ExitCode.fromCode(99));
+}
+
+test "HashAlgorithm digestSize" {
+    try std.testing.expectEqual(@as(usize, 32), HashAlgorithm.sha256.digestSize());
+    try std.testing.expectEqual(@as(usize, 64), HashAlgorithm.sha512.digestSize());
+    try std.testing.expectEqual(@as(usize, 32), HashAlgorithm.blake3.digestSize());
+    try std.testing.expectEqual(@as(usize, 8), HashAlgorithm.xxhash64.digestSize());
+}
