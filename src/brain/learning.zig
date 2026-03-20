@@ -441,7 +441,9 @@ pub const LearningSystem = struct {
         const jitter: f64 = if (attempt % 2 == 0) 1.618 else 0.618;
 
         const result = @min(base * jitter, @as(f64, @floatFromInt(self.backoff_config.max_ms)));
-        return @intFromFloat(result);
+        // Type safety: ensure result is never negative (rounding edge case)
+        const safe_result = @max(result, 0.0);
+        return @intFromFloat(safe_result);
     }
 
     fn detectOptimalBackoff(self: *Self) !?Pattern {
