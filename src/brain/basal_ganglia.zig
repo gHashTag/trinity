@@ -1,4 +1,4 @@
-//! BASAL GANGLIA — v1.1 — Action Selection (Striatum)
+//! BASAL GANGLIA — v1.2 — Action Selection (Striatum)
 //!
 //! CRDT-based task claim system for parallel agent coordination.
 //! First agent wins — atomic claim with TTL + heartbeat.
@@ -15,7 +15,7 @@
 //! - Atomic first-come-first-served task claiming
 //! - Time-to-live (TTL) for automatic claim expiration
 //! - Heartbeat mechanism for liveness detection
-//! - Thread-safe operations using mutexes
+//! - Thread-safe operations using read-write locks for better concurrency
 //!
 //! # Biological Inspiration
 //!
@@ -46,8 +46,10 @@
 //!
 //! # Thread Safety
 //!
-//! All operations are thread-safe via `std.Thread.Mutex`. The global
-//! registry can be safely accessed from multiple threads.
+//! All operations are thread-safe via `std.Thread.RwLock`. Read operations
+//! (getStats) use readLock() allowing concurrent readers. Write operations
+//! (claim, heartbeat, complete, abandon, reset) use writeLock() for exclusive
+//! access. This enables better parallelism when multiple threads only read.
 
 const std = @import("std");
 
@@ -144,8 +146,10 @@ pub const TaskClaim = struct {
 ///
 /// # Thread Safety
 ///
-/// All operations are protected by a mutex, making this struct safe to
-/// share between threads.
+/// All operations are protected by a read-write lock. Read operations
+/// (getStats) use readLock() allowing concurrent readers. Write operations
+/// (claim, heartbeat, complete, abandon, reset) use writeLock() for exclusive
+/// access. This enables better parallelism when multiple threads only read.
 ///
 /// # Example
 ///
@@ -167,8 +171,9 @@ pub const TaskClaim = struct {
 pub const Registry = struct {
     /// Map of task_id -> TaskClaim (owned strings)
     claims: std.StringHashMap(TaskClaim),
-    /// Mutex protecting the claims map
-    mutex: std.Thread.Mutex,
+    /// Read-write lock protecting the claims map
+    /// Allows concurrent readers, exclusive writers
+    rwlock: std.Thread.RwLock,
     /// Performance counters for monitoring
     stats: struct {
         claim_attempts: u64,
@@ -201,7 +206,7 @@ pub const Registry = struct {
     pub fn init(allocator: std.mem.Allocator) Registry {
         return Registry{
             .claims = std.StringHashMap(TaskClaim).init(allocator),
-            .mutex = std.Thread.Mutex{},
+            .rwlock = std.Thread.RwLock{},
             .stats = .{
                 .claim_attempts = 0,
                 .claim_success = 0,
@@ -266,8 +271,8 @@ pub const Registry = struct {
     /// }
     /// ```
     pub fn claim(self: *Registry, allocator: std.mem.Allocator, task_id: []const u8, agent_id: []const u8, ttl_ms: u64) !bool {
-        self.mutex.lock();
-        defer self.mutex.unlock();
+        self.rwlock.lock();
+        defer self.rwlock.unlock();
 
         self.stats.claim_attempts += 1;
 
@@ -333,8 +338,8 @@ pub const Registry = struct {
     /// }
     /// ```
     pub fn heartbeat(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
-        self.mutex.lock();
-        defer self.mutex.unlock();
+        self.rwlock.lock();
+        defer self.rwlock.unlock();
 
         if (self.claims.getEntry(task_id)) |entry| {
             const entry_claim = &entry.value_ptr.*;
@@ -369,8 +374,8 @@ pub const Registry = struct {
     /// }
     /// ```
     pub fn complete(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
-        self.mutex.lock();
-        defer self.mutex.unlock();
+        self.rwlock.lock();
+        defer self.rwlock.unlock();
 
         if (self.claims.getEntry(task_id)) |entry| {
             const entry_claim = &entry.value_ptr.*;
@@ -408,8 +413,8 @@ pub const Registry = struct {
     /// }
     /// ```
     pub fn abandon(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
-        self.mutex.lock();
-        defer self.mutex.unlock();
+        self.rwlock.lock();
+        defer self.rwlock.unlock();
 
         if (self.claims.getEntry(task_id)) |entry| {
             const entry_claim = &entry.value_ptr.*;
@@ -429,7 +434,7 @@ pub const Registry = struct {
     ///
     /// # Thread Safety
     ///
-    /// Thread-safe; locks the mutex during operation
+    /// Thread-safe; locks the rwlock for write during operation
     ///
     /// # Example
     ///
@@ -438,8 +443,8 @@ pub const Registry = struct {
     /// registry.reset();
     /// ```
     pub fn reset(self: *Registry) void {
-        self.mutex.lock();
-        defer self.mutex.unlock();
+        self.rwlock.lock();
+        defer self.rwlock.unlock();
 
         var iter = self.claims.iterator();
         while (iter.next()) |entry| {
@@ -456,7 +461,7 @@ pub const Registry = struct {
     ///
     /// # Thread Safety
     ///
-    /// Thread-safe; locks the mutex during read
+    /// Thread-safe; uses readLock() to allow concurrent readers
     ///
     /// # Example
     ///
@@ -479,8 +484,8 @@ pub const Registry = struct {
         abandon_success: u64,
         active_claims: usize,
     } {
-        self.mutex.lock();
-        defer self.mutex.unlock();
+        self.rwlock.readLock();
+        defer self.rwlock.unlock();
 
         return .{
             .claim_attempts = self.stats.claim_attempts,
@@ -516,6 +521,7 @@ var global_registry: ?*Registry = null;
 /// Allocator used for global registry
 var global_allocator: ?std.mem.Allocator = null;
 /// Mutex protecting global registry initialization
+/// (Not RwLock because init only happens once, Mutex is sufficient)
 var global_mutex = std.Thread.Mutex{};
 
 /// Gets or creates the global task claim registry.

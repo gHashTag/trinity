@@ -194,25 +194,21 @@ pub const PrefrontalCortex = struct {
     pub fn decide(ctx: DecisionContext) Decision {
         var confidence: f32 = 1.0;
         var action: Action = .proceed;
-        var reasons = std.ArrayList(u8).initCapacity(std.heap.page_allocator, 128) catch |err| {
-            std.log.err("Failed to allocate reasons: {}", .{err});
-            return Decision{
-                .action = .proceed,
-                .confidence = 0.5,
-                .reasoning = "Allocation failed",
-            };
-        };
-        defer reasons.deinit(std.heap.page_allocator);
+
+        // Static buffer for reasons - no allocation in hot path
+        var reasons_buf: [256]u8 = undefined;
+        var fbs = std.io.fixedBufferStream(&reasons_buf);
+        const writer = fbs.writer();
 
         // Check error rate
         if (ctx.error_rate > 0.5) {
             action = .pause;
             confidence = 0.9;
-            reasons.appendSlice(std.heap.page_allocator, "High error rate;") catch {};
+            writer.writeAll("High error rate;") catch {};
         } else if (ctx.error_rate > 0.2) {
             action = .throttle;
             confidence = 0.7;
-            reasons.appendSlice(std.heap.page_allocator, "Elevated error rate;") catch {};
+            writer.writeAll("Elevated error rate;") catch {};
         }
 
         // Check queue depth
@@ -224,38 +220,41 @@ pub const PrefrontalCortex = struct {
         if (queue_per_agent > 10) {
             if (action == .proceed) action = .scale_up;
             confidence *= 0.9;
-            reasons.appendSlice(std.heap.page_allocator, "High queue depth;") catch {};
+            writer.writeAll("High queue depth;") catch {};
         }
 
         // Check latency
         if (ctx.avg_latency_ms > 5000) {
             if (action == .proceed) action = .throttle;
             confidence *= 0.8;
-            reasons.appendSlice(std.heap.page_allocator, "High latency;") catch {};
+            writer.writeAll("High latency;") catch {};
         }
 
         // Check memory
         if (ctx.memory_usage_pct > 90) {
             action = .alert;
             confidence = 0.95;
-            reasons.appendSlice(std.heap.page_allocator, "Critical memory usage;") catch {};
+            writer.writeAll("Critical memory usage;") catch {};
         } else if (ctx.memory_usage_pct > 75) {
             if (action == .proceed) action = .throttle;
             confidence *= 0.85;
-            reasons.appendSlice(std.heap.page_allocator, "High memory usage;") catch {};
+            writer.writeAll("High memory usage;") catch {};
         }
 
         // Scale down if underutilized
         if (ctx.task_count < ctx.active_agents and queue_per_agent < 0.5) {
             if (action == .proceed) action = .scale_down;
             confidence *= 0.8;
-            reasons.appendSlice(std.heap.page_allocator, "Underutilized;") catch {};
+            writer.writeAll("Underutilized;") catch {};
         }
+
+        // Use static buffer reasoning if available, else fallback string
+        const reasoning = if (fbs.pos > 0) fbs.getWritten() else "All systems healthy";
 
         return .{
             .action = action,
             .confidence = confidence,
-            .reasoning = "Executive decision based on context",
+            .reasoning = reasoning,
         };
     }
 
