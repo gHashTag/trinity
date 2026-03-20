@@ -138,7 +138,7 @@ struct RichTextInputView: View {
                 Image(systemName: "face.smiling")
                     .font(WernickeTypography.size14)
                     .foregroundStyle(V4Color.textSecondary)
-                    .frame(width: 28, height: 24)
+                    .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.chipHeight)
             }
             .buttonStyle(.plain)
             .popover(isPresented: $showEmojiPicker) {
@@ -264,7 +264,7 @@ struct RichTextInputView: View {
             Image(systemName: icon)
                 .font(WernickeTypography.smallMedium)
                 .foregroundStyle(V4Color.textSecondary)
-                .frame(width: 28, height: 24)
+                .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.chipHeight)
         }
         .buttonStyle(.plain)
         .help(name)
@@ -483,7 +483,7 @@ struct RichTextInputView_Previews: PreviewProvider {
                 text: .constant(""),
                 placeholder: "Type your message..."
             )
-            .frame(width: 500, height: 200)
+            .frame(width: ParietalSpacing.wideSheetWidth, height: ParietalSpacing.modalFrame)
             .previewDisplayName("Empty")
             
             RichTextInputView(
@@ -491,7 +491,7 @@ struct RichTextInputView_Previews: PreviewProvider {
                 placeholder: "Type your message...",
                 showMarkdownPreview: true
             )
-            .frame(width: 500, height: 300)
+            .frame(width: ParietalSpacing.wideSheetWidth, height: ParietalSpacing.mediumModalFrame)
             .previewDisplayName("With Markdown")
         }
         .padding()

@@ -289,7 +289,7 @@ struct TooltipView_Previews: PreviewProvider {
             Button("Hover me") {}
                 .padding()
                 .tooltip("This is a helpful tooltip")
-                .frame(width: 150)
+                .frame(width: ParietalSpacing.panelWidth)
                 .padding()
 
             ContextualHelpView(

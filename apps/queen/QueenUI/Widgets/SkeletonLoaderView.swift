@@ -834,7 +834,7 @@ struct SkeletonLoaderView_Previews: PreviewProvider {
 
                 VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("Skeleton Rectangle").font(.caption)
-                    SkeletonRectangle(width: 80, height: 60)
+                    SkeletonRectangle(width: 80, height: ParietalSpacing.largeFrame)
                 }
 
                 VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
@@ -859,14 +859,14 @@ struct SkeletonLoaderView_Previews: PreviewProvider {
             VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("Skeleton Card").font(.caption)
                 SkeletonCard(headerHeight: 36, contentLines: 3)
-                    .frame(width: 280)
+                    .frame(width: ParietalSpacing.panelWidth)
             }
 
             // List
             VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 Text("Skeleton List").font(.caption)
                 SkeletonList(itemCount: 3, showLeading: true)
-                    .frame(width: 280)
+                    .frame(width: ParietalSpacing.panelWidth)
             }
 
             // Pulse variant

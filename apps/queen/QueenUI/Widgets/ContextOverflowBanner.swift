@@ -116,7 +116,7 @@ struct ContextOverflowBanner: View {
                         if tier.shouldAnimate && !reduceMotion {
                             Circle()
                                 .fill(tier.color.opacity(V2Depth.stateHover))
-                                .frame(width: 28, height: 28)
+                                .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                                 .scaleEffect(pulseScale)
                                 .blur(radius: 4)
                         }
@@ -166,13 +166,13 @@ struct ContextOverflowBanner: View {
                                 // Gradient fill
                                 RoundedRectangle(cornerRadius: 2)
                                     .fill(gradientBar)
-                                    .frame(width: geometry.size.width * percentage, height: 4)
+                                    .frame(width: geometry.size.width * percentage, height: ParietalSpacing.microHeight)
 
                                 // Threshold markers
                                 ForEach([0.8, 0.9, 0.95, 0.99], id: \.self) { threshold in
                                     Rectangle()
                                         .fill(Color.white.opacity(V2Depth.stateHover))
-                                        .frame(width: 1, height: 6)
+                                        .frame(width: ParietalSpacing.hairline, height: 6)
                                         .offset(x: geometry.size.width * threshold)
                                 }
                             }

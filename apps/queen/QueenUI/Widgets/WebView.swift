@@ -179,9 +179,9 @@ struct MarkdownWebView: View {
 struct WebView_Previews: PreviewProvider {
     static var previews: some View {
         SimpleWebView(url: URL(string: "https://example.com")!)
-            .frame(width: 400, height: 300)
+            .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.mediumModalFrame)
 
         MarkdownWebView(markdown: "# Hello\n\nThis is **bold** and *italic*.")
-            .frame(width: 400, height: 200)
+            .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.modalFrame)
     }
 }

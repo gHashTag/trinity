@@ -24,7 +24,7 @@ struct TimelineView<Content: View>: View {
             VStack(spacing: 0) {
                 Rectangle()
                     .fill(V4Color.border)
-                    .frame(width: 2)
+                    .frame(width: ParietalSpacing.dividerThickness)
             }
             .padding(.vertical, ParietalSpacing.sm)
 
@@ -65,7 +65,7 @@ struct TimelineItem: View {
             ZStack {
                 Circle()
                     .fill(iconColor.opacity(0.2))
-                    .frame(width: 28, height: 28)
+                    .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
 
                 if let icon = icon {
                     Image(systemName: icon)
@@ -74,7 +74,7 @@ struct TimelineItem: View {
                 } else {
                     Circle()
                         .fill(iconColor)
-                        .frame(width: 10, height: 10)
+                        .frame(width: ParietalSpacing.smallBadge, height: ParietalSpacing.captionHeight)
                 }
             }
             .overlay(
@@ -105,7 +105,7 @@ struct TimelineItem: View {
             if !isLast {
                 Rectangle()
                     .fill(V4Color.border)
-                    .frame(width: 2)
+                    .frame(width: ParietalSpacing.dividerThickness)
                     .padding(.leading, 13)
                     .frame(maxHeight: .infinity)
                     .offset(x: -16)
@@ -171,7 +171,7 @@ struct ActivityRow: View {
             ZStack {
                 Circle()
                     .fill(activity.color.opacity(V2Depth.bgSidebarHover))
-                    .frame(width: 36, height: 36)
+                    .frame(width: ParietalSpacing.cellFrame, height: ParietalSpacing.avatarLargeHeight)
 
                 Image(systemName: activity.icon)
                     .font(WernickeTypography.size14)
@@ -224,7 +224,7 @@ struct ActivityCard: View {
             ZStack {
                 Circle()
                     .fill(activity.color.opacity(V2Depth.bgSidebarHover))
-                    .frame(width: 40, height: 40)
+                    .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
 
                 Image(systemName: activity.icon)
                     .font(WernickeTypography.size16)
@@ -315,7 +315,7 @@ struct MilestoneTimeline: View {
                 .fill((current.isCompleted && next.isCompleted) ? V4Color.accent : V4Color.border)
                 .frame(height: ParietalSpacing.iconLarge)
         }
-        .frame(width: 2)
+        .frame(width: ParietalSpacing.dividerThickness)
         .padding(.leading, 15)
     }
 }
@@ -346,7 +346,7 @@ struct MilestoneRow: View {
                 } else {
                     Circle()
                         .fill(V4Color.border)
-                        .frame(width: 10, height: 10)
+                        .frame(width: ParietalSpacing.smallBadge, height: ParietalSpacing.captionHeight)
                 }
             }
             .overlay(
@@ -439,7 +439,7 @@ struct PhaseRow: View {
         ZStack {
             Circle()
                 .fill(backgroundColor)
-                .frame(width: 28, height: 28)
+                .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
 
             switch phase.status {
             case .completed:
@@ -492,7 +492,7 @@ struct PhaseConnector: View {
 
         return Rectangle()
             .fill(color)
-            .frame(width: 2, height: 24)
+            .frame(width: ParietalSpacing.dividerThickness, height: ParietalSpacing.chipHeight)
             .padding(.leading, 13)
     }
 }

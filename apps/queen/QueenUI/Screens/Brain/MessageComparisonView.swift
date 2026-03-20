@@ -213,7 +213,7 @@ struct MessageComparisonView: View {
                 }
             }
             .font(WernickeTypography.size11Mono)
-            .frame(width: 12, alignment: .trailing)
+            .frame(width: ParietalSpacing.mediumBadge, alignment: .trailing)
 
             // Line content with background
             Text(line.text)
@@ -382,6 +382,6 @@ struct MessageComparisonView_Previews: PreviewProvider {
             originalTitle: "Original",
             newTitle: "Regenerated"
         )
-        .frame(width: 1000, height: 600)
+        .frame(width: ParietalSpacing.extraLargeScreenFrame, height: ParietalSpacing.extraWideSheet)
     }
 }

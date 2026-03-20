@@ -66,7 +66,7 @@ struct LoadingDots: View {
             ForEach(0..<3) { index in
                 Circle()
                     .fill(V4Color.accent)
-                    .frame(width: 10, height: 10)
+                    .frame(width: ParietalSpacing.smallBadge, height: ParietalSpacing.captionHeight)
                     .scaleEffect(isAnimating ? pulseScale(for: index) : 1)
                     .animation(
                         .easeInOut(duration: 0.6)
@@ -96,7 +96,7 @@ struct LoadingBars: View {
             ForEach(0..<4) { index in
                 RoundedRectangle(cornerRadius: 2)
                     .fill(V4Color.accent)
-                    .frame(width: 4, height: 20)
+                    .frame(width: ParietalSpacing.smallIndicator, height: ParietalSpacing.iconHeight)
                     .scaleEffect(y: isAnimating ? barScale(for: index) : 0.3)
                     .animation(
                         .easeInOut(duration: 0.8)
@@ -129,13 +129,13 @@ struct PulsingCircle: View {
         ZStack {
             Circle()
                 .fill(V4Color.accent.opacity(V2Depth.stateHover))
-                .frame(width: 60, height: 60)
+                .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
                 .scaleEffect(scale)
                 .opacity(2 - scale)
 
             Circle()
                 .fill(V4Color.accent)
-                .frame(width: 40, height: 40)
+                .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
         }
         .onAppear {
             withAnimation(.easeInOut(duration: 1).repeatForever(autoreverses: false)) {
@@ -226,8 +226,8 @@ struct SkeletonLoading: View {
                         .frame(width: ParietalSpacing.avatarMedium, height: ParietalSpacing.avatarMedium)
 
                     VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
-                        SkeletonTextLine(widthPercent: 0.4, height: 12)
-                        SkeletonTextLine(widthPercent: 0.7, height: 10)
+                        SkeletonTextLine(widthPercent: 0.4, height: ParietalSpacing.badgeHeight)
+                        SkeletonTextLine(widthPercent: 0.7, height: ParietalSpacing.captionHeight)
                     }
                 }
 
@@ -260,9 +260,9 @@ struct SkeletonTextLine: View {
 struct SkeletonTextBlock: View {
     var body: some View {
         VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
-            SkeletonTextLine(widthPercent: 0.9, height: 10)
-            SkeletonTextLine(widthPercent: 0.7, height: 10)
-            SkeletonTextLine(widthPercent: 0.5, height: 10)
+            SkeletonTextLine(widthPercent: 0.9, height: ParietalSpacing.captionHeight)
+            SkeletonTextLine(widthPercent: 0.7, height: ParietalSpacing.captionHeight)
+            SkeletonTextLine(widthPercent: 0.5, height: ParietalSpacing.captionHeight)
         }
         .padding(.vertical, ParietalSpacing.xs)
     }
@@ -326,7 +326,7 @@ struct UploadProgressIndicator: View {
 
                         RoundedRectangle(cornerRadius: 2)
                             .fill(V4Color.accent)
-                            .frame(width: geometry.size.width * progress, height: 4)
+                            .frame(width: geometry.size.width * progress, height: ParietalSpacing.microHeight)
                             .shimmer()
                     }
                 }
@@ -349,9 +349,9 @@ struct CardSkeleton: View {
             SkeletonImagePlaceholder(size: 60)
 
             VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
-                SkeletonTextLine(widthPercent: 0.5, height: 12)
-                SkeletonTextLine(widthPercent: 0.9, height: 10)
-                SkeletonTextLine(widthPercent: 0.7, height: 10)
+                SkeletonTextLine(widthPercent: 0.5, height: ParietalSpacing.badgeHeight)
+                SkeletonTextLine(widthPercent: 0.9, height: ParietalSpacing.captionHeight)
+                SkeletonTextLine(widthPercent: 0.7, height: ParietalSpacing.captionHeight)
             }
 
             Spacer()
@@ -499,12 +499,12 @@ struct DetailedLoadingStates_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             DetailedLoadingState(style: .dots)
-                .frame(width: 300, height: 200)
+                .frame(width: ParietalSpacing.mediumModalFrame, height: ParietalSpacing.modalFrame)
                 .padding()
                 .background(V4Color.background)
 
             DetailedLoadingState(message: "Fetching data...", style: .bars)
-                .frame(width: 300, height: 200)
+                .frame(width: ParietalSpacing.mediumModalFrame, height: ParietalSpacing.modalFrame)
                 .padding()
                 .background(V4Color.background)
 
@@ -525,7 +525,7 @@ struct DetailedLoadingStates_Previews: PreviewProvider {
                 .background(V4Color.background)
 
             ListSkeleton(itemCount: 3)
-                .frame(width: 350)
+                .frame(width: ParietalSpacing.extraWidePanel)
                 .padding()
                 .background(V4Color.background)
 

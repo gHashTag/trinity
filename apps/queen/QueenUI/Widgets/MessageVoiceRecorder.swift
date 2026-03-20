@@ -65,7 +65,7 @@ struct MessageVoiceRecorder: View {
             ForEach(0..<30, id: \.self) { index in
                 RoundedRectangle(cornerRadius: 2)
                     .fill(visualizationColor(for: index))
-                    .frame(width: 4, height: barHeight(for: index))
+                    .frame(width: ParietalSpacing.smallIndicator, height: barHeight(for: index))
                     .animation(.easeInOut(duration: 0.1).repeatForever(autoreverses: true), value: audioLevel)
             }
         }

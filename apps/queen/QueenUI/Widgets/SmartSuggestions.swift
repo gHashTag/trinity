@@ -134,7 +134,7 @@ struct SmartSuggestionBar: View {
                                     .font(WernickeTypography.size11)
                                 Text(suggestion.text)
                                     .font(WernickeTypography.miniMedium)
-                                    .foregroundStyle(suggestion.urgent ? Color.black : V2Depth.white70)
+                                    .foregroundStyle(suggestion.urgent ? Color.black : V4Color.white70)
                             }
                             .padding(.horizontal, ParietalSpacing.sm + 2)
                             .padding(.vertical, 5)
@@ -495,7 +495,7 @@ struct EnhancedMentionPopup: View {
                 suggestionRow(for: item, index: idx, total: items.count)
             }
         }
-        .frame(width: 340)
+        .frame(width: ParietalSpacing.wideModalFrame)
         .background(V4Color.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(

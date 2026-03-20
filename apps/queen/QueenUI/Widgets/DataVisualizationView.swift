@@ -204,7 +204,7 @@ struct DataPieChart: View {
                     .fill(item.color)
                 }
             }
-            .frame(width: 200, height: 200)
+            .frame(width: ParietalSpacing.modalFrame, height: ParietalSpacing.modalFrame)
 
             // Legend
             if showLegend {
@@ -302,7 +302,7 @@ struct DonutChart: View {
                 }
             }
         }
-        .frame(width: 200, height: 200)
+        .frame(width: ParietalSpacing.modalFrame, height: ParietalSpacing.modalFrame)
     }
 
     private func angle(for values: [Double]) -> Double {
@@ -374,7 +374,7 @@ struct ProgressGauge: View {
                         .offset(y: 40)
                 }
             }
-            .frame(width: 200, height: 120)
+            .frame(width: ParietalSpacing.modalFrame, height: ParietalSpacing.xxxLargeFrame)
 
             // Zone labels
             HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {

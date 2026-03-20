@@ -45,7 +45,7 @@ struct AggregateDiffView: View {
                                 Image(systemName: expandedFile == diff.id ? "chevron.down" : "chevron.right")
                                     .font(.caption2)
                                     .foregroundStyle(V4Color.textSecondary)
-                                    .frame(width: 10)
+                                    .frame(width: ParietalSpacing.smallBadge)
 
                                 Text(shortPath(diff.file ?? ""))
                                     .font(.caption2.monospaced())

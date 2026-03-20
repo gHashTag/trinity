@@ -39,7 +39,7 @@ struct IssuesScreen: View {
                     ActionButton(icon: "🔄", label: "Refresh", color: V4Color.accent,
                                  action: "issues_refresh")
                     StatCard(label: "Open", value: "\(issues.count)")
-                        .frame(width: 100)
+                        .frame(width: ParietalSpacing.xxLargeFrame)
                 }
                 .padding()
 
@@ -72,7 +72,7 @@ struct IssuesScreen: View {
                         Text("#\(issue.number)")
                             .font(.caption.weight(.bold).monospacedDigit())
                             .foregroundStyle(V4Color.purple)
-                            .frame(width: 50, alignment: .leading)
+                            .frame(width: ParietalSpacing.mediumFrame, alignment: .leading)
 
                         VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                             Text(issue.title ?? "Untitled")

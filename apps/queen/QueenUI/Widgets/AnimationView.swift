@@ -311,7 +311,7 @@ struct LottieStyleAnimation: View {
         ZStack {
             Circle()
                 .stroke(color.opacity(0.2), lineWidth: 4)
-                .frame(width: 60, height: 60)
+                .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
 
             Circle()
                 .trim(from: 0, to: progress)
@@ -319,7 +319,7 @@ struct LottieStyleAnimation: View {
                     color,
                     style: StrokeStyle(lineWidth: 4, lineCap: .round)
                 )
-                .frame(width: 60, height: 60)
+                .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
                 .rotationEffect(.degrees(-90))
                 .animation(isPlaying ? .linear(duration: 1) : nil, value: progress)
         }
@@ -435,7 +435,7 @@ struct AnimationView_Previews: PreviewProvider {
                 AnimatedPulse(duration: 1.5, maxScale: 1.2) {
                     Circle()
                         .fill(V4Color.accent)
-                        .frame(width: 40, height: 40)
+                        .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
                 }
             }
             .padding()

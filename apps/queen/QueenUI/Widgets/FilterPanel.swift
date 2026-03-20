@@ -322,7 +322,7 @@ struct RangeSliderFilter: View {
                     // Fill
                     Rectangle()
                         .fill(V4Color.accent)
-                        .frame(width: width(for: range, in: geometry.size.width), height: 4)
+                        .frame(width: width(for: range, in: geometry.size.width), height: ParietalSpacing.microHeight)
 
                     // Lower thumb
                     Circle()

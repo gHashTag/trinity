@@ -102,7 +102,7 @@ struct TypingIndicatorView: View {
         ZStack {
             Circle()
                 .fill(V4Color.accent.opacity(V2Depth.bgSidebarHover))
-                .frame(width: 28, height: 28)
+                .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
 
             // Simple triangle path
             Path { path in
@@ -113,7 +113,7 @@ struct TypingIndicatorView: View {
                 path.closeSubpath()
             }
             .fill(V4Color.accent)
-            .frame(width: 14, height: 14)
+            .frame(width: ParietalSpacing.xSmallFrame, height: ParietalSpacing.subtitleHeight)
 
             if !reduceMotion {
                 Circle()
@@ -242,7 +242,7 @@ struct CompactTypingIndicator: View {
             ForEach(0..<3, id: \.self) { index in
                 Circle()
                     .fill(V4Color.accent)
-                    .frame(width: 6, height: 6)
+                    .frame(width: ParietalSpacing.dotSize, height: 6)
                     .scaleEffect(reduceMotion ? 1 : scales[index])
                     .opacity(reduceMotion ? 0.6 : opacities[index])
             }

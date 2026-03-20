@@ -47,7 +47,7 @@ public struct MainView: View {
 
                         Spacer()
                         // Balance spacer
-                        Color.clear.frame(width: 80)
+                        Color.clear.frame(width: ParietalSpacing.xLargeFrame)
                     }
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)

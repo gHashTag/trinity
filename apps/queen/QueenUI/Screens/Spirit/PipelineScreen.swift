@@ -117,7 +117,7 @@ struct PipelineScreen: View {
         HStack(spacing: ParietalSpacing.md) {
             Circle()
                 .fill(step.status.color)
-                .frame(width: 12, height: 12)
+                .frame(width: ParietalSpacing.mediumBadge, height: ParietalSpacing.badgeHeight)
 
             VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(step.label)
@@ -175,7 +175,7 @@ struct PipelineScreen: View {
                     HStack(spacing: ParietalSpacing.md) {
                         Circle()
                             .fill(isSelected ? V4Color.accent : V4Color.bgCardBorder)
-                            .frame(width: 8, height: 8)
+                            .frame(width: ParietalSpacing.tinyIndicator, height: 8)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text(name)

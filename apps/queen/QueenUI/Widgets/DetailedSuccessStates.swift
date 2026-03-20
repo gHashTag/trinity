@@ -81,7 +81,7 @@ struct DetailedSuccessState: View {
         ZStack {
             Circle()
                 .fill(V4Color.success.opacity(V2Depth.bgSidebarHover))
-                .frame(width: 70, height: 70)
+                .frame(width: ParietalSpacing.badgeFrame, height: ParietalSpacing.badgeFrame)
 
             Image(systemName: icon ?? "checkmark.circle.fill")
                 .font(WernickeTypography.size32)
@@ -101,7 +101,7 @@ struct CheckmarkAnimation: View {
         ZStack {
             Circle()
                 .fill(V4Color.success)
-                .frame(width: 60, height: 60)
+                .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
 
             Image(systemName: "checkmark")
                 .font(WernickeTypography.h3Bold)
@@ -357,12 +357,12 @@ struct DetailedSuccessStates_Previews: PreviewProvider {
                 message: "Your changes have been saved successfully.",
                 actionTitle: "Continue"
             )
-            .frame(width: 400, height: 300)
+            .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.mediumModalFrame)
             .padding()
             .background(V4Color.background)
 
             CheckmarkAnimation()
-                .frame(width: 100, height: 100)
+                .frame(width: ParietalSpacing.xxLargeFrame, height: ParietalSpacing.xxLargeFrame)
                 .padding()
                 .background(V4Color.background)
 
@@ -370,7 +370,7 @@ struct DetailedSuccessStates_Previews: PreviewProvider {
                 steps: ["Step 1: Setup", "Step 2: Configure", "Step 3: Complete"],
                 currentStep: 3
             )
-            .frame(width: 350)
+            .frame(width: ParietalSpacing.extraWidePanel)
             .padding()
             .background(V4Color.background)
 

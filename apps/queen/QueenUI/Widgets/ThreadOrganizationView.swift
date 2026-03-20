@@ -108,7 +108,7 @@ struct ThreadTagsManager: View {
                 }
             }
         }
-        .frame(width: 400, height: 500)
+        .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.extraLargeModalHeight)
     }
 
     private func availableTagRow(_ tag: String) -> some View {

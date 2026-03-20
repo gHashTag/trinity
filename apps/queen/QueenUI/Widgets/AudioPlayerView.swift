@@ -87,7 +87,7 @@ struct AudioPlayerView: View {
                 let progress = isDragging ? currentTime / duration : currentTime / duration
                 RoundedRectangle(cornerRadius: 3)
                     .fill(V4Color.accent)
-                    .frame(width: geometry.size.width * CGFloat(progress), height: 4)
+                    .frame(width: geometry.size.width * CGFloat(progress), height: ParietalSpacing.microHeight)
 
                 Circle()
                     .fill(.white)
@@ -126,7 +126,7 @@ struct AudioPlayerView: View {
             Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                 .font(WernickeTypography.size20)
                 .foregroundStyle(.white)
-                .frame(width: 56, height: 56)
+                .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeButtonHeight)
                 .background(
                     Circle()
                         .fill(V4Color.accent)
@@ -283,7 +283,7 @@ struct VoiceRecordingView: View {
             ForEach(0..<30) { index in
                 RoundedRectangle(cornerRadius: 2)
                     .fill(V4Color.accent)
-                    .frame(width: 3, height: CGFloat.random(in: 10...40))
+                    .frame(width: ParietalSpacing.smallIndicator, height: CGFloat.random(in: 10...40))
                     .animation(
                         .easeInOut(duration: 0.3)
                             .repeatForever(autoreverses: true)
@@ -352,7 +352,7 @@ struct VolumeControl: View {
 
                     RoundedRectangle(cornerRadius: 2)
                         .fill(V4Color.accent)
-                        .frame(width: geometry.size.width * CGFloat(volume), height: 4)
+                        .frame(width: geometry.size.width * CGFloat(volume), height: ParietalSpacing.microHeight)
 
                     Circle()
                         .fill(.white)
@@ -365,7 +365,7 @@ struct VolumeControl: View {
             Text("\(Int(volume * 100))%")
                 .font(.caption2)
                 .foregroundStyle(V4Color.textSecondary)
-                .frame(width: 30)
+                .frame(width: ParietalSpacing.touchFrame)
         }
         .gesture(
             DragGesture()
@@ -404,7 +404,7 @@ struct PlaylistItem: View {
                 Image(systemName: isPlaying ? "pause.fill" : "play.fill")
                     .font(WernickeTypography.size14)
                     .foregroundStyle(isPlaying ? V4Color.accent : V4Color.textSecondary)
-                    .frame(width: 32)
+                    .frame(width: ParietalSpacing.touchFrame)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
@@ -460,10 +460,10 @@ struct AudioPlayerView_Previews: PreviewProvider {
                 isPlaying: .constant(true),
                 progress: .constant(0.6)
             )
-            .frame(width: 320)
+            .frame(width: ParietalSpacing.widePanelWidth)
 
             VolumeControl(volume: .constant(0.7))
-                .frame(width: 150)
+                .frame(width: ParietalSpacing.panelWidth)
 
             PlaylistItem(
                 title: "Episode 1: Introduction",

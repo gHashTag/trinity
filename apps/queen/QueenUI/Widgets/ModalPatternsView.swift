@@ -102,7 +102,7 @@ struct AlertModal: View {
             }
         }
         .padding(24)
-        .frame(width: 360)
+        .frame(width: ParietalSpacing.xlModalFrame)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerLarge)
         .shadow(color: .black.opacity(0.2), radius: 20)
@@ -200,7 +200,7 @@ struct InputModal: View {
                 }
             }
             .padding(20)
-            .frame(width: 320)
+            .frame(width: ParietalSpacing.widePanelWidth)
             .background(V4Color.surface)
             .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
@@ -331,7 +331,7 @@ struct SelectionModal<T: Hashable & CustomStringConvertible>: View {
                 }
                 .padding()
             }
-            .frame(width: 360, height: 480)
+            .frame(width: ParietalSpacing.xlModalFrame, height: ParietalSpacing.sheetHeight)
             .background(V4Color.surface)
             .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
@@ -421,12 +421,12 @@ struct ProgressModal: View {
                         // Progress ring
                         Circle()
                             .stroke(V4Color.border, lineWidth: 4)
-                            .frame(width: 60, height: 60)
+                            .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
                         
                         Circle()
                             .trim(from: 0, to: progress)
                             .stroke(V4Color.accent, lineWidth: 4)
-                            .frame(width: 60, height: 60)
+                            .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
                             .rotationEffect(.degrees(-90))
                         
                         Text("\(Int(progress * 100))%")
@@ -437,7 +437,7 @@ struct ProgressModal: View {
                         Circle()
                             .trim(from: 0.2, to: 1)
                             .stroke(V4Color.accent, lineWidth: 4)
-                            .frame(width: 60, height: 60)
+                            .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
                             .rotationEffect(.degrees(rotation))
                             .onAppear {
                                 withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
@@ -469,7 +469,7 @@ struct ProgressModal: View {
                 }
             }
             .padding(24)
-            .frame(width: 320)
+            .frame(width: ParietalSpacing.widePanelWidth)
             .background(V4Color.surface)
             .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
@@ -526,7 +526,7 @@ struct ModalPatternsView_Previews: PreviewProvider {
                 onConfirm: {},
                 onCancel: {}
             )
-            .frame(width: 500, height: 400)
+            .frame(width: ParietalSpacing.wideSheetWidth, height: ParietalSpacing.wideSheetWidth)
             .previewDisplayName("Alert Modal")
             
             InputModal(
@@ -536,7 +536,7 @@ struct ModalPatternsView_Previews: PreviewProvider {
                 onSubmit: { _ in },
                 onCancel: {}
             )
-            .frame(width: 500, height: 400)
+            .frame(width: ParietalSpacing.wideSheetWidth, height: ParietalSpacing.wideSheetWidth)
             .previewDisplayName("Input Modal")
             
             ProgressModal(
@@ -545,7 +545,7 @@ struct ModalPatternsView_Previews: PreviewProvider {
                 progress: 0.65,
                 onCancel: {}
             )
-            .frame(width: 500, height: 400)
+            .frame(width: ParietalSpacing.wideSheetWidth, height: ParietalSpacing.wideSheetWidth)
             .previewDisplayName("Progress Modal")
         }
         .background(V4Color.background)

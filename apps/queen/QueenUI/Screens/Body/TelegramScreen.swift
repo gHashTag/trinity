@@ -134,7 +134,7 @@ struct TelegramScreen: View {
             HStack(spacing: ParietalSpacing.md) {
                 Circle()
                     .fill(running ? V4Color.statusOK : V4Color.statusError)
-                    .frame(width: 12, height: 12)
+                    .frame(width: ParietalSpacing.mediumBadge, height: ParietalSpacing.badgeHeight)
                 Text(running ? "RUNNING" : "STOPPED")
                     .font(.body.weight(.bold))
                     .foregroundStyle(running ? V4Color.statusOK : V4Color.statusError)

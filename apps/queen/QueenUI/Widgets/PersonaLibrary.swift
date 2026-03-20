@@ -78,7 +78,7 @@ struct PersonaLibrary: View {
                 }
             }
         }
-        .frame(width: 380, height: 500)
+        .frame(width: ParietalSpacing.xxlModalFrame, height: ParietalSpacing.extraLargeModalHeight)
         .background(V4Color.background)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .onAppear {
@@ -206,7 +206,7 @@ struct PersonaLibrary: View {
                         .foregroundStyle(isActive ? V4Color.accent : Color.white)
                     Text(String(persona.systemPrompt.prefix(60)))
                         .font(WernickeTypography.size10)
-                        .foregroundStyle(V2Depth.white35)
+                        .foregroundStyle(V4Color.white35)
                         .lineLimit(1)
                 }
                 Spacer()
@@ -321,7 +321,7 @@ struct PersonaLibrary: View {
                         .foregroundStyle(Color.white)
                     Text(String(template.body.prefix(60)))
                         .font(WernickeTypography.size10)
-                        .foregroundStyle(V2Depth.white35)
+                        .foregroundStyle(V4Color.white35)
                         .lineLimit(1)
                     if !template.variables.isEmpty {
                         HStack(spacing: ParietalSpacing.xs) {
@@ -416,7 +416,7 @@ struct PersonaEditor: View {
                         Image(systemName: ic)
                             .font(WernickeTypography.size18)
                             .foregroundStyle(icon == ic ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
-                            .frame(width: 36, height: 36)
+                            .frame(width: ParietalSpacing.cellFrame, height: ParietalSpacing.avatarLargeHeight)
                             .background(icon == ic ? V4Color.accent.opacity(V2Depth.bgSidebarHover) : Color.white.opacity(V2Depth.bgCard))
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
@@ -459,7 +459,7 @@ struct PersonaEditor: View {
             }
         }
         .padding(24)
-        .frame(width: 360)
+        .frame(width: ParietalSpacing.xlModalFrame)
         .background(V4Color.surfaceElevated)
         .onAppear {
             if let p = persona {
@@ -530,7 +530,7 @@ struct TemplateEditor: View {
             }
         }
         .padding(24)
-        .frame(width: 360)
+        .frame(width: ParietalSpacing.xlModalFrame)
         .background(V4Color.surfaceElevated)
     }
 }
