@@ -118,7 +118,7 @@ public struct SuperiorColliculusAccordion<Content: View>: View {
                     .font(WernickeTypography.caption2Semibold)
                     .foregroundStyle(.white)
                     .padding(.horizontal, ParietalSpacing.xxxs)
-                    .padding(.vertical, 2)
+                    .padding(.vertical, ParietalSpacing.xxxs)
                     .background(V4Color.accent)
                     .cornerRadius(V1Theme.cornerTiny)
             }
@@ -234,7 +234,7 @@ public struct SuperiorColliculusGroup: View {
                             .font(WernickeTypography.caption2Semibold)
                             .foregroundStyle(.white)
                             .padding(.horizontal, ParietalSpacing.xxxs)
-                            .padding(.vertical, 2)
+                            .padding(.vertical, ParietalSpacing.xxxs)
                             .background(V4Color.accent)
                             .cornerRadius(V1Theme.cornerTiny)
                     }

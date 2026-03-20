@@ -176,6 +176,10 @@ pub const EvolutionResult = struct {
     crash_rate: f32,
     byzantine_rate: f32,
 
+    // Policy parameters (for CSV export)
+    kill_threshold: f32 = 400.0, // PPL threshold for worker culling
+    microglia_interval: u32 = 30, // Steps between microglia actions
+
     // Per-objective breakdown
     objective_ppl: std.StringHashMap(f32),
 
@@ -238,10 +242,11 @@ pub const EvolutionResult = struct {
     }
 
     pub fn toCsv(self: *const EvolutionResult, writer: anytype) !void {
-        try writer.writeAll("step,scenario,avg_ppl,alive_workers,diversity\n");
+        try writer.writeAll("step,scenario,avg_ppl,alive_workers,diversity,kill_threshold,crash_rate,byzantine_rate\n");
         for (self.timeline) |entry| {
-            try writer.print("{d},{s},{d:.2},{d},{d:.3}\n", .{
+            try writer.print("{d},{s},{d:.2},{d},{d:.3},{d:.1},{d:.3},{d:.3}\n", .{
                 entry.step, self.scenario_name, entry.avg_ppl, entry.alive_workers, entry.diversity,
+                self.kill_threshold, self.crash_rate, self.byzantine_rate,
             });
         }
     }
@@ -485,6 +490,8 @@ pub const EvolutionSimulator = struct {
             .steps = self.config.steps,
             .crash_rate = self.config.crash_rate,
             .byzantine_rate = self.config.byzantine_rate,
+            .kill_threshold = 400.0, // Standard kill threshold
+            .microglia_interval = self.config.microglia_interval,
             .objective_ppl = objective_ppl,
             .timeline = timeline,
         };

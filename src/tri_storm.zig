@@ -1,11 +1,6 @@
 // @origin(spec:tri_storm_integration.tri) @regen(manual-impl)
 const std = @import("std");
 
-// P1: Import real brain zone implementations via module names
-const ofc_module = @import("storm_ofc");
-const habenula_module = @import("storm_habenula");
-const amygdala_module = @import("storm_amygdala");
-
 pub const StormCommand = enum {
     run,
     status,
@@ -28,7 +23,6 @@ pub fn runStormCommand(allocator: std.mem.Allocator, args: []const []const u8) !
         return try cmdStatus(allocator, command_args);
     } else if (std.mem.eql(u8, subcommand, "resume")) {
         return try cmdResume(allocator, command_args);
-    } else if (std.mem.eql(u8, subcommand, "init")) {
         return try cmdInit(allocator);
     } else if (std.mem.eql(u8, subcommand, "--help") or std.mem.eql(u8, subcommand, "-h")) {
         printUsage();
@@ -40,54 +34,31 @@ pub fn runStormCommand(allocator: std.mem.Allocator, args: []const []const u8) !
     }
 }
 
+// P1: Import real brain zone implementations
+const ofc_module = @import("src/storm/brain_zones/ofc.zig");
+const habenula_module = @import("src/storm/brain_zones/habenula.zig");
+const amygdala_module = @import("src/storm/brain_zones/amygdala.zig");
+
 pub fn runOFCCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
-    if (args.len < 1) {
-        std.debug.print("Usage: tri ofc verdict <action>\n", .{});
-        return 1;
-    }
-    const subcommand = args[0];
-    if (std.mem.eql(u8, subcommand, "verdict")) {
-        return try ofc_module.cmdVerdict(allocator, args[1..]);
-    }
-    std.debug.print("Unknown OFC subcommand: {s}\n", .{subcommand});
-    return 1;
+    const action = if (args.len >= 1) args[0] else "verdict";
+    return ofc_module.OFC.cmdVerdict(allocator, action);
 }
 
-pub fn runHabenulaCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
-    if (args.len < 1) {
-        std.debug.print("Usage: tri habenula unfair-detect\n", .{});
-        return 1;
-    }
-    const subcommand = args[0];
-    if (std.mem.eql(u8, subcommand, "unfair-detect")) {
-        return try habenula_module.cmdUnfairDetect(allocator, args[1..]);
-    }
-    std.debug.print("Unknown HABENULA subcommand: {s}\n", .{subcommand});
-    return 1;
+pub fn runHabenulaCommand(allocator: std.mem.Allocator, args: []const u8) !u8 {
+    return habenula_module.unfairDetect(allocator);
 }
 
-pub fn runAmygdalaCommand(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
-    if (args.len < 1) {
-        std.debug.print("Usage: tri amygdala check-fear <task>\n", .{});
+pub fn runAmygdalaCommand(allocator: std.mem.Allocator, args: []const u8) !u8 {
+    if (args.len < 2) {
+        std.debug.print("Usage: tri amygdala check_fear \"task description\"\n", .{});
         return 1;
     }
-    const subcommand = args[0];
-    if (std.mem.eql(u8, subcommand, "check-fear")) {
-        if (args.len < 2) {
-            std.debug.print("Error: check-fear requires a task name\n", .{});
-            return 1;
-        }
-        var amg = amygdala_module.Amygdala{ .allocator = allocator };
-        try amygdala_module.cmdCheckFear(&amg, args[1]);
-        return 0;
-    }
-    std.debug.print("Unknown AMYGDALA subcommand: {s}\n", .{subcommand});
-    return 1;
+    const task = if (args.len >= 1) args[1] else "";
+
+    return amygdala_module.checkFear(allocator, task);
 }
 
-fn cmdRun(_allocator: std.mem.Allocator, args: []const []const u8) !u8 {
-    _ = _allocator;
-
+fn cmdRun(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     var waves: u4 = 5;
     var agents: u8 = 32;
     var dry_run: bool = false;
@@ -129,9 +100,9 @@ fn cmdRun(_allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     return 0;
 }
 
-fn cmdStatus(_allocator: std.mem.Allocator, args: []const []const u8) !u8 {
+fn cmdStatus(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     _ = args;
-    _ = _allocator;
+    _ = allocator;
 
     std.debug.print("\n🌪️  STORM STATUS\n─────────────────────────\n", .{});
 
@@ -161,17 +132,16 @@ fn cmdStatus(_allocator: std.mem.Allocator, args: []const []const u8) !u8 {
     return 0;
 }
 
-fn cmdResume(_allocator: std.mem.Allocator, args: []const []const u8) !u8 {
-    _ = args;
-    _ = _allocator;
+fn cmdResume(allocator: std.mem.Allocator, args: []const []const u8) !u8 {
+    _ = allocator;
 
     std.debug.print("\n🌪️  STORM RESUME─────────────────────────\n", .{});
     std.debug.print("Resume not yet implemented.\n\n", .{});
     return 0;
 }
 
-fn cmdInit(_allocator: std.mem.Allocator) !u8 {
-    _ = _allocator;
+fn cmdInit(allocator: std.mem.Allocator) !u8 {
+    _ = allocator;
 
     std.debug.print("\n🌪️  STORM INIT─────────────────────────\n", .{});
 
@@ -194,23 +164,30 @@ fn cmdInit(_allocator: std.mem.Allocator) !u8 {
 
 fn printUsage() void {
     std.debug.print(
-        \\🌪️  STORM — Self-Organizing Regenerative Task Management
-        \\Usage: tri storm <subcommand> [options]
-        \\Subcommands:
-        \\  run        Execute STORM operation
-        \\  status     Show checkpoint status
-        \\  resume     Continue from checkpoint
-        \\  init       Initialize STORM structure
-        \\Options:
-        \\  --waves N         Number of waves (default:5)
-        \\  --agents M        Number of agents (default: 32)
-        \\  --config PATH     Config file path
-        \\  --dry-run         Simulation only
-        \\Examples:
-        \\  tri storm init                              — Initialize STORM
-        \\  tri storm run                               — Run with defaults
-        \\  tri storm run --waves=3 --agents=16        — Custom configuration
-        \\  tri storm status                            — Show checkpoint status
-        , .{}
+        \\
+🌪️  STORM — Self-Organizing Regenerative Task Management
+\\
+Usage: tri storm <subcommand> [options]
+\\
+Subcommands:
+\\  run        Execute STORM operation
+\\  status     Show checkpoint status
+\\  resume     Continue from checkpoint
+\\  init       Initialize STORM structure
+\\
+Options:
+\\  --waves N         Number of waves (default: 5)
+\\  --agents M        Number of agents (default: 32)
+\\  --config PATH     Config file path
+\\  --dry-run         Simulation only
+\\
+\\
+Examples:
+\\  tri storm init                              — Initialize STORM
+\\  tri storm run                               — Run with defaults
+\\  tri storm run --waves=3 --agents=16        — Custom configuration
+\\  tri storm status                            — Show checkpoint status
+\\
+    , .{}
     );
 }
