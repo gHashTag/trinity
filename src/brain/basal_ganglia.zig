@@ -622,6 +622,8 @@ pub fn resetGlobal(allocator: std.mem.Allocator) void {
 
     if (global_registry) |reg| {
         reg.deinit();
+        // IMPORTANT: Use global_allocator (saved from getGlobal) for destroy()
+        // NOT reg.allocator, because in tests these may be different instances
         if (global_allocator) |alloc| {
             alloc.destroy(reg);
         }

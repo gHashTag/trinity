@@ -410,11 +410,11 @@ pub const StateManager = struct {
         }
         self.allocator.free(state.metrics);
 
-        // Do NOT free metadata.hostname or metadata.tri_version:
-        // - They may be string literals or from getenv()
-        // - They are not owned by our allocator
-        _ = state.metadata.hostname;
-        _ = state.metadata.tri_version;
+        // Free metadata strings (allocated via dupe() in captureState())
+        // NOTE: freeState() is only called from save() (defer freeState),
+        // never for loaded states which are arena-managed.
+        self.allocator.free(state.metadata.hostname);
+        self.allocator.free(state.metadata.tri_version);
     }
 
     /// Validate and migrate state if needed
@@ -622,6 +622,9 @@ pub const StateManager = struct {
             };
             const Status = @TypeOf(dummy_claim.status);
 
+            // Skip summary entries (they contain statistics, not actual claims)
+            if (mem.eql(u8, claim_state.task_id, "_summary")) continue;
+
             const status: Status = if (mem.eql(u8, claim_state.status, "active"))
                 .active
             else if (mem.eql(u8, claim_state.status, "completed"))
@@ -629,8 +632,8 @@ pub const StateManager = struct {
             else if (mem.eql(u8, claim_state.status, "abandoned"))
                 .abandoned
             else {
-                std.log.err("Invalid status: '{s}' (len={d})", .{ claim_state.status, claim_state.status.len });
-                return error.InvalidStatus;
+                std.log.warn("Skipping claim with invalid status: '{s}' (len={d})", .{ claim_state.status, claim_state.status.len });
+                continue;
             };
 
             // Skip completed/abandoned claims, only restore active ones
