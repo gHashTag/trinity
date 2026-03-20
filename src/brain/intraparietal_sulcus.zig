@@ -466,12 +466,12 @@ test "NumberFormatter scientific notation" {
 
 test "precision f16 to f32" {
     const test_values = [_]f32{
-        0.0001,  // Small
-        0.1,     // Fractional
-        1.0,     // Unity
-        10.0,    // Integer
-        100.0,   // Large
-        1000.0,  // Very large
+        0.0001, // Small
+        0.1, // Fractional
+        1.0, // Unity
+        10.0, // Integer
+        100.0, // Large
+        1000.0, // Very large
     };
 
     for (test_values) |v| {

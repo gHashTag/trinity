@@ -2482,7 +2482,7 @@ pub fn runBrainVizCommand(allocator: std.mem.Allocator, args: []const []const u8
         std.debug.print("{s}\n", .{output});
     } else if (std.mem.eql(u8, mode, "heatmap")) {
         // TODO: Add actual data parameter
-        const dummy_data = [_]f32{0.1, 0.2, 0.3, 0.4, 0.5};
+        const dummy_data = [_]f32{ 0.1, 0.2, 0.3, 0.4, 0.5 };
         const output = try viz.activityHeatmap(allocator, &dummy_data, .{ .width = 40, .height = 15 });
         defer allocator.free(output);
         std.debug.print("{s}\n", .{output});
