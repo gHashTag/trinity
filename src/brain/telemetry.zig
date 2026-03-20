@@ -22,7 +22,9 @@ pub const BrainTelemetry = struct {
 
     pub fn init(allocator: std.mem.Allocator, max_points: usize) Self {
         var points: std.ArrayList(TelemetryPoint) = .empty;
-        points.ensureTotalCapacity(allocator, max_points) catch {};
+        points.ensureTotalCapacity(allocator, max_points) catch |err| {
+            std.log.warn("Failed to pre-allocate telemetry points: {}. Will grow dynamically.", .{err});
+        };
         return Self{
             .allocator = allocator,
             .points = points,

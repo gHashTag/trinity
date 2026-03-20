@@ -115,7 +115,11 @@ pub fn resetGlobal(allocator: std.mem.Allocator) void {
 pub const EventBus = struct {
     mutex: std.Thread.Mutex,
     allocator: std.mem.Allocator,
-    events: std.ArrayList(StoredEvent),
+    // Ring buffer: fixed size array with head/tail indices
+    buffer: [MAX_EVENTS]StoredEvent,
+    head_idx: usize, // Index of oldest event
+    tail_idx: usize, // Index where next event will be written
+    count: usize, // Number of events currently stored
     stats: struct {
         published: u64,
         polled: u64,
@@ -124,28 +128,25 @@ pub const EventBus = struct {
     },
 
     pub fn init(allocator: std.mem.Allocator) EventBus {
-        var bus = EventBus{
+        _ = allocator;
+        return EventBus{
             .mutex = std.Thread.Mutex{},
             .allocator = allocator,
-            .events = std.ArrayList(StoredEvent).initCapacity(allocator, 256) catch |err| {
-                std.log.err("Failed to allocate EventBus: {}", .{err});
-                @panic("EventBus init failed");
-            },
+            .buffer = undefined,
+            .head_idx = 0,
+            .tail_idx = 0,
+            .count = 0,
             .stats = .{ .published = 0, .polled = 0, .trim_count = 0, .peak_buffered = 0 },
         };
-        // Pre-allocate for MAX_EVENTS to avoid frequent reallocations
-        bus.events.ensureTotalCapacityPrecise(allocator, MAX_EVENTS) catch |err| {
-            std.log.warn("Failed to pre-allocate MAX_EVENTS: {}", .{err});
-            // Continue with initial capacity, will grow as needed
-        };
-        return bus;
     }
 
     pub fn deinit(self: *EventBus) void {
-        for (self.events.items) |ev| {
-            ev.deinit(self.allocator);
+        // Free all events in the ring buffer
+        var i: usize = 0;
+        while (i < self.count) : (i += 1) {
+            const idx = (self.head_idx + i) % MAX_EVENTS;
+            self.buffer[idx].deinit(self.allocator);
         }
-        self.events.deinit(self.allocator);
     }
 
     /// Publish an event to the bus
@@ -202,18 +203,25 @@ pub const EventBus = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        // Add to buffer, trim if necessary
-        try self.events.append(self.allocator, stored);
-        const buffered = self.events.items.len;
-        if (buffered > MAX_EVENTS) {
-            // Remove oldest event
-            const removed = self.events.orderedRemove(0);
-            removed.deinit(self.allocator);
+        // Check if buffer is full, advance head to make room (auto-trim)
+        if (self.count >= MAX_EVENTS) {
+            // Free the oldest event at head_idx
+            self.buffer[self.head_idx].deinit(self.allocator);
+            // Advance head (circular)
+            self.head_idx = (self.head_idx + 1) % MAX_EVENTS;
             self.stats.trim_count += 1;
+        } else {
+            // Track peak buffer size only when growing
+            if (self.count + 1 > self.stats.peak_buffered) {
+                self.stats.peak_buffered = self.count + 1;
+            }
         }
-        // Track peak buffer size
-        if (buffered > self.stats.peak_buffered) {
-            self.stats.peak_buffered = buffered;
+
+        // Write new event at tail
+        self.buffer[self.tail_idx] = stored;
+        self.tail_idx = (self.tail_idx + 1) % MAX_EVENTS;
+        if (self.count < MAX_EVENTS) {
+            self.count += 1;
         }
 
         self.stats.published += 1;
@@ -229,10 +237,15 @@ pub const EventBus = struct {
         };
         defer results.deinit(allocator);
 
-        for (self.events.items) |stored| {
-            if (stored.timestamp > since) {
-                if (results.items.len >= max_events) break;
+        // Iterate through ring buffer from head to tail
+        var i: usize = 0;
+        while (i < self.count) : (i += 1) {
+            if (results.items.len >= max_events) break;
 
+            const idx = (self.head_idx + i) % MAX_EVENTS;
+            const stored = &self.buffer[idx];
+
+            if (stored.timestamp > since) {
                 const data: EventData = switch (stored.event_type) {
                     .task_claimed => .{ .task_claimed = .{
                         .task_id = stored.task_id,
@@ -282,21 +295,31 @@ pub const EventBus = struct {
         return .{
             .published = self.stats.published,
             .polled = self.stats.polled,
-            .buffered = self.events.items.len,
+            .buffered = self.count,
             .trim_count = self.stats.trim_count,
             .peak_buffered = self.stats.peak_buffered,
         };
     }
 
     /// Trim oldest events, keeping only the most recent `count`
-    pub fn trim(self: *EventBus, count: usize) void {
+    /// O(1) operation: just advance head pointer
+    pub fn trim(self: *EventBus, target_count: usize) void {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        while (self.events.items.len > count) {
-            const removed = self.events.orderedRemove(0);
-            removed.deinit(self.allocator);
+        // If we need to trim more than we have, trim everything
+        const to_keep = @min(target_count, self.count);
+        const to_remove = self.count - to_keep;
+
+        var i: usize = 0;
+        while (i < to_remove) : (i += 1) {
+            const idx = (self.head_idx + i) % MAX_EVENTS;
+            self.buffer[idx].deinit(self.allocator);
         }
+
+        // Advance head pointer
+        self.head_idx = (self.head_idx + to_remove) % MAX_EVENTS;
+        self.count = to_keep;
     }
 
     /// Clear all events
@@ -304,10 +327,16 @@ pub const EventBus = struct {
         self.mutex.lock();
         defer self.mutex.unlock();
 
-        for (self.events.items) |ev| {
-            ev.deinit(self.allocator);
+        // Free all events
+        var i: usize = 0;
+        while (i < self.count) : (i += 1) {
+            const idx = (self.head_idx + i) % MAX_EVENTS;
+            self.buffer[idx].deinit(self.allocator);
         }
-        self.events.clearRetainingCapacity();
+
+        self.head_idx = 0;
+        self.tail_idx = 0;
+        self.count = 0;
     }
 };
 
