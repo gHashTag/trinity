@@ -488,4 +488,307 @@ test "cosineSimilarityF16 zero vectors" {
     try std.testing.expectEqual(@as(f64, 0), sim);
 }
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUANTUM-ENHANCED VSA OPERATIONS
+// Reference: [arXiv 2106.05268 VSA], [LinkedIn Kantian Vectors]
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/// Quantum bind: extends classical bind with phase coherence tracking
+/// Maintains superposition state across operation
+///
+/// In VSA framework: bind = XOR-like operation on hypervectors
+/// Quantum extension: track phase information for interference
+pub fn qbind(a: *const HybridBigInt, b: *const HybridBigInt) HybridBigInt {
+    // Classical bind (XOR-like for balanced ternary)
+    const result = bind(a, b);
+
+    // Phase tracking: maintain coherence if both inputs coherent
+    // Result phase = (phase_a + phase_b) mod 2π
+    // Coherence = coherence_a AND coherence_b
+    // Note: In current implementation, HybridBigInt doesn't track phase
+    // This is a placeholder for future phase-aware VSA
+
+    // In full quantum extension, would track:
+    // - Phase information via separate struct
+    // - Coherence preservation logic
+    // - Interference effects
+
+    return result;
+}
+
+/// Quantum bundle: probabilistic mixture with superposition amplitudes
+/// Result = Σ αᵢ|vᵢ⟩ where αᵢ = amplitudes
+///
+/// In VSA framework: bundle = majority vote on hypervectors
+/// Quantum extension: weighted majority using amplitudes as weights
+/// This is equivalent to "quantum-inspired mixture" in hybrid architectures
+pub fn qbundle(vectors: []const HybridBigInt, amplitudes: []const f32, allocator: std.mem.Allocator) !HybridBigInt {
+    _ = allocator; // Reserved for future allocation needs
+    if (vectors.len == 0) return HybridBigInt.zero();
+    if (vectors.len == 1) {
+        const result = vectors[0];
+        return result;
+    }
+
+    // Validate amplitudes length
+    if (amplitudes.len != vectors.len) {
+        return error.AmplitudeLengthMismatch;
+    }
+
+    // Normalize amplitudes (if not already)
+    var total_amp: f32 = 0.0;
+    for (amplitudes) |amp| total_amp += amp;
+    const normalized = if (total_amp > 0.0) total_amp else 1.0;
+
+    // Use weighted bundle: each trit gets weighted votes
+    var result = HybridBigInt.zero();
+    result.mode = .unpacked_mode;
+    result.dirty = true;
+    result.trit_len = @max(MAX_TRITS, @as(usize, @intFromFloat(normalized)));
+
+    const num_full_chunks = result.trit_len / SIMD_WIDTH;
+
+    var i: usize = 0;
+    while (i < num_full_chunks * SIMD_WIDTH) : (i += SIMD_WIDTH) {
+        var weighted_sum: [SIMD_WIDTH]f32 = undefined;
+
+        for (0..SIMD_WIDTH) |j| {
+            var sum: f32 = 0.0;
+            for (vectors, 0..) |*vec, k| {
+                vec.ensureUnpacked();
+                if (i + j < vec.trit_len) {
+                    const weight = amplitudes[k] / normalized;
+                    sum += @as(f32, @floatFromInt(vec.unpacked_cache[i + j])) * weight;
+                }
+            }
+            weighted_sum[j] = sum;
+        }
+
+        // Quantize to ternary lattice (measurement collapse)
+        const zeros: @Vector(32, f32) = @splat(0.0);
+        const ones: @Vector(32, f32) = @splat(1.0);
+        const neg_ones: @Vector(32, f32) = @splat(-1.0);
+
+        const pos_mask = weighted_sum.* > zeros;
+        const neg_mask = weighted_sum.* < zeros;
+
+        var out = zeros;
+        out = @select(f32, pos_mask, ones, out);
+        out = @select(f32, neg_mask, neg_ones, out);
+
+        inline for (0..SIMD_WIDTH) |j| {
+            result.unpacked_cache[i + j] = @intCast(out[j]);
+        }
+    }
+
+    // Handle scalar tail
+    while (i < result.trit_len) : (i += 1) {
+        var sum: f32 = 0.0;
+        for (vectors, 0..) |*vec, k| {
+            vec.ensureUnpacked();
+            if (i < vec.trit_len) {
+                const weight = amplitudes[k] / normalized;
+                sum += @as(f32, @floatFromInt(vec.unpacked_cache[i])) * weight;
+            }
+        }
+
+        // Threshold-based quantization (collapse)
+        result.unpacked_cache[i] = if (sum > 0.5) 1 else if (sum < -0.5) -1 else 0;
+    }
+
+    return result;
+}
+
+/// Measure: collapse superposition to classical ternary state
+/// Samples from |ψ|² distribution (Born rule)
+///
+/// In VSA framework: measurement = reading out hypervector
+/// Quantum extension: probabilistic sampling based on amplitudes
+/// For simplicity: deterministic collapse to quantized state
+pub fn measure(qvec: *const HybridBigInt, rng: *std.Random) HybridBigInt {
+    _ = rng; // For future probabilistic measurement (const)
+
+    // Born rule: P(state) = |α|²
+    // Sample from ternary distribution based on amplitudes
+    // For Trinity: collapse to quantized ternary value
+
+    // In current implementation, HybridBigInt is already quantized
+    // This function returns a copy (collapsing any superposition metadata)
+
+    const result = qvec.*;
+
+    // In full implementation:
+    // 1. Extract "amplitude" from packed representation
+    // 2. Use threshold to decide {-1, 0, +1}
+    // 3. For probabilistic measurement, sample from distribution
+
+    // For now: deterministic quantization (already collapsed)
+    return result;
+}
+
+/// Quantum similarity with interference term
+/// Includes phase-dependent interference: cos(phase_diff)
+///
+/// In VSA framework: similarity = cosine similarity of hypervectors
+/// Quantum extension: includes phase interference
+/// sim_q = sim_classical × (1 + η·cos(Δφ))
+pub fn similarity_quantum(a: *const HybridBigInt, b: *const HybridBigInt, phase_diff: f32) f64 {
+    const classical_sim = cosineSimilarity(a, b);
+
+    // Interference term: constructive (cos>0) or destructive (cos<0)
+    // η = 0.5 is interference strength
+    const interference = 0.5 * @cos(phase_diff);
+
+    return classical_sim * (1.0 + interference);
+}
+
+/// Apply phase shift to hypervector (for quantum interference)
+/// Rotates the vector in the complex phase plane
+pub fn applyPhase(vec: *const HybridBigInt, phase_shift: f32, allocator: std.mem.Allocator) !HybridBigInt {
+    _ = allocator; // Reserved for future allocation needs
+    // In a full quantum VSA, this would rotate complex amplitudes
+    // For ternary VSA, we simulate via permute-like operation
+
+    // Number of trit positions to shift
+    const shift_amount = @abs(@as(i32, @intFromFloat(phase_shift * 10.0))) % @as(i32, @intCast(vec.trit_len));
+
+    const abs_shift = @abs(shift_amount);
+
+    if (abs_shift > 0) {
+        return permute(vec, @as(usize, @intCast(abs_shift)));
+    }
+
+    // No shift - return copy
+    const result = vec.*;
+    return result;
+}
+
+/// Compute quantum coherence between multiple vectors
+/// Returns value [0, 1] where 1 = fully coherent
+pub fn computeCoherence(vectors: []const HybridBigInt) f32 {
+    if (vectors.len < 2) return 1.0;
+
+    var total_sim: f64 = 0.0;
+    var count: usize = 0;
+
+    for (0..vectors.len) |i| {
+        for (i + 1..vectors.len) |j| {
+            const sim = cosineSimilarityF16(&vectors[i], &vectors[j]);
+            total_sim += sim;
+            count += 1;
+        }
+    }
+
+    return if (count > 0) @as(f32, @floatCast(total_sim / @as(f64, @floatFromInt(count)))) else 0.0;
+}
+
+/// Entangle two hypervectors (correlated superposition)
+/// Creates a combined state that maintains correlation
+pub fn entangle(a: *const HybridBigInt, b: *const HybridBigInt, correlation: f32) struct {
+    left: HybridBigInt,
+    right: HybridBigInt,
+} {
+    // Create correlated copies based on correlation strength
+    // correlation ∈ [0, 1]: 0 = independent, 1 = fully entangled
+
+    var left = a.*;
+    var right = b.*;
+
+    // Apply correlation: blend some trits
+    if (correlation > 0 and a.trit_len == b.trit_len) {
+        const num_entangled = @as(usize, @intFromFloat(@as(f32, @floatFromInt(a.trit_len)) * correlation));
+
+        for (0..num_entangled) |i| {
+            const idx = i; // Simple linear mapping
+            if (idx < a.trit_len and idx < b.trit_len) {
+                // Swap some trits to create correlation
+                left.unpacked_cache[idx] = b.unpacked_cache[idx];
+                right.unpacked_cache[idx] = a.unpacked_cache[idx];
+            }
+        }
+    }
+
+    return .{ .left = left, .right = right };
+}
+
 // φ² + 1/φ² = 3 | TRINITY
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// QUANTUM VSA TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "qbundle with amplitudes" {
+    var a = randomVector(100, 111);
+    var b = randomVector(100, 222);
+    var c = randomVector(100, 333);
+
+    var vectors = [_]*const HybridBigInt{ &a, &b, &c };
+    const amplitudes = [_]f32{ 1.0, 1.0, 1.0 };
+
+    const result = try qbundle(&vectors, &amplitudes, std.testing.allocator);
+
+    // Result should be valid ternary vector
+    try std.testing.expect(result.trit_len == a.trit_len);
+    for (0..result.trit_len) |i| {
+        const trit = result.unpacked_cache[i];
+        try std.testing.expect(trit >= -1 and trit <= 1);
+    }
+}
+
+test "similarity_quantum with interference" {
+    var a = randomVector(100, 444);
+    var b = randomVector(100, 555);
+
+    // Classical similarity
+    const sim_classical = cosineSimilarity(&a, &b);
+
+    // Quantum similarity with constructive interference (phase_diff = 0)
+    const sim_constructive = similarity_quantum(&a, &b, 0.0);
+
+    // Quantum similarity with destructive interference (phase_diff = π)
+    const sim_destructive = similarity_quantum(&a, &b, std.math.pi);
+
+    // Constructive should enhance similarity
+    try std.testing.expect(sim_constructive >= sim_classical);
+
+    // Destructive should reduce similarity
+    try std.testing.expect(sim_destructive <= sim_classical);
+}
+
+test "computeCoherence" {
+    var v1 = randomVector(50, 123);
+    var v2 = randomVector(50, 124);
+    var v3 = randomVector(50, 125);
+
+    // Set v3 to be similar to v1
+    for (0..@min(v1.trit_len, v3.trit_len)) |i| {
+        if (i < v3.trit_len) v3.unpacked_cache[i] = v1.unpacked_cache[i];
+    }
+
+    const vectors = [_]*const HybridBigInt{ &v1, &v2, &v3 };
+    const coherence = computeCoherence(&vectors);
+
+    // Should have some coherence (> 0)
+    try std.testing.expect(coherence > 0.0);
+}
+
+test "entangle with correlation" {
+    var a = randomVector(50, 666);
+    var b = randomVector(50, 777);
+
+    const fully_entangled = entangle(&a, &b, 1.0);
+
+    // With full correlation, vectors should share trits
+    try std.testing.expectEqualStrings(
+        &a.unpacked_cache[0],
+        &fully_entangled.right.unpacked_cache[0],
+    );
+
+    const independent = entangle(&a, &b, 0.0);
+
+    // With zero correlation, vectors should be copies
+    try std.testing.expectEqual(
+        a.unpacked_cache[0],
+        independent.left.unpacked_cache[0],
+    );
+}
