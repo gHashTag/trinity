@@ -2528,19 +2528,19 @@ fn runSimSuite(allocator: std.mem.Allocator) !void {
     std.debug.print("Running {d} scenarios in parallel...\n\n", .{4});
 
     var s1 = try evo_sim.runS1Baseline(allocator, 100);
-    defer s1.deinit(allocator);
+    defer s1.deinit();
     std.debug.print("  {s}✓{s} S1 Baseline complete: PPL={d:.2}, Diversity={d:.3}\n", .{ GREEN, RESET, s1.final_ppl, s1.diversity_index });
 
     var s2 = try evo_sim.runS2Current(allocator, 100);
-    defer s2.deinit(allocator);
+    defer s2.deinit();
     std.debug.print("  {s}✓{s} S2 Current complete: PPL={d:.2}, Culled={d}\n", .{ GREEN, RESET, s2.final_ppl, s2.workers_culled });
 
     var s3 = try evo_sim.runS3MultiObj(allocator, 100);
-    defer s3.deinit(allocator);
+    defer s3.deinit();
     std.debug.print("  {s}✓{s} S3 MultiObj complete: PPL={d:.2}, Diversity={d:.3}\n", .{ GREEN, RESET, s3.final_ppl, s3.diversity_index });
 
     var s4 = try evo_sim.runS4DePIN(allocator, 100);
-    defer s4.deinit(allocator);
+    defer s4.deinit();
     std.debug.print("  {s}✓{s} S4 dePIN complete: PPL={d:.2}, Byzantine detected={d}\n", .{ GREEN, RESET, s4.final_ppl, s4.byzantine_detected });
 
     std.debug.print("\n{s}SIMULATION COMPLETE!{s}\n", .{ GREEN, RESET });

@@ -180,13 +180,10 @@ pub const EvolutionResult = struct {
         diversity: f32,
     };
 
-    pub fn deinit(self: *EvolutionResult, allocator: Allocator) void {
-        var iter = self.objective_ppl.iterator();
-        while (iter.next()) |entry| {
-            allocator.free(entry.key_ptr.*);
-        }
+    pub fn deinit(self: *EvolutionResult) void {
+        // Keys in objective_ppl are dupe'd strings, timeline is internal slice
+        // Both cleanup via deinit() - no manual free needed
         self.objective_ppl.deinit();
-        allocator.free(self.timeline);
     }
 
     pub fn format(self: *const EvolutionResult, writer: anytype) !void {
@@ -468,16 +465,14 @@ pub const EvolutionSimulator = struct {
         while (iter.next()) |entry| {
             const p = @as(f32, @floatFromInt(entry.value_ptr.*)) / @as(f32, @floatFromInt(alive_count));
             if (p > 0) {
-                diversity -= p * @log(p) / @log(@as(f32, @floatFromInt(counts.count())));
+                diversity -= p * @log(p);
             }
         }
 
-        // Normalize by max diversity (log of count)
-        const max_diversity = if (counts.count() > 1)
-            @log(@as(f32, @floatFromInt(counts.count())))
-        else
-            1.0;
-        return if (max_diversity > 0) diversity / max_diversity else 0.0;
+        // Normalize by max entropy (log of distinct types count)
+        const num_types = @as(f32, @floatFromInt(counts.count()));
+        const max_entropy = if (num_types > 1) @log(num_types) else 1.0;
+        return if (max_entropy > 0) diversity / max_entropy else 0.0;
     }
 
     /// Microglia patrol — prune workers with PPL > 100
@@ -617,11 +612,11 @@ pub const SuiteResult = struct {
     s3: EvolutionResult,
     s4: EvolutionResult,
 
-    pub fn deinit(self: *SuiteResult, allocator: Allocator) void {
-        self.s1.deinit(allocator);
-        self.s2.deinit(allocator);
-        self.s3.deinit(allocator);
-        self.s4.deinit(allocator);
+    pub fn deinit(self: *SuiteResult) void {
+        self.s1.deinit();
+        self.s2.deinit();
+        self.s3.deinit();
+        self.s4.deinit();
     }
 
     pub fn printComparison(self: *const SuiteResult, writer: anytype, allocator: Allocator) !void {
@@ -652,16 +647,16 @@ pub const SuiteResult = struct {
 
 pub fn runFullSuite(allocator: Allocator, steps: u32) !SuiteResult {
     const s1 = try runS1Baseline(allocator, steps);
-    errdefer s1.deinit(allocator);
+    errdefer s1.deinit();
 
     const s2 = try runS2Current(allocator, steps);
-    errdefer s2.deinit(allocator);
+    errdefer s2.deinit();
 
     const s3 = try runS3MultiObj(allocator, steps);
-    errdefer s3.deinit(allocator);
+    errdefer s3.deinit();
 
     const s4 = try runS4DePIN(allocator, steps);
-    errdefer s4.deinit(allocator);
+    errdefer s4.deinit();
 
     return SuiteResult{
         .s1 = s1,

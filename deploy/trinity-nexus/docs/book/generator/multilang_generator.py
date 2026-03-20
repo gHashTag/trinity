@@ -4,7 +4,7 @@ Matltandny generathatr tonandgand 999
 50 yazytoaboutin mandra = 50 perein ZhAR-PTITsY
 
 Author: Dmitrii Vasilev
-Email: reactnativeinitru@gmail.com
+Email: 999aigents@gmail.com
 """
 
 import json
@@ -89,7 +89,7 @@ def generate_all_languages(output_dir: Path):
         
         # Saboutzdayom README for toazhdaboutgabout yazytoa
         t = TRANSLATIONS[lang]
-        readme = f"# {t['title']}\n\n{t['author']}: Dmitrii Vasilev\nEmail: reactnativeinitru@gmail.com\n"
+        readme = f"# {t['title']}\n\n{t['author']}: Dmitrii Vasilev\nEmail: 999aigents@gmail.com\n"
         (lang_dir / "README.md").write_text(readme, encoding="utf-8")
     
     print(f"✅ Saboutzdaon structure for {len(TRANSLATIONS)} yazytoaboutin")
