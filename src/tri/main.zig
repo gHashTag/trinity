@@ -439,6 +439,13 @@ pub fn main() !void {
             try commands.runBrainDashboardCommand(allocator, brain_args);
             return;
         }
+        // Sim: route `tri sim suite` to evolution simulation
+        if (std.mem.eql(u8, first_arg, "sim")) {
+            const sim_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            try commands.runSimCommand(allocator, sim_args);
+            return;
+        }
         // UI: route `tri ui [build|kill]` to Queen UI launcher
         if (std.mem.eql(u8, first_arg, "ui")) {
             const ui_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};

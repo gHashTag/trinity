@@ -2094,6 +2094,16 @@ pub fn build(b: *std.Build) void {
             .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
         },
     });
+    const evolution_simulation_mod = b.createModule(.{
+        .root_source_file = b.path("src/brain/evolution_simulation.zig"),
+        .target = target,
+        .optimize = optimize,
+        .imports = &.{
+            .{ .name = "basal_ganglia", .module = basal_ganglia_mod },
+            .{ .name = "reticular_formation", .module = reticular_formation_mod },
+            .{ .name = "locus_coeruleus", .module = locus_coeruleus_mod },
+        },
+    });
     const observability_export_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/observability_export.zig"),
         .target = target,
@@ -2143,11 +2153,34 @@ pub fn build(b: *std.Build) void {
             .{ .name = "admin", .module = admin_mod },
             .{ .name = "alerts", .module = alerts_mod },
             .{ .name = "simulation", .module = simulation_mod },
+            .{ .name = "evolution_simulation", .module = evolution_simulation_mod },
             .{ .name = "observability_export", .module = observability_export_mod },
             .{ .name = "visualization", .module = visualization_mod },
         },
     });
-    // ═══════════════════════════════════════════════════════════════════════════════
+
+    // SIM SUITE — Deterministic Brain Evolution Scenarios
+    const sim_suite = b.addExecutable(.{
+        .name = "tri-sim-suite",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/cli/sim_suite.zig"),
+            .target = target,
+            .optimize = optimize,
+            .imports = &.{
+                .{ .name = "brain", .module = brain_mod },
+            },
+        }),
+    });
+    b.installArtifact(sim_suite);
+
+    const run_sim_suite = b.addRunArtifact(sim_suite);
+    if (b.args) |run_args| {
+        run_sim_suite.addArgs(run_args);
+    }
+    const sim_suite_step = b.step("sim-suite", "Run Brain Evolution Simulation Suite");
+    sim_suite_step.dependOn(&run_sim_suite.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════════════
 
     const tri_utils_mod = b.createModule(.{
         .root_source_file = b.path("src/tri/tri_utils.zig"),

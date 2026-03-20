@@ -95,6 +95,10 @@ pub const federation = @import("federation");
 /// ASCII art brain maps, sparklines, heatmaps, 3D visualization
 pub const visualization = @import("visualization");
 
+/// Evolution Simulation (Deterministic Brain Evolution)
+/// Parallel evolution scenarios: baseline, current, multi-objective, dePIN
+pub const evolution_simulation = @import("evolution_simulation");
+
 // Note: benchmarks is NOT imported here to avoid build system complexity.
 // Use @import("benchmarks") directly in benchmark code.
 
@@ -219,6 +223,11 @@ pub const BRAIN_ATLAS = [_]BrainRegion{
         .biological_function = "Spatial Representation — ASCII art brain maps, sparklines, heatmaps, 3D visualization",
         .file = "visualization.zig",
     },
+    .{
+        .name = "Evolution Simulation",
+        .biological_function = "Deterministic Evolution — Parallel brain evolution scenarios (baseline/current/multi-obj/dePIN)",
+        .file = "evolution_simulation.zig",
+    },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -263,6 +272,7 @@ pub const REGION_DEPENDENCIES = [_]RegionDependency{
     .{ .region = "Cerebellum", .depends_on = &[_][]const u8{ "Locus Coeruleus", "Telemetry" } },
     .{ .region = "Corpus Callosum (Federation)", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation", "Locus Coeruleus" } },
     .{ .region = "Visual Cortex", .depends_on = &[_][]const u8{} },
+    .{ .region = "Evolution Simulation", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation" } },
 };
 
 /// AgentCoordination — high-level wrapper combining all brain regions
@@ -629,7 +639,7 @@ pub const AgentCoordination = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 test "Brain atlas completeness" {
-    try std.testing.expectEqual(@as(usize, 21), BRAIN_ATLAS.len);
+    try std.testing.expectEqual(@as(usize, 22), BRAIN_ATLAS.len);
     try std.testing.expect(std.mem.eql(u8, "Basal Ganglia", BRAIN_ATLAS[1].name));
     try std.testing.expect(std.mem.eql(u8, "Microglia", BRAIN_ATLAS[9].name));
     try std.testing.expect(std.mem.eql(u8, "State Recovery", BRAIN_ATLAS[10].name));
@@ -643,6 +653,7 @@ test "Brain atlas completeness" {
     try std.testing.expect(std.mem.eql(u8, "Thalamic Async Processor", BRAIN_ATLAS[18].name));
     try std.testing.expect(std.mem.eql(u8, "Corpus Callosum (Federation)", BRAIN_ATLAS[19].name));
     try std.testing.expect(std.mem.eql(u8, "Visual Cortex", BRAIN_ATLAS[20].name));
+    try std.testing.expect(std.mem.eql(u8, "Evolution Simulation", BRAIN_ATLAS[21].name));
 }
 
 test "Metrics dashboard collects all regions" {
@@ -859,7 +870,7 @@ test "AgentCoordination full lifecycle with monitoring" {
 
 test "Brain region dependency graph completeness" {
     // Verify all regions in BRAIN_ATLAS have dependencies defined
-    try std.testing.expectEqual(@as(usize, 21), BRAIN_ATLAS.len);
+    try std.testing.expectEqual(@as(usize, 22), BRAIN_ATLAS.len);
     // REGION_DEPENDENCIES may not include all regions (some have no deps)
 
     // Check that all region names match
