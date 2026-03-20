@@ -325,7 +325,7 @@ private struct CategoryCard: View {
                     .foregroundStyle(V4Color.textPrimary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 20)
+            .padding(.vertical, ParietalSpacing.lg)
             .background(
                 RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                     .fill(category.color.opacity(isHovered ? 0.15 : 0.08))
@@ -554,7 +554,7 @@ struct BookmarksPanel: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 32)
+        .padding(.vertical, ParietalSpacing.xxl)
         .padding(.horizontal, ParietalSpacing.lg)
     }
 
@@ -646,7 +646,7 @@ struct BookmarksPanel: View {
                 .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 24)
+        .padding(.vertical, ParietalSpacing.xl)
     }
 
     private var bookmarksList: some View {

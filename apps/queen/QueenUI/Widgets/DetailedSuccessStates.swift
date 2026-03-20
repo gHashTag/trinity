@@ -220,7 +220,7 @@ struct ConfettiSuccessView: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(32)
+            .padding(ParietalSpacing.xxl)
             .background(V4Color.surface)
             .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
@@ -315,7 +315,7 @@ struct ProgressSuccessView: View {
                 }
             }
         }
-        .padding(24)
+        .padding(ParietalSpacing.xl)
     }
 }
 

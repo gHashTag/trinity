@@ -17,7 +17,7 @@ public struct TriToolsPanel: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
-            .padding(8)
+            .padding(ParietalSpacing.xs)
             .background(Color(nsColor: .controlBackgroundColor))
         }
     }

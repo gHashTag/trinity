@@ -58,7 +58,7 @@ struct IssuesScreen: View {
                                     .font(.caption.weight(.bold).monospacedDigit())
                                     .foregroundStyle(V4Color.accent)
                             }
-                            .padding(8)
+                            .padding(ParietalSpacing.xs)
                             .background(V4Color.bgCard)
                             .clipShape(RoundedRectangle(cornerRadius: 8))
                         }

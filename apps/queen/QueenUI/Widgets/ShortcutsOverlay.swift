@@ -67,7 +67,7 @@ struct ShortcutsOverlay: View {
             shortcutsList
             footerSection
         }
-        .padding(32)
+        .padding(ParietalSpacing.xxl)
         .frame(width: ParietalSpacing.extraWideModal)
         .background(cardBackground)
     }

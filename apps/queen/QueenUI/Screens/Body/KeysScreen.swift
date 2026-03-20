@@ -133,7 +133,7 @@ struct KeysScreen: View {
                 .padding(.vertical, 2)
             }
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, ParietalSpacing.xxs)
         .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .padding(.horizontal)

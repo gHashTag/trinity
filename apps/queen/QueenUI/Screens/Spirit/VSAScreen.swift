@@ -169,7 +169,7 @@ struct VSAScreen: View {
                 .font(.caption2)
                 .foregroundStyle(V4Color.textSecondary)
         }
-        .padding(10)
+        .padding(ParietalSpacing.xs)
         .frame(maxWidth: .infinity)
         .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 8))

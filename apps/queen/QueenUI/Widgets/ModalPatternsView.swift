@@ -101,7 +101,7 @@ struct AlertModal: View {
                 .tint(isDestructive ? V4Color.error : V4Color.accent)
             }
         }
-        .padding(24)
+        .padding(ParietalSpacing.xl)
         .frame(width: ParietalSpacing.xlModalFrame)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerLarge)
@@ -199,7 +199,7 @@ struct InputModal: View {
                     .disabled(!isValid)
                 }
             }
-            .padding(20)
+            .padding(ParietalSpacing.lg)
             .frame(width: ParietalSpacing.widePanelWidth)
             .background(V4Color.surface)
             .cornerRadius(V1Theme.cornerLarge)
@@ -468,7 +468,7 @@ struct ProgressModal: View {
                     .buttonStyle(.bordered)
                 }
             }
-            .padding(24)
+            .padding(ParietalSpacing.xl)
             .frame(width: ParietalSpacing.widePanelWidth)
             .background(V4Color.surface)
             .cornerRadius(V1Theme.cornerLarge)

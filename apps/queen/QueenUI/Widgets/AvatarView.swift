@@ -209,7 +209,7 @@ struct UserProfileCard: View {
             }
             .buttonStyle(.plain)
         }
-        .padding(20)
+        .padding(ParietalSpacing.lg)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(V4Color.surface)

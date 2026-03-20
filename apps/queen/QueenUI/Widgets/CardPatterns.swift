@@ -403,7 +403,7 @@ struct SettingsCard: View {
             Toggle("", isOn: $isEnabled)
                 .toggleStyle(.switch)
         }
-        .padding(14)
+        .padding(ParietalSpacing.sm)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerMedium)
         .overlay(

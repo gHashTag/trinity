@@ -247,7 +247,7 @@ struct ContextualMenu: View {
                     }
                 }
             }
-            .padding(4)
+            .padding(ParietalSpacing.xxs)
             .background(
                 RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                     .fill(V4Color.surface)
@@ -392,7 +392,7 @@ struct ModalView: View {
                 .tint(isPrimaryDestructive ? V4Color.error : V4Color.accent)
             }
         }
-        .padding(24)
+        .padding(ParietalSpacing.xl)
         .frame(width: ParietalSpacing.xlModalFrame)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerLarge)

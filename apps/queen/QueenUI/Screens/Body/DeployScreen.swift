@@ -87,7 +87,7 @@ struct DeployScreen: View {
                             .foregroundStyle(V4Color.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(32)
+                    .padding(ParietalSpacing.xxl)
                 }
             }
             .padding(.bottom)

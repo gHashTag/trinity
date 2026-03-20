@@ -92,7 +92,7 @@ struct ContextMenuOverlay: View {
                     }
                 }
             }
-            .padding(4)
+            .padding(ParietalSpacing.xxs)
             .background(
                 RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                     .fill(V4Color.surface)
@@ -128,7 +128,7 @@ struct LoadingOverlay: View {
                     .font(WernickeTypography.size14)
                     .foregroundStyle(V4Color.textPrimary)
             }
-            .padding(24)
+            .padding(ParietalSpacing.xl)
             .background(
                 RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                     .fill(V4Color.surface)

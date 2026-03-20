@@ -959,7 +959,7 @@ struct MathBlockView: View {
                     .multilineTextAlignment(.center)
             }
             .padding(.horizontal, ParietalSpacing.md + ParietalSpacing.md)
-            .padding(.vertical, 16)
+            .padding(.vertical, ParietalSpacing.md)
             Spacer()
         }
         .background(V4Color.background)
