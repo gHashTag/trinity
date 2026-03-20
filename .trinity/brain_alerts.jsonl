@@ -1,1 +1,1 @@
-{"ts":1774036031350,"level":"warning","condition":"events_buffered_high","message":"Event buffer high: 5000 events","health":0.0}
+{"ts":1774038549797,"level":"warning","condition":"events_buffered_high","message":"Event buffer high: 4000 events","health":0.0}
