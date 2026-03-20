@@ -2440,6 +2440,12 @@ pub fn build(b: *std.Build) void {
                     .target = target,
                     .optimize = optimize,
                 }) },
+                // Railway Circuit Breaker — 3-tier production-grade protection
+                .{ .name = "railway_circuit_breaker", .module = b.createModule(.{
+                    .root_source_file = b.path("src/tri/railway_circuit_breaker.zig"),
+                    .target = target,
+                    .optimize = optimize,
+                }) },
                 // P3.11: Token CLI commands
                 // FIXME: tri_token module disabled (getStdErr removed in Zig 0.15.2)
                 // .{ .name = "tri_token", .module = b.createModule(.{
