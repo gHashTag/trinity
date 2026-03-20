@@ -77,9 +77,9 @@ pub const ObservabilityManager = struct {
         };
 
         // Add default thresholds (ignore errors - these are hardcoded valid values)
-        _ = manager.addThreshold("uptime_pct", UPTIME_WARNING, UPTIME_CRITICAL, .less_than, true);
-        _ = manager.addThreshold("latency_avg_ms", LATENCY_WARNING, LATENCY_CRITICAL, .greater_than, true);
-        _ = manager.addThreshold("success_rate", SUCCESS_RATE_WARNING, SUCCESS_RATE_CRITICAL, .less_than, true);
+        try manager.addThreshold("uptime_pct", UPTIME_WARNING, UPTIME_CRITICAL, .less_than, true);
+        try manager.addThreshold("latency_avg_ms", LATENCY_WARNING, LATENCY_CRITICAL, .greater_than, true);
+        try manager.addThreshold("success_rate", SUCCESS_RATE_WARNING, SUCCESS_RATE_CRITICAL, .less_than, true);
 
         return manager;
     }
