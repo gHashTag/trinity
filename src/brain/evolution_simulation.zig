@@ -17,6 +17,38 @@ const Allocator = std.mem.Allocator;
 const SACRED_PHI: f32 = 1.618033988749895;
 const SACRED_E: f32 = 2.718281828459045;
 
+/// FPGA cost model for hardware-aware evolution
+/// Based on Artix-7 synthesis results (see project_fpga_synthesis_results.md)
+pub const FpgCost = struct {
+    /// LUT cost factor (per operation/worker)
+    lut_cost: f32 = 1.0,
+    /// BRAM cost factor (per memory block)
+    bram_cost: f32 = 10.0,
+    /// DSP cost factor (per multiplication)
+    dsp_cost: f32 = 5.0,
+
+    /// Calculate energy cost based on workers, steps, and FPGA resources
+    pub fn energyCost(workers: u32, steps: u32, lut_usage: f32, bram_usage: f32) f32 {
+        const worker_ops = @as(f32, @floatFromInt(workers)) * @as(f32, @floatFromInt(steps));
+        const lut_energy = worker_ops * lut_usage * self.lut_cost;
+        const bram_energy = worker_ops * (bram_usage / 72.0) * self.bram_cost; // Normalize to BRAM36
+        return lut_energy + bram_energy;
+    }
+
+    /// Calculate normalized FPGA cost (0-1, where 1 = cheapest)
+    pub fn normalizedCost(lut: u32, bram: u32, dsp: u32) f32 {
+        // Budget from K=16 wide BRAM synthesis: 19K LUT + 100.5 BRAM36-eq (74%)
+        const max_lut: f32 = 50000; // Conservative max LUT budget
+        const max_bram: f32 = 200;  // Conservative max BRAM36-eq
+
+        const lut_ratio = @as(f32, @floatFromInt(lut)) / max_lut;
+        const bram_ratio = @as(f32, @floatFromInt(bram)) / max_bram;
+
+        // Weighted sum (LUT is more expensive than BRAM)
+        return (lut_ratio * 0.7 + bram_ratio * 0.3);
+    }
+};
+
 // Fixed seeds for deterministic scenarios (20 scenarios for Sacred v2 + Quantum expansion)
 const SCENARIO_SEEDS = [_]u64{
     42,       // S1 Baseline
