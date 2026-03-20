@@ -34,35 +34,35 @@ struct ArenaLLMScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 // Header
                 HStack {
                     Text("⚔️")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("ARENA LLM")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("LMSYS-compatible ELO Battle Platform")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                     MetricGauge(
                         label: "Battles",
                         value: Double(battles.count),
                         maxValue: max(Double(battles.count), 1),
-                        accent: TrinityTheme.golden
+                        accent: V4Color.golden
                     )
                 }
                 .padding()
 
                 // ELO Leaderboard
                 if !leaderboard.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Text("ELO LEADERBOARD")
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(TrinityTheme.golden)
+                            .foregroundStyle(V4Color.golden)
                             .padding(.horizontal)
 
                         ELOChart(entries: leaderboard.map { ($0.name, $0.elo) })
@@ -70,33 +70,33 @@ struct ArenaLLMScreen: View {
                     }
 
                     // Fighter details
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
                         ForEach(leaderboard) { fighter in
-                            VStack(alignment: .leading, spacing: 8) {
+                            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                                 HStack {
                                     Text(fighter.name)
                                         .font(.headline)
-                                        .foregroundStyle(TrinityTheme.textPrimary)
+                                        .foregroundStyle(V4Color.textPrimary)
                                     Spacer()
                                     Text(String(format: "%.0f", fighter.elo))
                                         .font(.title3.weight(.bold).monospacedDigit())
-                                        .foregroundStyle(TrinityTheme.golden)
+                                        .foregroundStyle(V4Color.golden)
                                 }
-                                HStack(spacing: 16) {
+                                HStack(spacing: ParietalSpacing.lg) {
                                     Label("\(fighter.wins)W", systemImage: "checkmark.circle")
                                         .font(.caption)
-                                        .foregroundStyle(TrinityTheme.statusOK)
+                                        .foregroundStyle(V4Color.statusOK)
                                     Label("\(fighter.losses)L", systemImage: "xmark.circle")
                                         .font(.caption)
-                                        .foregroundStyle(TrinityTheme.statusError)
+                                        .foregroundStyle(V4Color.statusError)
                                     Text(String(format: "%.0f%%", fighter.winRate))
                                         .font(.caption.weight(.bold))
-                                        .foregroundStyle(TrinityTheme.textMuted)
+                                        .foregroundStyle(V4Color.textSecondary)
                                 }
                             }
                             .padding()
-                            .background(TrinityTheme.bgCard)
-                            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                            .background(V4Color.bgCard)
+                            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                         }
                     }
                     .padding(.horizontal)
@@ -104,38 +104,38 @@ struct ArenaLLMScreen: View {
 
                 // Recent battles
                 if !battles.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Text("RECENT BATTLES")
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                             .padding(.horizontal)
 
                         ForEach(battles.suffix(15).reversed(), id: \.stableID) { battle in
-                            HStack(spacing: 8) {
+                            HStack(spacing: ParietalSpacing.sm) {
                                 Text(verdictEmoji(battle.verdict))
                                 VStack(alignment: .leading, spacing: 2) {
-                                    HStack(spacing: 4) {
+                                    HStack(spacing: ParietalSpacing.xs) {
                                         Text(battle.fighter_a ?? "?")
                                             .font(.caption.weight(battle.verdict == "a_wins" ? .bold : .regular))
-                                            .foregroundStyle(battle.verdict == "a_wins" ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                                            .foregroundStyle(battle.verdict == "a_wins" ? V4Color.accent : V4Color.textPrimary)
                                         Text("vs")
                                             .font(.caption2)
-                                            .foregroundStyle(TrinityTheme.textMuted)
+                                            .foregroundStyle(V4Color.textSecondary)
                                         Text(battle.fighter_b ?? "?")
                                             .font(.caption.weight(battle.verdict == "b_wins" ? .bold : .regular))
-                                            .foregroundStyle(battle.verdict == "b_wins" ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                                            .foregroundStyle(battle.verdict == "b_wins" ? V4Color.accent : V4Color.textPrimary)
                                     }
                                     if let cat = battle.category {
                                         Text(cat)
                                             .font(.caption2)
-                                            .foregroundStyle(TrinityTheme.purple)
+                                            .foregroundStyle(V4Color.purple)
                                     }
                                 }
                                 Spacer()
                                 if let ms = battle.latency_a_ms, ms > 0 {
                                     Text("\(ms)ms")
                                         .font(.caption2.monospacedDigit())
-                                        .foregroundStyle(TrinityTheme.textMuted)
+                                        .foregroundStyle(V4Color.textSecondary)
                                 }
                             }
                             .padding(.horizontal)
@@ -145,13 +145,13 @@ struct ArenaLLMScreen: View {
                 }
 
                 if battles.isEmpty && leaderboard.isEmpty {
-                    VStack(spacing: 12) {
+                    VStack(spacing: ParietalSpacing.md) {
                         Text("No arena results found")
                             .font(.headline)
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
                         Text("Run battles via: tri arena battle")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(32)
@@ -159,7 +159,7 @@ struct ArenaLLMScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { loadData() }
     }
 

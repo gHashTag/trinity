@@ -67,7 +67,7 @@ struct SearchableMessageHistory: View {
         VStack(spacing: 0) {
             // Dim backdrop
             if isSearching {
-                Color.black.opacity(0.4)
+                Color.black.opacity(V1Theme.opacityTextTertiary)
                     .ignoresSafeArea()
                     .transition(.opacity)
                     .onTapGesture {
@@ -80,7 +80,7 @@ struct SearchableMessageHistory: View {
                     .transition(.move(edge: .top).combined(with: .opacity))
             }
         }
-        .animation(reduceMotion ? .none : TrinityTheme.springAnimation(), value: isSearching)
+        .animation(reduceMotion ? .none : MTMotion.standardSpring, value: isSearching)
         .onChange(of: searchText) { _, newValue in
             localQuery = newValue
         }
@@ -103,17 +103,17 @@ struct SearchableMessageHistory: View {
     private var searchSheet: some View {
         VStack(spacing: 0) {
             // Search bar header
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 // Search icon
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 // Text field
                 TextField("Search messages...", text: $localQuery)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textPrimary)
                     .focused($isSearchFocused)
                     .onSubmit {
                         navigateToNext()
@@ -121,49 +121,49 @@ struct SearchableMessageHistory: View {
 
                 // Match count badge
                 Text(matchCountDisplay)
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .font(WernickeTypography.caption2MediumMono)
                     .foregroundStyle(matchCountForeground)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, ParietalSpacing.sm)
+                    .padding(.vertical, ParietalSpacing.xs)
                     .background(matchCountBackground)
-                    .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall))
+                    .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
 
                 // Close button
                 Button {
                     dismissSearch()
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 16))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size16)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close search")
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(TrinityTheme.bgCard)
+            .padding(.horizontal, ParietalSpacing.lg)
+            .padding(.vertical, ParietalSpacing.md)
+            .background(V4Color.surface)
             .overlay(
                 Rectangle()
-                    .fill(TrinityTheme.accent.opacity(isSearchFocused ? 1 : 0))
+                    .fill(V4Color.accent.opacity(isSearchFocused ? 1 : 0))
                     .frame(height: 2),
                 alignment: .bottom
             )
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             // Navigation controls
-            HStack(spacing: 20) {
+            HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 // Previous match
                 Button {
                     navigateToPrevious()
                 } label: {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Image(systemName: "chevron.up")
                         Text("Previous")
                     }
-                    .font(.system(size: 12))
-                    .foregroundStyle(canNavigatePrevious ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(canNavigatePrevious ? V4Color.textPrimary : V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
                 .disabled(!canNavigatePrevious)
@@ -176,24 +176,24 @@ struct SearchableMessageHistory: View {
                 Button {
                     navigateToNext()
                 } label: {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Text("Next")
                         Image(systemName: "chevron.down")
                     }
-                    .font(.system(size: 12))
-                    .foregroundStyle(canNavigateNext ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(canNavigateNext ? V4Color.textPrimary : V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
                 .disabled(!canNavigateNext)
                 .accessibilityLabel("Next match")
                 .accessibilityHint("Navigate to next search result")
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(TrinityTheme.bgCard.opacity(0.5))
+            .padding(.horizontal, ParietalSpacing.lg)
+            .padding(.vertical, ParietalSpacing.sm)
+            .background(V4Color.surface.opacity(V2Depth.stateDisabled))
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             // Results list
             if matchingMessages.isEmpty && !localQuery.isEmpty {
@@ -205,26 +205,26 @@ struct SearchableMessageHistory: View {
             }
 
             // Keyboard shortcuts footer
-            HStack(spacing: 16) {
+            HStack(spacing: ParietalSpacing.lg) {
                 keyboardHint("↑", "Previous")
                 keyboardHint("↓", "Next")
                 keyboardHint("⎋", "Close")
                 Spacer()
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 6)
-            .background(TrinityTheme.bgCard.opacity(0.3))
-            .font(.system(size: 10))
-            .foregroundStyle(TrinityTheme.textMuted)
+            .padding(.horizontal, ParietalSpacing.lg)
+            .padding(.vertical, ParietalSpacing.xs + 2)
+            .background(V4Color.surface.opacity(V2Depth.stateHover))
+            .font(WernickeTypography.size10)
+            .foregroundStyle(V4Color.textSecondary)
         }
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.border, lineWidth: 1)
         )
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge))
-        .shadow(color: .black.opacity(TrinityTheme.shadowLargeOpacity), radius: TrinityTheme.shadowLargeRadius)
-        .padding(.horizontal, 20)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
+        .shadow(color: .black.opacity(V1Theme.shadowLargeOpacity), radius: V1Theme.shadowLargeRadius)
+        .padding(.horizontal, ParietalSpacing.md + ParietalSpacing.md)
         .padding(.top, 12)
         .frame(maxHeight: 400)
         .onAppear {
@@ -251,18 +251,18 @@ struct SearchableMessageHistory: View {
     // MARK: - Subviews
 
     private var emptyState: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             Image(systemName: "questionmark.circle")
-                .font(.system(size: 32))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
+                .font(WernickeTypography.size32)
+                .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateDisabled))
 
             Text("No matches found")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.body14Medium)
+                .foregroundStyle(V4Color.textSecondary)
 
             Text("Try a different search term")
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                .font(WernickeTypography.size12)
+                .foregroundStyle(V4Color.textSecondary.opacity(0.7))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.vertical, 40)
@@ -270,18 +270,18 @@ struct SearchableMessageHistory: View {
     }
 
     private var recentSearchesPlaceholder: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             Image(systemName: "magnifyingglass")
-                .font(.system(size: 28))
-                .foregroundStyle(TrinityTheme.accent.opacity(0.5))
+                .font(WernickeTypography.size28)
+                .foregroundStyle(V4Color.accent.opacity(V2Depth.stateDisabled))
 
             Text("Search in conversation")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.body14Medium)
+                .foregroundStyle(V4Color.textSecondary)
 
             Text("Type to search all messages in this thread")
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                .font(WernickeTypography.size12)
+                .foregroundStyle(V4Color.textSecondary.opacity(0.7))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.vertical, 40)
@@ -307,38 +307,38 @@ struct SearchableMessageHistory: View {
         let isSelected = index == selectedMatchIndex
         let previewText = messageTextPreview(message.text)
 
-        return HStack(alignment: .top, spacing: 12) {
+        return HStack(alignment: .top, spacing: ParietalSpacing.md) {
             // Role icon
             Image(systemName: message.role == .user ? "person.circle.fill" : "cpu")
-                .font(.system(size: 14))
-                .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textMuted)
-                .frame(width: 20)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(isSelected ? V4Color.accent : V4Color.textSecondary)
+                .frame(width: ParietalSpacing.buttonSmallWidth)
 
             // Content
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 // Message header
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text(message.role == .user ? "You" : (message.modelID ?? "Assistant"))
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(isSelected ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                        .font(WernickeTypography.caption2Semibold)
+                        .foregroundStyle(isSelected ? V4Color.textPrimary : V4Color.textSecondary)
 
                     Text(timestampString(for: message.timestamp))
-                        .font(.system(size: 10))
-                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
                 }
 
                 // Highlighted preview
                 highlightedText(previewText, query: localQuery)
-                    .font(.system(size: 13))
+                    .font(WernickeTypography.size13)
                     .lineLimit(2)
-                    .foregroundStyle(isSelected ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                    .foregroundStyle(isSelected ? V4Color.textPrimary : V4Color.textSecondary)
             }
 
             Spacer()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(isSelected ? TrinityTheme.accent.opacity(0.1) : Color.clear)
+        .padding(.horizontal, ParietalSpacing.lg)
+        .padding(.vertical, ParietalSpacing.sm + 2)
+        .background(isSelected ? V4Color.accent.opacity(V2Depth.bgSubtle) : Color.clear)
         .contentShape(Rectangle())
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Message \(index + 1) of \(matchingMessages.count)")
@@ -368,7 +368,7 @@ struct SearchableMessageHistory: View {
             }
             // Highlighted text
             result = result + Text(String(text[range]))
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
                 .fontWeight(.semibold)
             lastIndex = range.upperBound
         }
@@ -382,17 +382,17 @@ struct SearchableMessageHistory: View {
     }
 
     private func keyboardHint(_ keys: String, _ label: String) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Text(keys)
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
+                .font(WernickeTypography.microBoldMono)
+                .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
                 .padding(.horizontal, 5)
                 .padding(.vertical, 2)
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
                 .clipShape(RoundedRectangle(cornerRadius: 4))
             Text(label)
-                .font(.system(size: 9))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
+                .font(WernickeTypography.size9)
+                .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateDisabled))
         }
     }
 
@@ -455,16 +455,16 @@ struct SearchableMessageHistory: View {
 
     private var matchCountForeground: Color {
         if matchingMessages.isEmpty {
-            return TrinityTheme.textMuted
+            return V4Color.textSecondary
         }
-        return TrinityTheme.accent
+        return V4Color.accent
     }
 
     private var matchCountBackground: Color {
         if matchingMessages.isEmpty {
-            return TrinityTheme.bgCardBorder
+            return V4Color.border
         }
-        return TrinityTheme.accent.opacity(0.15)
+        return V4Color.accent.opacity(V2Depth.bgSidebarHover)
     }
 }
 

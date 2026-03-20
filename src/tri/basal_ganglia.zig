@@ -129,6 +129,249 @@ pub const CellHealth = struct {
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// TASK CLAIM REGISTRY — CRDT-based distributed task coordination
+// ═══════════════════════════════════════════════════════════════════════════════
+// Prevents duplicate task execution across parallel agents.
+// First agent wins — atomic claim with TTL + heartbeat.
+
+pub const TaskClaim = struct {
+    task_id: []const u8,
+    agent_id: []const u8,
+    claimed_at: i64,
+    ttl_ms: u64,
+    status: enum { active, completed, abandoned },
+    completed_at: ?i64,
+    last_heartbeat: i64,
+
+    pub fn isValid(self: *const TaskClaim) bool {
+        if (self.status != .active) return false;
+        const now_ms = std.time.timestamp() * 1000;
+        const age_ms = @as(u64, @intCast(now_ms - self.claimed_at));
+        if (age_ms > self.ttl_ms) return false;
+        const heartbeat_age_ms = @as(u64, @intCast(now_ms - self.last_heartbeat));
+        if (heartbeat_age_ms > 30000) return false; // 30s heartbeat timeout
+        return true;
+    }
+};
+
+pub const Registry = struct {
+    claims: std.StringHashMap(TaskClaim),
+    mutex: std.Thread.Mutex,
+
+    pub fn init(allocator: std.mem.Allocator) Registry {
+        return Registry{
+            .claims = std.StringHashMap(TaskClaim).init(allocator),
+            .mutex = std.Thread.Mutex{},
+        };
+    }
+
+    pub fn deinit(self: *Registry) void {
+        var iter = self.claims.iterator();
+        while (iter.next()) |entry| {
+            self.claims.allocator.free(entry.key_ptr.*);
+            self.claims.allocator.free(entry.value_ptr.task_id);
+            self.claims.allocator.free(entry.value_ptr.agent_id);
+        }
+        self.claims.deinit();
+    }
+
+    pub fn claim(self: *Registry, allocator: std.mem.Allocator, task_id: []const u8, agent_id: []const u8, ttl_ms: u64) !bool {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        const now_ms = std.time.timestamp() * 1000;
+
+        // Check if already claimed and valid
+        if (self.claims.get(task_id)) |existing| {
+            if (existing.isValid()) {
+                return false; // Already claimed by someone else
+            }
+        }
+
+        // Remove old claim if exists (to free memory)
+        if (self.claims.fetchRemove(task_id)) |old_entry| {
+            allocator.free(old_entry.key);
+            allocator.free(old_entry.value.task_id);
+            allocator.free(old_entry.value.agent_id);
+        }
+
+        // Create new claim
+        const new_claim = TaskClaim{
+            .task_id = try allocator.dupe(u8, task_id),
+            .agent_id = try allocator.dupe(u8, agent_id),
+            .claimed_at = now_ms,
+            .ttl_ms = ttl_ms,
+            .status = .active,
+            .completed_at = null,
+            .last_heartbeat = now_ms,
+        };
+
+        try self.claims.put(try allocator.dupe(u8, task_id), new_claim);
+        return true;
+    }
+
+    pub fn heartbeat(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        if (self.claims.getEntry(task_id)) |entry| {
+            const entry_claim = &entry.value_ptr.*;
+            if (std.mem.eql(u8, entry_claim.agent_id, agent_id) and entry_claim.isValid()) {
+                entry_claim.last_heartbeat = std.time.timestamp() * 1000;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn complete(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        if (self.claims.getEntry(task_id)) |entry| {
+            const entry_claim = &entry.value_ptr.*;
+            if (std.mem.eql(u8, entry_claim.agent_id, agent_id) and entry_claim.isValid()) {
+                entry_claim.status = .completed;
+                entry_claim.completed_at = std.time.timestamp() * 1000;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn abandon(self: *Registry, task_id: []const u8, agent_id: []const u8) bool {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        if (self.claims.getEntry(task_id)) |entry| {
+            const entry_claim = &entry.value_ptr.*;
+            if (std.mem.eql(u8, entry_claim.agent_id, agent_id) and entry_claim.isValid()) {
+                entry_claim.status = .abandoned;
+                entry_claim.completed_at = std.time.timestamp() * 1000;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    pub fn reset(self: *Registry) void {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        var iter = self.claims.iterator();
+        while (iter.next()) |entry| {
+            self.claims.allocator.free(entry.key_ptr.*);
+            self.claims.allocator.free(entry.value_ptr.task_id);
+            self.claims.allocator.free(entry.value_ptr.agent_id);
+        }
+        self.claims.clearRetainingCapacity();
+    }
+
+    pub fn getStats(self: *Registry) Stats {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        var active: usize = 0;
+        var completed: usize = 0;
+        var abandoned: usize = 0;
+
+        var iter = self.claims.iterator();
+        while (iter.next()) |entry| {
+            const stored_claim = entry.value_ptr.*;
+            if (stored_claim.isValid()) {
+                active += 1;
+            } else {
+                switch (stored_claim.status) {
+                    .completed => completed += 1,
+                    .abandoned => abandoned += 1,
+                    .active => {}, // Expired active claims count as inactive
+                }
+            }
+        }
+
+        return Stats{
+            .total = self.claims.count(),
+            .active = active,
+            .completed = completed,
+            .abandoned = abandoned,
+        };
+    }
+
+    pub fn listClaims(self: *Registry, allocator: std.mem.Allocator, filter_agent: ?[]const u8) ![]const ClaimInfo {
+        self.mutex.lock();
+        defer self.mutex.unlock();
+
+        var list = std.ArrayList(ClaimInfo).init(allocator);
+        errdefer list.deinit();
+
+        var iter = self.claims.iterator();
+        while (iter.next()) |entry| {
+            const stored_claim = entry.value_ptr.*;
+            // Filter by agent if specified
+            if (filter_agent) |agent| {
+                if (!std.mem.eql(u8, stored_claim.agent_id, agent)) continue;
+            }
+
+            const info = ClaimInfo{
+                .task_id = stored_claim.task_id,
+                .agent_id = stored_claim.agent_id,
+                .status = stored_claim.status,
+                .claimed_at = stored_claim.claimed_at,
+                .ttl_ms = stored_claim.ttl_ms,
+                .is_valid = stored_claim.isValid(),
+            };
+            try list.append(info);
+        }
+
+        return list.toOwnedSlice();
+    }
+};
+
+pub const Stats = struct {
+    total: usize,
+    active: usize,
+    completed: usize,
+    abandoned: usize,
+};
+
+pub const ClaimInfo = struct {
+    task_id: []const u8,
+    agent_id: []const u8,
+    status: TaskClaim.Status,
+    claimed_at: i64,
+    ttl_ms: u64,
+    is_valid: bool,
+};
+
+// Global singleton
+var global_registry: ?*Registry = null;
+var global_mutex = std.Thread.Mutex{};
+
+pub fn getGlobal(allocator: std.mem.Allocator) !*Registry {
+    global_mutex.lock();
+    defer global_mutex.unlock();
+
+    if (global_registry) |reg| return reg;
+
+    const reg = try allocator.create(Registry);
+    reg.* = Registry.init(allocator);
+    global_registry = reg;
+    return reg;
+}
+
+/// Reset global registry (for testing)
+pub fn resetGlobal(allocator: std.mem.Allocator) void {
+    global_mutex.lock();
+    defer global_mutex.unlock();
+
+    if (global_registry) |reg| {
+        reg.deinit();
+        allocator.destroy(reg);
+        global_registry = null;
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // TESTS
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -463,4 +706,245 @@ test "basal_ganglia — CellHealth custom values" {
     try std.testing.expectEqual(CellHealth.Status.weak, h.status);
     try std.testing.expectEqual(@as(u32, 3), h.cycle);
     try std.testing.expectEqual(@as(i64, 54321), h.last_check);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// TASK CLAIM REGISTRY TESTS
+// ═══════════════════════════════════════════════════════════════════
+
+test "basal_ganglia — TaskClaim expired by TTL" {
+    const now_ms = std.time.timestamp() * 1000;
+    var claim = TaskClaim{
+        .task_id = "test-task",
+        .agent_id = "agent-1",
+        .claimed_at = now_ms - 70000, // 70 seconds ago
+        .ttl_ms = 60000, // 60 second TTL
+        .status = .active,
+        .completed_at = null,
+        .last_heartbeat = now_ms,
+    };
+
+    try std.testing.expect(!claim.isValid()); // Expired by TTL
+}
+
+test "basal_ganglia — TaskClaim expired by heartbeat" {
+    const now_ms = std.time.timestamp() * 1000;
+    var claim = TaskClaim{
+        .task_id = "test-task",
+        .agent_id = "agent-1",
+        .claimed_at = now_ms - 20000,
+        .ttl_ms = 300000, // 5 minute TTL
+        .status = .active,
+        .completed_at = null,
+        .last_heartbeat = now_ms - 40000, // 40 seconds ago
+    };
+
+    try std.testing.expect(!claim.isValid()); // Expired by heartbeat
+}
+
+test "basal_ganglia — TaskClaim completed is not valid" {
+    const now_ms = std.time.timestamp() * 1000;
+    var claim = TaskClaim{
+        .task_id = "test-task",
+        .agent_id = "agent-1",
+        .claimed_at = now_ms - 1000,
+        .ttl_ms = 300000,
+        .status = .completed,
+        .completed_at = now_ms,
+        .last_heartbeat = now_ms,
+    };
+
+    try std.testing.expect(!claim.isValid()); // Completed claims are not valid
+}
+
+test "basal_ganglia — TaskClaim valid active claim" {
+    const now_ms = std.time.timestamp() * 1000;
+    var claim = TaskClaim{
+        .task_id = "test-task",
+        .agent_id = "agent-1",
+        .claimed_at = now_ms - 1000,
+        .ttl_ms = 300000,
+        .status = .active,
+        .completed_at = null,
+        .last_heartbeat = now_ms - 5000,
+    };
+
+    try std.testing.expect(claim.isValid()); // Valid claim
+}
+
+test "basal_ganglia — Registry claim success" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    const claimed = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    try std.testing.expect(claimed);
+    try std.testing.expectEqual(@as(usize, 1), registry.claims.count());
+}
+
+test "basal_ganglia — Registry claim duplicate denied" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    const claimed_again = try registry.claim(allocator, "task-1", "agent-2", 60000);
+
+    try std.testing.expect(!claimed_again); // Second claim denied
+    try std.testing.expectEqual(@as(usize, 1), registry.claims.count());
+}
+
+test "basal_ganglia — Registry heartbeat refreshes" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    const refreshed = registry.heartbeat("task-1", "agent-1");
+
+    try std.testing.expect(refreshed);
+}
+
+test "basal_ganglia — Registry heartbeat wrong agent denied" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    const refreshed = registry.heartbeat("task-1", "agent-2");
+
+    try std.testing.expect(!refreshed); // Wrong agent
+}
+
+test "basal_ganglia — Registry complete marks task done" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    const completed = registry.complete("task-1", "agent-1");
+
+    try std.testing.expect(completed);
+
+    const task_claim = registry.claims.get("task-1").?;
+    try std.testing.expectEqual(TaskClaim.Status.completed, task_claim.status);
+}
+
+test "basal_ganglia — Registry complete wrong agent denied" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    const completed = registry.complete("task-1", "agent-2");
+
+    try std.testing.expect(!completed); // Wrong agent
+}
+
+test "basal_ganglia — Registry abandon releases task" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    const abandoned = registry.abandon("task-1", "agent-1");
+
+    try std.testing.expect(abandoned);
+
+    const claim = registry.claims.get("task-1").?;
+    try std.testing.expectEqual(TaskClaim.Status.abandoned, claim.status);
+}
+
+test "basal_ganglia — Registry reclaim after abandon" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    _ = registry.abandon("task-1", "agent-1");
+
+    // Should be able to reclaim after abandon
+    const reclaimed = try registry.claim(allocator, "task-1", "agent-2", 60000);
+    try std.testing.expect(reclaimed);
+}
+
+test "basal_ganglia — Registry reset clears all" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    _ = try registry.claim(allocator, "task-2", "agent-2", 60000);
+    try std.testing.expectEqual(@as(usize, 2), registry.claims.count());
+
+    registry.reset();
+    try std.testing.expectEqual(@as(usize, 0), registry.claims.count());
+}
+
+test "basal_ganglia — Registry getStats counts correctly" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    _ = try registry.claim(allocator, "task-2", "agent-2", 60000);
+    _ = registry.complete("task-1", "agent-1");
+    _ = registry.abandon("task-2", "agent-2");
+
+    const stats = registry.getStats();
+    try std.testing.expectEqual(@as(usize, 2), stats.total);
+    try std.testing.expectEqual(@as(usize, 0), stats.active);
+    try std.testing.expectEqual(@as(usize, 1), stats.completed);
+    try std.testing.expectEqual(@as(usize, 1), stats.abandoned);
+}
+
+test "basal_ganglia — Registry listClaims no filter" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    _ = try registry.claim(allocator, "task-2", "agent-2", 60000);
+
+    const claims = try registry.listClaims(allocator, null);
+    defer allocator.free(claims);
+
+    try std.testing.expectEqual(@as(usize, 2), claims.len);
+}
+
+test "basal_ganglia — Registry listClaims with agent filter" {
+    const allocator = std.testing.allocator;
+    var registry = Registry.init(allocator);
+    defer registry.deinit();
+
+    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
+    _ = try registry.claim(allocator, "task-2", "agent-2", 60000);
+    _ = try registry.claim(allocator, "task-3", "agent-1", 60000);
+
+    const claims = try registry.listClaims(allocator, "agent-1");
+    defer allocator.free(claims);
+
+    try std.testing.expectEqual(@as(usize, 2), claims.len);
+}
+
+test "basal_ganglia — getGlobal returns same instance" {
+    const allocator = std.testing.allocator;
+    resetGlobal(allocator); // Clear any existing
+
+    const reg1 = try getGlobal(allocator);
+    const reg2 = try getGlobal(allocator);
+
+    try std.testing.expectEqual(reg1, reg2); // Same pointer
+
+    resetGlobal(allocator); // Cleanup
+}
+
+test "basal_ganglia — resetGlobal clears instance" {
+    const allocator = std.testing.allocator;
+
+    _ = try getGlobal(allocator);
+    try std.testing.expect(global_registry != null);
+
+    resetGlobal(allocator);
+    try std.testing.expect(global_registry == null);
 }

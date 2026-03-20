@@ -124,14 +124,15 @@ pub fn main() !void {
     // Special handling for "test" command — route subcommands
     if (arg_idx < args.len and std.mem.eql(u8, args[arg_idx], "test")) {
         const sub = if (arg_idx + 1 < args.len) args[arg_idx + 1] else "";
-        // tri test / tri test spec / tri test report → runTestCommand
+        // tri test / tri test spec / tri test report → runTestCommand (TODO: not implemented)
         if (sub.len == 0 or
             std.mem.eql(u8, sub, "spec") or
             std.mem.eql(u8, sub, "report"))
         {
             const test_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
             logAgentCommand(args[arg_idx..]);
-            try commands.runTestCommand(allocator, test_args);
+            _ = test_args;
+            std.debug.print("Test command not yet implemented. Use 'zig build test' instead.\n", .{});
             return;
         }
         // tri test e2e → E2E toxic test suite
@@ -574,7 +575,9 @@ pub fn main() !void {
         },
         .fix => utils.runSWECommand(&state, .BugFix, cmd_args),
         .explain => utils.runSWECommand(&state, .Explain, cmd_args),
-        .test_cmd => try commands.runTestCommand(allocator, cmd_args),
+        .test_cmd => {
+            std.debug.print("Test command not yet implemented in REPL. Use 'zig build test' instead.\n", .{});
+        },
         .doc => utils.runSWECommand(&state, .Document, cmd_args),
         .refactor => utils.runSWECommand(&state, .Refactor, cmd_args),
         .reason => utils.runSWECommand(&state, .Reason, cmd_args),

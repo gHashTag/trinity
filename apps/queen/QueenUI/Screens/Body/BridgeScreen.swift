@@ -7,18 +7,18 @@ struct BridgeScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 // Header
                 HStack {
                     Text("\u{1F310}")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("INTEGRATIONS")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("Integration Hub & Event Monitor")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                     StatCard(label: "Channels", value: "5")
@@ -37,16 +37,16 @@ struct BridgeScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { loadData() }
     }
 
     // MARK: - Integration Cards
 
     private var integrationsGrid: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             // Row 1: Telegram + GitHub
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 integrationCard(
                     emoji: "\u{1F916}",
                     name: "Telegram",
@@ -76,7 +76,7 @@ struct BridgeScreen: View {
             .padding(.horizontal)
 
             // Row 2: Railway + Arena
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 integrationCard(
                     emoji: "\u{1F682}",
                     name: "Railway",
@@ -119,14 +119,14 @@ struct BridgeScreen: View {
         actionLabel: String,
         actionName: String
     ) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             // Header
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Text(emoji)
                     .font(.title2)
                 Text(name)
                     .font(.headline)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                 Spacer()
                 AgentStatusDot(status: statusOk ? .up : .down)
             }
@@ -136,11 +136,11 @@ struct BridgeScreen: View {
                 HStack {
                     Text(label)
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                         .frame(width: 60, alignment: .leading)
                     Text(value)
                         .font(.caption.monospaced())
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                         .lineLimit(1)
                     Spacer()
                 }
@@ -149,68 +149,68 @@ struct BridgeScreen: View {
             // Action button
             HStack {
                 Spacer()
-                ActionButton(icon: emoji, label: actionLabel, color: statusOk ? TrinityTheme.accent : TrinityTheme.textMuted,
+                ActionButton(icon: emoji, label: actionLabel, color: statusOk ? V4Color.accent : V4Color.textSecondary,
                              action: actionName)
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                .stroke(statusOk ? TrinityTheme.accent.opacity(0.2) : TrinityTheme.statusError.opacity(0.2), lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(statusOk ? V4Color.accent.opacity(0.2) : V4Color.statusError.opacity(0.2), lineWidth: 1)
         )
     }
 
     private var actionQueueCard: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             Text("\u{1F517}")
                 .font(.title2)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Action Queue")
                     .font(.headline)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                 Text("Pending commands for Queen daemon")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             Spacer()
 
             AgentStatusDot(status: .up)
 
-            ActionButton(icon: "\u{1F5D1}", label: "Clear", color: TrinityTheme.statusWarn,
+            ActionButton(icon: "\u{1F5D1}", label: "Clear", color: V4Color.statusWarn,
                          action: "queue_clear")
         }
         .padding()
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.bgCardBorder, lineWidth: 1)
         )
     }
 
     // MARK: - Event Log
 
     private var eventLogSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack {
                 Text("UNIFIED EVENT LOG")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
                 Spacer()
                 Text("\(events.count) events")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .padding(.horizontal)
 
             if events.isEmpty {
                 Text("No recent events")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .padding()
             } else {
                 ForEach(events.suffix(20).reversed()) { event in
@@ -221,12 +221,12 @@ struct BridgeScreen: View {
     }
 
     private func eventRow(_ event: AgentEvent) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             // Timestamp
             if let ts = event.ts {
                 Text(formatTime(ts))
                     .font(.caption2.monospacedDigit())
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .frame(width: 60, alignment: .leading)
             }
 
@@ -237,13 +237,13 @@ struct BridgeScreen: View {
             // Kind
             Text(event.resolvedKind)
                 .font(.caption2.weight(.medium).monospaced())
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
                 .frame(width: 60, alignment: .leading)
 
             // Text
             Text(event.text ?? event.action ?? event.detail ?? "—")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
                 .lineLimit(1)
 
             Spacer()
@@ -252,53 +252,53 @@ struct BridgeScreen: View {
             if let agent = event.agent {
                 Text(agent)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.purple)
+                    .foregroundStyle(V4Color.purple)
                     .padding(.horizontal, 4)
                     .padding(.vertical, 1)
-                    .background(TrinityTheme.purple.opacity(0.1))
+                    .background(V4Color.purple.opacity(V2Depth.bgSubtle))
                     .clipShape(SwiftUI.Capsule())
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 3)
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
         .padding(.horizontal)
     }
 
     // MARK: - SSH Bridge
 
     private var sshBridgeSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("SSH BRIDGE")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.golden)
+                .foregroundStyle(V4Color.golden)
                 .padding(.horizontal)
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 sshRow("Host", "gondola.proxy.rlwy.net")
                 sshRow("Port", "35344")
                 sshRow("User", "trinity")
                 sshRow("Key", "~/.ssh/id_ed25519")
 
-                Divider().background(TrinityTheme.bgCardBorder)
+                Divider().background(V4Color.bgCardBorder)
 
                 HStack {
                     Text("$")
                         .font(.caption.weight(.bold).monospaced())
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                     Text("ssh -i ~/.ssh/id_ed25519 -p 35344 trinity@gondola.proxy.rlwy.net")
                         .font(.caption2.monospaced())
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                         .lineLimit(1)
                 }
             }
             .padding()
-            .background(TrinityTheme.bgCard)
-            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+            .background(V4Color.bgCard)
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                    .stroke(V4Color.bgCardBorder, lineWidth: 1)
             )
             .padding(.horizontal)
         }
@@ -308,11 +308,11 @@ struct BridgeScreen: View {
         HStack {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
                 .frame(width: 50, alignment: .leading)
             Text(value)
                 .font(.caption.monospaced())
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
             Spacer()
         }
     }

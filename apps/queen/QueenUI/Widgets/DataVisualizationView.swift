@@ -21,7 +21,7 @@ struct DataLineChart: View {
         showGrid: Bool = true,
         showLabels: Bool = false,
         lineStyle: LineStyle = .solid,
-        color: Color = TrinityTheme.accent
+        color: Color = V4Color.accent
     ) {
         self.data = data
         self.showPoints = showPoints
@@ -48,7 +48,7 @@ struct DataLineChart: View {
                             path.move(to: CGPoint(x: 0, y: y))
                             path.addLine(to: CGPoint(x: width, y: y))
                         }
-                        .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                        .stroke(V4Color.border, lineWidth: 1)
                     }
                 }
 
@@ -83,7 +83,7 @@ struct DataLineChart: View {
 
                         Circle()
                             .fill(color)
-                            .frame(width: 8, height: 8)
+                            .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
                             .position(x: x, y: y)
                     }
                 }
@@ -95,13 +95,13 @@ struct DataLineChart: View {
                             let value = minValue + range * (1 - CGFloat(index) / 4)
                             Text(String(format: "%.1f", value))
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                                 .position(x: 30, y: height * CGFloat(index) / 4)
 
                             Spacer()
                         }
                     }
-                    .frame(width: 40)
+                    .frame(width: ParietalSpacing.buttonMediumWidth)
                 }
             }
         }
@@ -123,17 +123,17 @@ struct DataBarChart: View {
     ) {
         self.data = data
         self.labels = labels
-        self.colors = colors.isEmpty ? [TrinityTheme.accent] : colors
+        self.colors = colors.isEmpty ? [V4Color.accent] : colors
     }
 
     @State private var animatedValues: [CGFloat] = []
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 8) {
+        HStack(alignment: .bottom, spacing: ParietalSpacing.sm) {
             ForEach(Array(data.enumerated()), id: \.offset) { index, value in
                 let color = colors[index % colors.count]
 
-                VStack(spacing: 4) {
+                VStack(spacing: ParietalSpacing.xs) {
                     RoundedRectangle(cornerRadius: 4)
                         .fill(color)
                         .frame(height: maxBarHeight * (animatedValues.isEmpty ? value : animatedValues[index]))
@@ -142,14 +142,14 @@ struct DataBarChart: View {
                     if index < labels.count {
                         Text(labels[index])
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .lineLimit(1)
                     }
                 }
             }
         }
         .frame(height: 200)
-        .padding(.vertical, 8)
+        .padding(.vertical, ParietalSpacing.sm)
         .onAppear {
             withAnimation {
                 animatedValues = data.map { _ in 1.0 }
@@ -180,7 +180,7 @@ struct DataPieChart: View {
     }
 
     var body: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             // Pie
             ZStack {
                 ForEach(Array(data.enumerated()), id: \.offset) { index, item in
@@ -208,23 +208,23 @@ struct DataPieChart: View {
 
             // Legend
             if showLegend {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     ForEach(data, id: \.label) { item in
-                        HStack(spacing: 8) {
+                        HStack(spacing: ParietalSpacing.sm) {
                             Circle()
                                 .fill(item.color)
-                                .frame(width: 12, height: 12)
+                                .frame(width: ParietalSpacing.sm, height: ParietalSpacing.sm)
 
                             Text(item.label)
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
 
                             if showPercentages {
                                 let total = data.reduce(0) { $0 + $1.value }
                                 let percentage = item.value / total * 100
                                 Text(String(format: "%.0f%%", percentage))
                                     .font(.caption)
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .foregroundStyle(V4Color.textSecondary)
                             }
                         }
                     }
@@ -291,13 +291,13 @@ struct DonutChart: View {
             if let centerText = centerText {
                 VStack(spacing: 2) {
                     Text(centerText)
-                        .font(.system(size: 20, weight: .bold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.size20.weight(.bold))
+                        .foregroundStyle(V4Color.textPrimary)
 
                     if let centerSubtext = centerSubtext {
                         Text(centerSubtext)
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
             }
@@ -328,9 +328,9 @@ struct ProgressGauge: View {
         value: Double,
         label: String? = nil,
         zones: [Zone] = [
-            Zone(range: 0...0.3, color: TrinityTheme.statusError, label: "Poor"),
-            Zone(range: 0.3...0.7, color: TrinityTheme.statusWarn, label: "Fair"),
-            Zone(range: 0.7...1.0, color: TrinityTheme.statusOK, label: "Good")
+            Zone(range: 0...0.3, color: V4Color.error, label: "Poor"),
+            Zone(range: 0.3...0.7, color: V4Color.warning, label: "Fair"),
+            Zone(range: 0.7...1.0, color: V4Color.success, label: "Good")
         ]
     ) {
         self.value = max(0, min(1, value))
@@ -339,7 +339,7 @@ struct ProgressGauge: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             ZStack {
                 // Background arc
                 Path { path in
@@ -351,7 +351,7 @@ struct ProgressGauge: View {
                         clockwise: false
                     )
                 }
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 16)
+                .stroke(V4Color.border, lineWidth: 16)
 
                 // Value arc
                 Path { path in
@@ -369,7 +369,7 @@ struct ProgressGauge: View {
                 // Label
                 if let label = label {
                     Text(label)
-                        .font(.system(size: 24, weight: .bold))
+                        .font(WernickeTypography.h3Bold)
                         .foregroundStyle(zoneColor)
                         .offset(y: 40)
                 }
@@ -377,16 +377,16 @@ struct ProgressGauge: View {
             .frame(width: 200, height: 120)
 
             // Zone labels
-            HStack(spacing: 20) {
+            HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 ForEach(zones, id: \.label) { zone in
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Circle()
                             .fill(zone.color)
-                            .frame(width: 8, height: 8)
+                            .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
 
                         Text(zone.label)
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
             }
@@ -399,7 +399,7 @@ struct ProgressGauge: View {
                 return zone.color
             }
         }
-        return TrinityTheme.textMuted
+        return V4Color.textSecondary
     }
 }
 
@@ -412,7 +412,7 @@ struct Sparkline: View {
 
     init(
         data: [CGFloat],
-        color: Color = TrinityTheme.accent,
+        color: Color = V4Color.accent,
         showArea: Bool = true
     ) {
         self.data = data
@@ -460,7 +460,7 @@ struct Sparkline: View {
                 .stroke(color, lineWidth: 2)
             }
         }
-        .frame(height: 40)
+        .frame(height: ParietalSpacing.avatarMedium - 8)
     }
 }
 
@@ -469,7 +469,7 @@ struct Sparkline: View {
 struct DataVisualizationView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 DataLineChart(
                     data: [10, 25, 15, 30, 20, 40, 35],
                     showLabels: true
@@ -494,6 +494,6 @@ struct DataVisualizationView_Previews: PreviewProvider {
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

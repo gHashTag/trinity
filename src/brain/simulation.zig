@@ -595,3 +595,603 @@ test "Simulation: result json" {
     try std.testing.expect(std.mem.endsWith(u8, output, "}\n"));
     try std.testing.expect(std.mem.indexOf(u8, output, "\"tasks_processed\"") != null);
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SYNTHETIC WORKLOAD GENERATION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Simulation: synthetic workload - small scale" {
+    const config = SimulationConfig.init()
+        .withAgents(5)
+        .withTasks(20)
+        .withEventRate(50)
+        .withDuration(1000)
+        .withSeed(42); // Deterministic seed
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Verify all tasks were processed
+    try std.testing.expectEqual(@as(usize, 20), result.config.num_tasks);
+    try std.testing.expect(result.tasks_processed + result.tasks_failed > 0);
+}
+
+test "Simulation: synthetic workload - deterministic with seed" {
+    const config = SimulationConfig.init()
+        .withAgents(10)
+        .withTasks(50)
+        .withCrashProb(0.0)
+        .withPartitionProb(0.0)
+        .withSeed(12345);
+
+    // Run twice with same seed
+    var engine1 = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine1.deinit();
+    const result1 = try engine1.run();
+
+    var engine2 = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine2.deinit();
+    const result2 = try engine2.run();
+
+    // With same seed and no random events, results should be consistent
+    try std.testing.expectEqual(result1.tasks_processed, result2.tasks_processed);
+}
+
+test "Simulation: synthetic workload - high crash probability" {
+    const config = SimulationConfig.init()
+        .withAgents(20)
+        .withTasks(100)
+        .withCrashProb(0.50) // 50% crash rate
+        .withPartitionProb(0.0)
+        .withSeed(999);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // With high crash probability, we should have crashes and failures
+    try std.testing.expect(result.agents_crashed > 0 or result.tasks_failed > 0);
+}
+
+test "Simulation: synthetic workload - zero crash and partition" {
+    const config = SimulationConfig.init()
+        .withAgents(10)
+        .withTasks(50)
+        .withCrashProb(0.0)
+        .withPartitionProb(0.0)
+        .withSeed(42);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // With zero probabilities, no crashes or partitions should occur
+    try std.testing.expectEqual(@as(usize, 0), result.agents_crashed);
+    try std.testing.expectEqual(@as(usize, 0), result.partitions_occurred);
+    // All tasks should succeed
+    try std.testing.expect(result.tasks_processed > 0);
+    try std.testing.expectEqual(@as(usize, 0), result.tasks_failed);
+}
+
+test "Simulation: synthetic workload - event storm stress" {
+    const config = SimulationConfig.init()
+        .withAgents(10)
+        .withTasks(100)
+        .withEventRate(5000) // Very high event rate
+        .withDuration(1000)
+        .withSeed(777);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Should publish many events (5 events/sec * 1 sec = 5000 events)
+    try std.testing.expect(result.events_published > 4000);
+}
+
+test "Simulation: agent ID generation" {
+    const config = SimulationConfig.init()
+        .withAgents(25)
+        .withTasks(0)
+        .withSeed(1);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    // Verify agent IDs are correctly formatted
+    try std.testing.expectEqual(@as(usize, 25), engine.agent_ids.len);
+
+    for (engine.agent_ids, 0..) |agent_id, i| {
+        const expected = try std.fmt.allocPrint(std.testing.allocator, "sim-agent-{d:0>4}", .{i});
+        defer std.testing.allocator.free(expected);
+        try std.testing.expectEqualStrings(expected, agent_id);
+    }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REALISTIC SCENARIO SIMULATION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Simulation: realistic scenario - gradual load increase" {
+    // Simulate gradually increasing load
+    const config = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(500)
+        .withEventRate(100)
+        .withDuration(5000)
+        .withCrashProb(0.01)
+        .withSeed(42);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // System should remain healthy under gradual load
+    try std.testing.expect(result.brain_health_final >= 50.0);
+    try std.testing.expect(result.tasks_processed > 0);
+}
+
+test "Simulation: realistic scenario - burst traffic" {
+    // Simulate burst traffic pattern
+    const config = SimulationConfig.init()
+        .withAgents(100)
+        .withTasks(1000)
+        .withEventRate(2000) // Burst of events
+        .withDuration(2000)
+        .withSeed(111);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Should handle burst traffic
+    try std.testing.expect(result.events_published > 0);
+    try std.testing.expect(result.peak_concurrent_claims > 0);
+}
+
+test "Simulation: realistic scenario - partial network partition" {
+    const config = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(200)
+        .withPartitionProb(0.15) // 15% partition probability
+        .withCrashProb(0.0)
+        .withSeed(222);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Partitions should cause some task failures
+    try std.testing.expect(result.partitions_occurred > 0);
+    // But system should continue operating
+    try std.testing.expect(result.brain_health_final >= 0);
+}
+
+test "Simulation: realistic scenario - agent cascade failure" {
+    const config = SimulationConfig.init()
+        .withAgents(100)
+        .withTasks(500)
+        .withCrashProb(0.20) // High crash rate simulating cascade
+        .withSeed(333);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Even with cascade, some tasks should complete
+    try std.testing.expect(result.tasks_processed + result.tasks_failed > 0);
+    try std.testing.expect(result.agents_crashed > 0);
+}
+
+test "Simulation: realistic scenario - steady state operation" {
+    // Simulate normal steady-state operation
+    const config = SimulationConfig.init()
+        .withAgents(100)
+        .withTasks(1000)
+        .withEventRate(500)
+        .withDuration(10000)
+        .withCrashProb(0.005) // Low crash rate
+        .withPartitionProb(0.01)
+        .withSeed(444);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Steady state should be healthy
+    try std.testing.expect(result.brain_health_final >= 70.0);
+    try std.testing.expect(result.tasks_processed > result.tasks_failed);
+}
+
+test "Simulation: realistic scenario - recovery after partition" {
+    const config = SimulationConfig.init()
+        .withAgents(30)
+        .withTasks(150)
+        .withPartitionProb(0.10)
+        .withSeed(555);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Partitions occurred but system continued
+    try std.testing.expect(result.partitions_occurred >= 0);
+    // At least some tasks should succeed
+    try std.testing.expect(result.tasks_processed > 0);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PERFORMANCE METRICS COLLECTION TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Simulation: metrics - task throughput" {
+    const config = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(500)
+        .withDuration(5000)
+        .withSeed(666);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Calculate throughput: tasks processed per second
+    const throughput = @as(f64, @floatFromInt(result.tasks_processed)) /
+        @as(f64, @floatFromInt(result.duration_ms)) * 1000.0;
+
+    // Throughput should be positive
+    try std.testing.expect(throughput > 0);
+
+    // With 500 tasks in 5 seconds, should be at least 50 tasks/sec (accounting for failures)
+    try std.testing.expect(throughput > 10.0);
+}
+
+test "Simulation: metrics - peak concurrent claims tracking" {
+    const config = SimulationConfig.init()
+        .withAgents(100)
+        .withTasks(500)
+        .withSeed(777);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Peak concurrent claims should be tracked
+    try std.testing.expect(result.peak_concurrent_claims > 0);
+    // Peak should not exceed number of tasks
+    try std.testing.expect(result.peak_concurrent_claims <= result.config.num_tasks);
+}
+
+test "Simulation: metrics - event publication rate" {
+    const config = SimulationConfig.init()
+        .withAgents(20)
+        .withTasks(100)
+        .withEventRate(1000)
+        .withDuration(5000)
+        .withSeed(888);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Expected events: 1000 events/sec * 5 sec = 5000 events
+    // Plus task events (claims, completions)
+    try std.testing.expect(result.events_published >= 4000);
+}
+
+test "Simulation: metrics - agent crash count accuracy" {
+    const config = SimulationConfig.init()
+        .withAgents(100)
+        .withTasks(1000)
+        .withCrashProb(0.05) // 5% crash probability
+        .withSeed(999);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // With 1000 tasks and 5% crash probability, expect ~50 crashes
+    try std.testing.expect(result.agents_crashed >= 20); // At least some
+    try std.testing.expect(result.agents_crashed <= 200); // At most all tasks
+}
+
+test "Simulation: metrics - partition tracking" {
+    const config = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(200)
+        .withPartitionProb(0.20)
+        .withSeed(101);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Partitions should be tracked
+    try std.testing.expect(result.partitions_occurred >= 0);
+}
+
+test "Simulation: metrics - duration measurement" {
+    const config = SimulationConfig.init()
+        .withAgents(10)
+        .withTasks(50)
+        .withSeed(202);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const start_time = std.time.nanoTimestamp();
+    const result = try engine.run();
+    const end_time = std.time.nanoTimestamp();
+
+    // Duration should be positive and reasonable
+    try std.testing.expect(result.duration_ms > 0);
+    // Duration should match actual elapsed time (within tolerance)
+    const actual_duration_ms = @as(u64, @intCast(@divTrunc(end_time - start_time, 1_000_000)));
+    try std.testing.expect(actual_duration_ms >= result.duration_ms);
+    try std.testing.expect(actual_duration_ms < result.duration_ms + 1000); // Within 1 second
+}
+
+test "Simulation: metrics - success rate calculation" {
+    const config = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(200)
+        .withCrashProb(0.0)
+        .withPartitionProb(0.0)
+        .withSeed(303);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // With no crashes or partitions, success rate should be 100%
+    const success_rate = @as(f64, @floatFromInt(result.tasks_processed)) /
+        @as(f64, @floatFromInt(result.config.num_tasks)) * 100.0;
+
+    try std.testing.expect(success_rate >= 99.0); // Allow small rounding
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIMULATION RESULT ANALYSIS TESTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "Simulation: analysis - health score calculation" {
+    const config = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(200)
+        .withCrashProb(0.0)
+        .withPartitionProb(0.0)
+        .withSeed(404);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Healthy scenario should have high health score
+    try std.testing.expect(result.brain_health_final >= 80.0);
+    try std.testing.expect(result.brain_health_final <= 100.0);
+}
+
+test "Simulation: analysis - degraded health detection" {
+    const config = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(200)
+        .withCrashProb(0.30) // High crash rate
+        .withPartitionProb(0.20)
+        .withSeed(505);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Degraded scenario should have lower health score
+    try std.testing.expect(result.brain_health_final >= 0.0);
+    try std.testing.expect(result.brain_health_final <= 100.0);
+}
+
+test "Simulation: analysis - task failure impact on health" {
+    // Compare two simulations
+    const config_healthy = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(200)
+        .withCrashProb(0.0)
+        .withPartitionProb(0.0)
+        .withSeed(606);
+
+    const config_degraded = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(200)
+        .withCrashProb(0.50)
+        .withPartitionProb(0.30)
+        .withSeed(606);
+
+    var engine_healthy = try SimulationEngine.init(std.testing.allocator, config_healthy);
+    defer engine_healthy.deinit();
+    const result_healthy = try engine_healthy.run();
+
+    var engine_degraded = try SimulationEngine.init(std.testing.allocator, config_degraded);
+    defer engine_degraded.deinit();
+    const result_degraded = try engine_degraded.run();
+
+    // Healthy simulation should have better health score
+    try std.testing.expect(result_healthy.brain_health_final >= result_degraded.brain_health_final);
+}
+
+test "Simulation: analysis - result format output" {
+    const result = try runSmokeTest(std.testing.allocator);
+
+    // Test formatted output contains expected sections
+    var buffer: [8192]u8 = undefined;
+    var fbs = std.io.fixedBufferStream(&buffer);
+    try result.format(fbs.writer());
+    const output = fbs.getWritten();
+
+    // Check for key sections in formatted output
+    try std.testing.expect(std.mem.indexOf(u8, output, "S³AI BRAIN SIMULATION REPORT") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "Configuration") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "Results") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "Performance") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "Brain Health") != null);
+}
+
+test "Simulation: analysis - result JSON completeness" {
+    const result = try runSmokeTest(std.testing.allocator);
+
+    var buffer: [8192]u8 = undefined;
+    var fbs = std.io.fixedBufferStream(&buffer);
+    try result.toJson(fbs.writer());
+    const json = fbs.getWritten();
+
+    // Verify all required fields are present
+    const required_fields = [_][]const u8{
+        "\"config\":",
+        "\"duration_ms\":",
+        "\"tasks_processed\":",
+        "\"tasks_failed\":",
+        "\"events_published\":",
+        "\"agents_crashed\":",
+        "\"partitions_occurred\":",
+        "\"peak_concurrent_claims\":",
+        "\"brain_health_final\":",
+    };
+
+    for (required_fields) |field| {
+        try std.testing.expect(std.mem.indexOf(u8, json, field) != null);
+    }
+}
+
+test "Simulation: analysis - config nested in JSON" {
+    const result = try runAgentCompetition(std.testing.allocator);
+
+    var buffer: [8192]u8 = undefined;
+    var fbs = std.io.fixedBufferStream(&buffer);
+    try result.toJson(fbs.writer());
+    const json = fbs.getWritten();
+
+    // Verify nested config fields
+    const config_fields = [_][]const u8{
+        "\"agents\":100",
+        "\"tasks\":1000",
+        "\"event_rate\":500",
+    };
+
+    for (config_fields) |field| {
+        try std.testing.expect(std.mem.indexOf(u8, json, field) != null);
+    }
+}
+
+test "Simulation: analysis - correlation between events and tasks" {
+    const config = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(200)
+        .withEventRate(100)
+        .withDuration(5000)
+        .withSeed(707);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Events published should correlate with tasks + storm events
+    // At minimum: one event per task (claim or completion)
+    const expected_min_events = result.tasks_processed;
+    try std.testing.expect(result.events_published >= expected_min_events);
+}
+
+test "Simulation: analysis - peak claims vs total tasks" {
+    const config = SimulationConfig.init()
+        .withAgents(100)
+        .withTasks(1000)
+        .withSeed(808);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Peak concurrent claims shouldn't exceed total tasks
+    try std.testing.expect(result.peak_concurrent_claims <= result.config.num_tasks);
+
+    // Peak claims should be reasonable relative to agent count
+    // (can't have more concurrent claims than agents in steady state)
+    try std.testing.expect(result.peak_concurrent_claims > 0);
+}
+
+test "Simulation: analysis - failure modes" {
+    const config = SimulationConfig.init()
+        .withAgents(50)
+        .withTasks(200)
+        .withCrashProb(0.10)
+        .withPartitionProb(0.10)
+        .withSeed(909);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // In simulation with crashes and partitions, we expect:
+    // 1. Some agents crashed
+    try std.testing.expect(result.agents_crashed >= 0);
+    // 2. Some partitions occurred
+    try std.testing.expect(result.partitions_occurred >= 0);
+    // 3. Some tasks failed
+    try std.testing.expect(result.tasks_failed >= 0);
+    // 4. But some tasks still succeeded
+    try std.testing.expect(result.tasks_processed > 0);
+}
+
+test "Simulation: edge case - zero tasks" {
+    const config = SimulationConfig.init()
+        .withAgents(10)
+        .withTasks(0)
+        .withEventRate(0)
+        .withDuration(100)
+        .withSeed(100);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Should complete without errors
+    try std.testing.expectEqual(@as(usize, 0), result.tasks_processed);
+    try std.testing.expectEqual(@as(usize, 0), result.config.num_tasks);
+}
+
+test "Simulation: edge case - single agent single task" {
+    const config = SimulationConfig.init()
+        .withAgents(1)
+        .withTasks(1)
+        .withCrashProb(0.0)
+        .withPartitionProb(0.0)
+        .withSeed(111);
+
+    var engine = try SimulationEngine.init(std.testing.allocator, config);
+    defer engine.deinit();
+
+    const result = try engine.run();
+
+    // Single task should succeed
+    try std.testing.expectEqual(@as(usize, 1), result.tasks_processed);
+    try std.testing.expectEqual(@as(usize, 0), result.tasks_failed);
+}

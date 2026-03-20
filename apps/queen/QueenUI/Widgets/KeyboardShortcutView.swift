@@ -7,7 +7,7 @@ struct KeyboardShortcutDisplay: View {
     let shortcut: KeyboardShortcut
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             ForEach(keys, id: \.self) { key in
                 KeyCap(key: key)
             }
@@ -72,17 +72,17 @@ struct KeyCap: View {
 
     var body: some View {
         Text(key)
-            .font(.system(size: 11, weight: .medium, design: .monospaced))
-            .foregroundStyle(isPressed ? TrinityTheme.accent : TrinityTheme.textPrimary)
-            .padding(.horizontal, 6)
-            .padding(.vertical, 4)
+            .font(WernickeTypography.caption2MediumMono)
+            .foregroundStyle(isPressed ? V4Color.accent : V4Color.textPrimary)
+            .padding(.horizontal, ParietalSpacing.xs + 2)
+            .padding(.vertical, ParietalSpacing.xs)
             .background(
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(isPressed ? TrinityTheme.accent.opacity(0.15) : TrinityTheme.bgCardBorder)
+                    .fill(isPressed ? V4Color.accent.opacity(V2Depth.bgSidebarHover) : V4Color.border)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 4)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: isPressed ? 0 : 1)
+                    .stroke(V4Color.border, lineWidth: isPressed ? 0 : 1)
             )
     }
 }
@@ -105,7 +105,7 @@ struct ShortcutRecorder: View {
     }
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             if let shortcut = shortcut {
                 KeyboardShortcutDisplay(shortcut: shortcut)
 
@@ -114,8 +114,8 @@ struct ShortcutRecorder: View {
                         self.shortcut = nil
                     } label: {
                         Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 14))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size14)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     .buttonStyle(.plain)
                 }
@@ -128,13 +128,13 @@ struct ShortcutRecorder: View {
     }
 
     private var recordingPlaceholder: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             ProgressView()
                 .scaleEffect(0.7)
 
             Text("Recording...")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             Button("Cancel") {
                 isRecording.wrappedValue = false
@@ -149,7 +149,7 @@ struct ShortcutRecorder: View {
         } label: {
             Text("Record Shortcut")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
         }
         .buttonStyle(.plain)
     }
@@ -165,10 +165,10 @@ struct ShortcutListItem: View {
     let onChangeShortcut: (() -> Void)?
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             Text(title)
-                .font(.system(size: 13))
-                .foregroundStyle(isEnabled ? TrinityTheme.textPrimary : TrinityTheme.textMuted)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(isEnabled ? V4Color.textPrimary : V4Color.textSecondary)
 
             Spacer()
 
@@ -210,11 +210,11 @@ struct ShortcutGroup: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text(title)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textMuted)
-                .padding(.horizontal, 4)
+                .font(WernickeTypography.miniSemibold)
+                .foregroundStyle(V4Color.textSecondary)
+                .padding(.horizontal, ParietalSpacing.xs)
 
             VStack(spacing: 0) {
                 ForEach(Array(shortcuts.enumerated()), id: \.element.id) { index, item in
@@ -228,11 +228,11 @@ struct ShortcutGroup: View {
             }
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(TrinityTheme.bgCard)
+                    .fill(V4Color.surface)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    .stroke(V4Color.border, lineWidth: 1)
             )
         }
     }
@@ -246,15 +246,15 @@ struct ShortcutRow: View {
     var body: some View {
         HStack {
             Text(item.title)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textPrimary)
 
             Spacer()
 
             KeyboardShortcutDisplay(shortcut: item.shortcut)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm)
     }
 }
 
@@ -265,10 +265,10 @@ struct CommandPaletteTrigger: View {
     let onTrigger: () -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Text("Command Palette")
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textSecondary)
 
             KeyboardShortcutDisplay(shortcut: shortcut)
 
@@ -332,7 +332,7 @@ struct KeyboardShortcut: Equatable {
 struct KeyboardShortcutView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            VStack(alignment: .leading, spacing: 16) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
                 KeyboardShortcutDisplay(shortcut: .commandK)
 
                 ShortcutGroup(
@@ -355,6 +355,6 @@ struct KeyboardShortcutView_Previews: PreviewProvider {
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

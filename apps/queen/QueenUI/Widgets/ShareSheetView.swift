@@ -23,16 +23,16 @@ struct ShareSheet: View {
     var body: some View {
         if isVisibleBinding.wrappedValue {
             ZStack {
-                Color.black.opacity(0.4)
+                Color.black.opacity(V1Theme.opacityTextTertiary)
                     .ignoresSafeArea()
                     .onTapGesture {
                         isVisibleBinding.wrappedValue = false
                     }
 
-                VStack(spacing: 16) {
+                VStack(spacing: ParietalSpacing.lg) {
                     Text("Share")
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.body16Medium)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     shareOptions
 
@@ -40,19 +40,19 @@ struct ShareSheet: View {
                         isVisibleBinding.wrappedValue = false
                     } label: {
                         Text("Cancel")
-                            .font(.system(size: 14))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.size14)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     .buttonStyle(.plain)
                 }
                 .padding(24)
                 .background(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                        .fill(TrinityTheme.bgCard)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                        .fill(V4Color.surface)
                 )
                 .overlay(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerLarge)
-                        .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                        .stroke(V4Color.border, lineWidth: 1)
                 )
                 .shadow(color: .black.opacity(0.2), radius: 20)
                 .padding(.horizontal, 40)
@@ -66,7 +66,7 @@ struct ShareSheet: View {
             GridItem(.flexible()),
             GridItem(.flexible()),
             GridItem(.flexible())
-        ], spacing: 20) {
+        ], spacing: ParietalSpacing.md + ParietalSpacing.md) {
             ShareSheetOption(icon: "square.and.arrow.up", title: "Copy") {
                 copyToClipboard()
             }
@@ -80,7 +80,7 @@ struct ShareSheet: View {
                 shareViaMessage()
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, ParietalSpacing.sm)
     }
 
     private func copyToClipboard() {
@@ -125,19 +125,19 @@ struct ShareSheetOption: View {
         Button {
             action()
         } label: {
-            VStack(spacing: 6) {
+            VStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.size20)
+                    .foregroundStyle(V4Color.accent)
                     .frame(width: 50, height: 50)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(TrinityTheme.accent.opacity(0.1))
+                            .fill(V4Color.accent.opacity(V2Depth.bgSubtle))
                     )
 
                 Text(title)
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.textPrimary)
             }
         }
         .buttonStyle(.plain)
@@ -175,7 +175,7 @@ struct NativeShareButton: View {
             }
         } label: {
             if let title = title {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     if let icon = icon {
                         Image(systemName: icon)
                     }
@@ -201,7 +201,7 @@ struct QuickShare: View {
     @State private var showFullSheet = false
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             QuickShareButton(icon: "doc.on.doc", title: "Copy") {
                 copyToPasteboard()
             }
@@ -214,12 +214,12 @@ struct QuickShare: View {
                 showFullSheet = true
             } label: {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 13))
-                    .foregroundStyle(TrinityTheme.textMuted)
-                    .frame(width: 32, height: 32)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(V4Color.textSecondary)
+                    .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
                     .background(
                         Circle()
-                            .fill(TrinityTheme.bgCardBorder)
+                            .fill(V4Color.border)
                     )
             }
             .buttonStyle(.plain)
@@ -252,12 +252,12 @@ struct QuickShareButton: View {
             action()
         } label: {
             Image(systemName: icon)
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textMuted)
-                .frame(width: 32, height: 32)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textSecondary)
+                .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
                 .background(
                     Circle()
-                        .fill(TrinityTheme.bgCardBorder)
+                        .fill(V4Color.border)
                 )
         }
         .buttonStyle(.plain)
@@ -274,12 +274,12 @@ struct SharePreview: View {
     let imageUrl: URL?
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm + 2) {
             Text("Share Preview")
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.captionMedium)
+                .foregroundStyle(V4Color.textSecondary)
 
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 if let imageUrl = imageUrl {
                     AsyncImage(url: imageUrl) { image in
                         image
@@ -287,28 +287,28 @@ struct SharePreview: View {
                             .aspectRatio(contentMode: .fill)
                     } placeholder: {
                         Rectangle()
-                            .fill(TrinityTheme.bgCardBorder)
+                            .fill(V4Color.border)
                     }
                     .frame(width: 60, height: 60)
-                    .cornerRadius(8)
+                    .cornerRadius(V1Theme.cornerSmall)
                 }
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                     Text(title)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.smallMedium)
+                        .foregroundStyle(V4Color.textPrimary)
                         .lineLimit(2)
 
                     if let description = description {
                         Text(description)
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .lineLimit(2)
                     }
 
                     Text(url.host ?? "Unknown")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                        .foregroundStyle(V4Color.textSecondary.opacity(0.7))
                 }
 
                 Spacer()
@@ -316,11 +316,11 @@ struct SharePreview: View {
             .padding(10)
             .background(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(TrinityTheme.bgCard)
+                    .fill(V4Color.surface)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    .stroke(V4Color.border, lineWidth: 1)
             )
         }
     }
@@ -374,8 +374,8 @@ struct ExportOptions: View {
             }
         } label: {
             Image(systemName: "square.and.arrow.up")
-                .font(.system(size: 13))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .sheet(isPresented: $showShareSheet) {
             ShareSheet(items: [content], isVisible: $showShareSheet)
@@ -407,7 +407,7 @@ struct ShareSheetView_Previews: PreviewProvider {
                 description: "This is a preview of the shared content",
                 imageUrl: nil
             )
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
             .padding()
 
             ExportOptions(
@@ -417,6 +417,6 @@ struct ShareSheetView_Previews: PreviewProvider {
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

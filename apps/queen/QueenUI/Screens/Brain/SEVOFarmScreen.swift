@@ -6,24 +6,24 @@ struct SEVOFarmScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 // Header
                 HStack {
                     Text("🧬")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("SEVO FARM")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("Sacred EVolutionary Objective — Population-Based Training")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
-                    VStack(spacing: 6) {
-                        ActionButton(icon: "🧬", label: "Evolve", color: TrinityTheme.accent,
+                    VStack(spacing: ParietalSpacing.sm - 2) {
+                        ActionButton(icon: "🧬", label: "Evolve", color: V4Color.accent,
                                      action: "farm_evolve")
-                        ActionButton(icon: "💀", label: "Kill Idle", color: TrinityTheme.statusError,
+                        ActionButton(icon: "💀", label: "Kill Idle", color: V4Color.statusError,
                                      action: "farm_kill_idle")
                     }
                 }
@@ -31,27 +31,27 @@ struct SEVOFarmScreen: View {
 
                 // Evolution metrics
                 if let evo = bridge.loadEvolutionState() {
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
                         StatCard(
                             label: "Generation",
                             value: "\(evo["generation"] as? Int ?? evo["cycle"] as? Int ?? 0)",
-                            accent: TrinityTheme.accent
+                            accent: V4Color.accent
                         )
                         StatCard(
                             label: "Best PPL",
                             value: formatPPL(evo["best_ppl"] as? Double),
-                            accent: TrinityTheme.golden
+                            accent: V4Color.golden
                         )
                         StatCard(
                             label: "Population",
                             value: "\(evo["population_size"] as? Int ?? 0)",
-                            accent: TrinityTheme.purple
+                            accent: V4Color.purple
                         )
                     }
                     .padding(.horizontal)
 
                     // Strategy & stagnation
-                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
                         StatCard(
                             label: "Strategy",
                             value: evo["strategy"] as? String ?? "—"
@@ -60,37 +60,37 @@ struct SEVOFarmScreen: View {
                             label: "Stagnation",
                             value: "\(evo["stagnation"] as? Int ?? 0)",
                             accent: (evo["stagnation"] as? Int ?? 0) > 3
-                                ? TrinityTheme.statusError
-                                : TrinityTheme.statusOK
+                                ? V4Color.statusError
+                                : V4Color.statusOK
                         )
                     }
                     .padding(.horizontal)
 
                     // Top services
                     if let services = evo["services"] as? [[String: Any]] {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                             Text("TOP SERVICES")
                                 .font(.caption.weight(.bold))
-                                .foregroundStyle(TrinityTheme.golden)
+                                .foregroundStyle(V4Color.golden)
                                 .padding(.horizontal)
 
                             ForEach(Array(services.prefix(10).enumerated()), id: \.offset) { idx, svc in
-                                HStack(spacing: 12) {
+                                HStack(spacing: ParietalSpacing.md) {
                                     Text(idx < 3 ? "🏆" : "📡")
                                     VStack(alignment: .leading) {
                                         Text(svc["name"] as? String ?? "service-\(idx)")
                                             .font(.body.weight(.medium).monospaced())
-                                            .foregroundStyle(TrinityTheme.textPrimary)
-                                        HStack(spacing: 8) {
+                                            .foregroundStyle(V4Color.textPrimary)
+                                        HStack(spacing: ParietalSpacing.sm) {
                                             if let lr = svc["lr"] as? Double {
                                                 Text("LR \(String(format: "%.1e", lr))")
                                                     .font(.caption2)
-                                                    .foregroundStyle(TrinityTheme.textMuted)
+                                                    .foregroundStyle(V4Color.textSecondary)
                                             }
                                             if let sched = svc["schedule"] as? String {
                                                 Text(sched)
                                                     .font(.caption2)
-                                                    .foregroundStyle(TrinityTheme.purple)
+                                                    .foregroundStyle(V4Color.purple)
                                             }
                                         }
                                     }
@@ -98,17 +98,17 @@ struct SEVOFarmScreen: View {
                                     if let ppl = svc["ppl"] as? Double {
                                         Text(String(format: "PPL %.2f", ppl))
                                             .font(.body.weight(.bold).monospacedDigit())
-                                            .foregroundStyle(TrinityTheme.golden)
+                                            .foregroundStyle(V4Color.golden)
                                     }
                                     if let step = svc["step"] as? Int {
                                         Text("\(step / 1000)K")
                                             .font(.caption.monospacedDigit())
-                                            .foregroundStyle(TrinityTheme.textMuted)
+                                            .foregroundStyle(V4Color.textSecondary)
                                     }
                                 }
                                 .padding()
-                                .background(TrinityTheme.bgCard)
-                                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                                .background(V4Color.bgCard)
+                                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                                 .padding(.horizontal)
                             }
                         }
@@ -124,28 +124,28 @@ struct SEVOFarmScreen: View {
                 // Recent farm events
                 let events = bridge.loadFarmEvents(lastN: 15)
                 if !events.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Text("FARM EVENT LOG")
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                             .padding(.horizontal)
 
                         ForEach(events) { event in
-                            HStack(spacing: 8) {
+                            HStack(spacing: ParietalSpacing.sm) {
                                 Text(eventEmoji(event.type))
                                 Text(event.type ?? "event")
                                     .font(.caption.weight(.medium))
-                                    .foregroundStyle(TrinityTheme.textPrimary)
+                                    .foregroundStyle(V4Color.textPrimary)
                                 if let svc = event.service {
                                     Text(svc)
                                         .font(.caption2.monospaced())
-                                        .foregroundStyle(TrinityTheme.textMuted)
+                                        .foregroundStyle(V4Color.textSecondary)
                                 }
                                 Spacer()
                                 if let ppl = event.ppl {
                                     Text(String(format: "%.2f", ppl))
                                         .font(.caption.monospacedDigit())
-                                        .foregroundStyle(TrinityTheme.golden)
+                                        .foregroundStyle(V4Color.golden)
                                 }
                             }
                             .padding(.horizontal)
@@ -156,18 +156,18 @@ struct SEVOFarmScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { watcher.reload() }
     }
 
     private var noDataView: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: ParietalSpacing.md) {
             Text("No evolution state found")
                 .font(.headline)
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .foregroundStyle(V4Color.textPrimary)
             Text(".trinity/evolution_state.json not found")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .frame(maxWidth: .infinity)
         .padding(32)

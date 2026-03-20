@@ -96,9 +96,7 @@ pub const ApiServer = struct {
     }
 
     pub fn start(self: *ApiServer) !void {
-        std.log.info("PHI LOOP API Server listening on http://{any}:{d}", .{
-            self.address.in.sa.addr, self.address.in.getPort()
-        });
+        std.log.info("PHI LOOP API Server listening on http://{any}:{d}", .{ self.address.in.sa.addr, self.address.in.getPort() });
 
         while (true) {
             const response = try self.server.accept();

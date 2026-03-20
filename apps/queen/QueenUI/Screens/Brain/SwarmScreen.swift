@@ -8,23 +8,23 @@ struct SwarmScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 // Header
                 HStack {
                     Text("\u{1F41D}")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("HONEYCOMB")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("Cell Ecosystem Browser")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
                     StatCard(label: "Cells", value: "\(cells.count)")
                         .frame(width: 80)
-                    ActionButton(icon: "+", label: "New Cell", color: TrinityTheme.accent,
+                    ActionButton(icon: "+", label: "New Cell", color: V4Color.accent,
                                  action: "cell_create")
                 }
                 .padding()
@@ -50,21 +50,21 @@ struct SwarmScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .onAppear { loadCells() }
     }
 
     // MARK: - Cell Grid
 
     private var cellGridSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("CELL REGISTRY")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.golden)
+                .foregroundStyle(V4Color.golden)
                 .padding(.horizontal)
 
-            let columns = Array(repeating: GridItem(.flexible(), spacing: 8), count: 3)
-            LazyVGrid(columns: columns, spacing: 8) {
+            let columns = Array(repeating: GridItem(.flexible(), spacing: ParietalSpacing.sm), count: 3)
+            LazyVGrid(columns: columns, spacing: ParietalSpacing.sm) {
                 ForEach(cells) { cell in
                     cellCard(cell)
                 }
@@ -81,7 +81,7 @@ struct SwarmScreen: View {
                 selectedCell = isSelected ? nil : cell
             }
         } label: {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                 HStack {
                     Text(cell.emoji)
                         .font(.title2)
@@ -91,23 +91,23 @@ struct SwarmScreen: View {
 
                 Text(cell.name)
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                     .lineLimit(1)
 
                 Text(cell.description)
-                    .font(.system(size: 9))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size9)
+                    .foregroundStyle(V4Color.textSecondary)
                     .lineLimit(2)
 
                 if !cell.tags.isEmpty {
                     HStack(spacing: 3) {
                         ForEach(cell.tags.prefix(3), id: \.self) { tag in
                             Text(tag)
-                                .font(.system(size: 8, weight: .medium))
-                                .foregroundStyle(TrinityTheme.accent)
+                                .font(WernickeTypography.tiny8Medium)
+                                .foregroundStyle(V4Color.accent)
                                 .padding(.horizontal, 4)
                                 .padding(.vertical, 1)
-                                .background(TrinityTheme.accent.opacity(0.1))
+                                .background(V4Color.accent.opacity(V2Depth.bgSubtle))
                                 .clipShape(SwiftUI.Capsule())
                         }
                     }
@@ -115,25 +115,25 @@ struct SwarmScreen: View {
             }
             .padding(10)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(TrinityTheme.bgCard)
-            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+            .background(V4Color.bgCard)
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                    .stroke(isSelected ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: isSelected ? 2 : 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                    .stroke(isSelected ? V4Color.accent : V4Color.bgCardBorder, lineWidth: isSelected ? 2 : 1)
             )
         }
         .buttonStyle(.plain)
     }
 
     private func cellDetailCard(_ cell: CellInfo) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack {
                 Text(cell.emoji)
                     .font(.largeTitle)
                 VStack(alignment: .leading) {
                     Text(cell.name)
                         .font(.headline)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                     Text(cell.status.uppercased())
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(cell.agentStatus.color)
@@ -143,66 +143,66 @@ struct SwarmScreen: View {
                     withAnimation { selectedCell = nil }
                 } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
 
             Text(cell.description)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             // Tags
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 ForEach(cell.tags, id: \.self) { tag in
                     Text(tag)
                         .font(.caption2.weight(.medium))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(TrinityTheme.accent.opacity(0.1))
+                        .background(V4Color.accent.opacity(V2Depth.bgSubtle))
                         .clipShape(SwiftUI.Capsule())
                 }
             }
 
             // File path
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Text("Path:")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                 Text(cell.path)
                     .font(.caption2.monospaced())
-                    .foregroundStyle(TrinityTheme.purple)
+                    .foregroundStyle(V4Color.purple)
             }
 
             // Dependencies
             if !cell.dependencies.isEmpty {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Text("Deps:")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text(cell.dependencies.joined(separator: ", "))
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                 }
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.bgCard)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                .stroke(V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 
     // MARK: - Agent Pool
 
     private var agentPoolSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("AGENT POOL")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.purple)
+                .foregroundStyle(V4Color.purple)
                 .padding(.horizontal)
 
             let agents: [(name: String, emoji: String, role: String, caps: String)] = [
@@ -218,20 +218,20 @@ struct SwarmScreen: View {
                 let beat = watcher.heartbeats.first { $0.displayName.lowercased() == agent.name.lowercased() }
                 let isUp = beat != nil
 
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     Text(agent.emoji)
                         .font(.title2)
 
                     VStack(alignment: .leading, spacing: 2) {
                         Text(agent.name.uppercased())
                             .font(.headline)
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
                         Text(agent.role)
                             .font(.caption2.weight(.bold))
-                            .foregroundStyle(TrinityTheme.purple)
+                            .foregroundStyle(V4Color.purple)
                         Text(agent.caps)
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
 
                     Spacer()
@@ -239,18 +239,18 @@ struct SwarmScreen: View {
                     if let beat {
                         Text("Wake #\(beat.wake ?? 0)")
                             .font(.caption2.monospacedDigit())
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
 
                     AgentStatusDot(status: isUp ? .up : .stub)
                     StatusBadge(status: isUp ? .up : .stub)
                 }
                 .padding()
-                .background(TrinityTheme.bgCard)
-                .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+                .background(V4Color.bgCard)
+                .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
                 .overlay(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                        .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                        .stroke(V4Color.bgCardBorder, lineWidth: 1)
                 )
                 .padding(.horizontal)
             }
@@ -260,23 +260,23 @@ struct SwarmScreen: View {
     // MARK: - Task Decomposer
 
     private var taskDecomposerSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("TASK DECOMPOSER")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
                 .padding(.horizontal)
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 TextField("Describe task...", text: $taskInput)
                     .font(.caption.monospaced())
                     .textFieldStyle(.plain)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                     .padding(8)
-                    .background(TrinityTheme.bgCard)
+                    .background(V4Color.bgCard)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .onSubmit { submitTask() }
 
-                ActionButton(icon: "\u{1F41D}", label: "Decompose", color: TrinityTheme.accent,
+                ActionButton(icon: "\u{1F41D}", label: "Decompose", color: V4Color.accent,
                              action: "swarm_decompose", params: ["task": taskInput])
             }
             .padding(.horizontal)
@@ -286,21 +286,21 @@ struct SwarmScreen: View {
     // MARK: - Stats Bar
 
     private var statsBar: some View {
-        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.sm) {
             StatCard(
                 label: "Total Cells",
                 value: "\(cells.count)",
-                accent: TrinityTheme.accent
+                accent: V4Color.accent
             )
             StatCard(
                 label: "Active Agents",
                 value: "\(watcher.heartbeats.count)",
-                accent: TrinityTheme.purple
+                accent: V4Color.purple
             )
             StatCard(
                 label: "Completed",
                 value: "\(watcher.swarmState?.completed_tasks ?? 0)",
-                accent: TrinityTheme.golden
+                accent: V4Color.golden
             )
         }
         .padding(.horizontal)

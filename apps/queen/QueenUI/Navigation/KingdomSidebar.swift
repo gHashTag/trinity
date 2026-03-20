@@ -1,5 +1,6 @@
 import SwiftUI
 
+// Cortex: Entorhinal Cortex — Navigation & Grid Cells
 struct KingdomSidebar: View {
     @Binding var selection: Screen?
 
@@ -11,12 +12,19 @@ struct KingdomSidebar: View {
     ]
 
     var body: some View {
+        // Cortex: Entorhinal Sidebar — Responsive 220-400px
+        EntorhinalSidebar {
+            sidebarContent
+        }
+    }
+
+    private var sidebarContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Kingdom.allCases) { kingdom in
                     // Realm header
                     Text(realmTitle(kingdom))
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .font(WernickeTypography.caption2Bold.monospaced())
                         .foregroundStyle(Self.realmColors[kingdom] ?? .white)
                         .padding(.vertical, LayoutConstants.compactSpacing)
                         .padding(.horizontal, LayoutConstants.standardPadding)
@@ -26,24 +34,24 @@ struct KingdomSidebar: View {
                         Button {
                             selection = screen
                         } label: {
-                            HStack(spacing: 8) {
+                            HStack(spacing: ParietalSpacing.sm) {
                                 Text(screen.icon)
-                                    .font(.system(size: 13))
+                                    .font(WernickeTypography.small)
                                 Text(screen.rawValue)
-                                    .font(.system(size: 13, design: .monospaced))
+                                    .font(WernickeTypography.small.monospaced())
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.vertical, 6)
                             .padding(.horizontal, 16)
                             .background(
                                 selection == screen
-                                    ? (Self.realmColors[screen.kingdom] ?? .white).opacity(0.15)
+                                    ? (Self.realmColors[screen.kingdom] ?? .white).opacity(V2Depth.bgSidebarHover)
                                     : Color.clear
                             )
                             .foregroundStyle(
                                 selection == screen
                                     ? .white
-                                    : TrinityTheme.textMuted
+                                    : V4Color.textSecondary
                             )
                         }
                         .buttonStyle(.plain)

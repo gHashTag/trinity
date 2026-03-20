@@ -35,11 +35,11 @@ struct MarkdownTextView: View {
 
         var color: Color {
             switch self {
-            case .info: return TrinityTheme.accent
-            case .warning: return TrinityTheme.statusWarn
-            case .error: return TrinityTheme.statusError
-            case .tip: return TrinityTheme.purple
-            case .note: return Color.white.opacity(0.4)
+            case .info: return V4Color.accent
+            case .warning: return V4Color.warning
+            case .error: return V4Color.error
+            case .tip: return V4Color.purple
+            case .note: return Color.white.opacity(V1Theme.opacityTextTertiary)
             }
         }
 
@@ -263,70 +263,70 @@ struct MarkdownTextView: View {
                 if let lang, !lang.isEmpty {
                     HStack {
                         Text(lang)
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .font(WernickeTypography.caption2MediumMono)
+                            .foregroundStyle(V4Color.accent)
                         Spacer()
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, ParietalSpacing.md)
                     .padding(.top, 8)
                     .padding(.bottom, 4)
                 }
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     SyntaxHighlightedCode(code: code, language: lang)
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, ParietalSpacing.md)
                         .padding(.vertical, lang != nil ? 4 : 12)
                         .padding(.bottom, 8)
                 }
             }
-            .background(Color(hex: 0x1A1A1A))
+            .background(V4Color.surfaceElevated)
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(alignment: .topTrailing) {
                 CodeCopyButton(code: code)
-                    .padding(8)
+                    .padding(ParietalSpacing.sm)
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, ParietalSpacing.xs)
 
         case .mermaid(let code):
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     Text("mermaid")
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
-                        .foregroundStyle(TrinityTheme.purple)
+                        .font(WernickeTypography.caption2MediumMono)
+                        .foregroundStyle(V4Color.purple)
                     Spacer()
                 }
-                .padding(.horizontal, 12)
+                .padding(.horizontal, ParietalSpacing.md)
                 .padding(.top, 8)
                 .padding(.bottom, 4)
 
                 MermaidView(mermaidCode: code)
                     .frame(minHeight: 200)
                     .frame(maxWidth: .infinity)
-                    .padding(12)
-                    .background(Color(hex: 0x0A0A0A))
+                    .padding(ParietalSpacing.md)
+                    .background(V4Color.background)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(
                         RoundedRectangle(cornerRadius: 8)
-                            .stroke(TrinityTheme.purple.opacity(0.3), lineWidth: 1)
+                            .stroke(V4Color.purple.opacity(V2Depth.stateHover), lineWidth: 1)
                     )
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, ParietalSpacing.xs)
 
         case .taskItem(let checked, let text):
-            HStack(alignment: .top, spacing: 8) {
+            HStack(alignment: .top, spacing: ParietalSpacing.sm) {
                 Image(systemName: checked ? "checkmark.square.fill" : "square")
-                    .font(.system(size: 13))
-                    .foregroundStyle(checked ? TrinityTheme.accent : Color.white.opacity(0.4))
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(checked ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
                 inlineMarkdown(text)
-                    .strikethrough(checked, color: Color.white.opacity(0.3))
+                    .strikethrough(checked, color: Color.white.opacity(V2Depth.stateHover))
             }
             .padding(.vertical, 1)
             .padding(.leading, 8)
 
         case .listItem(let text):
-            HStack(alignment: .top, spacing: 8) {
+            HStack(alignment: .top, spacing: ParietalSpacing.sm) {
                 Text("\u{2022}")
-                    .foregroundStyle(Color(hex: 0xD1D1D1))
+                    .foregroundStyle(V4Color.border)
                 inlineMarkdown(text)
             }
             .padding(.vertical, 1)
@@ -334,29 +334,29 @@ struct MarkdownTextView: View {
 
         case .table(let rows):
             TableBlockView(rows: rows)
-                .padding(.vertical, 8)
+                .padding(.vertical, ParietalSpacing.sm)
 
         case .image(let alt, let url):
             ImageBlockView(alt: alt, url: url)
-                .padding(.vertical, 8)
+                .padding(.vertical, ParietalSpacing.sm)
 
         case .diff(let content):
             DiffBlockView(content: content)
-                .padding(.vertical, 4)
+                .padding(.vertical, ParietalSpacing.xs)
 
         case .math(let expr):
             MathBlockView(expression: expr)
-                .padding(.vertical, 4)
+                .padding(.vertical, ParietalSpacing.xs)
 
         case .callout(let type, let text):
             CalloutView(type: type, text: text)
-                .padding(.vertical, 4)
+                .padding(.vertical, ParietalSpacing.xs)
 
         case .horizontalRule:
             Rectangle()
-                .fill(Color.white.opacity(0.1))
+                .fill(Color.white.opacity(V2Depth.bgSubtle))
                 .frame(height: 1)
-                .padding(.vertical, 12)
+                .padding(.vertical, ParietalSpacing.md)
 
         case .empty:
             Spacer().frame(height: 8)
@@ -396,14 +396,14 @@ struct MarkdownTextView: View {
         ) {
             let withCitations = applyCitationSuperscripts(to: attributed)
             Text(withCitations)
-                .foregroundStyle(Color(hex: 0xD1D1D1))
+                .foregroundStyle(V4Color.border)
                 .environment(\.openURL, OpenURLAction { url in
                     NSWorkspace.shared.open(url)
                     return .handled
                 })
         } else {
             Text(processed)
-                .foregroundStyle(Color(hex: 0xD1D1D1))
+                .foregroundStyle(V4Color.border)
         }
     }
 
@@ -437,7 +437,7 @@ struct MarkdownTextView: View {
             // Build superscript string
             let superscript = String(numStr.map { superMap[$0] ?? $0 })
             var replacement = AttributedString(superscript)
-            replacement.foregroundColor = Color(hex: 0x50FA7B) // accent green
+            replacement.foregroundColor = V4Color.success // accent green
             replacement.font = .system(size: 11, weight: .bold)
             // Add link to citation URL
             if let url = URL(string: citations[num - 1].url) {
@@ -519,8 +519,8 @@ private struct CodeCopyButton: View {
             }
         } label: {
             Image(systemName: copied ? "checkmark" : "doc.on.doc")
-                .font(.system(size: 12))
-                .foregroundStyle(copied ? TrinityTheme.accent : TrinityTheme.textMuted)
+                .font(WernickeTypography.size12)
+                .foregroundStyle(copied ? V4Color.accent : V4Color.textSecondary)
                 .contentTransition(.symbolEffect(.replace))
         }
         .buttonStyle(.plain)
@@ -557,23 +557,23 @@ struct TableBlockView: View {
             // Copy button header
             HStack {
                 Text("table")
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.3))
+                    .font(WernickeTypography.size10Mono.weight(.medium))
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 Spacer()
                 Button {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(tableAsText, forType: NSPasteboard.PasteboardType.string)
                 } label: {
                     Image(systemName: "doc.on.doc")
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color.white.opacity(0.3))
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                 }
                 .buttonStyle(.plain)
                 .help("Copy table")
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 4)
-            .background(Color.white.opacity(0.04))
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.xs)
+            .background(Color.white.opacity(V2Depth.bgCardLight))
 
             ScrollView(.horizontal, showsIndicators: false) {
                 VStack(alignment: .leading, spacing: 0) {
@@ -583,28 +583,28 @@ struct TableBlockView: View {
                                 let cell = colIdx < row.count ? row[colIdx] : ""
                                 Text(cell)
                                     .font(.system(size: 13, weight: rowIdx == 0 ? .bold : .regular, design: .default))
-                                    .foregroundStyle(rowIdx == 0 ? TrinityTheme.accent : Color(hex: 0xD1D1D1))
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 6)
+                                    .foregroundStyle(rowIdx == 0 ? V4Color.accent : V4Color.border)
+                                    .padding(.horizontal, ParietalSpacing.md)
+                                    .padding(.vertical, ParietalSpacing.xs + 2)
                                     .frame(minWidth: 80, alignment: .leading)
                             }
                         }
-                        .background(rowIdx == 0 ? Color.white.opacity(0.06) : (rowIdx % 2 == 0 ? Color.clear : Color.white.opacity(0.02)))
+                        .background(rowIdx == 0 ? Color.white.opacity(V2Depth.bgCard) : (rowIdx % 2 == 0 ? Color.clear : Color.white.opacity(0.02)))
 
                         if rowIdx == 0 {
                             Rectangle()
-                                .fill(TrinityTheme.accent.opacity(0.3))
+                                .fill(V4Color.accent.opacity(V2Depth.stateHover))
                                 .frame(height: 1)
                         }
                     }
                 }
             } // ScrollView
             } // VStack
-            .background(Color(hex: 0x0A0A0A))
+            .background(V4Color.background)
             .clipShape(RoundedRectangle(cornerRadius: 8))
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
+                    .stroke(Color.white.opacity(V2Depth.bgCard), lineWidth: 1)
             )
         }
     }
@@ -619,20 +619,20 @@ struct DiffBlockView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("diff")
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.caption2MediumMono)
+                    .foregroundStyle(V4Color.accent)
                 Spacer()
                 Button {
                     NSPasteboard.general.clearContents()
                     NSPasteboard.general.setString(content, forType: .string)
                 } label: {
                     Image(systemName: "doc.on.doc")
-                        .font(.system(size: 11))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, ParietalSpacing.md)
             .padding(.top, 8)
             .padding(.bottom, 4)
 
@@ -641,34 +641,34 @@ struct DiffBlockView: View {
                     ForEach(Array(content.components(separatedBy: "\n").enumerated()), id: \.offset) { _, line in
                         HStack(spacing: 0) {
                             Text(line)
-                                .font(.system(size: 13, design: .monospaced))
+                                .font(WernickeTypography.smallSemiboldMono)
                                 .foregroundStyle(diffLineColor(line))
                                 .textSelection(.enabled)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 12)
+                        .padding(.horizontal, ParietalSpacing.md)
                         .padding(.vertical, 1)
                         .background(diffLineBG(line))
                     }
                 }
-                .padding(.vertical, 4)
+                .padding(.vertical, ParietalSpacing.xs)
                 .padding(.bottom, 8)
             }
         }
-        .background(Color(hex: 0x1A1A1A))
+        .background(V4Color.surfaceElevated)
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private func diffLineColor(_ line: String) -> Color {
-        if line.hasPrefix("+") { return Color(hex: 0x50FA7B) }  // green
-        if line.hasPrefix("-") { return Color(hex: 0xFF5555) }  // red
+        if line.hasPrefix("+") { return V4Color.success }  // green
+        if line.hasPrefix("-") { return V4Color.error }  // red
         if line.hasPrefix("@@") { return Color(hex: 0x8BE9FD) } // cyan
-        return Color(hex: 0xE0E0E0)
+        return V4Color.textTertiary
     }
 
     private func diffLineBG(_ line: String) -> Color {
-        if line.hasPrefix("+") { return Color(hex: 0x50FA7B).opacity(0.08) }
-        if line.hasPrefix("-") { return Color(hex: 0xFF5555).opacity(0.08) }
+        if line.hasPrefix("+") { return V4Color.success.opacity(0.08) }
+        if line.hasPrefix("-") { return V4Color.error.opacity(0.08) }
         if line.hasPrefix("@@") { return Color(hex: 0x8BE9FD).opacity(0.05) }
         return .clear
     }
@@ -681,26 +681,26 @@ struct CalloutView: View {
     let text: String
 
     var body: some View {
-        HStack(alignment: .top, spacing: 10) {
+        HStack(alignment: .top, spacing: ParietalSpacing.sm + 2) {
             Image(systemName: type.icon)
-                .font(.system(size: 14))
+                .font(WernickeTypography.size14)
                 .foregroundStyle(type.color)
-                .frame(width: 20)
+                .frame(width: ParietalSpacing.buttonSmallWidth)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(text)
-                    .font(.system(size: 14))
+                    .font(WernickeTypography.size14)
                     .foregroundStyle(Color.white.opacity(0.85))
                     .lineSpacing(3)
             }
         }
-        .padding(12)
+        .padding(ParietalSpacing.md)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(type.color.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(type.color.opacity(0.3), lineWidth: 1)
+                .stroke(type.color.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 }
@@ -713,13 +713,13 @@ struct SyntaxHighlightedCode: View {
 
     var body: some View {
         Text(highlightedCode)
-            .font(.system(size: 13, design: .monospaced))
+            .font(WernickeTypography.smallSemiboldMono)
             .textSelection(.enabled)
     }
 
     private var highlightedCode: AttributedString {
         var result = AttributedString(code)
-        result.foregroundColor = Color(hex: 0xE0E0E0) // default text
+        result.foregroundColor = V4Color.textTertiary // default text
 
         let lang = (language ?? "").lowercased()
         let isZig = lang == "zig"
@@ -735,7 +735,7 @@ struct SyntaxHighlightedCode: View {
         let commentColor = Color(hex: 0x6272A4)  // gray-blue
         let numberColor = Color(hex: 0xBD93F9)   // purple
         let typeColor = Color(hex: 0x8BE9FD)     // cyan
-        let funcColor = Color(hex: 0x50FA7B)     // green
+        let funcColor = V4Color.success     // green
 
         let keywords: [String]
         let types: [String]
@@ -834,7 +834,7 @@ struct ImageBlockView: View {
     @State private var isLoading = true
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             if let image {
                 Image(nsImage: image)
                     .resizable()
@@ -843,7 +843,7 @@ struct ImageBlockView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 12))
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                            .stroke(Color.white.opacity(V2Depth.bgSubtle), lineWidth: 1)
                     )
                     .contextMenu {
                         Button("Copy Image") {
@@ -860,27 +860,27 @@ struct ImageBlockView: View {
                         }
                     }
             } else if isLoading {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     ProgressView()
                         .controlSize(.small)
                     Text("Loading image...")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .frame(width: 300, height: 200)
-                .background(Color(hex: 0x1A1A1A))
+                .background(V4Color.surfaceElevated)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             } else {
                 // Failed to load — show URL + retry
-                VStack(spacing: 8) {
-                    HStack(spacing: 8) {
+                VStack(spacing: ParietalSpacing.sm) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         Image(systemName: "photo.badge.exclamationmark")
-                            .foregroundStyle(TrinityTheme.statusError)
+                            .foregroundStyle(V4Color.error)
                         Text(alt.isEmpty ? "Image failed to load" : alt)
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         Button {
                             isLoading = true
                             Task {
@@ -888,13 +888,13 @@ struct ImageBlockView: View {
                                 isLoading = false
                             }
                         } label: {
-                            HStack(spacing: 4) {
+                            HStack(spacing: ParietalSpacing.xs) {
                                 Image(systemName: "arrow.clockwise")
-                                    .font(.system(size: 10))
+                                    .font(WernickeTypography.size10)
                                 Text("Retry")
-                                    .font(.system(size: 10, weight: .bold))
+                                    .font(WernickeTypography.miniBold)
                             }
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         }
                         .buttonStyle(.plain)
 
@@ -904,21 +904,21 @@ struct ImageBlockView: View {
                             }
                         } label: {
                             Text("Open URL")
-                                .font(.system(size: 10))
-                                .foregroundStyle(Color.white.opacity(0.4))
+                                .font(WernickeTypography.size10)
+                                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                         }
                         .buttonStyle(.plain)
                     }
                 }
                 .padding()
-                .background(Color(hex: 0x1A1A1A))
+                .background(V4Color.surfaceElevated)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             }
 
             if !alt.isEmpty && image != nil {
                 Text(alt)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .italic()
             }
         }
@@ -951,22 +951,22 @@ struct MathBlockView: View {
     var body: some View {
         HStack(spacing: 0) {
             Spacer()
-            VStack(alignment: .center, spacing: 4) {
+            VStack(alignment: .center, spacing: ParietalSpacing.xs) {
                 Text(MathRenderer.render(expression))
-                    .font(.system(size: 18, weight: .regular, design: .serif))
-                    .foregroundStyle(Color(hex: 0xE0E0E0))
+                    .font(WernickeTypography.size18)
+                    .foregroundStyle(V4Color.textTertiary)
                     .textSelection(.enabled)
                     .multilineTextAlignment(.center)
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, ParietalSpacing.md + ParietalSpacing.md)
             .padding(.vertical, 16)
             Spacer()
         }
-        .background(Color(hex: 0x0A0A0A))
+        .background(V4Color.background)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(TrinityTheme.purple.opacity(0.2), lineWidth: 1)
+                .stroke(V4Color.purple.opacity(0.2), lineWidth: 1)
         )
         .accessibilityLabel("Math expression: \(expression)")
     }

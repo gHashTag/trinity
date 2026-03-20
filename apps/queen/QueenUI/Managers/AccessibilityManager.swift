@@ -181,7 +181,7 @@ public final class AccessibilityManager: ObservableObject {
         if self.highContrast {
             return background == .black ? .white : .black
         }
-        return TrinityTheme.textPrimary
+        return V4Color.textPrimary
     }
 
     // MARK: - Accessibility Labels Helpers

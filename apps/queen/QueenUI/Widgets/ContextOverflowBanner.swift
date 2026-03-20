@@ -11,31 +11,31 @@ enum ContextWarningTier: Comparable {
 
     var color: Color {
         switch self {
-        case .none: return TrinityTheme.statusOK
-        case .info: return TrinityTheme.statusOK
-        case .warning: return TrinityTheme.statusWarn
-        case .urgent: return Color(hex: 0xFF8C00)  // Dark orange
-        case .critical: return TrinityTheme.statusError
+        case .none: return V4Color.success
+        case .info: return V4Color.success
+        case .warning: return V4Color.warning
+        case .urgent: return V4Color.warning  // Dark orange
+        case .critical: return V4Color.error
         }
     }
 
     var bgColor: Color {
         switch self {
-        case .none: return TrinityTheme.statusOK.opacity(0.08)
-        case .info: return TrinityTheme.statusOK.opacity(0.08)
-        case .warning: return TrinityTheme.statusWarn.opacity(0.1)
-        case .urgent: return Color(hex: 0xFF8C00).opacity(0.12)
-        case .critical: return TrinityTheme.statusError.opacity(0.15)
+        case .none: return V4Color.success.opacity(0.08)
+        case .info: return V4Color.success.opacity(0.08)
+        case .warning: return V4Color.warning.opacity(V2Depth.bgSubtle)
+        case .urgent: return V4Color.warning.opacity(0.12)
+        case .critical: return V4Color.error.opacity(V2Depth.bgSidebarHover)
         }
     }
 
     var borderColor: Color {
         switch self {
-        case .none: return TrinityTheme.statusOK.opacity(0.2)
-        case .info: return TrinityTheme.statusOK.opacity(0.3)
-        case .warning: return TrinityTheme.statusWarn.opacity(0.4)
-        case .urgent: return Color(hex: 0xFF8C00).opacity(0.5)
-        case .critical: return TrinityTheme.statusError.opacity(0.6)
+        case .none: return V4Color.success.opacity(0.2)
+        case .info: return V4Color.success.opacity(V2Depth.stateHover)
+        case .warning: return V4Color.warning.opacity(V1Theme.opacityTextTertiary)
+        case .urgent: return V4Color.warning.opacity(V2Depth.stateDisabled)
+        case .critical: return V4Color.error.opacity(V1Theme.opacityTextSecondary)
         }
     }
 
@@ -110,19 +110,19 @@ struct ContextOverflowBanner: View {
         if tier != .none {
             VStack(spacing: 0) {
                 // Main banner
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     // Animated icon with glow
                     ZStack {
                         if tier.shouldAnimate && !reduceMotion {
                             Circle()
-                                .fill(tier.color.opacity(0.3))
+                                .fill(tier.color.opacity(V2Depth.stateHover))
                                 .frame(width: 28, height: 28)
                                 .scaleEffect(pulseScale)
                                 .blur(radius: 4)
                         }
 
                         Image(systemName: tier.icon)
-                            .font(.system(size: tier == .critical ? 16 : 14))
+                            .font(tier == .critical ? WernickeTypography.size16 : WernickeTypography.size14)
                             .foregroundStyle(tier.color)
                             .scaleEffect(tier.shouldAnimate && !reduceMotion ? pulseScale : 1.0)
                     }
@@ -135,24 +135,24 @@ struct ContextOverflowBanner: View {
                     }
 
                     VStack(alignment: .leading, spacing: 2) {
-                        HStack(spacing: 6) {
+                        HStack(spacing: ParietalSpacing.sm - 2) {
                             Text(tier.title)
-                                .font(.system(size: 12, weight: .bold))
+                                .font(WernickeTypography.captionBold)
                                 .foregroundStyle(tier.color)
 
                             Text("\(tokens.formatted()) tokens")
-                                .font(.system(size: 10))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .font(WernickeTypography.size10)
+                                .foregroundStyle(V4Color.textSecondary)
 
                             Text("(\(Int(percentage * 100))%)")
-                                .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                                .font(WernickeTypography.size10.weight(.semibold))
                                 .foregroundStyle(tier.color)
                         }
 
                         if !tier.description.isEmpty {
                             Text(tier.description)
-                                .font(.system(size: 10))
-                                .foregroundStyle(TrinityTheme.textMuted.opacity(0.7))
+                                .font(WernickeTypography.size10)
+                                .foregroundStyle(V4Color.textSecondary.opacity(0.7))
                         }
 
                         // Gradient progress bar
@@ -160,8 +160,8 @@ struct ContextOverflowBanner: View {
                             ZStack(alignment: .leading) {
                                 // Background track
                                 RoundedRectangle(cornerRadius: 2)
-                                    .fill(Color.white.opacity(0.1))
-                                    .frame(height: 4)
+                                    .fill(Color.white.opacity(V2Depth.bgSubtle))
+                                    .frame(height: ParietalSpacing.xs)
 
                                 // Gradient fill
                                 RoundedRectangle(cornerRadius: 2)
@@ -171,13 +171,13 @@ struct ContextOverflowBanner: View {
                                 // Threshold markers
                                 ForEach([0.8, 0.9, 0.95, 0.99], id: \.self) { threshold in
                                     Rectangle()
-                                        .fill(Color.white.opacity(0.3))
+                                        .fill(Color.white.opacity(V2Depth.stateHover))
                                         .frame(width: 1, height: 6)
                                         .offset(x: geometry.size.width * threshold)
                                 }
                             }
                         }
-                        .frame(height: 4)
+                        .frame(height: ParietalSpacing.xs)
                     }
 
                     Spacer()
@@ -189,15 +189,15 @@ struct ContextOverflowBanner: View {
                         }
                     } label: {
                         Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 9, weight: .semibold))
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .font(WernickeTypography.miniSemibold)
+                            .foregroundStyle(V4Color.textSecondary)
                             .padding(4)
                             .background(Circle().fill(Color.white.opacity(0.05)))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(isExpanded ? "Collapse actions" : "Expand actions")
                 }
-                .padding(12)
+                .padding(ParietalSpacing.md)
                 .background(tier.bgColor)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 .overlay(
@@ -207,12 +207,12 @@ struct ContextOverflowBanner: View {
 
                 // Expanded action buttons
                 if isExpanded {
-                    VStack(spacing: 8) {
+                    VStack(spacing: ParietalSpacing.sm) {
                         Divider()
-                            .background(Color.white.opacity(0.1))
+                            .background(Color.white.opacity(V2Depth.bgSubtle))
 
                         // Primary actions
-                        HStack(spacing: 8) {
+                        HStack(spacing: ParietalSpacing.sm) {
                             SimpleActionButton(
                                 icon: "text.alignleft",
                                 title: "Summarize",
@@ -223,7 +223,7 @@ struct ContextOverflowBanner: View {
                             SimpleActionButton(
                                 icon: "square.and.pencil",
                                 title: "New Thread",
-                                color: TrinityTheme.accent,
+                                color: V4Color.accent,
                                 action: onNewThread
                             )
 
@@ -231,7 +231,7 @@ struct ContextOverflowBanner: View {
                                 SimpleActionButton(
                                     icon: "archivebox",
                                     title: "Archive Old",
-                                    color: TrinityTheme.purple,
+                                    color: V4Color.purple,
                                     action: { onArchive(10) }
                                 )
                             }
@@ -245,7 +245,7 @@ struct ContextOverflowBanner: View {
                             )
                         }
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, ParietalSpacing.md)
                     .padding(.bottom, 12)
                     .background(tier.bgColor)
                 }
@@ -257,10 +257,10 @@ struct ContextOverflowBanner: View {
 
     private var gradientBar: LinearGradient {
         let colors: [Color] = [
-            TrinityTheme.statusOK,
-            TrinityTheme.statusWarn,
-            Color(hex: 0xFF8C00),
-            TrinityTheme.statusError
+            V4Color.success,
+            V4Color.warning,
+            V4Color.warning,
+            V4Color.error
         ]
 
         return LinearGradient(
@@ -281,14 +281,14 @@ struct SimpleActionButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Image(systemName: icon)
-                    .font(.system(size: 9))
+                    .font(WernickeTypography.size9)
                 Text(title)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(WernickeTypography.miniSemibold)
             }
             .foregroundStyle(color)
-            .padding(.horizontal, 10)
+            .padding(.horizontal, ParietalSpacing.sm + 2)
             .padding(.vertical, 5)
             .background(Color.white.opacity(0.08))
             .clipShape(SwiftUI.Capsule())
@@ -307,40 +307,40 @@ struct SmartSuggestionsSection: View {
     @State private var removeCount = 10
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
             HStack {
                 Image(systemName: "lightbulb.fill")
-                    .font(.system(size: 8))
-                    .foregroundStyle(TrinityTheme.statusWarn)
+                    .font(WernickeTypography.size8)
+                    .foregroundStyle(V4Color.warning)
                 Text("Smart suggestions")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.miniSemibold)
+                    .foregroundStyle(V4Color.textSecondary)
                 Spacer()
             }
 
             Text("Remove oldest messages to free up context space")
-                .font(.system(size: 9))
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
+                .font(WernickeTypography.size9)
+                .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
 
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 ForEach([5, 10, 20], id: \.self) { count in
                     Button {
                         onRemoveOldest(count)
                     } label: {
                         HStack(spacing: 3) {
                             Image(systemName: "minus.circle.fill")
-                                .font(.system(size: 7))
+                                .font(WernickeTypography.size7)
                             Text("Oldest \(count)")
-                                .font(.system(size: 9, weight: .medium))
+                                .font(WernickeTypography.microMedium)
                         }
-                        .foregroundStyle(removeCount == count ? TrinityTheme.statusError : TrinityTheme.textMuted)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
+                        .foregroundStyle(removeCount == count ? V4Color.error : V4Color.textSecondary)
+                        .padding(.horizontal, ParietalSpacing.sm)
+                        .padding(.vertical, ParietalSpacing.xs)
                         .background((removeCount == count ? tier.color : Color.white).opacity(0.05))
                         .clipShape(RoundedRectangle(cornerRadius: 5))
                         .overlay(
                             RoundedRectangle(cornerRadius: 5)
-                                .stroke((removeCount == count ? tier.color : Color.white.opacity(0.1)), lineWidth: 1)
+                                .stroke((removeCount == count ? tier.color : Color.white.opacity(V2Depth.bgSubtle)), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
@@ -350,7 +350,7 @@ struct SmartSuggestionsSection: View {
                 }
             }
         }
-        .padding(8)
+        .padding(ParietalSpacing.sm)
         .background(Color.black.opacity(0.2))
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }
@@ -377,28 +377,28 @@ struct CompactContextIndicator: View {
     }
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Image(systemName: tier.icon)
-                .font(.system(size: 8))
+                .font(WernickeTypography.size8)
                 .foregroundStyle(tier.color)
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 1.5)
-                        .fill(Color.white.opacity(0.1))
-                        .frame(height: 3)
+                        .fill(Color.white.opacity(V2Depth.bgSubtle))
+                        .frame(height: ParietalSpacing.xxxs)
 
                     RoundedRectangle(cornerRadius: 1.5)
                         .fill(tier.color)
                         .frame(width: geometry.size.width * percentage, height: 3)
                 }
             }
-            .frame(width: 40)
+            .frame(width: ParietalSpacing.buttonMediumWidth)
 
             if isHovering {
                 Text("\(tokens.formatted()) / \(maxTokens.formatted())")
-                    .font(.system(size: 9, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size9Mono)
+                    .foregroundStyle(V4Color.textSecondary)
                     .transition(.opacity)
             }
         }

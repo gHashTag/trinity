@@ -26,10 +26,10 @@ enum ToastStyle: String, CaseIterable, Identifiable {
 
     var color: Color {
         switch self {
-        case .info: return Color(hex: 0x00D9FF)
-        case .success: return TrinityTheme.statusOK
-        case .warning: return TrinityTheme.statusWarn
-        case .error: return TrinityTheme.statusError
+        case .info: return V4Color.info
+        case .success: return V4Color.success
+        case .warning: return V4Color.warning
+        case .error: return V4Color.error
         }
     }
 
@@ -107,7 +107,7 @@ class ToastQueue: ObservableObject {
             }
         }
 
-        withAnimation(TrinityTheme.springAnimation()) {
+        withAnimation(MTMotion.standardSpring) {
             toasts.append(toast)
         }
 
@@ -119,7 +119,7 @@ class ToastQueue: ObservableObject {
     }
 
     func dismiss(_ id: UUID) {
-        withAnimation(TrinityTheme.gentleSpring()) {
+        withAnimation(MTMotion.slow) {
             toasts.removeAll { $0.id == id }
         }
         timers[id]?.invalidate()
@@ -128,7 +128,7 @@ class ToastQueue: ObservableObject {
     }
 
     func dismissAll() {
-        withAnimation(TrinityTheme.gentleSpring()) {
+        withAnimation(MTMotion.slow) {
             toasts.removeAll()
         }
         timers.values.forEach { $0.invalidate() }
@@ -206,21 +206,21 @@ struct ToastView: View {
     private let dragThreshold: CGFloat = 100
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // Icon
             iconView
 
             // Content
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(item.title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.smallSemibold)
+                    .foregroundStyle(V4Color.textPrimary)
                     .lineLimit(2)
 
                 if let message = item.message {
                     Text(message)
-                        .font(.system(size: 11))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size11)
+                        .foregroundStyle(V4Color.textSecondary)
                         .lineLimit(3)
                 }
             }
@@ -232,24 +232,24 @@ struct ToastView: View {
                 onDismiss()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textMuted)
-                    .frame(width: 20, height: 20)
-                    .background(Circle().fill(TrinityTheme.textMuted.opacity(0.1)))
+                    .font(WernickeTypography.miniSemibold)
+                    .foregroundStyle(V4Color.textSecondary)
+                    .frame(width: ParietalSpacing.icon + 4, height: ParietalSpacing.icon + 4)
+                    .background(Circle().fill(V4Color.textSecondary.opacity(V2Depth.bgSubtle)))
             }
             .buttonStyle(.plain)
             .accessibilityLabel("Dismiss notification")
         }
-        .padding(12)
+        .padding(ParietalSpacing.md)
         .frame(width: toastWidth)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .fill(TrinityTheme.bgCard)
-                .shadow(color: .black.opacity(0.3), radius: 12, y: 4)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .fill(V4Color.surface)
+                .shadow(color: .black.opacity(V2Depth.stateHover), radius: 12, y: 4)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(item.style.color.opacity(0.5), lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(item.style.color.opacity(V2Depth.stateDisabled), lineWidth: 1)
         )
         .overlay(alignment: .bottom) {
             if !isHovered {
@@ -260,7 +260,7 @@ struct ToastView: View {
         .scaleEffect(isVisible ? 1 : 0.8)
         .opacity(isVisible ? 1 : 0)
         .onAppear {
-            withAnimation(TrinityTheme.springAnimation()) {
+            withAnimation(MTMotion.standardSpring) {
                 isVisible = true
             }
             // Start progress animation
@@ -290,7 +290,7 @@ struct ToastView: View {
                             onDismiss()
                         }
                     } else {
-                        withAnimation(TrinityTheme.quickSpring()) {
+                        withAnimation(MTMotion.quickSpring) {
                             dragOffset = 0
                         }
                     }
@@ -303,11 +303,11 @@ struct ToastView: View {
     private var iconView: some View {
         ZStack {
             Circle()
-                .fill(item.style.color.opacity(0.15))
-                .frame(width: 32, height: 32)
+                .fill(item.style.color.opacity(V2Depth.bgSidebarHover))
+                .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
 
             Image(systemName: item.style.icon)
-                .font(.system(size: 14, weight: .medium))
+                .font(WernickeTypography.body14Medium)
                 .foregroundStyle(item.style.color)
         }
     }
@@ -323,8 +323,8 @@ struct ToastView: View {
                 }
             }
         }
-        .frame(height: 3)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium))
+        .frame(height: ParietalSpacing.xxxs)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
         .frame(maxWidth: .infinity, alignment: .leading)
         .offset(y: 1.5)
     }
@@ -356,7 +356,7 @@ struct ToastNotificationView: View {
                 .frame(width: 0, height: 0)
 
                 // Toast stack
-                VStack(spacing: 8) {
+                VStack(spacing: ParietalSpacing.sm) {
                     ForEach(queue.toasts.reversed()) { toast in
                         ToastView(
                             item: toast,
@@ -377,7 +377,7 @@ struct ToastNotificationView: View {
                         ))
                     }
                 }
-                .padding(16)
+                .padding(ParietalSpacing.lg)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: queue.position.alignment)
             }
         }
@@ -485,18 +485,18 @@ private struct ToastDemoView: View {
 
     var body: some View {
         ZStack {
-            TrinityTheme.bgWindow.ignoresSafeArea()
+            V4Color.background.ignoresSafeArea()
 
-            VStack(spacing: 20) {
+            VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
                 Text("Toast Notification Demo")
-                    .font(.system(size: 24, weight: .bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.h3Bold)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Text("Demonstrates all toast styles with animations")
-                    .font(.system(size: 14))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(V4Color.textSecondary)
 
-                VStack(spacing: 12) {
+                VStack(spacing: ParietalSpacing.md) {
                     toastButton("Info", style: .info) {
                         queue.info("Information", message: "This is an informational toast notification with timeout progress.")
                     }
@@ -515,14 +515,14 @@ private struct ToastDemoView: View {
                 }
 
                 Divider()
-                    .background(TrinityTheme.bgCardBorder)
+                    .background(V4Color.border)
 
-                VStack(spacing: 8) {
+                VStack(spacing: ParietalSpacing.sm) {
                     Text("Keyboard Shortcuts")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.caption2Semibold)
+                        .foregroundStyle(V4Color.textSecondary)
 
-                    HStack(spacing: 16) {
+                    HStack(spacing: ParietalSpacing.lg) {
                         shortcutKey("Esc", action: "Dismiss all")
 
                         shortcutKey("Swipe", action: "Swipe left to dismiss")
@@ -549,7 +549,7 @@ private struct ToastDemoView: View {
     }
 
     private var toastStack: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             ForEach(queue.toasts.reversed()) { toast in
                 ToastView(
                     item: toast,
@@ -570,7 +570,7 @@ private struct ToastDemoView: View {
                 ))
             }
         }
-        .padding(16)
+        .padding(ParietalSpacing.lg)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
         .background(
             GeometryReader { _ in
@@ -586,39 +586,39 @@ private struct ToastDemoView: View {
 
     private func toastButton(_ title: String, style: ToastStyle, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Image(systemName: style.icon)
                     .foregroundStyle(style.color)
 
                 Text(title)
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.smallMedium)
+                    .foregroundStyle(V4Color.textPrimary)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 10)
-            .background(style.color.opacity(0.15))
-            .cornerRadius(TrinityTheme.cornerSmall)
+            .padding(.vertical, ParietalSpacing.sm + 2)
+            .background(style.color.opacity(V2Depth.bgSidebarHover))
+            .cornerRadius(V1Theme.cornerSmall)
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .stroke(style.color.opacity(0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .stroke(style.color.opacity(V2Depth.stateHover), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
     }
 
     private func shortcutKey(_ key: String, action: String) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Text(key)
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                .foregroundStyle(TrinityTheme.textPrimary)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(TrinityTheme.bgCardBorder)
-                .cornerRadius(4)
+                .font(WernickeTypography.caption2Semibold)
+                .foregroundStyle(V4Color.textPrimary)
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.xs)
+                .background(V4Color.border)
+                .cornerRadius(V1Theme.cornerTiny)
 
             Text(action)
-                .font(.system(size: 11))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size11)
+                .foregroundStyle(V4Color.textSecondary)
         }
     }
 }

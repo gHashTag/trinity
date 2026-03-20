@@ -290,6 +290,8 @@ pub const Command = enum {
     event_stream,
     // Stress Testing
     stress_test,
+    // Brain Simulation
+    brain_simulate,
 };
 
 pub const CLIState = struct {

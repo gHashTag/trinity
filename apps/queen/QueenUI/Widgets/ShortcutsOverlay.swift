@@ -50,91 +50,137 @@ struct ShortcutsOverlay: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.7)
-                .ignoresSafeArea()
-                .onTapGesture { dismissOverlay() }
+            backgroundLayer
+            contentLayer
+        }
+    }
 
-            VStack(spacing: 0) {
-                if isFirstLaunch {
-                    VStack(spacing: 4) {
-                        Text("Welcome to Queen!")
-                            .font(.title2.weight(.bold))
-                            .foregroundStyle(TrinityTheme.golden)
-                        Text("Here are your shortcuts:")
-                            .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
-                    }
+    private var backgroundLayer: some View {
+        V2Depth.black70
+            .ignoresSafeArea()
+            .onTapGesture { dismissOverlay() }
+    }
+
+    private var contentLayer: some View {
+        VStack(spacing: 0) {
+            headerSection
+            shortcutsList
+            footerSection
+        }
+        .padding(32)
+        .frame(width: 560)
+        .background(cardBackground)
+    }
+
+    private var headerSection: some View {
+        VStack(spacing: 0) {
+            if isFirstLaunch {
+                welcomeText
                     .padding(.bottom, 16)
-                }
-
-                HStack {
-                    if !isFirstLaunch {
-                        Text("Keyboard Shortcuts")
-                            .font(.title2.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
-                    }
-                    Spacer()
-                    Button { dismissOverlay() } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(TrinityTheme.textMuted)
-                    }
-                    .buttonStyle(.plain)
-                }
+            }
+            titleRow
                 .padding(.bottom, 20)
+        }
+    }
 
-                ForEach(sections, id: \.0) { sectionName, shortcuts in
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(sectionName)
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundStyle(TrinityTheme.textMuted)
-                            .padding(.top, 8)
+    private var welcomeText: some View {
+        VStack(spacing: ParietalSpacing.xs) {
+            Text("Welcome to Queen!")
+                .font(.title2.weight(.bold))
+                .foregroundStyle(V4Color.golden)
+            Text("Here are your shortcuts:")
+                .font(.subheadline)
+                .foregroundStyle(V4Color.textSecondary)
+        }
+    }
 
-                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                            ForEach(shortcuts, id: \.0) { key, desc in
-                                HStack(spacing: 10) {
-                                    Text(key)
-                                        .font(.system(size: 13, weight: .bold, design: .monospaced))
-                                        .foregroundStyle(TrinityTheme.golden)
-                                        .frame(width: 70, alignment: .trailing)
-                                    Text(desc)
-                                        .font(.system(size: 13))
-                                        .foregroundStyle(TrinityTheme.textPrimary)
-                                    Spacer()
-                                }
-                                .padding(.vertical, 2)
-                            }
-                        }
-                    }
-                }
+    private var titleRow: some View {
+        HStack {
+            if !isFirstLaunch {
+                Text("Keyboard Shortcuts")
+                    .font(.title2.weight(.bold))
+                    .foregroundStyle(V4Color.accent)
+            }
+            Spacer()
+            closeButton
+        }
+    }
 
-                if isFirstLaunch {
-                    Button {
-                        dismissOverlay()
-                    } label: {
-                        Text("Got it!")
-                            .font(.body.weight(.semibold))
-                            .foregroundStyle(.black)
-                            .padding(.horizontal, 32)
-                            .padding(.vertical, 10)
-                            .background(TrinityTheme.golden)
-                            .clipShape(SwiftUI.Capsule())
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, 20)
+    private var closeButton: some View {
+        Button { dismissOverlay() } label: {
+            Image(systemName: "xmark.circle.fill")
+                .font(.title2)
+                .foregroundStyle(V4Color.textSecondary)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var shortcutsList: some View {
+        ForEach(sections, id: \.0) { sectionName, shortcuts in
+            shortcutSection(name: sectionName, shortcuts: shortcuts)
+        }
+    }
+
+    private func shortcutSection(name: String, shortcuts: [(String, String)]) -> some View {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
+            Text(name)
+                .font(WernickeTypography.captionBold)
+                .foregroundStyle(V4Color.textSecondary)
+                .padding(.top, 8)
+
+            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.sm) {
+                ForEach(shortcuts, id: \.0) { key, desc in
+                    shortcutRow(key: key, desc: desc)
                 }
             }
-            .padding(32)
-            .frame(width: 560)
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color(hex: 0x1A1A1A))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16)
-                            .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 1)
-                    )
-            )
         }
+    }
+
+    private func shortcutRow(key: String, desc: String) -> some View {
+        HStack(spacing: ParietalSpacing.sm + 2) {
+            Text(key)
+                .font(WernickeTypography.microBoldMono)
+                .foregroundStyle(V4Color.golden)
+                .frame(width: 70, alignment: .trailing)
+            Text(desc)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(V4Color.textPrimary)
+            Spacer()
+        }
+        .padding(.vertical, 2)
+    }
+
+    private var footerSection: some View {
+        Group {
+            if isFirstLaunch {
+                gotItButton
+                    .padding(.top, 20)
+            }
+        }
+    }
+
+    private var gotItButton: some View {
+        Button {
+            dismissOverlay()
+        } label: {
+            Text("Got it!")
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.black)
+                .padding(.horizontal, ParietalSpacing.xl + ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm + 2)
+                .background(V4Color.golden)
+                .clipShape(SwiftUI.Capsule())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var cardBackground: some View {
+        RoundedRectangle(cornerRadius: 16)
+            .fill(V4Color.surfaceElevated)
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 1)
+            )
     }
 
     private func dismissOverlay() {

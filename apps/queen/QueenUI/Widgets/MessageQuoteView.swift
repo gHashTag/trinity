@@ -11,7 +11,7 @@ struct MessageQuoteView: View {
     @State private var showComposer: Bool = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.md) {
             // Original quoted message
             QuoteBubble(message: originalMessage, onTap: scrollTOriginal)
 
@@ -32,17 +32,17 @@ struct MessageQuoteView: View {
                         showComposer = true
                     }
                 } label: {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Image(systemName: "arrow.turn.up.left")
                         Text("Reply to this message")
                     }
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, ParietalSpacing.sm)
     }
 
     private func scrollTOriginal() {
@@ -61,34 +61,34 @@ struct QuoteBubble: View {
 
     var body: some View {
         Button(action: onTap) {
-            HStack(alignment: .top, spacing: 8) {
+            HStack(alignment: .top, spacing: ParietalSpacing.sm) {
                 // Mini avatar
                 Circle()
-                    .fill(TrinityTheme.accent.opacity(0.2))
-                    .frame(width: 16, height: 16)
+                    .fill(V4Color.accent.opacity(0.2))
+                    .frame(width: ParietalSpacing.icon, height: ParietalSpacing.icon)
                     .overlay(
                         Image(systemName: message.role == .assistant ? "triangle.fill" : "person.fill")
-                            .font(.system(size: 8))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .font(WernickeTypography.size8)
+                            .foregroundStyle(V4Color.accent)
                     )
 
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                     // Author and time
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         Text(message.role == .assistant ? "Trinity" : "You")
                             .font(.caption2)
                             .fontWeight(.semibold)
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
 
                         Text(formatDate(message.timestamp))
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
 
                     // Truncated content
                     Text(truncatedText)
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                         .lineLimit(2)
                 }
 
@@ -96,17 +96,17 @@ struct QuoteBubble: View {
 
                 Image(systemName: "arrow.turn.down.right")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .fill(TrinityTheme.bgCard.opacity(0.5))
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .fill(V4Color.surface.opacity(V2Depth.stateDisabled))
             )
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .stroke(V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -135,31 +135,31 @@ struct QuoteComposer: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             // Text editor
             TextEditor(text: $text)
-                .font(.system(size: 14))
+                .font(WernickeTypography.size14)
                 .focused($isFocused)
                 .frame(minHeight: 80, maxHeight: 120)
                 .scrollContentBackground(.hidden)
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(TrinityTheme.cornerSmall)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerSmall)
                 .overlay(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                        .stroke(isFocused ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                        .stroke(isFocused ? V4Color.accent : V4Color.border, lineWidth: 1)
                 )
 
             HStack {
                 Text("\(text.count) chars")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 Spacer()
 
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Button("Cancel", action: onCancel)
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     Button("Send") {
                         onSend(text)
@@ -167,7 +167,7 @@ struct QuoteComposer: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .disabled(text.isEmpty)
-                    .foregroundStyle(text.isEmpty ? TrinityTheme.textMuted : TrinityTheme.accent)
+                    .foregroundStyle(text.isEmpty ? V4Color.textSecondary : V4Color.accent)
                 }
             }
         }
@@ -179,7 +179,7 @@ struct QuoteComposer: View {
 
 struct MessageQuoteView_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             MessageQuoteView(
                 originalMessage: ChatMessage(
                     role: .assistant,
@@ -195,6 +195,6 @@ struct MessageQuoteView_Previews: PreviewProvider {
             )
             .padding()
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

@@ -34,10 +34,10 @@ struct TooltipView: View {
     var body: some View {
         if isVisible {
             Text(content)
-                .font(.system(size: 11))
+                .font(WernickeTypography.size11)
                 .foregroundStyle(.white)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.sm)
+                .padding(.vertical, ParietalSpacing.xs)
                 .background(
                     RoundedRectangle(cornerRadius: 4)
                         .fill(.black.opacity(0.85))
@@ -109,21 +109,21 @@ struct RichTooltip: View {
 
     var body: some View {
         if isVisible {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 if let title = title {
-                    HStack(spacing: 6) {
+                    HStack(spacing: ParietalSpacing.sm - 2) {
                         if let icon = icon {
                             Image(systemName: icon)
-                                .font(.system(size: 11))
+                                .font(WernickeTypography.size11)
                         }
                         Text(title)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(WernickeTypography.miniSemibold)
                     }
                     .foregroundStyle(.white)
                 }
 
                 Text(message)
-                    .font(.system(size: 10))
+                    .font(WernickeTypography.size10)
                     .foregroundStyle(.white.opacity(0.9))
 
                 if !actions.isEmpty {
@@ -136,7 +136,7 @@ struct RichTooltip: View {
                             isVisible = false
                         } label: {
                             Text(action.title)
-                                .font(.system(size: 10))
+                                .font(WernickeTypography.size10)
                                 .foregroundStyle(.white)
                         }
                         .buttonStyle(.plain)
@@ -149,7 +149,7 @@ struct RichTooltip: View {
                     .fill(.black.opacity(0.9))
             )
             .frame(maxWidth: 200)
-            .shadow(color: .black.opacity(0.3), radius: 8)
+            .shadow(color: .black.opacity(V2Depth.stateHover), radius: 8)
             .transition(.scale.combined(with: .opacity))
         }
     }
@@ -163,27 +163,27 @@ struct InlineHelp: View {
     @State private var isExpanded = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
             Button {
                 withAnimation(.spring(response: 0.3)) {
                     isExpanded.toggle()
                 }
             } label: {
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Image(systemName: "info.circle.fill")
-                        .font(.system(size: 12))
+                        .font(WernickeTypography.size12)
                     Text(title)
                         .font(.caption)
                         .underline()
                 }
-                .foregroundStyle(TrinityTheme.accent)
+                .foregroundStyle(V4Color.accent)
             }
             .buttonStyle(.plain)
 
             if isExpanded {
                 Text(description)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .transition(.opacity)
             }
         }
@@ -201,16 +201,16 @@ struct HelpButton: View {
             showTooltip.toggle()
         } label: {
             Image(systemName: "questionmark.circle")
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .buttonStyle(.plain)
         .popover(isPresented: $showTooltip) {
             Text(helpText)
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size12)
+                .foregroundStyle(V4Color.textPrimary)
                 .padding()
-                .frame(width: 200)
+                .frame(width: ParietalSpacing.xl * 8)
         }
     }
 }
@@ -224,13 +224,13 @@ struct KeyboardShortcutTooltipHint: View {
         HStack(spacing: 3) {
             ForEach(shortcut.components(separatedBy: "+"), id: \.self) { key in
                 Text(key.uppercased())
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(WernickeTypography.size9Mono.weight(.medium))
+                    .foregroundStyle(V4Color.textSecondary)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 2)
                     .background(
                         RoundedRectangle(cornerRadius: 3)
-                            .fill(TrinityTheme.bgCardBorder)
+                            .fill(V4Color.border)
                     )
             }
         }
@@ -249,34 +249,34 @@ struct ContextualHelpView: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.lg) {
             ForEach(sections) { section in
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                     Text(section.title)
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.miniSemibold)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     ForEach(section.items, id: \.self) { item in
-                        HStack(spacing: 6) {
+                        HStack(spacing: ParietalSpacing.sm - 2) {
                             Image(systemName: "checkmark")
-                                .font(.system(size: 8))
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .font(WernickeTypography.size8)
+                                .foregroundStyle(V4Color.textSecondary)
                             Text(item)
                                 .font(.caption2)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
                 }
             }
         }
-        .padding(12)
+        .padding(ParietalSpacing.md)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -304,7 +304,7 @@ struct TooltipView_Previews: PreviewProvider {
                     )
                 ]
             )
-            .frame(width: 250)
+            .frame(width: ParietalSpacing.xl * 10)
             .padding()
 
             HStack {
@@ -314,6 +314,6 @@ struct TooltipView_Previews: PreviewProvider {
             .padding()
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

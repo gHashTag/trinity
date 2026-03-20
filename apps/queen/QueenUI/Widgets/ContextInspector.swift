@@ -13,34 +13,34 @@ struct ContextInspector: View {
             Button {
                 withAnimation(.easeInOut(duration: 0.15)) { isExpanded.toggle() }
             } label: {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                        .font(.system(size: 9, weight: .bold))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.microBold)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text("CONTEXT")
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.miniBoldMono)
+                        .foregroundStyle(V4Color.accent)
                     Spacer()
                     if !trinityCtx.attachedFiles.isEmpty {
                         Text("\(trinityCtx.attachedFiles.count)")
-                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                            .font(WernickeTypography.microBoldMono)
                             .foregroundStyle(.black)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 1)
-                            .background(TrinityTheme.accent)
+                            .background(V4Color.accent)
                             .clipShape(SwiftUI.Capsule())
                     }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.sm)
             }
             .buttonStyle(.plain)
 
             if isExpanded {
-                Divider().background(Color.white.opacity(0.06))
+                Divider().background(Color.white.opacity(V2Depth.bgCard))
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 10) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm + 2) {
                         // Build status
                         buildStatusRow
 
@@ -57,12 +57,12 @@ struct ContextInspector: View {
                             commitsSection
                         }
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.horizontal, ParietalSpacing.md)
+                    .padding(.vertical, ParietalSpacing.sm)
                 }
             }
         }
-        .background(Color(hex: 0x0A0A0A))
+        .background(V4Color.background)
         .onAppear {
             trinityCtx.refresh()
             loadCommits()
@@ -72,25 +72,25 @@ struct ContextInspector: View {
     // MARK: - Build Status
 
     private var buildStatusRow: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Circle()
                 .fill(buildColor)
-                .frame(width: 8, height: 8)
+                .frame(width: ParietalSpacing.xs, height: ParietalSpacing.xs)
             Text("Build")
-                .font(.system(size: 11, weight: .medium))
-                .foregroundStyle(Color.white.opacity(0.6))
+                .font(WernickeTypography.miniMedium)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextSecondary))
             Spacer()
             Text(buildLabel)
-                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                .font(WernickeTypography.miniBoldMono)
                 .foregroundStyle(buildColor)
         }
     }
 
     private var buildColor: Color {
         switch trinityCtx.buildOK {
-        case true: return TrinityTheme.statusOK
-        case false: return TrinityTheme.statusError
-        default: return TrinityTheme.textMuted
+        case true: return V4Color.success
+        case false: return V4Color.error
+        default: return V4Color.textSecondary
         }
     }
 
@@ -105,55 +105,55 @@ struct ContextInspector: View {
     // MARK: - Live Metrics
 
     private var liveMetricsRow: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             if let score = trinityCtx.ouroborosScore {
-                miniMetric(String(format: "%.0f", score), "Score", TrinityTheme.golden)
+                miniMetric(String(format: "%.0f", score), "Score", V4Color.golden)
             }
             if let ppl = trinityCtx.bestPPL {
-                miniMetric(String(format: "%.1f", ppl), "PPL", TrinityTheme.accent)
+                miniMetric(String(format: "%.1f", ppl), "PPL", V4Color.accent)
             }
             if let issues = trinityCtx.openIssues {
-                miniMetric("\(issues)", "Issues", TrinityTheme.purple)
+                miniMetric("\(issues)", "Issues", V4Color.purple)
             }
             if let dirty = trinityCtx.dirtyFiles {
-                miniMetric("\(dirty)", "Dirty", dirty > 30 ? TrinityTheme.statusWarn : TrinityTheme.textMuted)
+                miniMetric("\(dirty)", "Dirty", dirty > 30 ? V4Color.warning : V4Color.textSecondary)
             }
             Spacer()
         }
     }
 
     private func miniMetric(_ value: String, _ label: String, _ color: Color) -> some View {
-        VStack(spacing: 1) {
+        VStack(spacing: ParietalSpacing.xxxxs) {
             Text(value)
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .font(WernickeTypography.caption2BoldMono)
                 .foregroundStyle(color)
             Text(label)
-                .font(.system(size: 8))
-                .foregroundStyle(Color.white.opacity(0.3))
+                .font(WernickeTypography.size8)
+                .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
         }
     }
 
     // MARK: - Attached Files
 
     private var attachedFilesSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             Text("ATTACHED FILES")
-                .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(Color.white.opacity(0.3))
+                .font(WernickeTypography.microBold)
+                .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
 
             ForEach(trinityCtx.attachedFiles.suffix(8)) { file in
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Image(systemName: fileIcon(file.path))
-                        .font(.system(size: 9))
-                        .foregroundStyle(TrinityTheme.accent.opacity(0.7))
+                        .font(WernickeTypography.size9)
+                        .foregroundStyle(V4Color.accent.opacity(0.7))
                     Text(shortenPath(file.path))
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundStyle(Color.white.opacity(0.5))
+                        .font(WernickeTypography.size10Mono)
+                        .foregroundStyle(Color.white.opacity(V2Depth.stateDisabled))
                         .lineLimit(1)
                     Spacer()
                     Text("\(file.sizeKB)KB")
-                        .font(.system(size: 9, design: .monospaced))
-                        .foregroundStyle(Color.white.opacity(0.2))
+                        .font(WernickeTypography.size9Mono)
+                        .foregroundStyle(V4Color.white20)
                 }
             }
         }
@@ -162,15 +162,15 @@ struct ContextInspector: View {
     // MARK: - Commits
 
     private var commitsSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
             Text("RECENT COMMITS")
-                .font(.system(size: 9, weight: .bold))
-                .foregroundStyle(Color.white.opacity(0.3))
+                .font(WernickeTypography.microBold)
+                .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
 
             ForEach(recentCommits.prefix(5), id: \.self) { commit in
                 Text(commit)
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundStyle(Color.white.opacity(0.4))
+                    .font(WernickeTypography.size10Mono)
+                    .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                     .lineLimit(1)
             }
         }

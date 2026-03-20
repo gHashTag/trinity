@@ -459,7 +459,7 @@ fn getCurrentBranch(allocator: Allocator) ?[]const u8 {
     return if (out.len > 0) out else null;
 }
 
-fn runGitCommand(allocator: Allocator, argv: []const []const u8) bool {
+pub fn runGitCommand(allocator: Allocator, argv: []const []const u8) bool {
     var child = std.process.Child.init(argv, allocator);
     child.stdout_behavior = .Ignore;
     child.stderr_behavior = .Ignore;

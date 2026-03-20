@@ -32,36 +32,36 @@ struct MessageReactionPicker: View {
             HStack {
                 Text("Add Reaction")
                     .font(.headline)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 Spacer()
 
                 Button { onDismiss() } label: {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
             .padding()
 
             Divider()
-                .background(TrinityTheme.bgCardBorder)
+                .background(V4Color.border)
 
             // Search
             HStack {
                 Image(systemName: "magnifyingglass")
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
 
                 TextField("Search emojis", text: $searchText)
                     .textFieldStyle(.plain)
             }
             .padding(.horizontal)
-            .padding(.vertical, 8)
+            .padding(.vertical, ParietalSpacing.sm)
 
             // Recent emojis
             if !recentEmojis.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
+                    HStack(spacing: ParietalSpacing.sm) {
                         ForEach(recentEmojis, id: \.self) { emoji in
                             emojiButton(emoji)
                         }
@@ -70,12 +70,12 @@ struct MessageReactionPicker: View {
                 }
 
                 Divider()
-                    .background(TrinityTheme.bgCardBorder)
+                    .background(V4Color.border)
             }
 
             // Emoji grid
             ScrollView {
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 50))], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 50))], spacing: ParietalSpacing.md) {
                     ForEach(filteredEmojis, id: \.self) { emoji in
                         emojiButton(emoji)
                     }
@@ -84,13 +84,13 @@ struct MessageReactionPicker: View {
             }
         }
         .frame(width: 280, height: 350)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border, lineWidth: 1)
         )
-        .cornerRadius(TrinityTheme.cornerMedium)
-        .shadow(color: .black.opacity(0.3), radius: 20)
+        .cornerRadius(V1Theme.cornerMedium)
+        .shadow(color: .black.opacity(V2Depth.stateHover), radius: 20)
         .onAppear {
             loadRecentEmojis()
         }
@@ -102,11 +102,11 @@ struct MessageReactionPicker: View {
             saveRecentEmoji(emoji)
         } label: {
             Text(emoji)
-                .font(.system(size: 28))
+                .font(WernickeTypography.size28)
                 .frame(width: 50, height: 50)
                 .background(
                     Circle()
-                        .fill(TrinityTheme.bgCard.opacity(0.5))
+                        .fill(V4Color.surface.opacity(V2Depth.stateDisabled))
                 )
                 .scaleEffect(1.0)
         }
@@ -165,34 +165,34 @@ struct ReactionBadge: View {
         Button(action: onTap) {
             Image(systemName: "hand.tap")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted.opacity(0.5))
-                .frame(width: 20, height: 20)
+                .foregroundStyle(V4Color.textSecondary.opacity(V2Depth.stateDisabled))
+                .frame(width: ParietalSpacing.icon + 4, height: ParietalSpacing.icon + 4)
         }
         .buttonStyle(.plain)
     }
 
     private var populatedBadge: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             ForEach(reactions.prefix(3), id: \.emoji) { reaction in
                 HStack(spacing: 2) {
                     Text(reaction.emoji)
                         .font(.caption2)
                     Text("\(reaction.count)")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
-                .padding(.horizontal, 6)
+                .padding(.horizontal, ParietalSpacing.xs + 2)
                 .padding(.vertical, 3)
                 .background(
                     SwiftUI.Capsule()
-                        .fill(TrinityTheme.bgCard.opacity(0.5))
+                        .fill(V4Color.surface.opacity(V2Depth.stateDisabled))
                 )
             }
 
             if reactions.count > 3 {
                 Text("+\(reactions.count - 3)")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         .onTapGesture(perform: onTap)
@@ -219,7 +219,7 @@ struct Reaction: Identifiable, Equatable, Codable {
 
 struct MessageReactionPicker_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             ReactionBadge(
                 reactions: [
                     Reaction(emoji: "👍", user: "user1"),
@@ -234,6 +234,6 @@ struct MessageReactionPicker_Previews: PreviewProvider {
                 onDismiss: {}
             )
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

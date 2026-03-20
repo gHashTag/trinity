@@ -35,7 +35,7 @@ struct BrainHealthScreen: View {
             )
             .padding(.horizontal)
             .padding(.top, ParietalSpacing.sm)
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.bgWindow)
 
             // Content based on selected tab
             Group {
@@ -51,7 +51,7 @@ struct BrainHealthScreen: View {
                 }
             }
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .navigationTitle("Brain Health")
         .sheet(isPresented: $showDetailSheet) {
             if let detail = selectedRegion {
@@ -78,28 +78,28 @@ struct BrainHealthScreen: View {
     private var headerView: some View {
         HStack {
             Text("🧠")
-                WernickeTypography.h1)
+                .font(WernickeTypography.h1)
             VStack(alignment: .leading) {
                 Text("S³AI NEUROANATOMY")
                     .font(.headline.weight(.bold))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
                 Text("Brain Region Health Monitor v5.1")
                     .font(WernickeTypography.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             Spacer()
 
             HStack(spacing: ParietalSpacing.sm) {
                 // Live indicator
                 if isLiveUpdate {
-                    HStack(spacing: 4) {
+                    HStack(spacing: ParietalSpacing.xs) {
                         Circle()
-                            .fill(TrinityTheme.statusOK)
+                            .fill(V4Color.statusOK)
                             .frame(width: 8, height: 8)
                             .opacity(pulseValue ? 0.5 : 1)
                         Text("LIVE")
                             .font(.caption2.weight(.bold))
-                            .foregroundStyle(TrinityTheme.statusOK)
+                            .foregroundStyle(V4Color.statusOK)
                     }
                     .onAppear {
                         withAnimation(.easeInOut(duration: 1).repeatForever()) {
@@ -116,7 +116,7 @@ struct BrainHealthScreen: View {
                         .rotationEffect(.degrees(isRefreshing ? 360 : 0))
                         .animation(isRefreshing ? Animation.linear(duration: 1).repeatForever(autoreverses: false) : .default, value: isRefreshing)
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                 }
                 .buttonStyle(.plain)
                 .disabled(isRefreshing)
@@ -124,10 +124,10 @@ struct BrainHealthScreen: View {
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .overlay(
             Rectangle()
-                .fill(TrinityTheme.bgCardBorder)
+                .fill(V4Color.bgCardBorder)
                 .frame(height: 1),
             alignment: .bottom
         )
@@ -164,22 +164,22 @@ struct BrainHealthScreen: View {
                                 GridItem(.flexible(), spacing: ParietalSpacing.xs),
                                 GridItem(.flexible(), spacing: ParietalSpacing.xs)
                             ],
-                            spacing: 8
+                            spacing: ParietalSpacing.sm
                         ) {
                             MiniStatCard(
                                 label: "Claims",
                                 value: "\(data.activeClaims)",
-                                color: data.activeClaims > 100 ? TrinityTheme.statusWarn : TrinityTheme.statusOK
+                                color: data.activeClaims > 100 ? V4Color.statusWarn : V4Color.statusOK
                             )
                             MiniStatCard(
                                 label: "Events",
                                 value: formatCount(data.eventsBuffered),
-                                color: data.eventsBuffered > 1000 ? TrinityTheme.statusWarn : TrinityTheme.statusOK
+                                color: data.eventsBuffered > 1000 ? V4Color.statusWarn : V4Color.statusOK
                             )
                             MiniStatCard(
                                 label: "Snapshots",
                                 value: "\(data.history.count)",
-                                color: TrinityTheme.accent
+                                color: V4Color.accent
                             )
                         }
 
@@ -199,11 +199,11 @@ struct BrainHealthScreen: View {
                                 HStack {
                                     Text("HEALTH TREND")
                                         .font(.caption.weight(.bold))
-                                        .foregroundStyle(TrinityTheme.accent)
+                                        .foregroundStyle(V4Color.accent)
                                     Spacer()
                                     Text("Last \(data.history.count) snapshots")
                                         .font(WernickeTypography.caption2)
-                                        .foregroundStyle(TrinityTheme.textMuted)
+                                        .foregroundStyle(V4Color.textSecondary)
                                 }
 
                                 HealthTrendChart(snapshots: data.history)
@@ -239,9 +239,9 @@ struct BrainHealthScreen: View {
             EventFilterPicker(selectedFilter: $selectedEventFilter)
                 .padding(.horizontal)
                 .padding(.vertical, ParietalSpacing.xs)
-                .background(TrinityTheme.bgCard)
+                .background(V4Color.bgCard)
 
-            Divider().background(TrinityTheme.bgCardBorder)
+            Divider().background(V4Color.bgCardBorder)
 
             // Events list
             if filteredEvents.isEmpty {
@@ -278,9 +278,9 @@ struct BrainHealthScreen: View {
             TaskFilterPicker(selectedFilter: $selectedTaskFilter)
                 .padding(.horizontal)
                 .padding(.vertical, ParietalSpacing.xs)
-                .background(TrinityTheme.bgCard)
+                .background(V4Color.bgCard)
 
-            Divider().background(TrinityTheme.bgCardBorder)
+            Divider().background(V4Color.bgCardBorder)
 
             // Task claims list
             if filteredTasks.isEmpty {
@@ -314,16 +314,16 @@ struct BrainHealthScreen: View {
                 if brainAlerts.isEmpty {
                     VStack(spacing: ParietalSpacing.lg) {
                         Image(systemName: "checkmark.shield.fill")
-                            WernickeTypography.display)
-                            .foregroundStyle(TrinityTheme.statusOK)
+                            .font(WernickeTypography.display)
+                            .foregroundStyle(V4Color.statusOK)
 
                         Text("All Systems Normal")
                             .font(.headline.weight(.bold))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
 
                         Text("No brain alerts detected. All regions operating within normal parameters.")
                             .font(.body)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .multilineTextAlignment(.center)
                             .frame(maxWidth: 300)
                     }
@@ -693,7 +693,7 @@ private struct TabButton: View {
     let alertCount: Int
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Image(systemName: tab.icon)
                 .font(.caption)
             Text(tab.rawValue)
@@ -703,10 +703,10 @@ private struct TabButton: View {
                 AlertBadge(count: alertCount)
             }
         }
-        .foregroundStyle(isSelected ? TrinityTheme.bgWindow : TrinityTheme.textMuted)
+        .foregroundStyle(isSelected ? V4Color.bgWindow : V4Color.textSecondary)
         .padding(.horizontal, ParietalSpacing.sm)
         .padding(.vertical, ParietalSpacing.xs)
-        .background(isSelected ? TrinityTheme.accent : Color.clear)
+        .background(isSelected ? V4Color.accent : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
     }
 }
@@ -720,7 +720,7 @@ private struct AlertBadge: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
-            .background(count > 5 ? TrinityTheme.statusError : TrinityTheme.statusWarn)
+            .background(count > 5 ? V4Color.statusError : V4Color.statusWarn)
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
     }
 }
@@ -736,16 +736,16 @@ struct RegionalHealthGrid: View {
             HStack {
                 Text("NEUROANATOMY REGIONS")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
                 Spacer()
                 Text("\(activeRegionCount)/8 active")
                     .font(WernickeTypography.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             LazyVGrid(
                 columns: [GridItem(.flexible()), GridItem(.flexible())],
-                spacing: 12
+                spacing: ParietalSpacing.md
             ) {
                 BrainRegionCard(
                     name: "Thalamus",
@@ -936,10 +936,10 @@ struct EventFilterPicker: View {
                     } label: {
                         Text(filter.rawValue)
                             .font(.caption.weight(.medium))
-                            .foregroundStyle(selectedFilter == filter ? TrinityTheme.bgWindow : TrinityTheme.textMuted)
+                            .foregroundStyle(selectedFilter == filter ? V4Color.bgWindow : V4Color.textSecondary)
                             .padding(.horizontal, ParietalSpacing.sm)
                             .padding(.vertical, ParietalSpacing.xxs)
-                            .background(selectedFilter == filter ? TrinityTheme.accent : TrinityTheme.bgCardBorder)
+                            .background(selectedFilter == filter ? V4Color.accent : V4Color.bgCardBorder)
                             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                     }
                     .buttonStyle(.plain)
@@ -972,10 +972,10 @@ struct TaskFilterPicker: View {
                     } label: {
                         Text(filter.rawValue)
                             .font(.caption.weight(.medium))
-                            .foregroundStyle(selectedFilter == filter ? TrinityTheme.bgWindow : TrinityTheme.textMuted)
+                            .foregroundStyle(selectedFilter == filter ? V4Color.bgWindow : V4Color.textSecondary)
                             .padding(.horizontal, ParietalSpacing.sm)
                             .padding(.vertical, ParietalSpacing.xxs)
-                            .background(selectedFilter == filter ? TrinityTheme.accent : TrinityTheme.bgCardBorder)
+                            .background(selectedFilter == filter ? V4Color.accent : V4Color.bgCardBorder)
                             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                     }
                     .buttonStyle(.plain)
@@ -1001,33 +1001,33 @@ struct BrainEventRow: View {
                 HStack {
                     Text(event.title)
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     Spacer()
 
                     Text(timeAgo(event.timestamp))
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
 
                 Text(event.message)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .lineLimit(2)
 
                 if let agent = event.agent {
                     Text("Agent: \(agent)")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                 }
             }
         }
         .padding(ParietalSpacing.xs)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
-                .stroke(event.severity.color.opacity(0.3), lineWidth: 1)
+                .stroke(event.severity.color.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 
@@ -1055,7 +1055,7 @@ struct TaskClaimRow: View {
                 HStack {
                     Text(task.title)
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     Spacer()
 
@@ -1065,22 +1065,22 @@ struct TaskClaimRow: View {
                 HStack {
                     Text(task.source)
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     Spacer()
 
                     Text(task.claimedAt, style: .relative)
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
         }
         .padding(ParietalSpacing.xs)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
-                .stroke(task.status.color.opacity(0.3), lineWidth: 1)
+                .stroke(task.status.color.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 }
@@ -1095,7 +1095,7 @@ struct BrainAlertCard: View {
             // Alert icon
             ZStack {
                 Circle()
-                    .fill(alert.severity.color.opacity(0.15))
+                    .fill(alert.severity.color.opacity(V2Depth.bgSidebarHover))
                     .frame(width: 40, height: 40)
 
                 Image(systemName: alert.severity.icon)
@@ -1103,11 +1103,11 @@ struct BrainAlertCard: View {
                     .foregroundStyle(alert.severity.color)
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 HStack {
                     Text(alert.title)
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
 
                     Spacer()
 
@@ -1116,7 +1116,7 @@ struct BrainAlertCard: View {
 
                 Text(alert.message)
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .lineLimit(2)
 
                 HStack(spacing: ParietalSpacing.xxs) {
@@ -1124,22 +1124,22 @@ struct BrainAlertCard: View {
                         .font(.caption2)
                     Text(alert.region)
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
 
                     Spacer()
 
                     Text(alert.timestamp, style: .relative)
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
-                .stroke(alert.severity.color.opacity(0.3), lineWidth: 1)
+                .stroke(alert.severity.color.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 }
@@ -1155,7 +1155,7 @@ struct SeverityBadge: View {
             .foregroundStyle(severity.color)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
-            .background(severity.color.opacity(0.15))
+            .background(severity.color.opacity(V2Depth.bgSidebarHover))
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
     }
 }
@@ -1169,7 +1169,7 @@ struct PriorityBadge: View {
             .foregroundStyle(priority.color)
             .padding(.horizontal, 6)
             .padding(.vertical, 2)
-            .background(priority.color.opacity(0.15))
+            .background(priority.color.opacity(V2Depth.bgSidebarHover))
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
     }
 }
@@ -1181,25 +1181,25 @@ struct EventStatsFooter: View {
         HStack {
             Text("\(events.count) events")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             Spacer()
 
             let errorCount = events.filter { $0.severity == .error }.count
             if errorCount > 0 {
                 HStack(spacing: 2) {
-                    Circle().fill(TrinityTheme.statusError).frame(width: 6, height: 6)
+                    Circle().fill(V4Color.statusError).frame(width: 6, height: 6)
                     Text("\(errorCount) errors")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .overlay(
             Rectangle()
-                .fill(TrinityTheme.bgCardBorder)
+                .fill(V4Color.bgCardBorder)
                 .frame(height: 1),
             alignment: .top
         )
@@ -1214,21 +1214,21 @@ struct TaskStatsFooter: View {
         HStack {
             Text("\(tasks.count) tasks")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             Spacer()
 
             if let data = brainData {
                 Text("\(data.activeClaims) active claims")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .overlay(
             Rectangle()
-                .fill(TrinityTheme.bgCardBorder)
+                .fill(V4Color.bgCardBorder)
                 .frame(height: 1),
             alignment: .top
         )
@@ -1248,44 +1248,44 @@ struct BrainRegionDetailSheet: View {
                 HStack {
                     Image(systemName: "brain.head.profile")
                         .font(.title)
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
 
                     VStack(alignment: .leading) {
                         Text(detail.name)
                             .font(WernickeTypography.h4)
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
                         Text(detail.function)
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
 
                     Spacer()
                 }
                 .padding()
                 .frame(maxWidth: .infinity)
-                .background(TrinityTheme.bgCard)
+                .background(V4Color.bgCard)
                 .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
 
                 // Description
                 VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                     Text("Description")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     Text(detail.description)
                         .font(.body)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(TrinityTheme.bgCard)
+                .background(V4Color.bgCard)
                 .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
 
                 // Metrics
                 VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                     Text("Current Metrics")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     ForEach(detail.metrics, id: \.label) { metric in
                         MetricRow(label: metric.label, value: metric.value, color: metric.color)
@@ -1293,12 +1293,12 @@ struct BrainRegionDetailSheet: View {
                 }
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(TrinityTheme.bgCard)
+                .background(V4Color.bgCard)
                 .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
             }
             .padding()
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
         .frame(minWidth: 400, minHeight: 300)
     }
 }
@@ -1312,13 +1312,13 @@ struct MetricRow: View {
         HStack {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
 
             Spacer()
 
             Text(value)
                 .font(.caption.weight(.semibold))
-                .foregroundStyle(color ?? TrinityTheme.textPrimary)
+                .foregroundStyle(color ?? V4Color.textPrimary)
         }
     }
 }
@@ -1344,10 +1344,10 @@ struct BrainRegionCard: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(name)
                             .font(.headline.weight(.bold))
-                            .foregroundStyle(TrinityTheme.textPrimary)
+                            .foregroundStyle(V4Color.textPrimary)
                         Text(function)
                             .font(WernickeTypography.caption2)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
 
@@ -1361,12 +1361,12 @@ struct BrainRegionCard: View {
                 // Mini sparkline for trend data
                 if trend.count >= 2 {
                     MiniSparkline(data: trend, color: status.color)
-                        .frame(height: 24)
+                        .frame(height: ParietalSpacing.iconLarge)
                 }
             }
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(TrinityTheme.bgCard)
+            .background(V4Color.bgCard)
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
             .overlay(
                 RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
@@ -1420,10 +1420,10 @@ enum RegionStatus {
 
     var color: Color {
         switch self {
-        case .healthy: return TrinityTheme.statusOK
-        case .warning: return TrinityTheme.statusWarn
-        case .error: return TrinityTheme.statusError
-        case .unknown: return TrinityTheme.textMuted
+        case .healthy: return V4Color.statusOK
+        case .warning: return V4Color.statusWarn
+        case .error: return V4Color.statusError
+        case .unknown: return V4Color.textSecondary
         }
     }
 
@@ -1472,9 +1472,9 @@ enum EventSeverity {
 
     var color: Color {
         switch self {
-        case .info: return TrinityTheme.accent
-        case .warning: return TrinityTheme.statusWarn
-        case .error: return TrinityTheme.statusError
+        case .info: return V4Color.accent
+        case .warning: return V4Color.statusWarn
+        case .error: return V4Color.statusError
         case .critical: return Color.red
         }
     }
@@ -1504,9 +1504,9 @@ enum TaskStatus {
 
     var color: Color {
         switch self {
-        case .active: return TrinityTheme.accent
-        case .completed: return TrinityTheme.statusOK
-        case .failed: return TrinityTheme.statusError
+        case .active: return V4Color.accent
+        case .completed: return V4Color.statusOK
+        case .failed: return V4Color.statusError
         }
     }
 }
@@ -1518,9 +1518,9 @@ enum TaskPriority: String {
 
     var color: Color {
         switch self {
-        case .low: return TrinityTheme.textMuted
-        case .medium: return TrinityTheme.statusWarn
-        case .high: return TrinityTheme.statusError
+        case .low: return V4Color.textSecondary
+        case .medium: return V4Color.statusWarn
+        case .high: return V4Color.statusError
         }
     }
 }
@@ -1542,9 +1542,9 @@ enum AlertSeverity: String {
 
     var color: Color {
         switch self {
-        case .info: return TrinityTheme.accent
-        case .warning: return TrinityTheme.statusWarn
-        case .error: return TrinityTheme.statusError
+        case .info: return V4Color.accent
+        case .warning: return V4Color.statusWarn
+        case .error: return V4Color.statusError
         case .critical: return Color.red
         }
     }
@@ -1620,51 +1620,51 @@ enum BrainRegionDetail {
         switch self {
         case .thalamus:
             return [
-                ("Status", "Active", TrinityTheme.statusOK),
-                ("Railway Logs", "Streaming", TrinityTheme.accent),
-                ("External Services", "Connected", TrinityTheme.statusOK)
+                ("Status", "Active", V4Color.statusOK),
+                ("Railway Logs", "Streaming", V4Color.accent),
+                ("External Services", "Connected", V4Color.statusOK)
             ]
         case .basalGanglia:
             return [
                 ("Active Claims", "Variable", nil),
-                ("Max Capacity", "1000", TrinityTheme.textMuted),
-                ("Conflict Rate", "< 1%", TrinityTheme.statusOK)
+                ("Max Capacity", "1000", V4Color.textSecondary),
+                ("Conflict Rate", "< 1%", V4Color.statusOK)
             ]
         case .reticular:
             return [
                 ("Event Buffer", "Variable", nil),
-                ("Broadcast Rate", "Real-time", TrinityTheme.accent),
-                ("Alert Latency", "< 100ms", TrinityTheme.statusOK)
+                ("Broadcast Rate", "Real-time", V4Color.accent),
+                ("Alert Latency", "< 100ms", V4Color.statusOK)
             ]
         case .locusCoeruleus:
             return [
-                ("Backoff Policy", "Active", TrinityTheme.statusOK),
-                ("Arousal Level", "Normal", TrinityTheme.accent),
-                ("Overload Protection", "Enabled", TrinityTheme.statusOK)
+                ("Backoff Policy", "Active", V4Color.statusOK),
+                ("Arousal Level", "Normal", V4Color.accent),
+                ("Overload Protection", "Enabled", V4Color.statusOK)
             ]
         case .amygdala:
             return [
-                ("Priority Detection", "Active", TrinityTheme.statusOK),
-                ("Urgency Threshold", "Configured", TrinityTheme.accent),
-                ("Emotional Context", "Stable", TrinityTheme.statusOK)
+                ("Priority Detection", "Active", V4Color.statusOK),
+                ("Urgency Threshold", "Configured", V4Color.accent),
+                ("Emotional Context", "Stable", V4Color.statusOK)
             ]
         case .prefrontal:
             return [
                 ("Decision Mode", "Variable", nil),
-                ("Health Threshold", "70%", TrinityTheme.textMuted),
-                ("Throttle Active", "Conditional", TrinityTheme.statusWarn)
+                ("Health Threshold", "70%", V4Color.textSecondary),
+                ("Throttle Active", "Conditional", V4Color.statusWarn)
             ]
         case .hippocampus:
             return [
                 ("Memory Records", "Variable", nil),
-                ("Retention Period", "7 days", TrinityTheme.textMuted),
-                ("Trend Analysis", "Enabled", TrinityTheme.statusOK)
+                ("Retention Period", "7 days", V4Color.textSecondary),
+                ("Trend Analysis", "Enabled", V4Color.statusOK)
             ]
         case .corpusCallosum:
             return [
-                ("Telemetry Status", "Active", TrinityTheme.statusOK),
-                ("Bridge Latency", "< 50ms", TrinityTheme.accent),
-                ("Data Sync", "Real-time", TrinityTheme.statusOK)
+                ("Telemetry Status", "Active", V4Color.statusOK),
+                ("Bridge Latency", "< 50ms", V4Color.accent),
+                ("Data Sync", "Real-time", V4Color.statusOK)
             ]
         }
     }
@@ -1685,17 +1685,17 @@ struct HealthScoreCard: View {
                 HStack(spacing: ParietalSpacing.xs) {
                     Text("OVERALL HEALTH")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     if isLive {
                         HStack(spacing: ParietalSpacing.xxs) {
                             Circle()
-                                .fill(TrinityTheme.statusOK)
+                                .fill(V4Color.statusOK)
                                 .frame(width: 6, height: 6)
                                 .opacity(pulse ? 0.3 : 1)
                             Text("LIVE")
                                 .font(.caption2.weight(.bold))
-                                .foregroundStyle(TrinityTheme.statusOK)
+                                .foregroundStyle(V4Color.statusOK)
                         }
                         .onAppear {
                             withAnimation(.easeInOut(duration: 1).repeatForever()) {
@@ -1706,8 +1706,8 @@ struct HealthScoreCard: View {
                 }
 
                 Text("\(Int(score))/100")
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundStyle(healthy ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                    .font(WernickeTypography.displayRounded)
+                    .foregroundStyle(healthy ? V4Color.statusOK : V4Color.statusError)
             }
 
             Spacer()
@@ -1715,19 +1715,19 @@ struct HealthScoreCard: View {
             VStack(alignment: .trailing, spacing: ParietalSpacing.xxs) {
                 Text(healthy ? "✅ HEALTHY" : "⚠️ UNHEALTHY")
                     .font(.headline.weight(.bold))
-                    .foregroundStyle(healthy ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                    .foregroundStyle(healthy ? V4Color.statusOK : V4Color.statusError)
 
                 Text("Brain circuit operational")
                     .font(WernickeTypography.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
-                .stroke(healthy ? TrinityTheme.statusOK.opacity(0.3) : TrinityTheme.statusError.opacity(0.3), lineWidth: 1)
+                .stroke(healthy ? V4Color.statusOK.opacity(V2Depth.stateHover) : V4Color.statusError.opacity(V2Depth.stateHover), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Overall brain health score: \(Int(score)) out of 100")
@@ -1738,13 +1738,13 @@ struct HealthScoreCard: View {
 struct MiniStatCard: View {
     let label: String
     let value: String
-    var color: Color = TrinityTheme.accent
+    var color: Color = V4Color.accent
 
     var body: some View {
         VStack(alignment: .leading, spacing: ParietalSpacing.xxs) {
             Text(label)
                 .font(WernickeTypography.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
             Text(value)
                 .font(.headline.weight(.bold).monospacedDigit())
                 .foregroundStyle(color)
@@ -1752,7 +1752,7 @@ struct MiniStatCard: View {
         .padding(.horizontal, ParietalSpacing.sm)
         .padding(.vertical, ParietalSpacing.xs)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
@@ -1772,14 +1772,14 @@ struct StatusPill: View {
             .foregroundStyle(status.color)
             .padding(.horizontal, ParietalSpacing.xs)
             .padding(.vertical, ParietalSpacing.xxs)
-            .background(status.color.opacity(0.15))
+            .background(status.color.opacity(V2Depth.bgSidebarHover))
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
     }
 }
 
 struct MiniSparkline: View {
     let data: [Double]
-    var color: Color = TrinityTheme.accent
+    var color: Color = V4Color.accent
 
     var body: some View {
         Canvas { ctx, size in
@@ -1835,7 +1835,7 @@ struct HealthTrendChart: View {
                     gridPath.addLine(to: CGPoint(x: size.width, y: y))
                     ctx.stroke(
                         gridPath,
-                        with: .color(TrinityTheme.textMuted.opacity(0.15)),
+                        with: .color(V4Color.textSecondary.opacity(V2Depth.bgSidebarHover)),
                         style: StrokeStyle(lineWidth: 1)
                     )
                 }
@@ -1860,12 +1860,12 @@ struct HealthTrendChart: View {
                 fillPath.addLine(to: CGPoint(x: 0, y: size.height))
                 fillPath.closeSubpath()
 
-                ctx.fill(fillPath, with: .color(TrinityTheme.accent.opacity(0.1)))
+                ctx.fill(fillPath, with: .color(V4Color.accent.opacity(V2Depth.bgSubtle)))
 
                 // Draw the line
                 ctx.stroke(
                     path,
-                    with: .color(TrinityTheme.accent),
+                    with: .color(V4Color.accent),
                     style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round)
                 )
 
@@ -1875,7 +1875,7 @@ struct HealthTrendChart: View {
                     let normalized = (snapshot.healthScore - minScore) / range
                     let y = size.height * (1 - CGFloat(normalized))
 
-                    let dotColor = snapshot.healthy ? TrinityTheme.statusOK : TrinityTheme.statusError
+                    let dotColor = snapshot.healthy ? V4Color.statusOK : V4Color.statusError
                     ctx.fill(
                         Path(ellipseIn: CGRect(x: x - 3, y: y - 3, width: 6, height: 6)),
                         with: .color(dotColor)
@@ -1887,19 +1887,19 @@ struct HealthTrendChart: View {
             HStack {
                 Text("Oldest")
                     .font(WernickeTypography.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                 Spacer()
                 Text("Latest")
                     .font(WernickeTypography.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.bgCardBorder, lineWidth: 1)
         )
     }
 }
@@ -1909,33 +1909,33 @@ struct ErrorBanner: View {
     var dismissAction: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(TrinityTheme.statusError)
+                .foregroundStyle(V4Color.statusError)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("Error loading brain data")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                 Text(message)
                     .font(WernickeTypography.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
 
             Spacer()
 
             Button(action: dismissAction) {
                 Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .buttonStyle(.plain)
         }
         .padding()
-        .background(TrinityTheme.statusError.opacity(0.1))
+        .background(V4Color.statusError.opacity(V2Depth.bgSubtle))
         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerMedium))
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
-                .stroke(TrinityTheme.statusError.opacity(0.3), lineWidth: 1)
+                .stroke(V4Color.statusError.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 }

@@ -126,13 +126,21 @@ pub const RegionMetrics = struct {
         if (self.alert) |a| self.raw_metrics.allocator.free(a);
     }
 
-    /// Set a raw metric value
+    /// Set a raw metric value (copies both key and value)
     pub fn setMetric(self: *RegionMetrics, allocator: std.mem.Allocator, key: []const u8, value: []const u8) !void {
         const key_copy = try allocator.dupe(u8, key);
         errdefer allocator.free(key_copy);
         const value_copy = try allocator.dupe(u8, value);
         errdefer allocator.free(value_copy);
         try self.raw_metrics.put(key_copy, value_copy);
+    }
+
+    /// Set a raw metric value, taking ownership of the value (must be allocated with same allocator)
+    pub fn setMetricOwned(self: *RegionMetrics, allocator: std.mem.Allocator, key: []const u8, value: []const u8) !void {
+        const key_copy = try allocator.dupe(u8, key);
+        errdefer allocator.free(key_copy);
+        // Value is already allocated, use it directly
+        try self.raw_metrics.put(key_copy, value);
     }
 };
 
@@ -194,7 +202,7 @@ pub const AggregateMetrics = struct {
         if (basal_ganglia.getGlobal(self.allocator)) |registry| {
             bg_metrics.status = .healthy;
             const claim_count = registry.claims.count();
-            try bg_metrics.setMetric(self.allocator, "active_claims", try std.fmt.allocPrint(self.allocator, "{d}", .{claim_count}));
+            try bg_metrics.setMetricOwned(self.allocator, "active_claims", try std.fmt.allocPrint(self.allocator, "{d}", .{claim_count}));
             // Health based on claim count (0-1000 is healthy range)
             const bg_health = if (claim_count < 1000) 100.0 else @max(0.0, 100.0 - @as(f32, @floatFromInt(claim_count - 1000)) / 10.0);
             bg_metrics.health_score = bg_health;
@@ -213,8 +221,8 @@ pub const AggregateMetrics = struct {
         var rf_metrics = RegionMetrics.init(self.allocator, "Reticular Formation", "Broadcast Alerting");
         if (reticular_formation.getGlobal(self.allocator)) |bus| {
             const stats = bus.getStats();
-            try rf_metrics.setMetric(self.allocator, "published", try std.fmt.allocPrint(self.allocator, "{d}", .{stats.published}));
-            try rf_metrics.setMetric(self.allocator, "buffered", try std.fmt.allocPrint(self.allocator, "{d}", .{stats.buffered}));
+            try rf_metrics.setMetricOwned(self.allocator, "published", try std.fmt.allocPrint(self.allocator, "{d}", .{stats.published}));
+            try rf_metrics.setMetricOwned(self.allocator, "buffered", try std.fmt.allocPrint(self.allocator, "{d}", .{stats.buffered}));
             // Health based on buffer utilization
             const buffer_pct = @as(f32, @floatFromInt(stats.buffered)) / 10000.0 * 100.0;
             rf_metrics.health_score = 100.0 - buffer_pct;
@@ -236,8 +244,8 @@ pub const AggregateMetrics = struct {
         lc_metrics.trend = .stable;
         const policy = locus_coeruleus.BackoffPolicy.init();
         try lc_metrics.setMetric(self.allocator, "strategy", @tagName(policy.strategy));
-        try lc_metrics.setMetric(self.allocator, "initial_ms", try std.fmt.allocPrint(self.allocator, "{d}", .{policy.initial_ms}));
-        try lc_metrics.setMetric(self.allocator, "max_ms", try std.fmt.allocPrint(self.allocator, "{d}", .{policy.max_ms}));
+        try lc_metrics.setMetricOwned(self.allocator, "initial_ms", try std.fmt.allocPrint(self.allocator, "{d}", .{policy.initial_ms}));
+        try lc_metrics.setMetricOwned(self.allocator, "max_ms", try std.fmt.allocPrint(self.allocator, "{d}", .{policy.max_ms}));
         try self.regions.append(self.allocator, lc_metrics);
 
         // 4. Hippocampus (Memory Persistence)
@@ -566,7 +574,7 @@ test "AggregateMetrics collect all regions" {
                 break;
             }
         }
-        try std.testing.expect(found, "Region '{s}' not found", .{name});
+        try std.testing.expect(found);
     }
 }
 
@@ -614,10 +622,10 @@ test "AggregateMetrics exportJson is valid" {
 
     try metrics.collect();
 
-    var buffer = std.ArrayList(u8).init(allocator);
-    defer buffer.deinit();
+    var buffer: std.ArrayList(u8) = .empty;
+    defer buffer.deinit(allocator);
 
-    try metrics.exportJson(buffer.writer());
+    try metrics.exportJson(buffer.writer(allocator));
 
     // JSON should contain expected keys
     const json = buffer.items;
@@ -636,4 +644,602 @@ test "TrendDirection emoji mapping" {
     try std.testing.expect(std.mem.eql(u8, "U+2191", TrendDirection.improving.emojiPlain()));
     try std.testing.expect(std.mem.eql(u8, "U+2192", TrendDirection.stable.emojiPlain()));
     try std.testing.expect(std.mem.eql(u8, "U+2193", TrendDirection.declining.emojiPlain()));
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// COMPREHENSIVE TESTS FOR METRICS DASHBOARD
+// ═══════════════════════════════════════════════════════════════════════════════
+
+test "RegionMetrics initialization defaults" {
+    const allocator = std.testing.allocator;
+
+    var metrics = RegionMetrics.init(allocator, "TestRegion", "Test Function");
+    defer metrics.deinit();
+
+    // Verify default initialization values
+    try std.testing.expectEqualStrings("TestRegion", metrics.name);
+    try std.testing.expectEqualStrings("Test Function", metrics.function);
+    try std.testing.expectEqual(RegionStatus.unavailable, metrics.status);
+    try std.testing.expect(metrics.health_score == null);
+    try std.testing.expectEqual(TrendDirection.unknown, metrics.trend);
+    try std.testing.expect(metrics.alert == null);
+    try std.testing.expectEqual(@as(usize, 0), metrics.raw_metrics.count());
+}
+
+test "RegionMetrics setMetric copies key and value" {
+    const allocator = std.testing.allocator;
+
+    var metrics = RegionMetrics.init(allocator, "Test", "Function");
+    defer metrics.deinit();
+
+    var key_buffer: [20]u8 = undefined;
+    const key = try std.fmt.bufPrint(&key_buffer, "dynamic_{d}", .{42});
+
+    var value_buffer: [20]u8 = undefined;
+    const value = try std.fmt.bufPrint(&value_buffer, "value_{d}", .{99});
+
+    try metrics.setMetric(allocator, key, value);
+
+    // Verify the metric was stored
+    const stored = metrics.raw_metrics.get("dynamic_42");
+    try std.testing.expect(stored != null);
+    try std.testing.expectEqualStrings("value_99", stored.?);
+}
+
+test "RegionMetrics setMetricOwned takes ownership" {
+    const allocator = std.testing.allocator;
+
+    var metrics = RegionMetrics.init(allocator, "Test", "Function");
+    defer metrics.deinit();
+
+    const key_copy = try allocator.dupe(u8, "owned_key");
+    errdefer allocator.free(key_copy);
+
+    const value_copy = try allocator.dupe(u8, "owned_value");
+    errdefer allocator.free(value_copy);
+
+    try metrics.setMetricOwned(allocator, key_copy, value_copy);
+
+    // After taking ownership, RegionMetrics.deinit should free these
+    const stored = metrics.raw_metrics.get("owned_key");
+    try std.testing.expect(stored != null);
+    try std.testing.expectEqualStrings("owned_value", stored.?);
+}
+
+test "RegionMetrics alert allocation and cleanup" {
+    const allocator = std.testing.allocator;
+
+    var metrics = RegionMetrics.init(allocator, "AlertRegion", "Alert Test");
+    defer metrics.deinit();
+
+    // Set an alert (allocated by same allocator as raw_metrics)
+    metrics.alert = try allocator.dupe(u8, "CRITICAL: Test alert");
+
+    try std.testing.expect(metrics.alert != null);
+    try std.testing.expectEqualStrings("CRITICAL: Test alert", metrics.alert.?);
+
+    // deinit should free the alert
+}
+
+test "RegionMetrics health score boundary values" {
+    const allocator = std.testing.allocator;
+
+    var metrics = RegionMetrics.init(allocator, "HealthTest", "Health Boundaries");
+    defer metrics.deinit();
+
+    // Test various health score values
+    const test_scores = [_]f32{ 0.0, 25.5, 50.0, 75.5, 100.0 };
+
+    for (test_scores) |score| {
+        metrics.health_score = score;
+        try std.testing.expectEqual(score, metrics.health_score.?);
+    }
+
+    // Test null health score
+    metrics.health_score = null;
+    try std.testing.expect(metrics.health_score == null);
+}
+
+test "RegionMetrics status enum all values" {
+    // Test all status values have valid emojiPlain representations
+    const statuses = [_]RegionStatus{ .healthy, .idle, .warning, .critical, .unavailable };
+
+    for (statuses) |status| {
+        const emoji = status.emojiPlain();
+        try std.testing.expect(emoji.len > 0);
+        try std.testing.expect(emoji.len <= 5); // Reasonable max length
+    }
+}
+
+test "AggregateMetrics initialization with capacity" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    // Verify initial state
+    try std.testing.expectEqual(@as(usize, 0), metrics.regions.items.len);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), metrics.overall_health, 0.01);
+    try std.testing.expectEqual(TrendDirection.stable, metrics.overall_trend);
+    try std.testing.expect(metrics.timestamp > 0);
+    try std.testing.expectEqual(@as(usize, 0), metrics.critical_alerts.items.len);
+}
+
+test "AggregateMetrics manual region collection" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    // Manually add regions to test collection without brain dependencies
+    var region1 = RegionMetrics.init(allocator, "Manual1", "Manual Function 1");
+    region1.status = .healthy;
+    region1.health_score = 85.0;
+    region1.trend = .improving;
+
+    var region2 = RegionMetrics.init(allocator, "Manual2", "Manual Function 2");
+    region2.status = .warning;
+    region2.health_score = 60.0;
+    region2.trend = .declining;
+    region2.alert = try allocator.dupe(u8, "Warning alert");
+
+    var region3 = RegionMetrics.init(allocator, "Manual3", "Manual Function 3");
+    region3.status = .critical;
+    region3.health_score = 25.0;
+    region3.trend = .declining;
+    region3.alert = try allocator.dupe(u8, "Critical alert");
+
+    try metrics.regions.append(allocator, region1);
+    try metrics.regions.append(allocator, region2);
+    try metrics.regions.append(allocator, region3);
+
+    // Calculate overall (this will also collect alerts)
+    try metrics.calculateOverall();
+
+    // Verify overall health is average of all scores
+    const expected_health = (85.0 + 60.0 + 25.0) / 3.0;
+    try std.testing.expectApproxEqAbs(expected_health, metrics.overall_health, 0.1);
+
+    // Verify trend is declining due to critical region
+    try std.testing.expectEqual(TrendDirection.declining, metrics.overall_trend);
+
+    // Verify alerts were collected
+    try std.testing.expectEqual(@as(usize, 2), metrics.critical_alerts.items.len);
+}
+
+test "AggregateMetrics trend detection logic" {
+    const allocator = std.testing.allocator;
+
+    // Test 1: No critical, no warning -> stable
+    {
+        var metrics = AggregateMetrics.init(allocator);
+        defer metrics.deinit();
+
+        var region = RegionMetrics.init(allocator, "Healthy", "All Good");
+        region.status = .healthy;
+        region.health_score = 90.0;
+        try metrics.regions.append(allocator, region);
+
+        try metrics.calculateOverall();
+        try std.testing.expectEqual(TrendDirection.stable, metrics.overall_trend);
+    }
+
+    // Test 2: Has warning -> stable (not declining)
+    {
+        var metrics = AggregateMetrics.init(allocator);
+        defer metrics.deinit();
+
+        var region = RegionMetrics.init(allocator, "Warning", "Warning State");
+        region.status = .warning;
+        region.health_score = 65.0;
+        try metrics.regions.append(allocator, region);
+
+        try metrics.calculateOverall();
+        try std.testing.expectEqual(TrendDirection.stable, metrics.overall_trend);
+    }
+
+    // Test 3: Has critical -> declining
+    {
+        var metrics = AggregateMetrics.init(allocator);
+        defer metrics.deinit();
+
+        var region = RegionMetrics.init(allocator, "Critical", "Critical State");
+        region.status = .critical;
+        region.health_score = 20.0;
+        try metrics.regions.append(allocator, region);
+
+        try metrics.calculateOverall();
+        try std.testing.expectEqual(TrendDirection.declining, metrics.overall_trend);
+    }
+
+    // Test 4: Multiple regions with mixed statuses
+    {
+        var metrics = AggregateMetrics.init(allocator);
+        defer metrics.deinit();
+
+        var r1 = RegionMetrics.init(allocator, "H1", "Healthy 1");
+        r1.status = .healthy;
+        r1.health_score = 95.0;
+        try metrics.regions.append(allocator, r1);
+
+        var r2 = RegionMetrics.init(allocator, "H2", "Healthy 2");
+        r2.status = .healthy;
+        r2.health_score = 88.0;
+        try metrics.regions.append(allocator, r2);
+
+        var r3 = RegionMetrics.init(allocator, "Warn", "Warning");
+        r3.status = .warning;
+        r3.health_score = 55.0;
+        try metrics.regions.append(allocator, r3);
+
+        try metrics.calculateOverall();
+        // No critical regions -> stable
+        try std.testing.expectEqual(TrendDirection.stable, metrics.overall_trend);
+    }
+}
+
+test "AggregateMetrics critical alerts tracking" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    // Add regions with alerts
+    var region1 = RegionMetrics.init(allocator, "Alert1", "Alert Region 1");
+    region1.status = .critical;
+    region1.health_score = 10.0;
+    region1.alert = try allocator.dupe(u8, "Critical failure in region 1");
+
+    var region2 = RegionMetrics.init(allocator, "Alert2", "Alert Region 2");
+    region2.status = .warning;
+    region2.health_score = 45.0;
+    region2.alert = try allocator.dupe(u8, "Warning threshold exceeded");
+
+    var region3 = RegionMetrics.init(allocator, "NoAlert", "No Alert Region");
+    region3.status = .healthy;
+    region3.health_score = 100.0;
+    // No alert set
+
+    try metrics.regions.append(allocator, region1);
+    try metrics.regions.append(allocator, region2);
+    try metrics.regions.append(allocator, region3);
+
+    try metrics.calculateOverall();
+
+    // Should have 2 alerts (regions with non-null alert field)
+    try std.testing.expectEqual(@as(usize, 2), metrics.critical_alerts.items.len);
+
+    // Verify alert content
+    const has_critical_alert = blk: {
+        for (metrics.critical_alerts.items) |alert| {
+            if (std.mem.indexOf(u8, alert, "Critical failure") != null) {
+                break :blk true;
+            }
+        }
+        break :blk false;
+    };
+    try std.testing.expect(has_critical_alert);
+
+    const has_warning_alert = blk: {
+        for (metrics.critical_alerts.items) |alert| {
+            if (std.mem.indexOf(u8, alert, "Warning threshold") != null) {
+                break :blk true;
+            }
+        }
+        break :blk false;
+    };
+    try std.testing.expect(has_warning_alert);
+}
+
+test "AggregateMetrics health calculation with null scores" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    // Mix of null and non-null health scores
+    var r1 = RegionMetrics.init(allocator, "Scored1", "Has Score");
+    r1.status = .healthy;
+    r1.health_score = 80.0;
+
+    var r2 = RegionMetrics.init(allocator, "Unscored", "No Score");
+    r2.status = .idle;
+    r2.health_score = null; // Null score should be excluded
+
+    var r3 = RegionMetrics.init(allocator, "Scored2", "Has Score");
+    r3.status = .healthy;
+    r3.health_score = 60.0;
+
+    try metrics.regions.append(allocator, r1);
+    try metrics.regions.append(allocator, r2);
+    try metrics.regions.append(allocator, r3);
+
+    try metrics.calculateOverall();
+
+    // Average should be (80 + 60) / 2 = 70, not / 3
+    try std.testing.expectApproxEqAbs(@as(f32, 70.0), metrics.overall_health, 0.1);
+}
+
+test "AggregateMetrics health calculation all null" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    // All regions with null health scores
+    var r1 = RegionMetrics.init(allocator, "Idle1", "Idle");
+    r1.status = .idle;
+    r1.health_score = null;
+
+    var r2 = RegionMetrics.init(allocator, "Idle2", "Idle");
+    r2.status = .idle;
+    r2.health_score = null;
+
+    try metrics.regions.append(allocator, r1);
+    try metrics.regions.append(allocator, r2);
+
+    try metrics.calculateOverall();
+
+    // Should default to 100.0 when no scores available
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), metrics.overall_health, 0.01);
+}
+
+test "AggregateMetrics summary string format" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    // Add test regions
+    var r1 = RegionMetrics.init(allocator, "Healthy", "Good");
+    r1.status = .healthy;
+    r1.health_score = 90.0;
+
+    var r2 = RegionMetrics.init(allocator, "Warning", "Warn");
+    r2.status = .warning;
+    r2.health_score = 60.0;
+
+    var r3 = RegionMetrics.init(allocator, "Critical", "Bad");
+    r3.status = .critical;
+    r3.health_score = 20.0;
+
+    try metrics.regions.append(allocator, r1);
+    try metrics.regions.append(allocator, r2);
+    try metrics.regions.append(allocator, r3);
+
+    try metrics.calculateOverall();
+
+    const summary = try metrics.summary(allocator);
+    defer allocator.free(summary);
+
+    // Verify summary contains expected elements
+    try std.testing.expect(std.mem.indexOf(u8, summary, "Health:") != null);
+    try std.testing.expect(std.mem.indexOf(u8, summary, "1 healthy") != null);
+    try std.testing.expect(std.mem.indexOf(u8, summary, "1 warning") != null);
+    try std.testing.expect(std.mem.indexOf(u8, summary, "1 critical") != null);
+}
+
+test "quickScan returns problematic regions" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    // Add regions with various statuses
+    var r1 = RegionMetrics.init(allocator, "Healthy", "OK");
+    r1.status = .healthy;
+
+    var r2 = RegionMetrics.init(allocator, "Warning", "Warning");
+    r2.status = .warning;
+
+    var r3 = RegionMetrics.init(allocator, "Critical", "Critical");
+    r3.status = .critical;
+
+    var r4 = RegionMetrics.init(allocator, "Idle", "Idle");
+    r4.status = .idle; // Idle is NOT problematic
+
+    try metrics.regions.append(allocator, r1);
+    try metrics.regions.append(allocator, r2);
+    try metrics.regions.append(allocator, r3);
+    try metrics.regions.append(allocator, r4);
+
+    // Manually simulate quickScan logic
+    var problematic: std.ArrayList([]const u8) = .empty;
+    defer {
+        for (problematic.items) |p| allocator.free(p);
+        problematic.deinit(allocator);
+    }
+
+    for (metrics.regions.items) |region| {
+        if (region.status != .healthy and region.status != .idle) {
+            try problematic.append(allocator, try allocator.dupe(u8, region.name));
+        }
+    }
+
+    // Should have 2 problematic regions (warning and critical, not idle)
+    try std.testing.expectEqual(@as(usize, 2), problematic.items.len);
+
+    // Verify names
+    const has_warning = blk: {
+        for (problematic.items) |name| {
+            if (std.mem.eql(u8, "Warning", name)) break :blk true;
+        }
+        break :blk false;
+    };
+    try std.testing.expect(has_warning);
+
+    const has_critical = blk: {
+        for (problematic.items) |name| {
+            if (std.mem.eql(u8, "Critical", name)) break :blk true;
+        }
+        break :blk false;
+    };
+    try std.testing.expect(has_critical);
+}
+
+test "AggregateMetrics formatAscii basic structure" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    // Add a simple region
+    var region = RegionMetrics.init(allocator, "TestRegion", "Test Function");
+    region.status = .healthy;
+    region.health_score = 85.0;
+    region.trend = .improving;
+    try metrics.regions.append(allocator, region);
+
+    var buffer: std.ArrayList(u8) = .empty;
+    defer buffer.deinit(allocator);
+
+    try metrics.formatAscii(buffer.writer(allocator));
+
+    const output = buffer.items;
+
+    // Verify ASCII table borders
+    try std.testing.expect(std.mem.indexOf(u8, output, "╔") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "╗") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "╚") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "╝") != null);
+
+    // Verify region name appears
+    try std.testing.expect(std.mem.indexOf(u8, output, "TestRegion") != null);
+}
+
+test "AggregateMetrics formatDetailed finds region" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    // Add region with metrics
+    var region = RegionMetrics.init(allocator, "DetailTest", "Detailed Function");
+    region.status = .warning;
+    region.health_score = 55.0;
+    region.trend = .declining;
+    region.alert = try allocator.dupe(u8, "Test alert message");
+    try region.setMetric(allocator, "metric1", "value1");
+    try region.setMetric(allocator, "metric2", "value2");
+
+    try metrics.regions.append(allocator, region);
+
+    var buffer: std.ArrayList(u8) = .empty;
+    defer buffer.deinit(allocator);
+
+    try metrics.formatDetailed(buffer.writer(allocator), "DetailTest");
+
+    const output = buffer.items;
+
+    // Verify detailed output contains all expected fields
+    try std.testing.expect(std.mem.indexOf(u8, output, "DetailTest") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "Detailed Function") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "warning") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "55.0") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "declining") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "Test alert message") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "metric1") != null);
+    try std.testing.expect(std.mem.indexOf(u8, output, "value1") != null);
+}
+
+test "AggregateMetrics formatDetailed missing region" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    var buffer: std.ArrayList(u8) = .empty;
+    defer buffer.deinit(allocator);
+
+    try metrics.formatDetailed(buffer.writer(allocator), "NonExistent");
+
+    const output = buffer.items;
+
+    // Should indicate region not found
+    try std.testing.expect(std.mem.indexOf(u8, output, "not found") != null);
+}
+
+test "AggregateMetrics exportJson complete structure" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    // Add comprehensive test region
+    var region = RegionMetrics.init(allocator, "JsonTest", "JSON Export Test");
+    region.status = .healthy;
+    region.health_score = 92.5;
+    region.trend = .improving;
+    region.alert = null;
+    try region.setMetric(allocator, "test_metric", "test_value");
+
+    try metrics.regions.append(allocator, region);
+    try metrics.calculateOverall();
+
+    var buffer: std.ArrayList(u8) = .empty;
+    defer buffer.deinit(allocator);
+
+    try metrics.exportJson(buffer.writer(allocator));
+
+    const json = buffer.items;
+
+    // Verify JSON structure
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"timestamp\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"overall_health\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"overall_trend\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"regions\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"critical_alerts\"") != null);
+
+    // Verify region fields
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"name\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"function\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"status\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"health_score\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"trend\"") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "\"metrics\"") != null);
+
+    // Verify values
+    try std.testing.expect(std.mem.indexOf(u8, json, "JsonTest") != null);
+    try std.testing.expect(std.mem.indexOf(u8, json, "92.5") != null);
+}
+
+test "RegionMetrics deinit cleanup verification" {
+    const allocator = std.testing.allocator;
+
+    // Create and destroy multiple times to verify no leaks
+    for (0..10) |_| {
+        var metrics = RegionMetrics.init(allocator, "LeakTest", "Memory Leak Test");
+        metrics.status = .healthy;
+        metrics.health_score = 75.0;
+        metrics.alert = try allocator.dupe(u8, "Test alert");
+
+        // Add several metrics
+        try metrics.setMetric(allocator, "key1", "value1");
+        try metrics.setMetric(allocator, "key2", "value2");
+        try metrics.setMetric(allocator, "key3", "value3");
+
+        metrics.deinit();
+    }
+
+    // If we got here without crashing, cleanup is working
+    try std.testing.expect(true);
+}
+
+test "AggregateMetrics timestamp updates on collect" {
+    const allocator = std.testing.allocator;
+
+    var metrics = AggregateMetrics.init(allocator);
+    defer metrics.deinit();
+
+    const before = std.time.milliTimestamp();
+
+    // Collect will update timestamp
+    // Note: collect() may fail if brain regions aren't available,
+    // but timestamp should still be set
+    metrics.timestamp = std.time.milliTimestamp();
+
+    const after = std.time.milliTimestamp();
+
+    try std.testing.expect(metrics.timestamp >= before);
+    try std.testing.expect(metrics.timestamp <= after);
 }

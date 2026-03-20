@@ -29,7 +29,7 @@ public struct AutomationOverlay: View {
     private var cursorIndicator: some View {
         ZStack {
             Circle()
-                .fill(Color.red.opacity(0.3))
+                .fill(Color.red.opacity(V2Depth.stateHover))
                 .frame(width: 24, height: 24)
                 .blur(radius: 4)
             Circle()
@@ -79,14 +79,14 @@ public struct AutomationOverlay: View {
             if gazeActive {
                 ZStack {
                     Circle()
-                        .fill(Color.cyan.opacity(0.15))
+                        .fill(Color.cyan.opacity(V2Depth.bgSidebarHover))
                         .frame(width: 120, height: 120)
                         .blur(radius: 20)
                     Circle()
-                        .stroke(Color.cyan.opacity(0.6), lineWidth: 1.5)
+                        .stroke(Color.cyan.opacity(V1Theme.opacityTextSecondary), lineWidth: 1.5)
                         .frame(width: 80, height: 80)
                     Image(systemName: "eye.fill")
-                        .font(.system(size: 14))
+                        .font(WernickeTypography.size14)
                         .foregroundStyle(.cyan.opacity(0.8))
                 }
                 .position(gazePosition)
@@ -98,7 +98,7 @@ public struct AutomationOverlay: View {
     private var thinkingIndicator: some View {
         Group {
             if isThinking {
-                VStack(spacing: 4) {
+                VStack(spacing: ParietalSpacing.xs) {
                     ZStack {
                         Circle()
                             .stroke(Color.orange, lineWidth: 2)
@@ -109,11 +109,11 @@ public struct AutomationOverlay: View {
                             .fill(Color.orange.opacity(0.8))
                             .frame(width: 24, height: 24)
                         Image(systemName: "brain.head.profile")
-                            .font(.system(size: 12))
+                            .font(WernickeTypography.caption)
                             .foregroundStyle(.white)
                     }
                     Text("THINKING")
-                        .font(.system(size: 7, weight: .bold, design: .monospaced))
+                        .font(WernickeTypography.size7.weight(.bold).monospaced())
                         .foregroundStyle(Color.orange.opacity(0.9))
                 }
                 .position(x: cursorPosition.x + 50, y: cursorPosition.y - 50)
@@ -128,14 +128,14 @@ public struct AutomationOverlay: View {
                 HStack(spacing: 6) {
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.black.opacity(0.6))
+                            .fill(Color.black.opacity(V1Theme.opacityTextSecondary))
                             .frame(width: 80, height: 4)
                         RoundedRectangle(cornerRadius: 2)
                             .fill(Color.green)
                             .frame(width: 80 * actionProgress, height: 4)
                     }
                     Text(currentAction)
-                        .font(.system(size: 9, weight: .semibold, design: .monospaced))
+                        .font(WernickeTypography.microSemibold.monospaced())
                         .foregroundStyle(.white)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 3)
@@ -155,14 +155,14 @@ public struct AutomationOverlay: View {
             if let error = errorCorrection {
                 HStack(spacing: 6) {
                     Image(systemName: "arrow.uturn.backward")
-                        .font(.system(size: 10))
+                        .font(WernickeTypography.mini)
                         .foregroundStyle(.orange)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("CORRECTING")
-                            .font(.system(size: 7, weight: .bold))
+                            .font(WernickeTypography.size7.weight(.bold))
                             .foregroundStyle(.orange)
                         Text("\"\(error.wrongText.prefix(15))\" → \"\(error.correctedText.prefix(15))\"")
-                            .font(.system(size: 8))
+                            .font(WernickeTypography.size8)
                             .foregroundStyle(.white.opacity(0.8))
                     }
                 }
@@ -173,7 +173,7 @@ public struct AutomationOverlay: View {
                         .fill(Color.orange.opacity(0.2))
                         .overlay(
                             RoundedRectangle(cornerRadius: 4)
-                                .stroke(Color.orange.opacity(0.6), lineWidth: 1)
+                                .stroke(Color.orange.opacity(V1Theme.opacityTextSecondary), lineWidth: 1)
                         )
                 )
                 .position(error.position)
@@ -210,13 +210,13 @@ public struct AutomationOverlay: View {
 
     private var statusPanel: some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 Circle()
                     .fill(server.isRunning ? Color.green : Color.red)
                     .frame(width: 10, height: 10)
                     .shadow(color: server.isRunning ? .green : .red, radius: 4)
                 Text("🤖 PUPPET MODE")
-                    .font(.system(size: 12, weight: .black, design: .monospaced))
+                    .font(WernickeTypography.captionBold.monospaced())
                     .foregroundStyle(.white)
                 if server.isRunning {
                     Circle()
@@ -230,7 +230,7 @@ public struct AutomationOverlay: View {
             .background(
                 RoundedRectangle(cornerRadius: 6)
                     .fill(Color.black.opacity(0.8))
-                    .shadow(color: .black.opacity(0.5), radius: 8)
+                    .shadow(color: .black.opacity(V2Depth.stateDisabled), radius: 8)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 6)
@@ -238,27 +238,27 @@ public struct AutomationOverlay: View {
             )
 
             if server.isRunning {
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     Text("localhost:\(server.port)")
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .font(WernickeTypography.miniMono)
                     Text("\(server.connectedClients) client(s)")
-                        .font(.system(size: 10, weight: .medium, design: .monospaced))
+                        .font(WernickeTypography.miniMono)
                 }
                 .foregroundStyle(.white.opacity(0.9))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(Color.black.opacity(0.7))
-                .cornerRadius(4)
+                .background(V2Depth.black70)
+                .cornerRadius(V1Theme.cornerTiny)
             }
 
             if !server.lastActivity.isEmpty {
                 Text(server.lastActivity.uppercased())
-                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                    .font(WernickeTypography.microBold.monospaced())
                     .foregroundStyle(.cyan)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 2)
-                    .background(Color.black.opacity(0.7))
-                    .cornerRadius(4)
+                    .background(V2Depth.black70)
+                    .cornerRadius(V1Theme.cornerTiny)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -267,17 +267,17 @@ public struct AutomationOverlay: View {
     }
 
     private var actionLogView: some View {
-        VStack(alignment: .trailing, spacing: 4) {
+        VStack(alignment: .trailing, spacing: ParietalSpacing.xs) {
             Text("ACTION LOG")
-                .font(.system(size: 8, weight: .bold, design: .monospaced))
-                .foregroundStyle(.white.opacity(0.6))
+                .font(WernickeTypography.size8.weight(.bold).monospaced())
+                .foregroundStyle(.white.opacity(V1Theme.opacityTextSecondary))
             ForEach(Array(automation.actionLog.enumerated().reversed()), id: \.offset) { _, action in
-                HStack(spacing: 4) {
+                HStack(spacing: ParietalSpacing.xs) {
                     Circle()
                         .fill(Color.red)
                         .frame(width: 4, height: 4)
                     Text(action)
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(WernickeTypography.caption2.monospaced())
                         .foregroundStyle(.white)
                 }
                 .padding(.horizontal, 10)
@@ -296,16 +296,16 @@ public struct AutomationOverlay: View {
     private var coordinatesView: some View {
         Group {
             if server.isRunning {
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text("X: \(Int(cursorPosition.x))")
                     Text("Y: \(Int(cursorPosition.y))")
                 }
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .font(WernickeTypography.miniMono)
                 .foregroundStyle(.white.opacity(0.8))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .background(Color.black.opacity(0.7))
-                .cornerRadius(4)
+                .background(V2Depth.black70)
+                .cornerRadius(V1Theme.cornerTiny)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                 .padding(16)
                 .allowsHitTesting(false)

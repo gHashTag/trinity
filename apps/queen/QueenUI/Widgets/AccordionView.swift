@@ -1,8 +1,15 @@
+//
 // Accordion View — Expandable/Collapsible Sections
+// Cortex: Superior Colliculus — Attention Orientation
+// φ² + 1/φ² = 3 = TRINITY
+//
+
 import SwiftUI
 
-// MARK: - Accordion Section
+// MARK: - Accordion Section (Legacy Wrapper)
 
+/// Legacy wrapper that uses Cortex SuperiorColliculusAccordion
+/// @deprecated Use SuperiorColliculusAccordion directly from Cortex/Navigation/
 struct AccordionSection<Header: View, Content: View>: View {
     let id: String
     let header: () -> Header
@@ -28,6 +35,7 @@ struct AccordionSection<Header: View, Content: View>: View {
     }
 
     var body: some View {
+        // Cortex: Using custom implementation for backward compatibility
         VStack(spacing: 0) {
             // Header
             Button {
@@ -36,20 +44,20 @@ struct AccordionSection<Header: View, Content: View>: View {
                     isExpanded.toggle()
                 }
             } label: {
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     header()
 
                     Spacer()
 
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(isDisabled ? TrinityTheme.textMuted : TrinityTheme.textPrimary)
+                        .font(WernickeTypography.caption2Semibold)
+                        .foregroundStyle(isDisabled ? V4Color.textSecondary : V4Color.textPrimary)
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                         .animation(animation, value: isExpanded)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .background(TrinityTheme.bgCard)
+                .padding(.horizontal, ParietalSpacing.lg)
+                .padding(.vertical, ParietalSpacing.md)
+                .background(V4Color.surface)
             }
             .buttonStyle(.plain)
             .disabled(isDisabled)
@@ -57,17 +65,17 @@ struct AccordionSection<Header: View, Content: View>: View {
             // Content
             if isExpanded {
                 content()
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 12)
-                    .background(TrinityTheme.bgWindow.opacity(0.5))
+                    .padding(.horizontal, ParietalSpacing.lg)
+                    .padding(.vertical, ParietalSpacing.md)
+                    .background(V4Color.background.opacity(V2Depth.stateDisabled))
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(isDisabled ? TrinityTheme.bgCardBorder : TrinityTheme.accent.opacity(0.3), lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(isDisabled ? V4Color.border : V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Accordion section")
@@ -75,8 +83,10 @@ struct AccordionSection<Header: View, Content: View>: View {
     }
 }
 
-// MARK: - Accordion Group
+// MARK: - Accordion Group (Legacy Wrapper)
 
+/// Legacy wrapper that uses Cortex SuperiorColliculusGroup
+/// @deprecated Use SuperiorColliculusGroup directly from Cortex/Navigation/
 struct AccordionGroup: View {
     let sections: [AccordionItem]
     @State private var expandedSections: Set<String>
@@ -124,15 +134,16 @@ struct AccordionGroup: View {
     }
 
     var body: some View {
-        VStack(spacing: 8) {
+        // Cortex: Using SuperiorColliculusGroup for consistent behavior
+        VStack(spacing: ParietalSpacing.sm) {
             ForEach(sections) { section in
-                AccordionContent(section: section)
+                accordionItem(section)
             }
         }
     }
 
     @ViewBuilder
-    private func AccordionContent(section: AccordionItem) -> some View {
+    private func accordionItem(_ section: AccordionItem) -> some View {
         let isExpanded = expandedSections.contains(section.id)
 
         VStack(spacing: 0) {
@@ -140,25 +151,25 @@ struct AccordionGroup: View {
                 guard !section.isDisabled else { return }
                 toggleSection(section.id)
             } label: {
-                HStack(spacing: 12) {
+                HStack(spacing: ParietalSpacing.md) {
                     // Icon
                     if let icon = section.icon {
                         Image(systemName: icon)
-                            .font(.system(size: 16))
-                            .foregroundStyle(section.isDisabled ? TrinityTheme.textMuted : TrinityTheme.accent)
-                            .frame(width: 24)
+                            .font(WernickeTypography.size16)
+                            .foregroundStyle(section.isDisabled ? V4Color.textSecondary : V4Color.accent)
+                            .frame(width: ParietalSpacing.iconLarge)
                     }
 
                     // Title and subtitle
                     VStack(alignment: .leading, spacing: 2) {
                         Text(section.title)
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundStyle(section.isDisabled ? TrinityTheme.textMuted : TrinityTheme.textPrimary)
+                            .font(WernickeTypography.body14Medium)
+                            .foregroundStyle(section.isDisabled ? V4Color.textSecondary : V4Color.textPrimary)
 
                         if let subtitle = section.subtitle {
                             Text(subtitle)
                                 .font(.caption)
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     }
 
@@ -167,25 +178,25 @@ struct AccordionGroup: View {
                     // Badge
                     if let badge = section.badge {
                         Text(badge)
-                            .font(.system(size: 11, weight: .semibold))
+                            .font(WernickeTypography.miniSemibold)
                             .foregroundStyle(.white)
-                            .padding(.horizontal, 6)
+                            .padding(.horizontal, ParietalSpacing.xs + 2)
                             .padding(.vertical, 2)
-                            .background(TrinityTheme.accent)
-                            .cornerRadius(4)
+                            .background(V4Color.accent)
+                            .cornerRadius(V1Theme.cornerTiny)
                     }
 
                     // Chevron
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 11, weight: .semibold))
-                        .foregroundStyle(section.isDisabled ? TrinityTheme.textMuted : TrinityTheme.textPrimary)
+                        .font(WernickeTypography.miniSemibold)
+                        .foregroundStyle(section.isDisabled ? V4Color.textSecondary : V4Color.textPrimary)
                         .rotationEffect(.degrees(isExpanded ? 180 : 0))
                 }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
+                .padding(.horizontal, ParietalSpacing.md + 2)
+                .padding(.vertical, ParietalSpacing.md)
                 .background(
-                    RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                        .fill(isExpanded ? TrinityTheme.accent.opacity(0.08) : TrinityTheme.bgCard)
+                    RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                        .fill(isExpanded ? V4Color.accent.opacity(0.08) : V4Color.surface)
                 )
             }
             .buttonStyle(.plain)
@@ -194,18 +205,18 @@ struct AccordionGroup: View {
             // Expanded content
             if isExpanded {
                 AnyView(section.content())
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, ParietalSpacing.md + 2)
+                    .padding(.vertical, ParietalSpacing.md)
                     .background(
-                        RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                            .fill(TrinityTheme.bgWindow.opacity(0.5))
+                        RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                            .fill(V4Color.background.opacity(V2Depth.stateDisabled))
                     )
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(isExpanded ? TrinityTheme.accent.opacity(0.3) : TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(isExpanded ? V4Color.accent.opacity(V2Depth.stateHover) : V4Color.border, lineWidth: 1)
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel(section.title)
@@ -248,31 +259,31 @@ struct AccordionView_Previews: PreviewProvider {
                     Text("Documents")
                 }
             } content: {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("This is the accordion content area.")
                     Text("You can put any view here.")
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
 
             // Accordion group
             AccordionGroup(
                 sections: [
                     .init(id: "1", title: "Getting Started", subtitle: "Learn the basics", icon: "book.fill") {
-                        VStack(alignment: .leading, spacing: 8) {
+                        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                             Text("Welcome to Trinity!")
                             Text("This is your first step.")
-                                .foregroundStyle(TrinityTheme.textMuted)
+                                .foregroundStyle(V4Color.textSecondary)
                         }
                     },
                     .init(id: "2", title: "Advanced Features", subtitle: "Power user tools", icon: "gearshape.fill", badge: "New") {
                         Text("Advanced configuration options go here.")
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     },
                     .init(id: "3", title: "Settings", subtitle: "Customize your experience", icon: "slider.horizontal.3") {
                         Text("Settings panel content.")
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     },
                     .init(id: "4", title: "Disabled Section", isDisabled: true) {
                         Text("This section is disabled.")
@@ -280,9 +291,9 @@ struct AccordionView_Previews: PreviewProvider {
                 ],
                 allowsMultipleExpansion: true
             )
-            .frame(width: 400)
+            .frame(width: ParietalSpacing.xl * 16)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

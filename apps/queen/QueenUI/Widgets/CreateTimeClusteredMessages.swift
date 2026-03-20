@@ -56,7 +56,7 @@ struct TimeClusteredMessages<Content: View>: View {
         let countLabel = count == 1 ? "message" : "messages"
 
         Button {
-            withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : TrinityTheme.springAnimation()) {
+            withAnimation(reduceMotion ? .easeInOut(duration: 0.2) : MTMotion.standardSpring) {
                 if isExpanded {
                     expandedSections.remove(cluster.sectionKey)
                 } else {
@@ -64,35 +64,35 @@ struct TimeClusteredMessages<Content: View>: View {
                 }
             }
         } label: {
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 // Expand/collapse chevron
                 Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .font(WernickeTypography.captionMedium)
+                    .foregroundStyle(V4Color.accent)
                     .rotationEffect(.degrees(isExpanded ? 0 : -90))
-                    .animation(reduceMotion ? .easeInOut(duration: 0.2) : TrinityTheme.springAnimation(), value: isExpanded)
+                    .animation(reduceMotion ? .easeInOut(duration: 0.2) : MTMotion.standardSpring, value: isExpanded)
 
                 // Section title with theme colors
                 Text(cluster.title)
-                    .font(.system(size: TrinityTheme.chatCaptionSize, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(.system(size: V1Theme.chatCaptionSize, weight: .semibold))
+                    .foregroundStyle(V4Color.textPrimary)
 
                 // Message count badge
                 Text("\(count) \(countLabel)")
-                    .font(.system(size: TrinityTheme.chatCaptionSize - 1))
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .font(.system(size: V1Theme.chatCaptionSize - 1))
+                    .foregroundStyle(V4Color.textSecondary)
 
                 Spacer(minLength: 0)
 
                 // Visual divider line
                 Rectangle()
-                    .fill(TrinityTheme.bgCardBorder)
+                    .fill(V4Color.border)
                     .frame(height: 1)
                     .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, TrinityTheme.spacing)
-            .padding(.vertical, 8)
-            .background(TrinityTheme.bgWindow)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
+            .background(V4Color.background)
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(cluster.title), \(count) \(countLabel)")
             .accessibilityValue(isExpanded ? "expanded" : "collapsed")

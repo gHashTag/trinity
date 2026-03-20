@@ -11,12 +11,12 @@ struct MessageAttachmentPicker: View {
     @State private var draggedURLs: [URL] = []
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // Image picker
             attachmentButton(
                 icon: "photo.fill",
                 label: "Image",
-                color: TrinityTheme.purple
+                color: V4Color.purple
             ) {
                 showImagePicker = true
             }
@@ -32,7 +32,7 @@ struct MessageAttachmentPicker: View {
             attachmentButton(
                 icon: "doc.fill",
                 label: "File",
-                color: TrinityTheme.accent
+                color: V4Color.accent
             ) {
                 showFilePicker = true
             }
@@ -49,8 +49,8 @@ struct MessageAttachmentPicker: View {
 
             Spacer()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.horizontal, ParietalSpacing.lg)
+        .padding(.vertical, ParietalSpacing.md)
     }
 
     private func attachmentButton(
@@ -60,42 +60,42 @@ struct MessageAttachmentPicker: View {
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
-            VStack(spacing: 6) {
+            VStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(WernickeTypography.size20)
                     .foregroundStyle(color)
 
                 Text(label)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             .frame(width: 60, height: 50)
             .background(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                    .fill(TrinityTheme.bgCard)
+                RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                    .fill(V4Color.surface)
             )
         }
         .buttonStyle(.plain)
     }
 
     private var dropZone: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             Image(systemName: "arrow.down.doc.fill")
-                .font(.system(size: 16))
-                .foregroundStyle(draggedURLs.isEmpty ? TrinityTheme.textMuted : TrinityTheme.accent)
+                .font(WernickeTypography.size16)
+                .foregroundStyle(draggedURLs.isEmpty ? V4Color.textSecondary : V4Color.accent)
 
             Text(draggedURLs.isEmpty ? "Drop files" : "\(draggedURLs.count) files")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
         .frame(width: 80, height: 50)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                .fill(draggedURLs.isEmpty ? TrinityTheme.bgCard : TrinityTheme.accent.opacity(0.2))
+            RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                .fill(draggedURLs.isEmpty ? V4Color.surface : V4Color.accent.opacity(0.2))
         )
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                .stroke(draggedURLs.isEmpty ? TrinityTheme.bgCardBorder : TrinityTheme.accent, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                .stroke(draggedURLs.isEmpty ? V4Color.border : V4Color.accent, lineWidth: 1)
         )
         .onDrop(of: [.fileURL], isTargeted: nil) { providers in
             handleDrop(providers: providers)
@@ -171,12 +171,12 @@ struct AttachmentPreviewRow: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 10) {
+            HStack(spacing: ParietalSpacing.sm + 2) {
                 ForEach(attachments) { attachment in
                     attachmentThumbnail(attachment)
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, ParietalSpacing.lg)
         }
     }
 
@@ -184,22 +184,22 @@ struct AttachmentPreviewRow: View {
         Button {
             onRemove(attachment)
         } label: {
-            VStack(spacing: 6) {
+            VStack(spacing: ParietalSpacing.sm - 2) {
                 ZStack(alignment: .topTrailing) {
                     thumbnailPlaceholder(attachment)
 
                     // Remove button
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
+                        .font(WernickeTypography.size14)
                         .foregroundStyle(.white)
-                        .background(Circle().fill(TrinityTheme.statusError))
+                        .background(Circle().fill(V4Color.error))
                 }
 
                 Text(attachment.fileName)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .lineLimit(1)
-                    .frame(width: 60)
+                    .frame(width: ParietalSpacing.avatarMedium + ParietalSpacing.md)
             }
         }
         .buttonStyle(.plain)
@@ -214,12 +214,12 @@ struct AttachmentPreviewRow: View {
                 } else {
                     Image(systemName: "photo")
                         .font(.title2)
-                        .foregroundStyle(TrinityTheme.purple)
+                        .foregroundStyle(V4Color.purple)
                 }
             case .video:
                 Image(systemName: "video")
                     .font(.title2)
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
             case .audio:
                 Image(systemName: "waveform")
                     .font(.title2)
@@ -231,12 +231,12 @@ struct AttachmentPreviewRow: View {
             case .file:
                 Image(systemName: "doc")
                     .font(.title2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         .frame(width: 60, height: 60)
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerSmall)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerSmall)
     }
 }
 
@@ -247,7 +247,7 @@ struct AttachmentGalleryView: View {
     let onSelect: (Attachment) -> Void
 
     var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: 12) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 100))], spacing: ParietalSpacing.md) {
             ForEach(attachments) { attachment in
                 attachmentCard(attachment)
             }
@@ -259,26 +259,26 @@ struct AttachmentGalleryView: View {
         Button {
             onSelect(attachment)
         } label: {
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                 thumbnailPlaceholder(attachment)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(attachment.fileName)
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                         .lineLimit(1)
 
                     if let size = attachment.fileSize {
                         Text(formattedFileSize(size))
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                 }
             }
-            .padding(8)
+            .padding(ParietalSpacing.sm)
             .frame(maxWidth: .infinity)
-            .background(TrinityTheme.bgCard)
-            .cornerRadius(TrinityTheme.cornerSmall)
+            .background(V4Color.surface)
+            .cornerRadius(V1Theme.cornerSmall)
         }
         .buttonStyle(.plain)
     }
@@ -289,11 +289,11 @@ struct AttachmentGalleryView: View {
             case .image:
                 Image(systemName: "photo.fill")
                     .font(.largeTitle)
-                    .foregroundStyle(TrinityTheme.purple)
+                    .foregroundStyle(V4Color.purple)
             case .video:
                 Image(systemName: "video.fill")
                     .font(.largeTitle)
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
             case .audio:
                 Image(systemName: "waveform.path")
                     .font(.largeTitle)
@@ -305,13 +305,13 @@ struct AttachmentGalleryView: View {
             case .file:
                 Image(systemName: "doc.fill")
                     .font(.largeTitle)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
         .frame(height: 80)
         .frame(maxWidth: .infinity)
-        .background(TrinityTheme.bgCard.opacity(0.5))
-        .cornerRadius(TrinityTheme.cornerSmall)
+        .background(V4Color.surface.opacity(V2Depth.stateDisabled))
+        .cornerRadius(V1Theme.cornerSmall)
     }
 
     private func formattedFileSize(_ bytes: Int64) -> String {
@@ -325,10 +325,10 @@ struct AttachmentGalleryView: View {
 
 struct MessageAttachmentPicker_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             MessageAttachmentPicker { _ in }
                 .padding()
-                .background(TrinityTheme.bgCard)
+                .background(V4Color.surface)
 
             AttachmentPreviewRow(
                 attachments: .constant([
@@ -338,6 +338,6 @@ struct MessageAttachmentPicker_Previews: PreviewProvider {
                 onRemove: { _ in }
             )
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

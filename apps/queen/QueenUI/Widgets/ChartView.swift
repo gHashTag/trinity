@@ -24,7 +24,7 @@ struct LineChart: View {
                 // Grid lines
                 ForEach(0..<5) { index in
                     Rectangle()
-                        .fill(TrinityTheme.bgCardBorder)
+                        .fill(V4Color.border)
                         .frame(height: 1)
                         .position(
                             x: geometry.size.width / 2,
@@ -63,7 +63,7 @@ struct LineChart: View {
                     }
                     .fill(
                         LinearGradient(
-                            colors: [color.opacity(0.3), color.opacity(0.05)],
+                            colors: [color.opacity(V2Depth.stateHover), color.opacity(0.05)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -106,16 +106,16 @@ struct BarChart: View {
 
             HStack(alignment: .bottom, spacing: 0) {
                 ForEach(data) { item in
-                    VStack(spacing: 4) {
+                    VStack(spacing: ParietalSpacing.xs) {
                         Rectangle()
                             .fill(color)
                             .frame(width: barWidth)
                             .frame(height: CGFloat(item.value / max) * geometry.size.height * 0.8)
-                            .cornerRadius(4)
+                            .cornerRadius(V1Theme.cornerTiny)
 
                         Text(item.label)
                             .font(.caption2)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .lineLimit(1)
                     }
                     .frame(width: spacing)
@@ -165,7 +165,7 @@ struct PieChart: View {
 
                 // Center circle for donut effect
                 Circle()
-                    .fill(TrinityTheme.bgCard)
+                    .fill(V4Color.surface)
                     .frame(width: radius * 0.6, height: radius * 0.6)
             }
         }
@@ -194,16 +194,16 @@ struct ChartStatCard: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             HStack {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.system(size: 16))
+                        .font(WernickeTypography.size16)
                         .foregroundStyle(color)
-                        .frame(width: 32, height: 32)
+                        .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(color.opacity(0.15))
+                                .fill(color.opacity(V2Depth.bgSidebarHover))
                         )
                 }
 
@@ -212,30 +212,30 @@ struct ChartStatCard: View {
                 if let change = change, let changeType = changeType {
                     HStack(spacing: 2) {
                         Image(systemName: changeIcon(for: changeType))
-                            .font(.system(size: 10))
+                            .font(WernickeTypography.size10)
                         Text(change)
                             .font(.caption)
                     }
-                    .foregroundStyle(changeType == .increase ? TrinityTheme.statusOK : changeType == .decrease ? TrinityTheme.statusError : TrinityTheme.textMuted)
+                    .foregroundStyle(changeType == .increase ? V4Color.success : changeType == .decrease ? V4Color.error : V4Color.textSecondary)
                 }
             }
 
             Text(value)
-                .font(.system(size: 24, weight: .bold))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.h3Bold)
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(title)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
-        .padding(16)
+        .padding(ParietalSpacing.lg)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 
@@ -258,7 +258,7 @@ struct ChartProgressRing: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 4)
+                .stroke(V4Color.border, lineWidth: 4)
                 .frame(width: size, height: size)
 
             Circle()
@@ -284,7 +284,7 @@ struct GaugeChart: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: ParietalSpacing.sm) {
             ZStack {
                 // Background arc
                 Path { path in
@@ -296,7 +296,7 @@ struct GaugeChart: View {
                         clockwise: false
                     )
                 }
-                .stroke(TrinityTheme.bgCardBorder, style: StrokeStyle(lineWidth: 8))
+                .stroke(V4Color.border, style: StrokeStyle(lineWidth: 8))
 
                 // Value arc
                 Path { path in
@@ -314,15 +314,15 @@ struct GaugeChart: View {
                 .stroke(color, style: StrokeStyle(lineWidth: 8, lineCap: .round))
 
                 Text(String(format: "%.0f%%", (value - min) / (max - min) * 100))
-                    .font(.system(size: 20, weight: .bold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size20.weight(.bold))
+                    .foregroundStyle(V4Color.textPrimary)
                     .offset(y: 10)
             }
             .frame(width: 120, height: 80)
 
             Text(label)
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
         }
     }
 }
@@ -340,10 +340,10 @@ struct ChartView_Previews: PreviewProvider {
                     LineChart.ChartDataPoint(label: "Thu", value: 40),
                     LineChart.ChartDataPoint(label: "Fri", value: 30)
                 ],
-                color: TrinityTheme.accent,
+                color: V4Color.accent,
                 showArea: true
             )
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
 
             BarChart(
                 data: [
@@ -352,9 +352,9 @@ struct ChartView_Previews: PreviewProvider {
                     BarChart.BarData(label: "C", value: 25),
                     BarChart.BarData(label: "D", value: 40)
                 ],
-                color: TrinityTheme.accent
+                color: V4Color.accent
             )
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
 
             PieChart(
                 data: [
@@ -366,6 +366,6 @@ struct ChartView_Previews: PreviewProvider {
             .frame(width: 150)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

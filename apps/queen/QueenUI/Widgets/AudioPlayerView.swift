@@ -12,37 +12,37 @@ struct AudioPlayerView: View {
     @State private var isDragging = false
 
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: ParietalSpacing.lg) {
             // Album art placeholder
             albumArt
 
             // Track info
-            VStack(spacing: 4) {
+            VStack(spacing: ParietalSpacing.xs) {
                 Text(title)
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body16Medium)
+                    .foregroundStyle(V4Color.textPrimary)
 
                 if let artist = artist {
                     Text(artist)
-                        .font(.system(size: 13))
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size13)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
 
             // Progress
-            VStack(spacing: 6) {
+            VStack(spacing: ParietalSpacing.sm - 2) {
                 progressSlider
 
                 HStack {
                     Text(formatTime(currentTime))
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
 
                     Spacer()
 
                     Text(formatTime(duration))
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
 
@@ -52,11 +52,11 @@ struct AudioPlayerView: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 16)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 
@@ -64,7 +64,7 @@ struct AudioPlayerView: View {
         RoundedRectangle(cornerRadius: 12)
             .fill(
                 LinearGradient(
-                    colors: [TrinityTheme.accent.opacity(0.3), TrinityTheme.accent.opacity(0.6)],
+                    colors: [V4Color.accent.opacity(V2Depth.stateHover), V4Color.accent.opacity(V1Theme.opacityTextSecondary)],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
@@ -72,8 +72,8 @@ struct AudioPlayerView: View {
             .frame(height: 180)
             .overlay {
                 Image(systemName: "music.note")
-                    .font(.system(size: 48))
-                    .foregroundStyle(.white.opacity(0.3))
+                    .font(WernickeTypography.display)
+                    .foregroundStyle(.white.opacity(V2Depth.stateHover))
             }
     }
 
@@ -81,21 +81,21 @@ struct AudioPlayerView: View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(TrinityTheme.bgCardBorder)
-                    .frame(height: 4)
+                    .fill(V4Color.border)
+                    .frame(height: ParietalSpacing.xs)
 
                 let progress = isDragging ? currentTime / duration : currentTime / duration
                 RoundedRectangle(cornerRadius: 3)
-                    .fill(TrinityTheme.accent)
+                    .fill(V4Color.accent)
                     .frame(width: geometry.size.width * CGFloat(progress), height: 4)
 
                 Circle()
                     .fill(.white)
-                    .frame(width: 12, height: 12)
+                    .frame(width: ParietalSpacing.sm, height: ParietalSpacing.sm)
                     .offset(x: geometry.size.width * CGFloat(progress) - 6)
             }
         }
-        .frame(height: 4)
+        .frame(height: ParietalSpacing.xs)
         .gesture(
             DragGesture()
                 .onChanged { value in
@@ -108,7 +108,7 @@ struct AudioPlayerView: View {
     }
 
     private var playbackControls: some View {
-        HStack(spacing: 20) {
+        HStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             controlButton(icon: "backward.fill") {}
 
             playButton
@@ -124,12 +124,12 @@ struct AudioPlayerView: View {
             }
         } label: {
             Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                .font(.system(size: 20))
+                .font(WernickeTypography.size20)
                 .foregroundStyle(.white)
                 .frame(width: 56, height: 56)
                 .background(
                     Circle()
-                        .fill(TrinityTheme.accent)
+                        .fill(V4Color.accent)
                 )
         }
         .buttonStyle(.plain)
@@ -140,8 +140,8 @@ struct AudioPlayerView: View {
             action()
         } label: {
             Image(systemName: icon)
-                .font(.system(size: 18))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size18)
+                .foregroundStyle(V4Color.textPrimary)
         }
         .buttonStyle(.plain)
     }
@@ -161,37 +161,37 @@ struct MiniAudioPlayer: View {
     @Binding var progress: Double
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: ParietalSpacing.md) {
             // Album art thumbnail
             RoundedRectangle(cornerRadius: 6)
-                .fill(TrinityTheme.accent.opacity(0.3))
-                .frame(width: 44, height: 44)
+                .fill(V4Color.accent.opacity(V2Depth.stateHover))
+                .frame(width: ParietalSpacing.avatarMedium - 4, height: ParietalSpacing.avatarMedium - 4)
                 .overlay {
                     Image(systemName: "music.note")
-                        .font(.system(size: 16))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.size16)
+                        .foregroundStyle(V4Color.accent)
                 }
 
             // Info and controls
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(title)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.captionMedium)
+                    .foregroundStyle(V4Color.textPrimary)
                     .lineLimit(1)
 
                 // Progress bar
                 GeometryReader { geometry in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(TrinityTheme.bgCardBorder)
-                            .frame(height: 3)
+                            .fill(V4Color.border)
+                            .frame(height: ParietalSpacing.xxxs)
 
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(TrinityTheme.accent)
+                            .fill(V4Color.accent)
                             .frame(width: geometry.size.width * CGFloat(progress), height: 3)
                     }
                 }
-                .frame(height: 3)
+                .frame(height: ParietalSpacing.xxxs)
             }
 
             // Play button
@@ -201,12 +201,12 @@ struct MiniAudioPlayer: View {
                 }
             } label: {
                 Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: 14))
+                    .font(WernickeTypography.size14)
                     .foregroundStyle(.white)
-                    .frame(width: 32, height: 32)
+                    .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
                     .background(
                         Circle()
-                            .fill(TrinityTheme.accent)
+                            .fill(V4Color.accent)
                     )
             }
             .buttonStyle(.plain)
@@ -214,11 +214,11 @@ struct MiniAudioPlayer: View {
         .padding(10)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(TrinityTheme.bgCard)
+                .fill(V4Color.surface)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 }
@@ -232,30 +232,30 @@ struct VoiceRecordingView: View {
     let onStop: () -> Void
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             // Animated waveform
             waveform
 
             Text(formatTime(duration))
-                .font(.system(size: 32, weight: .light, design: .monospaced))
-                .foregroundStyle(TrinityTheme.textPrimary)
+                .font(WernickeTypography.size32.weight(.light))
+                .foregroundStyle(V4Color.textPrimary)
 
             Text(isRecording ? "Recording..." : "Paused")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.statusError)
+                .foregroundStyle(V4Color.error)
 
             // Controls
-            HStack(spacing: 40) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Button {
                     onCancel()
                 } label: {
                     Image(systemName: "xmark")
-                        .font(.system(size: 16))
+                        .font(WernickeTypography.size16)
                         .foregroundStyle(.white)
-                        .frame(width: 48, height: 48)
+                        .frame(width: ParietalSpacing.avatarMedium, height: ParietalSpacing.avatarMedium)
                         .background(
                             Circle()
-                                .fill(TrinityTheme.textMuted)
+                                .fill(V4Color.textSecondary)
                         )
                 }
                 .buttonStyle(.plain)
@@ -264,12 +264,12 @@ struct VoiceRecordingView: View {
                     onStop()
                 } label: {
                     Image(systemName: "stop.fill")
-                        .font(.system(size: 18))
+                        .font(WernickeTypography.size18)
                         .foregroundStyle(.white)
-                        .frame(width: 64, height: 64)
+                        .frame(width: ParietalSpacing.avatarLarge, height: ParietalSpacing.avatarLarge)
                         .background(
                             Circle()
-                                .fill(TrinityTheme.statusError)
+                                .fill(V4Color.error)
                         )
                 }
                 .buttonStyle(.plain)
@@ -282,7 +282,7 @@ struct VoiceRecordingView: View {
         HStack(spacing: 3) {
             ForEach(0..<30) { index in
                 RoundedRectangle(cornerRadius: 2)
-                    .fill(TrinityTheme.accent)
+                    .fill(V4Color.accent)
                     .frame(width: 3, height: CGFloat.random(in: 10...40))
                     .animation(
                         .easeInOut(duration: 0.3)
@@ -292,7 +292,7 @@ struct VoiceRecordingView: View {
                     )
             }
         }
-        .frame(height: 50)
+        .frame(height: ParietalSpacing.avatarMedium + 2)
         .onAppear {
             // Start animation
         }
@@ -316,7 +316,7 @@ struct AudioWaveform: View {
         GeometryReader { geometry in
             let barWidth = geometry.size.width / CGFloat(samples.count)
 
-            HStack(spacing: 1) {
+            HStack(spacing: ParietalSpacing.xxxxs) {
                 ForEach(Array(samples.enumerated()), id: \.offset) { index, sample in
                     Rectangle()
                         .fill(color)
@@ -328,7 +328,7 @@ struct AudioWaveform: View {
             }
             .frame(maxHeight: .infinity)
         }
-        .frame(height: 40)
+        .frame(height: ParietalSpacing.avatarMedium - 8)
     }
 }
 
@@ -338,33 +338,33 @@ struct VolumeControl: View {
     @Binding var volume: Double
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Image(systemName: volumeIcon)
-                .font(.system(size: 14))
-                .foregroundStyle(TrinityTheme.textMuted)
-                .frame(width: 16)
+                .font(WernickeTypography.size14)
+                .foregroundStyle(V4Color.textSecondary)
+                .frame(width: ParietalSpacing.icon)
 
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(TrinityTheme.bgCardBorder)
-                        .frame(height: 4)
+                        .fill(V4Color.border)
+                        .frame(height: ParietalSpacing.xs)
 
                     RoundedRectangle(cornerRadius: 2)
-                        .fill(TrinityTheme.accent)
+                        .fill(V4Color.accent)
                         .frame(width: geometry.size.width * CGFloat(volume), height: 4)
 
                     Circle()
                         .fill(.white)
-                        .frame(width: 12, height: 12)
+                        .frame(width: ParietalSpacing.sm, height: ParietalSpacing.sm)
                         .offset(x: geometry.size.width * CGFloat(volume) - 6)
                 }
             }
-            .frame(height: 4)
+            .frame(height: ParietalSpacing.xs)
 
             Text("\(Int(volume * 100))%")
                 .font(.caption2)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
                 .frame(width: 30)
         }
         .gesture(
@@ -400,37 +400,37 @@ struct PlaylistItem: View {
         Button {
             onPlay()
         } label: {
-            HStack(spacing: 12) {
+            HStack(spacing: ParietalSpacing.md) {
                 Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                    .font(.system(size: 14))
-                    .foregroundStyle(isPlaying ? TrinityTheme.accent : TrinityTheme.textMuted)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(isPlaying ? V4Color.accent : V4Color.textSecondary)
                     .frame(width: 32)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.system(size: 13))
-                        .foregroundStyle(isPlaying ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                        .font(WernickeTypography.size13)
+                        .foregroundStyle(isPlaying ? V4Color.accent : V4Color.textPrimary)
                         .lineLimit(1)
 
                     Text(formatTime(duration))
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
 
                 Spacer()
 
                 if isPlaying {
-                    AudioWaveform(samples: Array(repeating: 0.5, count: 30), color: TrinityTheme.accent, isPlaying: true)
-                        .frame(width: 60)
+                    AudioWaveform(samples: Array(repeating: 0.5, count: 30), color: V4Color.accent, isPlaying: true)
+                        .frame(width: ParietalSpacing.avatarMedium + ParietalSpacing.md)
                 }
             }
-            .padding(.vertical, 6)
-            .padding(.horizontal, 8)
+            .padding(.vertical, ParietalSpacing.xs + 2)
+            .padding(.horizontal, ParietalSpacing.sm)
         }
         .buttonStyle(.plain)
         .background(
             RoundedRectangle(cornerRadius: 6)
-                .fill(isPlaying ? TrinityTheme.accent.opacity(0.1) : Color.clear)
+                .fill(isPlaying ? V4Color.accent.opacity(V2Depth.bgSubtle) : Color.clear)
         )
     }
 
@@ -453,7 +453,7 @@ struct AudioPlayerView_Previews: PreviewProvider {
                 currentTime: .constant(123),
                 isPlaying: .constant(true)
             )
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
 
             MiniAudioPlayer(
                 title: "Now Playing",
@@ -470,9 +470,9 @@ struct AudioPlayerView_Previews: PreviewProvider {
                 duration: 1845,
                 isPlaying: false
             ) {}
-            .frame(width: 300)
+            .frame(width: ParietalSpacing.xl * 12)
         }
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

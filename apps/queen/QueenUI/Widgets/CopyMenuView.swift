@@ -76,7 +76,7 @@ struct CopyMenuView: View {
             .disabled(!hasCitations)
         } label: {
             Image(systemName: didCopy ? "checkmark" : "doc.on.doc")
-                .foregroundColor(didCopy ? TrinityTheme.statusOK : TrinityTheme.textMuted)
+                .foregroundColor(didCopy ? V4Color.success : V4Color.textSecondary)
         }
         .menuStyle(.borderlessButton)
         .frame(width: 28, height: 28)

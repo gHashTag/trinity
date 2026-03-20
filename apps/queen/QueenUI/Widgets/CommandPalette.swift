@@ -130,7 +130,7 @@ struct CommandPalette: View {
     var body: some View {
         VStack(spacing: 0) {
             // Backdrop
-            Color.black.opacity(0.5)
+            Color.black.opacity(V2Depth.stateDisabled)
                 .ignoresSafeArea()
                 .onTapGesture { isPresented = false }
 
@@ -139,22 +139,22 @@ struct CommandPalette: View {
             // Palette card
             VStack(spacing: 0) {
                 // Search input
-                HStack(spacing: 10) {
+                HStack(spacing: ParietalSpacing.sm + 2) {
                     Image(systemName: "command")
-                        .font(.system(size: 14))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .font(WernickeTypography.size14)
+                        .foregroundStyle(V4Color.accent)
 
                     TextField("Type a command...", text: $query)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 15))
+                        .font(WernickeTypography.size15)
                         .foregroundStyle(Color.white)
                         .focused($isFocused)
                         .onSubmit { executeSelected() }
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
+                .padding(.horizontal, ParietalSpacing.lg)
+                .padding(.vertical, ParietalSpacing.md)
 
-                Divider().background(Color.white.opacity(0.1))
+                Divider().background(Color.white.opacity(V2Depth.bgSubtle))
 
                 // Results list
                 ScrollView {
@@ -171,27 +171,27 @@ struct CommandPalette: View {
                 .frame(maxHeight: 300)
 
                 // Footer
-                HStack(spacing: 16) {
+                HStack(spacing: ParietalSpacing.lg) {
                     keyHint("↑↓", "Navigate")
                     keyHint("↵", "Select")
                     keyHint("esc", "Close")
                     Spacer()
                     Text("\(filteredItems.count) results")
-                        .font(.system(size: 10))
-                        .foregroundStyle(Color.white.opacity(0.2))
+                        .font(WernickeTypography.size10)
+                        .foregroundStyle(V4Color.white20)
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .padding(.horizontal, ParietalSpacing.lg)
+                .padding(.vertical, ParietalSpacing.sm)
                 .background(Color.white.opacity(0.02))
             }
-            .frame(width: 500)
-            .background(Color(hex: 0x1A1A1A))
+            .frame(width: ParietalSpacing.xl * 20)
+            .background(V4Color.surfaceElevated)
             .clipShape(RoundedRectangle(cornerRadius: 12))
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
+                    .stroke(Color.white.opacity(V2Depth.bgSubtle), lineWidth: 1)
             )
-            .shadow(color: .black.opacity(0.5), radius: 30)
+            .shadow(color: .black.opacity(V2Depth.stateDisabled), radius: 30)
             .padding(.bottom, 100)
 
             Spacer()
@@ -221,41 +221,41 @@ struct CommandPalette: View {
     }
 
     private func paletteRow(_ item: PaletteItem, isSelected: Bool) -> some View {
-        HStack(spacing: 10) {
+        HStack(spacing: ParietalSpacing.sm + 2) {
             Image(systemName: item.icon)
-                .font(.system(size: 13))
-                .foregroundStyle(isSelected ? TrinityTheme.accent : Color.white.opacity(0.4))
-                .frame(width: 20)
+                .font(WernickeTypography.size13)
+                .foregroundStyle(isSelected ? V4Color.accent : Color.white.opacity(V1Theme.opacityTextTertiary))
+                .frame(width: ParietalSpacing.buttonSmallWidth)
 
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xxxxs) {
                 Text(item.title)
-                    .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
-                    .foregroundStyle(isSelected ? Color.white : Color.white.opacity(0.7))
+                    .font(isSelected ? WernickeTypography.smallSemibold : WernickeTypography.small)
+                    .foregroundStyle(isSelected ? Color.white : V2Depth.white70)
                     .lineLimit(1)
                 Text(item.subtitle)
-                    .font(.system(size: 10))
-                    .foregroundStyle(Color.white.opacity(0.3))
+                    .font(WernickeTypography.size10)
+                    .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
             }
 
             Spacer()
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(isSelected ? TrinityTheme.accent.opacity(0.1) : Color.clear)
+        .padding(.horizontal, ParietalSpacing.lg)
+        .padding(.vertical, ParietalSpacing.sm)
+        .background(isSelected ? V4Color.accent.opacity(V2Depth.bgSubtle) : Color.clear)
     }
 
     private func keyHint(_ key: String, _ label: String) -> some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             Text(key)
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundStyle(Color.white.opacity(0.4))
-                .padding(.horizontal, 4)
+                .font(WernickeTypography.microBoldMono)
+                .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
+                .padding(.horizontal, ParietalSpacing.xs)
                 .padding(.vertical, 2)
-                .background(Color.white.opacity(0.06))
+                .background(Color.white.opacity(V2Depth.bgCard))
                 .clipShape(RoundedRectangle(cornerRadius: 3))
             Text(label)
-                .font(.system(size: 9))
-                .foregroundStyle(Color.white.opacity(0.2))
+                .font(WernickeTypography.size9)
+                .foregroundStyle(V4Color.white20)
         }
     }
 

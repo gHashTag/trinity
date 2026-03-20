@@ -5,56 +5,56 @@ struct GitScreen: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: TrinityTheme.spacing) {
+            VStack(spacing: ParietalSpacing.standard) {
                 HStack {
                     Text("🌿")
-                        .font(.system(size: 48))
+                        .font(WernickeTypography.size48)
                     VStack(alignment: .leading) {
                         Text("GIT")
                             .font(.title.weight(.bold))
-                            .foregroundStyle(TrinityTheme.accent)
+                            .foregroundStyle(V4Color.accent)
                         Text("Repository Status")
                             .font(.subheadline)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     Spacer()
-                    HStack(spacing: 8) {
-                        ActionButton(icon: "💾", label: "Commit", color: TrinityTheme.accent,
+                    HStack(spacing: ParietalSpacing.sm) {
+                        ActionButton(icon: "💾", label: "Commit", color: V4Color.accent,
                                      action: "git_commit")
-                        ActionButton(icon: "🚀", label: "Push", color: TrinityTheme.golden,
+                        ActionButton(icon: "🚀", label: "Push", color: V4Color.golden,
                                      action: "git_push")
                     }
                 }
                 .padding()
 
-                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
                     StatCard(label: "Branch", value: currentBranch)
                     StatCard(label: "Dirty Files",
                              value: "\(watcher.queenSenses?.dirty_files ?? 0)",
                              accent: (watcher.queenSenses?.dirty_files ?? 0) > 0
-                                ? TrinityTheme.statusWarn : TrinityTheme.statusOK)
+                                ? V4Color.statusWarn : V4Color.statusOK)
                     StatCard(label: "Last Push", value: lastPushAgo,
-                             accent: TrinityTheme.purple)
+                             accent: V4Color.purple)
                 }
                 .padding(.horizontal)
 
                 // Branch info
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                     Text("BRANCHES")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                         .padding(.horizontal)
 
                     let branches = localBranches
                     ForEach(branches, id: \.self) { branch in
-                        HStack(spacing: 8) {
+                        HStack(spacing: ParietalSpacing.sm) {
                             Text(branch == currentBranch ? "●" : "○")
                                 .font(.caption2)
                                 .foregroundStyle(branch == currentBranch
-                                    ? TrinityTheme.accent : TrinityTheme.textMuted)
+                                    ? V4Color.accent : V4Color.textSecondary)
                             Text(branch)
                                 .font(.caption.monospaced())
-                                .foregroundStyle(TrinityTheme.textPrimary)
+                                .foregroundStyle(V4Color.textPrimary)
                                 .lineLimit(1)
                         }
                         .padding(.horizontal)
@@ -63,23 +63,23 @@ struct GitScreen: View {
                     if branches.isEmpty {
                         Text("No branch info available")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                             .padding(.horizontal)
                     }
                 }
 
                 // Senses summary
                 if let senses = watcher.queenSenses {
-                    VStack(alignment: .leading, spacing: 8) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
                         Text("REPOSITORY HEALTH")
                             .font(.caption.weight(.bold))
-                            .foregroundStyle(TrinityTheme.golden)
+                            .foregroundStyle(V4Color.golden)
                             .padding(.horizontal)
 
-                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                        LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: ParietalSpacing.md) {
                             StatCard(label: "Open Issues", value: "\(senses.open_issues ?? 0)")
                             StatCard(label: "Build", value: (senses.build_ok ?? false) ? "OK" : "BROKEN",
-                                     accent: (senses.build_ok ?? false) ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                                     accent: (senses.build_ok ?? false) ? V4Color.statusOK : V4Color.statusError)
                         }
                     }
                     .padding(.horizontal)
@@ -87,7 +87,7 @@ struct GitScreen: View {
             }
             .padding(.bottom)
         }
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.bgWindow)
     }
 
     private var currentBranch: String {

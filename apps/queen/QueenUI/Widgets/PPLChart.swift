@@ -21,10 +21,10 @@ struct PPLChart: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm) {
             Text("PPL LOSS CURVE")
                 .font(.caption.weight(.bold))
-                .foregroundStyle(TrinityTheme.golden)
+                .foregroundStyle(V4Color.golden)
 
             if points.count >= 2 {
                 Chart(points) { point in
@@ -32,7 +32,7 @@ struct PPLChart: View {
                         x: .value("Step", point.step),
                         y: .value("PPL", point.ppl)
                     )
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
                     .interpolationMethod(.catmullRom)
 
                     AreaMark(
@@ -41,7 +41,7 @@ struct PPLChart: View {
                     )
                     .foregroundStyle(
                         .linearGradient(
-                            colors: [TrinityTheme.accent.opacity(0.3), TrinityTheme.accent.opacity(0.0)],
+                            colors: [V4Color.accent.opacity(V2Depth.stateHover), V4Color.accent.opacity(0.0)],
                             startPoint: .top,
                             endPoint: .bottom
                         )
@@ -51,17 +51,17 @@ struct PPLChart: View {
                 .chartYAxis {
                     AxisMarks(position: .leading) { _ in
                         AxisValueLabel()
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                         AxisGridLine()
-                            .foregroundStyle(TrinityTheme.textMuted.opacity(0.2))
+                            .foregroundStyle(V4Color.textSecondary.opacity(0.2))
                     }
                 }
                 .chartXAxis {
                     AxisMarks { _ in
                         AxisValueLabel()
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                         AxisGridLine()
-                            .foregroundStyle(TrinityTheme.textMuted.opacity(0.2))
+                            .foregroundStyle(V4Color.textSecondary.opacity(0.2))
                     }
                 }
                 .frame(height: 180)
@@ -70,7 +70,7 @@ struct PPLChart: View {
             } else {
                 Text("Waiting for PPL data from farm events...")
                     .font(.caption)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
                     .frame(height: 180)
                     .frame(maxWidth: .infinity)
             }
@@ -79,15 +79,15 @@ struct PPLChart: View {
                 HStack {
                     Text("Latest:")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text(String(format: "PPL %.2f @ step %d", last.ppl, last.step))
                         .font(.caption2.weight(.bold).monospacedDigit())
-                        .foregroundStyle(TrinityTheme.golden)
+                        .foregroundStyle(V4Color.golden)
                 }
             }
         }
         .padding()
-        .background(TrinityTheme.bgCard)
-        .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+        .background(V4Color.surface)
+        .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
     }
 }

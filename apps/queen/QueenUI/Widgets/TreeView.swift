@@ -66,9 +66,9 @@ struct TreeViewRow<Content: View>: View {
                 onToggle()
             } label: {
                 Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .font(.system(size: 10, weight: .semibold))
-                    .foregroundStyle(hasChildren ? TrinityTheme.textMuted : .clear)
-                    .frame(width: 16)
+                    .font(WernickeTypography.miniSemibold)
+                    .foregroundStyle(hasChildren ? V4Color.textSecondary : .clear)
+                    .frame(width: ParietalSpacing.icon)
             }
             .buttonStyle(.plain)
             .disabled(!hasChildren)
@@ -76,12 +76,12 @@ struct TreeViewRow<Content: View>: View {
             // Content
             content()
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 6)
-        .background(isSelected ? TrinityTheme.accent.opacity(0.1) : .clear)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xs + 2)
+        .background(isSelected ? V4Color.accent.opacity(V2Depth.bgSubtle) : .clear)
         .overlay(
             Rectangle()
-                .fill(isSelected ? TrinityTheme.accent : .clear)
+                .fill(isSelected ? V4Color.accent : .clear)
                 .frame(width: 2),
             alignment: .leading
         )
@@ -97,7 +97,7 @@ struct SimpleTreeRow: View {
     let isSelected: Bool
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             // Indent
             Rectangle()
                 .fill(.clear)
@@ -105,28 +105,28 @@ struct SimpleTreeRow: View {
 
             // Chevron
             Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                .font(.system(size: 10, weight: .semibold))
-                .foregroundStyle(item.children != nil ? TrinityTheme.textMuted : .clear)
-                .frame(width: 16)
+                .font(WernickeTypography.miniSemibold)
+                .foregroundStyle(item.children != nil ? V4Color.textSecondary : .clear)
+                .frame(width: ParietalSpacing.icon)
 
             // Icon
             if let icon = item.icon {
                 Image(systemName: icon)
-                    .font(.system(size: 14))
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textMuted)
-                    .frame(width: 20)
+                    .font(WernickeTypography.size14)
+                    .foregroundStyle(isSelected ? V4Color.accent : V4Color.textSecondary)
+                    .frame(width: ParietalSpacing.buttonSmallWidth)
             }
 
             // Title and subtitle
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.title)
-                    .font(.system(size: 13))
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size13)
+                    .foregroundStyle(isSelected ? V4Color.accent : V4Color.textPrimary)
 
                 if let subtitle = item.subtitle {
                     Text(subtitle)
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
 
@@ -135,12 +135,12 @@ struct SimpleTreeRow: View {
             // Badge
             if let badge = item.badge {
                 Text(badge)
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(WernickeTypography.miniSemibold)
                     .foregroundStyle(.white)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 1)
-                    .background(TrinityTheme.accent)
-                    .cornerRadius(3)
+                    .background(V4Color.accent)
+                    .cornerRadius(V1Theme.cornerMicro)
             }
         }
         .padding(.vertical, 5)
@@ -182,11 +182,11 @@ struct TreeView: View {
                 }
             }
         }
-        .background(TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(V4Color.border, lineWidth: 1)
         )
     }
 
@@ -262,7 +262,7 @@ struct FileTreeView: View {
                 }
             }
         }
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
     }
 
     private func handleTap(item: FlattenedItem) {
@@ -313,30 +313,30 @@ struct FileTreeView: View {
         let isSelected: Bool
 
         var body: some View {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Rectangle()
                     .fill(.clear)
                     .frame(width: CGFloat(level) * 16)
 
                 Image(systemName: isExpanded ? "chevron.down" : "chevron.right")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundStyle(item.children != nil ? TrinityTheme.textMuted : .clear)
+                    .font(WernickeTypography.miniSemibold)
+                    .foregroundStyle(item.children != nil ? V4Color.textSecondary : .clear)
                     .frame(width: 12)
 
                 Image(systemName: iconName)
-                    .font(.system(size: 12))
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : iconColor)
-                    .frame(width: 16)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(isSelected ? V4Color.accent : iconColor)
+                    .frame(width: ParietalSpacing.icon)
 
                 Text(item.title)
-                    .font(.system(size: 12))
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size12)
+                    .foregroundStyle(isSelected ? V4Color.accent : V4Color.textPrimary)
 
                 Spacer()
             }
-            .padding(.vertical, 4)
-            .padding(.horizontal, 8)
-            .background(isSelected ? TrinityTheme.accent.opacity(0.1) : .clear)
+            .padding(.vertical, ParietalSpacing.xs)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .background(isSelected ? V4Color.accent.opacity(V2Depth.bgSubtle) : .clear)
         }
 
         private var iconName: String {
@@ -354,7 +354,7 @@ struct FileTreeView: View {
             case "swift": return .orange
             case "zig": return .yellow
             case "json": return .green
-            default: return TrinityTheme.textMuted
+            default: return V4Color.textSecondary
             }
         }
     }
@@ -399,7 +399,7 @@ struct TreeView_Previews: PreviewProvider {
             )
             .frame(width: 300, height: 400)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
 
             // File tree
             FileTreeView(
@@ -418,7 +418,7 @@ struct TreeView_Previews: PreviewProvider {
             )
             .frame(width: 250, height: 300)
             .padding()
-            .background(TrinityTheme.bgWindow)
+            .background(V4Color.background)
         }
     }
 }

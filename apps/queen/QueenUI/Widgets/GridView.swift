@@ -14,7 +14,7 @@ struct GridCell: View {
         title: String,
         subtitle: String? = nil,
         icon: String? = nil,
-        iconColor: Color = TrinityTheme.accent,
+        iconColor: Color = V4Color.accent,
         isSelected: Bool = false
     ) {
         self.title = title
@@ -25,39 +25,39 @@ struct GridCell: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.sm + 2) {
             // Icon
             if let icon = icon {
                 Image(systemName: icon)
-                    .font(.system(size: 28))
+                    .font(WernickeTypography.size28)
                     .foregroundStyle(iconColor)
-                    .frame(width: 44, height: 44)
-                    .background(iconColor.opacity(0.15))
-                    .cornerRadius(10)
+                    .frame(width: ParietalSpacing.avatarMedium - 4, height: ParietalSpacing.avatarMedium - 4)
+                    .background(iconColor.opacity(V2Depth.bgSidebarHover))
+                    .cornerRadius(V1Theme.cornerMedium)
             }
 
             // Title and subtitle
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                 Text(title)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(isSelected ? TrinityTheme.accent : TrinityTheme.textPrimary)
+                    .font(WernickeTypography.body14Medium)
+                    .foregroundStyle(isSelected ? V4Color.accent : V4Color.textPrimary)
                     .lineLimit(2)
 
                 if let subtitle = subtitle {
                     Text(subtitle)
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                         .lineLimit(1)
                 }
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(isSelected ? TrinityTheme.accent.opacity(0.1) : TrinityTheme.bgCard)
-        .cornerRadius(TrinityTheme.cornerMedium)
+        .background(isSelected ? V4Color.accent.opacity(V2Depth.bgSubtle) : V4Color.surface)
+        .cornerRadius(V1Theme.cornerMedium)
         .overlay(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
-                .stroke(isSelected ? TrinityTheme.accent : TrinityTheme.bgCardBorder, lineWidth: isSelected ? 2 : 1)
+            RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
+                .stroke(isSelected ? V4Color.accent : V4Color.border, lineWidth: isSelected ? 2 : 1)
         )
     }
 }
@@ -151,7 +151,7 @@ struct DraggableGridCell: View {
 
 struct GridView_Previews: PreviewProvider {
     static var previews: some View {
-        FixedGridView(columns: 3, spacing: 12) {
+        FixedGridView(columns: 3, spacing: ParietalSpacing.md) {
             GridCell(title: "Neural Net", icon: "brain.head.profile", iconColor: .blue)
             GridCell(title: "FPGA", icon: "cpu", iconColor: .purple)
             GridCell(title: "Training", icon: "chart.line.uptrend.xyaxis", iconColor: .green)
@@ -159,9 +159,9 @@ struct GridView_Previews: PreviewProvider {
             GridCell(title: "Models", icon: "cube.fill", iconColor: .red)
             GridCell(title: "Datasets", icon: "doc.fill", iconColor: .cyan)
         }
-        .frame(width: 500)
+        .frame(width: ParietalSpacing.xl * 20)
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }
 

@@ -18,14 +18,14 @@ struct TriToolsChatPanel: View {
     ]
 
     private let categories: [(name: String, icon: String, color: Color)] = [
-        ("Core", "crown.fill", TrinityTheme.accent),
-        ("Git", "arrow.triangle.branch", Color(hex: 0xF05033)),
-        ("Farm", "server.rack", Color(hex: 0x34D399)),
-        ("Cloud", "cloud", Color(hex: 0x38BDF8)),
-        ("Math", "function", Color(hex: 0xA78BFA)),
-        ("Bio", "dna", Color(hex: 0x4ADE80)),
-        ("Science", "atom", Color(hex: 0x60A5FA)),
-        ("Agent", "robot", Color(hex: 0xF472B6)),
+        ("Core", "crown.fill", V4Color.accent),
+        ("Git", "arrow.triangle.branch", V4Color.error),
+        ("Farm", "server.rack", V4Color.success),
+        ("Cloud", "cloud", V4Color.info),
+        ("Math", "function", V4Color.purple),
+        ("Bio", "dna", V4Color.success),
+        ("Science", "atom", V4Color.info),
+        ("Agent", "robot", V4Color.purple),
     ]
 
     var body: some View {
@@ -61,34 +61,34 @@ struct TriToolsChatPanel: View {
 
     private var header: some View {
         Button(action: {
-            withAnimation(TrinityTheme.quickSpring()) {
+            withAnimation(MTMotion.quickSpring) {
                 isExpanded.toggle()
             }
         }) {
             HStack {
                 Image(systemName: "crown.fill")
-                    .font(.system(size: 11))
-                    .foregroundColor(TrinityTheme.accent)
+                    .font(WernickeTypography.size11)
+                    .foregroundColor(V4Color.accent)
 
                 Text("Tri CLI")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(TrinityTheme.textPrimary)
+                    .font(WernickeTypography.caption2Semibold)
+                    .foregroundColor(V4Color.textPrimary)
 
                 Spacer()
 
                 if !lastCommand.isEmpty {
                     Circle()
-                        .fill(isRunning ? TrinityTheme.accent : TrinityTheme.statusOK)
+                        .fill(isRunning ? V4Color.accent : V4Color.success)
                         .frame(width: 6, height: 6)
                 }
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 9, weight: .semibold))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.miniSemibold)
+                    .foregroundColor(V4Color.textSecondary)
                     .rotationEffect(.degrees(isExpanded ? 90 : 0))
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .padding(.horizontal, ParietalSpacing.sm + 2)
+            .padding(.vertical, ParietalSpacing.xs + 2)
         }
         .buttonStyle(.plain)
     }
@@ -96,22 +96,22 @@ struct TriToolsChatPanel: View {
     // MARK: - Quick Actions Row
 
     private var quickActionsRow: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: ParietalSpacing.xs) {
             ForEach(quickCommands, id: \.name) { cmd in
                 QuickActionButton(icon: cmd.icon, isRunning: isRunning && lastCommand == cmd.name) {
                     executeCommand(cmd.cmd)
                 }
             }
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ParietalSpacing.xs + 2)
+        .padding(.vertical, ParietalSpacing.xs)
     }
 
     // MARK: - Category Filter
 
     private var categoryFilter: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 4) {
+            HStack(spacing: ParietalSpacing.xs) {
                 ForEach(categories, id: \.name) { category in
                     CategoryButton(
                         name: category.name,
@@ -125,9 +125,9 @@ struct TriToolsChatPanel: View {
                     }
                 }
             }
-            .padding(.horizontal, 6)
+            .padding(.horizontal, ParietalSpacing.xs + 2)
         }
-        .padding(.vertical, 4)
+        .padding(.vertical, ParietalSpacing.xs)
     }
 
     // MARK: - Commands List
@@ -154,8 +154,8 @@ struct TriToolsChatPanel: View {
         VStack(spacing: 0) {
             HStack {
                 Text("Output")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(TrinityTheme.textMuted)
+                    .font(WernickeTypography.miniMedium)
+                    .foregroundColor(V4Color.textSecondary)
 
                 Spacer()
 
@@ -166,24 +166,24 @@ struct TriToolsChatPanel: View {
                     }
                 }) {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 9))
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size9)
+                        .foregroundColor(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(TrinityTheme.bgCardBorder.opacity(0.3))
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
+            .background(V4Color.border.opacity(V2Depth.stateHover))
 
             ScrollView {
                 Text(commandOutput.isEmpty ? "No output yet..." : commandOutput)
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundColor(commandOutput.isEmpty ? TrinityTheme.textMuted : TrinityTheme.textPrimary)
+                    .font(WernickeTypography.size10Mono)
+                    .foregroundColor(commandOutput.isEmpty ? V4Color.textSecondary : V4Color.textPrimary)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(8)
+                    .padding(ParietalSpacing.sm)
             }
             .frame(maxHeight: 150)
-            .background(TrinityTheme.bgCard.opacity(0.5))
+            .background(V4Color.surface.opacity(V2Depth.stateDisabled))
         }
     }
 
@@ -345,11 +345,11 @@ struct QuickActionButton: View {
                         .tint(.white)
                 } else {
                     Image(systemName: icon)
-                        .font(.system(size: 11))
+                        .font(WernickeTypography.size11)
                 }
             }
             .frame(width: 28, height: 28)
-            .background(isRunning ? TrinityTheme.accent : TrinityTheme.bgCardBorder.opacity(0.4))
+            .background(isRunning ? V4Color.accent : V4Color.border.opacity(V1Theme.opacityTextTertiary))
             .clipShape(RoundedRectangle(cornerRadius: 4))
         }
         .buttonStyle(.plain)
@@ -369,14 +369,14 @@ struct CategoryButton: View {
         Button(action: action) {
             HStack(spacing: 3) {
                 Image(systemName: icon)
-                    .font(.system(size: 8))
+                    .font(WernickeTypography.size8)
                 Text(name)
-                    .font(.system(size: 9, weight: isSelected ? .semibold : .regular))
+                    .font(isSelected ? WernickeTypography.microSemibold : WernickeTypography.micro)
             }
             .foregroundColor(isSelected ? .white : color)
-            .padding(.horizontal, 6)
+            .padding(.horizontal, ParietalSpacing.xs + 2)
             .padding(.vertical, 3)
-            .background(isSelected ? color : color.opacity(0.15))
+            .background(isSelected ? color : color.opacity(V2Depth.bgSidebarHover))
             .clipShape(RoundedRectangle(cornerRadius: 4))
         }
         .buttonStyle(.plain)
@@ -393,19 +393,19 @@ struct CommandButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 7))
-                    .foregroundColor(TrinityTheme.textMuted.opacity(0.5))
+                    .font(WernickeTypography.size7)
+                    .foregroundColor(V4Color.textSecondary.opacity(V2Depth.stateDisabled))
 
-                VStack(alignment: .leading, spacing: 1) {
+                VStack(alignment: .leading, spacing: ParietalSpacing.xxxxs) {
                     Text(name)
-                        .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(TrinityTheme.textPrimary)
+                        .font(WernickeTypography.miniMedium)
+                        .foregroundColor(V4Color.textPrimary)
 
                     Text(desc)
-                        .font(.system(size: 8))
-                        .foregroundColor(TrinityTheme.textMuted)
+                        .font(WernickeTypography.size8)
+                        .foregroundColor(V4Color.textSecondary)
                         .lineLimit(1)
                 }
 
@@ -414,12 +414,12 @@ struct CommandButton: View {
                 if isRunning {
                     ProgressView()
                         .scaleEffect(0.5)
-                        .tint(TrinityTheme.accent)
+                        .tint(V4Color.accent)
                 }
             }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(TrinityTheme.bgCardBorder.opacity(0.2))
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xs)
+            .background(V4Color.border.opacity(0.2))
             .clipShape(RoundedRectangle(cornerRadius: 4))
         }
         .buttonStyle(.plain)

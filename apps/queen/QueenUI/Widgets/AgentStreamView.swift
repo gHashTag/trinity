@@ -11,7 +11,7 @@ struct AgentStreamView: View {
             HStack {
                 Text("\u{1F4E1} AGENT STREAM")
                     .font(.caption.weight(.bold))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
                 Spacer()
                 // Toggle aggregate diff view
                 Button {
@@ -19,30 +19,30 @@ struct AgentStreamView: View {
                 } label: {
                     Image(systemName: showAggregateDiff ? "list.bullet" : "doc.text.magnifyingglass")
                         .font(.caption)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 .buttonStyle(.plain)
 
                 Text("\(watcher.eventStream.count)")
                     .font(.caption2.monospacedDigit())
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(TrinityTheme.bgCard)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
+            .background(V4Color.surface)
 
-            Divider().background(TrinityTheme.bgCardBorder)
+            Divider().background(V4Color.border)
 
             // Time navigation: selected event info bar
             if let selectedId = watcher.selectedEventId,
                let selected = watcher.eventStream.first(where: { $0.id == selectedId }) {
-                HStack(spacing: 6) {
+                HStack(spacing: ParietalSpacing.sm - 2) {
                     Image(systemName: "clock.arrow.circlepath")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.golden)
+                        .foregroundStyle(V4Color.golden)
                     Text(watcher.sensesAtEvent(selected))
                         .font(.caption2.monospaced())
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                         .lineLimit(1)
                     Spacer()
                     Button {
@@ -50,26 +50,26 @@ struct AgentStreamView: View {
                     } label: {
                         Image(systemName: "xmark.circle.fill")
                             .font(.caption)
-                            .foregroundStyle(TrinityTheme.textMuted)
+                            .foregroundStyle(V4Color.textSecondary)
                     }
                     .buttonStyle(.plain)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 4)
-                .background(TrinityTheme.golden.opacity(0.08))
+                .padding(.horizontal, ParietalSpacing.md)
+                .padding(.vertical, ParietalSpacing.xs)
+                .background(V4Color.golden.opacity(0.08))
             }
 
             if showAggregateDiff {
                 // Aggregate diff mode
                 ScrollView {
                     AggregateDiffView(events: watcher.eventStream)
-                        .padding(8)
+                        .padding(ParietalSpacing.sm)
                 }
             } else {
                 // Event stream
                 ScrollViewReader { proxy in
                     ScrollView {
-                        LazyVStack(alignment: .leading, spacing: 6) {
+                        LazyVStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                             ForEach(watcher.eventStream) { event in
                                 AgentEventRow(
                                     event: event,
@@ -84,7 +84,7 @@ struct AgentStreamView: View {
                                 }
                             }
                         }
-                        .padding(8)
+                        .padding(ParietalSpacing.sm)
                     }
                     .onChange(of: watcher.eventStream.count) { _, _ in
                         // Auto-scroll only if no event selected (time navigation not active)
@@ -97,19 +97,19 @@ struct AgentStreamView: View {
                 }
             }
 
-            Divider().background(TrinityTheme.bgCardBorder)
+            Divider().background(V4Color.border)
 
             // Todos section (editable)
             MemoryTodoView()
 
-            Divider().background(TrinityTheme.bgCardBorder)
+            Divider().background(V4Color.border)
 
             // Mid-flight input (Windsurf/Copilot steering)
-            HStack(spacing: 8) {
+            HStack(spacing: ParietalSpacing.sm) {
                 TextField("Message to Queen...", text: $userInput)
                     .font(.caption.monospaced())
                     .textFieldStyle(.plain)
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
                     .onSubmit { sendMessage() }
 
                 Button {
@@ -117,14 +117,14 @@ struct AgentStreamView: View {
                 } label: {
                     Image(systemName: "paperplane.fill")
                         .font(.caption)
-                        .foregroundStyle(userInput.isEmpty ? TrinityTheme.textMuted : TrinityTheme.accent)
+                        .foregroundStyle(userInput.isEmpty ? V4Color.textSecondary : V4Color.accent)
                 }
                 .buttonStyle(.plain)
                 .disabled(userInput.isEmpty)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 8)
-            .background(TrinityTheme.bgCard)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
+            .background(V4Color.surface)
         }
     }
 
@@ -164,7 +164,7 @@ struct AgentEventRow: View {
         }
         .overlay(
             RoundedRectangle(cornerRadius: 6)
-                .stroke(isSelected ? TrinityTheme.golden : .clear, lineWidth: 1.5)
+                .stroke(isSelected ? V4Color.golden : .clear, lineWidth: 1.5)
         )
     }
 }
@@ -176,16 +176,16 @@ struct ThoughtBubble: View {
     let isLatest: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 4) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
+            HStack(spacing: ParietalSpacing.xs) {
                 Text("\u{1F9E0} THINKING")
                     .font(.caption2.weight(.bold))
-                    .foregroundStyle(TrinityTheme.accent)
+                    .foregroundStyle(V4Color.accent)
                 Spacer()
                 if let ts = event.ts {
                     Text(timeAgo(ts))
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
 
@@ -194,15 +194,15 @@ struct ThoughtBubble: View {
             } else {
                 Text(event.text ?? "")
                     .font(.body.monospaced())
-                    .foregroundStyle(TrinityTheme.textPrimary)
+                    .foregroundStyle(V4Color.textPrimary)
             }
         }
         .padding(10)
-        .background(TrinityTheme.bgCard)
+        .background(V4Color.surface)
         .clipShape(RoundedRectangle(cornerRadius: 8))
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(TrinityTheme.accent.opacity(0.3), lineWidth: 1)
+                .stroke(V4Color.accent.opacity(V2Depth.stateHover), lineWidth: 1)
         )
     }
 
@@ -220,21 +220,21 @@ struct TodoItem: View {
     let event: AgentEvent
 
     var body: some View {
-        HStack(spacing: 8) {
+        HStack(spacing: ParietalSpacing.sm) {
             Text(event.status == "done" ? "\u{2611}" : "\u{2610}")
                 .font(.caption)
             Text(event.text ?? "")
                 .font(.caption)
-                .foregroundStyle(event.status == "done" ? TrinityTheme.textMuted : TrinityTheme.textPrimary)
+                .foregroundStyle(event.status == "done" ? V4Color.textSecondary : V4Color.textPrimary)
             Spacer()
             if let source = event.source {
                 Text("(\(source))")
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.xs)
     }
 }
 
@@ -244,35 +244,35 @@ struct CycleStatusLine: View {
     let event: AgentEvent
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
+        VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
+            HStack(spacing: ParietalSpacing.sm - 2) {
                 Text("\u{1F451}")
                     .font(.caption)
                 if let progress = event.stepProgress {
                     Text(progress)
                         .font(.caption2.weight(.bold).monospacedDigit())
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                 } else {
                     Text("cycle")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
                 if let text = event.text {
                     Text(text)
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textPrimary)
+                        .foregroundStyle(V4Color.textPrimary)
                         .lineLimit(1)
                 }
                 if let detail = event.detail {
                     Text(detail)
                         .font(.caption2.weight(.medium))
-                        .foregroundStyle(detail == "GREEN" ? TrinityTheme.statusOK : TrinityTheme.statusError)
+                        .foregroundStyle(detail == "GREEN" ? V4Color.success : V4Color.error)
                 }
                 Spacer()
                 if let ts = event.ts {
                     Text(formatTime(ts))
                         .font(.caption2.monospacedDigit())
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                 }
             }
 
@@ -280,16 +280,16 @@ struct CycleStatusLine: View {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(TrinityTheme.bgCardBorder)
+                            .fill(V4Color.border)
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(TrinityTheme.accent)
+                            .fill(V4Color.accent)
                             .frame(width: geo.size.width * CGFloat(step) / CGFloat(total))
                     }
                 }
-                .frame(height: 3)
+                .frame(height: ParietalSpacing.xxxs)
             }
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, ParietalSpacing.md)
         .padding(.vertical, 3)
     }
 
@@ -307,20 +307,20 @@ struct ReportLine: View {
     let event: AgentEvent
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Text("\u{1F4CA}")
                 .font(.caption)
             Text(event.action ?? "report")
                 .font(.caption2.monospaced())
-                .foregroundStyle(TrinityTheme.golden)
+                .foregroundStyle(V4Color.golden)
             if let detail = event.detail {
                 Text(detail)
                     .font(.caption2)
-                    .foregroundStyle(TrinityTheme.textMuted)
+                    .foregroundStyle(V4Color.textSecondary)
             }
             Spacer()
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, ParietalSpacing.md)
         .padding(.vertical, 3)
     }
 }
@@ -331,16 +331,16 @@ struct GenericEventLine: View {
     let event: AgentEvent
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Text("\u{2022}")
                 .font(.caption)
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
             Text(event.event ?? event.kind ?? "event")
                 .font(.caption2.monospaced())
-                .foregroundStyle(TrinityTheme.textMuted)
+                .foregroundStyle(V4Color.textSecondary)
             Spacer()
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, ParietalSpacing.md)
         .padding(.vertical, 2)
     }
 }

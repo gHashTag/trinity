@@ -15,22 +15,22 @@ struct AggregateDiffView: View {
 
     var body: some View {
         if diffEvents.isEmpty { EmptyView() } else {
-            VStack(alignment: .leading, spacing: 6) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
                 // Header
-                HStack(spacing: 8) {
+                HStack(spacing: ParietalSpacing.sm) {
                     Text("\u{1F4C1} FILES CHANGED")
                         .font(.caption.weight(.bold))
-                        .foregroundStyle(TrinityTheme.accent)
+                        .foregroundStyle(V4Color.accent)
                     Spacer()
                     Text("\(diffEvents.count) files")
                         .font(.caption2)
-                        .foregroundStyle(TrinityTheme.textMuted)
+                        .foregroundStyle(V4Color.textSecondary)
                     Text("+\(totalAdded)")
                         .font(.caption2.weight(.bold).monospacedDigit())
-                        .foregroundStyle(TrinityTheme.statusOK)
+                        .foregroundStyle(V4Color.success)
                     Text("-\(totalRemoved)")
                         .font(.caption2.weight(.bold).monospacedDigit())
-                        .foregroundStyle(TrinityTheme.statusError)
+                        .foregroundStyle(V4Color.error)
                 }
 
                 // File list
@@ -41,15 +41,15 @@ struct AggregateDiffView: View {
                                 expandedFile = expandedFile == diff.id ? nil : diff.id
                             }
                         } label: {
-                            HStack(spacing: 6) {
+                            HStack(spacing: ParietalSpacing.sm - 2) {
                                 Image(systemName: expandedFile == diff.id ? "chevron.down" : "chevron.right")
                                     .font(.caption2)
-                                    .foregroundStyle(TrinityTheme.textMuted)
+                                    .foregroundStyle(V4Color.textSecondary)
                                     .frame(width: 10)
 
                                 Text(shortPath(diff.file ?? ""))
                                     .font(.caption2.monospaced())
-                                    .foregroundStyle(TrinityTheme.textPrimary)
+                                    .foregroundStyle(V4Color.textPrimary)
                                     .lineLimit(1)
 
                                 Spacer()
@@ -57,12 +57,12 @@ struct AggregateDiffView: View {
                                 if let a = diff.added, a > 0 {
                                     Text("+\(a)")
                                         .font(.caption2.monospaced())
-                                        .foregroundStyle(TrinityTheme.statusOK)
+                                        .foregroundStyle(V4Color.success)
                                 }
                                 if let r = diff.removed, r > 0 {
                                     Text("-\(r)")
                                         .font(.caption2.monospaced())
-                                        .foregroundStyle(TrinityTheme.statusError)
+                                        .foregroundStyle(V4Color.error)
                                 }
                             }
                         }
@@ -70,7 +70,7 @@ struct AggregateDiffView: View {
 
                         // Expanded preview
                         if expandedFile == diff.id, let preview = diff.preview, !preview.isEmpty {
-                            VStack(alignment: .leading, spacing: 1) {
+                            VStack(alignment: .leading, spacing: ParietalSpacing.xxxxs) {
                                 ForEach(preview.components(separatedBy: "\n").prefix(8), id: \.self) { line in
                                     Text(line)
                                         .font(.caption2.monospaced())
@@ -84,11 +84,11 @@ struct AggregateDiffView: View {
                 }
             }
             .padding(10)
-            .background(TrinityTheme.bgCard)
-            .clipShape(RoundedRectangle(cornerRadius: TrinityTheme.cardCorner))
+            .background(V4Color.surface)
+            .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cardCorner)
-                    .stroke(TrinityTheme.bgCardBorder, lineWidth: 1)
+                RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
+                    .stroke(V4Color.border, lineWidth: 1)
             )
         }
     }
@@ -100,8 +100,8 @@ struct AggregateDiffView: View {
     }
 
     private func diffLineColor(_ line: String) -> Color {
-        if line.hasPrefix("+") { return TrinityTheme.statusOK }
-        if line.hasPrefix("-") { return TrinityTheme.statusError }
-        return TrinityTheme.textMuted
+        if line.hasPrefix("+") { return V4Color.success }
+        if line.hasPrefix("-") { return V4Color.error }
+        return V4Color.textSecondary
     }
 }

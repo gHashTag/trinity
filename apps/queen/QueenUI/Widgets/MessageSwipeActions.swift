@@ -23,10 +23,10 @@ public enum SwipeAction: Equatable {
     /// Color for the action background
     var color: Color {
         switch self {
-        case .reply: return Color(hex: 0x00FF88) // green from theme accent
-        case .forward: return TrinityTheme.purple
-        case .copy: return Color(hex: 0x3B82F6) // blue
-        case .delete: return TrinityTheme.statusError
+        case .reply: return V4Color.success // green from theme accent
+        case .forward: return V4Color.purple
+        case .copy: return V4Color.info // blue
+        case .delete: return V4Color.error
         }
     }
 
@@ -204,7 +204,7 @@ public struct MessageSwipeActions: ViewModifier {
             action.color
 
             Image(systemName: action.icon)
-                .font(.system(size: 20, weight: .semibold))
+                .font(WernickeTypography.size20.weight(.semibold))
                 .foregroundColor(.white)
         }
     }
@@ -303,39 +303,39 @@ private struct MessageSwipeActionsPreview: View {
     @State private var lastAction: SwipeAction?
 
     var body: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             Text("Swipe a message to see actions")
                 .font(.caption)
-                .foregroundColor(TrinityTheme.textMuted)
+                .foregroundColor(V4Color.textSecondary)
 
             if let action = lastAction {
                 Text("Triggered: \(action.accessibilityLabel)")
-                    .padding(8)
-                    .background(TrinityTheme.bgCard)
-                    .cornerRadius(TrinityTheme.cornerSmall)
+                    .padding(ParietalSpacing.sm)
+                    .background(V4Color.surface)
+                    .cornerRadius(V1Theme.cornerSmall)
             }
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                 HStack {
                     Circle()
-                        .fill(TrinityTheme.accent)
-                        .frame(width: 32, height: 32)
+                        .fill(V4Color.accent)
+                        .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                         Text("Trinity")
                             .font(.headline)
-                            .foregroundColor(TrinityTheme.textPrimary)
+                            .foregroundColor(V4Color.textPrimary)
 
                         Text("Swipe me left or right to see available actions")
                             .font(.body)
-                            .foregroundColor(TrinityTheme.textMuted)
+                            .foregroundColor(V4Color.textSecondary)
                     }
 
                     Spacer()
                 }
-                .padding(12)
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(TrinityTheme.cornerMedium)
+                .padding(ParietalSpacing.md)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerMedium)
             }
             .messageSwipeActions(
                 onSwipeAction: { action in
@@ -345,27 +345,27 @@ private struct MessageSwipeActionsPreview: View {
             .frame(maxWidth: 400)
             .padding()
 
-            VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading, spacing: ParietalSpacing.md) {
                 HStack {
                     Circle()
-                        .fill(TrinityTheme.purple)
-                        .frame(width: 32, height: 32)
+                        .fill(V4Color.purple)
+                        .frame(width: ParietalSpacing.avatarSmall, height: ParietalSpacing.avatarSmall)
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: ParietalSpacing.xs) {
                         Text("User")
                             .font(.headline)
-                            .foregroundColor(TrinityTheme.textPrimary)
+                            .foregroundColor(V4Color.textPrimary)
 
                         Text("Try different swipe distances for different actions")
                             .font(.body)
-                            .foregroundColor(TrinityTheme.textMuted)
+                            .foregroundColor(V4Color.textSecondary)
                     }
 
                     Spacer()
                 }
-                .padding(12)
-                .background(TrinityTheme.bgCard)
-                .cornerRadius(TrinityTheme.cornerMedium)
+                .padding(ParietalSpacing.md)
+                .background(V4Color.surface)
+                .cornerRadius(V1Theme.cornerMedium)
             }
             .messageSwipeActions(
                 onSwipeAction: { action in
@@ -378,6 +378,6 @@ private struct MessageSwipeActionsPreview: View {
             .padding()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
     }
 }

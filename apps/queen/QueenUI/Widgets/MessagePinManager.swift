@@ -102,21 +102,21 @@ struct PinBadge: View {
     var body: some View {
         if count > 0 {
             Text("\(count)")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundStyle(TrinityTheme.bgWindow)
+                .font(WernickeTypography.miniBold)
+                .foregroundStyle(V4Color.background)
                 .frame(minWidth: 16, minHeight: 16)
                 .padding(2)
                 .background(
                     Circle()
-                        .fill(TrinityTheme.golden)
+                        .fill(V4Color.golden)
                 )
                 .accessibilityLabel("Pinned messages")
                 .accessibilityValue("\(count) pinned")
         } else {
             Image(systemName: "pin")
-                .font(.system(size: 12))
-                .foregroundStyle(TrinityTheme.textMuted)
-                .frame(width: 20, height: 20)
+                .font(WernickeTypography.size12)
+                .foregroundStyle(V4Color.textSecondary)
+                .frame(width: ParietalSpacing.icon + 4, height: ParietalSpacing.icon + 4)
                 .accessibilityLabel("No pinned messages")
         }
     }
@@ -130,13 +130,13 @@ struct PinIndicator: View {
 
     var body: some View {
         Image(systemName: "pin.fill")
-            .font(.system(size: 9, weight: .semibold))
-            .foregroundStyle(TrinityTheme.golden)
-            .frame(width: 16, height: 16)
+            .font(WernickeTypography.miniSemibold)
+            .foregroundStyle(V4Color.golden)
+            .frame(width: ParietalSpacing.icon, height: ParietalSpacing.icon)
             .background(
                 Circle()
-                    .fill(TrinityTheme.bgCard)
-                    .shadow(color: .black.opacity(0.3), radius: 2)
+                    .fill(V4Color.surface)
+                    .shadow(color: .black.opacity(V2Depth.stateHover), radius: 2)
             )
             .offset(x: -4, y: -4)
             .opacity(isVisible ? 1 : 0)
@@ -187,34 +187,34 @@ struct PinnedMessagesHeader: View {
     let count: Int
 
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: ParietalSpacing.sm - 2) {
             Image(systemName: "pin.fill")
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundStyle(TrinityTheme.golden)
+                .font(WernickeTypography.miniSemibold)
+                .foregroundStyle(V4Color.golden)
 
             Text("Pinned")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(TrinityTheme.textMuted)
+                .font(WernickeTypography.caption2Semibold)
+                .foregroundStyle(V4Color.textSecondary)
 
             if count > 0 {
                 Text("(\(count))")
-                    .font(.system(size: 11))
-                    .foregroundStyle(TrinityTheme.textMuted.opacity(0.6))
+                    .font(WernickeTypography.size11)
+                    .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextSecondary))
             }
 
             Spacer()
 
             if count > 0 {
                 Text("max \(PinStore.maxPins)")
-                    .font(.system(size: 10))
-                    .foregroundStyle(TrinityTheme.textMuted.opacity(0.4))
+                    .font(WernickeTypography.size10)
+                    .foregroundStyle(V4Color.textSecondary.opacity(V1Theme.opacityTextTertiary))
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.horizontal, ParietalSpacing.md)
+        .padding(.vertical, ParietalSpacing.sm)
         .background(
-            RoundedRectangle(cornerRadius: TrinityTheme.cornerSmall)
-                .fill(TrinityTheme.bgCard.opacity(0.5))
+            RoundedRectangle(cornerRadius: V1Theme.cornerSmall)
+                .fill(V4Color.surface.opacity(V2Depth.stateDisabled))
         )
     }
 }
@@ -232,10 +232,10 @@ struct PinAnimationModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .overlay(
-                RoundedRectangle(cornerRadius: TrinityTheme.cornerMedium)
+                RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                     .stroke(
                         LinearGradient(
-                            colors: isPinned ? [TrinityTheme.golden, TrinityTheme.golden.opacity(0.3)] : [],
+                            colors: isPinned ? [V4Color.golden, V4Color.golden.opacity(V2Depth.stateHover)] : [],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         ),
@@ -274,25 +274,25 @@ extension View {
 
 struct MessagePinManager_Previews: PreviewProvider {
     static var previews: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: ParietalSpacing.md + ParietalSpacing.md) {
             // Pin badges with different counts
-            HStack(spacing: 16) {
+            HStack(spacing: ParietalSpacing.lg) {
                 PinBadge(count: 0)
                 PinBadge(count: 1)
                 PinBadge(count: 3)
                 PinBadge(count: 5)
             }
             .padding()
-            .background(TrinityTheme.bgSidebar)
+            .background(V4Color.sidebar)
 
             // Pinned messages header
-            VStack(spacing: 8) {
+            VStack(spacing: ParietalSpacing.sm) {
                 PinnedMessagesHeader(count: 0)
                 PinnedMessagesHeader(count: 2)
                 PinnedMessagesHeader(count: 5)
             }
             .padding()
-            .background(TrinityTheme.bgSidebar)
+            .background(V4Color.sidebar)
 
             // Context menu action preview
             List {
@@ -315,9 +315,9 @@ struct MessagePinManager_Previews: PreviewProvider {
                     }
             }
         }
-        .frame(width: 300)
+        .frame(width: ParietalSpacing.xl * 12)
         .padding()
-        .background(TrinityTheme.bgWindow)
+        .background(V4Color.background)
         .preferredColorScheme(.dark)
     }
 }

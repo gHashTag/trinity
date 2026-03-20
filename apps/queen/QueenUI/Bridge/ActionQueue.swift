@@ -67,15 +67,15 @@ struct ActionButton: View {
         Button {
             ActionQueue.shared.enqueue(action, params: params)
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: ParietalSpacing.xxs) {
                 Text(icon)
-                    .font(.caption)
+                    .font(WernickeTypography.caption)
                 Text(label)
-                    .font(.caption.weight(.bold))
+                    .font(WernickeTypography.captionBold)
             }
             .foregroundStyle(.black)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.horizontal, ParietalSpacing.sm)
+            .padding(.vertical, ParietalSpacing.xxs)
             .background(color)
             .clipShape(SwiftUI.Capsule())
         }
