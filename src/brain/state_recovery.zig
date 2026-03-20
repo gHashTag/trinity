@@ -44,6 +44,7 @@ pub const MigrationError = error{
     UnsupportedVersion,
     CorruptedData,
     MigrationFailed,
+    InvalidStatus,
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -597,9 +598,10 @@ pub const StateManager = struct {
             const age_ms = @as(u64, @intCast(now_ms - claim_state.claimed_at));
 
             if (age_ms < claim_state.ttl_ms) {
-                // Restore the claim
+                // Restore claim
+                const task_id_copy = try self.allocator.dupe(u8, claim_state.task_id);
                 const new_claim = basal_ganglia.TaskClaim{
-                    .task_id = try self.allocator.dupe(u8, claim_state.task_id),
+                    .task_id = task_id_copy,
                     .agent_id = try self.allocator.dupe(u8, claim_state.agent_id),
                     .claimed_at = claim_state.claimed_at,
                     .ttl_ms = claim_state.ttl_ms,
@@ -609,10 +611,7 @@ pub const StateManager = struct {
                 };
 
                 registry.mutex.lock();
-                try registry.claims.put(
-                    try self.allocator.dupe(u8, claim_state.task_id),
-                    new_claim,
-                );
+                try registry.claims.put(task_id_copy, new_claim);
                 registry.mutex.unlock();
             }
         }

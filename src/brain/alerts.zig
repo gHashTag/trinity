@@ -116,18 +116,22 @@ pub const Alert = struct {
             try std.fmt.allocPrint(allocator, " [{s}]", .{r})
         else
             "";
-        defer {
-            if (self.region_name != null) allocator.free(region_str);
-        }
 
-        return std.fmt.allocPrint(allocator, "{{\"ts\":{d},\"level\":\"{s}\",\"condition\":\"{s}\",\"message\":\"{s}\",\"health\":{d:.1}{s}}}\n", .{
+        // Format the final string, incorporating region_str
+        const result = try std.fmt.allocPrint(allocator, "{{\"ts\":{d},\"level\":\"{s}\",\"condition\":\"{s}\",\"message\":\"{s}\",\"health\":{d:.1}{s}{s}}}\n", .{
             self.timestamp,
             @tagName(self.level),
             @tagName(self.condition),
             self.message,
             self.health_score orelse 0.0,
+            region_str,
             resolved_str,
         });
+
+        // Free region_str now that we've incorporated it into result
+        if (self.region_name != null) allocator.free(region_str);
+
+        return result;
     }
 
     /// Format alert for Telegram
@@ -136,19 +140,26 @@ pub const Alert = struct {
             try std.fmt.allocPrint(allocator, "\nRegion: {s}", .{r})
         else
             "";
-        defer {
-            if (self.region_name != null) allocator.free(region_str);
-        }
 
         const health_str = if (self.health_score) |h|
             try std.fmt.allocPrint(allocator, "\nHealth: {d:.1}/100", .{h})
         else
             "";
-        defer {
-            if (self.health_score != null) allocator.free(health_str);
-        }
 
-        return std.fmt.allocPrint(allocator, "{s} {s}: {s}{s}{s}", .{ self.level.telegramIcon(), self.condition.label(), self.message, region_str, health_str });
+        // Format the final string, incorporating both region_str and health_str
+        const result = try std.fmt.allocPrint(allocator, "{s} {s}: {s}{s}{s}", .{
+            self.level.telegramIcon(),
+            self.condition.label(),
+            self.message,
+            region_str,
+            health_str,
+        });
+
+        // Free intermediate strings now that we've incorporated them into result
+        if (self.region_name != null) allocator.free(region_str);
+        if (self.health_score != null) allocator.free(health_str);
+
+        return result;
     }
 
     /// Check if this alert is a duplicate of another (for suppression)
@@ -270,7 +281,9 @@ pub const AlertHistory = struct {
 
         // Persist to log file (use original alert, not stored_alert with owned pointers)
         // Note: persist may fail in tests due to file system, don't let it break alert tracking
-        self.persist(alert) catch {};
+        self.persist(alert) catch |err| {
+            std.log.warn("Failed to persist alert to log: {}", .{err});
+        };
     }
 
     /// Persist alert to log file
