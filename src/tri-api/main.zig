@@ -100,7 +100,11 @@ pub fn main() !void {
                 std.log.debug("tri-api/main: failed to write session list: {}", .{err});
             };
             w.end() catch |err| {
+<<<<<<< HEAD
                 std.log.debug("tri-api/main: failed to flush session list writer: {}", .{err});
+=======
+                std.log.debug("tri-api/main: failed to flush stdout: {}", .{err});
+>>>>>>> feat/issue-241
             };
         } else {
             std.debug.print("No sessions found.\n", .{});
