@@ -2073,6 +2073,16 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    const golden_chain_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/golden_chain.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+    const experience_engine_mod = b.createModule(.{
+        .root_source_file = b.path("src/storm/experience_engine.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
     const microglia_mod = b.createModule(.{
         .root_source_file = b.path("src/brain/microglia.zig"),
         .target = target,
@@ -2276,6 +2286,9 @@ pub fn build(b: *std.Build) void {
             .{ .name = "storm_ofc", .module = storm_ofc_mod },
             .{ .name = "storm_habenula", .module = storm_habenula_mod },
             .{ .name = "storm_amygdala", .module = storm_amygdala_mod },
+            // STORM P2-P3 Modules
+            .{ .name = "golden_chain", .module = golden_chain_mod },
+            .{ .name = "experience_engine", .module = experience_engine_mod },
             // FIXME: trinity-nexus submodule missing
             // .{ .name = "serve_full", .module = serve_full_mod },
         },
