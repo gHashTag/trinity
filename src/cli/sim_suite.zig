@@ -141,6 +141,7 @@ fn writeResult(result: *const @import("brain").evolution_simulation.EvolutionRes
 
 // Helper function to format a CSV row
 fn fmtRow(r: *const @import("brain").evolution_simulation.EvolutionResult, name: []const u8, w: anytype, _: Allocator) !void {
+    _ =; // Suppress unused warning
     var conv_buf: [32]u8 = undefined;
     const conv_str = if (r.convergence_step) |s| try std.fmt.bufPrintZ(&conv_buf, "{d}", .{s}) else "never";
 
