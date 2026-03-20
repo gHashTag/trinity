@@ -166,7 +166,7 @@ struct SuccessBanner: View {
             alignment: .top
         )
         .offset(y: isVisible ? 0 : -60)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isVisible)
+        .animation(MTMotion.modal, value: isVisible)
         .onAppear {
             withAnimation {
                 isVisible = true

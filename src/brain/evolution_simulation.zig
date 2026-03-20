@@ -18,11 +18,12 @@ const SACRED_PHI: f32 = 1.618033988749895;
 const SACRED_E: f32 = 2.718281828459045;
 
 // Fixed seeds for deterministic scenarios
-const SCENARIO_SEEDS = [4]u64{
+const SCENARIO_SEEDS = [5]u64{
     42, // S1 Baseline
     137, // S2 Current
     1618, // S3 Multi-obj (φ * 1000)
     2718, // S4 dePIN (e * 1000)
+    3236, // S5 dePIN without Microglia (φ^2 * 1000)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -640,18 +641,40 @@ pub fn runS4DePIN(allocator: Allocator, steps: u32) !EvolutionResult {
     return sim.run("S4_dePIN");
 }
 
-/// Run all 4 scenarios in sequence
+/// Run S5 dePIN without Microglia — Byzantine nodes only (no immunity)
+pub fn runS5DePIN_NoImmunity(allocator: Allocator, steps: u32) !EvolutionResult {
+    const config = EvolutionSimulationConfig{
+        .workers = 100,
+        .steps = steps * 3,
+        .crash_rate = 0.10,
+        .byzantine_rate = 0.05,
+        .seed = SCENARIO_SEEDS[4],
+        .objectives = &.{
+            .{ .name = "ntp", .weight = 0.75 },
+            .{ .name = "jepa", .weight = 0.25 },
+        },
+        .microglia_interval = 0, // DISABLED - No immunity patrol
+    };
+
+    var sim = try EvolutionSimulator.init(allocator, config);
+    defer sim.deinit();
+    return sim.run("S5_dePIN_NoImmunity");
+}
+
+/// Run all 5 scenarios in sequence
 pub const SuiteResult = struct {
     s1: EvolutionResult,
     s2: EvolutionResult,
     s3: EvolutionResult,
     s4: EvolutionResult,
+    s5: EvolutionResult,
 
     pub fn deinit(self: *SuiteResult) void {
         self.s1.deinit();
         self.s2.deinit();
         self.s3.deinit();
         self.s4.deinit();
+        self.s5.deinit();
     }
 
     pub fn printComparison(self: *const SuiteResult, writer: anytype, allocator: Allocator) !void {
@@ -693,11 +716,15 @@ pub fn runFullSuite(allocator: Allocator, steps: u32) !SuiteResult {
     const s4 = try runS4DePIN(allocator, steps);
     errdefer s4.deinit();
 
+    const s5 = try runS5DePIN_NoImmunity(allocator, steps);
+    errdefer s5.deinit();
+
     return SuiteResult{
         .s1 = s1,
         .s2 = s2,
         .s3 = s3,
         .s4 = s4,
+        .s5 = s5,
     };
 }
 

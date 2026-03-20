@@ -1,0 +1,18 @@
+[
+  {"config":"w8-mock-01","service":"hslm-w7-8","svc_id":"05292276-fe32-43c2-a079-a4f64b810e5a","acct_idx":1,"acct_name":"FARM-2","sacred":true},
+  {"config":"w8-mock-02","service":"hslm-w7-4","svc_id":"12a8963c-d4bf-4624-8887-809945f719ec","acct_idx":1,"acct_name":"FARM-2","sacred":true},
+  {"config":"w8-mock-03","service":"hslm-r33","svc_id":"29d038c0-800d-4408-aa5b-8d4b1d146146","acct_idx":1,"acct_name":"FARM-2","sacred":true},
+  {"config":"w8-mock-04","service":"hslm-w7-6","svc_id":"3c8c74be-a6ee-40fd-8691-bbd4e7c299b7","acct_idx":1,"acct_name":"FARM-2","sacred":true},
+  {"config":"w8-mock-05","service":"hslm-w7-9","svc_id":"5533dfc3-1de8-4d01-b4ba-8605f588314e","acct_idx":1,"acct_name":"FARM-2","sacred":true},
+  {"config":"w8-mock-06","service":"hslm-w7-3","svc_id":"58765cae-7a20-48d6-bf65-bea1f06b1d03","acct_idx":1,"acct_name":"FARM-2","sacred":true},
+  {"config":"w8-mock-07","service":"hslm-r5","svc_id":"5c3f29ff-b38b-47fd-8471-f1209ebda5e4","acct_idx":1,"acct_name":"FARM-2","sacred":true},
+  {"config":"w8-mock-08","service":"hslm-r12","svc_id":"9c45fdc4-cf6a-45f9-87ab-d4ffe09aab4b","acct_idx":1,"acct_name":"FARM-2","sacred":true},
+  {"config":"w8-mock-09","service":"hslm-w7-5","svc_id":"a72eaaac-7c52-423d-872d-ee8a06278634","acct_idx":1,"acct_name":"FARM-2","sacred":false},
+  {"config":"w8-mock-10","service":"hslm-r18","svc_id":"b68f1f3b-632c-434e-a7e8-2a0861bcd2c1","acct_idx":1,"acct_name":"FARM-2","sacred":false},
+  {"config":"w8-mock-11","service":"hslm-w7-2","svc_id":"b6c6bc83-886e-4abe-9c25-5cf209c22512","acct_idx":1,"acct_name":"FARM-2","sacred":false},
+  {"config":"w8-mock-12","service":"hslm-w7-7","svc_id":"ce8c0bc8-c578-4647-834b-8728cdcb0b2a","acct_idx":1,"acct_name":"FARM-2","sacred":false},
+  {"config":"w8-mock-13","service":"hslm-w7-10","svc_id":"e321e3c8-2985-4f42-ac33-833f97a05313","acct_idx":1,"acct_name":"FARM-2","sacred":false},
+  {"config":"w8-mock-14","service":"hslm-r11","svc_id":"e8d8f5ec-2f34-4f41-a911-e7f41208cdcf","acct_idx":1,"acct_name":"FARM-2","sacred":false},
+  {"config":"w8-mock-15","service":"hslm-r13","svc_id":"f0bd7e32-03c4-43e8-828f-00d5edc32da4","acct_idx":1,"acct_name":"FARM-2","sacred":false},
+  {"config":"w8-mock-16","service":"hslm-w7-1","svc_id":"f47d5045-77d9-47d9-ab54-bc89e7976f2b","acct_idx":1,"acct_name":"FARM-2","sacred":false}
+]

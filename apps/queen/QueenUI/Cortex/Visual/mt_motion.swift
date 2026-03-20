@@ -45,6 +45,27 @@ public enum MTMotion {
         Animation.spring(response: 0.35, dampingFraction: 0.6, blendDuration: 0.25)
     }
 
+    /// Ultra quick spring for instant feedback
+    /// - Response: 0.25s (ultra fast)
+    /// - Damping: 0.8 (no bounce)
+    public static var ultraQuickSpring: Animation {
+        Animation.spring(response: 0.25, dampingFraction: 0.8, blendDuration: 0.15)
+    }
+
+    /// Quick gentle spring for subtle feedback
+    /// - Response: 0.3s (fast)
+    /// - Damping: 0.8 (no bounce)
+    public static var quickGentleSpring: Animation {
+        Animation.spring(response: 0.3, dampingFraction: 0.8, blendDuration: 0.2)
+    }
+
+    /// Slow bouncy spring for playful delays
+    /// - Response: 0.5s (slow)
+    /// - Damping: 0.6 (more bounce)
+    public static var slowBouncySpring: Animation {
+        Animation.spring(response: 0.5, dampingFraction: 0.6, blendDuration: 0.4)
+    }
+
     // MARK: - Ease Animations
 
     /// Quick ease for micro-interactions

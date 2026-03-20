@@ -84,7 +84,7 @@ test "BiopsyResult defaults" {
 
 test "PhoenixBridge init" {
     const allocator = std.testing.allocator;
-    const pb = try PhoenixBridge{
+    const pb = PhoenixBridge{
         .allocator = allocator,
         .cell_path = "/tmp/cell",
         .checkpoint_dir = ".test/checkpoints/",
