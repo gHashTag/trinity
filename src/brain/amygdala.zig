@@ -822,4 +822,437 @@ test "Threat detection: low urgency task" {
     try std.testing.expect(salience.score < 40);
 }
 
+// ═════════════════════════════════════════════════════════════════════════════════════════════════════
+// COMPREHENSIVE EDGE CASE TESTS
+// ═════════════════════════════════════════════════════════════════════════════════════════════════════
+
+test "Amygdala: threat level boundaries - exact thresholds" {
+    // Test exact boundary values for each level transition
+
+    // none/low boundary at 20
+    const level_19 = SalienceLevel.fromScore(19.999);
+    try std.testing.expectEqual(SalienceLevel.none, level_19);
+
+    const level_20 = SalienceLevel.fromScore(20.0);
+    try std.testing.expectEqual(SalienceLevel.low, level_20);
+
+    // low/medium boundary at 40
+    const level_39 = SalienceLevel.fromScore(39.999);
+    try std.testing.expectEqual(SalienceLevel.low, level_39);
+
+    const level_40 = SalienceLevel.fromScore(40.0);
+    try std.testing.expectEqual(SalienceLevel.medium, level_40);
+
+    // medium/high boundary at 60
+    const level_59 = SalienceLevel.fromScore(59.999);
+    try std.testing.expectEqual(SalienceLevel.medium, level_59);
+
+    const level_60 = SalienceLevel.fromScore(60.0);
+    try std.testing.expectEqual(SalienceLevel.high, level_60);
+
+    // high/critical boundary at 80
+    const level_79 = SalienceLevel.fromScore(79.999);
+    try std.testing.expectEqual(SalienceLevel.high, level_79);
+
+    const level_80 = SalienceLevel.fromScore(80.0);
+    try std.testing.expectEqual(SalienceLevel.critical, level_80);
+}
+
+test "Amygdala: threat level - negative score" {
+    // Negative scores should map to none
+    const level = SalienceLevel.fromScore(-10.0);
+    try std.testing.expectEqual(SalienceLevel.none, level);
+}
+
+test "Amygdala: threat level - score above 100" {
+    // Scores above 100 should still map to critical
+    const level = SalienceLevel.fromScore(150.0);
+    try std.testing.expectEqual(SalienceLevel.critical, level);
+
+    const level_max = SalienceLevel.fromScore(std.math.inf(f32));
+    try std.testing.expectEqual(SalienceLevel.critical, level_max);
+}
+
+test "Amygdala: threat level - zero score" {
+    const level = SalienceLevel.fromScore(0.0);
+    try std.testing.expectEqual(SalienceLevel.none, level);
+}
+
+test "Amygdala: threat level - fractional scores" {
+    // Test that fractional scores are handled correctly
+    const level_19_5 = SalienceLevel.fromScore(19.5);
+    try std.testing.expectEqual(SalienceLevel.none, level_19_5);
+
+    const level_20_5 = SalienceLevel.fromScore(20.5);
+    try std.testing.expectEqual(SalienceLevel.low, level_20_5);
+}
+
+test "Amygdala: salience calculation - maximum score" {
+    // Test all scoring factors combined
+    const result = Amygdala.analyzeTask(
+        "urgent-critical-security",
+        "dukh",
+        "critical"
+    );
+
+    //dukhh(40) + urgent(30) + critical(50) + security(40) + critical_priority(30) = 190
+    // But capped at 100
+    try std.testing.expectEqual(@as(f32, 100), result.score);
+    try std.testing.expectEqual(SalienceLevel.critical, result.level);
+}
+
+test "Amygdala: salience calculation - minimum score" {
+    // Test with no scoring factors
+    const result = Amygdala.analyzeTask(
+        "routine-task",
+        "unknown-realm",
+        "low"
+    );
+
+    try std.testing.expect(result.score < 20);
+    try std.testing.expectEqual(SalienceLevel.none, result.level);
+}
+
+test "Amygdala: salience calculation - dukh vs razum" {
+    const dukh_result = Amygdala.analyzeTask("task", "dukh", "normal");
+    const razum_result = Amygdala.analyzeTask("task", "razum", "normal");
+
+    // dukh (+40) > razum (+30)
+    try std.testing.expect(dukh_result.score > razum_result.score);
+}
+
+test "Amygdala: salience calculation - priority levels" {
+    const normal = Amygdala.analyzeTask("task", "sattva", "normal");
+    const high = Amygdala.analyzeTask("task", "sattva", "high");
+    const critical = Amygdala.analyzeTask("task", "sattva", "critical");
+
+    try std.testing.expect(normal.score < high.score);
+    try std.testing.expect(high.score < critical.score);
+}
+
+test "Amygdala: salience calculation - keyword stacking" {
+    // Test that multiple keywords stack correctly
+    const single = Amygdala.analyzeTask("task", "sattva", "normal");
+    const with_urgent = Amygdala.analyzeTask("urgent-task", "sattva", "normal");
+    const with_critical = Amygdala.analyzeTask("critical-task", "sattva", "normal");
+    const with_both = Amygdala.analyzeTask("urgent-critical-task", "sattva", "normal");
+
+    try std.testing.expect(with_urgent.score > single.score);
+    try std.testing.expect(with_critical.score > with_urgent.score);
+    try std.testing.expect(with_both.score > with_critical.score);
+}
+
+test "Amygdala: error salience - all critical patterns" {
+    const result = Amygdala.analyzeError(
+        "segfault panic deadlock corruption security authentication injection out of memory"
+    );
+
+    // Base 20 + 8 patterns * 30 = 260, capped at 100
+    try std.testing.expectEqual(@as(f32, 100), result.score);
+    try std.testing.expectEqual(SalienceLevel.critical, result.level);
+}
+
+test "Amygdala: error salience - all high severity patterns" {
+    const result = Amygdala.analyzeError(
+        "timeout connection refused not found"
+    );
+
+    // Base 20 + timeout(15) + connection_refused(15) + not_found(15) = 65
+    // Note: patterns are checked for presence, not count
+    try std.testing.expect(result.score >= 60);
+}
+
+test "Amygdala: error salience - empty error message" {
+    const result = Amygdala.analyzeError("");
+
+    // Empty error should still get base score
+    try std.testing.expectEqual(@as(f32, 20), result.score);
+    try std.testing.expectEqual(SalienceLevel.low, result.level);
+}
+
+test "Amygdala: error salience - generic error only" {
+    const result = Amygdala.analyzeError("something went wrong");
+
+    // Only base score for generic error
+    try std.testing.expectEqual(@as(f32, 20), result.score);
+}
+
+test "Amygdala: urgency calculation - all levels" {
+    const none: EventSalience = .{ .level = .none, .score = 0, .reason = "" };
+    const low: EventSalience = .{ .level = .low, .score = 25, .reason = "" };
+    const medium: EventSalience = .{ .level = .medium, .score = 50, .reason = "" };
+    const high: EventSalience = .{ .level = .high, .score = 75, .reason = "" };
+    const critical: EventSalience = .{ .level = .critical, .score = 100, .reason = "" };
+
+    try std.testing.expectEqual(@as(f32, 0.0), Amygdala.urgency(none));
+    try std.testing.expectEqual(@as(f32, 0.25), Amygdala.urgency(low));
+    try std.testing.expectEqual(@as(f32, 0.5), Amygdala.urgency(medium));
+    try std.testing.expectEqual(@as(f32, 0.75), Amygdala.urgency(high));
+    try std.testing.expectEqual(@as(f32, 1.0), Amygdala.urgency(critical));
+}
+
+test "Amygdala: urgency is linear with level" {
+    // Verify urgency = level / 4.0
+    for (0..5) |i| {
+        const level: SalienceLevel = @enumFromInt(i);
+        const event: EventSalience = .{ .level = level, .score = 0, .reason = "" };
+        const expected_urgency = @as(f32, @floatFromInt(i)) / 4.0;
+        try std.testing.expectApproxEqAbs(expected_urgency, Amygdala.urgency(event), 0.001);
+    }
+}
+
+test "Amygdala: requiresAttention thresholds" {
+    const none: EventSalience = .{ .level = .none, .score = 0, .reason = "" };
+    const low: EventSalience = .{ .level = .low, .score = 25, .reason = "" };
+    const medium: EventSalience = .{ .level = .medium, .score = 50, .reason = "" };
+    const high: EventSalience = .{ .level = .high, .score = 75, .reason = "" };
+    const critical: EventSalience = .{ .level = .critical, .score = 100, .reason = "" };
+
+    try std.testing.expect(!Amygdala.requiresAttention(none));
+    try std.testing.expect(!Amygdala.requiresAttention(low));
+    try std.testing.expect(!Amygdala.requiresAttention(medium));
+    try std.testing.expect(Amygdala.requiresAttention(high));
+    try std.testing.expect(Amygdala.requiresAttention(critical));
+}
+
+test "Amygdala: scanPatterns - pattern at string boundaries" {
+    // Pattern at start
+    const start = Amygdala.scanPatterns("critical-fix");
+    try std.testing.expectEqual(@as(f32, 50), start);
+
+    // Pattern at end
+    const end = Amygdala.scanPatterns("fix-critical");
+    try std.testing.expectEqual(@as(f32, 50), end);
+
+    // Pattern as entire string
+    const whole = Amygdala.scanPatterns("critical");
+    try std.testing.expectEqual(@as(f32, 50), whole);
+}
+
+test "Amygdala: scanPatterns - overlapping patterns" {
+    // "security" contains "cur" but we only match full patterns
+    const result = Amygdala.scanPatterns("securityurgent");
+    try std.testing.expectEqual(@as(f32, 70), result); // 40 + 30
+}
+
+test "Amygdala: scanPatterns - case sensitivity" {
+    const lower = Amygdala.scanPatterns("critical");
+    const upper = Amygdala.scanPatterns("CRITICAL");
+    const mixed = Amygdala.scanPatterns("CrItIcAl");
+
+    try std.testing.expectEqual(@as(f32, 50), lower);
+    try std.testing.expectEqual(@as(f32, 0), upper);
+    try std.testing.expectEqual(@as(f32, 0), mixed);
+}
+
+test "Amygdala: scanPatterns - repeated pattern counting" {
+    // Same pattern multiple times should be counted each time
+    const single = Amygdala.scanPatterns("critical");
+    const double = Amygdala.scanPatterns("critical critical");
+    const triple = Amygdala.scanPatterns("critical critical critical");
+
+    try std.testing.expectEqual(@as(f32, 50), single);
+    try std.testing.expectEqual(@as(f32, 100), double);
+    try std.testing.expectEqual(@as(f32, 150), triple);
+}
+
+test "Amygdala: scanPatterns - very short input" {
+    const empty = Amygdala.scanPatterns("");
+    try std.testing.expectEqual(@as(f32, 0), empty);
+
+    const single_char = Amygdala.scanPatterns("a");
+    try std.testing.expectEqual(@as(f32, 0), single_char);
+
+    const five_chars = Amygdala.scanPatterns("abcde");
+    try std.testing.expectEqual(@as(f32, 0), five_chars); // "urgent" is 6 chars
+}
+
+test "Amygdala: scanPatterns - unicode handling" {
+    // Unicode characters should not break the scanner
+    const result = Amygdala.scanPatterns("urgent-critical-тест");
+    try std.testing.expectEqual(@as(f32, 80), result); // 30 + 50
+}
+
+test "Amygdala: analyzeTask - very long task_id" {
+    var long_task: [1000]u8 = undefined;
+    @memset(&long_task, 'a');
+
+    const result = Amygdala.analyzeTask(&long_task, "dukh", "high");
+    try std.testing.expect(result.score >= 60); // dukh(40) + high(20)
+}
+
+test "Amygdala: analyzeTask - empty strings" {
+    const result = Amygdala.analyzeTask("", "", "");
+    try std.testing.expectEqual(@as(f32, 0), result.score);
+    try std.testing.expectEqual(SalienceLevel.none, result.level);
+}
+
+test "Amygdala: analyzeTask - special characters in task_id" {
+    const result = Amygdala.analyzeTask("urgent!@#$%^&*()", "dukh", "high");
+    // Should still detect urgent keyword
+    try std.testing.expect(result.score >= 70); // dukh(40) + urgent(30) or similar
+}
+
+test "Amygdala: analyzeError - special characters in error" {
+    const result = Amygdala.analyzeError("segfault at 0xdeadbeef in function(){}[]");
+    try std.testing.expect(result.score >= 50); // base(20) + segfault(30)
+}
+
+test "Amygdala: analyzeError - pattern substring matching" {
+    // "authentication" contains "auth" but we match full pattern
+    const result = Amygdala.analyzeError("authentication failed");
+    try std.testing.expect(result.score >= 50); // base(20) + authentication(30)
+}
+
+test "Amygdala: analyzeError - multiple same patterns" {
+    // Note: analyzeError only checks if pattern exists, not count occurrences
+    // So multiple instances of the same pattern don't increase the score
+    const single = Amygdala.analyzeError("segfault");
+    const double = Amygdala.analyzeError("segfault segfault");
+    const triple = Amygdala.analyzeError("segfault segfault segfault");
+
+    try std.testing.expectEqual(@as(f32, 50), single.score); // 20 + 30
+    try std.testing.expectEqual(@as(f32, 50), double.score); // Still 20 + 30 (pattern exists once)
+    try std.testing.expectEqual(@as(f32, 50), triple.score); // Still 20 + 30 (pattern exists once)
+}
+
+test "Amygdala: score capping at exactly 100" {
+    // Test that scores are capped at exactly 100, not above
+    const result1 = Amygdala.analyzeTask("urgent-critical-security", "dukh", "critical");
+    try std.testing.expectEqual(@as(f32, 100), result1.score);
+
+    const result2 = Amygdala.analyzeError("segfault panic deadlock corruption security authentication injection");
+    try std.testing.expectEqual(@as(f32, 100), result2.score);
+}
+
+test "Amygdala: emoji returns non-empty strings" {
+    for (0..5) |i| {
+        const level: SalienceLevel = @enumFromInt(i);
+        const emoji = level.emoji();
+        try std.testing.expect(emoji.len > 0);
+    }
+}
+
+test "Amygdala: emoji strings are unique per level" {
+    const emojis = [_][]const u8{
+        SalienceLevel.none.emoji(),
+        SalienceLevel.low.emoji(),
+        SalienceLevel.medium.emoji(),
+        SalienceLevel.high.emoji(),
+        SalienceLevel.critical.emoji(),
+    };
+
+    // Verify each emoji is different
+    for (emojis, 0..) |emoji1, i| {
+        for (emojis[i + 1 ..]) |emoji2| {
+            try std.testing.expect(!std.mem.eql(u8, emoji1, emoji2));
+        }
+    }
+}
+
+test "Amygdala: threat detection - security related" {
+    const result = Amygdala.analyzeTask("security-patch-needed", "sattva", "high");
+    try std.testing.expect(result.level == .high or result.level == .critical);
+    try std.testing.expect(Amygdala.requiresAttention(result));
+}
+
+test "Amygdala: threat detection - urgent production issue" {
+    const result = Amygdala.analyzeTask("urgent-production-outage", "dukh", "critical");
+    try std.testing.expectEqual(SalienceLevel.critical, result.level);
+    try std.testing.expect(Amygdala.requiresAttention(result));
+}
+
+test "Amygdala: threat detection - routine maintenance" {
+    const result = Amygdala.analyzeTask("scheduled-maintenance", "razum", "normal");
+    try std.testing.expect(result.level == .none or result.level == .low);
+    try std.testing.expect(!Amygdala.requiresAttention(result));
+}
+
+test "Amygdala: threat detection - security error" {
+    const result = Amygdala.analyzeError("security: SQL injection detected");
+    try std.testing.expect(result.score >= 50); // base(20) + security(30)
+    try std.testing.expect(Amygdala.requiresAttention(result));
+}
+
+test "Amygdala: threat detection - crash error" {
+    const result = Amygdala.analyzeError("process crashed with segfault");
+    // Score = 20 (base) + 30 (segfault) = 50
+    try std.testing.expect(result.score >= 50);
+    // Level at 50 is medium (not high/critical)
+    try std.testing.expectEqual(SalienceLevel.medium, result.level);
+}
+
+test "Amygdala: threat detection - timeout error" {
+    const result = Amygdala.analyzeError("connection timeout after 30s");
+    try std.testing.expect(result.score >= 35); // base(20) + timeout(15)
+}
+
+test "Amygdala: realm scoring - unknown realm" {
+    const result = Amygdala.analyzeTask("task", "unknown-realm", "normal");
+    // Unknown realm adds no score
+    try std.testing.expect(result.score < 20);
+}
+
+test "Amygdala: priority scoring - unknown priority" {
+    const result = Amygdala.analyzeTask("task", "sattva", "unknown-priority");
+    // Unknown priority adds no score
+    try std.testing.expect(result.score < 20);
+}
+
+test "Amygdala: combined scoring - realm + priority + keywords" {
+    // dukh(40) + critical_priority(30) + critical(50) = 120 -> capped at 100
+    const result = Amygdala.analyzeTask("critical-fix", "dukh", "critical");
+    try std.testing.expectEqual(@as(f32, 100), result.score);
+}
+
+test "Amygdala: combined scoring - razum + high + urgent" {
+    // razum(30) + high(20) + urgent(30) = 80
+    const result = Amygdala.analyzeTask("urgent-fix", "razum", "high");
+    try std.testing.expectEqual(@as(f32, 80), result.score);
+    try std.testing.expectEqual(SalienceLevel.critical, result.level);
+}
+
+test "Amygdala: boundary - exactly at threshold" {
+    // Test score exactly at boundary
+    // 20 = low/none boundary
+    const result = Amygdala.analyzeTask("", "sattva", "high");
+    try std.testing.expectEqual(@as(f32, 20), result.score);
+    try std.testing.expectEqual(SalienceLevel.low, result.level);
+}
+
+test "Amygdala: fromScore with infinity" {
+    const pos_inf = SalienceLevel.fromScore(std.math.inf(f32));
+    try std.testing.expectEqual(SalienceLevel.critical, pos_inf);
+
+    const neg_inf = SalienceLevel.fromScore(-std.math.inf(f32));
+    try std.testing.expectEqual(SalienceLevel.none, neg_inf);
+}
+
+// NaN handling is special case - fromScore returns .none but NaN != NaN comparison is false
+// Skipping explicit NaN test as it tests implementation detail rather than behavior
+
+test "Amygdala: very long error message" {
+    var long_error: [10000]u8 = undefined;
+    @memset(&long_error, ' ');
+    @memcpy(long_error[0..8], "segfault");
+
+    const result = Amygdala.analyzeError(&long_error);
+    try std.testing.expect(result.score >= 50); // base(20) + segfault(30)
+}
+
+test "Amygdala: urgency comparison across levels" {
+    const levels = [_]SalienceLevel{ .none, .low, .medium, .high, .critical };
+
+    var prev_urgency: f32 = 0.0;
+    for (levels, 0..) |level, i| {
+        const event: EventSalience = .{ .level = level, .score = 0, .reason = "" };
+        const urgency = Amygdala.urgency(event);
+        try std.testing.expect(urgency >= prev_urgency);
+        if (i > 0) {
+            try std.testing.expect(urgency > prev_urgency);
+        }
+        prev_urgency = urgency;
+    }
+}
+
 // φ² + 1/φ² = 3 | TRINITY

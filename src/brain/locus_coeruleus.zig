@@ -568,6 +568,473 @@ test "BackoffPolicy no_jitter_is_deterministic" {
     try std.testing.expectEqual(delay2, delay3);
 }
 
+// ═════════════════════════════════════════════════════════════════════════════════════════════════════
+// COMPREHENSIVE EDGE CASE TESTS
+// ═════════════════════════════════════════════════════════════════════════════════════════════════════
+
+test "LocusCoeruleus: overflow backoff - very high attempt count" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+        .max_ms = 60000,
+    };
+
+    // Very high attempt count should cap at max_ms
+    const delay1 = policy.nextDelay(100);
+    const delay2 = policy.nextDelay(1000);
+    const delay3 = policy.nextDelay(10000);
+
+    // All should be capped at max_ms
+    try std.testing.expectEqual(@as(u64, 60000), delay1);
+    try std.testing.expectEqual(@as(u64, 60000), delay2);
+    try std.testing.expectEqual(@as(u64, 60000), delay3);
+}
+
+test "LocusCoeruleus: overflow backoff - large multiplier" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 1000.0, // Very large multiplier
+        .strategy = .exponential,
+        .jitter_type = .none,
+        .max_ms = 100000,
+    };
+
+    // With large multiplier, should hit max_ms quickly
+    const delay_0 = policy.nextDelay(0);
+    try std.testing.expectEqual(@as(u64, 1000), delay_0);
+
+    const delay_1 = policy.nextDelay(1);
+    // 1000 * 1000 = 1,000,000, but capped at 100,000
+    try std.testing.expectEqual(@as(u64, 100000), delay_1);
+
+    const delay_2 = policy.nextDelay(2);
+    try std.testing.expectEqual(@as(u64, 100000), delay_2);
+}
+
+test "LocusCoeruleus: overflow backoff - max attempt as u32" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+        .max_ms = std.math.maxInt(u64),
+    };
+
+    // Test with max u32 attempt
+    const delay = policy.nextDelay(std.math.maxInt(u32));
+    // Should not crash and should return some value
+    try std.testing.expect(delay > 0);
+}
+
+test "LocusCoeruleus: reset after failure - zero delay" {
+    var policy = BackoffPolicy{
+        .initial_ms = 0,
+        .strategy = .constant,
+        .jitter_type = .none,
+    };
+
+    // Zero initial delay should return zero
+    const delay = policy.nextDelay(100);
+    try std.testing.expectEqual(@as(u64, 0), delay);
+}
+
+test "LocusCoeruleus: reset after failure - small max_ms" {
+    var policy = BackoffPolicy{
+        .initial_ms = 10000,
+        .max_ms = 1, // Max is less than initial
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    // Should cap at max_ms even though it's smaller than initial
+    const delay = policy.nextDelay(0);
+    try std.testing.expectEqual(@as(u64, 1), delay);
+}
+
+test "LocusCoeruleus: backoff sequence monotonicity" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+        .max_ms = 100000,
+    };
+
+    // Verify sequence is monotonically increasing until cap
+    var prev_delay = policy.nextDelay(0);
+    var i: u32 = 1;
+    while (i < 50) : (i += 1) {
+        const curr_delay = policy.nextDelay(i);
+        try std.testing.expect(curr_delay >= prev_delay);
+        if (curr_delay == prev_delay) {
+            // Hit the cap
+            try std.testing.expectEqual(@as(u64, 100000), curr_delay);
+            break;
+        }
+        prev_delay = curr_delay;
+    }
+}
+
+test "LocusCoeruleus: linear strategy with zero increment" {
+    var policy = BackoffPolicy{
+        .initial_ms = 5000,
+        .linear_increment = 0,
+        .strategy = .linear,
+        .jitter_type = .none,
+    };
+
+    // With zero increment, should behave like constant
+    const delay_0 = policy.nextDelay(0);
+    const delay_10 = policy.nextDelay(10);
+    const delay_100 = policy.nextDelay(100);
+
+    try std.testing.expectEqual(@as(u64, 5000), delay_0);
+    try std.testing.expectEqual(@as(u64, 5000), delay_10);
+    try std.testing.expectEqual(@as(u64, 5000), delay_100);
+}
+
+test "LocusCoeruleus: linear strategy overflow protection" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1,
+        .linear_increment = std.math.maxInt(u64) / 2,
+        .strategy = .linear,
+        .jitter_type = .none,
+        .max_ms = std.math.maxInt(u64),
+    };
+
+    // Should handle large increment without overflow
+    const delay_0 = policy.nextDelay(0);
+    const delay_1 = policy.nextDelay(1);
+    const delay_2 = policy.nextDelay(2);
+
+    try std.testing.expect(delay_1 > delay_0);
+    try std.testing.expect(delay_2 > delay_1);
+}
+
+test "LocusCoeruleus: constant strategy never changes" {
+    var policy = BackoffPolicy{
+        .initial_ms = 7777,
+        .strategy = .constant,
+        .jitter_type = .none,
+    };
+
+    // Constant strategy always returns same value
+    const delays = [_]u32{ 0, 1, 10, 100, 1000, 10000 };
+    for (delays) |attempt| {
+        const delay = policy.nextDelay(attempt);
+        try std.testing.expectEqual(@as(u64, 7777), delay);
+    }
+}
+
+test "LocusCoeruleus: jitter phi_weighted distribution" {
+    var policy = BackoffPolicy{
+        .initial_ms = 10000,
+        .strategy = .constant,
+        .jitter_type = .phi_weighted,
+    };
+
+    var low_count: usize = 0; // 0.618x
+    var high_count: usize = 0; // 1.618x
+
+    // Sample many times
+    for (0..1000) |_| {
+        const delay = policy.nextDelay(0);
+        // 10000 * 0.618 = 6180
+        // 10000 * 1.618 = 16180
+        if (delay < 10000) {
+            try std.testing.expect(delay >= 6000 and delay <= 6500);
+            low_count += 1;
+        } else {
+            try std.testing.expect(delay >= 16000 and delay <= 16500);
+            high_count += 1;
+        }
+    }
+
+    // Should have both values represented
+    try std.testing.expect(low_count > 400);
+    try std.testing.expect(high_count > 400);
+}
+
+test "LocusCoeruleus: jitter with max_ms cap" {
+    var policy = BackoffPolicy{
+        .initial_ms = 10000,
+        .max_ms = 8000, // Cap is below base
+        .strategy = .constant,
+        .jitter_type = .phi_weighted,
+    };
+
+    // Even with jitter, should never exceed max_ms
+    for (0..100) |_| {
+        const delay = policy.nextDelay(0);
+        try std.testing.expect(delay <= 8000);
+    }
+}
+
+test "LocusCoeruleus: EXP_TABLE lookup correctness" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    // Verify table lookup for all entries
+    for (0..32) |attempt| {
+        const table_delay = policy.nextDelay(@intCast(attempt));
+        const expected = @as(u64, 1000) * @as(u64, 1) << @as(u5, @intCast(attempt));
+        try std.testing.expectEqual(expected, table_delay);
+    }
+}
+
+test "LocusCoeruleus: EXP_TABLE boundary overflow" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+        .max_ms = std.math.maxInt(u64),
+    };
+
+    // Entry 31 is 2^31 * 1000 = 2147483648000
+    const delay_31 = policy.nextDelay(31);
+    try std.testing.expectEqual(@as(u64, 2147483648000), delay_31);
+
+    // Entry 32 should use computation path
+    const delay_32 = policy.nextDelay(32);
+    try std.testing.expect(delay_32 > delay_31);
+}
+
+test "LocusCoeruleus: custom multiplier less than 1" {
+    var policy = BackoffPolicy{
+        .initial_ms = 10000,
+        .multiplier = 0.5, // Decreasing backoff
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    const delay_0 = policy.nextDelay(0);
+    const delay_1 = policy.nextDelay(1);
+    const delay_2 = policy.nextDelay(2);
+
+    try std.testing.expectEqual(@as(u64, 10000), delay_0);
+    try std.testing.expect(delay_1 < delay_0); // Should decrease
+    try std.testing.expect(delay_2 < delay_1); // Should continue decreasing
+}
+
+test "LocusCoeruleus: zero initial delay with multiplier" {
+    var policy = BackoffPolicy{
+        .initial_ms = 0,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    const delay_0 = policy.nextDelay(0);
+    const delay_1 = policy.nextDelay(1);
+    const delay_2 = policy.nextDelay(2);
+
+    // 0 * 2^attempt = 0 for all attempts
+    try std.testing.expectEqual(@as(u64, 0), delay_0);
+    try std.testing.expectEqual(@as(u64, 0), delay_1);
+    try std.testing.expectEqual(@as(u64, 0), delay_2);
+}
+
+test "LocusCoeruleus: negative jitter behavior" {
+    // Jitter should never produce negative delays
+    var policy = BackoffPolicy{
+        .initial_ms = 1,
+        .strategy = .constant,
+        .jitter_type = .phi_weighted,
+    };
+
+    for (0..100) |_| {
+        const delay = policy.nextDelay(0);
+        try std.testing.expect(delay > 0);
+    }
+}
+
+test "LocusCoeruleus: max_ms zero edge case" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .max_ms = 0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    // With max_ms=0, should return 0
+    const delay = policy.nextDelay(0);
+    try std.testing.expectEqual(@as(u64, 0), delay);
+}
+
+test "LocusCoeruleus: sequence with jitter is monotonic on average" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .uniform,
+        .max_ms = 100000,
+    };
+
+    // Sample each delay multiple times and check average is increasing
+    var prev_avg: f64 = 0;
+
+    for (0..10) |attempt| {
+        var sum: u64 = 0;
+        const samples = 20;
+        for (0..samples) |_| {
+            sum += policy.nextDelay(@intCast(attempt));
+        }
+        const avg = @as(f64, @floatFromInt(sum)) / @as(f64, @floatFromInt(samples));
+
+        if (attempt > 0) {
+            try std.testing.expect(avg >= prev_avg * 0.8); // Allow some jitter overlap
+        }
+        prev_avg = avg;
+    }
+}
+
+test "LocusCoeruleus: backoff after simulated failure" {
+    var policy = BackoffPolicy{
+        .initial_ms = 100,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+        .max_ms = 10000,
+    };
+
+    // Simulate retry sequence
+    var attempt: u32 = 0;
+    var total_waited: u64 = 0;
+
+    while (attempt < 10) : (attempt += 1) {
+        const delay = policy.nextDelay(attempt);
+        total_waited += delay;
+
+        // "Reset" on success would restart at attempt 0
+        // Here we just verify the sequence
+        if (attempt > 0) {
+            const prev_delay = policy.nextDelay(attempt - 1);
+            try std.testing.expect(delay >= prev_delay);
+        }
+    }
+
+    // Total wait time should be reasonable
+    try std.testing.expect(total_waited > 0);
+    try std.testing.expect(total_waited < 100000); // Not too large
+}
+
+test "LocusCoeruleus: very small initial with jitter" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1,
+        .strategy = .constant,
+        .jitter_type = .phi_weighted,
+    };
+
+    // Even with smallest initial, should never produce 0
+    for (0..100) |_| {
+        const delay = policy.nextDelay(0);
+        try std.testing.expect(delay > 0);
+    }
+}
+
+test "LocusCoeruleus: linear with large increment overflows to max" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1,
+        .linear_increment = 100000,
+        .strategy = .linear,
+        .jitter_type = .none,
+        .max_ms = 500000,
+    };
+
+    // Should hit max_ms after a few attempts
+    const delay_0 = policy.nextDelay(0);
+    const delay_1 = policy.nextDelay(1);
+    const delay_2 = policy.nextDelay(2);
+    const delay_10 = policy.nextDelay(10);
+
+    try std.testing.expectEqual(@as(u64, 1), delay_0);
+    try std.testing.expectEqual(@as(u64, 100001), delay_1);
+    try std.testing.expectEqual(@as(u64, 200001), delay_2);
+    try std.testing.expectEqual(@as(u64, 500000), delay_10); // Capped
+}
+
+test "LocusCoeruleus: exponential with multiplier 1 is constant" {
+    var policy = BackoffPolicy{
+        .initial_ms = 5555,
+        .multiplier = 1.0,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    // Multiplier 1.0 makes exponential behave like constant
+    const delays = [_]u32{ 0, 1, 5, 10, 100 };
+    for (delays) |attempt| {
+        const delay = policy.nextDelay(attempt);
+        try std.testing.expectEqual(@as(u64, 5555), delay);
+    }
+}
+
+test "LocusCoeruleus: jitter does not affect monotonicity at high attempts" {
+    var policy = BackoffPolicy{
+        .initial_ms = 1000,
+        .multiplier = 2.0,
+        .strategy = .exponential,
+        .jitter_type = .uniform,
+        .max_ms = 60000,
+    };
+
+    // At high attempts, jitter shouldn't cause decrease below previous cap
+    const delay_100 = policy.nextDelay(100);
+    const delay_101 = policy.nextDelay(101);
+
+    // Both should be at max_ms
+    try std.testing.expectEqual(@as(u64, 60000), delay_100);
+    try std.testing.expectEqual(@as(u64, 60000), delay_101);
+}
+
+test "LocusCoeruleus: fractional multiplier precision" {
+    var policy = BackoffPolicy{
+        .initial_ms = 10000,
+        .multiplier = 1.5,
+        .strategy = .exponential,
+        .jitter_type = .none,
+    };
+
+    const delay_0 = policy.nextDelay(0);
+    const delay_1 = policy.nextDelay(1);
+    const delay_2 = policy.nextDelay(2);
+
+    try std.testing.expectEqual(@as(u64, 10000), delay_0);
+    // 10000 * 1.5 = 15000
+    try std.testing.expectEqual(@as(u64, 15000), delay_1);
+    // 15000 * 1.5 = 22500
+    try std.testing.expectEqual(@as(u64, 22500), delay_2);
+}
+
+test "LocusCoeruleus: jitter uniform full range coverage" {
+    var policy = BackoffPolicy{
+        .initial_ms = 10000,
+        .strategy = .constant,
+        .jitter_type = .uniform,
+    };
+
+    // Sample many times to verify range coverage
+    var min_delay: u64 = std.math.maxInt(u64);
+    var max_delay: u64 = 0;
+
+    for (0..1000) |_| {
+        const delay = policy.nextDelay(0);
+        if (delay < min_delay) min_delay = delay;
+        if (delay > max_delay) max_delay = delay;
+    }
+
+    // Should cover most of the range [10000, 20000)
+    try std.testing.expect(min_delay >= 10000);
+    try std.testing.expect(max_delay >= 18000); // At least 80% of range
+}
+
 
 // φ² + 1/φ² = 3 | TRINITY
 

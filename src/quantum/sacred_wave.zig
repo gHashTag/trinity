@@ -55,6 +55,8 @@ pub const SacredWaveFunction = struct {
     allocator: std.mem.Allocator,
     /// Probability amplitudes for each sacred config (|ψ|² sums to 1)
     amplitudes: []f64,
+    /// Which configs have been measured (bitmask)
+    measured: []bool,
     /// Total number of measurements performed
     measurements: usize = 0,
     /// Best PPL observed so far
@@ -64,16 +66,24 @@ pub const SacredWaveFunction = struct {
     /// Inverse temperature β for Bayesian updates
     /// Higher β = stronger response to PPL improvements
     beta: f64 = 1.0,
+    /// Measured PPL values for likelihood computation
+    measured_ppl: []f64,
 
     /// Initialize uniform superposition (all configs equally probable)
     pub fn initUniform(allocator: std.mem.Allocator, num_configs: usize) !SacredWaveFunction {
         const amplitudes = try allocator.alloc(f64, num_configs);
+        const measured = try allocator.alloc(bool, num_configs);
+        const measured_ppl = try allocator.alloc(f64, num_configs);
         const uniform_amp = 1.0 / @sqrt(@as(f64, @floatFromInt(num_configs)));
         @memset(amplitudes, uniform_amp);
+        @memset(measured, false);
+        @memset(measured_ppl, std.math.inf(f64));
 
         return .{
             .allocator = allocator,
             .amplitudes = amplitudes,
+            .measured = measured,
+            .measured_ppl = measured_ppl,
             .beta = 1.0,
         };
     }
@@ -81,7 +91,11 @@ pub const SacredWaveFunction = struct {
     /// Initialize with prior beliefs (non-uniform amplitudes)
     pub fn initWithPrior(allocator: std.mem.Allocator, amplitudes: []f64) !SacredWaveFunction {
         const copied = try allocator.alloc(f64, amplitudes.len);
+        const measured = try allocator.alloc(bool, amplitudes.len);
+        const measured_ppl = try allocator.alloc(f64, amplitudes.len);
         @memcpy(copied, amplitudes);
+        @memset(measured, false);
+        @memset(measured_ppl, std.math.inf(f64));
 
         // Normalize amplitudes
         var total_prob: f64 = 0.0;
@@ -97,6 +111,8 @@ pub const SacredWaveFunction = struct {
         return .{
             .allocator = allocator,
             .amplitudes = copied,
+            .measured = measured,
+            .measured_ppl = measured_ppl,
             .beta = 1.0,
         };
     }
@@ -152,16 +168,8 @@ pub const SacredWaveFunction = struct {
     /// Lower PPL → higher amplitude (better config more probable)
     pub fn measureAndUpdate(self: *SacredWaveFunction, config_idx: usize, ppl: f64) !void {
         self.measurements += 1;
-
-        // Likelihood: exp(-β × PPL) where β = inverse temperature
-        // Uses relative difference from current best for numerical stability
-        const best_ppl = if (std.math.isFinite(self.best_ppl)) self.best_ppl else ppl;
-        const delta_ppl = ppl - best_ppl;
-
-        const likelihood = @exp(-self.beta * delta_ppl);
-
-        // Bayesian update: amplitude_new ∝ amplitude_old × likelihood
-        self.amplitudes[config_idx] *= likelihood;
+        self.measured[config_idx] = true;
+        self.measured_ppl[config_idx] = ppl;
 
         // Update best if improved
         if (ppl < self.best_ppl or !std.math.isFinite(self.best_ppl)) {
@@ -169,8 +177,27 @@ pub const SacredWaveFunction = struct {
             self.best_config = config_idx;
         }
 
-        // Renormalize to ensure Σ|ψ|² = 1
-        try self.normalize();
+        // Recalculate all amplitudes based on measured configs
+        // Unmeasured configs get zero probability (or small exploration epsilon)
+        const epsilon: f64 = 0.001; // Small probability for unmeasured configs
+
+        var total_likelihood: f64 = 0.0;
+        for (self.measured, self.measured_ppl) |is_measured, mppl| {
+            if (is_measured) {
+                total_likelihood += @exp(-self.beta * mppl);
+            } else {
+                total_likelihood += epsilon;
+            }
+        }
+
+        const scale = 1.0 / @sqrt(total_likelihood);
+        for (self.amplitudes, self.measured, self.measured_ppl) |*amp, is_measured, mppl| {
+            if (is_measured) {
+                amp.* = @exp(-self.beta * mppl) * scale;
+            } else {
+                amp.* = epsilon * scale;
+            }
+        }
     }
 
     /// Renormalize amplitudes so Σ|ψ|² = 1
@@ -275,6 +302,8 @@ pub const ConfigScore = struct {
     /// Cleanup
     pub fn deinit(self: *SacredWaveFunction) void {
         self.allocator.free(self.amplitudes);
+        self.allocator.free(self.measured);
+        self.allocator.free(self.measured_ppl);
     }
 
     /// Format summary for display
@@ -369,11 +398,11 @@ test "SacredWaveFunction topConfigs returns sorted" {
     var wave = try SacredWaveFunction.initUniform(testing.allocator, 10);
     defer wave.deinit();
 
-    // Update some configs
-    try wave.measureAndUpdate(0, 10.0);
-    try wave.measureAndUpdate(1, 5.0);
-    try wave.measureAndUpdate(2, 3.0);
-    try wave.measureAndUpdate(3, 15.0);
+    // Update configs: lower PPL should get higher probability
+    try wave.measureAndUpdate(0, 5.0);
+    try wave.measureAndUpdate(1, 3.0);  // Best PPL
+    try wave.measureAndUpdate(2, 7.0);
+    try wave.measureAndUpdate(3, 10.0);
 
     const top3 = try wave.topConfigs(testing.allocator, 3);
     defer testing.allocator.free(top3);
@@ -384,8 +413,8 @@ test "SacredWaveFunction topConfigs returns sorted" {
     try testing.expect(top3[0].prob >= top3[1].prob);
     try testing.expect(top3[1].prob >= top3[2].prob);
 
-    // Config 2 (best PPL) should be first
-    try testing.expectEqual(@as(usize, 2), top3[0].idx);
+    // Config 1 should be first (best PPL = 3.0)
+    try testing.expectEqual(@as(usize, 1), top3[0].idx);
 }
 
 test "SacredWaveFunction setTemperature affects exploration" {

@@ -35,19 +35,9 @@ pub const BenchmarkResult = struct {
     pub fn format(self: BenchmarkResult, comptime fmt: []const u8, options: std.fmt.FormatOptions, writer: anytype) !void {
         _ = fmt;
         _ = options;
-        try writer.print(
-            \\ {s}: {d} iterations
-            \\   Total: {d:>12} ns  Avg: {d:>10} ns  Min: {d:>10} ns  Max: {d:>10} ns
-            \\   Throughput: {d:>12} ops/sec
-        , .{
-            self.name,
-            self.iterations,
-            self.total_ns,
-            self.avg_ns,
-            self.min_ns,
-            self.max_ns,
-            self.ops_per_sec,
-        });
+        try writer.print(" {s}: {d} iterations\n", .{ self.name, self.iterations });
+        try writer.print("   Total: {d:>12} ns  Avg: {d:>10} ns  Min: {d:>10} ns  Max: {d:>10} ns\n", .{ self.total_ns, self.avg_ns, self.min_ns, self.max_ns });
+        try writer.print("   Throughput: {d:>12} ops/sec\n", .{ self.ops_per_sec });
     }
 };
 
@@ -76,28 +66,14 @@ pub const BenchmarkSuite = struct {
     }
 
     pub fn printReport(self: *const BenchmarkSuite) !void {
-        std.debug.print(
-            \\╔════════════════════════════════════════════════════════════════════════════╗
-            \\║                        BRAIN BENCHMARK REPORT                                ║
-            \\╚════════════════════════════════════════════════════════════════════════════╝
-            \\
-        );
-
         for (self.results.items) |result| {
-            std.debug.print("{}\n\n", .{result});
+            std.debug.print("{any}\n\n", .{result});
         }
 
         try self.printComparison();
     }
 
     pub fn printComparison(self: *const BenchmarkSuite) !void {
-        std.debug.print(
-            \\╔════════════════════════════════════════════════════════════════════════════╗
-            \\║                       SPEEDUP ANALYSIS (OPTIMIZED)                          ║
-            \\╚════════════════════════════════════════════════════════════════════════════╝
-            \\
-        );
-
         // Find baseline (first result) and compare
         if (self.results.items.len < 2) return;
 
@@ -474,7 +450,7 @@ pub fn printOptimizationReport() !void {
         \\║                       OPTIMIZATION OPPORTUNITIES                              ║
         \\╚══════════════════════════════════════════════════════════════════════════╝
         \\
-    );
+    , .{});
 
     for (opportunities) |opp| {
         std.debug.print(

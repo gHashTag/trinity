@@ -282,6 +282,7 @@ pub const REGION_DEPENDENCIES = [_]RegionDependency{
     .{ .region = "Corpus Callosum (Federation)", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation", "Locus Coeruleus" } },
     .{ .region = "Visual Cortex", .depends_on = &[_][]const u8{} },
     .{ .region = "Evolution Simulation", .depends_on = &[_][]const u8{ "Basal Ganglia", "Reticular Formation" } },
+    .{ .region = "Performance Dashboard", .depends_on = &[_][]const u8{ "Metrics Dashboard" } },
 };
 
 /// AgentCoordination — high-level wrapper combining all brain regions
@@ -880,7 +881,7 @@ test "AgentCoordination full lifecycle with monitoring" {
 
 test "Brain region dependency graph completeness" {
     // Verify all regions in BRAIN_ATLAS have dependencies defined
-    try std.testing.expectEqual(@as(usize, 22), BRAIN_ATLAS.len);
+    try std.testing.expectEqual(@as(usize, 23), BRAIN_ATLAS.len);
     // REGION_DEPENDENCIES may not include all regions (some have no deps)
 
     // Check that all region names match

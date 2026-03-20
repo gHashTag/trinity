@@ -1,0 +1,3 @@
+step,scenario_id,ppl,diversity,alive,energy,kill_threshold,crash_rate,byzantine_rate,obj_weights
+100,S16,5.2,0.8,150,10000,0.5,0.1,0.0,uniform
+100,S17,4.8,0.9,80,12000,0.3,0.05,0.0,ntp
