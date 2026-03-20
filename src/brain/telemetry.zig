@@ -3,6 +3,8 @@
 //! Tracks brain metrics over time for analysis and alerting.
 //! Brain Region: Interosceptive Network (Internal State Monitoring)
 //!
+//! Sacred Formula: φ² + 1/φ² = 3 = TRINITY
+//!
 //! # Biological Analogy
 //!
 //! In the mammalian brain, the interosceptive network (including insular cortex

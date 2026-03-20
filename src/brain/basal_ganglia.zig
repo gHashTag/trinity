@@ -3,6 +3,8 @@
 //! Sharded HashMap design for lock-free reads and minimal contention writes.
 //! Target: > 10k OP/s through horizontal scaling.
 //!
+//! Sacred Formula: φ² + 1/φ² = 3 = TRINITY
+//!
 //! Design Principles:
 //! 1. Sharded HashMap: Partition keys into N shards (default: 16)
 //! 2. Each shard has its own RwLock for independent access

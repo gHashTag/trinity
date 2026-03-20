@@ -1,6 +1,8 @@
 //! BRAIN PERSISTENCE — Event Log for S³AI Brain
 //!
 //! Persists brain events to JSONL for replay and analysis.
+//!
+//! Sacred Formula: φ² + 1/φ² = 3 = TRINITY
 
 const std = @import("std");
 const fs = std.fs;

@@ -2,6 +2,8 @@
 //!
 //! Immune surveillance system of the S³AI Brain
 //!
+//! Sacred Formula: φ² + 1/φ² = 3 = TRINITY
+//!
 //! Microglia are the brain's resident immune cells that Nature named
 //! "The Constant Gardeners" (Paolicelli et al., 2011). They constantly
 //! patrol the brain, pruning weak synapses and stimulating strong ones.

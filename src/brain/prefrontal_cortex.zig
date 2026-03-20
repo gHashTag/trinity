@@ -3,6 +3,8 @@
 //! Decision making, planning, and cognitive control.
 //! Brain Region: Prefrontal Cortex (Executive Function)
 //!
+//! Sacred Formula: φ² + 1/φ² = 3 = TRINITY
+//!
 //! # Overview
 //!
 //! The Prefrontal Cortex module provides executive decision-making
