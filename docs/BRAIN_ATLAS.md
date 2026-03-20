@@ -232,6 +232,373 @@ const decision = brain.prefrontal_cortex.PrefrontalCortex.decide(ctx);
 // decision.action == .proceed | .throttle | .scale_up | .scale_down | .pause | .alert
 ```
 
+## Complete CLI Reference
+
+The S³AI Brain provides CLI commands for all brain regions through the `tri` CLI.
+
+### Brain Health Commands
+
+```bash
+# Show overall brain health
+tri brain health
+
+# Show specific region status
+tri brain region basal-ganglia
+tri brain region reticular-formation
+tri brain region locus-coeruleus
+tri brain region amygdala
+tri brain region prefrontal-cortex
+
+# Show all regions with activity levels
+tri brain scan
+
+# Visual ASCII brain scan (for TUI display)
+tri brain scan --visual
+```
+
+### Task Operations (Basal Ganglia)
+
+```bash
+# Claim a task for an agent
+tri brain claim <task_id> <agent_id>
+
+# Refresh task heartbeat
+tri brain heartbeat <task_id> <agent_id>
+
+# Complete a task
+tri brain complete <task_id> <agent_id> <duration_ms>
+
+# Abandon a task
+tri brain abandon <task_id> <agent_id>
+
+# Show task statistics
+tri brain stats
+```
+
+### Event Operations (Reticular Formation)
+
+```bash
+# Poll recent events
+tri brain events --since <timestamp> --limit <count>
+
+# Get event statistics
+tri brain events --stats
+
+# Publish custom event
+tri brain publish <event_type> --task-id <id> --agent-id <id>
+
+# Stream events in real-time
+tri brain stream
+```
+
+### Telemetry and Monitoring
+
+```bash
+# Show brain telemetry
+tri brain telemetry
+
+# Export metrics in Prometheus format
+tri brain metrics --format prometheus
+
+# Export metrics in JSON format
+tri brain metrics --format json
+
+# Show health history
+tri brain history --last <duration>
+
+# Show learning patterns
+tri brain learn --patterns
+```
+
+### Federation (Multi-Instance)
+
+```bash
+# Show federation status
+tri federation status
+
+# List all instances
+tri federation instances
+
+# Show leader election state
+tri federation leader
+
+# Sync state with other instances
+tri federation sync
+
+# Show federation metrics
+tri federation metrics
+```
+
+### Microglia (Immune Surveillance)
+
+```bash
+# Run surveillance patrol
+tri microglia patrol
+
+# Show patrol report
+tri microglia report
+
+# Prune crashed workers
+tri microglia prune --crashed
+
+# Prune stalled workers
+tri microglia prune --stalled
+
+# Stimulate regrowth from leader
+tri microglia regrow --template <name>
+
+# Enter night mode (reduced pruning)
+tri microglia night-mode on
+tri microglia night-mode off
+
+# Show don't-eat-me list
+tri microglia protected
+```
+
+### Administration (Hypothalamus)
+
+```bash
+# Reset brain state
+tri brain admin reset
+
+# Run doctor scan
+tri brain doctor scan
+
+# Mark modules for regeneration
+tri brain doctor mark --all
+
+# Generate migration plan
+tri brain doctor plan
+
+# Backup brain state
+tri brain backup --path <path>
+
+# Restore brain state
+tri brain restore --path <path>
+```
+
+### Visualization (Visual Cortex)
+
+```bash
+# Show ASCII brain map
+tri brain map
+
+# Show activity heatmap
+tri brain heatmap
+
+# Show sparkline trends
+tri brain trends
+
+# Show 3D visualization
+tri brain visualize --3d
+```
+
+### Alerting (Brain Alerts)
+
+```bash
+# Show alert configuration
+tri brain alerts config
+
+# Show recent alerts
+tri brain alerts recent
+
+# Configure alert thresholds
+tri brain alerts threshold --health <score> --buffered <count>
+
+# Test alert system
+tri brain alerts test
+```
+
+### Simulation (Synthetic Workload)
+
+```bash
+# Run simulation scenario
+tri brain simulate --scenario <name>
+
+# List available scenarios
+tri brain simulate --list
+
+# Run with custom parameters
+tri brain simulate --tasks <count> --agents <count> --duration <seconds>
+
+# Show simulation results
+tri brain simulate --results
+```
+
+### Observability Export
+
+```bash
+# Export to Prometheus
+tri brain export --prometheus --port <port>
+
+# Export to OpenTelemetry
+tri brain export --otel --endpoint <url>
+
+# Export to JSON
+tri brain export --json --file <path>
+```
+
+### Learning System (Cerebellum)
+
+```bash
+# Show learning statistics
+tri brain learn --stats
+
+# Show learned patterns
+tri brain learn --patterns
+
+# Show failure predictions
+tri brain learn --predictions
+
+# Reset learning history
+tri brain learn --reset
+```
+
+### Async Processor
+
+```bash
+# Show async processor status
+tri brain async status
+
+# Show pending operations
+tri brain async pending
+
+# Show background telemetry
+tri brain async telemetry
+```
+
+### Evolution Simulation
+
+```bash
+# Run evolution simulation
+tri brain evolve --scenario <name>
+
+# Show evolution progress
+tri brain evolve --progress
+
+# Show evolution results
+tri brain evolve --results
+
+# Compare scenarios
+tri brain evolve --compare <scenarios...>
+```
+
+## CLI Examples by Use Case
+
+### Monitoring Agent Swarm Health
+
+```bash
+# Quick health check
+tri brain health
+
+# Detailed region status
+tri brain scan --visual
+
+# Event stream
+tri brain stream
+
+# Metrics export
+tri brain metrics --format prometheus
+```
+
+### Debugging Task Coordination
+
+```bash
+# Check task claims
+tri brain stats
+
+# View recent events
+tri brain events --since -1h
+
+# Check specific task
+tri brain claim get <task_id>
+
+# View event history for task
+tri brain events --filter task_id:<task_id>
+```
+
+### Managing Farm Workers
+
+```bash
+# Run microglia patrol
+tri microglia patrol
+
+# Prune crashed workers
+tri microglia prune --crashed
+
+# Stimulate regrowth from leader
+tri microglia regrow --template hslm-r33
+
+# View protected workers
+tri microglia protected
+```
+
+### Multi-Instance Coordination
+
+```bash
+# Check federation status
+tri federation status
+
+# View leader election
+tri federation leader
+
+# Sync state
+tri federation sync
+
+# View all instances
+tri federation instances
+```
+
+### Performance Analysis
+
+```bash
+# View telemetry
+tri brain telemetry
+
+# Check trends
+tri brain trends
+
+# View learning patterns
+tri brain learn --patterns
+
+# Run simulation
+tri brain simulate --scenario high-load
+```
+
+## Output Formats
+
+The brain CLI supports multiple output formats:
+
+```bash
+# JSON output
+tri brain health --format json
+
+# Prometheus metrics
+tri brain metrics --format prometheus
+
+# Human-readable table
+tri brain stats --format table
+
+# Compact format
+tri brain scan --format compact
+```
+
+## Configuration
+
+Brain configuration is stored in `.trinity/brain/`:
+
+```
+.trinity/brain/
+├── config.json           # Main configuration
+├── alerts.json           # Alert thresholds
+├── microglia.json        # Microglia settings
+├── federation.json       # Federation config
+└── state/                # Persistent state
+    ├── claims.json       # Task claims
+    ├── events.jsonl      # Event log
+    └── telemetry.json    # Telemetry data
+```
+
 ## Testing
 
 Run all brain module tests:
@@ -1018,6 +1385,373 @@ std.log.info("Recommendation: {s} (priority: {d})", .{
 // Predict failure
 const prediction = learning.predictFailure(.task_claim);
 std.log.info("Failure probability: {d:.0}%", .{prediction.probability * 100});
+```
+
+## Complete CLI Reference
+
+The S³AI Brain provides CLI commands for all brain regions through the `tri` CLI.
+
+### Brain Health Commands
+
+```bash
+# Show overall brain health
+tri brain health
+
+# Show specific region status
+tri brain region basal-ganglia
+tri brain region reticular-formation
+tri brain region locus-coeruleus
+tri brain region amygdala
+tri brain region prefrontal-cortex
+
+# Show all regions with activity levels
+tri brain scan
+
+# Visual ASCII brain scan (for TUI display)
+tri brain scan --visual
+```
+
+### Task Operations (Basal Ganglia)
+
+```bash
+# Claim a task for an agent
+tri brain claim <task_id> <agent_id>
+
+# Refresh task heartbeat
+tri brain heartbeat <task_id> <agent_id>
+
+# Complete a task
+tri brain complete <task_id> <agent_id> <duration_ms>
+
+# Abandon a task
+tri brain abandon <task_id> <agent_id>
+
+# Show task statistics
+tri brain stats
+```
+
+### Event Operations (Reticular Formation)
+
+```bash
+# Poll recent events
+tri brain events --since <timestamp> --limit <count>
+
+# Get event statistics
+tri brain events --stats
+
+# Publish custom event
+tri brain publish <event_type> --task-id <id> --agent-id <id>
+
+# Stream events in real-time
+tri brain stream
+```
+
+### Telemetry and Monitoring
+
+```bash
+# Show brain telemetry
+tri brain telemetry
+
+# Export metrics in Prometheus format
+tri brain metrics --format prometheus
+
+# Export metrics in JSON format
+tri brain metrics --format json
+
+# Show health history
+tri brain history --last <duration>
+
+# Show learning patterns
+tri brain learn --patterns
+```
+
+### Federation (Multi-Instance)
+
+```bash
+# Show federation status
+tri federation status
+
+# List all instances
+tri federation instances
+
+# Show leader election state
+tri federation leader
+
+# Sync state with other instances
+tri federation sync
+
+# Show federation metrics
+tri federation metrics
+```
+
+### Microglia (Immune Surveillance)
+
+```bash
+# Run surveillance patrol
+tri microglia patrol
+
+# Show patrol report
+tri microglia report
+
+# Prune crashed workers
+tri microglia prune --crashed
+
+# Prune stalled workers
+tri microglia prune --stalled
+
+# Stimulate regrowth from leader
+tri microglia regrow --template <name>
+
+# Enter night mode (reduced pruning)
+tri microglia night-mode on
+tri microglia night-mode off
+
+# Show don't-eat-me list
+tri microglia protected
+```
+
+### Administration (Hypothalamus)
+
+```bash
+# Reset brain state
+tri brain admin reset
+
+# Run doctor scan
+tri brain doctor scan
+
+# Mark modules for regeneration
+tri brain doctor mark --all
+
+# Generate migration plan
+tri brain doctor plan
+
+# Backup brain state
+tri brain backup --path <path>
+
+# Restore brain state
+tri brain restore --path <path>
+```
+
+### Visualization (Visual Cortex)
+
+```bash
+# Show ASCII brain map
+tri brain map
+
+# Show activity heatmap
+tri brain heatmap
+
+# Show sparkline trends
+tri brain trends
+
+# Show 3D visualization
+tri brain visualize --3d
+```
+
+### Alerting (Brain Alerts)
+
+```bash
+# Show alert configuration
+tri brain alerts config
+
+# Show recent alerts
+tri brain alerts recent
+
+# Configure alert thresholds
+tri brain alerts threshold --health <score> --buffered <count>
+
+# Test alert system
+tri brain alerts test
+```
+
+### Simulation (Synthetic Workload)
+
+```bash
+# Run simulation scenario
+tri brain simulate --scenario <name>
+
+# List available scenarios
+tri brain simulate --list
+
+# Run with custom parameters
+tri brain simulate --tasks <count> --agents <count> --duration <seconds>
+
+# Show simulation results
+tri brain simulate --results
+```
+
+### Observability Export
+
+```bash
+# Export to Prometheus
+tri brain export --prometheus --port <port>
+
+# Export to OpenTelemetry
+tri brain export --otel --endpoint <url>
+
+# Export to JSON
+tri brain export --json --file <path>
+```
+
+### Learning System (Cerebellum)
+
+```bash
+# Show learning statistics
+tri brain learn --stats
+
+# Show learned patterns
+tri brain learn --patterns
+
+# Show failure predictions
+tri brain learn --predictions
+
+# Reset learning history
+tri brain learn --reset
+```
+
+### Async Processor
+
+```bash
+# Show async processor status
+tri brain async status
+
+# Show pending operations
+tri brain async pending
+
+# Show background telemetry
+tri brain async telemetry
+```
+
+### Evolution Simulation
+
+```bash
+# Run evolution simulation
+tri brain evolve --scenario <name>
+
+# Show evolution progress
+tri brain evolve --progress
+
+# Show evolution results
+tri brain evolve --results
+
+# Compare scenarios
+tri brain evolve --compare <scenarios...>
+```
+
+## CLI Examples by Use Case
+
+### Monitoring Agent Swarm Health
+
+```bash
+# Quick health check
+tri brain health
+
+# Detailed region status
+tri brain scan --visual
+
+# Event stream
+tri brain stream
+
+# Metrics export
+tri brain metrics --format prometheus
+```
+
+### Debugging Task Coordination
+
+```bash
+# Check task claims
+tri brain stats
+
+# View recent events
+tri brain events --since -1h
+
+# Check specific task
+tri brain claim get <task_id>
+
+# View event history for task
+tri brain events --filter task_id:<task_id>
+```
+
+### Managing Farm Workers
+
+```bash
+# Run microglia patrol
+tri microglia patrol
+
+# Prune crashed workers
+tri microglia prune --crashed
+
+# Stimulate regrowth from leader
+tri microglia regrow --template hslm-r33
+
+# View protected workers
+tri microglia protected
+```
+
+### Multi-Instance Coordination
+
+```bash
+# Check federation status
+tri federation status
+
+# View leader election
+tri federation leader
+
+# Sync state
+tri federation sync
+
+# View all instances
+tri federation instances
+```
+
+### Performance Analysis
+
+```bash
+# View telemetry
+tri brain telemetry
+
+# Check trends
+tri brain trends
+
+# View learning patterns
+tri brain learn --patterns
+
+# Run simulation
+tri brain simulate --scenario high-load
+```
+
+## Output Formats
+
+The brain CLI supports multiple output formats:
+
+```bash
+# JSON output
+tri brain health --format json
+
+# Prometheus metrics
+tri brain metrics --format prometheus
+
+# Human-readable table
+tri brain stats --format table
+
+# Compact format
+tri brain scan --format compact
+```
+
+## Configuration
+
+Brain configuration is stored in `.trinity/brain/`:
+
+```
+.trinity/brain/
+├── config.json           # Main configuration
+├── alerts.json           # Alert thresholds
+├── microglia.json        # Microglia settings
+├── federation.json       # Federation config
+└── state/                # Persistent state
+    ├── claims.json       # Task claims
+    ├── events.jsonl      # Event log
+    └── telemetry.json    # Telemetry data
 ```
 
 ## Testing
