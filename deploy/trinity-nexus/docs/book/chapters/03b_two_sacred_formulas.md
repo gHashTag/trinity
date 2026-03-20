@@ -337,7 +337,7 @@ Prove that any constant expressible by the complete formula can be approximated 
 ---
 
 **Author**: Dmitrii Vasilev
-**Email**: reactnativeinitru@gmail.com
+**Email**: 999aigents@gmail.com
 **Project**: 999 OS / VIBEE
 **Date**: January 2026
 

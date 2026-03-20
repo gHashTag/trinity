@@ -131,9 +131,21 @@ pub const TaskClaim = struct {
     pub fn isValid(self: *const TaskClaim) bool {
         if (self.status != .active) return false;
         const now_ms = std.time.timestamp() * 1000;
-        const age_ms = @as(u64, @intCast(now_ms - self.claimed_at));
+
+        // Handle clock skew: if claimed_at is in future, treat as valid until clock normalizes
+        const age_ms = if (self.claimed_at > now_ms)
+            @as(u64, 0) // Future timestamp = claim not yet aged
+        else
+            @as(u64, @intCast(now_ms - self.claimed_at));
+
         if (age_ms > self.ttl_ms) return false;
-        const heartbeat_age_ms = @as(u64, @intCast(now_ms - self.last_heartbeat));
+
+        // Handle clock skew for heartbeat as well
+        const heartbeat_age_ms = if (self.last_heartbeat > now_ms)
+            @as(u64, 0) // Future heartbeat = treat as fresh
+        else
+            @as(u64, @intCast(now_ms - self.last_heartbeat));
+
         if (heartbeat_age_ms > 30000) return false; // 30s heartbeat timeout
         return true;
     }
@@ -293,10 +305,19 @@ pub const Registry = struct {
             allocator.free(old_entry.value.agent_id);
         }
 
-        // Create new claim
+        // Create new claim - allocate key and values
+        const key_dup = try allocator.dupe(u8, task_id);
+        errdefer allocator.free(key_dup); // Free key on error
+
+        const task_id_dup = try allocator.dupe(u8, task_id);
+        errdefer allocator.free(task_id_dup); // Free task_id on error
+
+        const agent_id_dup = try allocator.dupe(u8, agent_id);
+        errdefer allocator.free(agent_id_dup); // Free agent_id on error
+
         const new_claim = TaskClaim{
-            .task_id = try allocator.dupe(u8, task_id),
-            .agent_id = try allocator.dupe(u8, agent_id),
+            .task_id = task_id_dup,
+            .agent_id = agent_id_dup,
             .claimed_at = now_ms,
             .ttl_ms = ttl_ms,
             .status = .active,
@@ -304,7 +325,8 @@ pub const Registry = struct {
             .last_heartbeat = now_ms,
         };
 
-        try self.claims.put(try allocator.dupe(u8, task_id), new_claim);
+        try self.claims.put(key_dup, new_claim);
+        // If put succeeds, all allocations are now owned by the HashMap
         self.stats.claim_success += 1;
         return true;
     }
@@ -846,4 +868,22 @@ test "Registry claim replacement" {
     const claimed = try registry.claim(allocator, task_id, "agent-002", 60000);
     // Should fail because first claim is still valid
     try std.testing.expect(!claimed);
+}
+
+test "TaskClaim handles clock skew - future timestamp" {
+    const now_ms = std.time.timestamp() * 1000;
+    const future_ms = now_ms + 3600000; // 1 hour in future
+
+    // Claimed_at in future should be treated as valid (not aged yet)
+    var claim = TaskClaim{
+        .task_id = "test",
+        .agent_id = "agent",
+        .claimed_at = future_ms,
+        .ttl_ms = 60000,
+        .status = .active,
+        .completed_at = null,
+        .last_heartbeat = future_ms,
+    };
+
+    try std.testing.expect(claim.isValid()); // Future timestamp = not yet aged
 }

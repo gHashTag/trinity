@@ -10,7 +10,7 @@ Inthosegrandratet:
 - Naatchnye rabfromy by storytelling
 
 Author: Dmitrii Vasilev
-Email: reactnativeinitru@gmail.com
+Email: 999aigents@gmail.com
 """
 
 import math
@@ -296,8 +296,8 @@ def generate_chapter(template: ChapterTemplate,
 
 ---
 
-**Author**: Dmitrii Vasilev  
-**Email**: reactnativeinitru@gmail.com
+**Author**: Dmitrii Vasilev
+**Email**: 999aigents@gmail.com
 
 ---
 

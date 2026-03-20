@@ -583,10 +583,7 @@ pub const StateManager = struct {
             else if (mem.eql(u8, claim_state.status, "abandoned"))
                 .abandoned
             else {
-                std.log.err("Invalid status: '{s}' (len={d})", .{
-                    claim_state.status,
-                    claim_state.status.len
-                });
+                std.log.err("Invalid status: '{s}' (len={d})", .{ claim_state.status, claim_state.status.len });
                 return error.InvalidStatus;
             };
 

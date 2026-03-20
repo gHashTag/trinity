@@ -282,7 +282,7 @@ THRICE-TEN STATE = 3 × 10 = 30
 ---
 
 **Author**: Dmitrii Vasilev
-**Email**: reactnativeinitru@gmail.com
+**Email**: 999aigents@gmail.com
 **Project**: 999 OS / VIBEE
 **Date**: January 2026
 

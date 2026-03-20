@@ -9,7 +9,7 @@ Inthosegrandratet:
 - Naatchnye rabfromy arXiv
 
 Author: Dmitrii Vasilev
-Email: reactnativeinitru@gmail.com
+Email: 999aigents@gmail.com
 Date: January 2026
 """
 
@@ -452,8 +452,8 @@ Iwithwithledatythose, howande ffromandchewithtoande toaboutnwiththatnty maboutzh
 
 *{lang_data['tsarwithtinabout']}*
 
-**Author**: Dmitrii Vasilev  
-**Email**: reactnativeinitru@gmail.com
+**Author**: Dmitrii Vasilev
+**Email**: 999aigents@gmail.com
 
 ---
 
