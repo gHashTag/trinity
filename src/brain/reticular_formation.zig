@@ -140,6 +140,8 @@ pub fn resetGlobal(allocator: std.mem.Allocator) void {
 
     if (global_event_bus) |bus| {
         bus.deinit();
+        // IMPORTANT: Use global_allocator (saved from getGlobal) for destroy()
+        // NOT bus.allocator, because in tests these may be different instances
         if (global_allocator) |alloc| {
             alloc.destroy(bus);
         }
