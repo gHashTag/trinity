@@ -1,0 +1,118 @@
+# Evolution Simulation Analysis — Summary
+
+## Key Findings
+
+### S4 vs S5 Results
+
+| Scenario | Final PPL | Alive Workers | Byzantine Detected | Status |
+|----------|-----------|---------------|-------------------|--------|
+| S4 (with Microglia) | inf | 0 (step 47) | 20 | DEAD |
+| S5 (without Microglia) | 18.12 | 1 (step 59) | 10 | SURVIVED |
+
+**Counter-intuitive**: S5 (no immune system) survived LONGER than S4 (with Microglia).
+
+## Root Cause: Microglia Bug
+
+**Bug location**: `evolution_simulation.zig:514-523`
+
+```zig
+fn microgliaPatrol(self: *EvolutionSimulator) u32 {
+    var pruned: u32 = 0;
+    for (self.workers[0..self.worker_count]) |*worker| {
+        if (!worker.alive or worker.ppl > 100.0) {  // ← BUG
+            worker.alive = false;
+            pruned += 1;
+        }
+    }
+    return pruned;
+}
+```
+
+**Problem**:
+- All workers start with PPL=500+ (line 38: `PplModel.A = 500.0`)
+- Microglia patrol runs every 30 steps
+- **Culls ALL workers with PPL > 100**, regardless of training stage
+- This is **absolute threshold**, not relative
+
+**Death spiral**:
+1. Step 0-30: All workers PPL > 100
+2. Step 30: First Microglia patrol → culls most workers
+3. Step 31-46: Crash rate (10%) kills remaining
+4. Step 47: Last worker dies → PPL = inf (division by zero)
+
+## Byzantine Detection Logic
+
+**Current behavior**:
+- Byzantine rate: 5% (config)
+- Detection rate: 15% per step (hardcoded)
+- Expected: 100 × 5% × 15% = 0.75 detections/step
+- Over 300 steps: 225 detections
+
+**Actual results**:
+- S4: 20 detections (workers died early from Microglia)
+- S5: 10 detections (workers lived longer)
+
+**Issue**: Byzantine detection happens **every step**, but dead workers don't generate events. S4's Microglia **competes** with Byzantine detection, killing workers before they can be detected.
+
+## Recommendations
+
+### 1. Fix Microglia (Priority HIGH)
+
+Use **relative threshold** instead of absolute:
+
+```zig
+// Calculate median PPL of alive workers
+// Cull only if PPL > 3× median (true outliers)
+```
+
+### 2. Separate Byzantine from Microglia (Priority HIGH)
+
+- Byzantine: **Suspicion score** (increment on false report)
+- Microglia: **Audit** (cull only if suspicion ≥ 3)
+
+### 3. Fix S4/S5 Comparison (Priority HIGH)
+
+- Same objectives (S4 has 3, S5 has 2)
+- Same steps (S4 has 3×, S5 has 3×)
+- Control only `microglia_interval` variable
+
+### 4. Improve tri-sim-plot (Priority MEDIUM)
+
+- `--view ppl` — PPL convergence curves
+- `--view diversity` — Objective distribution over time
+- `--view alive` — Worker survival curves
+- `--view byzantine` — Detection events timeline
+
+## What's Next?
+
+### Option A: Implement S6-S10 (JEPA-heavy)
+- Tests multi-objective convergence
+- Validates JEPA slowdown multiplier
+- **BUT**: Doesn't fix bugs first
+
+### Option B: Fix Microglia + Byzantine
+- Makes S4/S5 comparison valid
+- Uncovers true value of immune system
+- **REQUIRED** before S6-S10
+
+### Option C: Improve tri-sim-plot
+- Better debugging tools
+- Easier to spot bugs
+- **SHOULD** accompany bug fixes
+
+### Option D: Autonomous Development Cycle
+- 30-min cycles
+- Continuous validation
+- **USE FOR**: validation, not initial dev
+
+## Recommended Action Plan
+
+1. **Fix Microglia bug** (relative threshold)
+2. **Separate Byzantine detection** (suspicion score)
+3. **Re-run S4 vs S5** (fair comparison)
+4. **Improve tri-sim-plot** (better debugging)
+5. **Implement S6-S10** (after bugs fixed)
+
+---
+
+**Full analysis**: `/Users/playra/trinity-w1/.trinity/evolution_analysis.md`

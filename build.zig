@@ -3244,4 +3244,103 @@ pub fn build(b: *std.Build) void {
     const sacred_synth_report_step = b.step("sacred-synth-report", "Parse Yosys JSON synthesis output for Sacred ALU");
     sacred_synth_report_step.dependOn(&sacred_synth_report.step);
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // SACRED VERIFICATION — Trinity math constants at compile-time
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const sacred_types_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sacred/sacred_types.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_sacred_types = b.addRunArtifact(sacred_types_tests);
+
+    const sacred_verify_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sacred/verify.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_sacred_verify = b.addRunArtifact(sacred_verify_tests);
+
+    const sacred_guards_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sacred/guards.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_sacred_guards = b.addRunArtifact(sacred_guards_tests);
+
+    const sacred_lut_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sacred/lut.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_sacred_lut = b.addRunArtifact(sacred_lut_tests);
+
+    const sacred_simd_tests = b.addTest(.{
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sacred/simd_ternary.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    const run_sacred_simd = b.addRunArtifact(sacred_simd_tests);
+
+    const sacred_verify_step = b.step("sacred-verify", "Verify Sacred math constants and types");
+    sacred_verify_step.dependOn(&run_sacred_types.step);
+    sacred_verify_step.dependOn(&run_sacred_verify.step);
+    sacred_verify_step.dependOn(&run_sacred_guards.step);
+    sacred_verify_step.dependOn(&run_sacred_lut.step);
+    sacred_verify_step.dependOn(&run_sacred_simd.step);
+    test_step.dependOn(sacred_verify_step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // CAPABILITIES REPORT — System capabilities (SIMD, Sacred Dimensions)
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const caps_report = b.addExecutable(.{
+        .name = "caps-report",
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/sacred/caps_report.zig"),
+            .target = target,
+            .optimize = optimize,
+        }),
+    });
+    b.installArtifact(caps_report);
+
+    const run_caps = b.addRunArtifact(caps_report);
+    const caps_step = b.step("caps", "Generate Sacred Trinity capabilities report");
+    caps_step.dependOn(&run_caps.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // FPGA SYNTHESIS — Sacred ALU via Docker openXC7
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const fpga_synth = b.addSystemCommand(&.{
+        "sh", "-c",
+        \\docker run --rm --platform linux/amd64 \\
+        \\  -v fpga/openxc7-synth:/work \\
+        \\  -w /work ghcr.io/ghashtag/openxc7:latest \\
+        \\  yosys -p "read_verilog sacred_alu.v; synth_xilinx -top sacred_alu -family xc7; stat"
+    ,
+    });
+    const fpga_synth_step = b.step("fpga-synth", "Synthesize Sacred ALU with Yosys via Docker");
+    fpga_synth_step.dependOn(&fpga_synth.step);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // SACRED TRINITY COMPREHENSIVE STEP
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const sacred_trinity_step = b.step("sacred-trinity", "Verify Sacred Trinity: types + math + SIMD + capabilities");
+    sacred_trinity_step.dependOn(sacred_verify_step);
+    sacred_trinity_step.dependOn(caps_step);
+    // Note: fpga-synth is optional (requires Docker) - not auto-included
+
 }

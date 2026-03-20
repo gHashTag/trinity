@@ -18,12 +18,17 @@ const SACRED_PHI: f32 = 1.618033988749895;
 const SACRED_E: f32 = 2.718281828459045;
 
 // Fixed seeds for deterministic scenarios
-const SCENARIO_SEEDS = [5]u64{
+const SCENARIO_SEEDS = [10]u64{
     42, // S1 Baseline
     137, // S2 Current
     1618, // S3 Multi-obj (φ * 1000)
     2718, // S4 dePIN (e * 1000)
-    3236, // S5 dePIN without Microglia (φ^2 * 1000)
+    3236, // S5 dePIN NoImmunity (φ^2 * 1000)
+    5242, // S6 JEPA-heavy (e^3 * 1000)
+    8450, // S7 High-Diversity (φ^3 * 1000)
+    13692, // S8 Low-Crash (φ^4 * 1000)
+    22134, // S9 Byzantine-Heavy (φ^5 * 1000)
+    35780, // S10 Energy-Optimal (φ^6 * 1000)
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -165,6 +170,7 @@ pub const EvolutionResult = struct {
     microglia_actions: u32,
     workers_culled: u32,
     workers_spawned: u32,
+    workers_alive: u32, // Survivors at end
     byzantine_detected: u32,
     steps: u32,
     crash_rate: f32,
@@ -457,6 +463,12 @@ pub const EvolutionSimulator = struct {
         obj_counts.deinit();
         obj_totals.deinit();
 
+        // Count survivors at end
+        var workers_alive: u32 = 0;
+        for (self.workers[0..self.worker_count]) |*worker| {
+            if (worker.alive) workers_alive += 1;
+        }
+
         // Move timeline to result
         const timeline = try self.allocator.dupe(EvolutionResult.TimelineEntry, self.timeline[0..self.timeline_count]);
 
@@ -468,6 +480,7 @@ pub const EvolutionSimulator = struct {
             .microglia_actions = microglia_actions,
             .workers_culled = workers_culled,
             .workers_spawned = workers_spawned,
+            .workers_alive = workers_alive,
             .byzantine_detected = byzantine_detected,
             .steps = self.config.steps,
             .crash_rate = self.config.crash_rate,
@@ -510,11 +523,56 @@ pub const EvolutionSimulator = struct {
         return if (max_entropy > 0) diversity / max_entropy else 0.0;
     }
 
-    /// Microglia patrol — prune workers with PPL > 100
+    /// Calculate median PPL of alive workers
+    fn calculateAliveMedian(self: *EvolutionSimulator) f32 {
+        var values: [256]f32 = undefined;
+        var count: usize = 0;
+
+        for (self.workers[0..self.worker_count]) |*worker| {
+            if (worker.alive) {
+                values[count] = worker.ppl;
+                count += 1;
+            }
+        }
+
+        if (count == 0) return 0.0;
+
+        // Sort values using simple selection sort (small dataset)
+        var i: usize = 0;
+        while (i < count) : (i += 1) {
+            var j: usize = i + 1;
+            while (j < count) : (j += 1) {
+                if (values[i] > values[j]) {
+                    const temp = values[i];
+                    values[i] = values[j];
+                    values[j] = temp;
+                }
+            }
+        }
+
+        if (count == 0) return 0.0;
+
+        const mid = count / 2;
+        if (count % 2 == 0) {
+            // Even: average of two middle values
+            return (values[mid - 1] + values[mid]) / 2.0;
+        } else {
+            // Odd: middle value
+            return values[mid];
+        }
+    }
+
+    /// Microglia patrol — prune worst workers using relative threshold
     fn microgliaPatrol(self: *EvolutionSimulator) u32 {
+        // Skip patrol if interval is 0 (no immunity)
+        if (self.config.microglia_interval == 0) return 0;
+
+        const median_ppl = self.calculateAliveMedian();
+        const threshold = median_ppl * 3.0; // Kill if >3× median
+
         var pruned: u32 = 0;
         for (self.workers[0..self.worker_count]) |*worker| {
-            if (!worker.alive or worker.ppl > 100.0) {
+            if (!worker.alive or worker.ppl > threshold) {
                 worker.alive = false;
                 pruned += 1;
             }

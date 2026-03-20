@@ -6,6 +6,90 @@
 // Import sacred math for re-export (provided as module import in build.zig)
 const sacred_math = @import("math.zig");
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED TYPES — GF16, TF3 (единственный источник правды для форматов)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const sacred_types_mod = @import("sacred_types.zig");
+pub const GF16 = sacred_types_mod.GF16;
+pub const TF3 = sacred_types_mod.TF3;
+pub const PHI = sacred_types_mod.PHI;
+pub const PHI_SQ = sacred_types_mod.PHI_SQ;
+pub const INV_PHI = sacred_types_mod.INV_PHI;
+pub const TRINITY = sacred_types_mod.TRINITY;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED VERIFY — Compile-time проверки Sacred математики
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const sacred_verify = @import("verify.zig");
+pub const assertTritResonance = sacred_verify.assertTritResonance;
+pub const assertSacredDim = sacred_verify.assertSacredDim;
+pub const isPowerOf3 = sacred_verify.isPowerOf3;
+pub const tritPower = sacred_verify.tritPower;
+pub const SacredVerifier = sacred_verify.SacredVerifier;
+pub const SacredDimensions = sacred_verify.SacredDimensions;
+pub const PowersOf3 = sacred_verify.PowersOf3;
+pub const PowersOfPhi = sacred_verify.PowersOfPhi;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED GUARDS — Compile-time guards против anti-patterns
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const sacred_guards = @import("guards.zig");
+pub const forbidRawFormat = sacred_guards.forbidRawFormat;
+pub const forbidRawF32 = sacred_guards.forbidRawF32;
+pub const assertTernaryDim = sacred_guards.assertTernaryDim;
+pub const assertNotFlatLR = sacred_guards.assertNotFlatLR;
+pub const RailwayConfigGuard = sacred_guards.RailwayConfigGuard;
+pub const HSLMConfigGuard = sacred_guards.HSLMConfigGuard;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SACRED LUT — Compile-time таблицы для Sacred типов
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const sacred_lut = @import("lut.zig");
+pub const GF16LUT = sacred_lut.GF16LUT;
+pub const TF3LUT = sacred_lut.TF3LUT;
+pub const PowersOf3LUT = sacred_lut.PowersOf3LUT;
+pub const PowersOfPhiLUT = sacred_lut.PowersOfPhiLUT;
+pub const TritEncodingLUT = sacred_lut.TritEncodingLUT;
+pub const SacredDimensionsLUT = sacred_lut.SacredDimensionsLUT;
+pub const gf16_to_f32 = sacred_lut.gf16_to_f32;
+pub const tf3_to_f32 = sacred_lut.tf3_to_f32;
+pub const pow3 = sacred_lut.pow3;
+pub const phi_pow = sacred_lut.phi_pow;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SIMD TERNARY — SIMD-примитивы для тернарного VSA
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const simd_ternary = @import("simd_ternary.zig");
+pub const SIMD_WIDTH = simd_ternary.SIMD_WIDTH;
+pub const TritVector = simd_ternary.TritVector;
+pub const TritVectorWide = simd_ternary.TritVectorWide;
+pub const tritDot = simd_ternary.tritDot;
+pub const tritDotSlice = simd_ternary.tritDotSlice;
+pub const tritBind = simd_ternary.tritBind;
+pub const tritBindSlice = simd_ternary.tritBindSlice;
+pub const tritBundle2 = simd_ternary.tritBundle2;
+pub const tritBundle3 = simd_ternary.tritBundle3;
+pub const tritBundleN = simd_ternary.tritBundleN;
+pub const tritBundleSlice = simd_ternary.tritBundleSlice;
+pub const tritPermuteLeft = simd_ternary.tritPermuteLeft;
+pub const tritPermuteRight = simd_ternary.tritPermuteRight;
+pub const tritCosineSim = simd_ternary.tritCosineSim;
+pub const tritNorm = simd_ternary.tritNorm;
+pub const tritCountNonZero = simd_ternary.tritCountNonZero;
+pub const tritCountPositive = simd_ternary.tritCountPositive;
+pub const tritCountNegative = simd_ternary.tritCountNegative;
+pub const tritRandom = simd_ternary.tritRandom;
+pub const tritRandomRuntime = simd_ternary.tritRandomRuntime;
+pub const tritZero = simd_ternary.tritZero;
+pub const tritOnes = simd_ternary.tritOnes;
+pub const tritMinusOnes = simd_ternary.tritMinusOnes;
+pub const tritIsValid = simd_ternary.tritIsValid;
+
 // Export all sacred constants
 pub const math = sacred_math.math;
 pub const physics = sacred_math.physics;
