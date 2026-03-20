@@ -1,0 +1,32 @@
+{"id":"mem_1774021270_sevo_6988ba1d","agent":"sevo","kind":"learning","ts":1774021270,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-01","parent":"w7-35","target":"hslm-w7-8","sacred":true,"success":true,"lr":"1.00e-3","grad_clip":1.00,"warmup":2187,"schedule":"cosine","seed":1315917216,"timestamp":1774021270330}
+,"summary":"sevo deploy w8-mock-01 parent=w7-35 target=hslm-w7-8 ok=true"}
+{"id":"mem_1774021278_sevo_6988ba15","agent":"sevo","kind":"learning","ts":1774021278,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-02","parent":"w7-21","target":"hslm-w7-4","sacred":true,"success":true,"lr":"2.62e-3","grad_clip":1.62,"warmup":729,"schedule":"cosine","seed":822002377,"timestamp":1774021278811}
+,"summary":"sevo deploy w8-mock-02 parent=w7-21 target=hslm-w7-4 ok=true"}
+{"id":"mem_1774021349_sevo_6988ba6e","agent":"sevo","kind":"learning","ts":1774021349,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-03","parent":"w7-08","target":"hslm-r33","sacred":true,"success":true,"lr":"1.89e-4","grad_clip":1.00,"warmup":2187,"schedule":"cosine","seed":3714588805,"timestamp":1774021349551}
+,"summary":"sevo deploy w8-mock-03 parent=w7-08 target=hslm-r33 ok=true"}
+{"id":"mem_1774021359_sevo_6988ba64","agent":"sevo","kind":"learning","ts":1774021359,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-04","parent":"w7-42","target":"hslm-w7-6","sacred":true,"success":true,"lr":"3.82e-4","grad_clip":0.62,"warmup":729,"schedule":"cosine","seed":3970685054,"timestamp":1774021359840}
+,"summary":"sevo deploy w8-mock-04 parent=w7-42 target=hslm-w7-6 ok=true"}
+{"id":"mem_1774021367_sevo_6988ba7c","agent":"sevo","kind":"learning","ts":1774021367,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-05","parent":"w7-17","target":"hslm-w7-9","sacred":true,"success":true,"lr":"1.20e-3","grad_clip":1.62,"warmup":243,"schedule":"cosine","seed":2471426652,"timestamp":1774021367961}
+,"summary":"sevo deploy w8-mock-05 parent=w7-17 target=hslm-w7-9 ok=true"}
+{"id":"mem_1774021374_sevo_6988ba75","agent":"sevo","kind":"learning","ts":1774021374,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-06","parent":"w7-51","target":"hslm-w7-3","sacred":true,"success":true,"lr":"4.24e-3","grad_clip":1.62,"warmup":2187,"schedule":"cosine","seed":1102872805,"timestamp":1774021374355}
+,"summary":"sevo deploy w8-mock-06 parent=w7-51 target=hslm-w7-3 ok=true"}
+{"id":"mem_1774021382_sevo_6988bb8d","agent":"sevo","kind":"learning","ts":1774021382,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-07","parent":"w7-03","target":"hslm-r5","sacred":true,"success":true,"lr":"1.18e-4","grad_clip":1.62,"warmup":2187,"schedule":"cosine","seed":224888718,"timestamp":1774021382937}
+,"summary":"sevo deploy w8-mock-07 parent=w7-03 target=hslm-r5 ok=true"}
+{"id":"mem_1774021391_sevo_6988bb84","agent":"sevo","kind":"learning","ts":1774021391,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-08","parent":"w7-66","target":"hslm-r12","sacred":true,"success":true,"lr":"1.62e-3","grad_clip":0.62,"warmup":2187,"schedule":"cosine","seed":3532801706,"timestamp":1774021391004}
+,"summary":"sevo deploy w8-mock-08 parent=w7-66 target=hslm-r12 ok=true"}
+{"id":"mem_1774021396_sevo_6988bb9f","agent":"sevo","kind":"learning","ts":1774021396,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-09","parent":"w7-35","target":"hslm-w7-5","sacred":false,"success":true,"lr":"8.19e-4","grad_clip":0.75,"warmup":1660,"schedule":"cosine","seed":1148821856,"timestamp":1774021396640}
+,"summary":"sevo deploy w8-mock-09 parent=w7-35 target=hslm-w7-5 ok=true"}
+{"id":"mem_1774021403_sevo_6988bb90","agent":"sevo","kind":"learning","ts":1774021403,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-10","parent":"w7-21","target":"hslm-r18","sacred":false,"success":true,"lr":"9.84e-4","grad_clip":1.10,"warmup":2258,"schedule":"cosine","seed":2359257139,"timestamp":1774021403686}
+,"summary":"sevo deploy w8-mock-10 parent=w7-21 target=hslm-r18 ok=true"}
+{"id":"mem_1774021410_sevo_6988bba9","agent":"sevo","kind":"learning","ts":1774021410,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-11","parent":"w7-08","target":"hslm-w7-2","sacred":false,"success":true,"lr":"8.12e-4","grad_clip":1.19,"warmup":1582,"schedule":"cosine","seed":1346197856,"timestamp":1774021410726}
+,"summary":"sevo deploy w8-mock-11 parent=w7-08 target=hslm-w7-2 ok=true"}
+{"id":"mem_1774021418_sevo_6988bba1","agent":"sevo","kind":"learning","ts":1774021418,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-12","parent":"w7-42","target":"hslm-w7-7","sacred":false,"success":true,"lr":"1.06e-3","grad_clip":0.87,"warmup":1965,"schedule":"phi_restart","seed":3714041729,"timestamp":1774021418812}
+,"summary":"sevo deploy w8-mock-12 parent=w7-42 target=hslm-w7-7 ok=true"}
+{"id":"mem_1774021425_sevo_6988bbba","agent":"sevo","kind":"learning","ts":1774021425,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-13","parent":"w7-17","target":"hslm-w7-10","sacred":false,"success":true,"lr":"1.37e-3","grad_clip":0.81,"warmup":1842,"schedule":"cosine","seed":3722749367,"timestamp":1774021425966}
+,"summary":"sevo deploy w8-mock-13 parent=w7-17 target=hslm-w7-10 ok=true"}
+{"id":"mem_1774021431_sevo_6988bbbc","agent":"sevo","kind":"learning","ts":1774021431,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-14","parent":"w7-51","target":"hslm-r11","sacred":false,"success":true,"lr":"8.29e-4","grad_clip":1.60,"warmup":1680,"schedule":"cosine","seed":3985593569,"timestamp":1774021431714}
+,"summary":"sevo deploy w8-mock-14 parent=w7-51 target=hslm-r11 ok=true"}
+{"id":"mem_1774021446_sevo_6988bbcd","agent":"sevo","kind":"learning","ts":1774021446,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-15","parent":"w7-03","target":"hslm-r13","sacred":false,"success":true,"lr":"6.09e-4","grad_clip":1.20,"warmup":2788,"schedule":"cosine","seed":30609761,"timestamp":1774021446468}
+,"summary":"sevo deploy w8-mock-15 parent=w7-03 target=hslm-r13 ok=true"}
+{"id":"mem_1774021456_sevo_6988bbdb","agent":"sevo","kind":"learning","ts":1774021456,"tags":[],"ttl":0,"data":{"event":"deploy","config":"w8-mock-16","parent":"w7-66","target":"hslm-w7-1","sacred":false,"success":true,"lr":"9.26e-4","grad_clip":1.02,"warmup":1665,"schedule":"cosine","seed":989036879,"timestamp":1774021456353}
+,"summary":"sevo deploy w8-mock-16 parent=w7-66 target=hslm-w7-1 ok=true"}

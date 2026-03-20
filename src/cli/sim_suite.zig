@@ -1,10 +1,11 @@
 //! SIMULATION SUITE RUNNER — Parallel Evolution Scenarios
 //!
-//! Runs 4 parallel simulation scenarios to predict brain evolution:
+//! Runs 5 parallel simulation scenarios to predict brain evolution:
 //!   S1 Baseline — Ideal conditions (0% crash)
 //!   S2 Current — 90% crash rate
 //!   S3 Multi-obj — IGLA seeds injection
 //!   S4 dePIN — Byzantine nodes + Microglia
+//!   S5 dePIN No Immunity — Byzantine nodes only (shows effect of disabled immunity)
 //!
 //! Usage: tri-sim-suite [--steps N] [--output DIR]
 //!
@@ -63,11 +64,11 @@ pub fn main() !void {
     // Import evolution simulation
     const evo_sim = @import("brain").evolution_simulation;
 
-    // Run all 4 scenarios
+    // Run all 5 scenarios
     print("\n{s}╔═══════════════════════════════════════════════════════╗{s}\n", .{ CYAN, RESET });
     print("{s}║  DETERMINISTIC BRAIN EVOLUTION SIMULATION SUITE         ║{s}\n", .{ BOLD, RESET });
     print("{s}╚═══════════════════════════════════════════════════════════╝{s}\n\n", .{ CYAN, RESET });
-    print("Running {d} scenarios in parallel...\n\n", .{4});
+    print("Running {d} scenarios in parallel...\n\n", .{5});
 
     // Run scenarios (note: Zig doesn't have true parallelism yet, so we run sequentially)
     var s1 = try evo_sim.runS1Baseline(allocator, steps);
@@ -87,6 +88,11 @@ pub fn main() !void {
     defer s4.deinit();
     const s4_ppl_str = if (s4.final_ppl < 100.0) try std.fmt.allocPrint(allocator, "{d:.2}", .{s4.final_ppl}) else "DEAD";
     print("  {s}✓{s} S4 dePIN complete: PPL={s}, Byzantine detected={d}\n", .{ GREEN, RESET, s4_ppl_str, s4.byzantine_detected });
+
+    var s5 = try evo_sim.runS5DePIN_NoImmunity(allocator, steps);
+    defer s5.deinit();
+    const s5_ppl_str = if (s5.final_ppl < 100.0) try std.fmt.allocPrint(allocator, "{d:.2}", .{s5.final_ppl}) else "DEAD";
+    print("  {s}✓{s} S5 dePIN NoImmunity complete: PPL={s}, Byzantine={d}, NoMicroglia\n", .{ YELLOW, RESET, s5_ppl_str, s5.byzantine_detected });
 
     print("\n{s}Simulation complete!{s}\n", .{ GREEN, RESET });
 

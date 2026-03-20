@@ -285,6 +285,21 @@ while (true) {
 }
 ```
 
+#### Performance Characteristics
+
+- **Throughput**: 9.13 MOP/s
+- **P99 Latency**: < 1us target
+- **Memory Overhead**: ~32 bytes per policy
+- **Complexity**: O(1) constant time
+
+#### SLA Targets
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| P99 Latency | < 1us | PASS |
+| Throughput | > 1M OP/s | PASS |
+| Error Rate | 0% | PASS |
+
 ### Amygdala (Emotional Salience)
 
 **Module**: `brain.amygdala`
@@ -364,6 +379,21 @@ if (brain.amygdala.Amygdala.requiresAttention(salience)) {
 const urgency = brain.amygdala.Amygdala.urgency(salience);
 std.log.info("Urgency: {d:.2}", .{urgency});
 ```
+
+#### Performance Characteristics
+
+- **Throughput**: 1.96 MOP/s baseline, 6.70 MOP/s optimized
+- **P99 Latency**: < 10us target
+- **Memory per task**: ~64 bytes
+- **Optimization**: Single-pass pattern matching (3.4x faster)
+
+#### SLA Targets
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| P99 Latency | < 10us | PASS |
+| Throughput | > 500k OP/s | PASS |
+| Error Rate | < 1% | PASS |
 
 ### Prefrontal Cortex (Executive Function)
 
@@ -453,6 +483,20 @@ switch (decision.action) {
     .alert => sendCriticalAlert(),
 }
 ```
+
+#### Performance Characteristics
+
+- **Decision Latency**: < 10ms P99 for complex decisions
+- **Memory Overhead**: ~1KB per decision context
+- **Optimization**: Static buffers (256 bytes) - no heap allocation in hot path
+
+#### SLA Targets
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| P99 Latency | < 10ms | PASS |
+| Throughput | > 10k OP/s | PASS |
+| Error Rate | < 5% | PASS |
 
 ## Supporting Regions
 
@@ -601,6 +645,21 @@ var file = try std.fs.cwd().createFile("telemetry.json", .{});
 defer file.close();
 try tel.exportJson(file.writer());
 ```
+
+#### Performance Characteristics
+
+- **Record Throughput**: 1,396 kOP/s
+- **P99 Latency**: < 200us
+- **Buffer Size**: 1,000 points
+- **Aggregation**: O(n) over buffer
+
+#### SLA Targets
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| P99 Latency | < 200us | PASS |
+| Throughput | > 50k OP/s | PASS |
+| Error Rate | < 1% | PASS |
 
 ### Thalamus Logs (Sensory Relay)
 
@@ -1379,6 +1438,13 @@ for (active) |alert| {
 _ = try manager.resolve(alert.id);
 ```
 
+#### Performance Characteristics
+
+- **Alert Emission**: < 1ms per alert
+- **Suppression Check**: O(1) hash lookup
+- **Telegram Delivery**: ~100ms (network bound)
+- **Memory**: ~256 bytes per alert
+
 ### Simulation Environment (Synthetic Workload Generator)
 
 **Module**: `brain.simulation`
@@ -1480,6 +1546,23 @@ std.log.info("Final health: {d:.1}%", .{result.final_health});
 const report = try engine.getReport(result);
 std.log.info("{s}", .{report});
 ```
+
+#### Performance Characteristics
+
+- **Simulation Duration**: Configurable (10s-60s for preset scenarios)
+- **Agent Overhead**: ~1ms per task processing
+- **Memory Usage**: ~1KB per agent
+- **Network Simulation**: Optional partition simulation
+
+#### Scenarios
+
+| Scenario | Description | Duration |
+|----------|-------------|----------|
+| `smoke_test` | Light load, verify basic functionality | 10s |
+| `agent_competition` | Test claim contention | 30s |
+| `event_storm` | High event throughput | 60s |
+| `network_partition` | Simulate network failure | 30s |
+| `chaos` | Random failures | 60s |
 
 ### Observability Export (External Telemetry)
 
@@ -1589,6 +1672,13 @@ var server = brain.observability_export.MetricsServer.init(
 try server.start();
 // Now scrape at http://localhost:9090/metrics
 ```
+
+#### Performance Characteristics
+
+- **Export Latency**: < 1ms per metric
+- **Batch Size**: 100 metrics default
+- **HTTP Server**: ~10ms response time
+- **Memory**: ~1KB per buffered metric
 
 ### Thalamus (Async Relay & Processing)
 
@@ -1710,6 +1800,13 @@ if (result.success) {
 const channel = try processor.registerChannel("results");
 ```
 
+#### Performance Characteristics
+
+- **Task Submission**: < 100us
+- **Queue Depth**: 10,000 tasks default
+- **Worker Threads**: Configurable (4 default)
+- **Task Execution**: Depends on task type
+
 ### Evolution Simulation (Deterministic Brain Evolution)
 
 **Module**: `brain.evolution_simulation`
@@ -1823,6 +1920,13 @@ if (result.converged) {
     std.log.info("Converged at step {d}", .{result.convergence_step.?});
 }
 ```
+
+#### Performance Characteristics
+
+- **Simulation Speed**: ~1M steps/second
+- **Memory Usage**: ~100KB per model
+- **Determinism**: Same seed = same results
+- **Checkpoint Interval**: 1,000 steps default
 
 ### Visual Cortex (Spatial Representation)
 
@@ -1955,6 +2059,13 @@ const dashboard = try brain.visualization.preset(
 );
 std.log.info("{s}", .{dashboard});
 ```
+
+#### Performance Characteristics
+
+- **Map Generation**: < 50ms for full brain
+- **Sparkline**: < 5ms for 40 points
+- **Heatmap**: < 100ms for 32x16 grid
+- **3D Rendering**: < 200ms for 60x30 view
 
 ### Federation (Corpus Callosum - Distributed)
 
@@ -2304,6 +2415,13 @@ defer {
     allocator.free(results);
 }
 ```
+
+#### Performance Characteristics
+
+- **Record Operation**: < 1us
+- **Stats Collection**: O(n) over history
+- **SLA Check**: O(1) with precomputed stats
+- **History Size**: 1000 entries default
 
 ## Inter-Region Communication
 

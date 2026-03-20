@@ -282,7 +282,10 @@ pub const GoldenChain = struct {
         std.fs.cwd().makePath(chain.checkpoint_dir) catch {};
 
         const timestamp = std.time.timestamp();
-        const cid = if (checkpoint_id.len > 0) checkpoint_id else std.fmt.allocPrint(chain.allocator, "{d}", .{timestamp});
+        const cid = if (checkpoint_id.len > 0)
+            checkpoint_id
+        else
+            try std.fmt.allocPrint(chain.allocator, "{d}", .{timestamp});
 
         var json_buf: [4096]u8 = undefined;
         const json = try std.fmt.bufPrint(&json_buf,

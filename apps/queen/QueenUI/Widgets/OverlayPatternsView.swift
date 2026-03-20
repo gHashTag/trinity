@@ -104,7 +104,7 @@ struct ContextMenuOverlay: View {
         }
         .opacity(isVisible ? 1 : 0)
         .scaleEffect(isVisible ? 1 : 0.95)
-        .animation(.spring(response: 0.25, dampingFraction: 0.8), value: isVisible)
+        .animation(MTMotion.ultraQuickSpring, value: isVisible)
     }
 }
 
