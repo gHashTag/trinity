@@ -61,7 +61,7 @@ pub const ExperienceEngine = struct {
         task: []const u8,
         success: bool,
         duration_ms: u64,
-        error: ?[]const u8,
+        error_msg: ?[]const u8,
         learnings: ?[]const u8,
         timestamp: i64,
     };
