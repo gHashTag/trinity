@@ -98,26 +98,26 @@ pub fn main() !void {
         defer allocator.free(csv_path);
 
         // Header
-        try csv_file.writer().writeAll("step,scenario,avg_ppl,alive_workers,diversity\n");
+        try csv_file.writeAll("step,scenario,avg_ppl,alive_workers,diversity\n");
 
         // Write data from all scenarios
-        for (s1.timeline[0..s1.timeline_count]) |entry| {
-            try csv_file.writer().print("{d},{s},{d:.2},{d},{d:.3}\n", .{
+        for (s1.timeline) |entry| {
+            try csv_file.print("{d},{s},{d:.2},{d},{d:.3}\n", .{
                 entry.step, "S1", entry.avg_ppl, entry.alive_workers, entry.diversity,
             });
         }
-        for (s2.timeline[0..s2.timeline_count]) |entry| {
-            try csv_file.writer().print("{d},{s},{d:.2},{d},{d:.3}\n", .{
+        for (s2.timeline) |entry| {
+            try csv_file.print("{d},{s},{d:.2},{d},{d:.3}\n", .{
                 entry.step, "S2", entry.avg_ppl, entry.alive_workers, entry.diversity,
             });
         }
-        for (s3.timeline[0..s3.timeline_count]) |entry| {
-            try csv_file.writer().print("{d},{s},{d:.2},{d},{d:.3}\n", .{
+        for (s3.timeline) |entry| {
+            try csv_file.print("{d},{s},{d:.2},{d},{d:.3}\n", .{
                 entry.step, "S3", entry.avg_ppl, entry.alive_workers, entry.diversity,
             });
         }
-        for (s4.timeline[0..s4.timeline_count]) |entry| {
-            try csv_file.writer().print("{d},{s},{d:.2},{d},{d:.3}\n", .{
+        for (s4.timeline) |entry| {
+            try csv_file.print("{d},{s},{d:.2},{d},{d:.3}\n", .{
                 entry.step, "S4", entry.avg_ppl, entry.alive_workers, entry.diversity,
             });
         }
