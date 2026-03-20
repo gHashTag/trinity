@@ -73,12 +73,12 @@ pub fn main() !void {
     // Run scenarios (note: Zig doesn't have true parallelism yet, so we run sequentially)
     var s1 = try evo_sim.runS1Baseline(allocator, steps);
     defer s1.deinit();
-    print("  {s}✓{s} S1 Baseline complete: PPL={d:.2}, Diversity={d:.3}\n", .{ GREEN, RESET, s1.final_ppl, s1.diversity_index });
+    print("  {s}✓{s} S1 Baseline complete: PPL={d:.2}, Diversity={d:.3}, Alive={d}\n", .{ GREEN, RESET, s1.final_ppl, s1.diversity_index, s1.workers_alive });
 
     var s2 = try evo_sim.runS2Current(allocator, steps);
     defer s2.deinit();
-    const s2_ppl_str = if (s2.final_ppl < 100.0) try std.fmt.allocPrint(allocator, "{d:.2}", .{s2.final_ppl}) else "DEAD";
-    print("  {s}✓{s} S2 Current complete: PPL={s}, Culled={d}\n", .{ GREEN, RESET, s2_ppl_str, s2.workers_culled });
+    const s2_status = if (s2.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s2.final_ppl});
+    print("  {s}✓{s} S2 Current complete: PPL={s}, Alive={d}, Culled={d}\n", .{ GREEN, RESET, s2_status, s2.workers_alive, s2.workers_culled });
 
     var s3 = try evo_sim.runS3MultiObj(allocator, steps);
     defer s3.deinit();
@@ -86,13 +86,13 @@ pub fn main() !void {
 
     var s4 = try evo_sim.runS4DePIN(allocator, steps);
     defer s4.deinit();
-    const s4_ppl_str = if (s4.final_ppl < 100.0) try std.fmt.allocPrint(allocator, "{d:.2}", .{s4.final_ppl}) else "DEAD";
-    print("  {s}✓{s} S4 dePIN complete: PPL={s}, Byzantine detected={d}\n", .{ GREEN, RESET, s4_ppl_str, s4.byzantine_detected });
+    const s4_status = if (s4.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s4.final_ppl});
+    print("  {s}✓{s} S4 dePIN complete: PPL={s}, Alive={d}, Byzantine={d}\n", .{ GREEN, RESET, s4_status, s4.workers_alive, s4.byzantine_detected });
 
     var s5 = try evo_sim.runS5DePIN_NoImmunity(allocator, steps);
     defer s5.deinit();
-    const s5_ppl_str = if (s5.final_ppl < 100.0) try std.fmt.allocPrint(allocator, "{d:.2}", .{s5.final_ppl}) else "DEAD";
-    print("  {s}✓{s} S5 dePIN NoImmunity complete: PPL={s}, Byzantine={d}, NoMicroglia\n", .{ YELLOW, RESET, s5_ppl_str, s5.byzantine_detected });
+    const s5_status = if (s5.workers_alive == 0) "DEAD" else try std.fmt.allocPrint(allocator, "{d:.2}", .{s5.final_ppl});
+    print("  {s}✓{s} S5 dePIN NoImmunity complete: PPL={s}, Alive={d}, Byzantine={d}, NoMicroglia\n", .{ YELLOW, RESET, s5_status, s5.workers_alive, s5.byzantine_detected });
 
     print("\n{s}Simulation complete!{s}\n", .{ GREEN, RESET });
 

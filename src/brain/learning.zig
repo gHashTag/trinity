@@ -562,9 +562,60 @@ pub const LearningSystem = struct {
     }
 
     fn detectOptimalWindows(self: *Self) !?Pattern {
-        _ = self;
         // Analyze time-of-day success patterns
-        // TODO: Implement time window analysis
+        // Group records by hour and find success rate patterns
+        if (self.history.items.len < 50) return null;
+
+        var hour_success: [24]usize = [_]usize{0} ** 24;
+        var hour_total: [24]usize = [_]usize{0} ** 24;
+
+        // Aggregate by hour
+        for (self.history.items) |record| {
+            const timestamp_sec = @divFloor(record.timestamp, 1000);
+            const hour = @as(usize, @intCast(@rem(timestamp_sec, 86400 / 3600)));
+            hour_total[hour] += 1;
+            if (record.success) hour_success[hour] += 1;
+        }
+
+        // Find best and worst hours
+        var best_hour: usize = 0;
+        var best_rate: f32 = 0;
+        var worst_hour: usize = 0;
+        var worst_rate: f32 = 1;
+
+        for (0..24) |hour| {
+            if (hour_total[hour] > 0) {
+                const rate = @as(f32, @floatFromInt(hour_success[hour])) / @as(f32, @floatFromInt(hour_total[hour]));
+                if (rate > best_rate) {
+                    best_rate = rate;
+                    best_hour = hour;
+                }
+                if (rate < worst_rate) {
+                    worst_rate = rate;
+                    worst_hour = hour;
+                }
+            }
+        }
+
+        // If there's a significant difference (>20%), create a pattern
+        if (best_rate - worst_rate > 0.2 and hour_total[best_hour] >= 5) {
+            const name = try std.fmt.allocPrint(self.allocator, "Optimal Time Window: Hour {d}:00-{d}:00", .{ best_hour, best_hour + 1 });
+            errdefer self.allocator.free(name);
+
+            const desc = try std.fmt.allocPrint(self.allocator, "Success rate at hour {d} is {d:.0}% vs {d:.0}% at worst hour ({d})", .{ best_hour, best_rate * 100, worst_rate * 100, worst_hour });
+            errdefer self.allocator.free(desc);
+
+            const rec = try self.allocator.dupe(u8, "Schedule critical operations during this optimal window");
+
+            return .{
+                .name = name,
+                .confidence = best_rate - worst_rate,
+                .description = desc,
+                .recommendation = rec,
+                .pattern_type = .optimal_window,
+            };
+        }
+
         return null;
     }
 
@@ -595,7 +646,6 @@ pub const LearningSystem = struct {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 fn loadHistoryImpl(allocator: mem.Allocator, history: *std.ArrayList(PerformanceRecord)) !void {
-    _ = history;
     const file = fs.cwd().openFile(LEARNING_DATA_PATH, .{}) catch |err| {
         if (err == error.FileNotFound) return; // No history yet
         return err;
@@ -608,8 +658,19 @@ fn loadHistoryImpl(allocator: mem.Allocator, history: *std.ArrayList(Performance
     var lines = mem.splitScalar(u8, content, '\n');
     while (lines.next()) |line| {
         if (line.len == 0) continue;
-        // TODO: Parse JSON line into PerformanceRecord
-        // For now, skip parsing to avoid complex JSON dependency
+
+        // Parse JSON line into PerformanceRecord
+        // Expected format: {"timestamp":1234567890,"operation":"task_claim","duration_ms":100,"success":true,"metadata":{...}}
+        const parsed = std.json.parseFromSlice(PerformanceRecord, line, allocator) catch {
+            // Failed to parse, skip this line
+            // Could be legacy format or corrupted data
+            continue;
+        };
+
+        // Skip records with invalid timestamp
+        if (parsed.timestamp == 0) continue;
+
+        try history.append(allocator, parsed.value);
     }
 }
 
