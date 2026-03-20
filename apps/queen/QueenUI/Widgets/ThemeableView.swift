@@ -191,7 +191,7 @@ struct ThemePreviewCard: View {
                     .buttonStyle(.borderedProminent)
             }
         }
-        .padding(20)
+        .padding(ParietalSpacing.lg)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(V4Color.surface)
@@ -259,7 +259,7 @@ struct ThemeSettingsPanel: View {
                 typographySettings
             }
         }
-        .padding(20)
+        .padding(ParietalSpacing.lg)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(V4Color.surface)

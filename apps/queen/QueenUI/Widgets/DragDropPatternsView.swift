@@ -36,7 +36,7 @@ struct DropZone: View {
             }
         }
         .frame(maxWidth: .infinity)
-        .padding(32)
+        .padding(ParietalSpacing.xxl)
         .background(
             RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                 .stroke(isDragging ? V4Color.accent : V4Color.border, lineWidth: 2)
@@ -101,7 +101,7 @@ struct FileDropZone: View {
                 }
             }
             .frame(maxWidth: .infinity)
-            .padding(32)
+            .padding(ParietalSpacing.xxl)
         }
         .onDrop(of: [.fileURL], isTargeted: $isDragging) { providers in
             guard let provider = providers.first else { return false }

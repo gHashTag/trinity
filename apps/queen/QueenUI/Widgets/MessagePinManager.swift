@@ -105,7 +105,7 @@ struct PinBadge: View {
                 .font(WernickeTypography.miniBold)
                 .foregroundStyle(V4Color.background)
                 .frame(minWidth: 16, minHeight: 16)
-                .padding(2)
+                .padding(ParietalSpacing.xxs)
                 .background(
                     Circle()
                         .fill(V4Color.golden)

@@ -193,7 +193,7 @@ struct SettingsScreen: View {
                     Text("The quick brown fox jumps over the lazy dog")
                         .font(.system(size: CGFloat(chatFontSize)))
                         .foregroundStyle(V4Color.textPrimary)
-                        .padding(8)
+                        .padding(ParietalSpacing.xs)
                         .background(Color.white.opacity(V2Depth.bgCardLight))
                         .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerSmall))
                 }
@@ -240,7 +240,7 @@ struct SettingsScreen: View {
                                     .font(WernickeTypography.captionMedium)
                             }
                             .foregroundStyle(.black)
-                            .padding(.horizontal, 12)
+                            .padding(.horizontal, ParietalSpacing.sm)
                             .padding(.vertical, 6)
                             .background(V4Color.purple)
                             .clipShape(SwiftUI.Capsule())
@@ -542,7 +542,7 @@ struct SettingsScreen: View {
                                 Text("Reset tips")
                                     .font(WernickeTypography.captionMedium)
                                     .foregroundStyle(.black)
-                                    .padding(.horizontal, 12)
+                                    .padding(.horizontal, ParietalSpacing.sm)
                                     .padding(.vertical, 6)
                                     .background(V4Color.accent)
                                     .clipShape(SwiftUI.Capsule())
@@ -613,7 +613,7 @@ struct SettingsScreen: View {
                                     .font(WernickeTypography.captionMedium)
                             }
                             .foregroundStyle(V4Color.textPrimary)
-                            .padding(.horizontal, 12)
+                            .padding(.horizontal, ParietalSpacing.sm)
                             .padding(.vertical, 6)
                             .background(Color.white.opacity(0.08))
                             .clipShape(SwiftUI.Capsule())
@@ -630,7 +630,7 @@ struct SettingsScreen: View {
                                     .font(WernickeTypography.captionMedium)
                             }
                             .foregroundStyle(V4Color.statusError)
-                            .padding(.horizontal, 12)
+                            .padding(.horizontal, ParietalSpacing.sm)
                             .padding(.vertical, 6)
                             .background(V4Color.statusError.opacity(V2Depth.bgSidebarHover))
                             .clipShape(SwiftUI.Capsule())

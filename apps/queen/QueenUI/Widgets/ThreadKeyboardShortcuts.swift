@@ -339,7 +339,7 @@ struct ThreadSelectionIndicator: View {
                 Image(systemName: "pin.fill")
                     .font(WernickeTypography.size8)
                     .foregroundColor(V4Color.golden)
-                    .padding(4)
+                    .padding(ParietalSpacing.xxs)
                     .background(Circle().fill(V4Color.golden.opacity(0.2)))
             }
 

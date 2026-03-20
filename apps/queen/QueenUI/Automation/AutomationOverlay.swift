@@ -166,8 +166,8 @@ public struct AutomationOverlay: View {
                             .foregroundStyle(.white.opacity(0.8))
                     }
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.orange.opacity(0.2))
@@ -225,7 +225,7 @@ public struct AutomationOverlay: View {
                         .opacity(0.8 + 0.2 * sin(Date().timeIntervalSince1970 * 5))
                 }
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, ParietalSpacing.sm)
             .padding(.vertical, 6)
             .background(
                 RoundedRectangle(cornerRadius: 6)
@@ -245,8 +245,8 @@ public struct AutomationOverlay: View {
                         .font(WernickeTypography.miniMono)
                 }
                 .foregroundStyle(.white.opacity(0.9))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(V2Depth.black70)
                 .cornerRadius(V1Theme.cornerTiny)
             }
@@ -255,14 +255,14 @@ public struct AutomationOverlay: View {
                 Text(server.lastActivity.uppercased())
                     .font(WernickeTypography.microBold.monospaced())
                     .foregroundStyle(.cyan)
-                    .padding(.horizontal, 8)
+                    .padding(.horizontal, ParietalSpacing.xs)
                     .padding(.vertical, 2)
                     .background(V2Depth.black70)
                     .cornerRadius(V1Theme.cornerTiny)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-        .padding(16)
+        .padding(ParietalSpacing.md)
         .allowsHitTesting(false)
     }
 
@@ -280,8 +280,8 @@ public struct AutomationOverlay: View {
                         .font(WernickeTypography.caption2.monospaced())
                         .foregroundStyle(.white)
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(
                     RoundedRectangle(cornerRadius: 4)
                         .fill(Color.black.opacity(0.75))
@@ -289,7 +289,7 @@ public struct AutomationOverlay: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-        .padding(16)
+        .padding(ParietalSpacing.md)
         .allowsHitTesting(false)
     }
 
@@ -302,12 +302,12 @@ public struct AutomationOverlay: View {
                 }
                 .font(WernickeTypography.miniMono)
                 .foregroundStyle(.white.opacity(0.8))
-                .padding(.horizontal, 10)
-                .padding(.vertical, 4)
+                .padding(.horizontal, ParietalSpacing.xs)
+                .padding(.vertical, ParietalSpacing.xxs)
                 .background(V2Depth.black70)
                 .cornerRadius(V1Theme.cornerTiny)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
-                .padding(16)
+                .padding(ParietalSpacing.md)
                 .allowsHitTesting(false)
             }
         }

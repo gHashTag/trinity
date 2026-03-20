@@ -49,7 +49,7 @@ struct MessageVoiceRecorder: View {
             // Controls
             controlsBar
         }
-        .padding(20)
+        .padding(ParietalSpacing.lg)
         .background(V4Color.surface)
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerMedium)

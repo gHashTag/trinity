@@ -202,7 +202,7 @@ struct ReviewCard: View {
                     .foregroundStyle(V4Color.textSecondary)
             }
         }
-        .padding(14)
+        .padding(ParietalSpacing.sm)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerMedium)
     }

@@ -236,8 +236,8 @@ struct QueenScreen: View {
                     .clipShape(SwiftUI.Capsule())
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 4)
+        .padding(.horizontal, ParietalSpacing.sm)
+        .padding(.vertical, ParietalSpacing.xxs)
         .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 6))
         .padding(.horizontal)
@@ -288,7 +288,7 @@ struct QueenScreen: View {
                     Text("\(pendingEntries.count) pending")
                         .font(.caption2.weight(.bold))
                         .foregroundStyle(V4Color.golden)
-                        .padding(.horizontal, 8)
+                        .padding(.horizontal, ParietalSpacing.xs)
                         .padding(.vertical, 2)
                         .background(V4Color.golden.opacity(V2Depth.bgSidebarHover))
                         .clipShape(SwiftUI.Capsule())
@@ -378,7 +378,7 @@ struct QueenScreen: View {
                             .minimumScaleFactor(0.8)
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(8)
+                    .padding(ParietalSpacing.xs)
                     .background(V4Color.statusError.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .overlay(

@@ -307,7 +307,7 @@ struct QuickReplyTemplatesBar: View {
             Image(systemName: "plus")
                 .font(WernickeTypography.miniMedium)
                 .foregroundStyle(V4Color.textSecondary)
-                .padding(7)
+                .padding(ParietalSpacing.xs)
                 .background(
                     Circle()
                         .fill(V4Color.textSecondary.opacity(V2Depth.bgSubtle))
@@ -327,7 +327,7 @@ struct QuickReplyTemplatesBar: View {
             Image(systemName: "pencil")
                 .font(WernickeTypography.miniMedium)
                 .foregroundStyle(V4Color.textSecondary)
-                .padding(7)
+                .padding(ParietalSpacing.xs)
                 .background(
                     Circle()
                         .fill(V4Color.textSecondary.opacity(V2Depth.bgSubtle))
@@ -381,7 +381,7 @@ struct TemplateEditSheet: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close")
             }
-            .padding(20)
+            .padding(ParietalSpacing.lg)
             .background(V4Color.surface)
 
             Divider()
@@ -430,7 +430,7 @@ struct TemplateEditSheet: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Done")
             }
-            .padding(20)
+            .padding(ParietalSpacing.lg)
             .background(V4Color.surface)
         }
         .frame(width: ParietalSpacing.xxxlModalFrame, height: ParietalSpacing.extraLargeModalHeight)
@@ -558,7 +558,7 @@ struct AddTemplateSheet: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close")
             }
-            .padding(20)
+            .padding(ParietalSpacing.lg)
             .background(V4Color.surface)
 
             Divider()
@@ -615,7 +615,7 @@ struct AddTemplateSheet: View {
                     }
                 }
             }
-            .padding(20)
+            .padding(ParietalSpacing.lg)
             .background(V4Color.background)
 
             Spacer()
@@ -653,7 +653,7 @@ struct AddTemplateSheet: View {
                 .accessibilityLabel("Add template")
                 .accessibilityHint(templateText.isEmpty ? "Enter template text first" : "")
             }
-            .padding(20)
+            .padding(ParietalSpacing.lg)
             .background(V4Color.surface)
         }
         .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.mediumModalFrame)
@@ -739,7 +739,7 @@ struct CompactQuickReplyBar: View {
                     Image(systemName: "ellipsis")
                         .font(WernickeTypography.miniMedium)
                         .foregroundStyle(V4Color.textSecondary)
-                        .padding(5)
+                        .padding(ParietalSpacing.xxxs)
                         .background(
                             Circle()
                                 .fill(V4Color.textSecondary.opacity(V2Depth.bgSubtle))
@@ -797,7 +797,7 @@ struct AllTemplatesSheet: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(20)
+            .padding(ParietalSpacing.lg)
             .background(V4Color.surface)
 
             Divider()
@@ -835,7 +835,7 @@ struct AllTemplatesSheet: View {
                 .font(WernickeTypography.captionMedium)
                 .foregroundStyle(template.category == .builtin ? V4Color.textPrimary : V4Color.accent)
                 .multilineTextAlignment(.center)
-                .padding(10)
+                .padding(ParietalSpacing.xs)
                 .frame(maxWidth: .infinity)
                 .background(
                     template.category == .builtin

@@ -83,7 +83,7 @@ struct AggregateDiffView: View {
                     }
                 }
             }
-            .padding(10)
+            .padding(ParietalSpacing.xs)
             .background(V4Color.surface)
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))
             .overlay(

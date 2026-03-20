@@ -143,7 +143,7 @@ struct RichTooltip: View {
                     }
                 }
             }
-            .padding(10)
+            .padding(ParietalSpacing.xs)
             .background(
                 RoundedRectangle(cornerRadius: 6)
                     .fill(.black.opacity(0.9))

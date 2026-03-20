@@ -242,11 +242,11 @@ struct ErrorAlert: View {
                 }
                 .buttonStyle(.plain)
             }
-            .padding(24)
+            .padding(ParietalSpacing.xl)
             .background(V4Color.surface)
             .cornerRadius(V1Theme.cornerLarge)
             .shadow(color: .black.opacity(0.2), radius: 20)
-            .padding(.horizontal, 40)
+            .padding(.horizontal, ParietalSpacing.xxl)
         }
     }
 }

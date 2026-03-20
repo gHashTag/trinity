@@ -114,7 +114,7 @@ struct BannerCarousel: View {
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(20)
+            .padding(ParietalSpacing.lg)
         }
         .cornerRadius(V1Theme.cornerLarge)
         .padding(.horizontal, ParietalSpacing.xs)

@@ -87,8 +87,8 @@ struct FocusModeView: View {
                             .font(.system(size: fontSize))
                     }
                     .frame(maxWidth: 680, alignment: .leading)
-                    .padding(.horizontal, 40)
-                    .padding(.vertical, 40)
+                    .padding(.horizontal, ParietalSpacing.xxl)
+                    .padding(.vertical, ParietalSpacing.xxl)
                 }
                 Spacer()
             }
@@ -278,7 +278,7 @@ struct FocusModeView: View {
                             .onChange(of: autoScrollEnabled) { _, _ in savePreferences() }
                     }
                 }
-                .padding(14)
+                .padding(ParietalSpacing.sm)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
                         .fill(Color.black.opacity(0.8))
