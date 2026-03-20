@@ -111,7 +111,7 @@ fn cmdRun(allocator: std.mem.Allocator, args: [][]const u8) !u8 {
     config.waves = waves;
     config.agents = agents;
 
-    const chain = try golden_chain.GoldenChain.init(allocator, config.checkpoint_dir);
+    var chain = try golden_chain.GoldenChain.init(allocator, config.checkpoint_dir);
     std.debug.print("Running Golden Chain...\n", .{});
     _ = chain;
 

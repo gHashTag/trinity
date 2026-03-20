@@ -207,7 +207,7 @@ struct BrainHealthScreen: View {
                                 }
 
                                 HealthTrendChart(snapshots: data.history)
-                                    .frame(height: 140)
+                                    .frame(height: ParietalSpacing.chartPanelHeight)
                             }
                             .padding(.top, ParietalSpacing.xs)
                         }

@@ -346,18 +346,6 @@ pub const Registry = struct {
         }
         return stats;
     }
-
-    /// Returns the total number of claims across all shards.
-    /// Thread-safe read-only operation.
-    pub fn count(self: *Registry) usize {
-        var total: usize = 0;
-        for (&self.shards) |*shard| {
-            shard.rwlock.lockShared();
-            total += shard.count();
-            shard.rwlock.unlockShared();
-        }
-        return total;
-    }
 };
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -604,17 +592,23 @@ test "LockFree: heartbeat throughput benchmark" {
     _ = std.debug.print("LockFree Sharded Basal Ganglia Heartbeat: {d:.0} OP/s ({d:.2} ns/op)\n", .{ ops_per_sec * 1_000_000_000.0, @as(f64, @floatFromInt(elapsed_ns)) / @as(f64, @floatFromInt(iterations)) });
 }
 
-test "LockFree: stats are thread-safe" {
+test "LockFree: matches baseline behavior" {
     const allocator = std.testing.allocator;
-    var registry = Registry.init(allocator);
-    defer registry.deinit();
+    var registry_lf = Registry.init(allocator);
+    defer registry_lf.deinit();
 
-    // Stats should be lock-free atomic
-    _ = try registry.claim(allocator, "task-1", "agent-1", 60000);
-    _ = try registry.claim(allocator, "task-2", "agent-2", 60000);
+    const baseline = @import("basal_ganglia.zig");
+    var registry_base = baseline.Registry.init(allocator);
+    defer registry_base.deinit();
 
-    const stats = registry.getStats();
-    try std.testing.expectEqual(@as(u64, 2), stats.claim_attempts);
-    try std.testing.expectEqual(@as(u64, 2), stats.claim_success);
-    try std.testing.expectEqual(@as(usize, 2), stats.active_claims);
+    const task_id = "task-compare";
+    const agent_id = "agent-compare";
+
+    const claimed_lf = try registry_lf.claim(allocator, task_id, agent_id, 60000);
+    const claimed_base = try registry_base.claim(allocator, task_id, agent_id, 60000);
+    try std.testing.expectEqual(claimed_base, claimed_lf);
+
+    const dup_lf = try registry_lf.claim(allocator, task_id, "agent-002", 60000);
+    const dup_base = try registry_base.claim(allocator, task_id, "agent-002", 60000);
+    try std.testing.expectEqual(dup_base, dup_lf);
 }

@@ -193,130 +193,126 @@ pub const AggregateMetrics = struct {
         self.critical_alerts.deinit(self.allocator);
     }
 
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // REGION COLLECTION HELPERS
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    /// Configuration for collecting metrics from a brain region
+    const RegionCollector = struct {
+        name: []const u8,
+        function: []const u8,
+        /// Returns initialized RegionMetrics for this region
+        collect_fn: *const fn (*Self) anyerror!RegionMetrics,
+    };
+
+    /// Collect Basal Ganglia metrics
+    fn collectBasalGanglia(self: *Self) !RegionMetrics {
+        var metrics = RegionMetrics.init(self.allocator, "Basal Ganglia", "Action Selection");
+        if (basal_ganglia.getGlobal(self.allocator)) |registry| {
+            metrics.status = .healthy;
+            const claim_count = registry.claims.count();
+            try metrics.setMetricOwned(self.allocator, "active_claims", try std.fmt.allocPrint(self.allocator, "{d}", .{claim_count}));
+            const excess = if (claim_count > 1000) claim_count - 1000 else 0;
+            const bg_health = if (claim_count < 1000) 100.0 else @max(0.0, 100.0 - @as(f32, @floatFromInt(excess)) / 10.0);
+            metrics.health_score = bg_health;
+            metrics.trend = .stable;
+            if (claim_count > 5000) {
+                metrics.status = .warning;
+                metrics.alert = try std.fmt.allocPrint(self.allocator, "High claim count: {d}", .{claim_count});
+            }
+        } else |err| {
+            metrics.status = .unavailable;
+            try metrics.setMetric(self.allocator, "error", @errorName(err));
+        }
+        return metrics;
+    }
+
+    /// Collect Reticular Formation metrics
+    fn collectReticularFormation(self: *Self) !RegionMetrics {
+        var metrics = RegionMetrics.init(self.allocator, "Reticular Formation", "Broadcast Alerting");
+        if (reticular_formation.getGlobal(self.allocator)) |bus| {
+            const stats = bus.getStats();
+            try metrics.setMetricOwned(self.allocator, "published", try std.fmt.allocPrint(self.allocator, "{d}", .{stats.published}));
+            try metrics.setMetricOwned(self.allocator, "buffered", try std.fmt.allocPrint(self.allocator, "{d}", .{stats.buffered}));
+            const buffered_clamped = @min(stats.buffered, 10000);
+            const buffer_pct = @as(f32, @floatFromInt(buffered_clamped)) / 10000.0 * 100.0;
+            metrics.health_score = 100.0 - buffer_pct;
+            metrics.status = if (buffer_pct < 50) .healthy else if (buffer_pct < 80) .warning else .critical;
+            metrics.trend = if (stats.published > 0) .stable else .unknown;
+            if (buffer_pct > 80) {
+                metrics.alert = try std.fmt.allocPrint(self.allocator, "Buffer at {d:.1}% capacity", .{buffer_pct});
+            }
+        } else |err| {
+            metrics.status = .unavailable;
+            try metrics.setMetric(self.allocator, "error", @errorName(err));
+        }
+        return metrics;
+    }
+
+    /// Collect Locus Coeruleus metrics
+    fn collectLocusCoeruleus(self: *Self) !RegionMetrics {
+        var metrics = RegionMetrics.init(self.allocator, "Locus Coeruleus", "Arousal Regulation");
+        metrics.status = .healthy;
+        metrics.health_score = 100.0;
+        metrics.trend = .stable;
+        const policy = locus_coeruleus.BackoffPolicy.init();
+        try metrics.setMetric(self.allocator, "strategy", @tagName(policy.strategy));
+        try metrics.setMetricOwned(self.allocator, "initial_ms", try std.fmt.allocPrint(self.allocator, "{d}", .{policy.initial_ms}));
+        try metrics.setMetricOwned(self.allocator, "max_ms", try std.fmt.allocPrint(self.allocator, "{d}", .{policy.max_ms}));
+        return metrics;
+    }
+
+    /// Collect static metrics for simple regions (no external state)
+    fn collectStaticRegion(self: *Self, name: []const u8, function: []const u8, status: RegionStatus, metrics_list: []const struct { []const u8, []const u8 }) !RegionMetrics {
+        var metrics = RegionMetrics.init(self.allocator, name, function);
+        metrics.status = status;
+        metrics.health_score = if (status == .idle) null else 100.0;
+        metrics.trend = .stable;
+        for (metrics_list) |kv| {
+            try metrics.setMetric(self.allocator, kv.@"0", kv.@"1");
+        }
+        return metrics;
+    }
+
+    /// Region collector configurations
+    const region_collectors = [_]RegionCollector{
+        .{ .name = "Basal Ganglia", .function = "Action Selection", .collect_fn = collectBasalGanglia },
+        .{ .name = "Reticular Formation", .function = "Broadcast Alerting", .collect_fn = collectReticularFormation },
+        .{ .name = "Locus Coeruleus", .function = "Arousal Regulation", .collect_fn = collectLocusCoeruleus },
+    };
+
+    /// Static region data (name, function, status, metrics)
+    const static_regions = [_]struct {
+        name: []const u8,
+        function: []const u8,
+        status: RegionStatus,
+        metrics: []const struct { []const u8, []const u8 },
+    }{
+        .{ .name = "Hippocampus", .function = "Memory Persistence", .status = .healthy, .metrics = &.{.{ "log_file", ".trinity/brain_events.jsonl" }} },
+        .{ .name = "Corpus Callosum", .function = "Telemetry", .status = .healthy, .metrics = &.{ .{ "max_points", "1000" }, .{ "data_points", "0" } } },
+        .{ .name = "Amygdala", .function = "Emotional Salience", .status = .healthy, .metrics = &.{ .{ "salience_levels", "5" }, .{ "threshold_critical", "80" }, .{ "threshold_high", "60" } } },
+        .{ .name = "Prefrontal Cortex", .function = "Executive Function", .status = .healthy, .metrics = &.{ .{ "decision_engine", "ready" }, .{ "actions", "6" } } },
+        .{ .name = "Intraparietal Sulcus", .function = "Numerical Processing", .status = .healthy, .metrics = &.{ .{ "formats", "f16, GF16, TF3" }, .{ "phi", "1.618" } } },
+        .{ .name = "Microglia", .function = "Immune Surveillance", .status = .healthy, .metrics = &.{ .{ "patrol_interval", "30m" }, .{ "night_mode", "false" }, .{ "sacred_workers", "3" } } },
+        .{ .name = "Thalamus", .function = "Sensory Relay", .status = .idle, .metrics = &.{ .{ "buffer_size", "256" }, .{ "sensors", "6" } } },
+    };
+
     /// Collect metrics from all brain regions
     pub fn collect(self: *Self) !void {
         self.timestamp = std.time.milliTimestamp();
 
-        // 1. Basal Ganglia (Action Selection)
-        var bg_metrics = RegionMetrics.init(self.allocator, "Basal Ganglia", "Action Selection");
-        if (basal_ganglia.getGlobal(self.allocator)) |registry| {
-            bg_metrics.status = .healthy;
-            const claim_count = registry.claims.count();
-            try bg_metrics.setMetricOwned(self.allocator, "active_claims", try std.fmt.allocPrint(self.allocator, "{d}", .{claim_count}));
-            // Health based on claim count (0-1000 is healthy range)
-            // For claim_count > 2000, health drops to 0, clamped at minimum
-            const excess = if (claim_count > 1000) claim_count - 1000 else 0;
-            const bg_health = if (claim_count < 1000) 100.0 else @max(0.0, 100.0 - @as(f32, @floatFromInt(excess)) / 10.0);
-            bg_metrics.health_score = bg_health;
-            bg_metrics.trend = .stable;
-            if (claim_count > 5000) {
-                bg_metrics.status = .warning;
-                bg_metrics.alert = try std.fmt.allocPrint(self.allocator, "High claim count: {d}", .{claim_count});
-            }
-        } else |err| {
-            bg_metrics.status = .unavailable;
-            try bg_metrics.setMetric(self.allocator, "error", @errorName(err));
+        // Collect from regions with external state
+        for (region_collectors) |collector| {
+            const metrics = try collector.collect_fn(self);
+            try self.regions.append(self.allocator, metrics);
         }
-        try self.regions.append(self.allocator, bg_metrics);
 
-        // 2. Reticular Formation (Broadcast Alerting)
-        var rf_metrics = RegionMetrics.init(self.allocator, "Reticular Formation", "Broadcast Alerting");
-        if (reticular_formation.getGlobal(self.allocator)) |bus| {
-            const stats = bus.getStats();
-            try rf_metrics.setMetricOwned(self.allocator, "published", try std.fmt.allocPrint(self.allocator, "{d}", .{stats.published}));
-            try rf_metrics.setMetricOwned(self.allocator, "buffered", try std.fmt.allocPrint(self.allocator, "{d}", .{stats.buffered}));
-            // Health based on buffer utilization
-            // stats.buffered is at most 10000 (capacity), clamped to valid range
-            const buffered_clamped = @min(stats.buffered, 10000);
-            const buffer_pct = @as(f32, @floatFromInt(buffered_clamped)) / 10000.0 * 100.0;
-            rf_metrics.health_score = 100.0 - buffer_pct;
-            rf_metrics.status = if (buffer_pct < 50) .healthy else if (buffer_pct < 80) .warning else .critical;
-            rf_metrics.trend = if (stats.published > 0) .stable else .unknown;
-            if (buffer_pct > 80) {
-                rf_metrics.alert = try std.fmt.allocPrint(self.allocator, "Buffer at {d:.1}% capacity", .{buffer_pct});
-            }
-        } else |err| {
-            rf_metrics.status = .unavailable;
-            try rf_metrics.setMetric(self.allocator, "error", @errorName(err));
+        // Collect from static regions
+        for (static_regions) |static_region| {
+            const metrics = try self.collectStaticRegion(static_region.name, static_region.function, static_region.status, static_region.metrics);
+            try self.regions.append(self.allocator, metrics);
         }
-        try self.regions.append(self.allocator, rf_metrics);
 
-        // 3. Locus Coeruleus (Arousal Regulation)
-        var lc_metrics = RegionMetrics.init(self.allocator, "Locus Coeruleus", "Arousal Regulation");
-        lc_metrics.status = .healthy;
-        lc_metrics.health_score = 100.0;
-        lc_metrics.trend = .stable;
-        const policy = locus_coeruleus.BackoffPolicy.init();
-        try lc_metrics.setMetric(self.allocator, "strategy", @tagName(policy.strategy));
-        try lc_metrics.setMetricOwned(self.allocator, "initial_ms", try std.fmt.allocPrint(self.allocator, "{d}", .{policy.initial_ms}));
-        try lc_metrics.setMetricOwned(self.allocator, "max_ms", try std.fmt.allocPrint(self.allocator, "{d}", .{policy.max_ms}));
-        try self.regions.append(self.allocator, lc_metrics);
-
-        // 4. Hippocampus (Memory Persistence)
-        var hippo_metrics = RegionMetrics.init(self.allocator, "Hippocampus", "Memory Persistence");
-        hippo_metrics.status = .healthy;
-        hippo_metrics.health_score = 100.0;
-        hippo_metrics.trend = .stable;
-        try hippo_metrics.setMetric(self.allocator, "log_file", ".trinity/brain_events.jsonl");
-        try self.regions.append(self.allocator, hippo_metrics);
-
-        // 5. Corpus Callosum (Telemetry)
-        var cc_metrics = RegionMetrics.init(self.allocator, "Corpus Callosum", "Telemetry");
-        cc_metrics.status = .healthy;
-        cc_metrics.health_score = 100.0;
-        cc_metrics.trend = .stable;
-        try cc_metrics.setMetric(self.allocator, "max_points", "1000");
-        try cc_metrics.setMetric(self.allocator, "data_points", "0");
-        try self.regions.append(self.allocator, cc_metrics);
-
-        // 6. Amygdala (Emotional Salience)
-        var amy_metrics = RegionMetrics.init(self.allocator, "Amygdala", "Emotional Salience");
-        amy_metrics.status = .healthy;
-        amy_metrics.health_score = 100.0;
-        amy_metrics.trend = .stable;
-        try amy_metrics.setMetric(self.allocator, "salience_levels", "5");
-        try amy_metrics.setMetric(self.allocator, "threshold_critical", "80");
-        try amy_metrics.setMetric(self.allocator, "threshold_high", "60");
-        try self.regions.append(self.allocator, amy_metrics);
-
-        // 7. Prefrontal Cortex (Executive Function)
-        var pfc_metrics = RegionMetrics.init(self.allocator, "Prefrontal Cortex", "Executive Function");
-        pfc_metrics.status = .healthy;
-        pfc_metrics.health_score = 100.0;
-        pfc_metrics.trend = .stable;
-        try pfc_metrics.setMetric(self.allocator, "decision_engine", "ready");
-        try pfc_metrics.setMetric(self.allocator, "actions", "6");
-        try self.regions.append(self.allocator, pfc_metrics);
-
-        // 8. Intraparietal Sulcus (Numerical Processing)
-        var ips_metrics = RegionMetrics.init(self.allocator, "Intraparietal Sulcus", "Numerical Processing");
-        ips_metrics.status = .healthy;
-        ips_metrics.health_score = 100.0;
-        ips_metrics.trend = .stable;
-        try ips_metrics.setMetric(self.allocator, "formats", "f16, GF16, TF3");
-        try ips_metrics.setMetric(self.allocator, "phi", "1.618");
-        try self.regions.append(self.allocator, ips_metrics);
-
-        // 9. Microglia (Immune Surveillance)
-        var micro_metrics = RegionMetrics.init(self.allocator, "Microglia", "Immune Surveillance");
-        micro_metrics.status = .healthy;
-        micro_metrics.health_score = 100.0;
-        micro_metrics.trend = .stable;
-        try micro_metrics.setMetric(self.allocator, "patrol_interval", "30m");
-        try micro_metrics.setMetric(self.allocator, "night_mode", "false");
-        try micro_metrics.setMetric(self.allocator, "sacred_workers", "3");
-        try self.regions.append(self.allocator, micro_metrics);
-
-        // 10. Thalamus (Sensory Relay)
-        var thal_metrics = RegionMetrics.init(self.allocator, "Thalamus", "Sensory Relay");
-        thal_metrics.status = .idle;
-        thal_metrics.health_score = null;
-        thal_metrics.trend = .stable;
-        try thal_metrics.setMetric(self.allocator, "buffer_size", "256");
-        try thal_metrics.setMetric(self.allocator, "sensors", "6");
-        try self.regions.append(self.allocator, thal_metrics);
-
-        // Calculate overall health
         try self.calculateOverall();
     }
 
@@ -608,10 +604,10 @@ test "RegionMetrics set and get" {
 
 test "quickScan returns healthy status" {
     const allocator = std.testing.allocator;
-    const result = try quickScan(allocator);
+    var result = try quickScan(allocator);
     defer {
         for (result.problematic_regions.items) |r| allocator.free(r);
-        result.problematic_regions.deinit();
+        result.problematic_regions.deinit(allocator);
     }
 
     // Score should be valid

@@ -663,7 +663,7 @@ struct ChatScreen: View {
 
             followUpSection
 
-            Color.clear.frame(height: 1).id("bottom")
+            Color.clear.frame(height: ParietalSpacing.dividerHeight).id("bottom")
         }
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
         .padding(.top, 20)
@@ -2006,7 +2006,7 @@ struct ChatScreen: View {
                 )
         )
         .padding(.horizontal, LayoutConstants.messageHorizontalPadding)
-        .frame(height: 52)
+        .frame(height: ParietalSpacing.inputBarHeight)
         .fixedSize(horizontal: false, vertical: true)
     }
 
@@ -3302,7 +3302,7 @@ struct ContextBar: View {
                                 .animation(.easeInOut(duration: 0.4), value: ratio)
                         }
                     }
-                    .frame(height: 3)
+                    .frame(height: ParietalSpacing.cursorLineHeight)
 
                     Text("\(tokens / 1000)K / \(maxTokens / 1000)K")
                         .font(WernickeTypography.microMono)
@@ -5085,23 +5085,23 @@ struct MultilineInput: NSViewRepresentable {
         // FIXED: compression resistance for horizontal
         textView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         // FIXED: fixed container size - no expansion
-        textView.textContainer?.containerSize = NSSize(width: 400, height: ParietalSpacing.chipHeight)
-        textView.textContainer?.heightTracksTextView = false
+        textView.textContainer?.containerSize = NSSize(width: 400, height: ParietalSpacing.inputHeight)
+        textView.textContainer?.heightTracksTextView = true
         textView.textContainer?.widthTracksTextView = true
         textView.isAutomaticQuoteSubstitutionEnabled = false
         textView.isAutomaticDashSubstitutionEnabled = false
         textView.isAutomaticTextReplacementEnabled = false
         textView.insertionPointColor = .white
-        // FIXED: fixed frame size
-        textView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.chipHeight))
+        // FIXED: allow proper text container sizing
+        textView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputHeight))
 
         scrollView.documentView = textView
         scrollView.hasVerticalScroller = false
         scrollView.hasHorizontalScroller = false
         scrollView.drawsBackground = false
         scrollView.borderType = .noBorder
-        // FIXED: fixed scrollview frame
-        scrollView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.chipHeight))
+        // FIXED: proper scrollview frame for input
+        scrollView.setFrameSize(NSSize(width: 400, height: ParietalSpacing.inputHeight))
 
         context.coordinator.textView = textView
         return scrollView
@@ -6951,7 +6951,7 @@ struct TaskTrackerView: View {
                         .frame(width: geo.size.width * progress)
                 }
             }
-            .frame(height: 3)
+            .frame(height: ParietalSpacing.cursorLineHeight)
             .padding(.top, 4)
         }
         .padding(LayoutConstants.compactPadding)
@@ -7104,7 +7104,7 @@ struct TruncationGradient: ViewModifier {
                     startPoint: .top,
                     endPoint: .bottom
                 )
-                .frame(height: 30)
+                .frame(height: ParietalSpacing.toolbarMinHeight)
             }
     }
 }

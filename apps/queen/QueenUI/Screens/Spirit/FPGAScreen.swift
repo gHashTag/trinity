@@ -295,7 +295,7 @@ struct FPGAScreen: View {
                         .frame(width: geo.size.width * min(pct, 1.0))
                 }
             }
-            .frame(height: 6)
+            .frame(height: ParietalSpacing.statusIndicatorHeight)
         }
     }
 }

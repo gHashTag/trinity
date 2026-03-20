@@ -23,14 +23,19 @@ The S³AI Brain is designed for high-throughput, low-latency autonomous agent co
 
 | KPI | Target | Current | Status |
 |-----|--------|---------|--------|
-| Task Claim Latency (P99) | < 1ms | 1.31 ms | ⚠️ AT_LIMIT |
-| Event Publish Latency (P99) | < 500us | 632 µs | ⚠️ AT_LIMIT |
-| Backoff Calc Latency (P99) | < 1us | 109 ns | ✅ PASS |
-| Throughput (Task Claims) | > 10k OP/s | 762 OP/s | ❌ FAIL |
-| Throughput (Event Publish) | > 100k OP/s | 1.58 kOP/s | ❌ FAIL |
-| Throughput (Backoff Calc) | > 1M OP/s | 9.13 MOP/s | ✅ PASS |
+| Task Claim Latency (P99) | < 1ms | 1.47 ms | ⚠️ AT_LIMIT |
+| Event Publish Latency (P99) | < 500us | 517 µs | ⚠️ AT_LIMIT |
+| Backoff Calc Latency (P99) | < 1us | 85 ns | ✅ PASS |
+| Throughput (Task Claims) | > 10k OP/s | 678 OP/s | ❌ FAIL |
+| Throughput (Event Publish) | > 100k OP/s | 1.93 kOP/s | ❌ FAIL |
+| Throughput (Backoff Calc) | > 1M OP/s | 11.69 MOP/s | ✅ PASS |
 
-**Benchmark Date:** 2026-03-20 | **Platform:** aarch64-macos | **Zig:** 0.15.2
+**Benchmark Date:** 2026-03-20 (post-atomic optimization) | **Platform:** aarch64-macos | **Zig:** 0.15.2
+
+**Optimization Summary (v2 - atomic stats):**
+- Reticular Formation: +22% (1583→1933 OP/s)
+- Locus Coeruleus: +28% (9.13M→11.69M OP/s)
+- Basal Ganglia: -11% (762→678 OP/s) - atomic overhead > lock savings
 
 ---
 

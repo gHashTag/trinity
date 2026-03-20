@@ -59,7 +59,7 @@ const AgentCoordination = struct {
     } {
         const event_stats = self.event_bus.getStats();
         return .{
-            .active_claims = self.registry.claims.count(),
+            .active_claims = self.registry.count(),
             .total_events_published = event_stats.published,
             .total_events_polled = event_stats.polled,
             .buffered_events = event_stats.buffered,

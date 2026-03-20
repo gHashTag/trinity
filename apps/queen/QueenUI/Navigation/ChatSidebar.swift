@@ -471,7 +471,7 @@ struct ChatSidebar: View {
 
             Rectangle()
                 .fill(Color.white.opacity(V2Depth.bgCard))
-                .frame(height: 1)
+                .frame(height: ParietalSpacing.dividerHeight)
 
             // Bookmarks panel
             if showBookmarks {
@@ -833,7 +833,7 @@ struct ChatSidebar: View {
             // Model badge at bottom
             Rectangle()
                 .fill(Color.white.opacity(V2Depth.bgCard))
-                .frame(height: 1)
+                .frame(height: ParietalSpacing.dividerHeight)
 
             HStack(spacing: ParietalSpacing.sm - 2) {
                 ProviderDot(provider: modelManager.selectedModel.provider)
@@ -1009,7 +1009,7 @@ struct ChatSidebar: View {
 
             Rectangle()
                 .fill(Color.white.opacity(V2Depth.bgCard))
-                .frame(height: 1)
+                .frame(height: ParietalSpacing.dividerHeight)
         }
         .background(V4Color.surface.opacity(V2Depth.stateDisabled))
         .transition(.opacity.combined(with: .move(edge: .top)))
@@ -1455,7 +1455,7 @@ struct NetworkStatsBar: View {
             VStack(spacing: 0) {
                 Rectangle()
                     .fill(Color.white.opacity(V2Depth.bgCard))
-                    .frame(height: 1)
+                    .frame(height: ParietalSpacing.dividerHeight)
 
                 // Clickable stats row
                 Button(action: {
@@ -1536,7 +1536,7 @@ struct NetworkTimelineView: View {
 
             Rectangle()
                 .fill(Color.white.opacity(V2Depth.bgCardLight))
-                .frame(height: 1)
+                .frame(height: ParietalSpacing.dividerHeight)
                 .padding(.horizontal, ParietalSpacing.sm)
 
             // Timeline rows
@@ -1597,7 +1597,7 @@ struct NetworkTimelineView: View {
                     }
                 }
             }
-            .frame(height: 12)
+            .frame(height: ParietalSpacing.badgeHeight)
 
             // Right label: duration
             Text("\(entry.totalMs)ms")
@@ -1605,7 +1605,7 @@ struct NetworkTimelineView: View {
                 .foregroundStyle(Color.white.opacity(V1Theme.opacityTextTertiary))
                 .frame(width: ParietalSpacing.avatarMediumFrame, alignment: .trailing)
         }
-        .frame(height: 20)
+        .frame(height: ParietalSpacing.iconHeight)
     }
 
     private func statusColor(_ status: String) -> Color {
@@ -2007,7 +2007,7 @@ struct RealmDivider: View {
                     endPoint: .trailing
                 )
             )
-            .frame(height: 1)
+            .frame(height: ParietalSpacing.dividerHeight)
             .padding(.horizontal, ParietalSpacing.md)
             .padding(.bottom, 4)
     }
@@ -2032,13 +2032,13 @@ struct SkeletonThreadRow: View {
         VStack(alignment: .leading, spacing: ParietalSpacing.sm - 2) {
             RoundedRectangle(cornerRadius: 4)
                 .fill(Color.white.opacity(V2Depth.bgCard))
-                .frame(height: 12)
+                .frame(height: ParietalSpacing.badgeHeight)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .scaleEffect(x: titleWidth, y: 1, anchor: .leading)
             HStack(spacing: ParietalSpacing.sm) {
                 RoundedRectangle(cornerRadius: 3)
                     .fill(Color.white.opacity(V2Depth.bgCardLight))
-                    .frame(height: 9)
+                    .frame(height: ParietalSpacing.smallBadgeHeight)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .scaleEffect(x: subtitleWidth, y: 1, anchor: .leading)
                 RoundedRectangle(cornerRadius: 3)
