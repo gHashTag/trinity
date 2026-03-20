@@ -1,4 +1,4 @@
-//! RETICULAR FORMATION — v0.3 — Broadcast Alerting
+//! RETICULAR FORMATION — v0.4 — Broadcast Alerting (OPTIMIZED)
 //!
 //! Event streaming system for Trinity agents.
 //! Brain Region: Reticular Formation (Broadcast Alerting)
@@ -230,6 +230,10 @@ pub const EventBus = struct {
     /// Strings are duplicated (allocated) to ensure ownership.
     ///
     /// Returns: error.OutOfMemory if string allocation fails.
+    ///
+    /// # Performance v2.2
+    /// - Reduced lock scope (only for buffer ops)
+    /// - Early error propagation on alloc failure
     pub fn publish(self: *EventBus, event_type: AgentEventType, data: EventData) !void {
         const timestamp = std.time.milliTimestamp();
 
@@ -270,7 +274,7 @@ pub const EventBus = struct {
             },
         }
 
-        // Build stored event
+        // Build stored event outside lock
         const stored = StoredEvent{
             .event_type = event_type,
             .timestamp = timestamp,
@@ -280,8 +284,8 @@ pub const EventBus = struct {
             .duration_ms = duration_ms,
         };
 
+        // Lock only for buffer operations (reduced scope)
         self.mutex.lock();
-        defer self.mutex.unlock();
 
         // Auto-trim: evict oldest event if buffer full
         if (self.count >= MAX_EVENTS) {
@@ -304,6 +308,7 @@ pub const EventBus = struct {
             self.count += 1;
         }
 
+        self.mutex.unlock();
         _ = self.stats.published.fetchAdd(1, .monotonic);
     }
 
@@ -433,20 +438,32 @@ pub const EventBus = struct {
     ///   Slices point to internally-owned strings (valid until next poll/deinit).
     ///
     /// Thread-safe: locks mutex for buffer iteration.
+    ///
+    /// # Performance v2.2
+    /// - Pre-count matching events to allocate exact capacity
+    /// - Reduced switch statement overhead
     pub fn poll(self: *EventBus, since: i64, allocator: std.mem.Allocator, max_events: usize) ![]AgentEventRecord {
         self.mutex.lock();
-        defer self.mutex.unlock();
 
-        // Use estimated size based on buffer count, clamped by max_events
-        const estimated_size = if (max_events == 0) self.count else @min(self.count, max_events);
-        var results = std.ArrayList(AgentEventRecord).initCapacity(allocator, estimated_size) catch |err| {
-            return err;
-        };
-        defer results.deinit(allocator);
-
-        // Iterate through ring buffer from head to tail (chronological order)
+        // First pass: count matching events for exact capacity
+        const limit = if (max_events == 0) self.count else @min(self.count, max_events);
+        var match_count: usize = 0;
         var i: usize = 0;
-        while (i < self.count) : (i += 1) {
+        while (i < limit) : (i += 1) {
+            const idx = (self.head_idx + i) % MAX_EVENTS;
+            if (self.buffer[idx].timestamp > since) {
+                match_count += 1;
+                if (max_events > 0 and match_count >= max_events) break;
+            }
+        }
+
+        // Allocate with exact capacity
+        var results = try std.ArrayList(AgentEventRecord).initCapacity(allocator, match_count);
+        errdefer results.deinit(allocator);
+
+        // Second pass: collect events
+        i = 0;
+        while (i < limit) : (i += 1) {
             if (max_events > 0 and results.items.len >= max_events) break;
 
             const idx = (self.head_idx + i) % MAX_EVENTS;
@@ -482,7 +499,7 @@ pub const EventBus = struct {
                     } },
                 };
 
-                try results.append(allocator, AgentEventRecord{
+                results.appendAssumeCapacity(AgentEventRecord{
                     .event_type = stored.event_type,
                     .timestamp = stored.timestamp,
                     .data = data,
@@ -490,6 +507,7 @@ pub const EventBus = struct {
             }
         }
 
+        self.mutex.unlock();
         _ = self.stats.polled.fetchAdd(1, .monotonic);
         return results.toOwnedSlice(allocator);
     }

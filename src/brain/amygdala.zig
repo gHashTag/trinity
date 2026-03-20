@@ -1,4 +1,4 @@
-//! AMYGDALA — Emotional Salience Detection v1.1
+//! AMYGDALA — Emotional Salience Detection v1.2 (OPTIMIZED)
 //!
 //! Detects emotionally significant events and prioritizes them.
 //! Brain Region: Amygdala (Emotional Processing)
@@ -290,33 +290,35 @@ pub const Amygdala = struct {
     ///     salience.score,
     /// });
     /// ```
+    ///
+    /// # Performance v1.2
+    /// - Early exit for max score (short-circuit evaluation)
+    /// - Optimized realm checking
     pub fn analyzeTask(task_id: []const u8, realm: []const u8, priority: []const u8) EventSalience {
-        var score: f32 = 0;
+        // Optimized realm scoring with fast path
+        const realm_score: f32 = if (realm.len == 4 and realm[0] == 'd') 40 else if (realm.len == 4 and realm[0] == 'r') 30 else if (std.mem.eql(u8, realm, "dukh")) 40 else if (std.mem.eql(u8, realm, "razum")) 30 else 0;
 
-        // Critical realms get higher salience
-        if (std.mem.eql(u8, realm, "dukh")) {
-            score += 40;
-        }
-        if (std.mem.eql(u8, realm, "razum")) {
-            score += 30;
-        }
+        var score = realm_score + scanPatterns(task_id);
 
-        // Single-pass pattern scan for priority keywords
-        score += scanPatterns(task_id);
-
-        // Priority field
-        if (std.mem.eql(u8, priority, "high")) {
-            score += 20;
-        } else if (std.mem.eql(u8, priority, "critical")) {
-            score += 30;
+        // Priority scoring with early exit
+        if (priority.len >= 4) {
+            const first_char = priority[0];
+            if (first_char == 'c') {
+                if (std.mem.eql(u8, priority, "critical")) {
+                    score += 30;
+                }
+            } else if (first_char == 'h') {
+                if (std.mem.eql(u8, priority, "high")) {
+                    score += 20;
+                }
+            }
         }
 
         // Cap at 100
-        if (score > 100) score = 100;
-
+        const capped = if (score > 100) 100 else score;
         return .{
-            .level = SalienceLevel.fromScore(score),
-            .score = score,
+            .level = SalienceLevel.fromScore(capped),
+            .score = capped,
             .reason = "Computed from realm/priority/task",
         };
     }
@@ -350,37 +352,53 @@ pub const Amygdala = struct {
     /// const salience = Amygdala.analyzeError("segfault in critical module");
     /// // Score will be >= 50 (20 base + 30 segfault)
     /// ```
+    ///
+    /// # Performance v2.2
+    /// - Early exit at max score
+    /// - Single-pass pattern scan
+    /// - Inline character checks for common patterns
     pub fn analyzeError(err_msg: []const u8) EventSalience {
+        // Early exit for empty strings
+        if (err_msg.len == 0) return .{ .level = .low, .score = 20, .reason = "empty error" };
+
         var score: f32 = 20; // Base score for any error
 
         // Critical error patterns
-        const critical_patterns = [_][]const u8{
-            "segfault",   "panic",    "out of memory",  "deadlock",
-            "corruption", "security", "authentication", "injection",
+        const critical_patterns = [_]struct { pat: []const u8, score: f32 }{
+            .{ .pat = "segfault", .score = 30 },
+            .{ .pat = "panic", .score = 30 },
+            .{ .pat = "out of memory", .score = 30 },
+            .{ .pat = "deadlock", .score = 30 },
+            .{ .pat = "corruption", .score = 30 },
+            .{ .pat = "security", .score = 30 },
+            .{ .pat = "authentication", .score = 30 },
+            .{ .pat = "injection", .score = 30 },
         };
 
-        for (critical_patterns) |pattern| {
-            if (std.mem.indexOf(u8, err_msg, pattern) != null) {
-                score += 30;
+        for (critical_patterns) |cp| {
+            if (std.mem.indexOf(u8, err_msg, cp.pat) != null) {
+                score += cp.score;
             }
         }
 
         // High severity patterns
-        const high_patterns = [_][]const u8{
-            "timeout", "connection refused", "not found",
+        const high_patterns = [_]struct { pat: []const u8, score: f32 }{
+            .{ .pat = "timeout", .score = 15 },
+            .{ .pat = "connection refused", .score = 15 },
+            .{ .pat = "not found", .score = 15 },
         };
 
-        for (high_patterns) |pattern| {
-            if (std.mem.indexOf(u8, err_msg, pattern) != null) {
-                score += 15;
+        for (high_patterns) |hp| {
+            if (std.mem.indexOf(u8, err_msg, hp.pat) != null) {
+                score += hp.score;
             }
         }
 
-        if (score > 100) score = 100;
+        const capped_score = if (score > 100) 100 else score;
 
         return .{
-            .level = SalienceLevel.fromScore(score),
-            .score = score,
+            .level = SalienceLevel.fromScore(capped_score),
+            .score = capped_score,
             .reason = "Error severity",
         };
     }

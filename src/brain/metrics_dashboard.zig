@@ -409,7 +409,7 @@ pub const AggregateMetrics = struct {
                 try writer.print("║  Function: {s:<53}║\n", .{region.function});
                 try writer.print("║  Status:   {s:<53}║\n", .{@tagName(region.status)});
                 if (region.health_score) |health| {
-                    try writer.print("║  Health:   {d:.1}/100{>42}║\n", .{health});
+                    try writer.print("║  Health:   {d:.1}/100                                         ║\n", .{health});
                 }
                 try writer.print("║  Trend:    {s:<53}║\n", .{@tagName(region.trend)});
                 if (region.alert) |alert| {

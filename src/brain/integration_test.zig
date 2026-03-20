@@ -2103,7 +2103,7 @@ test "Integration: Multi-condition alert triggering" {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // Import metrics dashboard module
-const metrics_dashboard = @import("metrics_dashboard");
+const metrics_dashboard = @import("metrics_dashboard.zig");
 
 /// Test context holding region instances for multi-region tests
 const BrainTestContext = struct {
@@ -2816,6 +2816,565 @@ test "Multi-region: Task counter synchronization" {
     // Verify events were published
     const stats = context.event_bus.getStats();
     try std.testing.expect(stats.published >= 5);
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TEST SUITE 18: FULL AGENT WORKFLOW INTEGRATION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Simulates a complete agent workflow from task claim through completion
+// Tests coordination between all brain regions:
+// - Basal Ganglia: task claim management
+// - Reticular Formation: event broadcasting
+// - Locus Coeruleus: backoff policy
+// - Telemetry: metrics recording
+// - Alerts: health monitoring
+test "Full Agent Workflow: claim -> publish event -> record telemetry -> complete -> verify state" {
+    const allocator = std.testing.allocator;
+
+    // Reset all global singletons
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    // Initialize all brain regions
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    var tel = telemetry.BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    var alert_mgr = try alerts.AlertManager.init(allocator);
+    defer alert_mgr.deinit();
+
+    // Initialize backoff policy
+    var backoff = locus_coeruleus.BackoffPolicy.init();
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // STEP 1: CLAIM TASK VIA BASAL GANGLIA
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const task_id = "workflow-task-001";
+    const agent_id = "workflow-agent-alpha";
+
+    // Verify task is not initially claimed
+    try std.testing.expectEqual(basal_ganglia.Registry.ClaimCheckResult.not_found, registry.checkClaim(task_id));
+
+    // Claim the task
+    const claimed = try registry.claim(allocator, task_id, agent_id, 60000);
+    try std.testing.expect(claimed); // First claim should succeed
+
+    // Verify claim is registered
+    try std.testing.expectEqual(basal_ganglia.Registry.ClaimCheckResult.claimed, registry.checkClaim(task_id));
+
+    // Verify stats
+    var stats = registry.getStats();
+    try std.testing.expectEqual(@as(usize, 1), stats.active_claims);
+    try std.testing.expectEqual(@as(u64, 1), stats.claim_attempts);
+    try std.testing.expectEqual(@as(u64, 1), stats.claim_success);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // STEP 2: PUBLISH EVENT VIA RETICULAR FORMATION
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const claim_event = reticular_formation.EventData{
+        .task_claimed = .{
+            .task_id = task_id,
+            .agent_id = agent_id,
+        },
+    };
+    try event_bus.publish(.task_claimed, claim_event);
+
+    // Verify event was published
+    var event_stats = event_bus.getStats();
+    try std.testing.expectEqual(@as(u64, 1), event_stats.published);
+    try std.testing.expectEqual(@as(usize, 1), event_stats.buffered);
+
+    // Verify event can be polled
+    const events = try event_bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 1), events.len);
+    try std.testing.expectEqual(.task_claimed, events[0].event_type);
+    try std.testing.expectEqualStrings(task_id, events[0].data.task_claimed.task_id);
+    try std.testing.expectEqualStrings(agent_id, events[0].data.task_claimed.agent_id);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // STEP 3: RECORD TELEMETRY
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const now = std.time.milliTimestamp();
+    try tel.record(.{
+        .timestamp = now,
+        .active_claims = 1,
+        .events_published = 1,
+        .events_buffered = 1,
+        .health_score = 100.0,
+    });
+
+    // Verify telemetry was recorded
+    const avg_health = tel.avgHealth(10);
+    try std.testing.expectApproxEqAbs(@as(f32, 100.0), avg_health, 0.1);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // STEP 4: COMPLETE THE TASK
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    const completed = registry.complete(task_id, agent_id);
+    try std.testing.expect(completed);
+
+    // Verify completion via stats
+    stats = registry.getStats();
+    try std.testing.expect(stats.complete_success > 0);
+
+    // Verify task is now expired (completed claims are not valid for new operations)
+    try std.testing.expectEqual(basal_ganglia.Registry.ClaimCheckResult.expired, registry.checkClaim(task_id));
+
+    // Publish completion event
+    const complete_time = std.time.milliTimestamp();
+    const duration_ms = @as(u64, @intCast(complete_time - now));
+
+    const complete_event = reticular_formation.EventData{
+        .task_completed = .{
+            .task_id = task_id,
+            .agent_id = agent_id,
+            .duration_ms = duration_ms,
+        },
+    };
+    try event_bus.publish(.task_completed, complete_event);
+
+    // ═══════════════════════════════════════════════════════════════════════════════
+    // STEP 5: VERIFY ALL REGIONS REFLECT CORRECT STATE
+    // ═══════════════════════════════════════════════════════════════════════════════
+
+    // Verify basal ganglia: task marked completed
+    const claims = try registry.listClaims(allocator);
+    defer registry.freeClaims(allocator, claims);
+
+    try std.testing.expectEqual(@as(usize, 1), claims.len);
+    try std.testing.expectEqualStrings(task_id, claims[0].task_id);
+    try std.testing.expectEqualStrings(agent_id, claims[0].agent_id);
+    try std.testing.expectEqual(basal_ganglia.ClaimStatus.completed, claims[0].status);
+
+    // Verify reticular formation: both events published
+    event_stats = event_bus.getStats();
+    try std.testing.expectEqual(@as(u64, 2), event_stats.published);
+
+    const all_events = try event_bus.poll(0, allocator, 100);
+    defer allocator.free(all_events);
+
+    try std.testing.expectEqual(@as(usize, 2), all_events.len);
+    try std.testing.expectEqual(.task_claimed, all_events[0].event_type);
+    try std.testing.expectEqual(.task_completed, all_events[1].event_type);
+
+    // Verify telemetry: health score recorded
+    try std.testing.expect(tel.points.items.len >= 1);
+
+    // Verify alert manager: no critical alerts (healthy workflow)
+    try alert_mgr.checkHealth(100.0, 2, 1);
+
+    const recent_alerts = try alert_mgr.getRecentAlerts(10, null);
+    defer allocator.free(recent_alerts);
+
+    try std.testing.expectEqual(@as(usize, 0), recent_alerts.len);
+
+    // Verify backoff policy is configured correctly
+    const backoff_delay = backoff.nextDelay(0);
+    try std.testing.expectEqual(@as(u64, 1000), backoff_delay); // Default initial delay
+}
+
+test "Full Agent Workflow: concurrent agents with backoff retry" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    var backoff = locus_coeruleus.BackoffPolicy.init();
+
+    const task_id = "concurrent-workflow-task";
+    const agents = [_][]const u8{ "agent-alpha", "agent-beta", "agent-gamma" };
+
+    // All agents try to claim the same task - only first should succeed
+    var claim_success_count: usize = 0;
+    var winning_agent: ?[]const u8 = null;
+
+    for (agents) |agent| {
+        const claimed = try registry.claim(allocator, task_id, agent, 60000);
+        if (claimed) {
+            claim_success_count += 1;
+            winning_agent = agent;
+
+            // Publish claim event
+            try event_bus.publish(.task_claimed, .{
+                .task_claimed = .{
+                    .task_id = task_id,
+                    .agent_id = agent,
+                },
+            });
+        }
+    }
+
+    try std.testing.expectEqual(@as(usize, 1), claim_success_count);
+    try std.testing.expect(winning_agent != null);
+
+    // Other agents use backoff and retry (simulate)
+    var attempt: u32 = 0;
+    while (attempt < 3) : (attempt += 1) {
+        const delay = backoff.nextDelay(attempt);
+        // Verify backoff produces valid delays
+        try std.testing.expect(delay >= 1000);
+    }
+
+    // Verify only one claim event was published
+    const events = try event_bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    var claim_event_count: usize = 0;
+    for (events) |ev| {
+        if (ev.event_type == .task_claimed) {
+            claim_event_count += 1;
+        }
+    }
+    try std.testing.expectEqual(@as(usize, 1), claim_event_count);
+
+    // Complete task
+    if (winning_agent) |agent| {
+        _ = registry.complete(task_id, agent);
+        try event_bus.publish(.task_completed, .{
+            .task_completed = .{
+                .task_id = task_id,
+                .agent_id = agent,
+                .duration_ms = 1000,
+            },
+        });
+    }
+}
+
+test "Full Agent Workflow: task abandonment and state verification" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    const task_id = "abandon-workflow-task";
+    const agent_id = "agent-abandoner";
+
+    // Claim task
+    const claimed = try registry.claim(allocator, task_id, agent_id, 60000);
+    try std.testing.expect(claimed);
+
+    try event_bus.publish(.task_claimed, .{
+        .task_claimed = .{
+            .task_id = task_id,
+            .agent_id = agent_id,
+        },
+    });
+
+    // Abandon task
+    const abandoned = registry.abandon(task_id, agent_id);
+    try std.testing.expect(abandoned);
+
+    try event_bus.publish(.task_abandoned, .{
+        .task_abandoned = .{
+            .task_id = task_id,
+            .agent_id = agent_id,
+            .reason = "Resource constraints",
+        },
+    });
+
+    // Verify state: task should be expired
+    try std.testing.expectEqual(basal_ganglia.Registry.ClaimCheckResult.expired, registry.checkClaim(task_id));
+
+    // Verify stats
+    const stats = registry.getStats();
+    try std.testing.expect(stats.abandon_success > 0);
+
+    // Verify events
+    const events = try event_bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    var found_abandoned = false;
+    for (events) |ev| {
+        if (ev.event_type == .task_abandoned) {
+            found_abandoned = true;
+            try std.testing.expectEqualStrings("Resource constraints", ev.data.task_abandoned.reason);
+        }
+    }
+    try std.testing.expect(found_abandoned);
+
+    // Task should now be reclaimable by a different agent
+    const reclaimed = try registry.claim(allocator, task_id, "agent-rescue", 60000);
+    try std.testing.expect(reclaimed);
+}
+
+test "Full Agent Workflow: heartbeat refresh during long-running task" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+
+    const task_id = "heartbeat-workflow-task";
+    const agent_id = "agent-heartbeat";
+
+    // Claim task
+    const claimed = try registry.claim(allocator, task_id, agent_id, 60000);
+    try std.testing.expect(claimed);
+
+    // Send heartbeat
+    const heartbeat_ok = registry.heartbeat(task_id, agent_id);
+    try std.testing.expect(heartbeat_ok);
+
+    // Verify heartbeat stats
+    const stats = registry.getStats();
+    try std.testing.expect(stats.heartbeat_calls > 0);
+    try std.testing.expect(stats.heartbeat_success > 0);
+
+    // Wrong agent cannot heartbeat
+    const wrong_heartbeat = registry.heartbeat(task_id, "wrong-agent");
+    try std.testing.expect(!wrong_heartbeat);
+
+    // Complete after heartbeat
+    _ = registry.complete(task_id, agent_id);
+}
+
+test "Full Agent Workflow: complete telemetry capture throughout lifecycle" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    var tel = telemetry.BrainTelemetry.init(allocator, 100);
+    defer tel.deinit();
+
+    const task_id = "telemetry-workflow-task";
+    const agent_id = "agent-telemetry";
+
+    const now = std.time.milliTimestamp();
+
+    // Record initial state (idle)
+    try tel.record(.{
+        .timestamp = now,
+        .active_claims = 0,
+        .events_published = 0,
+        .events_buffered = 0,
+        .health_score = 100.0,
+    });
+
+    // Claim task
+    _ = try registry.claim(allocator, task_id, agent_id, 60000);
+
+    try event_bus.publish(.task_claimed, .{
+        .task_claimed = .{
+            .task_id = task_id,
+            .agent_id = agent_id,
+        },
+    });
+
+    // Record claimed state
+    try tel.record(.{
+        .timestamp = now + 100,
+        .active_claims = 1,
+        .events_published = 1,
+        .events_buffered = 1,
+        .health_score = 95.0,
+    });
+
+    // Simulate work with heartbeat
+    std.Thread.sleep(50 * std.time.ns_per_ms);
+    _ = registry.heartbeat(task_id, agent_id);
+
+    // Record working state
+    try tel.record(.{
+        .timestamp = now + 200,
+        .active_claims = 1,
+        .events_published = 1,
+        .events_buffered = 1,
+        .health_score = 90.0,
+    });
+
+    // Complete task
+    _ = registry.complete(task_id, agent_id);
+
+    try event_bus.publish(.task_completed, .{
+        .task_completed = .{
+            .task_id = task_id,
+            .agent_id = agent_id,
+            .duration_ms = 250,
+        },
+    });
+
+    // Record completion state
+    try tel.record(.{
+        .timestamp = now + 300,
+        .active_claims = 1,
+        .events_published = 2,
+        .events_buffered = 2,
+        .health_score = 100.0,
+    });
+
+    // Verify telemetry captured all states
+    try std.testing.expect(tel.points.items.len >= 4);
+
+    // Verify health trend
+    const trend = tel.trend(10);
+    try std.testing.expect(trend == .stable or trend == .improving);
+
+    // Verify event bus stats
+    const event_stats = event_bus.getStats();
+    try std.testing.expectEqual(@as(u64, 2), event_stats.published);
+}
+
+test "Full Agent Workflow: error handling and recovery" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    var alert_mgr = try alerts.AlertManager.init(allocator);
+    defer alert_mgr.deinit();
+
+    const task_id = "error-workflow-task";
+    const agent_id = "agent-error-prone";
+
+    // Claim task
+    _ = try registry.claim(allocator, task_id, agent_id, 60000);
+
+    // Simulate error condition - abandon task
+    _ = registry.abandon(task_id, agent_id);
+
+    try event_bus.publish(.task_failed, .{
+        .task_failed = .{
+            .task_id = task_id,
+            .agent_id = agent_id,
+            .err_msg = "Simulated error condition",
+        },
+    });
+
+    // Record error in telemetry
+    var telem = telemetry.BrainTelemetry.init(allocator, 100);
+    defer telem.deinit();
+
+    try telem.record(.{
+        .timestamp = std.time.milliTimestamp(),
+        .active_claims = 1,
+        .events_published = 1,
+        .events_buffered = 1,
+        .health_score = 50.0, // Poor health due to error
+    });
+
+    // Check that alert manager detects poor health
+    try alert_mgr.checkHealth(50.0, 1, 1);
+
+    // Verify alert was generated
+    const alert_list = try alert_mgr.getRecentAlerts(10, null);
+    defer allocator.free(alert_list);
+
+    // Should have at least one alert (health_low or similar)
+    try std.testing.expect(alert_list.len > 0);
+
+    // Verify task can be recovered
+    const recovered = try registry.claim(allocator, task_id, "agent-recovery", 60000);
+    try std.testing.expect(recovered);
+}
+
+test "Full Agent Workflow: multiple concurrent tasks" {
+    const allocator = std.testing.allocator;
+
+    basal_ganglia.resetGlobal(allocator);
+    reticular_formation.resetGlobal(allocator);
+    defer {
+        basal_ganglia.resetGlobal(allocator);
+        reticular_formation.resetGlobal(allocator);
+    }
+
+    const registry = try basal_ganglia.getGlobal(allocator);
+    const event_bus = try reticular_formation.getGlobal(allocator);
+
+    const num_tasks = 5;
+
+    // Claim multiple tasks
+    var i: usize = 0;
+    while (i < num_tasks) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "multi-task-{d}", .{i});
+        defer allocator.free(task_id);
+
+        const agent_id = try std.fmt.allocPrint(allocator, "multi-agent-{d}", .{i});
+        defer allocator.free(agent_id);
+
+        const claimed = try registry.claim(allocator, task_id, agent_id, 60000);
+        try std.testing.expect(claimed);
+
+        try event_bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = agent_id,
+            },
+        });
+    }
+
+    // Verify all tasks are claimed
+    try std.testing.expectEqual(@as(usize, num_tasks), registry.getStats().active_claims);
+
+    // Complete half the tasks
+    i = 0;
+    while (i < num_tasks / 2) : (i += 1) {
+        const task_id = try std.fmt.allocPrint(allocator, "multi-task-{d}", .{i});
+        defer allocator.free(task_id);
+
+        const agent_id = try std.fmt.allocPrint(allocator, "multi-agent-{d}", .{i});
+        defer allocator.free(agent_id);
+
+        _ = registry.complete(task_id, agent_id);
+
+        try event_bus.publish(.task_completed, .{
+            .task_completed = .{
+                .task_id = task_id,
+                .agent_id = agent_id,
+                .duration_ms = 1000,
+            },
+        });
+    }
+
+    // Verify event stats
+    const stats = event_bus.getStats();
+    try std.testing.expect(stats.published >= num_tasks);
 }
 
 // φ² + 1/φ² = 3 | TRINITY

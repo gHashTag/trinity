@@ -39,6 +39,7 @@ const faculty_board = @import("cortex.zig");
 const observability = @import("observability.zig");
 const structured_log = @import("structured_log.zig");
 const env_loader = @import("env_loader.zig");
+const golden_chain = @import("golden_chain");
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // MAIN
@@ -533,12 +534,17 @@ pub fn main() !void {
         if (std.mem.eql(u8, first_arg, "golden-chain")) {
             const golden_chain_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else ([_][]const u8{})[0..];
             logAgentCommand(args[arg_idx..]);
-            const golden_chain = @import("../storm/golden_chain.zig");
             const exit_code = try golden_chain.runGoldenChainCommand(allocator, golden_chain_args);
             std.process.exit(exit_code);
         }
         // Experience: route `tri experience consult|blacklist|record` to MNL pattern
         if (std.mem.eql(u8, first_arg, "experience")) {
+            const experience_args = if (arg_idx + 1 < args.len) args[arg_idx + 1 ..] else &[_][]const u8{};
+            logAgentCommand(args[arg_idx..]);
+            try tri_experience.runExperienceCommand(allocator, experience_args);
+            return;
+        }
+        // Version: show version number
         if (std.mem.eql(u8, first_arg, "version") or std.mem.eql(u8, first_arg, "--version") or std.mem.eql(u8, first_arg, "-v")) {
             printVersion(allocator);
             return;
