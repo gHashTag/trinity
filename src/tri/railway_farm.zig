@@ -121,6 +121,8 @@ pub const RailwayFarm = struct {
         }
 
         farm.loadState();
+        // Initialize Circuit Breaker health tracking
+        farm.initHealthTracking();
         return farm;
     }
 
@@ -288,12 +290,13 @@ pub const RailwayFarm = struct {
         self.saveState();
     }
 
-    /// Spawn with auto-failover across accounts.
+    /// Spawn with auto-failover across accounts using Circuit Breaker health scoring.
     pub fn spawnWithFailover(self: *Self, allocator: Allocator, issue: u32, service_name: []const u8) !SpawnResult {
         var tried = [_]bool{false} ** (MAX_ACCOUNTS + 1);
 
         while (true) {
-            const account = self.selectAccount() orelse return SpawnResult{
+            // Use Circuit Breaker health scoring for account selection
+            const account = self.selectHealthyAccount() orelse return SpawnResult{
                 .account_id = 0,
                 .status = .all_exhausted,
             };
@@ -307,8 +310,15 @@ pub const RailwayFarm = struct {
             var api = self.getApi(allocator, account.id) catch continue;
             defer api.deinit();
 
+            // Measure latency for Circuit Breaker
+            const start = std.time.nanoTimestamp();
+
             const response = api.createService(service_name) catch {
                 // Rate limited or daily cap — mark full, try next
+                const end_fail = std.time.nanoTimestamp();
+                const latency_fail = @as(u32, @intCast((end_fail - start) / 1_000_000));
+                self.recordApiResult(account.id, latency_fail, false);
+
                 account.daily_creates = account.max_daily_creates;
                 self.saveState();
                 continue;
@@ -321,6 +331,11 @@ pub const RailwayFarm = struct {
             account.daily_creates += 1;
             account.active_services += 1;
             self.recordAgent(issue, account.id, service_id);
+
+            // Record success in Circuit Breaker
+            const end = std.time.nanoTimestamp();
+            const latency_ms = @as(u32, @intCast((end - start) / 1_000_000));
+            self.recordApiResult(account.id, latency_ms, true);
             self.saveState();
 
             var result = SpawnResult{
