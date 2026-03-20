@@ -384,8 +384,24 @@ fn runBrainAlertsStats(allocator: std.mem.Allocator) !void {
     var manager = try brain_alerts.AlertManager.init(allocator);
     defer manager.deinit();
 
-    // TODO: formatSummary needs writer - use std.debug.print instead
-    // try manager.formatSummary(std.io.stderr.writer());
+    // Get stats and print directly
+    const stats = try manager.getStats();
+
+    std.debug.print("╔═══════════════════════════════════════════════════════════════╗\n", .{});
+    std.debug.print("║  BRAIN ALERTS SUMMARY                                           ║\n", .{});
+    std.debug.print("╠═══════════════════════════════════════════════════════════════╣\n", .{});
+    std.debug.print("║  Total Alerts:    {d:>6}                                       ║\n", .{stats.total});
+    std.debug.print("║  Info:            {d:>6}                                       ║\n", .{stats.info});
+    std.debug.print("║  Warnings:        {d:>6}                                       ║\n", .{stats.warning});
+    std.debug.print("║  Critical:        {d:>6}                                       ║\n", .{stats.critical});
+    std.debug.print("║  Unresolved:      {d:>6}                                       ║\n", .{stats.unresolved});
+    std.debug.print("║  Last 24h:        {d:>6}                                       ║\n", .{stats.last_24h});
+    std.debug.print("╚═══════════════════════════════════════════════════════════════╝\n", .{});
+
+    if (stats.unresolved > 0) {
+        const level_str = if (stats.critical > 0) "CRIT" else "WARN";
+        std.debug.print("\n[{s}]! {d} unresolved alert(s)\n", .{ level_str, stats.unresolved });
+    }
 }
 
 fn runBrainAlertsCheck(allocator: std.mem.Allocator, args: []const []const u8) !void {

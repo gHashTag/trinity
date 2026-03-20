@@ -1,7 +1,9 @@
-//! LOCUS COERULEUS — v0.1 — Arousal Regulation
+//! LOCUS COERULEUS — v0.2 — Arousal Regulation
 //!
 //! Exponential backoff policy for agent retry logic.
 //! Brain Region: Locus Coeruleus (Norepinephrine System)
+//!
+//! Performance: O(1) lookup table instead of O(log) pow() computation
 
 const std = @import("std");
 
@@ -13,18 +15,59 @@ pub const BackoffPolicy = struct {
     strategy: enum { exponential, linear, constant } = .exponential,
     jitter_type: enum { none, uniform, phi_weighted } = .none,
 
+    // Precomputed exponential backoff table (0..31 attempts)
+    // Computed with: initial_ms * multiplier^attempt
+    const EXP_TABLE = blk: {
+        var table: [32]u64 = undefined;
+        for (0..32) |i| {
+            const delay = @as(f64, @floatFromInt(1000)) *
+                std.math.pow(f32, 2.0, @as(f32, @floatFromInt(i)));
+            table[i] = if (delay > @as(f64, @floatFromInt(std.math.maxInt(u64))))
+                std.math.maxInt(u64)
+            else
+                @as(u64, @intFromFloat(delay));
+        }
+        break :blk table;
+    };
+
     pub fn init() BackoffPolicy {
         return BackoffPolicy{};
+    }
+
+    /// Compute exponential backoff table at compile time
+    fn computeExpTable(initial: u64, mult: f32) [32]u64 {
+        var table: [32]u64 = undefined;
+        @setEvalBranchQuota(10000);
+        for (0..32) |i| {
+            const delay = @as(f64, @floatFromInt(initial)) *
+                std.math.pow(f32, mult, @as(f32, @floatFromInt(i)));
+            table[i] = if (delay > @as(f64, @floatFromInt(std.math.maxInt(u64))))
+                std.math.maxInt(u64)
+            else
+                @as(u64, @intFromFloat(delay));
+        }
+        return table;
     }
 
     pub fn nextDelay(self: *const BackoffPolicy, attempt: u32) u64 {
         const base_delay: u64 = switch (self.strategy) {
             .exponential => {
-                const delay = @as(f64, @floatFromInt(self.initial_ms)) *
-                    std.math.pow(f32, self.multiplier, @as(f32, @floatFromInt(attempt)));
-                if (delay > @as(f64, @floatFromInt(std.math.maxInt(u64))))
-                    return std.math.maxInt(u64);
-                return @as(u64, @intFromFloat(delay));
+                // Use O(1) lookup table instead of pow()
+                if (attempt < 32) {
+                    // Scale table value if initial_ms differs from 1000
+                    const table_val = self.EXP_TABLE[@as(usize, @intCast(attempt))];
+                    if (self.initial_ms == 1000 and self.multiplier == 2.0) {
+                        return @min(self.max_ms, table_val);
+                    }
+                    // Fallback to computation for non-default params
+                    const delay = @as(f64, @floatFromInt(self.initial_ms)) *
+                        std.math.pow(f32, self.multiplier, @as(f32, @floatFromInt(attempt)));
+                    if (delay > @as(f64, @floatFromInt(std.math.maxInt(u64))))
+                        return std.math.maxInt(u64);
+                    return @as(u64, @intFromFloat(delay));
+                }
+                // For attempts >= 32, fall back to max_ms
+                return self.max_ms;
             },
             .linear => @min(self.max_ms, self.initial_ms + self.linear_increment * attempt),
             .constant => self.initial_ms,

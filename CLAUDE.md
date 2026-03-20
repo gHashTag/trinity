@@ -1,5 +1,13 @@
 # CLAUDE.md
 
+## FPGA Flashing — CRITICAL: JTAG Cable Requires fxload
+
+**BEFORE ANY FPGA flashing operation:**
+1. JTAG cable starts at PID 0x0013 (bootloader mode)
+2. MUST run fxload to switch to PID 0x0008 (JTAG mode)
+3. flash_no_sudo.sh auto-handles this
+4. NEVER skip fxload step — programming will fail
+
 ## Project
 
 Trinity — Pure Zig autonomous AI agent swarm. 0 TypeScript, 0 Python, 0 bash dependencies.
