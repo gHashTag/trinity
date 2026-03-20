@@ -978,8 +978,7 @@ pub fn main() !void {
         .math,
         .constants_cmd,
         // S³AI Brain Circuit Commands (v5.1) - dispatch to tri_commands
-        .task_claim,
-        => {
+        .task_claim => {
             const tri_commands_mod = @import("tri_commands.zig");
             try tri_commands_mod.runTaskClaimCommand(allocator, cmd_args);
         },
