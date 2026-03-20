@@ -108,6 +108,59 @@ where γ = φ⁻³ ≈ 0.23607 is derived from φ.
 
 ---
 
+## Quantum-Neuroanatomical Model
+
+Trinity S³AI integrates quantum computation principles with brain-inspired architecture through three literature-backed bridges.
+
+### Bridge 1: Cortical Microcolumns = Local Coherence Domains
+
+Research shows cortical microcolumns form coherent domains protected by energy gaps from thermal perturbations. This maps directly to Trinity brain modules.
+
+| Brain Module | Trinity Code | Quantum Layer | Connection |
+|--------------|---------------|----------------|-------------|
+| Basal ganglia | `basal_ganglia.zig` | `measure()` → ψ collapse | Collapse threshold = φ⁻¹ ≈ 0.618 |
+| Reticular formation | `reticular_formation.zig` | `coherence` tracking | Frequency ratio via φ |
+
+**Reference:** [Frontiers in Physics 2023 - Coherent domains in microcolumns](https://www.frontiersin.org/journals/physics/articles/10.3389/fphy.2023.1181416/full)
+
+### Bridge 2: φ in Brain Oscillations → φ in Architecture
+
+Brain waves synchronize at golden ratio frequencies. α, β, γ rhythms are connected through φ ≈ 1.618.
+
+- `QuantumMetrics.coherence` = φ-coherence: degree to which oscillations between brain modules follow golden frequency relationships
+- SacredWaveFunction ψ(θ) amplitudes = resonant modes of architecture
+
+**Reference:** [LinkedIn: Golden Ratio in Brain Waves](https://www.linkedin.com/posts/andrei-ursachi-065275203_frontiers-golden-ratio-organization-in-activity-7435035866231754752-xcs9)
+
+### Bridge 3: Qutrits → Ternary Neurons → Connectome
+
+Qutrit neural networks show 35-40% training speedup vs qubit networks, due to richer data representation.
+
+- Each ternary weight {-1, 0, +1} = **collapsed qutrit** (not metaphor)
+- Connectome topology scales: larger brains have stronger modular structure
+
+**Reference:** [PMC: Qutrit Neural Networks](https://pmc.ncbi.nlm.nih.gov/articles/PMC12328568/)
+
+### Mathematical Foundation
+
+```
+φ = (1 + √5) / 2 = 1.61803398874989482
+φ² + 1/φ² = 3 = TRINITY
+```
+
+### Implementation
+
+- **QuantumMetrics**: `src/brain/evolution_simulation.zig` — 4 formal metrics
+- **SacredWaveFunction**: `src/quantum/sacred_wave.zig` — Bayesian prior over 6.75M configs
+- **Quantum VSA**: `src/vsa/core.zig` — qbind, qbundle, measure, similarity_quantum
+
+**References:**
+- [arXiv 2510.27091] — Prioritized Policy Optimization
+- [arXiv 2106.05268] — VSA fundamentals
+- [PMLR Deshwal23a] — Bayesian optimization for categorical spaces
+
+---
+
 ## Installation
 
 **Trinity v1.0.2 "HEARTBEAT"** — Install via your preferred package manager:

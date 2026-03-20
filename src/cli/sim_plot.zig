@@ -57,7 +57,7 @@ pub fn main() !void {
         return;
     }
 
-    var view_mode: ?enum { ppl, diversity, alive, summary } = null;
+    var view_mode: ?enum { ppl, diversity, alive, summary, wave, coherence, phase, probability } = null;
     var input_path: []const u8 = "output/simulation_results.csv";
 
     var i: usize = 1;
@@ -72,6 +72,14 @@ pub fn main() !void {
                 view_mode = .alive;
             } else if (std.mem.eql(u8, mode_str, "summary")) {
                 view_mode = .summary;
+            } else if (std.mem.eql(u8, mode_str, "wave")) {
+                view_mode = .wave;
+            } else if (std.mem.eql(u8, mode_str, "coherence")) {
+                view_mode = .coherence;
+            } else if (std.mem.eql(u8, mode_str, "phase")) {
+                view_mode = .phase;
+            } else if (std.mem.eql(u8, mode_str, "probability")) {
+                view_mode = .probability;
             } else {
                 print("{s}Error: unknown view mode '{s}'{s}\n", .{ RED, mode_str, RESET });
                 return error.InvalidViewMode;
@@ -82,7 +90,7 @@ pub fn main() !void {
     }
 
     if (view_mode == null) {
-        print("{s}Error: --view mode required (summary|ppl|diversity|alive){s}\n", .{ RED, RESET });
+        print("{s}Error: --view mode required (summary|ppl|diversity|alive|wave|coherence|phase|probability){s}\n", .{ RED, RESET });
         printHelp();
         return error.ViewModeRequired;
     }
@@ -101,6 +109,10 @@ pub fn main() !void {
         .diversity => try plotDiversity(allocator, scenarios),
         .alive => try plotAlive(allocator, scenarios),
         .summary => try printSummary(allocator, scenarios),
+        .wave => try plotWaveFunction(allocator, scenarios),
+        .coherence => try plotCoherence(allocator, scenarios),
+        .phase => try plotPhaseSpace(allocator, scenarios),
+        .probability => try plotProbability(allocator, scenarios),
     }
 }
 
@@ -227,6 +239,8 @@ fn getScenarioName(id: []const u8) []const u8 {
     if (std.mem.eql(u8, id, "S13")) return "Wide";
     if (std.mem.eql(u8, id, "S14")) return "Base-Ext";
     if (std.mem.eql(u8, id, "S15")) return "Base-Ext2";
+    if (std.mem.eql(u8, id, "S16")) return "Quantum-1";
+    if (std.mem.eql(u8, id, "S17")) return "Quantum-2";
     return id;
 }
 
@@ -245,6 +259,9 @@ fn getScenarioCategory(id: []const u8) []const u8 {
     if (std.mem.eql(u8, id, "S13")) {
         return "Wide";
     }
+    if (std.mem.eql(u8, id, "S16") or std.mem.eql(u8, id, "S17")) {
+        return "Quantum";
+    }
     return "Mixed";
 }
 
@@ -254,6 +271,14 @@ fn getScenarioColor(category: []const u8) []const u8 {
     if (std.mem.eql(u8, category, "dePIN")) return YELLOW;
     if (std.mem.eql(u8, category, "Wide")) return CYAN;
     return BLUE;
+}
+
+fn getCategoryEmoji(category: []const u8) []const u8 {
+    if (std.mem.eql(u8, category, "Baseline")) return "🟢";
+    if (std.mem.eql(u8, category, "Sacred")) return "🟣";
+    if (std.mem.eql(u8, category, "dePIN")) return "🟡";
+    if (std.mem.eql(u8, category, "Wide")) return "🔵";
+    return "🔵";
 }
 
 fn printSummary(allocator: Allocator, scenarios: []const ScenarioStats) !void {
@@ -268,7 +293,7 @@ fn printSummary(allocator: Allocator, scenarios: []const ScenarioStats) !void {
 
     for (scenarios, 0..) |s, i| {
         const color = getScenarioColor(s.category);
-        print("{s}│ {d:>4} │ {s:<16} │ {} │    {} │ {d:>6} │ {}K │{s}\n", .{
+        print("{s}│ {d:>4} │ {s:<16} │ {:.1} │    {} │ {d:>6} │ {}K │{s}\n", .{
             color, i + 1, s.name, s.final_ppl, s.final_diversity, s.final_alive, s.total_energy / 1000.0, RESET,
         });
     }
@@ -511,20 +536,156 @@ fn plotAlive(allocator: Allocator, scenarios: []const ScenarioStats) !void {
     print("{s}Legend:{s} {s}●{s}Baseline  {s}●{s}Sacred  {s}●{s}dePIN  {s}●{s}Wide  {s}●{s}Mixed\n\n", .{ BOLD, RESET, GREEN, RESET, MAGENTA, RESET, YELLOW, RESET, CYAN, RESET, BLUE, RESET });
 }
 
+fn plotWaveFunction(allocator: Allocator, data: []const ScenarioStats) !void {
+    _ = allocator;
+    print("\n{s}WAVE FUNCTION |ψ⟩² EVOLUTION{s}\n\n", .{ CYAN, RESET });
+    for (data) |scenario| {
+        const color = getScenarioColor(scenario.category);
+        print("{s}{s}:{s} ", .{ color, scenario.name, RESET });
+        // ASCII amplitude bar (normalized to 30 chars)
+        const norm_amp = @min(30.0, scenario.final_ppl / 3.0);
+        const amp: usize = @intFromFloat(norm_amp);
+        var i: usize = 0;
+        while (i < amp) : (i += 1) print("#", .{});
+        while (i < 30) : (i += 1) print(".", .{});
+        print(" {:.1} PPL\n", .{scenario.final_ppl});
+    }
+}
+
+fn plotCoherence(allocator: Allocator, data: []const ScenarioStats) !void {
+    print("\n{s}PHASE COHERENCE TRACKING{s}\n\n", .{ CYAN, RESET });
+
+    // Print header
+    print("{s}┌──────────────────┬──────────┬───────────┐{s}\n", .{ BOLD, RESET });
+    print("{s}│ Scenario         │ Coherence│  Status   │{s}\n", .{ BOLD, RESET });
+    print("{s}├──────────────────┼──────────┼───────────┤{s}\n", .{ BOLD, RESET });
+
+    for (data) |scenario| {
+        const color = getScenarioColor(scenario.category);
+        // Coherence approximation based on diversity and survival
+        const coherence = scenario.final_diversity * @min(1.0, @as(f32, @floatFromInt(scenario.final_alive)) / 100.0);
+        const coherence_str = if (coherence > 0.6) "HIGH" else if (coherence > 0.3) "MED" else "LOW";
+        const coherence_bar = try barGraph(allocator, coherence, 8);
+        defer allocator.free(coherence_bar);
+
+        print("{s}│ {s:<16} │ {s}{s} {d:>4.2}{s} │ {s:<9} │{s}\n", .{
+            color, scenario.name, MAGENTA, coherence_bar, coherence, RESET, coherence_str, RESET,
+        });
+    }
+
+    print("{s}└──────────────────┴──────────┴───────────┘{s}\n\n", .{ BOLD, RESET });
+}
+
+fn plotPhaseSpace(allocator: Allocator, data: []const ScenarioStats) !void {
+    _ = allocator;
+    print("\n{s}PHASE SPACE (PPL vs Diversity){s}\n\n", .{ CYAN, RESET });
+
+    const graph_width = 40;
+    const graph_height = 15;
+
+    // Plot scenarios in phase space
+    var max_ppl: f32 = 0;
+    var max_div: f32 = 0;
+
+    for (data) |s| {
+        if (s.final_ppl > max_ppl) max_ppl = s.final_ppl;
+        if (s.final_diversity > max_div) max_div = s.final_diversity;
+    }
+
+    print("  High Diversity\n", .{});
+
+    var y_idx: usize = graph_height;
+    while (y_idx > 0) : (y_idx -= 1) {
+        const div_y: f32 = @as(f32, @floatFromInt(y_idx - 1)) * max_div / @as(f32, @floatFromInt(graph_height));
+
+        if (y_idx % 3 == 0) {
+            print("{d:>3.1} ", .{div_y});
+        } else {
+            print("    ", .{});
+        }
+
+        var x_idx: usize = 0;
+        while (x_idx < graph_width) : (x_idx += 1) {
+            const ppl_x: f32 = @as(f32, @floatFromInt(x_idx)) * max_ppl / @as(f32, @floatFromInt(graph_width));
+            var plotted = false;
+
+            for (data) |s| {
+                const dx = @abs(s.final_ppl - ppl_x) / max_ppl;
+                const dy = @abs(s.final_diversity - div_y) / max_div;
+                if (dx < 0.05 and dy < 0.05) {
+                    const color = getScenarioColor(s.category);
+                    print("{s}●{s}", .{ color, RESET });
+                    plotted = true;
+                    break;
+                }
+            }
+
+            if (!plotted) print(" ", .{});
+        }
+        print("\n", .{});
+    }
+
+    print("    {s}← Low PPL    High PPL →{s}\n\n", .{ GREEN, RESET });
+}
+
+fn plotProbability(allocator: Allocator, data: []const ScenarioStats) !void {
+    _ = allocator;
+    print("\n{s}BORN RULE |ψ|² DISTRIBUTION{s}\n\n", .{ CYAN, RESET });
+
+    print("{s}┌──────────────────┬──────────────────────────────────┐{s}\n", .{ BOLD, RESET });
+    print("{s}│ Scenario         │ Probability Density              │{s}\n", .{ BOLD, RESET });
+    print("{s}├──────────────────┼──────────────────────────────────┤{s}\n", .{ BOLD, RESET });
+
+    for (data) |scenario| {
+        const color = getScenarioColor(scenario.category);
+        // Probability approximated by survival ratio normalized
+        const prob = @min(1.0, @as(f32, @floatFromInt(scenario.final_alive)) / 150.0);
+        const bars: usize = @intFromFloat(prob * 34);
+        var i: usize = 0;
+        var bar_str: [35]u8 = .{' '} ** 35;
+        while (i < bars) : (i += 1) {
+            bar_str[i] = '#';
+        }
+
+        print("{s}│ {s:<16} │ {s}{s}{s} {d:.1}% │{s}\n", .{
+            color, scenario.name, YELLOW, &bar_str, RESET, prob * 100.0, RESET,
+        });
+    }
+
+    print("{s}└──────────────────┴──────────────────────────────────┘{s}\n\n", .{ BOLD, RESET });
+}
+
+// Helper function to create ASCII bar graphs
+fn barGraph(allocator: Allocator, value: f32, width: usize) ![]const u8 {
+    const filled = @min(width, @as(usize, @intFromFloat(value * @as(f32, @floatFromInt(width)))));
+    var result = try allocator.alloc(u8, width);
+    @memset(result, ' ');
+    var i: usize = 0;
+    while (i < filled) : (i += 1) {
+        result[i] = '#';
+    }
+    return result;
+}
+
 fn printHelp() void {
     print("\n{s}SIMULATION PLOTTER — Terminal Visualization{s}\n", .{ BOLD, RESET });
     print("\n{s}Usage:{s}\n", .{ CYAN, RESET });
     print("  tri-sim-plot --view=MODE [--input=PATH]\n", .{});
     print("\n{s}View Modes:{s}\n", .{ CYAN, RESET });
-    print("  summary   — Final metrics ranking table\n", .{});
-    print("  ppl       — PPL evolution curves\n", .{});
-    print("  diversity — Diversity index trends\n", .{});
-    print("  alive     — Worker survival curves\n", .{});
+    print("  summary     — Final metrics ranking table\n", .{});
+    print("  ppl         — PPL evolution curves\n", .{});
+    print("  diversity   — Diversity index trends\n", .{});
+    print("  alive       — Worker survival curves\n", .{});
+    print("  wave        — Wave function |ψ⟩² amplitude visualization\n", .{});
+    print("  coherence   — Phase coherence matrix\n", .{});
+    print("  phase       — Phase space trajectory (PPL vs diversity)\n", .{});
+    print("  probability — Born rule probability distribution\n", .{});
     print("\n{s}Options:{s}\n", .{ CYAN, RESET });
     print("  --input=PATH  CSV file path (default: output/simulation_results.csv)\n", .{});
     print("  --help, -h    Show this help\n", .{});
     print("\n{s}Examples:{s}\n", .{ CYAN, RESET });
     print("  tri-sim-plot --view=summary\n", .{});
+    print("  tri-sim-plot --view=wave\n", .{});
     print("  tri-sim-plot --view=ppl --input=/tmp/sim/simulation_results.csv\n", .{});
     print("\n", .{});
 }

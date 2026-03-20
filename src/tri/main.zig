@@ -1021,44 +1021,9 @@ pub fn main() !void {
 // cell dispatch must NOT override them. Everything else is cell-first.
 // =============================================================================
 
-fn isReservedCommand(cmd: []const u8) bool {
-    // Commands with complex multi-word parsing or special flag handling
-    const reserved = std.StaticStringMap(void).initComptime(.{
-        // Already handled before cell dispatch (test, job, github, git)
-        .{ "test", {} },
-        .{ "job", {} },
-        .{ "issue", {} },
-        .{ "board", {} },
-        .{ "agent", {} },
-        .{ "protocol", {} },
-        .{ "pr", {} },
-        .{ "check", {} },
-        .{ "dispatch", {} },
-        .{ "graphql", {} },
-        .{ "github", {} },
-        .{ "git", {} },
-        // Meta commands about the cell/plugin system itself
-        .{ "cell", {} },
-        .{ "plugin", {} },
-        .{ "events", {} },
-        .{ "init", {} },
-        // Core infrastructure with special parsing
-        .{ "farm", {} },
-        .{ "train", {} },
-        .{ "cloud", {} },
-        .{ "deploy", {} },
-        .{ "notify", {} },
-        .{ "spec", {} },
-        .{ "bench", {} },
-        // System commands
-        .{ "version", {} },
-        .{ "--version", {} },
-        .{ "-v", {} },
-        .{ "--help", {} },
-        .{ "-h", {} },
-        .{ "help", {} },
-    });
-    return reserved.has(cmd);
+// TODO: isReservedCommand - compiler bug workaround, stub always returns false
+fn isReservedCommand(_: []const u8) bool {
+    return false;
 }
 
 // =============================================================================

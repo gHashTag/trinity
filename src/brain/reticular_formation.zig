@@ -1374,3 +1374,416 @@ test "Event: publish throughput" {
 }
 
 // φ² + 1/φ² = 3 | TRINITY
+
+// ═════════════════════════════════════════════════════════════════════════════════════════════
+// COMPREHENSIVE EDGE CASE TESTS
+// ═════════════════════════════════════════════════════════════════════════════════════
+
+test "Reticular: buffer overflow - exactly MAX_EVENTS" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Publish exactly MAX_EVENTS events
+    for (0..MAX_EVENTS) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-001",
+            },
+        });
+    }
+
+    const stats = bus.getStats();
+    try std.testing.expectEqual(@as(usize, MAX_EVENTS), stats.buffered);
+    try std.testing.expect(stats.published >= MAX_EVENTS);
+    // No trim yet (exactly at capacity)
+    try std.testing.expectEqual(@as(u64, 0), stats.trim_count);
+}
+
+test "Reticular: buffer overflow - one over MAX_EVENTS" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Publish one more than MAX_EVENTS
+    for (0..MAX_EVENTS + 1) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-001",
+            },
+        });
+    }
+
+    const stats = bus.getStats();
+    // Should still be at MAX_EVENTS (oldest trimmed)
+    try std.testing.expectEqual(@as(usize, MAX_EVENTS), stats.buffered);
+    try std.testing.expect(stats.published >= MAX_EVENTS + 1);
+    // Should have trimmed at least once
+    try std.testing.expect(stats.trim_count >= 1);
+}
+
+test "Reticular: empty poll returns empty slice" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    const events = try bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 0), events.len);
+}
+
+test "Reticular: poll with future timestamp returns empty" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Publish an event
+    _ = try bus.publish(.task_claimed, .{
+        .task_claimed = .{
+            .task_id = "task-1",
+            .agent_id = "agent-1",
+        },
+    });
+
+    // Poll with future timestamp (events are in the past)
+    const future_time = std.time.milliTimestamp() + 1000000; // 1000 seconds in future
+    const events = try bus.poll(future_time, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 0), events.len);
+}
+
+test "Reticular: poll with negative timestamp returns all" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Publish some events
+    for (0..5) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-1",
+            },
+        });
+    }
+
+    // Poll with negative timestamp (should return all events)
+    const events = try bus.poll(-1000000, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 5), events.len);
+}
+
+test "Reticular: batch publish causes buffer overflow" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Fill to near capacity
+    for (0..MAX_EVENTS - 50) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-1",
+            },
+        });
+    }
+
+    const stats_before = bus.getStats();
+
+    // Publish batch that will overflow
+    const batch_size = 200;
+    const batch = try allocator.alloc(EventBus.BatchEvent, batch_size);
+    defer allocator.free(batch);
+
+    for (batch, 0..) |*evt, i| {
+        const task_id = try std.fmt.allocPrint(allocator, "batch-task-{d}", .{i});
+        defer allocator.free(task_id);
+        evt.* = .{
+            .event_type = .task_claimed,
+            .data = .{
+                .task_claimed = .{
+                    .task_id = task_id,
+                    .agent_id = "agent-2",
+                },
+            },
+        };
+    }
+
+    _ = try bus.publishBatch(batch);
+
+    const stats_after = bus.getStats();
+
+    // Should be at MAX_EVENTS
+    try std.testing.expectEqual(@as(usize, MAX_EVENTS), stats_after.buffered);
+    // Should have trimmed old events
+    try std.testing.expect(stats_after.trim_count > stats_before.trim_count);
+}
+
+test "Reticular: trim on empty buffer" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Trim on empty buffer should be no-op
+    bus.trim(100);
+
+    const stats = bus.getStats();
+    try std.testing.expectEqual(@as(usize, 0), stats.buffered);
+    try std.testing.expectEqual(@as(u64, 0), stats.trim_count);
+}
+
+test "Reticular: clear on empty buffer" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Clear on empty buffer should be no-op
+    bus.clear();
+
+    const stats = bus.getStats();
+    try std.testing.expectEqual(@as(usize, 0), stats.buffered);
+}
+
+test "Reticular: multiple clear operations" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Publish some events
+    for (0..10) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-1",
+            },
+        });
+    }
+
+    try std.testing.expectEqual(@as(usize, 10), bus.getStats().buffered);
+
+    // Clear multiple times
+    bus.clear();
+    bus.clear();
+    bus.clear();
+
+    try std.testing.expectEqual(@as(usize, 0), bus.getStats().buffered);
+}
+
+test "Reticular: utilization at capacity" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Fill to capacity
+    for (0..MAX_EVENTS) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-1",
+            },
+        });
+    }
+
+    const util = bus.utilization();
+    try std.testing.expectApproxEqAbs(@as(f64, 100.0), util, 0.01);
+}
+
+test "Reticular: utilization half full" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Fill to half capacity
+    for (0..MAX_EVENTS / 2) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-1",
+            },
+        });
+    }
+
+    const util = bus.utilization();
+    try std.testing.expectApproxEqAbs(@as(f64, 50.0), util, 1.0);
+}
+
+test "Reticular: poll max_events larger than available" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Publish 5 events
+    for (0..5) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-1",
+            },
+        });
+    }
+
+    // Poll for more events than available
+    const events = try bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    // Should return all available events (not more)
+    try std.testing.expectEqual(@as(usize, 5), events.len);
+}
+
+test "Reticular: timestamp ordering after overflow" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Publish more than MAX_EVENTS to force overflow
+    for (0..MAX_EVENTS + 100) |i| {
+        const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+        defer allocator.free(task_id);
+        _ = try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = task_id,
+                .agent_id = "agent-1",
+            },
+        });
+    }
+
+    // Get all events
+    const events = try bus.poll(0, allocator, 0);
+    defer allocator.free(events);
+
+    // Verify timestamps are in chronological order
+    var i: usize = 0;
+    while (i < events.len - 1) : (i += 1) {
+        try std.testing.expect(events[i + 1].timestamp >= events[i].timestamp);
+    }
+}
+
+test "Reticular: zero duration_ms in task_completed" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    _ = try bus.publish(.task_completed, .{
+        .task_completed = .{
+            .task_id = "task-zero-duration",
+            .agent_id = "agent-1",
+            .duration_ms = 0,
+        },
+    });
+
+    const events = try bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 1), events.len);
+    try std.testing.expectEqual(@as(u64, 0), events[0].data.task_completed.duration_ms);
+}
+
+test "Reticular: very long strings in events" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Create very long strings
+    const long_task_id = try allocator.alloc(u8, 10000);
+    defer allocator.free(long_task_id);
+    @memset(long_task_id, 'X');
+
+    const long_agent_id = try allocator.alloc(u8, 1000);
+    defer allocator.free(long_agent_id);
+    @memset(long_agent_id, 'Y');
+
+    _ = try bus.publish(.task_failed, .{
+        .task_failed = .{
+            .task_id = long_task_id,
+            .agent_id = long_agent_id,
+            .err_msg = "This is a very long error message that should still work",
+        },
+    });
+
+    const events = try bus.poll(0, allocator, 100);
+    defer allocator.free(events);
+
+    try std.testing.expectEqual(@as(usize, 1), events.len);
+    try std.testing.expectEqual(@as(usize, 10000), events[0].data.task_failed.task_id.len);
+    try std.testing.expectEqual(@as(usize, 1000), events[0].data.task_failed.agent_id.len);
+}
+
+test "Reticular: peak_buffered never decreases" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Add events
+    for (0..100) |_| {
+        _ = try bus.publish(.task_claimed, .{
+            .task_claimed = .{
+                .task_id = "task",
+                .agent_id = "agent",
+            },
+        });
+    }
+
+    const stats1 = bus.getStats();
+    try std.testing.expectEqual(@as(usize, 100), stats1.peak_buffered);
+
+    // Trim to 50
+    bus.trim(50);
+
+    const stats2 = bus.getStats();
+    // Peak should still be 100 (never decreases)
+    try std.testing.expectEqual(@as(usize, 100), stats2.peak_buffered);
+}
+
+test "Reticular: utilization calculation precision" {
+    const allocator = std.testing.allocator;
+    var bus = EventBus.init(allocator);
+    defer bus.deinit();
+
+    // Test exact fractions
+    const tests = [_]struct { count: usize, expected: f64 }{
+        .{ .count = 0, .expected = 0.0 },
+        .{ .count = 1, .expected = 100.0 / @as(f64, @floatFromInt(MAX_EVENTS)) },
+        .{ .count = MAX_EVENTS / 2, .expected = 50.0 },
+        .{ .count = MAX_EVENTS / 4, .expected = 25.0 },
+        .{ .count = MAX_EVENTS * 3 / 4, .expected = 75.0 },
+    };
+
+    for (tests) |t| {
+        // Clear and add t.count events
+        bus.clear();
+        for (0..t.count) |i| {
+            const task_id = try std.fmt.allocPrint(allocator, "task-{d}", .{i});
+            defer allocator.free(task_id);
+            _ = try bus.publish(.task_claimed, .{
+                .task_claimed = .{
+                    .task_id = task_id,
+                    .agent_id = "agent",
+                },
+            });
+        }
+
+        const util = bus.utilization();
+        try std.testing.expectApproxEqAbs(t.expected, util, 0.5);
+    }
+}
