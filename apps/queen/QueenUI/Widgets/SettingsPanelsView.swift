@@ -331,7 +331,7 @@ struct SettingsSlider: View {
                     Text(previewText?(value) ?? formattedValue)
                         .font(.body.monospacedDigit())
                         .foregroundStyle(V4Color.textPrimary)
-                        .frame(width: 44, alignment: .trailing)
+                        .frame(width: ParietalSpacing.alignmentFrameWidth, alignment: .trailing)
 
                     if let unit {
                         Text(unit)

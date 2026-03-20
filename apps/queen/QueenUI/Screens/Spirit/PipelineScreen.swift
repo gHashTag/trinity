@@ -101,7 +101,7 @@ struct PipelineScreen: View {
                     selectedStep = selectedStep?.id == step.id ? nil : step
                 }
             }
-            .frame(height: 220)
+            .frame(height: ParietalSpacing.pipelineCardHeight)
             .padding(.horizontal)
             .background(V4Color.bgCard)
             .clipShape(RoundedRectangle(cornerRadius: V1Theme.cornerLarge))

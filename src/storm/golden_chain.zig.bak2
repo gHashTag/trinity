@@ -288,8 +288,13 @@ pub const GoldenChain = struct {
 
         var json_buf: [4096]u8 = undefined;
         const json = try std.fmt.bufPrint(&json_buf,
-            \\{{"current_link":{d},"completed_links":"","checkpoint_id":"{s}"}}
-        , .{ chain.state.current_link, cid }) catch return error.OutOfMemory;
+            \\{{
+            \\  "current_link": {d},
+            \\  "completed_links": "",
+            \\  "checkpoint_id": "{s}"
+            \\}}
+        , .{ chain.state.current_link, "", cid })
+        ) catch return error.OutOfMemory;
 
         const file = try std.fs.cwd().createFile(cid ++ ".json", .{});
         defer file.close();

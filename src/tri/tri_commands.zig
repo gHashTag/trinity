@@ -434,7 +434,7 @@ fn runBrainAlertsCheck(allocator: std.mem.Allocator, args: []const []const u8) !
 
     // Get real metrics from brain if available
     if (basal_ganglia.getGlobal(allocator)) |registry| {
-        claims = registry.claims.count();
+        claims = registry.count();
     } else |_| {}
 
     if (reticular_formation.getGlobal(allocator)) |bus| {
@@ -2048,7 +2048,7 @@ pub fn runTaskClaimCommand(allocator: std.mem.Allocator, args: []const []const u
         }
     } else if (std.mem.eql(u8, action, "stats")) {
         std.debug.print("{s}Basal Ganglia Stats:{s}\n", .{ GOLDEN, RESET });
-        std.debug.print("  Total claims: {d}\n", .{reg.claims.count()});
+        std.debug.print("  Total claims: {d}\n", .{reg.count()});
     } else if (std.mem.eql(u8, action, "heartbeat")) {
         if (args.len < 2) {
             std.debug.print("Usage: tri task heartbeat <task_id> [--agent <id>]\n", .{});

@@ -32,8 +32,20 @@ pub fn executeStormCommand(allocator: Allocator, args: [][]const u8) !u8 {
 
 No separate binary. Everything inside tri.
 
+## CLI Integration
+In src/tri/main.zig, add storm case:
+```zig
+if (std.mem.eql(u8, command, "storm")) {
+    return storm.executeStormCommand(allocator, command_args);
+}
+```
+
 ## Dependencies
-- tri.pipeline (reuse)
+- storm.golden_chain (28-link pipeline)
+- storm.phoenix_bridge (self-healing)
+- storm.brain_zones.ofc (toxic verdict)
+- storm.brain_zones.habenula (anti-corruption)
+- storm.brain_zones.amygdala (MNL pattern)
 - tri.experience (reuse)
 - tri.swarm (reuse)
 

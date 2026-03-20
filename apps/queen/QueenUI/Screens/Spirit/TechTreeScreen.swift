@@ -88,7 +88,7 @@ struct TechTreeScreen: View {
                                         .frame(width: geo.size.width * progress)
                                 }
                             }
-                            .frame(height: 8)
+                            .frame(height: ParietalSpacing.microIndicator)
                             Text(String(format: "%.0f%% complete", Double(closed) / Double(totalChildren.count) * 100))
                                 .font(.caption)
                                 .foregroundStyle(V4Color.textSecondary)
