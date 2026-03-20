@@ -12,7 +12,7 @@ struct ELOChart: View {
                     Text("#\(idx + 1)")
                         .font(.caption.weight(.bold).monospacedDigit())
                         .foregroundStyle(idx == 0 ? V4Color.golden : V4Color.textSecondary)
-                        .frame(width: 30)
+                        .frame(width: ParietalSpacing.touchFrame)
 
                     Text(entry.name)
                         .font(.body.weight(.medium))
@@ -24,14 +24,14 @@ struct ELOChart: View {
 
                         RoundedRectangle(cornerRadius: 3)
                             .fill(barColor(idx))
-                            .frame(width: max(width, 4), height: 16)
+                            .frame(width: max(width, 4), height: ParietalSpacing.smallIndicatorHeight)
                     }
                     .frame(height: ParietalSpacing.icon)
 
                     Text(String(format: "%.0f", entry.elo))
                         .font(.caption.weight(.bold).monospacedDigit())
                         .foregroundStyle(V4Color.accent)
-                        .frame(width: 50, alignment: .trailing)
+                        .frame(width: ParietalSpacing.mediumFrame, alignment: .trailing)
                 }
             }
         }

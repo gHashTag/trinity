@@ -112,7 +112,7 @@ struct VSAScreen: View {
                             Text(label)
                                 .font(.caption.weight(.medium))
                                 .foregroundStyle(V4Color.textSecondary)
-                                .frame(width: 100, alignment: .leading)
+                                .frame(width: ParietalSpacing.xxLargeFrame, alignment: .leading)
                             Text(value)
                                 .font(.caption)
                                 .foregroundStyle(V4Color.textPrimary)
@@ -169,7 +169,7 @@ struct VSAScreen: View {
                 .font(.caption2)
                 .foregroundStyle(V4Color.textSecondary)
         }
-        .padding(10)
+        .padding(ParietalSpacing.xs)
         .frame(maxWidth: .infinity)
         .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 8))

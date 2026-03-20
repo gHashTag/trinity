@@ -247,7 +247,7 @@ struct ContextualMenu: View {
                     }
                 }
             }
-            .padding(4)
+            .padding(ParietalSpacing.xxs)
             .background(
                 RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                     .fill(V4Color.surface)
@@ -392,8 +392,8 @@ struct ModalView: View {
                 .tint(isPrimaryDestructive ? V4Color.error : V4Color.accent)
             }
         }
-        .padding(24)
-        .frame(width: 360)
+        .padding(ParietalSpacing.xl)
+        .frame(width: ParietalSpacing.xlModalFrame)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerLarge)
         .shadow(color: .black.opacity(V2Depth.stateHover), radius: 20)
@@ -545,7 +545,7 @@ struct Drawer: View {
                     .overlay(
                         Rectangle()
                             .fill(V4Color.border)
-                            .frame(width: 1),
+                            .frame(width: ParietalSpacing.hairline),
                         alignment: position == .leading ? .trailing : .leading
                     )
                     .offset(x: position == .leading ? -width + CGFloat(openProgress) * width + dragOffset : width - CGFloat(openProgress) * width + dragOffset)
@@ -856,7 +856,7 @@ struct OverlayComponentsView_Previews: PreviewProvider {
                 onPrimary: {},
                 onSecondary: {}
             )
-            .frame(width: 500, height: 400)
+            .frame(width: ParietalSpacing.wideSheetWidth, height: ParietalSpacing.wideSheetWidth)
             .background(V4Color.background)
             .previewDisplayName("Modal")
 

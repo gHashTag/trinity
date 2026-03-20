@@ -195,19 +195,19 @@ struct MessageAttachmentPreview: View {
                 Image(nsImage: thumbnail)
                     .resizable()
                     .aspectRatio(contentMode: .fill)
-                    .frame(width: 56, height: 56)
+                    .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeButtonHeight)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             } else if attachment.fileType == .image && isLoadingThumbnail {
                 ProgressView()
                     .controlSize(.small)
-                    .frame(width: 56, height: 56)
+                    .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeButtonHeight)
                     .background(V4Color.border.opacity(V2Depth.stateHover))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
             } else {
                 ZStack {
                     RoundedRectangle(cornerRadius: 8)
                         .fill(attachment.fileType.color.opacity(V2Depth.bgSidebarHover))
-                        .frame(width: 56, height: 56)
+                        .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeButtonHeight)
 
                     Image(systemName: attachment.fileType.icon)
                         .font(WernickeTypography.h2)
@@ -247,7 +247,7 @@ struct MessageAttachmentPreview: View {
                     Image(systemName: "eye")
                         .font(WernickeTypography.size12)
                         .foregroundColor(V4Color.textSecondary)
-                        .frame(width: 28, height: 28)
+                        .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                         .background(
                             Circle()
                                 .fill(V4Color.border.opacity(V2Depth.stateDisabled))
@@ -263,7 +263,7 @@ struct MessageAttachmentPreview: View {
                     Image(systemName: attachment.isDownloaded ? "checkmark" : "arrow.down")
                         .font(WernickeTypography.size11)
                         .foregroundColor(attachment.isDownloaded ? V4Color.success : V4Color.textSecondary)
-                        .frame(width: 28, height: 28)
+                        .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                         .background(
                             Circle()
                                 .fill(V4Color.border.opacity(V2Depth.stateDisabled))
@@ -485,7 +485,7 @@ struct AttachmentDetailView: View {
                     saveAttachment()
                 } label: {
                     Image(systemName: "arrow.down.doc")
-                        .frame(width: 28, height: 28)
+                        .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                 }
                 .buttonStyle(.plain)
                 .help("Save")
@@ -494,7 +494,7 @@ struct AttachmentDetailView: View {
                     NSWorkspace.shared.open(URL(string: attachment.fileURL)!)
                 } label: {
                     Image(systemName: "safari")
-                        .frame(width: 28, height: 28)
+                        .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                 }
                 .buttonStyle(.plain)
                 .help("Open in browser")
@@ -504,7 +504,7 @@ struct AttachmentDetailView: View {
                 } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundColor(V4Color.textSecondary)
-                        .frame(width: 28, height: 28)
+                        .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                 }
                 .buttonStyle(.plain)
                 .keyboardShortcut(.escape)

@@ -63,7 +63,7 @@ struct OracleScreen: View {
             let running = daemonState?.isRunning ?? false
             Circle()
                 .fill(running ? V4Color.statusOK : V4Color.statusError)
-                .frame(width: 12, height: 12)
+                .frame(width: ParietalSpacing.mediumBadge, height: ParietalSpacing.badgeHeight)
             Text(running ? "DAEMON RUNNING" : "DAEMON STOPPED")
                 .font(.caption.weight(.bold))
                 .foregroundStyle(running ? V4Color.statusOK : V4Color.statusError)
@@ -127,8 +127,8 @@ struct OracleScreen: View {
         return Text(status)
             .font(.title2.weight(.bold))
             .foregroundStyle(color)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.xs)
             .background(color.opacity(V2Depth.bgSidebarHover))
             .clipShape(SwiftUI.Capsule())
     }
@@ -240,7 +240,7 @@ struct OracleScreen: View {
                         }
                     }
                     .padding(.horizontal)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, ParietalSpacing.xxs)
                 }
             }
         }
@@ -266,7 +266,7 @@ struct OracleScreen: View {
             }
             Spacer()
         }
-        .padding(6)
+        .padding(ParietalSpacing.xxs)
         .background(V4Color.bgCard)
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }

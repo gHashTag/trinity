@@ -194,7 +194,7 @@ struct ActionConfirmationDialog: View {
             Image(systemName: action.icon)
                 .font(WernickeTypography.size32)
                 .foregroundStyle(V4Color.accent)
-                .frame(width: 60, height: 60)
+                .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
                 .background(
                     Circle()
                         .fill(V4Color.accent.opacity(0.2))
@@ -233,8 +233,8 @@ struct ActionConfirmationDialog: View {
                     .buttonStyle(.borderedProminent)
             }
         }
-        .padding(24)
-        .frame(width: 320)
+        .padding(ParietalSpacing.xl)
+        .frame(width: ParietalSpacing.widePanelWidth)
         .background(V4Color.background)
         .overlay(
             RoundedRectangle(cornerRadius: V1Theme.cornerLarge)

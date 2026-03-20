@@ -290,7 +290,7 @@ extension ACCFeedback {
                         .font(WernickeTypography.body)
                         .foregroundStyle(V4Color.textPrimary)
                 }
-                .frame(width: 60, height: 60)
+                .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
 
                 if let message = message {
                     Text(message)
@@ -428,7 +428,7 @@ extension ACCFeedback {
             .overlay(
                 Rectangle()
                     .fill(type.color)
-                    .frame(width: 4),
+                    .frame(width: ParietalSpacing.smallIndicator),
                 alignment: .leading
             )
             .cornerRadius(V1Theme.cornerMedium)

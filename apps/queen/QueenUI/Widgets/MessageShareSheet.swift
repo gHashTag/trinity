@@ -113,7 +113,7 @@ struct MessageShareSheet: View {
                     .foregroundColor(V4Color.success)
                     .opacity(flashOpacity)
             }
-            .frame(width: 28, height: 28)
+            .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
         }
         .menuStyle(.borderlessButton)
         .help("Share options")
@@ -235,7 +235,7 @@ private struct ShareSheetContentView: View {
             .keyboardShortcut(.cancelAction)
         }
         .padding()
-        .frame(width: 400, height: 280)
+        .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.panelHeight)
         .background(V4Color.surface)
     }
 

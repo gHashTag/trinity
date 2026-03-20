@@ -92,7 +92,7 @@ struct ContextMenuOverlay: View {
                     }
                 }
             }
-            .padding(4)
+            .padding(ParietalSpacing.xxs)
             .background(
                 RoundedRectangle(cornerRadius: V1Theme.cornerMedium)
                     .fill(V4Color.surface)
@@ -128,7 +128,7 @@ struct LoadingOverlay: View {
                     .font(WernickeTypography.size14)
                     .foregroundStyle(V4Color.textPrimary)
             }
-            .padding(24)
+            .padding(ParietalSpacing.xl)
             .background(
                 RoundedRectangle(cornerRadius: V1Theme.cornerLarge)
                     .fill(V4Color.surface)
@@ -208,7 +208,7 @@ struct OverlayPatternsView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
             SimpleTooltip(text: "Helpful info", isVisible: true)
-                .frame(width: 200, height: 100)
+                .frame(width: ParietalSpacing.modalFrame, height: ParietalSpacing.xxLargeFrame)
             
             OverlayErrorBanner(error: "Something went wrong") {}
                 .frame(width: ParietalSpacing.xl * 16)

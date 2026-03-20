@@ -59,7 +59,7 @@ struct PulseRingIndicator: View {
                         ),
                         lineWidth: 2
                     )
-                    .frame(width: 36, height: 36)
+                    .frame(width: ParietalSpacing.cellFrame, height: ParietalSpacing.avatarLargeHeight)
                     .scaleEffect(reduceMotion ? 1 : pulseScale)
                     .opacity(reduceMotion ? 0.5 : (2 - pulseScale))
                     .blur(radius: reduceMotion ? 0 : 3)
@@ -71,14 +71,14 @@ struct PulseRingIndicator: View {
                         primaryColor,
                         style: StrokeStyle(lineWidth: 2, lineCap: .round)
                     )
-                    .frame(width: 28, height: 28)
+                    .frame(width: ParietalSpacing.smallIconFrame, height: ParietalSpacing.smallButtonHeight)
                     .rotationEffect(.degrees(reduceMotion ? 0 : rotation))
                     .shadow(color: primaryColor.opacity(V1Theme.opacityTextSecondary), radius: 3)
 
                 // Core dot
                 Circle()
                     .fill(primaryColor)
-                    .frame(width: 10, height: 10)
+                    .frame(width: ParietalSpacing.smallBadge, height: ParietalSpacing.captionHeight)
                     .scaleEffect(corePulse)
             }
             .frame(width: ParietalSpacing.avatarMedium - 4, height: ParietalSpacing.avatarMedium - 4)
@@ -264,9 +264,9 @@ struct CompactPulseRing: View {
             // Core
             Circle()
                 .fill(primaryColor)
-                .frame(width: 5, height: 5)
+                .frame(width: ParietalSpacing.microIndicator, height: 5)
         }
-        .frame(width: 22, height: 22)
+        .frame(width: ParietalSpacing.smallFrame, height: ParietalSpacing.avatarHeight)
         .task(id: isActive) {
             guard isActive, !reduceMotion else {
                 pulseScale = 1.0

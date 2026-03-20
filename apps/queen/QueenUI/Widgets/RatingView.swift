@@ -157,7 +157,7 @@ struct ReviewCard: View {
                     Image(systemName: avatar)
                         .font(WernickeTypography.size20)
                         .foregroundStyle(V4Color.accent)
-                        .frame(width: 36, height: 36)
+                        .frame(width: ParietalSpacing.cellFrame, height: ParietalSpacing.avatarLargeHeight)
                         .background(
                             Circle()
                                 .fill(V4Color.accent.opacity(V2Depth.bgSidebarHover))
@@ -165,7 +165,7 @@ struct ReviewCard: View {
                 } else {
                     Circle()
                         .fill(V4Color.border)
-                        .frame(width: 36, height: 36)
+                        .frame(width: ParietalSpacing.cellFrame, height: ParietalSpacing.avatarLargeHeight)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -202,7 +202,7 @@ struct ReviewCard: View {
                     .foregroundStyle(V4Color.textSecondary)
             }
         }
-        .padding(14)
+        .padding(ParietalSpacing.sm)
         .background(V4Color.surface)
         .cornerRadius(V1Theme.cornerMedium)
     }
@@ -273,7 +273,7 @@ struct RatingSummary: View {
                         Text("\(star)")
                             .font(WernickeTypography.size11)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 12)
+                            .frame(width: ParietalSpacing.mediumBadge)
 
                         GeometryReader { geometry in
                             ZStack(alignment: .leading) {
@@ -294,7 +294,7 @@ struct RatingSummary: View {
                         Text("\(ratingDistribution[safe: star - 1] ?? 0)")
                             .font(.caption2)
                             .foregroundStyle(V4Color.textSecondary)
-                            .frame(width: 30)
+                            .frame(width: ParietalSpacing.touchFrame)
                     }
                 }
             }

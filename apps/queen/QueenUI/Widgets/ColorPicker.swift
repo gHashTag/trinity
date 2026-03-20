@@ -126,7 +126,7 @@ struct ColorSwatchView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 6)
                     .fill(color)
-                    .frame(width: 40, height: 40)
+                    .frame(width: ParietalSpacing.standardFrame, height: ParietalSpacing.itemHeight)
                     .overlay(
                         RoundedRectangle(cornerRadius: 6)
                             .stroke(.white.opacity(V2Depth.stateHover), lineWidth: 1)
@@ -187,7 +187,7 @@ struct CustomColorSheet: View {
 
                         RoundedRectangle(cornerRadius: 8)
                             .fill(Color(color))
-                            .frame(width: 60, height: 60)
+                            .frame(width: ParietalSpacing.largeFrame, height: ParietalSpacing.largeFrame)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 8)
                                     .stroke(V4Color.border, lineWidth: 1)
@@ -229,7 +229,7 @@ struct CustomColorSheet: View {
                 }
             }
         }
-        .frame(width: 400, height: 500)
+        .frame(width: ParietalSpacing.sheetWidth, height: ParietalSpacing.extraLargeModalHeight)
     }
 
     private var hexCode: String {
@@ -427,7 +427,7 @@ struct GradientSwatchView: View {
                         endPoint: .bottomTrailing
                     )
                 )
-                .frame(width: 50, height: 50)
+                .frame(width: ParietalSpacing.mediumFrame, height: ParietalSpacing.mediumFrame)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(name)

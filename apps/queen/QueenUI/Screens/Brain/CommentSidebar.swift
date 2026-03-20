@@ -35,8 +35,8 @@ struct CommentSidebar: View {
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close comments")
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, ParietalSpacing.md)
+            .padding(.vertical, ParietalSpacing.sm)
 
             // Quoted original message
             Text(message.text)
@@ -48,9 +48,9 @@ struct CommentSidebar: View {
                 .overlay(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 1.5)
                         .fill(V4Color.accent.opacity(V2Depth.stateDisabled))
-                        .frame(width: 3)
+                        .frame(width: ParietalSpacing.smallIndicator)
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, ParietalSpacing.md)
                 .padding(.bottom, 12)
 
             Rectangle()
@@ -74,12 +74,12 @@ struct CommentSidebar: View {
                                     .font(WernickeTypography.size12)
                                     .foregroundStyle(Color.white.opacity(V2Depth.stateHover))
                             }
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, ParietalSpacing.md)
                         }
 
                         Color.clear.frame(height: 1).id("commentBottom")
                     }
-                    .padding(.vertical, 12)
+                    .padding(.vertical, ParietalSpacing.sm)
                 }
                 .onChange(of: comments.count) {
                     withAnimation(.easeOut(duration: 0.15)) {
@@ -113,7 +113,7 @@ struct CommentSidebar: View {
                 .disabled(commentInput.isEmpty || client.isStreaming)
                 .accessibilityLabel("Send comment")
             }
-            .padding(.horizontal, 12)
+            .padding(.horizontal, ParietalSpacing.sm)
             .padding(.vertical, 10)
             .background(V4Color.surfaceElevated)
         }
@@ -154,7 +154,7 @@ struct CommentRow: View {
                     .fill(comment.role == .user ? Color.white.opacity(V2Depth.stateHover) :
                           hasError ? V4Color.statusError.opacity(V2Depth.stateDisabled) :
                           V4Color.accent.opacity(V2Depth.stateDisabled))
-                    .frame(width: 6, height: 6)
+                    .frame(width: ParietalSpacing.dotSize, height: 6)
                 Text(comment.role == .user ? "You" : "Queen")
                     .font(WernickeTypography.caption2Semibold)
                     .foregroundStyle(comment.role == .user ? Color.white.opacity(V2Depth.stateDisabled) :
@@ -196,6 +196,6 @@ struct CommentRow: View {
                 .padding(.top, 2)
             }
         }
-        .padding(.horizontal, 16)
+        .padding(.horizontal, ParietalSpacing.md)
     }
 }

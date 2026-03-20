@@ -92,7 +92,7 @@ struct SimpleListItem: View, Identifiable {
                 Image(systemName: icon)
                     .font(WernickeTypography.size18)
                     .foregroundStyle(isSelected ? V4Color.accent : V4Color.textSecondary)
-                    .frame(width: 28)
+                    .frame(width: ParietalSpacing.smallIconFrame)
             }
 
             // Title and subtitle
@@ -348,7 +348,7 @@ struct ListView_Previews: PreviewProvider {
                     icon: "chart.line.uptrend.xyaxis"
                 )
             }
-            .frame(width: 350)
+            .frame(width: ParietalSpacing.extraWidePanel)
             .padding()
             .background(V4Color.background)
 
@@ -370,7 +370,7 @@ struct ListView_Previews: PreviewProvider {
                     icon: "hand.tap"
                 )
             }
-            .frame(width: 350)
+            .frame(width: ParietalSpacing.extraWidePanel)
             .padding()
             .background(V4Color.background)
         }
